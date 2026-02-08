@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for ProcessRepository to achieve 85%+ coverage.
+"""Comprehensive unit tests for ProcessRepository to achieve 85%+ coverage.
 
 Tests for:
 - create() - process creation with various options
@@ -45,7 +44,7 @@ def unique_project_name() -> str:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_process_basic(db_session: AsyncSession):
+async def test_create_process_basic(db_session: AsyncSession) -> None:
     """Test creating process with basic fields."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -69,7 +68,7 @@ async def test_create_process_basic(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_process_with_description(db_session: AsyncSession):
+async def test_create_process_with_description(db_session: AsyncSession) -> None:
     """Test creating process with description and purpose."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -89,7 +88,7 @@ async def test_create_process_with_description(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_process_with_classification(db_session: AsyncSession):
+async def test_create_process_with_classification(db_session: AsyncSession) -> None:
     """Test creating process with classification fields."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -109,7 +108,7 @@ async def test_create_process_with_classification(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_process_with_stages(db_session: AsyncSession):
+async def test_create_process_with_stages(db_session: AsyncSession) -> None:
     """Test creating process with stage definitions."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -133,7 +132,7 @@ async def test_create_process_with_stages(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_process_with_swimlanes(db_session: AsyncSession):
+async def test_create_process_with_swimlanes(db_session: AsyncSession) -> None:
     """Test creating process with swimlane definitions."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -156,7 +155,7 @@ async def test_create_process_with_swimlanes(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_process_with_inputs_outputs(db_session: AsyncSession):
+async def test_create_process_with_inputs_outputs(db_session: AsyncSession) -> None:
     """Test creating process with inputs and outputs."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -179,7 +178,7 @@ async def test_create_process_with_inputs_outputs(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_process_with_triggers(db_session: AsyncSession):
+async def test_create_process_with_triggers(db_session: AsyncSession) -> None:
     """Test creating process with triggers and exit criteria."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -202,7 +201,7 @@ async def test_create_process_with_triggers(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_process_with_bpmn(db_session: AsyncSession):
+async def test_create_process_with_bpmn(db_session: AsyncSession) -> None:
     """Test creating process with BPMN XML."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -222,7 +221,7 @@ async def test_create_process_with_bpmn(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_process_with_ownership(db_session: AsyncSession):
+async def test_create_process_with_ownership(db_session: AsyncSession) -> None:
     """Test creating process with ownership fields."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -242,7 +241,7 @@ async def test_create_process_with_ownership(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_process_with_metrics(db_session: AsyncSession):
+async def test_create_process_with_metrics(db_session: AsyncSession) -> None:
     """Test creating process with metrics."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -262,7 +261,7 @@ async def test_create_process_with_metrics(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_process_with_metadata(db_session: AsyncSession):
+async def test_create_process_with_metadata(db_session: AsyncSession) -> None:
     """Test creating process with custom metadata."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -285,7 +284,7 @@ async def test_create_process_with_metadata(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_found(db_session: AsyncSession):
+async def test_get_by_id_found(db_session: AsyncSession) -> None:
     """Test retrieving process by ID when found."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -303,7 +302,7 @@ async def test_get_by_id_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_not_found(db_session: AsyncSession):
+async def test_get_by_id_not_found(db_session: AsyncSession) -> None:
     """Test retrieving process by ID when not found."""
     repo = ProcessRepository(db_session)
     found = await repo.get_by_id(str(uuid4()))
@@ -312,7 +311,7 @@ async def test_get_by_id_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_excludes_deleted(db_session: AsyncSession):
+async def test_get_by_id_excludes_deleted(db_session: AsyncSession) -> None:
     """Test that get_by_id excludes soft-deleted processes."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -331,7 +330,7 @@ async def test_get_by_id_excludes_deleted(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_scoped_to_project(db_session: AsyncSession):
+async def test_get_by_id_scoped_to_project(db_session: AsyncSession) -> None:
     """Test retrieving process by ID scoped to project."""
     project_repo = ProjectRepository(db_session)
     project1 = await project_repo.create(name=unique_project_name())
@@ -358,7 +357,7 @@ async def test_get_by_id_scoped_to_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_number_found(db_session: AsyncSession):
+async def test_get_by_number_found(db_session: AsyncSession) -> None:
     """Test retrieving process by process number when found."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -375,7 +374,7 @@ async def test_get_by_number_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_number_not_found(db_session: AsyncSession):
+async def test_get_by_number_not_found(db_session: AsyncSession) -> None:
     """Test retrieving process by number when not found."""
     repo = ProcessRepository(db_session)
     found = await repo.get_by_number("PROC-NONEXISTENT")
@@ -389,7 +388,7 @@ async def test_get_by_number_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_basic(db_session: AsyncSession):
+async def test_list_all_basic(db_session: AsyncSession) -> None:
     """Test listing processes for a project."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -407,7 +406,7 @@ async def test_list_all_basic(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_excludes_deleted(db_session: AsyncSession):
+async def test_list_all_excludes_deleted(db_session: AsyncSession) -> None:
     """Test listing processes excludes deleted by default."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -427,7 +426,7 @@ async def test_list_all_excludes_deleted(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_include_deleted(db_session: AsyncSession):
+async def test_list_all_include_deleted(db_session: AsyncSession) -> None:
     """Test listing processes can include deleted."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -447,7 +446,7 @@ async def test_list_all_include_deleted(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_filter_by_status(db_session: AsyncSession):
+async def test_list_all_filter_by_status(db_session: AsyncSession) -> None:
     """Test filtering processes by status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -471,7 +470,7 @@ async def test_list_all_filter_by_status(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_filter_by_category(db_session: AsyncSession):
+async def test_list_all_filter_by_category(db_session: AsyncSession) -> None:
     """Test filtering processes by category."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -489,7 +488,7 @@ async def test_list_all_filter_by_category(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_filter_by_owner(db_session: AsyncSession):
+async def test_list_all_filter_by_owner(db_session: AsyncSession) -> None:
     """Test filtering processes by owner."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -507,7 +506,7 @@ async def test_list_all_filter_by_owner(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_filter_active_only(db_session: AsyncSession):
+async def test_list_all_filter_active_only(db_session: AsyncSession) -> None:
     """Test filtering only active versions."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -533,7 +532,7 @@ async def test_list_all_filter_active_only(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_pagination(db_session: AsyncSession):
+async def test_list_all_pagination(db_session: AsyncSession) -> None:
     """Test pagination in list_all."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -558,7 +557,7 @@ async def test_list_all_pagination(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_basic_fields(db_session: AsyncSession):
+async def test_update_basic_fields(db_session: AsyncSession) -> None:
     """Test updating basic process fields."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -582,7 +581,7 @@ async def test_update_basic_fields(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_optimistic_locking_failure(db_session: AsyncSession):
+async def test_update_optimistic_locking_failure(db_session: AsyncSession) -> None:
     """Test that update fails with stale version."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -603,7 +602,7 @@ async def test_update_optimistic_locking_failure(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_not_found(db_session: AsyncSession):
+async def test_update_not_found(db_session: AsyncSession) -> None:
     """Test updating non-existent process."""
     repo = ProcessRepository(db_session)
 
@@ -618,7 +617,7 @@ async def test_update_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_version(db_session: AsyncSession):
+async def test_create_version(db_session: AsyncSession) -> None:
     """Test creating a new version of a process."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -648,7 +647,7 @@ async def test_create_version(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_version_not_found(db_session: AsyncSession):
+async def test_create_version_not_found(db_session: AsyncSession) -> None:
     """Test creating version for non-existent process."""
     repo = ProcessRepository(db_session)
 
@@ -663,7 +662,7 @@ async def test_create_version_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_activate_version(db_session: AsyncSession):
+async def test_activate_version(db_session: AsyncSession) -> None:
     """Test activating a process version."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -683,7 +682,7 @@ async def test_activate_version(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_activate_version_deactivates_others(db_session: AsyncSession):
+async def test_activate_version_deactivates_others(db_session: AsyncSession) -> None:
     """Test that activating a version deactivates others with same name."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -714,7 +713,7 @@ async def test_activate_version_deactivates_others(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_activate_version_not_found(db_session: AsyncSession):
+async def test_activate_version_not_found(db_session: AsyncSession) -> None:
     """Test activating non-existent process."""
     repo = ProcessRepository(db_session)
 
@@ -729,7 +728,7 @@ async def test_activate_version_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_deprecate(db_session: AsyncSession):
+async def test_deprecate(db_session: AsyncSession) -> None:
     """Test deprecating a process."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -753,7 +752,7 @@ async def test_deprecate(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_deprecate_not_found(db_session: AsyncSession):
+async def test_deprecate_not_found(db_session: AsyncSession) -> None:
     """Test deprecating non-existent process."""
     repo = ProcessRepository(db_session)
 
@@ -768,7 +767,7 @@ async def test_deprecate_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_soft(db_session: AsyncSession):
+async def test_delete_soft(db_session: AsyncSession) -> None:
     """Test soft delete of process."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -787,7 +786,7 @@ async def test_delete_soft(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_hard(db_session: AsyncSession):
+async def test_delete_hard(db_session: AsyncSession) -> None:
     """Test hard delete of process."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -803,7 +802,7 @@ async def test_delete_hard(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_not_found(db_session: AsyncSession):
+async def test_delete_not_found(db_session: AsyncSession) -> None:
     """Test delete of non-existent process."""
     repo = ProcessRepository(db_session)
     result = await repo.delete(str(uuid4()), soft=True)
@@ -817,7 +816,7 @@ async def test_delete_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_count_by_status(db_session: AsyncSession):
+async def test_count_by_status(db_session: AsyncSession) -> None:
     """Test counting processes by status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -839,7 +838,7 @@ async def test_count_by_status(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_count_by_category(db_session: AsyncSession):
+async def test_count_by_category(db_session: AsyncSession) -> None:
     """Test counting processes by category."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -863,7 +862,7 @@ async def test_count_by_category(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_execution(db_session: AsyncSession):
+async def test_create_execution(db_session: AsyncSession) -> None:
     """Test creating a process execution."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -890,7 +889,7 @@ async def test_create_execution(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_execution_process_not_found(db_session: AsyncSession):
+async def test_create_execution_process_not_found(db_session: AsyncSession) -> None:
     """Test creating execution for non-existent process."""
     repo = ProcessRepository(db_session)
 
@@ -900,7 +899,7 @@ async def test_create_execution_process_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_execution_by_id(db_session: AsyncSession):
+async def test_get_execution_by_id(db_session: AsyncSession) -> None:
     """Test retrieving execution by ID."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -920,7 +919,7 @@ async def test_get_execution_by_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_executions(db_session: AsyncSession):
+async def test_list_executions(db_session: AsyncSession) -> None:
     """Test listing executions for a process."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -941,7 +940,7 @@ async def test_list_executions(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_executions_filter_by_status(db_session: AsyncSession):
+async def test_list_executions_filter_by_status(db_session: AsyncSession) -> None:
     """Test filtering executions by status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -967,7 +966,7 @@ async def test_list_executions_filter_by_status(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_start_execution(db_session: AsyncSession):
+async def test_start_execution(db_session: AsyncSession) -> None:
     """Test starting a process execution."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -988,7 +987,7 @@ async def test_start_execution(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_start_execution_not_found(db_session: AsyncSession):
+async def test_start_execution_not_found(db_session: AsyncSession) -> None:
     """Test starting non-existent execution."""
     repo = ProcessRepository(db_session)
 
@@ -998,7 +997,7 @@ async def test_start_execution_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_advance_execution(db_session: AsyncSession):
+async def test_advance_execution(db_session: AsyncSession) -> None:
     """Test advancing execution to next stage."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -1029,7 +1028,7 @@ async def test_advance_execution(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_advance_execution_not_found(db_session: AsyncSession):
+async def test_advance_execution_not_found(db_session: AsyncSession) -> None:
     """Test advancing non-existent execution."""
     repo = ProcessRepository(db_session)
 
@@ -1039,7 +1038,7 @@ async def test_advance_execution_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_complete_execution(db_session: AsyncSession):
+async def test_complete_execution(db_session: AsyncSession) -> None:
     """Test completing a process execution."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -1069,7 +1068,7 @@ async def test_complete_execution(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_complete_execution_not_found(db_session: AsyncSession):
+async def test_complete_execution_not_found(db_session: AsyncSession) -> None:
     """Test completing non-existent execution."""
     repo = ProcessRepository(db_session)
 
@@ -1079,7 +1078,7 @@ async def test_complete_execution_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_fail_execution(db_session: AsyncSession):
+async def test_fail_execution(db_session: AsyncSession) -> None:
     """Test marking execution as failed."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -1105,7 +1104,7 @@ async def test_fail_execution(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_fail_execution_not_found(db_session: AsyncSession):
+async def test_fail_execution_not_found(db_session: AsyncSession) -> None:
     """Test failing non-existent execution."""
     repo = ProcessRepository(db_session)
 
@@ -1115,7 +1114,7 @@ async def test_fail_execution_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_cancel_execution(db_session: AsyncSession):
+async def test_cancel_execution(db_session: AsyncSession) -> None:
     """Test canceling a process execution."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -1141,7 +1140,7 @@ async def test_cancel_execution(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_cancel_execution_not_found(db_session: AsyncSession):
+async def test_cancel_execution_not_found(db_session: AsyncSession) -> None:
     """Test canceling non-existent execution."""
     repo = ProcessRepository(db_session)
 

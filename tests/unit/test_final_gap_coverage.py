@@ -1,5 +1,4 @@
-"""
-Final gap coverage tests for modules below 80% coverage.
+"""Final gap coverage tests for modules below 80% coverage.
 
 These tests target specific modules to bring total coverage to 85%+.
 """
@@ -16,16 +15,16 @@ import pytest
 
 
 class TestCLITestModule:
-    """Tests for src/tracertm/cli/commands/test.py (standalone file)"""
+    """Tests for src/tracertm/cli/commands/test.py (standalone file)."""
 
-    def test_test_module_can_be_imported(self):
+    def test_test_module_can_be_imported(self) -> None:
         """Test test.py module can be imported via direct path."""
         import importlib.util
         import sys
 
         # Import the standalone test.py file directly
         spec = importlib.util.spec_from_file_location(
-            "test_module", "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/test.py"
+            "test_module", "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/test.py",
         )
         if spec and spec.loader:
             test_module = importlib.util.module_from_spec(spec)
@@ -42,13 +41,13 @@ class TestCLITestModule:
             assert hasattr(test_module, "discover_all_tests")
             assert hasattr(test_module, "app")
 
-    def test_test_metadata_dataclass_via_direct_import(self):
+    def test_test_metadata_dataclass_via_direct_import(self) -> None:
         """Test TestMetadata dataclass creation."""
         import importlib.util
         import sys
 
         spec = importlib.util.spec_from_file_location(
-            "test_module2", "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/test.py"
+            "test_module2", "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/test.py",
         )
         if spec and spec.loader:
             test_module = importlib.util.module_from_spec(spec)
@@ -67,13 +66,13 @@ class TestCLITestModule:
             assert metadata.domain == []
             assert metadata.function == []
 
-    def test_domain_mapping_has_expected_domains(self):
+    def test_domain_mapping_has_expected_domains(self) -> None:
         """Test DOMAIN_MAPPING has expected structure."""
         import importlib.util
         import sys
 
         spec = importlib.util.spec_from_file_location(
-            "test_module3", "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/test.py"
+            "test_module3", "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/test.py",
         )
         if spec and spec.loader:
             test_module = importlib.util.module_from_spec(spec)
@@ -91,13 +90,13 @@ class TestCLITestModule:
                 assert "python" in config
                 assert "description" in config
 
-    def test_python_discoverer_infer_domain(self):
+    def test_python_discoverer_infer_domain(self) -> None:
         """Test domain inference from test file path."""
         import importlib.util
         import sys
 
         spec = importlib.util.spec_from_file_location(
-            "test_module4", "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/test.py"
+            "test_module4", "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/test.py",
         )
         if spec and spec.loader:
             test_module = importlib.util.module_from_spec(spec)
@@ -109,13 +108,13 @@ class TestCLITestModule:
             discoverer = python_test_discoverer(Path.cwd())
             assert discoverer.root_dir == Path.cwd()
 
-    def test_go_discoverer_init(self):
+    def test_go_discoverer_init(self) -> None:
         """Test GoTestDiscoverer initialization."""
         import importlib.util
         import sys
 
         spec = importlib.util.spec_from_file_location(
-            "test_module5", "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/test.py"
+            "test_module5", "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/test.py",
         )
         if spec and spec.loader:
             test_module = importlib.util.module_from_spec(spec)
@@ -128,13 +127,13 @@ class TestCLITestModule:
             assert discoverer.root_dir == Path.cwd()
             assert discoverer.backend_dir == Path.cwd() / "backend"
 
-    def test_typescript_discoverer_init(self):
+    def test_typescript_discoverer_init(self) -> None:
         """Test TypeScriptTestDiscoverer initialization."""
         import importlib.util
         import sys
 
         spec = importlib.util.spec_from_file_location(
-            "test_module6", "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/test.py"
+            "test_module6", "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/test.py",
         )
         if spec and spec.loader:
             test_module = importlib.util.module_from_spec(spec)
@@ -154,9 +153,9 @@ class TestCLITestModule:
 
 
 class TestPanderaSchemas:
-    """Tests for src/tracertm/schemas.py"""
+    """Tests for src/tracertm/schemas.py."""
 
-    def test_requirement_schema_import(self):
+    def test_requirement_schema_import(self) -> None:
         """Test RequirementSchema can be imported."""
         try:
             from tracertm.schemas import RequirementSchema  # type: ignore[attr-defined]
@@ -165,7 +164,7 @@ class TestPanderaSchemas:
         except ImportError:
             pytest.skip("pandera not installed")
 
-    def test_traceability_link_schema_import(self):
+    def test_traceability_link_schema_import(self) -> None:
         """Test TraceabilityLinkSchema can be imported."""
         try:
             from tracertm.schemas import TraceabilityLinkSchema  # type: ignore[attr-defined]
@@ -174,7 +173,7 @@ class TestPanderaSchemas:
         except ImportError:
             pytest.skip("pandera not installed")
 
-    def test_project_metrics_schema_import(self):
+    def test_project_metrics_schema_import(self) -> None:
         """Test ProjectMetricsSchema can be imported."""
         try:
             from tracertm.schemas import ProjectMetricsSchema  # type: ignore[attr-defined]
@@ -183,7 +182,7 @@ class TestPanderaSchemas:
         except ImportError:
             pytest.skip("pandera not installed")
 
-    def test_validate_requirements_function(self):
+    def test_validate_requirements_function(self) -> None:
         """Test validate_requirements function exists."""
         try:
             from tracertm.schemas import validate_requirements  # type: ignore[attr-defined]
@@ -192,7 +191,7 @@ class TestPanderaSchemas:
         except ImportError:
             pytest.skip("pandera not installed")
 
-    def test_validate_traceability_links_function(self):
+    def test_validate_traceability_links_function(self) -> None:
         """Test validate_traceability_links function exists."""
         try:
             from tracertm.schemas import validate_traceability_links  # type: ignore[attr-defined]
@@ -201,7 +200,7 @@ class TestPanderaSchemas:
         except ImportError:
             pytest.skip("pandera not installed")
 
-    def test_validate_project_metrics_function(self):
+    def test_validate_project_metrics_function(self) -> None:
         """Test validate_project_metrics function exists."""
         try:
             from tracertm.schemas import validate_project_metrics  # type: ignore[attr-defined]
@@ -217,9 +216,9 @@ class TestPanderaSchemas:
 
 
 class TestStateCLI:
-    """Tests for src/tracertm/cli/commands/state.py"""
+    """Tests for src/tracertm/cli/commands/state.py."""
 
-    def test_app_exists(self):
+    def test_app_exists(self) -> None:
         """Test state app typer instance exists."""
         import typer
 
@@ -227,7 +226,7 @@ class TestStateCLI:
 
         assert isinstance(app, typer.Typer)
 
-    def test_console_exists(self):
+    def test_console_exists(self) -> None:
         """Test console is available."""
         from rich.console import Console
 
@@ -237,7 +236,7 @@ class TestStateCLI:
 
     @patch("tracertm.cli.commands.state.ConfigManager")
     @patch("tracertm.cli.commands.state.LocalStorageManager")
-    def test_show_state_no_project(self, mock_storage, mock_config):
+    def test_show_state_no_project(self, mock_storage, mock_config) -> None:
         """Test show_state when no project is set."""
         import click
 
@@ -251,7 +250,7 @@ class TestStateCLI:
 
     @patch("tracertm.cli.commands.state.ConfigManager")
     @patch("tracertm.cli.commands.state.LocalStorageManager")
-    def test_show_state_with_view_filter(self, mock_storage, mock_config):
+    def test_show_state_with_view_filter(self, mock_storage, mock_config) -> None:
         """Test show_state with view filter."""
         from tracertm.cli.commands.state import show_state
 
@@ -280,16 +279,16 @@ class TestStateCLI:
 
 
 class TestCoreDatabase:
-    """Tests for src/tracertm/core/database.py"""
+    """Tests for src/tracertm/core/database.py."""
 
-    def test_engine_global_none_initially(self):
+    def test_engine_global_none_initially(self) -> None:
         """Test that engine starts as None."""
         from tracertm.core import database
 
         # Note: engine may be initialized in other tests
         assert hasattr(database, "_engine")
 
-    def test_session_factory_global(self):
+    def test_session_factory_global(self) -> None:
         """Test session factory global variable."""
         from tracertm.core import database
 
@@ -297,7 +296,7 @@ class TestCoreDatabase:
 
     @patch("tracertm.core.database.get_config")
     @patch("tracertm.core.database.create_async_engine")
-    def test_get_engine_creates_engine(self, mock_create_engine, mock_get_config):
+    def test_get_engine_creates_engine(self, mock_create_engine, mock_get_config) -> None:
         """Test get_engine creates and returns engine."""
         from tracertm.core import database
 
@@ -322,7 +321,7 @@ class TestCoreDatabase:
 
     @patch("tracertm.core.database.get_engine")
     @patch("tracertm.core.database.async_sessionmaker")
-    def test_get_session_factory(self, mock_sessionmaker, mock_get_engine):
+    def test_get_session_factory(self, mock_sessionmaker, mock_get_engine) -> None:
         """Test get_session_factory creates factory."""
         from tracertm.core import database
 
@@ -349,7 +348,7 @@ class TestCoreDatabase:
 class TestTUIWidgets:
     """Tests for TUI widgets with low coverage."""
 
-    def test_state_display_widget_import(self):
+    def test_state_display_widget_import(self) -> None:
         """Test StateDisplayWidget can be imported."""
         try:
             from tracertm.tui.widgets.state_display import StateDisplayWidget
@@ -358,13 +357,13 @@ class TestTUIWidgets:
         except ImportError:
             pytest.skip("textual not installed")
 
-    def test_state_display_widget_has_textual_check(self):
+    def test_state_display_widget_has_textual_check(self) -> None:
         """Test TEXTUAL_AVAILABLE flag exists."""
         from tracertm.tui.widgets import state_display
 
         assert hasattr(state_display, "TEXTUAL_AVAILABLE")
 
-    def test_item_list_widget_import(self):
+    def test_item_list_widget_import(self) -> None:
         """Test ItemListWidget can be imported."""
         try:
             from tracertm.tui.widgets.item_list import ItemListWidget
@@ -373,13 +372,13 @@ class TestTUIWidgets:
         except ImportError:
             pytest.skip("textual not installed")
 
-    def test_item_list_has_textual_check(self):
+    def test_item_list_has_textual_check(self) -> None:
         """Test TEXTUAL_AVAILABLE flag exists."""
         from tracertm.tui.widgets import item_list
 
         assert hasattr(item_list, "TEXTUAL_AVAILABLE")
 
-    def test_view_switcher_widget_import(self):
+    def test_view_switcher_widget_import(self) -> None:
         """Test ViewSwitcherWidget can be imported."""
         try:
             from tracertm.tui.widgets.view_switcher import ViewSwitcherWidget
@@ -388,13 +387,13 @@ class TestTUIWidgets:
         except ImportError:
             pytest.skip("textual not installed")
 
-    def test_view_switcher_has_textual_check(self):
+    def test_view_switcher_has_textual_check(self) -> None:
         """Test TEXTUAL_AVAILABLE flag exists."""
         from tracertm.tui.widgets import view_switcher
 
         assert hasattr(view_switcher, "TEXTUAL_AVAILABLE")
 
-    def test_graph_view_widget_import(self):
+    def test_graph_view_widget_import(self) -> None:
         """Test GraphViewWidget can be imported."""
         try:
             from tracertm.tui.widgets.graph_view import GraphViewWidget
@@ -403,7 +402,7 @@ class TestTUIWidgets:
         except ImportError:
             pytest.skip("textual not installed")
 
-    def test_graph_view_has_textual_check(self):
+    def test_graph_view_has_textual_check(self) -> None:
         """Test TEXTUAL_AVAILABLE flag exists."""
         from tracertm.tui.widgets import graph_view
 
@@ -425,14 +424,14 @@ class TestStateDisplayWidgetTextual:
         ):
             yield
 
-    def test_state_display_placeholder_class(self):
+    def test_state_display_placeholder_class(self) -> None:
         """Test placeholder class exists."""
         from tracertm.tui.widgets.state_display import StateDisplayWidget
 
         # Should be either the real widget or placeholder
         assert StateDisplayWidget is not None
 
-    def test_state_display_init_sets_columns_added(self):
+    def test_state_display_init_sets_columns_added(self) -> None:
         """Test init sets _columns_added flag."""
         from tracertm.tui.widgets import state_display
 
@@ -448,13 +447,13 @@ class TestStateDisplayWidgetTextual:
 class TestItemListWidgetTextual:
     """Tests for ItemListWidget when textual is available."""
 
-    def test_item_list_placeholder_class(self):
+    def test_item_list_placeholder_class(self) -> None:
         """Test placeholder class exists."""
         from tracertm.tui.widgets.item_list import ItemListWidget
 
         assert ItemListWidget is not None
 
-    def test_item_list_init_sets_columns_added(self):
+    def test_item_list_init_sets_columns_added(self) -> None:
         """Test init sets _columns_added flag."""
         from tracertm.tui.widgets import item_list
 
@@ -470,13 +469,13 @@ class TestItemListWidgetTextual:
 class TestViewSwitcherWidgetTextual:
     """Tests for ViewSwitcherWidget when textual is available."""
 
-    def test_view_switcher_placeholder_class(self):
+    def test_view_switcher_placeholder_class(self) -> None:
         """Test placeholder class exists."""
         from tracertm.tui.widgets.view_switcher import ViewSwitcherWidget
 
         assert ViewSwitcherWidget is not None
 
-    def test_view_switcher_expected_views(self):
+    def test_view_switcher_expected_views(self) -> None:
         """Test expected views list."""
         # Even without textual, we can check the views are defined
         from tracertm.tui.widgets import view_switcher
@@ -489,7 +488,7 @@ class TestViewSwitcherWidgetTextual:
 class TestGraphViewWidgetTextual:
     """Tests for GraphViewWidget when textual is available."""
 
-    def test_graph_view_placeholder_class(self):
+    def test_graph_view_placeholder_class(self) -> None:
         """Test placeholder class exists."""
         from tracertm.tui.widgets.graph_view import GraphViewWidget
 
@@ -502,9 +501,9 @@ class TestGraphViewWidgetTextual:
 
 
 class TestCLITestAppModule:
-    """Tests for src/tracertm/cli/commands/test/app.py"""
+    """Tests for src/tracertm/cli/commands/test/app.py."""
 
-    def test_app_module_import(self):
+    def test_app_module_import(self) -> None:
         """Test test/app.py can be imported."""
         try:
             from tracertm.cli.commands.test import app
@@ -513,7 +512,7 @@ class TestCLITestAppModule:
         except ImportError as e:
             pytest.skip(f"Import failed: {e}")
 
-    def test_typer_app_exists(self):
+    def test_typer_app_exists(self) -> None:
         """Test typer app exists in test module."""
         try:
             import typer
@@ -536,9 +535,9 @@ class TestCLITestAppModule:
 
 
 class TestCLITestMainModule:
-    """Tests for src/tracertm/cli/commands/test/main.py"""
+    """Tests for src/tracertm/cli/commands/test/main.py."""
 
-    def test_main_module_import(self):
+    def test_main_module_import(self) -> None:
         """Test test/main.py can be imported."""
         try:
             from tracertm.cli.commands.test import main
@@ -554,15 +553,15 @@ class TestCLITestMainModule:
 
 
 class TestAgentLockModel:
-    """Tests for src/tracertm/models/agent_lock.py"""
+    """Tests for src/tracertm/models/agent_lock.py."""
 
-    def test_agent_lock_import(self):
+    def test_agent_lock_import(self) -> None:
         """Test AgentLock can be imported."""
         from tracertm.models.agent_lock import AgentLock
 
         assert AgentLock is not None
 
-    def test_agent_lock_has_fields(self):
+    def test_agent_lock_has_fields(self) -> None:
         """Test AgentLock has expected fields."""
         from tracertm.models.agent_lock import AgentLock
 
@@ -583,7 +582,7 @@ class TestLinkRepositoryGap:
         """Create mock session."""
         return MagicMock()
 
-    def test_link_repository_import(self):
+    def test_link_repository_import(self) -> None:
         """Test LinkRepository can be imported."""
         from tracertm.repositories.link_repository import LinkRepository
 
@@ -598,7 +597,7 @@ class TestLinkRepositoryGap:
 class TestProjectRepositoryGap:
     """Additional tests for project_repository.py to reach 100%."""
 
-    def test_project_repository_import(self):
+    def test_project_repository_import(self) -> None:
         """Test ProjectRepository can be imported."""
         from tracertm.repositories.project_repository import ProjectRepository
 
@@ -611,9 +610,9 @@ class TestProjectRepositoryGap:
 
 
 class TestCoreConcurrency:
-    """Tests for core/concurrency.py"""
+    """Tests for core/concurrency.py."""
 
-    def test_concurrency_module_import(self):
+    def test_concurrency_module_import(self) -> None:
         """Test concurrency module can be imported."""
         from tracertm.core import concurrency
 
@@ -626,9 +625,9 @@ class TestCoreConcurrency:
 
 
 class TestDiscoverModule:
-    """Tests for cli/commands/test/discover.py"""
+    """Tests for cli/commands/test/discover.py."""
 
-    def test_discover_module_import(self):
+    def test_discover_module_import(self) -> None:
         """Test discover module can be imported."""
         try:
             from tracertm.cli.commands.test import discover
@@ -646,7 +645,7 @@ class TestDiscoverModule:
 class TestWidgetPlaceholders:
     """Tests for widget placeholder classes when textual not available."""
 
-    def test_state_display_placeholder(self):
+    def test_state_display_placeholder(self) -> None:
         """Test StateDisplayWidget placeholder works."""
         from tracertm.tui.widgets import state_display
         from tracertm.tui.widgets.state_display import StateDisplayWidget
@@ -656,7 +655,7 @@ class TestWidgetPlaceholders:
             widget = StateDisplayWidget()
             assert widget is not None
 
-    def test_item_list_placeholder(self):
+    def test_item_list_placeholder(self) -> None:
         """Test ItemListWidget placeholder works."""
         from tracertm.tui.widgets import item_list
         from tracertm.tui.widgets.item_list import ItemListWidget
@@ -665,7 +664,7 @@ class TestWidgetPlaceholders:
             widget = ItemListWidget()
             assert widget is not None
 
-    def test_view_switcher_placeholder(self):
+    def test_view_switcher_placeholder(self) -> None:
         """Test ViewSwitcherWidget placeholder works."""
         from tracertm.tui.widgets import view_switcher
         from tracertm.tui.widgets.view_switcher import ViewSwitcherWidget
@@ -674,7 +673,7 @@ class TestWidgetPlaceholders:
             widget = ViewSwitcherWidget()
             assert widget is not None
 
-    def test_graph_view_placeholder(self):
+    def test_graph_view_placeholder(self) -> None:
         """Test GraphViewWidget placeholder works."""
         from tracertm.tui.widgets import graph_view
         from tracertm.tui.widgets.graph_view import GraphViewWidget
@@ -698,7 +697,7 @@ class TestFunctionKeywords:
         import sys
 
         spec = importlib.util.spec_from_file_location(
-            "test_module_kw", "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/test.py"
+            "test_module_kw", "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/test.py",
         )
         if spec and spec.loader:
             test_module = importlib.util.module_from_spec(spec)
@@ -709,7 +708,7 @@ class TestFunctionKeywords:
             return python_test_discoverer(Path.cwd())
         return None
 
-    def test_crud_keywords(self):
+    def test_crud_keywords(self) -> None:
         """Test CRUD function detection."""
         discoverer = self._get_discoverer()
         if discoverer:
@@ -718,21 +717,21 @@ class TestFunctionKeywords:
             assert "crud" in discoverer._infer_function(Path("test_delete.py"))
             assert "crud" in discoverer._infer_function(Path("test_update.py"))
 
-    def test_query_keywords(self):
+    def test_query_keywords(self) -> None:
         """Test query function detection."""
         discoverer = self._get_discoverer()
         if discoverer:
             assert "query" in discoverer._infer_function(Path("test_search.py"))
             assert "query" in discoverer._infer_function(Path("test_filter.py"))
 
-    def test_sync_keywords(self):
+    def test_sync_keywords(self) -> None:
         """Test sync function detection."""
         discoverer = self._get_discoverer()
         if discoverer:
             assert "sync" in discoverer._infer_function(Path("test_sync.py"))
             assert "sync" in discoverer._infer_function(Path("test_conflict.py"))
 
-    def test_import_export_keywords(self):
+    def test_import_export_keywords(self) -> None:
         """Test import/export function detection."""
         discoverer = self._get_discoverer()
         if discoverer:
@@ -740,14 +739,14 @@ class TestFunctionKeywords:
             assert "export" in discoverer._infer_function(Path("test_export.py"))
             assert "export" in discoverer._infer_function(Path("test_backup.py"))
 
-    def test_view_keywords(self):
+    def test_view_keywords(self) -> None:
         """Test view function detection."""
         discoverer = self._get_discoverer()
         if discoverer:
             assert "view" in discoverer._infer_function(Path("test_view.py"))
             assert "view" in discoverer._infer_function(Path("test_display.py"))
 
-    def test_general_fallback(self):
+    def test_general_fallback(self) -> None:
         """Test general fallback for unknown functions."""
         discoverer = self._get_discoverer()
         if discoverer:

@@ -1,6 +1,4 @@
-"""
-GraphSnapshot model for TraceRTM.
-"""
+"""GraphSnapshot model for TraceRTM."""
 
 import uuid
 
@@ -18,9 +16,7 @@ def generate_graph_snapshot_uuid() -> str:
 
 
 class GraphSnapshot(Base, TimestampMixin):
-    """
-    Immutable graph snapshot for versioned export and diffs.
-    """
+    """Immutable graph snapshot for versioned export and diffs."""
 
     __tablename__ = "graph_snapshots"
     __table_args__ = (

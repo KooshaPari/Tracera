@@ -1,5 +1,4 @@
-"""
-Bulk operation service for Epic 2 (Story 2.8, FR14).
+"""Bulk operation service for Epic 2 (Story 2.8, FR14).
 
 Handles bulk operations with preview, validation, and atomic execution.
 """
@@ -24,11 +23,9 @@ BULK_WARN_THRESHOLD = 100
 
 
 class BulkOperationService:
-    """
-    Service for bulk operations with preview (Story 2.8, FR14).
-    """
+    """Service for bulk operations with preview (Story 2.8, FR14)."""
 
-    def __init__(self, session: Session):
+    def __init__(self, session: Session) -> None:
         """Initialize bulk operation service."""
         self.session = session
 
@@ -39,8 +36,7 @@ class BulkOperationService:
         updates: dict[str, Any],
         limit: int = 5,
     ) -> dict[str, Any]:
-        """
-        Preview bulk update without applying changes (Story 2.8, FR14).
+        """Preview bulk update without applying changes (Story 2.8, FR14).
 
         Args:
             project_id: Project ID
@@ -123,8 +119,7 @@ class BulkOperationService:
         updates: dict[str, Any],
         agent_id: str | None = None,
     ) -> dict[str, int]:
-        """
-        Execute bulk update atomically (Story 2.8, FR14).
+        """Execute bulk update atomically (Story 2.8, FR14).
 
         Args:
             project_id: Project ID
@@ -201,8 +196,7 @@ class BulkOperationService:
         filters: dict[str, Any],
         agent_id: str | None = None,
     ) -> dict[str, int]:
-        """
-        Execute bulk delete atomically (Story 2.8, FR14).
+        """Execute bulk delete atomically (Story 2.8, FR14).
 
         Args:
             project_id: Project ID
@@ -263,8 +257,7 @@ class BulkOperationService:
         csv_data: str,
         limit: int = 5,
     ) -> dict[str, Any]:
-        """
-        Preview bulk create from CSV without applying changes (Story 2.8, FR14, FR74).
+        """Preview bulk create from CSV without applying changes (Story 2.8, FR14, FR74).
 
         Args:
             project_id: Project ID
@@ -398,7 +391,7 @@ class BulkOperationService:
             if key in title_view_pairs:
                 warnings.append(
                     f"Duplicate title '{data_dict.get('title', '')}' in view "
-                    f"{data_dict.get('view', '')} (rows {title_view_pairs[key]} and {row_num_val})"
+                    f"{data_dict.get('view', '')} (rows {title_view_pairs[key]} and {row_num_val})",
                 )
             else:
                 title_view_pairs[key] = row_num_val
@@ -437,8 +430,7 @@ class BulkOperationService:
         csv_data: str,
         agent_id: str | None = None,
     ) -> dict[str, int]:
-        """
-        Execute bulk create from CSV atomically (Story 2.8, FR14, FR74).
+        """Execute bulk create from CSV atomically (Story 2.8, FR14, FR74).
 
         Args:
             project_id: Project ID

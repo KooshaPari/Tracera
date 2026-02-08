@@ -22,7 +22,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Create derived_journeys table for journey detection."""
-
     op.create_table(
         "derived_journeys",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),

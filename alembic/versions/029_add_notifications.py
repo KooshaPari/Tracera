@@ -22,7 +22,7 @@ def upgrade() -> None:
         sa.Column("id", sa.String(36), primary_key=True),
         sa.Column("user_id", sa.String(255), nullable=False),
         sa.Column(
-            "project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=True
+            "project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=True,
         ),
         sa.Column("type", sa.String(50), nullable=False, server_default="info"),
         sa.Column("title", sa.String(255), nullable=False),

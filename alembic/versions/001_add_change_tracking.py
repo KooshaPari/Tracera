@@ -1,4 +1,4 @@
-"""Add change tracking infrastructure
+"""Add change tracking infrastructure.
 
 Revision ID: 001
 Revises:
@@ -22,7 +22,6 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     """Add change_log table and triggers for change tracking."""
-
     # Create change_log table
     op.create_table(
         "change_log",
@@ -39,7 +38,7 @@ def upgrade() -> None:
 
     # Create indexes
     op.create_index(
-        "idx_change_log_processed", "change_log", ["processed"], postgresql_where=sa.text("processed = FALSE")
+        "idx_change_log_processed", "change_log", ["processed"], postgresql_where=sa.text("processed = FALSE"),
     )
     op.create_index("idx_change_log_table", "change_log", ["table_name"])
     op.create_index("idx_change_log_record_id", "change_log", ["record_id"])
@@ -97,7 +96,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Remove change tracking infrastructure."""
-
     # Drop triggers
     op.execute("DROP TRIGGER IF EXISTS item_change_trigger ON items;")
     op.execute("DROP TRIGGER IF EXISTS link_change_trigger ON links;")

@@ -1,5 +1,4 @@
-"""
-Cross-Module Integration Workflows - Comprehensive scenario tests.
+"""Cross-Module Integration Workflows - Comprehensive scenario tests.
 
 End-to-end workflows combining multiple services and repositories:
 
@@ -57,9 +56,8 @@ pytestmark = pytest.mark.integration
 class TestItemCreationLinkingSyncExport:
     """Test complete item lifecycle workflows."""
 
-    def test_create_item_link_sync_export_happy_path(self, sync_db_session: Session):
-        """
-        Happy path: Create item → Create link → Sync → Export
+    def test_create_item_link_sync_export_happy_path(self, sync_db_session: Session) -> None:
+        """Happy path: Create item → Create link → Sync → Export.
 
         Validates:
         - Item creation with metadata
@@ -122,9 +120,8 @@ class TestItemCreationLinkingSyncExport:
         assert item1.item_metadata["priority"] == "high"
         assert item1.item_metadata["assignee"] == "alice"
 
-    def test_create_item_with_dependent_status_transitions(self, sync_db_session: Session):
-        """
-        Workflow: Create items → Link with dependency → Update status on dependency
+    def test_create_item_with_dependent_status_transitions(self, sync_db_session: Session) -> None:
+        """Workflow: Create items → Link with dependency → Update status on dependency.
 
         Validates:
         - Status changes on dependent items
@@ -199,9 +196,8 @@ class TestItemCreationLinkingSyncExport:
         assert len(links) == 1
         assert links[0].target_item_id == story.id
 
-    def test_item_creation_with_bulk_linking(self, sync_db_session: Session):
-        """
-        Workflow: Create multiple items → Create links between all pairs
+    def test_item_creation_with_bulk_linking(self, sync_db_session: Session) -> None:
+        """Workflow: Create multiple items → Create links between all pairs.
 
         Validates:
         - Bulk item creation
@@ -249,9 +245,8 @@ class TestItemCreationLinkingSyncExport:
         all_links = asyncio.run(link_repo.get_by_project(str(project.id)))
         assert len(all_links) == 4  # 5 items = 4 links in chain
 
-    def test_item_export_after_modifications(self, sync_db_session: Session):
-        """
-        Workflow: Create items → Modify → Link → Export
+    def test_item_export_after_modifications(self, sync_db_session: Session) -> None:
+        """Workflow: Create items → Modify → Link → Export.
 
         Validates:
         - Export captures all modifications
@@ -298,9 +293,8 @@ class TestItemCreationLinkingSyncExport:
 class TestProjectSetupItemManagementWorkflow:
     """Test project lifecycle with item management."""
 
-    def test_project_creation_with_initial_items(self, sync_db_session: Session):
-        """
-        Workflow: Create project → Add items → Verify structure
+    def test_project_creation_with_initial_items(self, sync_db_session: Session) -> None:
+        """Workflow: Create project → Add items → Verify structure.
 
         Validates:
         - Project creation
@@ -333,9 +327,8 @@ class TestProjectSetupItemManagementWorkflow:
         project_items = asyncio.run(item_repo.get_by_project(str(project.id)))
         assert len(project_items) == 4
 
-    def test_project_item_bulk_update_workflow(self, sync_db_session: Session):
-        """
-        Workflow: Create items → Bulk update statuses → Verify consistency
+    def test_project_item_bulk_update_workflow(self, sync_db_session: Session) -> None:
+        """Workflow: Create items → Bulk update statuses → Verify consistency.
 
         Validates:
         - Bulk status updates
@@ -382,9 +375,8 @@ class TestProjectSetupItemManagementWorkflow:
         assert done_count == 5
         assert len(all_items) == 10
 
-    def test_project_milestone_with_cascading_item_updates(self, sync_db_session: Session):
-        """
-        Workflow: Create project → Create milestone items → Update parent → Cascade
+    def test_project_milestone_with_cascading_item_updates(self, sync_db_session: Session) -> None:
+        """Workflow: Create project → Create milestone items → Update parent → Cascade.
 
         Validates:
         - Parent item status changes
@@ -443,9 +435,8 @@ class TestProjectSetupItemManagementWorkflow:
 class TestSyncAndConflictWorkflows:
     """Test synchronization and conflict resolution workflows."""
 
-    def test_bidirectional_sync_with_no_conflicts(self, sync_db_session: Session):
-        """
-        Workflow: Create items in DB → Sync to storage → Verify consistency
+    def test_bidirectional_sync_with_no_conflicts(self, sync_db_session: Session) -> None:
+        """Workflow: Create items in DB → Sync to storage → Verify consistency.
 
         Validates:
         - One-way sync completeness
@@ -477,9 +468,8 @@ class TestSyncAndConflictWorkflows:
         assert item.item_metadata["custom_field"] == "custom_value"
         assert item.status == "in_progress"
 
-    def test_conflict_detection_on_concurrent_modification(self, sync_db_session: Session):
-        """
-        Workflow: Create item → Simulate concurrent modifications → Detect conflict
+    def test_conflict_detection_on_concurrent_modification(self, sync_db_session: Session) -> None:
+        """Workflow: Create item → Simulate concurrent modifications → Detect conflict.
 
         Validates:
         - Conflict detection mechanism
@@ -520,9 +510,8 @@ class TestSyncAndConflictWorkflows:
         assert item.item_metadata["version"] == 3
         assert item.title == "Modified by User B"
 
-    def test_sync_with_rollback_on_error(self, sync_db_session: Session):
-        """
-        Workflow: Start sync → Introduce error → Rollback changes
+    def test_sync_with_rollback_on_error(self, sync_db_session: Session) -> None:
+        """Workflow: Start sync → Introduce error → Rollback changes.
 
         Validates:
         - Transaction rollback
@@ -562,9 +551,8 @@ class TestSyncAndConflictWorkflows:
         sync_db_session.refresh(item)
         assert item.title == original_title
 
-    def test_merge_conflict_resolution(self, sync_db_session: Session):
-        """
-        Workflow: Create conflicting modifications → Apply merge strategy → Verify result
+    def test_merge_conflict_resolution(self, sync_db_session: Session) -> None:
+        """Workflow: Create conflicting modifications → Apply merge strategy → Verify result.
 
         Validates:
         - Three-way merge logic
@@ -613,9 +601,8 @@ class TestSyncAndConflictWorkflows:
 class TestBulkOperationsWithRollback:
     """Test bulk operations and rollback scenarios."""
 
-    def test_bulk_create_items_with_links(self, sync_db_session: Session):
-        """
-        Workflow: Bulk create 20 items → Create links between all → Commit
+    def test_bulk_create_items_with_links(self, sync_db_session: Session) -> None:
+        """Workflow: Bulk create 20 items → Create links between all → Commit.
 
         Validates:
         - Bulk insert performance
@@ -662,9 +649,8 @@ class TestBulkOperationsWithRollback:
         assert len(all_items) == 20
         assert len(all_links) == 19
 
-    def test_bulk_update_with_selective_rollback(self, sync_db_session: Session):
-        """
-        Workflow: Bulk update 15 items → Fail on item 8 → Rollback all
+    def test_bulk_update_with_selective_rollback(self, sync_db_session: Session) -> None:
+        """Workflow: Bulk update 15 items → Fail on item 8 → Rollback all.
 
         Validates:
         - Partial failure handling
@@ -698,7 +684,8 @@ class TestBulkOperationsWithRollback:
                 item.status = "in_progress"
                 # Simulate failure at index 8
                 if idx == 8:
-                    raise ValueError("Simulated bulk operation failure")
+                    msg = "Simulated bulk operation failure"
+                    raise ValueError(msg)
             sync_db_session.commit()
         except ValueError:
             sync_db_session.rollback()
@@ -708,9 +695,8 @@ class TestBulkOperationsWithRollback:
         todo_count = sum(1 for i in all_items if i.status == "todo")
         assert todo_count == 15  # All still todo
 
-    def test_bulk_delete_with_cascade(self, sync_db_session: Session):
-        """
-        Workflow: Create 10 items → Create links → Delete all → Verify cleanup
+    def test_bulk_delete_with_cascade(self, sync_db_session: Session) -> None:
+        """Workflow: Create 10 items → Create links → Delete all → Verify cleanup.
 
         Validates:
         - Cascade delete behavior
@@ -762,9 +748,8 @@ class TestBulkOperationsWithRollback:
         assert len(remaining_items) == 0
         assert len(remaining_links) == 0
 
-    def test_bulk_state_transition_workflow(self, sync_db_session: Session):
-        """
-        Workflow: Create 5 items → Transition all through states → Verify workflow
+    def test_bulk_state_transition_workflow(self, sync_db_session: Session) -> None:
+        """Workflow: Create 5 items → Transition all through states → Verify workflow.
 
         Validates:
         - State machine validation
@@ -814,9 +799,8 @@ class TestBulkOperationsWithRollback:
 class TestAdvancedIntegrationPatterns:
     """Test advanced cross-module integration patterns."""
 
-    def test_graph_analysis_with_dynamic_link_updates(self, sync_db_session: Session):
-        """
-        Workflow: Create item graph → Add link → Analyze impact → Remove link
+    def test_graph_analysis_with_dynamic_link_updates(self, sync_db_session: Session) -> None:
+        """Workflow: Create item graph → Add link → Analyze impact → Remove link.
 
         Validates:
         - Dynamic graph structure
@@ -875,9 +859,8 @@ class TestAdvancedIntegrationPatterns:
         remaining_links = asyncio.run(link_repo.get_by_project(str(project.id)))
         assert len(remaining_links) == 1
 
-    def test_impact_analysis_during_item_modification(self, sync_db_session: Session):
-        """
-        Workflow: Create dependency tree → Modify leaf item → Analyze impact
+    def test_impact_analysis_during_item_modification(self, sync_db_session: Session) -> None:
+        """Workflow: Create dependency tree → Modify leaf item → Analyze impact.
 
         Validates:
         - Transitive dependency analysis
@@ -901,7 +884,7 @@ class TestAdvancedIntegrationPatterns:
             status="todo",
         )
         child1 = Item(
-            id="CHILD-001", project_id=project.id, title="Child Story", view="FEATURE", item_type="story", status="todo"
+            id="CHILD-001", project_id=project.id, title="Child Story", view="FEATURE", item_type="story", status="todo",
         )
         child2 = Item(
             id="CHILD-002",
@@ -944,9 +927,8 @@ class TestAdvancedIntegrationPatterns:
         all_links = asyncio.run(link_repo.get_by_project(str(project.id)))
         assert len(all_links) == 2
 
-    def test_cross_view_item_reference_workflow(self, sync_db_session: Session):
-        """
-        Workflow: Create items across views → Link them → Query cross-view
+    def test_cross_view_item_reference_workflow(self, sync_db_session: Session) -> None:
+        """Workflow: Create items across views → Link them → Query cross-view.
 
         Validates:
         - Cross-view linking
@@ -993,9 +975,8 @@ class TestAdvancedIntegrationPatterns:
         all_links = asyncio.run(link_repo.get_by_project(str(project.id)))
         assert len(all_links) == 3
 
-    def test_multi_project_cross_reference_workflow(self, sync_db_session: Session):
-        """
-        Workflow: Create items in multiple projects → Link across projects
+    def test_multi_project_cross_reference_workflow(self, sync_db_session: Session) -> None:
+        """Workflow: Create items in multiple projects → Link across projects.
 
         Validates:
         - Multi-project item management
@@ -1048,9 +1029,8 @@ class TestAdvancedIntegrationPatterns:
 class TestStateConsistencyAndRecovery:
     """Test data consistency and recovery scenarios."""
 
-    def test_state_consistency_after_partial_commit(self, sync_db_session: Session):
-        """
-        Workflow: Create items with metadata → Partial update → Verify consistency
+    def test_state_consistency_after_partial_commit(self, sync_db_session: Session) -> None:
+        """Workflow: Create items with metadata → Partial update → Verify consistency.
 
         Validates:
         - Consistency checks
@@ -1097,9 +1077,8 @@ class TestStateConsistencyAndRecovery:
         assert item1.item_metadata["update_version"] == 2
         assert item2.item_metadata["update_version"] == 2
 
-    def test_recovery_from_orphaned_links(self, sync_db_session: Session):
-        """
-        Workflow: Create link → Delete source item → Detect orphan → Cleanup
+    def test_recovery_from_orphaned_links(self, sync_db_session: Session) -> None:
+        """Workflow: Create link → Delete source item → Detect orphan → Cleanup.
 
         Validates:
         - Orphan detection
@@ -1115,10 +1094,10 @@ class TestStateConsistencyAndRecovery:
 
         # Create items with link
         source = Item(
-            id="ORPHAN-SOURCE", project_id=project.id, title="Source Item", view="TASK", item_type="task", status="todo"
+            id="ORPHAN-SOURCE", project_id=project.id, title="Source Item", view="TASK", item_type="task", status="todo",
         )
         target = Item(
-            id="ORPHAN-TARGET", project_id=project.id, title="Target Item", view="TASK", item_type="task", status="todo"
+            id="ORPHAN-TARGET", project_id=project.id, title="Target Item", view="TASK", item_type="task", status="todo",
         )
         sync_db_session.add_all([source, target])
         sync_db_session.commit()

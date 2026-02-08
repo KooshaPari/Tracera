@@ -1,5 +1,4 @@
-"""
-Phase 6: E2E Integration Testing - Full Agent Lifecycle Test
+"""Phase 6: E2E Integration Testing - Full Agent Lifecycle Test.
 
 Comprehensive end-to-end test covering complete agent session lifecycle.
 
@@ -17,31 +16,32 @@ This test verifies the entire system working together:
 This is the ultimate integration test for the agent system.
 """
 
-import pytest
 import asyncio
-from uuid import uuid4
-from pathlib import Path
 import tempfile
+from pathlib import Path
+from uuid import uuid4
+
+import pytest
 
 from .test_helpers import (
-    create_test_session,
-    create_test_checkpoint,
-    verify_postgres_session,
-    verify_neo4j_session,
-    verify_neo4j_relationship,
-    verify_postgres_checkpoint,
-    verify_redis_cache,
-    verify_s3_object,
-    cleanup_s3_objects,
-    cleanup_test_session,
     EventCollector,
     assert_session_data_matches,
+    cleanup_s3_objects,
+    cleanup_test_session,
+    create_test_checkpoint,
+    create_test_session,
+    verify_neo4j_relationship,
+    verify_neo4j_session,
+    verify_postgres_checkpoint,
+    verify_postgres_session,
+    verify_redis_cache,
+    verify_s3_object,
 )
-
 
 # ============================================================================
 # Complete Agent Session Lifecycle Test
 # ============================================================================
+
 
 @pytest.mark.e2e
 @pytest.mark.slow
@@ -53,9 +53,8 @@ async def test_complete_agent_session(
     minio_clean,
     nats_client,
     event_publisher,
-):
-    """
-    Test complete agent session lifecycle end-to-end.
+) -> None:
+    """Test complete agent session lifecycle end-to-end.
 
     This comprehensive test verifies:
     - Session creation in all databases
@@ -208,7 +207,7 @@ async def test_complete_agent_session(
 
     result = await db_session.execute(
         text("SELECT COUNT(*) FROM agent_checkpoints WHERE session_id = :id"),
-        {"id": session_id}
+        {"id": session_id},
     )
     checkpoint_count = result.scalar()
     assert checkpoint_count == 2
@@ -253,7 +252,7 @@ async def test_complete_agent_session(
                 SET sandbox_snapshot_s3_key = :s3_key
                 WHERE session_id = :session_id AND turn_number = 10
             """),
-            {"s3_key": s3_key, "session_id": session_id}
+            {"s3_key": s3_key, "session_id": session_id},
         )
         await db_session.commit()
 
@@ -320,7 +319,7 @@ async def test_complete_agent_session(
             ORDER BY turn_number DESC
             LIMIT 1
         """),
-        {"session_id": session_id}
+        {"session_id": session_id},
     )
     latest_checkpoint = result.first()
     assert latest_checkpoint is not None
@@ -420,11 +419,11 @@ async def test_complete_agent_session(
     # Clean up PostgreSQL
     await db_session.execute(
         text("DELETE FROM agent_checkpoints WHERE session_id = :id"),
-        {"id": session_id}
+        {"id": session_id},
     )
     await db_session.execute(
         text("DELETE FROM agent_sessions WHERE id = :id"),
-        {"id": session_id}
+        {"id": session_id},
     )
     await db_session.commit()
 
@@ -473,9 +472,8 @@ async def test_concurrent_agent_sessions(
     redis_clean,
     nats_client,
     event_publisher,
-):
-    """
-    Test multiple agent sessions running concurrently.
+) -> None:
+    """Test multiple agent sessions running concurrently.
 
     Verifies:
     - Sessions don't interfere with each other
@@ -498,7 +496,7 @@ async def test_concurrent_agent_sessions(
     await asyncio.sleep(0.1)
 
     # Execute turns concurrently
-    async def run_session(session_data):
+    async def run_session(session_data) -> None:
         session_id = session_data["session_id"]
 
         for turn in range(1, 6):
@@ -538,7 +536,7 @@ async def test_concurrent_agent_sessions(
         await cleanup_test_session(
             db_session,
             neo4j_driver,
-            session_data["session_id"]
+            session_data["session_id"],
         )
 
 
@@ -553,9 +551,8 @@ async def test_agent_session_error_recovery(
     neo4j_driver,
     nats_client,
     event_publisher,
-):
-    """
-    Test agent session recovers from errors gracefully.
+) -> None:
+    """Test agent session recovers from errors gracefully.
 
     Verifies:
     - Error event published
@@ -616,7 +613,7 @@ async def test_agent_session_error_recovery(
 
     checkpoint = await verify_postgres_checkpoint(
         db_session,
-        checkpoint_data["checkpoint_id"]
+        checkpoint_data["checkpoint_id"],
     )
     assert checkpoint is not None
 

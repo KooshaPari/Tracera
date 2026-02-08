@@ -1,5 +1,4 @@
-"""
-MCP Database Optimization Benchmark.
+"""MCP Database Optimization Benchmark.
 
 Compares performance before/after optimizations:
 - Connection pooling
@@ -38,14 +37,12 @@ _CACHE_TTL_SECONDS = 300
 class BenchmarkRunner:
     """Run performance benchmarks comparing old vs new implementation."""
 
-    def __init__(self, database_url: str):
+    def __init__(self, database_url: str) -> None:
         self.database_url = database_url
         self.results: dict[str, Any] = {}
 
-    def benchmark_sync_queries(self, project_id: str, iterations: int = _PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ):
+    def benchmark_sync_queries(self, project_id: str, iterations: int = _PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ) -> None:
         """Benchmark old synchronous queries without pooling."""
-        print("\n=== Benchmarking OLD implementation (sync, no pooling) ===")
-
         # Create new connection for each iteration (simulates old behavior)
         times = []
         for i in range(iterations):
@@ -76,14 +73,11 @@ class BenchmarkRunner:
             times.append(elapsed)
 
             if (i + 1) % _PROGRESS_UPDATE_FREQ == 0:
-                print(f"  Completed {i + 1}/{iterations} iterations")
+                pass
 
         avg_time = sum(times) / len(times)
         min_time = min(times)
         max_time = max(times)
-
-        print(f"  Average: {avg_time:.2f}ms")
-        print(f"  Min: {min_time:.2f}ms, Max: {max_time:.2f}ms")
 
         self.results["old_implementation"] = {
             "avg_ms": avg_time,
@@ -93,11 +87,9 @@ class BenchmarkRunner:
         }
 
     async def benchmark_async_pooled(
-        self, project_id: str, iterations: int = _PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ
-    ):
+        self, project_id: str, iterations: int = _PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ,
+    ) -> None:
         """Benchmark new async queries with connection pooling."""
-        print("\n=== Benchmarking NEW implementation (async + pooling) ===")
-
         db_manager = await get_database_manager()
 
         times = []
@@ -127,14 +119,11 @@ class BenchmarkRunner:
             times.append(elapsed)
 
             if (i + 1) % _PROGRESS_UPDATE_FREQ == 0:
-                print(f"  Completed {i + 1}/{iterations} iterations")
+                pass
 
         avg_time = sum(times) / len(times)
         min_time = min(times)
         max_time = max(times)
-
-        print(f"  Average: {avg_time:.2f}ms")
-        print(f"  Min: {min_time:.2f}ms, Max: {max_time:.2f}ms")
 
         self.results["pooled_implementation"] = {
             "avg_ms": avg_time,
@@ -144,11 +133,9 @@ class BenchmarkRunner:
         }
 
     async def benchmark_eager_loading(
-        self, project_id: str, iterations: int = _PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ
-    ):
+        self, project_id: str, iterations: int = _PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ,
+    ) -> None:
         """Benchmark with eager loading (no N+1)."""
-        print("\n=== Benchmarking EAGER LOADING (no N+1) ===")
-
         db_manager = await get_database_manager()
 
         times = []
@@ -174,14 +161,11 @@ class BenchmarkRunner:
             times.append(elapsed)
 
             if (i + 1) % _PROGRESS_UPDATE_FREQ == 0:
-                print(f"  Completed {i + 1}/{iterations} iterations")
+                pass
 
         avg_time = sum(times) / len(times)
         min_time = min(times)
         max_time = max(times)
-
-        print(f"  Average: {avg_time:.2f}ms")
-        print(f"  Min: {min_time:.2f}ms, Max: {max_time:.2f}ms")
 
         self.results["eager_loading"] = {
             "avg_ms": avg_time,
@@ -190,10 +174,8 @@ class BenchmarkRunner:
             "iterations": iterations,
         }
 
-    async def benchmark_with_cache(self, project_id: str, iterations: int = 100):
+    async def benchmark_with_cache(self, project_id: str, iterations: int = 100) -> None:
         """Benchmark with query caching."""
-        print("\n=== Benchmarking WITH CACHING ===")
-
         from tracertm.mcp.cache import get_query_cache
 
         cache = get_query_cache()
@@ -233,16 +215,12 @@ class BenchmarkRunner:
             times.append(elapsed)
 
             if (i + 1) % _PROGRESS_UPDATE_FREQ == 0:
-                print(f"  Completed {i + 1}/{iterations} iterations")
+                pass
 
         avg_time = sum(times) / len(times)
         min_time = min(times)
         max_time = max(times)
         hit_rate = cache_hits / iterations
-
-        print(f"  Average: {avg_time:.2f}ms")
-        print(f"  Min: {min_time:.2f}ms, Max: {max_time:.2f}ms")
-        print(f"  Cache hit rate: {hit_rate:.1%}")
 
         self.results["with_caching"] = {
             "avg_ms": avg_time,
@@ -253,74 +231,35 @@ class BenchmarkRunner:
             "iterations": iterations,
         }
 
-    def print_summary(self):
+    def print_summary(self) -> None:
         """Print comparison summary."""
-        print("\n" + "=" * 70)
-        print("PERFORMANCE SUMMARY")
-        print("=" * 70)
-
         if "old_implementation" in self.results and "pooled_implementation" in self.results:
             old_avg = self.results["old_implementation"]["avg_ms"]
             pooled_avg = self.results["pooled_implementation"]["avg_ms"]
-            pooling_improvement = ((old_avg - pooled_avg) / old_avg) * 100
-
-            print("\nConnection Pooling Impact:")
-            print(f"  Old (no pooling):  {old_avg:.2f}ms")
-            print(f"  New (with pool):   {pooled_avg:.2f}ms")
-            print(f"  Improvement:       {pooling_improvement:+.1f}%")
+            ((old_avg - pooled_avg) / old_avg) * 100
 
         if "pooled_implementation" in self.results and "eager_loading" in self.results:
             pooled_avg = self.results["pooled_implementation"]["avg_ms"]
             eager_avg = self.results["eager_loading"]["avg_ms"]
-            eager_improvement = ((pooled_avg - eager_avg) / pooled_avg) * 100
-
-            print("\nEager Loading Impact:")
-            print(f"  Without eager:     {pooled_avg:.2f}ms")
-            print(f"  With eager:        {eager_avg:.2f}ms")
-            print(f"  Improvement:       {eager_improvement:+.1f}%")
+            ((pooled_avg - eager_avg) / pooled_avg) * 100
 
         if "eager_loading" in self.results and "with_caching" in self.results:
             eager_avg = self.results["eager_loading"]["avg_ms"]
             cache_avg = self.results["with_caching"]["avg_ms"]
-            cache_improvement = ((eager_avg - cache_avg) / eager_avg) * 100
-            hit_rate = self.results["with_caching"]["hit_rate"]
-
-            print("\nCaching Impact:")
-            print(f"  Without cache:     {eager_avg:.2f}ms")
-            print(f"  With cache:        {cache_avg:.2f}ms")
-            print(f"  Improvement:       {cache_improvement:+.1f}%")
-            print(f"  Cache hit rate:    {hit_rate:.1%}")
+            ((eager_avg - cache_avg) / eager_avg) * 100
+            self.results["with_caching"]["hit_rate"]
 
         if "old_implementation" in self.results and "with_caching" in self.results:
             old_avg = self.results["old_implementation"]["avg_ms"]
             final_avg = self.results["with_caching"]["avg_ms"]
             total_improvement = ((old_avg - final_avg) / old_avg) * 100
 
-            print(f"\n{'=' * 70}")
-            print("TOTAL IMPROVEMENT (Old → Fully Optimized)")
-            print(f"{'=' * 70}")
-            print(f"  Before:            {old_avg:.2f}ms")
-            print(f"  After:             {final_avg:.2f}ms")
-            print(f"  Total improvement: {total_improvement:+.1f}%")
-            print()
-
             if total_improvement >= _TARGET_IMPROVEMENT_PCT:
-                print("✓ Target of 50% improvement ACHIEVED!")
-            else:
-                print(f"⚠ Target of 50% improvement not met (achieved {total_improvement:.1f}%)")
-
-        print("=" * 70)
+                pass
 
 
-async def run_benchmark(database_url: str, project_id: str):
+async def run_benchmark(database_url: str, project_id: str) -> None:
     """Run full benchmark suite."""
-    print("=" * 70)
-    print("MCP DATABASE OPTIMIZATION BENCHMARK")
-    print("=" * 70)
-    print(f"\nDatabase: {database_url}")
-    print(f"Project ID: {project_id}")
-    print(f"Iterations per test: {_PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ}")
-
     runner = BenchmarkRunner(database_url)
 
     # Run benchmarks
@@ -337,7 +276,6 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < _MIN_CLI_ARGS:
-        print("Usage: python db_benchmark.py <database_url> <project_id>")
         sys.exit(1)
 
     database_url = sys.argv[1]

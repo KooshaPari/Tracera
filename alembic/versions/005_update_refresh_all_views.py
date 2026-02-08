@@ -1,4 +1,4 @@
-"""Update refresh functions to include all 8 materialized views
+"""Update refresh functions to include all 8 materialized views.
 
 Revision ID: 005
 Revises: 004
@@ -19,7 +19,6 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     """Update refresh functions to include all 8 views."""
-
     # Update incremental refresh function
     op.execute("""
         CREATE OR REPLACE FUNCTION refresh_materialized_views_incremental()
@@ -168,7 +167,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Revert to previous refresh functions."""
-
     op.execute("DROP FUNCTION IF EXISTS refresh_view(TEXT);")
     op.execute("DROP FUNCTION IF EXISTS get_view_stats();")
 

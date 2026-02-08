@@ -1,5 +1,4 @@
-"""
-Comprehensive performance and stress testing.
+"""Comprehensive performance and stress testing.
 
 Tests bulk operations with 1000+ items, large graph traversal, sync performance,
 query optimization, memory efficiency, concurrent access patterns,
@@ -22,7 +21,7 @@ class TestBulkOperationsPerformance:
     """Test performance of bulk operations."""
 
     @pytest.mark.integration
-    def test_bulk_create_100_items(self, sync_db_session):
+    def test_bulk_create_100_items(self, sync_db_session) -> None:
         """Test creating 100 items."""
         project = Project(id="bulk-100", name="Bulk 100")
         sync_db_session.add(project)
@@ -56,7 +55,7 @@ class TestBulkOperationsPerformance:
         assert elapsed < 5.0
 
     @pytest.mark.integration
-    def test_bulk_create_500_items(self, sync_db_session):
+    def test_bulk_create_500_items(self, sync_db_session) -> None:
         """Test creating 500 items."""
         project = Project(id="bulk-500", name="Bulk 500")
         sync_db_session.add(project)
@@ -87,7 +86,7 @@ class TestBulkOperationsPerformance:
         assert elapsed < 15.0
 
     @pytest.mark.integration
-    def test_bulk_update_100_items(self, sync_db_session):
+    def test_bulk_update_100_items(self, sync_db_session) -> None:
         """Test updating 100 items."""
         project = Project(id="bulk-update-100", name="Update 100")
         sync_db_session.add(project)
@@ -128,7 +127,7 @@ class TestBulkOperationsPerformance:
         assert elapsed < 5.0
 
     @pytest.mark.integration
-    def test_bulk_delete_100_items(self, sync_db_session):
+    def test_bulk_delete_100_items(self, sync_db_session) -> None:
         """Test deleting 100 items."""
         project = Project(id="bulk-delete-100", name="Delete 100")
         sync_db_session.add(project)
@@ -173,7 +172,7 @@ class TestLargeGraphTraversal:
     """Test graph traversal on large datasets."""
 
     @pytest.mark.integration
-    def test_linked_items_traversal(self, sync_db_session):
+    def test_linked_items_traversal(self, sync_db_session) -> None:
         """Test traversal of linked items."""
         project = Project(id="graph-test", name="Graph Test")
         sync_db_session.add(project)
@@ -215,7 +214,7 @@ class TestLargeGraphTraversal:
         assert len(downstream_links) >= 1
 
     @pytest.mark.integration
-    def test_complex_dependency_graph(self, sync_db_session):
+    def test_complex_dependency_graph(self, sync_db_session) -> None:
         """Test complex dependency graph."""
         project = Project(id="complex-graph", name="Complex Graph")
         sync_db_session.add(project)
@@ -255,7 +254,7 @@ class TestLargeGraphTraversal:
         assert len(all_links) == link_count
 
     @pytest.mark.integration
-    def test_graph_query_performance(self, sync_db_session):
+    def test_graph_query_performance(self, sync_db_session) -> None:
         """Test graph query performance."""
         project = Project(id="graph-perf", name="Graph Perf")
         sync_db_session.add(project)
@@ -304,7 +303,7 @@ class TestSyncPerformance:
     """Test sync operation performance."""
 
     @pytest.mark.integration
-    def test_item_sync_performance(self, sync_db_session):
+    def test_item_sync_performance(self, sync_db_session) -> None:
         """Test item sync performance."""
         project = Project(id="sync-test", name="Sync Test")
         sync_db_session.add(project)
@@ -334,7 +333,7 @@ class TestSyncPerformance:
         assert elapsed < 1.0
 
     @pytest.mark.integration
-    def test_event_log_sync(self, db_with_sample_data):
+    def test_event_log_sync(self, db_with_sample_data) -> None:
         """Test event log sync performance."""
         # Create events
         for i in range(100):
@@ -360,7 +359,7 @@ class TestSyncPerformance:
         assert elapsed < 1.0
 
     @pytest.mark.integration
-    def test_conflict_detection_sync(self, sync_db_session):
+    def test_conflict_detection_sync(self, sync_db_session) -> None:
         """Test conflict detection during sync."""
         project = Project(id="conflict-sync", name="Conflict Sync")
         sync_db_session.add(project)
@@ -396,7 +395,7 @@ class TestQueryOptimization:
     """Test query optimization."""
 
     @pytest.mark.integration
-    def test_indexed_query_performance(self, sync_db_session):
+    def test_indexed_query_performance(self, sync_db_session) -> None:
         """Test query performance with indexed fields."""
         project = Project(id="indexed-query", name="Indexed Query")
         sync_db_session.add(project)
@@ -426,7 +425,7 @@ class TestQueryOptimization:
         assert elapsed < 1.0
 
     @pytest.mark.integration
-    def test_filter_performance(self, sync_db_session):
+    def test_filter_performance(self, sync_db_session) -> None:
         """Test filter performance."""
         project = Project(id="filter-perf", name="Filter Perf")
         sync_db_session.add(project)
@@ -456,7 +455,7 @@ class TestQueryOptimization:
         assert elapsed < 1.0
 
     @pytest.mark.integration
-    def test_aggregation_performance(self, sync_db_session):
+    def test_aggregation_performance(self, sync_db_session) -> None:
         """Test aggregation performance."""
         project = Project(id="agg-perf", name="Agg Perf")
         sync_db_session.add(project)
@@ -490,7 +489,7 @@ class TestMemoryEfficiency:
     """Test memory efficiency."""
 
     @pytest.mark.integration
-    def test_large_metadata_handling(self, sync_db_session):
+    def test_large_metadata_handling(self, sync_db_session) -> None:
         """Test large metadata handling."""
         project = Project(id="large-meta", name="Large Meta")
         sync_db_session.add(project)
@@ -516,7 +515,7 @@ class TestMemoryEfficiency:
         assert len(result.item_metadata) == 50
 
     @pytest.mark.integration
-    def test_lazy_loading_performance(self, sync_db_session):
+    def test_lazy_loading_performance(self, sync_db_session) -> None:
         """Test lazy loading performance."""
         project = Project(id="lazy-load", name="Lazy Load")
         sync_db_session.add(project)
@@ -562,7 +561,7 @@ class TestConcurrentAccessPatterns:
     """Test concurrent access patterns."""
 
     @pytest.mark.integration
-    def test_sequential_access_pattern(self, sync_db_session):
+    def test_sequential_access_pattern(self, sync_db_session) -> None:
         """Test sequential access pattern."""
         project = Project(id="seq-access", name="Sequential Access")
         sync_db_session.add(project)
@@ -592,7 +591,7 @@ class TestConcurrentAccessPatterns:
         assert elapsed < 2.0
 
     @pytest.mark.integration
-    def test_bulk_read_access_pattern(self, sync_db_session):
+    def test_bulk_read_access_pattern(self, sync_db_session) -> None:
         """Test bulk read access pattern."""
         project = Project(id="bulk-read", name="Bulk Read")
         sync_db_session.add(project)
@@ -622,7 +621,7 @@ class TestConcurrentAccessPatterns:
         assert elapsed < 1.0
 
     @pytest.mark.integration
-    def test_mixed_read_write_pattern(self, sync_db_session):
+    def test_mixed_read_write_pattern(self, sync_db_session) -> None:
         """Test mixed read-write access pattern."""
         project = Project(id="mixed-rw", name="Mixed R/W")
         sync_db_session.add(project)
@@ -661,7 +660,7 @@ class TestPaginationPerformance:
     """Test pagination performance."""
 
     @pytest.mark.integration
-    def test_pagination_first_page(self, sync_db_session):
+    def test_pagination_first_page(self, sync_db_session) -> None:
         """Test pagination first page."""
         project = Project(id="paginate-1", name="Paginate 1")
         sync_db_session.add(project)
@@ -692,7 +691,7 @@ class TestPaginationPerformance:
         assert elapsed < 1.0
 
     @pytest.mark.integration
-    def test_pagination_middle_page(self, sync_db_session):
+    def test_pagination_middle_page(self, sync_db_session) -> None:
         """Test pagination middle page."""
         project = Project(id="paginate-mid", name="Paginate Mid")
         sync_db_session.add(project)
@@ -724,7 +723,7 @@ class TestPaginationPerformance:
         assert elapsed < 1.0
 
     @pytest.mark.integration
-    def test_pagination_large_offset(self, sync_db_session):
+    def test_pagination_large_offset(self, sync_db_session) -> None:
         """Test pagination with large offset."""
         project = Project(id="paginate-large", name="Paginate Large")
         sync_db_session.add(project)
@@ -760,7 +759,7 @@ class TestCachingEffectiveness:
     """Test caching effectiveness."""
 
     @pytest.mark.integration
-    def test_repeat_query_caching(self, sync_db_session):
+    def test_repeat_query_caching(self, sync_db_session) -> None:
         """Test repeat query benefits."""
         project = Project(id="cache-repeat", name="Cache Repeat")
         sync_db_session.add(project)
@@ -794,7 +793,7 @@ class TestCachingEffectiveness:
         assert second_elapsed >= 0
 
     @pytest.mark.integration
-    def test_session_identity_map(self, sync_db_session):
+    def test_session_identity_map(self, sync_db_session) -> None:
         """Test session identity map."""
         project = Project(id="identity-map", name="Identity Map")
         sync_db_session.add(project)

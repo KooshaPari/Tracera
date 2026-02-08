@@ -12,7 +12,7 @@ from tracertm.repositories.link_repository import LinkRepository
 class PerformanceOptimizationService:
     """Service for performance optimization."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)

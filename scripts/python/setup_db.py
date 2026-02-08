@@ -1,5 +1,4 @@
-"""
-Database setup script - Initialize database schema
+"""Database setup script - Initialize database schema.
 
 Usage:
     python scripts/setup_db.py
@@ -25,8 +24,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-async def main():
-    """Main setup function"""
+async def main() -> bool | None:
+    """Main setup function."""
     logger.info("Starting database setup...")
 
     # Create database service
@@ -72,7 +71,7 @@ async def main():
         return True
 
     except Exception as e:
-        logger.error(f"✗ Setup failed: {e}")
+        logger.exception("✗ Setup failed: %s", e)
         return False
 
     finally:

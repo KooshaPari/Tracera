@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Script to extract tool function ranges from param.py for splitting.
+"""Script to extract tool function ranges from param.py for splitting.
 Outputs line ranges for each tool to help with manual extraction.
 """
 
@@ -34,16 +33,10 @@ for idx, (line_no, name) in enumerate(tool_starts):
     tools_info.append({"name": name, "start": line_no, "end": end_line, "lines": end_line - line_no + 1})
 
 # Print report
-print("Tool Function Ranges in param.py:\n")
-print(f"{'Tool Name':<30} {'Start':<8} {'End':<8} {'Lines':<8}")
-print("=" * 60)
 
 for tool in tools_info:
-    print(f"{tool['name']:<30} {tool['start']:<8} {tool['end']:<8} {tool['lines']:<8}")
+    pass
 
-print("\n" + "=" * 60)
-print(f"Total tools: {len(tools_info)}")
-print(f"Total lines: {len(lines)}")
 
 # Group tools by domain for output modules
 domain_groups = {
@@ -56,12 +49,9 @@ domain_groups = {
     "system": ["benchmark_manage", "chaos_manage"],
 }
 
-print("\nDomain Groupings:")
-print("=" * 60)
-for domain, tool_names in domain_groups.items():
+for tool_names in domain_groups.values():
     total_lines = sum(t["lines"] for t in tools_info if t["name"] in tool_names)
-    print(f"{domain}: {len(tool_names)} tools, ~{total_lines} lines")
     for name in tool_names:
         tool = next((t for t in tools_info if t["name"] == name), None)
         if tool:
-            print(f"  - {name}: lines {tool['start']}-{tool['end']} ({tool['lines']} lines)")
+            pass

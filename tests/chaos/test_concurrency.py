@@ -1,5 +1,4 @@
-"""
-Chaos Test: Concurrent Conflicting Writes
+"""Chaos Test: Concurrent Conflicting Writes.
 
 Tests that the optimistic locking and retry mechanisms in ItemService and
 ItemRepository handle concurrent conflicting writes correctly --
@@ -13,6 +12,7 @@ import threading
 import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -21,6 +21,8 @@ from sqlalchemy.orm.exc import StaleDataError
 from tracertm.core.concurrency import ConcurrencyError, update_with_retry
 from tracertm.services.concurrent_operations_service import (
     ConcurrencyError as SyncConcurrencyError,
+)
+from tracertm.services.concurrent_operations_service import (
     retry_with_backoff,
 )
 
@@ -30,14 +32,14 @@ class TestConcurrentOptimisticLocking:
     """Verify that optimistic locking detects version conflicts under concurrent access."""
 
     @pytest.mark.asyncio
-    async def test_concurrent_updates_one_wins(self):
+    async def test_concurrent_updates_one_wins(self) -> None:
         """When two coroutines race to update the same item, one must succeed and one must raise ConcurrencyError."""
         # Shared mutable state simulating a DB row
         item_version = {"current": 1}
         results = {"success": 0, "conflict": 0}
         lock = asyncio.Lock()
 
-        async def attempt_update(agent_id: str):
+        async def attempt_update(agent_id: str) -> str:
             """Simulate reading version, sleeping, then writing -- classic race."""
             # Read current version (both agents see version 1)
             read_version = item_version["current"]
@@ -49,7 +51,8 @@ class TestConcurrentOptimisticLocking:
                 # Check version at write time
                 if item_version["current"] != read_version:
                     results["conflict"] += 1
-                    raise ConcurrencyError(f"Agent {agent_id}: version mismatch")
+                    msg = f"Agent {agent_id}: version mismatch"
+                    raise ConcurrencyError(msg)
 
                 # Write succeeds
                 item_version["current"] += 1
@@ -74,7 +77,7 @@ class TestConcurrentOptimisticLocking:
         assert results["conflict"] == 1
 
     @pytest.mark.asyncio
-    async def test_retry_resolves_transient_conflict(self):
+    async def test_retry_resolves_transient_conflict(self) -> None:
         """update_with_retry must resolve a transient version conflict by re-reading and retrying."""
         attempt_count = 0
 
@@ -83,7 +86,8 @@ class TestConcurrentOptimisticLocking:
             attempt_count += 1
             # First two attempts see stale version, third sees fresh
             if attempt_count < 3:
-                raise ConcurrencyError("version mismatch")
+                msg = "version mismatch"
+                raise ConcurrencyError(msg)
             return {"id": "item-1", "version": attempt_count}
 
         result = await update_with_retry(update_with_stale_read, max_retries=5, base_delay=0.01)
@@ -96,31 +100,33 @@ class TestConcurrentOptimisticLocking:
 class TestSyncRetryWithBackoff:
     """Test the synchronous retry_with_backoff decorator from concurrent_operations_service."""
 
-    def test_retry_succeeds_after_stale_data(self):
+    def test_retry_succeeds_after_stale_data(self) -> None:
         """StaleDataError triggers retry and eventually succeeds."""
         call_count = 0
 
         @retry_with_backoff(max_retries=3, initial_delay=0.01, max_delay=0.05)
-        def flaky_update():
+        def flaky_update() -> str:
             nonlocal call_count
             call_count += 1
             if call_count < 3:
-                raise StaleDataError("stale")
+                msg = "stale"
+                raise StaleDataError(msg)
             return "updated"
 
         result = flaky_update()
         assert result == "updated"
         assert call_count == 3
 
-    def test_retry_exhaustion_raises_sync_concurrency_error(self):
+    def test_retry_exhaustion_raises_sync_concurrency_error(self) -> None:
         """When all retries are exhausted, SyncConcurrencyError must propagate."""
         call_count = 0
 
         @retry_with_backoff(max_retries=2, initial_delay=0.01, max_delay=0.05)
-        def always_stale():
+        def always_stale() -> Never:
             nonlocal call_count
             call_count += 1
-            raise StaleDataError("always stale")
+            msg = "always stale"
+            raise StaleDataError(msg)
 
         with pytest.raises(SyncConcurrencyError, match="failed after 2 retries"):
             always_stale()
@@ -128,15 +134,16 @@ class TestSyncRetryWithBackoff:
         # initial attempt + 2 retries = 3 calls
         assert call_count == 3
 
-    def test_non_retryable_error_propagates_immediately(self):
+    def test_non_retryable_error_propagates_immediately(self) -> None:
         """Non-StaleDataError/ConcurrencyError exceptions must NOT be retried."""
         call_count = 0
 
         @retry_with_backoff(max_retries=5, initial_delay=0.01)
-        def bad_input():
+        def bad_input() -> Never:
             nonlocal call_count
             call_count += 1
-            raise ValueError("bad input")
+            msg = "bad input"
+            raise ValueError(msg)
 
         with pytest.raises(ValueError, match="bad input"):
             bad_input()
@@ -148,16 +155,15 @@ class TestSyncRetryWithBackoff:
 class TestThreadedConcurrentWrites:
     """Use real threads to simulate concurrent conflicting writes."""
 
-    def test_threaded_counter_with_lock_no_corruption(self):
-        """
-        Simulate N threads incrementing a shared counter with a lock.
+    def test_threaded_counter_with_lock_no_corruption(self) -> None:
+        """Simulate N threads incrementing a shared counter with a lock.
         Verifies that the lock prevents data corruption (counter == N at end).
         """
         counter = {"value": 0}
         lock = threading.Lock()
         num_threads = 20
 
-        def increment():
+        def increment() -> None:
             for _ in range(100):
                 with lock:
                     counter["value"] += 1
@@ -170,16 +176,15 @@ class TestThreadedConcurrentWrites:
 
         assert counter["value"] == num_threads * 100
 
-    def test_threaded_last_write_wins_without_lock(self):
-        """
-        Without locking, concurrent writes may produce a final value less than expected.
+    def test_threaded_last_write_wins_without_lock(self) -> None:
+        """Without locking, concurrent writes may produce a final value less than expected.
         This demonstrates WHY optimistic locking is necessary.
         """
         counter = {"value": 0}
         num_threads = 10
         iterations = 1000
 
-        def unsafe_increment():
+        def unsafe_increment() -> None:
             for _ in range(iterations):
                 # Deliberate race condition: read-modify-write without lock
                 current = counter["value"]
@@ -202,9 +207,8 @@ class TestThreadedConcurrentWrites:
         # by checking a weaker condition that this is a meaningful test)
         # Note: we cannot assert < because on very fast machines it might be ==
 
-    def test_threaded_concurrent_dict_updates_with_version_check(self):
-        """
-        Simulate concurrent updates to a shared dict with manual version checking.
+    def test_threaded_concurrent_dict_updates_with_version_check(self) -> None:
+        """Simulate concurrent updates to a shared dict with manual version checking.
         Threads that detect a version mismatch must retry.
         """
         shared_state = {"data": "initial", "version": 1}
@@ -213,7 +217,7 @@ class TestThreadedConcurrentWrites:
         conflict_count = 0
         counter_lock = threading.Lock()
 
-        def update_with_version_check(agent_name: str, new_value: str):
+        def update_with_version_check(agent_name: str, new_value: str) -> bool:
             nonlocal success_count, conflict_count
 
             for attempt in range(5):
@@ -256,9 +260,8 @@ class TestAsyncConcurrentWriteSimulation:
     """Simulate async concurrent writes using asyncio tasks."""
 
     @pytest.mark.asyncio
-    async def test_multiple_async_writers_with_retry(self):
-        """
-        Multiple async tasks attempt to update a shared resource.
+    async def test_multiple_async_writers_with_retry(self) -> None:
+        """Multiple async tasks attempt to update a shared resource.
         Each uses update_with_retry; conflicts are resolved via retry.
         """
         shared_resource = {"value": 0, "version": 1}
@@ -275,7 +278,8 @@ class TestAsyncConcurrentWriteSimulation:
 
                 async with resource_lock:
                     if shared_resource["version"] != current_version:
-                        raise ConcurrencyError(f"Writer {writer_id}: version mismatch")
+                        msg = f"Writer {writer_id}: version mismatch"
+                        raise ConcurrencyError(msg)
                     shared_resource["value"] += 1
                     shared_resource["version"] += 1
                     return shared_resource["value"]

@@ -17,7 +17,7 @@ import os
 import secrets
 import urllib.parse
 from datetime import UTC, datetime
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import func, select
@@ -74,8 +74,8 @@ def ensure_credential_access_fn(credential: Any, claims: dict[str, Any]) -> None
 async def start_oauth_flow(
     request: Request,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Start OAuth flow for an external integration provider."""
     enforce_rate_limit(request, claims)
@@ -141,8 +141,8 @@ async def start_oauth_flow(
 async def oauth_callback(
     request: Request,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Handle OAuth callback and store credentials."""
     from tracertm.api.handlers.oauth import oauth_callback as oauth_callback_handler
@@ -212,8 +212,8 @@ async def list_credentials(
 async def validate_credential(
     request: Request,
     credential_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Validate an integration credential."""
     enforce_rate_limit(request, claims)
@@ -276,8 +276,8 @@ async def validate_credential(
 async def delete_credential(
     request: Request,
     credential_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete an integration credential."""
     enforce_rate_limit(request, claims)
@@ -345,8 +345,8 @@ async def list_mappings(
 async def create_mapping(
     request: Request,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create a new integration mapping."""
     enforce_rate_limit(request, claims)
@@ -390,7 +390,7 @@ async def create_mapping(
                 Item.project_id == project_id,
                 Item.item_type == "project_root",
                 Item.title == "Integration Root",
-            )
+            ),
         )
         root_item = result.scalar_one_or_none()
         if not root_item:
@@ -449,8 +449,8 @@ async def update_mapping(
     request: Request,
     mapping_id: str,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Update an integration mapping."""
     enforce_rate_limit(request, claims)
@@ -504,8 +504,8 @@ async def update_mapping(
 async def delete_mapping(
     request: Request,
     mapping_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete an integration mapping."""
     enforce_rate_limit(request, claims)
@@ -536,8 +536,8 @@ async def delete_mapping(
 async def get_sync_status(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get sync status summary for a project."""
     enforce_rate_limit(request, claims)
@@ -554,7 +554,7 @@ async def get_sync_status(
         select(IntegrationSyncQueue.status, func.count().label("count"))
         .join(IntegrationMapping)
         .where(IntegrationMapping.project_id == project_id)
-        .group_by(IntegrationSyncQueue.status)
+        .group_by(IntegrationSyncQueue.status),
     )
 
     queue_stats = {"pending": 0, "processing": 0, "failed": 0, "completed": 0}
@@ -569,7 +569,7 @@ async def get_sync_status(
         .join(IntegrationMapping)
         .where(IntegrationMapping.project_id == project_id)
         .order_by(IntegrationSyncLog.created_at.desc())
-        .limit(10)
+        .limit(10),
     )
 
     recent_syncs = [
@@ -610,8 +610,8 @@ async def get_sync_status(
 async def trigger_sync(
     request: Request,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Trigger a manual sync for a mapping or credential."""
     enforce_rate_limit(request, claims)
@@ -759,8 +759,8 @@ async def resolve_conflict(
     request: Request,
     conflict_id: str,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Resolve a sync conflict."""
     enforce_rate_limit(request, claims)
@@ -768,7 +768,7 @@ async def resolve_conflict(
     resolution = data.get("resolution")  # "local", "external", "merge", "skip"
     merged_value = data.get("merged_value")
 
-    if resolution not in ["local", "external", "merge", "skip"]:
+    if resolution not in {"local", "external", "merge", "skip"}:
         raise HTTPException(status_code=400, detail="Invalid resolution strategy")
 
     if resolution == "merge" and not merged_value:

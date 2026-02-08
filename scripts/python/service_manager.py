@@ -80,7 +80,7 @@ def start_service(brew_name: str, fallbacks: list[str] | None = None) -> bool:
             return True
         except subprocess.CalledProcessError as e:
             if e.stderr:
-                print(f"    {name}: {e.stderr.strip()}", file=sys.stderr)
+                pass
     return False
 
 
@@ -94,49 +94,34 @@ def ensure_services_running(retries: int = 5, delay: int = 3) -> bool:
     Returns:
         True if all required services are running, False otherwise
     """
-    print("🔍 Checking service health...")
-
     all_healthy = True
 
     for service in SERVICES:
         # Check if service is already running
         if check_port("localhost", service.port):
-            print(f"  ✅ {service.name} (:{service.port})")
             continue
 
         # Service is down - attempt to start it (required and optional)
-        print(f"  ❌ {service.name} (:{service.port}) - starting...")
 
         fallbacks = ["postgresql@14", "postgresql"] if service.name == "PostgreSQL" else None
         if not start_service(service.brew_name, fallbacks=fallbacks):
             if service.required:
-                print(f"  ⛔ Failed to start {service.name}")
                 all_healthy = False
-            else:
-                print(f"  ⚠️  {service.name} not started (optional; install with brew install {service.brew_name})")
             continue
 
         # Wait for service to come up with retry logic
         service_started = False
-        for attempt in range(1, retries + 1):
+        for _attempt in range(1, retries + 1):
             time.sleep(delay)
             if check_port("localhost", service.port):
-                print(f"  ✅ {service.name} started successfully")
                 service_started = True
                 break
-            print(f"    Waiting for {service.name} (attempt {attempt}/{retries})...")
 
-        if not service_started:
-            if service.required:
-                print(f"  ⛔ {service.name} failed to start after {retries} attempts")
-                all_healthy = False
-            else:
-                print(f"  ⚠️  {service.name} did not come up (optional)")
+        if not service_started and service.required:
+            all_healthy = False
 
     if all_healthy:
-        print("\n✅ All required services are healthy\n")
-    else:
-        print("\n⛔ Some required services failed to start\n", file=sys.stderr)
+        pass
 
     return all_healthy
 

@@ -18,8 +18,7 @@ async def publish_with_retry(  # noqa: PLR0913
     data: dict[str, Any],
     max_retries: int = 3,
 ) -> None:
-    """
-    Publish event with retry logic for resilience.
+    """Publish event with retry logic for resilience.
 
     Args:
         event_bus: EventBus instance
@@ -40,7 +39,7 @@ async def publish_with_retry(  # noqa: PLR0913
             return
         except Exception as e:
             if attempt == max_retries - 1:
-                logger.error(f"Failed to publish {event_type} after {max_retries} attempts: {e}")
+                logger.exception("Failed to publish %s after %s attempts: %s", event_type, max_retries, e)
                 raise
             logger.warning(f"Failed to publish {event_type} (attempt {attempt + 1}/{max_retries}): {e}")
             await asyncio.sleep(0.1 * (attempt + 1))
@@ -54,8 +53,7 @@ async def safe_publish(  # noqa: PLR0913
     entity_type: str,
     data: dict[str, Any],
 ) -> None:
-    """
-    Publish event without failing the request if publishing fails.
+    """Publish event without failing the request if publishing fails.
 
     This is a fire-and-forget approach that logs errors but doesn't raise exceptions.
 
@@ -68,12 +66,13 @@ async def safe_publish(  # noqa: PLR0913
         data: Event payload
     """
     if event_bus is None:
-        raise RuntimeError("EventBus is required but not initialized")
+        msg = "EventBus is required but not initialized"
+        raise RuntimeError(msg)
 
     try:
         await event_bus.publish(event_type, project_id, entity_id, entity_type, data)
     except Exception as e:
-        logger.error(f"Failed to publish {event_type} event (non-blocking): {e}")
+        logger.exception("Failed to publish %s event (non-blocking): %s", event_type, e)
 
 
 async def safe_publish_with_retry(  # noqa: PLR0913
@@ -85,8 +84,7 @@ async def safe_publish_with_retry(  # noqa: PLR0913
     data: dict[str, Any],
     max_retries: int = 3,
 ) -> None:
-    """
-    Combine safe_publish with retry logic.
+    """Combine safe_publish with retry logic.
 
     Attempts to publish with retries but never raises exceptions to caller.
 
@@ -100,9 +98,10 @@ async def safe_publish_with_retry(  # noqa: PLR0913
         max_retries: Maximum number of retry attempts
     """
     if event_bus is None:
-        raise RuntimeError("EventBus is required but not initialized")
+        msg = "EventBus is required but not initialized"
+        raise RuntimeError(msg)
 
     try:
         await publish_with_retry(event_bus, event_type, project_id, entity_id, entity_type, data, max_retries)
     except Exception as e:
-        logger.error(f"Failed to publish {event_type} event after retries (non-blocking): {e}")
+        logger.exception("Failed to publish %s event after retries (non-blocking): %s", event_type, e)

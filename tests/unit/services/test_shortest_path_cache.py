@@ -34,7 +34,7 @@ def service(mock_session, mock_cache):
 
 
 @pytest.mark.asyncio
-async def test_cache_hit_returns_cached_result(service, mock_cache):
+async def test_cache_hit_returns_cached_result(service, mock_cache) -> None:
     """Test that cache hit returns cached result without computation."""
     # Setup
     project_id = "proj-123"
@@ -71,7 +71,7 @@ async def test_cache_hit_returns_cached_result(service, mock_cache):
 
 
 @pytest.mark.asyncio
-async def test_cache_miss_computes_and_caches(service, mock_cache):
+async def test_cache_miss_computes_and_caches(service, mock_cache) -> None:
     """Test that cache miss computes result and caches it."""
     # Setup
     project_id = "proj-123"
@@ -112,7 +112,7 @@ async def test_cache_miss_computes_and_caches(service, mock_cache):
 
 
 @pytest.mark.asyncio
-async def test_cache_key_includes_link_types(service, mock_cache):
+async def test_cache_key_includes_link_types(service, mock_cache) -> None:
     """Test that cache key includes link types filter."""
     # Setup
     project_id = "proj-123"
@@ -133,7 +133,7 @@ async def test_cache_key_includes_link_types(service, mock_cache):
 
 
 @pytest.mark.asyncio
-async def test_all_paths_cache_hit(service, mock_cache):
+async def test_all_paths_cache_hit(service, mock_cache) -> None:
     """Test that all_paths cache hit returns cached results."""
     # Setup
     project_id = "proj-123"
@@ -175,7 +175,7 @@ async def test_all_paths_cache_hit(service, mock_cache):
 
 
 @pytest.mark.asyncio
-async def test_graceful_cache_failure(service, mock_cache):
+async def test_graceful_cache_failure(service, mock_cache) -> None:
     """Test that cache failures don't break the service."""
     # Setup
     project_id = "proj-123"
@@ -207,7 +207,7 @@ async def test_graceful_cache_failure(service, mock_cache):
 
 
 @pytest.mark.asyncio
-async def test_no_cache_service(mock_session):
+async def test_no_cache_service(mock_session) -> None:
     """Test that service works without cache service."""
     # Create service without cache
     service = ShortestPathService(mock_session, cache=None)

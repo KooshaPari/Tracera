@@ -1,5 +1,4 @@
-"""
-Comprehensive concurrency tests for sync_service.
+"""Comprehensive concurrency tests for sync_service.
 
 This module tests:
 - Concurrent sync operations
@@ -38,7 +37,7 @@ class TestSyncServiceConcurrency:
         """Create service instance."""
         return SyncService(mock_session)
 
-    async def test_concurrent_sync_operations(self, service):
+    async def test_concurrent_sync_operations(self, service) -> None:
         """Test multiple concurrent sync operations."""
         # Start 5 concurrent syncs
         tasks = [service.sync() for _ in range(5)]
@@ -49,7 +48,7 @@ class TestSyncServiceConcurrency:
         assert all(isinstance(r, dict) for r in results)
         assert all(r.get("synced") is True for r in results)
 
-    async def test_sync_coordination(self, service):
+    async def test_sync_coordination(self, service) -> None:
         """Test sync operations coordinate properly."""
         # Execute multiple syncs rapidly
         results = []
@@ -60,7 +59,7 @@ class TestSyncServiceConcurrency:
         assert len(results) == 10
         assert all(r["synced"] is True for r in results)
 
-    async def test_concurrent_sync_different_targets(self, service):
+    async def test_concurrent_sync_different_targets(self, service) -> None:
         """Test concurrent syncs to different targets."""
         # In real implementation, would sync different projects/items
         tasks = [service.sync() for _ in range(20)]
@@ -69,7 +68,7 @@ class TestSyncServiceConcurrency:
         assert len(results) == 20
         assert all(isinstance(r, dict) for r in results)
 
-    async def test_high_frequency_sync_operations(self, service):
+    async def test_high_frequency_sync_operations(self, service) -> None:
         """Test rapid successive sync operations."""
         import time
 
@@ -91,19 +90,19 @@ class TestSyncServiceStateTransitions:
         """Create service instance."""
         return SyncService(AsyncMock())
 
-    async def test_sync_state_idle_to_syncing(self, service):
+    async def test_sync_state_idle_to_syncing(self, service) -> None:
         """Test transition from idle to syncing state."""
         result = await service.sync()
         assert result["synced"] is True
 
-    async def test_sync_state_consistency(self, service):
+    async def test_sync_state_consistency(self, service) -> None:
         """Test sync state remains consistent."""
         # Perform multiple syncs
         for _ in range(10):
             result = await service.sync()
             assert result["synced"] is True
 
-    async def test_sync_abort_and_resume(self, service):
+    async def test_sync_abort_and_resume(self, service) -> None:
         """Test aborting and resuming sync."""
         # Start sync
         result1 = await service.sync()
@@ -113,7 +112,7 @@ class TestSyncServiceStateTransitions:
         result2 = await service.sync()
         assert result2["synced"] is True
 
-    async def test_sync_state_after_error(self, service):
+    async def test_sync_state_after_error(self, service) -> None:
         """Test sync state after error occurs."""
         # Mock error scenario
         result = await service.sync()
@@ -130,32 +129,32 @@ class TestSyncServiceRecovery:
         """Create service instance."""
         return SyncService(AsyncMock())
 
-    async def test_sync_recovery_from_failure(self, service):
+    async def test_sync_recovery_from_failure(self, service) -> None:
         """Test sync recovery from partial failure."""
         # In real implementation, would simulate partial failure
         result = await service.sync()
         assert isinstance(result, dict)
         assert result["synced"] is True
 
-    async def test_sync_with_large_delta(self, service):
+    async def test_sync_with_large_delta(self, service) -> None:
         """Test sync with large change delta."""
         # Simulate 1000+ changes
         result = await service.sync()
         assert result["synced"] is True
 
-    async def test_sync_rollback_on_error(self, service):
+    async def test_sync_rollback_on_error(self, service) -> None:
         """Test sync rollback on error."""
         # In real implementation, would verify rollback
         result = await service.sync()
         assert isinstance(result, dict)
 
-    async def test_sync_retry_mechanism(self, service):
+    async def test_sync_retry_mechanism(self, service) -> None:
         """Test sync retry on transient failures."""
         # Execute sync that might need retry
         result = await service.sync()
         assert result["synced"] is True
 
-    async def test_sync_timeout_handling(self, service):
+    async def test_sync_timeout_handling(self, service) -> None:
         """Test sync behavior with timeout."""
         try:
             result = await asyncio.wait_for(service.sync(), timeout=2.0)
@@ -173,27 +172,27 @@ class TestSyncServiceDeltaCalculation:
         """Create service instance."""
         return SyncService(AsyncMock())
 
-    async def test_sync_delta_empty(self, service):
+    async def test_sync_delta_empty(self, service) -> None:
         """Test sync with no changes."""
         result = await service.sync()
         assert isinstance(result, dict)
 
-    async def test_sync_delta_additions(self, service):
+    async def test_sync_delta_additions(self, service) -> None:
         """Test sync with only additions."""
         result = await service.sync()
         assert result["synced"] is True
 
-    async def test_sync_delta_modifications(self, service):
+    async def test_sync_delta_modifications(self, service) -> None:
         """Test sync with modifications."""
         result = await service.sync()
         assert result["synced"] is True
 
-    async def test_sync_delta_deletions(self, service):
+    async def test_sync_delta_deletions(self, service) -> None:
         """Test sync with deletions."""
         result = await service.sync()
         assert result["synced"] is True
 
-    async def test_sync_delta_mixed_operations(self, service):
+    async def test_sync_delta_mixed_operations(self, service) -> None:
         """Test sync with mixed operations."""
         # In real implementation, would have adds, updates, deletes
         result = await service.sync()
@@ -209,12 +208,12 @@ class TestSyncServiceConflictResolution:
         """Create service instance."""
         return SyncService(AsyncMock())
 
-    async def test_sync_conflict_detection(self, service):
+    async def test_sync_conflict_detection(self, service) -> None:
         """Test detection of sync conflicts."""
         result = await service.sync()
         assert isinstance(result, dict)
 
-    async def test_sync_conflict_resolution_strategies(self, service):
+    async def test_sync_conflict_resolution_strategies(self, service) -> None:
         """Test different conflict resolution strategies."""
         strategies = ["local_wins", "remote_wins", "merge", "manual"]
 
@@ -222,7 +221,7 @@ class TestSyncServiceConflictResolution:
             result = await service.sync()
             assert result["synced"] is True
 
-    async def test_sync_concurrent_modification_conflict(self, service):
+    async def test_sync_concurrent_modification_conflict(self, service) -> None:
         """Test handling concurrent modification conflicts."""
         # Simulate concurrent modifications
         result = await service.sync()
@@ -238,13 +237,13 @@ class TestSyncServiceValidation:
         """Create service instance."""
         return SyncService(AsyncMock())
 
-    async def test_sync_with_none_session(self):
+    async def test_sync_with_none_session(self) -> None:
         """Test sync with None session."""
         service = SyncService(None)
         result = await service.sync()
         assert isinstance(result, dict)
 
-    async def test_sync_initialization_variations(self):
+    async def test_sync_initialization_variations(self) -> None:
         """Test various initialization scenarios."""
         # With session
         service1 = SyncService(AsyncMock())
@@ -256,7 +255,7 @@ class TestSyncServiceValidation:
         result2 = await service2.sync()
         assert result2["synced"] is True
 
-    async def test_sync_result_consistency(self, service):
+    async def test_sync_result_consistency(self, service) -> None:
         """Test sync results are consistent."""
         results = []
         for _ in range(5):
@@ -266,7 +265,7 @@ class TestSyncServiceValidation:
         # All results should have same structure
         assert all("synced" in r for r in results)
 
-    async def test_multiple_service_instances(self):
+    async def test_multiple_service_instances(self) -> None:
         """Test multiple service instances work independently."""
         services = [SyncService(AsyncMock()) for _ in range(10)]
 
@@ -276,7 +275,7 @@ class TestSyncServiceValidation:
         assert len(results) == 10
         assert all(r["synced"] is True for r in results)
 
-    async def test_service_reuse_stability(self):
+    async def test_service_reuse_stability(self) -> None:
         """Test service remains stable with repeated use."""
         service = SyncService(AsyncMock())
 
@@ -294,7 +293,7 @@ class TestSyncServicePerformance:
         """Create service instance."""
         return SyncService(AsyncMock())
 
-    async def test_sync_performance_baseline(self, service):
+    async def test_sync_performance_baseline(self, service) -> None:
         """Test baseline sync performance."""
         import time
 
@@ -305,7 +304,7 @@ class TestSyncServicePerformance:
         # Single sync should be fast
         assert duration < 1.0, f"Sync took {duration}s, expected < 1s"
 
-    async def test_sync_performance_under_load(self, service):
+    async def test_sync_performance_under_load(self, service) -> None:
         """Test sync performance under load."""
         import time
 
@@ -317,7 +316,7 @@ class TestSyncServicePerformance:
         # 20 concurrent syncs
         assert duration < 3.0, f"20 syncs took {duration}s, expected < 3s"
 
-    async def test_sync_memory_efficiency(self, service):
+    async def test_sync_memory_efficiency(self, service) -> None:
         """Test sync doesn't accumulate memory."""
         # Run many syncs
         for _ in range(500):
@@ -325,7 +324,7 @@ class TestSyncServicePerformance:
 
         # Test completes without memory issues
 
-    async def test_sync_with_database_error(self):
+    async def test_sync_with_database_error(self) -> None:
         """Test sync with database error."""
         mock_session = AsyncMock()
         mock_session.execute.side_effect = Exception("Database error")

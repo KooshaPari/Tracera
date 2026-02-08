@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Service utilities for development.
+"""Service utilities for development.
 
 Provides helper functions for checking, starting, and stopping
 services during development.
@@ -17,8 +16,7 @@ from neo4j import GraphDatabase
 
 
 def wait_for_service(check_func, service_name: str, max_wait: int = 30, interval: float = 1.0) -> bool:
-    """
-    Wait for a service to become available.
+    """Wait for a service to become available.
 
     Args:
         check_func: Function that returns True when service is ready
@@ -39,14 +37,12 @@ def wait_for_service(check_func, service_name: str, max_wait: int = 30, interval
 
         time.sleep(interval)
         elapsed += interval
-        print(f"Waiting for {service_name}... ({int(elapsed)}s)")
 
     return False
 
 
 def clear_redis_cache(pattern: str | None = None) -> int:
-    """
-    Clear Redis cache.
+    """Clear Redis cache.
 
     Args:
         pattern: Optional key pattern to match (e.g., "user:*")
@@ -66,8 +62,7 @@ def clear_redis_cache(pattern: str | None = None) -> int:
         r.flushdb()
         return -1  # Indicates full flush
 
-    except Exception as e:
-        print(f"Error clearing Redis cache: {e}")
+    except Exception:
         return 0
 
 
@@ -85,14 +80,12 @@ def get_redis_stats() -> dict[str, Any]:
             "total_keys": r.dbsize(),
             "uptime_days": info.get("uptime_in_days"),
         }
-    except Exception as e:
-        print(f"Error getting Redis stats: {e}")
+    except Exception:
         return {}
 
 
 def clear_neo4j_graph(confirm: bool = False) -> bool:
-    """
-    Clear all data from Neo4j graph.
+    """Clear all data from Neo4j graph.
 
     Args:
         confirm: Safety flag - must be True to execute
@@ -101,7 +94,6 @@ def clear_neo4j_graph(confirm: bool = False) -> bool:
         True if successful
     """
     if not confirm:
-        print("Error: confirm=True required to clear Neo4j graph")
         return False
 
     try:
@@ -116,8 +108,7 @@ def clear_neo4j_graph(confirm: bool = False) -> bool:
         driver.close()
         return True
 
-    except Exception as e:
-        print(f"Error clearing Neo4j: {e}")
+    except Exception:
         return False
 
 
@@ -150,14 +141,12 @@ def get_neo4j_stats() -> dict[str, Any]:
             "labels": labels,
         }
 
-    except Exception as e:
-        print(f"Error getting Neo4j stats: {e}")
+    except Exception:
         return {}
 
 
 def restart_service(service_name: str) -> bool:
-    """
-    Restart a service using process-compose.
+    """Restart a service using process-compose.
 
     Args:
         service_name: Name of service to restart
@@ -171,14 +160,12 @@ def restart_service(service_name: str) -> bool:
         result = subprocess.run(["pkill", "-HUP", "-f", service_name], capture_output=True, text=True)
         return result.returncode == 0
 
-    except Exception as e:
-        print(f"Error restarting service: {e}")
+    except Exception:
         return False
 
 
 def get_service_logs(service_name: str, lines: int = 50, follow: bool = False) -> str | None:
-    """
-    Get logs for a service.
+    """Get logs for a service.
 
     Args:
         service_name: Name of service
@@ -198,12 +185,11 @@ def get_service_logs(service_name: str, lines: int = 50, follow: bool = False) -
         if follow:
             subprocess.run(["tail", "-f", "-n", str(lines), str(log_file)])
             return None
-        with Path(log_file).open() as f:
+        with Path(log_file).open(encoding="utf-8") as f:
             all_lines = f.readlines()
             return "".join(all_lines[-lines:])
 
-    except Exception as e:
-        print(f"Error reading logs: {e}")
+    except Exception:
         return None
 
 
@@ -250,8 +236,7 @@ def get_process_info(process_name: str) -> list[dict[str, Any]]:
 
         return processes
 
-    except Exception as e:
-        print(f"Error getting process info: {e}")
+    except Exception:
         return []
 
 
@@ -268,6 +253,5 @@ def kill_process_on_port(port: int) -> bool:
 
         return False
 
-    except Exception as e:
-        print(f"Error killing process on port {port}: {e}")
+    except Exception:
         return False

@@ -1,5 +1,4 @@
-"""
-Test Template - Use this as a template for all new tests
+"""Test Template - Use this as a template for all new tests.
 
 This template demonstrates the proper structure, naming, and documentation
 for tests in the TraceRTM project.
@@ -16,8 +15,7 @@ import pytest
 
 @pytest.fixture
 def sample_fixture():
-    """
-    Fixture: Sample Setup
+    """Fixture: Sample Setup.
 
     Provides: Test data and setup
     Cleanup: Automatic teardown
@@ -34,8 +32,7 @@ def sample_fixture():
 
 
 class TestEpicXStoryY:
-    """
-    Test Suite: Epic X - Story Y
+    """Test Suite: Epic X - Story Y.
 
     Epic: X (Epic Title)
     Story: X.Y (Story Title)
@@ -49,9 +46,8 @@ class TestEpicXStoryY:
 
     @pytest.mark.unit
     @pytest.mark.critical
-    def test_tc_X_Y_1_successful_operation(self, sample_fixture):
-        """
-        TC-X.Y.1: Story Title - Successful Operation
+    def test_tc_X_Y_1_successful_operation(self, sample_fixture) -> None:
+        """TC-X.Y.1: Story Title - Successful Operation.
 
         FR: FR-XXX
         Story: X.Y
@@ -73,9 +69,8 @@ class TestEpicXStoryY:
         assert result == "value"
 
     @pytest.mark.unit
-    def test_tc_X_Y_2_alternative_scenario(self, sample_fixture):
-        """
-        TC-X.Y.2: Story Title - Alternative Scenario
+    def test_tc_X_Y_2_alternative_scenario(self, sample_fixture) -> None:
+        """TC-X.Y.2: Story Title - Alternative Scenario.
 
         FR: FR-XXX
         Story: X.Y
@@ -101,9 +96,8 @@ class TestEpicXStoryY:
     # ========================================================================
 
     @pytest.mark.unit
-    def test_tc_X_Y_3_error_handling(self, sample_fixture):
-        """
-        TC-X.Y.3: Story Title - Error Handling
+    def test_tc_X_Y_3_error_handling(self, sample_fixture) -> None:
+        """TC-X.Y.3: Story Title - Error Handling.
 
         FR: FR-XXX
         Story: X.Y
@@ -120,16 +114,15 @@ class TestEpicXStoryY:
 
         # Act & Assert (intentionally subscript None to raise TypeError)
         with pytest.raises(TypeError):
-            _ = cast(Any, data)["key"]  # runtime: data is None -> TypeError
+            _ = cast("Any", data)["key"]  # runtime: data is None -> TypeError
 
     # ========================================================================
     # EDGE CASE TEST CASES
     # ========================================================================
 
     @pytest.mark.unit
-    def test_tc_X_Y_4_edge_case_empty_input(self):
-        """
-        TC-X.Y.4: Story Title - Edge Case Empty Input
+    def test_tc_X_Y_4_edge_case_empty_input(self) -> None:
+        """TC-X.Y.4: Story Title - Edge Case Empty Input.
 
         FR: FR-XXX
         Story: X.Y
@@ -150,9 +143,8 @@ class TestEpicXStoryY:
         assert result == "default"
 
     @pytest.mark.unit
-    def test_tc_X_Y_5_edge_case_boundary_value(self):
-        """
-        TC-X.Y.5: Story Title - Edge Case Boundary Value
+    def test_tc_X_Y_5_edge_case_boundary_value(self) -> None:
+        """TC-X.Y.5: Story Title - Edge Case Boundary Value.
 
         FR: FR-XXX
         Story: X.Y
@@ -179,17 +171,15 @@ class TestEpicXStoryY:
 
 
 class TestEpicXStoryYIntegration:
-    """
-    Integration Test Suite: Epic X - Story Y
+    """Integration Test Suite: Epic X - Story Y.
 
     Tests interaction between multiple components
     """
 
     @pytest.mark.integration
     @pytest.mark.critical
-    def test_tc_X_Y_6_component_interaction(self, sample_fixture):
-        """
-        TC-X.Y.6: Story Title - Component Interaction
+    def test_tc_X_Y_6_component_interaction(self, sample_fixture) -> None:
+        """TC-X.Y.6: Story Title - Component Interaction.
 
         FR: FR-XXX
         Story: X.Y
@@ -216,8 +206,7 @@ class TestEpicXStoryYIntegration:
 
 
 class TestParametrized:
-    """
-    Parametrized Test Suite
+    """Parametrized Test Suite.
 
     Tests multiple scenarios with different inputs
     """
@@ -231,9 +220,8 @@ class TestParametrized:
             ("", ""),
         ],
     )
-    def test_tc_X_Y_7_parametrized_scenarios(self, input_val, expected):
-        """
-        TC-X.Y.7: Story Title - Parametrized Scenarios
+    def test_tc_X_Y_7_parametrized_scenarios(self, input_val, expected) -> None:
+        """TC-X.Y.7: Story Title - Parametrized Scenarios.
 
         FR: FR-XXX
         Story: X.Y

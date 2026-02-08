@@ -1,5 +1,4 @@
-"""
-Comprehensive test suite for TraceRTM Storage Module - Part 2.
+"""Comprehensive test suite for TraceRTM Storage Module - Part 2.
 
 This file continues comprehensive testing for:
 - local_storage.py - LocalStorageManager, ProjectStorage, ItemStorage
@@ -37,7 +36,7 @@ from tracertm.storage.local_storage import (
 class TestLocalStorageManager:
     """Test local storage manager initialization and core functionality."""
 
-    def test_initialization_default_dir(self):
+    def test_initialization_default_dir(self) -> None:
         """Test initialization with default directory."""
         with tempfile.TemporaryDirectory() as tmpdir:
             manager = LocalStorageManager(base_dir=Path(tmpdir))
@@ -46,7 +45,7 @@ class TestLocalStorageManager:
             assert manager.db_path.exists()
             assert manager.projects_dir.exists()
 
-    def test_initialization_creates_schema(self):
+    def test_initialization_creates_schema(self) -> None:
         """Test initialization creates database schema."""
         with tempfile.TemporaryDirectory() as tmpdir:
             manager = LocalStorageManager(base_dir=Path(tmpdir))
@@ -61,7 +60,7 @@ class TestLocalStorageManager:
             assert "sync_state" in tables
             assert "items_fts" in tables
 
-    def test_get_session(self):
+    def test_get_session(self) -> None:
         """Test getting database session."""
         with tempfile.TemporaryDirectory() as tmpdir:
             manager = LocalStorageManager(base_dir=Path(tmpdir))
@@ -71,7 +70,7 @@ class TestLocalStorageManager:
             assert session is not None
             session.close()
 
-    def test_is_trace_project_true(self):
+    def test_is_trace_project_true(self) -> None:
         """Test is_trace_project returns True for .trace/ directory."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -82,7 +81,7 @@ class TestLocalStorageManager:
 
             assert manager.is_trace_project(tmpdir) is True
 
-    def test_is_trace_project_false(self):
+    def test_is_trace_project_false(self) -> None:
         """Test is_trace_project returns False without .trace/."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -91,7 +90,7 @@ class TestLocalStorageManager:
 
             assert manager.is_trace_project(tmpdir) is False
 
-    def test_is_trace_project_with_file_path(self):
+    def test_is_trace_project_with_file_path(self) -> None:
         """Test is_trace_project works with file path."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -104,7 +103,7 @@ class TestLocalStorageManager:
 
             assert manager.is_trace_project(test_file) is True
 
-    def test_get_project_trace_dir_exists(self):
+    def test_get_project_trace_dir_exists(self) -> None:
         """Test getting .trace/ directory when it exists."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -117,7 +116,7 @@ class TestLocalStorageManager:
 
             assert result == trace_dir
 
-    def test_get_project_trace_dir_not_exists(self):
+    def test_get_project_trace_dir_not_exists(self) -> None:
         """Test getting .trace/ directory when it doesn't exist."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -128,14 +127,14 @@ class TestLocalStorageManager:
 
             assert result is None
 
-    def test_init_project_creates_structure(self):
+    def test_init_project_creates_structure(self) -> None:
         """Test init_project creates complete directory structure."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
             manager = LocalStorageManager(base_dir=tmpdir / "storage")
 
             trace_dir, project_id = manager.init_project(
-                tmpdir, project_name="Test Project", description="Test description"
+                tmpdir, project_name="Test Project", description="Test description",
             )
 
             assert trace_dir.exists()
@@ -150,14 +149,14 @@ class TestLocalStorageManager:
             assert (trace_dir / ".meta" / "links.yaml").exists()
             assert (trace_dir / ".meta" / "agents.yaml").exists()
 
-    def test_init_project_creates_project_yaml(self):
+    def test_init_project_creates_project_yaml(self) -> None:
         """Test init_project creates valid project.yaml."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
             manager = LocalStorageManager(base_dir=tmpdir / "storage")
 
             trace_dir, project_id = manager.init_project(
-                tmpdir, project_name="Test Project", description="Test description"
+                tmpdir, project_name="Test Project", description="Test description",
             )
 
             project_yaml_path = trace_dir / "project.yaml"
@@ -168,7 +167,7 @@ class TestLocalStorageManager:
             assert "counters" in config
             assert config["counters"]["epic"] == 0
 
-    def test_init_project_raises_if_exists(self):
+    def test_init_project_raises_if_exists(self) -> None:
         """Test init_project raises error if .trace/ already exists."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -181,7 +180,7 @@ class TestLocalStorageManager:
             with pytest.raises(ValueError, match="already initialized"):
                 manager.init_project(tmpdir)
 
-    def test_init_project_adds_gitignore(self):
+    def test_init_project_adds_gitignore(self) -> None:
         """Test init_project adds .gitignore entry."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -194,7 +193,7 @@ class TestLocalStorageManager:
             content = gitignore_path.read_text()
             assert ".trace/.meta/sync.yaml" in content
 
-    def test_register_project_existing(self):
+    def test_register_project_existing(self) -> None:
         """Test registering existing .trace/ project."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -208,7 +207,7 @@ class TestLocalStorageManager:
 
             assert project_id == original_id
 
-    def test_register_project_no_trace_dir(self):
+    def test_register_project_no_trace_dir(self) -> None:
         """Test register_project raises error without .trace/."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -217,7 +216,7 @@ class TestLocalStorageManager:
             with pytest.raises(ValueError, match="No .trace/"):
                 manager.register_project(tmpdir)
 
-    def test_register_project_generates_id_if_missing(self):
+    def test_register_project_generates_id_if_missing(self) -> None:
         """Test register_project generates ID if missing from project.yaml."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -236,7 +235,7 @@ class TestLocalStorageManager:
             config = yaml.safe_load(project_yaml.read_text())
             assert config["id"] == project_id
 
-    def test_get_project_counters(self):
+    def test_get_project_counters(self) -> None:
         """Test getting project counters."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -251,7 +250,7 @@ class TestLocalStorageManager:
             assert counters["test"] == 0
             assert counters["task"] == 0
 
-    def test_increment_project_counter(self):
+    def test_increment_project_counter(self) -> None:
         """Test incrementing project counter."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -270,7 +269,7 @@ class TestLocalStorageManager:
             assert counter == 2
             assert external_id == "EPIC-002"
 
-    def test_get_current_project_path_from_cwd(self):
+    def test_get_current_project_path_from_cwd(self) -> None:
         """Test getting current project path from working directory."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -289,7 +288,7 @@ class TestLocalStorageManager:
             finally:
                 os.chdir(original_cwd)
 
-    def test_get_current_project_path_not_found(self):
+    def test_get_current_project_path_not_found(self) -> None:
         """Test get_current_project_path returns None when not found."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -305,7 +304,7 @@ class TestLocalStorageManager:
             finally:
                 os.chdir(original_cwd)
 
-    def test_search_items_fts(self):
+    def test_search_items_fts(self) -> None:
         """Test full-text search for items."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -334,7 +333,7 @@ class TestLocalStorageManager:
                 # Add to FTS index
                 session.execute(
                     text(
-                        "INSERT INTO items_fts (item_id, title, description, item_type) VALUES (:item_id, :title, :description, :item_type)"
+                        "INSERT INTO items_fts (item_id, title, description, item_type) VALUES (:item_id, :title, :description, :item_type)",
                     ),
                     {
                         "item_id": item.id,
@@ -353,7 +352,7 @@ class TestLocalStorageManager:
             finally:
                 session.close()
 
-    def test_queue_sync_operation(self):
+    def test_queue_sync_operation(self) -> None:
         """Test queuing sync operation."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -366,7 +365,7 @@ class TestLocalStorageManager:
             assert len(queue) == 1
             assert queue[0]["entity_id"] == "item-123"
 
-    def test_get_sync_queue(self):
+    def test_get_sync_queue(self) -> None:
         """Test getting sync queue."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -380,7 +379,7 @@ class TestLocalStorageManager:
 
             assert len(queue) == 3
 
-    def test_clear_sync_queue_entry(self):
+    def test_clear_sync_queue_entry(self) -> None:
         """Test clearing specific queue entry."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -395,7 +394,7 @@ class TestLocalStorageManager:
             queue = manager.get_sync_queue()
             assert len(queue) == 0
 
-    def test_update_sync_state(self):
+    def test_update_sync_state(self) -> None:
         """Test updating sync state."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -407,7 +406,7 @@ class TestLocalStorageManager:
 
             assert value == "2024-01-01T12:00:00"
 
-    def test_get_sync_state_nonexistent(self):
+    def test_get_sync_state_nonexistent(self) -> None:
         """Test getting nonexistent sync state returns None."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -430,21 +429,21 @@ class TestProjectStorage:
             storage = manager.get_project_storage("test-project")
             yield storage
 
-    def test_initialization(self, project_storage):
+    def test_initialization(self, project_storage) -> None:
         """Test project storage initializes correctly."""
         assert project_storage.project_name == "test-project"
         assert project_storage.project_dir.exists()
         assert project_storage.epics_dir.exists()
         assert project_storage.stories_dir.exists()
 
-    def test_create_project(self, project_storage):
+    def test_create_project(self, project_storage) -> None:
         """Test creating a project."""
         project = project_storage.create_or_update_project(name="Test Project", description="Test description")
 
         assert project.name == "Test Project"
         assert project.description == "Test description"
 
-    def test_update_project(self, project_storage):
+    def test_update_project(self, project_storage) -> None:
         """Test updating existing project."""
         # Create
         project1 = project_storage.create_or_update_project(name="Test Project", description="Original")
@@ -455,7 +454,7 @@ class TestProjectStorage:
         assert project1.id == project2.id
         assert project2.description == "Updated"
 
-    def test_get_project(self, project_storage):
+    def test_get_project(self, project_storage) -> None:
         """Test getting project."""
         project_storage.create_or_update_project(name="Test Project")
 
@@ -464,7 +463,7 @@ class TestProjectStorage:
         assert project is not None
         assert project.name == "Test Project"
 
-    def test_get_project_nonexistent(self, project_storage):
+    def test_get_project_nonexistent(self, project_storage) -> None:
         """Test getting nonexistent project returns None."""
         project = project_storage.get_project()
 
@@ -485,7 +484,7 @@ class TestItemStorage:
             storage = project_storage.get_item_storage(project)
             yield storage
 
-    def test_create_item(self, item_storage):
+    def test_create_item(self, item_storage) -> None:
         """Test creating an item."""
         item = item_storage.create_item(
             title="Test Item",
@@ -501,10 +500,10 @@ class TestItemStorage:
         assert item.status == "todo"
         assert item.priority == "high"
 
-    def test_create_item_generates_markdown(self, item_storage):
+    def test_create_item_generates_markdown(self, item_storage) -> None:
         """Test creating item generates markdown file."""
         item = item_storage.create_item(
-            title="Test Epic", item_type="epic", external_id="EPIC-001", description="Test description"
+            title="Test Epic", item_type="epic", external_id="EPIC-001", description="Test description",
         )
 
         md_path = item_storage.project_storage.epics_dir / "EPIC-001.md"
@@ -512,7 +511,7 @@ class TestItemStorage:
         content = md_path.read_text()
         assert "Test Epic" in content
 
-    def test_update_item(self, item_storage):
+    def test_update_item(self, item_storage) -> None:
         """Test updating an item."""
         item = item_storage.create_item(title="Original Title", item_type="epic", external_id="EPIC-001")
 
@@ -521,12 +520,12 @@ class TestItemStorage:
         assert updated.title == "Updated Title"
         assert updated.status == "in_progress"
 
-    def test_update_item_nonexistent(self, item_storage):
+    def test_update_item_nonexistent(self, item_storage) -> None:
         """Test updating nonexistent item raises error."""
         with pytest.raises(ValueError, match="not found"):
             item_storage.update_item(item_id="nonexistent-id", title="New Title")
 
-    def test_delete_item(self, item_storage):
+    def test_delete_item(self, item_storage) -> None:
         """Test deleting an item (soft delete)."""
         item = item_storage.create_item(title="Test Item", item_type="epic", external_id="EPIC-001")
 
@@ -536,7 +535,7 @@ class TestItemStorage:
         deleted_item = item_storage.get_item(item.id)
         assert deleted_item.deleted_at is not None
 
-    def test_delete_item_removes_markdown(self, item_storage):
+    def test_delete_item_removes_markdown(self, item_storage) -> None:
         """Test deleting item removes markdown file."""
         item = item_storage.create_item(title="Test Item", item_type="epic", external_id="EPIC-001")
 
@@ -547,7 +546,7 @@ class TestItemStorage:
 
         assert not md_path.exists()
 
-    def test_get_item(self, item_storage):
+    def test_get_item(self, item_storage) -> None:
         """Test getting item by ID."""
         item = item_storage.create_item(title="Test Item", item_type="epic", external_id="EPIC-001")
 
@@ -556,13 +555,13 @@ class TestItemStorage:
         assert retrieved is not None
         assert retrieved.id == item.id
 
-    def test_get_item_nonexistent(self, item_storage):
+    def test_get_item_nonexistent(self, item_storage) -> None:
         """Test getting nonexistent item returns None."""
         result = item_storage.get_item("nonexistent-id")
 
         assert result is None
 
-    def test_list_items(self, item_storage):
+    def test_list_items(self, item_storage) -> None:
         """Test listing items."""
         for i in range(3):
             item_storage.create_item(title=f"Item {i}", item_type="epic", external_id=f"EPIC-{i:03d}")
@@ -571,7 +570,7 @@ class TestItemStorage:
 
         assert len(items) == 3
 
-    def test_list_items_with_type_filter(self, item_storage):
+    def test_list_items_with_type_filter(self, item_storage) -> None:
         """Test listing items with type filter."""
         item_storage.create_item(title="Epic", item_type="epic", external_id="EPIC-001")
         item_storage.create_item(title="Story", item_type="story", external_id="STORY-001")
@@ -581,7 +580,7 @@ class TestItemStorage:
         assert len(epics) == 1
         assert epics[0].item_type == "epic"
 
-    def test_list_items_with_status_filter(self, item_storage):
+    def test_list_items_with_status_filter(self, item_storage) -> None:
         """Test listing items with status filter."""
         item_storage.create_item(title="Item 1", item_type="epic", external_id="EPIC-001", status="todo")
         item_storage.create_item(title="Item 2", item_type="epic", external_id="EPIC-002", status="done")
@@ -591,7 +590,7 @@ class TestItemStorage:
         assert len(todo_items) == 1
         assert todo_items[0].status == "todo"
 
-    def test_create_link(self, item_storage):
+    def test_create_link(self, item_storage) -> None:
         """Test creating a traceability link."""
         item1 = item_storage.create_item(title="Source", item_type="epic", external_id="EPIC-001")
         item2 = item_storage.create_item(title="Target", item_type="story", external_id="STORY-001")
@@ -602,7 +601,7 @@ class TestItemStorage:
         assert link.target_item_id == item2.id
         assert link.link_type == "implements"
 
-    def test_delete_link(self, item_storage):
+    def test_delete_link(self, item_storage) -> None:
         """Test deleting a link."""
         item1 = item_storage.create_item(title="Source", item_type="epic", external_id="EPIC-001")
         item2 = item_storage.create_item(title="Target", item_type="story", external_id="STORY-001")
@@ -614,7 +613,7 @@ class TestItemStorage:
         links = item_storage.list_links(source_id=item1.id)
         assert len(links) == 0
 
-    def test_list_links(self, item_storage):
+    def test_list_links(self, item_storage) -> None:
         """Test listing links."""
         item1 = item_storage.create_item(title="Source", item_type="epic", external_id="EPIC-001")
         item2 = item_storage.create_item(title="Target 1", item_type="story", external_id="STORY-001")
@@ -627,7 +626,7 @@ class TestItemStorage:
 
         assert len(links) == 2
 
-    def test_list_links_with_type_filter(self, item_storage):
+    def test_list_links_with_type_filter(self, item_storage) -> None:
         """Test listing links with type filter."""
         item1 = item_storage.create_item(title="Source", item_type="epic", external_id="EPIC-001")
         item2 = item_storage.create_item(title="Target 1", item_type="story", external_id="STORY-001")
@@ -670,7 +669,7 @@ class TestFileWatcher:
 
             yield tmpdir, storage
 
-    def test_initialization(self, watcher_setup):
+    def test_initialization(self, watcher_setup) -> None:
         """Test file watcher initializes correctly."""
         project_path, storage = watcher_setup
 
@@ -681,7 +680,7 @@ class TestFileWatcher:
         assert watcher.debounce_delay == 0.5
         assert watcher.auto_sync is False
 
-    def test_initialization_no_trace_dir(self):
+    def test_initialization_no_trace_dir(self) -> None:
         """Test initialization raises error without .trace/."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -690,7 +689,7 @@ class TestFileWatcher:
             with pytest.raises(ValueError, match="No .trace/"):
                 TraceFileWatcher(tmpdir, storage)
 
-    def test_start_creates_observer(self, watcher_setup):
+    def test_start_creates_observer(self, watcher_setup) -> None:
         """Test start creates and starts observer."""
         project_path, storage = watcher_setup
         watcher = TraceFileWatcher(project_path, storage)
@@ -702,7 +701,7 @@ class TestFileWatcher:
 
         watcher.stop()
 
-    def test_stop_cleans_up(self, watcher_setup):
+    def test_stop_cleans_up(self, watcher_setup) -> None:
         """Test stop cleans up observer."""
         project_path, storage = watcher_setup
         watcher = TraceFileWatcher(project_path, storage)
@@ -713,7 +712,7 @@ class TestFileWatcher:
         assert watcher._observer is None
         assert not watcher.is_running()
 
-    def test_is_running(self, watcher_setup):
+    def test_is_running(self, watcher_setup) -> None:
         """Test is_running returns correct state."""
         project_path, storage = watcher_setup
         watcher = TraceFileWatcher(project_path, storage)
@@ -726,7 +725,7 @@ class TestFileWatcher:
         watcher.stop()
         assert watcher.is_running() is False
 
-    def test_get_stats(self, watcher_setup):
+    def test_get_stats(self, watcher_setup) -> None:
         """Test getting watcher statistics."""
         project_path, storage = watcher_setup
         watcher = TraceFileWatcher(project_path, storage)
@@ -738,7 +737,7 @@ class TestFileWatcher:
         assert "changes_by_type" in stats
         assert "is_running" in stats
 
-    def test_debounce_event(self, watcher_setup):
+    def test_debounce_event(self, watcher_setup) -> None:
         """Test event debouncing."""
         project_path, storage = watcher_setup
         watcher = TraceFileWatcher(project_path, storage, debounce_ms=100)
@@ -750,7 +749,7 @@ class TestFileWatcher:
         # Check pending count increased
         assert watcher._events_pending > 0
 
-    def test_handle_item_change_create(self, watcher_setup):
+    def test_handle_item_change_create(self, watcher_setup) -> None:
         """Test handling item creation."""
         project_path, storage = watcher_setup
         watcher = TraceFileWatcher(project_path, storage)
@@ -781,7 +780,7 @@ status: todo
         finally:
             session.close()
 
-    def test_handle_item_change_delete(self, watcher_setup):
+    def test_handle_item_change_delete(self, watcher_setup) -> None:
         """Test handling item deletion."""
         project_path, storage = watcher_setup
         watcher = TraceFileWatcher(project_path, storage)
@@ -839,7 +838,7 @@ class TestTraceEventHandler:
 
             yield handler, watcher, tmpdir
 
-    def test_on_created_processes_md_file(self, handler_setup):
+    def test_on_created_processes_md_file(self, handler_setup) -> None:
         """Test on_created processes .md files."""
         handler, watcher, tmpdir = handler_setup
 
@@ -855,7 +854,7 @@ class TestTraceEventHandler:
         # Check event was debounced
         assert watcher._events_pending > 0
 
-    def test_on_created_ignores_directory(self, handler_setup):
+    def test_on_created_ignores_directory(self, handler_setup) -> None:
         """Test on_created ignores directories."""
         handler, watcher, tmpdir = handler_setup
 
@@ -868,7 +867,7 @@ class TestTraceEventHandler:
 
         assert watcher._events_pending == initial_pending
 
-    def test_on_modified_processes_yaml_file(self, handler_setup):
+    def test_on_modified_processes_yaml_file(self, handler_setup) -> None:
         """Test on_modified processes .yaml files."""
         handler, watcher, tmpdir = handler_setup
 
@@ -883,7 +882,7 @@ class TestTraceEventHandler:
 
         assert watcher._events_pending > 0
 
-    def test_should_process_md_files(self, handler_setup):
+    def test_should_process_md_files(self, handler_setup) -> None:
         """Test _should_process returns True for .md files."""
         handler, watcher, tmpdir = handler_setup
 
@@ -891,7 +890,7 @@ class TestTraceEventHandler:
 
         assert handler._should_process(test_file) is True
 
-    def test_should_process_yaml_files(self, handler_setup):
+    def test_should_process_yaml_files(self, handler_setup) -> None:
         """Test _should_process returns True for .yaml files."""
         handler, watcher, tmpdir = handler_setup
 
@@ -899,7 +898,7 @@ class TestTraceEventHandler:
 
         assert handler._should_process(test_file) is True
 
-    def test_should_process_ignores_other_extensions(self, handler_setup):
+    def test_should_process_ignores_other_extensions(self, handler_setup) -> None:
         """Test _should_process returns False for other extensions."""
         handler, watcher, tmpdir = handler_setup
 
@@ -907,7 +906,7 @@ class TestTraceEventHandler:
 
         assert handler._should_process(test_file) is False
 
-    def test_should_process_ignores_sync_yaml(self, handler_setup):
+    def test_should_process_ignores_sync_yaml(self, handler_setup) -> None:
         """Test _should_process ignores sync.yaml."""
         handler, watcher, tmpdir = handler_setup
 
@@ -924,7 +923,7 @@ class TestTraceEventHandler:
 class TestStorageIntegration:
     """Integration tests for storage module components working together."""
 
-    def test_full_workflow_create_project_and_items(self):
+    def test_full_workflow_create_project_and_items(self) -> None:
         """Test complete workflow: create project, add items, link them."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -942,11 +941,11 @@ class TestStorageIntegration:
 
             # Create items
             epic = item_storage.create_item(
-                title="Test Epic", item_type="epic", external_id="EPIC-001", description="Epic description"
+                title="Test Epic", item_type="epic", external_id="EPIC-001", description="Epic description",
             )
 
             story = item_storage.create_item(
-                title="Test Story", item_type="story", external_id="STORY-001", parent_id=str(epic.id)
+                title="Test Story", item_type="story", external_id="STORY-001", parent_id=str(epic.id),
             )
 
             # Create link
@@ -959,7 +958,7 @@ class TestStorageIntegration:
             assert (trace_dir / "epics" / "EPIC-001.md").exists()
             assert (trace_dir / "stories" / "STORY-001.md").exists()
 
-    def test_index_project_from_markdown_files(self):
+    def test_index_project_from_markdown_files(self) -> None:
         """Test indexing project from existing markdown files."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)

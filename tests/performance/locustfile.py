@@ -1,5 +1,4 @@
-"""
-Locust load testing configuration for trace management system.
+"""Locust load testing configuration for trace management system.
 
 This file defines user behaviors for load testing:
 - Item CRUD operations
@@ -20,7 +19,7 @@ from locust import HttpUser, TaskSet, constant, task  # type: ignore[import-unty
 class UserBehavior(TaskSet):
     """Define user behavior and tasks."""
 
-    def on_start(self):
+    def on_start(self) -> None:
         """Called when a user is spawned."""
         self.project_id = "load-test-proj"
         self.item_ids = []
@@ -31,7 +30,7 @@ class UserBehavior(TaskSet):
     # ============================================================
 
     @task(3)
-    def create_item(self):
+    def create_item(self) -> None:
         """Create a new item."""
         item_id = f"item-{int(time.time() * 1000)}-{random.randint(0, 10000)}"
         payload = {
@@ -52,7 +51,7 @@ class UserBehavior(TaskSet):
                 response.failure(f"Failed with status {response.status_code}")
 
     @task(2)
-    def read_item(self):
+    def read_item(self) -> None:
         """Read an item."""
         if self.item_ids:
             item_id = random.choice(self.item_ids)
@@ -63,7 +62,7 @@ class UserBehavior(TaskSet):
                     response.failure(f"Failed with status {response.status_code}")
 
     @task(2)
-    def update_item(self):
+    def update_item(self) -> None:
         """Update an item."""
         if self.item_ids:
             item_id = random.choice(self.item_ids)
@@ -79,7 +78,7 @@ class UserBehavior(TaskSet):
                     response.failure(f"Failed with status {response.status_code}")
 
     @task(1)
-    def delete_item(self):
+    def delete_item(self) -> None:
         """Delete an item."""
         if self.item_ids:
             item_id = self.item_ids.pop(0)
@@ -94,7 +93,7 @@ class UserBehavior(TaskSet):
     # ============================================================
 
     @task(2)
-    def list_items(self):
+    def list_items(self) -> None:
         """List items with pagination."""
         params = {
             "project_id": self.project_id,
@@ -109,7 +108,7 @@ class UserBehavior(TaskSet):
                 response.failure(f"Failed with status {response.status_code}")
 
     @task(1)
-    def search_items(self):
+    def search_items(self) -> None:
         """Search items by query."""
         search_terms = ["feature", "bug", "test", "requirement"]
         query = random.choice(search_terms)
@@ -130,7 +129,7 @@ class UserBehavior(TaskSet):
     # ============================================================
 
     @task(2)
-    def create_link(self):
+    def create_link(self) -> None:
         """Create a link between items."""
         if len(self.item_ids) >= 2:
             link_id = f"link-{int(time.time() * 1000)}-{random.randint(0, 10000)}"
@@ -154,7 +153,7 @@ class UserBehavior(TaskSet):
                         response.failure(f"Failed with status {response.status_code}")
 
     @task(1)
-    def list_links(self):
+    def list_links(self) -> None:
         """List links for a project."""
         params = {
             "project_id": self.project_id,

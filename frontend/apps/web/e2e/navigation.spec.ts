@@ -24,7 +24,7 @@ test.describe('Application Navigation', () => {
     const errorHeading = page.getByRole('heading', { name: /system anomaly/i });
 
     // Wait for either dashboard or error to appear
-    await expect(dashboardHeading.or(errorHeading)).toBeVisible({ timeout: 10000 });
+    await expect(dashboardHeading.or(errorHeading)).toBeVisible({ timeout: 10_000 });
 
     if (await errorHeading.isVisible()) {
       console.log('Dashboard error state - retrying');
@@ -52,7 +52,7 @@ test.describe('Application Navigation', () => {
     const projectsHeading = page.getByRole('heading', {
       name: /project registry/i,
     });
-    await expect(projectsHeading).toBeVisible({ timeout: 10000 });
+    await expect(projectsHeading).toBeVisible({ timeout: 10_000 });
 
     // Wait for project cards to load
     const projectCards = page.locator('a >> text=/TraceRTM|Pokemon|E-Commerce|Banking/i');
@@ -73,7 +73,7 @@ test.describe('Application Navigation', () => {
 
     // Items table view should be visible - look for "Node Registry" heading
     const nodeHeading = page.getByRole('heading', { name: /node registry/i });
-    await expect(nodeHeading).toBeVisible({ timeout: 10000 });
+    await expect(nodeHeading).toBeVisible({ timeout: 10_000 });
   });
 
   test('should navigate to agents view', async ({ page }) => {
@@ -90,7 +90,7 @@ test.describe('Application Navigation', () => {
 
     // Agents heading should be visible - "Agent Cluster"
     const agentsHeading = page.getByRole('heading', { name: /agent cluster/i });
-    await expect(agentsHeading).toBeVisible({ timeout: 10000 });
+    await expect(agentsHeading).toBeVisible({ timeout: 10_000 });
   });
 
   test('should navigate to graph view', async ({ page }) => {
@@ -202,7 +202,7 @@ test.describe('Breadcrumb Navigation', () => {
       'nav[aria-label="breadcrumb"], nav[aria-label="Breadcrumb"], .breadcrumb',
     );
 
-    await expect(breadcrumb).toBeVisible({ timeout: 10000 });
+    await expect(breadcrumb).toBeVisible({ timeout: 10_000 });
   });
 });
 

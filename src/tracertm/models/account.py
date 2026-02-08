@@ -1,9 +1,9 @@
-"""
-Account model for TraceRTM.
+"""Account model for TraceRTM.
 
 Accounts represent workspaces/organizations that can have multiple users.
 """
 
+from collections import UserString
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from sqlalchemy import String
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from tracertm.models.account_user import AccountUser
 
 
-class AccountType(str):
+class AccountType(UserString):
     """Account type enumeration."""
 
     PERSONAL = "personal"
@@ -24,8 +24,7 @@ class AccountType(str):
 
 
 class Account(Base, TimestampMixin):
-    """
-    Account model representing a workspace/organization.
+    """Account model representing a workspace/organization.
 
     An account can have multiple users and projects.
     """
@@ -43,7 +42,7 @@ class Account(Base, TimestampMixin):
 
     # Relationships
     account_users: Mapped[list["AccountUser"]] = relationship(
-        "AccountUser", back_populates="account", cascade="all, delete-orphan"
+        "AccountUser", back_populates="account", cascade="all, delete-orphan",
     )
     # projects: Mapped[list["Project"]] = relationship(
     #     "Project", back_populates="account", cascade="all, delete-orphan"

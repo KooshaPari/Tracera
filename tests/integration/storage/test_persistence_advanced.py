@@ -1,5 +1,4 @@
-"""
-Comprehensive integration test suite for Storage and Persistence.
+"""Comprehensive integration test suite for Storage and Persistence.
 
 Tests advanced storage operations including:
 - LocalStorageManager: File operations, database setup
@@ -138,13 +137,13 @@ def sync_engine(db_connection, mock_api_client, storage_manager):
 class TestLocalFileStorageOperations:
     """Tests for local file storage operations."""
 
-    def test_storage_manager_initialization(self, storage_manager, temp_storage_dir):
+    def test_storage_manager_initialization(self, storage_manager, temp_storage_dir) -> None:
         """Test storage manager initializes correctly."""
         assert storage_manager.base_dir == temp_storage_dir
         assert storage_manager.base_dir.exists()
         assert storage_manager.db_path.exists()
 
-    def test_storage_creates_database(self, temp_storage_dir):
+    def test_storage_creates_database(self, temp_storage_dir) -> None:
         """Test that storage creates SQLite database."""
         manager = LocalStorageManager(base_dir=temp_storage_dir)
 
@@ -152,7 +151,7 @@ class TestLocalFileStorageOperations:
         assert db_file.exists()
         assert db_file.stat().st_size > 0
 
-    def test_storage_creates_tables(self, storage_manager):
+    def test_storage_creates_tables(self, storage_manager) -> None:
         """Test that storage creates required tables."""
         with storage_manager.SessionLocal() as session:
             # Check project_registry table
@@ -163,12 +162,12 @@ class TestLocalFileStorageOperations:
             result = session.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='sync_queue'")
             assert result.fetchone() is not None
 
-    def test_storage_projects_directory_creation(self, storage_manager, temp_storage_dir):
+    def test_storage_projects_directory_creation(self, storage_manager, temp_storage_dir) -> None:
         """Test that storage creates projects directory."""
         projects_dir = temp_storage_dir / "projects"
         assert projects_dir.exists()
 
-    def test_write_project_metadata(self, storage_manager):
+    def test_write_project_metadata(self, storage_manager) -> None:
         """Test writing project metadata."""
         with storage_manager.SessionLocal() as session:
             session.execute(
@@ -177,7 +176,7 @@ class TestLocalFileStorageOperations:
                 (id, name, path, created_at, updated_at)
                 VALUES ('test-proj', 'Test Project', '/path/to/project',
                         datetime('now'), datetime('now'))
-                """
+                """,
             )
             session.commit()
 
@@ -186,7 +185,7 @@ class TestLocalFileStorageOperations:
             assert row is not None
             assert row[0] == "Test Project"
 
-    def test_read_project_metadata(self, storage_manager):
+    def test_read_project_metadata(self, storage_manager) -> None:
         """Test reading project metadata."""
         with storage_manager.SessionLocal() as session:
             session.execute(
@@ -195,7 +194,7 @@ class TestLocalFileStorageOperations:
                 (id, name, path, created_at, updated_at)
                 VALUES ('proj-1', 'Project 1', '/path/1',
                         datetime('now'), datetime('now'))
-                """
+                """,
             )
             session.commit()
 
@@ -203,7 +202,7 @@ class TestLocalFileStorageOperations:
             row = result.fetchone()
             assert row is not None
 
-    def test_update_project_metadata(self, storage_manager):
+    def test_update_project_metadata(self, storage_manager) -> None:
         """Test updating project metadata."""
         with storage_manager.SessionLocal() as session:
             session.execute(
@@ -212,7 +211,7 @@ class TestLocalFileStorageOperations:
                 (id, name, path, created_at, updated_at)
                 VALUES ('proj-1', 'Original', '/path/1',
                         datetime('now'), datetime('now'))
-                """
+                """,
             )
             session.commit()
 
@@ -221,14 +220,14 @@ class TestLocalFileStorageOperations:
                 UPDATE project_registry
                 SET name = 'Updated'
                 WHERE id = 'proj-1'
-                """
+                """,
             )
             session.commit()
 
             result = session.execute("SELECT name FROM project_registry WHERE id = 'proj-1'")
             assert result.fetchone()[0] == "Updated"
 
-    def test_delete_project_metadata(self, storage_manager):
+    def test_delete_project_metadata(self, storage_manager) -> None:
         """Test deleting project metadata."""
         with storage_manager.SessionLocal() as session:
             session.execute(
@@ -237,7 +236,7 @@ class TestLocalFileStorageOperations:
                 (id, name, path, created_at, updated_at)
                 VALUES ('proj-to-delete', 'To Delete', '/path',
                         datetime('now'), datetime('now'))
-                """
+                """,
             )
             session.commit()
 
@@ -256,7 +255,7 @@ class TestLocalFileStorageOperations:
 class TestSyncEngineStatePersistence:
     """Tests for sync engine state persistence."""
 
-    def test_sync_queue_creation(self, storage_manager):
+    def test_sync_queue_creation(self, storage_manager) -> None:
         """Test adding items to sync queue."""
         with storage_manager.SessionLocal() as session:
             session.execute(
@@ -265,14 +264,14 @@ class TestSyncEngineStatePersistence:
                 (entity_type, entity_id, operation, payload, created_at)
                 VALUES ('item', 'item-1', 'CREATE',
                         '{"title": "Test"}', datetime('now'))
-                """
+                """,
             )
             session.commit()
 
             result = session.execute("SELECT COUNT(*) FROM sync_queue")
             assert result.scalar() == 1
 
-    def test_sync_queue_retrieval(self, storage_manager):
+    def test_sync_queue_retrieval(self, storage_manager) -> None:
         """Test retrieving items from sync queue."""
         with storage_manager.SessionLocal() as session:
             # Insert multiple items
@@ -283,14 +282,14 @@ class TestSyncEngineStatePersistence:
                     (entity_type, entity_id, operation, payload, created_at)
                     VALUES ('item', 'item-{i}', 'CREATE',
                             '{{"title": "Item {i}"}}', datetime('now'))
-                    """
+                    """,
                 )
             session.commit()
 
             result = session.execute("SELECT COUNT(*) FROM sync_queue")
             assert result.scalar() == 3
 
-    def test_sync_queue_clearing(self, storage_manager):
+    def test_sync_queue_clearing(self, storage_manager) -> None:
         """Test clearing sync queue after successful sync."""
         with storage_manager.SessionLocal() as session:
             # Insert items
@@ -301,7 +300,7 @@ class TestSyncEngineStatePersistence:
                     (entity_type, entity_id, operation, payload, created_at)
                     VALUES ('item', 'item-{i}', 'CREATE',
                             '{{"title": "Item {i}"}}', datetime('now'))
-                    """
+                    """,
                 )
             session.commit()
 
@@ -312,7 +311,7 @@ class TestSyncEngineStatePersistence:
             result = session.execute("SELECT COUNT(*) FROM sync_queue")
             assert result.scalar() == 0
 
-    def test_sync_queue_retry_count(self, storage_manager):
+    def test_sync_queue_retry_count(self, storage_manager) -> None:
         """Test retry count tracking in sync queue."""
         with storage_manager.SessionLocal() as session:
             session.execute(
@@ -321,14 +320,14 @@ class TestSyncEngineStatePersistence:
                 (entity_type, entity_id, operation, payload, created_at, retry_count)
                 VALUES ('item', 'item-1', 'CREATE',
                         '{"title": "Test"}', datetime('now'), 2)
-                """
+                """,
             )
             session.commit()
 
             result = session.execute("SELECT retry_count FROM sync_queue WHERE entity_id = 'item-1'")
             assert result.scalar() == 2
 
-    def test_sync_queue_failure_tracking(self, storage_manager):
+    def test_sync_queue_failure_tracking(self, storage_manager) -> None:
         """Test tracking failed sync operations."""
         with storage_manager.SessionLocal() as session:
             # Insert failed operation
@@ -338,7 +337,7 @@ class TestSyncEngineStatePersistence:
                 (entity_type, entity_id, operation, payload, created_at, retry_count)
                 VALUES ('item', 'item-1', 'CREATE',
                         '{}', datetime('now'), 5)
-                """
+                """,
             )
             session.commit()
 
@@ -355,7 +354,7 @@ class TestSyncEngineStatePersistence:
 class TestDataSerializationDeserialization:
     """Tests for data serialization/deserialization."""
 
-    def test_serialize_item_metadata(self):
+    def test_serialize_item_metadata(self) -> None:
         """Test serializing item metadata to JSON."""
         item_data = {
             "id": "item-1",
@@ -369,7 +368,7 @@ class TestDataSerializationDeserialization:
         assert isinstance(serialized, str)
         assert "item-1" in serialized
 
-    def test_deserialize_item_metadata(self):
+    def test_deserialize_item_metadata(self) -> None:
         """Test deserializing item metadata from JSON."""
         json_data = '{"id": "item-1", "title": "Test", "status": "todo"}'
 
@@ -377,14 +376,14 @@ class TestDataSerializationDeserialization:
         assert deserialized["id"] == "item-1"
         assert deserialized["title"] == "Test"
 
-    def test_serialize_link_metadata(self):
+    def test_serialize_link_metadata(self) -> None:
         """Test serializing link metadata."""
         link_data = {"source_id": "item-1", "target_id": "item-2", "type": "depends_on", "strength": 0.9}
 
         serialized = json.dumps(link_data)
         assert "source_id" in serialized
 
-    def test_deserialize_link_metadata(self):
+    def test_deserialize_link_metadata(self) -> None:
         """Test deserializing link metadata."""
         json_data = '{"source_id": "item-1", "target_id": "item-2", "type": "depends_on"}'
 
@@ -392,7 +391,7 @@ class TestDataSerializationDeserialization:
         assert deserialized["source_id"] == "item-1"
         assert deserialized["type"] == "depends_on"
 
-    def test_serialize_complex_structures(self):
+    def test_serialize_complex_structures(self) -> None:
         """Test serializing complex nested structures."""
         complex_data = {
             "items": [{"id": "item-1", "title": "Item 1"}, {"id": "item-2", "title": "Item 2"}],
@@ -405,7 +404,7 @@ class TestDataSerializationDeserialization:
         assert len(deserialized["items"]) == 2
         assert deserialized["links"][0]["type"] == "depends_on"
 
-    def test_round_trip_serialization(self):
+    def test_round_trip_serialization(self) -> None:
         """Test serialization and deserialization round-trip."""
         original = {"id": "item-1", "title": "Test", "nested": {"key": "value"}, "list": [1, 2, 3]}
 
@@ -423,7 +422,7 @@ class TestDataSerializationDeserialization:
 class TestFileIOErrorHandling:
     """Tests for file I/O error handling."""
 
-    def test_handle_database_connection_error(self, temp_storage_dir):
+    def test_handle_database_connection_error(self, temp_storage_dir) -> None:
         """Test handling database connection errors."""
         # Create manager with invalid path to trigger error scenarios
         manager = LocalStorageManager(base_dir=temp_storage_dir)
@@ -432,7 +431,7 @@ class TestFileIOErrorHandling:
         with manager.SessionLocal() as session:
             assert session is not None
 
-    def test_handle_missing_database_file(self, temp_storage_dir):
+    def test_handle_missing_database_file(self, temp_storage_dir) -> None:
         """Test handling missing database file."""
         manager = LocalStorageManager(base_dir=temp_storage_dir)
 
@@ -444,7 +443,7 @@ class TestFileIOErrorHandling:
         manager = LocalStorageManager(base_dir=temp_storage_dir)
         assert manager.db_path.exists()
 
-    def test_handle_corrupted_json_payload(self, storage_manager):
+    def test_handle_corrupted_json_payload(self, storage_manager) -> None:
         """Test handling corrupted JSON in sync queue."""
         with storage_manager.SessionLocal() as session:
             # Insert invalid JSON
@@ -454,7 +453,7 @@ class TestFileIOErrorHandling:
                 (entity_type, entity_id, operation, payload, created_at)
                 VALUES ('item', 'item-1', 'CREATE',
                         'invalid json {', datetime('now'))
-                """
+                """,
             )
             session.commit()
 
@@ -463,7 +462,7 @@ class TestFileIOErrorHandling:
             row = result.fetchone()
             assert row is not None
 
-    def test_handle_transaction_rollback(self, storage_manager):
+    def test_handle_transaction_rollback(self, storage_manager) -> None:
         """Test transaction rollback on error."""
         with storage_manager.SessionLocal() as session:
             try:
@@ -474,7 +473,7 @@ class TestFileIOErrorHandling:
                     (entity_type, entity_id, operation, payload, created_at)
                     VALUES ('item', 'item-1', 'CREATE',
                             '{}', datetime('now'))
-                    """
+                    """,
                 )
                 # Simulate error - constraint violation won't occur
                 session.commit()
@@ -486,7 +485,7 @@ class TestFileIOErrorHandling:
             # At least 1 should be there from successful insert
             assert result.scalar() >= 0
 
-    def test_handle_concurrent_access_conflicts(self, storage_manager):
+    def test_handle_concurrent_access_conflicts(self, storage_manager) -> None:
         """Test handling concurrent database access."""
         with storage_manager.SessionLocal() as session1, storage_manager.SessionLocal() as session2:
             # Both sessions can access same database
@@ -496,7 +495,7 @@ class TestFileIOErrorHandling:
                     (entity_type, entity_id, operation, payload, created_at)
                     VALUES ('item', 'item-1', 'CREATE',
                             '{}', datetime('now'))
-                    """
+                    """,
             )
             session1.commit()
 
@@ -512,7 +511,7 @@ class TestFileIOErrorHandling:
 class TestConcurrentAccessPatterns:
     """Tests for concurrent access to storage."""
 
-    def test_concurrent_writes_to_queue(self, storage_manager):
+    def test_concurrent_writes_to_queue(self, storage_manager) -> None:
         """Test concurrent writes to sync queue."""
         num_operations = 10
 
@@ -524,7 +523,7 @@ class TestConcurrentAccessPatterns:
                     (entity_type, entity_id, operation, payload, created_at)
                     VALUES ('item', 'item-{i}', 'CREATE',
                             '{{"title": "Item {i}"}}', datetime('now'))
-                    """
+                    """,
                 )
                 session.commit()
 
@@ -532,7 +531,7 @@ class TestConcurrentAccessPatterns:
             result = session.execute("SELECT COUNT(*) FROM sync_queue")
             assert result.scalar() == num_operations
 
-    def test_concurrent_reads_from_queue(self, storage_manager):
+    def test_concurrent_reads_from_queue(self, storage_manager) -> None:
         """Test concurrent reads from sync queue."""
         # Insert items
         with storage_manager.SessionLocal() as session:
@@ -543,7 +542,7 @@ class TestConcurrentAccessPatterns:
                     (entity_type, entity_id, operation, payload, created_at)
                     VALUES ('item', 'item-{i}', 'CREATE',
                             '{{"title": "Item {i}"}}', datetime('now'))
-                    """
+                    """,
                 )
             session.commit()
 
@@ -553,7 +552,7 @@ class TestConcurrentAccessPatterns:
                 result = session.execute("SELECT COUNT(*) FROM sync_queue")
                 assert result.scalar() == 5
 
-    def test_concurrent_read_write_mixed(self, storage_manager):
+    def test_concurrent_read_write_mixed(self, storage_manager) -> None:
         """Test mixed concurrent reads and writes."""
         with storage_manager.SessionLocal() as session1:
             # Write
@@ -563,7 +562,7 @@ class TestConcurrentAccessPatterns:
                 (entity_type, entity_id, operation, payload, created_at)
                 VALUES ('item', 'item-1', 'CREATE',
                         '{}', datetime('now'))
-                """
+                """,
             )
             session1.commit()
 
@@ -581,7 +580,7 @@ class TestConcurrentAccessPatterns:
 class TestLargeDataHandling:
     """Tests for handling large amounts of data."""
 
-    def test_handle_large_payload(self, storage_manager):
+    def test_handle_large_payload(self, storage_manager) -> None:
         """Test handling large JSON payloads."""
         large_payload = json.dumps({"items": [{"id": f"item-{i}", "content": "x" * 1000} for i in range(100)]})
 
@@ -601,7 +600,7 @@ class TestLargeDataHandling:
             size = result.scalar()
             assert size > 100000
 
-    def test_handle_many_queue_items(self, storage_manager):
+    def test_handle_many_queue_items(self, storage_manager) -> None:
         """Test handling many items in sync queue."""
         num_items = 1000
 
@@ -613,14 +612,14 @@ class TestLargeDataHandling:
                     (entity_type, entity_id, operation, payload, created_at)
                     VALUES ('item', 'item-{i}', 'CREATE',
                             '{{"index": {i}}}', datetime('now'))
-                    """
+                    """,
                 )
             session.commit()
 
             result = session.execute("SELECT COUNT(*) FROM sync_queue")
             assert result.scalar() == num_items
 
-    def test_handle_many_projects(self, storage_manager):
+    def test_handle_many_projects(self, storage_manager) -> None:
         """Test handling many registered projects."""
         num_projects = 100
 
@@ -632,7 +631,7 @@ class TestLargeDataHandling:
                     (id, name, path, created_at, updated_at)
                     VALUES ('proj-{i}', 'Project {i}', '/path/{i}',
                             datetime('now'), datetime('now'))
-                    """
+                    """,
                 )
             session.commit()
 
@@ -648,7 +647,7 @@ class TestLargeDataHandling:
 class TestRecoveryMechanisms:
     """Tests for data recovery mechanisms."""
 
-    def test_recover_from_incomplete_sync(self, storage_manager):
+    def test_recover_from_incomplete_sync(self, storage_manager) -> None:
         """Test recovering from incomplete sync operations."""
         with storage_manager.SessionLocal() as session:
             # Insert operation marked as incomplete
@@ -658,7 +657,7 @@ class TestRecoveryMechanisms:
                 (entity_type, entity_id, operation, payload, created_at, retry_count)
                 VALUES ('item', 'item-1', 'CREATE',
                         '{}', datetime('now'), 0)
-                """
+                """,
             )
             session.commit()
 
@@ -666,7 +665,7 @@ class TestRecoveryMechanisms:
             result = session.execute("SELECT COUNT(*) FROM sync_queue WHERE retry_count = 0")
             assert result.scalar() >= 1
 
-    def test_mark_operation_retried(self, storage_manager):
+    def test_mark_operation_retried(self, storage_manager) -> None:
         """Test marking operations as retried."""
         with storage_manager.SessionLocal() as session:
             session.execute(
@@ -675,7 +674,7 @@ class TestRecoveryMechanisms:
                 (entity_type, entity_id, operation, payload, created_at, retry_count)
                 VALUES ('item', 'item-1', 'CREATE',
                         '{}', datetime('now'), 0)
-                """
+                """,
             )
             session.commit()
 
@@ -685,14 +684,14 @@ class TestRecoveryMechanisms:
                 UPDATE sync_queue
                 SET retry_count = retry_count + 1
                 WHERE entity_id = 'item-1'
-                """
+                """,
             )
             session.commit()
 
             result = session.execute("SELECT retry_count FROM sync_queue WHERE entity_id = 'item-1'")
             assert result.scalar() == 1
 
-    def test_purge_old_operations(self, storage_manager):
+    def test_purge_old_operations(self, storage_manager) -> None:
         """Test purging old sync operations."""
         with storage_manager.SessionLocal() as session:
             # Insert old operations
@@ -703,7 +702,7 @@ class TestRecoveryMechanisms:
                     (entity_type, entity_id, operation, payload, created_at)
                     VALUES ('item', 'item-old-{i}', 'CREATE',
                             '{{}}', datetime('now', '-7 days'))
-                    """
+                    """,
                 )
             session.commit()
 
@@ -712,7 +711,7 @@ class TestRecoveryMechanisms:
                 """
                 DELETE FROM sync_queue
                 WHERE created_at < datetime('now', '-7 days')
-                """
+                """,
             )
             session.commit()
 
@@ -720,7 +719,7 @@ class TestRecoveryMechanisms:
             result = session.execute("SELECT COUNT(*) FROM sync_queue WHERE entity_id LIKE 'item-old-%'")
             assert result.scalar() == 0
 
-    def test_restore_from_sync_queue(self, storage_manager):
+    def test_restore_from_sync_queue(self, storage_manager) -> None:
         """Test restoring items from sync queue."""
         items_to_restore = [
             {"id": "item-1", "title": "Item 1", "action": "CREATE"},
@@ -753,7 +752,7 @@ class TestRecoveryMechanisms:
 class TestConflictResolutionPersistence:
     """Tests for conflict resolution and persistence."""
 
-    def test_persist_conflict_resolution(self, storage_manager):
+    def test_persist_conflict_resolution(self, storage_manager) -> None:
         """Test persisting conflict resolution records."""
         conflict_record = {
             "item_id": "item-1",
@@ -775,7 +774,7 @@ class TestConflictResolutionPersistence:
                     resolution TEXT,
                     created_at TEXT
                 )
-                """
+                """,
             )
             session.commit()
 
@@ -792,7 +791,7 @@ class TestConflictResolutionPersistence:
             result = session.execute("SELECT COUNT(*) FROM conflicts WHERE resolution = 'accept_remote'")
             assert result.scalar() >= 1
 
-    def test_retrieve_conflict_history(self, storage_manager):
+    def test_retrieve_conflict_history(self, storage_manager) -> None:
         """Test retrieving conflict resolution history."""
         with storage_manager.SessionLocal() as session:
             session.execute(
@@ -803,7 +802,7 @@ class TestConflictResolutionPersistence:
                     resolution TEXT,
                     created_at TEXT
                 )
-                """
+                """,
             )
 
             # Insert multiple conflict records
@@ -813,14 +812,14 @@ class TestConflictResolutionPersistence:
                     INSERT INTO conflicts
                     (item_id, resolution, created_at)
                     VALUES ('item-1', 'resolution-{i}', datetime('now'))
-                    """
+                    """,
                 )
             session.commit()
 
             result = session.execute("SELECT COUNT(*) FROM conflicts WHERE item_id = 'item-1'")
             assert result.scalar() == 5
 
-    def test_conflict_resolution_idempotency(self, storage_manager):
+    def test_conflict_resolution_idempotency(self, storage_manager) -> None:
         """Test that conflict resolution is idempotent."""
         with storage_manager.SessionLocal() as session:
             session.execute(
@@ -831,7 +830,7 @@ class TestConflictResolutionPersistence:
                     resolution TEXT,
                     created_at TEXT
                 )
-                """
+                """,
             )
             session.commit()
 
@@ -841,7 +840,7 @@ class TestConflictResolutionPersistence:
                 INSERT OR IGNORE INTO conflicts
                 (item_id, resolution, created_at)
                 VALUES ('item-1', 'merged', datetime('now'))
-                """
+                """,
             )
             session.commit()
 
@@ -851,7 +850,7 @@ class TestConflictResolutionPersistence:
                 INSERT OR IGNORE INTO conflicts
                 (item_id, resolution, created_at)
                 VALUES ('item-1', 'merged', datetime('now'))
-                """
+                """,
             )
             session.commit()
 
@@ -868,7 +867,7 @@ class TestConflictResolutionPersistence:
 class TestStoragePersistenceIntegration:
     """Integration tests for storage persistence."""
 
-    def test_complete_lifecycle(self, storage_manager):
+    def test_complete_lifecycle(self, storage_manager) -> None:
         """Test complete storage lifecycle: create, update, delete."""
         with storage_manager.SessionLocal() as session:
             # Create
@@ -878,7 +877,7 @@ class TestStoragePersistenceIntegration:
                 (id, name, path, created_at, updated_at)
                 VALUES ('proj-1', 'Project', '/path',
                         datetime('now'), datetime('now'))
-                """
+                """,
             )
             session.commit()
 
@@ -888,7 +887,7 @@ class TestStoragePersistenceIntegration:
                 UPDATE project_registry
                 SET name = 'Updated Project'
                 WHERE id = 'proj-1'
-                """
+                """,
             )
             session.commit()
 
@@ -904,7 +903,7 @@ class TestStoragePersistenceIntegration:
             result = session.execute("SELECT COUNT(*) FROM project_registry WHERE id = 'proj-1'")
             assert result.scalar() == 0
 
-    def test_multi_table_transaction(self, storage_manager):
+    def test_multi_table_transaction(self, storage_manager) -> None:
         """Test transaction across multiple tables."""
         with storage_manager.SessionLocal() as session:
             try:
@@ -915,7 +914,7 @@ class TestStoragePersistenceIntegration:
                     (id, name, path, created_at, updated_at)
                     VALUES ('proj-1', 'Project', '/path',
                             datetime('now'), datetime('now'))
-                    """
+                    """,
                 )
 
                 # Insert sync operation
@@ -925,7 +924,7 @@ class TestStoragePersistenceIntegration:
                     (entity_type, entity_id, operation, payload, created_at)
                     VALUES ('project', 'proj-1', 'CREATE',
                             '{}', datetime('now'))
-                    """
+                    """,
                 )
 
                 session.commit()
@@ -940,7 +939,7 @@ class TestStoragePersistenceIntegration:
             except Exception:
                 session.rollback()
 
-    def test_storage_performance_bulk_operations(self, storage_manager):
+    def test_storage_performance_bulk_operations(self, storage_manager) -> None:
         """Test storage performance with bulk operations."""
         num_operations = 100
 
@@ -956,7 +955,7 @@ class TestStoragePersistenceIntegration:
                     (entity_type, entity_id, operation, payload, created_at)
                     VALUES ('item', 'item-{i}', 'CREATE',
                             '{{"index": {i}}}', datetime('now'))
-                    """
+                    """,
                 )
             session.commit()
 

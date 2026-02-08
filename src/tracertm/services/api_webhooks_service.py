@@ -21,7 +21,7 @@ class WebhookEvent:
 class APIWebhooksService:
     """Service for managing API and webhooks."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.webhooks: dict[str, dict[str, Any]] = {}
         self.webhook_events: list[WebhookEvent] = []
         self.api_keys: dict[str, dict[str, Any]] = {}

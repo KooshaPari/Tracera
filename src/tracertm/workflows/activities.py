@@ -56,7 +56,7 @@ async def analyze_quality(project_id: str, analysis_type: str = "full") -> dict[
     await asyncio.sleep(0)
     activity_info = activity.info()
     logger.info(
-        f"Activity {activity_info.activity_id}: Analyzing quality for project {project_id} (type: {analysis_type})"
+        f"Activity {activity_info.activity_id}: Analyzing quality for project {project_id} (type: {analysis_type})",
     )
 
     # Placeholder implementation - replace with actual analysis logic
@@ -168,7 +168,7 @@ async def diff_graph(
     workflow_run_id = activity_info.workflow_run_id
 
     logger.info(
-        f"Activity {activity_info.activity_id}: Generating diff for {project_id}/{graph_id} v{from_version}..v{to_version}"
+        f"Activity {activity_info.activity_id}: Generating diff for {project_id}/{graph_id} v{from_version}..v{to_version}",
     )
 
     return await tasks.graph_diff_task(
@@ -287,7 +287,7 @@ async def create_session_checkpoint(
 
             await nats_client.close()
     except Exception as e:
-        logger.warning(f"Failed to publish checkpoint event: {e}")
+        logger.warning("Failed to publish checkpoint event: %s", e)
 
     return result
 

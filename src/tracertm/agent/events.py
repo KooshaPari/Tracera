@@ -152,7 +152,7 @@ class AgentEventPublisher:
     CHAT_SUBJECT_PREFIX = "tracertm.chat"
     SANDBOX_SUBJECT_PREFIX = "tracertm.sandbox"
 
-    def __init__(self, nats_client: Any):
+    def __init__(self, nats_client: Any) -> None:
         """Initialize event publisher.
 
         Args:
@@ -495,7 +495,7 @@ class AgentEventPublisher:
         """
         try:
             if not self.nats or not hasattr(self.nats, "_js") or not self.nats._js:
-                logger.debug(f"NATS not available, skipping event: {subject}")
+                logger.debug("NATS not available, skipping event: %s", subject)
                 return
 
             payload = event.model_dump_json().encode("utf-8")
@@ -503,7 +503,7 @@ class AgentEventPublisher:
 
             logger.debug(
                 f"Published {event.event_type} to {subject} "
-                f"(stream={ack.stream}, seq={ack.seq}, event_id={event.event_id})"
+                f"(stream={ack.stream}, seq={ack.seq}, event_id={event.event_id})",
             )
 
         except Exception as e:

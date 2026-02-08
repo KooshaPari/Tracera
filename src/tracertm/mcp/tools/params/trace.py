@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Never
 
 from fastmcp.exceptions import ToolError
 
@@ -28,8 +28,7 @@ async def trace_analyze(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
-    """
-    Unified traceability analysis tool.
+    """Unified traceability analysis tool.
 
     Analysis kinds:
     - gaps: Find gaps between views (requires: from_view, to_view)
@@ -84,7 +83,8 @@ async def trace_analyze(
         result = await _call_tool(trace_tools, "project_health", ctx=ctx)
         return _wrap(result, ctx, kind)
 
-    raise ToolError(f"Unknown trace analysis kind: {kind}")
+    msg = f"Unknown trace analysis kind: {kind}"
+    raise ToolError(msg)
 
 
 @mcp.tool(description="Unified quality analysis")
@@ -92,8 +92,7 @@ async def quality_analyze(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
-    """
-    Unified quality analysis tool.
+    """Unified quality analysis tool.
 
     Analyzes quality metrics for items.
     Optional: item_id for specific item analysis
@@ -104,8 +103,9 @@ async def quality_analyze(
     except Exception:
 
         class _SpecStub:
-            async def analyze_quality(self, **kwargs):
-                raise ToolError("Specification tools unavailable")
+            async def analyze_quality(self, **kwargs) -> Never:
+                msg = "Specification tools unavailable"
+                raise ToolError(msg)
 
         spec_tools: Any = _SpecStub()
 

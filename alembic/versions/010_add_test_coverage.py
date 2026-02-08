@@ -1,4 +1,4 @@
-"""Add test coverage for traceability
+"""Add test coverage for traceability.
 
 Revision ID: 010_add_test_coverage
 Revises: 010_merge_heads
@@ -24,7 +24,6 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     """Create test coverage tables."""
-
     # Test Coverages table - links test cases to requirements
     op.create_table(
         "test_coverages",
@@ -104,7 +103,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop test coverage tables."""
-
     # Drop indexes
     op.drop_index("ix_coverage_activities_type", "coverage_activities")
     op.drop_index("ix_coverage_activities_created_at", "coverage_activities")

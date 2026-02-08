@@ -71,13 +71,14 @@ async def _poll_services(
     to_poll_required = [c for c in checks if c.name in required_names and c.url and c.url.strip()]
     missing_required = [n for n in required_names if not any(c.name == n and c.url and c.url.strip() for c in checks)]
     if missing_required:
-        raise RuntimeError(f"Preflight failed for: {', '.join(missing_required)} (missing url)")
+        msg = f"Preflight failed for: {', '.join(missing_required)} (missing url)"
+        raise RuntimeError(msg)
 
     # Required: poll all in parallel with indefinite retry and progressive backoff
     if to_poll_required:
         names = ", ".join(c.name for c in to_poll_required)
         sys.stderr.write(
-            f"[{service_name}] Polling required (indefinite retry, backoff cap {interval_max}s): {names}...\n"
+            f"[{service_name}] Polling required (indefinite retry, backoff cap {interval_max}s): {names}...\n",
         )
         sys.stderr.flush()
         results = await asyncio.gather(*[
@@ -85,7 +86,8 @@ async def _poll_services(
         ])
         required_failures = [name for name, ok in results if not ok]
         if required_failures:
-            raise RuntimeError(f"Preflight failed for: {'; '.join(required_failures)}")
+            msg = f"Preflight failed for: {'; '.join(required_failures)}"
+            raise RuntimeError(msg)
 
 
 async def run_preflight_checks() -> tuple[tuple[str, ...], tuple[str, ...]]:
@@ -157,7 +159,8 @@ async def initialize_go_backend_client(app: FastAPI) -> None:
         logger.info("Go Backend Client initialized at %s", go_backend_url)
     except Exception as e:
         # Required dependency: fail clearly (CLAUDE.md).
-        raise RuntimeError(f"Go backend unavailable: {e}") from e
+        msg = f"Go backend unavailable: {e}"
+        raise RuntimeError(msg) from e
 
 
 def is_nats_enabled() -> bool:
@@ -194,7 +197,8 @@ async def initialize_nats_client() -> tuple[Any, Any]:
         return nats_client, event_bus
     except Exception as e:
         # Required dependency: fail clearly (CLAUDE.md).
-        raise RuntimeError(f"NATS unavailable: {e}") from e
+        msg = f"NATS unavailable: {e}"
+        raise RuntimeError(msg) from e
 
 
 async def initialize_agent_service(event_bus: Any) -> Any:
@@ -327,7 +331,8 @@ async def _invalidate_item_caches(cache_service: Any, project_id: str) -> None:
     except (RedisUnavailableError, RuntimeError):
         raise
     except Exception as e:
-        raise RedisUnavailableError(f"Redis unavailable: {e}") from e
+        msg = f"Redis unavailable: {e}"
+        raise RedisUnavailableError(msg) from e
 
 
 async def _invalidate_item_update_caches(cache_service: Any, project_id: str) -> None:
@@ -342,7 +347,8 @@ async def _invalidate_item_update_caches(cache_service: Any, project_id: str) ->
     except (RedisUnavailableError, RuntimeError):
         raise
     except Exception as e:
-        raise RedisUnavailableError(f"Redis unavailable: {e}") from e
+        msg = f"Redis unavailable: {e}"
+        raise RedisUnavailableError(msg) from e
 
 
 async def _invalidate_item_deletion_caches(cache_service: Any, project_id: str) -> None:
@@ -357,7 +363,8 @@ async def _invalidate_item_deletion_caches(cache_service: Any, project_id: str) 
     except (RedisUnavailableError, RuntimeError):
         raise
     except Exception as e:
-        raise RedisUnavailableError(f"Redis unavailable: {e}") from e
+        msg = f"Redis unavailable: {e}"
+        raise RedisUnavailableError(msg) from e
 
 
 async def _invalidate_link_caches(cache_service: Any, project_id: str) -> None:
@@ -373,7 +380,8 @@ async def _invalidate_link_caches(cache_service: Any, project_id: str) -> None:
     except (RedisUnavailableError, RuntimeError):
         raise
     except Exception as e:
-        raise RedisUnavailableError(f"Redis unavailable: {e}") from e
+        msg = f"Redis unavailable: {e}"
+        raise RedisUnavailableError(msg) from e
 
 
 async def _invalidate_project_caches(cache_service: Any, project_id: str) -> None:
@@ -386,7 +394,8 @@ async def _invalidate_project_caches(cache_service: Any, project_id: str) -> Non
     except (RedisUnavailableError, RuntimeError):
         raise
     except Exception as e:
-        raise RedisUnavailableError(f"Redis unavailable: {e}") from e
+        msg = f"Redis unavailable: {e}"
+        raise RedisUnavailableError(msg) from e
 
 
 async def subscribe_to_events(event_bus: Any, handlers: dict[str, Any]) -> None:
@@ -457,7 +466,8 @@ async def initialize_grpc_server(app: FastAPI) -> None:
         app.state.grpc_server = grpc_server
     except Exception as e:
         # gRPC is required for Go->Python internal calls; fail clearly.
-        raise RuntimeError(f"Python gRPC server failed to start: {e}") from e
+        msg = f"Python gRPC server failed to start: {e}"
+        raise RuntimeError(msg) from e
 
 
 async def startup_initialization(app: FastAPI) -> None:

@@ -15,49 +15,37 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 
-def verify_imports():
+def verify_imports() -> bool:
     """Verify all required modules can be imported."""
-    print("✓ Verifying imports...")
-
     try:
         from tracertm.api.routers import mcp  # noqa: F401
 
-        print("  ✓ MCP router imported")
-    except ImportError as e:
-        print(f"  ✗ Failed to import MCP router: {e}")
+    except ImportError:
         return False
 
     try:
         from tracertm.mcp.core import create_mcp_server  # noqa: F401
 
-        print("  ✓ MCP core imported")
-    except ImportError as e:
-        print(f"  ✗ Failed to import MCP core: {e}")
+    except ImportError:
         return False
 
     try:
         from tracertm.mcp.auth import build_auth_provider  # noqa: F401
 
-        print("  ✓ MCP auth imported")
-    except ImportError as e:
-        print(f"  ✗ Failed to import MCP auth: {e}")
+    except ImportError:
         return False
 
     try:
         from tracertm.core.context import current_account_id, current_user_id  # noqa: F401
 
-        print("  ✓ Context variables imported")
-    except ImportError as e:
-        print(f"  ✗ Failed to import context variables: {e}")
+    except ImportError:
         return False
 
     return True
 
 
-def verify_router_endpoints():
+def verify_router_endpoints() -> bool:
     """Verify MCP router has all expected endpoints."""
-    print("\n✓ Verifying MCP router endpoints...")
-
     from tracertm.api.main import app
 
     # Get all MCP routes from the mounted app
@@ -74,18 +62,15 @@ def verify_router_endpoints():
 
     for route in expected_routes:
         if route in found_routes:
-            print(f"  ✓ {route} endpoint exists")
+            pass
         else:
-            print(f"  ✗ {route} endpoint missing (found: {found_routes})")
             return False
 
     return True
 
 
-def verify_auth_integration():
+def verify_auth_integration() -> bool:
     """Verify auth_guard is used in endpoints."""
-    print("\n✓ Verifying auth integration...")
-
     import inspect
 
     from tracertm.api.routers import mcp
@@ -100,50 +85,40 @@ def verify_auth_integration():
 
             # Check for claims parameter (injected by auth_guard)
             if "claims" in sig.parameters:
-                print(f"  ✓ {endpoint_name} uses auth_guard")
+                pass
             else:
-                print(f"  ✗ {endpoint_name} missing auth_guard dependency")
                 return False
         else:
-            print(f"  ✗ {endpoint_name} function not found")
             return False
 
     return True
 
 
-def verify_transport_modes():
+def verify_transport_modes() -> bool:
     """Verify MCP core supports transport modes."""
-    print("\n✓ Verifying transport modes...")
-
     from tracertm.mcp.auth import build_auth_provider
 
     # Test STDIO mode
     try:
         _ = build_auth_provider(transport="stdio")
-        print("  ✓ STDIO transport mode supported")
-    except Exception as e:
-        print(f"  ✗ STDIO mode failed: {e}")
+    except Exception:
         return False
 
     # Test HTTP mode
     try:
         http_auth = build_auth_provider(transport="http")
         if http_auth is None:
-            print("  ✓ HTTP transport mode returns None (FastAPI handles auth)")
+            pass
         else:
-            print("  ✗ HTTP mode should return None")
             return False
-    except Exception as e:
-        print(f"  ✗ HTTP mode failed: {e}")
+    except Exception:
         return False
 
     return True
 
 
-def verify_user_context_injection():
+def verify_user_context_injection() -> bool:
     """Verify auth_guard sets user context."""
-    print("\n✓ Verifying user context injection...")
-
     import inspect
 
     from tracertm.api.deps import auth_guard
@@ -152,46 +127,35 @@ def verify_user_context_injection():
     source = inspect.getsource(auth_guard)
 
     if "current_user_id.set" in source:
-        print("  ✓ auth_guard sets user context")
+        pass
     else:
-        print("  ✗ auth_guard does not set user context")
         return False
 
     return True
 
 
-def verify_fastapi_integration():
+def verify_fastapi_integration() -> bool:
     """Verify MCP router is mounted in FastAPI app."""
-    print("\n✓ Verifying FastAPI integration...")
-
     try:
         from tracertm.api.main import app
 
-        print("  ✓ FastAPI app imported")
-    except ImportError as e:
-        print(f"  ✗ Failed to import FastAPI app: {e}")
+    except ImportError:
         return False
 
     # Check if MCP router is mounted
     mcp_routes = [route for route in app.routes if "/mcp" in str(getattr(route, "path", ""))]
 
     if mcp_routes:
-        print(f"  ✓ MCP router mounted ({len(mcp_routes)} routes)")
-        for route in mcp_routes:
-            print(f"    - {getattr(route, 'path', '')}")
+        for _route in mcp_routes:
+            pass
     else:
-        print("  ✗ MCP router not mounted")
         return False
 
     return True
 
 
-def main():
+def main() -> int:
     """Run all verification checks."""
-    print("=" * 70)
-    print("MCP HTTP Authentication Integration Verification")
-    print("=" * 70)
-
     checks = [
         ("Imports", verify_imports),
         ("Router Endpoints", verify_router_endpoints),
@@ -206,31 +170,21 @@ def main():
         try:
             result = check_fn()
             results.append((name, result))
-        except Exception as e:
-            print(f"\n✗ {name} check failed with error: {e}")
+        except Exception:
             import traceback
 
             traceback.print_exc()
             results.append((name, False))
 
     # Print summary
-    print("\n" + "=" * 70)
-    print("Summary")
-    print("=" * 70)
 
     all_passed = True
     for name, result in results:
-        status = "✓ PASS" if result else "✗ FAIL"
-        print(f"{status}: {name}")
         if not result:
             all_passed = False
 
-    print("=" * 70)
-
     if all_passed:
-        print("\n🎉 All verification checks passed!")
         return 0
-    print("\n❌ Some verification checks failed")
     return 1
 
 

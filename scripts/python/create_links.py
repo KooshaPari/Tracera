@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
-"""
-Create traceability links between related items to make projects more realistic.
-"""
+"""Create traceability links between related items to make projects more realistic."""
 
 from pathlib import Path
 
 import yaml
 
 
-def add_link_to_item(item_path, target_id, link_type):
+def add_link_to_item(item_path, target_id, link_type) -> bool:
     """Add a link to an item's frontmatter."""
     if not item_path.exists():
         return False
@@ -45,7 +43,7 @@ def add_link_to_item(item_path, target_id, link_type):
     return False
 
 
-def create_demo_project_links():
+def create_demo_project_links() -> None:
     """Create links in DEMO_PROJECT."""
     project_path = Path("./samples/DEMO_PROJECT/.trace")
 
@@ -62,12 +60,10 @@ def create_demo_project_links():
         ("STORY-020", "ENDPOINT-015"),  # Order confirmation -> GET /api/orders/:id
     ]
 
-    print("Creating story -> endpoint links...")
     for story_id, endpoint_id in story_endpoint_pairs:
         story_file = project_path / "stories" / f"{story_id}.md"
         if story_file.exists():
             add_link_to_item(story_file, endpoint_id, "implemented_by")
-            print(f"  ✓ Linked {story_id} -> {endpoint_id}")
 
     # Story -> Screen links (designs)
     story_screen_pairs = [
@@ -78,12 +74,10 @@ def create_demo_project_links():
         ("STORY-020", "SCREEN-010"),  # Order confirmation -> Order Confirmation Page
     ]
 
-    print("\nCreating story -> screen links...")
     for story_id, screen_id in story_screen_pairs:
         story_file = project_path / "stories" / f"{story_id}.md"
         if story_file.exists():
             add_link_to_item(story_file, screen_id, "designs")
-            print(f"  ✓ Linked {story_id} -> {screen_id}")
 
     # Story -> Test links (tested_by)
     story_test_pairs = [
@@ -93,12 +87,10 @@ def create_demo_project_links():
         ("STORY-020", "TEST_CASE-008"),  # Checkout -> E2E test
     ]
 
-    print("\nCreating story -> test links...")
     for story_id, test_id in story_test_pairs:
         story_file = project_path / "stories" / f"{story_id}.md"
         if story_file.exists():
             add_link_to_item(story_file, test_id, "tested_by")
-            print(f"  ✓ Linked {story_id} -> {test_id}")
 
     # Endpoint -> Table links (uses)
     endpoint_table_pairs = [
@@ -109,15 +101,13 @@ def create_demo_project_links():
         ("ENDPOINT-014", "TABLE-009"),  # POST orders -> order_items table
     ]
 
-    print("\nCreating endpoint -> table links...")
     for endpoint_id, table_id in endpoint_table_pairs:
         endpoint_file = project_path / "endpoints" / f"{endpoint_id}.md"
         if endpoint_file.exists():
             add_link_to_item(endpoint_file, table_id, "uses")
-            print(f"  ✓ Linked {endpoint_id} -> {table_id}")
 
 
-def create_frontend_links():
+def create_frontend_links() -> None:
     """Create links in frontend project."""
     project_path = Path("./frontend/.trace")
 
@@ -134,12 +124,10 @@ def create_frontend_links():
         ("STORY-015", "FILE-010"),  # Product Detail -> CartDrawer.tsx
     ]
 
-    print("\nCreating story -> component links...")
     for story_id, file_id in story_component_pairs:
         story_file = project_path / "stories" / f"{story_id}.md"
         if story_file.exists():
             add_link_to_item(story_file, file_id, "implemented_by")
-            print(f"  ✓ Linked {story_id} -> {file_id}")
 
     # Story -> Screen links
     story_screen_pairs = [
@@ -148,15 +136,13 @@ def create_frontend_links():
         ("STORY-010", "SCREEN-003"),  # Registration -> User Profile Page
     ]
 
-    print("\nCreating story -> screen links...")
     for story_id, screen_id in story_screen_pairs:
         story_file = project_path / "stories" / f"{story_id}.md"
         if story_file.exists():
             add_link_to_item(story_file, screen_id, "designs")
-            print(f"  ✓ Linked {story_id} -> {screen_id}")
 
 
-def create_backend_links():
+def create_backend_links() -> None:
     """Create links in backend project."""
     project_path = Path("./backend/.trace")
 
@@ -171,12 +157,10 @@ def create_backend_links():
         ("STORY-015", "FILE-007"),  # Payment Integration -> payment_service.py
     ]
 
-    print("\nCreating story -> service links...")
     for story_id, file_id in story_service_pairs:
         story_file = project_path / "stories" / f"{story_id}.md"
         if story_file.exists():
             add_link_to_item(story_file, file_id, "implemented_by")
-            print(f"  ✓ Linked {story_id} -> {file_id}")
 
     # Story -> Endpoint links
     story_endpoint_pairs = [
@@ -189,12 +173,10 @@ def create_backend_links():
         ("STORY-014", "ENDPOINT-014"),  # Checkout -> POST /api/v1/orders
     ]
 
-    print("\nCreating story -> endpoint links...")
     for story_id, endpoint_id in story_endpoint_pairs:
         story_file = project_path / "stories" / f"{story_id}.md"
         if story_file.exists():
             add_link_to_item(story_file, endpoint_id, "implemented_by")
-            print(f"  ✓ Linked {story_id} -> {endpoint_id}")
 
     # Endpoint -> Table links
     endpoint_table_pairs = [
@@ -205,12 +187,10 @@ def create_backend_links():
         ("ENDPOINT-014", "TABLE-009"),  # POST orders -> order_items
     ]
 
-    print("\nCreating endpoint -> table links...")
     for endpoint_id, table_id in endpoint_table_pairs:
         endpoint_file = project_path / "endpoints" / f"{endpoint_id}.md"
         if endpoint_file.exists():
             add_link_to_item(endpoint_file, table_id, "uses")
-            print(f"  ✓ Linked {endpoint_id} -> {table_id}")
 
     # Story -> Test Suite links
     story_test_pairs = [
@@ -220,27 +200,17 @@ def create_backend_links():
         ("STORY-014", "TEST_SUITE-004"),  # Order stories -> Order API Tests
     ]
 
-    print("\nCreating story -> test suite links...")
     for story_id, test_id in story_test_pairs:
         story_file = project_path / "stories" / f"{story_id}.md"
         if story_file.exists():
             add_link_to_item(story_file, test_id, "tested_by")
-            print(f"  ✓ Linked {story_id} -> {test_id}")
 
 
-def main():
+def main() -> None:
     """Create links between items."""
-    print("\n" + "=" * 60)
-    print("Creating Traceability Links")
-    print("=" * 60)
-
     create_demo_project_links()
     create_frontend_links()
     create_backend_links()
-
-    print(f"\n{'=' * 60}")
-    print("✓ Link creation complete!")
-    print(f"{'=' * 60}\n")
 
 
 if __name__ == "__main__":

@@ -178,7 +178,7 @@ describe('Helper Utilities', () => {
       expect(mockFn).not.toHaveBeenCalled();
 
       await new Promise((resolve) => setTimeout(resolve, 60));
-      expect(mockFn).toHaveBeenCalledTimes(1);
+      expect(mockFn).toHaveBeenCalledOnce();
     });
 
     it('should throttle function calls', async () => {
@@ -189,7 +189,7 @@ describe('Helper Utilities', () => {
       throttledFn();
       throttledFn();
 
-      expect(mockFn).toHaveBeenCalledTimes(1);
+      expect(mockFn).toHaveBeenCalledOnce();
 
       await new Promise((resolve) => setTimeout(resolve, 60));
       throttledFn();

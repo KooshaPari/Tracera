@@ -139,7 +139,7 @@ test.describe('Dashboard Navigation', () => {
   test('should navigate to specific project from dashboard', async ({ page }) => {
     // Look for any project link in the Active Projects section
     const projectLinks = page.locator('a[href*="/projects/"]');
-    await expect(projectLinks.first()).toBeVisible({ timeout: 10000 });
+    await expect(projectLinks.first()).toBeVisible({ timeout: 10_000 });
     await projectLinks.first().click();
     await page.waitForLoadState('networkidle');
 

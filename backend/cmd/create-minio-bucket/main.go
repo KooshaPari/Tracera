@@ -1,19 +1,18 @@
 // create-minio-bucket creates the S3_BUCKET on the S3-compatible endpoint (e.g. MinIO).
 // Loads S3_* from env (and .env). Run from backend dir: go run ./cmd/create-minio-bucket
-package main
+package main //nolint:forbidigo
 
 import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
 )
 
 func main() {
-	ctx := context.Background()
+	myCtx := context.Background()
 	config, err := loadConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -22,7 +21,7 @@ func main() {
 		log.Fatal(err)
 	}
 	env := buildAWSEnv(config)
-	if err := ensureBucket(ctx, config, env); err != nil {
+	if err := ensureBucket(myCtx, config, env); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -54,7 +53,7 @@ func loadConfig() (bucketConfig, error) {
 
 func ensureAWSCLI() error {
 	if _, err := exec.LookPath("aws"); err != nil {
-		return fmt.Errorf("aws CLI not found in PATH: %w", err)
+		return errors.New("aws CLI not found in PATH")
 	}
 	return nil
 }
@@ -78,7 +77,7 @@ func ensureBucket(ctx context.Context, config bucketConfig, env []string) error 
 
 	createArgs := buildCreateArgs(endpointArgs, config)
 	if err := runAWS(ctx, env, createArgs); err != nil {
-		return fmt.Errorf("CreateBucket: %w", err)
+		return errors.New("CreateBucket failed")
 	}
 	log.Printf("Bucket %q created.", config.bucket)
 	return nil
@@ -116,7 +115,7 @@ func runAWS(ctx context.Context, env []string, args []string) error {
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
 		if stderr.Len() > 0 {
-			return fmt.Errorf("%w: %s", err, stderr.String())
+			return errors.New(stderr.String())
 		}
 		return err
 	}

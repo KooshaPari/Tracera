@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for tracertm.tui.widgets.sync_status module.
+"""Comprehensive tests for tracertm.tui.widgets.sync_status module.
 
 Tests SyncStatusWidget and CompactSyncStatus widgets including reactive
 attributes, display updates, and time formatting.
@@ -23,7 +22,7 @@ from tracertm.tui.widgets.sync_status import (  # type: ignore[possibly-missing-
 class TestSyncStatusWidgetInitialization:
     """Test SyncStatusWidget initialization and reactive attributes."""
 
-    def test_init_default_values(self):
+    def test_init_default_values(self) -> None:
         """Test widget initializes with default reactive values."""
         widget = SyncStatusWidget()
         # Mock update_display to avoid query_one calls
@@ -36,7 +35,7 @@ class TestSyncStatusWidgetInitialization:
         assert widget.conflicts_count == 0
         assert widget.last_error is None
 
-    def test_compose_creates_widgets(self):
+    def test_compose_creates_widgets(self) -> None:
         """Test compose method creates status line widgets."""
         widget = SyncStatusWidget()
 
@@ -49,7 +48,7 @@ class TestSyncStatusWidgetInitialization:
 class TestSyncStatusWidgetSetters:
     """Test setter methods for updating status."""
 
-    def test_set_online(self):
+    def test_set_online(self) -> None:
         """Test setting online status."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -60,7 +59,7 @@ class TestSyncStatusWidgetSetters:
         widget.set_online(False)
         assert widget.is_online is False
 
-    def test_set_syncing(self):
+    def test_set_syncing(self) -> None:
         """Test setting syncing status."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -71,7 +70,7 @@ class TestSyncStatusWidgetSetters:
         widget.set_syncing(False)
         assert widget.is_syncing is False
 
-    def test_set_pending_changes(self):
+    def test_set_pending_changes(self) -> None:
         """Test setting pending changes count."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -82,7 +81,7 @@ class TestSyncStatusWidgetSetters:
         widget.set_pending_changes(0)
         assert widget.pending_changes == 0
 
-    def test_set_last_sync(self):
+    def test_set_last_sync(self) -> None:
         """Test setting last sync timestamp."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -94,7 +93,7 @@ class TestSyncStatusWidgetSetters:
         widget.set_last_sync(None)
         assert widget.last_sync is None
 
-    def test_set_conflicts(self):
+    def test_set_conflicts(self) -> None:
         """Test setting conflicts count."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -105,7 +104,7 @@ class TestSyncStatusWidgetSetters:
         widget.set_conflicts(0)
         assert widget.conflicts_count == 0
 
-    def test_set_error(self):
+    def test_set_error(self) -> None:
         """Test setting error message."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -120,7 +119,7 @@ class TestSyncStatusWidgetSetters:
 class TestSyncStatusWidgetWatchers:
     """Test reactive attribute watchers."""
 
-    def test_watch_is_online(self):
+    def test_watch_is_online(self) -> None:
         """Test is_online watcher triggers update."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -129,7 +128,7 @@ class TestSyncStatusWidgetWatchers:
 
         widget.update_display.assert_called_once()
 
-    def test_watch_is_syncing(self):
+    def test_watch_is_syncing(self) -> None:
         """Test is_syncing watcher triggers update."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -138,7 +137,7 @@ class TestSyncStatusWidgetWatchers:
 
         widget.update_display.assert_called_once()
 
-    def test_watch_pending_changes(self):
+    def test_watch_pending_changes(self) -> None:
         """Test pending_changes watcher triggers update."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -147,7 +146,7 @@ class TestSyncStatusWidgetWatchers:
 
         widget.update_display.assert_called_once()
 
-    def test_watch_last_sync(self):
+    def test_watch_last_sync(self) -> None:
         """Test last_sync watcher triggers update."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -156,7 +155,7 @@ class TestSyncStatusWidgetWatchers:
 
         widget.update_display.assert_called_once()
 
-    def test_watch_conflicts_count(self):
+    def test_watch_conflicts_count(self) -> None:
         """Test conflicts_count watcher triggers update."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -165,7 +164,7 @@ class TestSyncStatusWidgetWatchers:
 
         widget.update_display.assert_called_once()
 
-    def test_watch_last_error(self):
+    def test_watch_last_error(self) -> None:
         """Test last_error watcher triggers update."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -178,7 +177,7 @@ class TestSyncStatusWidgetWatchers:
 class TestSyncStatusWidgetDisplay:
     """Test display update logic."""
 
-    def test_update_display_syncing(self):
+    def test_update_display_syncing(self) -> None:
         """Test display when syncing."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()  # Mock initially to avoid errors
@@ -208,7 +207,7 @@ class TestSyncStatusWidgetDisplay:
         mock_connection.update.assert_called()
         assert "Syncing" in str(mock_connection.update.call_args)
 
-    def test_update_display_online(self):
+    def test_update_display_online(self) -> None:
         """Test display when online."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -238,7 +237,7 @@ class TestSyncStatusWidgetDisplay:
         mock_connection.update.assert_called()
         assert "Online" in str(mock_connection.update.call_args)
 
-    def test_update_display_offline(self):
+    def test_update_display_offline(self) -> None:
         """Test display when offline."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -268,7 +267,7 @@ class TestSyncStatusWidgetDisplay:
         mock_connection.update.assert_called()
         assert "Offline" in str(mock_connection.update.call_args)
 
-    def test_update_display_with_error(self):
+    def test_update_display_with_error(self) -> None:
         """Test display when error present."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -297,7 +296,7 @@ class TestSyncStatusWidgetDisplay:
         mock_connection.update.assert_called()
         assert "Error" in str(mock_connection.update.call_args)
 
-    def test_update_display_pending_changes(self):
+    def test_update_display_pending_changes(self) -> None:
         """Test display with pending changes."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -326,7 +325,7 @@ class TestSyncStatusWidgetDisplay:
         assert "5" in str(mock_sync.update.call_args)
         assert "pending" in str(mock_sync.update.call_args)
 
-    def test_update_display_with_conflicts(self):
+    def test_update_display_with_conflicts(self) -> None:
         """Test display with conflicts."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -359,7 +358,7 @@ class TestSyncStatusWidgetDisplay:
 class TestSyncStatusTimeFormatting:
     """Test time formatting functionality."""
 
-    def test_format_time_ago_just_now(self):
+    def test_format_time_ago_just_now(self) -> None:
         """Test formatting time less than 1 minute ago."""
         widget = SyncStatusWidget()
         now = datetime.now()
@@ -368,7 +367,7 @@ class TestSyncStatusTimeFormatting:
 
         assert result == "just now"
 
-    def test_format_time_ago_minutes(self):
+    def test_format_time_ago_minutes(self) -> None:
         """Test formatting time in minutes."""
         widget = SyncStatusWidget()
         past = datetime.now() - timedelta(minutes=5)
@@ -377,7 +376,7 @@ class TestSyncStatusTimeFormatting:
 
         assert result == "5 minutes ago"
 
-    def test_format_time_ago_one_minute(self):
+    def test_format_time_ago_one_minute(self) -> None:
         """Test formatting exactly 1 minute (singular)."""
         widget = SyncStatusWidget()
         past = datetime.now() - timedelta(minutes=1)
@@ -386,7 +385,7 @@ class TestSyncStatusTimeFormatting:
 
         assert result == "1 minute ago"
 
-    def test_format_time_ago_hours(self):
+    def test_format_time_ago_hours(self) -> None:
         """Test formatting time in hours."""
         widget = SyncStatusWidget()
         past = datetime.now() - timedelta(hours=2)
@@ -395,7 +394,7 @@ class TestSyncStatusTimeFormatting:
 
         assert result == "2 hours ago"
 
-    def test_format_time_ago_days(self):
+    def test_format_time_ago_days(self) -> None:
         """Test formatting time in days."""
         widget = SyncStatusWidget()
         past = datetime.now() - timedelta(days=3)
@@ -408,7 +407,7 @@ class TestSyncStatusTimeFormatting:
 class TestCompactSyncStatus:
     """Test CompactSyncStatus widget."""
 
-    def test_init_default_values(self):
+    def test_init_default_values(self) -> None:
         """Test compact widget initializes with defaults."""
         widget = CompactSyncStatus()
 
@@ -417,7 +416,7 @@ class TestCompactSyncStatus:
         assert widget.pending_changes == 0
         assert widget.conflicts_count == 0
 
-    def test_render_syncing(self):
+    def test_render_syncing(self) -> None:
         """Test render when syncing."""
         widget = CompactSyncStatus()
         widget.is_syncing = True
@@ -426,7 +425,7 @@ class TestCompactSyncStatus:
 
         assert "⟳" in result
 
-    def test_render_online(self):
+    def test_render_online(self) -> None:
         """Test render when online."""
         widget = CompactSyncStatus()
         widget.is_online = True
@@ -436,7 +435,7 @@ class TestCompactSyncStatus:
 
         assert "●" in result
 
-    def test_render_offline(self):
+    def test_render_offline(self) -> None:
         """Test render when offline."""
         widget = CompactSyncStatus()
         widget.is_online = False
@@ -447,7 +446,7 @@ class TestCompactSyncStatus:
         # Should show offline indicator
         assert isinstance(result, str)
 
-    def test_render_with_pending_changes(self):
+    def test_render_with_pending_changes(self) -> None:
         """Test render with pending changes."""
         widget = CompactSyncStatus()
         widget.pending_changes = 5
@@ -457,7 +456,7 @@ class TestCompactSyncStatus:
         assert "5" in result
         assert "pending" in result
 
-    def test_render_with_conflicts(self):
+    def test_render_with_conflicts(self) -> None:
         """Test render with conflicts."""
         widget = CompactSyncStatus()
         widget.conflicts_count = 2
@@ -467,28 +466,28 @@ class TestCompactSyncStatus:
         assert "⚠" in result
         assert "2" in result
 
-    def test_set_online(self):
+    def test_set_online(self) -> None:
         """Test setting online status on compact widget."""
         widget = CompactSyncStatus()
 
         widget.set_online(True)
         assert widget.is_online is True
 
-    def test_set_syncing(self):
+    def test_set_syncing(self) -> None:
         """Test setting syncing status on compact widget."""
         widget = CompactSyncStatus()
 
         widget.set_syncing(True)
         assert widget.is_syncing is True
 
-    def test_set_pending_changes(self):
+    def test_set_pending_changes(self) -> None:
         """Test setting pending changes on compact widget."""
         widget = CompactSyncStatus()
 
         widget.set_pending_changes(10)
         assert widget.pending_changes == 10
 
-    def test_set_conflicts(self):
+    def test_set_conflicts(self) -> None:
         """Test setting conflicts on compact widget."""
         widget = CompactSyncStatus()
 

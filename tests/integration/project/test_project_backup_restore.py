@@ -1,6 +1,4 @@
-"""
-Integration tests for Epic 6: Project Backup & Restore (Story 6.6, FR53).
-"""
+"""Integration tests for Epic 6: Project Backup & Restore (Story 6.6, FR53)."""
 
 import pytest
 
@@ -71,7 +69,7 @@ def project_with_data_setup(tmp_path, monkeypatch):
     return project_id, database_url
 
 
-def test_project_backup(project_with_data_setup):
+def test_project_backup(project_with_data_setup) -> None:
     """Test project backup (Story 6.6, FR53)."""
     project_id, database_url = project_with_data_setup
 
@@ -90,7 +88,7 @@ def test_project_backup(project_with_data_setup):
         assert len(backup_data["links"]) == 1
 
 
-def test_project_restore(project_with_data_setup):
+def test_project_restore(project_with_data_setup) -> None:
     """Test project restore (Story 6.6, FR53)."""
     project_id, database_url = project_with_data_setup
 
@@ -120,7 +118,7 @@ def test_project_restore(project_with_data_setup):
         assert len(links) == 1
 
 
-def test_project_clone(project_with_data_setup):
+def test_project_clone(project_with_data_setup) -> None:
     """Test project cloning (Story 6.5, FR46)."""
     project_id, database_url = project_with_data_setup
 
@@ -147,7 +145,7 @@ def test_project_clone(project_with_data_setup):
         assert len(links) == 1
 
 
-def test_project_template_creation(project_with_data_setup):
+def test_project_template_creation(project_with_data_setup) -> None:
     """Test template creation (Story 6.5, FR46)."""
     project_id, database_url = project_with_data_setup
 

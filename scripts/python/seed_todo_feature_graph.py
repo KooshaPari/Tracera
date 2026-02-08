@@ -67,7 +67,7 @@ def ensure_views(session: Session, project_id: str) -> dict[str, View]:
         ("ops", "Ops runbooks and incident hooks"),
     ]:
         view = session.execute(
-            select(View).where(View.project_id == project_id, View.name == name)
+            select(View).where(View.project_id == project_id, View.name == name),
         ).scalar_one_or_none()
         if not view:
             view = View(project_id=project_id, name=name, description=description, view_metadata={})
@@ -81,7 +81,7 @@ def ensure_node_kinds(session: Session, project_id: str, kind_names: list[str]) 
     kinds: dict[str, NodeKind] = {}
     for name in kind_names:
         kind = session.execute(
-            select(NodeKind).where(NodeKind.project_id == project_id, NodeKind.name == name)
+            select(NodeKind).where(NodeKind.project_id == project_id, NodeKind.name == name),
         ).scalar_one_or_none()
         if not kind:
             kind = NodeKind(project_id=project_id, name=name, description=None, kind_metadata={})
@@ -94,7 +94,7 @@ def ensure_node_kinds(session: Session, project_id: str, kind_names: list[str]) 
 def ensure_link_types(session: Session, project_id: str, link_types: list[str]) -> None:
     for name in link_types:
         existing = session.execute(
-            select(LinkType).where(LinkType.project_id == project_id, LinkType.name == name)
+            select(LinkType).where(LinkType.project_id == project_id, LinkType.name == name),
         ).scalar_one_or_none()
         if not existing:
             session.add(LinkType(project_id=project_id, name=name, description=None, link_metadata={}))
@@ -122,7 +122,7 @@ def ensure_graphs(session: Session, project_id: str) -> dict[str, Graph]:
     ]
     for graph_type, name in graph_specs:
         graph = session.execute(
-            select(Graph).where(Graph.project_id == project_id, Graph.graph_type == graph_type, Graph.name == name)
+            select(Graph).where(Graph.project_id == project_id, Graph.graph_type == graph_type, Graph.name == name),
         ).scalar_one_or_none()
         if not graph:
             graph = Graph(
@@ -140,7 +140,7 @@ def ensure_graphs(session: Session, project_id: str) -> dict[str, Graph]:
 
 
 def seed_items(
-    session: Session, project_id: str, views: dict[str, View], kinds: dict[str, NodeKind]
+    session: Session, project_id: str, views: dict[str, View], kinds: dict[str, NodeKind],
 ) -> dict[str, Item]:
     items: dict[str, Item] = {}
 
@@ -180,7 +180,7 @@ def seed_items(
                 view_id=views[view_name].id,
                 project_id=project_id,
                 is_primary=True,
-            )
+            ),
         )
 
     # User requirements
@@ -261,7 +261,7 @@ def seed_items(
     )
     add_item("UI_I_TOGGLE_TASK", "Toggle Task Status", "journey", "interaction", metadata={"trigger": "onChange"})
     add_item(
-        "UI_I_INLINE_EDIT_TITLE", "Inline Edit Task Title", "journey", "interaction", metadata={"trigger": "onBlur"}
+        "UI_I_INLINE_EDIT_TITLE", "Inline Edit Task Title", "journey", "interaction", metadata={"trigger": "onBlur"},
     )
     add_item("UI_C_FILTER_STATUS", "Status Filter Dropdown", "journey", "component", metadata={"type": "select"})
     add_item("UI_I_FILTER_CHANGE", "Change Status Filter", "journey", "interaction", metadata={"trigger": "onChange"})
@@ -283,7 +283,7 @@ def seed_items(
     add_item("T_TABLE_TASKS", "tasks", "technical_requirements", "table")
     add_item("T_INDEX_TASKS_STATUS", "tasks(status) index", "technical_requirements", "index")
     add_item(
-        "T_FIELD_TASK_ID", "tasks.id", "technical_requirements", "data_entity", metadata={"field": "id", "type": "uuid"}
+        "T_FIELD_TASK_ID", "tasks.id", "technical_requirements", "data_entity", metadata={"field": "id", "type": "uuid"},
     )
     add_item(
         "T_FIELD_TASK_TITLE",
@@ -383,7 +383,7 @@ def seed_items(
                 view_id=mapping_view_id,
                 project_id=project_id,
                 is_primary=False,
-            )
+            ),
         )
 
     return items
@@ -546,7 +546,7 @@ def seed_graph_nodes(session: Session, project_id: str, graphs: dict[str, Graph]
                     item_id=node_id,
                     project_id=project_id,
                     is_primary=False,
-                )
+                ),
             )
 
 
@@ -571,7 +571,7 @@ def seed_links(session: Session, project_id: str, graphs: dict[str, Graph]) -> N
                 target_item_id=dst,
                 link_type=link_type,
                 link_metadata=metadata or {},
-            )
+            ),
         )
 
     # User graph
@@ -732,7 +732,7 @@ def seed_external_links(session: Session, project_id: str) -> None:
             target="figma://FILE_TODO?nodeId=1",
             label="Task List Wireframe",
             link_metadata={},
-        )
+        ),
     )
 
 
@@ -814,8 +814,6 @@ def main() -> None:
         seed_links(session, project_id, graphs)
         seed_external_links(session, project_id)
         session.commit()
-
-    print("Seeded ToDo CRUD feature graph project.")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,4 @@
-"""
-Repositories for blockchain-style version tracking and baselines.
+"""Repositories for blockchain-style version tracking and baselines.
 
 Provides data access layer for:
 - VersionBlock: Blockchain-style version records
@@ -18,6 +17,7 @@ Architecture:
 
 import hashlib
 import json
+import operator
 from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
@@ -144,7 +144,7 @@ class VersionBlockRepository:
         if not chain:
             # No chain exists, create genesis
             return await self.create_genesis_block(
-                db, spec_id, spec_type, project_id, content, author_id, change_summary
+                db, spec_id, spec_type, project_id, content, author_id, change_summary,
             )
 
         timestamp = datetime.now(UTC)
@@ -188,8 +188,8 @@ class VersionBlockRepository:
                 and_(
                     VersionChainIndex.spec_id == spec_id,
                     VersionChainIndex.spec_type == spec_type,
-                )
-            )
+                ),
+            ),
         )
         return result.scalar_one_or_none()
 
@@ -276,7 +276,7 @@ class BaselineRepository:
             return "", {}
 
         # Sort items by id for consistency
-        sorted_items = sorted(items, key=lambda x: x[0])
+        sorted_items = sorted(items, key=operator.itemgetter(0))
 
         # Compute leaf hashes
         leaves = [
@@ -302,7 +302,7 @@ class BaselineRepository:
         return root, {"levels": tree_levels, "leaves": leaves}
 
     def generate_proof(
-        self, item_id: str, content_hash: str, tree_structure: dict[str, Any]
+        self, item_id: str, content_hash: str, tree_structure: dict[str, Any],
     ) -> list[dict[str, str]] | None:
         """Generate Merkle proof for an item."""
         if not tree_structure:
@@ -442,8 +442,8 @@ class BaselineRepository:
                 and_(
                     MerkleProofCache.baseline_id == baseline.id,
                     MerkleProofCache.item_id == item_id,
-                )
-            )
+                ),
+            ),
         )
         return result.scalar_one_or_none()
 
@@ -465,8 +465,8 @@ class BaselineRepository:
                 and_(
                     BaselineItem.baseline_id == baseline.id,
                     BaselineItem.item_id == item_id,
-                )
-            )
+                ),
+            ),
         )
         baseline_item = result.scalar_one_or_none()
 
@@ -521,8 +521,8 @@ class SpecEmbeddingRepository:
                     SpecEmbedding.spec_id == spec_id,
                     SpecEmbedding.spec_type == spec_type,
                     SpecEmbedding.embedding_model == embedding_model,
-                )
-            )
+                ),
+            ),
         )
         existing = result.scalar_one_or_none()
 
@@ -567,8 +567,8 @@ class SpecEmbeddingRepository:
                     SpecEmbedding.spec_id == spec_id,
                     SpecEmbedding.spec_type == spec_type,
                     SpecEmbedding.embedding_model == embedding_model,
-                )
-            )
+                ),
+            ),
         )
         return result.scalar_one_or_none()
 
@@ -584,7 +584,7 @@ class SpecEmbeddingRepository:
             and_(
                 SpecEmbedding.project_id == project_id,
                 SpecEmbedding.embedding_model == embedding_model,
-            )
+            ),
         )
         if spec_type:
             query = query.where(SpecEmbedding.spec_type == spec_type)
@@ -606,8 +606,8 @@ class SpecEmbeddingRepository:
                     SpecEmbedding.spec_id == spec_id,
                     SpecEmbedding.spec_type == spec_type,
                     SpecEmbedding.content_hash != current_content_hash,
-                )
-            )
+                ),
+            ),
         )
         stale = list(result.scalars().all())
 

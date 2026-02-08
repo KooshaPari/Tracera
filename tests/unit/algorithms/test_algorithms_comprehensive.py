@@ -1,5 +1,4 @@
-"""
-Comprehensive test suite for algorithm and analytics modules.
+"""Comprehensive test suite for algorithm and analytics modules.
 
 This test suite covers:
 - Cycle detection algorithms (DFS, Tarjan's, all variants)
@@ -123,7 +122,7 @@ class TestCycleDetectionAlgorithms:
         return CycleDetectionService(mock_session)
 
     # Empty Graph Tests
-    def test_empty_graph_no_cycles(self, service, mock_session):
+    def test_empty_graph_no_cycles(self, service, mock_session) -> None:
         """Test empty graph has no cycles."""
         mock_session.query.return_value.filter.return_value.all.return_value = []
 
@@ -134,7 +133,7 @@ class TestCycleDetectionAlgorithms:
         assert len(result.cycles) == 0
 
     # Single Node Tests
-    def test_single_node_no_edges_no_cycle(self, service, mock_session):
+    def test_single_node_no_edges_no_cycle(self, service, mock_session) -> None:
         """Test single node with no edges has no cycle."""
         mock_session.query.return_value.filter.return_value.all.return_value = []
 
@@ -142,7 +141,7 @@ class TestCycleDetectionAlgorithms:
 
         assert result.has_cycles is False
 
-    def test_single_node_self_loop_has_cycle(self, service, mock_session):
+    def test_single_node_self_loop_has_cycle(self, service, mock_session) -> None:
         """Test single node with self-loop creates cycle."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="A", link_type="depends_on"),
@@ -155,7 +154,7 @@ class TestCycleDetectionAlgorithms:
         assert result.cycle_count > 0
 
     # Two Node Tests
-    def test_two_nodes_no_edges_no_cycle(self, service, mock_session):
+    def test_two_nodes_no_edges_no_cycle(self, service, mock_session) -> None:
         """Test two nodes with no edges has no cycle."""
         mock_session.query.return_value.filter.return_value.all.return_value = []
 
@@ -163,7 +162,7 @@ class TestCycleDetectionAlgorithms:
 
         assert result.has_cycles is False
 
-    def test_two_nodes_one_edge_no_cycle(self, service, mock_session):
+    def test_two_nodes_one_edge_no_cycle(self, service, mock_session) -> None:
         """Test two nodes with one edge: A -> B."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -174,7 +173,7 @@ class TestCycleDetectionAlgorithms:
 
         assert result.has_cycles is False
 
-    def test_two_nodes_mutual_edges_has_cycle(self, service, mock_session):
+    def test_two_nodes_mutual_edges_has_cycle(self, service, mock_session) -> None:
         """Test two nodes with mutual edges: A <-> B."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -188,7 +187,7 @@ class TestCycleDetectionAlgorithms:
         assert result.cycle_count > 0
 
     # Triangle Cycles
-    def test_triangle_cycle_clockwise(self, service, mock_session):
+    def test_triangle_cycle_clockwise(self, service, mock_session) -> None:
         """Test triangle cycle: A -> B -> C -> A."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -202,7 +201,7 @@ class TestCycleDetectionAlgorithms:
         assert result.has_cycles is True
         assert result.cycle_count > 0
 
-    def test_triangle_no_cycle(self, service, mock_session):
+    def test_triangle_no_cycle(self, service, mock_session) -> None:
         """Test triangle with no cycle: A -> B, A -> C, B -> C."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -216,7 +215,7 @@ class TestCycleDetectionAlgorithms:
         assert result.has_cycles is False
 
     # Complete Graph Tests
-    def test_complete_graph_3_nodes_has_cycles(self, service, mock_session):
+    def test_complete_graph_3_nodes_has_cycles(self, service, mock_session) -> None:
         """Test complete graph K3 has cycles."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -233,7 +232,7 @@ class TestCycleDetectionAlgorithms:
         assert result.has_cycles is True
         assert result.cycle_count >= 3  # At least 3 cycles in K3
 
-    def test_complete_graph_4_nodes_has_many_cycles(self, service, mock_session):
+    def test_complete_graph_4_nodes_has_many_cycles(self, service, mock_session) -> None:
         """Test complete graph K4 has many cycles."""
         nodes = ["A", "B", "C", "D"]
         links = []
@@ -252,7 +251,7 @@ class TestCycleDetectionAlgorithms:
         assert result.cycle_count >= 4  # Many cycles in K4
 
     # Linear Chain Tests
-    def test_linear_chain_short_no_cycle(self, service, mock_session):
+    def test_linear_chain_short_no_cycle(self, service, mock_session) -> None:
         """Test short linear chain: A -> B -> C."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -264,7 +263,7 @@ class TestCycleDetectionAlgorithms:
 
         assert result.has_cycles is False
 
-    def test_linear_chain_long_no_cycle(self, service, mock_session):
+    def test_linear_chain_long_no_cycle(self, service, mock_session) -> None:
         """Test long linear chain: A -> B -> C -> D -> E -> F."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -280,7 +279,7 @@ class TestCycleDetectionAlgorithms:
         assert result.has_cycles is False
 
     # Disconnected Graph Tests
-    def test_disconnected_components_no_cycles(self, service, mock_session):
+    def test_disconnected_components_no_cycles(self, service, mock_session) -> None:
         """Test disconnected components with no cycles."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -293,7 +292,7 @@ class TestCycleDetectionAlgorithms:
 
         assert result.has_cycles is False
 
-    def test_disconnected_one_component_has_cycle(self, service, mock_session):
+    def test_disconnected_one_component_has_cycle(self, service, mock_session) -> None:
         """Test disconnected graph where one component has cycle."""
         links = [
             # Component 1: cycle
@@ -309,7 +308,7 @@ class TestCycleDetectionAlgorithms:
         assert result.has_cycles is True
 
     # Multiple Cycles Tests
-    def test_multiple_independent_cycles(self, service, mock_session):
+    def test_multiple_independent_cycles(self, service, mock_session) -> None:
         """Test graph with multiple independent cycles."""
         links = [
             # Cycle 1: A -> B -> A
@@ -327,7 +326,7 @@ class TestCycleDetectionAlgorithms:
         assert result.has_cycles is True
         assert result.cycle_count >= 2
 
-    def test_nested_cycles(self, service, mock_session):
+    def test_nested_cycles(self, service, mock_session) -> None:
         """Test nested cycles sharing nodes."""
         links = [
             # Outer cycle: A -> B -> C -> A
@@ -346,7 +345,7 @@ class TestCycleDetectionAlgorithms:
         assert result.cycle_count >= 2
 
     # Large Cycle Tests
-    def test_large_cycle_10_nodes(self, service, mock_session):
+    def test_large_cycle_10_nodes(self, service, mock_session) -> None:
         """Test large cycle with 10 nodes."""
         nodes = [f"N{i}" for i in range(10)]
         links = [
@@ -360,7 +359,7 @@ class TestCycleDetectionAlgorithms:
 
         assert result.has_cycles is True
 
-    def test_large_cycle_50_nodes(self, service, mock_session):
+    def test_large_cycle_50_nodes(self, service, mock_session) -> None:
         """Test large cycle with 50 nodes."""
         nodes = [f"N{i}" for i in range(50)]
         links = [
@@ -375,7 +374,7 @@ class TestCycleDetectionAlgorithms:
         assert result.has_cycles is True
 
     # Has Cycle (Link Prevention) Tests
-    def test_has_cycle_would_create_simple_cycle(self, service, mock_session):
+    def test_has_cycle_would_create_simple_cycle(self, service, mock_session) -> None:
         """Test has_cycle detects that new link would create cycle."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -388,7 +387,7 @@ class TestCycleDetectionAlgorithms:
 
         assert result is True
 
-    def test_has_cycle_safe_link(self, service, mock_session):
+    def test_has_cycle_safe_link(self, service, mock_session) -> None:
         """Test has_cycle allows safe link."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -401,7 +400,7 @@ class TestCycleDetectionAlgorithms:
 
         assert result is False
 
-    def test_has_cycle_non_depends_on_link_allowed(self, service, mock_session):
+    def test_has_cycle_non_depends_on_link_allowed(self, service, mock_session) -> None:
         """Test has_cycle allows non-depends_on links."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -415,7 +414,7 @@ class TestCycleDetectionAlgorithms:
         assert result is False
 
     # Can Reach Algorithm Tests
-    def test_can_reach_direct_connection(self, service):
+    def test_can_reach_direct_connection(self, service) -> None:
         """Test _can_reach with direct connection."""
         graph = {"A": {"B"}, "B": set()}
 
@@ -423,7 +422,7 @@ class TestCycleDetectionAlgorithms:
 
         assert result is True
 
-    def test_can_reach_indirect_connection(self, service):
+    def test_can_reach_indirect_connection(self, service) -> None:
         """Test _can_reach with indirect connection."""
         graph = {"A": {"B"}, "B": {"C"}, "C": set()}
 
@@ -431,7 +430,7 @@ class TestCycleDetectionAlgorithms:
 
         assert result is True
 
-    def test_can_reach_no_connection(self, service):
+    def test_can_reach_no_connection(self, service) -> None:
         """Test _can_reach with no connection."""
         graph = {"A": {"B"}, "C": {"D"}}
 
@@ -439,7 +438,7 @@ class TestCycleDetectionAlgorithms:
 
         assert result is False
 
-    def test_can_reach_same_node(self, service):
+    def test_can_reach_same_node(self, service) -> None:
         """Test _can_reach from node to itself."""
         graph = {"A": {"B"}}
 
@@ -448,7 +447,7 @@ class TestCycleDetectionAlgorithms:
         assert result is True
 
     # Find Cycles Algorithm Tests
-    def test_find_cycles_empty_graph(self, service):
+    def test_find_cycles_empty_graph(self, service) -> None:
         """Test _find_cycles on empty graph."""
         graph = {}
 
@@ -456,7 +455,7 @@ class TestCycleDetectionAlgorithms:
 
         assert len(cycles) == 0
 
-    def test_find_cycles_single_node_no_cycle(self, service):
+    def test_find_cycles_single_node_no_cycle(self, service) -> None:
         """Test _find_cycles on single node with no self-loop."""
         graph = {"A": set()}
 
@@ -464,7 +463,7 @@ class TestCycleDetectionAlgorithms:
 
         assert len(cycles) == 0
 
-    def test_find_cycles_returns_correct_cycle_path(self, service):
+    def test_find_cycles_returns_correct_cycle_path(self, service) -> None:
         """Test _find_cycles returns correct cycle path."""
         graph = {"A": {"B"}, "B": {"C"}, "C": {"A"}}
 
@@ -506,7 +505,7 @@ class TestShortestPathAlgorithms:
 
     # Empty Graph Tests
     @pytest.mark.asyncio
-    async def test_shortest_path_empty_graph(self, service, mock_async_session):
+    async def test_shortest_path_empty_graph(self, service, mock_async_session) -> None:
         """Test shortest path on empty graph."""
         service.items.get_by_project = AsyncMock(return_value=[])
         service.links.get_by_project = AsyncMock(return_value=[])
@@ -519,7 +518,7 @@ class TestShortestPathAlgorithms:
 
     # Single Edge Tests
     @pytest.mark.asyncio
-    async def test_shortest_path_single_edge_direct(self, service):
+    async def test_shortest_path_single_edge_direct(self, service) -> None:
         """Test shortest path with direct connection."""
         item_a = Mock(spec=Item, id="A")
         item_b = Mock(spec=Item, id="B")
@@ -536,7 +535,7 @@ class TestShortestPathAlgorithms:
 
     # Linear Chain Tests
     @pytest.mark.asyncio
-    async def test_shortest_path_linear_chain(self, service):
+    async def test_shortest_path_linear_chain(self, service) -> None:
         """Test shortest path through linear chain."""
         items = [Mock(spec=Item, id=f"N{i}") for i in range(5)]
         links = [
@@ -555,7 +554,7 @@ class TestShortestPathAlgorithms:
 
     # Multiple Paths Tests
     @pytest.mark.asyncio
-    async def test_shortest_path_multiple_paths_chooses_shortest(self, service):
+    async def test_shortest_path_multiple_paths_chooses_shortest(self, service) -> None:
         """Test Dijkstra chooses shortest among multiple paths."""
         items = [Mock(spec=Item, id=x) for x in ["A", "B", "C", "D"]]
         links = [
@@ -580,7 +579,7 @@ class TestShortestPathAlgorithms:
 
     # No Path Tests
     @pytest.mark.asyncio
-    async def test_shortest_path_no_path_disconnected(self, service):
+    async def test_shortest_path_no_path_disconnected(self, service) -> None:
         """Test shortest path when nodes are disconnected."""
         items = [Mock(spec=Item, id=x) for x in ["A", "B", "C", "D"]]
         links = [
@@ -598,7 +597,7 @@ class TestShortestPathAlgorithms:
 
     # Same Source and Target
     @pytest.mark.asyncio
-    async def test_shortest_path_same_source_target(self, service):
+    async def test_shortest_path_same_source_target(self, service) -> None:
         """Test shortest path from node to itself."""
         item_a = Mock(spec=Item, id="A")
 
@@ -613,7 +612,7 @@ class TestShortestPathAlgorithms:
 
     # Link Type Filtering
     @pytest.mark.asyncio
-    async def test_shortest_path_with_link_type_filter(self, service):
+    async def test_shortest_path_with_link_type_filter(self, service) -> None:
         """Test shortest path respects link type filter."""
         items = [Mock(spec=Item, id=x) for x in ["A", "B", "C"]]
         links = [
@@ -631,7 +630,7 @@ class TestShortestPathAlgorithms:
 
     # All Shortest Paths Tests
     @pytest.mark.asyncio
-    async def test_find_all_shortest_paths_from_source(self, service):
+    async def test_find_all_shortest_paths_from_source(self, service) -> None:
         """Test finding shortest paths to all reachable nodes."""
         items = [Mock(spec=Item, id=x) for x in ["A", "B", "C", "D"]]
         links = [
@@ -673,7 +672,7 @@ class TestImpactAnalysisAlgorithms:
 
     # Empty Graph Tests
     @pytest.mark.asyncio
-    async def test_impact_analysis_empty_graph(self, service):
+    async def test_impact_analysis_empty_graph(self, service) -> None:
         """Test impact analysis on empty graph."""
         root_item = Mock(spec=Item, id="A", title="Item A", view="requirements")
 
@@ -688,7 +687,7 @@ class TestImpactAnalysisAlgorithms:
 
     # Single Level Impact
     @pytest.mark.asyncio
-    async def test_impact_analysis_single_level(self, service):
+    async def test_impact_analysis_single_level(self, service) -> None:
         """Test impact analysis with single level of dependencies."""
         items = {
             "A": Mock(spec=Item, id="A", title="A", view="requirements", status="active"),
@@ -711,7 +710,7 @@ class TestImpactAnalysisAlgorithms:
                 [],
                 # No links from C
                 [],
-            ]
+            ],
         )
 
         result = await service.analyze_impact("A", max_depth=10)
@@ -722,7 +721,7 @@ class TestImpactAnalysisAlgorithms:
 
     # Multi-Level Impact
     @pytest.mark.asyncio
-    async def test_impact_analysis_multi_level(self, service):
+    async def test_impact_analysis_multi_level(self, service) -> None:
         """Test impact analysis with multiple levels."""
         items = {
             "A": Mock(spec=Item, id="A", title="A", view="requirements", status="active"),
@@ -741,7 +740,7 @@ class TestImpactAnalysisAlgorithms:
                 [Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on")],
                 [Mock(spec=Link, source_item_id="B", target_item_id="C", link_type="depends_on")],
                 [],
-            ]
+            ],
         )
 
         result = await service.analyze_impact("A", max_depth=10)
@@ -753,7 +752,7 @@ class TestImpactAnalysisAlgorithms:
 
     # Max Depth Limiting
     @pytest.mark.asyncio
-    async def test_impact_analysis_respects_max_depth(self, service):
+    async def test_impact_analysis_respects_max_depth(self, service) -> None:
         """Test impact analysis respects max depth limit."""
         items = {
             f"N{i}": Mock(spec=Item, id=f"N{i}", title=f"Node {i}", view="requirements", status="active")
@@ -787,7 +786,7 @@ class TestImpactAnalysisAlgorithms:
 
     # Reverse Impact Tests
     @pytest.mark.asyncio
-    async def test_reverse_impact_analysis(self, service):
+    async def test_reverse_impact_analysis(self, service) -> None:
         """Test reverse impact analysis (what depends on this item)."""
         items = {
             "A": Mock(spec=Item, id="A", title="A", view="implementation", status="active"),
@@ -806,7 +805,7 @@ class TestImpactAnalysisAlgorithms:
                 [Mock(spec=Link, source_item_id="B", target_item_id="A", link_type="depends_on")],
                 [Mock(spec=Link, source_item_id="C", target_item_id="B", link_type="depends_on")],
                 [],
-            ]
+            ],
         )
 
         result = await service.analyze_reverse_impact("A", max_depth=10)
@@ -816,7 +815,7 @@ class TestImpactAnalysisAlgorithms:
 
     # Critical Paths
     @pytest.mark.asyncio
-    async def test_critical_paths_identification(self, service):
+    async def test_critical_paths_identification(self, service) -> None:
         """Test identification of critical paths to leaf nodes."""
         items = {
             "A": Mock(spec=Item, id="A", title="A", view="requirements", status="active"),
@@ -833,7 +832,7 @@ class TestImpactAnalysisAlgorithms:
                 [Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on")],
                 [Mock(spec=Link, source_item_id="B", target_item_id="C", link_type="depends_on")],
                 [],
-            ]
+            ],
         )
 
         result = await service.analyze_impact("A", max_depth=10)
@@ -863,7 +862,7 @@ class TestCriticalPathAlgorithms:
 
     # Empty Graph Tests
     @pytest.mark.asyncio
-    async def test_critical_path_empty_graph(self, service):
+    async def test_critical_path_empty_graph(self, service) -> None:
         """Test critical path on empty graph."""
         service.items.get_by_project = AsyncMock(return_value=[])
         service.links.get_by_project = AsyncMock(return_value=[])
@@ -876,7 +875,7 @@ class TestCriticalPathAlgorithms:
 
     # Linear Chain Critical Path
     @pytest.mark.asyncio
-    async def test_critical_path_linear_chain(self, service):
+    async def test_critical_path_linear_chain(self, service) -> None:
         """Test critical path in linear chain (all nodes critical)."""
         items = [Mock(spec=Item, id=f"N{i}") for i in range(4)]
         links = [
@@ -895,7 +894,7 @@ class TestCriticalPathAlgorithms:
 
     # Parallel Paths Test
     @pytest.mark.asyncio
-    async def test_critical_path_parallel_paths(self, service):
+    async def test_critical_path_parallel_paths(self, service) -> None:
         """Test critical path with parallel paths."""
         items = [Mock(spec=Item, id=x) for x in ["A", "B", "C", "D"]]
         links = [
@@ -920,7 +919,7 @@ class TestCriticalPathAlgorithms:
 
     # Slack Time Calculation
     @pytest.mark.asyncio
-    async def test_slack_time_calculation(self, service):
+    async def test_slack_time_calculation(self, service) -> None:
         """Test slack time calculation for non-critical nodes."""
         items = [Mock(spec=Item, id=x) for x in ["A", "B", "C", "D", "E"]]
         links = [
@@ -961,7 +960,7 @@ class TestAdvancedAnalyticsAlgorithms:
 
     # Project Metrics Tests
     @pytest.mark.asyncio
-    async def test_project_metrics_empty_project(self, service):
+    async def test_project_metrics_empty_project(self, service) -> None:
         """Test project metrics for empty project."""
         service.items.query = AsyncMock(return_value=[])
 
@@ -971,7 +970,7 @@ class TestAdvancedAnalyticsAlgorithms:
         assert metrics["completion_rate"] == 0.0
 
     @pytest.mark.asyncio
-    async def test_project_metrics_with_items(self, service):
+    async def test_project_metrics_with_items(self, service) -> None:
         """Test project metrics calculation."""
         items = [
             Mock(spec=Item, status="done", view="requirements"),
@@ -988,7 +987,7 @@ class TestAdvancedAnalyticsAlgorithms:
         assert metrics["completion_rate"] == 50.0  # 2/4 done
 
     # Completion Rate Tests
-    def test_completion_rate_all_done(self, service):
+    def test_completion_rate_all_done(self, service) -> None:
         """Test completion rate when all items done."""
         status_counts = {"done": 10}
 
@@ -996,7 +995,7 @@ class TestAdvancedAnalyticsAlgorithms:
 
         assert rate == 100.0
 
-    def test_completion_rate_none_done(self, service):
+    def test_completion_rate_none_done(self, service) -> None:
         """Test completion rate when no items done."""
         status_counts = {"todo": 10, "in_progress": 5}
 
@@ -1004,7 +1003,7 @@ class TestAdvancedAnalyticsAlgorithms:
 
         assert rate == 0.0
 
-    def test_completion_rate_mixed(self, service):
+    def test_completion_rate_mixed(self, service) -> None:
         """Test completion rate with mixed statuses."""
         status_counts = {"done": 7, "complete": 3, "todo": 10}
 
@@ -1014,7 +1013,7 @@ class TestAdvancedAnalyticsAlgorithms:
 
     # Dependency Metrics Tests
     @pytest.mark.asyncio
-    async def test_dependency_metrics_calculation(self, service):
+    async def test_dependency_metrics_calculation(self, service) -> None:
         """Test dependency metrics calculation."""
         items = [
             Mock(
@@ -1043,7 +1042,7 @@ class TestAdvancedAnalyticsAlgorithms:
 
     # Quality Metrics Tests
     @pytest.mark.asyncio
-    async def test_quality_metrics_all_complete(self, service):
+    async def test_quality_metrics_all_complete(self, service) -> None:
         """Test quality metrics when all items have descriptions and links."""
         items = [
             Mock(spec=Item, description="Desc 1", outgoing_links=[Mock()]),
@@ -1057,7 +1056,7 @@ class TestAdvancedAnalyticsAlgorithms:
         assert metrics["link_coverage"] == 100.0
 
     @pytest.mark.asyncio
-    async def test_quality_metrics_partial_coverage(self, service):
+    async def test_quality_metrics_partial_coverage(self, service) -> None:
         """Test quality metrics with partial coverage."""
         # Need to ensure outgoing_links is present and has length > 0 for link coverage
         items = [
@@ -1088,7 +1087,7 @@ class TestAlgorithmPerformance:
         """Create mock session."""
         return Mock(spec=Session)
 
-    def test_cycle_detection_large_graph_performance(self, mock_session):
+    def test_cycle_detection_large_graph_performance(self, mock_session) -> None:
         """Test cycle detection performance on large graph (500 nodes)."""
         service = CycleDetectionService(mock_session)
 
@@ -1108,7 +1107,7 @@ class TestAlgorithmPerformance:
         assert result.has_cycles is False
         assert elapsed < 2.0  # Should complete in under 2 seconds
 
-    def test_cycle_detection_dense_graph_performance(self, mock_session):
+    def test_cycle_detection_dense_graph_performance(self, mock_session) -> None:
         """Test cycle detection on dense graph (100 nodes, high connectivity)."""
         service = CycleDetectionService(mock_session)
 
@@ -1131,7 +1130,7 @@ class TestAlgorithmPerformance:
         assert elapsed < 2.0  # Should complete in under 2 seconds
 
     @pytest.mark.asyncio
-    async def test_shortest_path_large_graph_performance(self):
+    async def test_shortest_path_large_graph_performance(self) -> None:
         """Test shortest path performance on large graph."""
         mock_session = Mock(spec=AsyncSession)
         service = ShortestPathService(mock_session)
@@ -1155,7 +1154,7 @@ class TestAlgorithmPerformance:
         assert elapsed < 1.0  # Dijkstra should be fast
 
     @pytest.mark.asyncio
-    async def test_impact_analysis_large_tree_performance(self):
+    async def test_impact_analysis_large_tree_performance(self) -> None:
         """Test impact analysis performance on large tree structure."""
         mock_session = Mock(spec=AsyncSession)
         service = ImpactAnalysisService(mock_session)
@@ -1178,11 +1177,11 @@ class TestAlgorithmPerformance:
             children = []
             if left < 127:
                 children.append(
-                    Mock(spec=Link, source_item_id=f"N{node_idx}", target_item_id=f"N{left}", link_type="depends_on")
+                    Mock(spec=Link, source_item_id=f"N{node_idx}", target_item_id=f"N{left}", link_type="depends_on"),
                 )
             if right < 127:
                 children.append(
-                    Mock(spec=Link, source_item_id=f"N{node_idx}", target_item_id=f"N{right}", link_type="depends_on")
+                    Mock(spec=Link, source_item_id=f"N{node_idx}", target_item_id=f"N{right}", link_type="depends_on"),
                 )
             return children
 
@@ -1211,7 +1210,7 @@ class TestGraphAlgorithmProperties:
 
     @given(graph=dag_strategy())
     @settings(max_examples=50, deadline=1000)
-    def test_dag_has_no_cycles_property(self, mock_session, graph):
+    def test_dag_has_no_cycles_property(self, mock_session, graph) -> None:
         """Property: DAG should never have cycles."""
         service = CycleDetectionService(mock_session)
 
@@ -1228,7 +1227,7 @@ class TestGraphAlgorithmProperties:
 
     @given(graph=cyclic_graph_strategy())
     @settings(max_examples=50, deadline=1000)
-    def test_cyclic_graph_has_cycles_property(self, mock_session, graph):
+    def test_cyclic_graph_has_cycles_property(self, mock_session, graph) -> None:
         """Property: Graph with guaranteed cycle should be detected."""
         service = CycleDetectionService(mock_session)
 
@@ -1245,7 +1244,7 @@ class TestGraphAlgorithmProperties:
 
     @given(graph=graph_strategy())
     @settings(max_examples=30, deadline=2000)
-    def test_cycle_detection_terminates_property(self, mock_session, graph):
+    def test_cycle_detection_terminates_property(self, mock_session, graph) -> None:
         """Property: Cycle detection always terminates."""
         assume(len(graph["nodes"]) > 0)  # Skip empty graphs
 
@@ -1266,7 +1265,7 @@ class TestGraphAlgorithmProperties:
 
     @given(nodes=st.lists(st.text(min_size=1, max_size=5), min_size=1, max_size=20, unique=True))
     @settings(max_examples=30, deadline=1000)
-    def test_isolated_nodes_have_no_impact_property(self, nodes):
+    def test_isolated_nodes_have_no_impact_property(self, nodes) -> None:
         """Property: Isolated nodes should have zero impact."""
         mock_session = Mock(spec=AsyncSession)
         service = ImpactAnalysisService(mock_session)
@@ -1274,7 +1273,7 @@ class TestGraphAlgorithmProperties:
         # Create isolated node
         root_item = Mock(spec=Item, id=nodes[0], title=nodes[0], view="requirements")
 
-        async def test_impl():
+        async def test_impl() -> None:
             service.items.get_by_id = AsyncMock(return_value=root_item)
             service.links.get_by_source = AsyncMock(return_value=[])
 
@@ -1300,12 +1299,12 @@ class TestAlgorithmEdgeCases:
         return Mock(spec=Session)
 
     # Null and Invalid Input Tests
-    def test_cycle_detection_handles_operational_error(self, mock_session):
+    def test_cycle_detection_handles_operational_error(self, mock_session) -> None:
         """Test cycle detection handles database errors gracefully."""
         service = CycleDetectionService(mock_session)
 
         mock_session.query.return_value.filter.return_value.all.side_effect = OperationalError(
-            "", None, Exception("db error")
+            "", None, Exception("db error"),
         )
 
         result = service.detect_cycles("proj1", link_type="depends_on")
@@ -1313,7 +1312,7 @@ class TestAlgorithmEdgeCases:
         # Should return no cycles on error
         assert result.has_cycles is False
 
-    def test_cycle_detection_missing_dependencies(self, mock_session):
+    def test_cycle_detection_missing_dependencies(self, mock_session) -> None:
         """Test detection of missing dependencies."""
         service = CycleDetectionService(mock_session)
 
@@ -1339,7 +1338,7 @@ class TestAlgorithmEdgeCases:
         assert result["has_missing_dependencies"] is True
         assert result["missing_count"] > 0
 
-    def test_orphan_detection_all_orphans(self, mock_session):
+    def test_orphan_detection_all_orphans(self, mock_session) -> None:
         """Test orphan detection when all items are orphans."""
         service = CycleDetectionService(mock_session)
 
@@ -1371,7 +1370,7 @@ class TestAlgorithmEdgeCases:
         assert result["has_orphans"] is True
         assert result["orphan_count"] == 2
 
-    def test_orphan_detection_no_orphans(self, mock_session):
+    def test_orphan_detection_no_orphans(self, mock_session) -> None:
         """Test orphan detection when no orphans exist."""
         service = CycleDetectionService(mock_session)
 
@@ -1408,7 +1407,7 @@ class TestAlgorithmEdgeCases:
         assert result["orphan_count"] == 0
 
     # Graph with Self-Loops
-    def test_multiple_self_loops(self, mock_session):
+    def test_multiple_self_loops(self, mock_session) -> None:
         """Test detection of multiple self-loops."""
         service = CycleDetectionService(mock_session)
 
@@ -1426,7 +1425,7 @@ class TestAlgorithmEdgeCases:
         assert result.cycle_count >= 3  # At least 3 self-loop cycles
 
     # Very Large Cycle
-    def test_very_large_cycle_500_nodes(self, mock_session):
+    def test_very_large_cycle_500_nodes(self, mock_session) -> None:
         """Test detection of very large cycle (500 nodes)."""
         service = CycleDetectionService(mock_session)
 
@@ -1444,7 +1443,7 @@ class TestAlgorithmEdgeCases:
         assert result.has_cycles is True
 
     # Numerical Accuracy Tests
-    def test_completion_rate_precision(self):
+    def test_completion_rate_precision(self) -> None:
         """Test completion rate calculation precision."""
         service = AdvancedAnalyticsService(Mock(spec=AsyncSession))
 
@@ -1454,7 +1453,7 @@ class TestAlgorithmEdgeCases:
 
         assert abs(rate - 25.0) < 0.01  # Should be 25% with high precision
 
-    def test_average_links_calculation_precision(self):
+    def test_average_links_calculation_precision(self) -> None:
         """Test average links per item calculation."""
         # This would be tested via dependency_metrics
         # Already covered in analytics tests

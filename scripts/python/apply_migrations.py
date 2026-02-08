@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""
-Apply database migrations to Supabase and Neo4j
-"""
+"""Apply database migrations to Supabase and Neo4j."""
 
+import contextlib
 import os
 import sys
 from pathlib import Path
@@ -15,15 +14,13 @@ env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(env_path)
 
 
-def apply_supabase_migrations():
-    """Apply migrations to Supabase PostgreSQL"""
-
+def apply_supabase_migrations() -> bool | None:
+    """Apply migrations to Supabase PostgreSQL."""
     # Try direct URL first, then fall back to pooler URL
     db_url = os.getenv("DB_DIRECT_URL")
     if not db_url:
         db_url = os.getenv("DB_TRANS_POOL_URL")
     if not db_url:
-        print("❌ DB_DIRECT_URL or DB_TRANS_POOL_URL not set")
         return False
 
     try:
@@ -31,49 +28,38 @@ def apply_supabase_migrations():
         conn = psycopg2.connect(db_url)
         cursor = conn.cursor()
 
-        print("✅ Connected to Supabase PostgreSQL")
-
         # Read and execute migration files
         migrations_dir = Path(__file__).parent.parent / "backend" / "internal" / "db" / "migrations"
 
         if not migrations_dir.exists():
-            print(f"❌ Migrations directory not found: {migrations_dir}")
             return False
 
         migration_files = sorted(migrations_dir.glob("*.sql"))
 
         if not migration_files:
-            print("❌ No migration files found")
             return False
 
         for migration_file in migration_files:
-            print(f"\n📝 Applying migration: {migration_file.name}")
 
-            with Path(migration_file).open() as f:
-                sql = f.read()
+            sql = Path(migration_file).read_text(encoding="utf-8")
 
             try:
                 cursor.execute(sql)
                 conn.commit()
-                print(f"✅ Applied: {migration_file.name}")
-            except Exception as e:
+            except Exception:
                 conn.rollback()
-                print(f"⚠️  Migration {migration_file.name} failed (may already exist): {e}")
 
         cursor.close()
         conn.close()
 
-        print("\n✅ Supabase migrations completed")
         return True
 
-    except Exception as e:
-        print(f"❌ Error applying migrations: {e}")
+    except Exception:
         return False
 
 
-def apply_neo4j_migrations():
-    """Apply migrations to Neo4j"""
-
+def apply_neo4j_migrations() -> bool | None:
+    """Apply migrations to Neo4j."""
     try:
         from neo4j import GraphDatabase
 
@@ -82,12 +68,9 @@ def apply_neo4j_migrations():
         password = os.getenv("NEO4J_PASSWORD")
 
         if not all([uri, username, password]):
-            print("❌ Neo4j credentials not set")
             return False
 
         driver = GraphDatabase.driver(uri, auth=(username, password))
-
-        print("✅ Connected to Neo4j")
 
         # Create constraints and indexes
         with driver.session() as session:
@@ -99,11 +82,8 @@ def apply_neo4j_migrations():
             ]
 
             for constraint in constraints:
-                try:
+                with contextlib.suppress(Exception):
                     session.run(constraint)
-                    print(f"✅ {constraint.split('IF NOT EXISTS')[0].strip()}")
-                except Exception as e:
-                    print(f"⚠️  Constraint creation: {e}")
 
             # Create indexes
             indexes = [
@@ -114,33 +94,24 @@ def apply_neo4j_migrations():
             ]
 
             for index in indexes:
-                try:
+                with contextlib.suppress(Exception):
                     session.run(index)
-                    print(f"✅ {index.split('IF NOT EXISTS')[0].strip()}")
-                except Exception as e:
-                    print(f"⚠️  Index creation: {e}")
 
         driver.close()
-        print("\n✅ Neo4j migrations completed")
         return True
 
     except ImportError:
-        print("⚠️  neo4j package not installed, skipping Neo4j migrations")
         return True
-    except Exception as e:
-        print(f"❌ Error applying Neo4j migrations: {e}")
+    except Exception:
         return False
 
 
 if __name__ == "__main__":
-    print("🚀 Starting database migrations...\n")
 
     supabase_ok = apply_supabase_migrations()
     neo4j_ok = apply_neo4j_migrations()
 
     if supabase_ok and neo4j_ok:
-        print("\n✨ All migrations completed successfully!")
         sys.exit(0)
     else:
-        print("\n❌ Some migrations failed")
         sys.exit(1)

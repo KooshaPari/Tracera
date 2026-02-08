@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 class SecurityComplianceService:
     """Service for security and compliance."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.audit_log: list[dict[str, Any]] = []
         self.encryption_enabled = False

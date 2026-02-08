@@ -1,4 +1,4 @@
-"""UUID validation and normalization utilities"""
+"""UUID validation and normalization utilities."""
 
 import re
 import uuid
@@ -7,7 +7,7 @@ UUID_REGEX = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a
 
 
 def validate_uuid(id_str: str) -> None:
-    """Validate UUID format, raise ValueError if invalid
+    """Validate UUID format, raise ValueError if invalid.
 
     Args:
         id_str: String to validate as UUID
@@ -17,11 +17,12 @@ def validate_uuid(id_str: str) -> None:
     """
     normalized = normalize_uuid(id_str)
     if not UUID_REGEX.match(normalized):
-        raise ValueError(f"Invalid UUID format: {id_str}")
+        msg = f"Invalid UUID format: {id_str}"
+        raise ValueError(msg)
 
 
 def normalize_uuid(id_str: str) -> str:
-    """Normalize UUID to lowercase and trimmed
+    """Normalize UUID to lowercase and trimmed.
 
     Args:
         id_str: UUID string to normalize
@@ -33,7 +34,7 @@ def normalize_uuid(id_str: str) -> str:
 
 
 def generate_uuid() -> str:
-    """Generate new UUID as string
+    """Generate new UUID as string.
 
     Returns:
         New UUID v4 as string
@@ -42,7 +43,7 @@ def generate_uuid() -> str:
 
 
 def is_valid_uuid(id_str: str) -> bool:
-    """Check if string is a valid UUID
+    """Check if string is a valid UUID.
 
     Args:
         id_str: String to validate
@@ -58,7 +59,7 @@ def is_valid_uuid(id_str: str) -> bool:
 
 
 def validate_uuids(id_strs: list[str]) -> None:
-    """Validate multiple UUIDs, raise ValueError on first invalid
+    """Validate multiple UUIDs, raise ValueError on first invalid.
 
     Args:
         id_strs: List of UUID strings to validate

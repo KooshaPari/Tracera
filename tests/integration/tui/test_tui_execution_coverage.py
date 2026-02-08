@@ -1,5 +1,4 @@
-"""
-Comprehensive execution tests for TUI module - targeting 100% code coverage.
+"""Comprehensive execution tests for TUI module - targeting 100% code coverage.
 
 Tests actual code execution paths for:
 - All 4 TUI apps (graph, browser, dashboard, dashboard_compat)
@@ -60,11 +59,11 @@ def mock_config_manager():
     """Mock ConfigManager for TUI apps."""
     with patch("tracertm.tui.apps.graph.ConfigManager") as mock_cm_class:
         mock_instance = Mock()
-        mock_instance.get.side_effect = lambda key: {
+        mock_instance.get.side_effect = {
             "database_url": "sqlite:///test.db",
             "current_project_id": "test-project-id",
             "current_project": "test-project",
-        }.get(key)
+        }.get
         mock_cm_class.return_value = mock_instance
         yield mock_instance
 
@@ -178,11 +177,11 @@ def mock_storage_adapter(sample_project, sample_items):
 class TestGraphApp:
     """Test GraphApp execution paths."""
 
-    def test_graph_app_initialization(self, mock_config_manager):
+    def test_graph_app_initialization(self, mock_config_manager) -> None:
         """Test GraphApp.__init__ execution."""
         with patch("tracertm.tui.apps.graph.ConfigManager") as mock_cm:
             mock_cm.return_value = mock_config_manager
-            app = cast(Any, GraphApp())
+            app = cast("Any", GraphApp())
 
             assert app.project_id is None
             assert app.db is None
@@ -193,13 +192,13 @@ class TestGraphApp:
     @patch("tracertm.tui.apps.graph.Session")
     @patch("tracertm.tui.apps.graph.DatabaseConnection")
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_compose(self, mock_cm, mock_db, mock_session_class):
+    def test_graph_app_compose(self, mock_cm, mock_db, mock_session_class) -> None:
         """Test GraphApp.compose execution."""
         mock_cm.return_value.get.return_value = "sqlite:///test.db"
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
 
         # Execute compose in Textual app context
-        async def run_test():
+        async def run_test() -> None:
             async with app.run_test() as pilot:
                 # The app is already set up, just verify it has widgets
                 assert app is not None
@@ -211,7 +210,7 @@ class TestGraphApp:
     @patch("tracertm.tui.apps.graph.Session")
     @patch("tracertm.tui.apps.graph.DatabaseConnection")
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_setup_database_success(self, mock_cm, mock_db_class, mock_session_class):
+    def test_graph_app_setup_database_success(self, mock_cm, mock_db_class, mock_session_class) -> None:
         """Test GraphApp.setup_database with valid config."""
         mock_instance = Mock()
         mock_instance.get.return_value = "sqlite:///test.db"
@@ -220,20 +219,20 @@ class TestGraphApp:
         mock_db = Mock()
         mock_db_class.return_value = mock_db
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.setup_database()
 
         assert app.db == mock_db
         mock_db.connect.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_setup_database_no_url(self, mock_cm):
+    def test_graph_app_setup_database_no_url(self, mock_cm) -> None:
         """Test GraphApp.setup_database with no database URL."""
         mock_instance = Mock()
         mock_instance.get.return_value = None
         mock_cm.return_value = mock_instance
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.exit = Mock()
 
         app.setup_database()
@@ -242,25 +241,25 @@ class TestGraphApp:
         assert "No database configured" in str(app.exit.call_args)
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_load_project_success(self, mock_cm):
+    def test_graph_app_load_project_success(self, mock_cm) -> None:
         """Test GraphApp.load_project with valid project."""
         mock_instance = Mock()
         mock_instance.get.return_value = "test-project-id"
         mock_cm.return_value = mock_instance
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.load_project()
 
         assert app.project_id == "test-project-id"
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_load_project_no_project(self, mock_cm):
+    def test_graph_app_load_project_no_project(self, mock_cm) -> None:
         """Test GraphApp.load_project with no current project."""
         mock_instance = Mock()
         mock_instance.get.return_value = None
         mock_cm.return_value = mock_instance
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.exit = Mock()
 
         app.load_project()
@@ -270,7 +269,7 @@ class TestGraphApp:
 
     @patch("tracertm.tui.apps.graph.Session")
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_load_graph_data(self, mock_cm, mock_session_class, sample_items, sample_links):
+    def test_graph_app_load_graph_data(self, mock_cm, mock_session_class, sample_items, sample_links) -> None:
         """Test GraphApp.load_graph_data execution."""
         mock_cm.return_value.get.return_value = "sqlite:///test.db"
 
@@ -282,7 +281,7 @@ class TestGraphApp:
         mock_session.query.return_value = mock_query
         mock_session_class.return_value.__enter__.return_value = mock_session
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.db = Mock()
         app.db.engine = Mock()
         app.project_id = "test-project-id"
@@ -295,11 +294,11 @@ class TestGraphApp:
 
     @patch("tracertm.tui.apps.graph.Session")
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_render_graph(self, mock_cm, mock_session_class, sample_items, sample_links):
+    def test_graph_app_render_graph(self, mock_cm, mock_session_class, sample_items, sample_links) -> None:
         """Test GraphApp.render_graph execution."""
         mock_cm.return_value.get.return_value = "sqlite:///test.db"
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.db = Mock()
         app.db.engine = Mock()
         app.project_id = "test-project-id"
@@ -316,7 +315,7 @@ class TestGraphApp:
                 "#graph-canvas": mock_canvas,
                 "#link-table": mock_table,
                 "#graph-stats": mock_stats,
-            }.get(selector)
+            }.get(selector),
         )
 
         # Mock session with proper query handling
@@ -348,11 +347,11 @@ class TestGraphApp:
         mock_stats.update.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_action_refresh(self, mock_cm):
+    def test_graph_app_action_refresh(self, mock_cm) -> None:
         """Test GraphApp.action_refresh execution."""
         mock_cm.return_value.get.return_value = "sqlite:///test.db"
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.load_graph_data = Mock()
         app.render_graph = Mock()
 
@@ -362,11 +361,11 @@ class TestGraphApp:
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_action_zoom_in(self, mock_cm):
+    def test_graph_app_action_zoom_in(self, mock_cm) -> None:
         """Test GraphApp.action_zoom_in execution."""
         mock_cm.return_value.get.return_value = "sqlite:///test.db"
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.zoom = 1.0
         app.render_graph = Mock()
 
@@ -376,11 +375,11 @@ class TestGraphApp:
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_action_zoom_in_max(self, mock_cm):
+    def test_graph_app_action_zoom_in_max(self, mock_cm) -> None:
         """Test GraphApp.action_zoom_in at max zoom."""
         mock_cm.return_value.get.return_value = "sqlite:///test.db"
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.zoom = 5.0
         app.render_graph = Mock()
 
@@ -389,11 +388,11 @@ class TestGraphApp:
         assert app.zoom == 5.0  # Capped at 5.0
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_action_zoom_out(self, mock_cm):
+    def test_graph_app_action_zoom_out(self, mock_cm) -> None:
         """Test GraphApp.action_zoom_out execution."""
         mock_cm.return_value.get.return_value = "sqlite:///test.db"
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.zoom = 1.2
         app.render_graph = Mock()
 
@@ -403,11 +402,11 @@ class TestGraphApp:
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_action_zoom_out_min(self, mock_cm):
+    def test_graph_app_action_zoom_out_min(self, mock_cm) -> None:
         """Test GraphApp.action_zoom_out at min zoom."""
         mock_cm.return_value.get.return_value = "sqlite:///test.db"
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.zoom = 0.5
         app.render_graph = Mock()
 
@@ -416,11 +415,11 @@ class TestGraphApp:
         assert app.zoom == 0.5  # Capped at 0.5
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_action_help(self, mock_cm):
+    def test_graph_app_action_help(self, mock_cm) -> None:
         """Test GraphApp.action_help execution."""
         mock_cm.return_value.get.return_value = "sqlite:///test.db"
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.notify = Mock()
 
         app.action_help()
@@ -429,11 +428,11 @@ class TestGraphApp:
         assert "quit" in str(app.notify.call_args).lower()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_on_unmount(self, mock_cm):
+    def test_graph_app_on_unmount(self, mock_cm) -> None:
         """Test GraphApp.on_unmount cleanup."""
         mock_cm.return_value.get.return_value = "sqlite:///test.db"
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.db = Mock()
 
         app.on_unmount()
@@ -441,11 +440,11 @@ class TestGraphApp:
         app.db.close.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_on_unmount_no_db(self, mock_cm):
+    def test_graph_app_on_unmount_no_db(self, mock_cm) -> None:
         """Test GraphApp.on_unmount with no database."""
         mock_cm.return_value.get.return_value = "sqlite:///test.db"
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.db = None
 
         # Should not raise
@@ -461,9 +460,9 @@ class TestBrowserApp:
     """Test BrowserApp execution paths."""
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
-    def test_browser_app_initialization(self, mock_cm):
+    def test_browser_app_initialization(self, mock_cm) -> None:
         """Test BrowserApp.__init__ execution."""
-        app = cast(Any, BrowserApp())
+        app = cast("Any", BrowserApp())
 
         assert app.project_id is None
         assert app.current_view == "FEATURE"
@@ -471,9 +470,9 @@ class TestBrowserApp:
         assert app.selected_item_id is None
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
-    def test_browser_app_compose(self, mock_cm):
+    def test_browser_app_compose(self, mock_cm) -> None:
         """Test BrowserApp.compose execution."""
-        app = cast(Any, BrowserApp())
+        app = cast("Any", BrowserApp())
 
         # Just verify the app can be created and has the compose method
         assert app is not None
@@ -483,9 +482,9 @@ class TestBrowserApp:
 
     @patch("tracertm.tui.apps.browser.Session")
     @patch("tracertm.tui.apps.browser.ConfigManager")
-    def test_browser_app_refresh_tree(self, mock_cm, mock_session_class, sample_items):
+    def test_browser_app_refresh_tree(self, mock_cm, mock_session_class, sample_items) -> None:
         """Test BrowserApp.refresh_tree execution."""
-        app = cast(Any, BrowserApp())
+        app = cast("Any", BrowserApp())
         app.db = Mock()
         app.db.engine = Mock()
         app.project_id = "test-project-id"
@@ -528,9 +527,9 @@ class TestBrowserApp:
 
     @patch("tracertm.tui.apps.browser.Session")
     @patch("tracertm.tui.apps.browser.ConfigManager")
-    def test_browser_app_add_children_recursive(self, mock_cm, mock_session_class, sample_items):
+    def test_browser_app_add_children_recursive(self, mock_cm, mock_session_class, sample_items) -> None:
         """Test BrowserApp._add_children recursive execution."""
-        app = cast(Any, BrowserApp())
+        app = cast("Any", BrowserApp())
         app.project_id = "test-project-id"
 
         # Create parent-child relationship
@@ -578,9 +577,9 @@ class TestBrowserApp:
 
     @patch("tracertm.tui.apps.browser.Session")
     @patch("tracertm.tui.apps.browser.ConfigManager")
-    def test_browser_app_show_item_details(self, mock_cm, mock_session_class, sample_items):
+    def test_browser_app_show_item_details(self, mock_cm, mock_session_class, sample_items) -> None:
         """Test BrowserApp.show_item_details execution."""
-        app = cast(Any, BrowserApp())
+        app = cast("Any", BrowserApp())
         app.db = Mock()
         app.db.engine = Mock()
         app.selected_item_id = sample_items[0].id
@@ -601,9 +600,9 @@ class TestBrowserApp:
         assert "Test Item 0" in call_args
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
-    def test_browser_app_on_tree_node_selected(self, mock_cm):
+    def test_browser_app_on_tree_node_selected(self, mock_cm) -> None:
         """Test BrowserApp.on_tree_node_selected execution."""
-        app = cast(Any, BrowserApp())
+        app = cast("Any", BrowserApp())
         app.show_item_details = Mock()
 
         # Create mock event
@@ -617,18 +616,18 @@ class TestBrowserApp:
         app.show_item_details.assert_called_once()
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
-    def test_browser_app_on_input_changed(self, mock_cm):
+    def test_browser_app_on_input_changed(self, mock_cm) -> None:
         """Test BrowserApp.on_input_changed execution (placeholder)."""
-        app = cast(Any, BrowserApp())
+        app = cast("Any", BrowserApp())
         mock_event = Mock()
 
         # Should execute without error (currently a TODO)
         app.on_input_changed(mock_event)
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
-    def test_browser_app_action_refresh(self, mock_cm):
+    def test_browser_app_action_refresh(self, mock_cm) -> None:
         """Test BrowserApp.action_refresh execution."""
-        app = cast(Any, BrowserApp())
+        app = cast("Any", BrowserApp())
         app.refresh_tree = Mock()
 
         app.action_refresh()
@@ -636,9 +635,9 @@ class TestBrowserApp:
         app.refresh_tree.assert_called_once()
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
-    def test_browser_app_action_filter(self, mock_cm):
+    def test_browser_app_action_filter(self, mock_cm) -> None:
         """Test BrowserApp.action_filter execution."""
-        app = cast(Any, BrowserApp())
+        app = cast("Any", BrowserApp())
 
         mock_input = Mock()
         app.query_one = Mock(return_value=mock_input)
@@ -648,9 +647,9 @@ class TestBrowserApp:
         mock_input.focus.assert_called_once()
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
-    def test_browser_app_action_help(self, mock_cm):
+    def test_browser_app_action_help(self, mock_cm) -> None:
         """Test BrowserApp.action_help execution."""
-        app = cast(Any, BrowserApp())
+        app = cast("Any", BrowserApp())
         app.notify = Mock()
 
         app.action_help()
@@ -658,9 +657,9 @@ class TestBrowserApp:
         app.notify.assert_called_once()
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
-    def test_browser_app_on_unmount(self, mock_cm):
+    def test_browser_app_on_unmount(self, mock_cm) -> None:
         """Test BrowserApp.on_unmount cleanup."""
-        app = cast(Any, BrowserApp())
+        app = cast("Any", BrowserApp())
         app.db = Mock()
 
         app.on_unmount()
@@ -677,9 +676,9 @@ class TestDashboardApp:
     """Test DashboardApp execution paths."""
 
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
-    def test_dashboard_app_initialization(self, mock_cm):
+    def test_dashboard_app_initialization(self, mock_cm) -> None:
         """Test DashboardApp.__init__ execution."""
-        app = cast(Any, DashboardApp())
+        app = cast("Any", DashboardApp())
 
         assert app.project_id is None
         assert app.current_view == "FEATURE"
@@ -687,9 +686,9 @@ class TestDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard.Session")
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
-    def test_dashboard_app_setup_view_tree(self, mock_cm, mock_session):
+    def test_dashboard_app_setup_view_tree(self, mock_cm, mock_session) -> None:
         """Test DashboardApp.setup_view_tree execution."""
-        app = cast(Any, DashboardApp())
+        app = cast("Any", DashboardApp())
 
         mock_tree = Mock()
         mock_node = Mock()
@@ -705,9 +704,9 @@ class TestDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard.Session")
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
-    def test_dashboard_app_refresh_data(self, mock_cm, mock_session):
+    def test_dashboard_app_refresh_data(self, mock_cm, mock_session) -> None:
         """Test DashboardApp.refresh_data execution."""
-        app = cast(Any, DashboardApp())
+        app = cast("Any", DashboardApp())
         app.db = Mock()
         app.project_id = "test-project-id"
         app.refresh_stats = Mock()
@@ -720,9 +719,9 @@ class TestDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard.Session")
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
-    def test_dashboard_app_refresh_stats(self, mock_cm, mock_session_class, sample_items, sample_links):
+    def test_dashboard_app_refresh_stats(self, mock_cm, mock_session_class, sample_items, sample_links) -> None:
         """Test DashboardApp.refresh_stats execution."""
-        app = cast(Any, DashboardApp())
+        app = cast("Any", DashboardApp())
         app.db = Mock()
         app.db.engine = Mock()
         app.project_id = "test-project-id"
@@ -743,7 +742,7 @@ class TestDashboardApp:
             side_effect=lambda selector, *args: {
                 "#stats-table": mock_table,
                 "#state-summary": mock_summary,
-            }.get(selector)
+            }.get(selector),
         )
 
         app.refresh_stats()
@@ -754,9 +753,9 @@ class TestDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard.Session")
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
-    def test_dashboard_app_refresh_items(self, mock_cm, mock_session_class, sample_items):
+    def test_dashboard_app_refresh_items(self, mock_cm, mock_session_class, sample_items) -> None:
         """Test DashboardApp.refresh_items execution."""
-        app = cast(Any, DashboardApp())
+        app = cast("Any", DashboardApp())
         app.db = Mock()
         app.db.engine = Mock()
         app.project_id = "test-project-id"
@@ -782,9 +781,9 @@ class TestDashboardApp:
         assert mock_table.add_row.call_count == len(sample_items)
 
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
-    def test_dashboard_app_on_tree_node_selected(self, mock_cm):
+    def test_dashboard_app_on_tree_node_selected(self, mock_cm) -> None:
         """Test DashboardApp.on_tree_node_selected execution."""
-        app = cast(Any, DashboardApp())
+        app = cast("Any", DashboardApp())
         app.refresh_items = Mock()
 
         mock_title = Mock()
@@ -802,9 +801,9 @@ class TestDashboardApp:
         mock_title.update.assert_called_once()
 
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
-    def test_dashboard_app_action_switch_view(self, mock_cm):
+    def test_dashboard_app_action_switch_view(self, mock_cm) -> None:
         """Test DashboardApp.action_switch_view execution."""
-        app = cast(Any, DashboardApp())
+        app = cast("Any", DashboardApp())
         app.current_view = "FEATURE"
         app.refresh_items = Mock()
 
@@ -817,9 +816,9 @@ class TestDashboardApp:
         app.refresh_items.assert_called_once()
 
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
-    def test_dashboard_app_action_switch_view_wraparound(self, mock_cm):
+    def test_dashboard_app_action_switch_view_wraparound(self, mock_cm) -> None:
         """Test DashboardApp.action_switch_view wraparound."""
-        app = cast(Any, DashboardApp())
+        app = cast("Any", DashboardApp())
         app.current_view = "PROGRESS"
         app.refresh_items = Mock()
 
@@ -831,9 +830,9 @@ class TestDashboardApp:
         assert app.current_view == "FEATURE"
 
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
-    def test_dashboard_app_action_refresh(self, mock_cm):
+    def test_dashboard_app_action_refresh(self, mock_cm) -> None:
         """Test DashboardApp.action_refresh execution."""
-        app = cast(Any, DashboardApp())
+        app = cast("Any", DashboardApp())
         app.refresh_data = Mock()
 
         app.action_refresh()
@@ -841,9 +840,9 @@ class TestDashboardApp:
         app.refresh_data.assert_called_once()
 
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
-    def test_dashboard_app_action_search(self, mock_cm):
+    def test_dashboard_app_action_search(self, mock_cm) -> None:
         """Test DashboardApp.action_search execution (placeholder)."""
-        app = cast(Any, DashboardApp())
+        app = cast("Any", DashboardApp())
         app.notify = Mock()
 
         app.action_search()
@@ -852,9 +851,9 @@ class TestDashboardApp:
         assert "not yet implemented" in str(app.notify.call_args).lower()
 
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
-    def test_dashboard_app_action_help(self, mock_cm):
+    def test_dashboard_app_action_help(self, mock_cm) -> None:
         """Test DashboardApp.action_help execution."""
-        app = cast(Any, DashboardApp())
+        app = cast("Any", DashboardApp())
         app.notify = Mock()
 
         app.action_help()
@@ -872,9 +871,9 @@ class TestEnhancedDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    def test_enhanced_dashboard_initialization(self, mock_cm, mock_adapter_class):
+    def test_enhanced_dashboard_initialization(self, mock_cm, mock_adapter_class) -> None:
         """Test EnhancedDashboardApp.__init__ execution."""
-        app: Any = cast(Any, EnhancedDashboardApp(base_dir=Path("/tmp/test")))
+        app: Any = cast("Any", EnhancedDashboardApp(base_dir=Path("/tmp/test")))
 
         assert app.project_name is None
         assert app.current_view == "epic"
@@ -882,12 +881,12 @@ class TestEnhancedDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    def test_enhanced_dashboard_compose(self, mock_cm, mock_adapter_class):
+    def test_enhanced_dashboard_compose(self, mock_cm, mock_adapter_class) -> None:
         """Test EnhancedDashboardApp.compose execution."""
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
 
         # Execute compose in Textual app context
-        async def run_test():
+        async def run_test() -> None:
             async with app.run_test() as pilot:
                 # The app is already set up, just verify it has widgets
                 assert app is not None
@@ -898,9 +897,9 @@ class TestEnhancedDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    def test_enhanced_dashboard_setup_view_tree(self, mock_cm, mock_adapter_class):
+    def test_enhanced_dashboard_setup_view_tree(self, mock_cm, mock_adapter_class) -> None:
         """Test EnhancedDashboardApp.setup_view_tree execution."""
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
 
         mock_tree = Mock()
         mock_node = Mock()
@@ -914,12 +913,12 @@ class TestEnhancedDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    def test_enhanced_dashboard_setup_storage_callbacks(self, mock_cm, mock_adapter_class):
+    def test_enhanced_dashboard_setup_storage_callbacks(self, mock_cm, mock_adapter_class) -> None:
         """Test EnhancedDashboardApp.setup_storage_callbacks execution."""
         mock_adapter = Mock(spec=StorageAdapter)
         mock_adapter_class.return_value = mock_adapter
 
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
         app.setup_storage_callbacks()
 
         mock_adapter.on_sync_status_change.assert_called_once()
@@ -928,11 +927,11 @@ class TestEnhancedDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    def test_enhanced_dashboard_update_sync_status(self, mock_cm, mock_adapter_class, mock_storage_adapter):
+    def test_enhanced_dashboard_update_sync_status(self, mock_cm, mock_adapter_class, mock_storage_adapter) -> None:
         """Test EnhancedDashboardApp.update_sync_status execution."""
         mock_adapter_class.return_value = mock_storage_adapter
 
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
         app.storage_adapter = mock_storage_adapter
 
         mock_widget = Mock()
@@ -945,11 +944,11 @@ class TestEnhancedDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    def test_enhanced_dashboard_refresh_stats(self, mock_cm, mock_adapter_class, mock_storage_adapter, sample_project):
+    def test_enhanced_dashboard_refresh_stats(self, mock_cm, mock_adapter_class, mock_storage_adapter, sample_project) -> None:
         """Test EnhancedDashboardApp.refresh_stats execution."""
         mock_adapter_class.return_value = mock_storage_adapter
 
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
         app.storage_adapter = mock_storage_adapter
 
         # Mock widgets
@@ -959,7 +958,7 @@ class TestEnhancedDashboardApp:
             side_effect=lambda selector, *args: {
                 "#stats-table": mock_table,
                 "#state-summary": mock_summary,
-            }.get(selector)
+            }.get(selector),
         )
 
         app.refresh_stats(sample_project)
@@ -969,11 +968,11 @@ class TestEnhancedDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    def test_enhanced_dashboard_refresh_items(self, mock_cm, mock_adapter_class, mock_storage_adapter, sample_project):
+    def test_enhanced_dashboard_refresh_items(self, mock_cm, mock_adapter_class, mock_storage_adapter, sample_project) -> None:
         """Test EnhancedDashboardApp.refresh_items execution."""
         mock_adapter_class.return_value = mock_storage_adapter
 
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
         app.storage_adapter = mock_storage_adapter
         app.current_view = "epic"
 
@@ -987,11 +986,11 @@ class TestEnhancedDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    def test_enhanced_dashboard_action_switch_view(self, mock_cm, mock_adapter_class, mock_storage_adapter):
+    def test_enhanced_dashboard_action_switch_view(self, mock_cm, mock_adapter_class, mock_storage_adapter) -> None:
         """Test EnhancedDashboardApp.action_switch_view execution."""
         mock_adapter_class.return_value = mock_storage_adapter
 
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
         app.storage_adapter = mock_storage_adapter
         app.current_view = "epic"
         app.refresh_data = Mock()
@@ -1006,11 +1005,11 @@ class TestEnhancedDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    def test_enhanced_dashboard_action_refresh(self, mock_cm, mock_adapter_class, mock_storage_adapter):
+    def test_enhanced_dashboard_action_refresh(self, mock_cm, mock_adapter_class, mock_storage_adapter) -> None:
         """Test EnhancedDashboardApp.action_refresh execution."""
         mock_adapter_class.return_value = mock_storage_adapter
 
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
         app.refresh_data = Mock()
         app.notify = Mock()
 
@@ -1022,11 +1021,11 @@ class TestEnhancedDashboardApp:
     @pytest.mark.asyncio
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    async def test_enhanced_dashboard_action_sync_success(self, mock_cm, mock_adapter_class, mock_storage_adapter):
+    async def test_enhanced_dashboard_action_sync_success(self, mock_cm, mock_adapter_class, mock_storage_adapter) -> None:
         """Test EnhancedDashboardApp.action_sync success path."""
         mock_adapter_class.return_value = mock_storage_adapter
 
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
         app.storage_adapter = mock_storage_adapter
         app.notify = Mock()
         app.refresh_data = Mock()
@@ -1040,12 +1039,12 @@ class TestEnhancedDashboardApp:
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
     async def test_enhanced_dashboard_action_sync_already_syncing(
-        self, mock_cm, mock_adapter_class, mock_storage_adapter
-    ):
+        self, mock_cm, mock_adapter_class, mock_storage_adapter,
+    ) -> None:
         """Test EnhancedDashboardApp.action_sync when already syncing."""
         mock_adapter_class.return_value = mock_storage_adapter
 
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
         app._is_syncing = True
         app.notify = Mock()
 
@@ -1057,13 +1056,13 @@ class TestEnhancedDashboardApp:
     @pytest.mark.asyncio
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    async def test_enhanced_dashboard_action_sync_failure(self, mock_cm, mock_adapter_class):
+    async def test_enhanced_dashboard_action_sync_failure(self, mock_cm, mock_adapter_class) -> None:
         """Test EnhancedDashboardApp.action_sync failure path."""
         mock_adapter = Mock(spec=StorageAdapter)
         mock_adapter.trigger_sync = AsyncMock(return_value={"success": False, "error": "Network error"})
         mock_adapter_class.return_value = mock_adapter
 
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
         app.storage_adapter = mock_adapter
         app.notify = Mock()
 
@@ -1075,11 +1074,11 @@ class TestEnhancedDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    def test_enhanced_dashboard_action_show_conflicts_none(self, mock_cm, mock_adapter_class, mock_storage_adapter):
+    def test_enhanced_dashboard_action_show_conflicts_none(self, mock_cm, mock_adapter_class, mock_storage_adapter) -> None:
         """Test EnhancedDashboardApp.action_show_conflicts with no conflicts."""
         mock_adapter_class.return_value = mock_storage_adapter
 
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
         app.storage_adapter = mock_storage_adapter
         app.notify = Mock()
 
@@ -1090,14 +1089,14 @@ class TestEnhancedDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    def test_enhanced_dashboard_action_show_conflicts_exists(self, mock_cm, mock_adapter_class):
+    def test_enhanced_dashboard_action_show_conflicts_exists(self, mock_cm, mock_adapter_class) -> None:
         """Test EnhancedDashboardApp.action_show_conflicts with conflicts."""
         mock_adapter = Mock(spec=StorageAdapter)
         mock_conflicts = [Mock(), Mock()]
         mock_adapter.get_unresolved_conflicts.return_value = mock_conflicts
         mock_adapter_class.return_value = mock_adapter
 
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
         app.storage_adapter = mock_adapter
         app.push_screen = Mock()
 
@@ -1107,9 +1106,9 @@ class TestEnhancedDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    def test_enhanced_dashboard_action_help(self, mock_cm, mock_adapter_class):
+    def test_enhanced_dashboard_action_help(self, mock_cm, mock_adapter_class) -> None:
         """Test EnhancedDashboardApp.action_help execution."""
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
         app.notify = Mock()
 
         app.action_help()
@@ -1118,9 +1117,9 @@ class TestEnhancedDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    def test_enhanced_dashboard_on_sync_status_change(self, mock_cm, mock_adapter_class):
+    def test_enhanced_dashboard_on_sync_status_change(self, mock_cm, mock_adapter_class) -> None:
         """Test EnhancedDashboardApp._on_sync_status_change callback."""
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
         app.call_from_thread = Mock()
 
         state = SyncState(
@@ -1136,9 +1135,9 @@ class TestEnhancedDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    def test_enhanced_dashboard_on_conflict_detected(self, mock_cm, mock_adapter_class):
+    def test_enhanced_dashboard_on_conflict_detected(self, mock_cm, mock_adapter_class) -> None:
         """Test EnhancedDashboardApp._on_conflict_detected callback."""
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
         app.call_from_thread = Mock()
 
         mock_conflict = Mock()
@@ -1152,9 +1151,9 @@ class TestEnhancedDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard_compat.StorageAdapter")
     @patch("tracertm.tui.apps.dashboard_compat.ConfigManager")
-    def test_enhanced_dashboard_on_item_change(self, mock_cm, mock_adapter_class):
+    def test_enhanced_dashboard_on_item_change(self, mock_cm, mock_adapter_class) -> None:
         """Test EnhancedDashboardApp._on_item_change callback."""
-        app: Any = cast(Any, EnhancedDashboardApp())
+        app: Any = cast("Any", EnhancedDashboardApp())
         app.call_from_thread = Mock()
 
         app._on_item_change("item-123")
@@ -1171,7 +1170,7 @@ class TestEnhancedDashboardApp:
 class TestGraphViewWidget:
     """Test GraphViewWidget execution paths."""
 
-    def test_graph_view_widget_initialization(self):
+    def test_graph_view_widget_initialization(self) -> None:
         """Test GraphViewWidget.__init__ execution."""
         widget = GraphViewWidget(id="test-graph")
 
@@ -1187,35 +1186,35 @@ class TestGraphViewWidget:
 class TestConflictPanel:
     """Test ConflictPanel execution paths."""
 
-    def test_conflict_panel_initialization(self):
+    def test_conflict_panel_initialization(self) -> None:
         """Test ConflictPanel.__init__ execution."""
         conflicts = [Mock(), Mock()]
-        panel = cast(Any, ConflictPanel(conflicts=conflicts, id="test-panel"))
+        panel = cast("Any", ConflictPanel(conflicts=conflicts, id="test-panel"))
 
         assert panel.conflicts == conflicts
         assert panel.selected_conflict is None
 
-    def test_conflict_panel_compose(self):
+    def test_conflict_panel_compose(self) -> None:
         """Test ConflictPanel.compose execution."""
         from textual.app import App  # type: ignore[import-untyped]
 
         class TestApp(App):
             def compose(self):
-                panel = cast(Any, ConflictPanel())
+                panel = cast("Any", ConflictPanel())
                 yield panel
 
         # Execute compose in Textual app context
-        async def run_test():
-            app = cast(Any, TestApp())
+        async def run_test() -> None:
+            app = cast("Any", TestApp())
             async with app.run_test() as pilot:
                 # Just verify the panel can be created
-                panel = cast(Any, ConflictPanel())
+                panel = cast("Any", ConflictPanel())
                 assert panel is not None
                 assert hasattr(panel, "compose")
 
         asyncio.run(run_test())
 
-    def test_conflict_panel_refresh_conflict_list(self):
+    def test_conflict_panel_refresh_conflict_list(self) -> None:
         """Test ConflictPanel.refresh_conflict_list execution."""
         # Create mock conflicts
         mock_conflict1 = Mock()
@@ -1229,7 +1228,7 @@ class TestConflictPanel:
         mock_conflict1.remote_version.vector_clock = Mock()
         mock_conflict1.remote_version.vector_clock.version = 2
 
-        panel = cast(Any, ConflictPanel(conflicts=[mock_conflict1]))
+        panel = cast("Any", ConflictPanel(conflicts=[mock_conflict1]))
 
         mock_table = Mock()
         panel.query_one = Mock(return_value=mock_table)
@@ -1240,7 +1239,7 @@ class TestConflictPanel:
         mock_table.add_row.assert_called_once()
 
     @patch("tracertm.storage.conflict_resolver.compare_versions")
-    def test_conflict_panel_show_conflict_detail(self, mock_compare):
+    def test_conflict_panel_show_conflict_detail(self, mock_compare) -> None:
         """Test ConflictPanel.show_conflict_detail execution."""
         mock_compare.return_value = {
             "modified": ["title", "status"],
@@ -1263,7 +1262,7 @@ class TestConflictPanel:
         mock_conflict.remote_version.vector_clock.timestamp = datetime.now()
         mock_conflict.remote_version.vector_clock.client_id = "client-2"
 
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         mock_static = Mock()
         panel.query_one = Mock(return_value=mock_static)
 
@@ -1274,10 +1273,10 @@ class TestConflictPanel:
         assert "item-123" in call_args
         assert "Modified fields" in call_args
 
-    def test_conflict_panel_on_data_table_row_selected(self):
+    def test_conflict_panel_on_data_table_row_selected(self) -> None:
         """Test ConflictPanel.on_data_table_row_selected execution."""
         mock_conflict = Mock()
-        panel = cast(Any, ConflictPanel(conflicts=[mock_conflict]))
+        panel = cast("Any", ConflictPanel(conflicts=[mock_conflict]))
         panel.show_conflict_detail = Mock()
 
         mock_event = Mock()
@@ -1288,10 +1287,10 @@ class TestConflictPanel:
         assert panel.selected_conflict == mock_conflict
         panel.show_conflict_detail.assert_called_once_with(mock_conflict)
 
-    def test_conflict_panel_action_resolve_local(self):
+    def test_conflict_panel_action_resolve_local(self) -> None:
         """Test ConflictPanel.action_resolve_local execution."""
         mock_conflict = Mock()
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.selected_conflict = mock_conflict
         panel.post_message = Mock()
 
@@ -1302,10 +1301,10 @@ class TestConflictPanel:
         assert message.conflict == mock_conflict
         assert message.strategy == "local"
 
-    def test_conflict_panel_action_resolve_remote(self):
+    def test_conflict_panel_action_resolve_remote(self) -> None:
         """Test ConflictPanel.action_resolve_remote execution."""
         mock_conflict = Mock()
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.selected_conflict = mock_conflict
         panel.post_message = Mock()
 
@@ -1315,10 +1314,10 @@ class TestConflictPanel:
         message = panel.post_message.call_args[0][0]
         assert message.strategy == "remote"
 
-    def test_conflict_panel_action_resolve_manual(self):
+    def test_conflict_panel_action_resolve_manual(self) -> None:
         """Test ConflictPanel.action_resolve_manual execution."""
         mock_conflict = Mock()
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.selected_conflict = mock_conflict
         panel.post_message = Mock()
 
@@ -1328,18 +1327,18 @@ class TestConflictPanel:
         message = panel.post_message.call_args[0][0]
         assert message.strategy == "manual"
 
-    def test_conflict_panel_action_close(self):
+    def test_conflict_panel_action_close(self) -> None:
         """Test ConflictPanel.action_close execution."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.post_message = Mock()
 
         panel.action_close()
 
         panel.post_message.assert_called_once()
 
-    def test_conflict_panel_on_button_pressed_local(self):
+    def test_conflict_panel_on_button_pressed_local(self) -> None:
         """Test ConflictPanel.on_button_pressed for local button."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.action_resolve_local = Mock()
 
         mock_event = Mock()
@@ -1350,9 +1349,9 @@ class TestConflictPanel:
 
         panel.action_resolve_local.assert_called_once()
 
-    def test_conflict_panel_on_button_pressed_remote(self):
+    def test_conflict_panel_on_button_pressed_remote(self) -> None:
         """Test ConflictPanel.on_button_pressed for remote button."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.action_resolve_remote = Mock()
 
         mock_event = Mock()
@@ -1363,9 +1362,9 @@ class TestConflictPanel:
 
         panel.action_resolve_remote.assert_called_once()
 
-    def test_conflict_panel_on_button_pressed_manual(self):
+    def test_conflict_panel_on_button_pressed_manual(self) -> None:
         """Test ConflictPanel.on_button_pressed for manual button."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.action_resolve_manual = Mock()
 
         mock_event = Mock()
@@ -1376,9 +1375,9 @@ class TestConflictPanel:
 
         panel.action_resolve_manual.assert_called_once()
 
-    def test_conflict_panel_on_button_pressed_close(self):
+    def test_conflict_panel_on_button_pressed_close(self) -> None:
         """Test ConflictPanel.on_button_pressed for close button."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.action_close = Mock()
 
         mock_event = Mock()
@@ -1398,12 +1397,12 @@ class TestConflictPanel:
 class TestViewSwitcherWidget:
     """Test ViewSwitcherWidget execution paths."""
 
-    def test_view_switcher_widget_initialization(self):
+    def test_view_switcher_widget_initialization(self) -> None:
         """Test ViewSwitcherWidget.__init__ execution."""
         widget = ViewSwitcherWidget(id="test-switcher")
         assert widget is not None
 
-    def test_view_switcher_widget_setup_views(self):
+    def test_view_switcher_widget_setup_views(self) -> None:
         """Test ViewSwitcherWidget.setup_views execution."""
         widget = ViewSwitcherWidget()
         widget.root = Mock()
@@ -1422,12 +1421,12 @@ class TestViewSwitcherWidget:
 class TestItemListWidget:
     """Test ItemListWidget execution paths."""
 
-    def test_item_list_widget_initialization(self):
+    def test_item_list_widget_initialization(self) -> None:
         """Test ItemListWidget.__init__ execution."""
         widget = ItemListWidget(id="test-list")
         assert widget._columns_added is False
 
-    def test_item_list_widget_on_mount(self):
+    def test_item_list_widget_on_mount(self) -> None:
         """Test ItemListWidget.on_mount execution."""
         widget = ItemListWidget()
         widget.add_columns = Mock()
@@ -1437,7 +1436,7 @@ class TestItemListWidget:
         widget.add_columns.assert_called_once_with("ID", "Title", "Type", "Status")
         assert widget._columns_added is True
 
-    def test_item_list_widget_on_mount_already_added(self):
+    def test_item_list_widget_on_mount_already_added(self) -> None:
         """Test ItemListWidget.on_mount with columns already added."""
         widget = ItemListWidget()
         widget._columns_added = True
@@ -1456,12 +1455,12 @@ class TestItemListWidget:
 class TestStateDisplayWidget:
     """Test StateDisplayWidget execution paths."""
 
-    def test_state_display_widget_initialization(self):
+    def test_state_display_widget_initialization(self) -> None:
         """Test StateDisplayWidget.__init__ execution."""
         widget = StateDisplayWidget(id="test-state")
         assert widget._columns_added is False
 
-    def test_state_display_widget_on_mount(self):
+    def test_state_display_widget_on_mount(self) -> None:
         """Test StateDisplayWidget.on_mount execution."""
         widget = StateDisplayWidget()
         widget.add_columns = Mock()
@@ -1480,7 +1479,7 @@ class TestStateDisplayWidget:
 class TestSyncStatusWidget:
     """Test SyncStatusWidget execution paths."""
 
-    def test_sync_status_widget_initialization(self):
+    def test_sync_status_widget_initialization(self) -> None:
         """Test SyncStatusWidget initialization."""
         widget = SyncStatusWidget(id="test-sync")
 
@@ -1491,14 +1490,14 @@ class TestSyncStatusWidget:
         assert widget.conflicts_count == 0
         assert widget.last_error is None
 
-    def test_sync_status_widget_compose(self):
+    def test_sync_status_widget_compose(self) -> None:
         """Test SyncStatusWidget.compose execution."""
         widget = SyncStatusWidget()
         result = list(widget.compose())
 
         assert len(result) >= 1
 
-    def test_sync_status_widget_update_display_offline(self):
+    def test_sync_status_widget_update_display_offline(self) -> None:
         """Test SyncStatusWidget.update_display when offline."""
         widget = SyncStatusWidget()
 
@@ -1514,7 +1513,7 @@ class TestSyncStatusWidget:
                     "#connection-status": mock_connection,
                     "#sync-info": mock_sync,
                     "#conflict-info": mock_conflict,
-                }.get(selector)
+                }.get(selector),
             )
 
             widget.update_display()
@@ -1523,7 +1522,7 @@ class TestSyncStatusWidget:
             assert mock_connection.update.called
             assert "Offline" in str(mock_connection.update.call_args)
 
-    def test_sync_status_widget_update_display_online(self):
+    def test_sync_status_widget_update_display_online(self) -> None:
         """Test SyncStatusWidget.update_display when online."""
         widget = SyncStatusWidget()
         widget.is_online = True
@@ -1539,7 +1538,7 @@ class TestSyncStatusWidget:
                     "#connection-status": mock_connection,
                     "#sync-info": mock_sync,
                     "#conflict-info": mock_conflict,
-                }.get(selector)
+                }.get(selector),
             )
 
             widget.update_display()
@@ -1548,7 +1547,7 @@ class TestSyncStatusWidget:
             assert mock_connection.update.called
             assert "Online" in str(mock_connection.update.call_args)
 
-    def test_sync_status_widget_update_display_syncing(self):
+    def test_sync_status_widget_update_display_syncing(self) -> None:
         """Test SyncStatusWidget.update_display when syncing."""
         widget = SyncStatusWidget()
         widget.is_syncing = True
@@ -1564,14 +1563,14 @@ class TestSyncStatusWidget:
                     "#connection-status": mock_connection,
                     "#sync-info": mock_sync,
                     "#conflict-info": mock_conflict,
-                }.get(selector)
+                }.get(selector),
             )
 
             widget.update_display()
 
             assert "Syncing" in str(mock_connection.update.call_args)
 
-    def test_sync_status_widget_update_display_error(self):
+    def test_sync_status_widget_update_display_error(self) -> None:
         """Test SyncStatusWidget.update_display with error."""
         widget = SyncStatusWidget()
         widget.last_error = "Network timeout"
@@ -1587,14 +1586,14 @@ class TestSyncStatusWidget:
                     "#connection-status": mock_connection,
                     "#sync-info": mock_sync,
                     "#conflict-info": mock_conflict,
-                }.get(selector)
+                }.get(selector),
             )
 
             widget.update_display()
 
             assert "Error" in str(mock_connection.update.call_args)
 
-    def test_sync_status_widget_update_display_pending_changes(self):
+    def test_sync_status_widget_update_display_pending_changes(self) -> None:
         """Test SyncStatusWidget.update_display with pending changes."""
         widget = SyncStatusWidget()
         widget.pending_changes = 5
@@ -1610,7 +1609,7 @@ class TestSyncStatusWidget:
                     "#connection-status": mock_connection,
                     "#sync-info": mock_sync,
                     "#conflict-info": mock_conflict,
-                }.get(selector)
+                }.get(selector),
             )
 
             widget.update_display()
@@ -1618,7 +1617,7 @@ class TestSyncStatusWidget:
             assert "5" in str(mock_sync.update.call_args)
             assert "pending" in str(mock_sync.update.call_args)
 
-    def test_sync_status_widget_update_display_last_sync(self):
+    def test_sync_status_widget_update_display_last_sync(self) -> None:
         """Test SyncStatusWidget.update_display with last sync time."""
         widget = SyncStatusWidget()
         widget.last_sync = datetime.now() - timedelta(minutes=5)
@@ -1634,14 +1633,14 @@ class TestSyncStatusWidget:
                     "#connection-status": mock_connection,
                     "#sync-info": mock_sync,
                     "#conflict-info": mock_conflict,
-                }.get(selector)
+                }.get(selector),
             )
 
             widget.update_display()
 
             assert "5 minute" in str(mock_sync.update.call_args)
 
-    def test_sync_status_widget_update_display_conflicts(self):
+    def test_sync_status_widget_update_display_conflicts(self) -> None:
         """Test SyncStatusWidget.update_display with conflicts."""
         widget = SyncStatusWidget()
         widget.conflicts_count = 3
@@ -1657,7 +1656,7 @@ class TestSyncStatusWidget:
                     "#connection-status": mock_connection,
                     "#sync-info": mock_sync,
                     "#conflict-info": mock_conflict,
-                }.get(selector)
+                }.get(selector),
             )
 
             widget.update_display()
@@ -1665,7 +1664,7 @@ class TestSyncStatusWidget:
             assert "3" in str(mock_conflict.update.call_args)
             assert "conflict" in str(mock_conflict.update.call_args)
 
-    def test_sync_status_widget_format_time_ago_just_now(self):
+    def test_sync_status_widget_format_time_ago_just_now(self) -> None:
         """Test SyncStatusWidget._format_time_ago for recent time."""
         widget = SyncStatusWidget()
         dt = datetime.now()
@@ -1674,7 +1673,7 @@ class TestSyncStatusWidget:
 
         assert result == "just now"
 
-    def test_sync_status_widget_format_time_ago_minutes(self):
+    def test_sync_status_widget_format_time_ago_minutes(self) -> None:
         """Test SyncStatusWidget._format_time_ago for minutes."""
         widget = SyncStatusWidget()
         dt = datetime.now() - timedelta(minutes=30)
@@ -1683,7 +1682,7 @@ class TestSyncStatusWidget:
 
         assert "30 minutes ago" in result
 
-    def test_sync_status_widget_format_time_ago_hours(self):
+    def test_sync_status_widget_format_time_ago_hours(self) -> None:
         """Test SyncStatusWidget._format_time_ago for hours."""
         widget = SyncStatusWidget()
         dt = datetime.now() - timedelta(hours=5)
@@ -1692,7 +1691,7 @@ class TestSyncStatusWidget:
 
         assert "5 hours ago" in result
 
-    def test_sync_status_widget_format_time_ago_days(self):
+    def test_sync_status_widget_format_time_ago_days(self) -> None:
         """Test SyncStatusWidget._format_time_ago for days."""
         widget = SyncStatusWidget()
         dt = datetime.now() - timedelta(days=3)
@@ -1701,7 +1700,7 @@ class TestSyncStatusWidget:
 
         assert "3 days ago" in result
 
-    def test_sync_status_widget_set_online(self):
+    def test_sync_status_widget_set_online(self) -> None:
         """Test SyncStatusWidget.set_online execution."""
         widget = SyncStatusWidget()
 
@@ -1709,7 +1708,7 @@ class TestSyncStatusWidget:
 
         assert widget.is_online is True
 
-    def test_sync_status_widget_set_syncing(self):
+    def test_sync_status_widget_set_syncing(self) -> None:
         """Test SyncStatusWidget.set_syncing execution."""
         widget = SyncStatusWidget()
 
@@ -1717,7 +1716,7 @@ class TestSyncStatusWidget:
 
         assert widget.is_syncing is True
 
-    def test_sync_status_widget_set_pending_changes(self):
+    def test_sync_status_widget_set_pending_changes(self) -> None:
         """Test SyncStatusWidget.set_pending_changes execution."""
         widget = SyncStatusWidget()
 
@@ -1725,7 +1724,7 @@ class TestSyncStatusWidget:
 
         assert widget.pending_changes == 10
 
-    def test_sync_status_widget_set_last_sync(self):
+    def test_sync_status_widget_set_last_sync(self) -> None:
         """Test SyncStatusWidget.set_last_sync execution."""
         widget = SyncStatusWidget()
         dt = datetime.now()
@@ -1734,7 +1733,7 @@ class TestSyncStatusWidget:
 
         assert widget.last_sync == dt
 
-    def test_sync_status_widget_set_conflicts(self):
+    def test_sync_status_widget_set_conflicts(self) -> None:
         """Test SyncStatusWidget.set_conflicts execution."""
         widget = SyncStatusWidget()
 
@@ -1742,7 +1741,7 @@ class TestSyncStatusWidget:
 
         assert widget.conflicts_count == 5
 
-    def test_sync_status_widget_set_error(self):
+    def test_sync_status_widget_set_error(self) -> None:
         """Test SyncStatusWidget.set_error execution."""
         widget = SyncStatusWidget()
 
@@ -1750,7 +1749,7 @@ class TestSyncStatusWidget:
 
         assert widget.last_error == "Test error"
 
-    def test_sync_status_widget_watchers(self):
+    def test_sync_status_widget_watchers(self) -> None:
         """Test SyncStatusWidget reactive watchers."""
         widget = SyncStatusWidget()
         widget.update_display = Mock()
@@ -1774,7 +1773,7 @@ class TestSyncStatusWidget:
 class TestCompactSyncStatus:
     """Test CompactSyncStatus execution paths."""
 
-    def test_compact_sync_status_render_offline(self):
+    def test_compact_sync_status_render_offline(self) -> None:
         """Test CompactSyncStatus.render when offline."""
         widget = CompactSyncStatus()
 
@@ -1783,7 +1782,7 @@ class TestCompactSyncStatus:
         # Should render with yellow indicator for offline
         assert "[yellow]" in result or "●" in result
 
-    def test_compact_sync_status_render_online(self):
+    def test_compact_sync_status_render_online(self) -> None:
         """Test CompactSyncStatus.render when online."""
         widget = CompactSyncStatus()
         widget.is_online = True
@@ -1792,7 +1791,7 @@ class TestCompactSyncStatus:
 
         assert "●" in result
 
-    def test_compact_sync_status_render_syncing(self):
+    def test_compact_sync_status_render_syncing(self) -> None:
         """Test CompactSyncStatus.render when syncing."""
         widget = CompactSyncStatus()
         widget.is_syncing = True
@@ -1801,7 +1800,7 @@ class TestCompactSyncStatus:
 
         assert "⟳" in result
 
-    def test_compact_sync_status_render_pending_changes(self):
+    def test_compact_sync_status_render_pending_changes(self) -> None:
         """Test CompactSyncStatus.render with pending changes."""
         widget = CompactSyncStatus()
         widget.pending_changes = 5
@@ -1811,7 +1810,7 @@ class TestCompactSyncStatus:
         assert "5" in result
         assert "pending" in result
 
-    def test_compact_sync_status_render_conflicts(self):
+    def test_compact_sync_status_render_conflicts(self) -> None:
         """Test CompactSyncStatus.render with conflicts."""
         widget = CompactSyncStatus()
         widget.conflicts_count = 3
@@ -1821,7 +1820,7 @@ class TestCompactSyncStatus:
         assert "⚠" in result
         assert "3" in result
 
-    def test_compact_sync_status_setters(self):
+    def test_compact_sync_status_setters(self) -> None:
         """Test CompactSyncStatus setter methods."""
         widget = CompactSyncStatus()
 
@@ -1847,7 +1846,7 @@ class TestStorageAdapter:
     """Test StorageAdapter execution paths."""
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_initialization(self, mock_storage_class):
+    def test_storage_adapter_initialization(self, mock_storage_class) -> None:
         """Test StorageAdapter.__init__ execution."""
         adapter = StorageAdapter(base_dir=Path("/tmp/test"))
 
@@ -1857,7 +1856,7 @@ class TestStorageAdapter:
         assert adapter._item_change_callbacks == []
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_get_project(self, mock_storage_class, sample_project):
+    def test_storage_adapter_get_project(self, mock_storage_class, sample_project) -> None:
         """Test StorageAdapter.get_project execution."""
         mock_storage = Mock()
         mock_project_storage = Mock()
@@ -1871,7 +1870,7 @@ class TestStorageAdapter:
         assert result == sample_project
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_create_project(self, mock_storage_class, sample_project):
+    def test_storage_adapter_create_project(self, mock_storage_class, sample_project) -> None:
         """Test StorageAdapter.create_project execution."""
         mock_storage = Mock()
         mock_project_storage = Mock()
@@ -1885,7 +1884,7 @@ class TestStorageAdapter:
         assert result == sample_project
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_list_items(self, mock_storage_class, sample_project, sample_items):
+    def test_storage_adapter_list_items(self, mock_storage_class, sample_project, sample_items) -> None:
         """Test StorageAdapter.list_items execution."""
         mock_storage = Mock()
         mock_project_storage = Mock()
@@ -1902,7 +1901,7 @@ class TestStorageAdapter:
         mock_item_storage.list_items.assert_called_once()
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_get_item(self, mock_storage_class, sample_project, sample_items):
+    def test_storage_adapter_get_item(self, mock_storage_class, sample_project, sample_items) -> None:
         """Test StorageAdapter.get_item execution."""
         mock_storage = Mock()
         mock_project_storage = Mock()
@@ -1918,7 +1917,7 @@ class TestStorageAdapter:
         assert result == sample_items[0]
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_create_item(self, mock_storage_class, sample_project, sample_items):
+    def test_storage_adapter_create_item(self, mock_storage_class, sample_project, sample_items) -> None:
         """Test StorageAdapter.create_item execution."""
         mock_storage = Mock()
         mock_project_storage = Mock()
@@ -1941,7 +1940,7 @@ class TestStorageAdapter:
             mock_notify.assert_called_once()
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_update_item(self, mock_storage_class, sample_project, sample_items):
+    def test_storage_adapter_update_item(self, mock_storage_class, sample_project, sample_items) -> None:
         """Test StorageAdapter.update_item execution."""
         mock_storage = Mock()
         mock_project_storage = Mock()
@@ -1958,7 +1957,7 @@ class TestStorageAdapter:
             mock_notify.assert_called_once()
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_delete_item(self, mock_storage_class, sample_project):
+    def test_storage_adapter_delete_item(self, mock_storage_class, sample_project) -> None:
         """Test StorageAdapter.delete_item execution."""
         mock_storage = Mock()
         mock_project_storage = Mock()
@@ -1974,7 +1973,7 @@ class TestStorageAdapter:
             mock_notify.assert_called_once()
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_list_links(self, mock_storage_class, sample_project, sample_links):
+    def test_storage_adapter_list_links(self, mock_storage_class, sample_project, sample_links) -> None:
         """Test StorageAdapter.list_links execution."""
         mock_storage = Mock()
         mock_project_storage = Mock()
@@ -1990,7 +1989,7 @@ class TestStorageAdapter:
         assert result == sample_links
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_create_link(self, mock_storage_class, sample_project, sample_links):
+    def test_storage_adapter_create_link(self, mock_storage_class, sample_project, sample_links) -> None:
         """Test StorageAdapter.create_link execution."""
         mock_storage = Mock()
         mock_project_storage = Mock()
@@ -2011,7 +2010,7 @@ class TestStorageAdapter:
         assert result == sample_links[0]
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_delete_link(self, mock_storage_class, sample_project):
+    def test_storage_adapter_delete_link(self, mock_storage_class, sample_project) -> None:
         """Test StorageAdapter.delete_link execution."""
         mock_storage = Mock()
         mock_project_storage = Mock()
@@ -2026,7 +2025,7 @@ class TestStorageAdapter:
         mock_item_storage.delete_link.assert_called_once_with("link-0")
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_search_items(self, mock_storage_class, sample_items):
+    def test_storage_adapter_search_items(self, mock_storage_class, sample_items) -> None:
         """Test StorageAdapter.search_items execution."""
         mock_storage = Mock()
         mock_storage.search_items.return_value = sample_items
@@ -2038,7 +2037,7 @@ class TestStorageAdapter:
         assert result == sample_items
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_get_sync_status_no_engine(self, mock_storage_class):
+    def test_storage_adapter_get_sync_status_no_engine(self, mock_storage_class) -> None:
         """Test StorageAdapter.get_sync_status without sync engine."""
         mock_storage = Mock()
         mock_storage.get_sync_queue.return_value = [1, 2, 3]
@@ -2051,7 +2050,7 @@ class TestStorageAdapter:
         assert result.status == SyncStatus.IDLE
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_get_sync_status_with_engine(self, mock_storage_class):
+    def test_storage_adapter_get_sync_status_with_engine(self, mock_storage_class) -> None:
         """Test StorageAdapter.get_sync_status with sync engine."""
         mock_storage = Mock()
         mock_storage_class.return_value = mock_storage
@@ -2070,7 +2069,7 @@ class TestStorageAdapter:
 
     @pytest.mark.asyncio
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    async def test_storage_adapter_trigger_sync_no_engine(self, mock_storage_class):
+    async def test_storage_adapter_trigger_sync_no_engine(self, mock_storage_class) -> None:
         """Test StorageAdapter.trigger_sync without sync engine."""
         adapter = StorageAdapter()
         result = await adapter.trigger_sync()
@@ -2080,7 +2079,7 @@ class TestStorageAdapter:
 
     @pytest.mark.asyncio
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    async def test_storage_adapter_trigger_sync_success(self, mock_storage_class):
+    async def test_storage_adapter_trigger_sync_success(self, mock_storage_class) -> None:
         """Test StorageAdapter.trigger_sync success path."""
         mock_sync_engine = Mock()
         mock_result = Mock()
@@ -2104,7 +2103,7 @@ class TestStorageAdapter:
 
     @pytest.mark.asyncio
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    async def test_storage_adapter_trigger_sync_failure(self, mock_storage_class):
+    async def test_storage_adapter_trigger_sync_failure(self, mock_storage_class) -> None:
         """Test StorageAdapter.trigger_sync failure path."""
         mock_sync_engine = Mock()
         mock_sync_engine.sync = AsyncMock(side_effect=Exception("Network error"))
@@ -2116,7 +2115,7 @@ class TestStorageAdapter:
             assert "Network error" in result["error"]
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_get_pending_changes_count(self, mock_storage_class):
+    def test_storage_adapter_get_pending_changes_count(self, mock_storage_class) -> None:
         """Test StorageAdapter.get_pending_changes_count execution."""
         mock_storage = Mock()
         mock_storage.get_sync_queue.return_value = [1, 2, 3]
@@ -2129,7 +2128,7 @@ class TestStorageAdapter:
 
     @patch("tracertm.storage.conflict_resolver.ConflictResolver")
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_get_unresolved_conflicts(self, mock_storage_class, mock_resolver_class):
+    def test_storage_adapter_get_unresolved_conflicts(self, mock_storage_class, mock_resolver_class) -> None:
         """Test StorageAdapter.get_unresolved_conflicts execution."""
         mock_storage = Mock()
         mock_session = Mock()
@@ -2150,7 +2149,7 @@ class TestStorageAdapter:
         mock_session.close.assert_called_once()
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_get_unresolved_conflicts_no_engine(self, mock_storage_class):
+    def test_storage_adapter_get_unresolved_conflicts_no_engine(self, mock_storage_class) -> None:
         """Test StorageAdapter.get_unresolved_conflicts without engine."""
         adapter = StorageAdapter()
         result = adapter.get_unresolved_conflicts()
@@ -2158,7 +2157,7 @@ class TestStorageAdapter:
         assert result == []
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_get_conflict_count(self, mock_storage_class):
+    def test_storage_adapter_get_conflict_count(self, mock_storage_class) -> None:
         """Test StorageAdapter.get_conflict_count execution."""
         adapter = StorageAdapter()
         with patch.object(adapter, "get_unresolved_conflicts", return_value=[1, 2, 3]):
@@ -2166,7 +2165,7 @@ class TestStorageAdapter:
             assert result == 3
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_get_project_stats(self, mock_storage_class, sample_project):
+    def test_storage_adapter_get_project_stats(self, mock_storage_class, sample_project) -> None:
         """Test StorageAdapter.get_project_stats execution."""
         mock_storage = Mock()
         mock_session = Mock()
@@ -2187,7 +2186,7 @@ class TestStorageAdapter:
         mock_session.close.assert_called_once()
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_on_sync_status_change(self, mock_storage_class):
+    def test_storage_adapter_on_sync_status_change(self, mock_storage_class) -> None:
         """Test StorageAdapter.on_sync_status_change callback registration."""
         adapter = StorageAdapter()
         callback = Mock()
@@ -2201,7 +2200,7 @@ class TestStorageAdapter:
         assert callback not in adapter._sync_status_callbacks
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_on_conflict_detected(self, mock_storage_class):
+    def test_storage_adapter_on_conflict_detected(self, mock_storage_class) -> None:
         """Test StorageAdapter.on_conflict_detected callback registration."""
         adapter = StorageAdapter()
         callback = Mock()
@@ -2214,7 +2213,7 @@ class TestStorageAdapter:
         assert callback not in adapter._conflict_callbacks
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_on_item_change(self, mock_storage_class):
+    def test_storage_adapter_on_item_change(self, mock_storage_class) -> None:
         """Test StorageAdapter.on_item_change callback registration."""
         adapter = StorageAdapter()
         callback = Mock()
@@ -2227,7 +2226,7 @@ class TestStorageAdapter:
         assert callback not in adapter._item_change_callbacks
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_notify_sync_status(self, mock_storage_class):
+    def test_storage_adapter_notify_sync_status(self, mock_storage_class) -> None:
         """Test StorageAdapter._notify_sync_status execution."""
         adapter = StorageAdapter()
         callback = Mock()
@@ -2239,7 +2238,7 @@ class TestStorageAdapter:
         callback.assert_called_once_with(state)
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_notify_sync_status_error_handling(self, mock_storage_class):
+    def test_storage_adapter_notify_sync_status_error_handling(self, mock_storage_class) -> None:
         """Test StorageAdapter._notify_sync_status error handling."""
         adapter = StorageAdapter()
         callback = Mock(side_effect=Exception("Callback error"))
@@ -2251,7 +2250,7 @@ class TestStorageAdapter:
         adapter._notify_sync_status(state)
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_notify_conflict(self, mock_storage_class):
+    def test_storage_adapter_notify_conflict(self, mock_storage_class) -> None:
         """Test StorageAdapter._notify_conflict execution."""
         adapter = StorageAdapter()
         callback = Mock()
@@ -2263,7 +2262,7 @@ class TestStorageAdapter:
         callback.assert_called_once_with(conflict)
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
-    def test_storage_adapter_notify_item_change(self, mock_storage_class):
+    def test_storage_adapter_notify_item_change(self, mock_storage_class) -> None:
         """Test StorageAdapter._notify_item_change execution."""
         adapter = StorageAdapter()
         callback = Mock()
@@ -2279,9 +2278,8 @@ class TestStorageAdapter:
 # ============================================================================
 
 
-def test_coverage_summary():
-    """
-    Summary of TUI execution tests.
+def test_coverage_summary() -> None:
+    """Summary of TUI execution tests.
 
     This test suite provides comprehensive coverage for:
 

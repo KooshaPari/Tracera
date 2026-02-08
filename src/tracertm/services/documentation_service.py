@@ -7,7 +7,7 @@ from typing import Any
 class DocumentationService:
     """Service for managing API documentation."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.endpoints: dict[str, dict[str, Any]] = {}
         self.schemas: dict[str, dict[str, Any]] = {}
         self.examples: dict[str, list[dict[str, Any]]] = {}
@@ -120,7 +120,7 @@ class DocumentationService:
                     "200": {
                         "description": "Success",
                         "schema": endpoint["response_schema"],
-                    }
+                    },
                 },
             }
 

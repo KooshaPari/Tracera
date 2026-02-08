@@ -1,5 +1,4 @@
-"""
-Unit tests for SyncEngine.
+"""Unit tests for SyncEngine.
 
 Tests queue management, sync flow, error handling, and retry logic
 for the local-to-remote synchronization system.
@@ -19,8 +18,7 @@ import pytest
 
 @pytest.fixture
 def sync_db(tmp_path):
-    """
-    Fixture: Sync Database
+    """Fixture: Sync Database.
 
     Provides: SQLite database with sync tables
     """
@@ -60,7 +58,7 @@ def sync_db(tmp_path):
 
 @pytest.fixture
 def mock_api_client():
-    """Mock API client for testing sync operations"""
+    """Mock API client for testing sync operations."""
     client = MagicMock()
     client.upload_changes = AsyncMock(return_value={"success": True, "conflicts": []})
     client.download_changes = AsyncMock(return_value={"changes": [], "server_time": datetime.now(UTC).isoformat()})
@@ -70,7 +68,7 @@ def mock_api_client():
 
 @pytest.fixture
 def sample_queue_entry():
-    """Sample sync queue entry"""
+    """Sample sync queue entry."""
     return {
         "entity_type": "item",
         "entity_id": "item-001",
@@ -88,16 +86,14 @@ def sample_queue_entry():
 
 
 class TestSyncEngineQueueManagement:
-    """
-    Test Suite: Sync Engine - Queue Management
+    """Test Suite: Sync Engine - Queue Management.
 
     Tests adding, retrieving, and removing entries from sync queue
     """
 
     @pytest.mark.unit
-    def test_add_to_queue(self, sync_db, sample_queue_entry):
-        """
-        TC-SE.1.1: Add to Queue - Success
+    def test_add_to_queue(self, sync_db, sample_queue_entry) -> None:
+        """TC-SE.1.1: Add to Queue - Success.
 
         Given: Change occurred locally
         When: Change is added to queue
@@ -134,9 +130,8 @@ class TestSyncEngineQueueManagement:
         assert result[3] == "create"
 
     @pytest.mark.unit
-    def test_get_pending_items(self, sync_db):
-        """
-        TC-SE.1.2: Get Pending Items - Returns All Unsynced
+    def test_get_pending_items(self, sync_db) -> None:
+        """TC-SE.1.2: Get Pending Items - Returns All Unsynced.
 
         Given: Multiple items in queue
         When: Pending items are requested
@@ -168,9 +163,8 @@ class TestSyncEngineQueueManagement:
         assert results[2][2] == "item-002"
 
     @pytest.mark.unit
-    def test_remove_from_queue(self, sync_db, sample_queue_entry):
-        """
-        TC-SE.1.3: Remove from Queue - After Successful Sync
+    def test_remove_from_queue(self, sync_db, sample_queue_entry) -> None:
+        """TC-SE.1.3: Remove from Queue - After Successful Sync.
 
         Given: Item in queue
         When: Sync succeeds
@@ -207,9 +201,8 @@ class TestSyncEngineQueueManagement:
         assert result is None
 
     @pytest.mark.unit
-    def test_update_retry_count(self, sync_db, sample_queue_entry):
-        """
-        TC-SE.1.4: Update Retry Count - After Failed Sync
+    def test_update_retry_count(self, sync_db, sample_queue_entry) -> None:
+        """TC-SE.1.4: Update Retry Count - After Failed Sync.
 
         Given: Item in queue
         When: Sync fails
@@ -248,7 +241,7 @@ class TestSyncEngineQueueManagement:
 
         # Assert
         cursor.execute(
-            "SELECT retry_count, last_error FROM sync_queue WHERE entity_id = ?", (sample_queue_entry["entity_id"],)
+            "SELECT retry_count, last_error FROM sync_queue WHERE entity_id = ?", (sample_queue_entry["entity_id"],),
         )
         result = cursor.fetchone()
         conn.close()
@@ -257,9 +250,8 @@ class TestSyncEngineQueueManagement:
         assert result[1] == "Network error"
 
     @pytest.mark.unit
-    def test_filter_by_max_retries(self, sync_db):
-        """
-        TC-SE.1.5: Filter by Max Retries - Skip Failed Items
+    def test_filter_by_max_retries(self, sync_db) -> None:
+        """TC-SE.1.5: Filter by Max Retries - Skip Failed Items.
 
         Given: Items with various retry counts
         When: Queue is filtered by max retries
@@ -302,17 +294,15 @@ class TestSyncEngineQueueManagement:
 
 
 class TestSyncEngineSyncFlow:
-    """
-    Test Suite: Sync Engine - Sync Flow
+    """Test Suite: Sync Engine - Sync Flow.
 
     Tests complete sync process including upload and download phases
     """
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_upload_phase_success(self, sync_db, mock_api_client, sample_queue_entry):
-        """
-        TC-SE.2.1: Upload Phase - Success
+    async def test_upload_phase_success(self, sync_db, mock_api_client, sample_queue_entry) -> None:
+        """TC-SE.2.1: Upload Phase - Success.
 
         Given: Pending changes in queue
         When: Upload sync is triggered
@@ -366,9 +356,8 @@ class TestSyncEngineSyncFlow:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_download_phase_success(self, sync_db, mock_api_client):
-        """
-        TC-SE.2.2: Download Phase - Success
+    async def test_download_phase_success(self, sync_db, mock_api_client) -> None:
+        """TC-SE.2.2: Download Phase - Success.
 
         Given: Server has new changes
         When: Download sync is triggered
@@ -404,9 +393,8 @@ class TestSyncEngineSyncFlow:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_bidirectional_sync(self, sync_db, mock_api_client, sample_queue_entry):
-        """
-        TC-SE.2.3: Bidirectional Sync - Upload then Download
+    async def test_bidirectional_sync(self, sync_db, mock_api_client, sample_queue_entry) -> None:
+        """TC-SE.2.3: Bidirectional Sync - Upload then Download.
 
         Given: Local changes and remote changes exist
         When: Full sync is triggered
@@ -457,9 +445,8 @@ class TestSyncEngineSyncFlow:
         assert mock_api_client.download_changes.called
 
     @pytest.mark.unit
-    def test_offline_mode_queue_persistence(self, sync_db, sample_queue_entry):
-        """
-        TC-SE.2.4: Offline Mode - Queue Persistence
+    def test_offline_mode_queue_persistence(self, sync_db, sample_queue_entry) -> None:
+        """TC-SE.2.4: Offline Mode - Queue Persistence.
 
         Given: Device is offline
         When: Changes are made locally
@@ -506,17 +493,15 @@ class TestSyncEngineSyncFlow:
 
 
 class TestSyncEngineErrorHandling:
-    """
-    Test Suite: Sync Engine - Error Handling
+    """Test Suite: Sync Engine - Error Handling.
 
     Tests handling of network errors, conflicts, and retry logic
     """
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_network_error_retry(self, sync_db, sample_queue_entry):
-        """
-        TC-SE.3.1: Network Error - Retry Logic
+    async def test_network_error_retry(self, sync_db, sample_queue_entry) -> None:
+        """TC-SE.3.1: Network Error - Retry Logic.
 
         Given: Network error during sync
         When: Sync fails
@@ -557,7 +542,7 @@ class TestSyncEngineErrorHandling:
 
         # Assert
         cursor.execute(
-            "SELECT retry_count, last_error FROM sync_queue WHERE entity_id = ?", (sample_queue_entry["entity_id"],)
+            "SELECT retry_count, last_error FROM sync_queue WHERE entity_id = ?", (sample_queue_entry["entity_id"],),
         )
         result = cursor.fetchone()
         conn.close()
@@ -567,9 +552,8 @@ class TestSyncEngineErrorHandling:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_max_retries_reached(self, sync_db, sample_queue_entry):
-        """
-        TC-SE.3.2: Max Retries Reached - Stop Retrying
+    async def test_max_retries_reached(self, sync_db, sample_queue_entry) -> None:
+        """TC-SE.3.2: Max Retries Reached - Stop Retrying.
 
         Given: Item has reached max retry count
         When: Queue is processed
@@ -607,9 +591,8 @@ class TestSyncEngineErrorHandling:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_conflict_detection(self, mock_api_client):
-        """
-        TC-SE.3.3: Conflict Detection - Server Returns Conflict
+    async def test_conflict_detection(self, mock_api_client) -> None:
+        """TC-SE.3.3: Conflict Detection - Server Returns Conflict.
 
         Given: Concurrent modification on server
         When: Upload is attempted
@@ -621,9 +604,9 @@ class TestSyncEngineErrorHandling:
             return_value={
                 "success": False,
                 "conflicts": [
-                    {"entity_id": "item-001", "local_version": 2, "remote_version": 3, "reason": "version_mismatch"}
+                    {"entity_id": "item-001", "local_version": 2, "remote_version": 3, "reason": "version_mismatch"},
                 ],
-            }
+            },
         )
 
         changes = [{"entity_id": "item-001", "version": 2}]
@@ -637,9 +620,8 @@ class TestSyncEngineErrorHandling:
         assert result["conflicts"][0]["reason"] == "version_mismatch"
 
     @pytest.mark.unit
-    def test_exponential_backoff(self):
-        """
-        TC-SE.3.4: Exponential Backoff - Increasing Delays
+    def test_exponential_backoff(self) -> None:
+        """TC-SE.3.4: Exponential Backoff - Increasing Delays.
 
         Given: Multiple retry attempts
         When: Backoff delay is calculated
@@ -664,9 +646,8 @@ class TestSyncEngineErrorHandling:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_partial_sync_failure(self, sync_db, mock_api_client):
-        """
-        TC-SE.3.5: Partial Sync Failure - Some Items Succeed
+    async def test_partial_sync_failure(self, sync_db, mock_api_client) -> None:
+        """TC-SE.3.5: Partial Sync Failure - Some Items Succeed.
 
         Given: Multiple items to sync
         When: Some items fail
@@ -723,16 +704,14 @@ class TestSyncEngineErrorHandling:
 
 
 class TestSyncEngineSyncState:
-    """
-    Test Suite: Sync Engine - Sync State Management
+    """Test Suite: Sync Engine - Sync State Management.
 
     Tests tracking of last sync time and sync status
     """
 
     @pytest.mark.unit
-    def test_store_last_sync_time(self, sync_db):
-        """
-        TC-SE.4.1: Store Last Sync Time - Success
+    def test_store_last_sync_time(self, sync_db) -> None:
+        """TC-SE.4.1: Store Last Sync Time - Success.
 
         Given: Sync completes successfully
         When: Last sync time is stored
@@ -763,9 +742,8 @@ class TestSyncEngineSyncState:
         assert result[0] == sync_time
 
     @pytest.mark.unit
-    def test_retrieve_last_sync_time(self, sync_db):
-        """
-        TC-SE.4.2: Retrieve Last Sync Time - Success
+    def test_retrieve_last_sync_time(self, sync_db) -> None:
+        """TC-SE.4.2: Retrieve Last Sync Time - Success.
 
         Given: Last sync time exists
         When: Time is retrieved
@@ -794,9 +772,8 @@ class TestSyncEngineSyncState:
         assert result[0] == sync_time
 
     @pytest.mark.unit
-    def test_no_previous_sync(self, sync_db):
-        """
-        TC-SE.4.3: No Previous Sync - Handle Gracefully
+    def test_no_previous_sync(self, sync_db) -> None:
+        """TC-SE.4.3: No Previous Sync - Handle Gracefully.
 
         Given: First sync attempt
         When: Last sync time is requested
@@ -815,9 +792,8 @@ class TestSyncEngineSyncState:
         assert result is None
 
     @pytest.mark.unit
-    def test_store_sync_status(self, sync_db):
-        """
-        TC-SE.4.4: Store Sync Status - Track State
+    def test_store_sync_status(self, sync_db) -> None:
+        """TC-SE.4.4: Store Sync Status - Track State.
 
         Given: Sync operation in progress
         When: Status is updated

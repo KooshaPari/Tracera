@@ -1,12 +1,10 @@
-"""
-Link factory for generating test links between items.
-"""
+"""Link factory for generating test links between items."""
 
 
 class LinkFactory:
     """Factory for creating test links."""
 
-    def __init__(self, session=None):
+    def __init__(self, session=None) -> None:
         self.session = session
         self.created_links = []
 
@@ -25,7 +23,7 @@ class LinkFactory:
 
         return link_data
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Delete all links created by this factory."""
         if self.session and self.created_links:
             self.created_links = []

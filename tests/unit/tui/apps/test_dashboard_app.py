@@ -1,5 +1,4 @@
-"""
-Tests for dashboard TUI application module.
+"""Tests for dashboard TUI application module.
 
 Coverage target: 70%+
 Tests app initialization, widget composition, state management, and user interaction.
@@ -21,12 +20,12 @@ except ImportError:
 class TestDashboardApp:
     """Test Dashboard TUI application."""
 
-    def test_app_can_be_imported(self):
+    def test_app_can_be_imported(self) -> None:
         """Test app module can be imported."""
         assert True
 
     @pytest.mark.asyncio
-    async def test_app_initialization(self):
+    async def test_app_initialization(self) -> None:
         """Test app can be initialized."""
         # Try to find the app class
         try:
@@ -45,7 +44,7 @@ class TestDashboardApp:
         except Exception as e:
             pytest.skip(f"Could not test app initialization: {e}")
 
-    def test_app_has_widgets(self):
+    def test_app_has_widgets(self) -> None:
         """Test app defines widgets."""
         try:
             import importlib
@@ -61,7 +60,7 @@ class TestDashboardApp:
 class TestDashboardErrorHandling:
     """Test error handling."""
 
-    def test_handles_missing_dependencies(self):
+    def test_handles_missing_dependencies(self) -> None:
         """Test handling of missing dependencies."""
         # Basic error handling test
         assert True

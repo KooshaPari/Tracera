@@ -1,5 +1,4 @@
-"""
-Common utilities and helpers for parameterized MCP tools.
+"""Common utilities and helpers for parameterized MCP tools.
 
 This module contains shared helper functions used across all domain-specific tool modules.
 By extracting these, we avoid duplication and keep domain modules focused.
@@ -8,10 +7,9 @@ By extracting these, we avoid duplication and keep domain modules focused.
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, Never, cast
 
 from fastmcp.exceptions import ToolError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -20,18 +18,23 @@ from tracertm.api.client import TraceRTMClient
 from tracertm.config.manager import ConfigManager
 from tracertm.database.connection import DatabaseConnection
 from tracertm.storage.conflict_resolver import ConflictStrategy as StorageConflictStrategy
-from tracertm.storage.file_watcher import TraceFileWatcher
 from tracertm.storage.local_storage import LocalStorageManager
 from tracertm.storage.sync_engine import SyncEngine
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+
+    from tracertm.storage.file_watcher import TraceFileWatcher
 
 # Import tool modules (tolerate missing FastMCP deps in tests)
 try:
     from tracertm.mcp.tools import core_tools as core
 except Exception:  # pragma: no cover - test fallback
 
-    async def _core_unavailable(*_args: Any, **_kwargs: Any):
+    async def _core_unavailable(*_args: Any, **_kwargs: Any) -> Never:
         await asyncio.sleep(0)
-        raise ToolError("MCP core tools are unavailable in this environment.")
+        msg = "MCP core tools are unavailable in this environment."
+        raise ToolError(msg)
 
     class _CoreStub:
         select_project = _core_unavailable
@@ -94,7 +97,7 @@ def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
 async def _call_tool(mod: Any, tool_name: str, **kwargs: Any) -> Any:
     """Invoke a tool by name on a module (handles FunctionTool/callable from @mcp.tool())."""
     fn = getattr(mod, tool_name)
-    return await cast(Callable[..., Awaitable[Any]], fn)(**kwargs)
+    return await cast("Callable[..., Awaitable[Any]]", fn)(**kwargs)
 
 
 def _get_access_token_from_ctx() -> Any | None:
@@ -125,11 +128,13 @@ def _validate_project_id(project_id: str | None, allowed: list[str]) -> str | No
         return project_id
     if project_id:
         if project_id not in allowed:
-            raise ToolError("Project access denied for requested project_id.")
+            msg = "Project access denied for requested project_id."
+            raise ToolError(msg)
         return project_id
     if len(allowed) == 1:
         return allowed[0]
-    raise ToolError("project_id required for this request.")
+    msg = "project_id required for this request."
+    raise ToolError(msg)
 
 
 def _resolve_project_id(payload: dict[str, Any], ctx: Any | None) -> str | None:
@@ -185,7 +190,7 @@ def _build_sync_engine() -> SyncEngine:
 
     return SyncEngine(
         db_connection=db_connection,
-        api_client=cast(Any, api_client),
+        api_client=cast("Any", api_client),
         storage_manager=storage_manager,
         config=SyncConfig(conflict_strategy=conflict_strategy),
     )
@@ -217,7 +222,8 @@ async def _get_async_session() -> AsyncSession:
     config = ConfigManager()
     database_url = config.get("database_url")
     if not database_url:
-        raise ToolError("Database URL not configured.")
+        msg = "Database URL not configured."
+        raise ToolError(msg)
 
     if database_url.startswith("postgresql://"):
         database_url = database_url.replace("postgresql://", "postgresql+asyncpg://")

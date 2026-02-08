@@ -1,5 +1,4 @@
-"""
-Comprehensive test suite for StorageHelper (src/tracertm/cli/storage_helper.py)
+"""Comprehensive test suite for StorageHelper (src/tracertm/cli/storage_helper.py).
 
 Coverage areas:
 - Singleton pattern behavior
@@ -20,6 +19,7 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Thread
+from typing import Never
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -49,7 +49,7 @@ from tracertm.models import Item, Link, Project
 class TestSingletonPattern:
     """Test singleton pattern behavior for storage manager."""
 
-    def test_get_storage_manager_returns_same_instance(self, tmp_path):
+    def test_get_storage_manager_returns_same_instance(self, tmp_path) -> None:
         """Test that get_storage_manager returns the same instance."""
         reset_storage_manager()
 
@@ -61,7 +61,7 @@ class TestSingletonPattern:
 
             assert manager1 is manager2
 
-    def test_get_storage_manager_initializes_once(self, tmp_path):
+    def test_get_storage_manager_initializes_once(self, tmp_path) -> None:
         """Test that storage manager initializes only once."""
         reset_storage_manager()
 
@@ -75,7 +75,7 @@ class TestSingletonPattern:
             manager2 = get_storage_manager()
             assert manager is manager2
 
-    def test_reset_storage_manager_clears_singleton(self):
+    def test_reset_storage_manager_clears_singleton(self) -> None:
         """Test that reset_storage_manager clears the singleton."""
         reset_storage_manager()
 
@@ -91,7 +91,7 @@ class TestSingletonPattern:
                 # But we can't compare directly as different sessions are created
                 assert manager2 is not None
 
-    def test_storage_manager_with_custom_config_directory(self, tmp_path):
+    def test_storage_manager_with_custom_config_directory(self, tmp_path) -> None:
         """Test storage manager with custom storage directory from config."""
         reset_storage_manager()
         custom_dir = tmp_path / "custom_storage"
@@ -102,7 +102,7 @@ class TestSingletonPattern:
             manager = get_storage_manager()
             assert manager.base_dir == custom_dir
 
-    def test_storage_manager_uses_default_directory_when_not_configured(self, tmp_path):
+    def test_storage_manager_uses_default_directory_when_not_configured(self, tmp_path) -> None:
         """Test that storage manager uses default directory when not configured."""
         reset_storage_manager()
 
@@ -122,7 +122,7 @@ class TestSingletonPattern:
 class TestSessionManagement:
     """Test session management lifecycle."""
 
-    def test_get_storage_manager_creates_database_session(self, tmp_path):
+    def test_get_storage_manager_creates_database_session(self, tmp_path) -> None:
         """Test that storage manager creates database sessions."""
         reset_storage_manager()
 
@@ -135,7 +135,7 @@ class TestSessionManagement:
             assert session is not None
             session.close()
 
-    def test_get_storage_manager_creates_database_file(self, tmp_path):
+    def test_get_storage_manager_creates_database_file(self, tmp_path) -> None:
         """Test that storage manager creates database file."""
         reset_storage_manager()
 
@@ -146,7 +146,7 @@ class TestSessionManagement:
 
             assert manager.db_path.exists()
 
-    def test_multiple_sessions_are_independent(self, tmp_path):
+    def test_multiple_sessions_are_independent(self, tmp_path) -> None:
         """Test that multiple sessions from same manager are independent."""
         reset_storage_manager()
 
@@ -162,7 +162,7 @@ class TestSessionManagement:
             session1.close()
             session2.close()
 
-    def test_storage_manager_initializes_schema(self, tmp_path):
+    def test_storage_manager_initializes_schema(self, tmp_path) -> None:
         """Test that storage manager initializes database schema."""
         reset_storage_manager()
 
@@ -183,7 +183,7 @@ class TestSessionManagement:
 
             session.close()
 
-    def test_get_sync_queue_returns_list(self, tmp_path):
+    def test_get_sync_queue_returns_list(self, tmp_path) -> None:
         """Test that get_sync_queue returns a list."""
         reset_storage_manager()
 
@@ -195,7 +195,7 @@ class TestSessionManagement:
 
             assert isinstance(queue, list)
 
-    def test_get_sync_state_returns_value(self, tmp_path):
+    def test_get_sync_state_returns_value(self, tmp_path) -> None:
         """Test that get_sync_state returns state value."""
         reset_storage_manager()
 
@@ -217,13 +217,13 @@ class TestSessionManagement:
 class TestConcurrentAccess:
     """Test concurrent access patterns to storage manager."""
 
-    def test_concurrent_get_storage_manager_calls(self, tmp_path):
+    def test_concurrent_get_storage_manager_calls(self, tmp_path) -> None:
         """Test that concurrent calls return same singleton."""
         reset_storage_manager()
         managers = []
         errors = []
 
-        def get_manager():
+        def get_manager() -> None:
             try:
                 with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
                     mock_config.return_value.get.return_value = str(tmp_path)
@@ -244,7 +244,7 @@ class TestConcurrentAccess:
             # All managers should be the same instance
             assert len(managers) > 0
 
-    def test_concurrent_session_creation(self, tmp_path):
+    def test_concurrent_session_creation(self, tmp_path) -> None:
         """Test concurrent session creation from single manager."""
         reset_storage_manager()
 
@@ -254,7 +254,7 @@ class TestConcurrentAccess:
             manager = get_storage_manager()
             sessions = []
 
-            def create_session():
+            def create_session() -> None:
                 session = manager.get_session()
                 sessions.append(session)
                 time.sleep(0.01)
@@ -270,7 +270,7 @@ class TestConcurrentAccess:
 
             assert len(sessions) == 10
 
-    def test_storage_manager_thread_safety(self, tmp_path):
+    def test_storage_manager_thread_safety(self, tmp_path) -> None:
         """Test that storage manager operations are thread-safe."""
         reset_storage_manager()
         results = []
@@ -280,7 +280,7 @@ class TestConcurrentAccess:
 
             manager = get_storage_manager()
 
-            def perform_operation(index):
+            def perform_operation(index) -> None:
                 try:
                     session = manager.get_session()
                     # Simulate some work
@@ -300,7 +300,7 @@ class TestConcurrentAccess:
 
             assert all(results)
 
-    def test_concurrent_sync_state_access(self, tmp_path):
+    def test_concurrent_sync_state_access(self, tmp_path) -> None:
         """Test concurrent access to sync state."""
         reset_storage_manager()
 
@@ -310,7 +310,7 @@ class TestConcurrentAccess:
             manager = get_storage_manager()
             states = []
 
-            def get_state(index):
+            def get_state(index) -> None:
                 state = manager.get_sync_state(f"key_{index}")
                 states.append(state)
 
@@ -324,7 +324,7 @@ class TestConcurrentAccess:
 
             assert len(states) == 10
 
-    def test_concurrent_sync_queue_access(self, tmp_path):
+    def test_concurrent_sync_queue_access(self, tmp_path) -> None:
         """Test concurrent access to sync queue."""
         reset_storage_manager()
 
@@ -334,7 +334,7 @@ class TestConcurrentAccess:
             manager = get_storage_manager()
             queues = []
 
-            def get_queue(index):
+            def get_queue(index) -> None:
                 queue = manager.get_sync_queue(limit=100)
                 queues.append(queue)
 
@@ -348,14 +348,14 @@ class TestConcurrentAccess:
 
             assert len(queues) == 10
 
-    def test_multiple_threads_singleton_consistency(self, tmp_path):
+    def test_multiple_threads_singleton_consistency(self, tmp_path) -> None:
         """Test that multiple threads see consistent singleton."""
         reset_storage_manager()
         first_manager = None
         consistency_check = []
         errors = []
 
-        def verify_singleton():
+        def verify_singleton() -> None:
             nonlocal first_manager
             try:
                 with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
@@ -390,12 +390,13 @@ class TestConcurrentAccess:
 class TestErrorHandling:
     """Test error handling for storage failures."""
 
-    def test_handle_storage_error_decorator_catches_file_not_found(self):
+    def test_handle_storage_error_decorator_catches_file_not_found(self) -> None:
         """Test that handle_storage_error catches FileNotFoundError."""
 
         @handle_storage_error
-        def failing_func():
-            raise FileNotFoundError("Test file not found")
+        def failing_func() -> Never:
+            msg = "Test file not found"
+            raise FileNotFoundError(msg)
 
         with patch("tracertm.cli.storage_helper._console.print") as mock_print:
             try:
@@ -406,12 +407,13 @@ class TestErrorHandling:
             # Should print error message
             assert mock_print.called
 
-    def test_handle_storage_error_decorator_catches_value_error(self):
+    def test_handle_storage_error_decorator_catches_value_error(self) -> None:
         """Test that handle_storage_error catches ValueError."""
 
         @handle_storage_error
-        def failing_func():
-            raise ValueError("Invalid value")
+        def failing_func() -> Never:
+            msg = "Invalid value"
+            raise ValueError(msg)
 
         with patch("tracertm.cli.storage_helper._console.print") as mock_print:
             try:
@@ -421,12 +423,13 @@ class TestErrorHandling:
 
             assert mock_print.called
 
-    def test_handle_storage_error_decorator_catches_generic_exception(self):
+    def test_handle_storage_error_decorator_catches_generic_exception(self) -> None:
         """Test that handle_storage_error catches generic exceptions."""
 
         @handle_storage_error
-        def failing_func():
-            raise RuntimeError("Storage connection failed")
+        def failing_func() -> Never:
+            msg = "Storage connection failed"
+            raise RuntimeError(msg)
 
         with patch("tracertm.cli.storage_helper._console.print") as mock_print:
             try:
@@ -436,26 +439,26 @@ class TestErrorHandling:
 
             assert mock_print.called
 
-    def test_handle_storage_error_decorator_returns_result_on_success(self):
+    def test_handle_storage_error_decorator_returns_result_on_success(self) -> None:
         """Test that handle_storage_error returns result on success."""
 
         @handle_storage_error
-        def successful_func():
+        def successful_func() -> str:
             return "success"
 
         result = successful_func()
         assert result == "success"
 
-    def test_handle_storage_error_decorator_preserves_function_name(self):
+    def test_handle_storage_error_decorator_preserves_function_name(self) -> None:
         """Test that handle_storage_error preserves function name."""
 
         @handle_storage_error
-        def my_storage_func():
+        def my_storage_func() -> str:
             return "result"
 
         assert my_storage_func.__name__ == "my_storage_func"
 
-    def test_trigger_sync_handles_missing_api_endpoint(self, tmp_path):
+    def test_trigger_sync_handles_missing_api_endpoint(self, tmp_path) -> None:
         """Test that _trigger_sync handles missing API endpoint gracefully."""
         reset_storage_manager()
 
@@ -471,11 +474,11 @@ class TestErrorHandling:
                 # Should not raise
                 _trigger_sync()
 
-    def test_with_sync_decorator_handles_sync_failure(self):
+    def test_with_sync_decorator_handles_sync_failure(self) -> None:
         """Test that with_sync decorator handles sync failures gracefully."""
 
         @with_sync(enabled=True)
-        def command_func():
+        def command_func() -> str:
             return "completed"
 
         with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
@@ -490,11 +493,11 @@ class TestErrorHandling:
                     # Command should complete despite sync failure
                     assert result == "completed"
 
-    def test_with_sync_decorator_disabled_skips_sync(self):
+    def test_with_sync_decorator_disabled_skips_sync(self) -> None:
         """Test that with_sync decorator respects enabled flag."""
 
         @with_sync(enabled=False)
-        def command_func():
+        def command_func() -> str:
             return "completed"
 
         with patch("tracertm.cli.storage_helper._trigger_sync") as mock_trigger:
@@ -513,7 +516,7 @@ class TestErrorHandling:
 class TestConfigurationLoading:
     """Test configuration loading behavior."""
 
-    def test_get_current_project_returns_tuple(self):
+    def test_get_current_project_returns_tuple(self) -> None:
         """Test that get_current_project returns tuple."""
         with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.side_effect = lambda key: (
@@ -526,7 +529,7 @@ class TestConfigurationLoading:
             assert len(result) == 2
             assert result == ("project-123", "My Project")
 
-    def test_get_current_project_returns_none_when_not_set(self):
+    def test_get_current_project_returns_none_when_not_set(self) -> None:
         """Test that get_current_project returns None when not set."""
         with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = None
@@ -535,11 +538,11 @@ class TestConfigurationLoading:
 
             assert result is None
 
-    def test_get_current_project_returns_none_when_partial(self):
+    def test_get_current_project_returns_none_when_partial(self) -> None:
         """Test that get_current_project returns None when only partial."""
         with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             # Only project_id, no project_name
-            def get_side_effect(key):
+            def get_side_effect(key) -> str | None:
                 if key == "current_project_id":
                     return "project-123"
                 return None
@@ -550,11 +553,11 @@ class TestConfigurationLoading:
 
             assert result is None
 
-    def test_require_project_decorator_allows_execution_with_project(self):
+    def test_require_project_decorator_allows_execution_with_project(self) -> None:
         """Test that require_project allows execution when project is set."""
 
         @require_project()
-        def my_command():
+        def my_command() -> str:
             return "executed"
 
         with patch("tracertm.cli.storage_helper.get_current_project") as mock_project:
@@ -564,11 +567,11 @@ class TestConfigurationLoading:
 
             assert result == "executed"
 
-    def test_require_project_decorator_prevents_execution_without_project(self):
+    def test_require_project_decorator_prevents_execution_without_project(self) -> None:
         """Test that require_project prevents execution when project is not set."""
 
         @require_project()
-        def my_command():
+        def my_command() -> str:
             return "executed"
 
         with patch("tracertm.cli.storage_helper.get_current_project") as mock_project:
@@ -590,7 +593,7 @@ class TestConfigurationLoading:
 class TestDisplayFormatting:
     """Test display formatting utilities."""
 
-    def test_format_item_for_display_returns_table(self):
+    def test_format_item_for_display_returns_table(self) -> None:
         """Test that format_item_for_display returns Rich table."""
         item = Item(
             id="item-123",
@@ -608,7 +611,7 @@ class TestDisplayFormatting:
         assert table is not None
         assert hasattr(table, "add_row")
 
-    def test_format_item_for_display_contains_required_fields(self):
+    def test_format_item_for_display_contains_required_fields(self) -> None:
         """Test that formatted item contains required fields."""
         item = Item(
             id="item-123",
@@ -627,20 +630,20 @@ class TestDisplayFormatting:
         # Table should be created successfully
         assert table is not None
 
-    def test_format_link_for_display_returns_table(self):
+    def test_format_link_for_display_returns_table(self) -> None:
         """Test that format_link_for_display returns Rich table."""
         link = Link(
-            id="link-123", project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="implements"
+            id="link-123", project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="implements",
         )
 
         table = format_link_for_display(link)
 
         assert table is not None
 
-    def test_format_link_for_display_with_context_items(self):
+    def test_format_link_for_display_with_context_items(self) -> None:
         """Test format_link_for_display with context items."""
         link = Link(
-            id="link-123", project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="implements"
+            id="link-123", project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="implements",
         )
 
         source_item = Item(id="item-1", project_id="proj-1", title="Source Item", item_type="feature", status="todo")
@@ -651,7 +654,7 @@ class TestDisplayFormatting:
 
         assert table is not None
 
-    def test_format_items_table_returns_table(self):
+    def test_format_items_table_returns_table(self) -> None:
         """Test that format_items_table returns Rich table."""
         items = [
             Item(id="item-1", project_id="proj-1", title="Item 1", item_type="feature", status="todo"),
@@ -662,7 +665,7 @@ class TestDisplayFormatting:
 
         assert table is not None
 
-    def test_format_items_table_with_project_column(self):
+    def test_format_items_table_with_project_column(self) -> None:
         """Test format_items_table with project column."""
         items = [
             Item(id="item-1", project_id="proj-1", title="Item 1", item_type="feature", status="todo"),
@@ -672,10 +675,10 @@ class TestDisplayFormatting:
 
         assert table is not None
 
-    def test_format_links_table_returns_table(self):
+    def test_format_links_table_returns_table(self) -> None:
         """Test that format_links_table returns Rich table."""
         link = Link(
-            id="link-1", project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="implements"
+            id="link-1", project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="implements",
         )
 
         item1 = Item(id="item-1", project_id="proj-1", title="Item 1", item_type="feature", status="todo")
@@ -696,14 +699,14 @@ class TestDisplayFormatting:
 class TestSyncManagement:
     """Test sync management functionality."""
 
-    def test_human_time_delta_just_now(self):
+    def test_human_time_delta_just_now(self) -> None:
         """Test _human_time_delta with recent time."""
         now = datetime.now()
         result = _human_time_delta(now)
 
         assert result == "just now"
 
-    def test_human_time_delta_minutes_ago(self):
+    def test_human_time_delta_minutes_ago(self) -> None:
         """Test _human_time_delta with minutes."""
         dt = datetime.now() - timedelta(minutes=5)
         result = _human_time_delta(dt)
@@ -711,7 +714,7 @@ class TestSyncManagement:
         assert "minute" in result
         assert "5" in result
 
-    def test_human_time_delta_hours_ago(self):
+    def test_human_time_delta_hours_ago(self) -> None:
         """Test _human_time_delta with hours."""
         dt = datetime.now() - timedelta(hours=2)
         result = _human_time_delta(dt)
@@ -719,7 +722,7 @@ class TestSyncManagement:
         assert "hour" in result
         assert "2" in result
 
-    def test_human_time_delta_days_ago(self):
+    def test_human_time_delta_days_ago(self) -> None:
         """Test _human_time_delta with days."""
         dt = datetime.now() - timedelta(days=3)
         result = _human_time_delta(dt)
@@ -727,7 +730,7 @@ class TestSyncManagement:
         assert "day" in result
         assert "3" in result
 
-    def test_show_sync_status_displays_status(self, tmp_path):
+    def test_show_sync_status_displays_status(self, tmp_path) -> None:
         """Test that show_sync_status displays status."""
         reset_storage_manager()
 
@@ -739,7 +742,7 @@ class TestSyncManagement:
 
                 assert mock_print.called
 
-    def test_trigger_sync_with_queue_items(self, tmp_path):
+    def test_trigger_sync_with_queue_items(self, tmp_path) -> None:
         """Test _trigger_sync with queue items."""
         reset_storage_manager()
 
@@ -769,11 +772,11 @@ class TestSyncManagement:
 class TestWithSyncDecorator:
     """Test with_sync decorator behavior."""
 
-    def test_with_sync_decorator_enabled_triggers_sync(self):
+    def test_with_sync_decorator_enabled_triggers_sync(self) -> None:
         """Test that with_sync decorator triggers sync when enabled."""
 
         @with_sync(enabled=True)
-        def my_command():
+        def my_command() -> str:
             return "result"
 
         with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
@@ -785,11 +788,11 @@ class TestWithSyncDecorator:
                 assert result == "result"
                 assert mock_trigger.called
 
-    def test_with_sync_decorator_disabled_skips_sync(self):
+    def test_with_sync_decorator_disabled_skips_sync(self) -> None:
         """Test that with_sync decorator skips sync when disabled."""
 
         @with_sync(enabled=False)
-        def my_command():
+        def my_command() -> str:
             return "result"
 
         with patch("tracertm.cli.storage_helper._trigger_sync") as mock_trigger:
@@ -798,11 +801,11 @@ class TestWithSyncDecorator:
             assert result == "result"
             assert not mock_trigger.called
 
-    def test_with_sync_decorator_respects_auto_sync_config(self):
+    def test_with_sync_decorator_respects_auto_sync_config(self) -> None:
         """Test that with_sync decorator respects auto_sync config."""
 
         @with_sync(enabled=True)
-        def my_command():
+        def my_command() -> str:
             return "result"
 
         with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
@@ -815,7 +818,7 @@ class TestWithSyncDecorator:
                 # Should not trigger sync if auto_sync is False
                 assert not mock_trigger.called
 
-    def test_with_sync_decorator_preserves_function_behavior(self):
+    def test_with_sync_decorator_preserves_function_behavior(self) -> None:
         """Test that with_sync decorator preserves function behavior."""
 
         @with_sync(enabled=True)
@@ -839,16 +842,16 @@ class TestWithSyncDecorator:
 class TestRequireProjectDecorator:
     """Test require_project decorator behavior."""
 
-    def test_require_project_preserves_function_name(self):
+    def test_require_project_preserves_function_name(self) -> None:
         """Test that require_project preserves function name."""
 
         @require_project()
-        def my_command():
+        def my_command() -> str:
             return "result"
 
         assert my_command.__name__ == "my_command"
 
-    def test_require_project_with_args_and_kwargs(self):
+    def test_require_project_with_args_and_kwargs(self) -> None:
         """Test require_project with function args and kwargs."""
 
         @require_project()
@@ -862,11 +865,11 @@ class TestRequireProjectDecorator:
 
             assert result == (1, 2, 3)
 
-    def test_require_project_prints_error_message(self):
+    def test_require_project_prints_error_message(self) -> None:
         """Test that require_project prints helpful error message."""
 
         @require_project()
-        def my_command():
+        def my_command() -> str:
             return "result"
 
         with patch("tracertm.cli.storage_helper.get_current_project") as mock_project:
@@ -890,7 +893,7 @@ class TestRequireProjectDecorator:
 class TestDatabaseOperations:
     """Test database CRUD operations."""
 
-    def test_storage_manager_can_create_project(self, tmp_path):
+    def test_storage_manager_can_create_project(self, tmp_path) -> None:
         """Test that storage manager can create project."""
         reset_storage_manager()
 
@@ -911,7 +914,7 @@ class TestDatabaseOperations:
 
             session.close()
 
-    def test_storage_manager_can_create_item(self, tmp_path):
+    def test_storage_manager_can_create_item(self, tmp_path) -> None:
         """Test that storage manager can create item."""
         reset_storage_manager()
 
@@ -928,7 +931,7 @@ class TestDatabaseOperations:
 
             # Create item
             item = Item(
-                id="item-1", project_id="proj-1", title="Test Item", view="FEATURE", item_type="feature", status="todo"
+                id="item-1", project_id="proj-1", title="Test Item", view="FEATURE", item_type="feature", status="todo",
             )
             session.add(item)
             session.commit()
@@ -940,7 +943,7 @@ class TestDatabaseOperations:
 
             session.close()
 
-    def test_storage_manager_can_update_item(self, tmp_path):
+    def test_storage_manager_can_update_item(self, tmp_path) -> None:
         """Test that storage manager can update item."""
         reset_storage_manager()
 
@@ -977,7 +980,7 @@ class TestDatabaseOperations:
 
             session.close()
 
-    def test_storage_manager_can_delete_item(self, tmp_path):
+    def test_storage_manager_can_delete_item(self, tmp_path) -> None:
         """Test that storage manager can delete item."""
         reset_storage_manager()
 
@@ -993,7 +996,7 @@ class TestDatabaseOperations:
             session.commit()
 
             item = Item(
-                id="item-1", project_id="proj-1", title="Test Item", view="FEATURE", item_type="feature", status="todo"
+                id="item-1", project_id="proj-1", title="Test Item", view="FEATURE", item_type="feature", status="todo",
             )
             session.add(item)
             session.commit()
@@ -1017,7 +1020,7 @@ class TestDatabaseOperations:
 class TestTransactionManagement:
     """Test transaction management behavior."""
 
-    def test_storage_manager_transaction_rollback(self, tmp_path):
+    def test_storage_manager_transaction_rollback(self, tmp_path) -> None:
         """Test that storage manager handles transaction rollback."""
         reset_storage_manager()
 
@@ -1043,7 +1046,7 @@ class TestTransactionManagement:
 
             session.close()
 
-    def test_storage_manager_transaction_commit(self, tmp_path):
+    def test_storage_manager_transaction_commit(self, tmp_path) -> None:
         """Test that storage manager commits transactions."""
         reset_storage_manager()
 
@@ -1065,7 +1068,7 @@ class TestTransactionManagement:
             assert retrieved is not None
             session2.close()
 
-    def test_storage_manager_session_isolation(self, tmp_path):
+    def test_storage_manager_session_isolation(self, tmp_path) -> None:
         """Test that storage manager maintains session isolation."""
         reset_storage_manager()
 
@@ -1104,7 +1107,7 @@ class TestTransactionManagement:
 class TestIntegration:
     """Integration tests combining multiple components."""
 
-    def test_full_workflow_create_and_retrieve_item(self, tmp_path):
+    def test_full_workflow_create_and_retrieve_item(self, tmp_path) -> None:
         """Test full workflow: create project, item, and retrieve."""
         reset_storage_manager()
 
@@ -1147,7 +1150,7 @@ class TestIntegration:
 
             session.close()
 
-    def test_full_workflow_with_links(self, tmp_path):
+    def test_full_workflow_with_links(self, tmp_path) -> None:
         """Test workflow including link creation."""
         reset_storage_manager()
 
@@ -1164,7 +1167,7 @@ class TestIntegration:
 
             # Create items
             item1 = Item(
-                id="item-1", project_id="proj-1", title="Feature", view="FEATURE", item_type="feature", status="todo"
+                id="item-1", project_id="proj-1", title="Feature", view="FEATURE", item_type="feature", status="todo",
             )
             item2 = Item(
                 id="item-2",
@@ -1200,13 +1203,13 @@ class TestIntegration:
 
             session.close()
 
-    def test_decorator_combination(self):
+    def test_decorator_combination(self) -> None:
         """Test combining multiple decorators."""
 
         @with_sync(enabled=False)
         @handle_storage_error
         @require_project()
-        def complex_command():
+        def complex_command() -> str:
             return "success"
 
         with patch("tracertm.cli.storage_helper.get_current_project") as mock_project:
@@ -1215,7 +1218,7 @@ class TestIntegration:
             result = complex_command()
             assert result == "success"
 
-    def test_singleton_with_multiple_operations(self, tmp_path):
+    def test_singleton_with_multiple_operations(self, tmp_path) -> None:
         """Test singleton consistency across multiple operations."""
         reset_storage_manager()
 
@@ -1241,7 +1244,7 @@ class TestIntegration:
             assert retrieved is not None
             session.close()
 
-    def test_error_handling_in_operations(self, tmp_path):
+    def test_error_handling_in_operations(self, tmp_path) -> None:
         """Test error handling during operations."""
         reset_storage_manager()
 
@@ -1249,8 +1252,9 @@ class TestIntegration:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             @handle_storage_error
-            def failing_operation():
-                raise ValueError("Invalid operation")
+            def failing_operation() -> Never:
+                msg = "Invalid operation"
+                raise ValueError(msg)
 
             with patch("tracertm.cli.storage_helper._console.print"):
                 try:

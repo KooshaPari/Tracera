@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""
-SwiftRide Project Data Enhancement Generator
-Generates 2,000+ items and 5,000+ links for comprehensive ride-sharing platform dataset
+"""SwiftRide Project Data Enhancement Generator
+Generates 2,000+ items and 5,000+ links for comprehensive ride-sharing platform dataset.
 """
 
 import hashlib
@@ -13,14 +12,14 @@ PROJECT_ID = "cd6d847c-0f2e-4ccc-bf1a-c96b08c97d4e"
 
 
 class ItemGenerator:
-    def __init__(self):
+    def __init__(self) -> None:
         self.items = []
         self.links = []
         self.item_counter = {}
         self.base_uuid_int = int.from_bytes(hashlib.sha256(b"swiftride_v1").digest()[:16], "big")
 
     def gen_id(self, prefix: str) -> str:
-        """Generate unique UUIDs using counter and prefix"""
+        """Generate unique UUIDs using counter and prefix."""
         if prefix not in self.item_counter:
             self.item_counter[prefix] = 1
         else:
@@ -43,7 +42,7 @@ class ItemGenerator:
         tags: list | None = None,
         parent_id: str | None = None,
     ) -> str:
-        """Add an item and return its ID"""
+        """Add an item and return its ID."""
         item_id = self.gen_id(item_type)
         meta = json.dumps(metadata or {}).replace("'", "''")
         tags_str = "ARRAY[" + ",".join([f"'{tag}'" for tag in (tags or [])]) + "]"
@@ -62,8 +61,8 @@ class ItemGenerator:
 
         return item_id
 
-    def add_link(self, source_id: str, target_id: str, link_type: str, metadata: dict | None = None):
-        """Add a link between items"""
+    def add_link(self, source_id: str, target_id: str, link_type: str, metadata: dict | None = None) -> None:
+        """Add a link between items."""
         self.links.append({
             "source_id": source_id,
             "target_id": target_id,
@@ -72,7 +71,7 @@ class ItemGenerator:
         })
 
     def generate_sql(self) -> str:
-        """Generate SQL INSERT statements"""
+        """Generate SQL INSERT statements."""
         sql = [
             "-- SwiftRide Project Enhancement - Auto-generated",
             "-- Total Items: " + str(len(self.items)),
@@ -90,11 +89,10 @@ class ItemGenerator:
                 f"INSERT INTO items (id, project_id, type, title, description, status, priority, metadata, tags, parent_id) "
                 f"VALUES ('{item['id']}', '{PROJECT_ID}', '{item['type']}', '{item['title']}', "
                 f"'{item['description']}', '{item['status']}', {item['priority']}, '{item['metadata']}'::jsonb, "
-                f"{item['tags']}{parent_clause});"
+                f"{item['tags']}{parent_clause});",
             )
 
-        sql.append("")
-        sql.append("-- LINKS")
+        sql.extend(("", "-- LINKS"))
 
         sql.extend([
             f"INSERT INTO links (source_id, target_id, link_type, metadata) "
@@ -103,22 +101,18 @@ class ItemGenerator:
             for link in self.links
         ])
 
-        sql.append("")
-        sql.append("COMMIT;")
+        sql.extend(("", "COMMIT;"))
 
         return "\n".join(sql)
 
 
-def generate_swiftride_data():
-    """Generate comprehensive SwiftRide dataset"""
+def generate_swiftride_data() -> None:
+    """Generate comprehensive SwiftRide dataset."""
     gen = ItemGenerator()
-
-    print("Generating SwiftRide comprehensive dataset...")
 
     # ==========================================================================
     # BUSINESS LAYER (200 items)
     # ==========================================================================
-    print("  - Business objectives, KPIs, market segments...")
 
     # Business Objectives (20)
     objectives = []
@@ -253,7 +247,7 @@ def generate_swiftride_data():
 
     for title, desc, ptype, age, income in persona_data:
         persona_id = gen.add_item(
-            "persona", title, desc, "active", 1, {"age": age, "income": income, "type": ptype}, ["persona", ptype]
+            "persona", title, desc, "active", 1, {"age": age, "income": income, "type": ptype}, ["persona", ptype],
         )
         personas.append(persona_id)
         # Link personas to segments
@@ -281,7 +275,7 @@ def generate_swiftride_data():
 
     for title, desc, priority in rule_data:
         rule_id = gen.add_item(
-            "business_rule", title, desc, "active", priority, {"enforcement": "automatic"}, ["policy", "enforcement"]
+            "business_rule", title, desc, "active", priority, {"enforcement": "automatic"}, ["policy", "enforcement"],
         )
         rules.append(rule_id)
 
@@ -367,12 +361,9 @@ def generate_swiftride_data():
         )
         pricing.append(price_id)
 
-    print(f"    Created {len(objectives)} objectives, {len(kpis)} KPIs, {len(segments)} segments...")
-
     # ==========================================================================
     # PRODUCT LAYER (400 items)
     # ==========================================================================
-    print("  - Epics, features, user stories, use cases...")
 
     # Epics (20)
     epics = []
@@ -527,12 +518,9 @@ def generate_swiftride_data():
         )
         gen.add_link(feat_id, ac_id, "satisfies", {})
 
-    print(f"    Created {len(epics)} epics, {len(features)} features, {len(stories)} stories, {len(tasks)} tasks...")
-
     # ==========================================================================
     # ARCHITECTURE LAYER (200 items)
     # ==========================================================================
-    print("  - Microservices, APIs, data models, infrastructure...")
 
     # Microservices (30)
     services = []
@@ -698,12 +686,9 @@ def generate_swiftride_data():
         )
         infra.append(infra_id)
 
-    print(f"    Created {len(services)} services, {len(endpoints)} endpoints, {len(models)} models...")
-
     # ==========================================================================
     # DEVELOPMENT LAYER (500 items)
     # ==========================================================================
-    print("  - Code files, database schemas, configs, scripts...")
 
     # Python Code Files (150)
     py_files = []
@@ -797,12 +782,9 @@ def generate_swiftride_data():
         )
         scripts.append(script_id)
 
-    print(f"    Created {len(py_files)} Python files, {len(ts_files)} TS files, {len(go_files)} Go files...")
-
     # ==========================================================================
     # TESTING LAYER (400 items)
     # ==========================================================================
-    print("  - Unit tests, integration tests, e2e tests...")
 
     # Unit Tests (200 - match code files)
     unit_tests = []
@@ -917,14 +899,9 @@ def generate_swiftride_data():
         )
         sec_tests.append(sec_id)
 
-    print(
-        f"    Created {len(unit_tests)} unit tests, {len(integration_tests)} integration tests, {len(e2e_tests)} e2e tests..."
-    )
-
     # ==========================================================================
     # OPERATIONS LAYER (200 items)
     # ==========================================================================
-    print("  - Monitoring, alerts, runbooks, CI/CD, IaC...")
 
     # Monitoring Dashboards (40)
     dashboards = []
@@ -1043,12 +1020,9 @@ def generate_swiftride_data():
         iac.append(iac_id)
         gen.add_link(iac_id, infra[i], "defines", {})
 
-    print(f"    Created {len(dashboards)} dashboards, {len(alerts)} alerts, {len(runbooks)} runbooks...")
-
     # ==========================================================================
     # DOCUMENTATION LAYER (100 items)
     # ==========================================================================
-    print("  - ADRs, API docs, user guides, technical specs...")
 
     # Architecture Decision Records (30)
     adrs = []
@@ -1160,14 +1134,11 @@ def generate_swiftride_data():
         specs.append(spec_id)
         gen.add_link(spec_id, services[i], "documents", {})
 
-    print(f"    Created {len(adrs)} ADRs, {len(api_docs)} API docs, {len(guides)} user guides...")
-
     # ==========================================================================
     # CROSS-LAYER LINKS (Additional 3000+ links)
     # ==========================================================================
-    print("  - Creating comprehensive cross-layer links...")
 
-    link_count_before = len(gen.links)
+    len(gen.links)
 
     # Link features to requirements/objectives
     for feat_id in features[:50]:
@@ -1225,38 +1196,22 @@ def generate_swiftride_data():
         for j in range(0, min(len(use_cases), 50), 5):
             gen.add_link(features[i], use_cases[j], "validates", {})
 
-    print(f"    Created {len(gen.links) - link_count_before} additional cross-layer links")
-
     # ==========================================================================
     # GENERATE SQL AND WRITE TO FILE
     # ==========================================================================
-    print("\nGenerating SQL...")
     sql_content = gen.generate_sql()
 
     out_path = Path(__file__).resolve().parent / "enhance_swiftride_full.sql"
     with out_path.open("w") as f:
         f.write(sql_content)
 
-    print(f"\n{'=' * 80}")
-    print("SWIFTRIDE DATA GENERATION COMPLETE")
-    print(f"{'=' * 80}")
-    print(f"Total Items Created: {len(gen.items)}")
-    print(f"Total Links Created: {len(gen.links)}")
-    print("\nBreakdown by Item Type:")
     type_counts = {}
     for item in gen.items:
         itype = item["type"]
         type_counts[itype] = type_counts.get(itype, 0) + 1
 
-    for itype, count in sorted(type_counts.items(), key=lambda x: -x[1]):
-        print(f"  {itype:30s}: {count:5d}")
-
-    print("\nSQL file generated: scripts/enhance_swiftride_full.sql")
-    print(
-        "Execute with: psql postgresql://tracertm:tracertm_password@localhost:5432/tracertm -f scripts/enhance_swiftride_full.sql"
-    )
-    print("Then run: ./scripts/quick_fix_graph.sh")
-    print(f"{'=' * 80}\n")
+    for itype, _count in sorted(type_counts.items(), key=lambda x: -x[1]):
+        pass
 
 
 if __name__ == "__main__":

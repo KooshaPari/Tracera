@@ -1,6 +1,7 @@
 package agents
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -14,34 +15,37 @@ type advisoryLockRow struct {
 	Locked bool `gorm:"column:locked"`
 }
 
-func (c *Coordinator) acquireSingletonLock() error {
-	if c.db == nil {
+func (coordinator *Coordinator) acquireSingletonLock() error {
+	if coordinator.db == nil {
 		return nil
 	}
 
 	// Only enforce singleton when running on Postgres.
-	if c.db.Dialector == nil || c.db.Dialector.Name() != "postgres" {
+	if coordinator.db.Dialector == nil || coordinator.db.Name() != "postgres" {
 		return nil
 	}
 
 	var row advisoryLockRow
-	if err := c.db.Raw("SELECT pg_try_advisory_lock(?) AS locked", coordinatorSingletonLockKey).Scan(&row).Error; err != nil {
+	if err := coordinator.db.Raw(
+		"SELECT pg_try_advisory_lock(?) AS locked",
+		coordinatorSingletonLockKey,
+	).Scan(&row).Error; err != nil {
 		return fmt.Errorf("failed to acquire coordinator singleton lock: %w", err)
 	}
 	if !row.Locked {
-		return fmt.Errorf("coordinator singleton lock is already held (another instance is running)")
+		return errors.New("coordinator singleton lock is already held (another instance is running)")
 	}
 	return nil
 }
 
-func (c *Coordinator) releaseSingletonLock() error {
-	if c.db == nil {
+func (coordinator *Coordinator) releaseSingletonLock() error {
+	if coordinator.db == nil {
 		return nil
 	}
-	if c.db.Dialector == nil || c.db.Dialector.Name() != "postgres" {
+	if coordinator.db.Dialector == nil || coordinator.db.Name() != "postgres" {
 		return nil
 	}
-	if err := c.db.Exec("SELECT pg_advisory_unlock(?)", coordinatorSingletonLockKey).Error; err != nil {
+	if err := coordinator.db.Exec("SELECT pg_advisory_unlock(?)", coordinatorSingletonLockKey).Error; err != nil {
 		return fmt.Errorf("failed to release coordinator singleton lock: %w", err)
 	}
 	return nil

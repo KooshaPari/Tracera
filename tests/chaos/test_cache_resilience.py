@@ -1,5 +1,4 @@
-"""
-Chaos Test: Cache (Redis) Resilience
+"""Chaos Test: Cache (Redis) Resilience.
 
 Tests that the CacheService fails clearly when Redis is unavailable (per CLAUDE.md:
 required dependencies must fail explicitly, not degrade silently). Also tests the
@@ -36,7 +35,7 @@ class TestCacheGetFailure:
     """CacheService.get() must raise RedisUnavailableError when Redis is down."""
 
     @pytest.mark.asyncio
-    async def test_get_raises_on_connection_refused(self, cache_service):
+    async def test_get_raises_on_connection_refused(self, cache_service) -> None:
         """Simulate ConnectionRefusedError from Redis -- must surface as RedisUnavailableError."""
         svc, mock_client = cache_service
         mock_client.get.side_effect = ConnectionRefusedError("Connection refused")
@@ -45,7 +44,7 @@ class TestCacheGetFailure:
             await svc.get("some:key")
 
     @pytest.mark.asyncio
-    async def test_get_raises_on_timeout(self, cache_service):
+    async def test_get_raises_on_timeout(self, cache_service) -> None:
         """Simulate a timeout from Redis -- must surface as RedisUnavailableError."""
         svc, mock_client = cache_service
         mock_client.get.side_effect = TimeoutError("Read timed out")
@@ -54,7 +53,7 @@ class TestCacheGetFailure:
             await svc.get("some:key")
 
     @pytest.mark.asyncio
-    async def test_get_raises_on_broken_pipe(self, cache_service):
+    async def test_get_raises_on_broken_pipe(self, cache_service) -> None:
         """Simulate BrokenPipeError mid-read -- must surface as RedisUnavailableError."""
         svc, mock_client = cache_service
         mock_client.get.side_effect = BrokenPipeError("Broken pipe")
@@ -68,7 +67,7 @@ class TestCacheSetFailure:
     """CacheService.set() must raise RedisUnavailableError when Redis is down."""
 
     @pytest.mark.asyncio
-    async def test_set_raises_on_connection_refused(self, cache_service):
+    async def test_set_raises_on_connection_refused(self, cache_service) -> None:
         svc, mock_client = cache_service
         mock_client.setex.side_effect = ConnectionRefusedError("Connection refused")
 
@@ -76,7 +75,7 @@ class TestCacheSetFailure:
             await svc.set("key", {"data": 1}, ttl_seconds=60)
 
     @pytest.mark.asyncio
-    async def test_set_raises_on_os_error(self, cache_service):
+    async def test_set_raises_on_os_error(self, cache_service) -> None:
         svc, mock_client = cache_service
         mock_client.setex.side_effect = OSError("Network unreachable")
 
@@ -89,7 +88,7 @@ class TestCacheDeleteAndClearFailure:
     """delete() and clear() must raise RedisUnavailableError when Redis is down."""
 
     @pytest.mark.asyncio
-    async def test_delete_raises_on_connection_error(self, cache_service):
+    async def test_delete_raises_on_connection_error(self, cache_service) -> None:
         svc, mock_client = cache_service
         mock_client.delete.side_effect = ConnectionRefusedError("Connection refused")
 
@@ -97,7 +96,7 @@ class TestCacheDeleteAndClearFailure:
             await svc.delete("key")
 
     @pytest.mark.asyncio
-    async def test_clear_raises_on_connection_error(self, cache_service):
+    async def test_clear_raises_on_connection_error(self, cache_service) -> None:
         svc, mock_client = cache_service
         mock_client.flushdb.side_effect = ConnectionRefusedError("Connection refused")
 
@@ -110,7 +109,7 @@ class TestCacheHealthCheckFailure:
     """health_check must raise RedisUnavailableError when ping fails."""
 
     @pytest.mark.asyncio
-    async def test_health_check_raises_on_unreachable(self, cache_service):
+    async def test_health_check_raises_on_unreachable(self, cache_service) -> None:
         svc, mock_client = cache_service
         mock_client.ping.side_effect = ConnectionRefusedError("Connection refused")
 
@@ -118,7 +117,7 @@ class TestCacheHealthCheckFailure:
             await svc.health_check()
 
     @pytest.mark.asyncio
-    async def test_health_check_passes_when_healthy(self, cache_service):
+    async def test_health_check_passes_when_healthy(self, cache_service) -> None:
         svc, mock_client = cache_service
         mock_client.ping.return_value = True
 
@@ -131,7 +130,7 @@ class TestCachedGetHelperResilience:
     """cached_get must propagate RedisUnavailableError from the underlying cache, not swallow it."""
 
     @pytest.mark.asyncio
-    async def test_cached_get_propagates_redis_error_on_read(self, cache_service):
+    async def test_cached_get_propagates_redis_error_on_read(self, cache_service) -> None:
         """If cache.get() fails with RedisUnavailableError, cached_get must re-raise."""
         svc, mock_client = cache_service
         mock_client.get.side_effect = ConnectionRefusedError("Connection refused")
@@ -145,7 +144,7 @@ class TestCachedGetHelperResilience:
         fetch_fn.assert_not_awaited()
 
     @pytest.mark.asyncio
-    async def test_cached_get_propagates_redis_error_on_write(self, cache_service):
+    async def test_cached_get_propagates_redis_error_on_write(self, cache_service) -> None:
         """If cache.get() returns None (miss) but cache.set() fails, cached_get must re-raise."""
         svc, mock_client = cache_service
         # Cache miss
@@ -167,7 +166,7 @@ class TestCacheStatsUnderFailure:
     """get_stats must raise RedisUnavailableError when info() call fails."""
 
     @pytest.mark.asyncio
-    async def test_get_stats_raises_on_connection_error(self, cache_service):
+    async def test_get_stats_raises_on_connection_error(self, cache_service) -> None:
         svc, mock_client = cache_service
         mock_client.info.side_effect = ConnectionRefusedError("Connection refused")
 
@@ -179,19 +178,19 @@ class TestCacheStatsUnderFailure:
 class TestCacheKeyGeneration:
     """Key generation must be deterministic and handle edge cases."""
 
-    def test_generate_key_is_deterministic(self, cache_service):
+    def test_generate_key_is_deterministic(self, cache_service) -> None:
         svc, _ = cache_service
         k1 = svc._generate_key("items", project_id="abc")
         k2 = svc._generate_key("items", project_id="abc")
         assert k1 == k2
 
-    def test_generate_key_different_inputs_different_keys(self, cache_service):
+    def test_generate_key_different_inputs_different_keys(self, cache_service) -> None:
         svc, _ = cache_service
         k1 = svc._generate_key("items", project_id="abc")
         k2 = svc._generate_key("items", project_id="xyz")
         assert k1 != k2
 
-    def test_generate_key_includes_prefix(self, cache_service):
+    def test_generate_key_includes_prefix(self, cache_service) -> None:
         svc, _ = cache_service
         key = svc._generate_key("graph", project_id="p1")
         assert key.startswith("tracertm:graph:")

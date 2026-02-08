@@ -18,7 +18,7 @@ HEADER_LEVEL_PARENT_SECONDARY = 2
 class ChaosModeService:
     """Service for advanced chaos mode features."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)
@@ -289,7 +289,7 @@ class ChaosModeService:
                     items_created += 1
 
                     # Set as parent for next level (header levels that become parents)
-                    if level in (HEADER_LEVEL_PARENT_PRIMARY, HEADER_LEVEL_PARENT_SECONDARY):
+                    if level in {HEADER_LEVEL_PARENT_PRIMARY, HEADER_LEVEL_PARENT_SECONDARY}:
                         current_parent = item.id
 
             # YAML list items (- Item)

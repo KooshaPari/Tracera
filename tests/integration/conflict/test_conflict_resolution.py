@@ -1,6 +1,4 @@
-"""
-Integration tests for Epic 5: Conflict Resolution (Story 5.5).
-"""
+"""Integration tests for Epic 5: Conflict Resolution (Story 5.5)."""
 
 import pytest
 
@@ -46,7 +44,7 @@ def temp_project_setup(tmp_path, monkeypatch):
     return project_id, database_url
 
 
-def test_conflict_detection(temp_project_setup):
+def test_conflict_detection(temp_project_setup) -> None:
     """Test conflict detection (Story 5.5)."""
     project_id, database_url = temp_project_setup
 
@@ -76,7 +74,7 @@ def test_conflict_detection(temp_project_setup):
     db.close()
 
 
-def test_conflict_resolution_strategies(temp_project_setup):
+def test_conflict_resolution_strategies(temp_project_setup) -> None:
     """Test conflict resolution strategies (Story 5.5)."""
     project_id, database_url = temp_project_setup
 
@@ -101,6 +99,6 @@ def test_conflict_resolution_strategies(temp_project_setup):
 
         # Test resolution strategies
         result = service.resolve_conflict(project_id, item_id, strategy="last_write_wins")
-        assert result["resolved"] in [True, False]  # May not have conflicts
+        assert result["resolved"] in {True, False}  # May not have conflicts
 
     db.close()

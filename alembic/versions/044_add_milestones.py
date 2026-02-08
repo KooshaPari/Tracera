@@ -22,7 +22,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Create milestones, sprints, and progress tracking tables."""
-
     # =========================================================================
     # MILESTONES TABLE
     # =========================================================================

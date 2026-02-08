@@ -1,6 +1,4 @@
-"""
-Simple CLI test to verify mocking approach works.
-"""
+"""Simple CLI test to verify mocking approach works."""
 
 from unittest.mock import patch
 
@@ -15,7 +13,7 @@ def cli_runner():
     return CliRunner()
 
 
-def test_simple_cli_item(cli_runner):
+def test_simple_cli_item(cli_runner) -> None:
     """Simple test to verify CLI mocking works."""
     with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
         # Mock the session

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Seed SwiftRide mock data into TraceRTM schema.
+"""Seed SwiftRide mock data into TraceRTM schema.
 
 Reads:
   - scripts/mock_data_rideshare.sql (project + items)
@@ -169,7 +168,7 @@ def parse_sql_values_line(line: str) -> list[str | int | None]:
 
 def extract_project_from_mock(mock_path: Path) -> dict | None:
     """Extract single project from mock_data_rideshare.sql."""
-    text = mock_path.read_text()
+    text = mock_path.read_text(encoding="utf-8")
     # INSERT INTO projects (id, name, project_metadata, created_at, updated_at) VALUES (...);
     m = re.search(
         r"INSERT INTO projects\s*\([^)]+\)\s*VALUES\s*\(([^;]+)\);",
@@ -190,7 +189,7 @@ def extract_project_from_mock(mock_path: Path) -> dict | None:
 
 def extract_items_from_mock(mock_path: Path) -> list[dict]:
     """Extract all item rows from mock_data_rideshare.sql."""
-    text = mock_path.read_text()
+    text = mock_path.read_text(encoding="utf-8")
     items: list[dict] = []
     # Match each line that looks like ('id', 'proj_...', ...)
     for m in re.finditer(
@@ -228,7 +227,7 @@ def extract_items_from_mock(mock_path: Path) -> list[dict]:
 
 def extract_links_from_add_links(links_path: Path) -> list[dict]:
     """Extract link rows from add_swiftride_links.sql. Columns: id, project_id, source_item_id, target_item_id, link_type, link_metadata, created_at, updated_at."""
-    text = links_path.read_text()
+    text = links_path.read_text(encoding="utf-8")
     links: list[dict] = []
     for line in text.splitlines():
         line = line.strip()
@@ -267,7 +266,7 @@ def main() -> int:
 
     ap = argparse.ArgumentParser(description="Emit TraceRTM-ready SQL for SwiftRide mock data")
     ap.add_argument(
-        "--account-id", default=os.environ.get("ACCOUNT_ID"), help="Account UUID for projects (or set ACCOUNT_ID)"
+        "--account-id", default=os.environ.get("ACCOUNT_ID"), help="Account UUID for projects (or set ACCOUNT_ID)",
     )
     ap.add_argument(
         "--project-id",
@@ -284,28 +283,20 @@ def main() -> int:
         try:
             uuid.UUID(project_uuid)
         except ValueError:
-            print(f"Error: --project-id must be a valid UUID: {project_uuid!r}", file=sys.stderr)
             return 1
     else:
         project_uuid = str(uuid.uuid4())
 
     if not extend_existing and not account_id:
         account_id = "00000000-0000-0000-0000-000000000001"  # placeholder; user should set ACCOUNT_ID
-        print(
-            "-- WARNING: ACCOUNT_ID not set; using placeholder. Set ACCOUNT_ID=your-uuid or --account-id",
-            file=sys.stderr,
-        )
 
     if not mock_path.exists():
-        print(f"Error: {mock_path} not found", file=sys.stderr)
         return 1
     if not links_path.exists():
-        print(f"Error: {links_path} not found", file=sys.stderr)
         return 1
 
     project = extract_project_from_mock(mock_path)
     if not project:
-        print("Error: could not extract project from mock", file=sys.stderr)
         return 1
 
     items = extract_items_from_mock(mock_path)
@@ -317,7 +308,7 @@ def main() -> int:
         logical_to_uuid[it["id"]] = str(uuid.uuid4())
 
     with (
-        Path(args.output).open("w") if args.output is not None else nullcontext(sys.stdout)
+        Path(args.output).open("w", encoding="utf-8") if args.output is not None else nullcontext(sys.stdout)
     ) as out:
         # Project metadata: keep description from project_metadata JSON if present
         try:
@@ -335,7 +326,8 @@ def main() -> int:
         try:
             safe_project_uuid = str(uuid.UUID(project_uuid))
         except (ValueError, TypeError) as err:
-            raise ValueError(f"Invalid project UUID: {project_uuid!r}") from err
+            msg = f"Invalid project UUID: {project_uuid!r}"
+            raise ValueError(msg) from err
 
         # TraceRTM projects (tracertm schema): id, account_id, name, description, metadata, created_at, updated_at.
         desc_from_meta = meta.get("description", "") if isinstance(meta, dict) else ""
@@ -353,7 +345,7 @@ def main() -> int:
             out.write("DELETE FROM projects WHERE id = '" + safe_project_uuid + "'::uuid;\n\n")
             if account_id:
                 out.write(
-                    "INSERT INTO projects (id, account_id, name, description, metadata, created_at, updated_at)\n"
+                    "INSERT INTO projects (id, account_id, name, description, metadata, created_at, updated_at)\n",
                 )
                 out.write(
                     "VALUES ("
@@ -366,7 +358,7 @@ def main() -> int:
                     + (sql_quote(desc_from_meta) if desc_from_meta else "NULL")
                     + ", '"
                     + meta_str
-                    + "'::jsonb, NOW(), NOW());\n\n"
+                    + "'::jsonb, NOW(), NOW());\n\n",
                 )
             else:
                 out.write("INSERT INTO projects (id, name, description, metadata, created_at, updated_at)\n")
@@ -379,7 +371,7 @@ def main() -> int:
                     + (sql_quote(desc_from_meta) if desc_from_meta else "NULL")
                     + ", '"
                     + meta_str
-                    + "'::jsonb, NOW(), NOW());\n\n"
+                    + "'::jsonb, NOW(), NOW());\n\n",
                 )
         else:
             out.write("\n")
@@ -387,7 +379,7 @@ def main() -> int:
         # Items: id, project_id, title, description, type, status, priority, parent_id, metadata, created_at, updated_at
         # Merge item_metadata + view + owner into metadata
         out.write(
-            "INSERT INTO items (id, project_id, title, description, type, status, priority, parent_id, metadata, created_at, updated_at)\nVALUES\n"
+            "INSERT INTO items (id, project_id, title, description, type, status, priority, parent_id, metadata, created_at, updated_at)\nVALUES\n",
         )
         for i, it in enumerate(items):
             u = logical_to_uuid[it["id"]]
@@ -428,21 +420,21 @@ def main() -> int:
                 + meta_str
                 + "'::jsonb, NOW(), NOW())"
                 + comma
-                + "\n"
+                + "\n",
             )
         out.write(";\n\n")
 
         # Default graph for the project (required for links.graph_id)
         graph_id = str(uuid.uuid4())
         out.write(
-            "INSERT INTO graphs (id, project_id, name, graph_type, description, root_item_id, graph_metadata, created_at, updated_at)\n"
+            "INSERT INTO graphs (id, project_id, name, graph_type, description, root_item_id, graph_metadata, created_at, updated_at)\n",
         )
         out.write(
             "VALUES ("
             + sql_quote(graph_id)
             + ", "
             + sql_quote(safe_project_uuid)
-            + "::uuid, 'Trace graph', 'trace', NULL, NULL, '{}'::jsonb, NOW(), NOW());\n\n"
+            + "::uuid, 'Trace graph', 'trace', NULL, NULL, '{}'::jsonb, NOW(), NOW());\n\n",
         )
 
         # Links: id, project_id, graph_id, source_item_id, target_item_id, link_type, link_metadata, created_at, updated_at
@@ -459,7 +451,7 @@ def main() -> int:
                 meta = "{}"
             valid_links.append((str(uuid.uuid4()), src, tgt, ln["link_type"], meta))
         out.write(
-            "INSERT INTO links (id, project_id, graph_id, source_item_id, target_item_id, link_type, link_metadata, created_at, updated_at)\nVALUES\n"
+            "INSERT INTO links (id, project_id, graph_id, source_item_id, target_item_id, link_type, link_metadata, created_at, updated_at)\nVALUES\n",
         )
         for i, (link_uuid, src, tgt, link_type, meta) in enumerate(valid_links):
             meta_esc = meta.replace("'", "''")
@@ -481,7 +473,7 @@ def main() -> int:
                 + meta_esc
                 + "'::jsonb, NOW(), NOW())"
                 + comma
-                + "\n"
+                + "\n",
             )
         out.write(";\n")
 

@@ -1,5 +1,4 @@
-"""
-User repository service for managing cached WorkOS user data.
+"""User repository service for managing cached WorkOS user data.
 
 This service handles CRUD operations for the User model, providing
 methods to sync user data from WorkOS into the local database cache.
@@ -19,7 +18,7 @@ def _parse_workos_timestamp(value: str | datetime | None) -> datetime:
         return datetime.now(UTC)
     if isinstance(value, datetime):
         return value
-    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    return datetime.fromisoformat(value)
 
 
 class UserRepository:

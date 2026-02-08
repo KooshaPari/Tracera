@@ -1,6 +1,4 @@
-"""
-Database connection management for TraceRTM.
-"""
+"""Database connection management for TraceRTM."""
 
 from collections.abc import Generator
 from typing import Any
@@ -13,8 +11,7 @@ from tracertm.models.base import Base
 
 
 class DatabaseConnection:
-    """
-    Manages database connections with connection pooling.
+    """Manages database connections with connection pooling.
 
     Features:
     - Connection pooling (pool_size=20, max_overflow=10)
@@ -22,9 +19,8 @@ class DatabaseConnection:
     - Automatic schema creation
     """
 
-    def __init__(self, database_url: str):
-        """
-        Initialize database connection.
+    def __init__(self, database_url: str) -> None:
+        """Initialize database connection.
 
         Args:
             database_url: PostgreSQL database URL (or sqlite:// for testing)
@@ -40,7 +36,8 @@ class DatabaseConnection:
             "sqlite+aiosqlite://",
         )
         if not database_url or not database_url.startswith(allowed_prefixes):
-            raise ValueError("Database URL must start with 'postgresql://' or 'sqlite://' (for testing)")
+            msg = "Database URL must start with 'postgresql://' or 'sqlite://' (for testing)"
+            raise ValueError(msg)
 
         self.database_url = database_url
         self._engine: Engine | None = None
@@ -52,8 +49,7 @@ class DatabaseConnection:
         return self._engine
 
     def connect(self) -> Engine:
-        """
-        Establish database connection with pooling.
+        """Establish database connection with pooling.
 
         Returns:
             SQLAlchemy engine
@@ -85,41 +81,43 @@ class DatabaseConnection:
             return self._engine
 
         except Exception as e:
-            raise ConnectionError(
+            msg = (
                 f"Failed to connect to database: {e}\n"
                 f"Please check:\n"
                 f"  1. PostgreSQL is running\n"
                 f"  2. Database URL is correct\n"
                 f"  3. Database exists and is accessible"
+            )
+            raise ConnectionError(
+                msg,
             ) from e
 
     def create_tables(self) -> None:
-        """
-        Create all tables defined in models.
+        """Create all tables defined in models.
 
         Raises:
             RuntimeError: If not connected
         """
         if not self._engine:
-            raise RuntimeError("Not connected. Call connect() first.")
+            msg = "Not connected. Call connect() first."
+            raise RuntimeError(msg)
 
         Base.metadata.create_all(self._engine)
 
     def drop_tables(self) -> None:
-        """
-        Drop all tables (for testing/rollback).
+        """Drop all tables (for testing/rollback).
 
         Raises:
             RuntimeError: If not connected
         """
         if not self._engine:
-            raise RuntimeError("Not connected. Call connect() first.")
+            msg = "Not connected. Call connect() first."
+            raise RuntimeError(msg)
 
         Base.metadata.drop_all(self._engine)
 
     def health_check(self) -> dict[str, Any]:
-        """
-        Check database health and return status.
+        """Check database health and return status.
 
         Returns:
             Dict with health status information
@@ -128,7 +126,8 @@ class DatabaseConnection:
             RuntimeError: If not connected
         """
         if not self._engine:
-            raise RuntimeError("Not connected. Call connect() first.")
+            msg = "Not connected. Call connect() first."
+            raise RuntimeError(msg)
 
         try:
             with self._engine.connect() as conn:
@@ -139,7 +138,7 @@ class DatabaseConnection:
 
                     # Check tables (PostgreSQL)
                     result = conn.execute(
-                        text("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'")
+                        text("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'"),
                     )
                     table_count = result.scalar()
                 else:
@@ -169,8 +168,7 @@ class DatabaseConnection:
             }
 
     def get_session(self) -> Session:
-        """
-        Get a new database session.
+        """Get a new database session.
 
         Returns:
             SQLAlchemy session
@@ -179,7 +177,8 @@ class DatabaseConnection:
             RuntimeError: If not connected
         """
         if not self._session_factory:
-            raise RuntimeError("Not connected. Call connect() first.")
+            msg = "Not connected. Call connect() first."
+            raise RuntimeError(msg)
 
         return self._session_factory()
 
@@ -196,8 +195,7 @@ _db_connection: DatabaseConnection | None = None
 
 
 def get_engine(database_url: str) -> Engine:
-    """
-    Get or create database engine.
+    """Get or create database engine.
 
     Args:
         database_url: PostgreSQL database URL
@@ -213,13 +211,13 @@ def get_engine(database_url: str) -> Engine:
 
     engine = _db_connection._engine
     if engine is None:
-        raise RuntimeError("Database connection failed: engine is None")
+        msg = "Database connection failed: engine is None"
+        raise RuntimeError(msg)
     return engine
 
 
 def get_session(database_url: str) -> Generator[Session, None, None]:
-    """
-    Get database session (for dependency injection).
+    """Get database session (for dependency injection).
 
     Args:
         database_url: PostgreSQL database URL

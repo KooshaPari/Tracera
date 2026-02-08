@@ -1,5 +1,4 @@
-"""
-Performance tests for sync and concurrent operations.
+"""Performance tests for sync and concurrent operations.
 
 Tests performance-critical paths:
 - Large sync operations (500+ entities)
@@ -15,6 +14,7 @@ Target: +2% coverage on performance-sensitive paths
 import asyncio
 import time
 from datetime import UTC, datetime
+from typing import Never
 
 import pytest
 from sqlalchemy.orm.exc import StaleDataError
@@ -37,7 +37,7 @@ from tracertm.storage.sync_engine import (
 class TestChangeDetectorPerformance:
     """Tests for change detection performance."""
 
-    def test_hash_computation_small_content(self):
+    def test_hash_computation_small_content(self) -> None:
         """Test hash computation for small content."""
         content = "Small test content"
 
@@ -48,7 +48,7 @@ class TestChangeDetectorPerformance:
         assert elapsed < 0.01, "Hash should be computed in < 10ms"
         assert len(hash_value) == 64  # SHA-256 hex digest
 
-    def test_hash_computation_large_content(self):
+    def test_hash_computation_large_content(self) -> None:
         """Test hash computation for large content."""
         # Create large content (1MB)
         content = "x" * (1024 * 1024)
@@ -60,7 +60,7 @@ class TestChangeDetectorPerformance:
         assert elapsed < 0.1, "Hash should be computed in < 100ms even for 1MB"
         assert len(hash_value) == 64
 
-    def test_hash_consistency(self):
+    def test_hash_consistency(self) -> None:
         """Test hash consistency."""
         content = "Test content"
 
@@ -69,7 +69,7 @@ class TestChangeDetectorPerformance:
 
         assert hash1 == hash2, "Same content should produce same hash"
 
-    def test_hash_sensitivity(self):
+    def test_hash_sensitivity(self) -> None:
         """Test hash sensitivity to content changes."""
         content1 = "Test content"
         content2 = "Test contend"  # Changed 't' to 'd'
@@ -79,7 +79,7 @@ class TestChangeDetectorPerformance:
 
         assert hash1 != hash2, "Different content should produce different hashes"
 
-    def test_change_detection_performance(self):
+    def test_change_detection_performance(self) -> None:
         """Test change detection performance."""
         old_content = "Original content"
         old_hash = ChangeDetector.compute_hash(old_content)
@@ -93,7 +93,7 @@ class TestChangeDetectorPerformance:
         assert elapsed < 0.01
         assert has_changed is True
 
-    def test_change_detection_no_change(self):
+    def test_change_detection_no_change(self) -> None:
         """Test change detection when content unchanged."""
         content = "Test content"
         content_hash = ChangeDetector.compute_hash(content)
@@ -102,7 +102,7 @@ class TestChangeDetectorPerformance:
 
         assert has_changed is False
 
-    def test_change_detection_null_hash(self):
+    def test_change_detection_null_hash(self) -> None:
         """Test change detection with null hash."""
         content = "Test content"
 
@@ -114,12 +114,12 @@ class TestChangeDetectorPerformance:
 class TestRetryWithBackoffPerformance:
     """Tests for retry logic performance."""
 
-    def test_retry_immediate_success(self):
+    def test_retry_immediate_success(self) -> None:
         """Test immediate success (no retries)."""
         call_count = 0
 
         @retry_with_backoff(max_retries=3, initial_delay=0.01)
-        def operation():
+        def operation() -> str:
             nonlocal call_count
             call_count += 1
             return "success"
@@ -132,16 +132,17 @@ class TestRetryWithBackoffPerformance:
         assert call_count == 1
         assert elapsed < 0.05, "Immediate success should not wait"
 
-    def test_retry_single_failure_then_success(self):
+    def test_retry_single_failure_then_success(self) -> None:
         """Test single failure then success."""
         call_count = 0
 
         @retry_with_backoff(max_retries=3, initial_delay=0.05, exponential_base=2.0)
-        def operation():
+        def operation() -> str:
             nonlocal call_count
             call_count += 1
             if call_count == 1:
-                raise StaleDataError("Conflict")
+                msg = "Conflict"
+                raise StaleDataError(msg)
             return "success"
 
         start_time = time.time()
@@ -154,30 +155,32 @@ class TestRetryWithBackoffPerformance:
         assert elapsed >= 0.05, "Should wait for backoff"
         assert elapsed < 0.15, "Total wait should be reasonable"
 
-    def test_retry_max_retries_exceeded(self):
+    def test_retry_max_retries_exceeded(self) -> None:
         """Test max retries exceeded."""
         call_count = 0
 
         @retry_with_backoff(max_retries=2, initial_delay=0.01)
-        def operation():
+        def operation() -> Never:
             nonlocal call_count
             call_count += 1
-            raise StaleDataError("Conflict")
+            msg = "Conflict"
+            raise StaleDataError(msg)
 
         with pytest.raises(ConcurrencyError):
             operation()
 
         assert call_count == 3  # Initial + 2 retries
 
-    def test_retry_exponential_backoff(self):
+    def test_retry_exponential_backoff(self) -> None:
         """Test exponential backoff timing."""
         call_times = []
 
         @retry_with_backoff(max_retries=3, initial_delay=0.01, exponential_base=2.0, jitter=False)
-        def operation():
+        def operation() -> str:
             call_times.append(time.time())
             if len(call_times) < 4:
-                raise StaleDataError("Conflict")
+                msg = "Conflict"
+                raise StaleDataError(msg)
             return "success"
 
         start_time = time.time()
@@ -193,18 +196,19 @@ class TestRetryWithBackoffPerformance:
         # Each delay should be ~2x the previous
         assert delays[0] < delays[1] < delays[2]
 
-    def test_retry_with_jitter(self):
+    def test_retry_with_jitter(self) -> None:
         """Test retry with jitter."""
         call_count = 0
         call_times = []
 
         @retry_with_backoff(max_retries=2, initial_delay=0.05, jitter=True)
-        def operation():
+        def operation() -> str:
             nonlocal call_count
             call_times.append(time.time())
             call_count += 1
             if call_count < 3:
-                raise StaleDataError("Conflict")
+                msg = "Conflict"
+                raise StaleDataError(msg)
             return "success"
 
         start_time = time.time()
@@ -218,16 +222,17 @@ class TestRetryWithBackoffPerformance:
         delay1 = call_times[1] - call_times[0]
         assert delay1 >= 0.03  # Within jitter range of 0.05
 
-    def test_retry_max_delay_clamping(self):
+    def test_retry_max_delay_clamping(self) -> None:
         """Test that delays are clamped to max_delay."""
         call_count = 0
 
         @retry_with_backoff(max_retries=5, initial_delay=0.1, max_delay=0.2, exponential_base=2.0, jitter=False)
-        def operation():
+        def operation() -> str:
             nonlocal call_count
             call_count += 1
             if call_count < 6:
-                raise StaleDataError("Conflict")
+                msg = "Conflict"
+                raise StaleDataError(msg)
             return "success"
 
         start_time = time.time()
@@ -238,33 +243,35 @@ class TestRetryWithBackoffPerformance:
         # With clamping, total time should be < exponential growth
         assert elapsed < 1.5, "Max delay clamping should prevent excessive delays"
 
-    def test_retry_non_retryable_error(self):
+    def test_retry_non_retryable_error(self) -> None:
         """Test that non-retryable errors are raised immediately."""
         call_count = 0
 
         @retry_with_backoff(max_retries=3)
-        def operation():
+        def operation() -> Never:
             nonlocal call_count
             call_count += 1
-            raise ValueError("Non-retryable error")
+            msg = "Non-retryable error"
+            raise ValueError(msg)
 
         with pytest.raises(ValueError):
             operation()
 
         assert call_count == 1, "Should not retry non-retryable errors"
 
-    def test_retry_concurrent_operations(self):
+    def test_retry_concurrent_operations(self) -> None:
         """Test retry behavior under concurrent operations."""
         call_counts = {}
 
         @retry_with_backoff(max_retries=2, initial_delay=0.01)
-        def operation(op_id: int):
+        def operation(op_id: int) -> str:
             if op_id not in call_counts:
                 call_counts[op_id] = 0
             call_counts[op_id] += 1
 
             if call_counts[op_id] < 2:
-                raise StaleDataError("Conflict")
+                msg = "Conflict"
+                raise StaleDataError(msg)
             return f"success-{op_id}"
 
         # Run multiple operations
@@ -283,7 +290,7 @@ class TestSyncQueuePerformance:
     """Tests for sync queue performance."""
 
     @pytest.mark.asyncio
-    async def test_queue_creation_large_batch(self):
+    async def test_queue_creation_large_batch(self) -> None:
         """Test creating large batch of queued changes."""
         changes = []
 
@@ -301,7 +308,7 @@ class TestSyncQueuePerformance:
         assert len(changes) == 1000
 
     @pytest.mark.asyncio
-    async def test_sync_state_tracking(self):
+    async def test_sync_state_tracking(self) -> None:
         """Test sync state tracking."""
         state = SyncState()
 
@@ -317,7 +324,7 @@ class TestSyncQueuePerformance:
         assert state.status == SyncStatus.SYNCING
 
     @pytest.mark.asyncio
-    async def test_sync_result_aggregation(self):
+    async def test_sync_result_aggregation(self) -> None:
         """Test sync result aggregation."""
         result = SyncResult(success=True, entities_synced=100, duration_seconds=2.5)
 
@@ -327,7 +334,7 @@ class TestSyncQueuePerformance:
         assert len(result.errors) == 0
 
     @pytest.mark.asyncio
-    async def test_sync_result_with_conflicts(self):
+    async def test_sync_result_with_conflicts(self) -> None:
         """Test sync result with conflicts."""
         result = SyncResult(
             success=False,
@@ -349,10 +356,10 @@ class TestConcurrentOperationsPerformance:
     """Tests for concurrent operations performance."""
 
     @pytest.mark.asyncio
-    async def test_concurrent_sync_operations(self):
+    async def test_concurrent_sync_operations(self) -> None:
         """Test multiple concurrent sync operations."""
 
-        async def sync_operation(op_id: int, delay: float = 0.01):
+        async def sync_operation(op_id: int, delay: float = 0.01) -> str:
             """Simulate sync operation."""
             await asyncio.sleep(delay)
             return f"sync-{op_id}-done"
@@ -366,11 +373,11 @@ class TestConcurrentOperationsPerformance:
         assert elapsed < 0.5, f"Concurrent operations took {elapsed}s"
 
     @pytest.mark.asyncio
-    async def test_concurrent_retry_operations(self):
+    async def test_concurrent_retry_operations(self) -> None:
         """Test concurrent operations with retries."""
         operation_states = {}
 
-        async def operation(op_id: int):
+        async def operation(op_id: int) -> str | None:
             """Operation with retry (manual retry logic for async)."""
             max_retries = 2
             delay = 0.01
@@ -385,7 +392,8 @@ class TestConcurrentOperationsPerformance:
                         await asyncio.sleep(delay)
                         delay *= 2.0
                         continue
-                    raise StaleDataError(f"Conflict in {op_id}")
+                    msg = f"Conflict in {op_id}"
+                    raise StaleDataError(msg)
 
                 await asyncio.sleep(0.01)
                 return f"success-{op_id}"
@@ -400,7 +408,7 @@ class TestConcurrentOperationsPerformance:
         assert elapsed < 2.0
 
     @pytest.mark.asyncio
-    async def test_sync_throughput(self):
+    async def test_sync_throughput(self) -> None:
         """Test sync throughput (entities/second)."""
         entity_count = 500
 
@@ -419,7 +427,7 @@ class TestConcurrentOperationsPerformance:
         assert throughput > 100, f"Throughput {throughput} entities/sec is too low"
 
     @pytest.mark.asyncio
-    async def test_memory_during_concurrent_operations(self):
+    async def test_memory_during_concurrent_operations(self) -> None:
         """Test memory usage during concurrent operations."""
         import tracemalloc
 
@@ -444,7 +452,7 @@ class TestConcurrentOperationsPerformance:
         assert total_increase < 5.0
 
     @pytest.mark.asyncio
-    async def test_batched_sync_operations(self):
+    async def test_batched_sync_operations(self) -> None:
         """Test batched sync for efficiency."""
         batch_size = 50
 
@@ -463,7 +471,7 @@ class TestConcurrentOperationsPerformance:
         assert elapsed < 1.0, "Batched operations should be efficient"
 
     @pytest.mark.asyncio
-    async def test_conflict_resolution_performance(self):
+    async def test_conflict_resolution_performance(self) -> None:
         """Test conflict resolution performance."""
         conflicts = []
         for i in range(100):

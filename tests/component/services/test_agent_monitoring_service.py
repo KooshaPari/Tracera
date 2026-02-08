@@ -24,7 +24,7 @@ def _agent(session, agent_id, last_activity=None, status="active", agent_type="a
     return agent
 
 
-def test_check_agent_health_classifies_states(sync_session):
+def test_check_agent_health_classifies_states(sync_session) -> None:
     now = datetime.now(datetime.UTC)
     _agent(sync_session, "a-healthy", last_activity=now.isoformat())
     _agent(sync_session, "a-idle", last_activity=(now - timedelta(hours=2)).isoformat())
@@ -40,12 +40,12 @@ def test_check_agent_health_classifies_states(sync_session):
     assert statuses["a-none"]["health"] == "no_activity"
 
 
-def test_check_agent_health_returns_empty_for_missing_agent(sync_session):
+def test_check_agent_health_returns_empty_for_missing_agent(sync_session) -> None:
     svc = AgentMonitoringService(sync_session)
     assert svc.check_agent_health("proj-1", agent_id="missing") == []
 
 
-def test_get_alerts_composes_from_metrics_and_errors(sync_session, monkeypatch):
+def test_get_alerts_composes_from_metrics_and_errors(sync_session, monkeypatch) -> None:
     now = datetime.now(datetime.UTC)
     _agent(sync_session, "a-stale", last_activity=(now - timedelta(hours=25)).isoformat())
 
@@ -53,8 +53,8 @@ def test_get_alerts_composes_from_metrics_and_errors(sync_session, monkeypatch):
     def fake_metrics_service(_session):
         return SimpleNamespace(
             calculate_metrics=lambda project_id, since: {
-                "metrics": [{"agent_id": "a-stale", "agent_name": "Agent stale", "conflict_rate": 12.5}]
-            }
+                "metrics": [{"agent_id": "a-stale", "agent_name": "Agent stale", "conflict_rate": 12.5}],
+            },
         )
 
     monkeypatch.setattr(

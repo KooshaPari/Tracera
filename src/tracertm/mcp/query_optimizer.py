@@ -1,5 +1,4 @@
-"""
-Query optimization utilities for MCP tools.
+"""Query optimization utilities for MCP tools.
 
 Provides:
 - Eager loading patterns to avoid N+1 queries
@@ -10,20 +9,23 @@ Provides:
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from sqlalchemy.ext.asyncio import AsyncSession
+
 
 class QueryOptimizer:
-    """
-    Query optimization utilities for common MCP operations.
+    """Query optimization utilities for common MCP operations.
 
     Provides optimized query patterns that avoid N+1 queries by using
     eager loading (selectinload/joinedload) for relationships.
@@ -38,8 +40,7 @@ class QueryOptimizer:
         status: str | None = None,
         limit: int = 50,
     ) -> Sequence[Item]:
-        """
-        Get items with their related links eagerly loaded.
+        """Get items with their related links eagerly loaded.
 
         Avoids N+1 queries when accessing item.source_links and item.target_links.
 
@@ -86,8 +87,7 @@ class QueryOptimizer:
         link_type: str | None = None,
         limit: int = 50,
     ) -> Sequence[Link]:
-        """
-        Get links with source and target items eagerly loaded.
+        """Get links with source and target items eagerly loaded.
 
         Avoids N+1 queries when accessing link.source_item and link.target_item.
 
@@ -123,8 +123,7 @@ class QueryOptimizer:
         session: AsyncSession,
         project_id: str,
     ) -> Project | None:
-        """
-        Get project with items eagerly loaded.
+        """Get project with items eagerly loaded.
 
         Args:
             session: Database session
@@ -151,8 +150,7 @@ class QueryOptimizer:
         item_id: str,
         project_id: str,
     ) -> Item | None:
-        """
-        Get item with parent and children eagerly loaded.
+        """Get item with parent and children eagerly loaded.
 
         Args:
             session: Database session
@@ -186,8 +184,7 @@ class QueryOptimizer:
         item_ids: list[str],
         project_id: str,
     ) -> dict[str, Item]:
-        """
-        Batch load multiple items by ID.
+        """Batch load multiple items by ID.
 
         More efficient than loading items one at a time.
 
@@ -217,8 +214,7 @@ class QueryOptimizer:
         source_view: str | None = None,
         target_view: str | None = None,
     ) -> tuple[Sequence[Item], Sequence[Link]]:
-        """
-        Get complete traceability graph with all relationships loaded.
+        """Get complete traceability graph with all relationships loaded.
 
         Optimized for graph traversal and analysis.
 
@@ -278,9 +274,8 @@ async def prefetch_relationships(
     session: AsyncSession,
     items: Sequence[Item],
     relationships: list[str] | None = None,
-):
-    """
-    Prefetch relationships for a collection of items.
+) -> None:
+    """Prefetch relationships for a collection of items.
 
     Useful for avoiding N+1 queries when iterating over items.
 

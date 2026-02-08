@@ -1,6 +1,4 @@
-"""
-Pytest configuration for MCP unit tests.
-"""
+"""Pytest configuration for MCP unit tests."""
 
 import asyncio
 import os
@@ -23,7 +21,7 @@ def temp_config_dir():
 
 
 @pytest.fixture(scope="session")
-def test_database_url(temp_config_dir):
+def test_database_url(temp_config_dir) -> str:
     """Provide a test database URL."""
     db_path = temp_config_dir / "test.db"
     return f"sqlite:///{db_path}"
@@ -44,8 +42,8 @@ async def setup_test_database(test_database_url, temp_config_dir, monkeypatch):
     config_path = temp_config_dir / "config.yaml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
 
-    def _write_config():
-        with Path(config_path).open("w") as f:
+    def _write_config() -> None:
+        with Path(config_path).open("w", encoding="utf-8") as f:
             yaml.safe_dump(
                 {
                     "database_url": test_database_url,

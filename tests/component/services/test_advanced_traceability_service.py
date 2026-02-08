@@ -11,7 +11,7 @@ class _Item(SimpleNamespace):
 
 
 @pytest.mark.asyncio
-async def test_find_all_paths(monkeypatch, async_session):
+async def test_find_all_paths(monkeypatch, async_session) -> None:
     svc = AdvancedTraceabilityService(async_session)
     path_links = [
         SimpleNamespace(target_item_id="i2"),
@@ -25,7 +25,7 @@ async def test_find_all_paths(monkeypatch, async_session):
 
 
 @pytest.mark.asyncio
-async def test_coverage_gaps(monkeypatch, async_session):
+async def test_coverage_gaps(monkeypatch, async_session) -> None:
     source_item = _Item(id="s1", view="FEATURE")
     target_item = _Item(id="t1", view="TEST")
 
@@ -48,7 +48,7 @@ async def test_coverage_gaps(monkeypatch, async_session):
 
 
 @pytest.mark.asyncio
-async def test_circular_dependency_check(monkeypatch, async_session):
+async def test_circular_dependency_check(monkeypatch, async_session) -> None:
     items = [
         _Item(id="a"),
         _Item(id="b"),

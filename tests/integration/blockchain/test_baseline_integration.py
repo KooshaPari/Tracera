@@ -1,5 +1,4 @@
-"""
-Integration tests for baseline management.
+"""Integration tests for baseline management.
 
 Tests full workflow including:
 - Creating baselines with multiple items
@@ -49,7 +48,7 @@ class TestBaselineCreation:
         return project, items
 
     @pytest.mark.asyncio
-    async def test_create_baseline_basic(self, db_session, project_with_items):
+    async def test_create_baseline_basic(self, db_session, project_with_items) -> None:
         """Test creating a simple baseline."""
         project, items = project_with_items
         repo = BaselineRepository()
@@ -74,7 +73,7 @@ class TestBaselineCreation:
         assert len(baseline.merkle_root) == 64
 
     @pytest.mark.asyncio
-    async def test_baseline_items_persisted(self, db_session, project_with_items):
+    async def test_baseline_items_persisted(self, db_session, project_with_items) -> None:
         """Test that baseline items are persisted correctly."""
         project, items = project_with_items
         repo = BaselineRepository()
@@ -104,7 +103,7 @@ class TestBaselineCreation:
         assert item_ids == expected_ids
 
     @pytest.mark.asyncio
-    async def test_merkle_proofs_cached(self, db_session, project_with_items):
+    async def test_merkle_proofs_cached(self, db_session, project_with_items) -> None:
         """Test that Merkle proofs are pre-computed and cached."""
         project, items = project_with_items
         repo = BaselineRepository()
@@ -165,7 +164,7 @@ class TestBaselineRetrieval:
         return baseline
 
     @pytest.mark.asyncio
-    async def test_get_baseline_by_id(self, db_session, baseline_with_items):
+    async def test_get_baseline_by_id(self, db_session, baseline_with_items) -> None:
         """Test retrieving baseline by ID."""
         baseline = baseline_with_items
         repo = BaselineRepository()
@@ -178,7 +177,7 @@ class TestBaselineRetrieval:
         assert retrieved.items_count == 3
 
     @pytest.mark.asyncio
-    async def test_get_baseline_by_merkle_root(self, db_session, baseline_with_items):
+    async def test_get_baseline_by_merkle_root(self, db_session, baseline_with_items) -> None:
         """Test retrieving baseline by Merkle root."""
         baseline = baseline_with_items
         repo = BaselineRepository()
@@ -189,7 +188,7 @@ class TestBaselineRetrieval:
         assert retrieved.baseline_id == baseline.baseline_id
 
     @pytest.mark.asyncio
-    async def test_get_merkle_proof(self, db_session, baseline_with_items):
+    async def test_get_merkle_proof(self, db_session, baseline_with_items) -> None:
         """Test retrieving cached Merkle proof."""
         baseline = baseline_with_items
         repo = BaselineRepository()
@@ -231,7 +230,7 @@ class TestBaselineVerification:
         return baseline
 
     @pytest.mark.asyncio
-    async def test_verify_unchanged_item(self, db_session, verifiable_baseline):
+    async def test_verify_unchanged_item(self, db_session, verifiable_baseline) -> None:
         """Test verification succeeds for unchanged item."""
         baseline = verifiable_baseline
         repo = BaselineRepository()
@@ -248,7 +247,7 @@ class TestBaselineVerification:
         assert proof.verified is True
 
     @pytest.mark.asyncio
-    async def test_verify_modified_item(self, db_session, verifiable_baseline):
+    async def test_verify_modified_item(self, db_session, verifiable_baseline) -> None:
         """Test verification fails for modified item."""
         baseline = verifiable_baseline
         repo = BaselineRepository()
@@ -263,7 +262,7 @@ class TestBaselineVerification:
         assert is_valid is False
 
     @pytest.mark.asyncio
-    async def test_verify_nonexistent_item(self, db_session, verifiable_baseline):
+    async def test_verify_nonexistent_item(self, db_session, verifiable_baseline) -> None:
         """Test verification fails for item not in baseline."""
         baseline = verifiable_baseline
         repo = BaselineRepository()
@@ -283,7 +282,7 @@ class TestBaselineMerkleIntegrity:
     """Test Merkle tree integrity in database context."""
 
     @pytest.mark.asyncio
-    async def test_merkle_tree_consistency(self, db_session):
+    async def test_merkle_tree_consistency(self, db_session) -> None:
         """Test that Merkle tree remains consistent after persistence."""
         project = Project(id="merkle-test-project", name="Merkle Test")
         db_session.add(project)
@@ -321,7 +320,7 @@ class TestBaselineMerkleIntegrity:
         assert rebuilt_root == baseline.merkle_root
 
     @pytest.mark.asyncio
-    async def test_all_items_verifiable(self, db_session):
+    async def test_all_items_verifiable(self, db_session) -> None:
         """Test that all items in baseline can be verified."""
         project = Project(id="all-verify-project", name="All Verify Test")
         db_session.add(project)
@@ -358,7 +357,7 @@ class TestBaselineEdgeCases:
     """Test edge cases and error handling."""
 
     @pytest.mark.asyncio
-    async def test_empty_baseline(self, db_session):
+    async def test_empty_baseline(self, db_session) -> None:
         """Test creating baseline with no items."""
         project = Project(id="empty-test-project", name="Empty Test")
         db_session.add(project)
@@ -380,7 +379,7 @@ class TestBaselineEdgeCases:
         assert baseline.merkle_root == ""
 
     @pytest.mark.asyncio
-    async def test_single_item_baseline(self, db_session):
+    async def test_single_item_baseline(self, db_session) -> None:
         """Test baseline with single item."""
         project = Project(id="single-test-project", name="Single Test")
         db_session.add(project)
@@ -413,7 +412,7 @@ class TestBaselineEdgeCases:
         assert is_valid is True
 
     @pytest.mark.asyncio
-    async def test_large_baseline(self, db_session):
+    async def test_large_baseline(self, db_session) -> None:
         """Test baseline with many items."""
         project = Project(id="large-test-project", name="Large Test")
         db_session.add(project)
@@ -450,7 +449,7 @@ class TestBaselineEdgeCases:
             assert is_valid is True
 
     @pytest.mark.asyncio
-    async def test_get_nonexistent_baseline(self, db_session):
+    async def test_get_nonexistent_baseline(self, db_session) -> None:
         """Test retrieving baseline that doesn't exist."""
         repo = BaselineRepository()
 
@@ -458,7 +457,7 @@ class TestBaselineEdgeCases:
         assert baseline is None
 
     @pytest.mark.asyncio
-    async def test_duplicate_item_ids_rejected(self, db_session):
+    async def test_duplicate_item_ids_rejected(self, db_session) -> None:
         """Test baseline rejects duplicate item IDs due to unique constraint."""
         project = Project(id="dup-test-project", name="Duplicate Test")
         db_session.add(project)

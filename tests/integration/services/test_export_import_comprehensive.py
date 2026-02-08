@@ -1,5 +1,4 @@
-"""
-Comprehensive test suite for ExportImportService covering JSON/YAML export,
+"""Comprehensive test suite for ExportImportService covering JSON/YAML export,
 import with conflicts, data validation, and large dataset handling.
 
 Target: 40+ tests with 90%+ code coverage.
@@ -188,7 +187,7 @@ async def sample_links(db_session, sample_project, sample_items):
 
 
 @pytest.mark.asyncio
-async def test_export_to_json_basic(export_import_service, sample_project):
+async def test_export_to_json_basic(export_import_service, sample_project) -> None:
     """Test basic JSON export."""
     result = await export_import_service.export_to_json(sample_project.id)
 
@@ -198,7 +197,7 @@ async def test_export_to_json_basic(export_import_service, sample_project):
 
 
 @pytest.mark.asyncio
-async def test_export_to_json_with_items(export_import_service, sample_project, sample_items):
+async def test_export_to_json_with_items(export_import_service, sample_project, sample_items) -> None:
     """Test JSON export includes all items."""
     result = await export_import_service.export_to_json(sample_project.id)
 
@@ -207,7 +206,7 @@ async def test_export_to_json_with_items(export_import_service, sample_project, 
 
 
 @pytest.mark.asyncio
-async def test_export_to_json_structure(export_import_service, sample_project, sample_items):
+async def test_export_to_json_structure(export_import_service, sample_project, sample_items) -> None:
     """Test JSON export structure is correct."""
     result = await export_import_service.export_to_json(sample_project.id)
 
@@ -230,7 +229,7 @@ async def test_export_to_json_structure(export_import_service, sample_project, s
 
 
 @pytest.mark.asyncio
-async def test_export_to_json_nonexistent_project(export_import_service):
+async def test_export_to_json_nonexistent_project(export_import_service) -> None:
     """Test JSON export for nonexistent project."""
     result = await export_import_service.export_to_json("nonexistent-project-" + uuid.uuid4().hex)
 
@@ -239,7 +238,7 @@ async def test_export_to_json_nonexistent_project(export_import_service):
 
 
 @pytest.mark.asyncio
-async def test_export_to_json_empty_project(db_session):
+async def test_export_to_json_empty_project(db_session) -> None:
     """Test JSON export for project with no items."""
     service = ExportImportService(db_session)
     project_id = unique_id("empty-proj")
@@ -254,7 +253,7 @@ async def test_export_to_json_empty_project(db_session):
 
 
 @pytest.mark.asyncio
-async def test_export_to_json_preserves_item_details(export_service, sample_project, sample_items):
+async def test_export_to_json_preserves_item_details(export_service, sample_project, sample_items) -> None:
     """Test JSON export preserves all item details."""
     json_str = await export_service.export_to_json(sample_project.id)
     data = json.loads(json_str)
@@ -271,7 +270,7 @@ async def test_export_to_json_preserves_item_details(export_service, sample_proj
 
 
 @pytest.mark.asyncio
-async def test_export_to_yaml_basic(export_service, sample_project, sample_items):
+async def test_export_to_yaml_basic(export_service, sample_project, sample_items) -> None:
     """Test basic YAML export."""
     result = await export_service.export_yaml(sample_project.id)
 
@@ -280,7 +279,7 @@ async def test_export_to_yaml_basic(export_service, sample_project, sample_items
 
 
 @pytest.mark.asyncio
-async def test_export_to_yaml_contains_items(export_service, sample_project, sample_items):
+async def test_export_to_yaml_contains_items(export_service, sample_project, sample_items) -> None:
     """Test YAML export contains items."""
     result = await export_service.export_yaml(sample_project.id)
 
@@ -288,7 +287,7 @@ async def test_export_to_yaml_contains_items(export_service, sample_project, sam
 
 
 @pytest.mark.asyncio
-async def test_export_to_yaml_valid_structure(export_service, sample_project, sample_items):
+async def test_export_to_yaml_valid_structure(export_service, sample_project, sample_items) -> None:
     """Test YAML export has valid structure."""
     result = await export_service.export_yaml(sample_project.id)
 
@@ -306,7 +305,7 @@ async def test_export_to_yaml_valid_structure(export_service, sample_project, sa
 
 
 @pytest.mark.asyncio
-async def test_export_to_csv_basic(export_import_service, sample_project):
+async def test_export_to_csv_basic(export_import_service, sample_project) -> None:
     """Test basic CSV export."""
     result = await export_import_service.export_to_csv(sample_project.id)
 
@@ -316,7 +315,7 @@ async def test_export_to_csv_basic(export_import_service, sample_project):
 
 
 @pytest.mark.asyncio
-async def test_export_to_csv_header(export_import_service, sample_project, sample_items):
+async def test_export_to_csv_header(export_import_service, sample_project, sample_items) -> None:
     """Test CSV export has correct header."""
     result = await export_import_service.export_to_csv(sample_project.id)
 
@@ -325,7 +324,7 @@ async def test_export_to_csv_header(export_import_service, sample_project, sampl
 
 
 @pytest.mark.asyncio
-async def test_export_to_csv_parseable(export_service, sample_project, sample_items):
+async def test_export_to_csv_parseable(export_service, sample_project, sample_items) -> None:
     """Test CSV export is parseable."""
     csv_str = await export_service.export_to_csv(sample_project.id)
 
@@ -336,7 +335,7 @@ async def test_export_to_csv_parseable(export_service, sample_project, sample_it
 
 
 @pytest.mark.asyncio
-async def test_export_to_csv_data_integrity(export_service, sample_project, sample_items):
+async def test_export_to_csv_data_integrity(export_service, sample_project, sample_items) -> None:
     """Test CSV export preserves data integrity."""
     csv_str = await export_service.export_to_csv(sample_project.id)
 
@@ -352,7 +351,7 @@ async def test_export_to_csv_data_integrity(export_service, sample_project, samp
 
 
 @pytest.mark.asyncio
-async def test_export_to_markdown_basic(export_import_service, sample_project):
+async def test_export_to_markdown_basic(export_import_service, sample_project) -> None:
     """Test basic Markdown export."""
     result = await export_import_service.export_to_markdown(sample_project.id)
 
@@ -361,7 +360,7 @@ async def test_export_to_markdown_basic(export_import_service, sample_project):
 
 
 @pytest.mark.asyncio
-async def test_export_to_markdown_has_project_title(export_service, sample_project, sample_items):
+async def test_export_to_markdown_has_project_title(export_service, sample_project, sample_items) -> None:
     """Test Markdown export contains project title."""
     md = await export_service.export_to_markdown(sample_project.id)
 
@@ -369,7 +368,7 @@ async def test_export_to_markdown_has_project_title(export_service, sample_proje
 
 
 @pytest.mark.asyncio
-async def test_export_to_markdown_has_items(export_service, sample_project, sample_items):
+async def test_export_to_markdown_has_items(export_service, sample_project, sample_items) -> None:
     """Test Markdown export contains items."""
     md = await export_service.export_to_markdown(sample_project.id)
 
@@ -377,7 +376,7 @@ async def test_export_to_markdown_has_items(export_service, sample_project, samp
 
 
 @pytest.mark.asyncio
-async def test_export_to_markdown_grouped_by_view(export_service, sample_project, sample_items):
+async def test_export_to_markdown_grouped_by_view(export_service, sample_project, sample_items) -> None:
     """Test Markdown export has content."""
     md = await export_service.export_to_markdown(sample_project.id)
 
@@ -389,7 +388,7 @@ async def test_export_to_markdown_grouped_by_view(export_service, sample_project
 
 
 @pytest.mark.asyncio
-async def test_import_from_json_basic(db_session):
+async def test_import_from_json_basic(db_session) -> None:
     """Test basic JSON import."""
     service = ExportImportService(db_session)
     project_id = unique_id("import-proj")
@@ -403,7 +402,7 @@ async def test_import_from_json_basic(db_session):
 
 
 @pytest.mark.asyncio
-async def test_import_from_json_invalid_format(export_import_service, sample_project):
+async def test_import_from_json_invalid_format(export_import_service, sample_project) -> None:
     """Test JSON import with invalid format."""
     result = await export_import_service.import_from_json(sample_project.id, "invalid json")
 
@@ -411,7 +410,7 @@ async def test_import_from_json_invalid_format(export_import_service, sample_pro
 
 
 @pytest.mark.asyncio
-async def test_import_from_json_missing_items_field(export_import_service, sample_project):
+async def test_import_from_json_missing_items_field(export_import_service, sample_project) -> None:
     """Test JSON import with missing items field."""
     json_data = json.dumps({"project": {"name": "Test"}})
 
@@ -421,7 +420,7 @@ async def test_import_from_json_missing_items_field(export_import_service, sampl
 
 
 @pytest.mark.asyncio
-async def test_import_from_json_creates_items(db_session):
+async def test_import_from_json_creates_items(db_session) -> None:
     """Test JSON import creates items."""
     service = ExportImportService(db_session)
     project_id = unique_id("test-proj")
@@ -435,7 +434,7 @@ async def test_import_from_json_creates_items(db_session):
 
 
 @pytest.mark.asyncio
-async def test_import_from_json_multiple_items(db_session):
+async def test_import_from_json_multiple_items(db_session) -> None:
     """Test JSON import with multiple items."""
     service = ExportImportService(db_session)
     project_id = unique_id("multi-proj")
@@ -445,7 +444,7 @@ async def test_import_from_json_multiple_items(db_session):
             {"title": "Item 1", "view": "FEATURE", "type": "feature", "status": "todo"},
             {"title": "Item 2", "view": "STORY", "type": "story", "status": "in_progress"},
             {"title": "Item 3", "view": "TEST", "type": "test", "status": "done"},
-        ]
+        ],
     })
 
     result = await service.import_from_json(project_id, json_data)
@@ -454,7 +453,7 @@ async def test_import_from_json_multiple_items(db_session):
 
 
 @pytest.mark.asyncio
-async def test_import_from_json_with_links(db_session):
+async def test_import_from_json_with_links(db_session) -> None:
     """Test JSON import with links."""
     service = ImportService(db_session)
     json_data = json.dumps({
@@ -478,7 +477,7 @@ async def test_import_from_json_with_links(db_session):
 
 
 @pytest.mark.asyncio
-async def test_import_from_csv_basic(export_import_service, sample_project):
+async def test_import_from_csv_basic(export_import_service, sample_project) -> None:
     """Test basic CSV import."""
     csv_data = "Title,View,Type,Status,Description\nTest,FEATURE,feature,todo,Desc"
 
@@ -489,7 +488,7 @@ async def test_import_from_csv_basic(export_import_service, sample_project):
 
 
 @pytest.mark.asyncio
-async def test_import_from_csv_invalid_format(export_import_service, sample_project):
+async def test_import_from_csv_invalid_format(export_import_service, sample_project) -> None:
     """Test CSV import with invalid format."""
     result = await export_import_service.import_from_csv(sample_project.id, "invalid,csv\ndata\nmore")
 
@@ -497,7 +496,7 @@ async def test_import_from_csv_invalid_format(export_import_service, sample_proj
 
 
 @pytest.mark.asyncio
-async def test_import_from_csv_multiple_rows(db_session):
+async def test_import_from_csv_multiple_rows(db_session) -> None:
     """Test CSV import with multiple rows."""
     service = ExportImportService(db_session)
     project_id = unique_id("csv-proj")
@@ -513,7 +512,7 @@ Item 3,TEST,test,done,Third item"""
 
 
 @pytest.mark.asyncio
-async def test_import_from_csv_with_special_chars(db_session):
+async def test_import_from_csv_with_special_chars(db_session) -> None:
     """Test CSV import handles special characters."""
     service = ExportImportService(db_session)
     project_id = unique_id("special-proj")
@@ -529,7 +528,7 @@ async def test_import_from_csv_with_special_chars(db_session):
 
 
 @pytest.mark.asyncio
-async def test_validate_import_data_valid(import_service):
+async def test_validate_import_data_valid(import_service) -> None:
     """Test validation of valid import data."""
     json_data = json.dumps({
         "project": {"name": f"Valid {uuid.uuid4().hex[:4]}", "description": "Test"},
@@ -543,10 +542,10 @@ async def test_validate_import_data_valid(import_service):
 
 
 @pytest.mark.asyncio
-async def test_validate_import_data_missing_project(import_service):
+async def test_validate_import_data_missing_project(import_service) -> None:
     """Test validation with missing project."""
     json_data = json.dumps({
-        "items": [{"id": "item-1", "title": "Item 1", "view": "FEATURE", "type": "feature", "status": "todo"}]
+        "items": [{"id": "item-1", "title": "Item 1", "view": "FEATURE", "type": "feature", "status": "todo"}],
     })
 
     errors = await import_service.validate_import_data(json_data)
@@ -555,7 +554,7 @@ async def test_validate_import_data_missing_project(import_service):
 
 
 @pytest.mark.asyncio
-async def test_validate_import_data_invalid_json(import_service):
+async def test_validate_import_data_invalid_json(import_service) -> None:
     """Test validation with invalid JSON."""
     errors = await import_service.validate_import_data("not json")
 
@@ -564,7 +563,7 @@ async def test_validate_import_data_invalid_json(import_service):
 
 
 @pytest.mark.asyncio
-async def test_validate_import_data_missing_item_title(import_service):
+async def test_validate_import_data_missing_item_title(import_service) -> None:
     """Test validation detects missing item title."""
     json_data = json.dumps({
         "project": {"name": "Test", "description": ""},
@@ -578,7 +577,7 @@ async def test_validate_import_data_missing_item_title(import_service):
 
 
 @pytest.mark.asyncio
-async def test_validate_import_data_broken_links(import_service):
+async def test_validate_import_data_broken_links(import_service) -> None:
     """Test validation detects broken links."""
     json_data = json.dumps({
         "project": {"name": "Test", "description": ""},
@@ -595,7 +594,7 @@ async def test_validate_import_data_broken_links(import_service):
 
 
 @pytest.mark.asyncio
-async def test_export_large_dataset(db_session, sample_project):
+async def test_export_large_dataset(db_session, sample_project) -> None:
     """Test export with large number of items."""
     service = ExportImportService(db_session)
 
@@ -617,7 +616,7 @@ async def test_export_large_dataset(db_session, sample_project):
 
 
 @pytest.mark.asyncio
-async def test_import_large_dataset(db_session):
+async def test_import_large_dataset(db_session) -> None:
     """Test import with large number of items."""
     service = ExportImportService(db_session)
     project_id = unique_id("large-import")
@@ -632,7 +631,7 @@ async def test_import_large_dataset(db_session):
 
 
 @pytest.mark.asyncio
-async def test_export_csv_large_dataset(db_session, sample_project):
+async def test_export_csv_large_dataset(db_session, sample_project) -> None:
     """Test CSV export with large dataset."""
     service = ExportImportService(db_session)
 
@@ -658,7 +657,7 @@ async def test_export_csv_large_dataset(db_session, sample_project):
 
 
 @pytest.mark.asyncio
-async def test_export_import_roundtrip_json(db_session, sample_project, sample_items):
+async def test_export_import_roundtrip_json(db_session, sample_project, sample_items) -> None:
     """Test export then import preserves data."""
     export_svc = ExportService(db_session)
 
@@ -669,7 +668,7 @@ async def test_export_import_roundtrip_json(db_session, sample_project, sample_i
 
 
 @pytest.mark.asyncio
-async def test_export_import_roundtrip_csv(db_session, sample_project, sample_items):
+async def test_export_import_roundtrip_csv(db_session, sample_project, sample_items) -> None:
     """Test CSV export-import roundtrip."""
     export_svc = ExportService(db_session)
 
@@ -684,7 +683,7 @@ async def test_export_import_roundtrip_csv(db_session, sample_project, sample_it
 
 
 @pytest.mark.asyncio
-async def test_export_with_null_description(db_session, sample_project):
+async def test_export_with_null_description(db_session, sample_project) -> None:
     """Test export handles null descriptions."""
     service = ExportImportService(db_session)
 
@@ -706,7 +705,7 @@ async def test_export_with_null_description(db_session, sample_project):
 
 
 @pytest.mark.asyncio
-async def test_import_with_duplicate_ids(db_session):
+async def test_import_with_duplicate_ids(db_session) -> None:
     """Test import handles duplicate item IDs gracefully."""
     service = ExportImportService(db_session)
     project_id = unique_id("dup-proj")
@@ -715,7 +714,7 @@ async def test_import_with_duplicate_ids(db_session):
         "items": [
             {"title": "Item 1", "view": "FEATURE", "type": "feature", "status": "todo"},
             {"title": "Item 2", "view": "FEATURE", "type": "feature", "status": "todo"},
-        ]
+        ],
     })
 
     result = await service.import_from_json(project_id, json_data)
@@ -724,7 +723,7 @@ async def test_import_with_duplicate_ids(db_session):
 
 
 @pytest.mark.asyncio
-async def test_export_empty_views(db_session, sample_project):
+async def test_export_empty_views(db_session, sample_project) -> None:
     """Test export with items from only one view."""
     service = ExportImportService(db_session)
 
@@ -745,7 +744,7 @@ async def test_export_empty_views(db_session, sample_project):
 
 
 @pytest.mark.asyncio
-async def test_import_empty_items_list(db_session):
+async def test_import_empty_items_list(db_session) -> None:
     """Test import with empty items list."""
     service = ExportImportService(db_session)
     project_id = unique_id("empty-proj")
@@ -758,7 +757,7 @@ async def test_import_empty_items_list(db_session):
 
 
 @pytest.mark.asyncio
-async def test_export_formats_available(export_import_service):
+async def test_export_formats_available(export_import_service) -> None:
     """Test getting available export formats."""
     formats = await export_import_service.get_export_formats()
 
@@ -768,7 +767,7 @@ async def test_export_formats_available(export_import_service):
 
 
 @pytest.mark.asyncio
-async def test_import_formats_available(export_import_service):
+async def test_import_formats_available(export_import_service) -> None:
     """Test getting available import formats."""
     formats = await export_import_service.get_import_formats()
 
@@ -780,7 +779,7 @@ async def test_import_formats_available(export_import_service):
 
 
 @pytest.mark.asyncio
-async def test_import_json_with_errors(db_session):
+async def test_import_json_with_errors(db_session) -> None:
     """Test JSON import error handling."""
     service = ExportImportService(db_session)
     project_id = unique_id("error-proj")
@@ -789,7 +788,7 @@ async def test_import_json_with_errors(db_session):
         "items": [
             {"title": "Good Item", "view": "FEATURE", "type": "feature", "status": "todo"},
             {"title": "Bad Item"},
-        ]
+        ],
     })
 
     result = await service.import_from_json(project_id, json_data)
@@ -798,7 +797,7 @@ async def test_import_json_with_errors(db_session):
 
 
 @pytest.mark.asyncio
-async def test_export_nonexistent_project_markdown(export_import_service):
+async def test_export_nonexistent_project_markdown(export_import_service) -> None:
     """Test markdown export for nonexistent project."""
     result = await export_import_service.export_to_markdown("nonexistent-" + uuid.uuid4().hex)
 
@@ -806,7 +805,7 @@ async def test_export_nonexistent_project_markdown(export_import_service):
 
 
 @pytest.mark.asyncio
-async def test_csv_import_empty_file(db_session):
+async def test_csv_import_empty_file(db_session) -> None:
     """Test CSV import with empty file."""
     service = ExportImportService(db_session)
     project_id = unique_id("csv-empty")
@@ -819,7 +818,7 @@ async def test_csv_import_empty_file(db_session):
 
 
 @pytest.mark.asyncio
-async def test_csv_import_header_only(db_session):
+async def test_csv_import_header_only(db_session) -> None:
     """Test CSV import with header only."""
     service = ExportImportService(db_session)
     project_id = unique_id("csv-header")
@@ -835,7 +834,7 @@ async def test_csv_import_header_only(db_session):
 
 
 @pytest.mark.asyncio
-async def test_export_with_all_item_types(db_session, sample_project):
+async def test_export_with_all_item_types(db_session, sample_project) -> None:
     """Test export includes all item types."""
     service = ExportImportService(db_session)
 
@@ -858,7 +857,7 @@ async def test_export_with_all_item_types(db_session, sample_project):
 
 
 @pytest.mark.asyncio
-async def test_import_creates_project_if_missing(db_session):
+async def test_import_creates_project_if_missing(db_session) -> None:
     """Test import creates project if it doesn't exist."""
     service = ImportService(db_session)
     json_data = json.dumps({
@@ -876,7 +875,7 @@ async def test_import_creates_project_if_missing(db_session):
 
 
 @pytest.mark.asyncio
-async def test_export_json_with_links(db_session, sample_project, sample_items, sample_links):
+async def test_export_json_with_links(db_session, sample_project, sample_items, sample_links) -> None:
     """Test JSON export includes links."""
     export_svc = ExportService(db_session)
 
@@ -888,7 +887,7 @@ async def test_export_json_with_links(db_session, sample_project, sample_items, 
 
 
 @pytest.mark.asyncio
-async def test_import_validates_all_data(import_service):
+async def test_import_validates_all_data(import_service) -> None:
     """Test import validation catches multiple errors."""
     json_data = json.dumps({
         "items": [
@@ -907,7 +906,7 @@ async def test_import_validates_all_data(import_service):
 
 
 @pytest.mark.asyncio
-async def test_export_preserves_unicode(db_session, sample_project):
+async def test_export_preserves_unicode(db_session, sample_project) -> None:
     """Test export preserves unicode characters."""
     service = ExportImportService(db_session)
 
@@ -930,7 +929,7 @@ async def test_export_preserves_unicode(db_session, sample_project):
 
 
 @pytest.mark.asyncio
-async def test_export_sanitizes_special_chars_csv(db_session, sample_project):
+async def test_export_sanitizes_special_chars_csv(db_session, sample_project) -> None:
     """Test CSV export handles special characters."""
     service = ExportImportService(db_session)
 

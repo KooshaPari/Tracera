@@ -39,7 +39,7 @@ import type { CacheStatistics } from '@/lib/cache';
 import { logger } from '@/lib/logger';
 
 /** Performance metrics snapshot */
-export interface PerformanceMetrics {
+interface PerformanceMetrics {
   /** Timestamp when metrics were captured */
   timestamp: number;
 
@@ -57,7 +57,8 @@ export interface PerformanceMetrics {
     total: number;
     rendered: number;
     culled: number;
-    cullingRatio: number; // Percentage of nodes culled
+    /** Percentage of nodes culled */
+    cullingRatio: number;
   };
 
   /** Edge rendering metrics */
@@ -65,15 +66,20 @@ export interface PerformanceMetrics {
     total: number;
     rendered: number;
     culled: number;
-    cullingRatio: number; // Percentage of edges culled
+    /** Percentage of edges culled */
+    cullingRatio: number;
   };
 
   /** LOD (Level of Detail) distribution */
   lod: {
-    high: number; // Full detail nodes
-    medium: number; // Simplified nodes
-    low: number; // Minimal nodes
-    skeleton: number; // Loading/error skeletons
+    /** Full detail nodes */
+    high: number;
+    /** Simplified nodes */
+    medium: number;
+    /** Minimal nodes */
+    low: number;
+    /** Loading/error skeletons */
+    skeleton: number;
   };
 
   /** Cache performance metrics */
@@ -86,17 +92,24 @@ export interface PerformanceMetrics {
 
   /** Viewport and rendering timing */
   timing: {
-    viewportLoadMs: number; // Time to render current viewport
-    layoutComputeMs: number; // Time to compute layout
-    cullingMs: number; // Time spent on viewport culling
-    renderMs: number; // Total render time
+    /** Time to render current viewport */
+    viewportLoadMs: number;
+    /** Time to compute layout */
+    layoutComputeMs: number;
+    /** Time spent on viewport culling */
+    cullingMs: number;
+    /** Total render time */
+    renderMs: number;
   };
 
   /** Memory metrics (if available) */
   memory?: {
-    usedJSHeapSize: number; // Bytes
-    totalJSHeapSize: number; // Bytes
-    jsHeapSizeLimit: number; // Bytes
+    /** Bytes */
+    usedJSHeapSize: number;
+    /** Bytes */
+    totalJSHeapSize: number;
+    /** Bytes */
+    jsHeapSizeLimit: number;
     heapUsagePercent: number;
   };
 
@@ -104,8 +117,10 @@ export interface PerformanceMetrics {
   interaction: {
     isPanning: boolean;
     isZooming: boolean;
-    panDuration: number; // Ms
-    zoomDuration: number; // Ms
+    /** Ms */
+    panDuration: number;
+    /** Ms */
+    zoomDuration: number;
     lastInteractionType: 'pan' | 'zoom' | 'idle';
   };
 }
@@ -114,12 +129,23 @@ export interface PerformanceMetrics {
 interface CacheHitRateMetrics {
   hits: number;
   misses: number;
-  hitRatio: number; // 0-1
+  /** 0-1 */
+  hitRatio: number;
   totalRequests: number;
 }
 
+interface PerformanceMemory {
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
+}
+
+type PerformanceWithMemory = Performance & {
+  memory?: PerformanceMemory;
+};
+
 /** LOD level distribution input */
-export interface LODDistribution {
+interface LODDistribution {
   high: number;
   medium: number;
   low: number;
@@ -127,15 +153,15 @@ export interface LODDistribution {
 }
 
 /** Hook configuration */
-export interface UseGraphPerformanceMonitorConfig {
+interface UseGraphPerformanceMonitorConfig<NodeType = unknown, EdgeType = unknown> {
   /** Total nodes in graph */
-  nodes: any[];
+  nodes: NodeType[];
   /** Total edges in graph */
-  edges: any[];
+  edges: EdgeType[];
   /** Currently visible/rendered nodes */
-  visibleNodes: any[];
+  visibleNodes: NodeType[];
   /** Currently visible/rendered edges */
-  visibleEdges: any[];
+  visibleEdges: EdgeType[];
   /** LOD level distribution */
   lodDistribution?: LODDistribution;
   /** Cache statistics from graph caches */
@@ -157,7 +183,7 @@ export interface UseGraphPerformanceMonitorConfig {
 }
 
 /** Hook return value */
-export interface GraphPerformanceMonitor {
+interface GraphPerformanceMonitor {
   /** Current performance metrics */
   currentMetrics: PerformanceMetrics | null;
   /** Historical metrics (last N snapshots) */
@@ -203,11 +229,10 @@ class FPSTracker {
     this.lastFrameTime = now;
 
     if (delta > 0) {
-      const fps = 1000 / delta;
+      const fps = MS_PER_SECOND / delta;
       this.frames.push(fps);
 
-      // Keep only last 60 frames (1 second at 60fps)
-      if (this.frames.length > 60) {
+      if (this.frames.length > FPS_SAMPLE_LIMIT) {
         this.frames.shift();
       }
     }
@@ -303,11 +328,23 @@ const STORAGE_KEY = 'trace_graph_performance_metrics';
 
 /** Maximum history entries to keep */
 const MAX_HISTORY_LENGTH = 50;
+const FPS_SAMPLE_LIMIT = 60;
+const MS_PER_SECOND = 1000;
+const DEFAULT_REPORT_INTERVAL_MS = 5000;
+const STORAGE_HISTORY_LIMIT = 100;
+const PROFILER_HISTORY_LIMIT = 50;
+const FPS_GOOD_THRESHOLD = 55;
+const FPS_WARN_THRESHOLD = 30;
+const BYTES_PER_MB = 1024 * 1024;
+const PERCENT_SCALE = 100;
+const PERCENT_DECIMALS = 1;
+const DURATION_DECIMALS = 2;
+const NO_DECIMALS = 0;
 
 /**
  * Graph Performance Monitor Hook
  */
-export function useGraphPerformanceMonitor({
+function useGraphPerformanceMonitor<NodeType = unknown, EdgeType = unknown>({
   nodes,
   edges,
   visibleNodes,
@@ -315,11 +352,11 @@ export function useGraphPerformanceMonitor({
   lodDistribution,
   cacheStats,
   enabled = process.env['NODE_ENV'] === 'development',
-  reportInterval = 5000,
+  reportInterval = DEFAULT_REPORT_INTERVAL_MS,
   logToConsole = process.env['NODE_ENV'] === 'development',
   persistToStorage = process.env['NODE_ENV'] === 'development',
   onMetricsUpdate,
-}: UseGraphPerformanceMonitorConfig): GraphPerformanceMonitor {
+}: UseGraphPerformanceMonitorConfig<NodeType, EdgeType>): GraphPerformanceMonitor {
   const [currentMetrics, setCurrentMetrics] = useState<PerformanceMetrics | null>(null);
   const [history, setHistory] = useState<PerformanceMetrics[]>([]);
 
@@ -346,12 +383,12 @@ export function useGraphPerformanceMonitor({
     const nodeTotal = nodes.length;
     const nodeRendered = visibleNodes.length;
     const nodeCulled = nodeTotal - nodeRendered;
-    const nodeCullingRatio = nodeTotal > 0 ? (nodeCulled / nodeTotal) * 100 : 0;
+    const nodeCullingRatio = nodeTotal > 0 ? (nodeCulled / nodeTotal) * PERCENT_SCALE : 0;
 
     const edgeTotal = edges.length;
     const edgeRendered = visibleEdges.length;
     const edgeCulled = edgeTotal - edgeRendered;
-    const edgeCullingRatio = edgeTotal > 0 ? (edgeCulled / edgeTotal) * 100 : 0;
+    const edgeCullingRatio = edgeTotal > 0 ? (edgeCulled / edgeTotal) * PERCENT_SCALE : 0;
 
     // LOD distribution
     const lod = {
@@ -403,10 +440,11 @@ export function useGraphPerformanceMonitor({
 
     // Memory metrics (if available)
     let memory: PerformanceMetrics['memory'];
-    if ('memory' in performance && typeof (performance as any).memory === 'object') {
-      const mem = (performance as any).memory;
+    const performanceWithMemory = performance as PerformanceWithMemory;
+    if (performanceWithMemory.memory) {
+      const mem = performanceWithMemory.memory;
       memory = {
-        heapUsagePercent: (mem.usedJSHeapSize / mem.jsHeapSizeLimit) * 100,
+        heapUsagePercent: (mem.usedJSHeapSize / mem.jsHeapSizeLimit) * PERCENT_SCALE,
         jsHeapSizeLimit: mem.jsHeapSizeLimit,
         totalJSHeapSize: mem.totalJSHeapSize,
         usedJSHeapSize: mem.usedJSHeapSize,
@@ -471,18 +509,18 @@ export function useGraphPerformanceMonitor({
 
       logger.info(
         `%cFPS: ${metrics.fps.current} (avg: ${metrics.fps.average}, min: ${metrics.fps.min}, max: ${metrics.fps.max})`,
-        metrics.fps.current >= 55
+        metrics.fps.current >= FPS_GOOD_THRESHOLD
           ? 'color: #10b981'
-          : metrics.fps.current >= 30
+          : metrics.fps.current >= FPS_WARN_THRESHOLD
             ? 'color: #f59e0b'
             : 'color: #ef4444',
       );
 
       logger.info(
-        `Nodes: ${metrics.nodes.rendered}/${metrics.nodes.total} (${metrics.nodes.cullingRatio.toFixed(1)}% culled)`,
+        `Nodes: ${metrics.nodes.rendered}/${metrics.nodes.total} (${metrics.nodes.cullingRatio.toFixed(PERCENT_DECIMALS)}% culled)`,
       );
       logger.info(
-        `Edges: ${metrics.edges.rendered}/${metrics.edges.total} (${metrics.edges.cullingRatio.toFixed(1)}% culled)`,
+        `Edges: ${metrics.edges.rendered}/${metrics.edges.total} (${metrics.edges.cullingRatio.toFixed(PERCENT_DECIMALS)}% culled)`,
       );
 
       logger.info(
@@ -490,24 +528,24 @@ export function useGraphPerformanceMonitor({
       );
 
       logger.info(
-        `Cache Hit Rate: ${(metrics.cache.combined.hitRatio * 100).toFixed(1)}% (${metrics.cache.combined.hits}/${metrics.cache.combined.totalRequests})`,
+        `Cache Hit Rate: ${(metrics.cache.combined.hitRatio * PERCENT_SCALE).toFixed(PERCENT_DECIMALS)}% (${metrics.cache.combined.hits}/${metrics.cache.combined.totalRequests})`,
       );
 
       if (metrics.timing.viewportLoadMs > 0) {
-        logger.info(`Viewport Load: ${metrics.timing.viewportLoadMs.toFixed(1)}ms`);
+        logger.info(`Viewport Load: ${metrics.timing.viewportLoadMs.toFixed(PERCENT_DECIMALS)}ms`);
       }
 
       if (metrics.memory) {
-        const heapMB = (metrics.memory.usedJSHeapSize / 1024 / 1024).toFixed(1);
-        const limitMB = (metrics.memory.jsHeapSizeLimit / 1024 / 1024).toFixed(1);
+        const heapMB = (metrics.memory.usedJSHeapSize / BYTES_PER_MB).toFixed(PERCENT_DECIMALS);
+        const limitMB = (metrics.memory.jsHeapSizeLimit / BYTES_PER_MB).toFixed(PERCENT_DECIMALS);
         logger.info(
-          `Memory: ${heapMB}MB / ${limitMB}MB (${metrics.memory.heapUsagePercent.toFixed(1)}%)`,
+          `Memory: ${heapMB}MB / ${limitMB}MB (${metrics.memory.heapUsagePercent.toFixed(PERCENT_DECIMALS)}%)`,
         );
       }
 
       if (metrics.interaction.isPanning || metrics.interaction.isZooming) {
         logger.info(
-          `Interaction: ${metrics.interaction.lastInteractionType} (${metrics.interaction.isPanning ? `pan: ${metrics.interaction.panDuration.toFixed(0)}ms` : ''} ${metrics.interaction.isZooming ? `zoom: ${metrics.interaction.zoomDuration.toFixed(0)}ms` : ''})`,
+          `Interaction: ${metrics.interaction.lastInteractionType} (${metrics.interaction.isPanning ? `pan: ${metrics.interaction.panDuration.toFixed(NO_DECIMALS)}ms` : ''} ${metrics.interaction.isZooming ? `zoom: ${metrics.interaction.zoomDuration.toFixed(NO_DECIMALS)}ms` : ''})`,
         );
       }
 
@@ -520,8 +558,7 @@ export function useGraphPerformanceMonitor({
         const stored = sessionStorage.getItem(STORAGE_KEY);
         const history = stored ? JSON.parse(stored) : [];
         history.push(metrics);
-        // Keep only last 100 entries in storage
-        const trimmed = history.slice(-100);
+        const trimmed = history.slice(-STORAGE_HISTORY_LIMIT);
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
       } catch (error) {
         logger.warn('[Graph Performance] Failed to persist metrics:', error);
@@ -537,13 +574,15 @@ export function useGraphPerformanceMonitor({
 
     const lines = [
       `FPS: ${currentMetrics.fps.current} (avg: ${currentMetrics.fps.average})`,
-      `Nodes: ${currentMetrics.nodes.rendered}/${currentMetrics.nodes.total} rendered (${currentMetrics.nodes.cullingRatio.toFixed(1)}% culled)`,
-      `Edges: ${currentMetrics.edges.rendered}/${currentMetrics.edges.total} rendered (${currentMetrics.edges.cullingRatio.toFixed(1)}% culled)`,
-      `Cache Hit Rate: ${(currentMetrics.cache.combined.hitRatio * 100).toFixed(1)}%`,
+      `Nodes: ${currentMetrics.nodes.rendered}/${currentMetrics.nodes.total} rendered (${currentMetrics.nodes.cullingRatio.toFixed(PERCENT_DECIMALS)}% culled)`,
+      `Edges: ${currentMetrics.edges.rendered}/${currentMetrics.edges.total} rendered (${currentMetrics.edges.cullingRatio.toFixed(PERCENT_DECIMALS)}% culled)`,
+      `Cache Hit Rate: ${(currentMetrics.cache.combined.hitRatio * PERCENT_SCALE).toFixed(PERCENT_DECIMALS)}%`,
     ];
 
     if (currentMetrics.memory) {
-      const heapMB = (currentMetrics.memory.usedJSHeapSize / 1024 / 1024).toFixed(1);
+      const heapMB = (currentMetrics.memory.usedJSHeapSize / BYTES_PER_MB).toFixed(
+        PERCENT_DECIMALS,
+      );
       lines.push(`Memory: ${heapMB}MB`);
     }
 
@@ -628,7 +667,7 @@ export function useGraphPerformanceMonitor({
  * </Profiler>
  * ```
  */
-export function createProfilerCallback(
+function createProfilerCallback(
   monitorId: string,
   logToConsole: boolean = process.env['NODE_ENV'] === 'development',
 ) {
@@ -642,8 +681,8 @@ export function createProfilerCallback(
   ) => {
     if (logToConsole) {
       logger.info(`%c[Profiler: ${monitorId}]`, 'color: #8b5cf6; font-weight: bold', {
-        actualDuration: `${actualDuration.toFixed(2)}ms`,
-        baseDuration: `${baseDuration.toFixed(2)}ms`,
+        actualDuration: `${actualDuration.toFixed(DURATION_DECIMALS)}ms`,
+        baseDuration: `${baseDuration.toFixed(DURATION_DECIMALS)}ms`,
         commitTime,
         id,
         phase,
@@ -666,8 +705,7 @@ export function createProfilerCallback(
           startTime,
           timestamp: Date.now(),
         });
-        // Keep only last 50 entries
-        const trimmed = history.slice(-50);
+        const trimmed = history.slice(-PROFILER_HISTORY_LIMIT);
         sessionStorage.setItem(key, JSON.stringify(trimmed));
       } catch {
         // Ignore storage errors
@@ -679,7 +717,7 @@ export function createProfilerCallback(
 /**
  * Performance mark helpers for manual timing
  */
-export const perfMark = {
+const perfMark = {
   end: (name: string) => {
     if (process.env['NODE_ENV'] === 'development') {
       performance.mark(`${name}-end`);
@@ -690,7 +728,7 @@ export const perfMark = {
           logger.info(
             `%c[Performance] ${name}:`,
             'color: #06b6d4',
-            `${measure.duration.toFixed(2)}ms`,
+            `${measure.duration.toFixed(DURATION_DECIMALS)}ms`,
           );
         }
       } catch {
@@ -703,4 +741,12 @@ export const perfMark = {
       performance.mark(`${name}-start`);
     }
   },
+};
+
+export { createProfilerCallback, perfMark, useGraphPerformanceMonitor };
+export type {
+  GraphPerformanceMonitor,
+  LODDistribution,
+  PerformanceMetrics,
+  UseGraphPerformanceMonitorConfig,
 };

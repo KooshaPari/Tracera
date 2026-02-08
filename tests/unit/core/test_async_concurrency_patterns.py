@@ -1,5 +1,4 @@
-"""
-Async and Concurrency Pattern Tests for TraceRTM.
+"""Async and Concurrency Pattern Tests for TraceRTM.
 
 Tests for:
 - Concurrent API requests
@@ -14,6 +13,7 @@ Tests for:
 
 import asyncio
 import time
+from typing import Never
 
 import pytest
 
@@ -28,7 +28,7 @@ class TestConcurrentAPIRequests:
     """Test concurrent API request handling."""
 
     @pytest.mark.asyncio
-    async def test_concurrent_api_requests_success(self):
+    async def test_concurrent_api_requests_success(self) -> None:
         """Test multiple concurrent API requests."""
 
         async def make_request(request_id: int) -> dict:
@@ -42,7 +42,7 @@ class TestConcurrentAPIRequests:
         assert [r["id"] for r in results] == [0, 1, 2, 3, 4]
 
     @pytest.mark.asyncio
-    async def test_concurrent_requests_with_rate_limiting(self):
+    async def test_concurrent_requests_with_rate_limiting(self) -> None:
         """Test concurrent requests with rate limiting."""
         semaphore = asyncio.Semaphore(2)  # Max 2 concurrent
         request_times = []
@@ -62,13 +62,14 @@ class TestConcurrentAPIRequests:
         assert elapsed > 0.15
 
     @pytest.mark.asyncio
-    async def test_concurrent_requests_partial_failure(self):
+    async def test_concurrent_requests_partial_failure(self) -> None:
         """Test concurrent requests where some fail."""
 
         async def request_with_failure(request_id: int) -> dict:
             await asyncio.sleep(0.01)
             if request_id % 2 == 0:
-                raise ValueError(f"Request {request_id} failed")
+                msg = f"Request {request_id} failed"
+                raise ValueError(msg)
             return {"id": request_id, "status": "success"}
 
         results = await asyncio.gather(*[request_with_failure(i) for i in range(4)], return_exceptions=True)
@@ -80,7 +81,7 @@ class TestConcurrentAPIRequests:
         assert results[3]["status"] == "success"
 
     @pytest.mark.asyncio
-    async def test_concurrent_requests_timeout(self):
+    async def test_concurrent_requests_timeout(self) -> None:
         """Test timeout in concurrent requests."""
 
         async def slow_request(request_id: int) -> int:
@@ -91,7 +92,7 @@ class TestConcurrentAPIRequests:
             await asyncio.wait_for(asyncio.gather(slow_request(1), slow_request(2), slow_request(3)), timeout=0.1)
 
     @pytest.mark.asyncio
-    async def test_concurrent_api_request_ordering(self):
+    async def test_concurrent_api_request_ordering(self) -> None:
         """Test that concurrent requests return in completion order."""
 
         async def timed_request(request_id: int, delay: float) -> dict:
@@ -111,7 +112,7 @@ class TestConcurrentAPIRequests:
         assert results[2]["id"] == 3
 
     @pytest.mark.asyncio
-    async def test_concurrent_requests_cancellation(self):
+    async def test_concurrent_requests_cancellation(self) -> None:
         """Test cancelling concurrent requests."""
 
         async def cancellable_request(request_id: int) -> int:
@@ -142,7 +143,7 @@ class TestConcurrentDatabaseOperations:
     """Test concurrent database operation handling."""
 
     @pytest.mark.asyncio
-    async def test_concurrent_reads_allowed(self):
+    async def test_concurrent_reads_allowed(self) -> None:
         """Test that concurrent reads are allowed."""
         results = []
 
@@ -158,11 +159,11 @@ class TestConcurrentDatabaseOperations:
         assert len(results) == 5
 
     @pytest.mark.asyncio
-    async def test_concurrent_writes_with_conflict_resolution(self):
+    async def test_concurrent_writes_with_conflict_resolution(self) -> None:
         """Test concurrent writes with conflict detection and resolution."""
 
         class DataStore:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.data = {"version": 1, "value": "initial"}
                 self.lock = asyncio.Lock()
 
@@ -183,7 +184,7 @@ class TestConcurrentDatabaseOperations:
         assert store.data["version"] == 4  # Initial + 3 updates
 
     @pytest.mark.asyncio
-    async def test_database_lock_timeout(self):
+    async def test_database_lock_timeout(self) -> None:
         """Test timeout when acquiring database lock."""
         lock = asyncio.Lock()
 
@@ -207,11 +208,11 @@ class TestConcurrentDatabaseOperations:
         await task1
 
     @pytest.mark.asyncio
-    async def test_transaction_rollback_on_concurrent_conflict(self):
+    async def test_transaction_rollback_on_concurrent_conflict(self) -> None:
         """Test transaction rollback when concurrent conflict detected."""
 
         class Transaction:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.state = {"count": 0}
                 self.committed = False
 
@@ -241,7 +242,7 @@ class TestConcurrentDatabaseOperations:
         assert isinstance(result, bool)
 
     @pytest.mark.asyncio
-    async def test_concurrent_batch_operations(self):
+    async def test_concurrent_batch_operations(self) -> None:
         """Test concurrent batch database operations."""
 
         async def batch_insert(batch_id: int, item_count: int) -> int:
@@ -263,7 +264,7 @@ class TestAsyncContextManagers:
     """Test async context manager patterns."""
 
     @pytest.mark.asyncio
-    async def test_async_context_manager_entry_exit(self):
+    async def test_async_context_manager_entry_exit(self) -> None:
         """Test async context manager entry and exit."""
         entered = False
         exited = False
@@ -287,11 +288,11 @@ class TestAsyncContextManagers:
         assert exited
 
     @pytest.mark.asyncio
-    async def test_async_context_manager_exception_handling(self):
+    async def test_async_context_manager_exception_handling(self) -> Never:
         """Test async context manager handles exceptions."""
 
         class AsyncResource:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.closed = False
 
             async def __aenter__(self):
@@ -306,17 +307,18 @@ class TestAsyncContextManagers:
         with pytest.raises(ValueError, match="Test error"):
             async with resource:
                 assert not resource.closed
-                raise ValueError("Test error")
+                msg = "Test error"
+                raise ValueError(msg)
 
         assert resource.closed
 
     @pytest.mark.asyncio
-    async def test_nested_async_context_managers(self):
+    async def test_nested_async_context_managers(self) -> None:
         """Test nested async context managers."""
         context_order = []
 
         class NestedContext:
-            def __init__(self, name: str):
+            def __init__(self, name: str) -> None:
                 self.name = name
 
             async def __aenter__(self):
@@ -340,7 +342,7 @@ class TestAsyncContextManagers:
         ]
 
     @pytest.mark.asyncio
-    async def test_async_context_manager_with_exception_in_exit(self):
+    async def test_async_context_manager_with_exception_in_exit(self) -> None:
         """Test async context manager when exit raises exception."""
 
         class ProblematicContext:
@@ -348,19 +350,20 @@ class TestAsyncContextManagers:
                 return self
 
             async def __aexit__(self, exc_type, exc_val, exc_tb):
-                raise RuntimeError("Exit error")
+                msg = "Exit error"
+                raise RuntimeError(msg)
 
         with pytest.raises(RuntimeError, match="Exit error"):
             async with ProblematicContext():
                 pass
 
     @pytest.mark.asyncio
-    async def test_concurrent_context_managers(self):
+    async def test_concurrent_context_managers(self) -> None:
         """Test concurrent async context managers."""
         executions = []
 
         class ConcurrentContext:
-            def __init__(self, name: str):
+            def __init__(self, name: str) -> None:
                 self.name = name
 
             async def __aenter__(self):
@@ -372,7 +375,7 @@ class TestAsyncContextManagers:
                 executions.append(f"end_{self.name}")
                 return False
 
-        async def use_context(name: str):
+        async def use_context(name: str) -> None:
             async with ConcurrentContext(name):
                 await asyncio.sleep(0.02)
 
@@ -397,7 +400,7 @@ class TestRaceConditions:
     """Test race condition scenarios and prevention."""
 
     @pytest.mark.asyncio
-    async def test_race_condition_without_protection(self):
+    async def test_race_condition_without_protection(self) -> None:
         """Test race condition when no synchronization is used."""
         counter = 0
 
@@ -414,7 +417,7 @@ class TestRaceConditions:
         assert counter < 100
 
     @pytest.mark.asyncio
-    async def test_race_condition_with_lock_protection(self):
+    async def test_race_condition_with_lock_protection(self) -> None:
         """Test race condition prevention with lock."""
         counter = 0
         lock = asyncio.Lock()
@@ -432,11 +435,11 @@ class TestRaceConditions:
         assert counter == 100
 
     @pytest.mark.asyncio
-    async def test_race_condition_data_corruption(self):
+    async def test_race_condition_data_corruption(self) -> None:
         """Test data corruption from race conditions."""
 
         class SharedData:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.items = []
 
             async def add_item_unsafe(self, item: str) -> None:
@@ -459,11 +462,11 @@ class TestRaceConditions:
         assert len(data.items) <= 10
 
     @pytest.mark.asyncio
-    async def test_check_then_act_race_condition(self):
+    async def test_check_then_act_race_condition(self) -> None:
         """Test classic check-then-act race condition."""
 
         class Registry:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.items = {}
 
             async def add_if_absent_unsafe(self, key: str, value: str) -> bool:
@@ -499,7 +502,7 @@ class TestTimeoutHandling:
     """Test timeout scenarios in async operations."""
 
     @pytest.mark.asyncio
-    async def test_operation_timeout(self):
+    async def test_operation_timeout(self) -> None:
         """Test operation timeout."""
 
         async def slow_operation() -> int:
@@ -510,7 +513,7 @@ class TestTimeoutHandling:
             await asyncio.wait_for(slow_operation(), timeout=0.1)
 
     @pytest.mark.asyncio
-    async def test_timeout_with_cleanup(self):
+    async def test_timeout_with_cleanup(self) -> None:
         """Test timeout with cleanup operation."""
         cleanup_called = False
 
@@ -537,7 +540,7 @@ class TestTimeoutHandling:
         assert cleanup_called
 
     @pytest.mark.asyncio
-    async def test_multiple_operations_with_timeout(self):
+    async def test_multiple_operations_with_timeout(self) -> None:
         """Test timeout on multiple concurrent operations."""
 
         async def operation(duration: float) -> int:
@@ -555,7 +558,7 @@ class TestTimeoutHandling:
             )
 
     @pytest.mark.asyncio
-    async def test_timeout_with_retry(self):
+    async def test_timeout_with_retry(self) -> None:
         """Test timeout with retry logic."""
 
         async def flaky_operation() -> str:
@@ -582,7 +585,7 @@ class TestTimeoutHandling:
         assert call_count == 3
 
     @pytest.mark.asyncio
-    async def test_timeout_doesnt_affect_other_tasks(self):
+    async def test_timeout_doesnt_affect_other_tasks(self) -> None:
         """Test that timeout on one task doesn't affect others."""
         completed = []
 
@@ -615,7 +618,7 @@ class TestCancellationScenarios:
     """Test task cancellation scenarios."""
 
     @pytest.mark.asyncio
-    async def test_task_cancellation(self):
+    async def test_task_cancellation(self) -> None:
         """Test basic task cancellation."""
 
         async def long_running() -> int:
@@ -630,7 +633,7 @@ class TestCancellationScenarios:
             await task
 
     @pytest.mark.asyncio
-    async def test_cancellation_cleanup(self):
+    async def test_cancellation_cleanup(self) -> None:
         """Test cleanup on cancellation."""
         cleanup_done = False
 
@@ -652,7 +655,7 @@ class TestCancellationScenarios:
         assert cleanup_done
 
     @pytest.mark.asyncio
-    async def test_cancellation_with_shield(self):
+    async def test_cancellation_with_shield(self) -> None:
         """Test cancellation prevention with shield."""
 
         async def critical_operation() -> str:
@@ -671,7 +674,7 @@ class TestCancellationScenarios:
             await task
 
     @pytest.mark.asyncio
-    async def test_partial_cancellation(self):
+    async def test_partial_cancellation(self) -> None:
         """Test cancelling only some tasks in a group."""
         results = []
 
@@ -699,7 +702,7 @@ class TestCancellationScenarios:
         assert 3 in results
 
     @pytest.mark.asyncio
-    async def test_cascade_cancellation(self):
+    async def test_cascade_cancellation(self) -> None:
         """Test cancellation propagation in nested tasks."""
         cancelled_tasks = []
 
@@ -731,7 +734,7 @@ class TestDeadlockPrevention:
     """Test deadlock prevention in concurrent operations."""
 
     @pytest.mark.asyncio
-    async def test_lock_order_consistency(self):
+    async def test_lock_order_consistency(self) -> None:
         """Test deadlock prevention with consistent lock ordering."""
         lock_a = asyncio.Lock()
         lock_b = asyncio.Lock()
@@ -752,7 +755,7 @@ class TestDeadlockPrevention:
         await asyncio.gather(operation_1(), operation_2())
 
     @pytest.mark.asyncio
-    async def test_lock_timeout_prevents_deadlock(self):
+    async def test_lock_timeout_prevents_deadlock(self) -> None:
         """Test timeout prevents indefinite deadlock."""
         lock = asyncio.Lock()
         timeout_occurred = False
@@ -773,7 +776,7 @@ class TestDeadlockPrevention:
         assert timeout_occurred
 
     @pytest.mark.asyncio
-    async def test_no_circular_dependencies(self):
+    async def test_no_circular_dependencies(self) -> None:
         """Test operation chain without circular lock dependencies."""
         locks = [asyncio.Lock() for _ in range(3)]
         execution_order = []
@@ -802,7 +805,7 @@ class TestAsyncRetryPatterns:
     """Test async retry patterns with concurrency."""
 
     @pytest.mark.asyncio
-    async def test_concurrent_retries(self):
+    async def test_concurrent_retries(self) -> None:
         """Test multiple operations retrying concurrently."""
         call_counts = {1: 0, 2: 0, 3: 0}
 
@@ -810,7 +813,8 @@ class TestAsyncRetryPatterns:
             await asyncio.sleep(0)
             call_counts[op_id] += 1
             if call_counts[op_id] < 2:
-                raise ConcurrencyError("Conflict")
+                msg = "Conflict"
+                raise ConcurrencyError(msg)
             return f"op_{op_id}"
 
         results = await asyncio.gather(*[
@@ -821,7 +825,7 @@ class TestAsyncRetryPatterns:
         assert all(c == 2 for c in call_counts.values())
 
     @pytest.mark.asyncio
-    async def test_retry_backoff_under_load(self):
+    async def test_retry_backoff_under_load(self) -> None:
         """Test retry backoff behavior under concurrent load."""
         attempt_times = []
 
@@ -829,7 +833,8 @@ class TestAsyncRetryPatterns:
             await asyncio.sleep(0)
             attempt_times.append(time.time())
             if len(attempt_times) < 2:
-                raise ConcurrencyError("Conflict")
+                msg = "Conflict"
+                raise ConcurrencyError(msg)
             return "success"
 
         start = time.time()
@@ -842,12 +847,13 @@ class TestAsyncRetryPatterns:
         assert elapsed >= 0.01
 
     @pytest.mark.asyncio
-    async def test_retry_failure_with_concurrent_operations(self):
+    async def test_retry_failure_with_concurrent_operations(self) -> None:
         """Test retry failure when concurrent operations conflict."""
 
         async def always_conflicts() -> str:
             await asyncio.sleep(0)
-            raise ConcurrencyError("Always conflicts")
+            msg = "Always conflicts"
+            raise ConcurrencyError(msg)
 
         with pytest.raises(ConcurrencyError):
             await update_with_retry(always_conflicts, max_retries=2, base_delay=0.001)
@@ -862,7 +868,7 @@ class TestEventLoopManagement:
     """Test event loop and task management."""
 
     @pytest.mark.asyncio
-    async def test_task_creation_and_management(self):
+    async def test_task_creation_and_management(self) -> None:
         """Test creating and managing multiple tasks."""
 
         async def simple_task(task_id: int) -> int:
@@ -875,7 +881,7 @@ class TestEventLoopManagement:
         assert results == [0, 2, 4, 6, 8]
 
     @pytest.mark.asyncio
-    async def test_task_result_retrieval(self):
+    async def test_task_result_retrieval(self) -> None:
         """Test retrieving results from completed tasks."""
 
         async def get_value(val: int) -> int:
@@ -887,12 +893,13 @@ class TestEventLoopManagement:
         assert result == 42
 
     @pytest.mark.asyncio
-    async def test_task_exception_handling(self):
+    async def test_task_exception_handling(self) -> None:
         """Test exception handling in tasks."""
 
         async def failing_task() -> None:
             await asyncio.sleep(0)
-            raise ValueError("Task error")
+            msg = "Task error"
+            raise ValueError(msg)
 
         task = asyncio.create_task(failing_task())
 
@@ -900,7 +907,7 @@ class TestEventLoopManagement:
             await task
 
     @pytest.mark.asyncio
-    async def test_task_done_check(self):
+    async def test_task_done_check(self) -> None:
         """Test checking if task is done."""
 
         async def quick_task() -> int:
@@ -914,7 +921,7 @@ class TestEventLoopManagement:
         assert task.done()
 
     @pytest.mark.asyncio
-    async def test_multiple_waiters_for_future(self):
+    async def test_multiple_waiters_for_future(self) -> None:
         """Test multiple coroutines waiting on same future."""
         future = asyncio.Future()
         results = []
@@ -942,7 +949,7 @@ class TestAsyncIntegrationPatterns:
     """Test integration of multiple async patterns."""
 
     @pytest.mark.asyncio
-    async def test_retry_with_timeout_and_cancellation(self):
+    async def test_retry_with_timeout_and_cancellation(self) -> None:
         """Test combining retry, timeout, and cancellation."""
         attempt_count = 0
 
@@ -951,14 +958,15 @@ class TestAsyncIntegrationPatterns:
             attempt_count += 1
             await asyncio.sleep(0.01)
             if attempt_count < 2:
-                raise ConcurrencyError("Conflict")
+                msg = "Conflict"
+                raise ConcurrencyError(msg)
             return "success"
 
         async def operation_with_retry_and_timeout() -> str:
             for attempt in range(3):
                 try:
                     return await asyncio.wait_for(
-                        update_with_retry(flaky_operation, max_retries=2, base_delay=0.001), timeout=0.5
+                        update_with_retry(flaky_operation, max_retries=2, base_delay=0.001), timeout=0.5,
                     )
                 except TimeoutError:
                     if attempt == 2:
@@ -970,7 +978,7 @@ class TestAsyncIntegrationPatterns:
         assert result == "success"
 
     @pytest.mark.asyncio
-    async def test_producer_consumer_pattern(self):
+    async def test_producer_consumer_pattern(self) -> None:
         """Test async producer-consumer pattern."""
         queue = asyncio.Queue(maxsize=5)
         produced = []
@@ -1006,7 +1014,7 @@ class TestAsyncIntegrationPatterns:
         assert len(consumed) == 5
 
     @pytest.mark.asyncio
-    async def test_fan_out_fan_in(self):
+    async def test_fan_out_fan_in(self) -> None:
         """Test fan-out and fan-in pattern."""
 
         async def worker(item: int) -> int:
@@ -1024,7 +1032,7 @@ class TestAsyncIntegrationPatterns:
         assert results == [2, 4, 6, 8, 10]
 
     @pytest.mark.asyncio
-    async def test_barrier_synchronization(self):
+    async def test_barrier_synchronization(self) -> None:
         """Test barrier pattern for synchronization."""
         barrier = asyncio.Barrier(3)
         events = []
@@ -1041,7 +1049,7 @@ class TestAsyncIntegrationPatterns:
         assert before_count == 3
 
     @pytest.mark.asyncio
-    async def test_semaphore_resource_pooling(self):
+    async def test_semaphore_resource_pooling(self) -> None:
         """Test semaphore for resource pooling."""
         active_count = 0
         max_active = 0
@@ -1060,7 +1068,7 @@ class TestAsyncIntegrationPatterns:
         assert max_active == 2  # Max concurrent should be limited to semaphore size
 
     @pytest.mark.asyncio
-    async def test_event_signal_pattern(self):
+    async def test_event_signal_pattern(self) -> None:
         """Test event/signal pattern for coordination."""
         event = asyncio.Event()
         signalled = []

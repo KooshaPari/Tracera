@@ -13,7 +13,7 @@ pytestmark = pytest.mark.usefixtures("link_test_setup")
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_link(db_session: AsyncSession):
+async def test_create_link(db_session: AsyncSession) -> None:
     """Test creating a link between items."""
     # Setup: Create project and items
     project_repo = ProjectRepository(db_session)
@@ -52,17 +52,17 @@ async def test_create_link(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id(db_session: AsyncSession):
+async def test_get_by_id(db_session: AsyncSession) -> None:
     """Test retrieving a link by ID."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target = await item_repo.create(
-        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -80,20 +80,20 @@ async def test_get_by_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_links_for_item(db_session: AsyncSession):
+async def test_get_links_for_item(db_session: AsyncSession) -> None:
     """Test getting all links for an item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
 
     item_repo = ItemRepository(db_session)
     feature = await item_repo.create(
-        project_id=str(project.id), title="Feature", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Feature", view="FEATURE", item_type="feature", status="todo",
     )
     code1 = await item_repo.create(
-        project_id=str(project.id), title="Code 1", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Code 1", view="CODE", item_type="file", status="todo",
     )
     code2 = await item_repo.create(
-        project_id=str(project.id), title="Code 2", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Code 2", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -116,17 +116,17 @@ async def test_get_links_for_item(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_link(db_session: AsyncSession):
+async def test_delete_link(db_session: AsyncSession) -> None:
     """Test deleting a link."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target = await item_repo.create(
-        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -145,20 +145,20 @@ async def test_delete_link(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_source(db_session: AsyncSession):
+async def test_get_by_source(db_session: AsyncSession) -> None:
     """Test getting links by source item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target1 = await item_repo.create(
-        project_id=str(project.id), title="Target 1", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 1", view="CODE", item_type="file", status="todo",
     )
     target2 = await item_repo.create(
-        project_id=str(project.id), title="Target 2", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 2", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -181,20 +181,20 @@ async def test_get_by_source(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_target(db_session: AsyncSession):
+async def test_get_by_target(db_session: AsyncSession) -> None:
     """Test getting links by target item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
 
     item_repo = ItemRepository(db_session)
     source1 = await item_repo.create(
-        project_id=str(project.id), title="Source 1", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source 1", view="FEATURE", item_type="feature", status="todo",
     )
     source2 = await item_repo.create(
-        project_id=str(project.id), title="Source 2", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source 2", view="FEATURE", item_type="feature", status="todo",
     )
     target = await item_repo.create(
-        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -217,17 +217,17 @@ async def test_get_by_target(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_link_with_metadata(db_session: AsyncSession):
+async def test_link_with_metadata(db_session: AsyncSession) -> None:
     """Test creating link with metadata."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target = await item_repo.create(
-        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -251,7 +251,7 @@ async def test_link_with_metadata(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_link_with_explicit_graph_id(db_session: AsyncSession):
+async def test_create_link_with_explicit_graph_id(db_session: AsyncSession) -> None:
     """Test creating a link with an explicit graph_id (skips resolution logic)."""
     from uuid import uuid4
 
@@ -273,10 +273,10 @@ async def test_create_link_with_explicit_graph_id(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target = await item_repo.create(
-        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -293,7 +293,7 @@ async def test_create_link_with_explicit_graph_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_link_resolves_graph_from_source_item_view(db_session: AsyncSession):
+async def test_create_link_resolves_graph_from_source_item_view(db_session: AsyncSession) -> None:
     """Test that graph_id is resolved from source item's primary view."""
     from uuid import uuid4
 
@@ -329,10 +329,10 @@ async def test_create_link_resolves_graph_from_source_item_view(db_session: Asyn
     # ItemRepository.create will automatically create ItemView with is_primary=True
     # linking source item to the "FEATURE" view we created above
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target = await item_repo.create(
-        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo",
     )
 
     # Now create link without graph_id - should resolve from source item's view
@@ -350,7 +350,7 @@ async def test_create_link_resolves_graph_from_source_item_view(db_session: Asyn
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_link_falls_back_to_default_graph(db_session: AsyncSession):
+async def test_create_link_falls_back_to_default_graph(db_session: AsyncSession) -> None:
     """Test that link creation falls back to 'default' graph when source view lookup fails."""
     from uuid import uuid4
 
@@ -381,10 +381,10 @@ async def test_create_link_falls_back_to_default_graph(db_session: AsyncSession)
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target = await item_repo.create(
-        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo",
     )
 
     # No ItemView exists for source, so view-based lookup will fail
@@ -402,7 +402,7 @@ async def test_create_link_falls_back_to_default_graph(db_session: AsyncSession)
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_link_raises_error_when_no_graph_found(db_session: AsyncSession):
+async def test_create_link_raises_error_when_no_graph_found(db_session: AsyncSession) -> None:
     """Test that link creation raises ValueError when no graph can be resolved."""
     from uuid import uuid4
 
@@ -419,10 +419,10 @@ async def test_create_link_raises_error_when_no_graph_found(db_session: AsyncSes
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target = await item_repo.create(
-        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -443,7 +443,7 @@ async def test_create_link_raises_error_when_no_graph_found(db_session: AsyncSes
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_with_graph_id_filter(db_session: AsyncSession):
+async def test_get_by_project_with_graph_id_filter(db_session: AsyncSession) -> None:
     """Test get_by_project with graph_id filter."""
     from uuid import uuid4
 
@@ -471,10 +471,10 @@ async def test_get_by_project_with_graph_id_filter(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target = await item_repo.create(
-        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -511,7 +511,7 @@ async def test_get_by_project_with_graph_id_filter(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_source_with_graph_id_filter(db_session: AsyncSession):
+async def test_get_by_source_with_graph_id_filter(db_session: AsyncSession) -> None:
     """Test get_by_source with graph_id filter."""
     from uuid import uuid4
 
@@ -539,13 +539,13 @@ async def test_get_by_source_with_graph_id_filter(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target1 = await item_repo.create(
-        project_id=str(project.id), title="Target 1", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 1", view="CODE", item_type="file", status="todo",
     )
     target2 = await item_repo.create(
-        project_id=str(project.id), title="Target 2", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 2", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -582,7 +582,7 @@ async def test_get_by_source_with_graph_id_filter(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_target_with_graph_id_filter(db_session: AsyncSession):
+async def test_get_by_target_with_graph_id_filter(db_session: AsyncSession) -> None:
     """Test get_by_target with graph_id filter."""
     from uuid import uuid4
 
@@ -610,13 +610,13 @@ async def test_get_by_target_with_graph_id_filter(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source1 = await item_repo.create(
-        project_id=str(project.id), title="Source 1", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source 1", view="FEATURE", item_type="feature", status="todo",
     )
     source2 = await item_repo.create(
-        project_id=str(project.id), title="Source 2", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source 2", view="FEATURE", item_type="feature", status="todo",
     )
     target = await item_repo.create(
-        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -653,7 +653,7 @@ async def test_get_by_target_with_graph_id_filter(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_item_with_graph_id_filter(db_session: AsyncSession):
+async def test_get_by_item_with_graph_id_filter(db_session: AsyncSession) -> None:
     """Test get_by_item with graph_id filter."""
     from uuid import uuid4
 
@@ -681,13 +681,13 @@ async def test_get_by_item_with_graph_id_filter(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     item = await item_repo.create(
-        project_id=str(project.id), title="Central Item", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Central Item", view="FEATURE", item_type="feature", status="todo",
     )
     other1 = await item_repo.create(
-        project_id=str(project.id), title="Other 1", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Other 1", view="CODE", item_type="file", status="todo",
     )
     other2 = await item_repo.create(
-        project_id=str(project.id), title="Other 2", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Other 2", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -729,17 +729,17 @@ async def test_get_by_item_with_graph_id_filter(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_with_none_graph_id(db_session: AsyncSession):
+async def test_get_by_project_with_none_graph_id(db_session: AsyncSession) -> None:
     """Test get_by_project explicitly passing graph_id=None returns all links."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target = await item_repo.create(
-        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -757,17 +757,17 @@ async def test_get_by_project_with_none_graph_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_source_with_none_graph_id(db_session: AsyncSession):
+async def test_get_by_source_with_none_graph_id(db_session: AsyncSession) -> None:
     """Test get_by_source explicitly passing graph_id=None returns all links."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target = await item_repo.create(
-        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -785,17 +785,17 @@ async def test_get_by_source_with_none_graph_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_target_with_none_graph_id(db_session: AsyncSession):
+async def test_get_by_target_with_none_graph_id(db_session: AsyncSession) -> None:
     """Test get_by_target explicitly passing graph_id=None returns all links."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target = await item_repo.create(
-        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -813,17 +813,17 @@ async def test_get_by_target_with_none_graph_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_item_with_none_graph_id(db_session: AsyncSession):
+async def test_get_by_item_with_none_graph_id(db_session: AsyncSession) -> None:
     """Test get_by_item explicitly passing graph_id=None returns all links."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target = await item_repo.create(
-        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -841,20 +841,20 @@ async def test_get_by_item_with_none_graph_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_by_item(db_session: AsyncSession):
+async def test_delete_by_item(db_session: AsyncSession) -> None:
     """Test deleting all links connected to an item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
 
     item_repo = ItemRepository(db_session)
     item = await item_repo.create(
-        project_id=str(project.id), title="Central Item", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Central Item", view="FEATURE", item_type="feature", status="todo",
     )
     other1 = await item_repo.create(
-        project_id=str(project.id), title="Other 1", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Other 1", view="CODE", item_type="file", status="todo",
     )
     other2 = await item_repo.create(
-        project_id=str(project.id), title="Other 2", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Other 2", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -888,20 +888,20 @@ async def test_delete_by_item(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_all(db_session: AsyncSession):
+async def test_get_all(db_session: AsyncSession) -> None:
     """Test getting all links in the database."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target1 = await item_repo.create(
-        project_id=str(project.id), title="Target 1", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 1", view="CODE", item_type="file", status="todo",
     )
     target2 = await item_repo.create(
-        project_id=str(project.id), title="Target 2", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 2", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -924,20 +924,20 @@ async def test_get_all(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_type(db_session: AsyncSession):
+async def test_get_by_type(db_session: AsyncSession) -> None:
     """Test getting links by link type."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target1 = await item_repo.create(
-        project_id=str(project.id), title="Target 1", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 1", view="CODE", item_type="file", status="todo",
     )
     target2 = await item_repo.create(
-        project_id=str(project.id), title="Target 2", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 2", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -966,17 +966,17 @@ async def test_get_by_type(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_link_with_link_metadata_parameter(db_session: AsyncSession):
+async def test_create_link_with_link_metadata_parameter(db_session: AsyncSession) -> None:
     """Test creating link using link_metadata parameter (alternative to metadata)."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo",
     )
     target = await item_repo.create(
-        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo",
     )
 
     link_repo = LinkRepository(db_session)
@@ -994,7 +994,7 @@ async def test_create_link_with_link_metadata_parameter(db_session: AsyncSession
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_returns_false_for_nonexistent_link(db_session: AsyncSession):
+async def test_delete_returns_false_for_nonexistent_link(db_session: AsyncSession) -> None:
     """Test that delete returns False when link doesn't exist."""
     link_repo = LinkRepository(db_session)
 
@@ -1004,7 +1004,7 @@ async def test_delete_returns_false_for_nonexistent_link(db_session: AsyncSessio
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_returns_none_for_nonexistent_link(db_session: AsyncSession):
+async def test_get_by_id_returns_none_for_nonexistent_link(db_session: AsyncSession) -> None:
     """Test that get_by_id returns None when link doesn't exist."""
     link_repo = LinkRepository(db_session)
 

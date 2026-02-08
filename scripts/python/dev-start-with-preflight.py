@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Dev start with preflight: run preflight, auto-start infra if needed, then process-compose.
+"""Dev start with preflight: run preflight, auto-start infra if needed, then process-compose.
 
 - Runs dev-start preflight (database, redis, nats, neo4j).
 - If any check fails, tries to start that service via scripts/shell/start-services.sh, then re-runs preflight.
@@ -114,7 +113,6 @@ def main() -> int:
 
     pc_config_path = repo_root / "config" / "process-compose.yaml"
     if not pc_config_path.exists():
-        print("config/process-compose.yaml not found", file=sys.stderr)
         return 1
 
     # Load environment
@@ -123,12 +121,10 @@ def main() -> int:
     os.environ.update(env)
 
     # Run preflight checks
-    passed, results = run_preflight_checks(repo_root, env)
+    passed, _results = run_preflight_checks(repo_root, env)
 
     if not passed:
-        from tracertm.preflight import format_preflight_failures
 
-        print(format_preflight_failures(results), file=sys.stderr)
         return 1
 
     # Build and execute process-compose
@@ -140,7 +136,6 @@ def main() -> int:
     try:
         os.execvp(pc_bin, [pc_bin, *pc_args])
     except FileNotFoundError:
-        print(f"{pc_bin} not found; install it (e.g. brew install process-compose)", file=sys.stderr)
         return 1
 
 

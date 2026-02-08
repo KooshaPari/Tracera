@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for EventRepository to achieve 85%+ coverage.
+"""Comprehensive unit tests for EventRepository to achieve 85%+ coverage.
 
 This file covers all missing functionality identified in coverage analysis:
 - log() event creation
@@ -32,7 +31,7 @@ def unique_project_name() -> str:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_log_event_basic(db_session: AsyncSession):
+async def test_log_event_basic(db_session: AsyncSession) -> None:
     """Test logging a basic event."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -58,7 +57,7 @@ async def test_log_event_basic(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_log_event_with_agent(db_session: AsyncSession):
+async def test_log_event_with_agent(db_session: AsyncSession) -> None:
     """Test logging event with agent_id."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -79,7 +78,7 @@ async def test_log_event_with_agent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_log_event_sequential_ids(db_session: AsyncSession):
+async def test_log_event_sequential_ids(db_session: AsyncSession) -> None:
     """Test log generates sequential IDs."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -88,12 +87,12 @@ async def test_log_event_sequential_ids(db_session: AsyncSession):
     event_repo = EventRepository(db_session)
 
     event1 = await event_repo.log(
-        project_id=project.id, event_type="created", entity_type="item", entity_id="item-1", data={}
+        project_id=project.id, event_type="created", entity_type="item", entity_id="item-1", data={},
     )
     await db_session.commit()
 
     event2 = await event_repo.log(
-        project_id=project.id, event_type="created", entity_type="item", entity_id="item-2", data={}
+        project_id=project.id, event_type="created", entity_type="item", entity_id="item-2", data={},
     )
     await db_session.commit()
 
@@ -107,7 +106,7 @@ async def test_log_event_sequential_ids(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_entity_returns_all_events(db_session: AsyncSession):
+async def test_get_by_entity_returns_all_events(db_session: AsyncSession) -> None:
     """Test get_by_entity returns all events for an entity."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -118,17 +117,17 @@ async def test_get_by_entity_returns_all_events(db_session: AsyncSession):
 
     # Create multiple events for same entity
     event1 = await event_repo.log(
-        project_id=project.id, event_type="created", entity_type="item", entity_id=entity_id, data={"title": "Item"}
+        project_id=project.id, event_type="created", entity_type="item", entity_id=entity_id, data={"title": "Item"},
     )
     await db_session.commit()
 
     event2 = await event_repo.log(
-        project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"status": "done"}
+        project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"status": "done"},
     )
     await db_session.commit()
 
     event3 = await event_repo.log(
-        project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"priority": "high"}
+        project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"priority": "high"},
     )
     await db_session.commit()
 
@@ -143,7 +142,7 @@ async def test_get_by_entity_returns_all_events(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_entity_respects_limit(db_session: AsyncSession):
+async def test_get_by_entity_respects_limit(db_session: AsyncSession) -> None:
     """Test get_by_entity respects limit parameter."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -155,7 +154,7 @@ async def test_get_by_entity_respects_limit(db_session: AsyncSession):
     # Create 5 events
     for i in range(5):
         await event_repo.log(
-            project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"change": i}
+            project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"change": i},
         )
         await db_session.commit()
 
@@ -166,7 +165,7 @@ async def test_get_by_entity_respects_limit(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_entity_orders_by_created_at_desc(db_session: AsyncSession):
+async def test_get_by_entity_orders_by_created_at_desc(db_session: AsyncSession) -> None:
     """Test get_by_entity returns events ordered by created_at descending."""
     import time
 
@@ -179,13 +178,13 @@ async def test_get_by_entity_orders_by_created_at_desc(db_session: AsyncSession)
 
     # Create multiple events with delay to ensure different timestamps
     event1 = await event_repo.log(
-        project_id=project.id, event_type="created", entity_type="item", entity_id=entity_id, data={"step": 1}
+        project_id=project.id, event_type="created", entity_type="item", entity_id=entity_id, data={"step": 1},
     )
     await db_session.commit()
     await asyncio.sleep(0.1)  # Ensure different timestamp
 
     event2 = await event_repo.log(
-        project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"step": 2}
+        project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"step": 2},
     )
     await db_session.commit()
 
@@ -216,7 +215,7 @@ async def test_get_by_entity_orders_by_created_at_desc(db_session: AsyncSession)
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_entity_empty_when_no_events(db_session: AsyncSession):
+async def test_get_by_entity_empty_when_no_events(db_session: AsyncSession) -> None:
     """Test get_by_entity returns empty list when no events exist."""
     event_repo = EventRepository(db_session)
 
@@ -226,7 +225,7 @@ async def test_get_by_entity_empty_when_no_events(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_entity_filters_by_entity_id(db_session: AsyncSession):
+async def test_get_by_entity_filters_by_entity_id(db_session: AsyncSession) -> None:
     """Test get_by_entity only returns events for specified entity."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -238,10 +237,10 @@ async def test_get_by_entity_filters_by_entity_id(db_session: AsyncSession):
 
     # Create events for different entities
     event1 = await event_repo.log(
-        project_id=project.id, event_type="created", entity_type="item", entity_id=unique_entity_1, data={}
+        project_id=project.id, event_type="created", entity_type="item", entity_id=unique_entity_1, data={},
     )
     _event2 = await event_repo.log(
-        project_id=project.id, event_type="created", entity_type="item", entity_id=unique_entity_2, data={}
+        project_id=project.id, event_type="created", entity_type="item", entity_id=unique_entity_2, data={},
     )
     await db_session.commit()
 
@@ -258,7 +257,7 @@ async def test_get_by_entity_filters_by_entity_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_returns_all_events(db_session: AsyncSession):
+async def test_get_by_project_returns_all_events(db_session: AsyncSession) -> None:
     """Test get_by_project returns all events for a project."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -268,10 +267,10 @@ async def test_get_by_project_returns_all_events(db_session: AsyncSession):
 
     # Create multiple events
     event1 = await event_repo.log(
-        project_id=project.id, event_type="created", entity_type="item", entity_id="item-1", data={}
+        project_id=project.id, event_type="created", entity_type="item", entity_id="item-1", data={},
     )
     event2 = await event_repo.log(
-        project_id=project.id, event_type="created", entity_type="item", entity_id="item-2", data={}
+        project_id=project.id, event_type="created", entity_type="item", entity_id="item-2", data={},
     )
     await db_session.commit()
 
@@ -285,7 +284,7 @@ async def test_get_by_project_returns_all_events(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_respects_limit(db_session: AsyncSession):
+async def test_get_by_project_respects_limit(db_session: AsyncSession) -> None:
     """Test get_by_project respects limit parameter."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -296,7 +295,7 @@ async def test_get_by_project_respects_limit(db_session: AsyncSession):
     # Create 5 events
     for i in range(5):
         await event_repo.log(
-            project_id=project.id, event_type="created", entity_type="item", entity_id=f"item-{i}", data={}
+            project_id=project.id, event_type="created", entity_type="item", entity_id=f"item-{i}", data={},
         )
         await db_session.commit()
 
@@ -307,7 +306,7 @@ async def test_get_by_project_respects_limit(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_filters_by_project(db_session: AsyncSession):
+async def test_get_by_project_filters_by_project(db_session: AsyncSession) -> None:
     """Test get_by_project only returns events for specified project."""
     project_repo = ProjectRepository(db_session)
     project1 = await project_repo.create(name=unique_project_name())
@@ -317,10 +316,10 @@ async def test_get_by_project_filters_by_project(db_session: AsyncSession):
     event_repo = EventRepository(db_session)
 
     event1 = await event_repo.log(
-        project_id=project1.id, event_type="created", entity_type="item", entity_id="item-1", data={}
+        project_id=project1.id, event_type="created", entity_type="item", entity_id="item-1", data={},
     )
     event2 = await event_repo.log(
-        project_id=project2.id, event_type="created", entity_type="item", entity_id="item-2", data={}
+        project_id=project2.id, event_type="created", entity_type="item", entity_id="item-2", data={},
     )
     await db_session.commit()
 
@@ -337,7 +336,7 @@ async def test_get_by_project_filters_by_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_empty_when_no_events(db_session: AsyncSession):
+async def test_get_by_project_empty_when_no_events(db_session: AsyncSession) -> None:
     """Test get_by_project returns empty list when no events exist."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -356,7 +355,7 @@ async def test_get_by_project_empty_when_no_events(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_agent_returns_all_events(db_session: AsyncSession):
+async def test_get_by_agent_returns_all_events(db_session: AsyncSession) -> None:
     """Test get_by_agent returns all events for an agent."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -367,10 +366,10 @@ async def test_get_by_agent_returns_all_events(db_session: AsyncSession):
 
     # Create multiple events by same agent
     event1 = await event_repo.log(
-        project_id=project.id, event_type="created", entity_type="item", entity_id="item-1", data={}, agent_id=agent_id
+        project_id=project.id, event_type="created", entity_type="item", entity_id="item-1", data={}, agent_id=agent_id,
     )
     event2 = await event_repo.log(
-        project_id=project.id, event_type="updated", entity_type="item", entity_id="item-2", data={}, agent_id=agent_id
+        project_id=project.id, event_type="updated", entity_type="item", entity_id="item-2", data={}, agent_id=agent_id,
     )
     await db_session.commit()
 
@@ -384,7 +383,7 @@ async def test_get_by_agent_returns_all_events(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_agent_respects_limit(db_session: AsyncSession):
+async def test_get_by_agent_respects_limit(db_session: AsyncSession) -> None:
     """Test get_by_agent respects limit parameter."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -412,7 +411,7 @@ async def test_get_by_agent_respects_limit(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_agent_filters_by_agent_id(db_session: AsyncSession):
+async def test_get_by_agent_filters_by_agent_id(db_session: AsyncSession) -> None:
     """Test get_by_agent only returns events for specified agent."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -422,10 +421,10 @@ async def test_get_by_agent_filters_by_agent_id(db_session: AsyncSession):
 
     # Create events by different agents
     event1 = await event_repo.log(
-        project_id=project.id, event_type="created", entity_type="item", entity_id="item-1", data={}, agent_id="agent-1"
+        project_id=project.id, event_type="created", entity_type="item", entity_id="item-1", data={}, agent_id="agent-1",
     )
     event2 = await event_repo.log(
-        project_id=project.id, event_type="created", entity_type="item", entity_id="item-2", data={}, agent_id="agent-2"
+        project_id=project.id, event_type="created", entity_type="item", entity_id="item-2", data={}, agent_id="agent-2",
     )
     await db_session.commit()
 
@@ -437,7 +436,7 @@ async def test_get_by_agent_filters_by_agent_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_agent_excludes_events_without_agent(db_session: AsyncSession):
+async def test_get_by_agent_excludes_events_without_agent(db_session: AsyncSession) -> None:
     """Test get_by_agent excludes events without agent_id."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -476,7 +475,7 @@ async def test_get_by_agent_excludes_events_without_agent(db_session: AsyncSessi
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_agent_empty_when_no_events(db_session: AsyncSession):
+async def test_get_by_agent_empty_when_no_events(db_session: AsyncSession) -> None:
     """Test get_by_agent returns empty list when no events exist."""
     event_repo = EventRepository(db_session)
 
@@ -491,7 +490,7 @@ async def test_get_by_agent_empty_when_no_events(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_entity_at_time_replays_created_event(db_session: AsyncSession):
+async def test_get_entity_at_time_replays_created_event(db_session: AsyncSession) -> None:
     """Test get_entity_at_time replays created event."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -520,7 +519,7 @@ async def test_get_entity_at_time_replays_created_event(db_session: AsyncSession
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_entity_at_time_replays_updated_events(db_session: AsyncSession):
+async def test_get_entity_at_time_replays_updated_events(db_session: AsyncSession) -> None:
     """Test get_entity_at_time replays multiple update events."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -552,7 +551,7 @@ async def test_get_entity_at_time_replays_updated_events(db_session: AsyncSessio
 
     # Update priority
     await event_repo.log(
-        project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"priority": "high"}
+        project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"priority": "high"},
     )
     await db_session.commit()
 
@@ -566,7 +565,7 @@ async def test_get_entity_at_time_replays_updated_events(db_session: AsyncSessio
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_entity_at_time_handles_deleted_event(db_session: AsyncSession):
+async def test_get_entity_at_time_handles_deleted_event(db_session: AsyncSession) -> None:
     """Test get_entity_at_time returns None when entity was deleted."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -597,7 +596,7 @@ async def test_get_entity_at_time_handles_deleted_event(db_session: AsyncSession
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_entity_at_time_before_creation_returns_none(db_session: AsyncSession):
+async def test_get_entity_at_time_before_creation_returns_none(db_session: AsyncSession) -> None:
     """Test get_entity_at_time returns None when time is before creation."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -624,7 +623,7 @@ async def test_get_entity_at_time_before_creation_returns_none(db_session: Async
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_entity_at_time_partial_replay(db_session: AsyncSession):
+async def test_get_entity_at_time_partial_replay(db_session: AsyncSession) -> None:
     """Test get_entity_at_time replays events up to specified time."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -656,7 +655,7 @@ async def test_get_entity_at_time_partial_replay(db_session: AsyncSession):
 
     # Second update (after our query time)
     await event_repo.log(
-        project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"priority": "high"}
+        project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"priority": "high"},
     )
     await db_session.commit()
 
@@ -672,7 +671,7 @@ async def test_get_entity_at_time_partial_replay(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_entity_at_time_empty_when_no_events(db_session: AsyncSession):
+async def test_get_entity_at_time_empty_when_no_events(db_session: AsyncSession) -> None:
     """Test get_entity_at_time returns None when no events exist."""
     event_repo = EventRepository(db_session)
 

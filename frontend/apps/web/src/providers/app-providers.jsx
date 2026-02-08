@@ -98,8 +98,6 @@ const buildContent = (children) => {
   );
 };
 
-const AppProviders = ({ children }) => {
-  return buildContent(children);
-};
+const AppProviders = ({ children }) => buildContent(children);
 
 export { AppProviders };

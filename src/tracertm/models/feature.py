@@ -1,6 +1,4 @@
-"""
-BDD Feature model.
-"""
+"""BDD Feature model."""
 
 from typing import Any, ClassVar
 
@@ -19,7 +17,7 @@ class Feature(Base, TimestampMixin):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     project_id: Mapped[str] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False,
     )
     feature_number: Mapped[str] = mapped_column(String(50), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)

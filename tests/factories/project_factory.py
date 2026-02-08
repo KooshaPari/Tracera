@@ -1,6 +1,4 @@
-"""
-Project factory for generating test projects.
-"""
+"""Project factory for generating test projects."""
 
 from faker import Faker
 
@@ -10,7 +8,7 @@ fake = Faker()
 class ProjectFactory:
     """Factory for creating test projects."""
 
-    def __init__(self, session=None):
+    def __init__(self, session=None) -> None:
         self.session = session
         self.created_projects = []
 
@@ -30,7 +28,7 @@ class ProjectFactory:
 
         return project_data
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Delete all projects created by this factory."""
         if self.session and self.created_projects:
             self.created_projects = []

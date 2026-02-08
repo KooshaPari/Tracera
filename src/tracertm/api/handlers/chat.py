@@ -219,7 +219,7 @@ async def _generate_sse_stream(
     except AIServiceError as e:
         yield _format_error_sse(str(e))
     except Exception as e:
-        logger.error(f"Chat streaming error: {e}", exc_info=True)
+        logger.error("Chat streaming error: %s", e, exc_info=True)
         yield _format_error_sse("An unexpected error occurred")
 
 
@@ -382,5 +382,5 @@ async def simple_chat(
     except AIServiceError as e:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
-        logger.error(f"Chat error: {e}", exc_info=True)
+        logger.error("Chat error: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="An unexpected error occurred")

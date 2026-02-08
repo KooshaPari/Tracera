@@ -1,5 +1,4 @@
-"""
-Comprehensive conflict resolver tests for 100% coverage (WP-1.3).
+"""Comprehensive conflict resolver tests for 100% coverage (WP-1.3).
 
 Tests all aspects of conflict resolution:
 - 3-way merge algorithm (base, local, remote)
@@ -80,7 +79,7 @@ def base_time():
 class TestVectorClockBasic:
     """Test basic vector clock functionality."""
 
-    def test_vector_clock_creation(self, base_time):
+    def test_vector_clock_creation(self, base_time) -> None:
         """Test creating a vector clock."""
         clock = VectorClock(
             client_id="client-1",
@@ -91,7 +90,7 @@ class TestVectorClockBasic:
         assert clock.version == 1
         assert clock.timestamp == base_time
 
-    def test_vector_clock_post_init_timezone(self):
+    def test_vector_clock_post_init_timezone(self) -> None:
         """Test that naive timestamps are converted to UTC."""
         naive_dt = datetime(2024, 1, 1, 12, 0, 0)
         clock = VectorClock(
@@ -101,7 +100,7 @@ class TestVectorClockBasic:
         )
         assert clock.timestamp.tzinfo is not None
 
-    def test_vector_clock_with_parent(self, base_time):
+    def test_vector_clock_with_parent(self, base_time) -> None:
         """Test vector clock with parent version."""
         clock = VectorClock(
             client_id="client-1",
@@ -111,26 +110,26 @@ class TestVectorClockBasic:
         )
         assert clock.parent_version == 1
 
-    def test_vector_clock_happens_before_same_client(self, base_time):
+    def test_vector_clock_happens_before_same_client(self, base_time) -> None:
         """Test happens_before for same client."""
         clock1 = VectorClock("client-1", 1, base_time)
         clock2 = VectorClock("client-1", 2, base_time + timedelta(seconds=10))
         assert clock1.happens_before(clock2)
         assert not clock2.happens_before(clock1)
 
-    def test_vector_clock_happens_before_different_clients(self, base_time):
+    def test_vector_clock_happens_before_different_clients(self, base_time) -> None:
         """Test happens_before for different clients (uses timestamp)."""
         clock1 = VectorClock("client-1", 5, base_time)
         clock2 = VectorClock("client-2", 1, base_time + timedelta(seconds=10))
         assert clock1.happens_before(clock2)
 
-    def test_vector_clock_is_concurrent(self, base_time):
+    def test_vector_clock_is_concurrent(self, base_time) -> None:
         """Test concurrent detection."""
         clock1 = VectorClock("client-1", 2, base_time)
         clock2 = VectorClock("client-2", 2, base_time)
         assert clock1.is_concurrent(clock2)
 
-    def test_vector_clock_serialization(self, base_time):
+    def test_vector_clock_serialization(self, base_time) -> None:
         """Test to_dict and from_dict."""
         original = VectorClock("client-1", 3, base_time, parent_version=2)
         data = original.to_dict()
@@ -141,7 +140,7 @@ class TestVectorClockBasic:
         assert restored.timestamp == original.timestamp
         assert restored.parent_version == original.parent_version
 
-    def test_vector_clock_not_concurrent(self, base_time):
+    def test_vector_clock_not_concurrent(self, base_time) -> None:
         """Test is_concurrent returns false for non-concurrent clocks."""
         clock1 = VectorClock("client-1", 1, base_time)
         clock2 = VectorClock("client-1", 2, base_time)
@@ -156,7 +155,7 @@ class TestVectorClockBasic:
 class TestEntityVersion:
     """Test entity version functionality."""
 
-    def test_entity_version_creation(self, base_time):
+    def test_entity_version_creation(self, base_time) -> None:
         """Test creating entity version."""
         clock = VectorClock("client-1", 1, base_time)
         version = EntityVersion(
@@ -169,7 +168,7 @@ class TestEntityVersion:
         assert version.entity_type == "item"
         assert version.data["title"] == "Test"
 
-    def test_entity_version_with_hash(self, base_time):
+    def test_entity_version_with_hash(self, base_time) -> None:
         """Test entity version with content hash."""
         clock = VectorClock("client-1", 1, base_time)
         version = EntityVersion(
@@ -181,7 +180,7 @@ class TestEntityVersion:
         )
         assert version.content_hash == "abc123def"
 
-    def test_entity_version_serialization(self, base_time):
+    def test_entity_version_serialization(self, base_time) -> None:
         """Test to_dict and from_dict."""
         clock = VectorClock("client-1", 1, base_time)
         original = EntityVersion(
@@ -199,7 +198,7 @@ class TestEntityVersion:
         assert restored.data == original.data
         assert restored.content_hash == original.content_hash
 
-    def test_entity_version_complex_data(self, base_time):
+    def test_entity_version_complex_data(self, base_time) -> None:
         """Test entity version with complex nested data."""
         clock = VectorClock("client-1", 1, base_time)
         complex_data = {
@@ -219,7 +218,7 @@ class TestEntityVersion:
         )
         assert version.data["metadata"]["nested"]["level"] == 2
 
-    def test_entity_version_all_types(self, base_time):
+    def test_entity_version_all_types(self, base_time) -> None:
         """Test entity version with all supported entity types."""
         clock = VectorClock("client-1", 1, base_time)
         for entity_type in ["project", "item", "link"]:
@@ -231,7 +230,7 @@ class TestEntityVersion:
             )
             assert version.entity_type == entity_type
 
-    def test_entity_version_empty_data(self, base_time):
+    def test_entity_version_empty_data(self, base_time) -> None:
         """Test entity version with empty data."""
         clock = VectorClock("client-1", 1, base_time)
         version = EntityVersion(
@@ -242,7 +241,7 @@ class TestEntityVersion:
         )
         assert version.data == {}
 
-    def test_entity_version_unicode_content(self, base_time):
+    def test_entity_version_unicode_content(self, base_time) -> None:
         """Test entity version with unicode content."""
         clock = VectorClock("client-1", 1, base_time)
         unicode_data = {
@@ -268,7 +267,7 @@ class TestEntityVersion:
 class TestResolverInitialization:
     """Test ConflictResolver initialization and database setup."""
 
-    def test_resolver_creates_backup_dir(self, temp_db):
+    def test_resolver_creates_backup_dir(self, temp_db) -> None:
         """Test resolver creates backup directory on init."""
         import tempfile
 
@@ -283,7 +282,7 @@ class TestResolverInitialization:
 
             assert backup_dir.exists()
 
-    def test_resolver_initializes_database(self, temp_db, temp_backup_dir):
+    def test_resolver_initializes_database(self, temp_db, temp_backup_dir) -> None:
         """Test resolver initializes database tables on init."""
         resolver = ConflictResolver(
             session=temp_db,
@@ -298,7 +297,7 @@ class TestResolverInitialization:
 class TestConflictDetection:
     """Test conflict detection logic."""
 
-    def test_no_conflict_sequential_same_client(self, resolver, base_time):
+    def test_no_conflict_sequential_same_client(self, resolver, base_time) -> None:
         """Test no conflict with sequential changes on same client."""
         local = EntityVersion(
             "item-1",
@@ -316,7 +315,7 @@ class TestConflictDetection:
         )
         assert resolver.detect_conflict(local, remote) is None
 
-    def test_conflict_concurrent_different_content(self, resolver, base_time):
+    def test_conflict_concurrent_different_content(self, resolver, base_time) -> None:
         """Test conflict detection with concurrent changes."""
         local = EntityVersion(
             "item-1",
@@ -337,7 +336,7 @@ class TestConflictDetection:
         assert conflict.entity_id == "item-1"
         assert conflict.status == ConflictStatus.UNRESOLVED
 
-    def test_no_conflict_identical_content(self, resolver, base_time):
+    def test_no_conflict_identical_content(self, resolver, base_time) -> None:
         """Test no conflict when content is identical."""
         local = EntityVersion(
             "item-1",
@@ -355,7 +354,7 @@ class TestConflictDetection:
         )
         assert resolver.detect_conflict(local, remote) is None
 
-    def test_no_conflict_when_local_is_none(self, resolver, base_time):
+    def test_no_conflict_when_local_is_none(self, resolver, base_time) -> None:
         """Test no conflict when local version is None."""
         remote = EntityVersion(
             "item-1",
@@ -365,7 +364,7 @@ class TestConflictDetection:
         )
         assert resolver.detect_conflict(None, remote) is None
 
-    def test_no_conflict_when_remote_is_none(self, resolver, base_time):
+    def test_no_conflict_when_remote_is_none(self, resolver, base_time) -> None:
         """Test no conflict when remote version is None."""
         local = EntityVersion(
             "item-1",
@@ -375,7 +374,7 @@ class TestConflictDetection:
         )
         assert resolver.detect_conflict(local, None) is None
 
-    def test_conflict_stored_in_database(self, resolver, base_time):
+    def test_conflict_stored_in_database(self, resolver, base_time) -> None:
         """Test that detected conflict is stored in database."""
         local = EntityVersion(
             "item-1",
@@ -396,7 +395,7 @@ class TestConflictDetection:
         assert retrieved is not None
         assert retrieved.entity_id == "item-1"
 
-    def test_conflict_different_entity_ids(self, resolver, base_time):
+    def test_conflict_different_entity_ids(self, resolver, base_time) -> None:
         """Test detect_conflict uses local entity_id regardless of remote."""
         local = EntityVersion(
             "item-1",
@@ -418,7 +417,7 @@ class TestConflictDetection:
         assert conflict is not None
         assert conflict.entity_id == "item-1"
 
-    def test_conflict_with_missing_hashes(self, resolver, base_time):
+    def test_conflict_with_missing_hashes(self, resolver, base_time) -> None:
         """Test conflict detection without hashes (uses data comparison)."""
         local = EntityVersion(
             "item-1",
@@ -436,7 +435,7 @@ class TestConflictDetection:
         conflict = resolver.detect_conflict(local, remote)
         assert conflict is not None
 
-    def test_project_conflict_detection(self, resolver, base_time):
+    def test_project_conflict_detection(self, resolver, base_time) -> None:
         """Test conflict detection for project entity type."""
         local = EntityVersion(
             "proj-1",
@@ -456,7 +455,7 @@ class TestConflictDetection:
         assert conflict is not None
         assert conflict.entity_type == "project"
 
-    def test_link_conflict_detection(self, resolver, base_time):
+    def test_link_conflict_detection(self, resolver, base_time) -> None:
         """Test conflict detection for link entity type."""
         local = EntityVersion(
             "link-1",
@@ -484,7 +483,7 @@ class TestConflictDetection:
 class TestResolutionStrategies:
     """Test different conflict resolution strategies."""
 
-    def test_last_write_wins_local_newer(self, resolver, base_time):
+    def test_last_write_wins_local_newer(self, resolver, base_time) -> None:
         """Test LAST_WRITE_WINS when local is newer."""
         local = EntityVersion(
             "item-1",
@@ -503,7 +502,7 @@ class TestResolutionStrategies:
         assert result.version == local
         assert result.strategy_used == ConflictStrategy.LAST_WRITE_WINS
 
-    def test_last_write_wins_remote_newer(self, resolver, base_time):
+    def test_last_write_wins_remote_newer(self, resolver, base_time) -> None:
         """Test LAST_WRITE_WINS when remote is newer."""
         local = EntityVersion(
             "item-1",
@@ -521,7 +520,7 @@ class TestResolutionStrategies:
         result = resolver.resolve(conflict, ConflictStrategy.LAST_WRITE_WINS)
         assert result.version == remote
 
-    def test_last_write_wins_same_timestamp_higher_version(self, resolver, base_time):
+    def test_last_write_wins_same_timestamp_higher_version(self, resolver, base_time) -> None:
         """Test LAST_WRITE_WINS with same timestamp, higher version wins."""
         local = EntityVersion(
             "item-1",
@@ -539,7 +538,7 @@ class TestResolutionStrategies:
         result = resolver.resolve(conflict, ConflictStrategy.LAST_WRITE_WINS)
         assert result.version == local
 
-    def test_local_wins_strategy(self, resolver, base_time):
+    def test_local_wins_strategy(self, resolver, base_time) -> None:
         """Test LOCAL_WINS always picks local."""
         local = EntityVersion(
             "item-1",
@@ -558,7 +557,7 @@ class TestResolutionStrategies:
         assert result.version == local
         assert result.strategy_used == ConflictStrategy.LOCAL_WINS
 
-    def test_remote_wins_strategy(self, resolver, base_time):
+    def test_remote_wins_strategy(self, resolver, base_time) -> None:
         """Test REMOTE_WINS always picks remote."""
         local = EntityVersion(
             "item-1",
@@ -577,7 +576,7 @@ class TestResolutionStrategies:
         assert result.version == remote
         assert result.strategy_used == ConflictStrategy.REMOTE_WINS
 
-    def test_manual_strategy_requires_resolve_manual(self, resolver, base_time):
+    def test_manual_strategy_requires_resolve_manual(self, resolver, base_time) -> None:
         """Test that MANUAL strategy requires resolve_manual()."""
         local = EntityVersion(
             "item-1",
@@ -595,7 +594,7 @@ class TestResolutionStrategies:
         with pytest.raises(ValueError, match="MANUAL strategy requires"):
             resolver.resolve(conflict, ConflictStrategy.MANUAL)
 
-    def test_invalid_strategy_raises_error(self, resolver, base_time):
+    def test_invalid_strategy_raises_error(self, resolver, base_time) -> None:
         """Test that invalid strategy raises error."""
         local = EntityVersion(
             "item-1",
@@ -614,7 +613,7 @@ class TestResolutionStrategies:
         with pytest.raises(ValueError):
             resolver.resolve(conflict, "invalid_strategy")  # type: ignore
 
-    def test_resolution_creates_backup(self, resolver, base_time):
+    def test_resolution_creates_backup(self, resolver, base_time) -> None:
         """Test that resolution creates backup."""
         local = EntityVersion(
             "item-1",
@@ -633,7 +632,7 @@ class TestResolutionStrategies:
         assert result.version.entity_id == "item-1"
         assert conflict.backup_path is not None
 
-    def test_resolution_updates_conflict_status(self, resolver, base_time):
+    def test_resolution_updates_conflict_status(self, resolver, base_time) -> None:
         """Test that resolution updates conflict status."""
         local = EntityVersion(
             "item-1",
@@ -660,7 +659,7 @@ class TestResolutionStrategies:
         assert retrieved.status == ConflictStatus.RESOLVED_AUTO
         assert retrieved.resolved_at is not None
 
-    def test_resolved_version_uses_resolved_status(self, resolver, base_time):
+    def test_resolved_version_uses_resolved_status(self, resolver, base_time) -> None:
         """Test resolved version has correct status."""
         local = EntityVersion(
             "item-1",
@@ -678,7 +677,7 @@ class TestResolutionStrategies:
         result = resolver.resolve(conflict, ConflictStrategy.REMOTE_WINS)
         assert isinstance(result, ResolvedEntity)
 
-    def test_last_write_wins_equal_timestamp_lower_version(self, resolver, base_time):
+    def test_last_write_wins_equal_timestamp_lower_version(self, resolver, base_time) -> None:
         """Test LAST_WRITE_WINS when timestamps equal, lower version loses."""
         local = EntityVersion(
             "item-1",
@@ -706,7 +705,7 @@ class TestResolutionStrategies:
 class TestManualResolution:
     """Test manual conflict resolution."""
 
-    def test_resolve_manual_basic(self, resolver, base_time):
+    def test_resolve_manual_basic(self, resolver, base_time) -> None:
         """Test basic manual resolution."""
         local = EntityVersion(
             "item-1",
@@ -730,7 +729,7 @@ class TestManualResolution:
         assert result.version.data == merged_data
         assert result.strategy_used == ConflictStrategy.MANUAL
 
-    def test_resolve_manual_increments_version(self, resolver, base_time):
+    def test_resolve_manual_increments_version(self, resolver, base_time) -> None:
         """Test that manual resolution increments version."""
         local = EntityVersion(
             "item-1",
@@ -749,7 +748,7 @@ class TestManualResolution:
         # Should be max(5, 3) + 1 = 6
         assert result.version.vector_clock.version == 6
 
-    def test_resolve_manual_records_merger(self, resolver, base_time):
+    def test_resolve_manual_records_merger(self, resolver, base_time) -> None:
         """Test that manual resolution records who merged."""
         local = EntityVersion(
             "item-1",
@@ -773,7 +772,7 @@ class TestManualResolution:
         assert retrieved is not None
         assert retrieved.metadata["merged_by"] == "alice"
 
-    def test_resolve_manual_updates_conflict_status(self, resolver, base_time):
+    def test_resolve_manual_updates_conflict_status(self, resolver, base_time) -> None:
         """Test that manual resolution updates status to RESOLVED_MANUAL."""
         local = EntityVersion(
             "item-1",
@@ -797,7 +796,7 @@ class TestManualResolution:
         assert retrieved is not None
         assert retrieved.status == ConflictStatus.RESOLVED_MANUAL
 
-    def test_resolve_manual_preserves_backup(self, resolver, base_time):
+    def test_resolve_manual_preserves_backup(self, resolver, base_time) -> None:
         """Test that manual resolution creates/uses backup."""
         local = EntityVersion(
             "item-1",
@@ -815,7 +814,7 @@ class TestManualResolution:
         resolver.resolve_manual(conflict, {"title": "Merged"})
         assert conflict.backup_path is not None
 
-    def test_resolve_manual_complex_merge(self, resolver, base_time):
+    def test_resolve_manual_complex_merge(self, resolver, base_time) -> None:
         """Test manual resolution with complex data merge."""
         local = EntityVersion(
             "item-1",
@@ -848,7 +847,7 @@ class TestManualResolution:
         assert result.version.data["tags"] == ["local", "remote"]
         assert result.version.data["status"] == "completed"
 
-    def test_resolve_manual_empty_data(self, resolver, base_time):
+    def test_resolve_manual_empty_data(self, resolver, base_time) -> None:
         """Test manual resolution with empty merged data."""
         local = EntityVersion(
             "item-1",
@@ -875,7 +874,7 @@ class TestManualResolution:
 class TestConflictDataclass:
     """Test Conflict dataclass serialization."""
 
-    def test_conflict_to_dict(self, base_time):
+    def test_conflict_to_dict(self, base_time) -> None:
         """Test Conflict.to_dict() serialization."""
         local = EntityVersion(
             "item-1",
@@ -913,7 +912,7 @@ class TestConflictDataclass:
 class TestBackupAndRecovery:
     """Test backup creation and recovery."""
 
-    def test_create_backup_creates_structure(self, resolver, base_time):
+    def test_create_backup_creates_structure(self, resolver, base_time) -> None:
         """Test that backup creates expected directory structure."""
         local = EntityVersion(
             "item-1",
@@ -935,7 +934,7 @@ class TestBackupAndRecovery:
         assert (backup_path / "remote.json").exists()
         assert (backup_path / "conflict.json").exists()
 
-    def test_backup_contains_correct_data(self, resolver, base_time):
+    def test_backup_contains_correct_data(self, resolver, base_time) -> None:
         """Test that backup files contain correct data."""
         local = EntityVersion(
             "item-1",
@@ -952,15 +951,15 @@ class TestBackupAndRecovery:
         conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         backup_path = resolver.create_backup(conflict)
 
-        with Path(backup_path / "local.json").open() as f:
+        with Path(backup_path / "local.json").open(encoding="utf-8") as f:
             local_data = json.load(f)
             assert local_data["data"]["title"] == "Local Title"
 
-        with Path(backup_path / "remote.json").open() as f:
+        with Path(backup_path / "remote.json").open(encoding="utf-8") as f:
             remote_data = json.load(f)
             assert remote_data["data"]["title"] == "Remote Title"
 
-    def test_conflict_backup_manager_list(self, temp_backup_dir):
+    def test_conflict_backup_manager_list(self, temp_backup_dir) -> None:
         """Test ConflictBackup.list_backups()."""
         backup_mgr = ConflictBackup(temp_backup_dir)
 
@@ -974,21 +973,21 @@ class TestBackupAndRecovery:
             "entity_type": "item",
             "detected_at": "2024-01-01T12:00:00+00:00",
         }
-        with Path(backup_path / "conflict.json").open("w") as f:
+        with Path(backup_path / "conflict.json").open("w", encoding="utf-8") as f:
             json.dump(conflict_meta, f)
 
         backups = backup_mgr.list_backups()
         assert len(backups) == 1
         assert backups[0]["conflict_id"] == "test-1"
 
-    def test_conflict_backup_manager_filter_by_type(self, temp_backup_dir):
+    def test_conflict_backup_manager_filter_by_type(self, temp_backup_dir) -> None:
         """Test ConflictBackup.list_backups() filtering by type."""
         backup_mgr = ConflictBackup(temp_backup_dir)
 
         # Create item backup
         item_path = temp_backup_dir / "item" / "item-1_test"
         item_path.mkdir(parents=True)
-        with Path(item_path / "conflict.json").open("w") as f:
+        with Path(item_path / "conflict.json").open("w", encoding="utf-8") as f:
             json.dump(
                 {
                     "conflict_id": "item-conflict",
@@ -1000,7 +999,7 @@ class TestBackupAndRecovery:
         # Create project backup
         proj_path = temp_backup_dir / "project" / "proj-1_test"
         proj_path.mkdir(parents=True)
-        with Path(proj_path / "conflict.json").open("w") as f:
+        with Path(proj_path / "conflict.json").open("w", encoding="utf-8") as f:
             json.dump(
                 {
                     "conflict_id": "proj-conflict",
@@ -1013,7 +1012,7 @@ class TestBackupAndRecovery:
         assert len(item_backups) == 1
         assert item_backups[0]["entity_type"] == "item"
 
-    def test_conflict_backup_manager_load(self, temp_backup_dir, base_time):
+    def test_conflict_backup_manager_load(self, temp_backup_dir, base_time) -> None:
         """Test ConflictBackup.load_backup()."""
         backup_mgr = ConflictBackup(temp_backup_dir)
 
@@ -1034,9 +1033,9 @@ class TestBackupAndRecovery:
             VectorClock("client-2", 1, base_time),
         )
 
-        with Path(backup_path / "local.json").open("w") as f:
+        with Path(backup_path / "local.json").open("w", encoding="utf-8") as f:
             json.dump(local_version.to_dict(), f)
-        with Path(backup_path / "remote.json").open("w") as f:
+        with Path(backup_path / "remote.json").open("w", encoding="utf-8") as f:
             json.dump(remote_version.to_dict(), f)
 
         loaded = backup_mgr.load_backup(backup_path)
@@ -1045,7 +1044,7 @@ class TestBackupAndRecovery:
         assert local.entity_id == "item-1"
         assert remote.entity_id == "item-1"
 
-    def test_conflict_backup_delete(self, temp_backup_dir):
+    def test_conflict_backup_delete(self, temp_backup_dir) -> None:
         """Test ConflictBackup.delete_backup()."""
         backup_mgr = ConflictBackup(temp_backup_dir)
 
@@ -1058,14 +1057,14 @@ class TestBackupAndRecovery:
         assert result is True
         assert not backup_path.exists()
 
-    def test_conflict_backup_delete_nonexistent(self, temp_backup_dir):
+    def test_conflict_backup_delete_nonexistent(self, temp_backup_dir) -> None:
         """Test deleting nonexistent backup returns False."""
         backup_mgr = ConflictBackup(temp_backup_dir)
         nonexistent = temp_backup_dir / "nonexistent"
         result = backup_mgr.delete_backup(nonexistent)
         assert result is False
 
-    def test_conflict_backup_manager_handles_non_directory_files(self, temp_backup_dir):
+    def test_conflict_backup_manager_handles_non_directory_files(self, temp_backup_dir) -> None:
         """Test that backup manager skips non-directory files."""
         backup_mgr = ConflictBackup(temp_backup_dir)
 
@@ -1080,7 +1079,7 @@ class TestBackupAndRecovery:
         backups = backup_mgr.list_backups()
         assert len(backups) == 0
 
-    def test_conflict_backup_manager_skips_non_backup_dirs(self, temp_backup_dir):
+    def test_conflict_backup_manager_skips_non_backup_dirs(self, temp_backup_dir) -> None:
         """Test that backup manager skips directories without conflict.json."""
         backup_mgr = ConflictBackup(temp_backup_dir)
 
@@ -1092,7 +1091,7 @@ class TestBackupAndRecovery:
         backups = backup_mgr.list_backups()
         assert len(backups) == 0
 
-    def test_conflict_backup_load_missing_files(self, temp_backup_dir):
+    def test_conflict_backup_load_missing_files(self, temp_backup_dir) -> None:
         """Test loading backup with missing files returns None."""
         backup_mgr = ConflictBackup(temp_backup_dir)
 
@@ -1114,7 +1113,7 @@ class TestBackupAndRecovery:
 class TestConflictQueries:
     """Test conflict querying and listing."""
 
-    def test_list_unresolved_basic(self, resolver, base_time):
+    def test_list_unresolved_basic(self, resolver, base_time) -> None:
         """Test listing unresolved conflicts."""
         # Create multiple conflicts
         for i in range(3):
@@ -1137,7 +1136,7 @@ class TestConflictQueries:
         unresolved = resolver.list_unresolved()
         assert len(unresolved) == 3
 
-    def test_list_unresolved_by_type(self, resolver, base_time):
+    def test_list_unresolved_by_type(self, resolver, base_time) -> None:
         """Test filtering unresolved by entity type."""
         # Create item conflict
         item_local = EntityVersion(
@@ -1180,7 +1179,7 @@ class TestConflictQueries:
         assert len(items) == 1
         assert len(projects) == 1
 
-    def test_get_conflict_by_id(self, resolver, base_time):
+    def test_get_conflict_by_id(self, resolver, base_time) -> None:
         """Test retrieving conflict by ID."""
         local = EntityVersion(
             "item-1",
@@ -1202,12 +1201,12 @@ class TestConflictQueries:
         assert retrieved is not None
         assert retrieved.entity_id == "item-1"
 
-    def test_get_conflict_not_found(self, resolver):
+    def test_get_conflict_not_found(self, resolver) -> None:
         """Test retrieving nonexistent conflict returns None."""
         result = resolver.get_conflict("nonexistent-id")
         assert result is None
 
-    def test_get_conflict_stats_basic(self, resolver, base_time):
+    def test_get_conflict_stats_basic(self, resolver, base_time) -> None:
         """Test conflict statistics."""
         # Create some conflicts
         for i in range(2):
@@ -1233,13 +1232,13 @@ class TestConflictQueries:
         assert stats["total"] == 2
         assert ConflictStatus.UNRESOLVED.value in stats["by_status"]
 
-    def test_get_conflict_stats_empty(self, resolver):
+    def test_get_conflict_stats_empty(self, resolver) -> None:
         """Test stats with no conflicts."""
         stats = resolver.get_conflict_stats()
         assert stats["total"] == 0
         assert stats["by_status"] == {}
 
-    def test_conflict_query_ordering(self, resolver, base_time):
+    def test_conflict_query_ordering(self, resolver, base_time) -> None:
         """Test conflicts are returned in detected order."""
         # Create conflicts with slight delays
         for i in range(3):
@@ -1272,7 +1271,7 @@ class TestConflictQueries:
 class TestUnicodeAndContent:
     """Test handling of unicode and various content types."""
 
-    def test_unicode_titles(self, resolver, base_time):
+    def test_unicode_titles(self, resolver, base_time) -> None:
         """Test conflict with unicode titles."""
         local = EntityVersion(
             "item-1",
@@ -1291,7 +1290,7 @@ class TestUnicodeAndContent:
         conflict = resolver.detect_conflict(local, remote)
         assert conflict is not None
 
-    def test_emoji_content(self, resolver, base_time):
+    def test_emoji_content(self, resolver, base_time) -> None:
         """Test conflict with emoji content."""
         local = EntityVersion(
             "item-1",
@@ -1310,7 +1309,7 @@ class TestUnicodeAndContent:
         conflict = resolver.detect_conflict(local, remote)
         assert conflict is not None
 
-    def test_multiline_content(self, resolver, base_time):
+    def test_multiline_content(self, resolver, base_time) -> None:
         """Test conflict with multiline content."""
         local_desc = "Line 1\nLine 2\nLine 3"
         remote_desc = "Line 1\nModified Line 2\nLine 3"
@@ -1332,7 +1331,7 @@ class TestUnicodeAndContent:
         conflict = resolver.detect_conflict(local, remote)
         assert conflict is not None
 
-    def test_whitespace_only_difference(self, resolver, base_time):
+    def test_whitespace_only_difference(self, resolver, base_time) -> None:
         """Test conflict detection with whitespace differences."""
         local = EntityVersion(
             "item-1",
@@ -1352,7 +1351,7 @@ class TestUnicodeAndContent:
         # Different content = conflict
         assert conflict is not None
 
-    def test_large_content(self, resolver, base_time):
+    def test_large_content(self, resolver, base_time) -> None:
         """Test handling large content."""
         large_text = "x" * 10000
         local = EntityVersion(
@@ -1381,7 +1380,7 @@ class TestUnicodeAndContent:
 class TestUtilityFunctions:
     """Test utility functions."""
 
-    def test_format_conflict_summary_basic(self, base_time):
+    def test_format_conflict_summary_basic(self, base_time) -> None:
         """Test formatting conflict summary."""
         local = EntityVersion(
             "item-1",
@@ -1403,7 +1402,7 @@ class TestUtilityFunctions:
         assert "v2" in summary
         assert "unresolved" in summary.lower()
 
-    def test_format_conflict_summary_with_timestamps(self, base_time):
+    def test_format_conflict_summary_with_timestamps(self, base_time) -> None:
         """Test summary includes formatted timestamps."""
         local = EntityVersion(
             "item-1",
@@ -1422,7 +1421,7 @@ class TestUtilityFunctions:
         assert "Local:" in summary
         assert "Remote:" in summary
 
-    def test_compare_versions_added_fields(self, base_time):
+    def test_compare_versions_added_fields(self, base_time) -> None:
         """Test comparing versions with added fields."""
         local = EntityVersion(
             "item-1",
@@ -1439,7 +1438,7 @@ class TestUtilityFunctions:
         diff = compare_versions(local, remote)
         assert "status" in diff["added"]
 
-    def test_compare_versions_removed_fields(self, base_time):
+    def test_compare_versions_removed_fields(self, base_time) -> None:
         """Test comparing versions with removed fields."""
         local = EntityVersion(
             "item-1",
@@ -1456,7 +1455,7 @@ class TestUtilityFunctions:
         diff = compare_versions(local, remote)
         assert "priority" in diff["removed"]
 
-    def test_compare_versions_modified_fields(self, base_time):
+    def test_compare_versions_modified_fields(self, base_time) -> None:
         """Test comparing versions with modified fields."""
         local = EntityVersion(
             "item-1",
@@ -1474,7 +1473,7 @@ class TestUtilityFunctions:
         assert "title" in diff["modified"]
         assert "status" not in diff["modified"]
 
-    def test_compare_versions_complex_data(self, base_time):
+    def test_compare_versions_complex_data(self, base_time) -> None:
         """Test comparing complex nested structures."""
         local = EntityVersion(
             "item-1",
@@ -1506,7 +1505,7 @@ class TestUtilityFunctions:
 class TestIntegration:
     """Integration tests with realistic scenarios."""
 
-    def test_full_conflict_workflow(self, resolver, base_time):
+    def test_full_conflict_workflow(self, resolver, base_time) -> None:
         """Test complete conflict detection and resolution."""
         # 1. Create conflicting versions
         local = EntityVersion(
@@ -1536,7 +1535,7 @@ class TestIntegration:
         retrieved = resolver.get_conflict(conflict.id)
         assert retrieved.status == ConflictStatus.RESOLVED_AUTO
 
-    def test_multiple_conflicts_different_types(self, resolver, base_time):
+    def test_multiple_conflicts_different_types(self, resolver, base_time) -> None:
         """Test handling multiple conflicts of different entity types."""
         # Item conflict
         item_local = EntityVersion(
@@ -1603,7 +1602,7 @@ class TestIntegration:
         stats = resolver.get_conflict_stats()
         assert stats["total"] == 3
 
-    def test_sequential_conflict_resolution(self, resolver, base_time):
+    def test_sequential_conflict_resolution(self, resolver, base_time) -> None:
         """Test resolving multiple conflicts sequentially."""
         conflicts = []
         for i in range(5):
@@ -1632,7 +1631,7 @@ class TestIntegration:
         unresolved = resolver.list_unresolved()
         assert len(unresolved) == 0
 
-    def test_concurrent_changes_same_field(self, resolver, base_time):
+    def test_concurrent_changes_same_field(self, resolver, base_time) -> None:
         """Test conflict when both sides modify same field."""
         local = EntityVersion(
             "item-1",

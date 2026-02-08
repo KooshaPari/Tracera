@@ -1,5 +1,4 @@
-"""
-CLI Integration Tests.
+"""CLI Integration Tests.
 
 Tests that all major CLI command groups work correctly with lazy loading,
 shell completion, and alias system.
@@ -35,47 +34,47 @@ def cli_app():
 class TestCommandGroups:
     """Test all major command groups work with optimizations."""
 
-    def test_config_commands(self, runner, cli_app):
+    def test_config_commands(self, runner, cli_app) -> None:
         """Test config command group."""
         result = runner.invoke(cli_app, ["config", "--help"])
         assert result.exit_code == 0
         assert "config" in result.stdout.lower() or "configuration" in result.stdout.lower()
 
-    def test_project_commands(self, runner, cli_app):
+    def test_project_commands(self, runner, cli_app) -> None:
         """Test project command group."""
         result = runner.invoke(cli_app, ["project", "--help"])
         assert result.exit_code == 0
         assert "project" in result.stdout.lower()
 
-    def test_item_commands(self, runner, cli_app):
+    def test_item_commands(self, runner, cli_app) -> None:
         """Test item command group."""
         result = runner.invoke(cli_app, ["item", "--help"])
         assert result.exit_code == 0
         assert "item" in result.stdout.lower()
 
-    def test_link_commands(self, runner, cli_app):
+    def test_link_commands(self, runner, cli_app) -> None:
         """Test link command group."""
         result = runner.invoke(cli_app, ["link", "--help"])
         assert result.exit_code == 0
         assert "link" in result.stdout.lower()
 
-    def test_mcp_commands(self, runner, cli_app):
+    def test_mcp_commands(self, runner, cli_app) -> None:
         """Test MCP command group."""
         result = runner.invoke(cli_app, ["mcp", "--help"])
         assert result.exit_code == 0
         assert "mcp" in result.stdout.lower() or "model context" in result.stdout.lower()
 
-    def test_auth_commands(self, runner, cli_app):
+    def test_auth_commands(self, runner, cli_app) -> None:
         """Test auth command group if available."""
         result = runner.invoke(cli_app, ["auth", "--help"])
         # Auth might not be available in all configurations
-        assert result.exit_code in [0, 2]  # 0=success, 2=command not found
+        assert result.exit_code in {0, 2}  # 0=success, 2=command not found
 
-    def test_test_commands(self, runner, cli_app):
+    def test_test_commands(self, runner, cli_app) -> None:
         """Test test command group."""
         result = runner.invoke(cli_app, ["test", "--help"])
         # Test group might not be available
-        assert result.exit_code in [0, 2]
+        assert result.exit_code in {0, 2}
 
 
 # ============================================================
@@ -86,7 +85,7 @@ class TestCommandGroups:
 class TestLazyLoading:
     """Test that lazy loading doesn't break functionality."""
 
-    def test_lazy_loader_module_caching(self):
+    def test_lazy_loader_module_caching(self) -> None:
         """Test that lazy loader properly caches modules."""
         from tracertm.cli.performance import get_loader
 
@@ -99,7 +98,7 @@ class TestLazyLoading:
         # Should be same object (cached)
         assert mod1 is mod2
 
-    def test_lazy_loader_multiple_modules(self):
+    def test_lazy_loader_multiple_modules(self) -> None:
         """Test loading multiple modules."""
         from tracertm.cli.performance import get_loader
 
@@ -119,7 +118,7 @@ class TestLazyLoading:
         assert json_mod is not os_mod
         assert os_mod is not sys_mod
 
-    def test_lazy_loader_clear_cache(self):
+    def test_lazy_loader_clear_cache(self) -> None:
         """Test cache clearing."""
         from tracertm.cli.performance import LazyLoader
 
@@ -137,7 +136,7 @@ class TestLazyLoading:
         # Different instances but same functionality
         assert mod1.__name__ == mod2.__name__
 
-    def test_command_execution_with_lazy_loading(self, runner, cli_app):
+    def test_command_execution_with_lazy_loading(self, runner, cli_app) -> None:
         """Test that commands work with lazy loading enabled."""
         # This should trigger lazy loading of command modules
         result = runner.invoke(cli_app, ["config", "--help"])
@@ -158,7 +157,7 @@ class TestLazyLoading:
 class TestShellCompletion:
     """Test shell completion generation."""
 
-    def test_completion_install_bash(self, runner, cli_app):
+    def test_completion_install_bash(self, runner, cli_app) -> None:
         """Test bash completion can be generated."""
         # Test that completion install command exists and works
         result = runner.invoke(cli_app, ["--help"])
@@ -167,7 +166,7 @@ class TestShellCompletion:
         # Typer automatically adds completion
         # We just verify the CLI doesn't break with completion support
 
-    def test_completion_install_zsh(self):
+    def test_completion_install_zsh(self) -> None:
         """Test zsh completion installation."""
         # This is just a smoke test to ensure completion code exists
         try:
@@ -179,7 +178,7 @@ class TestShellCompletion:
         except Exception as e:
             pytest.fail(f"Completion support broken: {e}")
 
-    def test_completion_list_commands(self, runner, cli_app):
+    def test_completion_list_commands(self, runner, cli_app) -> None:
         """Test that completion can list available commands."""
         result = runner.invoke(cli_app, ["--help"])
         assert result.exit_code == 0
@@ -198,20 +197,20 @@ class TestShellCompletion:
 class TestAliasSystem:
     """Test CLI alias functionality."""
 
-    def test_mvp_shortcuts_create(self, runner, cli_app):
+    def test_mvp_shortcuts_create(self, runner, cli_app) -> None:
         """Test MVP create shortcut."""
         # This uses the direct command, not alias
         result = runner.invoke(cli_app, ["create", "--help"])
         # May or may not be implemented
-        assert result.exit_code in [0, 2]
+        assert result.exit_code in {0, 2}
 
-    def test_mvp_shortcuts_list(self, runner, cli_app):
+    def test_mvp_shortcuts_list(self, runner, cli_app) -> None:
         """Test MVP list shortcut."""
         result = runner.invoke(cli_app, ["list", "--help"])
         # May or may not be implemented
-        assert result.exit_code in [0, 2]
+        assert result.exit_code in {0, 2}
 
-    def test_command_variations(self, runner, cli_app):
+    def test_command_variations(self, runner, cli_app) -> None:
         """Test that command variations work."""
         # Test both full and short command forms
         commands_to_test = [
@@ -233,20 +232,20 @@ class TestAliasSystem:
 class TestErrorHandling:
     """Test error handling with optimizations enabled."""
 
-    def test_invalid_command_error(self, runner, cli_app):
+    def test_invalid_command_error(self, runner, cli_app) -> None:
         """Test graceful error for invalid command."""
         result = runner.invoke(cli_app, ["nonexistent-command"])
         assert result.exit_code != 0
         # Should show helpful error message
         assert len(result.stdout) > 0 or len(result.stderr if hasattr(result, "stderr") else "") > 0
 
-    def test_missing_required_args_error(self, runner, cli_app):
+    def test_missing_required_args_error(self, runner, cli_app) -> None:
         """Test error handling for missing required arguments."""
         # Try create without required args
         result = runner.invoke(cli_app, ["create"])
         assert result.exit_code != 0
 
-    def test_help_flag_always_works(self, runner, cli_app):
+    def test_help_flag_always_works(self, runner, cli_app) -> None:
         """Test that --help never fails."""
         help_commands = [
             ["--help"],
@@ -258,7 +257,7 @@ class TestErrorHandling:
         for cmd in help_commands:
             result = runner.invoke(cli_app, cmd)
             # Help should always succeed
-            assert result.exit_code in [0, 2], f"Help failed for {cmd}"
+            assert result.exit_code in {0, 2}, f"Help failed for {cmd}"
 
 
 # ============================================================
@@ -269,7 +268,7 @@ class TestErrorHandling:
 class TestPerformanceUnderLoad:
     """Test CLI performance with multiple rapid invocations."""
 
-    def test_rapid_help_invocations(self, runner, cli_app):
+    def test_rapid_help_invocations(self, runner, cli_app) -> None:
         """Test rapid successive help invocations."""
         import time
 
@@ -285,7 +284,7 @@ class TestPerformanceUnderLoad:
         # Should complete in reasonable time
         assert elapsed < 5.0, f"10 help invocations took {elapsed:.2f}s (too slow)"
 
-    def test_mixed_command_sequence(self, runner, cli_app):
+    def test_mixed_command_sequence(self, runner, cli_app) -> None:
         """Test mixed command sequence performance."""
         commands = [
             ["--help"],
@@ -317,7 +316,7 @@ class TestPerformanceUnderLoad:
 class TestCacheBehavior:
     """Test command caching behavior."""
 
-    def test_command_cache_basic(self):
+    def test_command_cache_basic(self) -> None:
         """Test basic command cache operations."""
         from tracertm.cli.performance import CommandCache
 
@@ -330,7 +329,7 @@ class TestCacheBehavior:
         # Non-existent key
         assert cache.get("nonexistent") is None
 
-    def test_command_cache_expiration(self):
+    def test_command_cache_expiration(self) -> None:
         """Test cache expiration."""
         import time
 
@@ -345,7 +344,7 @@ class TestCacheBehavior:
         time.sleep(1.1)
         assert cache.get("test_key") is None
 
-    def test_command_cache_clear(self):
+    def test_command_cache_clear(self) -> None:
         """Test cache clearing."""
         from tracertm.cli.performance import CommandCache
 
@@ -368,9 +367,8 @@ class TestCacheBehavior:
 class TestRegressionPrevention:
     """Tests to prevent performance regressions."""
 
-    def test_no_unnecessary_imports_at_startup(self):
+    def test_no_unnecessary_imports_at_startup(self) -> None:
         """Verify no heavy modules imported at startup."""
-
         # Record initial modules
         initial_modules = set(sys.modules.keys())
 
@@ -396,7 +394,7 @@ class TestRegressionPrevention:
 
         assert len(imported_heavy) == 0, f"Heavy modules imported at startup: {imported_heavy}"
 
-    def test_version_command_fast(self, runner, cli_app):
+    def test_version_command_fast(self, runner, cli_app) -> None:
         """Test that --version is consistently fast."""
         import time
 
@@ -425,7 +423,7 @@ class TestRegressionPrevention:
 class TestCrossPlatform:
     """Test CLI works across platforms."""
 
-    def test_path_handling(self):
+    def test_path_handling(self) -> None:
         """Test that path handling works on current platform."""
         from tracertm.cli.performance import CommandCache
 
@@ -433,7 +431,7 @@ class TestCrossPlatform:
         cache = CommandCache()
         assert isinstance(cache.cache_dir, Path)
 
-    def test_subprocess_compatibility(self):
+    def test_subprocess_compatibility(self) -> None:
         """Test subprocess calls work on current platform."""
         import sys
 
@@ -458,7 +456,7 @@ class TestCrossPlatform:
 class TestIntegrationSmoke:
     """Smoke tests for CLI integration."""
 
-    def test_full_startup_sequence(self, runner, cli_app):
+    def test_full_startup_sequence(self, runner, cli_app) -> None:
         """Test complete startup sequence."""
         # Simulate user discovering CLI
         steps = [
@@ -471,7 +469,7 @@ class TestIntegrationSmoke:
             result = runner.invoke(cli_app, cmd)
             assert result.exit_code == 0, f"Failed: {description}"
 
-    def test_error_recovery(self, runner, cli_app):
+    def test_error_recovery(self, runner, cli_app) -> None:
         """Test CLI recovers from errors gracefully."""
         # Invalid command
         result1 = runner.invoke(cli_app, ["invalid"])
@@ -481,7 +479,7 @@ class TestIntegrationSmoke:
         result2 = runner.invoke(cli_app, ["--help"])
         assert result2.exit_code == 0
 
-    def test_all_command_groups_loadable(self, runner, cli_app):
+    def test_all_command_groups_loadable(self, runner, cli_app) -> None:
         """Test all command groups can be loaded."""
         command_groups = [
             "config",

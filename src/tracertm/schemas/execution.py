@@ -1,5 +1,4 @@
-"""
-Pydantic schemas for Execution API.
+"""Pydantic schemas for Execution API.
 
 Covers executions, artifacts, codex agent interactions, and environment config.
 """

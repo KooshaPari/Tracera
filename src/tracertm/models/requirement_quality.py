@@ -1,6 +1,4 @@
-"""
-Requirement Quality model for ISO 29148 analysis and derived metrics.
-"""
+"""Requirement Quality model for ISO 29148 analysis and derived metrics."""
 
 from datetime import datetime
 from typing import Any
@@ -15,8 +13,7 @@ from .base import Base, TimestampMixin, generate_uuid
 
 
 class RequirementQuality(Base, TimestampMixin):
-    """
-    ISO 29148 Requirement Quality Analysis with derived metrics.
+    """ISO 29148 Requirement Quality Analysis with derived metrics.
 
     Tracks:
     - Quality dimensions (unambiguity, completeness, verifiability, etc.)
@@ -38,7 +35,7 @@ class RequirementQuality(Base, TimestampMixin):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     item_id: Mapped[str] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("items.id", ondelete="CASCADE"), nullable=False, unique=True
+        UUID(as_uuid=True), ForeignKey("items.id", ondelete="CASCADE"), nullable=False, unique=True,
     )
     project_id: Mapped[str] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
 

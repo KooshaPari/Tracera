@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Database utilities for development.
+"""Database utilities for development.
 
 Provides helper functions for database operations, migrations,
 and data management during development.
@@ -61,8 +60,7 @@ def get_connection(autocommit: bool = False):
 def execute_sql_file(filepath: Path) -> bool:
     """Execute SQL file."""
     try:
-        with Path(filepath).open() as f:
-            sql = f.read()
+        sql = Path(filepath).read_text(encoding="utf-8")
 
         conn = get_connection(autocommit=True)
         cursor = conn.cursor()
@@ -70,8 +68,7 @@ def execute_sql_file(filepath: Path) -> bool:
         cursor.close()
         conn.close()
         return True
-    except Exception as e:
-        print(f"Error executing SQL file: {e}")
+    except Exception:
         return False
 
 
@@ -115,8 +112,7 @@ def truncate_table(table_name: str, cascade: bool = False) -> bool:
         cursor.close()
         conn.close()
         return True
-    except Exception as e:
-        print(f"Error truncating table: {e}")
+    except Exception:
         return False
 
 
@@ -130,16 +126,11 @@ def run_migrations(direction: str = "up") -> bool:
         elif direction == "down":
             result = subprocess.run(["alembic", "downgrade", "-1"], cwd=backend_dir, capture_output=True, text=True)
         else:
-            print(f"Invalid direction: {direction}")
             return False
 
-        if result.returncode == 0:
-            return True
-        print(f"Migration failed: {result.stderr}")
-        return False
+        return result.returncode == 0
 
-    except Exception as e:
-        print(f"Error running migrations: {e}")
+    except Exception:
         return False
 
 
@@ -194,11 +185,9 @@ def backup_database(backup_dir: Path | None = None) -> Path | None:
 
         if result.returncode == 0:
             return backup_file
-        print(f"Backup failed: {result.stderr}")
         return None
 
-    except Exception as e:
-        print(f"Error creating backup: {e}")
+    except Exception:
         return None
 
 
@@ -230,11 +219,7 @@ def restore_database(backup_file: Path) -> bool:
             text=True,
         )
 
-        if result.returncode == 0:
-            return True
-        print(f"Restore failed: {result.stderr}")
-        return False
+        return result.returncode == 0
 
-    except Exception as e:
-        print(f"Error restoring database: {e}")
+    except Exception:
         return False

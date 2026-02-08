@@ -10,6 +10,7 @@ These are lean, token-efficient versions of item tools that:
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import uuid
 from datetime import UTC, datetime
 from typing import Any, TypedDict
@@ -62,7 +63,7 @@ def _apply_item_updates_optimized(item: Item, opts: UpdateItemOptionsOptimized) 
     for key, attr, transform in (
         ("title", "title", lambda value: value),
         ("description", "description", lambda value: value),
-        ("status", "status", lambda value: str(value)),
+        ("status", "status", str),
     ):
         value = opts.get(key)
         if value is not None:
@@ -70,10 +71,8 @@ def _apply_item_updates_optimized(item: Item, opts: UpdateItemOptionsOptimized) 
 
     priority = opts.get("priority")
     if priority is not None:
-        try:
+        with contextlib.suppress(ValueError, TypeError):
             item.priority = int(priority)
-        except (ValueError, TypeError):
-            pass
 
     # item.owner is read-only
     metadata = opts.get("metadata")

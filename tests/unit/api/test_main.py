@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for tracertm.api.main module.
+"""Comprehensive tests for tracertm.api.main module.
 
 Tests FastAPI application setup, endpoints, middleware, and error handling.
 Coverage target: 80%+ of 59 statements
@@ -45,7 +44,7 @@ def client(mock_config_manager, mock_db_connection):
 class TestAppInitialization:
     """Test FastAPI application initialization and configuration."""
 
-    def test_app_metadata(self):
+    def test_app_metadata(self) -> None:
         """Test app has correct metadata."""
         from tracertm.api.main import app
 
@@ -53,7 +52,7 @@ class TestAppInitialization:
         assert app.description == "Traceability Requirements Tracking Management API"
         assert app.version == "1.0.0"
 
-    def test_cors_middleware_configured(self):
+    def test_cors_middleware_configured(self) -> None:
         """Test CORS middleware is properly configured."""
         from tracertm.api.main import app
 
@@ -75,7 +74,7 @@ class TestAppInitialization:
 class TestHealthCheckEndpoint:
     """Test health check endpoint functionality."""
 
-    def test_health_check_success(self, client):
+    def test_health_check_success(self, client) -> None:
         """Test health check returns correct status."""
         response = client.get("/health")
 
@@ -85,7 +84,7 @@ class TestHealthCheckEndpoint:
         assert data["version"] == "1.0.0"
         assert data["service"] == "TraceRTM API"
 
-    def test_health_check_response_format(self, client):
+    def test_health_check_response_format(self, client) -> None:
         """Test health check response has expected structure."""
         response = client.get("/health")
         data = response.json()
@@ -100,7 +99,7 @@ class TestDatabaseDependency:
     """Test database session dependency injection."""
 
     @pytest.mark.asyncio
-    async def test_get_db_success(self):
+    async def test_get_db_success(self) -> None:
         """Test get_db creates and yields session successfully."""
         from tracertm.api.main import get_db
 
@@ -120,7 +119,7 @@ class TestDatabaseDependency:
 
                 # Execute generator
                 gen = get_db()
-                yielded_session = await gen.__anext__()
+                yielded_session = await anext(gen)
 
                 # Assertions
                 assert yielded_session == session
@@ -128,13 +127,13 @@ class TestDatabaseDependency:
 
                 # Cleanup
                 try:
-                    await gen.__anext__()
+                    await anext(gen)
                 except StopAsyncIteration:
                     pass
                 session.close.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_get_db_no_database_configured(self):
+    async def test_get_db_no_database_configured(self) -> None:
         """Test get_db raises HTTPException when database not configured."""
         from fastapi import HTTPException
 
@@ -149,7 +148,7 @@ class TestDatabaseDependency:
             # Should raise HTTPException
             gen = get_db()
             with pytest.raises(HTTPException) as exc_info:
-                await gen.__anext__()
+                await anext(gen)
 
             assert exc_info.value.status_code == 500
             assert "Database not configured" in exc_info.value.detail
@@ -159,7 +158,7 @@ class TestItemsEndpoints:
     """Test /api/v1/items endpoints."""
 
     @pytest.mark.asyncio
-    async def test_list_items_success(self, client):
+    async def test_list_items_success(self, client) -> None:
         """Test listing items returns correct data."""
         mock_items = [
             MagicMock(id="item-1", title="Test Item 1", view="FEATURE", status="todo"),
@@ -181,7 +180,7 @@ class TestItemsEndpoints:
             assert data["items"][0]["title"] == "Test Item 1"
 
     @pytest.mark.asyncio
-    async def test_list_items_pagination(self, client):
+    async def test_list_items_pagination(self, client) -> None:
         """Test items list respects skip and limit parameters."""
         mock_items = [MagicMock(id=f"item-{i}", title=f"Item {i}", view="FEATURE", status="todo") for i in range(10)]
 
@@ -199,7 +198,7 @@ class TestItemsEndpoints:
             assert data["items"][0]["id"] == "item-2"  # Skipped 2
 
     @pytest.mark.asyncio
-    async def test_get_item_success(self, client):
+    async def test_get_item_success(self, client) -> None:
         """Test getting single item by ID."""
         from datetime import datetime
 
@@ -229,7 +228,7 @@ class TestItemsEndpoints:
             assert "updated_at" in data
 
     @pytest.mark.asyncio
-    async def test_get_item_not_found(self, client):
+    async def test_get_item_not_found(self, client) -> None:
         """Test getting non-existent item returns 404."""
         with patch("tracertm.repositories.item_repository.ItemRepository") as mock_repo:
             repo_instance = MagicMock()
@@ -246,7 +245,7 @@ class TestLinksEndpoints:
     """Test /api/v1/links endpoints."""
 
     @pytest.mark.asyncio
-    async def test_list_links_success(self, client):
+    async def test_list_links_success(self, client) -> None:
         """Test listing links returns correct data."""
         mock_links = [
             MagicMock(id="link-1", source_item_id="item-1", target_item_id="item-2", link_type="implements"),
@@ -271,10 +270,10 @@ class TestAnalysisEndpoints:
     """Test /api/v1/analysis endpoints."""
 
     @pytest.mark.asyncio
-    async def test_impact_analysis_success(self, client):
+    async def test_impact_analysis_success(self, client) -> None:
         """Test impact analysis endpoint."""
         mock_result = MagicMock(
-            root_item_id="item-1", total_affected=5, max_depth_reached=3, affected_items=["item-2", "item-3", "item-4"]
+            root_item_id="item-1", total_affected=5, max_depth_reached=3, affected_items=["item-2", "item-3", "item-4"],
         )
 
         with patch("tracertm.services.impact_analysis_service.ImpactAnalysisService") as mock_service:
@@ -291,10 +290,10 @@ class TestAnalysisEndpoints:
             assert data["max_depth"] == 3
 
     @pytest.mark.asyncio
-    async def test_cycle_detection_success(self, client):
+    async def test_cycle_detection_success(self, client) -> None:
         """Test cycle detection endpoint."""
         mock_result = MagicMock(
-            has_cycles=True, total_cycles=2, severity="high", affected_items={"item-1", "item-2", "item-3"}
+            has_cycles=True, total_cycles=2, severity="high", affected_items={"item-1", "item-2", "item-3"},
         )
 
         with patch("tracertm.services.cycle_detection_service.CycleDetectionService") as mock_service:
@@ -311,7 +310,7 @@ class TestAnalysisEndpoints:
             assert data["severity"] == "high"
 
     @pytest.mark.asyncio
-    async def test_shortest_path_success(self, client):
+    async def test_shortest_path_success(self, client) -> None:
         """Test shortest path endpoint."""
         mock_result = MagicMock(
             exists=True,
@@ -337,13 +336,13 @@ class TestAnalysisEndpoints:
 class TestErrorHandling:
     """Test error handling and edge cases."""
 
-    def test_invalid_endpoint_returns_404(self, client):
+    def test_invalid_endpoint_returns_404(self, client) -> None:
         """Test accessing invalid endpoint returns 404."""
         response = client.get("/api/v1/invalid-endpoint")
         assert response.status_code == 404
 
     @pytest.mark.asyncio
-    async def test_database_error_handling(self, client):
+    async def test_database_error_handling(self, client) -> None:
         """Test database errors are handled gracefully."""
         with patch("tracertm.repositories.item_repository.ItemRepository") as mock_repo:
             repo_instance = MagicMock()

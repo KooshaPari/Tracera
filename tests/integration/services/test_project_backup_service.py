@@ -1,5 +1,4 @@
-"""
-ProjectBackupService Comprehensive Test Coverage Expansion.
+"""ProjectBackupService Comprehensive Test Coverage Expansion.
 
 This module provides 50+ additional test cases for ProjectBackupService,
 expanding coverage for:
@@ -92,7 +91,7 @@ def sample_project(sync_db_session):
 class TestBackupProjectMetadataPreservation:
     """Test metadata preservation in backup operations."""
 
-    def test_backup_preserves_project_metadata(self, sync_db_session):
+    def test_backup_preserves_project_metadata(self, sync_db_session) -> None:
         """Test that backup preserves project metadata."""
         project = Project(
             id="meta-proj",
@@ -109,7 +108,7 @@ class TestBackupProjectMetadataPreservation:
         assert backup["project"]["metadata"]["custom_key"] == "custom_value"
         assert backup["project"]["metadata"]["version"] == "1.0"
 
-    def test_backup_includes_item_metadata(self, sync_db_session):
+    def test_backup_includes_item_metadata(self, sync_db_session) -> None:
         """Test that backup includes item metadata."""
         project = Project(id="item-meta-proj", name="Item Metadata Project")
         sync_db_session.add(project)
@@ -132,7 +131,7 @@ class TestBackupProjectMetadataPreservation:
         assert len(backup["items"]) == 1
         assert backup["items"][0]["metadata"]["custom_field"] == "custom_value"
 
-    def test_backup_includes_link_metadata(self, sync_db_session):
+    def test_backup_includes_link_metadata(self, sync_db_session) -> None:
         """Test that backup includes link metadata."""
         project = Project(id="link-meta-proj", name="Link Metadata Project")
         sync_db_session.add(project)
@@ -160,7 +159,7 @@ class TestBackupProjectMetadataPreservation:
         assert len(backup["links"]) == 1
         assert backup["links"][0]["metadata"]["priority"] == "high"
 
-    def test_backup_includes_deleted_items_filtering(self, sync_db_session):
+    def test_backup_includes_deleted_items_filtering(self, sync_db_session) -> None:
         """Test that backup excludes soft-deleted items."""
         project = Project(id="delete-test-proj", name="Delete Test")
         sync_db_session.add(project)
@@ -168,7 +167,7 @@ class TestBackupProjectMetadataPreservation:
 
         # Active item
         item1 = Item(
-            id="active-item", project_id="delete-test-proj", title="Active", view="FEATURE", item_type="feature"
+            id="active-item", project_id="delete-test-proj", title="Active", view="FEATURE", item_type="feature",
         )
         # Soft-deleted item
         item2 = Item(
@@ -188,7 +187,7 @@ class TestBackupProjectMetadataPreservation:
         assert len(backup["items"]) == 1
         assert backup["items"][0]["id"] == "active-item"
 
-    def test_backup_date_format_is_iso(self, sync_db_session):
+    def test_backup_date_format_is_iso(self, sync_db_session) -> None:
         """Test that backup_date is in ISO format."""
         project = Project(id="date-test-proj", name="Date Test")
         sync_db_session.add(project)
@@ -206,7 +205,7 @@ class TestBackupProjectMetadataPreservation:
 class TestRestoreProjectWorkflows:
     """Test restore operations with various workflows."""
 
-    def test_restore_with_custom_project_name(self, sync_db_session):
+    def test_restore_with_custom_project_name(self, sync_db_session) -> None:
         """Test restore with custom project name."""
         backup_data = {
             "version": "1.0",
@@ -227,7 +226,7 @@ class TestRestoreProjectWorkflows:
         project = sync_db_session.query(Project).filter(Project.id == new_project_id).first()
         assert project.name == "Custom Name"
 
-    def test_restore_uses_backup_name_when_no_custom_name(self, sync_db_session):
+    def test_restore_uses_backup_name_when_no_custom_name(self, sync_db_session) -> None:
         """Test restore uses backup project name when no custom name provided."""
         backup_data = {
             "version": "1.0",
@@ -248,7 +247,7 @@ class TestRestoreProjectWorkflows:
         project = sync_db_session.query(Project).filter(Project.id == new_project_id).first()
         assert project.name == "Backup Name"
 
-    def test_restore_preserves_backup_metadata(self, sync_db_session):
+    def test_restore_preserves_backup_metadata(self, sync_db_session) -> None:
         """Test that restore preserves project metadata from backup."""
         backup_data = {
             "version": "1.0",
@@ -269,7 +268,7 @@ class TestRestoreProjectWorkflows:
         project = sync_db_session.query(Project).filter(Project.id == new_project_id).first()
         assert project.project_metadata["custom_field"] == "custom_value"
 
-    def test_restore_adds_restored_from_backup_metadata(self, sync_db_session):
+    def test_restore_adds_restored_from_backup_metadata(self, sync_db_session) -> None:
         """Test that restore adds 'restored_from_backup' metadata."""
         backup_data = {
             "version": "1.0",
@@ -291,7 +290,7 @@ class TestRestoreProjectWorkflows:
         assert "restored_from_backup" in project.project_metadata
         assert project.project_metadata["restored_from_backup"] == "2024-01-15T10:30:00"
 
-    def test_restore_with_parent_child_hierarchy(self, sync_db_session):
+    def test_restore_with_parent_child_hierarchy(self, sync_db_session) -> None:
         """Test restore with parent-child item relationships."""
         backup_data = {
             "version": "1.0",
@@ -341,7 +340,7 @@ class TestRestoreProjectWorkflows:
         parent = next(i for i in items if i.title == "Parent")
         assert child.parent_id == parent.id
 
-    def test_restore_preserves_links_between_items(self, sync_db_session):
+    def test_restore_preserves_links_between_items(self, sync_db_session) -> None:
         """Test restore preserves links between restored items."""
         backup_data = {
             "version": "1.0",
@@ -385,7 +384,7 @@ class TestRestoreProjectWorkflows:
                     "target_id": "item-y",
                     "type": "depends_on",
                     "metadata": {},
-                }
+                },
             ],
         }
 
@@ -396,7 +395,7 @@ class TestRestoreProjectWorkflows:
         assert len(links) == 1
         assert links[0].link_type == "depends_on"
 
-    def test_restore_updates_existing_project_with_same_name(self, sync_db_session):
+    def test_restore_updates_existing_project_with_same_name(self, sync_db_session) -> None:
         """Test that restore updates existing project with same name."""
         # Create existing project
         existing = Project(
@@ -432,7 +431,7 @@ class TestRestoreProjectWorkflows:
 class TestCloneProjectVariations:
     """Test various clone project scenarios."""
 
-    def test_clone_with_items_and_links(self, sync_db_session, sample_project):
+    def test_clone_with_items_and_links(self, sync_db_session, sample_project) -> None:
         """Test clone with both items and links included."""
         service = ProjectBackupService(sync_db_session)
 
@@ -451,7 +450,7 @@ class TestCloneProjectVariations:
         cloned_links = sync_db_session.query(Link).filter(Link.project_id == cloned_id).all()
         assert len(cloned_links) == 4
 
-    def test_clone_without_links(self, sync_db_session, sample_project):
+    def test_clone_without_links(self, sync_db_session, sample_project) -> None:
         """Test clone with items but without links."""
         service = ProjectBackupService(sync_db_session)
 
@@ -470,7 +469,7 @@ class TestCloneProjectVariations:
         cloned_links = sync_db_session.query(Link).filter(Link.project_id == cloned_id).all()
         assert len(cloned_links) == 0
 
-    def test_clone_generates_new_item_ids(self, sync_db_session, sample_project):
+    def test_clone_generates_new_item_ids(self, sync_db_session, sample_project) -> None:
         """Test that cloned items have different IDs."""
         service = ProjectBackupService(sync_db_session)
 
@@ -486,7 +485,7 @@ class TestCloneProjectVariations:
         # IDs should be different
         assert original_ids.isdisjoint(cloned_ids)
 
-    def test_clone_preserves_item_properties(self, sync_db_session):
+    def test_clone_preserves_item_properties(self, sync_db_session) -> None:
         """Test that clone preserves item properties."""
         source = Project(id="source-props", name="Source")
         sync_db_session.add(source)
@@ -519,7 +518,7 @@ class TestCloneProjectVariations:
         assert cloned_item.priority == "high"
         assert cloned_item.owner == "alice"
 
-    def test_clone_multiple_projects_sequentially(self, sync_db_session):
+    def test_clone_multiple_projects_sequentially(self, sync_db_session) -> None:
         """Test cloning multiple projects sequentially."""
         # Create two source projects
         proj1 = Project(id="multi-source-1", name="Source 1")
@@ -540,7 +539,7 @@ class TestCloneProjectVariations:
 class TestTemplateOperations:
     """Test template creation and management."""
 
-    def test_create_template_sets_metadata_correctly(self, sync_db_session):
+    def test_create_template_sets_metadata_correctly(self, sync_db_session) -> None:
         """Test that template metadata is set correctly."""
         source = Project(id="template-source", name="Source")
         sync_db_session.add(source)
@@ -553,7 +552,7 @@ class TestTemplateOperations:
         assert template.project_metadata.get("is_template") == True
         assert template.project_metadata.get("template_name") == "My Template"
 
-    def test_create_multiple_templates_from_same_source(self, sync_db_session):
+    def test_create_multiple_templates_from_same_source(self, sync_db_session) -> None:
         """Test creating multiple templates from same source."""
         proj = Project(id="tmpl-src", name="Source")
         sync_db_session.add(proj)
@@ -570,7 +569,7 @@ class TestTemplateOperations:
         assert template3_id is not None
         assert len({template1_id, template2_id, template3_id}) == 3
 
-    def test_list_templates_returns_only_templates(self, sync_db_session):
+    def test_list_templates_returns_only_templates(self, sync_db_session) -> None:
         """Test that list_templates returns only marked templates."""
         # Create regular project
         regular = Project(id="regular-proj", name="Regular")
@@ -593,7 +592,7 @@ class TestTemplateOperations:
         assert "template-proj" in template_ids
         assert "regular-proj" not in template_ids
 
-    def test_list_templates_returns_all_required_fields(self, sync_db_session):
+    def test_list_templates_returns_all_required_fields(self, sync_db_session) -> None:
         """Test that list_templates includes all required fields."""
         template = Project(
             id="complete-tmpl",
@@ -614,7 +613,7 @@ class TestTemplateOperations:
         assert "description" in tmpl
         assert "template_name" in tmpl
 
-    def test_template_can_be_cloned(self, sync_db_session):
+    def test_template_can_be_cloned(self, sync_db_session) -> None:
         """Test that a template can be used as source for cloning."""
         base_proj = Project(id="base-for-tmpl", name="Base")
         sync_db_session.add(base_proj)
@@ -634,21 +633,21 @@ class TestTemplateOperations:
 class TestErrorHandlingAndEdgeCases:
     """Test error handling and exceptional cases."""
 
-    def test_backup_nonexistent_project_raises_error(self, sync_db_session):
+    def test_backup_nonexistent_project_raises_error(self, sync_db_session) -> None:
         """Test that backing up non-existent project raises ValueError."""
         service = ProjectBackupService(sync_db_session)
 
         with pytest.raises(ValueError, match="Project not found"):
             service.backup_project("does-not-exist")
 
-    def test_clone_nonexistent_project_raises_error(self, sync_db_session):
+    def test_clone_nonexistent_project_raises_error(self, sync_db_session) -> None:
         """Test that cloning non-existent project raises error."""
         service = ProjectBackupService(sync_db_session)
 
         with pytest.raises(ValueError):
             service.clone_project("does-not-exist", "Clone Target")
 
-    def test_backup_and_restore_roundtrip_preserves_data(self, sync_db_session, sample_project):
+    def test_backup_and_restore_roundtrip_preserves_data(self, sync_db_session, sample_project) -> None:
         """Test backup-restore roundtrip with complex data."""
         service = ProjectBackupService(sync_db_session)
 
@@ -665,7 +664,7 @@ class TestErrorHandlingAndEdgeCases:
         assert restored.name == "Restored Project"
         assert len(restored_items) == 5
 
-    def test_clone_independence_from_source(self, sync_db_session):
+    def test_clone_independence_from_source(self, sync_db_session) -> None:
         """Test that cloned project is independent from source."""
         source = Project(id="clone-indep-src", name="Source")
         sync_db_session.add(source)

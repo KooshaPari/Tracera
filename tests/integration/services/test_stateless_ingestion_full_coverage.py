@@ -1,5 +1,4 @@
-"""
-Comprehensive integration tests for StatelessIngestionService.
+"""Comprehensive integration tests for StatelessIngestionService.
 
 Target: stateless_ingestion_service.py (829 LOC)
 Coverage: 100% with 83+ tests
@@ -28,14 +27,14 @@ from tracertm.services.stateless_ingestion_service import StatelessIngestionServ
 class TestMarkdownIngestion:
     """Tests for Markdown file ingestion."""
 
-    def test_ingest_markdown_basic(self, db_session):
+    def test_ingest_markdown_basic(self, db_session) -> None:
         """Test basic markdown ingestion with simple structure."""
         content = """# Epic: User Management
 ## Feature: User Registration
 ### Story: Email Validation
 Content about email validation."""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -59,7 +58,7 @@ Content about email validation."""
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_markdown_with_frontmatter(self, db_session):
+    def test_ingest_markdown_with_frontmatter(self, db_session) -> None:
         """Test markdown with YAML frontmatter."""
         content = """---
 project: API Gateway
@@ -75,7 +74,7 @@ type_mapping:
 ## Authentication Endpoints
 Content here."""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -93,7 +92,7 @@ Content here."""
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_markdown_with_links(self, db_session):
+    def test_ingest_markdown_with_links(self, db_session) -> None:
         """Test markdown with internal links."""
         content = """# Main
 ## Section A
@@ -102,7 +101,7 @@ See [Section B](#section-b) for details.
 ## Section B
 Content for section B."""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -117,7 +116,7 @@ Content for section B."""
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_markdown_dry_run(self, db_session):
+    def test_ingest_markdown_dry_run(self, db_session) -> None:
         """Test markdown ingestion in dry-run mode."""
         content = """# Epic
 ## Feature
@@ -125,7 +124,7 @@ Content for section B."""
 ### Story
 [Link](http://example.com)"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -145,9 +144,9 @@ Content for section B."""
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_markdown_invalid_extension(self, db_session):
+    def test_ingest_markdown_invalid_extension(self, db_session) -> None:
         """Test markdown ingestion with invalid file extension."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".txt", delete=False) as f:
             f.write("# Test")
             f.flush()
             file_path = f.name
@@ -159,13 +158,13 @@ Content for section B."""
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_markdown_file_not_found(self, db_session):
+    def test_ingest_markdown_file_not_found(self, db_session) -> None:
         """Test markdown ingestion with non-existent file."""
         service = StatelessIngestionService(db_session)
         with pytest.raises(FileNotFoundError):
             service.ingest_markdown("/nonexistent/file.md")
 
-    def test_ingest_markdown_deep_hierarchy(self, db_session):
+    def test_ingest_markdown_deep_hierarchy(self, db_session) -> None:
         """Test markdown with deep header hierarchy."""
         content = """# H1
 ## H2
@@ -175,7 +174,7 @@ Content for section B."""
 ###### H6
 More content."""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -194,7 +193,7 @@ More content."""
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_markdown_with_custom_type_mapping(self, db_session):
+    def test_ingest_markdown_with_custom_type_mapping(self, db_session) -> None:
         """Test markdown with custom type mapping in frontmatter."""
         content = """---
 type_mapping:
@@ -207,7 +206,7 @@ type_mapping:
 ## Design 2
 ### Implementation 3"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -226,7 +225,7 @@ type_mapping:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_markdown_empty_content(self, db_session):
+    def test_ingest_markdown_empty_content(self, db_session) -> None:
         """Test markdown with empty sections."""
         content = """# Header 1
 
@@ -236,7 +235,7 @@ type_mapping:
 ### Header 3
 Content after gaps."""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -251,7 +250,7 @@ Content after gaps."""
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_markdown_no_frontmatter(self, db_session):
+    def test_ingest_markdown_no_frontmatter(self, db_session) -> None:
         """Test markdown without frontmatter."""
         content = """# Project Title
 ## First Section
@@ -260,7 +259,7 @@ Content here.
 ## Second Section
 More content."""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -275,7 +274,7 @@ More content."""
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_markdown_with_existing_project(self, db_session):
+    def test_ingest_markdown_with_existing_project(self, db_session) -> None:
         """Test markdown ingestion with existing project."""
         # Create project first
         project = Project(id="existing-proj", name="Existing Project")
@@ -285,7 +284,7 @@ More content."""
         content = """# New Feature
 ## Sub Feature"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -301,11 +300,11 @@ More content."""
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_markdown_invalid_project_id(self, db_session):
+    def test_ingest_markdown_invalid_project_id(self, db_session) -> None:
         """Test markdown ingestion with non-existent project ID."""
         content = """# Test"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -317,11 +316,11 @@ More content."""
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_markdown_validate_disabled(self, db_session):
+    def test_ingest_markdown_validate_disabled(self, db_session) -> None:
         """Test markdown ingestion with validation disabled."""
         content = """# Test Header"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -334,7 +333,7 @@ More content."""
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_markdown_section_content_extraction(self, db_session):
+    def test_ingest_markdown_section_content_extraction(self, db_session) -> None:
         """Test extraction of section content after header."""
         content = """# Section
 Paragraph 1.
@@ -343,7 +342,7 @@ Paragraph 2.
 ## Subsection
 Subsection content."""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -364,7 +363,7 @@ Subsection content."""
 class TestMDXIngestion:
     """Tests for MDX file ingestion."""
 
-    def test_ingest_mdx_basic(self, db_session):
+    def test_ingest_mdx_basic(self, db_session) -> None:
         """Test basic MDX ingestion with JSX components."""
         content = """---
 project: React App
@@ -377,7 +376,7 @@ project: React App
 ## Alert Component
 <Alert severity="error">Error message</Alert>"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".mdx", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".mdx", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -400,13 +399,13 @@ project: React App
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_mdx_dry_run(self, db_session):
+    def test_ingest_mdx_dry_run(self, db_session) -> None:
         """Test MDX dry-run mode."""
         content = """# Header
 <Component>Content</Component>
 <Another/>"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".mdx", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".mdx", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -421,9 +420,9 @@ project: React App
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_mdx_invalid_extension(self, db_session):
+    def test_ingest_mdx_invalid_extension(self, db_session) -> None:
         """Test MDX with invalid file extension."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write("# Test")
             f.flush()
             file_path = f.name
@@ -435,13 +434,13 @@ project: React App
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_mdx_file_not_found(self, db_session):
+    def test_ingest_mdx_file_not_found(self, db_session) -> None:
         """Test MDX with non-existent file."""
         service = StatelessIngestionService(db_session)
         with pytest.raises(FileNotFoundError):
             service.ingest_mdx("/nonexistent/file.mdx")
 
-    def test_ingest_mdx_multiple_components(self, db_session):
+    def test_ingest_mdx_multiple_components(self, db_session) -> None:
         """Test MDX with multiple JSX components."""
         content = """# Components
 
@@ -449,7 +448,7 @@ project: React App
 <Card title="Card 2">Content 2</Card>
 <Badge count="5">Badge</Badge>"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".mdx", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".mdx", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -470,7 +469,7 @@ project: React App
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_mdx_with_existing_project(self, db_session):
+    def test_ingest_mdx_with_existing_project(self, db_session) -> None:
         """Test MDX ingestion with existing project."""
         project = Project(id="mdx-proj", name="MDX Project")
         db_session.add(project)
@@ -478,7 +477,7 @@ project: React App
 
         content = """<Button>Test</Button>"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".mdx", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".mdx", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -501,7 +500,7 @@ project: React App
 class TestYAMLIngestion:
     """Tests for YAML file ingestion."""
 
-    def test_ingest_yaml_generic(self, db_session):
+    def test_ingest_yaml_generic(self, db_session) -> None:
         """Test generic YAML ingestion."""
         content = """name: MyProject
 description: Test project
@@ -511,7 +510,7 @@ sections:
   frontend:
     description: Frontend app"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -526,7 +525,7 @@ sections:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_openapi_spec(self, db_session):
+    def test_ingest_yaml_openapi_spec(self, db_session) -> None:
         """Test OpenAPI/Swagger specification ingestion."""
         content = """openapi: 3.0.0
 info:
@@ -551,7 +550,7 @@ components:
         name:
           type: string"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -573,7 +572,7 @@ components:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_openapi_with_request_body(self, db_session):
+    def test_ingest_yaml_openapi_with_request_body(self, db_session) -> None:
         """Test OpenAPI spec with request body schema references."""
         content = """openapi: 3.0.0
 info:
@@ -602,7 +601,7 @@ components:
         name:
           type: string"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -617,7 +616,7 @@ components:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_openapi_dry_run(self, db_session):
+    def test_ingest_yaml_openapi_dry_run(self, db_session) -> None:
         """Test OpenAPI spec dry-run mode."""
         content = """openapi: 3.0.0
 info:
@@ -638,7 +637,7 @@ components:
     Item:
       type: object"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -654,7 +653,7 @@ components:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_bmad_format(self, db_session):
+    def test_ingest_yaml_bmad_format(self, db_session) -> None:
         """Test BMad format YAML ingestion."""
         content = """project:
   name: Requirements Project
@@ -685,7 +684,7 @@ traceability:
     rule: "Must implement password reset for auth"
 """
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -700,7 +699,7 @@ traceability:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_bmad_dry_run(self, db_session):
+    def test_ingest_yaml_bmad_dry_run(self, db_session) -> None:
         """Test BMad format dry-run mode."""
         content = """requirements:
   - id: REQ-001
@@ -710,7 +709,7 @@ traceability:
   - id: REQ-003
     title: Feature 3"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -725,13 +724,13 @@ traceability:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_invalid_yaml(self, db_session):
+    def test_ingest_yaml_invalid_yaml(self, db_session) -> None:
         """Test YAML ingestion with invalid YAML syntax."""
         content = """invalid: yaml: syntax:
   - list without proper format
     - bad indentation"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -743,13 +742,13 @@ traceability:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_non_dict_root(self, db_session):
+    def test_ingest_yaml_non_dict_root(self, db_session) -> None:
         """Test YAML with non-dictionary root."""
         content = """- item1
 - item2
 - item3"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -761,7 +760,7 @@ traceability:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_generic_nested_structure(self, db_session):
+    def test_ingest_yaml_generic_nested_structure(self, db_session) -> None:
         """Test generic YAML with deeply nested structures."""
         content = """name: NestedProject
 level1:
@@ -776,7 +775,7 @@ level1:
     - title: Item 2
       description: Second item"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -791,9 +790,9 @@ level1:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_invalid_extension(self, db_session):
+    def test_ingest_yaml_invalid_extension(self, db_session) -> None:
         """Test YAML with invalid file extension."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".txt", delete=False) as f:
             f.write("name: test")
             f.flush()
             file_path = f.name
@@ -805,13 +804,13 @@ level1:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_file_not_found(self, db_session):
+    def test_ingest_yaml_file_not_found(self, db_session) -> None:
         """Test YAML with non-existent file."""
         service = StatelessIngestionService(db_session)
         with pytest.raises(FileNotFoundError):
             service.ingest_yaml("/nonexistent/file.yaml")
 
-    def test_ingest_yaml_with_existing_project(self, db_session):
+    def test_ingest_yaml_with_existing_project(self, db_session) -> None:
         """Test YAML ingestion with existing project."""
         project = Project(id="yaml-proj", name="YAML Project")
         db_session.add(project)
@@ -822,7 +821,7 @@ items:
   item1:
     description: Test"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -835,7 +834,7 @@ items:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_generic_dry_run(self, db_session):
+    def test_ingest_yaml_generic_dry_run(self, db_session) -> None:
         """Test generic YAML dry-run mode."""
         content = """name: Project
 section1:
@@ -846,7 +845,7 @@ section2:
     - item1
     - item2"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -861,7 +860,7 @@ section2:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_bmad_alternative_structure(self, db_session):
+    def test_ingest_yaml_bmad_alternative_structure(self, db_session) -> None:
         """Test BMad format with alternative structure."""
         content = """spec:
   requirements:
@@ -874,7 +873,7 @@ section2:
       target: R-2
       type: traces_to"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -885,14 +884,14 @@ section2:
 
             # The alternative structure uses "spec" wrapper which may be detected as generic YAML
             # Both bmad and yaml formats are acceptable
-            assert result["format"] in ["bmad", "yaml"]
+            assert result["format"] in {"bmad", "yaml"}
             items = db_session.query(Item).all()
             # Should have created items
             assert len(items) >= 2
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_bmad_with_various_types(self, db_session):
+    def test_ingest_yaml_bmad_with_various_types(self, db_session) -> None:
         """Test BMad with different requirement types."""
         content = """project:
   name: Multi-Type Project
@@ -914,7 +913,7 @@ requirements:
     title: Login Endpoint
     type: endpoint"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -934,24 +933,24 @@ requirements:
 class TestErrorHandling:
     """Tests for error handling and edge cases."""
 
-    def test_markdown_file_not_found(self, db_session):
+    def test_markdown_file_not_found(self, db_session) -> None:
         """Test error handling for missing markdown file."""
         service = StatelessIngestionService(db_session)
         with pytest.raises(FileNotFoundError):
             service.ingest_markdown("/missing/file.md")
 
-    def test_yaml_file_not_found(self, db_session):
+    def test_yaml_file_not_found(self, db_session) -> None:
         """Test error handling for missing YAML file."""
         service = StatelessIngestionService(db_session)
         with pytest.raises(FileNotFoundError):
             service.ingest_yaml("/missing/file.yaml")
 
-    def test_invalid_yaml_syntax(self, db_session):
+    def test_invalid_yaml_syntax(self, db_session) -> None:
         """Test YAML with invalid syntax."""
         content = """invalid: [syntax
   broken list"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -963,11 +962,11 @@ class TestErrorHandling:
         finally:
             Path(file_path).unlink()
 
-    def test_markdown_with_invalid_project_id(self, db_session):
+    def test_markdown_with_invalid_project_id(self, db_session) -> None:
         """Test markdown with non-existent project ID."""
         content = """# Test"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -983,7 +982,7 @@ class TestErrorHandling:
 class TestDataTransformation:
     """Tests for data transformation and processing."""
 
-    def test_markdown_item_metadata(self, db_session):
+    def test_markdown_item_metadata(self, db_session) -> None:
         """Test that markdown items have proper metadata."""
         content = """---
 priority: high
@@ -992,7 +991,7 @@ team: backend
 
 # Feature"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1009,7 +1008,7 @@ team: backend
         finally:
             Path(file_path).unlink()
 
-    def test_openapi_schema_item_metadata(self, db_session):
+    def test_openapi_schema_item_metadata(self, db_session) -> None:
         """Test OpenAPI schema items have complete metadata."""
         content = """openapi: 3.0.0
 info:
@@ -1023,7 +1022,7 @@ components:
         id:
           type: integer"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1041,7 +1040,7 @@ components:
         finally:
             Path(file_path).unlink()
 
-    def test_bmad_requirement_metadata(self, db_session):
+    def test_bmad_requirement_metadata(self, db_session) -> None:
         """Test BMad requirement items have complete metadata."""
         content = """project:
   name: Project
@@ -1053,7 +1052,7 @@ requirements:
     owner: alice
     tags: [feature, important]"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1076,17 +1075,16 @@ requirements:
 class TestLargeFileHandling:
     """Tests for handling large files."""
 
-    def test_large_markdown_file(self, db_session):
+    def test_large_markdown_file(self, db_session) -> None:
         """Test ingestion of large markdown file."""
         # Generate large markdown content
         lines = ["# Main"]
         for i in range(100):
-            lines.append(f"## Section {i}")
-            lines.append(f"Content for section {i}")
+            lines.extend((f"## Section {i}", f"Content for section {i}"))
 
         content = "\n".join(lines)
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1101,7 +1099,7 @@ class TestLargeFileHandling:
         finally:
             Path(file_path).unlink()
 
-    def test_large_yaml_structure(self, db_session):
+    def test_large_yaml_structure(self, db_session) -> None:
         """Test ingestion of large YAML structure."""
         yaml_dict = {"name": "LargeProject"}
         for i in range(50):
@@ -1109,7 +1107,7 @@ class TestLargeFileHandling:
 
         content = yaml.dump(yaml_dict)
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1124,7 +1122,7 @@ class TestLargeFileHandling:
         finally:
             Path(file_path).unlink()
 
-    def test_large_openapi_spec(self, db_session):
+    def test_large_openapi_spec(self, db_session) -> None:
         """Test ingestion of large OpenAPI specification."""
         spec: dict[str, Any] = {
             "openapi": "3.0.0",
@@ -1143,7 +1141,7 @@ class TestLargeFileHandling:
 
         content = yaml.dump(spec)
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1161,7 +1159,7 @@ class TestLargeFileHandling:
 class TestDuplicateDetection:
     """Tests for duplicate detection and handling."""
 
-    def test_markdown_with_duplicate_headers(self, db_session):
+    def test_markdown_with_duplicate_headers(self, db_session) -> None:
         """Test markdown with duplicate header names."""
         content = """# Feature
 ## Task
@@ -1170,7 +1168,7 @@ Details about task.
 ## Task
 Different details."""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1188,7 +1186,7 @@ Different details."""
         finally:
             Path(file_path).unlink()
 
-    def test_bmad_with_duplicate_ids(self, db_session):
+    def test_bmad_with_duplicate_ids(self, db_session) -> None:
         """Test BMad format handling of duplicate IDs."""
         content = """project:
   name: Project
@@ -1199,7 +1197,7 @@ requirements:
   - id: REQ-002
     title: Second"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1219,7 +1217,7 @@ requirements:
 class TestHierarchicalRelationships:
     """Tests for hierarchical relationships and parent-child links."""
 
-    def test_markdown_parent_child_relationships(self, db_session):
+    def test_markdown_parent_child_relationships(self, db_session) -> None:
         """Test markdown creates proper parent-child relationships."""
         content = """# Epic
 ## Feature 1
@@ -1229,7 +1227,7 @@ Content
 ### Story 2
 Content"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1249,7 +1247,7 @@ Content"""
         finally:
             Path(file_path).unlink()
 
-    def test_bmad_parent_child_relationships(self, db_session):
+    def test_bmad_parent_child_relationships(self, db_session) -> None:
         """Test BMad parent-child relationships."""
         content = """project:
   name: Project
@@ -1263,7 +1261,7 @@ requirements:
     parent_id: REQ-001
     depends_on: [REQ-001]"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1286,7 +1284,7 @@ requirements:
         finally:
             Path(file_path).unlink()
 
-    def test_generic_yaml_nested_hierarchy(self, db_session):
+    def test_generic_yaml_nested_hierarchy(self, db_session) -> None:
         """Test generic YAML creates proper hierarchy."""
         content = """name: Project
 section1:
@@ -1296,7 +1294,7 @@ section1:
     item1: value
     item2: value"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1315,11 +1313,11 @@ section1:
 class TestViewAssignment:
     """Tests for correct view assignment."""
 
-    def test_markdown_view_assignment(self, db_session):
+    def test_markdown_view_assignment(self, db_session) -> None:
         """Test markdown items get correct view."""
         content = """# Feature"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1333,7 +1331,7 @@ class TestViewAssignment:
         finally:
             Path(file_path).unlink()
 
-    def test_openapi_view_assignment(self, db_session):
+    def test_openapi_view_assignment(self, db_session) -> None:
         """Test OpenAPI items get API view."""
         content = """openapi: 3.0.0
 info:
@@ -1347,7 +1345,7 @@ components:
     User:
       type: object"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1361,7 +1359,7 @@ components:
         finally:
             Path(file_path).unlink()
 
-    def test_bmad_view_assignment_by_type(self, db_session):
+    def test_bmad_view_assignment_by_type(self, db_session) -> None:
         """Test BMad items get correct view based on type."""
         content = """project:
   name: Project
@@ -1383,7 +1381,7 @@ requirements:
     title: API
     type: endpoint"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1403,7 +1401,7 @@ requirements:
 class TestLinkCreation:
     """Tests for link creation and relationships."""
 
-    def test_openapi_endpoint_to_schema_links(self, db_session):
+    def test_openapi_endpoint_to_schema_links(self, db_session) -> None:
         """Test links created between endpoints and schemas."""
         content = """openapi: 3.0.0
 info:
@@ -1429,7 +1427,7 @@ components:
     User:
       type: object"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1445,7 +1443,7 @@ components:
         finally:
             Path(file_path).unlink()
 
-    def test_bmad_traceability_links(self, db_session):
+    def test_bmad_traceability_links(self, db_session) -> None:
         """Test BMad traceability links are created."""
         content = """project:
   name: Project
@@ -1466,7 +1464,7 @@ traceability:
     target: TEST-001
     type: tested_by"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1481,7 +1479,7 @@ traceability:
         finally:
             Path(file_path).unlink()
 
-    def test_markdown_internal_link_resolution(self, db_session):
+    def test_markdown_internal_link_resolution(self, db_session) -> None:
         """Test markdown internal link resolution."""
         content = """# Main
 Content.
@@ -1492,7 +1490,7 @@ Reference to [Main](#main) section.
 ## Other
 More content."""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1510,7 +1508,7 @@ More content."""
 class TestStatusHandling:
     """Tests for status field handling."""
 
-    def test_markdown_status_from_frontmatter(self, db_session):
+    def test_markdown_status_from_frontmatter(self, db_session) -> None:
         """Test markdown status from frontmatter."""
         content = """---
 status: in_progress
@@ -1518,7 +1516,7 @@ status: in_progress
 
 # Feature"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1535,7 +1533,7 @@ status: in_progress
         finally:
             Path(file_path).unlink()
 
-    def test_bmad_status_preservation(self, db_session):
+    def test_bmad_status_preservation(self, db_session) -> None:
         """Test BMad preserves status from requirements."""
         content = """project:
   name: Project
@@ -1553,7 +1551,7 @@ requirements:
     title: Requirement 3
     status: done"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1574,12 +1572,12 @@ requirements:
 class TestYMLAlternativeExtension:
     """Tests for .yml alternative extension."""
 
-    def test_ingest_yml_file(self, db_session):
+    def test_ingest_yml_file(self, db_session) -> None:
         """Test ingestion of .yml file (alternative extension)."""
         content = """name: Project
 description: Test"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1593,7 +1591,7 @@ description: Test"""
         finally:
             Path(file_path).unlink()
 
-    def test_yml_openapi_spec(self, db_session):
+    def test_yml_openapi_spec(self, db_session) -> None:
         """Test OpenAPI specification with .yml extension."""
         content = """openapi: 3.0.0
 info:
@@ -1603,7 +1601,7 @@ paths:
     get:
       operationId: test"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1620,12 +1618,12 @@ paths:
 class TestVersionTracking:
     """Tests for version field handling."""
 
-    def test_items_have_version_one(self, db_session):
+    def test_items_have_version_one(self, db_session) -> None:
         """Test all ingested items have version 1."""
         content = """# Feature
 ## Task"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1643,11 +1641,11 @@ class TestVersionTracking:
 class TestMarkdownAlternativeExtension:
     """Tests for .markdown alternative extension."""
 
-    def test_ingest_markdown_extension(self, db_session):
+    def test_ingest_markdown_extension(self, db_session) -> None:
         """Test .markdown file extension."""
         content = """# Test"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".markdown", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".markdown", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1664,7 +1662,7 @@ class TestMarkdownAlternativeExtension:
 class TestOpenAPIMethodLinks:
     """Tests for OpenAPI method-to-method links."""
 
-    def test_same_path_different_methods_linked(self, db_session):
+    def test_same_path_different_methods_linked(self, db_session) -> None:
         """Test that different HTTP methods on same path are linked."""
         content = """openapi: 3.0.0
 info:
@@ -1681,7 +1679,7 @@ paths:
       operationId: updateItem
       summary: Update item"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1699,11 +1697,11 @@ paths:
 class TestProjectCreationAndManagement:
     """Tests for project creation and management."""
 
-    def test_project_created_from_filename(self, db_session):
+    def test_project_created_from_filename(self, db_session) -> None:
         """Test project is created with filename as name."""
         content = """# Test"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", prefix="my_project_", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", prefix="my_project_", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1717,7 +1715,7 @@ class TestProjectCreationAndManagement:
         finally:
             Path(file_path).unlink()
 
-    def test_project_created_from_frontmatter(self, db_session):
+    def test_project_created_from_frontmatter(self, db_session) -> None:
         """Test project is created from frontmatter name."""
         content = """---
 project: CustomProjectName
@@ -1726,7 +1724,7 @@ description: Custom description
 
 # Test"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1743,7 +1741,7 @@ description: Custom description
         finally:
             Path(file_path).unlink()
 
-    def test_reuse_existing_project(self, db_session):
+    def test_reuse_existing_project(self, db_session) -> None:
         """Test that existing project is reused if name matches."""
         # Create initial project
         content1 = """---
@@ -1752,7 +1750,7 @@ project: SharedProject
 
 # Feature 1"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content1)
             f.flush()
             file_path1 = f.name
@@ -1769,7 +1767,7 @@ project: SharedProject
 
 # Feature 2"""
 
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f2:
+            with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f2:
                 f2.write(content2)
                 f2.flush()
                 file_path2 = f2.name
@@ -1794,13 +1792,13 @@ project: SharedProject
 class TestSpecialCharacters:
     """Tests for handling special characters and edge cases."""
 
-    def test_markdown_with_special_characters(self, db_session):
+    def test_markdown_with_special_characters(self, db_session) -> None:
         """Test markdown with special characters in headers."""
         content = """# Feature: User@Profile & Settings!
 ## Task: Handle "Quotes" & 'Apostrophes'
 ### Story: Test (Parentheses) [Brackets]"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1816,7 +1814,7 @@ class TestSpecialCharacters:
         finally:
             Path(file_path).unlink()
 
-    def test_yaml_unicode_handling(self, db_session):
+    def test_yaml_unicode_handling(self, db_session) -> None:
         """Test YAML with unicode characters."""
         content = """name: 项目名称
 description: Описание проекта
@@ -1843,11 +1841,11 @@ items:
 class TestEmptyAndMinimalFiles:
     """Tests for empty and minimal file handling."""
 
-    def test_empty_yaml_file(self, db_session):
+    def test_empty_yaml_file(self, db_session) -> None:
         """Test empty YAML file handling."""
         content = """{}"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1861,11 +1859,11 @@ class TestEmptyAndMinimalFiles:
         finally:
             Path(file_path).unlink()
 
-    def test_minimal_markdown_file(self, db_session):
+    def test_minimal_markdown_file(self, db_session) -> None:
         """Test minimal markdown file."""
         content = """# Header"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1887,9 +1885,9 @@ class TestEmptyAndMinimalFiles:
         ("## H2\n### H3\n#### H4\n# H1", 4),
     ],
 )
-def test_various_markdown_structures(db_session, headers, expected_count):
+def test_various_markdown_structures(db_session, headers, expected_count) -> None:
     """Test various markdown header structures."""
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+    with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
         f.write(headers)
         f.flush()
         file_path = f.name
@@ -1916,9 +1914,9 @@ items:
         ),
     ],
 )
-def test_various_yaml_structures(db_session, yaml_content, expected_items):
+def test_various_yaml_structures(db_session, yaml_content, expected_items) -> None:
     """Test various YAML structures."""
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+    with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
         f.write(yaml_content)
         f.flush()
         file_path = f.name
@@ -1937,12 +1935,12 @@ def test_various_yaml_structures(db_session, yaml_content, expected_items):
 class TestEdgeCasesAndMissingCoverage:
     """Additional tests for edge cases and full coverage."""
 
-    def test_markdown_with_only_links_no_headers(self, db_session):
+    def test_markdown_with_only_links_no_headers(self, db_session) -> None:
         """Test markdown with only links, no headers."""
         content = """[Link 1](http://example.com)
 [Link 2](http://example.com)"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1955,7 +1953,7 @@ class TestEdgeCasesAndMissingCoverage:
         finally:
             Path(file_path).unlink()
 
-    def test_openapi_spec_with_no_paths(self, db_session):
+    def test_openapi_spec_with_no_paths(self, db_session) -> None:
         """Test OpenAPI spec with no paths defined."""
         content = """openapi: 3.0.0
 info:
@@ -1965,7 +1963,7 @@ components:
     Model:
       type: object"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1979,7 +1977,7 @@ components:
         finally:
             Path(file_path).unlink()
 
-    def test_openapi_with_x_prefixed_paths(self, db_session):
+    def test_openapi_with_x_prefixed_paths(self, db_session) -> None:
         """Test OpenAPI with x- prefixed paths (extensions)."""
         content = """openapi: 3.0.0
 info:
@@ -1991,7 +1989,7 @@ paths:
     x-custom:
       custom: value"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2006,7 +2004,7 @@ paths:
         finally:
             Path(file_path).unlink()
 
-    def test_bmad_requirements_without_ids(self, db_session):
+    def test_bmad_requirements_without_ids(self, db_session) -> None:
         """Test BMad requirements that generate IDs."""
         content = """project:
   name: Project
@@ -2017,7 +2015,7 @@ requirements:
   - title: Requirement 2
     description: Also no ID"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2033,7 +2031,7 @@ requirements:
         finally:
             Path(file_path).unlink()
 
-    def test_bmad_with_string_depends_on(self, db_session):
+    def test_bmad_with_string_depends_on(self, db_session) -> None:
         """Test BMad with depends_on as string instead of list."""
         content = """project:
   name: Project
@@ -2045,7 +2043,7 @@ requirements:
     title: Second
     depends_on: REQ-1"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2059,7 +2057,7 @@ requirements:
         finally:
             Path(file_path).unlink()
 
-    def test_generic_yaml_with_list_of_dicts(self, db_session):
+    def test_generic_yaml_with_list_of_dicts(self, db_session) -> None:
         """Test generic YAML with list of dictionaries."""
         content = """name: Project
 items:
@@ -2070,7 +2068,7 @@ items:
   - title: Item 3
     description: Third item"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2084,7 +2082,7 @@ items:
         finally:
             Path(file_path).unlink()
 
-    def test_markdown_with_code_blocks(self, db_session):
+    def test_markdown_with_code_blocks(self, db_session) -> None:
         """Test markdown with code blocks."""
         content = """# Feature
 ## Implementation
@@ -2096,7 +2094,7 @@ def hello():
 
 More content."""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2110,7 +2108,7 @@ More content."""
         finally:
             Path(file_path).unlink()
 
-    def test_markdown_link_at_end_of_file(self, db_session):
+    def test_markdown_link_at_end_of_file(self, db_session) -> None:
         """Test markdown with link at end of file."""
         content = """# Main Feature
 Content here.
@@ -2119,7 +2117,7 @@ Content here.
 ## Related
 Related content."""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2132,7 +2130,7 @@ Related content."""
         finally:
             Path(file_path).unlink()
 
-    def test_openapi_endpoint_with_no_description(self, db_session):
+    def test_openapi_endpoint_with_no_description(self, db_session) -> None:
         """Test OpenAPI endpoint without description."""
         content = """openapi: 3.0.0
 info:
@@ -2145,7 +2143,7 @@ paths:
         '200':
           description: OK"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2161,7 +2159,7 @@ paths:
         finally:
             Path(file_path).unlink()
 
-    def test_openapi_with_multiple_content_types(self, db_session):
+    def test_openapi_with_multiple_content_types(self, db_session) -> None:
         """Test OpenAPI with multiple content types."""
         content = """openapi: 3.0.0
 info:
@@ -2186,7 +2184,7 @@ components:
     Data:
       type: object"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2201,7 +2199,7 @@ components:
         finally:
             Path(file_path).unlink()
 
-    def test_generic_yaml_with_string_values(self, db_session):
+    def test_generic_yaml_with_string_values(self, db_session) -> None:
         """Test generic YAML with only string values."""
         content = """name: Project
 config:
@@ -2209,7 +2207,7 @@ config:
   timeout: 30
   env: production"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2223,7 +2221,7 @@ config:
         finally:
             Path(file_path).unlink()
 
-    def test_markdown_parent_stack_complexity(self, db_session):
+    def test_markdown_parent_stack_complexity(self, db_session) -> None:
         """Test markdown with complex parent-child relationships."""
         content = """# Level 1
 ## Level 2
@@ -2234,7 +2232,7 @@ config:
 ### Level 3 New
 # Back to Level 1"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2248,7 +2246,7 @@ config:
         finally:
             Path(file_path).unlink()
 
-    def test_bmad_with_multiple_traceability_types(self, db_session):
+    def test_bmad_with_multiple_traceability_types(self, db_session) -> None:
         """Test BMad with different traceability relationship types."""
         content = """project:
   name: Complex Project
@@ -2274,7 +2272,7 @@ traceability:
     target: D-1
     type: implemented_by"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2289,13 +2287,13 @@ traceability:
         finally:
             Path(file_path).unlink()
 
-    def test_markdown_with_inline_code(self, db_session):
+    def test_markdown_with_inline_code(self, db_session) -> None:
         """Test markdown with inline code."""
         content = """# Feature: `UserService`
 ## Method: `authenticate()`
 Implementation using `bcrypt`."""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2309,7 +2307,7 @@ Implementation using `bcrypt`."""
         finally:
             Path(file_path).unlink()
 
-    def test_openapi_response_without_content(self, db_session):
+    def test_openapi_response_without_content(self, db_session) -> None:
         """Test OpenAPI response without content."""
         content = """openapi: 3.0.0
 info:
@@ -2324,7 +2322,7 @@ paths:
 components:
   schemas: {}"""
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name

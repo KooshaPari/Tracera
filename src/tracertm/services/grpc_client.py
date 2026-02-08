@@ -1,5 +1,4 @@
-"""
-gRPC Client for TraceRTM Go Backend Services
+"""gRPC Client for TraceRTM Go Backend Services.
 
 This module provides a client for calling gRPC services implemented in the Go backend.
 Primary use case: Python services calling Go's GraphService for high-performance graph operations.
@@ -20,8 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class GoBackendClient:
-    """
-    Client for calling Go backend gRPC services.
+    """Client for calling Go backend gRPC services.
 
     Provides methods for graph analysis operations implemented in Go:
     - Impact analysis
@@ -43,9 +41,8 @@ class GoBackendClient:
         port: int | None = None,
         max_retries: int = 3,
         timeout: int = 30,
-    ):
-        """
-        Initialize the gRPC client.
+    ) -> None:
+        """Initialize the gRPC client.
 
         Args:
             host: Go backend hostname (default: from GRPC_GO_BACKEND_HOST env or localhost)
@@ -74,7 +71,7 @@ class GoBackendClient:
 
         logger.info(f"Initialized GoBackendClient for {self.address}")
 
-    async def connect(self):
+    async def connect(self) -> None:
         """Establish connection to the gRPC server."""
         if self._channel is not None:
             logger.warning("Already connected to gRPC server")
@@ -102,16 +99,16 @@ class GoBackendClient:
             await self._test_connection()
             logger.info("Successfully connected to Go backend")
         except Exception as e:
-            logger.error(f"Failed to connect to Go backend: {e}")
+            logger.exception("Failed to connect to Go backend: %s", e)
             await self.close()
             raise
 
-    async def _test_connection(self):
+    async def _test_connection(self) -> None:
         """Test the gRPC connection with a simple health check."""
         # For now, we'll skip the health check
         # In production, you'd call a health check endpoint
 
-    async def close(self):
+    async def close(self) -> None:
         """Close the gRPC connection."""
         if self._channel:
             logger.info("Closing gRPC connection")
@@ -130,8 +127,7 @@ class GoBackendClient:
 
     @asynccontextmanager
     async def _retry_context(self, operation_name: str):
-        """
-        Context manager for retry logic with exponential backoff.
+        """Context manager for retry logic with exponential backoff.
 
         Args:
             operation_name: Name of the operation for logging
@@ -150,27 +146,27 @@ class GoBackendClient:
                 details = details_fn() if callable(details_fn) else ""
 
                 # Check if error is retryable
-                if code in (
+                if code in {
                     grpc.StatusCode.UNAVAILABLE,
                     grpc.StatusCode.DEADLINE_EXCEEDED,
                     grpc.StatusCode.RESOURCE_EXHAUSTED,
-                ):
+                }:
                     if attempt < self.max_retries - 1:
                         wait_time = 2**attempt  # Exponential backoff
                         logger.warning(
                             f"{operation_name} failed (attempt {attempt + 1}/{self.max_retries}): "
-                            f"{code} - {details}. Retrying in {wait_time}s..."
+                            f"{code} - {details}. Retrying in {wait_time}s...",
                         )
                         await asyncio.sleep(wait_time)
                     else:
-                        logger.error(f"{operation_name} failed after {self.max_retries} attempts")
+                        logger.exception(f"{operation_name} failed after {self.max_retries} attempts")
                 else:
                     # Non-retryable error
-                    logger.error(f"{operation_name} failed with non-retryable error: {code} - {details}")
+                    logger.exception("%s failed with non-retryable error: %s - %s", operation_name, code, details)
                     raise
             except Exception as e:
                 last_error = e
-                logger.error(f"{operation_name} failed with unexpected error: {e}")
+                logger.exception("%s failed with unexpected error: %s", operation_name, e)
                 raise
 
         # If we get here, all retries failed
@@ -185,8 +181,7 @@ class GoBackendClient:
         max_depth: int = 0,
         link_types: list[str] | None = None,
     ) -> dict[str, Any]:
-        """
-        Analyze the impact of changes to an item.
+        """Analyze the impact of changes to an item.
 
         Args:
             item_id: ID of the item to analyze
@@ -208,7 +203,8 @@ class GoBackendClient:
             grpc.RpcError: If the gRPC call fails
         """
         if not self._stub:
-            raise RuntimeError("Not connected to gRPC server. Call connect() first.")
+            msg = "Not connected to gRPC server. Call connect() first."
+            raise RuntimeError(msg)
 
         request = tracertm_pb2.AnalyzeImpactRequest(
             item_id=item_id,
@@ -218,7 +214,7 @@ class GoBackendClient:
             link_types=link_types or [],
         )
 
-        logger.debug(f"Analyzing impact for item {item_id} (direction={direction}, max_depth={max_depth})")
+        logger.debug("Analyzing impact for item %s (direction=%s, max_depth=%s)", item_id, direction, max_depth)
 
         async with self._retry_context("analyze_impact"):
             response = await self._stub.AnalyzeImpact(
@@ -255,8 +251,7 @@ class GoBackendClient:
         link_types: list[str] | None = None,
         max_cycle_length: int = 0,
     ) -> dict[str, Any]:
-        """
-        Find circular dependencies in the project graph.
+        """Find circular dependencies in the project graph.
 
         Args:
             project_id: Project ID
@@ -270,7 +265,8 @@ class GoBackendClient:
                 - has_cycles: Boolean indicating if any cycles exist
         """
         if not self._stub:
-            raise RuntimeError("Not connected to gRPC server. Call connect() first.")
+            msg = "Not connected to gRPC server. Call connect() first."
+            raise RuntimeError(msg)
 
         request = tracertm_pb2.FindCyclesRequest(
             project_id=project_id,
@@ -278,7 +274,7 @@ class GoBackendClient:
             max_cycle_length=max_cycle_length,
         )
 
-        logger.debug(f"Finding cycles in project {project_id}")
+        logger.debug("Finding cycles in project %s", project_id)
 
         async with self._retry_context("find_cycles"):
             response = await self._stub.FindCycles(
@@ -310,8 +306,7 @@ class GoBackendClient:
         target_item_id: str,
         link_types: list[str] | None = None,
     ) -> dict[str, Any]:
-        """
-        Calculate the shortest path between two items.
+        """Calculate the shortest path between two items.
 
         Args:
             project_id: Project ID
@@ -328,7 +323,8 @@ class GoBackendClient:
                 - path_weight: Total weight/cost of the path
         """
         if not self._stub:
-            raise RuntimeError("Not connected to gRPC server. Call connect() first.")
+            msg = "Not connected to gRPC server. Call connect() first."
+            raise RuntimeError(msg)
 
         request = tracertm_pb2.CalculatePathRequest(
             project_id=project_id,
@@ -337,7 +333,7 @@ class GoBackendClient:
             link_types=link_types or [],
         )
 
-        logger.debug(f"Calculating path from {source_item_id} to {target_item_id}")
+        logger.debug("Calculating path from %s to %s", source_item_id, target_item_id)
 
         async with self._retry_context("calculate_path"):
             response = await self._stub.CalculatePath(
@@ -365,8 +361,7 @@ async def analyze_impact_sync(
     max_depth: int = 0,
     link_types: list[str] | None = None,
 ) -> dict[str, Any]:
-    """
-    Convenience function for one-off impact analysis.
+    """Convenience function for one-off impact analysis.
 
     Opens a connection, performs the analysis, and closes the connection.
     For multiple requests, use the GoBackendClient context manager instead.

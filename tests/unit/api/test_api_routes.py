@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for FastAPI routes in TraceRTM.
+"""Comprehensive unit tests for FastAPI routes in TraceRTM.
 
 Tests all HTTP methods, request validation, response formats, error handling,
 and authentication/authorization for all API endpoints.
@@ -20,7 +19,7 @@ client = TestClient(app)
 class TestHealthEndpoints:
     """Test health check endpoints."""
 
-    def test_health_check_root(self):
+    def test_health_check_root(self) -> None:
         """Test root health check endpoint."""
         response = client.get("/health")
         assert response.status_code == 200
@@ -29,7 +28,7 @@ class TestHealthEndpoints:
         assert data["version"] == "1.0.0"
         assert data["service"] == "TraceRTM API"
 
-    def test_api_v1_health_check(self):
+    def test_api_v1_health_check(self) -> None:
         """Test v1 API health check endpoint."""
         response = client.get("/api/v1/health")
         assert response.status_code == 200
@@ -37,7 +36,7 @@ class TestHealthEndpoints:
         assert data["status"] == "ok"
         assert data["service"] == "tracertm-api"
 
-    def test_health_check_response_headers(self):
+    def test_health_check_response_headers(self) -> None:
         """Test health check includes proper response headers."""
         response = client.get("/api/v1/health")
         assert response.headers["content-type"] == "application/json"
@@ -48,7 +47,7 @@ class TestItemsEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_items_success(self, mock_auth, mock_db):
+    def test_list_items_success(self, mock_auth, mock_db) -> None:
         """Test successful items list retrieval."""
         # Setup mocks
         mock_auth.return_value = {"role": "user", "sub": "user123"}
@@ -99,7 +98,7 @@ class TestItemsEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_items_with_pagination(self, mock_auth, mock_db):
+    def test_list_items_with_pagination(self, mock_auth, mock_db) -> None:
         """Test items list with skip and limit parameters."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -135,7 +134,7 @@ class TestItemsEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_items_empty(self, mock_auth, mock_db):
+    def test_list_items_empty(self, mock_auth, mock_db) -> None:
         """Test items list when no items exist."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -158,7 +157,7 @@ class TestItemsEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_items_missing_project_id(self, mock_auth, mock_db):
+    def test_list_items_missing_project_id(self, mock_auth, mock_db) -> None:
         """Test items list without project_id returns empty."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -178,7 +177,7 @@ class TestItemsEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_get_item_success(self, mock_auth, mock_db):
+    def test_get_item_success(self, mock_auth, mock_db) -> None:
         """Test get single item endpoint."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -207,7 +206,7 @@ class TestItemsEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_get_item_not_found(self, mock_auth, mock_db):
+    def test_get_item_not_found(self, mock_auth, mock_db) -> None:
         """Test get item returns 404 when item not found."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -229,7 +228,7 @@ class TestLinksEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_links_by_project(self, mock_auth, mock_db):
+    def test_list_links_by_project(self, mock_auth, mock_db) -> None:
         """Test list links filtered by project."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -269,7 +268,7 @@ class TestLinksEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_links_by_source_id(self, mock_auth, mock_db):
+    def test_list_links_by_source_id(self, mock_auth, mock_db) -> None:
         """Test list links filtered by source item."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -300,7 +299,7 @@ class TestLinksEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_links_by_target_id(self, mock_auth, mock_db):
+    def test_list_links_by_target_id(self, mock_auth, mock_db) -> None:
         """Test list links filtered by target item."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -331,7 +330,7 @@ class TestLinksEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_links_by_source_and_target(self, mock_auth, mock_db):
+    def test_list_links_by_source_and_target(self, mock_auth, mock_db) -> None:
         """Test list links filtered by both source and target."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -361,7 +360,7 @@ class TestLinksEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_links_no_filters(self, mock_auth, mock_db):
+    def test_list_links_no_filters(self, mock_auth, mock_db) -> None:
         """Test list links without filters returns empty."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -375,7 +374,7 @@ class TestLinksEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_create_link_success(self, mock_auth, mock_db):
+    def test_create_link_success(self, mock_auth, mock_db) -> None:
         """Test successful link creation."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -412,7 +411,7 @@ class TestLinksEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_create_link_validation_error(self, mock_auth, mock_db):
+    def test_create_link_validation_error(self, mock_auth, mock_db) -> None:
         """Test link creation with invalid payload."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
@@ -425,11 +424,11 @@ class TestLinksEndpoints:
 
         response = client.post("/api/v1/links", json=payload)
         # Validation error - may be 422 or 500
-        assert response.status_code in [422, 500]
+        assert response.status_code in {422, 500}
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_create_link_unauthorized_guest(self, mock_auth, mock_db):
+    def test_create_link_unauthorized_guest(self, mock_auth, mock_db) -> None:
         """Test link creation fails for guest role."""
         mock_auth.return_value = {"role": "guest"}
         mock_db.return_value = AsyncMock()
@@ -443,11 +442,11 @@ class TestLinksEndpoints:
 
         response = client.post("/api/v1/links", json=payload)
         # Should fail due to write permission check
-        assert response.status_code in [403, 500]  # Forbidden or permission error
+        assert response.status_code in {403, 500}  # Forbidden or permission error
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_update_link_success(self, mock_auth, mock_db):
+    def test_update_link_success(self, mock_auth, mock_db) -> None:
         """Test successful link update."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -479,7 +478,7 @@ class TestLinksEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_update_link_not_found(self, mock_auth, mock_db):
+    def test_update_link_not_found(self, mock_auth, mock_db) -> None:
         """Test update link when link doesn't exist."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -504,7 +503,7 @@ class TestAnalysisEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_impact_analysis_success(self, mock_auth, mock_db):
+    def test_impact_analysis_success(self, mock_auth, mock_db) -> None:
         """Test successful impact analysis."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -532,7 +531,7 @@ class TestAnalysisEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_impact_analysis_item_not_found(self, mock_auth, mock_db):
+    def test_impact_analysis_item_not_found(self, mock_auth, mock_db) -> None:
         """Test impact analysis returns 404 for non-existent item."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -548,7 +547,7 @@ class TestAnalysisEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_cycle_detection_success(self, mock_auth, mock_db):
+    def test_cycle_detection_success(self, mock_auth, mock_db) -> None:
         """Test successful cycle detection."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -576,7 +575,7 @@ class TestAnalysisEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_cycle_detection_no_cycles(self, mock_auth, mock_db):
+    def test_cycle_detection_no_cycles(self, mock_auth, mock_db) -> None:
         """Test cycle detection when no cycles exist."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -602,7 +601,7 @@ class TestAnalysisEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_shortest_path_found(self, mock_auth, mock_db):
+    def test_shortest_path_found(self, mock_auth, mock_db) -> None:
         """Test successful shortest path finding."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -629,7 +628,7 @@ class TestAnalysisEndpoints:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_shortest_path_not_found(self, mock_auth, mock_db):
+    def test_shortest_path_not_found(self, mock_auth, mock_db) -> None:
         """Test shortest path when no path exists."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -659,7 +658,7 @@ class TestAuthenticationAndAuthorization:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_public_access_without_auth(self, mock_auth, mock_db):
+    def test_public_access_without_auth(self, mock_auth, mock_db) -> None:
         """Test public access works without authentication."""
         mock_auth.return_value = {"role": "public"}
         mock_db.return_value = AsyncMock()
@@ -669,7 +668,7 @@ class TestAuthenticationAndAuthorization:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_auth_guard_validates_bearer_token(self, mock_auth, mock_db):
+    def test_auth_guard_validates_bearer_token(self, mock_auth, mock_db) -> None:
         """Test auth guard validates bearer token format."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
@@ -680,7 +679,7 @@ class TestAuthenticationAndAuthorization:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_write_permission_check_guest_role(self, mock_auth, mock_db):
+    def test_write_permission_check_guest_role(self, mock_auth, mock_db) -> None:
         """Test write operations deny guest role."""
         mock_auth.return_value = {"role": "guest"}
         mock_db.return_value = AsyncMock()
@@ -695,11 +694,11 @@ class TestAuthenticationAndAuthorization:
         # Guest users should not be able to create links
         response = client.post("/api/v1/links", json=payload)
         # Should return an error (either 403 or 500 with permission error)
-        assert response.status_code in [403, 500]
+        assert response.status_code in {403, 500}
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_project_access_check(self, mock_auth, mock_db):
+    def test_project_access_check(self, mock_auth, mock_db) -> None:
         """Test project access verification."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -721,7 +720,7 @@ class TestRateLimiting:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_rate_limit_headers(self, mock_auth, mock_db):
+    def test_rate_limit_headers(self, mock_auth, mock_db) -> None:
         """Test rate limiting sets appropriate headers."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
@@ -733,11 +732,11 @@ class TestRateLimiting:
 
             response = client.get("/api/v1/items")
             # Response should include rate limiting info or pass through
-            assert response.status_code in [200, 429]
+            assert response.status_code in {200, 429}
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_bulk_operation_bypass_rate_limit(self, mock_auth, mock_db):
+    def test_bulk_operation_bypass_rate_limit(self, mock_auth, mock_db) -> None:
         """Test bulk operations bypass rate limiting."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -762,7 +761,7 @@ class TestErrorHandling:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_database_error_handling(self, mock_auth, mock_db):
+    def test_database_error_handling(self, mock_auth, mock_db) -> None:
         """Test database errors are handled gracefully."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -778,7 +777,7 @@ class TestErrorHandling:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_invalid_query_parameters(self, mock_auth, mock_db):
+    def test_invalid_query_parameters(self, mock_auth, mock_db) -> None:
         """Test invalid query parameters are rejected."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
@@ -789,7 +788,7 @@ class TestErrorHandling:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_missing_required_query_parameters(self, mock_auth, mock_db):
+    def test_missing_required_query_parameters(self, mock_auth, mock_db) -> None:
         """Test endpoints with missing required parameters."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
@@ -797,11 +796,11 @@ class TestErrorHandling:
         # Missing required project_id parameter for analysis endpoint
         response = client.get("/api/v1/analysis/impact/item1")
         # project_id should be required - may return 422 or 500
-        assert response.status_code in [422, 500]
+        assert response.status_code in {422, 500}
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_content_type_validation(self, mock_auth, mock_db):
+    def test_content_type_validation(self, mock_auth, mock_db) -> None:
         """Test content type validation for POST requests."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
@@ -836,7 +835,7 @@ class TestResponseFormats:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_items_response_format(self, mock_auth, mock_db):
+    def test_list_items_response_format(self, mock_auth, mock_db) -> None:
         """Test items list response has correct format."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -886,7 +885,7 @@ class TestResponseFormats:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_link_response_format(self, mock_auth, mock_db):
+    def test_link_response_format(self, mock_auth, mock_db) -> None:
         """Test link response has correct format."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -926,7 +925,7 @@ class TestResponseFormats:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_analysis_response_format(self, mock_auth, mock_db):
+    def test_analysis_response_format(self, mock_auth, mock_db) -> None:
         """Test analysis response has correct format."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()

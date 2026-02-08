@@ -19,7 +19,7 @@ from tracertm.models.view import View
 class ItemRepository:
     """Repository for Item CRUD operations with optimistic locking."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -41,9 +41,11 @@ class ItemRepository:
         if parent_id:
             parent_item = await self.get_by_id(parent_id)
             if not parent_item:
-                raise ValueError(f"Parent item {parent_id} not found")
+                msg = f"Parent item {parent_id} not found"
+                raise ValueError(msg)
             if parent_item.project_id != project_id:
-                raise ValueError(f"Parent item {parent_id} not in same project")
+                msg = f"Parent item {parent_id} not in same project"
+                raise ValueError(msg)
 
         supports_node_kinds = await self._table_exists("node_kinds")
         supports_views = await self._table_exists("views")
@@ -55,7 +57,7 @@ class ItemRepository:
                 select(NodeKind).where(
                     NodeKind.project_id == project_id,
                     NodeKind.name == item_type,
-                )
+                ),
             )
             node_kind_obj = node_kind.scalar_one_or_none()
             if not node_kind_obj:
@@ -72,7 +74,7 @@ class ItemRepository:
         view_obj = None
         if supports_views:
             view_result = await self.session.execute(
-                select(View).where(View.project_id == project_id, View.name == view)
+                select(View).where(View.project_id == project_id, View.name == view),
             )
             view_obj = view_result.scalar_one_or_none()
             if not view_obj:
@@ -114,7 +116,7 @@ class ItemRepository:
                     view_id=view_obj.id,
                     project_id=project_id,
                     is_primary=True,
-                )
+                ),
             )
         await self.session.refresh(item)
         return item
@@ -126,7 +128,7 @@ class ItemRepository:
                 SELECT 1
                 FROM information_schema.tables
                 WHERE table_schema = 'public' AND table_name = :table
-                """
+                """,
             ),
             {"table": table_name},
         )
@@ -174,13 +176,17 @@ class ItemRepository:
         item = result.scalar_one_or_none()
 
         if not item:
-            raise ValueError(f"Item {item_id} not found")
+            msg = f"Item {item_id} not found"
+            raise ValueError(msg)
 
         # Check version (optimistic lock)
         if item.version != expected_version:
-            raise ConcurrencyError(
+            msg = (
                 f"Item {item_id} was modified by another agent "
                 f"(expected version {expected_version}, current version {item.version})"
+            )
+            raise ConcurrencyError(
+                msg,
             )
 
         # Apply updates
@@ -219,7 +225,7 @@ class ItemRepository:
             return True
         # Delete links first to satisfy FK
         await self.session.execute(
-            delete(Link).where((Link.source_item_id == item_id) | (Link.target_item_id == item_id))
+            delete(Link).where((Link.source_item_id == item_id) | (Link.target_item_id == item_id)),
         )
         # Permanent delete
         result = await self.session.execute(delete(Item).where(Item.id == item_id))
@@ -331,7 +337,7 @@ class ItemRepository:
         )
 
         parent = select(Item.id, Item.parent_id, (hierarchy.c.level + 1).label("level")).join(
-            hierarchy, Item.id == hierarchy.c.parent_id
+            hierarchy, Item.id == hierarchy.c.parent_id,
         )
 
         hierarchy = hierarchy.union_all(parent)
@@ -358,7 +364,7 @@ class ItemRepository:
         )
 
         child = select(Item.id, Item.parent_id, (hierarchy.c.level + 1).label("level")).join(
-            hierarchy, Item.parent_id == hierarchy.c.id
+            hierarchy, Item.parent_id == hierarchy.c.id,
         )
 
         hierarchy = hierarchy.union_all(child)
@@ -369,8 +375,7 @@ class ItemRepository:
         return list(result.scalars().all())
 
     async def count_by_status(self, project_id: str | uuid.UUID) -> dict[str, int]:
-        """
-        Count items by status for a project.
+        """Count items by status for a project.
 
         Args:
             project_id: Project ID to count items for

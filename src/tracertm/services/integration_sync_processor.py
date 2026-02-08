@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import Any
-
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import TYPE_CHECKING, Any
 
 from tracertm.clients.github_client import GitHubClient, IssueListParams, IssueUpdateParams
 from tracertm.clients.linear_client import LinearClient
@@ -18,9 +16,12 @@ from tracertm.repositories.integration_repository import (
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.services.encryption_service import EncryptionService
 
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
 
 class IntegrationSyncProcessor:
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         encryption_key = __import__("os").environ.get("ENCRYPTION_KEY", "")
         encryption_service = EncryptionService(encryption_key) if encryption_key else None
@@ -98,10 +99,10 @@ class IntegrationSyncProcessor:
     ) -> dict[str, Any]:
         """Handle github provider sync; caller must close client."""
         repo_name = mapping.mapping_metadata.get("repo_full_name") or mapping.external_id
-        if direction in ("external_to_tracertm", "bidirectional") and repo_name and "/" in repo_name:
+        if direction in {"external_to_tracertm", "bidirectional"} and repo_name and "/" in repo_name:
             owner, repo = repo_name.split("/", 1)
             return await self._sync_github_repo_issues(client=client, mapping=mapping, owner=owner, repo=repo)
-        if direction in ("tracertm_to_external", "bidirectional"):
+        if direction in {"tracertm_to_external", "bidirectional"}:
             return await self._push_github_issue_update(client=client, mapping=mapping, payload=payload)
         user = await client.get_authenticated_user()
         return {"provider": provider, "user": user.get("login")}
@@ -115,7 +116,7 @@ class IntegrationSyncProcessor:
     ) -> dict[str, Any]:
         """Handle github_projects provider sync; caller must close client."""
         project_id = mapping.mapping_metadata.get("project_id") or mapping.external_id
-        if direction in ("external_to_tracertm", "bidirectional") and project_id:
+        if direction in {"external_to_tracertm", "bidirectional"} and project_id:
             return await self._sync_github_project_items(client=client, mapping=mapping, project_id=project_id)
         user = await client.get_authenticated_user()
         return {"provider": provider, "user": user.get("login")}
@@ -131,12 +132,12 @@ class IntegrationSyncProcessor:
         """Handle linear provider sync; caller must close client."""
         team_id = mapping.mapping_metadata.get("team_id")
         project_id = mapping.mapping_metadata.get("project_id") or mapping.external_id
-        if direction in ("external_to_tracertm", "bidirectional"):
+        if direction in {"external_to_tracertm", "bidirectional"}:
             if team_id:
                 return await self._sync_linear_team_issues(client=client, mapping=mapping, team_id=team_id)
             if project_id:
                 return await self._sync_linear_project_issues(client=client, mapping=mapping, project_id=project_id)
-        if direction in ("tracertm_to_external", "bidirectional"):
+        if direction in {"tracertm_to_external", "bidirectional"}:
             return await self._push_linear_issue_update(client=client, mapping=mapping, payload=payload)
         viewer = await client.get_viewer()
         return {"provider": provider, "viewer": viewer.get("name")}
@@ -175,9 +176,9 @@ class IntegrationSyncProcessor:
         }
 
     def _normalize_direction(self, direction: str) -> str:
-        if direction in ("pull", "external_to_tracertm"):
+        if direction in {"pull", "external_to_tracertm"}:
             return "external_to_tracertm"
-        if direction in ("push", "tracertm_to_external"):
+        if direction in {"push", "tracertm_to_external"}:
             return "tracertm_to_external"
         return direction
 
@@ -355,7 +356,7 @@ class IntegrationSyncProcessor:
             title = issue.get("title") or "Untitled Issue"
             description = issue.get("description")
             state = (issue.get("state") or {}).get("type") or "open"
-            status = "done" if state in ("completed", "canceled") else "todo"
+            status = "done" if state in {"completed", "canceled"} else "todo"
             assignee = issue.get("assignee") or {}
             owner_name = assignee.get("name")
             item_metadata = {
@@ -430,7 +431,7 @@ class IntegrationSyncProcessor:
             external_id = str(issue.get("id"))
             title = issue.get("title") or "Untitled Issue"
             state = (issue.get("state") or {}).get("type") or "open"
-            status = "done" if state in ("completed", "canceled") else "todo"
+            status = "done" if state in {"completed", "canceled"} else "todo"
             item_metadata = {
                 "external_system": "linear",
                 "project_id": project_id,

@@ -1,5 +1,4 @@
-"""
-Comprehensive concurrency and stress tests for TracerTM.
+"""Comprehensive concurrency and stress tests for TracerTM.
 
 Tests concurrent operations, race conditions, deadlock scenarios, and stress conditions.
 - 20+ test cases
@@ -12,6 +11,7 @@ Tests concurrent operations, race conditions, deadlock scenarios, and stress con
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Never
 
 import pytest
 from sqlalchemy import create_engine
@@ -103,7 +103,7 @@ def concurrent_session_from_initialized(concurrent_initialized_db):
 class TestBaselineStability:
     """Baseline tests to ensure basic functionality under normal conditions."""
 
-    def test_single_item_creation(self, concurrent_session):
+    def test_single_item_creation(self, concurrent_session) -> None:
         """Test basic item creation stability."""
         project = Project(id="test-proj", name="Test")
         concurrent_session.add(project)
@@ -124,7 +124,7 @@ class TestBaselineStability:
         assert retrieved is not None
         assert retrieved.title == "Test Item"
 
-    def test_single_item_update(self, concurrent_session_from_initialized):
+    def test_single_item_update(self, concurrent_session_from_initialized) -> None:
         """Test basic item update stability."""
         item = concurrent_session_from_initialized.query(Item).filter(Item.id == "item-0").first()
         assert item is not None
@@ -135,7 +135,7 @@ class TestBaselineStability:
         retrieved = concurrent_session_from_initialized.query(Item).filter(Item.id == "item-0").first()
         assert retrieved.status == "in_progress"
 
-    def test_single_link_creation(self, concurrent_session_from_initialized):
+    def test_single_link_creation(self, concurrent_session_from_initialized) -> None:
         """Test basic link creation stability."""
         link = Link(
             id="link-1",
@@ -151,7 +151,7 @@ class TestBaselineStability:
         assert retrieved is not None
         assert retrieved.link_type == "depends_on"
 
-    def test_transaction_rollback(self, concurrent_session):
+    def test_transaction_rollback(self, concurrent_session) -> None:
         """Test transaction rollback stability."""
         project = Project(id="proj-rollback", name="Rollback Test")
         concurrent_session.add(project)
@@ -192,13 +192,13 @@ class TestBaselineStability:
 class TestConcurrentWrites:
     """Tests for concurrent write operations without data corruption."""
 
-    def test_concurrent_item_creation(self, concurrent_initialized_db):
+    def test_concurrent_item_creation(self, concurrent_initialized_db) -> None:
         """Test concurrent creation of multiple items."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         results = []
         errors = []
 
-        def create_item(item_id: int):
+        def create_item(item_id: int) -> None:
             session = SessionLocal()
             try:
                 item = Item(
@@ -232,13 +232,13 @@ class TestConcurrentWrites:
         assert count >= 15, f"Expected at least 15 items, got {count}"
         session.close()
 
-    def test_concurrent_item_updates(self, concurrent_initialized_db):
+    def test_concurrent_item_updates(self, concurrent_initialized_db) -> None:
         """Test concurrent updates to same items."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         results = []
         errors = []
 
-        def update_item(item_num: int, update_num: int):
+        def update_item(item_num: int, update_num: int) -> None:
             session = SessionLocal()
             try:
                 item = session.query(Item).filter(Item.id == f"item-{item_num}").first()
@@ -263,13 +263,13 @@ class TestConcurrentWrites:
         # Some errors are acceptable due to concurrent updates
         assert len(errors) <= 5, f"Too many errors: {errors}"
 
-    def test_concurrent_link_creation(self, concurrent_initialized_db):
+    def test_concurrent_link_creation(self, concurrent_initialized_db) -> None:
         """Test concurrent creation of links."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         results = []
         errors = []
 
-        def create_link(link_id: int):
+        def create_link(link_id: int) -> None:
             session = SessionLocal()
             try:
                 source_id = f"item-{link_id % 10}"
@@ -296,13 +296,13 @@ class TestConcurrentWrites:
 
         assert len(results) >= 25, "Most link creations should succeed"
 
-    def test_concurrent_mixed_operations(self, concurrent_initialized_db):
+    def test_concurrent_mixed_operations(self, concurrent_initialized_db) -> None:
         """Test mix of concurrent creates, updates, and deletes."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         results = []
         errors = []
 
-        def mixed_operation(op_id: int, op_type: str):
+        def mixed_operation(op_id: int, op_type: str) -> None:
             session = SessionLocal()
             try:
                 if op_type == "create":
@@ -349,7 +349,7 @@ class TestConcurrentWrites:
 class TestRaceConditions:
     """Tests for detecting and handling race conditions."""
 
-    def test_race_condition_counter_increment(self, concurrent_initialized_db):
+    def test_race_condition_counter_increment(self, concurrent_initialized_db) -> None:
         """Test race condition in counter increment via metadata."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
 
@@ -363,7 +363,7 @@ class TestRaceConditions:
         errors = []
         successful_increments = []
 
-        def increment_counter():
+        def increment_counter() -> None:
             session = SessionLocal()
             try:
                 item = session.query(Item).filter(Item.id == "item-0").first()
@@ -394,7 +394,7 @@ class TestRaceConditions:
         # In SQLite with transaction isolation, we may get all increments or some subset
         assert final_counter <= 50, f"Counter should not exceed 50, got {final_counter}"
 
-    def test_lost_update_problem(self, concurrent_initialized_db):
+    def test_lost_update_problem(self, concurrent_initialized_db) -> None:
         """Demonstrate potential for lost update problem with stale data."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
 
@@ -407,7 +407,7 @@ class TestRaceConditions:
         updates = []
         errors = []
 
-        def read_modify_write(value: str):
+        def read_modify_write(value: str) -> None:
             session = SessionLocal()
             try:
                 item = session.query(Item).filter(Item.id == "item-1").first()
@@ -437,13 +437,13 @@ class TestRaceConditions:
 
         assert final_title.startswith("Initial"), "Final title should reflect a successful update"
 
-    def test_phantom_read_concurrent_creation(self, concurrent_initialized_db):
+    def test_phantom_read_concurrent_creation(self, concurrent_initialized_db) -> None:
         """Test phantom read scenario with concurrent item creation."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         read_counts = []
         errors = []
 
-        def count_items():
+        def count_items() -> None:
             session = SessionLocal()
             try:
                 count = session.query(Item).filter(Item.project_id == "test-project").count()
@@ -454,7 +454,7 @@ class TestRaceConditions:
             finally:
                 session.close()
 
-        def create_items():
+        def create_items() -> None:
             session = SessionLocal()
             try:
                 for i in range(5):
@@ -490,13 +490,13 @@ class TestRaceConditions:
         assert len(read_counts) >= 6
         assert len(set(read_counts)) > 1, "Phantom reads should occur"
 
-    def test_check_then_act_race(self, concurrent_initialized_db):
+    def test_check_then_act_race(self, concurrent_initialized_db) -> None:
         """Test check-then-act race condition pattern."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         results = []
         errors = []
 
-        def check_and_update():
+        def check_and_update() -> None:
             session = SessionLocal()
             try:
                 item = session.query(Item).filter(Item.id == "item-2").first()
@@ -532,13 +532,13 @@ class TestRaceConditions:
 class TestDeadlockScenarios:
     """Tests for deadlock detection and prevention."""
 
-    def test_lock_ordering_prevention(self, concurrent_initialized_db):
+    def test_lock_ordering_prevention(self, concurrent_initialized_db) -> None:
         """Test that consistent lock ordering prevents deadlocks."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         results = []
         errors = []
 
-        def ordered_update(thread_id: int, direction: str):
+        def ordered_update(thread_id: int, direction: str) -> None:
             session = SessionLocal()
             try:
                 # Always acquire locks in same order: item-0 then item-1
@@ -571,14 +571,14 @@ class TestDeadlockScenarios:
         # Most operations should succeed
         assert len(results) >= 7, f"Most operations should succeed, got {len(results)}"
 
-    def test_timeout_deadlock_detection(self):
+    def test_timeout_deadlock_detection(self) -> None:
         """Test deadlock detection using timeouts."""
         lock1 = threading.Lock()
         lock2 = threading.Lock()
         acquired = []
         deadlock_detected = False
 
-        def acquire_with_timeout():
+        def acquire_with_timeout() -> None:
             nonlocal deadlock_detected
             if lock1.acquire(timeout=0.5):
                 try:
@@ -602,14 +602,14 @@ class TestDeadlockScenarios:
         # Should have either acquired both locks or detected timeout
         assert len(acquired) + (1 if deadlock_detected else 0) > 0
 
-    def test_high_contention_scenario(self, concurrent_initialized_db):
+    def test_high_contention_scenario(self, concurrent_initialized_db) -> None:
         """Test system behavior under high lock contention."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         results = []
         errors = []
         successful_updates = []
 
-        def contend_update(thread_id: int):
+        def contend_update(thread_id: int) -> None:
             session = SessionLocal()
             try:
                 # All threads trying to update same item
@@ -643,7 +643,7 @@ class TestDeadlockScenarios:
 class TestTransactionIsolation:
     """Tests for transaction isolation levels and consistency."""
 
-    def test_dirty_read_prevention(self, concurrent_initialized_db):
+    def test_dirty_read_prevention(self, concurrent_initialized_db) -> None:
         """Test that dirty reads are prevented."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
 
@@ -656,7 +656,7 @@ class TestTransactionIsolation:
         read_value = None
         update_rolled_back = False
 
-        def reader():
+        def reader() -> None:
             nonlocal read_value
             time.sleep(0.2)  # Let writer start first
             session = SessionLocal()
@@ -664,7 +664,7 @@ class TestTransactionIsolation:
             read_value = item.title
             session.close()
 
-        def failed_writer():
+        def failed_writer() -> None:
             nonlocal update_rolled_back
             session = SessionLocal()
             item = session.query(Item).filter(Item.id == "item-3").first()
@@ -686,7 +686,7 @@ class TestTransactionIsolation:
         # Reader should not see dirty uncommitted value
         assert read_value == "Clean" or update_rolled_back
 
-    def test_repeatable_read_consistency(self, concurrent_initialized_db):
+    def test_repeatable_read_consistency(self, concurrent_initialized_db) -> None:
         """Test repeatable reads within a transaction."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
 
@@ -698,7 +698,7 @@ class TestTransactionIsolation:
 
         reads = []
 
-        def read_twice():
+        def read_twice() -> None:
             session = SessionLocal()
             # First read
             item1 = session.query(Item).filter(Item.id == "item-4").first()
@@ -709,7 +709,7 @@ class TestTransactionIsolation:
             reads.append(item2.title if item2 else None)
             session.close()
 
-        def update_between_reads():
+        def update_between_reads() -> None:
             time.sleep(0.05)
             session = SessionLocal()
             item = session.query(Item).filter(Item.id == "item-4").first()
@@ -727,7 +727,7 @@ class TestTransactionIsolation:
         # Both reads in same session might see different values in SQLite
         assert len(reads) == 2
 
-    def test_serializable_isolation(self, concurrent_initialized_db):
+    def test_serializable_isolation(self, concurrent_initialized_db) -> None:
         """Test serializable isolation with conflict detection."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
 
@@ -742,7 +742,7 @@ class TestTransactionIsolation:
 
         operations_completed = []
 
-        def transaction1():
+        def transaction1() -> None:
             session = SessionLocal()
             try:
                 item1 = session.query(Item).filter(Item.id == "item-5").first()
@@ -758,7 +758,7 @@ class TestTransactionIsolation:
             finally:
                 session.close()
 
-        def transaction2():
+        def transaction2() -> None:
             time.sleep(0.05)  # Start after tx1 has read
             session = SessionLocal()
             try:
@@ -789,49 +789,52 @@ class TestTransactionIsolation:
 class TestRetryAndBackoff:
     """Tests for retry logic and exponential backoff."""
 
-    def test_retry_decorator_success_on_retry(self):
+    def test_retry_decorator_success_on_retry(self) -> None:
         """Test that retry decorator succeeds on eventual success."""
         call_count = 0
 
         @retry_with_backoff(max_retries=3, initial_delay=0.01)
-        def flaky_operation():
+        def flaky_operation() -> str:
             nonlocal call_count
             call_count += 1
             if call_count < 2:
-                raise ConcurrencyError("Simulated conflict")
+                msg = "Simulated conflict"
+                raise ConcurrencyError(msg)
             return "success"
 
         result = flaky_operation()
         assert result == "success"
         assert call_count == 2
 
-    def test_retry_decorator_max_retries_exceeded(self):
+    def test_retry_decorator_max_retries_exceeded(self) -> None:
         """Test that retry decorator raises after max retries."""
         call_count = 0
 
         @retry_with_backoff(max_retries=2, initial_delay=0.01)
-        def always_failing():
+        def always_failing() -> Never:
             nonlocal call_count
             call_count += 1
-            raise ConcurrencyError("Always fails")
+            msg = "Always fails"
+            raise ConcurrencyError(msg)
 
         with pytest.raises(ConcurrencyError):
             always_failing()
 
         assert call_count == 3  # Initial + 2 retries
 
-    def test_exponential_backoff_timing(self):
+    def test_exponential_backoff_timing(self) -> None:
         """Test that exponential backoff increases delay."""
         call_count = 0
         call_times = []
 
         @retry_with_backoff(max_retries=3, initial_delay=0.01, exponential_base=2.0)
-        def tracked_flaky():
+        def tracked_flaky() -> str:
             nonlocal call_count
             call_times.append(time.time())
             call_count += 1
             if call_count < 3:
-                raise ConcurrencyError("Simulated conflict")
+                msg = "Simulated conflict"
+                raise ConcurrencyError(msg)
             return "success"
 
         start = time.time()
@@ -843,19 +846,20 @@ class TestRetryAndBackoff:
         # Should have delays due to backoff
         assert total_time > 0.01
 
-    def test_jitter_prevents_thundering_herd(self):
+    def test_jitter_prevents_thundering_herd(self) -> None:
         """Test that jitter prevents thundering herd problem."""
         call_count = 0
         timings = []
 
         @retry_with_backoff(max_retries=2, initial_delay=0.05, jitter=True)
-        def jittered_operation():
+        def jittered_operation() -> str:
             nonlocal call_count
             call_count += 1
             start = time.time()
             timings.append(start)
             if call_count < 2:
-                raise ConcurrencyError("Conflict")
+                msg = "Conflict"
+                raise ConcurrencyError(msg)
             return "success"
 
         start = time.time()
@@ -867,14 +871,14 @@ class TestRetryAndBackoff:
         # With jitter, timing should vary
         assert elapsed > 0
 
-    def test_concurrent_retry_operations(self, concurrent_session):
+    def test_concurrent_retry_operations(self, concurrent_session) -> None:
         """Test multiple threads with retry logic."""
         results = []
         errors = []
         concurrent_ops_service = ConcurrentOperationsService(concurrent_session)
 
-        def retryable_operation(op_id: int):
-            def operation():
+        def retryable_operation(op_id: int) -> None:
+            def operation() -> str:
                 # Simulate occasional conflicts
                 if op_id % 3 == 0:
                     time.sleep(0.001)
@@ -902,12 +906,12 @@ class TestRetryAndBackoff:
 class TestBulkOperationConcurrency:
     """Tests for concurrent bulk operations."""
 
-    def test_concurrent_bulk_updates(self, concurrent_initialized_db):
+    def test_concurrent_bulk_updates(self, concurrent_initialized_db) -> None:
         """Test concurrent bulk updates don't corrupt data."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         errors = []
 
-        def bulk_update_status(new_status: str):
+        def bulk_update_status(new_status: str) -> None:
             session = SessionLocal()
             try:
                 items = session.query(Item).filter(Item.project_id == "test-project").all()
@@ -936,13 +940,13 @@ class TestBulkOperationConcurrency:
         # Errors may occur due to stale data in concurrent updates
         assert len(errors) <= 3, f"Should have minimal errors: {errors}"
 
-    def test_concurrent_bulk_preview_and_execute(self, concurrent_initialized_db):
+    def test_concurrent_bulk_preview_and_execute(self, concurrent_initialized_db) -> None:
         """Test concurrent bulk preview and execution."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         results = []
         errors = []
 
-        def preview_and_execute(batch_id: int):
+        def preview_and_execute(batch_id: int) -> None:
             session = SessionLocal()
             try:
                 bulk_service = BulkOperationService(session)
@@ -973,14 +977,14 @@ class TestBulkOperationConcurrency:
 class TestStressConditions:
     """Stress tests for system limits and behavior under extreme load."""
 
-    def test_high_throughput_item_creation(self, concurrent_initialized_db):
+    def test_high_throughput_item_creation(self, concurrent_initialized_db) -> None:
         """Test high throughput item creation."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         results = []
         errors = []
         start_time = time.time()
 
-        def create_batch(batch_id: int):
+        def create_batch(batch_id: int) -> None:
             session = SessionLocal()
             try:
                 for i in range(10):
@@ -1011,13 +1015,13 @@ class TestStressConditions:
         assert len(results) >= 8, f"Most batches should complete, got {len(results)}"
         assert throughput >= 0, "Should achieve non-negative throughput"
 
-    def test_memory_stability_with_many_sessions(self, concurrent_initialized_db):
+    def test_memory_stability_with_many_sessions(self, concurrent_initialized_db) -> None:
         """Test that many concurrent sessions don't leak memory."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         results = []
         errors = []
 
-        def session_operation(op_id: int):
+        def session_operation(op_id: int) -> None:
             session = SessionLocal()
             try:
                 # Read and update existing items to avoid database state issues
@@ -1039,13 +1043,13 @@ class TestStressConditions:
         assert len(results) >= 40, f"Operations should complete, got {len(results)}"
         assert len(errors) <= 10, f"Should have minimal errors: {errors}"
 
-    def test_rapid_connection_cycling(self, concurrent_initialized_db):
+    def test_rapid_connection_cycling(self, concurrent_initialized_db) -> None:
         """Test rapid creation and destruction of connections."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         results = []
         errors = []
 
-        def quick_operation(op_id: int):
+        def quick_operation(op_id: int) -> None:
             try:
                 for _ in range(5):
                     session = SessionLocal()
@@ -1075,7 +1079,7 @@ class TestStressConditions:
 class TestConcurrencyIntegration:
     """Integration tests combining multiple concurrency scenarios."""
 
-    def test_mixed_workload_scenario(self, concurrent_initialized_db):
+    def test_mixed_workload_scenario(self, concurrent_initialized_db) -> None:
         """Test realistic mixed workload with multiple operation types."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         metrics = {
@@ -1086,7 +1090,7 @@ class TestConcurrencyIntegration:
         }
         metrics_lock = threading.Lock()
 
-        def reader():
+        def reader() -> None:
             session = SessionLocal()
             try:
                 for _ in range(5):
@@ -1100,7 +1104,7 @@ class TestConcurrencyIntegration:
             finally:
                 session.close()
 
-        def updater():
+        def updater() -> None:
             session = SessionLocal()
             try:
                 for i in range(5):
@@ -1129,7 +1133,7 @@ class TestConcurrencyIntegration:
         # Errors may occur due to concurrent write conflicts, but should be minimal
         assert metrics["errors"] <= 5, f"Should have minimal errors: {metrics['errors']}"
 
-    def test_concurrent_agent_operations(self, concurrent_initialized_db):
+    def test_concurrent_agent_operations(self, concurrent_initialized_db) -> None:
         """Test concurrent operations with agent tracking."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
 
@@ -1150,7 +1154,7 @@ class TestConcurrencyIntegration:
         results = []
         errors = []
 
-        def agent_operation(agent_id: str):
+        def agent_operation(agent_id: str) -> None:
             session = SessionLocal()
             try:
                 agent = session.query(Agent).filter(Agent.id == agent_id).first()
@@ -1192,14 +1196,14 @@ class TestConcurrencyReport:
             (20, 50),
         ],
     )
-    def test_throughput_measurement(self, concurrent_initialized_db, num_threads, operations):
+    def test_throughput_measurement(self, concurrent_initialized_db, num_threads, operations) -> None:
         """Measure throughput at various concurrency levels."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         results = []
         errors = []
         start_time = time.time()
 
-        def operation(op_id: int):
+        def operation(op_id: int) -> None:
             session = SessionLocal()
             try:
                 # Simple operation

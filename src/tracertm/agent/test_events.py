@@ -37,7 +37,7 @@ TEST_SNAPSHOT_FILE_COUNT = 150
 class MockNATSClient:
     """Mock NATS client for testing event publishing."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.published_events: list[dict[str, Any]] = []
         self._js = MagicMock()
         self._js.publish = AsyncMock(side_effect=self._mock_publish)
@@ -70,7 +70,7 @@ def publisher(mock_nats):
 
 
 @pytest.mark.asyncio
-async def test_publish_session_created(publisher, mock_nats):
+async def test_publish_session_created(publisher, mock_nats) -> None:
     """Test session created event publishing."""
     await publisher.publish_session_created(
         session_id="sess-123",
@@ -94,7 +94,7 @@ async def test_publish_session_created(publisher, mock_nats):
 
 
 @pytest.mark.asyncio
-async def test_publish_session_checkpoint(publisher, mock_nats):
+async def test_publish_session_checkpoint(publisher, mock_nats) -> None:
     """Test session checkpoint event publishing."""
     payload = SessionCheckpointPayload(
         checkpoint_id="ckpt-789",
@@ -120,7 +120,7 @@ async def test_publish_session_checkpoint(publisher, mock_nats):
 
 
 @pytest.mark.asyncio
-async def test_publish_session_destroyed(publisher, mock_nats):
+async def test_publish_session_destroyed(publisher, mock_nats) -> None:
     """Test session destroyed event publishing."""
     await publisher.publish_session_destroyed(
         session_id="sess-123",
@@ -137,7 +137,7 @@ async def test_publish_session_destroyed(publisher, mock_nats):
 
 
 @pytest.mark.asyncio
-async def test_publish_session_status_changed(publisher, mock_nats):
+async def test_publish_session_status_changed(publisher, mock_nats) -> None:
     """Test session status change event publishing."""
     await publisher.publish_session_status_changed(
         session_id="sess-123",
@@ -158,7 +158,7 @@ async def test_publish_session_status_changed(publisher, mock_nats):
 
 
 @pytest.mark.asyncio
-async def test_publish_chat_message(publisher, mock_nats):
+async def test_publish_chat_message(publisher, mock_nats) -> None:
     """Test chat message event publishing."""
     long_content = "A" * TEST_CONTENT_LENGTH
     payload = ChatMessagePayload(
@@ -186,7 +186,7 @@ async def test_publish_chat_message(publisher, mock_nats):
 
 
 @pytest.mark.asyncio
-async def test_publish_chat_tool_use(publisher, mock_nats):
+async def test_publish_chat_tool_use(publisher, mock_nats) -> None:
     """Test tool use event publishing."""
     payload = ChatToolUsePayload(
         tool_name="read_file",
@@ -211,7 +211,7 @@ async def test_publish_chat_tool_use(publisher, mock_nats):
 
 
 @pytest.mark.asyncio
-async def test_publish_chat_error(publisher, mock_nats):
+async def test_publish_chat_error(publisher, mock_nats) -> None:
     """Test chat error event publishing."""
     await publisher.publish_chat_error(
         session_id="sess-123",
@@ -231,7 +231,7 @@ async def test_publish_chat_error(publisher, mock_nats):
 
 
 @pytest.mark.asyncio
-async def test_publish_snapshot_created(publisher, mock_nats):
+async def test_publish_snapshot_created(publisher, mock_nats) -> None:
     """Test snapshot created event publishing."""
     payload = SnapshotCreatedPayload(
         snapshot_id="snap-789",
@@ -257,7 +257,7 @@ async def test_publish_snapshot_created(publisher, mock_nats):
 
 
 @pytest.mark.asyncio
-async def test_publish_snapshot_restored(publisher, mock_nats):
+async def test_publish_snapshot_restored(publisher, mock_nats) -> None:
     """Test snapshot restored event publishing."""
     await publisher.publish_snapshot_restored(
         session_id="sess-123",
@@ -276,7 +276,7 @@ async def test_publish_snapshot_restored(publisher, mock_nats):
 
 
 @pytest.mark.asyncio
-async def test_event_payload_structure(publisher, mock_nats):
+async def test_event_payload_structure(publisher, mock_nats) -> None:
     """Test that all events follow standard payload structure."""
     await publisher.publish_session_created(
         session_id="sess-123",
@@ -303,7 +303,7 @@ async def test_event_payload_structure(publisher, mock_nats):
 
 
 @pytest.mark.asyncio
-async def test_fire_and_forget_on_error(mock_nats):
+async def test_fire_and_forget_on_error(mock_nats) -> None:
     """Test that event publishing errors don't raise exceptions."""
     # Make publish fail
     mock_nats._js.publish = AsyncMock(side_effect=Exception("NATS error"))
@@ -320,7 +320,7 @@ async def test_fire_and_forget_on_error(mock_nats):
 
 
 @pytest.mark.asyncio
-async def test_publisher_disabled_when_no_nats():
+async def test_publisher_disabled_when_no_nats() -> None:
     """Test that publisher gracefully handles missing NATS client."""
     publisher = AgentEventPublisher(None)
 
@@ -334,7 +334,7 @@ async def test_publisher_disabled_when_no_nats():
 
 
 @pytest.mark.asyncio
-async def test_health_check(publisher, mock_nats):
+async def test_health_check(publisher, mock_nats) -> None:
     """Test event publisher health check."""
     health = await publisher.health_check()
 
@@ -344,7 +344,7 @@ async def test_health_check(publisher, mock_nats):
 
 
 @pytest.mark.asyncio
-async def test_health_check_no_nats():
+async def test_health_check_no_nats() -> None:
     """Test health check with no NATS client."""
     publisher = AgentEventPublisher(None)
     health = await publisher.health_check()
@@ -353,21 +353,21 @@ async def test_health_check_no_nats():
     assert "reason" in health
 
 
-def test_event_type_enum():
+def test_event_type_enum() -> None:
     """Test event type enumeration."""
     assert EventType.SESSION_CREATED.value == "session.created"
     assert EventType.CHAT_MESSAGE.value == "chat.message"
     assert EventType.SNAPSHOT_CREATED.value == "snapshot.created"
 
 
-def test_session_status_enum():
+def test_session_status_enum() -> None:
     """Test session status enumeration."""
     assert SessionStatus.ACTIVE.value == "ACTIVE"
     assert SessionStatus.COMPLETED.value == "COMPLETED"
     assert SessionStatus.FAILED.value == "FAILED"
 
 
-def test_event_source_enum():
+def test_event_source_enum() -> None:
     """Test event source enumeration."""
     assert EventSource.AGENT_SERVICE.value == "agent_service"
     assert EventSource.WORKFLOW_EXECUTOR.value == "workflow_executor"

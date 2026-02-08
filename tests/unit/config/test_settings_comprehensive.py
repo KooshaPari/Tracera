@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for TraceRTM settings and configuration.
+"""Comprehensive tests for TraceRTM settings and configuration.
 
 Target: +2% coverage on configuration paths (40 test cases)
 """
@@ -21,7 +20,7 @@ class TestDatabaseSettings:
     """Test suite for DatabaseSettings configuration."""
 
     @pytest.mark.unit
-    def test_database_settings_defaults(self):
+    def test_database_settings_defaults(self) -> None:
         """Test default database settings."""
         settings = DatabaseSettings()
         assert settings.url == "sqlite:///tracertm.db"
@@ -30,7 +29,7 @@ class TestDatabaseSettings:
         assert settings.max_overflow == 20
 
     @pytest.mark.unit
-    def test_database_settings_custom_values(self):
+    def test_database_settings_custom_values(self) -> None:
         """Test custom database settings."""
         settings = DatabaseSettings(
             url="postgresql://localhost/test",
@@ -44,7 +43,7 @@ class TestDatabaseSettings:
         assert settings.max_overflow == 30
 
     @pytest.mark.unit
-    def test_database_settings_pool_size_constraints(self):
+    def test_database_settings_pool_size_constraints(self) -> None:
         """Test pool size validation (1-100)."""
         db = DatabaseSettings(pool_size=1)
         assert db.pool_size == 1
@@ -59,7 +58,7 @@ class TestDatabaseSettings:
             DatabaseSettings(pool_size=101)
 
     @pytest.mark.unit
-    def test_database_settings_max_overflow_constraints(self):
+    def test_database_settings_max_overflow_constraints(self) -> None:
         """Test max overflow validation (0-200)."""
         db = DatabaseSettings(max_overflow=0)
         assert db.max_overflow == 0
@@ -74,19 +73,19 @@ class TestDatabaseSettings:
             DatabaseSettings(max_overflow=201)
 
     @pytest.mark.unit
-    def test_database_url_validation_postgresql(self):
+    def test_database_url_validation_postgresql(self) -> None:
         """Test PostgreSQL URL validation."""
         db = DatabaseSettings(url="postgresql://user:pass@localhost:5432/db")
         assert db.url == "postgresql://user:pass@localhost:5432/db"
 
     @pytest.mark.unit
-    def test_database_url_validation_sqlite(self):
+    def test_database_url_validation_sqlite(self) -> None:
         """Test SQLite URL validation."""
         db = DatabaseSettings(url="sqlite:///path/to/db.sqlite")
         assert db.url == "sqlite:///path/to/db.sqlite"
 
     @pytest.mark.unit
-    def test_database_url_validation_invalid(self):
+    def test_database_url_validation_invalid(self) -> None:
         """Test invalid database URL rejection."""
         invalid_urls = [
             "mysql://localhost/db",
@@ -103,7 +102,7 @@ class TestTraceSettingsDefaults:
     """Test suite for TraceSettings default values."""
 
     @pytest.mark.unit
-    def test_settings_all_defaults(self):
+    def test_settings_all_defaults(self) -> None:
         """Test default settings values."""
         reset_settings()
         settings = TraceSettings()
@@ -121,7 +120,7 @@ class TestTraceSettingsDefaults:
         assert settings.enable_validation is True
 
     @pytest.mark.unit
-    def test_settings_custom_override(self):
+    def test_settings_custom_override(self) -> None:
         """Test custom settings initialization."""
         reset_settings()
         settings = TraceSettings(
@@ -146,7 +145,7 @@ class TestTraceSettingsValidation:
     """Test suite for TraceSettings validation."""
 
     @pytest.mark.unit
-    def test_max_agents_constraints(self):
+    def test_max_agents_constraints(self) -> None:
         """Test max_agents validation (1-10000)."""
         TraceSettings(max_agents=1)
         TraceSettings(max_agents=10000)
@@ -158,7 +157,7 @@ class TestTraceSettingsValidation:
             TraceSettings(max_agents=10001)
 
     @pytest.mark.unit
-    def test_cache_ttl_constraints(self):
+    def test_cache_ttl_constraints(self) -> None:
         """Test cache_ttl validation (0-3600)."""
         TraceSettings(cache_ttl=0)
         TraceSettings(cache_ttl=3600)
@@ -170,7 +169,7 @@ class TestTraceSettingsValidation:
             TraceSettings(cache_ttl=3601)
 
     @pytest.mark.unit
-    def test_batch_size_constraints(self):
+    def test_batch_size_constraints(self) -> None:
         """Test batch_size validation (1-1000)."""
         TraceSettings(batch_size=1)
         TraceSettings(batch_size=1000)
@@ -182,7 +181,7 @@ class TestTraceSettingsValidation:
             TraceSettings(batch_size=1001)
 
     @pytest.mark.unit
-    def test_log_level_values(self):
+    def test_log_level_values(self) -> None:
         """Test valid log levels."""
         for level in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
             settings = TraceSettings(log_level=level)
@@ -192,7 +191,7 @@ class TestTraceSettingsValidation:
             TraceSettings(log_level="INVALID")
 
     @pytest.mark.unit
-    def test_output_format_values(self):
+    def test_output_format_values(self) -> None:
         """Test valid output formats."""
         for fmt in ["table", "json", "yaml", "csv"]:
             settings = TraceSettings(output_format=fmt)
@@ -202,7 +201,7 @@ class TestTraceSettingsValidation:
             TraceSettings(output_format="invalid")
 
     @pytest.mark.unit
-    def test_view_type_values(self):
+    def test_view_type_values(self) -> None:
         """Test valid view types."""
         views = [
             "FEATURE",
@@ -226,7 +225,7 @@ class TestTraceSettingsDirectories:
     """Test suite for directory handling in TraceSettings."""
 
     @pytest.mark.unit
-    def test_directory_creation(self, tmp_path):
+    def test_directory_creation(self, tmp_path) -> None:
         """Test that settings creates required directories."""
         data_dir = tmp_path / "data"
         config_dir = tmp_path / "config"
@@ -241,7 +240,7 @@ class TestTraceSettingsDirectories:
         assert config_dir.exists()
 
     @pytest.mark.unit
-    def test_custom_paths(self, tmp_path):
+    def test_custom_paths(self, tmp_path) -> None:
         """Test custom path configuration."""
         reset_settings()
         custom_data = tmp_path / "custom_data"
@@ -253,7 +252,7 @@ class TestTraceSettingsDirectories:
         assert settings.config_dir == custom_config
 
     @pytest.mark.unit
-    def test_nested_path_creation(self, tmp_path):
+    def test_nested_path_creation(self, tmp_path) -> None:
         """Test nested path creation."""
         reset_settings()
         nested_path = tmp_path / "a" / "b" / "c"
@@ -269,7 +268,7 @@ class TestTraceSettingsProperties:
     """Test suite for TraceSettings properties."""
 
     @pytest.mark.unit
-    def test_config_file_path(self, tmp_path):
+    def test_config_file_path(self, tmp_path) -> None:
         """Test config file path property."""
         reset_settings()
         config_dir = tmp_path / "config"
@@ -278,14 +277,14 @@ class TestTraceSettingsProperties:
         assert settings.config_file == config_dir / "config.yaml"
 
     @pytest.mark.unit
-    def test_env_file_path(self):
+    def test_env_file_path(self) -> None:
         """Test env file path property."""
         reset_settings()
         settings = TraceSettings()
         assert settings.env_file_path == Path(".env")
 
     @pytest.mark.unit
-    def test_database_settings_access(self):
+    def test_database_settings_access(self) -> None:
         """Test accessing nested database settings."""
         reset_settings()
         db_settings = DatabaseSettings(url="postgresql://localhost/test", pool_size=20)
@@ -299,7 +298,7 @@ class TestSettingsSingleton:
     """Test suite for settings singleton pattern."""
 
     @pytest.mark.unit
-    def test_get_settings_singleton(self):
+    def test_get_settings_singleton(self) -> None:
         """Test get_settings returns singleton instance."""
         reset_settings()
 
@@ -309,7 +308,7 @@ class TestSettingsSingleton:
         assert settings1 is settings2
 
     @pytest.mark.unit
-    def test_get_settings_creates_instance(self):
+    def test_get_settings_creates_instance(self) -> None:
         """Test get_settings creates instance on first call."""
         reset_settings()
 
@@ -321,7 +320,7 @@ class TestSettingsSingleton:
         assert isinstance(settings, TraceSettings)
 
     @pytest.mark.unit
-    def test_reset_settings_clears_singleton(self):
+    def test_reset_settings_clears_singleton(self) -> None:
         """Test reset_settings clears singleton."""
         reset_settings()
 
@@ -339,7 +338,7 @@ class TestSettingsEnvironmentVariables:
     """Test suite for environment variable handling."""
 
     @pytest.mark.unit
-    def test_env_prefix_tracertm(self, monkeypatch):
+    def test_env_prefix_tracertm(self, monkeypatch) -> None:
         """Test TRACERTM_ environment variable prefix."""
         reset_settings()
         monkeypatch.setenv("TRACERTM_LOG_LEVEL", "DEBUG")
@@ -348,7 +347,7 @@ class TestSettingsEnvironmentVariables:
         assert settings.log_level == "DEBUG"
 
     @pytest.mark.unit
-    def test_env_case_insensitive(self, monkeypatch):
+    def test_env_case_insensitive(self, monkeypatch) -> None:
         """Test environment variables are case insensitive."""
         reset_settings()
         monkeypatch.setenv("tracertm_log_level", "WARNING")
@@ -357,7 +356,7 @@ class TestSettingsEnvironmentVariables:
         assert settings.log_level == "WARNING"
 
     @pytest.mark.unit
-    def test_multiple_env_variables(self, monkeypatch):
+    def test_multiple_env_variables(self, monkeypatch) -> None:
         """Test multiple environment variable overrides."""
         reset_settings()
         monkeypatch.setenv("TRACERTM_LOG_LEVEL", "ERROR")
@@ -370,7 +369,7 @@ class TestSettingsEnvironmentVariables:
         assert settings.output_format == "json"
 
     @pytest.mark.unit
-    def test_env_number_conversion(self, monkeypatch):
+    def test_env_number_conversion(self, monkeypatch) -> None:
         """Test environment variable number conversion."""
         reset_settings()
         monkeypatch.setenv("TRACERTM_MAX_AGENTS", "500")
@@ -383,7 +382,7 @@ class TestSettingsEnvironmentVariables:
         assert settings.batch_size == 75
 
     @pytest.mark.unit
-    def test_env_boolean_conversion(self, monkeypatch):
+    def test_env_boolean_conversion(self, monkeypatch) -> None:
         """Test environment variable boolean conversion."""
         reset_settings()
         monkeypatch.setenv("TRACERTM_ENABLE_CACHE", "false")
@@ -398,7 +397,7 @@ class TestSettingsLogging:
     """Test suite for logging configuration settings."""
 
     @pytest.mark.unit
-    def test_custom_log_format(self):
+    def test_custom_log_format(self) -> None:
         """Test custom log format setting."""
         reset_settings()
         custom_format = "%(asctime)s - %(message)s"
@@ -407,7 +406,7 @@ class TestSettingsLogging:
         assert settings.log_format == custom_format
 
     @pytest.mark.unit
-    def test_default_log_format(self):
+    def test_default_log_format(self) -> None:
         """Test default log format."""
         reset_settings()
         settings = TraceSettings()
@@ -416,7 +415,7 @@ class TestSettingsLogging:
         assert settings.log_format == expected_format
 
     @pytest.mark.unit
-    def test_all_log_levels(self):
+    def test_all_log_levels(self) -> None:
         """Test all valid log levels."""
         levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
@@ -430,7 +429,7 @@ class TestSettingsFeatureFlags:
     """Test suite for feature flag settings."""
 
     @pytest.mark.unit
-    def test_enable_cache_flag(self):
+    def test_enable_cache_flag(self) -> None:
         """Test cache feature flag."""
         reset_settings()
         s1 = TraceSettings(enable_cache=True)
@@ -441,7 +440,7 @@ class TestSettingsFeatureFlags:
         assert s2.enable_cache is False
 
     @pytest.mark.unit
-    def test_enable_async_flag(self):
+    def test_enable_async_flag(self) -> None:
         """Test async feature flag."""
         reset_settings()
         s1 = TraceSettings(enable_async=True)
@@ -452,7 +451,7 @@ class TestSettingsFeatureFlags:
         assert s2.enable_async is False
 
     @pytest.mark.unit
-    def test_enable_validation_flag(self):
+    def test_enable_validation_flag(self) -> None:
         """Test validation feature flag."""
         reset_settings()
         s1 = TraceSettings(enable_validation=True)
@@ -463,7 +462,7 @@ class TestSettingsFeatureFlags:
         assert s2.enable_validation is False
 
     @pytest.mark.unit
-    def test_all_features_enabled(self):
+    def test_all_features_enabled(self) -> None:
         """Test all features enabled simultaneously."""
         reset_settings()
         settings = TraceSettings(enable_cache=True, enable_async=True, enable_validation=True)
@@ -473,7 +472,7 @@ class TestSettingsFeatureFlags:
         assert settings.enable_validation is True
 
     @pytest.mark.unit
-    def test_all_features_disabled(self):
+    def test_all_features_disabled(self) -> None:
         """Test all features disabled simultaneously."""
         reset_settings()
         settings = TraceSettings(enable_cache=False, enable_async=False, enable_validation=False)

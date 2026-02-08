@@ -107,7 +107,7 @@ describe('WebSocket Hooks - Integration Tests', () => {
 
       store.addEvent(mockEvent('item-1'));
       store.addEvent(mockEvent('item-2'));
-      store.addEvent(mockEvent('item-1')); // duplicate
+      store.addEvent(mockEvent('item-1')); // Duplicate
 
       const item1Events = useWebSocketStore
         .getState()
@@ -134,7 +134,7 @@ describe('WebSocket Hooks - Integration Tests', () => {
       store.addEvent(event2);
       store.addEvent(event3);
 
-      const events = useWebSocketStore.getState().events;
+      const { events } = useWebSocketStore.getState();
 
       // Should be in newest-first order
       expect(events[0].timestamp).toBeGreaterThanOrEqual(events[1].timestamp);
@@ -154,7 +154,7 @@ describe('WebSocket Hooks - Integration Tests', () => {
       store.addEvent(event2);
       store.addEvent(event3);
 
-      const events = useWebSocketStore.getState().events;
+      const { events } = useWebSocketStore.getState();
       // Events should be stored in the order they were added (newest-first may not sort by timestamp)
       // Just verify all events are present
       expect(events).toHaveLength(3);
@@ -172,7 +172,7 @@ describe('WebSocket Hooks - Integration Tests', () => {
       store.addEvent(event);
       store.addEvent(event);
 
-      const events = useWebSocketStore.getState().events;
+      const { events } = useWebSocketStore.getState();
       const dupCount = events.filter((e) => e.record?.id === 'dup-id').length;
 
       expect(dupCount).toBeGreaterThanOrEqual(1); // Depends on implementation
@@ -229,7 +229,7 @@ describe('WebSocket Hooks - Integration Tests', () => {
         store.addEvent(mockEvent(`event-${i}`));
       }
 
-      const events = useWebSocketStore.getState().events;
+      const { events } = useWebSocketStore.getState();
       expect(events).toHaveLength(100);
     });
 
@@ -240,12 +240,12 @@ describe('WebSocket Hooks - Integration Tests', () => {
         store.addEvent(mockEvent(`event-${i}`, 'created'));
       }
 
-      const events = useWebSocketStore.getState().events;
-      const eventIds = events.map((e) => e.record?.id);
+      const { events } = useWebSocketStore.getState();
+      const eventIds = new Set(events.map((e) => e.record?.id));
 
       // Oldest events (0-9) should be dropped
-      expect(eventIds.includes('event-0')).toBeFalsy();
-      expect(eventIds.includes('event-9')).toBeFalsy();
+      expect(eventIds.has('event-0')).toBeFalsy();
+      expect(eventIds.has('event-9')).toBeFalsy();
     });
 
     it('should clear event buffer', () => {
@@ -260,8 +260,8 @@ describe('WebSocket Hooks - Integration Tests', () => {
       store.clearEvents();
 
       expect(useWebSocketStore.getState().events).toHaveLength(0);
-      const lastEvent = useWebSocketStore.getState().lastEvent;
-      // lastEvent may be null or undefined depending on implementation
+      const { lastEvent } = useWebSocketStore.getState();
+      // LastEvent may be null or undefined depending on implementation
       expect(lastEvent === null || lastEvent === undefined).toBeTruthy();
     });
   });
@@ -312,7 +312,9 @@ describe('WebSocket Hooks - Integration Tests', () => {
         mockEvent('1', 'updated'),
       ];
 
-      events.forEach((event) => store.addEvent(event));
+      events.forEach((event) => {
+        store.addEvent(event);
+      });
 
       const state = useWebSocketStore.getState();
       expect(state.events).toHaveLength(4);
@@ -376,7 +378,7 @@ describe('WebSocket Hooks - Integration Tests', () => {
     it('should handle concurrent event additions', async () => {
       const store = useWebSocketStore.getState();
 
-      const promises = Array.from({ length: 10 }, (_, i) =>
+      const promises = Array.from({ length: 10 }, async (_, i) =>
         Promise.resolve().then(() => {
           store.addEvent(mockEvent(`event-${i}`));
         }),

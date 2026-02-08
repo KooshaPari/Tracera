@@ -11,8 +11,10 @@ from __future__ import annotations
 
 import gzip
 import json
-from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class ResponseFormat:
@@ -173,11 +175,9 @@ def _generate_suggestions(error_msg: str, category: str) -> list[str]:  # noqa: 
 
     if category == "not_found":
         if "project" in error_msg.lower():
-            suggestions.append("Use select_project() to select a project first")
-            suggestions.append("Use list_projects() to see available projects")
+            suggestions.extend(("Use select_project() to select a project first", "Use list_projects() to see available projects"))
         elif "item" in error_msg.lower():
-            suggestions.append("Check the item ID or use query_items() to search")
-            suggestions.append("Item IDs support prefix matching (e.g., 'abc' matches 'abcdef...')")
+            suggestions.extend(("Check the item ID or use query_items() to search", "Item IDs support prefix matching (e.g., 'abc' matches 'abcdef...')"))
 
     elif category == "validation":
         if "required" in error_msg.lower():
@@ -186,8 +186,7 @@ def _generate_suggestions(error_msg: str, category: str) -> list[str]:  # noqa: 
             suggestions.append("Use select_project() to set the current project")
 
     elif category == "auth":
-        suggestions.append("Check your access token and permissions")
-        suggestions.append("Verify project access for the current user")
+        suggestions.extend(("Check your access token and permissions", "Verify project access for the current user"))
 
     return suggestions
 

@@ -1,4 +1,4 @@
-"""Fix schema validation issues
+"""Fix schema validation issues.
 
 Revision ID: 059_fix_schema_validation
 Revises: 058_add_api_keys_table
@@ -15,9 +15,8 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
+def upgrade() -> None:
     """Fix schema validation issues identified in tests."""
-
     # 1. Add missing updated_at column to links table
     op.execute("""
         ALTER TABLE links
@@ -113,9 +112,8 @@ def upgrade():
     """)
 
 
-def downgrade():
+def downgrade() -> None:
     """Revert schema validation fixes."""
-
     # Remove views table
     op.execute("DROP TABLE IF EXISTS views CASCADE;")
 

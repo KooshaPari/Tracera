@@ -139,7 +139,7 @@ describe('CreateItemDialog - Error Handling', () => {
 
     expect(result.success).toBeFalsy();
     expect(result.attempts).toBe(1);
-    expect(mockFn).toHaveBeenCalledTimes(1);
+    expect(mockFn).toHaveBeenCalledOnce();
   });
 
   it('should stop retrying after max attempts', async () => {

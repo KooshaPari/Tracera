@@ -1,6 +1,4 @@
-"""
-Pydantic schemas for Test Coverage.
-"""
+"""Pydantic schemas for Test Coverage."""
 
 from datetime import datetime
 from typing import Any

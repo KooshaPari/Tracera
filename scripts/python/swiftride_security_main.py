@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""
-Main execution script for SwiftRide Security Layer Generation
-Generates 450+ security items across 6 categories with comprehensive linking
+"""Main execution script for SwiftRide Security Layer Generation
+Generates 450+ security items across 6 categories with comprehensive linking.
 """
 
 import json
@@ -57,7 +56,7 @@ async def create_item(
     priority: str = "medium",
     metadata: dict | None = None,
 ) -> str:
-    """Create a security item in the database"""
+    """Create a security item in the database."""
     item_id = str(uuid.uuid4())
     counters[item_type] += 1
     external_id = f"{item_type.upper().replace('_', '-')}-{counters[item_type]:03d}"
@@ -92,12 +91,11 @@ async def create_item(
     )
 
     items_db[item_type].append((item_id, title))
-    print(f"✓ Created {external_id}: {title[:60]}...")
     return item_id
 
 
-async def create_link(session: AsyncSession, source_id: str, target_id: str, link_type: str, metadata: dict | None = None):
-    """Create a link between items"""
+async def create_link(session: AsyncSession, source_id: str, target_id: str, link_type: str, metadata: dict | None = None) -> None:
+    """Create a link between items."""
     link_id = str(uuid.uuid4())
 
     query = text("""

@@ -1,6 +1,4 @@
-"""
-Event model for TraceRTM (event sourcing).
-"""
+"""Event model for TraceRTM (event sourcing)."""
 
 from typing import Any
 
@@ -13,8 +11,7 @@ from tracertm.models.types import JSONType
 
 
 class Event(Base, TimestampMixin):
-    """
-    Event model for event sourcing.
+    """Event model for event sourcing.
 
     All state changes are recorded as events for history tracking.
     """

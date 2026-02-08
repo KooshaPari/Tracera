@@ -12,7 +12,7 @@ from tracertm.repositories.project_repository import ProjectRepository
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_item_update_version_conflict(db_session: AsyncSession):
+async def test_item_update_version_conflict(db_session: AsyncSession) -> None:
     """Test optimistic locking raises error on version conflict."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project")
@@ -39,7 +39,7 @@ async def test_item_update_version_conflict(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_item_update_nonexistent(db_session: AsyncSession):
+async def test_item_update_nonexistent(db_session: AsyncSession) -> None:
     """Test updating non-existent item raises error."""
     item_repo = ItemRepository(db_session)
 
@@ -51,7 +51,7 @@ async def test_item_update_nonexistent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_item_create_with_invalid_parent(db_session: AsyncSession):
+async def test_item_create_with_invalid_parent(db_session: AsyncSession) -> None:
     """Test creating item with non-existent parent raises error."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project")
@@ -72,7 +72,7 @@ async def test_item_create_with_invalid_parent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_item_create_with_parent_from_different_project(db_session: AsyncSession):
+async def test_item_create_with_parent_from_different_project(db_session: AsyncSession) -> None:
     """Test creating item with parent from different project raises error."""
     project_repo = ProjectRepository(db_session)
     project1 = await project_repo.create(name="Project 1")
@@ -100,7 +100,7 @@ async def test_item_create_with_parent_from_different_project(db_session: AsyncS
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_agent_update_status_nonexistent(db_session: AsyncSession):
+async def test_agent_update_status_nonexistent(db_session: AsyncSession) -> None:
     """Test updating status of non-existent agent raises error."""
     agent_repo = AgentRepository(db_session)
 
@@ -112,7 +112,7 @@ async def test_agent_update_status_nonexistent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_agent_update_activity_nonexistent(db_session: AsyncSession):
+async def test_agent_update_activity_nonexistent(db_session: AsyncSession) -> None:
     """Test updating activity of non-existent agent raises error."""
     agent_repo = AgentRepository(db_session)
 
@@ -124,7 +124,7 @@ async def test_agent_update_activity_nonexistent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_item_get_by_id_with_project_scope(db_session: AsyncSession):
+async def test_item_get_by_id_with_project_scope(db_session: AsyncSession) -> None:
     """Test getting item by ID scoped to project."""
     project_repo = ProjectRepository(db_session)
     project1 = await project_repo.create(name="Project 1")
@@ -150,7 +150,7 @@ async def test_item_get_by_id_with_project_scope(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_nonexistent_item_returns_false(db_session: AsyncSession):
+async def test_delete_nonexistent_item_returns_false(db_session: AsyncSession) -> None:
     """Test deleting non-existent item returns False."""
     item_repo = ItemRepository(db_session)
     result = await item_repo.delete("nonexistent-id", soft=True)
@@ -159,7 +159,7 @@ async def test_delete_nonexistent_item_returns_false(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_nonexistent_link_returns_false(db_session: AsyncSession):
+async def test_delete_nonexistent_link_returns_false(db_session: AsyncSession) -> None:
     """Test deleting non-existent link returns False."""
     link_repo = LinkRepository(db_session)
     result = await link_repo.delete("nonexistent-id")
@@ -168,7 +168,7 @@ async def test_delete_nonexistent_link_returns_false(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_nonexistent_agent_returns_false(db_session: AsyncSession):
+async def test_delete_nonexistent_agent_returns_false(db_session: AsyncSession) -> None:
     """Test deleting non-existent agent returns False."""
     agent_repo = AgentRepository(db_session)
     result = await agent_repo.delete("nonexistent-id")
@@ -177,7 +177,7 @@ async def test_delete_nonexistent_agent_returns_false(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_project_update_nonexistent_returns_none(db_session: AsyncSession):
+async def test_project_update_nonexistent_returns_none(db_session: AsyncSession) -> None:
     """Test updating non-existent project returns None."""
     project_repo = ProjectRepository(db_session)
     result = await project_repo.update("nonexistent-id", name="New Name")
@@ -186,7 +186,7 @@ async def test_project_update_nonexistent_returns_none(db_session: AsyncSession)
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_restore_nonexistent_item_returns_none(db_session: AsyncSession):
+async def test_restore_nonexistent_item_returns_none(db_session: AsyncSession) -> None:
     """Test restoring non-existent item returns None."""
     item_repo = ItemRepository(db_session)
     result = await item_repo.restore("nonexistent-id")
@@ -195,7 +195,7 @@ async def test_restore_nonexistent_item_returns_none(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_restore_non_deleted_item_returns_none(db_session: AsyncSession):
+async def test_restore_non_deleted_item_returns_none(db_session: AsyncSession) -> None:
     """Test restoring non-deleted item returns None."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project")

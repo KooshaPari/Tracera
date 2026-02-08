@@ -141,7 +141,7 @@ def mock_context():
     """Create a mock MCP context for testing."""
     mock = MagicMock()
 
-    async def mock_report_progress(progress: int, total: int, message: str = ""):
+    async def mock_report_progress(progress: int, total: int, message: str = "") -> None:
         pass
 
     mock.report_progress = mock_report_progress
@@ -164,7 +164,7 @@ class MockItem:
         created_at=None,
         updated_at=None,
         deleted_at=None,
-    ):
+    ) -> None:
         self.id = id
         self.title = title
         self.view = view
@@ -190,7 +190,7 @@ class MockLink:
         project_id: str = "test-project",
         created_at=None,
         deleted_at=None,
-    ):
+    ) -> None:
         self.id = id
         self.source_id = source_id
         self.target_id = target_id
@@ -210,7 +210,7 @@ class MockProject:
         description: str = "",
         created_at=None,
         deleted_at=None,
-    ):
+    ) -> None:
         self.id = id
         self.name = name
         self.description = description

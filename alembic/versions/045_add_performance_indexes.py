@@ -25,7 +25,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Add performance indexes for critical queries."""
-
     # =========================================================================
     # LINKS TABLE INDEXES (Most Critical for Graph Performance)
     # =========================================================================
@@ -73,9 +72,9 @@ def upgrade() -> None:
     # =========================================================================
     # Project filtering - most common query pattern
     # Already created in 000 as idx_items_project_id
-    # We'll use different names to avoid conflicts if they are needed, 
+    # We'll use different names to avoid conflicts if they are needed,
     # but usually one index is enough. I'll comment out the redundant ones.
-    
+
     # op.create_index(
     #     "ix_items_project_id",
     #     "items",
@@ -167,7 +166,7 @@ def upgrade() -> None:
         CREATE INDEX ix_items_search ON items
         USING gin(to_tsvector('english',
             coalesce(title, '') || ' ' || coalesce(description, '')))
-    """
+    """,
     )
 
     # =========================================================================
@@ -289,7 +288,7 @@ def does_table_exist(table_name: str) -> bool:
                     SELECT 1 FROM information_schema.tables
                     WHERE table_name = :table_name
                 )
-            """
+            """,
             ),
             {"table_name": table_name},
         )

@@ -14,20 +14,23 @@ import os
 import secrets
 import urllib.parse
 from datetime import UTC, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.config.rate_limiting import enforce_rate_limit
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.clients.github_client import GitHubClient
 from tracertm.clients.linear_client import LinearClient
-from tracertm.models.integration import IntegrationCredential
 from tracertm.repositories.integration_repository import IntegrationCredentialRepository
 from tracertm.schemas.integration import IntegrationProvider
 from tracertm.services.encryption_service import EncryptionService
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from tracertm.models.integration import IntegrationCredential
 
 logger = logging.getLogger(__name__)
 
@@ -88,8 +91,8 @@ class OAuthCallbackRequest(BaseModel):
 async def start_oauth_flow(
     request: Request,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Start OAuth flow for an external integration provider.
 
@@ -167,8 +170,8 @@ async def start_oauth_flow(
 async def oauth_callback(
     request: Request,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Handle OAuth callback and store credentials.
 
@@ -261,8 +264,8 @@ async def list_credentials(
 async def validate_credential(
     request: Request,
     credential_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Validate an integration credential by testing API access.
 
@@ -336,8 +339,8 @@ async def validate_credential(
 async def delete_credential(
     request: Request,
     credential_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete an integration credential.
 

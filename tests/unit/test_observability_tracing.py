@@ -1,12 +1,14 @@
 """Tests for observability tracing initialization guards."""
 
+from typing import Never
+
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 
 from tracertm.observability import tracing
 
 
-def test_init_tracing_returns_existing_tracer(monkeypatch):
+def test_init_tracing_returns_existing_tracer(monkeypatch) -> None:
     tracer = trace.get_tracer("test-existing")
     monkeypatch.setattr(tracing, "_tracer", tracer)
     monkeypatch.setattr(tracing, "_exporter_available", False)
@@ -16,7 +18,7 @@ def test_init_tracing_returns_existing_tracer(monkeypatch):
     assert result is tracer
 
 
-def test_get_tracer_initializes_once(monkeypatch):
+def test_get_tracer_initializes_once(monkeypatch) -> None:
     monkeypatch.setattr(tracing, "_tracer", None)
     monkeypatch.setattr(tracing, "_exporter_available", False)
 
@@ -26,13 +28,14 @@ def test_get_tracer_initializes_once(monkeypatch):
     assert first is second
 
 
-def test_init_tracing_skips_overriding_existing_provider(monkeypatch):
+def test_init_tracing_skips_overriding_existing_provider(monkeypatch) -> None:
     monkeypatch.setattr(tracing, "_tracer", None)
     monkeypatch.setattr(tracing, "_exporter_available", True)
-    monkeypatch.setattr(trace, "get_tracer_provider", lambda: TracerProvider())
+    monkeypatch.setattr(trace, "get_tracer_provider", TracerProvider)
 
-    def _fail_set_provider(_provider):
-        raise AssertionError("set_tracer_provider should not be called when provider exists")
+    def _fail_set_provider(_provider) -> Never:
+        msg = "set_tracer_provider should not be called when provider exists"
+        raise AssertionError(msg)
 
     monkeypatch.setattr(trace, "set_tracer_provider", _fail_set_provider)
 

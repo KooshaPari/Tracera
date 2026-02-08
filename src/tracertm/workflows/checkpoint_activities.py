@@ -203,7 +203,7 @@ async def execute_ai_turn(
                 agent_svc = AgentService(session_store=store)
                 sandbox_path, _ = await agent_svc.get_or_create_session_sandbox(session_id, config=None, db_session=db)
         except (ValueError, RuntimeError, Exception) as e:
-            logger.debug(f"DB session resolution failed ({e}), using global store")
+            logger.debug("DB session resolution failed (%s), using global store", e)
             agent_svc = get_agent_service()
             sandbox_path, _ = await agent_svc.get_or_create_session_sandbox(session_id)
 
@@ -291,7 +291,8 @@ async def create_sandbox_snapshot(
         sandbox_path, _ = await agent_svc.get_or_create_session_sandbox(session_id)
 
         if not sandbox_path or not (await asyncio.to_thread(Path(sandbox_path).exists)):
-            raise FileNotFoundError(f"Sandbox not found for session {session_id}")
+            msg = f"Sandbox not found for session {session_id}"
+            raise FileNotFoundError(msg)
 
         # Prepare S3 key (Phase 4 will upload to MinIO)
         timestamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
@@ -308,7 +309,7 @@ async def create_sandbox_snapshot(
             try:
                 # Create tar archive
                 compression_mode = cast(
-                    Literal["w", "w:gz", "w:bz2"],
+                    "Literal['w', 'w:gz', 'w:bz2']",
                     {"gzip": "w:gz", "bzip2": "w:bz2", "none": "w"}.get(compression, "w:gz"),
                 )
 

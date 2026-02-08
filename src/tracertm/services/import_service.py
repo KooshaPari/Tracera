@@ -13,7 +13,7 @@ from tracertm.repositories.project_repository import ProjectRepository
 class ImportService:
     """Service for importing TraceRTM data."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.projects = ProjectRepository(session)
         self.items = ItemRepository(session)

@@ -51,7 +51,7 @@ describe(useProjects, () => {
     });
 
     expect(result.current.data).toEqual(mockProjects);
-    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockFetch).toHaveBeenCalledOnce();
   });
 
   it('should handle fetch error', async () => {

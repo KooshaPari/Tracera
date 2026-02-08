@@ -37,7 +37,8 @@ _JWKS_CACHE: dict[str, tuple[float, PyJWKClient]] = {}
 def get_workos_settings() -> WorkOSSettings:
     client_id = os.getenv("WORKOS_CLIENT_ID") or os.getenv("WORKOS_AUTHKIT_CLIENT_ID")
     if not client_id:
-        raise ValueError("WORKOS_CLIENT_ID is required for AuthKit")
+        msg = "WORKOS_CLIENT_ID is required for AuthKit"
+        raise ValueError(msg)
 
     api_key = os.getenv("WORKOS_API_KEY")
     api_base_url = os.getenv("WORKOS_API_BASE_URL", "https://api.workos.com").rstrip("/")
@@ -141,8 +142,9 @@ def verify_access_token(token: str) -> dict[str, Any]:
         if not matches:
             from jwt.exceptions import InvalidIssuerError
 
+            msg = f"Invalid issuer. Expected {expected_issuer} (or {api_base}/user_management/{{client_id}}), got {token_issuer}"
             raise InvalidIssuerError(
-                f"Invalid issuer. Expected {expected_issuer} (or {api_base}/user_management/{{client_id}}), got {token_issuer}"
+                msg,
             )
 
     # Manual audience verification
@@ -153,11 +155,13 @@ def verify_access_token(token: str) -> dict[str, Any]:
             if settings.audience not in token_audience:
                 from jwt.exceptions import InvalidAudienceError
 
-                raise InvalidAudienceError(f"Invalid audience. Expected {settings.audience}, got {token_audience}")
+                msg = f"Invalid audience. Expected {settings.audience}, got {token_audience}"
+                raise InvalidAudienceError(msg)
         elif token_audience != settings.audience:
             from jwt.exceptions import InvalidAudienceError
 
-            raise InvalidAudienceError(f"Invalid audience. Expected {settings.audience}, got {token_audience}")
+            msg = f"Invalid audience. Expected {settings.audience}, got {token_audience}"
+            raise InvalidAudienceError(msg)
 
     return decoded
 
@@ -166,7 +170,8 @@ def get_logout_url(session_id: str, return_to: str | None = None) -> str:
     """Generate a logout URL for the given session ID."""
     settings = get_workos_settings()
     if WorkOSClient is None:
-        raise RuntimeError("workos SDK is not available")
+        msg = "workos SDK is not available"
+        raise RuntimeError(msg)
     workos_client = WorkOSClient(
         api_key=settings.api_key or "sk_dummy",
         client_id=settings.client_id,
@@ -181,9 +186,11 @@ def authenticate_with_code(code: str) -> dict[str, Any]:
     """Exchange authorization code for tokens and user info."""
     settings = get_workos_settings()
     if not settings.api_key:
-        raise ValueError("WORKOS_API_KEY is required for code exchange")
+        msg = "WORKOS_API_KEY is required for code exchange"
+        raise ValueError(msg)
     if WorkOSClient is None:
-        raise RuntimeError("workos SDK is not available")
+        msg = "workos SDK is not available"
+        raise RuntimeError(msg)
     workos_client = WorkOSClient(
         api_key=settings.api_key,
         client_id=settings.client_id,
@@ -201,9 +208,11 @@ def authenticate_with_code(code: str) -> dict[str, Any]:
 def authenticate_with_refresh_token(refresh_token: str) -> dict[str, Any]:
     settings = get_workos_settings()
     if not settings.api_key:
-        raise ValueError("WORKOS_API_KEY is required for refresh token exchange")
+        msg = "WORKOS_API_KEY is required for refresh token exchange"
+        raise ValueError(msg)
     if WorkOSClient is None:
-        raise RuntimeError("workos SDK is not available")
+        msg = "workos SDK is not available"
+        raise RuntimeError(msg)
     workos_client = WorkOSClient(
         api_key=settings.api_key,
         client_id=settings.client_id,
@@ -239,9 +248,11 @@ class WorkOSAuthService:
 def get_user(user_id: str) -> dict[str, Any]:
     settings = get_workos_settings()
     if not settings.api_key:
-        raise ValueError("WORKOS_API_KEY is required to fetch user data")
+        msg = "WORKOS_API_KEY is required to fetch user data"
+        raise ValueError(msg)
     if WorkOSClient is None:
-        raise RuntimeError("workos SDK is not available")
+        msg = "workos SDK is not available"
+        raise RuntimeError(msg)
     workos_client = WorkOSClient(
         api_key=settings.api_key,
         client_id=settings.client_id,

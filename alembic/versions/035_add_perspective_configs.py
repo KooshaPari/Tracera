@@ -22,7 +22,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Create perspective_configs table."""
-
     op.create_table(
         "perspective_configs",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),

@@ -1,6 +1,4 @@
-"""
-Pydantic schemas for Account API.
-"""
+"""Pydantic schemas for Account API."""
 
 from typing import Any
 

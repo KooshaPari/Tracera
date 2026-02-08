@@ -13,7 +13,7 @@ from tracertm.repositories.event_repository import EventRepository
 class ContractService:
     """Service for Contract Management."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def _log_event(
@@ -47,7 +47,7 @@ class ContractService:
         """Create a new Contract."""
         # Simple numbering
         result = await self.session.execute(
-            select(Contract).where(Contract.project_id == project_id).order_by(Contract.created_at.desc()).limit(1)
+            select(Contract).where(Contract.project_id == project_id).order_by(Contract.created_at.desc()).limit(1),
         )
         last = result.scalar_one_or_none()
 
@@ -113,7 +113,8 @@ class ContractService:
         async def do_update() -> Contract:
             contract = await self.get_contract(contract_id)
             if not contract:
-                raise ValueError(f"Contract {contract_id} not found")
+                msg = f"Contract {contract_id} not found"
+                raise ValueError(msg)
 
             before = {key: getattr(contract, key, None) for key in updates}
             for key, value in updates.items():

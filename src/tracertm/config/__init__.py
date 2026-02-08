@@ -1,5 +1,4 @@
-"""
-Configuration management for TraceRTM.
+"""Configuration management for TraceRTM.
 
 Provides schema.py (Config, ConfigManager) and settings.py (TraceSettings) configuration.
 New code should use the pydantic-settings based TraceSettings from settings.py.

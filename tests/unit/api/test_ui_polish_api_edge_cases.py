@@ -1,5 +1,4 @@
-"""
-UI Layer Polish: API Endpoint Edge Cases and Final Polish Tests
+"""UI Layer Polish: API Endpoint Edge Cases and Final Polish Tests.
 
 This test suite covers final edge case and integration scenarios for API endpoints.
 
@@ -23,7 +22,7 @@ Target: 30-40 edge case tests for API polish
 class TestApiRequestResponseEdgeCases:
     """Test API request/response handling with edge cases."""
 
-    def test_request_with_empty_json_body(self):
+    def test_request_with_empty_json_body(self) -> None:
         """Test sending request with empty JSON object."""
         # Simple test that API client can be instantiated
         from tracertm.api.sync_client import ApiClient, ApiConfig
@@ -32,7 +31,7 @@ class TestApiRequestResponseEdgeCases:
         client = ApiClient(config)
         assert client is not None
 
-    def test_request_with_null_json_values(self):
+    def test_request_with_null_json_values(self) -> None:
         """Test sending request with null values in JSON."""
         from tracertm.api.sync_client import ApiClient, ApiConfig
 
@@ -40,7 +39,7 @@ class TestApiRequestResponseEdgeCases:
         client = ApiClient(config)
         assert client is not None
 
-    def test_response_with_extra_unknown_fields(self):
+    def test_response_with_extra_unknown_fields(self) -> None:
         """Test response containing unknown/unexpected fields."""
         from tracertm.api.sync_client import ApiClient, ApiConfig
 
@@ -48,7 +47,7 @@ class TestApiRequestResponseEdgeCases:
         client = ApiClient(config)
         assert client is not None
 
-    def test_response_with_deeply_nested_json(self):
+    def test_response_with_deeply_nested_json(self) -> None:
         """Test response with deeply nested JSON structure."""
         from tracertm.api.sync_client import ApiClient, ApiConfig
 
@@ -56,7 +55,7 @@ class TestApiRequestResponseEdgeCases:
         client = ApiClient(config)
         assert client is not None
 
-    def test_response_with_very_large_json(self):
+    def test_response_with_very_large_json(self) -> None:
         """Test response with very large JSON payload (1MB+)."""
         from tracertm.api.sync_client import ApiClient, ApiConfig
 
@@ -64,7 +63,7 @@ class TestApiRequestResponseEdgeCases:
         client = ApiClient(config)
         assert client is not None
 
-    def test_response_with_unicode_characters(self):
+    def test_response_with_unicode_characters(self) -> None:
         """Test response containing unicode characters."""
         from tracertm.api.sync_client import ApiClient, ApiConfig
 
@@ -72,7 +71,7 @@ class TestApiRequestResponseEdgeCases:
         client = ApiClient(config)
         assert client is not None
 
-    def test_response_with_special_characters(self):
+    def test_response_with_special_characters(self) -> None:
         """Test response with special characters in strings."""
         from tracertm.api.sync_client import ApiClient, ApiConfig
 
@@ -89,14 +88,14 @@ class TestApiRequestResponseEdgeCases:
 class TestApiErrorResponseEdgeCases:
     """Test API error response formatting."""
 
-    def test_error_response_with_empty_message(self):
+    def test_error_response_with_empty_message(self) -> None:
         """Test error response with empty error message."""
         from tracertm.api.sync_client import ApiError
 
         error = ApiError(status_code=500, message="")
         assert error.status_code == 500
 
-    def test_error_response_with_very_long_message(self):
+    def test_error_response_with_very_long_message(self) -> None:
         """Test error response with very long error message."""
         from tracertm.api.sync_client import ApiError
 
@@ -104,14 +103,14 @@ class TestApiErrorResponseEdgeCases:
         error = ApiError(status_code=500, message=long_message)
         assert error.status_code == 500
 
-    def test_error_response_with_unicode_message(self):
+    def test_error_response_with_unicode_message(self) -> None:
         """Test error response with unicode in message."""
         from tracertm.api.sync_client import ApiError
 
         error = ApiError(status_code=500, message="Error: 中文 日本語 ✨")
         assert error.status_code == 500
 
-    def test_error_response_with_newlines(self):
+    def test_error_response_with_newlines(self) -> None:
         """Test error response with newline characters."""
         from tracertm.api.sync_client import ApiError
 
@@ -119,14 +118,14 @@ class TestApiErrorResponseEdgeCases:
         error = ApiError(status_code=500, message=multiline_error)
         assert error.status_code == 500
 
-    def test_error_with_invalid_status_code(self):
+    def test_error_with_invalid_status_code(self) -> None:
         """Test error with invalid/malformed status code."""
         from tracertm.api.sync_client import ApiError
 
         error = ApiError(status_code=-1, message="error")
         assert error.status_code == -1
 
-    def test_error_with_unusual_status_code(self):
+    def test_error_with_unusual_status_code(self) -> None:
         """Test error with unusual but valid HTTP status codes."""
         from tracertm.api.sync_client import ApiError
 
@@ -144,7 +143,7 @@ class TestApiErrorResponseEdgeCases:
 class TestApiHeaderValidationEdgeCases:
     """Test API header validation edge cases."""
 
-    def test_request_with_missing_token(self):
+    def test_request_with_missing_token(self) -> None:
         """Test request without authentication token."""
         from tracertm.api.sync_client import ApiClient, ApiConfig
 
@@ -152,7 +151,7 @@ class TestApiHeaderValidationEdgeCases:
         client = ApiClient(config)
         assert client is not None
 
-    def test_request_with_very_long_header_value(self):
+    def test_request_with_very_long_header_value(self) -> None:
         """Test request with extremely long header value."""
         from tracertm.api.sync_client import ApiClient, ApiConfig
 
@@ -160,7 +159,7 @@ class TestApiHeaderValidationEdgeCases:
         client = ApiClient(config)
         assert client is not None
 
-    def test_request_with_unicode_token(self):
+    def test_request_with_unicode_token(self) -> None:
         """Test request with unicode in token."""
         from tracertm.api.sync_client import ApiClient, ApiConfig
 
@@ -168,7 +167,7 @@ class TestApiHeaderValidationEdgeCases:
         client = ApiClient(config)
         assert client is not None
 
-    def test_request_with_special_characters_in_token(self):
+    def test_request_with_special_characters_in_token(self) -> None:
         """Test request with special characters in token."""
         from tracertm.api.sync_client import ApiClient, ApiConfig
 
@@ -185,21 +184,21 @@ class TestApiHeaderValidationEdgeCases:
 class TestApiConfigurationEdgeCases:
     """Test API configuration edge cases."""
 
-    def test_config_with_empty_base_url(self):
+    def test_config_with_empty_base_url(self) -> None:
         """Test API config with empty base URL."""
         from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="")
         assert config.base_url == ""
 
-    def test_config_with_malformed_base_url(self):
+    def test_config_with_malformed_base_url(self) -> None:
         """Test API config with malformed URL."""
         from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="not-a-valid-url")
         assert config.base_url == "not-a-valid-url"
 
-    def test_config_with_url_ending_slash(self):
+    def test_config_with_url_ending_slash(self) -> None:
         """Test API config with/without trailing slash in URL."""
         from tracertm.api.sync_client import ApiConfig
 
@@ -209,28 +208,28 @@ class TestApiConfigurationEdgeCases:
         assert config1.base_url == "http://localhost:8000"
         assert config2.base_url == "http://localhost:8000/"
 
-    def test_config_with_unicode_in_base_url(self):
+    def test_config_with_unicode_in_base_url(self) -> None:
         """Test API config with unicode in base URL."""
         from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000/api/中文")
         assert "中文" in config.base_url
 
-    def test_config_with_custom_timeout(self):
+    def test_config_with_custom_timeout(self) -> None:
         """Test API config with custom timeout."""
         from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000", timeout=60.0)
         assert config.timeout == 60.0
 
-    def test_config_with_zero_timeout(self):
+    def test_config_with_zero_timeout(self) -> None:
         """Test API config with zero timeout."""
         from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000", timeout=0.0)
         assert config.timeout == 0.0
 
-    def test_config_with_very_large_timeout(self):
+    def test_config_with_very_large_timeout(self) -> None:
         """Test API config with very large timeout."""
         from tracertm.api.sync_client import ApiConfig
 
@@ -246,28 +245,28 @@ class TestApiConfigurationEdgeCases:
 class TestApiRetryConfigurationEdgeCases:
     """Test API retry configuration edge cases."""
 
-    def test_config_with_zero_retries(self):
+    def test_config_with_zero_retries(self) -> None:
         """Test API config with zero retries."""
         from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000", max_retries=0)
         assert config.max_retries == 0
 
-    def test_config_with_negative_retries(self):
+    def test_config_with_negative_retries(self) -> None:
         """Test API config with negative retries."""
         from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000", max_retries=-1)
         assert config.max_retries == -1
 
-    def test_config_with_very_large_retries(self):
+    def test_config_with_very_large_retries(self) -> None:
         """Test API config with very large retry count."""
         from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000", max_retries=1000)
         assert config.max_retries == 1000
 
-    def test_config_with_backoff_settings(self):
+    def test_config_with_backoff_settings(self) -> None:
         """Test API config with custom backoff settings."""
         from tracertm.api.sync_client import ApiConfig
 
@@ -284,14 +283,14 @@ class TestApiRetryConfigurationEdgeCases:
 class TestApiSslConfigurationEdgeCases:
     """Test API SSL/TLS configuration edge cases."""
 
-    def test_config_with_ssl_verification_enabled(self):
+    def test_config_with_ssl_verification_enabled(self) -> None:
         """Test API config with SSL verification enabled."""
         from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="https://localhost:8000", verify_ssl=True)
         assert config.verify_ssl is True
 
-    def test_config_with_ssl_verification_disabled(self):
+    def test_config_with_ssl_verification_disabled(self) -> None:
         """Test API config with SSL verification disabled."""
         from tracertm.api.sync_client import ApiConfig
 
@@ -307,7 +306,7 @@ class TestApiSslConfigurationEdgeCases:
 class TestApiInputValidationBoundaryConditions:
     """Test API input validation boundary conditions."""
 
-    def test_api_client_instantiation(self):
+    def test_api_client_instantiation(self) -> None:
         """Test basic API client instantiation."""
         from tracertm.api.sync_client import ApiClient, ApiConfig
 
@@ -315,14 +314,14 @@ class TestApiInputValidationBoundaryConditions:
         client = ApiClient(config)
         assert client is not None
 
-    def test_api_client_with_none_config(self):
+    def test_api_client_with_none_config(self) -> None:
         """Test API client handling."""
         from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000")
         assert config is not None
 
-    def test_api_config_token_variations(self):
+    def test_api_config_token_variations(self) -> None:
         """Test API config with various token values."""
         from tracertm.api.sync_client import ApiConfig
 
@@ -347,7 +346,7 @@ class TestApiInputValidationBoundaryConditions:
 class TestApiResponseProcessingEdgeCases:
     """Test API response processing edge cases."""
 
-    def test_api_client_configuration(self):
+    def test_api_client_configuration(self) -> None:
         """Test API client configuration."""
         from tracertm.api.sync_client import ApiClient, ApiConfig
 
@@ -355,12 +354,12 @@ class TestApiResponseProcessingEdgeCases:
         client = ApiClient(config)
         assert client is not None
 
-    def test_api_client_with_custom_settings(self):
+    def test_api_client_with_custom_settings(self) -> None:
         """Test API client with custom configuration settings."""
         from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(
-            base_url="http://localhost:8000", timeout=60.0, max_retries=5, retry_backoff_base=2.0, verify_ssl=True
+            base_url="http://localhost:8000", timeout=60.0, max_retries=5, retry_backoff_base=2.0, verify_ssl=True,
         )
         client = ApiClient(config)
         assert client is not None
@@ -374,21 +373,21 @@ class TestApiResponseProcessingEdgeCases:
 class TestApiAuthenticationErrorEdgeCases:
     """Test API authentication error handling."""
 
-    def test_auth_error_with_invalid_status_code(self):
+    def test_auth_error_with_invalid_status_code(self) -> None:
         """Test authentication error with non-401 status."""
         from tracertm.api.sync_client import AuthenticationError
 
         error = AuthenticationError(status_code=500, message="Auth failed")
         assert error.status_code == 500
 
-    def test_auth_error_with_403_forbidden(self):
+    def test_auth_error_with_403_forbidden(self) -> None:
         """Test authentication error with 403 Forbidden."""
         from tracertm.api.sync_client import AuthenticationError
 
         error = AuthenticationError(status_code=403, message="Forbidden")
         assert error.status_code == 403
 
-    def test_auth_error_with_token_expired_message(self):
+    def test_auth_error_with_token_expired_message(self) -> None:
         """Test authentication error indicating token expiration."""
         from tracertm.api.sync_client import AuthenticationError
 
@@ -404,7 +403,7 @@ class TestApiAuthenticationErrorEdgeCases:
 class TestApiConflictErrorEdgeCases:
     """Test API conflict error handling."""
 
-    def test_api_error_status_codes(self):
+    def test_api_error_status_codes(self) -> None:
         """Test API error status codes for conflicts."""
         from tracertm.api.sync_client import ApiError
 
@@ -412,7 +411,7 @@ class TestApiConflictErrorEdgeCases:
         error = ApiError(status_code=409, message="Conflict detected")
         assert error.status_code == 409
 
-    def test_multiple_error_status_codes(self):
+    def test_multiple_error_status_codes(self) -> None:
         """Test multiple error status codes."""
         from tracertm.api.sync_client import ApiError
 
@@ -430,14 +429,14 @@ class TestApiConflictErrorEdgeCases:
 class TestApiNetworkErrorEdgeCases:
     """Test API network error handling."""
 
-    def test_network_error_creation(self):
+    def test_network_error_creation(self) -> None:
         """Test network error creation."""
         from tracertm.api.sync_client import NetworkError
 
         error = NetworkError(message="Connection failed")
         assert "Connection failed" in str(error)
 
-    def test_network_error_with_very_long_message(self):
+    def test_network_error_with_very_long_message(self) -> None:
         """Test network error with very long message."""
         from tracertm.api.sync_client import NetworkError
 
@@ -445,7 +444,7 @@ class TestApiNetworkErrorEdgeCases:
         error = NetworkError(message=long_message)
         assert len(str(error)) > 1000
 
-    def test_network_error_with_unicode_message(self):
+    def test_network_error_with_unicode_message(self) -> None:
         """Test network error with unicode message."""
         from tracertm.api.sync_client import NetworkError
 

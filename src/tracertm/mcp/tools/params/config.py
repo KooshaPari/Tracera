@@ -32,8 +32,7 @@ async def config_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
-    """
-    Unified configuration management tool.
+    """Unified configuration management tool.
 
     Actions:
     - init: Initialize config (requires: database_url)
@@ -60,14 +59,16 @@ async def _config_manage_impl(
     def _action_init() -> dict[str, Any]:
         database_url = payload.get("database_url")
         if not database_url:
-            raise ToolError("database_url is required for config init.")
+            msg = "database_url is required for config init."
+            raise ToolError(msg)
         result = config.init(database_url=database_url).model_dump()
         return _wrap(result, ctx, action)
 
     def _action_get() -> dict[str, Any]:
         key = payload.get("key")
         if not key:
-            raise ToolError("key is required for config get.")
+            msg = "key is required for config get."
+            raise ToolError(msg)
         config_path = config.projects_dir / project_id / "config.yaml" if project_id else config.config_path
         if config_path.exists():
             with config_path.open() as handle:
@@ -80,7 +81,8 @@ async def _config_manage_impl(
     def _action_set() -> dict[str, Any]:
         key = payload.get("key")
         if key is None:
-            raise ToolError("key is required for config set.")
+            msg = "key is required for config set."
+            raise ToolError(msg)
         value = payload.get("value")
         config.set(key, value, project_id=project_id)
         return _wrap({"key": key, "value": value}, ctx, action)
@@ -88,7 +90,8 @@ async def _config_manage_impl(
     def _action_unset() -> dict[str, Any]:
         key = payload.get("key")
         if not key:
-            raise ToolError("key is required for config unset.")
+            msg = "key is required for config unset."
+            raise ToolError(msg)
         config.set(key, None, project_id=project_id)
         return _wrap({"key": key}, ctx, action)
 
@@ -105,5 +108,6 @@ async def _config_manage_impl(
     }
     handler = handlers.get(action)
     if handler is None:
-        raise ToolError(f"Unknown config action: {action}")
+        msg = f"Unknown config action: {action}"
+        raise ToolError(msg)
     return handler()

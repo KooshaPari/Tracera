@@ -75,7 +75,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         )
 
         # Optional: Log request body (be careful with sensitive data)
-        if self.log_request_body and method in ("POST", "PUT", "PATCH"):
+        if self.log_request_body and method in {"POST", "PUT", "PATCH"}:
             try:
                 # Note: This consumes the request body, may need special handling
                 # For production, consider using a custom body reader

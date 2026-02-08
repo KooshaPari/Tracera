@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for core database module.
+"""Comprehensive unit tests for core database module.
 
 Tests core/database.py:
 - get_engine function
@@ -11,6 +10,7 @@ Tests core/database.py:
 """
 
 import logging
+from typing import Never
 from unittest.mock import patch
 
 import pytest
@@ -86,7 +86,7 @@ class TestGetEngine:
     """Test get_engine function."""
 
     @patch("tracertm.core.database.get_config")
-    def test_get_engine_returns_async_engine(self, mock_get_config, mock_config):
+    def test_get_engine_returns_async_engine(self, mock_get_config, mock_config) -> None:
         """Test that get_engine returns an AsyncEngine."""
         mock_get_config.return_value = mock_config
         # Reset global state
@@ -99,7 +99,7 @@ class TestGetEngine:
         assert isinstance(engine, AsyncEngine)
 
     @patch("tracertm.core.database.get_config")
-    def test_get_engine_singleton(self, mock_get_config, mock_config):
+    def test_get_engine_singleton(self, mock_get_config, mock_config) -> None:
         """Test that get_engine returns the same instance."""
         mock_get_config.return_value = mock_config
         # Reset global state
@@ -113,7 +113,7 @@ class TestGetEngine:
         assert engine1 is engine2
 
     @patch("tracertm.core.database.get_config")
-    def test_get_engine_url_conversion(self, mock_get_config, mock_config):
+    def test_get_engine_url_conversion(self, mock_get_config, mock_config) -> None:
         """Test that postgresql:// URL is converted to postgresql+asyncpg://."""
         mock_get_config.return_value = mock_config
         # Reset global state
@@ -127,7 +127,7 @@ class TestGetEngine:
         assert "asyncpg" in str(engine.url)
 
     @patch("tracertm.core.database.get_config")
-    def test_get_engine_pool_configuration(self, mock_get_config, mock_config):
+    def test_get_engine_pool_configuration(self, mock_get_config, mock_config) -> None:
         """Test that engine has pool configuration."""
         mock_get_config.return_value = mock_config
         # Reset global state
@@ -145,7 +145,7 @@ class TestGetSessionFactory:
     """Test get_session_factory function."""
 
     @patch("tracertm.core.database.get_config")
-    def test_get_session_factory_returns_sessionmaker(self, mock_get_config, mock_config):
+    def test_get_session_factory_returns_sessionmaker(self, mock_get_config, mock_config) -> None:
         """Test that get_session_factory returns async_sessionmaker."""
         mock_get_config.return_value = mock_config
         # Reset global state
@@ -158,7 +158,7 @@ class TestGetSessionFactory:
         assert isinstance(factory, async_sessionmaker)
 
     @patch("tracertm.core.database.get_config")
-    def test_get_session_factory_singleton(self, mock_get_config, mock_config):
+    def test_get_session_factory_singleton(self, mock_get_config, mock_config) -> None:
         """Test that get_session_factory returns the same instance."""
         mock_get_config.return_value = mock_config
         # Reset global state
@@ -172,7 +172,7 @@ class TestGetSessionFactory:
         assert factory1 is factory2
 
     @patch("tracertm.core.database.get_config")
-    def test_session_factory_creates_async_sessions(self, mock_get_config, mock_config):
+    def test_session_factory_creates_async_sessions(self, mock_get_config, mock_config) -> None:
         """Test that factory creates AsyncSession instances."""
         mock_get_config.return_value = mock_config
         # Reset global state
@@ -186,7 +186,7 @@ class TestGetSessionFactory:
         assert factory.class_ == AsyncSession
 
     @patch("tracertm.core.database.get_config")
-    def test_session_factory_expire_on_commit_false(self, mock_get_config, mock_config):
+    def test_session_factory_expire_on_commit_false(self, mock_get_config, mock_config) -> None:
         """Test that expire_on_commit is False."""
         mock_get_config.return_value = mock_config
         # Reset global state
@@ -204,7 +204,7 @@ class TestGetSession:
 
     @pytest.mark.asyncio
     @patch("tracertm.core.database.get_config")
-    async def test_get_session_yields_async_session(self, mock_get_config, mock_config_sqlite):
+    async def test_get_session_yields_async_session(self, mock_get_config, mock_config_sqlite) -> None:
         """Test that get_session yields an AsyncSession."""
         mock_get_config.return_value = mock_config_sqlite
         # Reset global state
@@ -218,7 +218,7 @@ class TestGetSession:
 
     @pytest.mark.asyncio
     @patch("tracertm.core.database.get_config")
-    async def test_get_session_commits_on_success(self, mock_get_config, mock_config_sqlite):
+    async def test_get_session_commits_on_success(self, mock_get_config, mock_config_sqlite) -> None:
         """Test that session commits on successful exit."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
@@ -235,7 +235,7 @@ class TestGetSession:
 
     @pytest.mark.asyncio
     @patch("tracertm.core.database.get_config")
-    async def test_get_session_rollback_on_error(self, mock_get_config, mock_config_sqlite):
+    async def test_get_session_rollback_on_error(self, mock_get_config, mock_config_sqlite) -> Never:
         """Test that session rolls back on exception."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
@@ -247,11 +247,12 @@ class TestGetSession:
             async with get_session() as session:
                 assert session is not None
                 # Raise error to trigger rollback
-                raise ValueError("Test error")
+                msg = "Test error"
+                raise ValueError(msg)
 
     @pytest.mark.asyncio
     @patch("tracertm.core.database.get_config")
-    async def test_get_session_closes_session(self, mock_get_config, mock_config_sqlite):
+    async def test_get_session_closes_session(self, mock_get_config, mock_config_sqlite) -> None:
         """Test that session is closed after context exit."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
@@ -267,7 +268,7 @@ class TestGetSession:
 
     @pytest.mark.asyncio
     @patch("tracertm.core.database.get_config")
-    async def test_get_session_multiple_contexts(self, mock_get_config, mock_config_sqlite):
+    async def test_get_session_multiple_contexts(self, mock_get_config, mock_config_sqlite) -> None:
         """Test creating multiple session contexts."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
@@ -289,7 +290,7 @@ class TestGetSession:
 
     @pytest.mark.asyncio
     @patch("tracertm.core.database.get_config")
-    async def test_get_session_nested_not_recommended(self, mock_get_config, mock_config_sqlite):
+    async def test_get_session_nested_not_recommended(self, mock_get_config, mock_config_sqlite) -> None:
         """Test that nested sessions are separate instances."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
@@ -314,13 +315,13 @@ class TestInitDb:
     """Test init_db function."""
 
     @pytest.mark.asyncio
-    async def test_init_db_callable(self):
+    async def test_init_db_callable(self) -> None:
         """Test that init_db is callable."""
         assert callable(init_db)
 
     @pytest.mark.asyncio
     @patch("tracertm.core.database.get_config")
-    async def test_init_db_executes(self, mock_get_config, mock_config_sqlite):
+    async def test_init_db_executes(self, mock_get_config, mock_config_sqlite) -> None:
         """Test that init_db executes without error."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
@@ -339,7 +340,7 @@ class TestInitDb:
 
     @pytest.mark.asyncio
     @patch("tracertm.core.database.get_config")
-    async def test_init_db_uses_engine(self, mock_get_config, mock_config_sqlite):
+    async def test_init_db_uses_engine(self, mock_get_config, mock_config_sqlite) -> None:
         """Test that init_db uses the global engine."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
@@ -362,13 +363,13 @@ class TestDropDb:
     """Test drop_db function."""
 
     @pytest.mark.asyncio
-    async def test_drop_db_callable(self):
+    async def test_drop_db_callable(self) -> None:
         """Test that drop_db is callable."""
         assert callable(drop_db)
 
     @pytest.mark.asyncio
     @patch("tracertm.core.database.get_config")
-    async def test_drop_db_executes(self, mock_get_config, mock_config_sqlite):
+    async def test_drop_db_executes(self, mock_get_config, mock_config_sqlite) -> None:
         """Test that drop_db executes without error."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
@@ -387,7 +388,7 @@ class TestDropDb:
 
     @pytest.mark.asyncio
     @patch("tracertm.core.database.get_config")
-    async def test_drop_db_uses_engine(self, mock_get_config, mock_config_sqlite):
+    async def test_drop_db_uses_engine(self, mock_get_config, mock_config_sqlite) -> None:
         """Test that drop_db uses the global engine."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
@@ -409,7 +410,7 @@ class TestDropDb:
 class TestDatabaseModuleIntegration:
     """Integration tests for database module."""
 
-    def test_module_exports(self):
+    def test_module_exports(self) -> None:
         """Test that module exports expected functions."""
         from tracertm.core import database
 
@@ -420,7 +421,7 @@ class TestDatabaseModuleIntegration:
         assert hasattr(database, "drop_db")
 
     @patch("tracertm.core.database.get_config")
-    def test_engine_pool_settings(self, mock_get_config, mock_config):
+    def test_engine_pool_settings(self, mock_get_config, mock_config) -> None:
         """Test that engine pool has expected settings."""
         mock_get_config.return_value = mock_config
         import tracertm.core.database as db_module
@@ -437,7 +438,7 @@ class TestDatabaseModuleIntegration:
 
     @pytest.mark.asyncio
     @patch("tracertm.core.database.get_config")
-    async def test_session_transaction_support(self, mock_get_config, mock_config_sqlite):
+    async def test_session_transaction_support(self, mock_get_config, mock_config_sqlite) -> None:
         """Test that sessions support transactions."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
@@ -453,7 +454,7 @@ class TestDatabaseModuleIntegration:
 
     @pytest.mark.asyncio
     @patch("tracertm.core.database.get_config")
-    async def test_multiple_concurrent_sessions(self, mock_get_config, mock_config_sqlite):
+    async def test_multiple_concurrent_sessions(self, mock_get_config, mock_config_sqlite) -> None:
         """Test creating multiple concurrent sessions."""
         import asyncio
 
@@ -465,7 +466,7 @@ class TestDatabaseModuleIntegration:
 
         sessions = []
 
-        async def create_session():
+        async def create_session() -> None:
             async with get_session() as session:
                 sessions.append(session)
                 await asyncio.sleep(0.01)
@@ -485,7 +486,7 @@ class TestDatabaseConfiguration:
     """Test database configuration from config."""
 
     @patch("tracertm.core.database.get_config")
-    def test_engine_uses_config(self, mock_get_config, mock_config):
+    def test_engine_uses_config(self, mock_get_config, mock_config) -> None:
         """Test that engine uses configuration settings."""
         mock_get_config.return_value = mock_config
         import tracertm.core.database as db_module
@@ -501,7 +502,7 @@ class TestDatabaseConfiguration:
         # (actual assertion depends on config setup)
 
     @patch("tracertm.core.database.get_config")
-    def test_engine_pool_size(self, mock_get_config, mock_config):
+    def test_engine_pool_size(self, mock_get_config, mock_config) -> None:
         """Test that engine respects pool_size config."""
         mock_get_config.return_value = mock_config
         import tracertm.core.database as db_module
@@ -517,7 +518,7 @@ class TestDatabaseConfiguration:
         # (exact value depends on config)
 
     @patch("tracertm.core.database.get_config")
-    def test_engine_connection_options(self, mock_get_config, mock_config):
+    def test_engine_connection_options(self, mock_get_config, mock_config) -> None:
         """Test that engine has proper connection options."""
         mock_get_config.return_value = mock_config
         import tracertm.core.database as db_module
@@ -537,7 +538,7 @@ class TestDatabaseErrorHandling:
 
     @pytest.mark.asyncio
     @patch("tracertm.core.database.get_config")
-    async def test_session_rollback_on_exception(self, mock_get_config, mock_config_sqlite):
+    async def test_session_rollback_on_exception(self, mock_get_config, mock_config_sqlite) -> None:
         """Test that exceptions trigger rollback."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
@@ -550,7 +551,8 @@ class TestDatabaseErrorHandling:
         try:
             async with get_session() as _session:
                 # Simulate error during transaction
-                raise RuntimeError("Simulated error")
+                msg = "Simulated error"
+                raise RuntimeError(msg)
         except RuntimeError:
             exception_raised = True
 
@@ -558,7 +560,7 @@ class TestDatabaseErrorHandling:
 
     @pytest.mark.asyncio
     @patch("tracertm.core.database.get_config")
-    async def test_session_closes_after_exception(self, mock_get_config, mock_config_sqlite):
+    async def test_session_closes_after_exception(self, mock_get_config, mock_config_sqlite) -> None:
         """Test that session closes even after exception."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
@@ -571,7 +573,8 @@ class TestDatabaseErrorHandling:
         try:
             async with get_session() as _session:
                 session_created = True
-                raise RuntimeError("Test error")
+                msg = "Test error"
+                raise RuntimeError(msg)
         except RuntimeError:
             pass
 
@@ -581,7 +584,7 @@ class TestDatabaseErrorHandling:
 
     @pytest.mark.asyncio
     @patch("tracertm.core.database.get_config")
-    async def test_multiple_errors_in_sequence(self, mock_get_config, mock_config_sqlite):
+    async def test_multiple_errors_in_sequence(self, mock_get_config, mock_config_sqlite) -> None:
         """Test handling multiple errors in sequence."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
@@ -594,7 +597,8 @@ class TestDatabaseErrorHandling:
         for i in range(3):
             try:
                 async with get_session() as _session:
-                    raise RuntimeError(f"Error {i}")
+                    msg = f"Error {i}"
+                    raise RuntimeError(msg)
             except RuntimeError as e:
                 errors.append(str(e))
 
@@ -606,7 +610,7 @@ class TestDatabaseGlobalState:
     """Test global state management."""
 
     @patch("tracertm.core.database.get_config")
-    def test_engine_global_state(self, mock_get_config, mock_config):
+    def test_engine_global_state(self, mock_get_config, mock_config) -> None:
         """Test that engine is stored in global state."""
         mock_get_config.return_value = mock_config
         import tracertm.core.database as db_module
@@ -621,7 +625,7 @@ class TestDatabaseGlobalState:
         assert engine1 is engine2
 
     @patch("tracertm.core.database.get_config")
-    def test_session_factory_global_state(self, mock_get_config, mock_config):
+    def test_session_factory_global_state(self, mock_get_config, mock_config) -> None:
         """Test that session factory is stored in global state."""
         mock_get_config.return_value = mock_config
         import tracertm.core.database as db_module
@@ -636,7 +640,7 @@ class TestDatabaseGlobalState:
         assert factory1 is factory2
 
     @patch("tracertm.core.database.get_config")
-    def test_global_state_initialization_order(self, mock_get_config, mock_config):
+    def test_global_state_initialization_order(self, mock_get_config, mock_config) -> None:
         """Test that global state initializes in correct order."""
         mock_get_config.return_value = mock_config
         import tracertm.core.database as db_module

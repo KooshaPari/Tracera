@@ -9,26 +9,26 @@ import pytest
 
 
 class TestItemCreation:
-    """Test item creation functionality"""
+    """Test item creation functionality."""
 
     @pytest.fixture
-    def project_id(self):
-        """Return a test project ID"""
+    def project_id(self) -> str:
+        """Return a test project ID."""
         return "00000000-0000-0000-0000-000000000001"
 
-    def test_item_type_enum(self):
-        """Verify all item types are valid"""
+    def test_item_type_enum(self) -> None:
+        """Verify all item types are valid."""
         valid_types = ["epic", "feature", "story", "task", "bug", "file", "endpoint", "test", "table", "milestone"]
         assert len(valid_types) == 10
         # In a real scenario, we'd import the Enum definition
 
-    def test_item_view_enum(self):
-        """Verify all views are valid"""
+    def test_item_view_enum(self) -> None:
+        """Verify all views are valid."""
         valid_views = ["FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"]
         assert len(valid_views) == 8
 
-    def test_metadata_validation(self):
-        """TC-2.1.5: Validate metadata is JSON-serializable"""
+    def test_metadata_validation(self) -> None:
+        """TC-2.1.5: Validate metadata is JSON-serializable."""
         import json
 
         # Valid metadata
@@ -40,5 +40,5 @@ class TestItemCreation:
         except (TypeError, ValueError):
             pytest.fail("Metadata should be JSON serializable")
 
-    def test_parent_id_optional(self):
-        """Verify parent_id is optional"""
+    def test_parent_id_optional(self) -> None:
+        """Verify parent_id is optional."""

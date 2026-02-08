@@ -1,5 +1,4 @@
-"""
-Integration tests for Epic 3: JSON output flag (FR32).
+"""Integration tests for Epic 3: JSON output flag (FR32).
 
 Tests --json flag on various commands.
 """
@@ -21,7 +20,7 @@ def runner():
 
 
 @pytest.fixture
-def temp_project(runner, tmp_path, monkeypatch):
+def temp_project(runner, tmp_path, monkeypatch) -> str:
     """Create a temporary project for testing."""
     # Set up temporary config directory
     config_dir = tmp_path / ".config" / "tracertm"
@@ -44,7 +43,7 @@ def temp_project(runner, tmp_path, monkeypatch):
     return "test-project"
 
 
-def test_item_list_json_output(runner, temp_project):
+def test_item_list_json_output(runner, temp_project) -> None:
     """Test item list with JSON output (FR32)."""
     # Create test item
     create_result = runner.invoke(
@@ -77,7 +76,7 @@ def test_item_list_json_output(runner, temp_project):
         assert data["items"][0]["title"] == "JSON Test Item"
 
 
-def test_query_json_output(runner, temp_project):
+def test_query_json_output(runner, temp_project) -> None:
     """Test query with JSON output (FR32)."""
     # Create test item
     runner.invoke(
@@ -110,7 +109,7 @@ def test_query_json_output(runner, temp_project):
         assert data["count"] > 0
 
 
-def test_json_output_structure(runner, temp_project):
+def test_json_output_structure(runner, temp_project) -> None:
     """Test JSON output has correct structure."""
     # Create item with all fields
     runner.invoke(

@@ -57,7 +57,7 @@ def _storage_with_items():
                     view="FEATURE",
                     item_type="feature",
                     status="todo",
-                )
+                ),
             ]
 
     class _Storage:
@@ -72,7 +72,7 @@ def _storage_with_items():
 
 
 @pytest.mark.e2e
-def test_search_no_results_shows_message():
+def test_search_no_results_shows_message() -> None:
     with (
         patch("tracertm.cli.commands.search.ConfigManager") as cfg,
         patch("tracertm.cli.commands.search._get_storage_manager", return_value=_storage_with_no_results()),
@@ -88,7 +88,7 @@ def test_search_no_results_shows_message():
 
 
 @pytest.mark.e2e
-def test_search_fuzzy_invalid_date_handling():
+def test_search_fuzzy_invalid_date_handling() -> None:
     with (
         patch("tracertm.cli.commands.search.ConfigManager") as cfg,
         patch("tracertm.cli.commands.search._get_storage_manager", return_value=_storage_with_items()),
@@ -108,7 +108,7 @@ def test_search_fuzzy_invalid_date_handling():
 
 
 @pytest.mark.e2e
-def test_search_with_date_filters_parses_iso():
+def test_search_with_date_filters_parses_iso() -> None:
     with (
         patch("tracertm.cli.commands.search.ConfigManager") as cfg,
         patch("tracertm.cli.commands.search._get_storage_manager", return_value=_storage_with_items()),

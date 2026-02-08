@@ -27,32 +27,33 @@ async def event_bus(nats_client):
 class EventCollector:
     """Helper class to collect events from subscriptions."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.events: list[dict] = []
 
-    async def handler(self, event: dict):
+    async def handler(self, event: dict) -> None:
         """Event handler callback."""
         self.events.append(event)
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear collected events."""
         self.events = []
 
     def wait_for_events(self, count: int = 1, timeout: float = 5.0):
         """Wait for a specific number of events."""
 
-        async def _wait():
+        async def _wait() -> None:
             start = asyncio.get_event_loop().time()
             while len(self.events) < count:
                 if asyncio.get_event_loop().time() - start > timeout:
-                    raise TimeoutError(f"Timeout waiting for {count} events")
+                    msg = f"Timeout waiting for {count} events"
+                    raise TimeoutError(msg)
                 await asyncio.sleep(0.1)
 
         return _wait()
 
 
 @pytest.mark.asyncio
-async def test_spec_created_event_published(event_bus):
+async def test_spec_created_event_published(event_bus) -> None:
     """Test that creating a specification publishes an event."""
     # Setup event collector
     collector = EventCollector()
@@ -92,7 +93,7 @@ async def test_spec_created_event_published(event_bus):
 
 
 @pytest.mark.asyncio
-async def test_spec_updated_event_published(event_bus):
+async def test_spec_updated_event_published(event_bus) -> None:
     """Test that updating a specification publishes an event."""
     collector = EventCollector()
     await event_bus.subscribe("spec.updated", collector.handler)
@@ -122,7 +123,7 @@ async def test_spec_updated_event_published(event_bus):
 
 
 @pytest.mark.asyncio
-async def test_spec_deleted_event_published(event_bus):
+async def test_spec_deleted_event_published(event_bus) -> None:
     """Test that deleting a specification publishes an event."""
     collector = EventCollector()
     await event_bus.subscribe("spec.deleted", collector.handler)
@@ -148,7 +149,7 @@ async def test_spec_deleted_event_published(event_bus):
 
 
 @pytest.mark.asyncio
-async def test_project_specific_subscription(event_bus):
+async def test_project_specific_subscription(event_bus) -> None:
     """Test subscribing to events for a specific project."""
     collector = EventCollector()
 
@@ -185,7 +186,7 @@ async def test_project_specific_subscription(event_bus):
 
 
 @pytest.mark.asyncio
-async def test_go_backend_events_received(event_bus):
+async def test_go_backend_events_received(event_bus) -> None:
     """Test receiving events from Go backend."""
     collector = EventCollector()
 
@@ -221,7 +222,7 @@ async def test_go_backend_events_received(event_bus):
 
 
 @pytest.mark.asyncio
-async def test_event_health_check(event_bus):
+async def test_event_health_check(event_bus) -> None:
     """Test that event bus health check works."""
     health = await event_bus.health_check()
 
@@ -232,7 +233,7 @@ async def test_event_health_check(event_bus):
 
 
 @pytest.mark.asyncio
-async def test_multiple_events_in_sequence(event_bus):
+async def test_multiple_events_in_sequence(event_bus) -> None:
     """Test publishing multiple events in sequence."""
     collector = EventCollector()
     await event_bus.subscribe("spec.created", collector.handler)
@@ -259,7 +260,7 @@ async def test_multiple_events_in_sequence(event_bus):
 
 
 @pytest.mark.asyncio
-async def test_ai_analysis_complete_event(event_bus):
+async def test_ai_analysis_complete_event(event_bus) -> None:
     """Test publishing AI analysis completion event."""
     collector = EventCollector()
     await event_bus.subscribe("ai.analysis.complete", collector.handler)
@@ -292,7 +293,7 @@ async def test_ai_analysis_complete_event(event_bus):
 
 
 @pytest.mark.asyncio
-async def test_execution_completed_event(event_bus):
+async def test_execution_completed_event(event_bus) -> None:
     """Test publishing execution completion event."""
     collector = EventCollector()
     await event_bus.subscribe("execution.completed", collector.handler)
@@ -323,7 +324,7 @@ async def test_execution_completed_event(event_bus):
 
 
 @pytest.mark.asyncio
-async def test_workflow_completed_event(event_bus):
+async def test_workflow_completed_event(event_bus) -> None:
     """Test publishing workflow completion event."""
     collector = EventCollector()
     await event_bus.subscribe("workflow.completed", collector.handler)

@@ -46,13 +46,11 @@ const mockItemResponse = {
   total: 2,
 };
 
-function createMockResponse(data: unknown, status = 200) {
-  return Promise.resolve(
-    new Response(JSON.stringify(data), {
-      headers: { 'Content-Type': 'application/json' },
-      status,
-    }),
-  );
+async function createMockResponse(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    headers: { 'Content-Type': 'application/json' },
+    status,
+  });
 }
 
 describe('useItems Hooks - P1 Coverage', () => {
@@ -62,17 +60,17 @@ describe('useItems Hooks - P1 Coverage', () => {
   });
 
   // ============================================================================
-  // useItems HOOK TESTS
+  // UseItems HOOK TESTS
   // ============================================================================
 
-  describe('useItems', () => {
+  describe(useItems, () => {
     it('should fetch items without filters', async () => {
       (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockItemResponse));
 
       const { result } = renderHook(() => useItems());
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current.data).toBeDefined();
@@ -84,7 +82,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItems({ projectId: 'proj-1' }));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(global.fetch as any).toHaveBeenCalled();
@@ -96,7 +94,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItems({ status: 'open' }));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(global.fetch as any).toHaveBeenCalled();
@@ -108,7 +106,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItems({ view: 'kanban' }));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(global.fetch as any).toHaveBeenCalled();
@@ -120,7 +118,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItems({ parentId: 'parent-1' }));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(global.fetch as any).toHaveBeenCalled();
@@ -132,7 +130,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItems({ limit: 10 }));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(global.fetch as any).toHaveBeenCalled();
@@ -152,7 +150,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       );
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(global.fetch as any).toHaveBeenCalled();
@@ -166,7 +164,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItems());
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current.isError).toBeDefined();
@@ -178,7 +176,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItems());
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current.data).toBeDefined();
@@ -203,7 +201,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItems());
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       // Dynamic config should refetch on mount
@@ -216,7 +214,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItems({ projectId: 'proj-1' }));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       // Should successfully create a key including token
@@ -225,17 +223,17 @@ describe('useItems Hooks - P1 Coverage', () => {
   });
 
   // ============================================================================
-  // useItem HOOK TESTS
+  // UseItem HOOK TESTS
   // ============================================================================
 
-  describe('useItem', () => {
+  describe(useItem, () => {
     it('should fetch single item by ID', async () => {
       (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockItem));
 
       const { result } = renderHook(() => useItem('item-1'));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current.data).toBeDefined();
@@ -245,7 +243,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItem(''));
 
       // With empty ID, query should be disabled
-      expect(result.current.isDisabled).toBe(true);
+      expect(result.current.isDisabled).toBeTruthy();
     });
 
     it('should handle fetch error', async () => {
@@ -254,7 +252,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItem('nonexistent'));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current.isError).toBeDefined();
@@ -266,7 +264,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItem('item-1'));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       // Should have transformed fields
@@ -279,7 +277,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItem('item-1'));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current).toBeDefined();
@@ -287,17 +285,17 @@ describe('useItems Hooks - P1 Coverage', () => {
   });
 
   // ============================================================================
-  // useCreateItem MUTATION TESTS
+  // UseCreateItem MUTATION TESTS
   // ============================================================================
 
-  describe('useCreateItem', () => {
+  describe(useCreateItem, () => {
     it('should create item with valid data', async () => {
       (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockItem, 201));
 
       const { result } = renderHook(() => useCreateItem());
 
       expect(result.current.mutate).toBeDefined();
-      expect(result.current.isPending).toBe(false);
+      expect(result.current.isPending).toBeFalsy();
     });
 
     it('should handle create item errors', async () => {
@@ -320,10 +318,10 @@ describe('useItems Hooks - P1 Coverage', () => {
   });
 
   // ============================================================================
-  // useUpdateItem MUTATION TESTS
+  // UseUpdateItem MUTATION TESTS
   // ============================================================================
 
-  describe('useUpdateItem', () => {
+  describe(useUpdateItem, () => {
     it('should update item', async () => {
       const updated = { ...mockItem, title: 'Updated' };
       (global.fetch as any).mockResolvedValueOnce(createMockResponse(updated));
@@ -352,10 +350,10 @@ describe('useItems Hooks - P1 Coverage', () => {
   });
 
   // ============================================================================
-  // useDeleteItem MUTATION TESTS
+  // UseDeleteItem MUTATION TESTS
   // ============================================================================
 
-  describe('useDeleteItem', () => {
+  describe(useDeleteItem, () => {
     it('should delete item', async () => {
       (global.fetch as any).mockResolvedValueOnce(new Response(null, { status: 204 }));
 
@@ -374,10 +372,10 @@ describe('useItems Hooks - P1 Coverage', () => {
   });
 
   // ============================================================================
-  // useCreateItemWithSpec MUTATION TESTS
+  // UseCreateItemWithSpec MUTATION TESTS
   // ============================================================================
 
-  describe('useCreateItemWithSpec', () => {
+  describe(useCreateItemWithSpec, () => {
     const mockSpecData = {
       item: {
         description: 'Test requirement',
@@ -463,7 +461,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItem('item-1'));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       // Transformation should occur
@@ -484,7 +482,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItem('item-1'));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current.data).toBeDefined();
@@ -506,7 +504,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItem('item-1'));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current.data).toBeDefined();
@@ -526,7 +524,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItem('item-1'));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current.data).toBeDefined();
@@ -548,7 +546,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItem('item-1'));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current.data).toBeDefined();
@@ -569,7 +567,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItem('item-1'));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current.data).toBeDefined();
@@ -592,7 +590,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItem('item-1'));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current.data).toBeDefined();
@@ -610,7 +608,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItem('item-1'));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current.data).toBeDefined();
@@ -641,7 +639,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItems());
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current.data).toBeDefined();
@@ -669,7 +667,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItems());
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
     });
 
@@ -684,7 +682,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItems());
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
     });
 
@@ -694,7 +692,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItems());
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
     });
 
@@ -709,7 +707,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItems());
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current.data).toBeDefined();
@@ -727,7 +725,7 @@ describe('useItems Hooks - P1 Coverage', () => {
       const { result } = renderHook(() => useItem('item-1'));
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isLoading).toBeFalsy();
       });
 
       expect(result.current.data).toBeDefined();

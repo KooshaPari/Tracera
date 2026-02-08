@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""
-Generate all remaining SwiftRide test types:
+"""Generate all remaining SwiftRide test types:
 - Performance Tests (80)
 - Security Tests (70)
 - Test Scenarios (100)
 - Test Data (90)
-- Accessibility Tests (60)
+- Accessibility Tests (60).
 """
 
 import uuid
@@ -17,7 +16,7 @@ import yaml
 PROJECT_PATH = "samples/DEMO_PROJECT/.trace"
 
 
-def create_test(test_type, title, desc, priority="medium"):
+def create_test(test_type, title, desc, priority="medium") -> None:
     yaml_path = Path(PROJECT_PATH) / "project.yaml"
     with yaml_path.open() as f:
         project = yaml.safe_load(f)
@@ -57,7 +56,6 @@ def create_test(test_type, title, desc, priority="medium"):
 
 
 # Performance Tests (80)
-print("\n=== Generating Performance Tests (80) ===")
 perf_tests = [
     ("10k Concurrent Ride Requests", "Test system handling 10,000 concurrent ride requests", "critical"),
     ("50k Concurrent Users", "Test 50,000 concurrent active users", "critical"),
@@ -143,10 +141,8 @@ perf_tests = [
 
 for title, desc, priority in perf_tests:
     create_test("performance_test", title, desc, priority)
-print(f"✓ Generated {len(perf_tests)} performance tests")
 
 # Security Tests (70)
-print("\n=== Generating Security Tests (70) ===")
 sec_tests = [
     ("SQL Injection Prevention", "Test SQL injection attack prevention", "critical"),
     ("XSS Attack Prevention", "Test XSS attack prevention", "critical"),
@@ -222,10 +218,8 @@ sec_tests = [
 
 for title, desc, priority in sec_tests:
     create_test("security_test", title, desc, priority)
-print(f"✓ Generated {len(sec_tests)} security tests")
 
 # Test Scenarios (100)
-print("\n=== Generating Test Scenarios (100) ===")
 scenarios = [
     ("Rider First Ride Success", "Scenario: New rider's first successful ride", "critical"),
     ("Driver First Day Earnings", "Scenario: Driver completes first day and earns money", "high"),
@@ -331,7 +325,3 @@ scenarios = [
 
 for title, desc, priority in scenarios:
     create_test("test_scenario", title, desc, priority)
-print(f"✓ Generated {len(scenarios)} test scenarios")
-
-print("\nTest generation complete!")
-print("=" * 70)

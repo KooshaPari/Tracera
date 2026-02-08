@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for ConflictPanel widget.
+"""Comprehensive tests for ConflictPanel widget.
 
 Tests panel initialization, conflict display, conflict selection,
 detail view, resolution actions, and event handling.
@@ -27,7 +26,7 @@ def _panel(*args: Any, **kwargs: Any) -> Any:
 class TestConflictPanelInitialization:
     """Test ConflictPanel initialization."""
 
-    def test_init_creates_panel(self):
+    def test_init_creates_panel(self) -> None:
         """Test ConflictPanel initializes correctly."""
         panel = _panel()
 
@@ -35,7 +34,7 @@ class TestConflictPanelInitialization:
         assert panel.conflicts == []
         assert panel.selected_conflict is None
 
-    def test_init_with_conflicts(self):
+    def test_init_with_conflicts(self) -> None:
         """Test ConflictPanel accepts conflicts list."""
         mock_conflict1 = MagicMock()
         mock_conflict2 = MagicMock()
@@ -46,14 +45,14 @@ class TestConflictPanelInitialization:
         assert len(panel.conflicts) == 2
         assert panel.conflicts[0] == mock_conflict1
 
-    def test_init_with_custom_id(self):
+    def test_init_with_custom_id(self) -> None:
         """Test ConflictPanel accepts custom ID."""
         panel = _panel(id="custom-conflict-panel")
 
         assert panel is not None
         assert panel.id == "custom-conflict-panel"
 
-    def test_bindings_configured(self):
+    def test_bindings_configured(self) -> None:
         """Test ConflictPanel has correct key bindings."""
         panel = _panel()
 
@@ -63,7 +62,7 @@ class TestConflictPanelInitialization:
         assert "m" in binding_keys  # Merge manually
         assert "escape" in binding_keys  # Close
 
-    def test_compose_creates_children(self):
+    def test_compose_creates_children(self) -> None:
         """Test compose creates correct child widgets."""
         panel = _panel()
         children = list(panel.compose())
@@ -76,7 +75,7 @@ class TestConflictPanelDisplay:
     """Test conflict list display."""
 
     @patch.object(ConflictPanel, "query_one")
-    def test_refresh_conflict_list_empty(self, mock_query_one):
+    def test_refresh_conflict_list_empty(self, mock_query_one) -> None:
         """Test refresh_conflict_list with no conflicts."""
         mock_table = MagicMock()
         mock_query_one.return_value = mock_table
@@ -88,7 +87,7 @@ class TestConflictPanelDisplay:
         mock_table.add_row.assert_not_called()
 
     @patch.object(ConflictPanel, "query_one")
-    def test_refresh_conflict_list_with_conflicts(self, mock_query_one):
+    def test_refresh_conflict_list_with_conflicts(self, mock_query_one) -> None:
         """Test refresh_conflict_list displays conflicts."""
         mock_table = MagicMock()
         mock_query_one.return_value = mock_table
@@ -118,7 +117,7 @@ class TestConflictPanelDisplay:
 class TestConflictPanelSelection:
     """Test conflict selection and detail view."""
 
-    def test_on_data_table_row_selected_valid(self):
+    def test_on_data_table_row_selected_valid(self) -> None:
         """Test selecting a conflict from the table."""
         mock_conflict = MagicMock()
         panel = _panel(conflicts=[mock_conflict])
@@ -133,7 +132,7 @@ class TestConflictPanelSelection:
         assert panel.selected_conflict == mock_conflict
         show_detail_mock.assert_called_once_with(mock_conflict)
 
-    def test_on_data_table_row_selected_invalid_index(self):
+    def test_on_data_table_row_selected_invalid_index(self) -> None:
         """Test selecting invalid row index does nothing."""
         mock_conflict = MagicMock()
         panel = _panel(conflicts=[mock_conflict])
@@ -154,7 +153,7 @@ class TestConflictPanelDetailView:
 
     @patch("tracertm.tui.widgets.conflict_panel.compare_versions")
     @patch.object(ConflictPanel, "query_one")
-    def test_show_conflict_detail(self, mock_query_one, mock_compare):
+    def test_show_conflict_detail(self, mock_query_one, mock_compare) -> None:
         """Test show_conflict_detail displays conflict details."""
         mock_detail_content = MagicMock()
         mock_query_one.return_value = mock_detail_content
@@ -193,7 +192,7 @@ class TestConflictPanelDetailView:
 
     @patch("tracertm.tui.widgets.conflict_panel.compare_versions")
     @patch.object(ConflictPanel, "query_one")
-    def test_show_conflict_detail_with_differences(self, mock_query_one, mock_compare):
+    def test_show_conflict_detail_with_differences(self, mock_query_one, mock_compare) -> None:
         """Test show_conflict_detail includes difference information."""
         mock_detail_content = MagicMock()
         mock_query_one.return_value = mock_detail_content
@@ -227,7 +226,7 @@ class TestConflictPanelDetailView:
 class TestConflictPanelResolutionActions:
     """Test conflict resolution actions."""
 
-    def test_action_resolve_local(self):
+    def test_action_resolve_local(self) -> None:
         """Test action_resolve_local posts message."""
         mock_conflict = MagicMock()
         panel = _panel(conflicts=[mock_conflict])
@@ -244,7 +243,7 @@ class TestConflictPanelResolutionActions:
         assert hasattr(message, "strategy")
         assert message.strategy == "local"
 
-    def test_action_resolve_local_no_selection(self):
+    def test_action_resolve_local_no_selection(self) -> None:
         """Test action_resolve_local does nothing without selection."""
         panel = _panel()
         panel.selected_conflict = None
@@ -255,7 +254,7 @@ class TestConflictPanelResolutionActions:
 
         post_message_mock.assert_not_called()
 
-    def test_action_resolve_remote(self):
+    def test_action_resolve_remote(self) -> None:
         """Test action_resolve_remote posts message."""
         mock_conflict = MagicMock()
         panel = _panel(conflicts=[mock_conflict])
@@ -269,7 +268,7 @@ class TestConflictPanelResolutionActions:
         message = post_message_mock.call_args[0][0]
         assert message.strategy == "remote"
 
-    def test_action_resolve_manual(self):
+    def test_action_resolve_manual(self) -> None:
         """Test action_resolve_manual posts message."""
         mock_conflict = MagicMock()
         panel = _panel(conflicts=[mock_conflict])
@@ -283,7 +282,7 @@ class TestConflictPanelResolutionActions:
         message = post_message_mock.call_args[0][0]
         assert message.strategy == "manual"
 
-    def test_action_close(self):
+    def test_action_close(self) -> None:
         """Test action_close posts close message."""
         panel = _panel()
         post_message_mock = MagicMock()
@@ -297,7 +296,7 @@ class TestConflictPanelResolutionActions:
 class TestConflictPanelButtonHandling:
     """Test button press handling."""
 
-    def test_on_button_pressed_local(self):
+    def test_on_button_pressed_local(self) -> None:
         """Test button press triggers local resolution."""
         panel = _panel()
         action_mock = MagicMock()
@@ -312,7 +311,7 @@ class TestConflictPanelButtonHandling:
 
         action_mock.assert_called_once()
 
-    def test_on_button_pressed_remote(self):
+    def test_on_button_pressed_remote(self) -> None:
         """Test button press triggers remote resolution."""
         panel = _panel()
         action_mock = MagicMock()
@@ -327,7 +326,7 @@ class TestConflictPanelButtonHandling:
 
         action_mock.assert_called_once()
 
-    def test_on_button_pressed_manual(self):
+    def test_on_button_pressed_manual(self) -> None:
         """Test button press triggers manual resolution."""
         panel = _panel()
         action_mock = MagicMock()
@@ -342,7 +341,7 @@ class TestConflictPanelButtonHandling:
 
         action_mock.assert_called_once()
 
-    def test_on_button_pressed_close(self):
+    def test_on_button_pressed_close(self) -> None:
         """Test button press triggers close."""
         panel = _panel()
         action_mock = MagicMock()
@@ -357,7 +356,7 @@ class TestConflictPanelButtonHandling:
 
         action_mock.assert_called_once()
 
-    def test_on_button_pressed_unknown(self):
+    def test_on_button_pressed_unknown(self) -> None:
         """Test button press with unknown button ID does nothing."""
         panel = _panel()
         action_local_mock = MagicMock()
@@ -386,7 +385,7 @@ class TestConflictPanelButtonHandling:
 class TestConflictPanelMessages:
     """Test custom message classes."""
 
-    def test_conflict_resolved_message(self):
+    def test_conflict_resolved_message(self) -> None:
         """Test ConflictResolved message structure."""
         mock_conflict = MagicMock()
         panel = _panel()
@@ -395,7 +394,7 @@ class TestConflictPanelMessages:
         assert message.conflict == mock_conflict
         assert message.strategy == "local"
 
-    def test_conflict_panel_closed_message(self):
+    def test_conflict_panel_closed_message(self) -> None:
         """Test ConflictPanelClosed message can be created."""
         panel = _panel()
         message = type(panel).ConflictPanelClosed()
@@ -407,7 +406,7 @@ class TestConflictPanelIntegration:
     """Integration tests for ConflictPanel."""
 
     @patch.object(ConflictPanel, "query_one")
-    def test_on_mount_refreshes_list(self, mock_query_one):
+    def test_on_mount_refreshes_list(self, mock_query_one) -> None:
         """Test on_mount calls refresh_conflict_list."""
         mock_table = MagicMock()
         mock_query_one.return_value = mock_table
@@ -419,7 +418,7 @@ class TestConflictPanelIntegration:
 
     @patch("tracertm.tui.widgets.conflict_panel.compare_versions")
     @patch.object(ConflictPanel, "query_one")
-    def test_full_workflow_selection_to_resolution(self, mock_query_one, mock_compare):
+    def test_full_workflow_selection_to_resolution(self, mock_query_one, mock_compare) -> None:
         """Test full workflow from selection to resolution."""
         # Setup mocks
         mock_table = MagicMock()
@@ -468,7 +467,7 @@ class TestConflictPanelIntegration:
 class TestConflictPanelAvailability:
     """Test widget availability."""
 
-    def test_conflict_panel_available(self):
+    def test_conflict_panel_available(self) -> None:
         """Test ConflictPanel is available when Textual is installed."""
         from tracertm.tui.widgets import conflict_panel
 

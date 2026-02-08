@@ -6,12 +6,14 @@ Provides CRUD operations for conversation checkpoints with database persistence.
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.agent_checkpoint import AgentCheckpoint
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +24,7 @@ class CheckpointService:
     Handles checkpoint creation, retrieval, and cleanup for agent sessions.
     """
 
-    def __init__(self, db_session: AsyncSession | None = None):
+    def __init__(self, db_session: AsyncSession | None = None) -> None:
         """Initialize checkpoint service.
 
         Args:
@@ -72,10 +74,11 @@ class CheckpointService:
                 select(AgentCheckpoint).where(
                     AgentCheckpoint.session_id == session_id,
                     AgentCheckpoint.turn_number == turn_number,
-                )
+                ),
             )
             if existing.scalar_one_or_none():
-                raise ValueError(f"Checkpoint already exists for session {session_id} turn {turn_number}")
+                msg = f"Checkpoint already exists for session {session_id} turn {turn_number}"
+                raise ValueError(msg)
 
             # Prepare S3 key (Phase 4 will implement actual MinIO upload)
             s3_key = f"sandboxes/{session_id}/snapshots/snapshot-turn-{turn_number}.tar.gz"
@@ -105,7 +108,7 @@ class CheckpointService:
         except Exception as e:
             if self._owns_session:
                 await db.rollback()
-            logger.error(f"Failed to create checkpoint: {e}")
+            logger.exception("Failed to create checkpoint: %s", e)
             raise
 
     async def load_latest_checkpoint(
@@ -127,19 +130,19 @@ class CheckpointService:
                 select(AgentCheckpoint)
                 .where(AgentCheckpoint.session_id == session_id)
                 .order_by(AgentCheckpoint.turn_number.desc())
-                .limit(1)
+                .limit(1),
             )
             checkpoint = result.scalar_one_or_none()
 
             if checkpoint:
                 logger.info(f"Loaded latest checkpoint for session {session_id}: turn {checkpoint.turn_number}")
             else:
-                logger.info(f"No checkpoints found for session {session_id}")
+                logger.info("No checkpoints found for session %s", session_id)
 
             return checkpoint
 
         except Exception as e:
-            logger.error(f"Failed to load latest checkpoint: {e}")
+            logger.exception("Failed to load latest checkpoint: %s", e)
             raise
 
     async def load_checkpoint_by_turn(
@@ -163,19 +166,19 @@ class CheckpointService:
                 select(AgentCheckpoint).where(
                     AgentCheckpoint.session_id == session_id,
                     AgentCheckpoint.turn_number == turn_number,
-                )
+                ),
             )
             checkpoint = result.scalar_one_or_none()
 
             if checkpoint:
-                logger.info(f"Loaded checkpoint for session {session_id} turn {turn_number}")
+                logger.info("Loaded checkpoint for session %s turn %s", session_id, turn_number)
             else:
-                logger.info(f"No checkpoint found for session {session_id} turn {turn_number}")
+                logger.info("No checkpoint found for session %s turn %s", session_id, turn_number)
 
             return checkpoint
 
         except Exception as e:
-            logger.error(f"Failed to load checkpoint by turn: {e}")
+            logger.exception("Failed to load checkpoint by turn: %s", e)
             raise
 
     async def list_checkpoints(
@@ -199,7 +202,7 @@ class CheckpointService:
                 select(AgentCheckpoint)
                 .where(AgentCheckpoint.session_id == session_id)
                 .order_by(AgentCheckpoint.turn_number.desc())
-                .limit(limit)
+                .limit(limit),
             )
             checkpoints = list(result.scalars().all())
 
@@ -208,7 +211,7 @@ class CheckpointService:
             return checkpoints
 
         except Exception as e:
-            logger.error(f"Failed to list checkpoints: {e}")
+            logger.exception("Failed to list checkpoints: %s", e)
             raise
 
     async def delete_checkpoint(
@@ -230,7 +233,7 @@ class CheckpointService:
             checkpoint = result.scalar_one_or_none()
 
             if not checkpoint:
-                logger.warning(f"Checkpoint {checkpoint_id} not found")
+                logger.warning("Checkpoint %s not found", checkpoint_id)
                 return False
 
             await db.delete(checkpoint)
@@ -238,13 +241,13 @@ class CheckpointService:
             if self._owns_session:
                 await db.commit()
 
-            logger.info(f"Deleted checkpoint {checkpoint_id}")
+            logger.info("Deleted checkpoint %s", checkpoint_id)
             return True
 
         except Exception as e:
             if self._owns_session:
                 await db.rollback()
-            logger.error(f"Failed to delete checkpoint: {e}")
+            logger.exception("Failed to delete checkpoint: %s", e)
             raise
 
     async def cleanup_old_checkpoints(
@@ -268,7 +271,7 @@ class CheckpointService:
             result = await db.execute(
                 select(AgentCheckpoint)
                 .where(AgentCheckpoint.session_id == session_id)
-                .order_by(AgentCheckpoint.turn_number.desc())
+                .order_by(AgentCheckpoint.turn_number.desc()),
             )
             all_checkpoints = list(result.scalars().all())
 
@@ -276,7 +279,7 @@ class CheckpointService:
             to_delete = all_checkpoints[keep_count:]
 
             if not to_delete:
-                logger.info(f"No checkpoints to clean up for session {session_id}")
+                logger.info("No checkpoints to clean up for session %s", session_id)
                 return 0
 
             # Delete old checkpoints
@@ -293,7 +296,7 @@ class CheckpointService:
         except Exception as e:
             if self._owns_session:
                 await db.rollback()
-            logger.error(f"Failed to cleanup checkpoints: {e}")
+            logger.exception("Failed to cleanup checkpoints: %s", e)
             raise
 
     async def get_checkpoint_stats(
@@ -333,10 +336,10 @@ class CheckpointService:
             }
 
         except Exception as e:
-            logger.error(f"Failed to get checkpoint stats: {e}")
+            logger.exception("Failed to get checkpoint stats: %s", e)
             raise
 
-    async def close(self):
+    async def close(self) -> None:
         """Close database session if owned."""
         if self._owns_session and self._db_session:
             await self._db_session.close()

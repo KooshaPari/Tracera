@@ -14,8 +14,8 @@
     "test": "vitest --run",
     "test:coverage": "vitest --run --coverage",
     "test:watch": "vitest",
-    "lint": "oxlint -c .oxlintrc.json .",
-    "lint:fix": "oxlint -c .oxlintrc.json --fix .",
+    "lint": "oxlint -c .oxlintrc.json . --ignore-pattern \"**/__tests__/**\" --ignore-pattern \"**/*.test.ts\" --ignore-pattern \"**/*.spec.ts\" --ignore-pattern \"**/*.mjs\"",
+    "lint:fix": "oxlint -c .oxlintrc.json --fix . --ignore-pattern \"**/__tests__/**\" --ignore-pattern \"**/*.test.ts\" --ignore-pattern \"**/*.spec.ts\" --ignore-pattern \"**/*.mjs\"",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

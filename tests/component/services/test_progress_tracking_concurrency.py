@@ -1,5 +1,4 @@
-"""
-Comprehensive concurrency tests for progress tracking service.
+"""Comprehensive concurrency tests for progress tracking service.
 
 This module tests:
 - Concurrent progress updates
@@ -55,7 +54,7 @@ class TestProgressTrackingConcurrency:
             return ProgressTrackingService(mock_session)
         return None
 
-    async def test_concurrent_progress_updates(self, stub_service):
+    async def test_concurrent_progress_updates(self, stub_service) -> None:
         """Test concurrent updates to progress."""
         if not stub_service:
             pytest.skip("Stub service not available")
@@ -69,7 +68,7 @@ class TestProgressTrackingConcurrency:
         assert all(isinstance(r, dict) for r in results)
         assert all("progress" in r for r in results)
 
-    async def test_high_frequency_progress_queries(self, stub_service):
+    async def test_high_frequency_progress_queries(self, stub_service) -> None:
         """Test rapid successive progress queries."""
         if not stub_service:
             pytest.skip("Stub service not available")
@@ -84,7 +83,7 @@ class TestProgressTrackingConcurrency:
         # Should complete quickly
         assert duration < 2.0, f"100 queries took {duration}s, expected < 2s"
 
-    async def test_concurrent_progress_different_items(self, stub_service):
+    async def test_concurrent_progress_different_items(self, stub_service) -> None:
         """Test concurrent progress for different items."""
         if not stub_service:
             pytest.skip("Stub service not available")
@@ -114,7 +113,7 @@ class TestProgressCalculationAccuracy:
             return ProgressService(mock_session)
         return None
 
-    def test_progress_calculation_leaf_item_todo(self, real_service, mock_session):
+    def test_progress_calculation_leaf_item_todo(self, real_service, mock_session) -> None:
         """Test progress calculation for leaf item in todo state."""
         if not real_service:
             pytest.skip("Real service not available")
@@ -132,7 +131,7 @@ class TestProgressCalculationAccuracy:
         result = real_service.calculate_completion("item1")
         assert result == 0.0
 
-    def test_progress_calculation_leaf_item_in_progress(self, real_service, mock_session):
+    def test_progress_calculation_leaf_item_in_progress(self, real_service, mock_session) -> None:
         """Test progress calculation for leaf item in progress."""
         if not real_service:
             pytest.skip("Real service not available")
@@ -149,7 +148,7 @@ class TestProgressCalculationAccuracy:
         result = real_service.calculate_completion("item2")
         assert result == 50.0
 
-    def test_progress_calculation_leaf_item_complete(self, real_service, mock_session):
+    def test_progress_calculation_leaf_item_complete(self, real_service, mock_session) -> None:
         """Test progress calculation for leaf item complete."""
         if not real_service:
             pytest.skip("Real service not available")
@@ -166,7 +165,7 @@ class TestProgressCalculationAccuracy:
         result = real_service.calculate_completion("item3")
         assert result == 100.0
 
-    def test_progress_calculation_leaf_item_blocked(self, real_service, mock_session):
+    def test_progress_calculation_leaf_item_blocked(self, real_service, mock_session) -> None:
         """Test progress calculation for blocked item."""
         if not real_service:
             pytest.skip("Real service not available")
@@ -183,7 +182,7 @@ class TestProgressCalculationAccuracy:
         result = real_service.calculate_completion("item4")
         assert result == 0.0
 
-    def test_progress_calculation_nonexistent_item(self, real_service, mock_session):
+    def test_progress_calculation_nonexistent_item(self, real_service, mock_session) -> None:
         """Test progress calculation for nonexistent item."""
         if not real_service:
             pytest.skip("Real service not available")
@@ -207,7 +206,7 @@ class TestProgressStateConsistency:
             return ProgressTrackingService(MagicMock())
         return None
 
-    async def test_progress_query_consistency(self, stub_service):
+    async def test_progress_query_consistency(self, stub_service) -> None:
         """Test progress queries return consistent results."""
         if not stub_service:
             pytest.skip("Stub service not available")
@@ -220,7 +219,7 @@ class TestProgressStateConsistency:
         # All results should have consistent structure
         assert all("progress" in r for r in results)
 
-    async def test_multiple_service_instances(self):
+    async def test_multiple_service_instances(self) -> None:
         """Test multiple service instances work independently."""
         if not HAS_STUB:
             pytest.skip("Stub service not available")
@@ -233,7 +232,7 @@ class TestProgressStateConsistency:
         assert len(results) == 10
         assert all("progress" in r for r in results)
 
-    async def test_service_reuse_stability(self, stub_service):
+    async def test_service_reuse_stability(self, stub_service) -> None:
         """Test service remains stable with repeated use."""
         if not stub_service:
             pytest.skip("Stub service not available")
@@ -254,7 +253,7 @@ class TestCompletionMilestoneDetection:
             return ProgressTrackingService(MagicMock())
         return None
 
-    async def test_milestone_0_percent(self, stub_service):
+    async def test_milestone_0_percent(self, stub_service) -> None:
         """Test 0% completion milestone."""
         if not stub_service:
             pytest.skip("Stub service not available")
@@ -262,7 +261,7 @@ class TestCompletionMilestoneDetection:
         result = await stub_service.progress()
         assert result["progress"] == 0
 
-    async def test_milestone_detection_incremental(self, stub_service):
+    async def test_milestone_detection_incremental(self, stub_service) -> None:
         """Test milestone detection at various percentages."""
         if not stub_service:
             pytest.skip("Stub service not available")
@@ -290,7 +289,7 @@ class TestBlockedItemTracking:
             return ProgressService(mock_session)
         return None
 
-    def test_get_blocked_items_empty(self, real_service, mock_session):
+    def test_get_blocked_items_empty(self, real_service, mock_session) -> None:
         """Test getting blocked items when none exist."""
         if not real_service:
             pytest.skip("Real service not available")
@@ -302,7 +301,7 @@ class TestBlockedItemTracking:
         result = real_service.get_blocked_items("project1")
         assert result == []
 
-    def test_get_blocked_items_with_blockers(self, real_service, mock_session):
+    def test_get_blocked_items_with_blockers(self, real_service, mock_session) -> None:
         """Test getting blocked items with blockers."""
         if not real_service:
             pytest.skip("Real service not available")
@@ -348,7 +347,7 @@ class TestStalledItemTracking:
             return ProgressService(mock_session)
         return None
 
-    def test_get_stalled_items_empty(self, real_service, mock_session):
+    def test_get_stalled_items_empty(self, real_service, mock_session) -> None:
         """Test getting stalled items when none exist."""
         if not real_service:
             pytest.skip("Real service not available")
@@ -360,7 +359,7 @@ class TestStalledItemTracking:
         result = real_service.get_stalled_items("project1")
         assert result == []
 
-    def test_get_stalled_items_with_threshold(self, real_service, mock_session):
+    def test_get_stalled_items_with_threshold(self, real_service, mock_session) -> None:
         """Test getting stalled items with custom threshold."""
         if not real_service:
             pytest.skip("Real service not available")
@@ -397,7 +396,7 @@ class TestVelocityCalculations:
             return ProgressService(mock_session)
         return None
 
-    def test_calculate_velocity_no_items(self, real_service, mock_session):
+    def test_calculate_velocity_no_items(self, real_service, mock_session) -> None:
         """Test velocity calculation with no items."""
         if not real_service:
             pytest.skip("Real service not available")
@@ -411,7 +410,7 @@ class TestVelocityCalculations:
         assert result["items_created"] == 0
         assert result["completion_rate"] == 0
 
-    def test_calculate_velocity_with_items(self, real_service, mock_session):
+    def test_calculate_velocity_with_items(self, real_service, mock_session) -> None:
         """Test velocity calculation with completed items."""
         if not real_service:
             pytest.skip("Real service not available")
@@ -431,7 +430,7 @@ class TestVelocityCalculations:
 class TestProgressServiceValidation:
     """Test progress service validation and edge cases."""
 
-    async def test_progress_service_initialization_without_session(self):
+    async def test_progress_service_initialization_without_session(self) -> None:
         """Test service initialization without session."""
         if HAS_STUB:
             service = ProgressTrackingService(None)
@@ -439,7 +438,7 @@ class TestProgressServiceValidation:
             result = await service.progress()
             assert "progress" in result
 
-    async def test_progress_timeout_handling(self):
+    async def test_progress_timeout_handling(self) -> None:
         """Test progress operations with timeout."""
         if not HAS_STUB:
             pytest.skip("Stub service not available")
@@ -452,7 +451,7 @@ class TestProgressServiceValidation:
         except TimeoutError:
             pytest.fail("Progress query timed out unexpectedly")
 
-    async def test_progress_performance_baseline(self):
+    async def test_progress_performance_baseline(self) -> None:
         """Test baseline progress query performance."""
         if not HAS_STUB:
             pytest.skip("Stub service not available")

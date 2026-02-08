@@ -1,5 +1,4 @@
-"""
-API key management and security tests.
+"""API key management and security tests.
 
 Tests for API key generation, validation, rotation, and security.
 """
@@ -11,7 +10,7 @@ import pytest
 
 
 @pytest.fixture
-def mock_api_key():
+def mock_api_key() -> str:
     """Generate mock API key."""
     return "sk_live_1234567890abcdefghijklmnop"
 
@@ -26,7 +25,7 @@ def mock_api_key_manager():
 class TestAPIKeyGeneration:
     """Test API key generation."""
 
-    def test_api_key_generation_success(self, mock_api_key_manager):
+    def test_api_key_generation_success(self, mock_api_key_manager) -> None:
         """Test successful API key generation."""
         mock_api_key_manager.generate.return_value = {
             "api_key": "sk_live_1234567890abcdefghijklmnop",
@@ -39,13 +38,13 @@ class TestAPIKeyGeneration:
         assert "api_key" in key
         assert key["api_key"].startswith("sk_")
 
-    def test_api_key_format(self, mock_api_key):
+    def test_api_key_format(self, mock_api_key) -> None:
         """Test API key format validation."""
         # Should follow pattern: sk_<environment>_<random_characters>
         assert mock_api_key.startswith("sk_")
         assert len(mock_api_key) > 20
 
-    def test_api_key_randomness(self, mock_api_key_manager):
+    def test_api_key_randomness(self, mock_api_key_manager) -> None:
         """Test that API keys are random."""
         mock_api_key_manager.generate.side_effect = [
             {"api_key": "sk_live_key1"},
@@ -58,7 +57,7 @@ class TestAPIKeyGeneration:
         # Keys should be different
         assert key1["api_key"] != key2["api_key"]
 
-    def test_api_key_environment_prefix(self, mock_api_key_manager):
+    def test_api_key_environment_prefix(self, mock_api_key_manager) -> None:
         """Test API key environment prefix."""
         mock_api_key_manager.generate.side_effect = [
             {"api_key": "sk_test_1234"},
@@ -75,7 +74,7 @@ class TestAPIKeyGeneration:
 class TestAPIKeyValidation:
     """Test API key validation."""
 
-    def test_api_key_validation_success(self, mock_api_key, mock_api_key_manager):
+    def test_api_key_validation_success(self, mock_api_key, mock_api_key_manager) -> None:
         """Test successful API key validation."""
         mock_api_key_manager.validate.return_value = {
             "valid": True,
@@ -87,7 +86,7 @@ class TestAPIKeyValidation:
 
         assert result["valid"] is True
 
-    def test_api_key_validation_failure(self, mock_api_key_manager):
+    def test_api_key_validation_failure(self, mock_api_key_manager) -> None:
         """Test API key validation failure."""
         mock_api_key_manager.validate.return_value = {
             "valid": False,
@@ -98,7 +97,7 @@ class TestAPIKeyValidation:
 
         assert result["valid"] is False
 
-    def test_nonexistent_api_key_rejected(self, mock_api_key_manager):
+    def test_nonexistent_api_key_rejected(self, mock_api_key_manager) -> None:
         """Test that non-existent API keys are rejected."""
         mock_api_key_manager.validate.return_value = {
             "valid": False,
@@ -109,7 +108,7 @@ class TestAPIKeyValidation:
 
         assert result["valid"] is False
 
-    def test_api_key_case_sensitivity(self, mock_api_key_manager):
+    def test_api_key_case_sensitivity(self, mock_api_key_manager) -> None:
         """Test that API keys are case-sensitive."""
         lower_key = "sk_live_abcdef"
         upper_key = "SK_LIVE_ABCDEF"
@@ -129,7 +128,7 @@ class TestAPIKeyValidation:
 class TestAPIKeyScopes:
     """Test API key scopes and permissions."""
 
-    def test_api_key_scopes_validation(self, mock_api_key, mock_api_key_manager):
+    def test_api_key_scopes_validation(self, mock_api_key, mock_api_key_manager) -> None:
         """Test API key scope validation."""
         mock_api_key_manager.validate.return_value = {
             "valid": True,
@@ -140,7 +139,7 @@ class TestAPIKeyScopes:
 
         assert "read:projects" in result["scopes"]
 
-    def test_api_key_insufficient_scopes(self, mock_api_key_manager):
+    def test_api_key_insufficient_scopes(self, mock_api_key_manager) -> None:
         """Test API key with insufficient scopes."""
         mock_api_key_manager.validate.return_value = {
             "valid": True,
@@ -154,7 +153,7 @@ class TestAPIKeyScopes:
 
         assert has_write is False
 
-    def test_api_key_scope_inheritance(self, mock_api_key_manager):
+    def test_api_key_scope_inheritance(self, mock_api_key_manager) -> None:
         """Test scope inheritance (admin includes all)."""
         mock_api_key_manager.validate.return_value = {
             "valid": True,
@@ -173,7 +172,7 @@ class TestAPIKeyScopes:
 class TestAPIKeyExpiration:
     """Test API key expiration."""
 
-    def test_api_key_with_expiration(self, mock_api_key_manager):
+    def test_api_key_with_expiration(self, mock_api_key_manager) -> None:
         """Test API key with expiration date."""
         expiration = datetime.now(UTC) + timedelta(days=365)
 
@@ -186,7 +185,7 @@ class TestAPIKeyExpiration:
 
         assert "expires_at" in key
 
-    def test_api_key_expiration_check(self, mock_api_key_manager):
+    def test_api_key_expiration_check(self, mock_api_key_manager) -> None:
         """Test API key expiration validation."""
         mock_api_key_manager.is_expired.return_value = False
 
@@ -194,7 +193,7 @@ class TestAPIKeyExpiration:
 
         assert is_expired is False
 
-    def test_expired_api_key_rejected(self, mock_api_key_manager):
+    def test_expired_api_key_rejected(self, mock_api_key_manager) -> None:
         """Test that expired API keys are rejected."""
         mock_api_key_manager.validate.return_value = {
             "valid": False,
@@ -205,7 +204,7 @@ class TestAPIKeyExpiration:
 
         assert result["valid"] is False
 
-    def test_api_key_no_expiration(self, mock_api_key_manager):
+    def test_api_key_no_expiration(self, mock_api_key_manager) -> None:
         """Test API key without expiration."""
         mock_api_key_manager.generate.return_value = {
             "api_key": "sk_live_1234",
@@ -216,7 +215,7 @@ class TestAPIKeyExpiration:
 
         assert key["expires_at"] is None
 
-    def test_api_key_near_expiration(self, mock_api_key_manager):
+    def test_api_key_near_expiration(self, mock_api_key_manager) -> None:
         """Test warning for API keys nearing expiration."""
         mock_api_key_manager.is_expiring_soon.return_value = True
 
@@ -228,7 +227,7 @@ class TestAPIKeyExpiration:
 class TestAPIKeyRotation:
     """Test API key rotation and revocation."""
 
-    def test_api_key_rotation(self, mock_api_key_manager):
+    def test_api_key_rotation(self, mock_api_key_manager) -> None:
         """Test API key rotation."""
         old_key = "sk_live_old_key"
 
@@ -242,7 +241,7 @@ class TestAPIKeyRotation:
 
         assert result["new_key"] != old_key
 
-    def test_old_key_invalid_after_rotation(self, mock_api_key_manager):
+    def test_old_key_invalid_after_rotation(self, mock_api_key_manager) -> None:
         """Test that old key becomes invalid after rotation."""
         old_key = "sk_live_old"
 
@@ -260,7 +259,7 @@ class TestAPIKeyRotation:
 
         assert result["valid"] is False
 
-    def test_new_key_valid_after_rotation(self, mock_api_key_manager):
+    def test_new_key_valid_after_rotation(self, mock_api_key_manager) -> None:
         """Test that new key is valid after rotation."""
         mock_api_key_manager.rotate.return_value = {
             "new_key": "sk_live_new_key",
@@ -279,7 +278,7 @@ class TestAPIKeyRotation:
 class TestAPIKeyRevocation:
     """Test API key revocation."""
 
-    def test_api_key_revocation(self, mock_api_key, mock_api_key_manager):
+    def test_api_key_revocation(self, mock_api_key, mock_api_key_manager) -> None:
         """Test API key revocation."""
         mock_api_key_manager.revoke.return_value = True
 
@@ -287,7 +286,7 @@ class TestAPIKeyRevocation:
 
         assert is_revoked is True
 
-    def test_revoked_key_rejected(self, mock_api_key_manager):
+    def test_revoked_key_rejected(self, mock_api_key_manager) -> None:
         """Test that revoked keys are rejected."""
         key_to_revoke = "sk_live_revoke_me"
 
@@ -305,7 +304,7 @@ class TestAPIKeyRevocation:
 
         assert result["valid"] is False
 
-    def test_revoke_all_keys_for_user(self, mock_api_key_manager):
+    def test_revoke_all_keys_for_user(self, mock_api_key_manager) -> None:
         """Test revoking all API keys for a user."""
         mock_api_key_manager.revoke_all.return_value = 3
 
@@ -317,7 +316,7 @@ class TestAPIKeyRevocation:
 class TestAPIKeyMetadata:
     """Test API key metadata."""
 
-    def test_api_key_name(self, mock_api_key_manager):
+    def test_api_key_name(self, mock_api_key_manager) -> None:
         """Test API key with name."""
         mock_api_key_manager.generate.return_value = {
             "api_key": "sk_live_1234",
@@ -328,7 +327,7 @@ class TestAPIKeyMetadata:
 
         assert key["name"] == "Production Server"
 
-    def test_api_key_description(self, mock_api_key_manager):
+    def test_api_key_description(self, mock_api_key_manager) -> None:
         """Test API key with description."""
         mock_api_key_manager.generate.return_value = {
             "api_key": "sk_live_1234",
@@ -339,7 +338,7 @@ class TestAPIKeyMetadata:
 
         assert "description" in key
 
-    def test_api_key_creation_timestamp(self, mock_api_key_manager):
+    def test_api_key_creation_timestamp(self, mock_api_key_manager) -> None:
         """Test API key creation timestamp."""
         now = datetime.now(UTC).isoformat()
 
@@ -352,7 +351,7 @@ class TestAPIKeyMetadata:
 
         assert key["created_at"] == now
 
-    def test_api_key_last_used(self, mock_api_key_manager):
+    def test_api_key_last_used(self, mock_api_key_manager) -> None:
         """Test API key last used timestamp."""
         mock_api_key_manager.get_metadata.return_value = {
             "last_used_at": datetime.now(UTC).isoformat(),
@@ -366,7 +365,7 @@ class TestAPIKeyMetadata:
 class TestAPIKeyListAndManagement:
     """Test API key listing and management."""
 
-    def test_list_user_api_keys(self, mock_api_key_manager):
+    def test_list_user_api_keys(self, mock_api_key_manager) -> None:
         """Test listing user's API keys."""
         mock_api_key_manager.list_keys.return_value = [
             {"key_id": "key_1", "name": "Production"},
@@ -377,14 +376,14 @@ class TestAPIKeyListAndManagement:
 
         assert len(keys) == 2
 
-    def test_api_key_masking_in_response(self, mock_api_key_manager):
+    def test_api_key_masking_in_response(self, mock_api_key_manager) -> None:
         """Test that API keys are masked in responses."""
         mock_api_key_manager.list_keys.return_value = [
             {
                 "key_id": "key_1",
                 "masked_key": "sk_live_...1234",  # Only last 4 chars visible
                 "name": "Production",
-            }
+            },
         ]
 
         keys = mock_api_key_manager.list_keys("user123")
@@ -394,7 +393,7 @@ class TestAPIKeyListAndManagement:
             if "masked_key" in key:
                 assert not key["masked_key"].startswith("sk_live_abcd")
 
-    def test_api_key_details_retrieval(self, mock_api_key_manager):
+    def test_api_key_details_retrieval(self, mock_api_key_manager) -> None:
         """Test retrieving API key details."""
         mock_api_key_manager.get_key_details.return_value = {
             "key_id": "key_1",
@@ -409,7 +408,7 @@ class TestAPIKeyListAndManagement:
         assert details["name"] == "Production Server"
         assert len(details["scopes"]) == 2
 
-    def test_delete_api_key(self, mock_api_key_manager):
+    def test_delete_api_key(self, mock_api_key_manager) -> None:
         """Test deleting an API key."""
         mock_api_key_manager.delete.return_value = True
 
@@ -421,14 +420,14 @@ class TestAPIKeyListAndManagement:
 class TestAPIKeySecurityBestPractices:
     """Test API key security best practices."""
 
-    def test_api_key_not_in_logs(self, mock_api_key):
+    def test_api_key_not_in_logs(self, mock_api_key) -> None:
         """Test that API keys are not logged."""
         with patch("tracertm.logging_config.logger") as mock_logger:
             # Simulate logging operation
             # Logger should redact API keys
             pass
 
-    def test_api_key_not_in_error_messages(self, mock_api_key):
+    def test_api_key_not_in_error_messages(self, mock_api_key) -> None:
         """Test that API keys don't appear in error messages."""
         # Error messages should not contain actual API keys
         error_msg = f"Invalid API key: {mock_api_key}"
@@ -438,7 +437,7 @@ class TestAPIKeySecurityBestPractices:
 
         assert mock_api_key not in redacted
 
-    def test_api_key_transmission_over_https(self, mock_api_key_manager):
+    def test_api_key_transmission_over_https(self, mock_api_key_manager) -> None:
         """Test that API keys should be transmitted over HTTPS only."""
         # This is enforced at infrastructure level
         # Test ensures configuration requires HTTPS
@@ -448,7 +447,7 @@ class TestAPIKeySecurityBestPractices:
 
         assert requires_https is True
 
-    def test_api_key_comparison_timing_safe(self, mock_api_key_manager):
+    def test_api_key_comparison_timing_safe(self, mock_api_key_manager) -> None:
         """Test constant-time comparison to prevent timing attacks."""
         mock_api_key_manager.validate.return_value = {"valid": True}
 

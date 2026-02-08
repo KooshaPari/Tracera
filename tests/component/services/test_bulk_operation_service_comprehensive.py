@@ -1,5 +1,4 @@
-"""
-Comprehensive test suite for BulkOperationService.
+"""Comprehensive test suite for BulkOperationService.
 
 Target: 40+ tests covering:
 - Bulk create with 100-1000 items
@@ -54,7 +53,7 @@ def _create_test_csv(items_list, omit_empty_metadata=True):
 
 
 def _seed_items(
-    session, project_id="proj-1", count=5, status="todo", view="FEATURE", item_type="feature", prefix="item"
+    session, project_id="proj-1", count=5, status="todo", view="FEATURE", item_type="feature", prefix="item",
 ):
     """Create seed items for testing."""
     items = []
@@ -91,7 +90,7 @@ def _seed_project(session, project_id="proj-1"):
 class TestBulkCreateBasic:
     """Basic bulk create functionality."""
 
-    def test_bulk_create_single_item(self, sync_session):
+    def test_bulk_create_single_item(self, sync_session) -> None:
         """Test creating a single item via bulk create."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -107,14 +106,14 @@ class TestBulkCreateBasic:
                 "Owner": "john",
                 "Parent Id": "",
                 "Metadata": "",
-            }
+            },
         ])
 
         result = svc.bulk_create_items("proj-1", csv_data)
         assert result["items_created"] == 1
         assert sync_session.query(Item).count() == 1
 
-    def test_bulk_create_multiple_items(self, sync_session):
+    def test_bulk_create_multiple_items(self, sync_session) -> None:
         """Test creating multiple items."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -139,7 +138,7 @@ class TestBulkCreateBasic:
         assert result["items_created"] == 10
         assert sync_session.query(Item).count() == 10
 
-    def test_bulk_create_with_metadata(self, sync_session):
+    def test_bulk_create_with_metadata(self, sync_session) -> None:
         """Test creating items with JSON metadata."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -156,7 +155,7 @@ class TestBulkCreateBasic:
                     "Owner": "",
                     "Parent Id": "",
                     "Metadata": json.dumps({"key": "value", "nested": {"field": "data"}}),
-                }
+                },
             ],
             omit_empty_metadata=False,
         )
@@ -166,11 +165,11 @@ class TestBulkCreateBasic:
         item = sync_session.query(Item).first()
         assert item.item_metadata == {"key": "value", "nested": {"field": "data"}}
 
-    def test_bulk_create_with_parent_id(self, sync_session):
+    def test_bulk_create_with_parent_id(self, sync_session) -> None:
         """Test creating items with parent relationships."""
         _seed_project(sync_session)
         parent = Item(
-            id="parent-1", project_id="proj-1", title="Parent", view="STORY", item_type="story", status="todo"
+            id="parent-1", project_id="proj-1", title="Parent", view="STORY", item_type="story", status="todo",
         )
         sync_session.add(parent)
         sync_session.commit()
@@ -186,7 +185,7 @@ class TestBulkCreateBasic:
                 "Priority": "medium",
                 "Owner": "",
                 "Parent Id": "parent-1",
-            }
+            },
         ])
 
         result = svc.bulk_create_items("proj-1", csv_data)
@@ -194,7 +193,7 @@ class TestBulkCreateBasic:
         child = sync_session.query(Item).filter_by(title="Child Item").first()
         assert child.parent_id == "parent-1"
 
-    def test_bulk_create_logs_events(self, sync_session):
+    def test_bulk_create_logs_events(self, sync_session) -> None:
         """Test that bulk create logs events."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -210,7 +209,7 @@ class TestBulkCreateBasic:
                 "Owner": "",
                 "Parent Id": "",
                 "Metadata": "",
-            }
+            },
         ])
 
         result = svc.bulk_create_items("proj-1", csv_data, agent_id="agent-1")
@@ -229,7 +228,7 @@ class TestBulkCreateBasic:
 class TestBulkCreateLargeScale:
     """Test bulk create with large numbers of items."""
 
-    def test_bulk_create_100_items(self, sync_session):
+    def test_bulk_create_100_items(self, sync_session) -> None:
         """Test creating 100 items."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -254,7 +253,7 @@ class TestBulkCreateLargeScale:
         assert result["items_created"] == 100
         assert sync_session.query(Item).count() == 100
 
-    def test_bulk_create_500_items(self, sync_session):
+    def test_bulk_create_500_items(self, sync_session) -> None:
         """Test creating 500 items."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -279,7 +278,7 @@ class TestBulkCreateLargeScale:
         assert result["items_created"] == 500
         assert sync_session.query(Item).count() == 500
 
-    def test_bulk_create_1000_items(self, sync_session):
+    def test_bulk_create_1000_items(self, sync_session) -> None:
         """Test creating 1000 items."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -304,7 +303,7 @@ class TestBulkCreateLargeScale:
         assert result["items_created"] == 1000
         assert sync_session.query(Item).count() == 1000
 
-    def test_bulk_create_various_statuses(self, sync_session):
+    def test_bulk_create_various_statuses(self, sync_session) -> None:
         """Test creating items with different statuses."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -334,7 +333,7 @@ class TestBulkCreateLargeScale:
             count = sync_session.query(Item).filter_by(status=status).count()
             assert count == 50
 
-    def test_bulk_create_various_priorities(self, sync_session):
+    def test_bulk_create_various_priorities(self, sync_session) -> None:
         """Test creating items with different priorities."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -367,7 +366,7 @@ class TestBulkCreateLargeScale:
 class TestBulkCreatePreview:
     """Test bulk create preview functionality."""
 
-    def test_preview_valid_csv(self, sync_session):
+    def test_preview_valid_csv(self, sync_session) -> None:
         """Test preview with valid CSV."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -393,7 +392,7 @@ class TestBulkCreatePreview:
         assert len(preview["sample_items"]) == 5  # default limit
         assert preview["invalid_rows_count"] == 0
 
-    def test_preview_empty_csv(self, sync_session):
+    def test_preview_empty_csv(self, sync_session) -> None:
         """Test preview with empty CSV."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -403,7 +402,7 @@ class TestBulkCreatePreview:
         assert preview["total_count"] == 0
         assert len(preview["validation_errors"]) > 0
 
-    def test_preview_missing_required_headers(self, sync_session):
+    def test_preview_missing_required_headers(self, sync_session) -> None:
         """Test preview with missing required headers."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -412,7 +411,7 @@ class TestBulkCreatePreview:
         preview = svc.bulk_create_preview("proj-1", csv_data)
         assert len(preview["validation_errors"]) > 0
 
-    def test_preview_invalid_json_metadata(self, sync_session):
+    def test_preview_invalid_json_metadata(self, sync_session) -> None:
         """Test preview with invalid JSON metadata."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -429,7 +428,7 @@ class TestBulkCreatePreview:
                     "Owner": "",
                     "Parent Id": "",
                     "Metadata": "{invalid json}",
-                }
+                },
             ],
             omit_empty_metadata=False,
         )
@@ -437,7 +436,7 @@ class TestBulkCreatePreview:
         preview = svc.bulk_create_preview("proj-1", csv_data)
         assert preview["invalid_rows_count"] > 0
 
-    def test_preview_warnings_large_operation(self, sync_session):
+    def test_preview_warnings_large_operation(self, sync_session) -> None:
         """Test preview warnings for large operations."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -471,7 +470,7 @@ class TestBulkCreatePreview:
 class TestBulkUpdate:
     """Test bulk update functionality."""
 
-    def test_bulk_update_status(self, sync_session):
+    def test_bulk_update_status(self, sync_session) -> None:
         """Test updating item status."""
         _seed_project(sync_session)
         items = _seed_items(sync_session, count=5, status="todo")
@@ -481,14 +480,14 @@ class TestBulkUpdate:
         assert result["items_updated"] == 5
         assert all(item.status == "in_progress" for item in sync_session.query(Item).all())
 
-    def test_bulk_update_multiple_fields(self, sync_session):
+    def test_bulk_update_multiple_fields(self, sync_session) -> None:
         """Test updating multiple fields."""
         _seed_project(sync_session)
         items = _seed_items(sync_session, count=3)
         svc = BulkOperationService(sync_session)
 
         result = svc.bulk_update_items(
-            "proj-1", {"status": "todo"}, {"status": "done", "priority": "high", "owner": "alice"}
+            "proj-1", {"status": "todo"}, {"status": "done", "priority": "high", "owner": "alice"},
         )
         assert result["items_updated"] == 3
         for item in sync_session.query(Item).all():
@@ -496,7 +495,7 @@ class TestBulkUpdate:
             assert item.priority == "high"
             assert item.owner == "alice"
 
-    def test_bulk_update_with_filters(self, sync_session):
+    def test_bulk_update_with_filters(self, sync_session) -> None:
         """Test bulk update with complex filters."""
         _seed_project(sync_session)
         _seed_items(sync_session, count=3, status="todo", view="FEATURE", prefix="feat")
@@ -506,7 +505,7 @@ class TestBulkUpdate:
         result = svc.bulk_update_items("proj-1", {"view": "FEATURE", "status": "todo"}, {"status": "in_progress"})
         assert result["items_updated"] == 3
 
-    def test_bulk_update_preview(self, sync_session):
+    def test_bulk_update_preview(self, sync_session) -> None:
         """Test bulk update preview."""
         _seed_project(sync_session)
         items = _seed_items(sync_session, count=10, status="todo")
@@ -517,7 +516,7 @@ class TestBulkUpdate:
         assert len(preview["sample_items"]) == 3
         assert preview["estimated_duration_ms"] == 100  # 10 items * 10ms
 
-    def test_bulk_update_events_logged(self, sync_session):
+    def test_bulk_update_events_logged(self, sync_session) -> None:
         """Test that bulk update logs events."""
         _seed_project(sync_session)
         items = _seed_items(sync_session, count=2)
@@ -537,7 +536,7 @@ class TestBulkUpdate:
 class TestBulkDelete:
     """Test bulk delete functionality."""
 
-    def test_bulk_delete_items(self, sync_session):
+    def test_bulk_delete_items(self, sync_session) -> None:
         """Test soft deleting items."""
         _seed_project(sync_session)
         items = _seed_items(sync_session, count=5)
@@ -547,7 +546,7 @@ class TestBulkDelete:
         assert result["items_deleted"] == 5
         assert all(item.deleted_at is not None for item in sync_session.query(Item).all())
 
-    def test_bulk_delete_with_filters(self, sync_session):
+    def test_bulk_delete_with_filters(self, sync_session) -> None:
         """Test bulk delete with filters."""
         _seed_project(sync_session)
         _seed_items(sync_session, count=3, status="todo", prefix="todo")
@@ -561,7 +560,7 @@ class TestBulkDelete:
         deleted = sync_session.query(Item).filter(Item.deleted_at.isnot(None)).all()
         assert len(deleted) == 3
 
-    def test_bulk_delete_large_batch(self, sync_session):
+    def test_bulk_delete_large_batch(self, sync_session) -> None:
         """Test bulk delete with large batch."""
         _seed_project(sync_session)
         items = _seed_items(sync_session, count=100)
@@ -570,7 +569,7 @@ class TestBulkDelete:
         result = svc.bulk_delete_items("proj-1", {})
         assert result["items_deleted"] == 100
 
-    def test_bulk_delete_events_logged(self, sync_session):
+    def test_bulk_delete_events_logged(self, sync_session) -> None:
         """Test that bulk delete logs events."""
         _seed_project(sync_session)
         items = _seed_items(sync_session, count=2)
@@ -590,7 +589,7 @@ class TestBulkDelete:
 class TestErrorHandlingAndRollback:
     """Test error handling and transaction rollback."""
 
-    def test_bulk_create_rollback_on_commit_failure(self, sync_session, monkeypatch):
+    def test_bulk_create_rollback_on_commit_failure(self, sync_session, monkeypatch) -> None:
         """Test rollback on commit failure."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -606,12 +605,12 @@ class TestErrorHandlingAndRollback:
                 "Owner": "",
                 "Parent Id": "",
                 "Metadata": "",
-            }
+            },
         ])
 
         rolled_back = {"value": False}
 
-        def fake_rollback():
+        def fake_rollback() -> None:
             rolled_back["value"] = True
 
         monkeypatch.setattr(sync_session, "rollback", fake_rollback)
@@ -622,7 +621,7 @@ class TestErrorHandlingAndRollback:
 
         assert rolled_back["value"] is True
 
-    def test_bulk_update_rollback_on_failure(self, sync_session, monkeypatch):
+    def test_bulk_update_rollback_on_failure(self, sync_session, monkeypatch) -> None:
         """Test rollback on bulk update failure."""
         _seed_project(sync_session)
         _seed_items(sync_session, count=1)
@@ -630,7 +629,7 @@ class TestErrorHandlingAndRollback:
 
         rolled_back = {"value": False}
 
-        def fake_rollback():
+        def fake_rollback() -> None:
             rolled_back["value"] = True
 
         monkeypatch.setattr(sync_session, "rollback", fake_rollback)
@@ -641,7 +640,7 @@ class TestErrorHandlingAndRollback:
 
         assert rolled_back["value"] is True
 
-    def test_bulk_delete_rollback_on_failure(self, sync_session, monkeypatch):
+    def test_bulk_delete_rollback_on_failure(self, sync_session, monkeypatch) -> None:
         """Test rollback on bulk delete failure."""
         _seed_project(sync_session)
         _seed_items(sync_session, count=1)
@@ -649,7 +648,7 @@ class TestErrorHandlingAndRollback:
 
         rolled_back = {"value": False}
 
-        def fake_rollback():
+        def fake_rollback() -> None:
             rolled_back["value"] = True
 
         monkeypatch.setattr(sync_session, "rollback", fake_rollback)
@@ -660,7 +659,7 @@ class TestErrorHandlingAndRollback:
 
         assert rolled_back["value"] is True
 
-    def test_bulk_create_skips_invalid_rows(self, sync_session):
+    def test_bulk_create_skips_invalid_rows(self, sync_session) -> None:
         """Test that bulk create skips invalid rows and continues."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -693,7 +692,7 @@ class TestErrorHandlingAndRollback:
         # Should create 2 valid items (invalid row is skipped)
         assert result["items_created"] == 2
 
-    def test_bulk_create_handles_exception_during_iteration(self, sync_session, monkeypatch):
+    def test_bulk_create_handles_exception_during_iteration(self, sync_session, monkeypatch) -> None:
         """Test that exceptions during iteration are handled properly."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -708,12 +707,12 @@ class TestErrorHandlingAndRollback:
                 "Priority": "medium",
                 "Owner": "",
                 "Parent Id": "",
-            }
+            },
         ])
 
         rolled_back = {"value": False}
 
-        def fake_rollback():
+        def fake_rollback() -> None:
             rolled_back["value"] = True
 
         monkeypatch.setattr(sync_session, "rollback", fake_rollback)
@@ -733,7 +732,7 @@ class TestErrorHandlingAndRollback:
 class TestTransactionIsolation:
     """Test transaction isolation and atomicity."""
 
-    def test_bulk_create_atomicity(self, sync_session):
+    def test_bulk_create_atomicity(self, sync_session) -> None:
         """Test that bulk create is atomic."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -760,7 +759,7 @@ class TestTransactionIsolation:
         count = sync_session.query(Item).count()
         assert count == 50
 
-    def test_bulk_update_atomicity(self, sync_session):
+    def test_bulk_update_atomicity(self, sync_session) -> None:
         """Test that bulk update is atomic."""
         _seed_project(sync_session)
         items = _seed_items(sync_session, count=50)
@@ -772,7 +771,7 @@ class TestTransactionIsolation:
         # Verify all updates are committed
         assert sync_session.query(Item).filter_by(status="done").count() == 50
 
-    def test_bulk_delete_atomicity(self, sync_session):
+    def test_bulk_delete_atomicity(self, sync_session) -> None:
         """Test that bulk delete is atomic."""
         _seed_project(sync_session)
         items = _seed_items(sync_session, count=50)
@@ -784,7 +783,7 @@ class TestTransactionIsolation:
         # Verify all deletes are committed
         assert sync_session.query(Item).filter(Item.deleted_at.isnot(None)).count() == 50
 
-    def test_concurrent_bulk_operations_same_session(self, sync_session):
+    def test_concurrent_bulk_operations_same_session(self, sync_session) -> None:
         """Test multiple bulk operations on same session (sequential)."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -837,7 +836,7 @@ class TestTransactionIsolation:
 class TestFilteringAndQueries:
     """Test filter application and query building."""
 
-    def test_bulk_update_by_view_filter(self, sync_session):
+    def test_bulk_update_by_view_filter(self, sync_session) -> None:
         """Test filtering by view."""
         _seed_project(sync_session)
         _seed_items(sync_session, count=5, view="FEATURE", status="todo", prefix="feat")
@@ -847,7 +846,7 @@ class TestFilteringAndQueries:
         result = svc.bulk_update_items("proj-1", {"view": "FEATURE"}, {"status": "done"})
         assert result["items_updated"] == 5
 
-    def test_bulk_update_by_item_type_filter(self, sync_session):
+    def test_bulk_update_by_item_type_filter(self, sync_session) -> None:
         """Test filtering by item type."""
         _seed_project(sync_session)
         _seed_items(sync_session, count=5, item_type="feature", status="todo", prefix="feat")
@@ -857,7 +856,7 @@ class TestFilteringAndQueries:
         result = svc.bulk_update_items("proj-1", {"item_type": "feature"}, {"status": "done"})
         assert result["items_updated"] == 5
 
-    def test_bulk_update_by_priority_filter(self, sync_session):
+    def test_bulk_update_by_priority_filter(self, sync_session) -> None:
         """Test filtering by priority."""
         _seed_project(sync_session)
         for i in range(5):
@@ -888,7 +887,7 @@ class TestFilteringAndQueries:
         result = svc.bulk_update_items("proj-1", {"priority": "high"}, {"status": "in_progress"})
         assert result["items_updated"] == 5
 
-    def test_bulk_delete_by_owner_filter(self, sync_session):
+    def test_bulk_delete_by_owner_filter(self, sync_session) -> None:
         """Test delete filtering by owner."""
         _seed_project(sync_session)
         for i in range(5):
@@ -919,7 +918,7 @@ class TestFilteringAndQueries:
         result = svc.bulk_delete_items("proj-1", {"owner": "alice"})
         assert result["items_deleted"] == 5
 
-    def test_bulk_update_multiple_filters_combined(self, sync_session):
+    def test_bulk_update_multiple_filters_combined(self, sync_session) -> None:
         """Test combining multiple filters."""
         _seed_project(sync_session)
         for view in ["FEATURE", "STORY"]:
@@ -949,7 +948,7 @@ class TestFilteringAndQueries:
 class TestEdgeCasesAndSpecialScenarios:
     """Test edge cases and special scenarios."""
 
-    def test_bulk_create_empty_csv(self, sync_session):
+    def test_bulk_create_empty_csv(self, sync_session) -> None:
         """Test bulk create with empty CSV data."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -957,7 +956,7 @@ class TestEdgeCasesAndSpecialScenarios:
         result = svc.bulk_create_items("proj-1", "")
         assert result["items_created"] == 0
 
-    def test_bulk_update_no_matching_items(self, sync_session):
+    def test_bulk_update_no_matching_items(self, sync_session) -> None:
         """Test bulk update with no matching items."""
         _seed_project(sync_session)
         _seed_items(sync_session, count=5, status="todo")
@@ -966,7 +965,7 @@ class TestEdgeCasesAndSpecialScenarios:
         result = svc.bulk_update_items("proj-1", {"status": "nonexistent"}, {"status": "done"})
         assert result["items_updated"] == 0
 
-    def test_bulk_delete_no_matching_items(self, sync_session):
+    def test_bulk_delete_no_matching_items(self, sync_session) -> None:
         """Test bulk delete with no matching items."""
         _seed_project(sync_session)
         _seed_items(sync_session, count=5, status="todo")
@@ -975,7 +974,7 @@ class TestEdgeCasesAndSpecialScenarios:
         result = svc.bulk_delete_items("proj-1", {"status": "nonexistent"})
         assert result["items_deleted"] == 0
 
-    def test_bulk_create_special_characters_in_titles(self, sync_session):
+    def test_bulk_create_special_characters_in_titles(self, sync_session) -> None:
         """Test bulk create with special characters."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -1006,7 +1005,7 @@ class TestEdgeCasesAndSpecialScenarios:
         result = svc.bulk_create_items("proj-1", csv_data)
         assert result["items_created"] == 2
 
-    def test_bulk_create_with_very_long_descriptions(self, sync_session):
+    def test_bulk_create_with_very_long_descriptions(self, sync_session) -> None:
         """Test bulk create with very long descriptions."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -1022,7 +1021,7 @@ class TestEdgeCasesAndSpecialScenarios:
                 "Priority": "medium",
                 "Owner": "",
                 "Parent Id": "",
-            }
+            },
         ])
 
         result = svc.bulk_create_items("proj-1", csv_data)
@@ -1030,7 +1029,7 @@ class TestEdgeCasesAndSpecialScenarios:
         item = sync_session.query(Item).first()
         assert item.description == long_desc
 
-    def test_bulk_update_partial_field_updates(self, sync_session):
+    def test_bulk_update_partial_field_updates(self, sync_session) -> None:
         """Test that bulk update only updates specified fields."""
         _seed_project(sync_session)
         item = Item(
@@ -1067,7 +1066,7 @@ class TestEdgeCasesAndSpecialScenarios:
 class TestCSVParsingAndValidation:
     """Test CSV parsing and validation."""
 
-    def test_csv_case_insensitive_headers(self, sync_session):
+    def test_csv_case_insensitive_headers(self, sync_session) -> None:
         """Test that CSV headers are case-insensitive."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -1081,7 +1080,7 @@ class TestCSVParsingAndValidation:
         result = svc.bulk_create_items("proj-1", output.getvalue())
         assert result["items_created"] == 1
 
-    def test_csv_handles_whitespace_in_headers(self, sync_session):
+    def test_csv_handles_whitespace_in_headers(self, sync_session) -> None:
         """Test that CSV handles whitespace in headers."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -1094,7 +1093,7 @@ class TestCSVParsingAndValidation:
         result = svc.bulk_create_items("proj-1", output.getvalue())
         assert result["items_created"] == 1
 
-    def test_csv_handles_whitespace_in_values(self, sync_session):
+    def test_csv_handles_whitespace_in_values(self, sync_session) -> None:
         """Test that CSV handles whitespace in values."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -1109,7 +1108,7 @@ class TestCSVParsingAndValidation:
                 "Priority": " medium ",
                 "Owner": " owner ",
                 "Parent Id": "",
-            }
+            },
         ])
 
         result = svc.bulk_create_items("proj-1", csv_data)
@@ -1118,7 +1117,7 @@ class TestCSVParsingAndValidation:
         # Values should be stripped
         assert item.title == "Item With Spaces"
 
-    def test_preview_duplicate_detection(self, sync_session):
+    def test_preview_duplicate_detection(self, sync_session) -> None:
         """Test that preview detects duplicate titles in same view."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
@@ -1149,7 +1148,7 @@ class TestCSVParsingAndValidation:
         preview = svc.bulk_create_preview("proj-1", csv_data)
         assert any("Duplicate" in w for w in preview["warnings"])
 
-    def test_csv_missing_optional_fields_uses_defaults(self, sync_session):
+    def test_csv_missing_optional_fields_uses_defaults(self, sync_session) -> None:
         """Test that missing optional fields use defaults."""
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)

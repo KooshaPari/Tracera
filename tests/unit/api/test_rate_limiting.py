@@ -1,5 +1,4 @@
-"""
-Comprehensive rate limiting tests for API endpoints.
+"""Comprehensive rate limiting tests for API endpoints.
 
 Tests rate limiting mechanisms, throttling, and quota management.
 """
@@ -26,7 +25,7 @@ def mock_rate_limiter():
 class TestBasicRateLimiting:
     """Test basic rate limiting functionality."""
 
-    def test_rate_limit_allows_under_threshold(self, mock_rate_limiter):
+    def test_rate_limit_allows_under_threshold(self, mock_rate_limiter) -> None:
         """Test that requests under rate limit are allowed."""
         from tracertm.api.main import app
 
@@ -42,7 +41,7 @@ class TestBasicRateLimiting:
             except Exception:
                 pass  # May fail for other reasons
 
-    def test_rate_limit_blocks_over_threshold(self):
+    def test_rate_limit_blocks_over_threshold(self) -> None:
         """Test that requests over rate limit are blocked."""
         from tracertm.api.main import app
 
@@ -77,7 +76,7 @@ class TestBasicRateLimiting:
             # Should have been blocked at some point
             assert blocked or call_count > 10
 
-    def test_rate_limit_reset_after_window(self):
+    def test_rate_limit_reset_after_window(self) -> None:
         """Test that rate limit resets after time window."""
         from tracertm.api.main import app
 
@@ -107,7 +106,7 @@ class TestBasicRateLimiting:
 class TestRateLimitHeaders:
     """Test rate limit headers in responses."""
 
-    def test_rate_limit_headers_present(self):
+    def test_rate_limit_headers_present(self) -> None:
         """Test that rate limit headers are included in responses."""
         from tracertm.api.main import app
 
@@ -138,7 +137,7 @@ class TestRateLimitHeaders:
             except Exception:
                 pass
 
-    def test_retry_after_header_on_limit(self):
+    def test_retry_after_header_on_limit(self) -> None:
         """Test that Retry-After header is set when rate limited."""
         from tracertm.api.main import app
 
@@ -161,7 +160,7 @@ class TestRateLimitHeaders:
 class TestPerEndpointRateLimits:
     """Test different rate limits per endpoint."""
 
-    def test_read_endpoints_higher_limit(self):
+    def test_read_endpoints_higher_limit(self) -> None:
         """Test that read endpoints have higher rate limits."""
         from tracertm.api.main import app
 
@@ -178,7 +177,7 @@ class TestPerEndpointRateLimits:
                 except Exception:
                     pass
 
-    def test_write_endpoints_lower_limit(self):
+    def test_write_endpoints_lower_limit(self) -> None:
         """Test that write endpoints have lower rate limits."""
         from tracertm.api.main import app
 
@@ -203,7 +202,7 @@ class TestPerEndpointRateLimits:
             # Should have been limited
             assert call_count <= 15  # Some buffer for implementation
 
-    def test_analysis_endpoints_special_limits(self):
+    def test_analysis_endpoints_special_limits(self) -> None:
         """Test that analysis endpoints have special rate limits."""
         from tracertm.api.main import app
 
@@ -224,7 +223,7 @@ class TestPerEndpointRateLimits:
 class TestPerUserRateLimits:
     """Test rate limits per user/client."""
 
-    def test_different_users_independent_limits(self):
+    def test_different_users_independent_limits(self) -> None:
         """Test that different users have independent rate limits."""
         from tracertm.api.main import app
 
@@ -260,7 +259,7 @@ class TestPerUserRateLimits:
             # Both users should have used their quotas
             assert len(limits) >= 1
 
-    def test_user_quota_tracking(self):
+    def test_user_quota_tracking(self) -> None:
         """Test that user quotas are tracked accurately."""
         from tracertm.api.main import app
 
@@ -269,7 +268,7 @@ class TestPerUserRateLimits:
         with patch("tracertm.api.main.RateLimiter") as mock_limiter:
             remaining = 100
 
-            def check_limit(*args, **kwargs):
+            def check_limit(*args, **kwargs) -> bool:
                 nonlocal remaining
                 if remaining > 0:
                     remaining -= 1
@@ -294,7 +293,7 @@ class TestPerUserRateLimits:
 class TestIPBasedRateLimiting:
     """Test IP-based rate limiting."""
 
-    def test_rate_limit_by_ip_address(self):
+    def test_rate_limit_by_ip_address(self) -> None:
         """Test that rate limits are enforced per IP address."""
         from tracertm.api.main import app
 
@@ -325,7 +324,7 @@ class TestIPBasedRateLimiting:
 
                 assert "192.168.1.1" in limits or len(limits) > 0
 
-    def test_different_ips_independent_limits(self):
+    def test_different_ips_independent_limits(self) -> None:
         """Test that different IPs have independent limits."""
         from tracertm.api.main import app
 
@@ -361,7 +360,7 @@ class TestIPBasedRateLimiting:
 class TestRateLimitStrategies:
     """Test different rate limiting strategies."""
 
-    def test_sliding_window_rate_limit(self):
+    def test_sliding_window_rate_limit(self) -> None:
         """Test sliding window rate limiting strategy."""
         from tracertm.api.main import app
 
@@ -371,7 +370,7 @@ class TestRateLimitStrategies:
             window_start = time.time()
             requests = []
 
-            def check_limit(*args, **kwargs):
+            def check_limit(*args, **kwargs) -> bool:
                 now = time.time()
                 # Remove requests older than 60 seconds
                 nonlocal requests
@@ -393,7 +392,7 @@ class TestRateLimitStrategies:
                 except Exception:
                     pass
 
-    def test_token_bucket_rate_limit(self):
+    def test_token_bucket_rate_limit(self) -> None:
         """Test token bucket rate limiting strategy."""
         from tracertm.api.main import app
 
@@ -403,7 +402,7 @@ class TestRateLimitStrategies:
             tokens = 10
             last_refill = time.time()
 
-            def check_limit(*args, **kwargs):
+            def check_limit(*args, **kwargs) -> bool:
                 nonlocal tokens, last_refill
                 now = time.time()
 
@@ -428,7 +427,7 @@ class TestRateLimitStrategies:
                 except Exception:
                     pass
 
-    def test_fixed_window_rate_limit(self):
+    def test_fixed_window_rate_limit(self) -> None:
         """Test fixed window rate limiting strategy."""
         from tracertm.api.main import app
 
@@ -438,7 +437,7 @@ class TestRateLimitStrategies:
             window_start = int(time.time() / 60) * 60  # Minute boundary
             count = 0
 
-            def check_limit(*args, **kwargs):
+            def check_limit(*args, **kwargs) -> bool:
                 nonlocal count, window_start
                 current_window = int(time.time() / 60) * 60
 
@@ -467,7 +466,7 @@ class TestRateLimitStrategies:
 class TestRateLimitExceptions:
     """Test rate limit exception handling."""
 
-    def test_rate_limit_error_response_format(self):
+    def test_rate_limit_error_response_format(self) -> None:
         """Test that rate limit errors have correct response format."""
         from tracertm.api.main import app
 
@@ -488,7 +487,7 @@ class TestRateLimitExceptions:
             except Exception:
                 pass
 
-    def test_rate_limit_with_custom_message(self):
+    def test_rate_limit_with_custom_message(self) -> None:
         """Test rate limit errors with custom messages."""
         from tracertm.api.main import app
 
@@ -513,7 +512,7 @@ class TestRateLimitExceptions:
 class TestRateLimitBypass:
     """Test rate limit bypass mechanisms."""
 
-    def test_admin_users_bypass_rate_limit(self):
+    def test_admin_users_bypass_rate_limit(self) -> None:
         """Test that admin users can bypass rate limits."""
         from tracertm.api.main import app
 
@@ -532,7 +531,7 @@ class TestRateLimitBypass:
                 except Exception:
                     pass
 
-    def test_whitelisted_ips_bypass_rate_limit(self):
+    def test_whitelisted_ips_bypass_rate_limit(self) -> None:
         """Test that whitelisted IPs bypass rate limits."""
         from tracertm.api.main import app
 

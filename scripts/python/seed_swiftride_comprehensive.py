@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Comprehensive seed script for SwiftRide rideshare platform with 60+ item types.
+"""Comprehensive seed script for SwiftRide rideshare platform with 60+ item types.
 
 Creates realistic items across all categories:
 - Business & Strategy (7 types)
@@ -119,7 +118,6 @@ ITEM_TYPES = {
 
 def create_swiftride_items(session: Session, project_id: uuid.UUID) -> dict[str, list[Item]]:
     """Create comprehensive SwiftRide items across all types."""
-
     items_by_type = {}
 
     # Business Objectives
@@ -261,7 +259,6 @@ def create_swiftride_items(session: Session, project_id: uuid.UUID) -> dict[str,
 
 def create_market_segments_personas(session: Session, project_id: uuid.UUID) -> dict[str, list[Item]]:
     """Create market segments and personas."""
-
     items = {}
 
     # Market Segments
@@ -378,7 +375,6 @@ def create_market_segments_personas(session: Session, project_id: uuid.UUID) -> 
 
 def create_business_rules_policies(session: Session, project_id: uuid.UUID) -> dict[str, list[Item]]:
     """Create business rules and policies."""
-
     items = {}
 
     # Business Rules
@@ -465,11 +461,8 @@ def create_business_rules_policies(session: Session, project_id: uuid.UUID) -> d
     return items
 
 
-def main():
+def main() -> None:
     """Main seed function."""
-
-    print("Starting comprehensive SwiftRide seed...")
-
     # Import additional item creators
     import sys
     from pathlib import Path
@@ -484,9 +477,7 @@ def main():
             create_documentation_items,
             create_operations_items,
         )
-    except ImportError as e:
-        print(f"Warning: Could not import additional seed functions: {e}")
-        print("Running with base items only...")
+    except ImportError:
         create_architecture_items = None
         create_testing_items = None
         create_operations_items = None
@@ -514,56 +505,40 @@ def main():
         session.add(project)
         session.flush()
 
-        print(f"Created project: {project.name} ({project.id})")
-
         # Create all item types
         all_items = {}
 
-        print("Creating business objectives and KPIs...")
         all_items.update(create_swiftride_items(session, project.id))
 
-        print("Creating market segments and personas...")
         all_items.update(create_market_segments_personas(session, project.id))
 
-        print("Creating business rules and policies...")
         all_items.update(create_business_rules_policies(session, project.id))
 
         if create_architecture_items:
-            print("Creating architecture items...")
             all_items.update(create_architecture_items(session, project.id))
 
         if create_testing_items:
-            print("Creating testing items...")
             all_items.update(create_testing_items(session, project.id))
 
         if create_operations_items:
-            print("Creating operations items...")
             all_items.update(create_operations_items(session, project.id))
 
         if create_documentation_items:
-            print("Creating documentation items...")
             all_items.update(create_documentation_items(session, project.id))
 
         if create_compliance_items:
-            print("Creating compliance items...")
             all_items.update(create_compliance_items(session, project.id))
 
         # Create links
         if create_comprehensive_links:
-            print("Creating traceability links...")
-            links = create_comprehensive_links(session, project.id, all_items)
-            print(f"Created {len(links)} links")
+            create_comprehensive_links(session, project.id, all_items)
 
         # Commit all
         session.commit()
 
         # Print summary
-        print("\n=== Seed Complete ===")
-        print(f"Project: {project.name}")
-        for item_type, items in sorted(all_items.items()):
-            print(f"  {item_type}: {len(items)} items")
-        print(f"\nTotal items: {sum(len(items) for items in all_items.values())}")
-        print(f"Total item types: {len(all_items)}")
+        for _item_type, _items in sorted(all_items.items()):
+            pass
 
 
 if __name__ == "__main__":

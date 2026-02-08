@@ -1,5 +1,4 @@
-"""
-Phase 15A: Quick Wins - Model Edge Cases
+"""Phase 15A: Quick Wins - Model Edge Cases.
 
 Focus: Edge cases and boundary conditions for database models
 Target: Item, Link, Project, Agent, Event models
@@ -20,13 +19,13 @@ from tracertm.models.project import Project
 class TestItemModelEdgeCases:
     """Edge cases for Item model."""
 
-    def test_item_with_empty_strings(self):
+    def test_item_with_empty_strings(self) -> None:
         """Test item creation with empty strings."""
         item = Item(project_id="", title="", view="FEATURE", item_type="feature")
         assert item.project_id == ""
         assert item.title == ""
 
-    def test_item_with_none_optional_fields(self):
+    def test_item_with_none_optional_fields(self) -> None:
         """Test item with all optional fields as None."""
         item = Item(
             project_id="proj-1",
@@ -42,26 +41,26 @@ class TestItemModelEdgeCases:
         assert item.status is None
         assert item.parent_id is None
 
-    def test_item_with_special_characters_in_title(self):
+    def test_item_with_special_characters_in_title(self) -> None:
         """Test item with special characters in title."""
         item = Item(project_id="proj-1", title="Test @#$%^&*() Title \u2713", view="FEATURE", item_type="feature")
         assert "@#$%^&*()" in item.title
         assert "\u2713" in item.title
 
-    def test_item_with_very_long_title(self):
+    def test_item_with_very_long_title(self) -> None:
         """Test item with very long title (boundary test)."""
         long_title = "A" * 10000
         item = Item(project_id="proj-1", title=long_title, view="FEATURE", item_type="feature")
         assert len(item.title) == 10000
 
-    def test_item_with_very_long_description(self):
+    def test_item_with_very_long_description(self) -> None:
         """Test item with very long description."""
         long_desc = "B" * 50000
         item = Item(project_id="proj-1", title="Test", description=long_desc, view="FEATURE", item_type="feature")
         assert item.description is not None
         assert len(item.description) == 50000
 
-    def test_item_with_complex_metadata(self):
+    def test_item_with_complex_metadata(self) -> None:
         """Test item with complex nested metadata."""
         metadata = {
             "tags": ["urgent", "bug", "frontend"],
@@ -72,13 +71,13 @@ class TestItemModelEdgeCases:
         item = Item(project_id="proj-1", title="Test", view="FEATURE", item_type="feature", item_metadata=metadata)
         assert item.item_metadata == metadata
 
-    def test_item_with_numeric_strings(self):
+    def test_item_with_numeric_strings(self) -> None:
         """Test item with numeric string values."""
         item = Item(project_id="12345", title="67890", view="FEATURE", item_type="feature", parent_id="11111")
         assert item.project_id == "12345"
         assert item.parent_id == "11111"
 
-    def test_item_unicode_in_description(self):
+    def test_item_unicode_in_description(self) -> None:
         """Test item with unicode characters in description."""
         item = Item(
             project_id="proj-1",
@@ -91,32 +90,32 @@ class TestItemModelEdgeCases:
         assert "\u00e9" in item.description
         assert "\u4e2d\u6587" in item.description
 
-    def test_item_metadata_empty_dict(self):
+    def test_item_metadata_empty_dict(self) -> None:
         """Test item with explicitly empty metadata dict."""
         item = Item(project_id="proj-1", title="Test", view="FEATURE", item_type="feature", item_metadata={})
         assert item.item_metadata == {}
 
-    def test_item_all_views(self):
+    def test_item_all_views(self) -> None:
         """Test item creation with all possible views."""
         views = ["FEATURE", "REQUIREMENT", "TEST", "DEFECT", "TASK"]
         for view in views:
             item = Item(project_id="proj-1", title=f"Test {view}", view=view, item_type="feature")
             assert item.view == view
 
-    def test_item_all_statuses(self):
+    def test_item_all_statuses(self) -> None:
         """Test item with various status values."""
         statuses = ["todo", "in_progress", "done", "blocked", "review"]
         for status in statuses:
             item = Item(project_id="proj-1", title="Test", view="FEATURE", item_type="feature", status=status)
             assert item.status == status
 
-    def test_item_version_zero(self):
+    def test_item_version_zero(self) -> None:
         """Test item with version zero."""
         item = Item(project_id="proj-1", title="Test", view="FEATURE", item_type="feature")
         item.version = 0
         assert item.version == 0
 
-    def test_item_version_large_number(self):
+    def test_item_version_large_number(self) -> None:
         """Test item with large version number."""
         item = Item(project_id="proj-1", title="Test", view="FEATURE", item_type="feature")
         item.version = 99999
@@ -126,14 +125,14 @@ class TestItemModelEdgeCases:
 class TestLinkModelEdgeCases:
     """Edge cases for Link model."""
 
-    def test_link_with_empty_metadata(self):
+    def test_link_with_empty_metadata(self) -> None:
         """Test link with empty metadata dict."""
         link = Link(
-            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="depends_on", metadata={}
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="depends_on", metadata={},
         )
         assert link.metadata == {}
 
-    def test_link_with_complex_metadata(self):
+    def test_link_with_complex_metadata(self) -> None:
         """Test link with complex metadata structure."""
         metadata = {
             "weight": 5,
@@ -153,12 +152,12 @@ class TestLinkModelEdgeCases:
         )
         assert link.metadata == metadata
 
-    def test_link_self_referential(self):
+    def test_link_self_referential(self) -> None:
         """Test link where source and target are the same."""
         link = Link(project_id="proj-1", source_item_id="item-1", target_item_id="item-1", link_type="related_to")
         assert link.source_item_id == link.target_item_id
 
-    def test_link_all_types(self):
+    def test_link_all_types(self) -> None:
         """Test link with various link types."""
         link_types = [
             "depends_on",
@@ -178,29 +177,29 @@ class TestLinkModelEdgeCases:
 class TestProjectModelEdgeCases:
     """Edge cases for Project model."""
 
-    def test_project_with_empty_description(self):
+    def test_project_with_empty_description(self) -> None:
         """Test project with empty description."""
         project = Project(name="Test", description="")
         assert project.description == ""
 
-    def test_project_with_none_description(self):
+    def test_project_with_none_description(self) -> None:
         """Test project with None description."""
         project = Project(name="Test", description=None)
         assert project.description is None
 
-    def test_project_with_special_characters_in_name(self):
+    def test_project_with_special_characters_in_name(self) -> None:
         """Test project with special characters in name."""
         project = Project(name="Test @#$% Project \u2713")
         assert "@#$%" in project.name
         assert "\u2713" in project.name
 
-    def test_project_with_very_long_name(self):
+    def test_project_with_very_long_name(self) -> None:
         """Test project with very long name."""
         long_name = "P" * 5000
         project = Project(name=long_name)
         assert len(project.name) == 5000
 
-    def test_project_with_complex_metadata(self):
+    def test_project_with_complex_metadata(self) -> None:
         """Test project with complex metadata."""
         metadata = {
             "owner": "user1",
@@ -214,12 +213,12 @@ class TestProjectModelEdgeCases:
         project = Project(name="Test", project_metadata=metadata)
         assert project.project_metadata == metadata
 
-    def test_project_with_empty_metadata(self):
+    def test_project_with_empty_metadata(self) -> None:
         """Test project with empty metadata dict."""
         project = Project(name="Test", project_metadata={})
         assert project.project_metadata == {}
 
-    def test_project_with_unicode_name(self):
+    def test_project_with_unicode_name(self) -> None:
         """Test project with unicode characters in name."""
         project = Project(name="Проект \u4e2d\u6587 عربي")
         assert "\u4e2d\u6587" in project.name
@@ -228,19 +227,19 @@ class TestProjectModelEdgeCases:
 class TestAgentModelEdgeCases:
     """Edge cases for Agent model."""
 
-    def test_agent_with_empty_name(self):
+    def test_agent_with_empty_name(self) -> None:
         """Test agent with empty name."""
         agent = Agent(name="", status="idle")
         assert agent.name == ""
 
-    def test_agent_all_statuses(self):
+    def test_agent_all_statuses(self) -> None:
         """Test agent with all possible statuses."""
         statuses = ["idle", "active", "busy", "offline", "error"]
         for status in statuses:
             agent = Agent(name="Agent", status=status)
             assert agent.status == status
 
-    def test_agent_with_complex_metadata(self):
+    def test_agent_with_complex_metadata(self) -> None:
         """Test agent with complex metadata."""
         metadata = {
             "capabilities": ["read", "write", "execute"],
@@ -254,13 +253,13 @@ class TestAgentModelEdgeCases:
 class TestAgentEventModelEdgeCases:
     """Edge cases for AgentEvent model."""
 
-    def test_agent_event_minimal(self):
+    def test_agent_event_minimal(self) -> None:
         """Test agent event with minimal fields."""
         event = AgentEvent(agent_id="agent-1", event_type="heartbeat", event_data={})
         assert event.agent_id == "agent-1"
         assert event.event_type == "heartbeat"
 
-    def test_agent_event_complex_data(self):
+    def test_agent_event_complex_data(self) -> None:
         """Test agent event with complex event data."""
         event_data = {
             "action": "process_item",
@@ -275,19 +274,19 @@ class TestAgentEventModelEdgeCases:
 class TestAgentLockModelEdgeCases:
     """Edge cases for AgentLock model."""
 
-    def test_agent_lock_minimal(self):
+    def test_agent_lock_minimal(self) -> None:
         """Test agent lock with minimal fields."""
         lock = AgentLock(project_id="proj-1", item_id="resource-1", agent_id="agent-1")
         assert lock.item_id == "resource-1"
         assert lock.agent_id == "agent-1"
 
-    def test_agent_lock_with_long_resource_id(self):
+    def test_agent_lock_with_long_resource_id(self) -> None:
         """Test agent lock with very long resource ID."""
         long_id = "r" * 1000
         lock = AgentLock(project_id="proj-1", item_id=long_id, agent_id="agent-1")
         assert len(str(lock.item_id)) == 1000
 
-    def test_agent_lock_with_special_characters(self):
+    def test_agent_lock_with_special_characters(self) -> None:
         """Test agent lock with special characters in IDs."""
         lock = AgentLock(project_id="proj-1", item_id="resource:123:abc", agent_id="agent-@-1")
         assert ":" in str(lock.item_id)
@@ -297,7 +296,7 @@ class TestAgentLockModelEdgeCases:
 class TestEventModelEdgeCases:
     """Edge cases for Event model."""
 
-    def test_event_minimal(self):
+    def test_event_minimal(self) -> None:
         """Test event with minimal required fields."""
         event = Event(
             project_id="proj-1",
@@ -310,7 +309,7 @@ class TestEventModelEdgeCases:
         assert event.project_id == "proj-1"
         assert event.data == {}
 
-    def test_event_all_entity_types(self):
+    def test_event_all_entity_types(self) -> None:
         """Test event with different entity types."""
         entity_types = ["item", "project", "link", "agent"]
         for entity_type in entity_types:
@@ -324,7 +323,7 @@ class TestEventModelEdgeCases:
             )
             assert event.entity_type == entity_type
 
-    def test_event_complex_data(self):
+    def test_event_complex_data(self) -> None:
         """Test event with complex nested data."""
         data = {
             "changes": [
@@ -348,7 +347,7 @@ class TestEventModelEdgeCases:
         )
         assert event.data == data
 
-    def test_event_empty_data(self):
+    def test_event_empty_data(self) -> None:
         """Test event with explicitly empty data."""
         event = Event(
             project_id="proj-1",
@@ -364,7 +363,7 @@ class TestEventModelEdgeCases:
 class TestModelIntegration:
     """Integration tests for models working together."""
 
-    def test_item_and_link_relationship(self):
+    def test_item_and_link_relationship(self) -> None:
         """Test creating items and links that reference them."""
         item1 = Item(project_id="proj-1", title="Item 1", view="FEATURE", item_type="feature")
         item1.id = "item-1"
@@ -377,7 +376,7 @@ class TestModelIntegration:
         assert link.source_item_id == item1.id
         assert link.target_item_id == item2.id
 
-    def test_project_with_items(self):
+    def test_project_with_items(self) -> None:
         """Test project and item relationship."""
         project = Project(name="Test Project")
         project.id = "proj-1"
@@ -386,7 +385,7 @@ class TestModelIntegration:
 
         assert item.project_id == project.id
 
-    def test_event_for_item_change(self):
+    def test_event_for_item_change(self) -> None:
         """Test creating event for item change."""
         item = Item(project_id="proj-1", title="Test Item", view="FEATURE", item_type="feature")
         item.id = "item-1"
@@ -403,7 +402,7 @@ class TestModelIntegration:
         assert event.entity_id == item.id
         assert event.entity_type == "item"
 
-    def test_agent_event_for_agent(self):
+    def test_agent_event_for_agent(self) -> None:
         """Test agent event linked to agent."""
         agent_id = uuid.UUID("00000000-0000-0000-0000-000000000001")
         agent = Agent(id=agent_id, name="Test Agent", status="active")
@@ -412,7 +411,7 @@ class TestModelIntegration:
 
         assert agent_event.agent_id == agent.id
 
-    def test_agent_lock_for_resource(self):
+    def test_agent_lock_for_resource(self) -> None:
         """Test agent lock for specific resource."""
         agent_id = uuid.UUID("00000000-0000-0000-0000-000000000002")
         agent = Agent(id=agent_id, name="Test Agent", status="active")
@@ -427,19 +426,19 @@ class TestModelIntegration:
 class TestModelBoundaryConditions:
     """Boundary condition tests for models."""
 
-    def test_item_with_max_version(self):
+    def test_item_with_max_version(self) -> None:
         """Test item with maximum version number."""
         item = Item(project_id="proj-1", title="Test", view="FEATURE", item_type="feature")
         item.version = 2147483647  # Max 32-bit integer
         assert item.version == 2147483647
 
-    def test_metadata_with_many_keys(self):
+    def test_metadata_with_many_keys(self) -> None:
         """Test metadata with large number of keys."""
         metadata = {f"key_{i}": f"value_{i}" for i in range(1000)}
         item = Item(project_id="proj-1", title="Test", view="FEATURE", item_type="feature", item_metadata=metadata)
         assert len(item.item_metadata) == 1000
 
-    def test_metadata_with_deeply_nested_structure(self):
+    def test_metadata_with_deeply_nested_structure(self) -> None:
         """Test metadata with deeply nested structure."""
         metadata = {"level1": {"level2": {"level3": {"level4": {"level5": "deep"}}}}}
         item = Item(project_id="proj-1", title="Test", view="FEATURE", item_type="feature", item_metadata=metadata)
@@ -447,7 +446,7 @@ class TestModelBoundaryConditions:
         assert isinstance(meta, dict)
         assert meta["level1"]["level2"]["level3"]["level4"]["level5"] == "deep"
 
-    def test_metadata_with_arrays(self):
+    def test_metadata_with_arrays(self) -> None:
         """Test metadata containing large arrays."""
         metadata = {"array": list(range(10000))}
         item = Item(project_id="proj-1", title="Test", view="FEATURE", item_type="feature", item_metadata=metadata)
@@ -455,7 +454,7 @@ class TestModelBoundaryConditions:
         assert isinstance(meta, dict)
         assert len(meta["array"]) == 10000
 
-    def test_multiple_links_same_type(self):
+    def test_multiple_links_same_type(self) -> None:
         """Test creating multiple links of the same type between items."""
         links = [
             Link(project_id="proj-1", source_item_id="item-1", target_item_id=f"item-{i}", link_type="depends_on")

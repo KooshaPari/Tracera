@@ -16,7 +16,7 @@ from tracertm.repositories.project_repository import ProjectRepository
 class ExportService:
     """Service for exporting TraceRTM data."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.projects = ProjectRepository(session)
         self.items = ItemRepository(session)
@@ -26,7 +26,8 @@ class ExportService:
         """Export project to JSON format."""
         project = await self.projects.get_by_id(project_id)
         if not project:
-            raise ValueError("Project not found")
+            msg = "Project not found"
+            raise ValueError(msg)
         items = await self.items.query(project_id, {})
 
         data: dict[str, Any] = {
@@ -95,7 +96,8 @@ class ExportService:
         """Export project to Markdown format."""
         project = await self.projects.get_by_id(project_id)
         if not project:
-            raise ValueError("Project not found")
+            msg = "Project not found"
+            raise ValueError(msg)
         items = await self.items.query(project_id, {})
 
         md = f"# {project.name}\n\n"
@@ -153,8 +155,7 @@ class ExportService:
         return output.getvalue()
 
     async def export_yaml(self, project_id: str) -> str:
-        """
-        Export project to YAML format.
+        """Export project to YAML format.
 
         Args:
             project_id: Project ID to export
@@ -209,8 +210,7 @@ class ExportService:
         return yaml.dump(data, default_flow_style=False, sort_keys=False)
 
     async def _export_yaml_fallback(self, project_id: str) -> str:
-        """
-        Fallback YAML export when yaml library is not available.
+        """Fallback YAML export when yaml library is not available.
 
         Args:
             project_id: Project ID to export
@@ -222,19 +222,10 @@ class ExportService:
         items = await self.items.query(project_id, {})
 
         yaml_lines = []
-        yaml_lines.append("project:")
-        yaml_lines.append(f"  id: {project.id if project else project_id}")
-        yaml_lines.append(f"  name: {project.name if project else 'Unknown'}")
-        yaml_lines.append(f"  description: {project.description if project else ''}")
-        yaml_lines.append(f"  export_date: {datetime.now(UTC).isoformat()}")
-        yaml_lines.append("items:")
+        yaml_lines.extend(("project:", f"  id: {project.id if project else project_id}", f"  name: {project.name if project else 'Unknown'}", f"  description: {project.description if project else ''}", f"  export_date: {datetime.now(UTC).isoformat()}", "items:"))
 
         for item in items:
-            yaml_lines.append("  - id: " + str(item.id))
-            yaml_lines.append("    title: " + str(item.title))
-            yaml_lines.append("    view: " + str(item.view))
-            yaml_lines.append("    type: " + str(item.item_type))
-            yaml_lines.append("    status: " + str(item.status))
+            yaml_lines.extend(("  - id: " + str(item.id), "    title: " + str(item.title), "    view: " + str(item.view), "    type: " + str(item.item_type), "    status: " + str(item.status)))
             if item.description:
                 yaml_lines.append("    description: " + str(item.description))
 
@@ -242,8 +233,6 @@ class ExportService:
         for item in items:
             links = await self.links.get_by_source(str(item.id))
             for link in links:
-                yaml_lines.append("  - source_id: " + str(link.source_item_id))
-                yaml_lines.append("    target_id: " + str(link.target_item_id))
-                yaml_lines.append("    type: " + str(link.link_type))
+                yaml_lines.extend(("  - source_id: " + str(link.source_item_id), "    target_id: " + str(link.target_item_id), "    type: " + str(link.link_type)))
 
         return "\n".join(yaml_lines)

@@ -6,9 +6,12 @@ import logging
 import os
 import socket
 import time
-from collections.abc import Iterable
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +103,7 @@ def _http_check(url: str, path: str, timeout: float) -> PreflightResult:
     full_url = f"{base}{path}"
     parsed = urlparse(full_url)
     scheme = (parsed.scheme or "").lower()
-    if scheme not in ("http", "https"):
+    if scheme not in {"http", "https"}:
         return PreflightResult(full_url, False, "only http/https URLs allowed", True)
     try:
         req = urllib.request.Request(full_url, method="GET")  # noqa: S310 scheme validated above
@@ -132,7 +135,8 @@ def run_single_check_with_retry(
     backoff_max: float = PREFLIGHT_BACKOFF_MAX_SECONDS,
 ) -> PreflightResult:
     """Run one preflight check with wait+retry. Progressive backoff (cap at backoff_max).
-    If max_attempts is None, retry indefinitely until success."""
+    If max_attempts is None, retry indefinitely until success.
+    """
     result = run_single_check(check)
     if result.ok:
         return result
@@ -206,7 +210,8 @@ def run_preflight(  # noqa: C901, PLR0912
 
     if failures and strict:
         messages = ", ".join(f.name for f in failures)
-        raise RuntimeError(f"Preflight failed for: {messages}")
+        msg = f"Preflight failed for: {messages}"
+        raise RuntimeError(msg)
 
 
 def run_preflight_with_results(  # noqa: C901, PLR0912
@@ -281,8 +286,7 @@ def format_preflight_failures(results: list[PreflightResult]) -> str:
         return ""
     lines = ["Service preflight failed:", ""]
     lines.extend(f"  • {r.name}: {r.message}" for r in failed)
-    lines.append("")
-    lines.append("Fix the service issues above and try again.")
+    lines.extend(("", "Fix the service issues above and try again."))
     return "\n".join(lines)
 
 
@@ -294,13 +298,13 @@ def _default_port_for_url(url: str) -> int | None:  # noqa: PLR0911
         return 5432
     if scheme in {"redis", "rediss"}:
         return 6379
-    if scheme in {"nats"}:
+    if scheme == "nats":
         return 4222
     if scheme in {"neo4j", "bolt"}:
         return 7687
-    if scheme in {"http"}:
+    if scheme == "http":
         return 80
-    if scheme in {"https"}:
+    if scheme == "https":
         return 443
     return None
 

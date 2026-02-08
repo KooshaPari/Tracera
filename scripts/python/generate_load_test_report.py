@@ -13,7 +13,7 @@ def parse_k6_output(file_path: Path) -> dict[str, Any]:
     metrics = {}
     thresholds = {}
 
-    with file_path.open() as f:
+    with file_path.open(encoding="utf-8") as f:
         for line in f:
             try:
                 data = json.loads(line)
@@ -214,17 +214,13 @@ def generate_html_report(results_dir: Path) -> None:
     with report_path.open("w") as f:
         f.write(html)
 
-    print(f"Report generated: {report_path}")
-
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python3 generate_load_test_report.py <results_dir>")
         sys.exit(1)
 
     results_dir = Path(sys.argv[1])
     if not results_dir.exists():
-        print(f"Error: Directory {results_dir} does not exist")
         sys.exit(1)
 
     generate_html_report(results_dir)

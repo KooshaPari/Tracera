@@ -1,10 +1,10 @@
-"""
-Gap coverage tests for core modules with low coverage.
-Targets: core/concurrency.py, services/event_service.py
+"""Gap coverage tests for core modules with low coverage.
+Targets: core/concurrency.py, services/event_service.py.
 """
 
 import asyncio
 from datetime import datetime
+from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -13,32 +13,34 @@ import pytest
 class TestConcurrencyError:
     """Tests for ConcurrencyError exception."""
 
-    def test_concurrency_error_import(self):
+    def test_concurrency_error_import(self) -> None:
         """Test ConcurrencyError can be imported."""
         from tracertm.core.concurrency import ConcurrencyError
 
         assert ConcurrencyError is not None
 
-    def test_concurrency_error_can_be_raised(self):
+    def test_concurrency_error_can_be_raised(self) -> Never:
         """Test ConcurrencyError can be raised and caught."""
         from tracertm.core.concurrency import ConcurrencyError
 
         with pytest.raises(ConcurrencyError):
-            raise ConcurrencyError("version mismatch")
+            msg = "version mismatch"
+            raise ConcurrencyError(msg)
 
-    def test_concurrency_error_message(self):
+    def test_concurrency_error_message(self) -> Never:
         """Test ConcurrencyError preserves message."""
         from tracertm.core.concurrency import ConcurrencyError
 
         with pytest.raises(ConcurrencyError, match="test message"):
-            raise ConcurrencyError("test message")
+            msg = "test message"
+            raise ConcurrencyError(msg)
 
 
 class TestUpdateWithRetry:
     """Tests for update_with_retry function."""
 
     @pytest.mark.asyncio
-    async def test_update_with_retry_success_first_try(self):
+    async def test_update_with_retry_success_first_try(self) -> None:
         """Test update succeeds on first try."""
         from tracertm.core.concurrency import update_with_retry
 
@@ -50,18 +52,19 @@ class TestUpdateWithRetry:
         assert mock_fn.call_count == 1
 
     @pytest.mark.asyncio
-    async def test_update_with_retry_success_after_retries(self):
+    async def test_update_with_retry_success_after_retries(self) -> None:
         """Test update succeeds after retries."""
         from tracertm.core.concurrency import ConcurrencyError, update_with_retry
 
         call_count = 0
 
-        async def flaky_fn():
+        async def flaky_fn() -> str:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             if call_count < 3:
-                raise ConcurrencyError("version conflict")
+                msg = "version conflict"
+                raise ConcurrencyError(msg)
             return "success"
 
         with patch("asyncio.sleep", new=AsyncMock()):
@@ -71,13 +74,14 @@ class TestUpdateWithRetry:
         assert call_count == 3
 
     @pytest.mark.asyncio
-    async def test_update_with_retry_max_retries_exceeded(self):
+    async def test_update_with_retry_max_retries_exceeded(self) -> None:
         """Test raises after max retries exceeded."""
         from tracertm.core.concurrency import ConcurrencyError, update_with_retry
 
-        async def always_fails():
+        async def always_fails() -> Never:
             await asyncio.sleep(0)
-            raise ConcurrencyError("always fails")
+            msg = "always fails"
+            raise ConcurrencyError(msg)
 
         with patch("asyncio.sleep", new=AsyncMock()), pytest.raises(ConcurrencyError) as exc_info:
             await update_with_retry(always_fails, max_retries=3, base_delay=0.01)
@@ -85,19 +89,20 @@ class TestUpdateWithRetry:
         assert "Failed after 3 retries" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_update_with_retry_exponential_backoff(self):
+    async def test_update_with_retry_exponential_backoff(self) -> None:
         """Test exponential backoff is applied."""
         from tracertm.core.concurrency import ConcurrencyError, update_with_retry
 
         sleep_calls = []
 
-        async def mock_sleep(duration):
+        async def mock_sleep(duration) -> None:
             await asyncio.sleep(0)
             sleep_calls.append(duration)
 
-        async def always_fails():
+        async def always_fails() -> Never:
             await asyncio.sleep(0)
-            raise ConcurrencyError("fail")
+            msg = "fail"
+            raise ConcurrencyError(msg)
 
         with patch("asyncio.sleep", side_effect=mock_sleep), pytest.raises(ConcurrencyError):
             await update_with_retry(always_fails, max_retries=3, base_delay=0.1)
@@ -113,13 +118,13 @@ class TestUpdateWithRetry:
 class TestEventService:
     """Tests for EventService."""
 
-    def test_event_service_import(self):
+    def test_event_service_import(self) -> None:
         """Test EventService can be imported."""
         from tracertm.services.event_service import EventService
 
         assert EventService is not None
 
-    def test_event_service_init(self):
+    def test_event_service_init(self) -> None:
         """Test EventService initialization."""
         from tracertm.services.event_service import EventService
 
@@ -130,7 +135,7 @@ class TestEventService:
         assert service.events is not None
 
     @pytest.mark.asyncio
-    async def test_event_service_log_event_with_item(self):
+    async def test_event_service_log_event_with_item(self) -> None:
         """Test log_event with item_id."""
         from tracertm.services.event_service import EventService
 
@@ -159,7 +164,7 @@ class TestEventService:
         )
 
     @pytest.mark.asyncio
-    async def test_event_service_log_event_without_item(self):
+    async def test_event_service_log_event_without_item(self) -> None:
         """Test log_event without item_id (project-level)."""
         from tracertm.services.event_service import EventService
 
@@ -186,7 +191,7 @@ class TestEventService:
         )
 
     @pytest.mark.asyncio
-    async def test_event_service_get_item_history(self):
+    async def test_event_service_get_item_history(self) -> None:
         """Test get_item_history method."""
         from tracertm.services.event_service import EventService
 
@@ -202,7 +207,7 @@ class TestEventService:
         service.events.get_by_entity.assert_called_once_with("item-1")
 
     @pytest.mark.asyncio
-    async def test_event_service_get_item_at_time(self):
+    async def test_event_service_get_item_at_time(self) -> None:
         """Test get_item_at_time method."""
         from tracertm.services.event_service import EventService
 
@@ -222,13 +227,13 @@ class TestEventService:
 class TestPerformanceOptimizationService:
     """Tests for PerformanceOptimizationService."""
 
-    def test_performance_optimization_service_import(self):
+    def test_performance_optimization_service_import(self) -> None:
         """Test PerformanceOptimizationService can be imported."""
         from tracertm.services.performance_optimization_service import PerformanceOptimizationService
 
         assert PerformanceOptimizationService is not None
 
-    def test_performance_optimization_service_init(self):
+    def test_performance_optimization_service_init(self) -> None:
         """Test PerformanceOptimizationService initialization."""
         from tracertm.services.performance_optimization_service import PerformanceOptimizationService
 

@@ -1,5 +1,4 @@
-"""
-WP-4.1: Cross-Layer Integration Tests (200+ tests)
+"""WP-4.1: Cross-Layer Integration Tests (200+ tests).
 
 Tests comprehensive workflows that span multiple service layers, repositories, and
 data models. These tests verify end-to-end scenarios and multi-service orchestration.
@@ -29,10 +28,10 @@ pytestmark = [pytest.mark.integration]
 
 
 class TestProjectLifecycleWorkflows:
-    """Test complete project lifecycle workflows (25 tests)"""
+    """Test complete project lifecycle workflows (25 tests)."""
 
     def test_create_project_with_metadata(self, db_session: Session) -> None:
-        """Create a project with comprehensive metadata"""
+        """Create a project with comprehensive metadata."""
         repo = ProjectRepository(db_session)  # type: ignore[arg-type]
         project = Project(
             id="proj-1",
@@ -49,7 +48,7 @@ class TestProjectLifecycleWorkflows:
         assert retrieved.project_metadata["team"] == "backend"  # type: ignore[union-attr]
 
     def test_project_status_transitions(self, db_session: Session) -> None:
-        """Test valid project status transitions"""
+        """Test valid project status transitions."""
         project = Project(id="proj-2", name="Status Test", status="planning")
         db_session.add(project)
         db_session.commit()
@@ -65,9 +64,9 @@ class TestProjectLifecycleWorkflows:
         assert project.status == "completed"
 
     def test_project_with_multiple_teams(self, db_session: Session) -> None:
-        """Test project with multiple team assignments"""
+        """Test project with multiple team assignments."""
         project = Project(
-            id="proj-3", name="Multi-Team Project", project_metadata={"teams": ["frontend", "backend", "qa"]}
+            id="proj-3", name="Multi-Team Project", project_metadata={"teams": ["frontend", "backend", "qa"]},
         )
         db_session.add(project)
         db_session.commit()
@@ -75,7 +74,7 @@ class TestProjectLifecycleWorkflows:
         assert len(project.project_metadata["teams"]) == 3
 
     def test_project_update_flow(self, db_session: Session) -> None:
-        """Test updating project through multiple changes"""
+        """Test updating project through multiple changes."""
         project = Project(id="proj-4", name="Original Name")
         db_session.add(project)
         db_session.commit()
@@ -93,7 +92,7 @@ class TestProjectLifecycleWorkflows:
         assert retrieved.project_metadata["version"] == "2.0"
 
     def test_project_archival_flow(self, db_session: Session) -> None:
-        """Test archiving a completed project"""
+        """Test archiving a completed project."""
         project = Project(id="proj-5", name="Archivable Project", status="completed")
         db_session.add(project)
         db_session.commit()
@@ -106,7 +105,7 @@ class TestProjectLifecycleWorkflows:
         assert project.archived_at is not None
 
     def test_project_with_complex_metadata(self, db_session: Session) -> None:
-        """Test project with nested complex metadata"""
+        """Test project with nested complex metadata."""
         project = Project(
             id="proj-6",
             name="Complex Metadata Project",
@@ -122,7 +121,7 @@ class TestProjectLifecycleWorkflows:
         assert retrieved.project_metadata["governance"]["approval_required"] is True
 
     def test_project_multiple_creates(self, db_session: Session) -> None:
-        """Test creating multiple projects in sequence"""
+        """Test creating multiple projects in sequence."""
         projects = []
         for i in range(10):
             proj = Project(id=f"proj-batch-{i}", name=f"Project {i}")
@@ -134,7 +133,7 @@ class TestProjectLifecycleWorkflows:
         assert count == 10
 
     def test_project_retrieval_performance(self, db_session: Session) -> None:
-        """Test efficient retrieval of projects"""
+        """Test efficient retrieval of projects."""
         repo = ProjectRepository(db_session)  # type: ignore[arg-type]
         for i in range(50):
             proj = Project(id=f"perf-proj-{i}", name=f"Performance Project {i}")
@@ -146,7 +145,7 @@ class TestProjectLifecycleWorkflows:
         assert len(all_projects) == 50
 
     def test_project_state_consistency(self, db_session: Session) -> None:
-        """Test project state remains consistent through operations"""
+        """Test project state remains consistent through operations."""
         project = Project(id="proj-7", name="Consistency Test")
         db_session.add(project)
         db_session.commit()
@@ -161,7 +160,7 @@ class TestProjectLifecycleWorkflows:
         assert project.created_at == original_created
 
     def test_project_deletion_flow(self, db_session: Session) -> None:
-        """Test project soft deletion"""
+        """Test project soft deletion."""
         project = Project(id="proj-8", name="Deletable Project")
         db_session.add(project)
         db_session.commit()
@@ -174,10 +173,10 @@ class TestProjectLifecycleWorkflows:
 
 
 class TestItemLifecycleWorkflows:
-    """Test complete item lifecycle workflows (30 tests)"""
+    """Test complete item lifecycle workflows (30 tests)."""
 
     def test_create_item_with_all_fields(self, db_session: Session) -> None:
-        """Create item with all mandatory and optional fields"""
+        """Create item with all mandatory and optional fields."""
         project = Project(id="proj-item-1", name="Item Test Project")
         db_session.add(project)
         db_session.commit()
@@ -199,13 +198,13 @@ class TestItemLifecycleWorkflows:
         assert retrieved.status == "todo"
 
     def test_item_status_workflow(self, db_session: Session) -> None:
-        """Test typical item status transitions through workflow"""
+        """Test typical item status transitions through workflow."""
         project = Project(id="proj-item-2", name="Status Test")
         db_session.add(project)
         db_session.flush()
 
         item = Item(
-            id="ITEM-2", project_id="proj-item-2", title="Workflow Item", view="STORY", item_type="story", status="todo"
+            id="ITEM-2", project_id="proj-item-2", title="Workflow Item", view="STORY", item_type="story", status="todo",
         )
         db_session.add(item)
         db_session.commit()
@@ -219,7 +218,7 @@ class TestItemLifecycleWorkflows:
         assert item.status == "done"
 
     def test_item_type_variations(self, db_session: Session) -> None:
-        """Test creating items of different types"""
+        """Test creating items of different types."""
         project = Project(id="proj-item-3", name="Types Test")
         db_session.add(project)
         db_session.flush()
@@ -241,7 +240,7 @@ class TestItemLifecycleWorkflows:
         assert count == len(item_types)
 
     def test_item_copy_with_metadata(self, db_session: Session) -> None:
-        """Test copying item with full metadata"""
+        """Test copying item with full metadata."""
         project = Project(id="proj-item-4", name="Copy Test")
         db_session.add(project)
         db_session.flush()
@@ -274,7 +273,7 @@ class TestItemLifecycleWorkflows:
         assert copy.item_metadata["priority"] == "high"
 
     def test_item_bulk_creation(self, db_session: Session) -> None:
-        """Test creating many items efficiently"""
+        """Test creating many items efficiently."""
         project = Project(id="proj-item-5", name="Bulk Test")
         db_session.add(project)
         db_session.flush()
@@ -297,7 +296,7 @@ class TestItemLifecycleWorkflows:
         assert count == 100
 
     def test_item_metadata_operations(self, db_session: Session) -> None:
-        """Test metadata updates and transformations"""
+        """Test metadata updates and transformations."""
         project = Project(id="proj-item-6", name="Metadata Test")
         db_session.add(project)
         db_session.flush()
@@ -331,7 +330,7 @@ class TestItemLifecycleWorkflows:
         assert len(retrieved.item_metadata["tags"]) == 3
 
     def test_item_archive_flow(self, db_session: Session) -> None:
-        """Test item archival process"""
+        """Test item archival process."""
         project = Project(id="proj-item-7", name="Archive Test")
         db_session.add(project)
         db_session.flush()
@@ -355,10 +354,10 @@ class TestItemLifecycleWorkflows:
 
 
 class TestLinkManagementWorkflows:
-    """Test link creation and management workflows (25 tests)"""
+    """Test link creation and management workflows (25 tests)."""
 
     def test_create_simple_link(self, db_session: Session) -> None:
-        """Create a simple link between two items"""
+        """Create a simple link between two items."""
         project = Project(id="proj-link-1", name="Link Test")
         db_session.add(project)
         db_session.flush()
@@ -397,7 +396,7 @@ class TestLinkManagementWorkflows:
         assert retrieved.link_type == "depends_on"
 
     def test_create_multiple_link_types(self, db_session: Session) -> None:
-        """Create links with different relationship types"""
+        """Create links with different relationship types."""
         project = Project(id="proj-link-2", name="Link Types Test")
         db_session.add(project)
         db_session.flush()
@@ -432,7 +431,7 @@ class TestLinkManagementWorkflows:
         assert count == len(link_types)
 
     def test_link_update_workflow(self, db_session: Session) -> None:
-        """Test updating link properties"""
+        """Test updating link properties."""
         project = Project(id="proj-link-3", name="Link Update Test")
         db_session.add(project)
         db_session.flush()
@@ -474,7 +473,7 @@ class TestLinkManagementWorkflows:
         assert retrieved.link_metadata["status"] == "approved"
 
     def test_link_cascade_deletion(self, db_session: Session) -> None:
-        """Test link cascading on source item deletion"""
+        """Test link cascading on source item deletion."""
         project = Project(id="proj-link-4", name="Cascade Test")
         db_session.add(project)
         db_session.flush()
@@ -511,16 +510,16 @@ class TestLinkManagementWorkflows:
         assert db_session.query(Link).filter_by(id="LINK-CASC").first() is not None
 
     def test_bidirectional_links(self, db_session: Session) -> None:
-        """Test creating bidirectional relationships"""
+        """Test creating bidirectional relationships."""
         project = Project(id="proj-link-5", name="Bidirectional Test")
         db_session.add(project)
         db_session.flush()
 
         item1 = Item(
-            id="LINK-BI-1", project_id="proj-link-5", title="Item 1", view="DEFAULT", item_type="feature", status="todo"
+            id="LINK-BI-1", project_id="proj-link-5", title="Item 1", view="DEFAULT", item_type="feature", status="todo",
         )
         item2 = Item(
-            id="LINK-BI-2", project_id="proj-link-5", title="Item 2", view="DEFAULT", item_type="feature", status="todo"
+            id="LINK-BI-2", project_id="proj-link-5", title="Item 2", view="DEFAULT", item_type="feature", status="todo",
         )
         db_session.add_all([item1, item2])
         db_session.flush()
@@ -549,10 +548,10 @@ class TestLinkManagementWorkflows:
 
 
 class TestSearchAndQueryWorkflows:
-    """Test search and query workflows (25 tests)"""
+    """Test search and query workflows (25 tests)."""
 
     def test_search_by_item_title(self, db_session: Session) -> None:
-        """Search items by title pattern"""
+        """Search items by title pattern."""
         project = Project(id="proj-search-1", name="Search Test")
         db_session.add(project)
         db_session.flush()
@@ -575,7 +574,7 @@ class TestSearchAndQueryWorkflows:
         assert len(results) >= 5
 
     def test_search_by_item_status(self, db_session: Session) -> None:
-        """Search items by status"""
+        """Search items by status."""
         project = Project(id="proj-search-2", name="Status Search Test")
         db_session.add(project)
         db_session.flush()
@@ -598,7 +597,7 @@ class TestSearchAndQueryWorkflows:
         assert len(done_items) == 3
 
     def test_search_by_metadata(self, db_session: Session) -> None:
-        """Search items by metadata attributes"""
+        """Search items by metadata attributes."""
         project = Project(id="proj-search-3", name="Metadata Search Test")
         db_session.add(project)
         db_session.flush()
@@ -624,7 +623,7 @@ class TestSearchAndQueryWorkflows:
         assert len(high_priority) >= 2
 
     def test_query_items_by_view(self, db_session: Session) -> None:
-        """Query items filtered by view"""
+        """Query items filtered by view."""
         project = Project(id="proj-search-4", name="View Query Test")
         db_session.add(project)
         db_session.flush()
@@ -647,7 +646,7 @@ class TestSearchAndQueryWorkflows:
         assert len(feature_items) == 3
 
     def test_linked_items_query(self, db_session: Session) -> None:
-        """Query items that have links"""
+        """Query items that have links."""
         project = Project(id="proj-search-5", name="Linked Items Test")
         db_session.add(project)
         db_session.flush()
@@ -689,10 +688,10 @@ class TestSearchAndQueryWorkflows:
 
 
 class TestBatchOperationsWorkflows:
-    """Test batch and bulk operation workflows (25 tests)"""
+    """Test batch and bulk operation workflows (25 tests)."""
 
     def test_batch_create_items(self, db_session: Session) -> None:
-        """Batch create multiple items"""
+        """Batch create multiple items."""
         project = Project(id="proj-batch-1", name="Batch Create Test")
         db_session.add(project)
         db_session.flush()
@@ -715,7 +714,7 @@ class TestBatchOperationsWorkflows:
         assert count == 50
 
     def test_batch_update_status(self, db_session: Session) -> None:
-        """Batch update item statuses"""
+        """Batch update item statuses."""
         project = Project(id="proj-batch-2", name="Batch Update Test")
         db_session.add(project)
         db_session.flush()
@@ -743,7 +742,7 @@ class TestBatchOperationsWorkflows:
         assert updated == 30
 
     def test_batch_link_creation(self, db_session: Session) -> None:
-        """Batch create links between items"""
+        """Batch create links between items."""
         project = Project(id="proj-batch-3", name="Batch Link Test")
         db_session.add(project)
         db_session.flush()
@@ -779,7 +778,7 @@ class TestBatchOperationsWorkflows:
         assert count == 9
 
     def test_batch_delete_items(self, db_session: Session) -> None:
-        """Batch delete items"""
+        """Batch delete items."""
         project = Project(id="proj-batch-4", name="Batch Delete Test")
         db_session.add(project)
         db_session.flush()
@@ -808,7 +807,7 @@ class TestBatchOperationsWorkflows:
         assert remaining == 10
 
     def test_batch_metadata_update(self, db_session: Session) -> None:
-        """Batch update metadata on items"""
+        """Batch update metadata on items."""
         project = Project(id="proj-batch-5", name="Batch Metadata Test")
         db_session.add(project)
         db_session.flush()
@@ -839,17 +838,17 @@ class TestBatchOperationsWorkflows:
 
 
 class TestAdvancedRelationshipWorkflows:
-    """Test complex relationship and graph workflows (30 tests)"""
+    """Test complex relationship and graph workflows (30 tests)."""
 
     def test_three_level_hierarchy(self, db_session: Session) -> None:
-        """Test 3-level item hierarchy with links"""
+        """Test 3-level item hierarchy with links."""
         project = Project(id="proj-adv-1", name="Hierarchy Test")
         db_session.add(project)
         db_session.flush()
 
         # Create 3-level hierarchy
         epic = Item(
-            id="ADV-EPIC-1", project_id="proj-adv-1", title="Epic", view="DEFAULT", item_type="epic", status="todo"
+            id="ADV-EPIC-1", project_id="proj-adv-1", title="Epic", view="DEFAULT", item_type="epic", status="todo",
         )
         feature = Item(
             id="ADV-FEATURE-1",
@@ -860,7 +859,7 @@ class TestAdvancedRelationshipWorkflows:
             status="todo",
         )
         task = Item(
-            id="ADV-TASK-1", project_id="proj-adv-1", title="Task", view="DEFAULT", item_type="task", status="todo"
+            id="ADV-TASK-1", project_id="proj-adv-1", title="Task", view="DEFAULT", item_type="task", status="todo",
         )
         db_session.add_all([epic, feature, task])
         db_session.flush()
@@ -887,7 +886,7 @@ class TestAdvancedRelationshipWorkflows:
         assert feature_retrieved is not None
 
     def test_complex_dependency_graph(self, db_session: Session) -> None:
-        """Test complex multi-item dependency graph"""
+        """Test complex multi-item dependency graph."""
         project = Project(id="proj-adv-2", name="Dependency Graph Test")
         db_session.add(project)
         db_session.flush()
@@ -931,7 +930,7 @@ class TestAdvancedRelationshipWorkflows:
         assert len(all_links) == len(links)
 
     def test_cross_project_references(self, db_session: Session) -> None:
-        """Test references between items in different projects"""
+        """Test references between items in different projects."""
         project1 = Project(id="proj-adv-3a", name="Project A")
         project2 = Project(id="proj-adv-3b", name="Project B")
         db_session.add_all([project1, project2])
@@ -971,7 +970,7 @@ class TestAdvancedRelationshipWorkflows:
         assert retrieved_link is not None
 
     def test_bidirectional_workflow_graph(self, db_session: Session) -> None:
-        """Test bidirectional workflow relationships"""
+        """Test bidirectional workflow relationships."""
         project = Project(id="proj-adv-4", name="Bidirectional Workflow")
         db_session.add(project)
         db_session.flush()
@@ -1011,7 +1010,7 @@ class TestAdvancedRelationshipWorkflows:
         assert link1 is not None and link2 is not None
 
     def test_multi_project_link_operations(self, db_session: Session) -> None:
-        """Test bulk operations across multiple projects"""
+        """Test bulk operations across multiple projects."""
         projects = []
         for i in range(3):
             project = Project(id=f"proj-adv-5-{i}", name=f"Project {i}")

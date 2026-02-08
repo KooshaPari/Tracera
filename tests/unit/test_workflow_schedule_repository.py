@@ -8,7 +8,7 @@ from tracertm.repositories.workflow_schedule_repository import WorkflowScheduleR
 
 
 @pytest.mark.asyncio
-async def test_create_and_list_workflow_schedule(async_db_engine):
+async def test_create_and_list_workflow_schedule(async_db_engine) -> None:
     session_maker = async_sessionmaker(async_db_engine, class_=AsyncSession, expire_on_commit=False)
     async with session_maker() as session:
         project_id = uuid.uuid4()

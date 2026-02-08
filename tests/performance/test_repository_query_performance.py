@@ -1,5 +1,4 @@
-"""
-Performance tests for repository and query operations.
+"""Performance tests for repository and query operations.
 
 Tests performance-critical paths:
 - Bulk item creation/retrieval
@@ -42,7 +41,7 @@ class TestItemRepositoryPerformance:
     """Tests for item repository performance."""
 
     @pytest.mark.asyncio
-    async def test_create_single_item(self, mock_async_session):
+    async def test_create_single_item(self, mock_async_session) -> None:
         """Test single item creation performance."""
         repo = ItemRepository(mock_async_session)
 
@@ -63,7 +62,7 @@ class TestItemRepositoryPerformance:
         mock_async_session.flush.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_create_bulk_items_sequential(self, mock_async_session):
+    async def test_create_bulk_items_sequential(self, mock_async_session) -> None:
         """Test bulk item creation (sequential)."""
         repo = ItemRepository(mock_async_session)
 
@@ -76,14 +75,14 @@ class TestItemRepositoryPerformance:
         assert mock_async_session.add.call_count == 100
 
     @pytest.mark.asyncio
-    async def test_create_bulk_items_concurrent(self, mock_async_session):
+    async def test_create_bulk_items_concurrent(self, mock_async_session) -> None:
         """Test bulk item creation (concurrent)."""
         repo = ItemRepository(mock_async_session)
 
         async def create_item(i: int):
             """Create single item."""
             return await repo.create(
-                project_id="proj-001", title=f"Item {i}", view="requirements", item_type="requirement"
+                project_id="proj-001", title=f"Item {i}", view="requirements", item_type="requirement",
             )
 
         start_time = time.time()
@@ -94,7 +93,7 @@ class TestItemRepositoryPerformance:
         assert elapsed < 1.0, "Creating 50 items concurrently should be < 1s"
 
     @pytest.mark.asyncio
-    async def test_get_item_by_id(self, mock_async_session):
+    async def test_get_item_by_id(self, mock_async_session) -> None:
         """Test get item by ID performance."""
         repo = ItemRepository(mock_async_session)
 
@@ -116,7 +115,7 @@ class TestItemRepositoryPerformance:
         assert result.id == "item-001"
 
     @pytest.mark.asyncio
-    async def test_list_by_view_performance(self, mock_async_session):
+    async def test_list_by_view_performance(self, mock_async_session) -> None:
         """Test list items by view performance."""
         repo = ItemRepository(mock_async_session)
 
@@ -144,7 +143,7 @@ class TestItemRepositoryPerformance:
         assert elapsed < 0.1, "Listing 100 items should be < 100ms"
 
     @pytest.mark.asyncio
-    async def test_list_by_view_large_result(self, mock_async_session):
+    async def test_list_by_view_large_result(self, mock_async_session) -> None:
         """Test listing 1000 items by view."""
         repo = ItemRepository(mock_async_session)
 
@@ -171,7 +170,7 @@ class TestItemRepositoryPerformance:
         assert elapsed < 0.5, "Listing 1000 items should be < 500ms"
 
     @pytest.mark.asyncio
-    async def test_concurrent_read_operations(self, mock_async_session):
+    async def test_concurrent_read_operations(self, mock_async_session) -> None:
         """Test concurrent read operations."""
         repo = ItemRepository(mock_async_session)
 
@@ -194,7 +193,7 @@ class TestItemRepositoryPerformance:
         assert elapsed < 1.0, "100 concurrent reads should be < 1s"
 
     @pytest.mark.asyncio
-    async def test_query_with_multiple_filters(self, mock_async_session):
+    async def test_query_with_multiple_filters(self, mock_async_session) -> None:
         """Test query performance with multiple filters."""
         repo = ItemRepository(mock_async_session)
 
@@ -223,7 +222,7 @@ class TestItemRepositoryPerformance:
         assert elapsed < 0.1
 
     @pytest.mark.asyncio
-    async def test_update_item_with_version(self, mock_async_session):
+    async def test_update_item_with_version(self, mock_async_session) -> None:
         """Test update with optimistic locking."""
         repo = ItemRepository(mock_async_session)
 
@@ -246,7 +245,7 @@ class TestItemRepositoryPerformance:
         assert item.title == "Updated"
 
     @pytest.mark.asyncio
-    async def test_memory_efficiency_large_query(self, mock_async_session):
+    async def test_memory_efficiency_large_query(self, mock_async_session) -> None:
         """Test memory efficiency when querying large result set."""
         import tracemalloc
 
@@ -283,7 +282,7 @@ class TestItemRepositoryPerformance:
         assert total_increase < 10.0, f"Memory increase {total_increase}MB too high"
 
     @pytest.mark.asyncio
-    async def test_parent_item_validation_performance(self, mock_async_session):
+    async def test_parent_item_validation_performance(self, mock_async_session) -> None:
         """Test parent validation performance."""
         repo = ItemRepository(mock_async_session)
 
@@ -310,7 +309,7 @@ class TestItemRepositoryPerformance:
         assert mock_async_session.add.called
 
     @pytest.mark.asyncio
-    async def test_pagination_performance(self, mock_async_session):
+    async def test_pagination_performance(self, mock_async_session) -> None:
         """Test pagination performance."""
         repo = ItemRepository(mock_async_session)
 
@@ -343,7 +342,7 @@ class TestItemRepositoryPerformance:
         assert elapsed < 1.0
 
     @pytest.mark.asyncio
-    async def test_delete_item_performance(self, mock_async_session):
+    async def test_delete_item_performance(self, mock_async_session) -> None:
         """Test item deletion performance."""
         repo = ItemRepository(mock_async_session)
 
@@ -360,7 +359,7 @@ class TestItemRepositoryPerformance:
         assert item.deleted_at is not None
 
     @pytest.mark.asyncio
-    async def test_bulk_delete_performance(self, mock_async_session):
+    async def test_bulk_delete_performance(self, mock_async_session) -> None:
         """Test bulk deletion performance."""
         repo = ItemRepository(mock_async_session)
 
@@ -381,7 +380,7 @@ class TestItemRepositoryPerformance:
         assert all(item.deleted_at is not None for item in items)
 
     @pytest.mark.asyncio
-    async def test_search_items_performance(self, mock_async_session):
+    async def test_search_items_performance(self, mock_async_session) -> None:
         """Test search performance on large dataset."""
         repo = ItemRepository(mock_async_session)
 
@@ -408,7 +407,7 @@ class TestItemRepositoryPerformance:
         assert elapsed < 0.1
 
     @pytest.mark.asyncio
-    async def test_concurrent_write_operations(self, mock_async_session):
+    async def test_concurrent_write_operations(self, mock_async_session) -> None:
         """Test concurrent write operations."""
         repo = ItemRepository(mock_async_session)
 
@@ -416,7 +415,7 @@ class TestItemRepositoryPerformance:
             """Create and update item."""
             # Create
             item = await repo.create(
-                project_id="proj-001", title=f"Item {i}", view="requirements", item_type="requirement"
+                project_id="proj-001", title=f"Item {i}", view="requirements", item_type="requirement",
             )
 
             # Update

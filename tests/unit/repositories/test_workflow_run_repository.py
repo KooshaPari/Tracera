@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for WorkflowRunRepository to achieve 85%+ coverage.
+"""Comprehensive unit tests for WorkflowRunRepository to achieve 85%+ coverage.
 
 Tests for:
 - create_run() - workflow run creation
@@ -29,7 +28,7 @@ def unique_project_name() -> str:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_run_basic(db_session: AsyncSession):
+async def test_create_run_basic(db_session: AsyncSession) -> None:
     """Test creating workflow run with basic fields."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -51,7 +50,7 @@ async def test_create_run_basic(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_run_with_payload(db_session: AsyncSession):
+async def test_create_run_with_payload(db_session: AsyncSession) -> None:
     """Test creating workflow run with payload."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -70,7 +69,7 @@ async def test_create_run_with_payload(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_run_with_external_id(db_session: AsyncSession):
+async def test_create_run_with_external_id(db_session: AsyncSession) -> None:
     """Test creating workflow run with external run ID."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -89,7 +88,7 @@ async def test_create_run_with_external_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_run_with_graph_id(db_session: AsyncSession):
+async def test_create_run_with_graph_id(db_session: AsyncSession) -> None:
     """Test creating workflow run with graph ID."""
     from tests.unit.repositories.conftest import create_default_graph_for_project
 
@@ -110,7 +109,7 @@ async def test_create_run_with_graph_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_run_with_user_id(db_session: AsyncSession):
+async def test_create_run_with_user_id(db_session: AsyncSession) -> None:
     """Test creating workflow run with created_by_user_id."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -129,7 +128,7 @@ async def test_create_run_with_user_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_run_with_all_fields(db_session: AsyncSession):
+async def test_create_run_with_all_fields(db_session: AsyncSession) -> None:
     """Test creating workflow run with all optional fields."""
     from tests.unit.repositories.conftest import create_default_graph_for_project
 
@@ -163,7 +162,7 @@ async def test_create_run_with_all_fields(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_run_without_project(db_session: AsyncSession):
+async def test_create_run_without_project(db_session: AsyncSession) -> None:
     """Test creating workflow run without project ID."""
     repo = WorkflowRunRepository(db_session)
     run = await repo.create_run(workflow_name="standalone_workflow")
@@ -179,7 +178,7 @@ async def test_create_run_without_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_runs_basic(db_session: AsyncSession):
+async def test_list_runs_basic(db_session: AsyncSession) -> None:
     """Test listing workflow runs for a project."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -198,7 +197,7 @@ async def test_list_runs_basic(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_runs_filters_by_project(db_session: AsyncSession):
+async def test_list_runs_filters_by_project(db_session: AsyncSession) -> None:
     """Test listing runs only returns runs for specified project."""
     project_repo = ProjectRepository(db_session)
     project1 = await project_repo.create(name=unique_project_name())
@@ -220,7 +219,7 @@ async def test_list_runs_filters_by_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_runs_filter_by_status(db_session: AsyncSession):
+async def test_list_runs_filter_by_status(db_session: AsyncSession) -> None:
     """Test listing runs with status filter."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -248,7 +247,7 @@ async def test_list_runs_filter_by_status(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_runs_filter_by_workflow_name(db_session: AsyncSession):
+async def test_list_runs_filter_by_workflow_name(db_session: AsyncSession) -> None:
     """Test listing runs with workflow name filter."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -271,7 +270,7 @@ async def test_list_runs_filter_by_workflow_name(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_runs_pagination_limit(db_session: AsyncSession):
+async def test_list_runs_pagination_limit(db_session: AsyncSession) -> None:
     """Test listing runs with limit."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -289,7 +288,7 @@ async def test_list_runs_pagination_limit(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_runs_pagination_offset(db_session: AsyncSession):
+async def test_list_runs_pagination_offset(db_session: AsyncSession) -> None:
     """Test listing runs with offset."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -307,7 +306,7 @@ async def test_list_runs_pagination_offset(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_runs_empty_when_no_runs(db_session: AsyncSession):
+async def test_list_runs_empty_when_no_runs(db_session: AsyncSession) -> None:
     """Test listing runs returns empty list when no runs exist."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -326,7 +325,7 @@ async def test_list_runs_empty_when_no_runs(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_by_external_id_status(db_session: AsyncSession):
+async def test_update_by_external_id_status(db_session: AsyncSession) -> None:
     """Test updating run status by external ID."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -355,7 +354,7 @@ async def test_update_by_external_id_status(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_by_external_id_with_result(db_session: AsyncSession):
+async def test_update_by_external_id_with_result(db_session: AsyncSession) -> None:
     """Test updating run with result by external ID."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -386,7 +385,7 @@ async def test_update_by_external_id_with_result(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_by_external_id_with_error(db_session: AsyncSession):
+async def test_update_by_external_id_with_error(db_session: AsyncSession) -> None:
     """Test updating run with error message by external ID."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -416,7 +415,7 @@ async def test_update_by_external_id_with_error(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_by_external_id_with_timestamps(db_session: AsyncSession):
+async def test_update_by_external_id_with_timestamps(db_session: AsyncSession) -> None:
     """Test updating run with timestamps by external ID."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -450,7 +449,7 @@ async def test_update_by_external_id_with_timestamps(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_by_external_id_all_fields(db_session: AsyncSession):
+async def test_update_by_external_id_all_fields(db_session: AsyncSession) -> None:
     """Test updating run with all fields by external ID."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())

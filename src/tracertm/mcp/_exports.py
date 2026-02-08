@@ -7,12 +7,6 @@ def run_server() -> None:
     """Standalone MCP is not allowed. MCP runs only as part of the backend (mounted ASGI)."""
     import sys
 
-    print("Standalone MCP is not allowed.", file=sys.stderr)
-    print("MCP is only available as part of the backend (mounted ASGI process).", file=sys.stderr)
-    print(
-        "Start the TraceRTM API server (e.g. uvicorn tracertm.api.main:app, or rtm dev) and use /api/v1/mcp/...",
-        file=sys.stderr,
-    )
     sys.exit(1)
 
 

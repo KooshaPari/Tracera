@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, Index, String, Text
 from sqlalchemy.dialects.postgresql import UUID
@@ -11,6 +11,9 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from tracertm.models.base import Base, TimestampMixin
 from tracertm.models.types import JSONType
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 def generate_workflow_schedule_uuid() -> uuid.UUID:

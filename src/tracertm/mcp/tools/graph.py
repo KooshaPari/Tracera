@@ -1,5 +1,4 @@
-"""
-Graph analysis MCP tools.
+"""Graph analysis MCP tools.
 
 Provides tools for cycle detection and shortest path finding
 in the traceability graph.
@@ -7,6 +6,7 @@ in the traceability graph.
 
 from __future__ import annotations
 
+import contextlib
 from typing import Any
 
 from fastmcp.exceptions import ToolError
@@ -42,7 +42,7 @@ async def detect_cycles(
             {
                 "project_id": project_id,
                 "cycle_count": len(cycles) if cycles else 0,
-                "cycles": cycles if cycles else [],
+                "cycles": cycles or [],
             },
             "detect_cycles",
             ctx,
@@ -68,7 +68,8 @@ async def shortest_path(
         Path as list of items and links, or indication if no path exists
     """
     if not source_id or not target_id:
-        raise ToolError("source_id and target_id are required.")
+        msg = "source_id and target_id are required."
+        raise ToolError(msg)
 
     project_id = require_project()
 
@@ -97,10 +98,8 @@ async def shortest_path(
         path_val = to_dict() if callable(to_dict) else path
         path_len: int | None = None
         if hasattr(path, "__len__"):
-            try:
+            with contextlib.suppress(TypeError):
                 path_len = len(path)
-            except TypeError:
-                pass
         return wrap_success(
             {
                 "source_id": source_id,

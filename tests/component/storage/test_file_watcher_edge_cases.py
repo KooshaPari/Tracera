@@ -1,4 +1,4 @@
-"""Edge case and error scenario tests for file_watcher.py
+"""Edge case and error scenario tests for file_watcher.py.
 
 Tests cover:
 - Rapid file changes with debouncing
@@ -31,7 +31,7 @@ def _make_project(tmp_path: Path):
 class TestFileWatcherEdgeCases:
     """Test edge cases and error conditions in file watcher."""
 
-    def test_watcher_handles_rapid_file_changes(self, tmp_path: Path):
+    def test_watcher_handles_rapid_file_changes(self, tmp_path: Path) -> None:
         """Test handling of rapid successive file changes with debouncing."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=100)
@@ -58,7 +58,7 @@ class TestFileWatcherEdgeCases:
         # Should have processed the change
         assert watcher._events_processed >= 1
 
-    def test_watcher_handles_deleted_files(self, tmp_path: Path):
+    def test_watcher_handles_deleted_files(self, tmp_path: Path) -> None:
         """Test handling of deleted files during watch."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=50)
@@ -80,7 +80,7 @@ class TestFileWatcherEdgeCases:
         # Deletion might not be tracked if item doesn't exist
         assert isinstance(stats["changes_by_type"], dict)
 
-    def test_watcher_handles_permission_errors(self, tmp_path: Path):
+    def test_watcher_handles_permission_errors(self, tmp_path: Path) -> None:
         """Test handling of permission denied errors during file access."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=50)
@@ -101,7 +101,7 @@ class TestFileWatcherEdgeCases:
         stats = watcher.get_stats()
         assert stats["events_processed"] >= 0
 
-    def test_watcher_handles_symlink_changes(self, tmp_path: Path):
+    def test_watcher_handles_symlink_changes(self, tmp_path: Path) -> None:
         """Test handling of symlink modifications."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=50)
@@ -130,7 +130,7 @@ class TestFileWatcherEdgeCases:
             # Symlinks might not be supported on this OS
             pytest.skip("Symlinks not supported")
 
-    def test_watcher_debounce_timing_custom(self, tmp_path: Path):
+    def test_watcher_debounce_timing_custom(self, tmp_path: Path) -> None:
         """Test debounce delay with custom timing."""
         mgr, repo, trace_dir = _make_project(tmp_path)
 
@@ -151,7 +151,7 @@ class TestFileWatcherEdgeCases:
             # Should be processed
             assert watcher._events_processed >= 1
 
-    def test_watcher_exception_recovery(self, tmp_path: Path):
+    def test_watcher_exception_recovery(self, tmp_path: Path) -> None:
         """Test recovery from exceptions during event processing."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=50)
@@ -176,7 +176,7 @@ class TestFileWatcherEdgeCases:
         # Event processing increments counter even on error
         assert stats["events_processed"] >= initial_count
 
-    def test_watcher_handles_corrupted_markdown(self, tmp_path: Path):
+    def test_watcher_handles_corrupted_markdown(self, tmp_path: Path) -> None:
         """Test handling of corrupted/invalid markdown files."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=50)
@@ -192,7 +192,7 @@ class TestFileWatcherEdgeCases:
         stats = watcher.get_stats()
         assert stats["events_processed"] >= 0
 
-    def test_watcher_handles_missing_project_yaml(self, tmp_path: Path):
+    def test_watcher_handles_missing_project_yaml(self, tmp_path: Path) -> None:
         """Test handling when project.yaml is missing during project config change."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=50)
@@ -208,7 +208,7 @@ class TestFileWatcherEdgeCases:
         stats = watcher.get_stats()
         assert stats["events_processed"] >= 0
 
-    def test_watcher_handles_invalid_links_yaml(self, tmp_path: Path):
+    def test_watcher_handles_invalid_links_yaml(self, tmp_path: Path) -> None:
         """Test handling of invalid links.yaml format."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=50)
@@ -223,7 +223,7 @@ class TestFileWatcherEdgeCases:
         stats = watcher.get_stats()
         assert stats["events_processed"] >= 0
 
-    def test_watcher_stop_cancels_pending_timers(self, tmp_path: Path):
+    def test_watcher_stop_cancels_pending_timers(self, tmp_path: Path) -> None:
         """Test that stop() cancels all pending debounce timers."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=1000)  # Long delay
@@ -245,7 +245,7 @@ class TestFileWatcherEdgeCases:
         # All timers should be cancelled
         assert len(watcher._debounce_timers) == 0
 
-    def test_watcher_double_start_warning(self, tmp_path: Path):
+    def test_watcher_double_start_warning(self, tmp_path: Path) -> None:
         """Test that starting an already running watcher logs warning."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=50)
@@ -259,7 +259,7 @@ class TestFileWatcherEdgeCases:
 
         watcher.stop()
 
-    def test_watcher_double_stop_warning(self, tmp_path: Path):
+    def test_watcher_double_stop_warning(self, tmp_path: Path) -> None:
         """Test that stopping a non-running watcher logs warning."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=50)
@@ -268,7 +268,7 @@ class TestFileWatcherEdgeCases:
         watcher.stop()
         assert not watcher.is_running()
 
-    def test_event_handler_should_process_filters(self, tmp_path: Path):
+    def test_event_handler_should_process_filters(self, tmp_path: Path) -> None:
         """Test _TraceEventHandler._should_process filters correctly."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=50)
@@ -290,7 +290,7 @@ class TestFileWatcherEdgeCases:
         # Should NOT process hidden files/directories (except .trace/.meta)
         assert not handler._should_process(trace_dir / ".hidden" / "test.md")
 
-    def test_event_handler_ignores_directory_events(self, tmp_path: Path):
+    def test_event_handler_ignores_directory_events(self, tmp_path: Path) -> None:
         """Test that directory events are ignored."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=50)
@@ -309,7 +309,7 @@ class TestFileWatcherEdgeCases:
         # No events should be debounced
         assert watcher._events_pending == 0
 
-    def test_watcher_handles_item_without_external_id(self, tmp_path: Path):
+    def test_watcher_handles_item_without_external_id(self, tmp_path: Path) -> None:
         """Test handling items that lack external_id in metadata."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=50)
@@ -353,7 +353,7 @@ class TestFileWatcherEdgeCases:
         stats = watcher.get_stats()
         assert stats["events_processed"] >= 0
 
-    def test_watcher_queue_for_sync_when_disabled(self, tmp_path: Path):
+    def test_watcher_queue_for_sync_when_disabled(self, tmp_path: Path) -> None:
         """Test that _queue_for_sync does nothing when auto_sync is False."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=50, auto_sync=False)
@@ -369,7 +369,7 @@ class TestFileWatcherEdgeCases:
         queue = mgr.get_sync_queue()
         assert len(queue) == initial_count  # No increase
 
-    def test_watcher_queue_for_sync_when_enabled(self, tmp_path: Path):
+    def test_watcher_queue_for_sync_when_enabled(self, tmp_path: Path) -> None:
         """Test that _queue_for_sync queues when auto_sync is True."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=50, auto_sync=True)
@@ -381,7 +381,7 @@ class TestFileWatcherEdgeCases:
         queue = mgr.get_sync_queue()
         assert len(queue) >= 1
 
-    def test_watcher_last_event_time_tracking(self, tmp_path: Path):
+    def test_watcher_last_event_time_tracking(self, tmp_path: Path) -> None:
         """Test that last_event_time is properly tracked."""
         mgr, repo, trace_dir = _make_project(tmp_path)
         watcher = TraceFileWatcher(repo, mgr, debounce_ms=50)

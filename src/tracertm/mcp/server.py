@@ -1,5 +1,4 @@
-"""
-Unified FastMCP Server definition for TraceRTM.
+"""Unified FastMCP Server definition for TraceRTM.
 
 This module re-exports the single MCP server instance and imports tool modules
 to register them. The param tools have been split into domain-specific modules

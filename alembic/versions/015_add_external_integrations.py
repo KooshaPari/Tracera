@@ -20,7 +20,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Add external integrations tables."""
-
     # integration_credentials
     op.create_table(
         "integration_credentials",

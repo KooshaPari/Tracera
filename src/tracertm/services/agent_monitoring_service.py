@@ -1,5 +1,4 @@
-"""
-Agent monitoring service for Epic 5 (Story 5.8).
+"""Agent monitoring service for Epic 5 (Story 5.8).
 
 Provides health checks, alerting, and monitoring capabilities.
 """
@@ -16,11 +15,9 @@ CONFLICT_RATE_ALERT_THRESHOLD = 10.0
 
 
 class AgentMonitoringService:
-    """
-    Service for monitoring agent health and status (Story 5.8).
-    """
+    """Service for monitoring agent health and status (Story 5.8)."""
 
-    def __init__(self, session: Session):
+    def __init__(self, session: Session) -> None:
         """Initialize agent monitoring service."""
         self.session = session
 
@@ -30,8 +27,7 @@ class AgentMonitoringService:
         agent_id: str | None = None,
         stale_threshold_hours: float = 24.0,
     ) -> list[dict[str, Any]]:
-        """
-        Check health status of agents (Story 5.8).
+        """Check health status of agents (Story 5.8).
 
         Args:
             project_id: Project ID
@@ -57,7 +53,7 @@ class AgentMonitoringService:
             # Determine health
             if agent.last_activity_at:
                 try:
-                    last_activity = datetime.fromisoformat(agent.last_activity_at.replace("Z", "+00:00"))
+                    last_activity = datetime.fromisoformat(agent.last_activity_at)
                     hours_since = (datetime.now(UTC) - last_activity.replace(tzinfo=None)).total_seconds() / 3600
 
                     if hours_since < 1:
@@ -95,8 +91,7 @@ class AgentMonitoringService:
         project_id: str,
         alert_types: list[str] | None = None,
     ) -> list[dict[str, Any]]:
-        """
-        Get alerts for agents (Story 5.8).
+        """Get alerts for agents (Story 5.8).
 
         Args:
             project_id: Project ID

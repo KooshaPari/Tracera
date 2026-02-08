@@ -489,7 +489,7 @@ async def execute_tool(
             return await _execute_tracertm_tool(tool_name, tool_input, db_session)
         return {"success": False, "error": f"Unknown tool: {tool_name}"}
     except Exception as e:
-        logger.error(f"Tool execution error: {tool_name}: {e}", exc_info=True)
+        logger.error("Tool execution error: %s: %s", tool_name, e, exc_info=True)
         return {"success": False, "error": str(e)}
 
 
@@ -868,13 +868,13 @@ async def _execute_tracertm_tool(
         direction = params.get("direction", "both")
 
         links = []
-        if direction in ("outgoing", "both"):
+        if direction in {"outgoing", "both"}:
             outgoing = await repo.get_by_source(item_id)
             links.extend([
                 {"type": "outgoing", "target_id": str(link.target_item_id), "link_type": link.link_type}
                 for link in outgoing
             ])
-        if direction in ("incoming", "both"):
+        if direction in {"incoming", "both"}:
             incoming = await repo.get_by_target(item_id)
             links.extend([
                 {"type": "incoming", "source_id": str(link.source_item_id), "link_type": link.link_type}

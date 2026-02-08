@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for Advanced Search API endpoint.
+"""Comprehensive tests for Advanced Search API endpoint.
 
 Tests:
 - POST /api/v1/projects/{project_id}/search/advanced
@@ -46,7 +45,7 @@ class TestAdvancedSearchEndpoint:
     """Test POST /api/v1/projects/{project_id}/search/advanced endpoint."""
 
     @pytest.mark.asyncio
-    async def test_advanced_search_with_query(self, client):
+    async def test_advanced_search_with_query(self, client) -> None:
         """Test advanced search with query parameter."""
         mock_results = [
             {"id": "item-1", "title": "Test Item", "view": "FEATURE"},
@@ -71,7 +70,7 @@ class TestAdvancedSearchEndpoint:
             assert data["total"] == 2
 
     @pytest.mark.asyncio
-    async def test_advanced_search_with_filters(self, client):
+    async def test_advanced_search_with_filters(self, client) -> None:
         """Test advanced search with filters."""
         mock_results = [
             {"id": "item-1", "title": "Test Item", "view": "FEATURE", "status": "todo"},
@@ -94,7 +93,7 @@ class TestAdvancedSearchEndpoint:
             assert len(data["results"]) == 1
 
     @pytest.mark.asyncio
-    async def test_advanced_search_with_query_and_filters(self, client):
+    async def test_advanced_search_with_query_and_filters(self, client) -> None:
         """Test advanced search with both query and filters."""
         mock_results = [
             {"id": "item-1", "title": "Test Item", "view": "FEATURE"},
@@ -116,7 +115,7 @@ class TestAdvancedSearchEndpoint:
             assert len(data["results"]) == 1
 
     @pytest.mark.asyncio
-    async def test_advanced_search_empty_results(self, client):
+    async def test_advanced_search_empty_results(self, client) -> None:
         """Test advanced search returns empty results when no matches."""
         mock_results = []
 
@@ -136,7 +135,7 @@ class TestAdvancedSearchEndpoint:
             assert data["total"] == 0
 
     @pytest.mark.asyncio
-    async def test_advanced_search_no_query_no_filters(self, client):
+    async def test_advanced_search_no_query_no_filters(self, client) -> None:
         """Test advanced search with no query or filters."""
         mock_results = [
             {"id": "item-1", "title": "Item 1"},
@@ -156,7 +155,7 @@ class TestAdvancedSearchEndpoint:
             assert len(data["results"]) == 2
 
     @pytest.mark.asyncio
-    async def test_advanced_search_response_structure(self, client):
+    async def test_advanced_search_response_structure(self, client) -> None:
         """Test advanced search response has expected structure."""
         mock_results = [{"id": "item-1", "title": "Test"}]
 

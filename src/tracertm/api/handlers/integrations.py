@@ -53,7 +53,7 @@ async def _get_mapping_stats(db: AsyncSession, project_id: str) -> dict[str, Any
             func.count().label("count"),
         )
         .where(IntegrationMapping.project_id == project_id)
-        .group_by(IntegrationMapping.external_system, IntegrationMapping.status)
+        .group_by(IntegrationMapping.external_system, IntegrationMapping.status),
     )
 
     total = 0
@@ -82,7 +82,7 @@ async def _get_sync_stats(db: AsyncSession, project_id: str) -> dict[str, Any]:
         .where(
             IntegrationMapping.project_id == project_id,
             IntegrationSyncQueue.status == "pending",
-        )
+        ),
     )
 
     # Recent sync logs (last 7 days)
@@ -98,7 +98,7 @@ async def _get_sync_stats(db: AsyncSession, project_id: str) -> dict[str, Any]:
             IntegrationMapping.project_id == project_id,
             IntegrationSyncLog.created_at >= week_ago,
         )
-        .group_by(IntegrationSyncLog.success)
+        .group_by(IntegrationSyncLog.success),
     )
 
     sync_counts = {"total": 0, "success": 0}
@@ -127,7 +127,7 @@ async def _get_conflict_stats(db: AsyncSession, project_id: str) -> dict[str, in
         )
         .join(IntegrationMapping)
         .where(IntegrationMapping.project_id == project_id)
-        .group_by(IntegrationConflict.resolution_status)
+        .group_by(IntegrationConflict.resolution_status),
     )
 
     conflict_stats = {"pending": 0, "resolved": 0}

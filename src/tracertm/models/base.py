@@ -1,6 +1,4 @@
-"""
-Base SQLAlchemy model for TraceRTM.
-"""
+"""Base SQLAlchemy model for TraceRTM."""
 
 import uuid
 from datetime import datetime

@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for Project API endpoints.
+"""Comprehensive tests for Project API endpoints.
 
 Tests:
 - GET /api/v1/projects
@@ -50,7 +49,7 @@ class TestListProjectsEndpoint:
     """Test GET /api/v1/projects endpoint."""
 
     @pytest.mark.asyncio
-    async def test_list_projects_success(self, client):
+    async def test_list_projects_success(self, client) -> None:
         """Test listing projects returns correct data."""
         # Create proper mock objects with attributes
         mock_project1 = MagicMock()
@@ -82,7 +81,7 @@ class TestListProjectsEndpoint:
             assert data["projects"][0]["name"] == "Project 1"
 
     @pytest.mark.asyncio
-    async def test_list_projects_pagination(self, client):
+    async def test_list_projects_pagination(self, client) -> None:
         """Test projects list respects skip and limit parameters."""
         mock_projects = [MagicMock(id=f"proj-{i}", name=f"Project {i}", description="", metadata={}) for i in range(10)]
 
@@ -100,7 +99,7 @@ class TestListProjectsEndpoint:
             assert data["projects"][0]["id"] == "proj-2"
 
     @pytest.mark.asyncio
-    async def test_list_projects_empty(self, client):
+    async def test_list_projects_empty(self, client) -> None:
         """Test listing projects when none exist."""
         with patch("tracertm.repositories.project_repository.ProjectRepository") as mock_repo:
             repo_instance = MagicMock()
@@ -119,7 +118,7 @@ class TestGetProjectEndpoint:
     """Test GET /api/v1/projects/{project_id} endpoint."""
 
     @pytest.mark.asyncio
-    async def test_get_project_success(self, client):
+    async def test_get_project_success(self, client) -> None:
         """Test getting project by ID."""
         mock_project = MagicMock()
         mock_project.id = "proj-123"
@@ -142,7 +141,7 @@ class TestGetProjectEndpoint:
             assert data["metadata"] == {"key": "value"}
 
     @pytest.mark.asyncio
-    async def test_get_project_not_found(self, client):
+    async def test_get_project_not_found(self, client) -> None:
         """Test getting non-existent project returns 404."""
         with patch("tracertm.repositories.project_repository.ProjectRepository") as mock_repo:
             repo_instance = MagicMock()
@@ -159,7 +158,7 @@ class TestCreateProjectEndpoint:
     """Test POST /api/v1/projects endpoint."""
 
     @pytest.mark.asyncio
-    async def test_create_project_success(self, client):
+    async def test_create_project_success(self, client) -> None:
         """Test creating project successfully."""
         mock_project = MagicMock()
         mock_project.id = "proj-new"
@@ -184,7 +183,7 @@ class TestCreateProjectEndpoint:
             assert data["description"] == "New description"
 
     @pytest.mark.asyncio
-    async def test_create_project_with_metadata(self, client):
+    async def test_create_project_with_metadata(self, client) -> None:
         """Test creating project with metadata."""
         mock_project = MagicMock()
         mock_project.id = "proj-new"
@@ -207,7 +206,7 @@ class TestCreateProjectEndpoint:
             assert data["metadata"] == {"key": "value"}
 
     @pytest.mark.asyncio
-    async def test_create_project_minimal(self, client):
+    async def test_create_project_minimal(self, client) -> None:
         """Test creating project with only name."""
         mock_project = MagicMock()
         mock_project.id = "proj-new"
@@ -231,7 +230,7 @@ class TestUpdateProjectEndpoint:
     """Test PUT /api/v1/projects/{project_id} endpoint."""
 
     @pytest.mark.asyncio
-    async def test_update_project_success(self, client):
+    async def test_update_project_success(self, client) -> None:
         """Test updating project successfully."""
         mock_project = MagicMock()
         mock_project.id = "proj-123"
@@ -256,7 +255,7 @@ class TestUpdateProjectEndpoint:
             assert data["description"] == "Updated description"
 
     @pytest.mark.asyncio
-    async def test_update_project_partial(self, client):
+    async def test_update_project_partial(self, client) -> None:
         """Test updating project with partial data."""
         mock_project = MagicMock()
         mock_project.id = "proj-123"
@@ -279,7 +278,7 @@ class TestUpdateProjectEndpoint:
             assert data["description"] == "Updated description"
 
     @pytest.mark.asyncio
-    async def test_update_project_not_found(self, client):
+    async def test_update_project_not_found(self, client) -> None:
         """Test updating non-existent project returns 404."""
         with patch("tracertm.repositories.project_repository.ProjectRepository") as mock_repo:
             repo_instance = MagicMock()
@@ -295,7 +294,7 @@ class TestUpdateProjectEndpoint:
             assert "Project not found" in response.json()["detail"]
 
     @pytest.mark.asyncio
-    async def test_update_project_metadata(self, client):
+    async def test_update_project_metadata(self, client) -> None:
         """Test updating project metadata."""
         mock_project = MagicMock()
         mock_project.id = "proj-123"
@@ -322,7 +321,7 @@ class TestDeleteProjectEndpoint:
     """Test DELETE /api/v1/projects/{project_id} endpoint."""
 
     @pytest.mark.asyncio
-    async def test_delete_project_success(self, client):
+    async def test_delete_project_success(self, client) -> None:
         """Test deleting project successfully."""
         mock_project = MagicMock()
         mock_project.id = "proj-123"
@@ -359,7 +358,7 @@ class TestDeleteProjectEndpoint:
                         assert "Project deleted successfully" in data["message"]
 
     @pytest.mark.asyncio
-    async def test_delete_project_not_found(self, client):
+    async def test_delete_project_not_found(self, client) -> None:
         """Test deleting non-existent project returns 404."""
         with patch("tracertm.repositories.project_repository.ProjectRepository") as mock_repo:
             repo_instance = MagicMock()
@@ -372,7 +371,7 @@ class TestDeleteProjectEndpoint:
             assert "Project not found" in response.json()["detail"]
 
     @pytest.mark.asyncio
-    async def test_delete_project_cascade(self, client):
+    async def test_delete_project_cascade(self, client) -> None:
         """Test deleting project cascades to items and links."""
         mock_project = MagicMock()
         mock_project.id = "proj-123"

@@ -7,7 +7,7 @@ pytestmark = pytest.mark.integration
 
 
 @pytest.mark.asyncio
-async def test_link_create_and_fetch(async_session):
+async def test_link_create_and_fetch(async_session) -> None:
     async_session.add(Project(id="proj-1", name="Proj"))
     await async_session.commit()
 
@@ -23,7 +23,7 @@ async def test_link_create_and_fetch(async_session):
 
 
 @pytest.mark.asyncio
-async def test_delete_and_delete_by_item(async_session):
+async def test_delete_and_delete_by_item(async_session) -> None:
     async_session.add(Project(id="proj-1", name="Proj"))
     await async_session.commit()
 

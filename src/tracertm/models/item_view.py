@@ -1,6 +1,4 @@
-"""
-ItemView model for TraceRTM.
-"""
+"""ItemView model for TraceRTM."""
 
 from sqlalchemy import Boolean, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import UUID
@@ -10,9 +8,7 @@ from tracertm.models.base import Base, TimestampMixin
 
 
 class ItemView(Base, TimestampMixin):
-    """
-    Join table mapping items to views (many-to-many).
-    """
+    """Join table mapping items to views (many-to-many)."""
 
     __tablename__ = "item_views"
     __table_args__ = (

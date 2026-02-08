@@ -1,6 +1,4 @@
-"""
-CLI hooks integration tests
-"""
+"""CLI hooks integration tests."""
 
 import pytest
 from hooks import (
@@ -18,7 +16,7 @@ from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
 
 @pytest.mark.asyncio
 class TestCliHooks:
-    """Test CLI hooks"""
+    """Test CLI hooks."""
 
     @pytest.fixture
     def router(self):
@@ -36,15 +34,15 @@ class TestCliHooks:
 
         return MockSearchService()
 
-    async def test_cursor_agent_hook_initialization(self, router, registry, search_service):
-        """Test Cursor Agent hook initialization"""
+    async def test_cursor_agent_hook_initialization(self, router, registry, search_service) -> None:
+        """Test Cursor Agent hook initialization."""
         hook = CursorAgentHook(router, registry, search_service)
         assert hook is not None
         assert hook.router is not None
         assert hook.registry is not None
 
-    async def test_cursor_agent_pre_discovery(self, router, registry, search_service):
-        """Test Cursor Agent pre-discovery"""
+    async def test_cursor_agent_pre_discovery(self, router, registry, search_service) -> None:
+        """Test Cursor Agent pre-discovery."""
         hook = CursorAgentHook(router, registry, search_service)
         context = CursorAgentContext(
             action="generate",
@@ -56,8 +54,8 @@ class TestCliHooks:
         assert "route" in result
         assert "tools" in result
 
-    async def test_cursor_agent_post_selection(self, router, registry, search_service):
-        """Test Cursor Agent post-selection"""
+    async def test_cursor_agent_post_selection(self, router, registry, search_service) -> None:
+        """Test Cursor Agent post-selection."""
         hook = CursorAgentHook(router, registry, search_service)
         context = CursorAgentContext(
             action="generate",
@@ -68,13 +66,13 @@ class TestCliHooks:
         assert result["route"] == "api_development"
         assert result["status"] == "ready"
 
-    async def test_claude_cli_hook_initialization(self, router, registry, search_service):
-        """Test Claude CLI hook initialization"""
+    async def test_claude_cli_hook_initialization(self, router, registry, search_service) -> None:
+        """Test Claude CLI hook initialization."""
         hook = ClaudeCliHook(router, registry, search_service)
         assert hook is not None
 
-    async def test_claude_cli_pre_discovery(self, router, registry, search_service):
-        """Test Claude CLI pre-discovery"""
+    async def test_claude_cli_pre_discovery(self, router, registry, search_service) -> None:
+        """Test Claude CLI pre-discovery."""
         hook = ClaudeCliHook(router, registry, search_service)
         context = ClaudeCliContext(
             command="generate",
@@ -86,13 +84,13 @@ class TestCliHooks:
         assert "route" in result
         assert "tools" in result
 
-    async def test_auggie_hook_initialization(self, router, registry, search_service):
-        """Test Auggie hook initialization"""
+    async def test_auggie_hook_initialization(self, router, registry, search_service) -> None:
+        """Test Auggie hook initialization."""
         hook = AuggieHook(router, registry, search_service)
         assert hook is not None
 
-    async def test_auggie_pre_discovery(self, router, registry, search_service):
-        """Test Auggie pre-discovery"""
+    async def test_auggie_pre_discovery(self, router, registry, search_service) -> None:
+        """Test Auggie pre-discovery."""
         hook = AuggieHook(router, registry, search_service)
         context = AuggieContext(
             operation="transform",
@@ -104,13 +102,13 @@ class TestCliHooks:
         assert "route" in result
         assert "tools" in result
 
-    async def test_droid_hook_initialization(self, router, registry, search_service):
-        """Test Droid hook initialization"""
+    async def test_droid_hook_initialization(self, router, registry, search_service) -> None:
+        """Test Droid hook initialization."""
         hook = DroidHook(router, registry, search_service)
         assert hook is not None
 
-    async def test_droid_pre_discovery(self, router, registry, search_service):
-        """Test Droid pre-discovery"""
+    async def test_droid_pre_discovery(self, router, registry, search_service) -> None:
+        """Test Droid pre-discovery."""
         hook = DroidHook(router, registry, search_service)
         context = DroidContext(
             test_type="unit",
@@ -122,8 +120,8 @@ class TestCliHooks:
         assert "route" in result
         assert "tools" in result
 
-    async def test_hook_completion(self, router, registry, search_service):
-        """Test hook completion"""
+    async def test_hook_completion(self, router, registry, search_service) -> None:
+        """Test hook completion."""
         hook = CursorAgentHook(router, registry, search_service)
         context = CursorAgentContext(
             action="generate",

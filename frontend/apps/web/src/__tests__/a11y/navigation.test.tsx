@@ -402,7 +402,7 @@ describe('Custom Controls Keyboard Support', () => {
     customButton.focus();
 
     await globalThis.user.keyboard('{Enter}');
-    expect(handleClick).toHaveBeenCalledTimes(1);
+    expect(handleClick).toHaveBeenCalledOnce();
 
     await globalThis.user.keyboard(' ');
     expect(handleClick).toHaveBeenCalledTimes(2);

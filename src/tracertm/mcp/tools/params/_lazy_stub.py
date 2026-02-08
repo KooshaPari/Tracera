@@ -1,5 +1,4 @@
-"""
-Lazy loading stub for tools not yet fully migrated.
+"""Lazy loading stub for tools not yet fully migrated.
 
 This temporary module provides stub implementations that avoid importing
 the monolithic param.py file, preventing duplicate tool registrations.

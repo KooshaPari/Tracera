@@ -48,7 +48,7 @@ test.describe('Export Functionality', () => {
 
       // Set up download listener
       const downloadPromise = page.waitForEvent('download', {
-        timeout: 10000,
+        timeout: 10_000,
       });
 
       // Click export button
@@ -94,7 +94,7 @@ test.describe('Export Functionality', () => {
       await expect(exportButton).toBeVisible({ timeout: 5000 });
 
       const downloadPromise = page.waitForEvent('download', {
-        timeout: 10000,
+        timeout: 10_000,
       });
 
       await exportButton.click();
@@ -129,7 +129,7 @@ test.describe('Export Functionality', () => {
       const successMessage = page.getByText(/export.*success|export.*complete|downloaded/i).first();
 
       // This might be optional depending on implementation, but let's expect it for high integrity
-      await expect(successMessage).toBeVisible({ timeout: 10000 });
+      await expect(successMessage).toBeVisible({ timeout: 10_000 });
     });
   });
 
@@ -402,7 +402,7 @@ Test Item 2,Feature,In Progress,Medium`;
 
       // Check for success message
       const successMsg = page.getByText(/import.*success|imported.*items/i).first();
-      await expect(successMsg).toBeVisible({ timeout: 10000 });
+      await expect(successMsg).toBeVisible({ timeout: 10_000 });
 
       // Clean up
       fs.unlinkSync(csvFile);
@@ -623,7 +623,7 @@ Another Valid,Feature,In Progress,Medium`;
 
       // Should show partial results
       const resultMsg = page.getByText(/imported.*error|success.*error/i).first();
-      await expect(resultMsg).toBeVisible({ timeout: 10000 });
+      await expect(resultMsg).toBeVisible({ timeout: 10_000 });
 
       // Clean up
       fs.unlinkSync(csvFile);
@@ -729,7 +729,7 @@ test.describe('Export/Import Round-trip', () => {
 
     // Verify round-trip success
     const successMsg = page.getByText(/import.*success|completed/i).first();
-    await expect(successMsg).toBeVisible({ timeout: 10000 });
+    await expect(successMsg).toBeVisible({ timeout: 10_000 });
   });
 
   test('should handle CSV export/import round-trip with data transformation', async ({ page }) => {
@@ -824,7 +824,7 @@ test.describe('Export/Import Edge Cases', () => {
 
     // Find an empty project or create scenario
     const projectCards = page.locator("[data-testid*='project']");
-    await expect(projectCards.first()).toBeVisible({ timeout: 10000 });
+    await expect(projectCards.first()).toBeVisible({ timeout: 10_000 });
 
     // Click on first project
     await projectCards.first().click();

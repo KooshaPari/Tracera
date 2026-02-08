@@ -1,5 +1,4 @@
-"""
-Item factory for generating test items with realistic data.
+"""Item factory for generating test items with realistic data.
 
 Uses faker for data generation and provides automatic cleanup.
 """
@@ -10,8 +9,7 @@ fake = Faker()
 
 
 class ItemFactory:
-    """
-    Factory for creating test items.
+    """Factory for creating test items.
 
     Example:
         >>> factory = ItemFactory(session=db_session)
@@ -19,9 +17,8 @@ class ItemFactory:
         >>> items = factory.create_batch(10, view="CODE")
     """
 
-    def __init__(self, session=None):
-        """
-        Initialize factory with optional database session.
+    def __init__(self, session=None) -> None:
+        """Initialize factory with optional database session.
 
         Args:
             session: SQLAlchemy session for database operations
@@ -38,8 +35,7 @@ class ItemFactory:
         status: str = "todo",
         **kwargs,
     ):
-        """
-        Create a single test item.
+        """Create a single test item.
 
         Args:
             title: Item title (auto-generated if None)
@@ -84,8 +80,7 @@ class ItemFactory:
         return item_data
 
     def create_batch(self, count: int, **kwargs):
-        """
-        Create multiple test items.
+        """Create multiple test items.
 
         Args:
             count: Number of items to create
@@ -97,8 +92,7 @@ class ItemFactory:
         return [self.create(**kwargs) for _ in range(count)]
 
     def create_hierarchy(self, depth: int = 3, children_per_level: int = 3):
-        """
-        Create a hierarchical structure of items.
+        """Create a hierarchical structure of items.
 
         Args:
             depth: Number of levels in hierarchy
@@ -127,9 +121,8 @@ class ItemFactory:
         create_level(parent_id=root.get("id"), current_depth=1)
         return root
 
-    def cleanup(self):
-        """
-        Delete all items created by this factory.
+    def cleanup(self) -> None:
+        """Delete all items created by this factory.
 
         Called automatically by pytest fixture after each test.
         """

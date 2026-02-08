@@ -1,6 +1,4 @@
-"""
-Contract (Design by Contract) model.
-"""
+"""Contract (Design by Contract) model."""
 
 from datetime import datetime
 from typing import Any, ClassVar
@@ -20,7 +18,7 @@ class Contract(Base, TimestampMixin):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     project_id: Mapped[str] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False,
     )
     item_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("items.id", ondelete="CASCADE"), nullable=False)
     contract_number: Mapped[str] = mapped_column(String(50), nullable=False)

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Test script for TraceRTM gRPC integration.
+"""Test script for TraceRTM gRPC integration.
 
 This script tests the Python gRPC client connecting to the Go gRPC server.
 
@@ -23,7 +22,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 
-async def test_connection():
+async def test_connection() -> bool | None:
     """Test basic connection to gRPC server."""
     logger.info("Testing gRPC connection...")
 
@@ -32,18 +31,18 @@ async def test_connection():
             logger.info("✅ Successfully connected to gRPC server")
             return True
     except Exception as e:
-        logger.error(f"❌ Failed to connect: {e}")
+        logger.exception("❌ Failed to connect: %s", e)
         return False
 
 
-async def test_analyze_impact():
+async def test_analyze_impact() -> bool | None:
     """Test impact analysis."""
     logger.info("Testing impact analysis...")
 
     try:
         async with GoBackendClient() as client:
             result = await client.analyze_impact(
-                item_id="test-item-123", project_id="test-project-456", direction="both", max_depth=2
+                item_id="test-item-123", project_id="test-project-456", direction="both", max_depth=2,
             )
 
             logger.info("✅ Impact analysis succeeded")
@@ -54,11 +53,11 @@ async def test_analyze_impact():
 
             return True
     except Exception as e:
-        logger.error(f"❌ Impact analysis failed: {e}")
+        logger.exception("❌ Impact analysis failed: %s", e)
         return False
 
 
-async def test_find_cycles():
+async def test_find_cycles() -> bool | None:
     """Test cycle detection."""
     logger.info("Testing cycle detection...")
 
@@ -72,18 +71,18 @@ async def test_find_cycles():
 
             return True
     except Exception as e:
-        logger.error(f"❌ Cycle detection failed: {e}")
+        logger.exception("❌ Cycle detection failed: %s", e)
         return False
 
 
-async def test_calculate_path():
+async def test_calculate_path() -> bool | None:
     """Test path calculation."""
     logger.info("Testing path calculation...")
 
     try:
         async with GoBackendClient() as client:
             result = await client.calculate_path(
-                project_id="test-project-456", source_item_id="test-item-1", target_item_id="test-item-2"
+                project_id="test-project-456", source_item_id="test-item-1", target_item_id="test-item-2",
             )
 
             logger.info("✅ Path calculation succeeded")
@@ -92,11 +91,11 @@ async def test_calculate_path():
 
             return True
     except Exception as e:
-        logger.error(f"❌ Path calculation failed: {e}")
+        logger.exception("❌ Path calculation failed: %s", e)
         return False
 
 
-async def main():
+async def main() -> None:
     """Run all tests."""
     logger.info("=" * 60)
     logger.info("TraceRTM gRPC Integration Test Suite")
@@ -113,7 +112,7 @@ async def main():
 
     for test_name, test_func in tests:
         logger.info("")
-        logger.info(f"Running: {test_name}")
+        logger.info("Running: %s", test_name)
         logger.info("-" * 60)
 
         result = await test_func()
@@ -130,10 +129,10 @@ async def main():
 
     for test_name, result in results:
         status = "✅ PASS" if result else "❌ FAIL"
-        logger.info(f"{status}: {test_name}")
+        logger.info("%s: %s", status, test_name)
 
     logger.info("")
-    logger.info(f"Results: {passed}/{total} tests passed")
+    logger.info("Results: %s/%s tests passed", passed, total)
 
     if passed == total:
         logger.info("🎉 All tests passed!")

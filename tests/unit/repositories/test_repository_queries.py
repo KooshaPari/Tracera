@@ -16,7 +16,7 @@ pytestmark = pytest.mark.usefixtures("link_test_setup")
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_item_query_with_filters(db_session: AsyncSession):
+async def test_item_query_with_filters(db_session: AsyncSession) -> None:
     """Test querying items with dynamic filters."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Query Filters Test Project")
@@ -66,7 +66,7 @@ async def test_item_query_with_filters(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_item_get_by_view_with_pagination(db_session: AsyncSession):
+async def test_item_get_by_view_with_pagination(db_session: AsyncSession) -> None:
     """Test getting items by view with limit and offset."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Pagination Test Project")
@@ -98,7 +98,7 @@ async def test_item_get_by_view_with_pagination(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_item_count_by_status(db_session: AsyncSession):
+async def test_item_count_by_status(db_session: AsyncSession) -> None:
     """Test counting items grouped by status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Count Status Test Project")
@@ -142,7 +142,7 @@ async def test_item_count_by_status(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_item_get_children(db_session: AsyncSession):
+async def test_item_get_children(db_session: AsyncSession) -> None:
     """Test getting direct children of an item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Children Test Project")
@@ -184,7 +184,7 @@ async def test_item_get_children(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_item_get_descendants_recursive(db_session: AsyncSession):
+async def test_item_get_descendants_recursive(db_session: AsyncSession) -> None:
     """Test getting all descendants recursively."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Descendants Test Project")
@@ -226,7 +226,7 @@ async def test_item_get_descendants_recursive(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_item_get_ancestors_recursive(db_session: AsyncSession):
+async def test_item_get_ancestors_recursive(db_session: AsyncSession) -> None:
     """Test getting all ancestors recursively."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Ancestors Test Project")
@@ -271,7 +271,7 @@ async def test_item_get_ancestors_recursive(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_link_get_by_source_and_target(db_session: AsyncSession):
+async def test_link_get_by_source_and_target(db_session: AsyncSession) -> None:
     """Test getting links by source and target separately."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Link Source Target Test Project")
@@ -325,7 +325,7 @@ async def test_link_get_by_source_and_target(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_event_get_by_entity(db_session: AsyncSession):
+async def test_event_get_by_entity(db_session: AsyncSession) -> None:
     """Test getting events for a specific entity."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Event Entity Test Project")
@@ -366,7 +366,7 @@ async def test_event_get_by_entity(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_event_replay_entity_state(db_session: AsyncSession):
+async def test_event_replay_entity_state(db_session: AsyncSession) -> None:
     """Test replaying events to reconstruct entity state."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Event Replay Test Project")
@@ -401,7 +401,7 @@ async def test_event_replay_entity_state(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_event_replay_shows_deletion(db_session: AsyncSession):
+async def test_event_replay_shows_deletion(db_session: AsyncSession) -> None:
     """Test that event replay returns None for deleted entities."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Event Deletion Test Project")

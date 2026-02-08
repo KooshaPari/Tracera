@@ -74,7 +74,7 @@ def get_tracer() -> trace.Tracer:
 class TelemetryMiddleware(Middleware):
     """Middleware that instruments MCP tool calls with OpenTelemetry spans."""
 
-    def __init__(self, tracer: trace.Tracer | None = None):
+    def __init__(self, tracer: trace.Tracer | None = None) -> None:
         """Initialize telemetry middleware.
 
         Args:
@@ -158,7 +158,7 @@ class TelemetryMiddleware(Middleware):
 
                 # Add sanitized arguments as event
                 span.add_event(
-                    "tool.arguments", attributes={"arguments": json.dumps(sanitized_args, default=str)[:1000]}
+                    "tool.arguments", attributes={"arguments": json.dumps(sanitized_args, default=str)[:1000]},
                 )
 
                 # Add auth context if available
@@ -193,7 +193,7 @@ class TelemetryMiddleware(Middleware):
                 span.record_exception(e)
                 span.set_status(Status(StatusCode.ERROR, str(e)))
 
-                logger.error(f"[TELEMETRY] {tool_name} failed after {elapsed:.3f}s: {e}")
+                logger.exception(f"[TELEMETRY] {tool_name} failed after {elapsed:.3f}s: {e}")
 
                 # Re-raise to allow other middleware to handle
                 raise
@@ -206,7 +206,7 @@ class PerformanceMonitoringMiddleware(Middleware):
         self,
         slow_threshold_seconds: float = 5.0,
         very_slow_threshold_seconds: float = 30.0,
-    ):
+    ) -> None:
         """Initialize performance monitoring.
 
         Args:
@@ -249,7 +249,7 @@ class PerformanceMonitoringMiddleware(Middleware):
             # Warn about slow calls
             if elapsed >= self.very_slow_threshold:
                 logger.warning(
-                    f"[PERFORMANCE] VERY SLOW: {tool_name} took {elapsed:.2f}s (threshold: {self.very_slow_threshold}s)"
+                    f"[PERFORMANCE] VERY SLOW: {tool_name} took {elapsed:.2f}s (threshold: {self.very_slow_threshold}s)",
                 )
             elif elapsed >= self.slow_threshold:
                 logger.info(f"[PERFORMANCE] Slow: {tool_name} took {elapsed:.2f}s (threshold: {self.slow_threshold}s)")

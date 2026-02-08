@@ -1,6 +1,4 @@
-"""
-Agent Lock model for TraceRTM - represents locks on items held by agents.
-"""
+"""Agent Lock model for TraceRTM - represents locks on items held by agents."""
 
 import uuid
 from datetime import UTC, datetime
@@ -18,8 +16,7 @@ def generate_lock_uuid() -> str:
 
 
 class AgentLock(Base, TimestampMixin):
-    """
-    Represents a lock on an item held by an agent.
+    """Represents a lock on an item held by an agent.
 
     Locks are used to:
     - Prevent concurrent modifications

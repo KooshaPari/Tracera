@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Generate comprehensive Quality & Compliance items for SwiftRide project.
+"""Generate comprehensive Quality & Compliance items for SwiftRide project.
 
 Target: 570+ items across 7 types:
 - quality_gate: 60 items
@@ -30,15 +29,13 @@ DATABASE_URL = "postgresql://tracertm:tracertm_password@localhost:5432/tracertm"
 class QualityItemGenerator:
     """Generate quality and compliance items for SwiftRide."""
 
-    def __init__(self, conn: asyncpg.Connection):
+    def __init__(self, conn: asyncpg.Connection) -> None:
         self.conn = conn
         self.project_id = PROJECT_ID
         self.created_items = []
 
     async def generate_all(self):
         """Generate all quality and compliance items."""
-        print("🚀 Starting quality & compliance item generation for SwiftRide...")
-
         # Generate each type
         await self.generate_quality_gates()
         await self.generate_code_standards()
@@ -51,7 +48,6 @@ class QualityItemGenerator:
         # Create links between items
         await self.create_links()
 
-        print(f"\n✅ Generated {len(self.created_items)} quality & compliance items!")
         return self.created_items
 
     async def generate_slas(self) -> None:
@@ -117,10 +113,8 @@ class QualityItemGenerator:
 
         return item_id
 
-    async def generate_quality_gates(self):
+    async def generate_quality_gates(self) -> None:
         """Generate 60 quality gate items."""
-        print("\n📋 Generating Quality Gates (60 items)...")
-
         gates = [
             # Code Coverage Gates (10)
             {
@@ -722,12 +716,8 @@ class QualityItemGenerator:
                 tags=gate["tags"] if isinstance(gate.get("tags"), list) else None,
             )
 
-        print(f"  ✓ Generated {len(gates)} quality gates")
-
-    async def generate_code_standards(self):
+    async def generate_code_standards(self) -> None:
         """Generate 70 code standard items."""
-        print("\n📐 Generating Code Standards (70 items)...")
-
         standards = [
             # Python Standards (20)
             {
@@ -1441,12 +1431,8 @@ class QualityItemGenerator:
                 tags=standard["tags"] if isinstance(standard.get("tags"), list) else None,
             )
 
-        print(f"  ✓ Generated {len(standards)} code standards")
-
-    async def generate_performance_benchmarks(self):
+    async def generate_performance_benchmarks(self) -> None:
         """Generate 80 performance benchmark items."""
-        print("\n⚡ Generating Performance Benchmarks (80 items)...")
-
         # Will continue in next part due to length
         benchmarks = [
             # API Performance (15)
@@ -1660,33 +1646,23 @@ class QualityItemGenerator:
                 description=str(benchmark["description"]),
                 status="active",
                 priority=int(benchmark["priority"]) if isinstance(benchmark.get("priority"), (int, float)) else 3,
-                metadata=cast(dict[str, Any] | None, benchmark.get("metadata") if isinstance(benchmark.get("metadata"), dict) else None),
-                tags=cast(list[str] | None, benchmark.get("tags") if isinstance(benchmark.get("tags"), list) else None),
+                metadata=cast("dict[str, Any] | None", benchmark.get("metadata") if isinstance(benchmark.get("metadata"), dict) else None),
+                tags=cast("list[str] | None", benchmark.get("tags") if isinstance(benchmark.get("tags"), list) else None),
             )
-
-        print(f"  ✓ Generated {len(benchmarks)} performance benchmarks (showing first batch)")
 
     # ... methods continue for SLAs, bugs, technical debt, refactoring opportunities
 
 
-async def main():
+async def main() -> None:
     """Main execution function."""
     conn = None
     try:
         conn = await asyncpg.connect(DATABASE_URL)
 
         generator = QualityItemGenerator(conn)
-        items = await generator.generate_all()
+        await generator.generate_all()
 
-        print("\n" + "=" * 80)
-        print("📊 GENERATION SUMMARY")
-        print("=" * 80)
-        print(f"Total Items Created: {len(items)}")
-        print(f"Project ID: {PROJECT_ID}")
-        print("\n✅ Quality & Compliance items generated successfully!")
-
-    except Exception as e:
-        print(f"\n❌ Error: {e}")
+    except Exception:
         import traceback
 
         traceback.print_exc()

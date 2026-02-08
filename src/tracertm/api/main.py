@@ -20,7 +20,7 @@ from collections import defaultdict
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, cast
+from typing import Annotated, Any
 
 
 def _path_exists_str(path_str: str) -> bool:
@@ -56,7 +56,7 @@ except ImportError:
     # If python-dotenv not available, try to read .env manually
     env_path = Path(__file__).parent.parent.parent.parent / ".env"
     if env_path.exists():
-        with Path(env_path).open() as f:
+        with Path(env_path).open(encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#") and "=" in line:
@@ -196,7 +196,8 @@ def verify_refresh_token(refresh_token: str, *_: Any, **__: Any) -> dict[str, An
         result = workos_auth_service.authenticate_with_refresh_token(refresh_token)
         if isinstance(result, dict):
             return result
-        raise ValueError("Invalid refresh token response")
+        msg = "Invalid refresh token response"
+        raise ValueError(msg)
     except Exception as exc:
         raise ValueError(str(exc)) from exc
 
@@ -205,7 +206,8 @@ def generate_access_token(refresh_token_val: str, *_: Any, **__: Any) -> dict[st
     """Generate access tokens from refresh token exchange output."""
     result = verify_refresh_token(refresh_token_val)
     if not isinstance(result, dict):
-        raise ValueError("Unable to generate access token")
+        msg = "Unable to generate access token"
+        raise ValueError(msg)
     return {
         "access_token": result.get("access_token"),
         "refresh_token": result.get("refresh_token"),
@@ -372,7 +374,7 @@ def auth_guard(request: Request) -> dict[str, Any]:
     try:
         claims = verify_token(token)
     except Exception as exc:
-        logger.error(f"Authentication failed: {exc}")
+        logger.exception("Authentication failed: %s", exc)
         raise HTTPException(status_code=401, detail=f"Invalid token: {exc!s}")
 
     if not isinstance(claims, dict):
@@ -430,7 +432,7 @@ async def _shutdown_event_impl(app: FastAPI) -> None:
 
             await stop_grpc_server(app.state.grpc_server)
         except Exception as e:
-            logger.error("Error stopping gRPC server: %s", e)
+            logger.exception("Error stopping gRPC server: %s", e)
 
     # Close Go Backend Client
     if hasattr(app.state, "go_client") and app.state.go_client:
@@ -438,7 +440,7 @@ async def _shutdown_event_impl(app: FastAPI) -> None:
             await app.state.go_client.close()
             logger.info("Go Backend Client closed")
         except Exception as e:
-            logger.error(f"Error closing Go Backend Client: {e}")
+            logger.exception("Error closing Go Backend Client: %s", e)
 
     # Close NATS connection
     if hasattr(app.state, "nats_client") and app.state.nats_client:
@@ -446,7 +448,7 @@ async def _shutdown_event_impl(app: FastAPI) -> None:
             await app.state.nats_client.close()
             logger.info("NATS connection closed")
         except Exception as e:
-            logger.error(f"Error closing NATS connection: {e}")
+            logger.exception("Error closing NATS connection: %s", e)
 
 
 # Create FastAPI app
@@ -505,14 +507,14 @@ try:
         logger.info("ℹ️  APM instrumentation disabled (set TRACING_ENABLED=true to enable)")
 except ImportError as e:
     if tracing_enabled:
-        logger.error(f"APM instrumentation required but not available: {e}")
+        logger.exception("APM instrumentation required but not available: %s", e)
         raise
-    logger.warning(f"APM instrumentation not available: {e}")
+    logger.warning("APM instrumentation not available: %s", e)
 except Exception as e:
     if tracing_enabled:
-        logger.error(f"Failed to initialize APM instrumentation (required): {e}")
+        logger.exception("Failed to initialize APM instrumentation (required): %s", e)
         raise
-    logger.error(f"Failed to initialize APM instrumentation: {e}")
+    logger.exception("Failed to initialize APM instrumentation: %s", e)
 
 
 @app.exception_handler(RedisUnavailableError)
@@ -746,8 +748,8 @@ async def metrics() -> Response:
 
 @app.get("/api/v1/health")
 async def api_health_check(
-    db: AsyncSession = Depends(get_db),
-    cache: CacheService = Depends(get_cache_service),
+    db: Annotated[AsyncSession, Depends(get_db)],
+    cache: Annotated[CacheService, Depends(get_cache_service)],
 ):
     """API health check endpoint with component status."""
     import time
@@ -768,8 +770,8 @@ async def api_health_check(
         result = await db.execute(
             text(
                 "SELECT EXISTS (SELECT 1 FROM information_schema.tables "
-                "WHERE table_schema = 'public' AND table_name = 'test_cases')"
-            )
+                "WHERE table_schema = 'public' AND table_name = 'test_cases')",
+            ),
         )
         tables_ok = result.scalar() is True
         if not tables_ok:
@@ -871,7 +873,7 @@ async def get_csrf_token() -> dict[str, Any]:
 
 @app.get("/api/v1/cache/stats")
 async def cache_stats(
-    cache: CacheService = Depends(get_cache_service),
+    cache: Annotated[CacheService, Depends(get_cache_service)],
 ) -> dict[str, Any]:
     """Get cache statistics for monitoring."""
     stats = await cache.get_stats()
@@ -922,7 +924,7 @@ async def auth_callback(payload: AuthCallbackPayload):
 
 # WebSocket endpoint for real-time updates
 @app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebSocket) -> None:
     """WebSocket endpoint for real-time updates - wrapper for extracted implementation."""
     await _websocket_endpoint_impl(websocket, verify_token)
 
@@ -1033,8 +1035,8 @@ def _serialize_item_for_response(item: Any) -> dict[str, Any]:
 async def get_item(
     item_id: str,
     request: Request,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get a specific item."""
     try:
@@ -1142,7 +1144,7 @@ async def list_links_grouped(
             Item.deleted_at.is_(None),
             or_(Item.id == item_id, Item.external_id.ilike(f"{item_id}%")),
         )
-        .limit(1)
+        .limit(1),
     )
     resolved_id = resolved.scalar_one_or_none()
     if not resolved_id:
@@ -1162,7 +1164,7 @@ async def list_links_grouped(
                     Link.source_item_id == resolved_id,
                     Item.deleted_at.is_(None),
                     *([Item.view == view_upper] if view_upper else []),
-                )
+                ),
             )
         )
         .scalars()
@@ -1179,7 +1181,7 @@ async def list_links_grouped(
                     Link.target_item_id == resolved_id,
                     Item.deleted_at.is_(None),
                     *([Item.view == view_upper] if view_upper else []),
-                )
+                ),
             )
         )
         .scalars()
@@ -1242,9 +1244,9 @@ class LinkUpdate(BaseModel):
 async def create_link(
     request: Request,
     payload: LinkCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    cache: CacheService = Depends(get_cache_service),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    cache: Annotated[CacheService, Depends(get_cache_service)],
 ):
     """Create a new link."""
     ensure_write_permission(claims, action="create")
@@ -1279,8 +1281,8 @@ async def update_link(
     request: Request,
     link_id: str,
     request_body: LinkUpdate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Update link fields."""
     enforce_rate_limit(request, claims)
@@ -1317,8 +1319,8 @@ async def update_link(
 async def delete_link(
     request: Request,
     link_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete link."""
     enforce_rate_limit(request, claims)
@@ -1340,8 +1342,8 @@ async def get_traceability_gaps(
     project_id: str,
     from_view: str,
     to_view: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Find coverage gaps between two views."""
     enforce_rate_limit(request, claims)
@@ -1386,7 +1388,7 @@ async def get_traceability_matrix(
             project_id=project_id,
             source_view=source_view,
             target_view=target_view,
-        )
+        ),
     )
     return {
         "project_id": project_id,
@@ -1423,8 +1425,8 @@ async def get_reverse_impact(
 async def get_project_health(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get high-level health metrics for a project."""
     enforce_rate_limit(request, claims)
@@ -1448,8 +1450,8 @@ async def get_impact_analysis(
     request: Request,
     item_id: str,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get impact analysis for an item."""
     enforce_rate_limit(request, claims)
@@ -1473,8 +1475,8 @@ async def get_impact_analysis(
 async def detect_cycles(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Detect cycles in project dependency graph."""
     enforce_rate_limit(request, claims)
@@ -1497,9 +1499,9 @@ async def find_shortest_path(
     project_id: str,
     source_id: str,
     target_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    cache: CacheService = Depends(get_cache_service),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    cache: Annotated[CacheService, Depends(get_cache_service)],
 ):
     """Find shortest path between two items with Redis caching for 10x performance."""
     enforce_rate_limit(request, claims)
@@ -1542,9 +1544,9 @@ class ItemUpdate(BaseModel):
 async def create_item_endpoint(
     request: Request,
     payload: ItemCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    cache: CacheService = Depends(get_cache_service),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    cache: Annotated[CacheService, Depends(get_cache_service)],
 ):
     """Create an item with simple permission checks."""
     ensure_write_permission(claims, action="create")
@@ -1584,7 +1586,7 @@ async def create_item_endpoint(
         }
     except Exception as exc:
         await db.rollback()
-        logger.error(f"Error creating item: {exc}", exc_info=True)
+        logger.error("Error creating item: %s", exc, exc_info=True)
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
@@ -1593,9 +1595,9 @@ async def update_item_endpoint(
     request: Request,
     item_id: str,
     payload: ItemUpdate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    cache: CacheService = Depends(get_cache_service),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    cache: Annotated[CacheService, Depends(get_cache_service)],
 ):
     """Update an item with optimistic locking (if expected_version provided)."""
     ensure_write_permission(claims, action="update")
@@ -1611,7 +1613,7 @@ async def update_item_endpoint(
     update_fields = {
         key: value
         for key, value in payload.model_dump().items()
-        if key not in {"expected_version"} and value is not None
+        if key != "expected_version" and value is not None
     }
     expected_version = payload.expected_version
     if expected_version is None:
@@ -1639,7 +1641,7 @@ async def update_item_endpoint(
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except Exception as exc:
         await db.rollback()
-        logger.error(f"Error updating item: {exc}", exc_info=True)
+        logger.error("Error updating item: %s", exc, exc_info=True)
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
@@ -1647,8 +1649,8 @@ async def update_item_endpoint(
 async def delete_item_endpoint(
     request: Request,
     item_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete an item (permission-gated)."""
     ensure_write_permission(claims, action="delete")
@@ -1675,9 +1677,9 @@ class ItemBulkUpdate(BaseModel):
 async def bulk_update_items_endpoint(
     request: Request,
     payload: ItemBulkUpdate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    cache: CacheService = Depends(get_cache_service),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    cache: Annotated[CacheService, Depends(get_cache_service)],
 ):
     """Bulk update item status with optional preview."""
     ensure_write_permission(claims, action="bulk_update")
@@ -1721,8 +1723,8 @@ async def summarize_items_endpoint(
     request: Request,
     project_id: str,
     view: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Summarize items in a view (counts by status + samples)."""
     enforce_rate_limit(request, claims)
@@ -1738,7 +1740,7 @@ async def summarize_items_endpoint(
                 Item.view == view_upper,
                 Item.deleted_at.is_(None),
             )
-            .group_by(Item.status)
+            .group_by(Item.status),
         )
     ).all()
 
@@ -1752,7 +1754,7 @@ async def summarize_items_endpoint(
                     Item.deleted_at.is_(None),
                 )
                 .order_by(Item.updated_at.desc())
-                .limit(5)
+                .limit(5),
             )
         )
         .scalars()
@@ -1762,7 +1764,7 @@ async def summarize_items_endpoint(
     return {
         "project_id": project_id,
         "view": view_upper,
-        "status_counts": {s: c for s, c in status_counts},
+        "status_counts": dict(status_counts),
         "total": sum(count for _, count in status_counts),
         "samples": [
             {
@@ -1831,8 +1833,8 @@ app.post("/api/v1/auth/device/complete")(device_complete_endpoint)
 
 @app.get("/api/v1/accounts")
 async def list_accounts_endpoint(
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """List all accounts for the current user."""
     from tracertm.repositories.account_repository import AccountRepository
@@ -1854,8 +1856,8 @@ async def list_accounts_endpoint(
 @app.post("/api/v1/accounts")
 async def create_account_endpoint(
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create a new account."""
     import hashlib
@@ -1906,8 +1908,8 @@ async def create_account_endpoint(
 @app.post("/api/v1/accounts/{account_id}/switch")
 async def switch_account_endpoint(
     account_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Switch active account context."""
     from tracertm.repositories.account_repository import AccountRepository
@@ -1942,8 +1944,8 @@ async def switch_account_endpoint(
 @app.post("/api/v1/workflows/trigger")
 async def trigger_workflow_endpoint(
     payload: WorkflowTriggerPayload,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Trigger a Temporal workflow by name."""
     ensure_write_permission(claims, action="trigger_workflow")
@@ -1980,8 +1982,8 @@ async def trigger_workflow_endpoint(
 async def trigger_graph_snapshot(
     project_id: str,
     graph_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Trigger graph snapshot workflow in Temporal."""
     ensure_write_permission(claims, action="graph_snapshot")
@@ -2013,8 +2015,8 @@ async def trigger_graph_snapshot(
 async def trigger_graph_validation(
     project_id: str,
     graph_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Trigger graph validation workflow in Temporal."""
     ensure_write_permission(claims, action="graph_validate")
@@ -2045,8 +2047,8 @@ async def trigger_graph_validation(
 @app.post("/api/v1/workflows/graph-export")
 async def trigger_graph_export(
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Trigger graph export workflow in Temporal."""
     ensure_write_permission(claims, action="graph_export")
@@ -2078,8 +2080,8 @@ async def trigger_graph_diff(
     graph_id: str,
     from_version: int,
     to_version: int,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Trigger graph diff workflow in Temporal."""
     ensure_write_permission(claims, action="graph_diff")
@@ -2176,7 +2178,7 @@ async def trigger_integrations_retry(
 
 @app.get("/api/v1/temporal/summary")
 async def get_temporal_summary(
-    claims: dict[str, Any] = Depends(auth_guard),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
     workflow_limit: int = 100,
     schedule_limit: int = 200,
 ):
@@ -2241,8 +2243,8 @@ async def list_workflow_runs(
 @app.post("/api/v1/projects/{project_id}/workflows/schedules/bootstrap")
 async def bootstrap_workflow_schedules(
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create default Temporal schedules for graph snapshots and integration retries."""
     ensure_project_access(project_id, claims)
@@ -2262,7 +2264,7 @@ async def bootstrap_workflow_schedules(
         select(Graph.id).where(
             Graph.project_id == project_id,
             Graph.graph_type == "default",
-        )
+        ),
     )
     graph_id = graph_result.scalar_one_or_none()
     if not graph_id:
@@ -2343,7 +2345,7 @@ async def bootstrap_workflow_schedules(
 @app.get("/api/v1/projects/{project_id}/workflows/schedules")
 async def list_workflow_schedules(
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
     limit: int = 100,
     offset: int = 0,
     db: AsyncSession = Depends(get_db),
@@ -2381,8 +2383,8 @@ async def list_workflow_schedules(
 async def delete_workflow_schedule(
     project_id: str,
     cron_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete a Temporal schedule."""
     ensure_project_access(project_id, claims)
@@ -2483,9 +2485,9 @@ async def list_projects(
 @app.get("/api/v1/projects/{project_id}")
 async def get_project(
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    cache: CacheService = Depends(get_cache_service),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    cache: Annotated[CacheService, Depends(get_cache_service)],
 ):
     """Get a specific project (cached for 5 minutes)."""
     ensure_project_access(project_id, claims)
@@ -2538,9 +2540,9 @@ class CreateProjectRequest(BaseModel):
 @app.post("/api/v1/projects")
 async def create_project(
     request: CreateProjectRequest,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    cache: CacheService = Depends(get_cache_service),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    cache: Annotated[CacheService, Depends(get_cache_service)],
 ):
     """Create a new project."""
     ensure_write_permission(claims, action="create_project")
@@ -2572,7 +2574,7 @@ async def create_project(
         }
     except Exception as exc:
         await db.rollback()
-        logger.error(f"Error creating project: {exc}", exc_info=True)
+        logger.error("Error creating project: %s", exc, exc_info=True)
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
@@ -2588,8 +2590,8 @@ class UpdateProjectRequest(BaseModel):
 async def update_project(
     project_id: str,
     request: UpdateProjectRequest,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Update a project."""
     ensure_project_access(project_id, claims)
@@ -2618,8 +2620,8 @@ async def update_project(
 @app.delete("/api/v1/projects/{project_id}")
 async def delete_project(
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete a project."""
     ensure_project_access(project_id, claims)
@@ -2707,8 +2709,8 @@ class ImportRequest(BaseModel):
 async def import_project(
     project_id: str,
     request: ImportRequest,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Import project data into an existing project (items only for json/csv)."""
     ensure_project_access(project_id, claims)
@@ -2735,8 +2737,8 @@ async def import_project(
 @app.post("/api/v1/import")
 async def import_full_project(
     body: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Import a full project from canonical JSON (project + items + links). Creates new project and resolves item ids for links."""
     ensure_write_permission(claims, action="import_project")
@@ -2759,8 +2761,8 @@ async def import_full_project(
 async def create_execution(
     project_id: str,
     body: ExecutionCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create a new execution (status=pending)."""
     ensure_project_access(project_id, claims)
@@ -2820,7 +2822,7 @@ async def list_executions(
 
     service = ExecutionService(db)
     executions = await service.list_by_project(
-        project_id, status=status, execution_type=execution_type, limit=limit, offset=offset
+        project_id, status=status, execution_type=execution_type, limit=limit, offset=offset,
     )
     return ExecutionListResponse(
         executions=[
@@ -2856,8 +2858,8 @@ async def list_executions(
 async def get_execution(
     project_id: str,
     execution_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get a single execution by ID."""
     ensure_project_access(project_id, claims)
@@ -2897,8 +2899,8 @@ async def get_execution(
 async def start_execution(
     project_id: str,
     execution_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Start execution (create container, set status=running)."""
     ensure_project_access(project_id, claims)
@@ -2920,8 +2922,8 @@ async def complete_execution(
     project_id: str,
     execution_id: str,
     body: ExecutionComplete,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Complete execution (stop container, set status and duration)."""
     ensure_project_access(project_id, claims)
@@ -2983,8 +2985,8 @@ async def list_execution_artifacts(
 @app.get("/api/v1/projects/{project_id}/execution-config")
 async def get_execution_config(
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get execution environment config for project."""
     ensure_project_access(project_id, claims)
@@ -3002,8 +3004,8 @@ async def get_execution_config(
 async def upsert_execution_config(
     project_id: str,
     body: ExecutionEnvironmentConfigUpdate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create or update execution environment config for project."""
     ensure_project_access(project_id, claims)
@@ -3022,8 +3024,8 @@ async def download_artifact(
     project_id: str,
     execution_id: str,
     artifact_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Download an artifact file."""
     from fastapi.responses import FileResponse
@@ -3058,8 +3060,8 @@ async def download_artifact(
 async def codex_review_image(
     project_id: str,
     body: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Have Codex review an image artifact."""
     ensure_project_access(project_id, claims)
@@ -3107,8 +3109,8 @@ async def codex_review_image(
 async def codex_review_video(
     project_id: str,
     body: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Have Codex review a video artifact."""
     ensure_project_access(project_id, claims)
@@ -3127,7 +3129,7 @@ async def codex_review_video(
         raise HTTPException(status_code=400, detail="artifact_id required")
 
     interaction = await codex_service.review_video(
-        artifact_id, prompt, project_id, execution_id=execution_id, max_frames=max_frames
+        artifact_id, prompt, project_id, execution_id=execution_id, max_frames=max_frames,
     )
     await db.commit()
 
@@ -3213,8 +3215,8 @@ async def list_codex_interactions(
 @app.get("/api/v1/projects/{project_id}/codex/auth-status")
 async def codex_auth_status(
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Check Codex CLI authentication status."""
     ensure_project_access(project_id, claims)
@@ -3239,8 +3241,8 @@ async def codex_auth_status(
 @app.get("/api/v1/projects/{project_id}/sync/status")
 async def get_sync_status(
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get sync status for a project."""
     ensure_project_access(project_id, claims)
@@ -3260,8 +3262,8 @@ async def get_sync_status(
 @app.post("/api/v1/projects/{project_id}/sync")
 async def sync_project(
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Execute sync for a project."""
     ensure_project_access(project_id, claims)
@@ -3290,8 +3292,8 @@ class AdvancedSearchRequest(BaseModel):
 async def advanced_search(
     project_id: str,
     request: AdvancedSearchRequest,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Advanced search with filters and query."""
     ensure_project_access(project_id, claims)
@@ -3326,7 +3328,7 @@ async def get_graph_neighbors(
     repo = LinkRepository(db)
 
     neighbors: list[dict[str, Any]] = []
-    if direction in ("out", "both"):
+    if direction in {"out", "both"}:
         out_links = await repo.get_by_source(item_id, graph_id=graph_id)
         neighbors.extend(
             {
@@ -3339,7 +3341,7 @@ async def get_graph_neighbors(
             for link in out_links
         )
 
-    if direction in ("in", "both"):
+    if direction in {"in", "both"}:
         in_links = await repo.get_by_target(item_id, graph_id=graph_id)
         neighbors.extend(
             {
@@ -3471,8 +3473,8 @@ async def get_graph_projection(
 async def validate_graph(
     project_id: str,
     graph_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Validate a graph against edge/node rules."""
     ensure_project_access(project_id, claims)
@@ -3542,7 +3544,7 @@ async def diff_graph_snapshots(
     graph_id: str,
     from_version: int,
     to_version: int,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Diff two graph snapshots."""
     from tracertm.services.graph_snapshot_service import GraphSnapshotService
@@ -3560,7 +3562,7 @@ async def diff_graph_snapshots(
 async def graph_report(
     project_id: str,
     graph_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Graph QA report for coverage and missing mappings."""
     from tracertm.services.graph_report_service import GraphReportService
@@ -3644,8 +3646,8 @@ async def list_problems(
 async def get_problem(
     request: Request,
     problem_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get a specific problem by ID."""
     enforce_rate_limit(request, claims)
@@ -3715,8 +3717,8 @@ async def create_problem(
     request: Request,
     project_id: str,
     problem_data: ProblemCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create a new problem."""
     enforce_rate_limit(request, claims)
@@ -3754,8 +3756,8 @@ async def update_problem(
     request: Request,
     problem_id: str,
     problem_data: ProblemUpdate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Update a problem."""
     enforce_rate_limit(request, claims)
@@ -3791,8 +3793,8 @@ async def transition_problem_status(
     request: Request,
     problem_id: str,
     transition: ProblemStatusTransition,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Transition problem to a new status."""
     enforce_rate_limit(request, claims)
@@ -3818,8 +3820,8 @@ async def record_problem_rca(
     request: Request,
     problem_id: str,
     rca_data: RCARequest,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Record Root Cause Analysis for a problem."""
     enforce_rate_limit(request, claims)
@@ -3851,8 +3853,8 @@ async def update_problem_workaround(
     request: Request,
     problem_id: str,
     workaround_data: WorkaroundUpdate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Update workaround information for a problem."""
     enforce_rate_limit(request, claims)
@@ -3876,8 +3878,8 @@ async def update_problem_permanent_fix(
     request: Request,
     problem_id: str,
     fix_data: PermanentFixUpdate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Update permanent fix information for a problem."""
     enforce_rate_limit(request, claims)
@@ -3901,8 +3903,8 @@ async def close_problem(
     request: Request,
     problem_id: str,
     closure_data: ProblemClosure,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Close a problem."""
     enforce_rate_limit(request, claims)
@@ -3957,8 +3959,8 @@ async def get_problem_activities(
 async def delete_problem(
     request: Request,
     problem_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete a problem (soft delete)."""
     enforce_rate_limit(request, claims)
@@ -3978,8 +3980,8 @@ async def delete_problem(
 async def get_problem_stats(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get problem statistics for a project."""
     enforce_rate_limit(request, claims)
@@ -4067,8 +4069,8 @@ async def list_processes(
 async def get_process(
     request: Request,
     process_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get a specific process by ID."""
     enforce_rate_limit(request, claims)
@@ -4123,8 +4125,8 @@ async def create_process(
     request: Request,
     project_id: str,
     process_data: ProcessCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create a new process."""
     enforce_rate_limit(request, claims)
@@ -4172,8 +4174,8 @@ async def update_process(
     request: Request,
     process_id: str,
     process_data: ProcessUpdate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Update a process."""
     enforce_rate_limit(request, claims)
@@ -4213,8 +4215,8 @@ async def create_process_version(
     request: Request,
     process_id: str,
     version_data: ProcessVersionCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create a new version of a process."""
     enforce_rate_limit(request, claims)
@@ -4244,8 +4246,8 @@ async def activate_process(
     request: Request,
     process_id: str,
     activation_data: ProcessActivation,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Activate a process version."""
     enforce_rate_limit(request, claims)
@@ -4273,8 +4275,8 @@ async def deprecate_process(
     request: Request,
     process_id: str,
     deprecation_data: ProcessDeprecation,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Deprecate a process."""
     enforce_rate_limit(request, claims)
@@ -4298,8 +4300,8 @@ async def deprecate_process(
 async def delete_process(
     request: Request,
     process_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete a process (soft delete)."""
     enforce_rate_limit(request, claims)
@@ -4319,8 +4321,8 @@ async def delete_process(
 async def get_process_stats(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get process statistics for a project."""
     enforce_rate_limit(request, claims)
@@ -4346,8 +4348,8 @@ async def create_process_execution(
     request: Request,
     process_id: str,
     execution_data: ProcessExecutionCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Start a new execution of a process."""
     enforce_rate_limit(request, claims)
@@ -4412,8 +4414,8 @@ async def list_process_executions(
 async def get_execution_by_id_endpoint(
     request: Request,
     execution_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get a specific process execution."""
     enforce_rate_limit(request, claims)
@@ -4448,8 +4450,8 @@ async def get_execution_by_id_endpoint(
 async def start_execution_endpoint(
     request: Request,
     execution_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Start a pending execution."""
     enforce_rate_limit(request, claims)
@@ -4470,8 +4472,8 @@ async def advance_execution(
     request: Request,
     execution_id: str,
     stage_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Advance execution to next stage."""
     enforce_rate_limit(request, claims)
@@ -4496,8 +4498,8 @@ async def complete_execution_endpoint(
     request: Request,
     execution_id: str,
     completion_data: ProcessExecutionComplete,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Complete a process execution."""
     enforce_rate_limit(request, claims)
@@ -4521,6 +4523,8 @@ async def complete_execution_endpoint(
 # =============================================================================
 # Test Case Management Endpoints (Quality Engineering)
 # =============================================================================
+
+import operator
 
 from tracertm.repositories.test_case_repository import TestCaseRepository
 from tracertm.schemas.test_case import (
@@ -4598,8 +4602,8 @@ async def list_test_cases(
 async def get_test_case(
     request: Request,
     test_case_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get a specific test case by ID."""
     enforce_rate_limit(request, claims)
@@ -4657,8 +4661,8 @@ async def create_test_case(
     request: Request,
     project_id: str,
     test_case_data: TestCaseCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create a new test case."""
     enforce_rate_limit(request, claims)
@@ -4705,8 +4709,8 @@ async def update_test_case(
     request: Request,
     test_case_id: str,
     test_case_data: TestCaseUpdate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Update a test case."""
     enforce_rate_limit(request, claims)
@@ -4749,8 +4753,8 @@ async def transition_test_case_status(
     request: Request,
     test_case_id: str,
     transition: TestCaseStatusTransition,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Transition test case to a new status."""
     enforce_rate_limit(request, claims)
@@ -4776,8 +4780,8 @@ async def submit_test_case_for_review(
     request: Request,
     test_case_id: str,
     review_data: TestCaseReview,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Submit a test case for review."""
     enforce_rate_limit(request, claims)
@@ -4802,8 +4806,8 @@ async def approve_test_case(
     request: Request,
     test_case_id: str,
     review_data: TestCaseReview,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Approve a test case after review."""
     enforce_rate_limit(request, claims)
@@ -4828,8 +4832,8 @@ async def deprecate_test_case(
     request: Request,
     test_case_id: str,
     deprecation_data: TestCaseDeprecation,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Deprecate a test case."""
     enforce_rate_limit(request, claims)
@@ -4887,8 +4891,8 @@ async def get_test_case_activities(
 async def delete_test_case(
     request: Request,
     test_case_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete a test case (soft delete)."""
     enforce_rate_limit(request, claims)
@@ -4908,8 +4912,8 @@ async def delete_test_case(
 async def get_test_case_stats(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get test case statistics for a project."""
     enforce_rate_limit(request, claims)
@@ -5009,8 +5013,8 @@ async def list_test_suites(
 async def get_test_suite(
     request: Request,
     suite_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get a test suite by ID."""
     enforce_rate_limit(request, claims)
@@ -5062,8 +5066,8 @@ async def create_test_suite(
     request: Request,
     project_id: str,
     suite_data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create a new test suite."""
     enforce_rate_limit(request, claims)
@@ -5102,8 +5106,8 @@ async def update_test_suite(
     request: Request,
     suite_id: str,
     suite_data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Update a test suite."""
     enforce_rate_limit(request, claims)
@@ -5136,8 +5140,8 @@ async def transition_test_suite_status(
     request: Request,
     suite_id: str,
     status_data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Transition test suite status."""
     enforce_rate_limit(request, claims)
@@ -5172,8 +5176,8 @@ async def add_test_case_to_suite(
     request: Request,
     suite_id: str,
     tc_data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Add a test case to a suite."""
     enforce_rate_limit(request, claims)
@@ -5207,8 +5211,8 @@ async def remove_test_case_from_suite(
     request: Request,
     suite_id: str,
     test_case_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Remove a test case from a suite."""
     enforce_rate_limit(request, claims)
@@ -5236,8 +5240,8 @@ async def remove_test_case_from_suite(
 async def get_suite_test_cases(
     request: Request,
     suite_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get test cases in a suite."""
     enforce_rate_limit(request, claims)
@@ -5316,8 +5320,8 @@ async def get_test_suite_activities(
 async def delete_test_suite(
     request: Request,
     suite_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete a test suite."""
     enforce_rate_limit(request, claims)
@@ -5342,8 +5346,8 @@ async def delete_test_suite(
 async def get_test_suite_stats(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get test suite statistics for a project."""
     enforce_rate_limit(request, claims)
@@ -5438,8 +5442,8 @@ async def list_test_runs(
 async def get_test_run(
     request: Request,
     run_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get a test run by ID."""
     enforce_rate_limit(request, claims)
@@ -5498,8 +5502,8 @@ async def create_test_run(
     request: Request,
     project_id: str,
     run_data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create a new test run."""
     enforce_rate_limit(request, claims)
@@ -5536,8 +5540,8 @@ async def update_test_run(
     request: Request,
     run_id: str,
     run_data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Update a test run."""
     enforce_rate_limit(request, claims)
@@ -5677,8 +5681,8 @@ async def submit_test_result(
     request: Request,
     run_id: str,
     result_data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Submit a single test result."""
     enforce_rate_limit(request, claims)
@@ -5726,8 +5730,8 @@ async def submit_bulk_test_results(
     request: Request,
     run_id: str,
     bulk_data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Submit multiple test results at once."""
     enforce_rate_limit(request, claims)
@@ -5852,8 +5856,8 @@ async def get_test_run_activities(
 async def delete_test_run(
     request: Request,
     run_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete a test run."""
     enforce_rate_limit(request, claims)
@@ -5878,8 +5882,8 @@ async def delete_test_run(
 async def get_test_run_stats(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get test run statistics for a project."""
     enforce_rate_limit(request, claims)
@@ -6026,8 +6030,8 @@ async def create_test_coverage(
 async def get_test_coverage(
     request: Request,
     coverage_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get a test coverage mapping by ID."""
     enforce_rate_limit(request, claims)
@@ -6117,8 +6121,8 @@ async def update_test_coverage(
 async def delete_test_coverage(
     request: Request,
     coverage_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete a test coverage mapping."""
     enforce_rate_limit(request, claims)
@@ -6214,8 +6218,8 @@ async def get_coverage_gaps(
 async def get_test_case_coverage(
     request: Request,
     test_case_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get coverage summary for a specific test case."""
     enforce_rate_limit(request, claims)
@@ -6230,8 +6234,8 @@ async def get_test_case_coverage(
 async def get_requirement_coverage(
     request: Request,
     requirement_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get all test cases covering a specific requirement."""
     enforce_rate_limit(request, claims)
@@ -6262,8 +6266,8 @@ async def get_requirement_coverage(
 async def get_coverage_stats(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get coverage statistics for a project."""
     enforce_rate_limit(request, claims)
@@ -6407,8 +6411,8 @@ class WebhookCreateRequest(BaseModel):
 async def create_webhook(
     request: Request,
     payload: WebhookCreateRequest,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create a new webhook integration."""
     enforce_rate_limit(request, claims)
@@ -6463,8 +6467,8 @@ async def create_webhook(
 async def get_webhook(
     request: Request,
     webhook_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get a webhook by ID."""
     enforce_rate_limit(request, claims)
@@ -6533,8 +6537,8 @@ async def update_webhook(
     request: Request,
     webhook_id: str,
     payload: WebhookUpdateRequest,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Update a webhook."""
     enforce_rate_limit(request, claims)
@@ -6587,8 +6591,8 @@ async def set_webhook_status(
     request: Request,
     webhook_id: str,
     payload: WebhookStatusRequest,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Update webhook status."""
     enforce_rate_limit(request, claims)
@@ -6603,7 +6607,7 @@ async def set_webhook_status(
 
     ensure_project_access(webhook.project_id, claims)
 
-    if payload.status not in ["active", "paused", "disabled"]:
+    if payload.status not in {"active", "paused", "disabled"}:
         raise HTTPException(status_code=400, detail="Invalid status")
 
     webhook = await repo.set_status(webhook_id, payload.status)
@@ -6620,8 +6624,8 @@ async def set_webhook_status(
 async def regenerate_webhook_secret(
     request: Request,
     webhook_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Regenerate the webhook secret."""
     enforce_rate_limit(request, claims)
@@ -6650,8 +6654,8 @@ async def regenerate_webhook_secret(
 async def delete_webhook(
     request: Request,
     webhook_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete a webhook."""
     enforce_rate_limit(request, claims)
@@ -6737,8 +6741,8 @@ async def get_webhook_logs(
 async def get_webhook_stats(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get webhook statistics for a project."""
     enforce_rate_limit(request, claims)
@@ -6759,10 +6763,9 @@ async def get_webhook_stats(
 async def receive_inbound_webhook(
     request: Request,
     webhook_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    """
-    Receive inbound webhook from CI/CD systems.
+    """Receive inbound webhook from CI/CD systems.
     This endpoint does NOT require auth_guard - it uses HMAC signature verification.
     """
     from tracertm.services.webhook_service import WebhookService
@@ -6828,8 +6831,8 @@ async def receive_inbound_webhook(
 async def get_qa_metrics_summary(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get comprehensive QA metrics summary for dashboard."""
     enforce_rate_limit(request, claims)
@@ -6925,10 +6928,10 @@ async def get_pass_rate_trend(
                 TestRun.project_id == project_id,
                 TestRun.completed_at >= cutoff_date,
                 TestRun.completed_at.isnot(None),
-            )
+            ),
         )
         .group_by(func.date(TestRun.completed_at))
-        .order_by(func.date(TestRun.completed_at))
+        .order_by(func.date(TestRun.completed_at)),
     )
 
     rows = result.all()
@@ -6953,8 +6956,8 @@ async def get_pass_rate_trend(
 async def get_coverage_metrics(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get detailed coverage metrics."""
     enforce_rate_limit(request, claims)
@@ -6999,7 +7002,7 @@ async def get_coverage_metrics(
         "by_view": coverage_by_view,
         "by_type": stats.get("by_type", {}),
         "gaps_count": gaps.get("uncovered_count", 0),
-        "high_priority_gaps": len([g for g in gaps.get("gaps", []) if g.get("priority") in ["high", "critical"]]),
+        "high_priority_gaps": len([g for g in gaps.get("gaps", []) if g.get("priority") in {"high", "critical"}]),
     }
 
 
@@ -7007,8 +7010,8 @@ async def get_coverage_metrics(
 async def get_defect_density(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get defect density metrics (failed tests per test case)."""
     enforce_rate_limit(request, claims)
@@ -7027,7 +7030,7 @@ async def get_defect_density(
         )
         .join(TestRun, TestRun.id == TestResult.run_id)
         .where(TestRun.project_id == project_id)
-        .group_by(TestResult.test_case_id)
+        .group_by(TestResult.test_case_id),
     )
 
     rows = result.all()
@@ -7052,7 +7055,7 @@ async def get_defect_density(
             })
 
     # Sort by failure count
-    test_cases_with_failures.sort(key=lambda x: x["failure_count"], reverse=True)
+    test_cases_with_failures.sort(key=operator.itemgetter("failure_count"), reverse=True)
 
     return {
         "project_id": project_id,
@@ -7068,8 +7071,8 @@ async def get_defect_density(
 async def get_flaky_tests(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get flaky test analysis."""
     enforce_rate_limit(request, claims)
@@ -7090,10 +7093,10 @@ async def get_flaky_tests(
             and_(
                 TestRun.project_id == project_id,
                 TestResult.is_flaky.is_(True),
-            )
+            ),
         )
         .group_by(TestResult.test_case_id)
-        .order_by(func.count().desc())
+        .order_by(func.count().desc()),
     )
 
     flaky_tests = [
@@ -7116,10 +7119,10 @@ async def get_flaky_tests(
             and_(
                 TestRun.project_id == project_id,
                 TestResult.completed_at.isnot(None),
-            )
+            ),
         )
         .group_by(TestResult.test_case_id, func.date(TestResult.completed_at))
-        .having(func.count(func.distinct(TestResult.status)) > 1)
+        .having(func.count(func.distinct(TestResult.status)) > 1),
     )
 
     inconsistent_days = {}
@@ -7134,7 +7137,7 @@ async def get_flaky_tests(
             "test_case_id": tc_id,
             "inconsistent_days": count,
         }
-        for tc_id, count in sorted(inconsistent_days.items(), key=lambda x: x[1], reverse=True)
+        for tc_id, count in sorted(inconsistent_days.items(), key=operator.itemgetter(1), reverse=True)
     ][:20]
 
     return {
@@ -7172,10 +7175,10 @@ async def get_execution_history(
             and_(
                 TestRun.project_id == project_id,
                 TestRun.created_at >= cutoff_date,
-            )
+            ),
         )
         .order_by(TestRun.created_at.desc())
-        .limit(50)
+        .limit(50),
     )
 
     runs = result.scalars().all()
@@ -7213,8 +7216,8 @@ async def get_execution_history(
 async def start_oauth_flow(
     request: Request,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Start OAuth flow for an external integration provider."""
     import secrets
@@ -7285,8 +7288,8 @@ async def start_oauth_flow(
 async def oauth_callback(
     request: Request,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Handle OAuth callback and store credentials."""
     from tracertm.api.handlers.oauth import oauth_callback as oauth_callback_handler
@@ -7356,8 +7359,8 @@ async def list_credentials(
 async def validate_credential(
     request: Request,
     credential_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Validate an integration credential."""
     from datetime import datetime
@@ -7430,8 +7433,8 @@ async def validate_credential(
 async def delete_credential(
     request: Request,
     credential_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete an integration credential."""
     from tracertm.repositories.integration_repository import IntegrationCredentialRepository
@@ -7504,8 +7507,8 @@ async def list_mappings(
 async def create_mapping(
     request: Request,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create a new integration mapping."""
     from tracertm.repositories.integration_repository import (
@@ -7561,7 +7564,7 @@ async def create_mapping(
                 Item.project_id == project_id,
                 Item.item_type == "project_root",
                 Item.title == "Integration Root",
-            )
+            ),
         )
         root_item = result.scalar_one_or_none()
         if not root_item:
@@ -7620,8 +7623,8 @@ async def update_mapping(
     request: Request,
     mapping_id: str,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Update an integration mapping."""
     from tracertm.repositories.integration_repository import (
@@ -7681,8 +7684,8 @@ async def update_mapping(
 async def delete_mapping(
     request: Request,
     mapping_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete an integration mapping."""
     from tracertm.repositories.integration_repository import (
@@ -7719,8 +7722,8 @@ async def delete_mapping(
 async def get_integration_sync_status(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get sync status summary for a project."""
     from sqlalchemy import func, select
@@ -7749,7 +7752,7 @@ async def get_integration_sync_status(
         select(IntegrationSyncQueue.status, func.count().label("count"))
         .join(IntegrationMapping)
         .where(IntegrationMapping.project_id == project_id)
-        .group_by(IntegrationSyncQueue.status)
+        .group_by(IntegrationSyncQueue.status),
     )
 
     queue_stats = {"pending": 0, "processing": 0, "failed": 0, "completed": 0}
@@ -7764,7 +7767,7 @@ async def get_integration_sync_status(
         .join(IntegrationMapping)
         .where(IntegrationMapping.project_id == project_id)
         .order_by(IntegrationSyncLog.created_at.desc())
-        .limit(10)
+        .limit(10),
     )
 
     recent_syncs = [
@@ -7805,8 +7808,8 @@ async def get_integration_sync_status(
 async def trigger_sync(
     request: Request,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Trigger a manual sync for a mapping or credential."""
     from tracertm.repositories.integration_repository import (
@@ -7974,8 +7977,8 @@ async def resolve_conflict(
     request: Request,
     conflict_id: str,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Resolve a sync conflict."""
     from tracertm.repositories.integration_repository import (
@@ -7990,7 +7993,7 @@ async def resolve_conflict(
     resolution = data.get("resolution")  # "local", "external", "merge", "skip"
     merged_value = data.get("merged_value")
 
-    if resolution not in ["local", "external", "merge", "skip"]:
+    if resolution not in {"local", "external", "merge", "skip"}:
         raise HTTPException(status_code=400, detail="Invalid resolution strategy")
 
     if resolution == "merge" and not merged_value:
@@ -8181,8 +8184,8 @@ async def list_github_repos(
 async def create_github_repo(
     request: Request,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create a new GitHub repository."""
     from tracertm.clients.github_client import GitHubClient
@@ -8335,8 +8338,8 @@ async def list_github_issues(
 @app.get("/api/v1/integrations/github/app/install-url")
 async def get_github_app_install_url(
     account_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get GitHub App installation URL for an account."""
     from tracertm.config.github_app import get_github_app_config
@@ -8373,7 +8376,7 @@ async def get_github_app_install_url(
 @app.post("/api/v1/integrations/github/app/webhook")
 async def github_app_webhook_endpoint(
     request: Request,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Handle GitHub App webhook events."""
     from tracertm.api.handlers.webhooks import github_app_webhook
@@ -8384,8 +8387,8 @@ async def github_app_webhook_endpoint(
 @app.get("/api/v1/integrations/github/app/installations")
 async def list_github_app_installations(
     account_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """List GitHub App installations for an account."""
     from tracertm.repositories.account_repository import AccountRepository
@@ -8426,8 +8429,8 @@ async def list_github_app_installations(
 async def link_github_app_installation(
     installation_id: str,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Link a GitHub App installation to an account."""
     from tracertm.repositories.account_repository import AccountRepository
@@ -8467,8 +8470,8 @@ async def link_github_app_installation(
 @app.delete("/api/v1/integrations/github/app/installations/{installation_id}")
 async def delete_github_app_installation(
     installation_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete a GitHub App installation."""
     from tracertm.repositories.account_repository import AccountRepository
@@ -8583,8 +8586,8 @@ async def list_github_projects(
 async def auto_link_github_projects(
     request: Request,
     data: dict[str, Any],
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Auto-link GitHub Projects for a repository."""
     from tracertm.clients.github_client import GitHubClient
@@ -8606,11 +8609,11 @@ async def auto_link_github_projects(
     # Type casting for mypy
     from typing import cast
 
-    p_id = cast(str, project_id)
-    i_id = cast(str, installation_id)
-    repo_owner = cast(str, github_repo_owner)
-    repo_name = cast(str, github_repo_name)
-    repo_id = cast(int, github_repo_id)
+    p_id = cast("str", project_id)
+    i_id = cast("str", installation_id)
+    repo_owner = cast("str", github_repo_owner)
+    repo_name = cast("str", github_repo_name)
+    repo_id = cast("int", github_repo_id)
 
     ensure_project_access(p_id, claims)
 
@@ -8695,8 +8698,8 @@ async def list_linked_github_projects(
 async def unlink_github_project(
     request: Request,
     github_project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Unlink a GitHub Project from a TraceRTM project."""
     from tracertm.repositories.github_project_repository import GitHubProjectRepository
@@ -8721,8 +8724,8 @@ async def unlink_github_project(
 async def list_linear_teams(
     request: Request,
     credential_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """List Linear teams accessible with the credential."""
     from tracertm.clients.linear_client import LinearClient
@@ -8888,7 +8891,7 @@ async def list_linear_projects(
 async def receive_github_webhook(
     request: Request,
     webhook_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Receive GitHub webhook events."""
     import hashlib
@@ -8958,7 +8961,7 @@ async def receive_github_webhook(
 async def receive_linear_webhook(
     request: Request,
     webhook_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Receive Linear webhook events."""
     import hashlib
@@ -9029,8 +9032,8 @@ async def receive_linear_webhook(
 async def get_integration_stats(
     request: Request,
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get integration statistics for a project."""
     from tracertm.api.handlers.integrations import get_integration_stats_handler

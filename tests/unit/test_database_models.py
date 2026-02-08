@@ -1,5 +1,4 @@
-"""
-Unit tests for models with database persistence.
+"""Unit tests for models with database persistence.
 
 Tests: Model creation, persistence, retrieval
 """
@@ -35,7 +34,7 @@ def test_db(tmp_path):
 class TestItemPersistence:
     """Test Item model persistence."""
 
-    def test_create_and_retrieve_item(self, test_db):
+    def test_create_and_retrieve_item(self, test_db) -> None:
         """Test creating and retrieving item."""
         with Session(test_db.engine) as session:
             project = Project(name="Test")
@@ -55,7 +54,7 @@ class TestItemPersistence:
             assert retrieved.status == "todo"
             assert retrieved.version == 1
 
-    def test_update_item(self, test_db):
+    def test_update_item(self, test_db) -> None:
         """Test updating item."""
         with Session(test_db.engine) as session:
             project = Project(name="Test")
@@ -80,7 +79,7 @@ class TestItemPersistence:
             assert item.title == "Updated"
             assert item.version == 2
 
-    def test_item_metadata_persistence(self, test_db):
+    def test_item_metadata_persistence(self, test_db) -> None:
         """Test item metadata persistence."""
         with Session(test_db.engine) as session:
             project = Project(name="Test")
@@ -109,7 +108,7 @@ class TestItemPersistence:
 class TestLinkPersistence:
     """Test Link model persistence."""
 
-    def test_create_and_retrieve_link(self, test_db):
+    def test_create_and_retrieve_link(self, test_db) -> None:
         """Test creating and retrieving link."""
         with Session(test_db.engine) as session:
             project = Project(name="Test")
@@ -132,7 +131,7 @@ class TestLinkPersistence:
 class TestAgentPersistence:
     """Test Agent model persistence."""
 
-    def test_create_and_retrieve_agent(self, test_db):
+    def test_create_and_retrieve_agent(self, test_db) -> None:
         """Test creating and retrieving agent."""
         with Session(test_db.engine) as session:
             project = Project(name="Test")
@@ -155,7 +154,7 @@ class TestAgentPersistence:
 class TestModelQueries:
     """Test model queries."""
 
-    def test_query_items_by_view(self, test_db):
+    def test_query_items_by_view(self, test_db) -> None:
         """Test querying items by view."""
         with Session(test_db.engine) as session:
             project = Project(name="Test")
@@ -180,7 +179,7 @@ class TestModelQueries:
             assert len(features) == 3
             assert len(codes) == 2
 
-    def test_query_links_by_type(self, test_db):
+    def test_query_links_by_type(self, test_db) -> None:
         """Test querying links by type."""
         with Session(test_db.engine) as session:
             project = Project(name="Test")

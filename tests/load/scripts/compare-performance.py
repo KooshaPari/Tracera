@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Performance Comparison Script
+"""Performance Comparison Script.
 
 Compares current test results against baseline to detect regressions.
 Fails if performance degradation exceeds threshold.
@@ -15,13 +14,12 @@ from typing import Any
 
 def load_json(file_path: Path) -> dict[str, Any]:
     """Load JSON file."""
-    with Path(file_path).open() as f:
+    with Path(file_path).open(encoding="utf-8") as f:
         return json.load(f)
 
 
 def compare_metrics(baseline: dict, current: dict, threshold: float) -> tuple[bool, list]:
-    """
-    Compare metrics between baseline and current results.
+    """Compare metrics between baseline and current results.
 
     Args:
         baseline: Baseline metrics
@@ -77,49 +75,48 @@ def compare_metrics(baseline: dict, current: dict, threshold: float) -> tuple[bo
                 if change_pct < -threshold:
                     issues.append(
                         f"❌ {label} decreased by {abs(change_pct):.2f}% "
-                        f"(baseline: {baseline_val:.2f}, current: {current_val:.2f})"
+                        f"(baseline: {baseline_val:.2f}, current: {current_val:.2f})",
                     )
                     passed = False
                 elif change_pct < 0:
                     issues.append(
                         f"⚠️  {label} decreased by {abs(change_pct):.2f}% "
-                        f"(baseline: {baseline_val:.2f}, current: {current_val:.2f})"
+                        f"(baseline: {baseline_val:.2f}, current: {current_val:.2f})",
                     )
-            else:
-                # Response time and error rate - increase is bad
-                if change_pct > threshold:
-                    issues.append(
-                        f"❌ {label} increased by {change_pct:.2f}% "
-                        f"(baseline: {baseline_val:.4f}, current: {current_val:.4f})"
-                    )
-                    passed = False
-                elif change_pct > threshold / 2:
-                    issues.append(
-                        f"⚠️  {label} increased by {change_pct:.2f}% "
-                        f"(baseline: {baseline_val:.4f}, current: {current_val:.4f})"
-                    )
+            # Response time and error rate - increase is bad
+            elif change_pct > threshold:
+                issues.append(
+                    f"❌ {label} increased by {change_pct:.2f}% "
+                    f"(baseline: {baseline_val:.4f}, current: {current_val:.4f})",
+                )
+                passed = False
+            elif change_pct > threshold / 2:
+                issues.append(
+                    f"⚠️  {label} increased by {change_pct:.2f}% "
+                    f"(baseline: {baseline_val:.4f}, current: {current_val:.4f})",
+                )
 
             # Also report improvements
             if metric_name == "http_reqs" and change_pct > 5:
                 issues.append(
                     f"✅ {label} improved by {change_pct:.2f}% "
-                    f"(baseline: {baseline_val:.2f}, current: {current_val:.2f})"
+                    f"(baseline: {baseline_val:.2f}, current: {current_val:.2f})",
                 )
             elif metric_name != "http_reqs" and change_pct < -5:
                 issues.append(
                     f"✅ {label} improved by {abs(change_pct):.2f}% "
-                    f"(baseline: {baseline_val:.4f}, current: {current_val:.4f})"
+                    f"(baseline: {baseline_val:.4f}, current: {current_val:.4f})",
                 )
 
     return passed, issues
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Compare k6 test results against baseline")
     parser.add_argument("--baseline", type=Path, required=True, help="Path to baseline results JSON")
     parser.add_argument("--current", type=Path, required=True, help="Path to current test results JSON")
     parser.add_argument(
-        "--threshold", type=float, default=10.0, help="Performance degradation threshold percentage (default: 10)"
+        "--threshold", type=float, default=10.0, help="Performance degradation threshold percentage (default: 10)",
     )
     parser.add_argument("--output", type=Path, help="Optional output file for comparison report")
 
@@ -130,32 +127,18 @@ def main():
         baseline = load_json(args.baseline)
         current = load_json(args.current)
     except FileNotFoundError as e:
-        print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
     except json.JSONDecodeError as e:
-        print(f"Error parsing JSON: {e}", file=sys.stderr)
         sys.exit(1)
 
     # Compare metrics
     passed, issues = compare_metrics(baseline, current, args.threshold)
 
     # Print results
-    print("\n" + "=" * 80)
-    print("PERFORMANCE COMPARISON REPORT")
-    print("=" * 80 + "\n")
-
-    print(f"Baseline: {args.baseline}")
-    print(f"Current:  {args.current}")
-    print(f"Threshold: {args.threshold}%\n")
 
     if issues:
-        print("Findings:\n")
         for issue in issues:
-            print(f"  {issue}")
-    else:
-        print("✅ No significant performance changes detected")
-
-    print("\n" + "=" * 80)
+            pass
 
     # Save report if output specified
     if args.output:
@@ -166,16 +149,13 @@ def main():
             "passed": passed,
             "issues": issues,
         }
-        with Path(args.output).open("w") as f:
+        with Path(args.output).open("w", encoding="utf-8") as f:
             json.dump(report, f, indent=2)
-        print(f"\nReport saved to: {args.output}")
 
     # Exit with appropriate code
     if not passed:
-        print("\n❌ Performance regression detected!")
         sys.exit(1)
     else:
-        print("\n✅ Performance check passed!")
         sys.exit(0)
 
 

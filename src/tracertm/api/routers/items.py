@@ -10,12 +10,11 @@ Implements:
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy import func, select, update
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.config.rate_limiting import enforce_rate_limit
 from tracertm.api.deps import auth_guard, get_cache_service, get_db
@@ -30,7 +29,11 @@ from tracertm.api.handlers.items import (
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.models.item import Item
 from tracertm.repositories import item_repository
-from tracertm.services.cache_service import CacheService
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from tracertm.services.cache_service import CacheService
 
 logger = logging.getLogger(__name__)
 
@@ -223,8 +226,8 @@ async def list_items(
 async def get_item(
     item_id: str,
     request: Request,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get a specific item."""
     try:
@@ -251,9 +254,9 @@ async def get_item(
 async def create_item_endpoint(
     request: Request,
     payload: ItemCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    cache: CacheService = Depends(get_cache_service),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    cache: Annotated[CacheService, Depends(get_cache_service)],
 ):
     """Create an item with simple permission checks."""
     ensure_write_permission(claims, action="create")
@@ -293,7 +296,7 @@ async def create_item_endpoint(
         }
     except Exception as exc:
         await db.rollback()
-        logger.error(f"Error creating item: {exc}", exc_info=True)
+        logger.error("Error creating item: %s", exc, exc_info=True)
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
@@ -302,9 +305,9 @@ async def update_item_endpoint(
     request: Request,
     item_id: str,
     payload: ItemUpdate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    cache: CacheService = Depends(get_cache_service),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    cache: Annotated[CacheService, Depends(get_cache_service)],
 ):
     """Update an item with optimistic locking (if expected_version provided)."""
     ensure_write_permission(claims, action="update")
@@ -320,7 +323,7 @@ async def update_item_endpoint(
     update_fields = {
         key: value
         for key, value in payload.model_dump().items()
-        if key not in {"expected_version"} and value is not None
+        if key != "expected_version" and value is not None
     }
     expected_version = payload.expected_version
     if expected_version is None:
@@ -348,7 +351,7 @@ async def update_item_endpoint(
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except Exception as exc:
         await db.rollback()
-        logger.error(f"Error updating item: {exc}", exc_info=True)
+        logger.error("Error updating item: %s", exc, exc_info=True)
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
@@ -356,8 +359,8 @@ async def update_item_endpoint(
 async def delete_item_endpoint(
     request: Request,
     item_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Delete an item (permission-gated)."""
     ensure_write_permission(claims, action="delete")
@@ -376,9 +379,9 @@ async def delete_item_endpoint(
 async def bulk_update_items_endpoint(
     request: Request,
     payload: ItemBulkUpdate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    cache: CacheService = Depends(get_cache_service),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    cache: Annotated[CacheService, Depends(get_cache_service)],
 ):
     """Bulk update item status with optional preview."""
     ensure_write_permission(claims, action="bulk_update")
@@ -422,8 +425,8 @@ async def summarize_items_endpoint(
     request: Request,
     project_id: str,
     view: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Summarize items in a view (counts by status + samples)."""
     enforce_rate_limit(request, claims)
@@ -439,7 +442,7 @@ async def summarize_items_endpoint(
                 Item.view == view_upper,
                 Item.deleted_at.is_(None),
             )
-            .group_by(Item.status)
+            .group_by(Item.status),
         )
     ).all()
 
@@ -453,7 +456,7 @@ async def summarize_items_endpoint(
                     Item.deleted_at.is_(None),
                 )
                 .order_by(Item.updated_at.desc())
-                .limit(5)
+                .limit(5),
             )
         )
         .scalars()

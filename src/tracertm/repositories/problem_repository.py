@@ -14,7 +14,7 @@ from tracertm.models.problem import Problem, ProblemActivity
 class ProblemRepository:
     """Repository for Problem CRUD operations with optimistic locking."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     def _generate_problem_number(self) -> str:
@@ -148,12 +148,16 @@ class ProblemRepository:
         problem = result.scalar_one_or_none()
 
         if not problem:
-            raise ValueError(f"Problem {problem_id} not found")
+            msg = f"Problem {problem_id} not found"
+            raise ValueError(msg)
 
         if problem.version != expected_version:
-            raise ConcurrencyError(
+            msg = (
                 f"Problem {problem_id} was modified by another process "
                 f"(expected version {expected_version}, current version {problem.version})"
+            )
+            raise ConcurrencyError(
+                msg,
             )
 
         # Track changes for activity log
@@ -172,7 +176,7 @@ class ProblemRepository:
 
         # Log significant changes
         for key, old_value, new_value in changes:
-            if key in ("status", "priority", "impact_level", "assigned_to"):
+            if key in {"status", "priority", "impact_level", "assigned_to"}:
                 await self._log_activity(
                     problem_id=problem.id,
                     activity_type=f"{key}_changed",
@@ -196,7 +200,8 @@ class ProblemRepository:
         problem = result.scalar_one_or_none()
 
         if not problem:
-            raise ValueError(f"Problem {problem_id} not found")
+            msg = f"Problem {problem_id} not found"
+            raise ValueError(msg)
 
         from_status = problem.status
 
@@ -211,7 +216,8 @@ class ProblemRepository:
         }
 
         if to_status not in valid_transitions.get(from_status, []):
-            raise ValueError(f"Invalid status transition from {from_status} to {to_status}")
+            msg = f"Invalid status transition from {from_status} to {to_status}"
+            raise ValueError(msg)
 
         problem.status = to_status
         problem.version += 1
@@ -248,7 +254,8 @@ class ProblemRepository:
         problem = result.scalar_one_or_none()
 
         if not problem:
-            raise ValueError(f"Problem {problem_id} not found")
+            msg = f"Problem {problem_id} not found"
+            raise ValueError(msg)
 
         problem.rca_performed = True
         problem.rca_method = rca_method
@@ -290,7 +297,8 @@ class ProblemRepository:
         problem = result.scalar_one_or_none()
 
         if not problem:
-            raise ValueError(f"Problem {problem_id} not found")
+            msg = f"Problem {problem_id} not found"
+            raise ValueError(msg)
 
         problem.workaround_available = workaround_available
         problem.workaround_description = workaround_description
@@ -325,7 +333,8 @@ class ProblemRepository:
         problem = result.scalar_one_or_none()
 
         if not problem:
-            raise ValueError(f"Problem {problem_id} not found")
+            msg = f"Problem {problem_id} not found"
+            raise ValueError(msg)
 
         problem.permanent_fix_available = permanent_fix_available
         problem.permanent_fix_description = permanent_fix_description
@@ -361,7 +370,8 @@ class ProblemRepository:
         problem = result.scalar_one_or_none()
 
         if not problem:
-            raise ValueError(f"Problem {problem_id} not found")
+            msg = f"Problem {problem_id} not found"
+            raise ValueError(msg)
 
         problem.status = "closed"
         problem.resolution_type = resolution_type

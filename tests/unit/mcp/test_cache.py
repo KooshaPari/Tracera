@@ -10,7 +10,7 @@ from tracertm.mcp.cache import CacheEntry, QueryCache
 class TestCacheEntry:
     """Test CacheEntry functionality."""
 
-    def test_create_entry(self):
+    def test_create_entry(self) -> None:
         """Test creating cache entry."""
         entry = CacheEntry("test_value", ttl=300)
 
@@ -18,7 +18,7 @@ class TestCacheEntry:
         assert not entry.is_expired()
         assert entry.created_at > 0
 
-    def test_expiration(self):
+    def test_expiration(self) -> None:
         """Test entry expiration."""
         entry = CacheEntry("test_value", ttl=0)
 
@@ -35,7 +35,7 @@ class TestQueryCache:
         return QueryCache(max_size=10, default_ttl=300)
 
     @pytest.mark.asyncio
-    async def test_set_and_get(self, cache):
+    async def test_set_and_get(self, cache) -> None:
         """Test basic set and get operations."""
         await cache.set("test", "value1", project_id="proj1")
 
@@ -43,13 +43,13 @@ class TestQueryCache:
         assert value == "value1"
 
     @pytest.mark.asyncio
-    async def test_cache_miss(self, cache):
+    async def test_cache_miss(self, cache) -> None:
         """Test cache miss."""
         value = await cache.get("nonexistent", key="test")
         assert value is None
 
     @pytest.mark.asyncio
-    async def test_ttl_expiration(self, cache):
+    async def test_ttl_expiration(self, cache) -> None:
         """Test TTL expiration."""
         await cache.set("test", "value", ttl=0, project_id="proj1")
 
@@ -58,7 +58,7 @@ class TestQueryCache:
         assert value is None
 
     @pytest.mark.asyncio
-    async def test_lru_eviction(self, cache):
+    async def test_lru_eviction(self, cache) -> None:
         """Test LRU eviction when max_size reached."""
         # Fill cache to max
         for i in range(10):
@@ -76,7 +76,7 @@ class TestQueryCache:
         assert value == "value10"
 
     @pytest.mark.asyncio
-    async def test_invalidate_pattern(self, cache):
+    async def test_invalidate_pattern(self, cache) -> None:
         """Test invalidation by pattern."""
         await cache.set("item_query", "value1", project_id="proj1")
         await cache.set("item_get", "value2", project_id="proj1")
@@ -94,7 +94,7 @@ class TestQueryCache:
         # which works on the hash, not the original prefix
 
     @pytest.mark.asyncio
-    async def test_invalidate_all(self, cache):
+    async def test_invalidate_all(self, cache) -> None:
         """Test clearing entire cache."""
         await cache.set("test1", "value1")
         await cache.set("test2", "value2")
@@ -105,11 +105,11 @@ class TestQueryCache:
         assert await cache.get("test2") is None
 
     @pytest.mark.asyncio
-    async def test_get_or_compute(self, cache):
+    async def test_get_or_compute(self, cache) -> None:
         """Test get_or_compute pattern."""
         call_count = 0
 
-        async def compute():
+        async def compute() -> str:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
@@ -126,7 +126,7 @@ class TestQueryCache:
         assert call_count == 1  # Not incremented
 
     @pytest.mark.asyncio
-    async def test_get_stats(self, cache):
+    async def test_get_stats(self, cache) -> None:
         """Test cache statistics."""
         # Generate some hits and misses
         await cache.set("test", "value", key="test1")
@@ -144,7 +144,7 @@ class TestQueryCache:
         assert stats["size"] == 1  # One entry
 
     @pytest.mark.asyncio
-    async def test_clear(self, cache):
+    async def test_clear(self, cache) -> None:
         """Test clearing cache and stats."""
         await cache.set("test", "value")
         await cache.get("test")
@@ -161,7 +161,7 @@ class TestQueryCache:
         assert stats_after["misses"] == 0
 
     @pytest.mark.asyncio
-    async def test_cleanup_expired(self, cache):
+    async def test_cleanup_expired(self, cache) -> None:
         """Test cleanup of expired entries."""
         # Add expired entry
         await cache.set("expired", "value", ttl=0, key="test1")
@@ -176,10 +176,10 @@ class TestQueryCache:
         assert stats["size"] == 1  # Only valid entry remains
 
     @pytest.mark.asyncio
-    async def test_concurrent_access(self, cache):
+    async def test_concurrent_access(self, cache) -> None:
         """Test concurrent cache access."""
 
-        async def write_cache(i):
+        async def write_cache(i) -> None:
             await cache.set("test", f"value{i}", key=i)
 
         async def read_cache(i):

@@ -3,6 +3,7 @@
 import hashlib
 import hmac
 import json
+import pathlib
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -69,7 +70,7 @@ class TestWebhookHandlers:
     """Test webhook handler functions."""
 
     @pytest.mark.asyncio
-    async def test_verify_webhook_signature_valid(self, mock_request):
+    async def test_verify_webhook_signature_valid(self, mock_request) -> None:
         """Test webhook signature verification with valid signature."""
         body = b'{"test": "data"}'
         secret = "test-secret"
@@ -92,7 +93,7 @@ class TestWebhookHandlers:
             assert payload == {"test": "data"}
 
     @pytest.mark.asyncio
-    async def test_verify_webhook_signature_invalid(self, mock_request):
+    async def test_verify_webhook_signature_invalid(self, mock_request) -> None:
         """Test webhook signature verification with invalid signature."""
         body = b'{"test": "data"}'
 
@@ -111,7 +112,7 @@ class TestWebhookHandlers:
             assert exc_info.value.status_code == 401
 
     @pytest.mark.asyncio
-    async def test_handle_installation_created(self, webhook_payload, mock_installation_repo, mock_db):
+    async def test_handle_installation_created(self, webhook_payload, mock_installation_repo, mock_db) -> None:
         """Test installation created event handler."""
         mock_installation = MagicMock()
         mock_installation.id = "inst-123"
@@ -126,7 +127,7 @@ class TestWebhookHandlers:
         mock_db.commit.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_handle_installation_deleted(self, webhook_payload, mock_installation_repo, mock_db):
+    async def test_handle_installation_deleted(self, webhook_payload, mock_installation_repo, mock_db) -> None:
         """Test installation deleted event handler."""
         webhook_payload["action"] = "deleted"
 
@@ -143,7 +144,7 @@ class TestWebhookHandlers:
         mock_db.commit.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_handle_installation_suspended(self, webhook_payload, mock_installation_repo, mock_db):
+    async def test_handle_installation_suspended(self, webhook_payload, mock_installation_repo, mock_db) -> None:
         """Test installation suspended event handler."""
         webhook_payload["action"] = "suspend"
 
@@ -160,7 +161,7 @@ class TestWebhookHandlers:
         mock_db.commit.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_process_installation_event_created(self, webhook_payload, mock_installation_repo, mock_db):
+    async def test_process_installation_event_created(self, webhook_payload, mock_installation_repo, mock_db) -> None:
         """Test installation event processing for created action."""
         mock_installation = MagicMock()
         mock_installation.id = "inst-123"
@@ -171,7 +172,7 @@ class TestWebhookHandlers:
         assert result["status"] == "created"
 
     @pytest.mark.asyncio
-    async def test_process_installation_event_unknown_action(self, webhook_payload, mock_installation_repo, mock_db):
+    async def test_process_installation_event_unknown_action(self, webhook_payload, mock_installation_repo, mock_db) -> None:
         """Test installation event processing for unknown action."""
         webhook_payload["action"] = "unknown"
 
@@ -180,7 +181,7 @@ class TestWebhookHandlers:
         assert result["status"] == "ok"
 
     @pytest.mark.asyncio
-    async def test_github_app_webhook_installation_event(self, mock_request, mock_db):
+    async def test_github_app_webhook_installation_event(self, mock_request, mock_db) -> None:
         """Test main webhook handler for installation event."""
         payload = {
             "action": "created",
@@ -217,7 +218,7 @@ class TestWebhookHandlers:
                 assert result["installation_id"] == "inst-123"
 
     @pytest.mark.asyncio
-    async def test_github_app_webhook_unknown_event(self, mock_request, mock_db):
+    async def test_github_app_webhook_unknown_event(self, mock_request, mock_db) -> None:
         """Test main webhook handler for unknown event type."""
         mock_request.headers = {
             "X-Hub-Signature-256": "sha256=test",
@@ -237,7 +238,7 @@ class TestWebhookHandlers:
 class TestComplexityReduction:
     """Test that complexity has been reduced."""
 
-    def test_function_complexity(self):
+    def test_function_complexity(self) -> None:
         """Verify that individual functions have low complexity."""
         # Each function should have complexity < 7
         # Main webhook handler: 1 if statement -> complexity 2
@@ -255,12 +256,12 @@ class TestComplexityReduction:
         # All functions have complexity < 7 ✓
         assert True  # Placeholder for actual complexity measurement
 
-    def test_file_size(self):
+    def test_file_size(self) -> None:
         """Verify that file size is under 500 lines."""
         import os
 
         file_path = "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/api/handlers/webhooks.py"
-        with open(file_path) as f:
+        with pathlib.Path(file_path).open(encoding="utf-8") as f:
             lines = len(f.readlines())
 
         assert lines < 500, f"File has {lines} lines, should be < 500"

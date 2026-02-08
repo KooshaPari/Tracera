@@ -1,10 +1,7 @@
-"""
-Linear App Installation model for account-level Linear integrations.
-"""
+"""Linear App Installation model for account-level Linear integrations."""
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, Index, String
@@ -14,13 +11,14 @@ from tracertm.models.base import Base, TimestampMixin, generate_uuid
 from tracertm.models.types import JSONType
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from tracertm.models.account import Account
     from tracertm.models.integration import IntegrationCredential
 
 
 class LinearAppInstallation(Base, TimestampMixin):
-    """
-    Linear App Installation model.
+    """Linear App Installation model.
 
     Represents a Linear OAuth installation at the account level.
     Similar to GitHub App but uses OAuth flow.
@@ -41,7 +39,7 @@ class LinearAppInstallation(Base, TimestampMixin):
 
     # OAuth token (encrypted, stored in IntegrationCredential)
     integration_credential_id: Mapped[str | None] = mapped_column(
-        String(36), ForeignKey("integration_credentials.id", ondelete="SET NULL"), nullable=True
+        String(36), ForeignKey("integration_credentials.id", ondelete="SET NULL"), nullable=True,
     )
 
     # Installation metadata
@@ -54,7 +52,7 @@ class LinearAppInstallation(Base, TimestampMixin):
     # Relationships
     account: Mapped[Account] = relationship("Account")
     credential: Mapped[IntegrationCredential | None] = relationship(
-        "IntegrationCredential", foreign_keys=[integration_credential_id]
+        "IntegrationCredential", foreign_keys=[integration_credential_id],
     )
 
     def __repr__(self) -> str:

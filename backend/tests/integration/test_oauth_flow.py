@@ -1,5 +1,4 @@
-"""
-Phase 6: E2E Integration Testing - OAuth Flow Tests
+"""Phase 6: E2E Integration Testing - OAuth Flow Tests.
 
 Tests OAuth authorization flow through CLIProxy (Go backend).
 
@@ -7,9 +6,8 @@ Note: These tests use HTTP client to call actual Go endpoints.
 The CLIProxy must be running for these tests to pass.
 """
 
-import pytest
 import httpx
-
+import pytest
 
 # ============================================================================
 # Configuration
@@ -24,9 +22,8 @@ CLIPROXY_BASE_URL = "http://localhost:8765"
 
 @pytest.mark.e2e
 @pytest.mark.asyncio
-async def test_cliproxy_health():
-    """
-    Test CLIProxy health endpoint returns provider list.
+async def test_cliproxy_health() -> None:
+    """Test CLIProxy health endpoint returns provider list.
 
     Verifies:
     - CLIProxy is running
@@ -60,9 +57,8 @@ async def test_cliproxy_health():
 @pytest.mark.e2e
 @pytest.mark.oauth
 @pytest.mark.asyncio
-async def test_oauth_authorization_redirect():
-    """
-    Test OAuth authorization endpoint returns redirect.
+async def test_oauth_authorization_redirect() -> None:
+    """Test OAuth authorization endpoint returns redirect.
 
     Verifies:
     - Authorization URL generation
@@ -72,7 +68,7 @@ async def test_oauth_authorization_redirect():
     async with httpx.AsyncClient(follow_redirects=False) as client:
         response = await client.get(
             f"{CLIPROXY_BASE_URL}/oauth/authorize",
-            params={"provider": "claude"}
+            params={"provider": "claude"},
         )
 
         # Should return 307 Temporary Redirect
@@ -91,9 +87,8 @@ async def test_oauth_authorization_redirect():
 @pytest.mark.e2e
 @pytest.mark.oauth
 @pytest.mark.asyncio
-async def test_oauth_authorization_invalid_provider():
-    """
-    Test OAuth authorization with invalid provider returns error.
+async def test_oauth_authorization_invalid_provider() -> None:
+    """Test OAuth authorization with invalid provider returns error.
 
     Verifies:
     - Invalid provider handling
@@ -102,11 +97,11 @@ async def test_oauth_authorization_invalid_provider():
     async with httpx.AsyncClient() as client:
         response = await client.get(
             f"{CLIPROXY_BASE_URL}/oauth/authorize",
-            params={"provider": "invalid-provider-xyz"}
+            params={"provider": "invalid-provider-xyz"},
         )
 
         # Should return 400 Bad Request or 404 Not Found
-        assert response.status_code in [400, 404]
+        assert response.status_code in {400, 404}
 
         data = response.json()
         assert "error" in data
@@ -115,9 +110,8 @@ async def test_oauth_authorization_invalid_provider():
 @pytest.mark.e2e
 @pytest.mark.oauth
 @pytest.mark.asyncio
-async def test_oauth_authorization_missing_provider():
-    """
-    Test OAuth authorization without provider returns error.
+async def test_oauth_authorization_missing_provider() -> None:
+    """Test OAuth authorization without provider returns error.
 
     Verifies:
     - Missing parameter handling
@@ -140,9 +134,8 @@ async def test_oauth_authorization_missing_provider():
 @pytest.mark.e2e
 @pytest.mark.oauth
 @pytest.mark.asyncio
-async def test_oauth_callback_missing_code():
-    """
-    Test OAuth callback without code parameter returns error.
+async def test_oauth_callback_missing_code() -> None:
+    """Test OAuth callback without code parameter returns error.
 
     Verifies:
     - Missing code handling
@@ -151,7 +144,7 @@ async def test_oauth_callback_missing_code():
     async with httpx.AsyncClient() as client:
         response = await client.get(
             f"{CLIPROXY_BASE_URL}/oauth/callback",
-            params={"provider": "claude"}
+            params={"provider": "claude"},
         )
 
         # Should return 400 Bad Request
@@ -164,9 +157,8 @@ async def test_oauth_callback_missing_code():
 @pytest.mark.e2e
 @pytest.mark.oauth
 @pytest.mark.asyncio
-async def test_oauth_callback_missing_provider():
-    """
-    Test OAuth callback without provider parameter returns error.
+async def test_oauth_callback_missing_provider() -> None:
+    """Test OAuth callback without provider parameter returns error.
 
     Verifies:
     - Missing provider handling
@@ -175,7 +167,7 @@ async def test_oauth_callback_missing_provider():
     async with httpx.AsyncClient() as client:
         response = await client.get(
             f"{CLIPROXY_BASE_URL}/oauth/callback",
-            params={"code": "test-code"}
+            params={"code": "test-code"},
         )
 
         # Should return 400 Bad Request
@@ -189,9 +181,8 @@ async def test_oauth_callback_missing_provider():
 @pytest.mark.oauth
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Requires mock OAuth server for token exchange")
-async def test_oauth_callback_token_exchange():
-    """
-    Test OAuth callback with valid code exchanges for token.
+async def test_oauth_callback_token_exchange() -> None:
+    """Test OAuth callback with valid code exchanges for token.
 
     Note: This test is skipped because it requires a mock OAuth server
     to handle token exchange. In production, this would test:
@@ -213,7 +204,7 @@ async def test_oauth_callback_token_exchange():
                 "code": "mock-authorization-code",
                 "provider": "claude",
                 "state": "mock-state",
-            }
+            },
         )
 
         # Should return 200 with access token
@@ -232,9 +223,8 @@ async def test_oauth_callback_token_exchange():
 @pytest.mark.oauth
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Requires OAuth state management implementation")
-async def test_oauth_callback_invalid_state():
-    """
-    Test OAuth callback with invalid state parameter returns error.
+async def test_oauth_callback_invalid_state() -> None:
+    """Test OAuth callback with invalid state parameter returns error.
 
     Note: This test verifies CSRF protection via state parameter.
     Requires OAuth state management to be implemented.
@@ -251,11 +241,11 @@ async def test_oauth_callback_invalid_state():
                 "code": "mock-code",
                 "provider": "claude",
                 "state": "invalid-state-xyz",
-            }
+            },
         )
 
         # Should return 400 Bad Request or 403 Forbidden
-        assert response.status_code in [400, 403]
+        assert response.status_code in {400, 403}
 
         data = response.json()
         assert "error" in data
@@ -270,9 +260,8 @@ async def test_oauth_callback_invalid_state():
 @pytest.mark.oauth
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Requires full OAuth + session integration")
-async def test_oauth_session_creation():
-    """
-    Test OAuth flow creates agent session.
+async def test_oauth_session_creation() -> None:
+    """Test OAuth flow creates agent session.
 
     This integration test verifies:
     1. OAuth authorization + callback
@@ -290,7 +279,7 @@ async def test_oauth_session_creation():
     async with httpx.AsyncClient(follow_redirects=False) as client:
         auth_response = await client.get(
             f"{CLIPROXY_BASE_URL}/oauth/authorize",
-            params={"provider": "claude"}
+            params={"provider": "claude"},
         )
         assert auth_response.status_code == 307
 
@@ -302,7 +291,7 @@ async def test_oauth_session_creation():
                 "code": "mock-code",
                 "provider": "claude",
                 "state": "mock-state",
-            }
+            },
         )
         assert callback_response.status_code == 200
 
@@ -322,32 +311,28 @@ async def test_oauth_session_creation():
 @pytest.mark.oauth
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Requires error handling implementation")
-async def test_oauth_provider_timeout():
-    """
-    Test OAuth flow handles provider timeout gracefully.
+async def test_oauth_provider_timeout() -> None:
+    """Test OAuth flow handles provider timeout gracefully.
 
     Verifies:
     - Timeout handling
     - Appropriate error message
     - No partial state created
     """
-    pass
 
 
 @pytest.mark.e2e
 @pytest.mark.oauth
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Requires error handling implementation")
-async def test_oauth_provider_error():
-    """
-    Test OAuth flow handles provider errors gracefully.
+async def test_oauth_provider_error() -> None:
+    """Test OAuth flow handles provider errors gracefully.
 
     Verifies:
     - Provider error handling
     - Error message propagation
     - Cleanup on failure
     """
-    pass
 
 
 # ============================================================================
@@ -357,9 +342,8 @@ async def test_oauth_provider_error():
 @pytest.mark.e2e
 @pytest.mark.oauth
 @pytest.mark.asyncio
-async def test_oauth_redirect_uri_validation():
-    """
-    Test OAuth redirect URI cannot be manipulated.
+async def test_oauth_redirect_uri_validation() -> None:
+    """Test OAuth redirect URI cannot be manipulated.
 
     Verifies:
     - Redirect URI security
@@ -370,8 +354,8 @@ async def test_oauth_redirect_uri_validation():
             f"{CLIPROXY_BASE_URL}/oauth/authorize",
             params={
                 "provider": "claude",
-                "redirect_uri": "https://evil.com/callback"
-            }
+                "redirect_uri": "https://evil.com/callback",
+            },
         )
 
         # Should ignore custom redirect_uri parameter
@@ -386,9 +370,8 @@ async def test_oauth_redirect_uri_validation():
 @pytest.mark.oauth
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Requires rate limiting implementation")
-async def test_oauth_rate_limiting():
-    """
-    Test OAuth endpoints have rate limiting.
+async def test_oauth_rate_limiting() -> None:
+    """Test OAuth endpoints have rate limiting.
 
     Verifies:
     - Rate limiting on authorization endpoint
@@ -401,7 +384,7 @@ async def test_oauth_rate_limiting():
         for _ in range(100):
             response = await client.get(
                 f"{CLIPROXY_BASE_URL}/oauth/authorize",
-                params={"provider": "claude"}
+                params={"provider": "claude"},
             )
             responses.append(response)
 

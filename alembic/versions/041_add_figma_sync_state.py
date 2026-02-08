@@ -22,7 +22,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Create figma_sync_state table for design-code synchronization."""
-
     op.create_table(
         "figma_sync_state",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),

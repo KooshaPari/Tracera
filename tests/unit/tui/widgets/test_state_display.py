@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for StateDisplayWidget.
+"""Comprehensive tests for StateDisplayWidget.
 
 Tests cover:
 - Widget initialization
@@ -28,34 +27,34 @@ from tracertm.tui.widgets.state_display import StateDisplayWidget
 class TestStateDisplayWidget:
     """Test StateDisplayWidget initialization and basic functionality."""
 
-    def test_widget_initialization(self):
+    def test_widget_initialization(self) -> None:
         """Test widget can be initialized."""
         widget = StateDisplayWidget()
         assert widget is not None
         assert isinstance(widget, DataTable)
 
-    def test_widget_inherits_datatable(self):
+    def test_widget_inherits_datatable(self) -> None:
         """Test widget inherits from DataTable."""
         widget = StateDisplayWidget()
         assert isinstance(widget, DataTable)
 
-    def test_widget_has_columns(self):
+    def test_widget_has_columns(self) -> None:
         """Test widget has default columns."""
         widget = StateDisplayWidget()
         # Columns are added in __init__
         assert hasattr(widget, "columns")
 
-    def test_widget_with_id(self):
+    def test_widget_with_id(self) -> None:
         """Test widget can be created with custom id."""
         widget = StateDisplayWidget(id="test-state")
         assert widget.id == "test-state"
 
-    def test_widget_with_classes(self):
+    def test_widget_with_classes(self) -> None:
         """Test widget can be created with CSS classes."""
         widget = StateDisplayWidget(classes="custom-class")
         assert "custom-class" in widget.classes
 
-    def test_multiple_widgets(self):
+    def test_multiple_widgets(self) -> None:
         """Test multiple widgets can coexist."""
         widget1 = StateDisplayWidget(id="state1")
         widget2 = StateDisplayWidget(id="state2")
@@ -67,13 +66,13 @@ class TestStateDisplayWidget:
 class TestStateDisplayWidgetColumns:
     """Test column management."""
 
-    def test_default_columns(self):
+    def test_default_columns(self) -> None:
         """Test default columns are present."""
         widget = StateDisplayWidget()
         # Default columns: View, Items, Links
         assert hasattr(widget, "columns")
 
-    def test_column_count(self):
+    def test_column_count(self) -> None:
         """Test correct number of default columns."""
         widget = StateDisplayWidget()
         # Should have 3 default columns
@@ -81,14 +80,14 @@ class TestStateDisplayWidgetColumns:
         if hasattr(widget, "ordered_columns"):
             assert len(widget.ordered_columns) >= len(expected_columns)
 
-    def test_column_order(self):
+    def test_column_order(self) -> None:
         """Test columns are in correct order."""
         StateDisplayWidget()
         # Columns should be: View, Items, Links
         expected_order = ["View", "Items", "Links"]
         assert expected_order is not None  # Basic assertion
 
-    def test_column_labels(self):
+    def test_column_labels(self) -> None:
         """Test column labels are descriptive."""
         widget = StateDisplayWidget()
         # Columns represent project state dimensions
@@ -99,13 +98,13 @@ class TestStateDisplayWidgetColumns:
 class TestStateDisplayWidgetDataManipulation:
     """Test data manipulation methods."""
 
-    def test_empty_widget(self):
+    def test_empty_widget(self) -> None:
         """Test empty widget state."""
         widget = StateDisplayWidget()
         if hasattr(widget, "row_count"):
             assert widget.row_count == 0
 
-    def test_add_single_view(self):
+    def test_add_single_view(self) -> None:
         """Test adding a single view state."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -113,7 +112,7 @@ class TestStateDisplayWidgetDataManipulation:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_add_multiple_views(self):
+    def test_add_multiple_views(self) -> None:
         """Test adding multiple view states."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -123,7 +122,7 @@ class TestStateDisplayWidgetDataManipulation:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 3
 
-    def test_clear_widget(self):
+    def test_clear_widget(self) -> None:
         """Test clearing all rows."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row") and hasattr(widget, "clear"):
@@ -133,7 +132,7 @@ class TestStateDisplayWidgetDataManipulation:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 0
 
-    def test_update_state(self):
+    def test_update_state(self) -> None:
         """Test updating state values."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -150,7 +149,7 @@ class TestStateDisplayWidgetDataManipulation:
 class TestStateDisplayWidgetViewTypes:
     """Test different view types."""
 
-    def test_feature_view(self):
+    def test_feature_view(self) -> None:
         """Test FEATURE view state."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -158,7 +157,7 @@ class TestStateDisplayWidgetViewTypes:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_code_view(self):
+    def test_code_view(self) -> None:
         """Test CODE view state."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -166,7 +165,7 @@ class TestStateDisplayWidgetViewTypes:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_test_view(self):
+    def test_test_view(self) -> None:
         """Test TEST view state."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -174,7 +173,7 @@ class TestStateDisplayWidgetViewTypes:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_api_view(self):
+    def test_api_view(self) -> None:
         """Test API view state."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -182,7 +181,7 @@ class TestStateDisplayWidgetViewTypes:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_database_view(self):
+    def test_database_view(self) -> None:
         """Test DATABASE view state."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -190,7 +189,7 @@ class TestStateDisplayWidgetViewTypes:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_all_views(self):
+    def test_all_views(self) -> None:
         """Test all view types together."""
         widget = StateDisplayWidget()
         views = [
@@ -216,7 +215,7 @@ class TestStateDisplayWidgetViewTypes:
 class TestStateDisplayWidgetEdgeCases:
     """Test edge cases and error handling."""
 
-    def test_zero_counts(self):
+    def test_zero_counts(self) -> None:
         """Test state with zero items and links."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -224,7 +223,7 @@ class TestStateDisplayWidgetEdgeCases:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_large_counts(self):
+    def test_large_counts(self) -> None:
         """Test state with large numbers."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -232,7 +231,7 @@ class TestStateDisplayWidgetEdgeCases:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_negative_counts(self):
+    def test_negative_counts(self) -> None:
         """Test handling negative counts."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -241,7 +240,7 @@ class TestStateDisplayWidgetEdgeCases:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_non_numeric_counts(self):
+    def test_non_numeric_counts(self) -> None:
         """Test non-numeric count values."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -249,7 +248,7 @@ class TestStateDisplayWidgetEdgeCases:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_empty_values(self):
+    def test_empty_values(self) -> None:
         """Test empty string values."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -257,7 +256,7 @@ class TestStateDisplayWidgetEdgeCases:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_special_characters_in_view(self):
+    def test_special_characters_in_view(self) -> None:
         """Test special characters in view names."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -265,7 +264,7 @@ class TestStateDisplayWidgetEdgeCases:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_unicode_in_values(self):
+    def test_unicode_in_values(self) -> None:
         """Test unicode characters in values."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -278,7 +277,7 @@ class TestStateDisplayWidgetEdgeCases:
 class TestStateDisplayWidgetIntegration:
     """Test widget integration scenarios."""
 
-    def test_populate_from_project_state(self):
+    def test_populate_from_project_state(self) -> None:
         """Test populating from project state data."""
         widget = StateDisplayWidget()
 
@@ -295,7 +294,7 @@ class TestStateDisplayWidgetIntegration:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == len(project_state)
 
-    def test_refresh_state(self):
+    def test_refresh_state(self) -> None:
         """Test refreshing state display."""
         widget = StateDisplayWidget()
 
@@ -312,7 +311,7 @@ class TestStateDisplayWidgetIntegration:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 2
 
-    def test_incremental_updates(self):
+    def test_incremental_updates(self) -> None:
         """Test incremental state updates."""
         widget = StateDisplayWidget()
 
@@ -325,7 +324,7 @@ class TestStateDisplayWidgetIntegration:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 3
 
-    def test_complete_state_display(self):
+    def test_complete_state_display(self) -> None:
         """Test displaying complete project state."""
         widget = StateDisplayWidget()
 
@@ -352,17 +351,17 @@ class TestStateDisplayWidgetIntegration:
 class TestStateDisplayWidgetStyling:
     """Test widget styling capabilities."""
 
-    def test_custom_styles(self):
+    def test_custom_styles(self) -> None:
         """Test widget accepts custom styles."""
         widget = StateDisplayWidget(classes="custom-style")
         assert "custom-style" in widget.classes
 
-    def test_multiple_classes(self):
+    def test_multiple_classes(self) -> None:
         """Test widget can have multiple CSS classes."""
         widget = StateDisplayWidget(classes="state-display project-stats")
         assert any(c in widget.classes for c in ["state-display", "project-stats"])
 
-    def test_id_attribute(self):
+    def test_id_attribute(self) -> None:
         """Test widget ID attribute."""
         widget = StateDisplayWidget(id="project-state")
         assert widget.id == "project-state"
@@ -372,11 +371,11 @@ class TestStateDisplayWidgetStyling:
 class TestStateDisplayWidgetPlaceholder:
     """Test placeholder class when Textual is not available."""
 
-    def test_placeholder_exists(self):
+    def test_placeholder_exists(self) -> None:
         """Test placeholder class exists."""
         assert StateDisplayWidget is not None
 
-    def test_placeholder_instantiation(self):
+    def test_placeholder_instantiation(self) -> None:
         """Test placeholder can be instantiated."""
         widget = StateDisplayWidget()
         assert widget is not None
@@ -385,12 +384,12 @@ class TestStateDisplayWidgetPlaceholder:
 class TestStateDisplayWidgetAvailability:
     """Test widget availability detection."""
 
-    def test_textual_availability_constant(self):
+    def test_textual_availability_constant(self) -> None:
         """Test TEXTUAL_AVAILABLE constant is defined."""
         assert WIDGET_TEXTUAL is not None
         assert isinstance(WIDGET_TEXTUAL, bool)
 
-    def test_textual_availability_matches(self):
+    def test_textual_availability_matches(self) -> None:
         """Test module TEXTUAL_AVAILABLE matches test import."""
         assert WIDGET_TEXTUAL == TEXTUAL_AVAILABLE
 
@@ -399,7 +398,7 @@ class TestStateDisplayWidgetAvailability:
 class TestStateDisplayWidgetStatistics:
     """Test statistical display scenarios."""
 
-    def test_summary_statistics(self):
+    def test_summary_statistics(self) -> None:
         """Test displaying summary statistics."""
         widget = StateDisplayWidget()
 
@@ -408,7 +407,7 @@ class TestStateDisplayWidgetStatistics:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_percentage_values(self):
+    def test_percentage_values(self) -> None:
         """Test percentage-based values."""
         widget = StateDisplayWidget()
 
@@ -417,7 +416,7 @@ class TestStateDisplayWidgetStatistics:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_ratio_values(self):
+    def test_ratio_values(self) -> None:
         """Test ratio-based values."""
         widget = StateDisplayWidget()
 
@@ -426,7 +425,7 @@ class TestStateDisplayWidgetStatistics:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_formatted_numbers(self):
+    def test_formatted_numbers(self) -> None:
         """Test formatted number display."""
         widget = StateDisplayWidget()
 
@@ -440,7 +439,7 @@ class TestStateDisplayWidgetStatistics:
 class TestStateDisplayWidgetPerformance:
     """Test widget performance scenarios."""
 
-    def test_many_views(self):
+    def test_many_views(self) -> None:
         """Test widget with many views."""
         widget = StateDisplayWidget()
 
@@ -451,7 +450,7 @@ class TestStateDisplayWidgetPerformance:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 50
 
-    def test_rapid_updates(self):
+    def test_rapid_updates(self) -> None:
         """Test rapid state updates."""
         widget = StateDisplayWidget()
 
@@ -464,7 +463,7 @@ class TestStateDisplayWidgetPerformance:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 2
 
-    def test_large_numbers(self):
+    def test_large_numbers(self) -> None:
         """Test displaying large numbers."""
         widget = StateDisplayWidget()
 
@@ -478,7 +477,7 @@ class TestStateDisplayWidgetPerformance:
 class TestStateDisplayWidgetRowOperations:
     """Test advanced row operations."""
 
-    def test_row_with_key(self):
+    def test_row_with_key(self) -> None:
         """Test adding row with custom key."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -486,7 +485,7 @@ class TestStateDisplayWidgetRowOperations:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_remove_specific_row(self):
+    def test_remove_specific_row(self) -> None:
         """Test removing specific row."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row") and hasattr(widget, "remove_row"):
@@ -496,7 +495,7 @@ class TestStateDisplayWidgetRowOperations:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_row_order(self):
+    def test_row_order(self) -> None:
         """Test row insertion order."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -512,7 +511,7 @@ class TestStateDisplayWidgetRowOperations:
 class TestStateDisplayWidgetDataFormats:
     """Test different data format scenarios."""
 
-    def test_compact_format(self):
+    def test_compact_format(self) -> None:
         """Test compact data format."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -520,7 +519,7 @@ class TestStateDisplayWidgetDataFormats:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_verbose_format(self):
+    def test_verbose_format(self) -> None:
         """Test verbose data format."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):
@@ -528,7 +527,7 @@ class TestStateDisplayWidgetDataFormats:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_mixed_formats(self):
+    def test_mixed_formats(self) -> None:
         """Test mixed data formats."""
         widget = StateDisplayWidget()
         if hasattr(widget, "add_row"):

@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for Export/Import API endpoints.
+"""Comprehensive tests for Export/Import API endpoints.
 
 Tests:
 - GET /api/v1/projects/{project_id}/export
@@ -48,7 +47,7 @@ class TestExportEndpoint:
     """Test GET /api/v1/projects/{project_id}/export endpoint."""
 
     @pytest.mark.asyncio
-    async def test_export_json_success(self, client):
+    async def test_export_json_success(self, client) -> None:
         """Test exporting project to JSON format."""
         mock_export_data = {
             "format": "json",
@@ -79,7 +78,7 @@ class TestExportEndpoint:
             assert data["item_count"] == 2
 
     @pytest.mark.asyncio
-    async def test_export_csv_success(self, client):
+    async def test_export_csv_success(self, client) -> None:
         """Test exporting project to CSV format."""
         mock_export_data = {
             "format": "csv",
@@ -101,7 +100,7 @@ class TestExportEndpoint:
             assert data["item_count"] == 1
 
     @pytest.mark.asyncio
-    async def test_export_markdown_success(self, client):
+    async def test_export_markdown_success(self, client) -> None:
         """Test exporting project to Markdown format."""
         mock_export_data = {
             "format": "markdown",
@@ -123,7 +122,7 @@ class TestExportEndpoint:
             assert data["item_count"] == 1
 
     @pytest.mark.asyncio
-    async def test_export_project_not_found(self, client):
+    async def test_export_project_not_found(self, client) -> None:
         """Test exporting non-existent project returns 404."""
         mock_export_data = {"error": "Project not found"}
 
@@ -138,7 +137,7 @@ class TestExportEndpoint:
             assert "Project not found" in response.json()["detail"]
 
     @pytest.mark.asyncio
-    async def test_export_unsupported_format(self, client):
+    async def test_export_unsupported_format(self, client) -> None:
         """Test exporting with unsupported format returns 400."""
         response = client.get("/api/v1/projects/proj-123/export?format=xml")
 
@@ -146,7 +145,7 @@ class TestExportEndpoint:
         assert "Unsupported format" in response.json()["detail"]
 
     @pytest.mark.asyncio
-    async def test_export_default_format(self, client):
+    async def test_export_default_format(self, client) -> None:
         """Test exporting with default format (JSON)."""
         mock_export_data = {
             "format": "json",
@@ -171,13 +170,13 @@ class TestImportEndpoint:
     """Test POST /api/v1/projects/{project_id}/import endpoint."""
 
     @pytest.mark.asyncio
-    async def test_import_json_success(self, client):
+    async def test_import_json_success(self, client) -> None:
         """Test importing project from JSON format."""
         json_data = json.dumps({
             "items": [
                 {"title": "Item 1", "view": "FEATURE", "type": "feature", "status": "todo"},
                 {"title": "Item 2", "view": "FEATURE", "type": "feature", "status": "in_progress"},
-            ]
+            ],
         })
 
         mock_import_result = {
@@ -204,7 +203,7 @@ class TestImportEndpoint:
             assert data["error_count"] == 0
 
     @pytest.mark.asyncio
-    async def test_import_csv_success(self, client):
+    async def test_import_csv_success(self, client) -> None:
         """Test importing project from CSV format."""
         csv_data = "ID,Title,View,Type,Status,Description\nitem-1,Item 1,FEATURE,feature,todo,\n"
 
@@ -231,7 +230,7 @@ class TestImportEndpoint:
             assert data["imported_count"] == 1
 
     @pytest.mark.asyncio
-    async def test_import_invalid_json(self, client):
+    async def test_import_invalid_json(self, client) -> None:
         """Test importing with invalid JSON returns 400."""
         invalid_json = "{invalid json}"
 
@@ -251,7 +250,7 @@ class TestImportEndpoint:
             assert "Invalid JSON format" in response.json()["detail"]
 
     @pytest.mark.asyncio
-    async def test_import_missing_items_field(self, client):
+    async def test_import_missing_items_field(self, client) -> None:
         """Test importing JSON without items field returns 400."""
         json_data = json.dumps({"project": {"name": "Test"}})
 
@@ -271,7 +270,7 @@ class TestImportEndpoint:
             assert "Missing 'items' field" in response.json()["detail"]
 
     @pytest.mark.asyncio
-    async def test_import_unsupported_format(self, client):
+    async def test_import_unsupported_format(self, client) -> None:
         """Test importing with unsupported format returns 400."""
         response = client.post(
             "/api/v1/projects/proj-123/import",
@@ -282,13 +281,13 @@ class TestImportEndpoint:
         assert "Unsupported format" in response.json()["detail"]
 
     @pytest.mark.asyncio
-    async def test_import_with_errors(self, client):
+    async def test_import_with_errors(self, client) -> None:
         """Test importing with some errors."""
         json_data = json.dumps({
             "items": [
                 {"title": "Item 1", "view": "FEATURE"},
                 {"title": "Item 2", "view": "INVALID"},  # This might cause an error
-            ]
+            ],
         })
 
         mock_import_result = {

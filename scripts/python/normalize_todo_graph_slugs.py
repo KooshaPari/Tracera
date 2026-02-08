@@ -29,7 +29,7 @@ SLUG_MAP = {
 }
 
 
-def main():
+def main() -> None:
     conn = psycopg2.connect(POSTGRES_URL)
     conn.autocommit = False
     try:

@@ -1,5 +1,4 @@
-"""
-HTTP API client for TraceRTM sync operations.
+"""HTTP API client for TraceRTM sync operations.
 
 Handles communication with the backend API for synchronization of local changes.
 """
@@ -9,7 +8,7 @@ import hashlib
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
-from typing import Any
+from typing import Any, Self
 
 import httpx
 from loguru import logger
@@ -52,8 +51,7 @@ class ApiConfig:
 
     @classmethod
     def from_config_manager(cls, config_manager: ConfigManager | None = None) -> "ApiConfig":
-        """
-        Create ApiConfig from ConfigManager.
+        """Create ApiConfig from ConfigManager.
 
         Args:
             config_manager: Optional ConfigManager instance (creates new if None)
@@ -190,7 +188,7 @@ class SyncStatus:
 class ApiError(Exception):
     """Base exception for API errors."""
 
-    def __init__(self, message: str, status_code: int | None = None, response_data: dict[str, Any] | None = None):
+    def __init__(self, message: str, status_code: int | None = None, response_data: dict[str, Any] | None = None) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.response_data = response_data or {}
@@ -210,10 +208,10 @@ class RateLimitError(ApiError):
     def __init__(
         self,
         message: str,
-        retry_after: int | float | None = None,
+        retry_after: float | None = None,
         status_code: int | None = None,
         response_data: dict[str, Any] | None = None,
-    ):
+    ) -> None:
         super().__init__(message, status_code, response_data)
         self.retry_after = retry_after
 
@@ -227,21 +225,19 @@ class ConflictError(ApiError):
         conflicts: list[Conflict],
         status_code: int | None = None,
         response_data: dict[str, Any] | None = None,
-    ):
+    ) -> None:
         super().__init__(message, status_code, response_data)
         self.conflicts = conflicts
 
 
 class ApiClient:
-    """
-    Async HTTP client for TraceRTM backend API.
+    """Async HTTP client for TraceRTM backend API.
 
     Handles authentication, retries, and error handling for sync operations.
     """
 
-    def __init__(self, config: ApiConfig | None = None):
-        """
-        Initialize API client.
+    def __init__(self, config: ApiConfig | None = None) -> None:
+        """Initialize API client.
 
         Args:
             config: Optional ApiConfig (creates default if None)
@@ -286,7 +282,7 @@ class ApiClient:
             await self._client.aclose()
             self._client = None
 
-    async def __aenter__(self) -> "ApiClient":
+    async def __aenter__(self) -> Self:
         """Async context manager entry."""
         return self
 
@@ -300,8 +296,7 @@ class ApiClient:
         endpoint: str,
         **kwargs: Any,
     ) -> httpx.Response:
-        """
-        Execute HTTP request with exponential backoff retry logic.
+        """Execute HTTP request with exponential backoff retry logic.
 
         Args:
             method: HTTP method (GET, POST, etc.)
@@ -328,8 +323,9 @@ class ApiClient:
                         retry_after = float(retry_after_raw)
                     except Exception:
                         retry_after = 60.0
+                    msg = f"Rate limit exceeded. Retry after {retry_after}s"
                     raise RateLimitError(
-                        f"Rate limit exceeded. Retry after {retry_after}s",
+                        msg,
                         retry_after=retry_after,
                         status_code=429,
                         response_data=response.json() if response.content else {},
@@ -337,8 +333,9 @@ class ApiClient:
 
                 # Check for auth errors
                 if response.status_code == HTTP_UNAUTHORIZED:
+                    msg = "Authentication failed. Check API token."
                     raise AuthenticationError(
-                        "Authentication failed. Check API token.",
+                        msg,
                         status_code=401,
                         response_data=response.json() if response.content else {},
                     )
@@ -352,8 +349,9 @@ class ApiClient:
                 if e.response.status_code == HTTP_CONFLICT:
                     data = e.response.json() if e.response.content else {}
                     conflicts = [Conflict.from_dict(c) for c in data.get("conflicts", [])]
+                    msg = "Conflicts detected during request"
                     raise ConflictError(
-                        "Conflicts detected during request",
+                        msg,
                         conflicts=conflicts,
                         status_code=409,
                         response_data=data,
@@ -361,7 +359,7 @@ class ApiClient:
                 last_error = e
                 logger.warning(
                     f"HTTP error on attempt {attempt + 1}/{self.config.max_retries}: "
-                    f"{e.response.status_code} - {e.response.text}"
+                    f"{e.response.status_code} - {e.response.text}",
                 )
 
             except httpx.TimeoutException as e:
@@ -399,18 +397,20 @@ class ApiClient:
 
         # All retries failed
         if isinstance(last_error, (httpx.TimeoutException, httpx.NetworkError)):
-            raise NetworkError(f"Network error after {self.config.max_retries} retries: {last_error}")
+            msg = f"Network error after {self.config.max_retries} retries: {last_error}"
+            raise NetworkError(msg)
         if isinstance(last_error, httpx.HTTPStatusError):
+            msg = f"HTTP error after {self.config.max_retries} retries: {last_error}"
             raise ApiError(
-                f"HTTP error after {self.config.max_retries} retries: {last_error}",
+                msg,
                 status_code=last_error.response.status_code,
                 response_data=last_error.response.json() if last_error.response.content else {},
             )
-        raise ApiError(f"Request failed after {self.config.max_retries} retries: {last_error}")
+        msg = f"Request failed after {self.config.max_retries} retries: {last_error}"
+        raise ApiError(msg)
 
     async def health_check(self) -> bool:
-        """
-        Check API health.
+        """Check API health.
 
         Returns:
             True if API is healthy, False otherwise
@@ -432,8 +432,7 @@ class ApiClient:
         changes: list[Change],
         last_sync: datetime | None = None,
     ) -> UploadResult:
-        """
-        Upload local changes to server.
+        """Upload local changes to server.
 
         Args:
             changes: List of changes to upload
@@ -465,7 +464,8 @@ class ApiClient:
                     for c in conflicts_raw
                     if isinstance(c, (dict[str, Any], Conflict))
                 ]
-                raise ConflictError("Sync conflicts detected", conflicts=conflicts) from exc
+                msg = "Sync conflicts detected"
+                raise ConflictError(msg, conflicts=conflicts) from exc
             raise
 
     async def download_changes(
@@ -473,8 +473,7 @@ class ApiClient:
         since: datetime,
         project_id: str | None = None,
     ) -> list[Change]:
-        """
-        Download remote changes since timestamp.
+        """Download remote changes since timestamp.
 
         Args:
             since: Download changes after this timestamp
@@ -512,8 +511,7 @@ class ApiClient:
         resolution: ConflictStrategy,
         merged_data: dict[str, Any] | None = None,
     ) -> bool:
-        """
-        Resolve a sync conflict.
+        """Resolve a sync conflict.
 
         Args:
             conflict_id: Conflict ID to resolve
@@ -540,8 +538,7 @@ class ApiClient:
         return bool(resolved_result)
 
     async def get_sync_status(self) -> SyncStatus:
-        """
-        Get current sync status.
+        """Get current sync status.
 
         Returns:
             SyncStatus with sync information
@@ -562,8 +559,7 @@ class ApiClient:
         project_id: str | None = None,
         conflict_strategy: ConflictStrategy = ConflictStrategy.LAST_WRITE_WINS,
     ) -> tuple[UploadResult, list[Change]]:
-        """
-        Perform full bidirectional sync.
+        """Perform full bidirectional sync.
 
         Args:
             local_changes: Local changes to upload

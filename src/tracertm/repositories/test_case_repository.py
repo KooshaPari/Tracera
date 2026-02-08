@@ -14,7 +14,7 @@ from tracertm.models.test_case import TestCase, TestCaseActivity
 class TestCaseRepository:
     """Repository for TestCase CRUD operations with optimistic locking."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     def _generate_test_case_number(self) -> str:
@@ -147,7 +147,7 @@ class TestCaseRepository:
             query = query.where(
                 (TestCase.title.ilike(search_term))
                 | (TestCase.description.ilike(search_term))
-                | (TestCase.test_case_number.ilike(search_term))
+                | (TestCase.test_case_number.ilike(search_term)),
             )
 
         query = query.order_by(TestCase.created_at.desc()).limit(limit).offset(offset)
@@ -191,8 +191,8 @@ class TestCaseRepository:
                 and_(
                     TestCase.project_id == project_id,
                     TestCase.deleted_at.is_(None),
-                )
-            )
+                ),
+            ),
         )
         total = total_result.scalar() or 0
 
@@ -203,9 +203,9 @@ class TestCaseRepository:
                 and_(
                     TestCase.project_id == project_id,
                     TestCase.deleted_at.is_(None),
-                )
+                ),
             )
-            .group_by(TestCase.status)
+            .group_by(TestCase.status),
         )
         by_status = {str(row[0]): row[1] for row in status_result}
 
@@ -216,9 +216,9 @@ class TestCaseRepository:
                 and_(
                     TestCase.project_id == project_id,
                     TestCase.deleted_at.is_(None),
-                )
+                ),
             )
-            .group_by(TestCase.priority)
+            .group_by(TestCase.priority),
         )
         by_priority = {str(row[0]): row[1] for row in priority_result}
 
@@ -229,8 +229,8 @@ class TestCaseRepository:
                     TestCase.project_id == project_id,
                     TestCase.deleted_at.is_(None),
                     TestCase.automation_status == "automated",
-                )
-            )
+                ),
+            ),
         )
         automated_count = auto_result.scalar() or 0
         manual_count = max(0, total - automated_count)
@@ -257,12 +257,16 @@ class TestCaseRepository:
         test_case = result.scalar_one_or_none()
 
         if not test_case:
-            raise ValueError(f"Test case {test_case_id} not found")
+            msg = f"Test case {test_case_id} not found"
+            raise ValueError(msg)
 
         if test_case.version != expected_version:
-            raise ConcurrencyError(
+            msg = (
                 f"Test case {test_case_id} was modified by another process "
                 f"(expected version {expected_version}, current version {test_case.version})"
+            )
+            raise ConcurrencyError(
+                msg,
             )
 
         # Track changes for activity log
@@ -281,7 +285,7 @@ class TestCaseRepository:
 
         # Log significant changes
         for key, old_value, new_value in changes:
-            if key in ("status", "priority", "test_type", "automation_status", "assigned_to"):
+            if key in {"status", "priority", "test_type", "automation_status", "assigned_to"}:
                 await self._log_activity(
                     test_case_id=test_case.id,
                     activity_type=f"{key}_changed",
@@ -305,7 +309,8 @@ class TestCaseRepository:
         test_case = result.scalar_one_or_none()
 
         if not test_case:
-            raise ValueError(f"Test case {test_case_id} not found")
+            msg = f"Test case {test_case_id} not found"
+            raise ValueError(msg)
 
         from_status = test_case.status
 
@@ -319,7 +324,8 @@ class TestCaseRepository:
         }
 
         if to_status not in valid_transitions.get(from_status, []):
-            raise ValueError(f"Invalid status transition from {from_status} to {to_status}")
+            msg = f"Invalid status transition from {from_status} to {to_status}"
+            raise ValueError(msg)
 
         test_case.status = to_status
         test_case.version += 1
@@ -427,7 +433,8 @@ class TestCaseRepository:
         test_case = db_result.scalar_one_or_none()
 
         if not test_case:
-            raise ValueError(f"Test case {test_case_id} not found")
+            msg = f"Test case {test_case_id} not found"
+            raise ValueError(msg)
 
         test_case.last_executed_at = datetime.now(UTC)
         test_case.last_execution_result = result

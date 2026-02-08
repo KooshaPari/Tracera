@@ -1,5 +1,4 @@
-"""
-Performance tests for graph traversal and analysis.
+"""Performance tests for graph traversal and analysis.
 
 Tests performance-critical paths:
 - Large graph traversals (100+ nodes)
@@ -82,7 +81,7 @@ class TestCriticalPathPerformance:
     """Tests for critical path analysis performance."""
 
     @pytest.mark.asyncio
-    async def test_critical_path_100_items(self, mock_async_session, create_graph_items, create_graph_links):
+    async def test_critical_path_100_items(self, mock_async_session, create_graph_items, create_graph_links) -> None:
         """Test critical path with 100 items."""
         project_id = "proj-001"
         items = create_graph_items(100)(project_id)
@@ -109,7 +108,7 @@ class TestCriticalPathPerformance:
         assert result.path_length > 0
 
     @pytest.mark.asyncio
-    async def test_critical_path_500_items_stress(self, mock_async_session):
+    async def test_critical_path_500_items_stress(self, mock_async_session) -> None:
         """Test critical path with 500 items (stress test)."""
         project_id = "proj-002"
 
@@ -152,8 +151,8 @@ class TestCriticalPathPerformance:
 
     @pytest.mark.asyncio
     async def test_critical_path_with_link_type_filter(
-        self, mock_async_session, create_graph_items, create_graph_links
-    ):
+        self, mock_async_session, create_graph_items, create_graph_links,
+    ) -> None:
         """Test critical path with link type filtering."""
         project_id = "proj-003"
         items = create_graph_items(100)(project_id)
@@ -187,7 +186,7 @@ class TestCriticalPathPerformance:
         assert elapsed < 0.5
 
     @pytest.mark.asyncio
-    async def test_critical_path_concurrent_queries(self, mock_async_session):
+    async def test_critical_path_concurrent_queries(self, mock_async_session) -> None:
         """Test concurrent critical path queries."""
 
         async def run_cp_analysis(project_id: str, num_items: int):
@@ -227,7 +226,7 @@ class TestCriticalPathPerformance:
         assert all(r is not None for r in results)
 
     @pytest.mark.asyncio
-    async def test_critical_path_memory_efficiency(self, mock_async_session):
+    async def test_critical_path_memory_efficiency(self, mock_async_session) -> None:
         """Test memory efficiency during critical path calculation."""
         project_id = "proj-004"
 
@@ -273,7 +272,7 @@ class TestCriticalPathPerformance:
         assert total_increase < 10.0, f"Memory increase {total_increase}MB is too high"
 
     @pytest.mark.asyncio
-    async def test_critical_path_empty_graph(self, mock_async_session):
+    async def test_critical_path_empty_graph(self, mock_async_session) -> None:
         """Test critical path with empty graph."""
         project_id = "proj-005"
 
@@ -292,7 +291,7 @@ class TestCriticalPathPerformance:
         assert len(result.critical_items) == 0
 
     @pytest.mark.asyncio
-    async def test_critical_path_single_node(self, mock_async_session):
+    async def test_critical_path_single_node(self, mock_async_session) -> None:
         """Test critical path with single node."""
         project_id = "proj-006"
 
@@ -314,7 +313,7 @@ class TestCriticalPathPerformance:
         assert result.path_length > 0
 
     @pytest.mark.asyncio
-    async def test_critical_path_dense_graph(self, mock_async_session):
+    async def test_critical_path_dense_graph(self, mock_async_session) -> None:
         """Test critical path with dense graph (high connectivity)."""
         project_id = "proj-007"
 
@@ -353,7 +352,7 @@ class TestCriticalPathPerformance:
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_critical_path_sequential_chain(self, mock_async_session):
+    async def test_critical_path_sequential_chain(self, mock_async_session) -> None:
         """Test critical path with sequential chain (linear graph)."""
         project_id = "proj-008"
 
@@ -388,7 +387,7 @@ class TestCriticalPathPerformance:
         assert len(result.critical_items) == 100
 
     @pytest.mark.asyncio
-    async def test_critical_path_mixed_structures(self, mock_async_session):
+    async def test_critical_path_mixed_structures(self, mock_async_session) -> None:
         """Test critical path with mixed graph structures."""
         project_id = "proj-009"
 

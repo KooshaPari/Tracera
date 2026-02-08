@@ -34,7 +34,7 @@ class GitHubClientError(Exception):
 class GitHubRateLimitError(GitHubClientError):
     """Rate limit exceeded."""
 
-    def __init__(self, reset_at: datetime, message: str = "Rate limit exceeded"):
+    def __init__(self, reset_at: datetime, message: str = "Rate limit exceeded") -> None:
         self.reset_at = reset_at
         super().__init__(message)
 
@@ -108,7 +108,7 @@ class GitHubClient:
         token: str,
         timeout: float = 30.0,
         is_app_token: bool = False,
-    ):
+    ) -> None:
         """Initialize GitHub client.
 
         Args:
@@ -138,7 +138,6 @@ class GitHubClient:
         Returns:
             GitHubClient instance authenticated with installation token.
         """
-
         # Generate JWT for app authentication
         try:
             private_key_obj = load_pem_private_key(
@@ -146,7 +145,8 @@ class GitHubClient:
                 password=None,
             )
         except Exception as e:
-            raise GitHubAuthError(f"Invalid private key: {e}") from e
+            msg = f"Invalid private key: {e}"
+            raise GitHubAuthError(msg) from e
 
         now = int(time.time())
         jwt_payload = {
@@ -170,7 +170,8 @@ class GitHubClient:
                 )
 
                 if response.status_code != HTTP_CREATED:
-                    raise GitHubAuthError(f"Failed to get installation token: {response.text}")
+                    msg = f"Failed to get installation token: {response.text}"
+                    raise GitHubAuthError(msg)
 
                 token_data = response.json()
                 installation_token = token_data.get("token")
@@ -204,7 +205,7 @@ class GitHubClient:
             lambda e: (
                 isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
                 or (isinstance(e, httpx.HTTPStatusError) and e.response.status_code >= _STATUS_SERVER_ERROR)
-            )
+            ),
         ),
         reraise=True,
     )
@@ -242,11 +243,13 @@ class GitHubClient:
 
         # Handle auth errors
         if response.status_code == _STATUS_UNAUTHORIZED:
-            raise GitHubAuthError("Invalid or expired token")
+            msg = "Invalid or expired token"
+            raise GitHubAuthError(msg)
 
         # Handle not found
         if response.status_code == _STATUS_NOT_FOUND:
-            raise GitHubNotFoundError(f"Resource not found: {path}")
+            msg = f"Resource not found: {path}"
+            raise GitHubNotFoundError(msg)
 
         # Raise for other errors
         response.raise_for_status()

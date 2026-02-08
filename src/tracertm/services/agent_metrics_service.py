@@ -1,5 +1,4 @@
-"""
-Agent metrics service for Epic 5 (Story 5.6, FR43).
+"""Agent metrics service for Epic 5 (Story 5.6, FR43).
 
 Calculates and provides agent performance metrics.
 """
@@ -18,11 +17,9 @@ from tracertm.models.item import Item
 
 
 class AgentMetricsService:
-    """
-    Service for calculating agent performance metrics (Story 5.6, FR43).
-    """
+    """Service for calculating agent performance metrics (Story 5.6, FR43)."""
 
-    def __init__(self, session: Session):
+    def __init__(self, session: Session) -> None:
         """Initialize agent metrics service."""
         self.session = session
 
@@ -32,8 +29,7 @@ class AgentMetricsService:
         agent_id: str | None = None,
         since: datetime | None = None,
     ) -> dict[str, Any]:
-        """
-        Calculate metrics for agent(s) (Story 5.6, FR43).
+        """Calculate metrics for agent(s) (Story 5.6, FR43).
 
         Args:
             project_id: Project ID
@@ -114,8 +110,7 @@ class AgentMetricsService:
         project_id: str,
         agent_id: str,
     ) -> dict[str, Any]:
-        """
-        Get workload for an agent (Story 5.6, FR45).
+        """Get workload for an agent (Story 5.6, FR45).
 
         Args:
             project_id: Project ID
@@ -124,7 +119,6 @@ class AgentMetricsService:
         Returns:
             Workload dictionary
         """
-
         items = (
             self.session
             .query(Item)

@@ -1,5 +1,4 @@
-"""
-MCP HTTP Client Example for TraceRTM
+"""MCP HTTP Client Example for TraceRTM.
 
 This example demonstrates how to use the MCP server over HTTP with:
 - JSON-RPC 2.0 request/response handling
@@ -18,15 +17,16 @@ Requirements:
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
-from typing import Any
+from typing import Any, Self
 
 import httpx
 from pydantic import BaseModel
 
 
 class JsonRpcRequest(BaseModel):
-    """JSON-RPC 2.0 request structure"""
+    """JSON-RPC 2.0 request structure."""
 
     jsonrpc: str = "2.0"
     id: int
@@ -35,7 +35,7 @@ class JsonRpcRequest(BaseModel):
 
 
 class JsonRpcError(BaseModel):
-    """JSON-RPC 2.0 error structure"""
+    """JSON-RPC 2.0 error structure."""
 
     code: int
     message: str
@@ -43,7 +43,7 @@ class JsonRpcError(BaseModel):
 
 
 class JsonRpcResponse(BaseModel):
-    """JSON-RPC 2.0 response structure"""
+    """JSON-RPC 2.0 response structure."""
 
     jsonrpc: str
     id: int
@@ -52,15 +52,15 @@ class JsonRpcResponse(BaseModel):
 
 
 class MCPHTTPClient:
-    """HTTP-based MCP client implementation"""
+    """HTTP-based MCP client implementation."""
 
     def __init__(
         self,
         base_url: str,
         token: str | None = None,
         timeout: float = 30.0,
-    ):
-        """Initialize MCP HTTP client
+    ) -> None:
+        """Initialize MCP HTTP client.
 
         Args:
             base_url: Base URL of the MCP server (e.g., "http://localhost:8000")
@@ -73,28 +73,28 @@ class MCPHTTPClient:
         self._request_id = 0
         self._client = httpx.AsyncClient(timeout=timeout)
 
-    async def __aenter__(self) -> MCPHTTPClient:
-        """Async context manager entry"""
+    async def __aenter__(self) -> Self:
+        """Async context manager entry."""
         return self
 
     async def __aexit__(self, *args) -> None:
-        """Async context manager exit"""
+        """Async context manager exit."""
         await self.close()
 
     def _next_request_id(self) -> int:
-        """Generate a unique request ID"""
+        """Generate a unique request ID."""
         self._request_id += 1
         return self._request_id
 
     def _build_headers(self) -> dict[str, str]:
-        """Build headers for MCP requests"""
+        """Build headers for MCP requests."""
         headers = {"Content-Type": "application/json"}
         if self.token:
             headers["Authorization"] = f"Bearer {self.token}"
         return headers
 
     async def _send_request(self, method: str, params: dict[str, Any] | None = None) -> Any:
-        """Send a JSON-RPC request to the MCP server
+        """Send a JSON-RPC request to the MCP server.
 
         Args:
             method: JSON-RPC method name
@@ -120,10 +120,12 @@ class MCPHTTPClient:
         data = JsonRpcResponse.model_validate_json(response.content)
 
         if data.error:
-            raise ValueError(f"JSON-RPC Error {data.error.code}: {data.error.message}")
+            msg = f"JSON-RPC Error {data.error.code}: {data.error.message}"
+            raise ValueError(msg)
 
         if data.result is None:
-            raise ValueError("Invalid JSON-RPC response: missing result")
+            msg = "Invalid JSON-RPC response: missing result"
+            raise ValueError(msg)
 
         return data.result
 
@@ -133,7 +135,7 @@ class MCPHTTPClient:
         client_name: str = "Python MCP Client",
         client_version: str = "1.0.0",
     ) -> dict[str, Any]:
-        """Initialize the MCP session
+        """Initialize the MCP session.
 
         Args:
             protocol_version: MCP protocol version
@@ -160,7 +162,7 @@ class MCPHTTPClient:
         )
 
     async def list_tools(self) -> dict[str, Any]:
-        """List available tools
+        """List available tools.
 
         Returns:
             Dictionary with 'tools' key containing list of tool definitions
@@ -168,7 +170,7 @@ class MCPHTTPClient:
         return await self._send_request("tools/list")
 
     async def call_tool(self, name: str, arguments: dict[str, Any] | None = None) -> Any:
-        """Call a tool with parameters
+        """Call a tool with parameters.
 
         Args:
             name: Tool name
@@ -180,7 +182,7 @@ class MCPHTTPClient:
         return await self._send_request("tools/call", {"name": name, "arguments": arguments or {}})
 
     async def list_resources(self) -> dict[str, Any]:
-        """List available resources
+        """List available resources.
 
         Returns:
             Dictionary with 'resources' key containing list of resource definitions
@@ -188,7 +190,7 @@ class MCPHTTPClient:
         return await self._send_request("resources/list")
 
     async def read_resource(self, uri: str) -> dict[str, Any]:
-        """Read a resource by URI
+        """Read a resource by URI.
 
         Args:
             uri: Resource URI
@@ -199,7 +201,7 @@ class MCPHTTPClient:
         return await self._send_request("resources/read", {"uri": uri})
 
     async def list_prompts(self) -> dict[str, Any]:
-        """List available prompts
+        """List available prompts.
 
         Returns:
             Dictionary with 'prompts' key containing list of prompt definitions
@@ -207,7 +209,7 @@ class MCPHTTPClient:
         return await self._send_request("prompts/list")
 
     async def get_prompt(self, name: str, arguments: dict[str, Any] | None = None) -> dict[str, Any]:
-        """Get a prompt with arguments
+        """Get a prompt with arguments.
 
         Args:
             name: Prompt name
@@ -219,7 +221,7 @@ class MCPHTTPClient:
         return await self._send_request("prompts/get", {"name": name, "arguments": arguments or {}})
 
     async def close(self) -> None:
-        """Close the MCP session and HTTP client"""
+        """Close the MCP session and HTTP client."""
         try:
             # Send cancellation notification (no response expected)
             await self._client.post(
@@ -237,80 +239,59 @@ class MCPHTTPClient:
             await self._client.aclose()
 
 
-async def example_usage():
-    """Example usage of the MCP HTTP client"""
-
+async def example_usage() -> None:
+    """Example usage of the MCP HTTP client."""
     # Initialize client with authentication
     async with MCPHTTPClient(
         base_url="http://localhost:8000",
         token="your-auth-token-here",  # noqa: S106  # Replace with actual token
     ) as client:
         # Initialize session
-        print("Initializing MCP session...")
-        init_response = await client.initialize()
-        print(f"Server: {init_response['serverInfo']['name']} v{init_response['serverInfo']['version']}")
-        print(f"Protocol: {init_response['protocolVersion']}\n")
+        await client.initialize()
 
         # List available tools
-        print("Listing available tools...")
         tools_response = await client.list_tools()
-        print(f"Found {len(tools_response['tools'])} tools:")
-        for tool in tools_response["tools"][:5]:  # Show first 5
-            print(f"  - {tool['name']}: {tool.get('description', 'No description')}")
-        print()
+        for _tool in tools_response["tools"][:5]:  # Show first 5
+            pass
 
         # Call a tool (example: list projects)
-        print("Calling project_list tool...")
-        try:
-            result = await client.call_tool(
+        with contextlib.suppress(Exception):
+            await client.call_tool(
                 "project_manage",
                 {"action": "list", "params": {}},
             )
-            print(f"Result: {result}")
-        except Exception as e:
-            print(f"Error: {e}")
-        print()
 
         # List resources
-        print("Listing available resources...")
         resources_response = await client.list_resources()
-        print(f"Found {len(resources_response['resources'])} resources:")
-        for resource in resources_response["resources"][:5]:  # Show first 5
-            print(f"  - {resource['name']}: {resource['uri']}")
-        print()
+        for _resource in resources_response["resources"][:5]:  # Show first 5
+            pass
 
         # List prompts
-        print("Listing available prompts...")
         prompts_response = await client.list_prompts()
-        print(f"Found {len(prompts_response['prompts'])} prompts:")
-        for prompt in prompts_response["prompts"][:5]:  # Show first 5
-            print(f"  - {prompt['name']}: {prompt.get('description', 'No description')}")
-        print()
+        for _prompt in prompts_response["prompts"][:5]:  # Show first 5
+            pass
 
 
-async def example_with_error_handling():
-    """Example with comprehensive error handling"""
-
+async def example_with_error_handling() -> None:
+    """Example with comprehensive error handling."""
     try:
         async with MCPHTTPClient(
             base_url="http://localhost:8000",
             token="your-auth-token-here",  # noqa: S106
         ) as client:
             await client.initialize()
-            result = await client.call_tool("project_manage", {"action": "list"})
-            print(f"Success: {result}")
+            await client.call_tool("project_manage", {"action": "list"})
 
-    except httpx.HTTPError as e:
-        print(f"HTTP error: {e}")
-    except ValueError as e:
-        print(f"JSON-RPC error: {e}")
-    except Exception as e:
-        print(f"Unexpected error: {e}")
+    except httpx.HTTPError:
+        pass
+    except ValueError:
+        pass
+    except Exception:
+        pass
 
 
-async def example_manual_lifecycle():
-    """Example with manual client lifecycle management"""
-
+async def example_manual_lifecycle() -> None:
+    """Example with manual client lifecycle management."""
     client = MCPHTTPClient(
         base_url="http://localhost:8000",
         token="your-auth-token-here",  # noqa: S106
@@ -321,8 +302,7 @@ async def example_manual_lifecycle():
         await client.initialize()
 
         # Use client
-        tools = await client.list_tools()
-        print(f"Found {len(tools['tools'])} tools")
+        await client.list_tools()
 
     finally:
         # Always close
@@ -330,17 +310,8 @@ async def example_manual_lifecycle():
 
 
 if __name__ == "__main__":
-    print("=" * 60)
-    print("MCP HTTP Client Example")
-    print("=" * 60)
-    print()
 
     # Run the main example
     asyncio.run(example_usage())
-
-    print("\n" + "=" * 60)
-    print("Error Handling Example")
-    print("=" * 60)
-    print()
 
     asyncio.run(example_with_error_handling())

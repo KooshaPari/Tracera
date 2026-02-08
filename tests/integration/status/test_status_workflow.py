@@ -1,6 +1,4 @@
-"""
-Integration tests for Epic 2: Status Workflow (Story 2.7, FR13).
-"""
+"""Integration tests for Epic 2: Status Workflow (Story 2.7, FR13)."""
 
 import pytest
 
@@ -55,7 +53,7 @@ def temp_project_setup(tmp_path, monkeypatch):
     return project_id, item_id, database_url
 
 
-def test_status_transition_validation(temp_project_setup):
+def test_status_transition_validation(temp_project_setup) -> None:
     """Test status transition validation (Story 2.7, FR13)."""
     _project_id, _item_id, database_url = temp_project_setup
 
@@ -78,7 +76,7 @@ def test_status_transition_validation(temp_project_setup):
         assert service.validate_transition("archived", "todo") is False
 
 
-def test_status_update_with_progress(temp_project_setup):
+def test_status_update_with_progress(temp_project_setup) -> None:
     """Test status update with progress auto-update (Story 2.7, FR13)."""
     _project_id, item_id, database_url = temp_project_setup
 
@@ -105,7 +103,7 @@ def test_status_update_with_progress(temp_project_setup):
         assert result["progress"] == 100  # done = 100%
 
 
-def test_status_history_tracking(temp_project_setup):
+def test_status_history_tracking(temp_project_setup) -> None:
     """Test status change history tracking (Story 2.7, FR13)."""
     _project_id, item_id, database_url = temp_project_setup
 
@@ -130,7 +128,7 @@ def test_status_history_tracking(temp_project_setup):
         assert "in_progress" in statuses
         # Most recent should be "done" (last change)
         # But due to timing, check that we have both transitions
-        assert history[0]["new_status"] in ["done", "in_progress"]
+        assert history[0]["new_status"] in {"done", "in_progress"}
         # Ensure we can see the progression
         if len(history) >= 2:
             # At least verify the transitions happened

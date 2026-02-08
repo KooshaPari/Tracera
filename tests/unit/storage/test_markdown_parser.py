@@ -1,5 +1,4 @@
-"""
-Unit tests for MarkdownParser.
+"""Unit tests for MarkdownParser.
 
 Tests parsing and writing markdown files with YAML frontmatter
 for various item types (epics, stories, tests, tasks).
@@ -17,8 +16,7 @@ import yaml
 
 @pytest.fixture
 def temp_markdown_dir(tmp_path):
-    """
-    Fixture: Temporary Markdown Directory
+    """Fixture: Temporary Markdown Directory.
 
     Provides: Clean directory for markdown files
     """
@@ -28,8 +26,8 @@ def temp_markdown_dir(tmp_path):
 
 
 @pytest.fixture
-def sample_epic_markdown():
-    """Sample epic markdown with frontmatter"""
+def sample_epic_markdown() -> str:
+    """Sample epic markdown with frontmatter."""
     return """---
 id: "550e8400-e29b-41d4-a716-446655440000"
 external_id: "EPIC-001"
@@ -88,8 +86,8 @@ This epic covers all authentication-related functionality for the MVP release.
 
 
 @pytest.fixture
-def sample_story_markdown():
-    """Sample story markdown with frontmatter"""
+def sample_story_markdown() -> str:
+    """Sample story markdown with frontmatter."""
     return """---
 id: "story-001"
 external_id: "STORY-001"
@@ -126,8 +124,8 @@ Use bcrypt with cost factor 12 for password hashing.
 
 
 @pytest.fixture
-def sample_test_markdown():
-    """Sample test markdown with frontmatter"""
+def sample_test_markdown() -> str:
+    """Sample test markdown with frontmatter."""
     return """---
 id: "test-001"
 external_id: "TEST-001"
@@ -166,16 +164,14 @@ User is created and JWT token is returned.
 
 
 class TestMarkdownParserFrontmatter:
-    """
-    Test Suite: Markdown Parser - Frontmatter Parsing
+    """Test Suite: Markdown Parser - Frontmatter Parsing.
 
     Tests parsing YAML frontmatter from markdown files
     """
 
     @pytest.mark.unit
-    def test_parse_epic_frontmatter(self, sample_epic_markdown):
-        """
-        TC-MP.1.1: Parse Epic Frontmatter - Success
+    def test_parse_epic_frontmatter(self, sample_epic_markdown) -> None:
+        """TC-MP.1.1: Parse Epic Frontmatter - Success.
 
         Given: Epic markdown with valid frontmatter
         When: Frontmatter is parsed
@@ -202,9 +198,8 @@ class TestMarkdownParserFrontmatter:
         assert len(frontmatter["links"]) == 2
 
     @pytest.mark.unit
-    def test_parse_story_frontmatter(self, sample_story_markdown):
-        """
-        TC-MP.1.2: Parse Story Frontmatter - Success
+    def test_parse_story_frontmatter(self, sample_story_markdown) -> None:
+        """TC-MP.1.2: Parse Story Frontmatter - Success.
 
         Given: Story markdown with valid frontmatter
         When: Frontmatter is parsed
@@ -225,9 +220,8 @@ class TestMarkdownParserFrontmatter:
         assert "authentication" in frontmatter["tags"]
 
     @pytest.mark.unit
-    def test_parse_test_frontmatter(self, sample_test_markdown):
-        """
-        TC-MP.1.3: Parse Test Frontmatter - Success
+    def test_parse_test_frontmatter(self, sample_test_markdown) -> None:
+        """TC-MP.1.3: Parse Test Frontmatter - Success.
 
         Given: Test markdown with valid frontmatter
         When: Frontmatter is parsed
@@ -248,9 +242,8 @@ class TestMarkdownParserFrontmatter:
         assert frontmatter["parent"] == "STORY-001"
 
     @pytest.mark.unit
-    def test_extract_body_content(self, sample_epic_markdown):
-        """
-        TC-MP.1.4: Extract Body Content - Success
+    def test_extract_body_content(self, sample_epic_markdown) -> None:
+        """TC-MP.1.4: Extract Body Content - Success.
 
         Given: Markdown with frontmatter and body
         When: Body is extracted
@@ -270,9 +263,8 @@ class TestMarkdownParserFrontmatter:
         assert "## History" in body
 
     @pytest.mark.unit
-    def test_parse_empty_frontmatter(self):
-        """
-        TC-MP.1.5: Parse Empty Frontmatter - Graceful Handling
+    def test_parse_empty_frontmatter(self) -> None:
+        """TC-MP.1.5: Parse Empty Frontmatter - Graceful Handling.
 
         Given: Markdown with empty frontmatter
         When: Frontmatter is parsed
@@ -294,9 +286,8 @@ class TestMarkdownParserFrontmatter:
         assert frontmatter == {} or frontmatter is None
 
     @pytest.mark.unit
-    def test_parse_malformed_yaml(self):
-        """
-        TC-MP.1.6: Parse Malformed YAML - Error Handling
+    def test_parse_malformed_yaml(self) -> None:
+        """TC-MP.1.6: Parse Malformed YAML - Error Handling.
 
         Given: Markdown with invalid YAML frontmatter
         When: Parsing is attempted
@@ -325,16 +316,14 @@ invalid: yaml: structure:
 
 
 class TestMarkdownParserWriting:
-    """
-    Test Suite: Markdown Parser - Content Writing
+    """Test Suite: Markdown Parser - Content Writing.
 
     Tests writing markdown files with frontmatter
     """
 
     @pytest.mark.unit
-    def test_write_epic_markdown(self, temp_markdown_dir):
-        """
-        TC-MP.2.1: Write Epic Markdown - Success
+    def test_write_epic_markdown(self, temp_markdown_dir) -> None:
+        """TC-MP.2.1: Write Epic Markdown - Success.
 
         Given: Epic metadata and content
         When: Markdown file is written
@@ -368,9 +357,8 @@ class TestMarkdownParserWriting:
         assert "# Epic Title" in written_content
 
     @pytest.mark.unit
-    def test_write_story_markdown(self, temp_markdown_dir):
-        """
-        TC-MP.2.2: Write Story Markdown - Success
+    def test_write_story_markdown(self, temp_markdown_dir) -> None:
+        """TC-MP.2.2: Write Story Markdown - Success.
 
         Given: Story metadata and content
         When: Markdown file is written
@@ -401,9 +389,8 @@ class TestMarkdownParserWriting:
         assert parsed_metadata["parent"] == "EPIC-001"
 
     @pytest.mark.unit
-    def test_update_existing_markdown(self, temp_markdown_dir, sample_epic_markdown):
-        """
-        TC-MP.2.3: Update Existing Markdown - Success
+    def test_update_existing_markdown(self, temp_markdown_dir, sample_epic_markdown) -> None:
+        """TC-MP.2.3: Update Existing Markdown - Success.
 
         Given: Existing markdown file
         When: File is updated with new metadata
@@ -420,7 +407,7 @@ class TestMarkdownParserWriting:
         body = parts[2].strip()
 
         # Update version
-        frontmatter["version"] = frontmatter["version"] + 1
+        frontmatter["version"] += 1
         frontmatter["status"] = "done"
 
         # Write back
@@ -437,9 +424,8 @@ class TestMarkdownParserWriting:
         assert updated_frontmatter["status"] == "done"
 
     @pytest.mark.unit
-    def test_preserve_content_formatting(self, temp_markdown_dir):
-        """
-        TC-MP.2.4: Preserve Content Formatting - Success
+    def test_preserve_content_formatting(self, temp_markdown_dir) -> None:
+        """TC-MP.2.4: Preserve Content Formatting - Success.
 
         Given: Markdown with specific formatting
         When: File is read and written
@@ -488,16 +474,14 @@ def test():
 
 
 class TestMarkdownParserLinks:
-    """
-    Test Suite: Markdown Parser - Links Parsing
+    """Test Suite: Markdown Parser - Links Parsing.
 
     Tests parsing traceability links from frontmatter
     """
 
     @pytest.mark.unit
-    def test_parse_implements_links(self, sample_epic_markdown):
-        """
-        TC-MP.3.1: Parse Implements Links - Success
+    def test_parse_implements_links(self, sample_epic_markdown) -> None:
+        """TC-MP.3.1: Parse Implements Links - Success.
 
         Given: Epic with implements links
         When: Links are parsed from frontmatter
@@ -518,9 +502,8 @@ class TestMarkdownParserLinks:
         assert links[1]["target"] == "STORY-002"
 
     @pytest.mark.unit
-    def test_parse_multiple_link_types(self):
-        """
-        TC-MP.3.2: Parse Multiple Link Types - Success
+    def test_parse_multiple_link_types(self) -> None:
+        """TC-MP.3.2: Parse Multiple Link Types - Success.
 
         Given: Item with various link types
         When: Links are parsed
@@ -556,9 +539,8 @@ links:
         assert "blocks" in link_types
 
     @pytest.mark.unit
-    def test_parse_no_links(self):
-        """
-        TC-MP.3.3: Parse No Links - Graceful Handling
+    def test_parse_no_links(self) -> None:
+        """TC-MP.3.3: Parse No Links - Graceful Handling.
 
         Given: Item without links
         When: Links are parsed
@@ -588,16 +570,14 @@ type: story
 
 
 class TestMarkdownParserTags:
-    """
-    Test Suite: Markdown Parser - Tags Parsing
+    """Test Suite: Markdown Parser - Tags Parsing.
 
     Tests parsing tags from frontmatter
     """
 
     @pytest.mark.unit
-    def test_parse_tags_list(self, sample_epic_markdown):
-        """
-        TC-MP.4.1: Parse Tags List - Success
+    def test_parse_tags_list(self, sample_epic_markdown) -> None:
+        """TC-MP.4.1: Parse Tags List - Success.
 
         Given: Item with tags
         When: Tags are parsed
@@ -618,9 +598,8 @@ class TestMarkdownParserTags:
         assert "mvp" in tags
 
     @pytest.mark.unit
-    def test_parse_empty_tags(self):
-        """
-        TC-MP.4.2: Parse Empty Tags - Graceful Handling
+    def test_parse_empty_tags(self) -> None:
+        """TC-MP.4.2: Parse Empty Tags - Graceful Handling.
 
         Given: Item without tags
         When: Tags are parsed
@@ -644,9 +623,8 @@ type: story
         assert tags == []
 
     @pytest.mark.unit
-    def test_write_tags(self, temp_markdown_dir):
-        """
-        TC-MP.4.3: Write Tags - Success
+    def test_write_tags(self, temp_markdown_dir) -> None:
+        """TC-MP.4.3: Write Tags - Success.
 
         Given: Item metadata with tags
         When: Markdown is written
@@ -675,16 +653,14 @@ type: story
 
 
 class TestMarkdownParserContentExtraction:
-    """
-    Test Suite: Markdown Parser - Content Extraction
+    """Test Suite: Markdown Parser - Content Extraction.
 
     Tests extracting specific sections from markdown
     """
 
     @pytest.mark.unit
-    def test_extract_acceptance_criteria(self, sample_epic_markdown):
-        """
-        TC-MP.5.1: Extract Acceptance Criteria - Success
+    def test_extract_acceptance_criteria(self, sample_epic_markdown) -> None:
+        """TC-MP.5.1: Extract Acceptance Criteria - Success.
 
         Given: Epic with acceptance criteria section
         When: Section is extracted
@@ -706,9 +682,8 @@ class TestMarkdownParserContentExtraction:
         assert "[x] Password reset flow" in criteria_section
 
     @pytest.mark.unit
-    def test_extract_description(self, sample_epic_markdown):
-        """
-        TC-MP.5.2: Extract Description Section - Success
+    def test_extract_description(self, sample_epic_markdown) -> None:
+        """TC-MP.5.2: Extract Description Section - Success.
 
         Given: Markdown with description section
         When: Description is extracted
@@ -727,9 +702,8 @@ class TestMarkdownParserContentExtraction:
         assert "OAuth2" in description_section
 
     @pytest.mark.unit
-    def test_extract_technical_notes(self, sample_story_markdown):
-        """
-        TC-MP.5.3: Extract Technical Notes - Success
+    def test_extract_technical_notes(self, sample_story_markdown) -> None:
+        """TC-MP.5.3: Extract Technical Notes - Success.
 
         Given: Story with technical notes
         When: Notes are extracted
@@ -753,16 +727,14 @@ class TestMarkdownParserContentExtraction:
 
 
 class TestMarkdownParserErrorHandling:
-    """
-    Test Suite: Markdown Parser - Error Handling
+    """Test Suite: Markdown Parser - Error Handling.
 
     Tests handling of invalid or malformed markdown
     """
 
     @pytest.mark.unit
-    def test_missing_frontmatter_delimiters(self):
-        """
-        TC-MP.6.1: Missing Frontmatter Delimiters - Error Detection
+    def test_missing_frontmatter_delimiters(self) -> None:
+        """TC-MP.6.1: Missing Frontmatter Delimiters - Error Detection.
 
         Given: Markdown without proper --- delimiters
         When: Parsing is attempted
@@ -783,9 +755,8 @@ id: test-001
         assert len(parts) < 3
 
     @pytest.mark.unit
-    def test_invalid_yaml_syntax(self):
-        """
-        TC-MP.6.2: Invalid YAML Syntax - Error Handling
+    def test_invalid_yaml_syntax(self) -> None:
+        """TC-MP.6.2: Invalid YAML Syntax - Error Handling.
 
         Given: Frontmatter with invalid YAML
         When: Parsing is attempted
@@ -807,9 +778,8 @@ invalid yaml structure
             yaml.safe_load(parts[1])
 
     @pytest.mark.unit
-    def test_missing_required_fields(self):
-        """
-        TC-MP.6.3: Missing Required Fields - Validation
+    def test_missing_required_fields(self) -> None:
+        """TC-MP.6.3: Missing Required Fields - Validation.
 
         Given: Frontmatter without required fields
         When: Metadata is validated

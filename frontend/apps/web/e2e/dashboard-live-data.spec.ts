@@ -25,7 +25,7 @@ test.describe('Dashboard - Live Data with 5,686 Items', () => {
     // Wait for dashboard API call to complete
     const dashboardResponse = await page.waitForResponse(
       (response) => response.url().includes('/api/v1/dashboard/summary'),
-      { timeout: 10000 },
+      { timeout: 10_000 },
     );
 
     // If running in live mode, we expect real API calls

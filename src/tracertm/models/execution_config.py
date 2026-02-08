@@ -1,5 +1,4 @@
-"""
-Execution Environment Configuration model for QA Integration system.
+"""Execution Environment Configuration model for QA Integration system.
 
 Per-project settings for Docker containers, VHS, Playwright, and Codex.
 """
@@ -21,8 +20,7 @@ def generate_config_uuid() -> str:
 
 
 class ExecutionEnvironmentConfig(Base, TimestampMixin):
-    """
-    Execution Environment Configuration model.
+    """Execution Environment Configuration model.
 
     Per-project settings for Docker execution, VHS recording,
     Playwright testing, and Codex AI agent integration.

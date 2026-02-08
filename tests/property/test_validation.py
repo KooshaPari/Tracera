@@ -7,13 +7,15 @@ unhandled exception) and that validators enforce documented constraints.
 import string
 
 import pytest
-from hypothesis import given, settings, assume
+from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 from pydantic import ValidationError
 
+from tracertm.schemas.account import AccountCreate
 from tracertm.schemas.item import ItemCreate, ItemUpdate
 from tracertm.schemas.link import LinkCreate
-from tracertm.schemas.account import AccountCreate
+from tracertm.schemas.problem import ImpactLevel, ProblemCreate
+from tracertm.schemas.process import ProcessCreate, ProcessStage
 from tracertm.schemas.specification import (
     ADRCreate,
     ADROption,
@@ -21,15 +23,13 @@ from tracertm.schemas.specification import (
     BDDStep,
     ContractCondition,
 )
-from tracertm.schemas.problem import ProblemCreate, ImpactLevel
-from tracertm.schemas.test_case import TestCaseCreate as TCCreate, TestStep as TStep
-from tracertm.schemas.process import ProcessCreate, ProcessStage
+from tracertm.schemas.test_case import TestCaseCreate as TCCreate
+from tracertm.schemas.test_case import TestStep as TStep
 from tracertm.validation.id_validator import (
     is_valid_uuid,
     normalize_uuid,
     validate_uuid,
 )
-
 
 # ---------------------------------------------------------------------------
 # Strategies for adversarial inputs
@@ -124,7 +124,7 @@ class TestAccountValidation:
         assert account.name == name
         assert account.account_type == "personal"
 
-    @given(account_type=st.text(min_size=1, max_size=50).filter(lambda s: s not in ("personal", "organization")))
+    @given(account_type=st.text(min_size=1, max_size=50).filter(lambda s: s not in {"personal", "organization"}))
     @settings(max_examples=100)
     def test_account_type_rejects_invalid_values(self, account_type: str) -> None:
         """Only 'personal' or 'organization' are accepted."""

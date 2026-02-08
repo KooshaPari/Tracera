@@ -1,5 +1,4 @@
-"""
-Comprehensive authentication and authorization tests for API endpoints.
+"""Comprehensive authentication and authorization tests for API endpoints.
 
 Tests authentication mechanisms, token validation, and access control.
 """
@@ -13,13 +12,13 @@ from fastapi.testclient import TestClient
 
 
 @pytest.fixture
-def mock_jwt_token():
+def mock_jwt_token() -> str:
     """Generate mock JWT token for testing."""
     return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3VzZXIiLCJleHAiOjE3MzAwMDAwMDB9.test_signature"
 
 
 @pytest.fixture
-def expired_jwt_token():
+def expired_jwt_token() -> str:
     """Generate expired JWT token for testing."""
     return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3VzZXIiLCJleHAiOjE2MDAwMDAwMDB9.expired_signature"
 
@@ -42,7 +41,7 @@ def mock_auth_config():
 class TestTokenValidation:
     """Test JWT token validation functionality."""
 
-    def test_valid_token_accepted(self, mock_jwt_token, mock_auth_config):
+    def test_valid_token_accepted(self, mock_jwt_token, mock_auth_config) -> None:
         """Test that valid JWT tokens are accepted."""
         from tracertm.api.main import app
 
@@ -57,7 +56,7 @@ class TestTokenValidation:
             # Should not get 401 Unauthorized
             assert response.status_code != 401
 
-    def test_missing_token_rejected(self):
+    def test_missing_token_rejected(self) -> None:
         """Test that requests without tokens are rejected when auth is enabled."""
         from tracertm.api.main import app
 
@@ -74,7 +73,7 @@ class TestTokenValidation:
             with pytest.raises(Exception):  # Will raise because middleware expects token
                 client.get("/api/v1/items", params={"project_id": "test"})
 
-    def test_malformed_token_rejected(self):
+    def test_malformed_token_rejected(self) -> None:
         """Test that malformed tokens are rejected."""
         from tracertm.api.main import app
 
@@ -87,7 +86,7 @@ class TestTokenValidation:
             with pytest.raises(Exception):
                 client.get("/api/v1/items", params={"project_id": "test"}, headers=headers)
 
-    def test_expired_token_rejected(self, expired_jwt_token):
+    def test_expired_token_rejected(self, expired_jwt_token) -> None:
         """Test that expired tokens are rejected."""
         from tracertm.api.main import app
 
@@ -100,7 +99,7 @@ class TestTokenValidation:
             with pytest.raises(Exception):
                 client.get("/api/v1/items", params={"project_id": "test"}, headers=headers)
 
-    def test_token_with_wrong_signature(self):
+    def test_token_with_wrong_signature(self) -> None:
         """Test that tokens with invalid signatures are rejected."""
         from tracertm.api.main import app
 
@@ -118,7 +117,7 @@ class TestTokenValidation:
 class TestAuthorizationHeaders:
     """Test various Authorization header formats."""
 
-    def test_bearer_prefix_required(self, mock_jwt_token):
+    def test_bearer_prefix_required(self, mock_jwt_token) -> None:
         """Test that Bearer prefix is required in Authorization header."""
         from tracertm.api.main import app
 
@@ -129,7 +128,7 @@ class TestAuthorizationHeaders:
         with pytest.raises(Exception):
             client.get("/api/v1/items", params={"project_id": "test"}, headers=headers)
 
-    def test_case_insensitive_bearer(self, mock_jwt_token):
+    def test_case_insensitive_bearer(self, mock_jwt_token) -> None:
         """Test that Bearer prefix is case-insensitive."""
         from tracertm.api.main import app
 
@@ -147,7 +146,7 @@ class TestAuthorizationHeaders:
                 except Exception:
                     pass  # Just testing header parsing
 
-    def test_multiple_spaces_in_header(self, mock_jwt_token):
+    def test_multiple_spaces_in_header(self, mock_jwt_token) -> None:
         """Test handling of multiple spaces in Authorization header."""
         from tracertm.api.main import app
 
@@ -157,7 +156,7 @@ class TestAuthorizationHeaders:
         with pytest.raises(Exception):
             client.get("/api/v1/items", params={"project_id": "test"}, headers=headers)
 
-    def test_empty_token_after_bearer(self):
+    def test_empty_token_after_bearer(self) -> None:
         """Test handling of empty token after Bearer prefix."""
         from tracertm.api.main import app
 
@@ -171,7 +170,7 @@ class TestAuthorizationHeaders:
 class TestRoleBasedAccess:
     """Test role-based access control."""
 
-    def test_admin_access_to_all_endpoints(self, mock_jwt_token):
+    def test_admin_access_to_all_endpoints(self, mock_jwt_token) -> None:
         """Test that admin role has access to all endpoints."""
         from tracertm.api.main import app
 
@@ -197,7 +196,7 @@ class TestRoleBasedAccess:
                 except Exception:
                     pass  # Just testing authorization, not full endpoint logic
 
-    def test_user_role_restrictions(self, mock_jwt_token):
+    def test_user_role_restrictions(self, mock_jwt_token) -> None:
         """Test that regular users have restricted access."""
         from tracertm.api.main import app
 
@@ -214,7 +213,7 @@ class TestRoleBasedAccess:
                 with pytest.raises(Exception):
                     client.delete("/api/v1/items/test_item", headers=headers)
 
-    def test_guest_role_readonly_access(self, mock_jwt_token):
+    def test_guest_role_readonly_access(self, mock_jwt_token) -> None:
         """Test that guest role has read-only access."""
         from tracertm.api.main import app
 
@@ -238,7 +237,7 @@ class TestRoleBasedAccess:
 class TestProjectAccess:
     """Test project-level access control."""
 
-    def test_user_can_access_own_projects(self, mock_jwt_token):
+    def test_user_can_access_own_projects(self, mock_jwt_token) -> None:
         """Test that users can access their own projects."""
         from tracertm.api.main import app
 
@@ -256,7 +255,7 @@ class TestProjectAccess:
                 except Exception:
                     pass  # Just testing authorization
 
-    def test_user_cannot_access_other_projects(self, mock_jwt_token):
+    def test_user_cannot_access_other_projects(self, mock_jwt_token) -> None:
         """Test that users cannot access projects they don't own."""
         from tracertm.api.main import app
 
@@ -276,7 +275,7 @@ class TestProjectAccess:
 class TestAPIKeyAuthentication:
     """Test API key authentication as alternative to JWT."""
 
-    def test_valid_api_key_accepted(self):
+    def test_valid_api_key_accepted(self) -> None:
         """Test that valid API keys are accepted."""
         from tracertm.api.main import app
 
@@ -291,7 +290,7 @@ class TestAPIKeyAuthentication:
             except Exception:
                 pass  # Just testing key validation
 
-    def test_invalid_api_key_rejected(self):
+    def test_invalid_api_key_rejected(self) -> None:
         """Test that invalid API keys are rejected."""
         from tracertm.api.main import app
 
@@ -304,7 +303,7 @@ class TestAPIKeyAuthentication:
             with pytest.raises(Exception):
                 client.get("/api/v1/items", params={"project_id": "test"}, headers=headers)
 
-    def test_api_key_and_jwt_precedence(self, mock_jwt_token):
+    def test_api_key_and_jwt_precedence(self, mock_jwt_token) -> None:
         """Test precedence when both API key and JWT are provided."""
         from tracertm.api.main import app
 
@@ -328,7 +327,7 @@ class TestAPIKeyAuthentication:
 class TestAuthenticationBypass:
     """Test authentication bypass scenarios."""
 
-    def test_public_endpoints_no_auth_required(self):
+    def test_public_endpoints_no_auth_required(self) -> None:
         """Test that public endpoints don't require authentication."""
         from tracertm.api.main import app
 
@@ -339,7 +338,7 @@ class TestAuthenticationBypass:
         response = client.get("/health")
         assert response.status_code == 200
 
-    def test_auth_disabled_mode(self):
+    def test_auth_disabled_mode(self) -> None:
         """Test that all endpoints work when auth is disabled."""
         from tracertm.api.main import app
 
@@ -362,7 +361,7 @@ class TestAuthenticationBypass:
 class TestTokenRefresh:
     """Test token refresh mechanism."""
 
-    def test_refresh_token_generates_new_token(self):
+    def test_refresh_token_generates_new_token(self) -> None:
         """Test that refresh tokens can generate new access tokens."""
         refresh_token = "valid_refresh_token_12345"
 
@@ -385,7 +384,7 @@ class TestTokenRefresh:
                 except Exception:
                     pass  # Endpoint might not exist, but testing the concept
 
-    def test_expired_refresh_token_rejected(self):
+    def test_expired_refresh_token_rejected(self) -> None:
         """Test that expired refresh tokens are rejected."""
         expired_refresh = "expired_refresh_token"
 
@@ -403,7 +402,7 @@ class TestTokenRefresh:
 class TestRateLimitingWithAuth:
     """Test rate limiting based on authentication."""
 
-    def test_authenticated_users_higher_rate_limit(self, mock_jwt_token):
+    def test_authenticated_users_higher_rate_limit(self, mock_jwt_token) -> None:
         """Test that authenticated users have higher rate limits."""
         from tracertm.api.main import app
 
@@ -423,7 +422,7 @@ class TestRateLimitingWithAuth:
                     except Exception:
                         pass
 
-    def test_anonymous_users_lower_rate_limit(self):
+    def test_anonymous_users_lower_rate_limit(self) -> None:
         """Test that anonymous users have lower rate limits."""
         from tracertm.api.main import app
 

@@ -26,7 +26,7 @@ def _queue(tmp_path: Path, monkeypatch) -> SyncQueue:
                 last_error TEXT,
                 UNIQUE(entity_type, entity_id, operation)
             );
-            """
+            """,
         )
         conn.exec_driver_sql(
             """
@@ -35,7 +35,7 @@ def _queue(tmp_path: Path, monkeypatch) -> SyncQueue:
                 value TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             );
-            """
+            """,
         )
         conn.commit()
 
@@ -53,12 +53,12 @@ def _queue(tmp_path: Path, monkeypatch) -> SyncQueue:
             conn.commit()
             return result.lastrowid if hasattr(result, "lastrowid") else 1
 
-    def _remove(queue_id: int):
+    def _remove(queue_id: int) -> None:
         with mgr.engine.connect() as conn:
             conn.exec_driver_sql("DELETE FROM sync_queue WHERE id = ?", (queue_id,))
             conn.commit()
 
-    def _update_retry(queue_id: int, error: str):
+    def _update_retry(queue_id: int, error: str) -> None:
         with mgr.engine.connect() as conn:
             conn.exec_driver_sql(
                 "UPDATE sync_queue SET retry_count = retry_count + 1, last_error = ? WHERE id = ?",
@@ -102,14 +102,14 @@ def _queue(tmp_path: Path, monkeypatch) -> SyncQueue:
     return queue
 
 
-def test_enqueue_and_get_pending(tmp_path: Path, monkeypatch):
+def test_enqueue_and_get_pending(tmp_path: Path, monkeypatch) -> None:
     queue = _queue(tmp_path, monkeypatch)
     qid = queue.enqueue(EntityType.ITEM, "item-1", OperationType.CREATE, {"foo": "bar"})
     pending = queue.get_pending()
     assert any(p.id == qid and p.entity_id == "item-1" for p in pending)
 
 
-def test_remove_and_count(tmp_path: Path, monkeypatch):
+def test_remove_and_count(tmp_path: Path, monkeypatch) -> None:
     queue = _queue(tmp_path, monkeypatch)
     qid = queue.enqueue(EntityType.ITEM, "item-2", OperationType.UPDATE, {"a": 1})
     assert queue.get_count() == 1
@@ -117,7 +117,7 @@ def test_remove_and_count(tmp_path: Path, monkeypatch):
     assert queue.get_count() == 0
 
 
-def test_update_retry_records_error(tmp_path: Path, monkeypatch):
+def test_update_retry_records_error(tmp_path: Path, monkeypatch) -> None:
     queue = _queue(tmp_path, monkeypatch)
     qid = queue.enqueue(EntityType.LINK, "link-1", OperationType.DELETE, {})
     queue.update_retry(qid, "boom")

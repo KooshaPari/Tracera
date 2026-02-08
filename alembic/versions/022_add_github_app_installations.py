@@ -81,7 +81,7 @@ def upgrade() -> None:
     except Exception as e:
         log.debug("drop_index ix_integration_credentials_project_provider: %s", e)
     op.create_index(
-        "ix_integration_credentials_account_provider", "integration_credentials", ["account_id", "provider"]
+        "ix_integration_credentials_account_provider", "integration_credentials", ["account_id", "provider"],
     )
 
 
@@ -90,7 +90,7 @@ def downgrade() -> None:
     op.drop_index("ix_integration_credentials_github_app_installation_id", table_name="integration_credentials")
     op.drop_index("ix_integration_credentials_account_id", table_name="integration_credentials")
     op.drop_constraint(
-        "fk_integration_credentials_github_app_installation_id", "integration_credentials", type_="foreignkey"
+        "fk_integration_credentials_github_app_installation_id", "integration_credentials", type_="foreignkey",
     )
     op.drop_constraint("fk_integration_credentials_account_id", "integration_credentials", type_="foreignkey")
 

@@ -11,6 +11,8 @@ _STATUS_UNAUTHORIZED = 401
 # Identifier format: TEAM-NUMBER (e.g. TEAM-123)
 _MIN_IDENTIFIER_PARTS = 2
 
+import contextlib
+
 import httpx
 from pydantic import BaseModel, Field
 from tenacity import (
@@ -28,7 +30,7 @@ class LinearClientError(Exception):
 class LinearRateLimitError(LinearClientError):
     """Rate limit exceeded."""
 
-    def __init__(self, reset_at: datetime | None = None, message: str = "Rate limit exceeded"):
+    def __init__(self, reset_at: datetime | None = None, message: str = "Rate limit exceeded") -> None:
         self.reset_at = reset_at
         super().__init__(message)
 
@@ -131,7 +133,7 @@ class LinearClient:
         self,
         api_key: str,
         timeout: float = 30.0,
-    ):
+    ) -> None:
         """Initialize Linear client.
 
         Args:
@@ -167,7 +169,7 @@ class LinearClient:
             lambda e: (
                 isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
                 or (isinstance(e, httpx.HTTPStatusError) and e.response.status_code >= _STATUS_SERVER_ERROR)
-            )
+            ),
         ),
         reraise=True,
     )
@@ -199,15 +201,14 @@ class LinearClient:
             reset_after = response.headers.get("Retry-After")
             reset_at = None
             if reset_after:
-                try:
+                with contextlib.suppress(ValueError, TypeError):
                     reset_at = datetime.fromtimestamp(float(reset_after), tz=UTC)
-                except (ValueError, TypeError):
-                    pass
             raise LinearRateLimitError(reset_at)
 
         # Handle auth errors
         if response.status_code == _STATUS_UNAUTHORIZED:
-            raise LinearAuthError("Invalid API key")
+            msg = "Invalid API key"
+            raise LinearAuthError(msg)
 
         response.raise_for_status()
 
@@ -217,7 +218,8 @@ class LinearClient:
         if "errors" in result:
             errors = result["errors"]
             if any(e.get("extensions", {}).get("code") == "UNAUTHENTICATED" for e in errors):
-                raise LinearAuthError("Invalid API key")
+                msg = "Invalid API key"
+                raise LinearAuthError(msg)
             if any(e.get("message", "").lower().find("not found") >= 0 for e in errors):
                 raise LinearNotFoundError(errors[0].get("message", "Resource not found"))
             raise LinearClientError(errors[0].get("message", "GraphQL error"))
@@ -474,7 +476,8 @@ class LinearClient:
         # Parse the identifier (e.g. TEAM-123 => team_key + issue_number)
         parts = identifier.split("-")
         if len(parts) < _MIN_IDENTIFIER_PARTS:
-            raise ValueError(f"Invalid issue identifier: {identifier}")
+            msg = f"Invalid issue identifier: {identifier}"
+            raise ValueError(msg)
 
         team_key = parts[0]
         issue_number = int(parts[1])
@@ -518,12 +521,13 @@ class LinearClient:
                 "filter": {
                     "team": {"key": {"eq": team_key}},
                     "number": {"eq": issue_number},
-                }
+                },
             },
         )
         issues = result.get("issues", {}).get("nodes", [])
         if not issues:
-            raise LinearNotFoundError(f"Issue {identifier} not found")
+            msg = f"Issue {identifier} not found"
+            raise LinearNotFoundError(msg)
         return issues[0]
 
     async def create_issue(self, request: IssueCreateRequest) -> dict[str, Any]:

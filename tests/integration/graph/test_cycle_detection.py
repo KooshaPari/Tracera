@@ -1,5 +1,4 @@
-"""
-Integration tests for Epic 4: Cycle detection (FR22).
+"""Integration tests for Epic 4: Cycle detection (FR22).
 
 Tests cycle prevention for depends_on relationships.
 """
@@ -22,7 +21,7 @@ def runner():
 
 
 @pytest.fixture
-def temp_project(runner, tmp_path, monkeypatch):
+def temp_project(runner, tmp_path, monkeypatch) -> str:
     """Create a temporary project for testing."""
     config_dir = tmp_path / ".config" / "tracertm"
     config_dir.mkdir(parents=True, exist_ok=True)
@@ -43,7 +42,7 @@ def temp_project(runner, tmp_path, monkeypatch):
     return "test-project"
 
 
-def test_cycle_prevention_on_link_creation(runner, temp_project):
+def test_cycle_prevention_on_link_creation(runner, temp_project) -> None:
     """Test that cycle prevention prevents creating circular dependencies (FR22)."""
     # Create items
     result1 = runner.invoke(
@@ -106,7 +105,7 @@ def test_cycle_prevention_on_link_creation(runner, temp_project):
     assert "Circular dependency" in result4.stdout or "cycle" in result4.stdout.lower()
 
 
-def test_cycle_detection_command(runner, temp_project):
+def test_cycle_detection_command(runner, temp_project) -> None:
     """Test cycle detection command (FR22)."""
     # Create items and links that form a cycle
     # This test verifies the detect-cycles command works
@@ -117,7 +116,7 @@ def test_cycle_detection_command(runner, temp_project):
     assert "No cycles detected" in result.stdout or "cycle" in result.stdout.lower()
 
 
-def test_cycle_detection_service(runner, temp_project, tmp_path, monkeypatch):
+def test_cycle_detection_service(runner, temp_project, tmp_path, monkeypatch) -> None:
     """Test cycle detection service directly."""
     from tracertm.config.manager import ConfigManager
 

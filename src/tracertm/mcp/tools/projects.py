@@ -1,5 +1,4 @@
-"""
-Project management MCP tools.
+"""Project management MCP tools.
 
 Provides tools for creating, listing, selecting, and snapshotting projects.
 """
@@ -41,7 +40,8 @@ async def create_project(
         Created project details with id, name, description
     """
     if not name:
-        raise ToolError("Project name is required.")
+        msg = "Project name is required."
+        raise ToolError(msg)
 
     async with get_mcp_session() as session:
         project = Project(
@@ -107,7 +107,8 @@ async def select_project(
         Selected project details
     """
     if not project_id:
-        raise ToolError("project_id is required.")
+        msg = "project_id is required."
+        raise ToolError(msg)
 
     async with get_mcp_session() as session:
         # Try exact match first
@@ -120,7 +121,8 @@ async def select_project(
             project = result.scalar_one_or_none()
 
         if not project:
-            raise ToolError(f"Project not found: {project_id}")
+            msg = f"Project not found: {project_id}"
+            raise ToolError(msg)
 
         await set_current_project(str(project.id))
 
@@ -154,13 +156,15 @@ async def snapshot_project(
         Snapshot details including timestamp and label
     """
     if not project_id or not label:
-        raise ToolError("project_id and label are required.")
+        msg = "project_id and label are required."
+        raise ToolError(msg)
 
     async with get_mcp_session() as session:
         result = await session.execute(select(Project).filter(Project.id == project_id))
         project = result.scalar_one_or_none()
         if not project:
-            raise ToolError(f"Project not found: {project_id}")
+            msg = f"Project not found: {project_id}"
+            raise ToolError(msg)
 
         # Create snapshot record
         config = get_config_manager()

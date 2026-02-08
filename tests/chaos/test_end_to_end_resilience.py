@@ -1,5 +1,4 @@
-"""
-Chaos Test: End-to-End Resilience
+"""Chaos Test: End-to-End Resilience.
 
 Full system resilience tests combining multiple failure scenarios.
 Validates that the entire application stack recovers from cascading failures.
@@ -34,8 +33,7 @@ async def test_cascading_failure_recovery(
     redis_client: redis.Redis,
     assert_recovery_within_target,
 ) -> None:
-    """
-    Test: Cascading failure across multiple services.
+    """Test: Cascading failure across multiple services.
 
     Scenario:
     1. Verify all services healthy
@@ -161,8 +159,7 @@ async def test_gradual_degradation_under_load(
     db_session,
     assert_recovery_within_target,
 ) -> None:
-    """
-    Test: Gradual degradation under increasing load.
+    """Test: Gradual degradation under increasing load.
 
     Scenario:
     1. Start with low latency (100ms)
@@ -192,7 +189,7 @@ async def test_gradual_degradation_under_load(
                 jitter_ms=50,
             )
 
-        logger.info(f"Increased latency to {latency_ms}ms")
+        logger.info("Increased latency to %sms", latency_ms)
 
         # Execute query under current latency
         start = time.time()
@@ -213,7 +210,7 @@ async def test_gradual_degradation_under_load(
             attributes={"latency": latency_ms, "jitter": 50},
         )
 
-        logger.info(f"Decreased latency to {latency_ms}ms")
+        logger.info("Decreased latency to %sms", latency_ms)
 
         result = await db_session.execute(text("SELECT 1 as health"))
         assert result.scalar() == 1
@@ -244,8 +241,7 @@ async def test_split_brain_scenario(
     redis_client: redis.Redis,
     assert_recovery_within_target,
 ) -> None:
-    """
-    Test: Split-brain scenario (partial network partition).
+    """Test: Split-brain scenario (partial network partition).
 
     Scenario:
     1. Set up two Redis connections through different proxies

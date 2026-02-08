@@ -1,5 +1,4 @@
-"""
-Comprehensive integration tests for ImpactAnalysisService.
+"""Comprehensive integration tests for ImpactAnalysisService.
 
 Tests cover:
 - Multi-level impact chains (depth 1-10+)
@@ -55,7 +54,7 @@ async def async_session(async_test_db):
 class TestImpactNodeDataclass:
     """Test ImpactNode dataclass."""
 
-    def test_impact_node_creation_basic(self):
+    def test_impact_node_creation_basic(self) -> None:
         """Test basic ImpactNode creation."""
         item = Mock()
         item.id = "item-1"
@@ -72,7 +71,7 @@ class TestImpactNodeDataclass:
         assert node.path == ["root", "item-1"]
         assert node.link_type is None
 
-    def test_impact_node_with_link_type(self):
+    def test_impact_node_with_link_type(self) -> None:
         """Test ImpactNode with link_type."""
         item = Mock()
         item.id = "item-2"
@@ -88,7 +87,7 @@ class TestImpactNodeDataclass:
         assert node.link_type == "implements"
         assert len(node.path) == 3
 
-    def test_impact_node_deep_path(self):
+    def test_impact_node_deep_path(self) -> None:
         """Test ImpactNode with deep path."""
         item = Mock()
         deep_path = [f"item-{i}" for i in range(10)]
@@ -109,7 +108,7 @@ class TestImpactNodeDataclass:
 class TestImpactAnalysisResultDataclass:
     """Test ImpactAnalysisResult dataclass."""
 
-    def test_result_creation_basic(self):
+    def test_result_creation_basic(self) -> None:
         """Test basic ImpactAnalysisResult creation."""
         result = ImpactAnalysisResult(
             root_item_id="root-1",
@@ -128,7 +127,7 @@ class TestImpactAnalysisResultDataclass:
                     "depth": 1,
                     "path": ["root-1", "item-1"],
                     "link_type": "traces_to",
-                }
+                },
             ],
             critical_paths=[["root-1", "item-1"]],
         )
@@ -142,7 +141,7 @@ class TestImpactAnalysisResultDataclass:
         assert len(result.affected_items) == 1
         assert len(result.critical_paths) == 1
 
-    def test_result_empty_affected_items(self):
+    def test_result_empty_affected_items(self) -> None:
         """Test ImpactAnalysisResult with no affected items."""
         result = ImpactAnalysisResult(
             root_item_id="root-1",
@@ -159,7 +158,7 @@ class TestImpactAnalysisResultDataclass:
         assert len(result.affected_items) == 0
         assert len(result.critical_paths) == 0
 
-    def test_result_multi_view_distribution(self):
+    def test_result_multi_view_distribution(self) -> None:
         """Test ImpactAnalysisResult with multiple views."""
         result = ImpactAnalysisResult(
             root_item_id="root-1",
@@ -184,7 +183,7 @@ class TestImpactAnalysisResultDataclass:
 class TestFindCriticalPaths:
     """Test _find_critical_paths method."""
 
-    def test_find_critical_paths_single_leaf(self):
+    def test_find_critical_paths_single_leaf(self) -> None:
         """Test finding critical paths with single leaf node."""
         service = ImpactAnalysisService(AsyncMock())
 
@@ -202,7 +201,7 @@ class TestFindCriticalPaths:
         assert len(paths) == 1
         assert paths[0] == ["root", "item-1"]
 
-    def test_find_critical_paths_multiple_branches(self):
+    def test_find_critical_paths_multiple_branches(self) -> None:
         """Test finding critical paths with multiple branches."""
         service = ImpactAnalysisService(AsyncMock())
 
@@ -232,7 +231,7 @@ class TestFindCriticalPaths:
         assert ["root", "item-1", "item-2"] in paths
         assert ["root", "item-1", "item-3"] in paths
 
-    def test_find_critical_paths_linear_chain(self):
+    def test_find_critical_paths_linear_chain(self) -> None:
         """Test finding critical paths with linear chain."""
         service = ImpactAnalysisService(AsyncMock())
 
@@ -250,7 +249,7 @@ class TestFindCriticalPaths:
         assert len(paths) == 1
         assert paths[0] == ["root", "item-1", "item-2", "item-3", "item-4"]
 
-    def test_find_critical_paths_empty_nodes(self):
+    def test_find_critical_paths_empty_nodes(self) -> None:
         """Test finding critical paths with empty nodes list."""
         service = ImpactAnalysisService(AsyncMock())
 
@@ -272,7 +271,7 @@ class TestAnalyzeImpactBasic:
         return service
 
     @pytest.mark.asyncio
-    async def test_item_not_found(self, service):
+    async def test_item_not_found(self, service) -> None:
         """Test analyzing impact of nonexistent item."""
         service.items.get_by_id = AsyncMock(return_value=None)
 
@@ -280,7 +279,7 @@ class TestAnalyzeImpactBasic:
             await service.analyze_impact("nonexistent")
 
     @pytest.mark.asyncio
-    async def test_single_item_no_links(self, service):
+    async def test_single_item_no_links(self, service) -> None:
         """Test analyzing item with no downstream links."""
         root = Mock()
         root.id = "root"
@@ -299,7 +298,7 @@ class TestAnalyzeImpactBasic:
         assert result.critical_paths == []
 
     @pytest.mark.asyncio
-    async def test_single_level_impact(self, service):
+    async def test_single_level_impact(self, service) -> None:
         """Test analyzing item with single level of impact."""
         root = Mock()
         root.id = "root"
@@ -331,7 +330,7 @@ class TestAnalyzeImpactBasic:
         assert len(result.critical_paths) == 1
 
     @pytest.mark.asyncio
-    async def test_two_level_impact(self, service):
+    async def test_two_level_impact(self, service) -> None:
         """Test analyzing item with two levels of impact."""
         root = Mock()
         root.id = "root"
@@ -387,7 +386,7 @@ class TestAnalyzeImpactBasic:
         assert len(result.affected_items) == 2
 
     @pytest.mark.asyncio
-    async def test_branching_impact(self, service):
+    async def test_branching_impact(self, service) -> None:
         """Test analyzing item with branching impact."""
         root = Mock()
         root.id = "root"
@@ -453,7 +452,7 @@ class TestAnalyzeImpactDepth:
         return service
 
     @pytest.mark.asyncio
-    async def test_max_depth_limit(self, service):
+    async def test_max_depth_limit(self, service) -> None:
         """Test that max_depth parameter limits traversal."""
         items = {
             "root": Mock(id="root", title="Root"),
@@ -469,7 +468,7 @@ class TestAnalyzeImpactDepth:
             "level3": [],
         }
 
-        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.items.get_by_id = AsyncMock(side_effect=items.get)
         service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
 
         # Test with max_depth=1
@@ -488,7 +487,7 @@ class TestAnalyzeImpactDepth:
         assert result.max_depth_reached == 3
 
     @pytest.mark.asyncio
-    async def test_deep_chain_5_levels(self, service):
+    async def test_deep_chain_5_levels(self, service) -> None:
         """Test deep chain of 5 levels."""
         items = {}
         for i in range(6):
@@ -503,7 +502,7 @@ class TestAnalyzeImpactDepth:
             links[f"item{i}"] = [Mock(target_item_id=f"item{i + 1}", link_type="traces_to")]
         links["item5"] = []
 
-        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.items.get_by_id = AsyncMock(side_effect=items.get)
         service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
 
         result = await service.analyze_impact("item0", max_depth=10)
@@ -526,7 +525,7 @@ class TestAnalyzeImpactFiltering:
         return service
 
     @pytest.mark.asyncio
-    async def test_filter_single_link_type(self, service):
+    async def test_filter_single_link_type(self, service) -> None:
         """Test filtering to single link type."""
         root = Mock()
         root.id = "root"
@@ -561,7 +560,7 @@ class TestAnalyzeImpactFiltering:
         assert result.affected_items[0]["id"] == "item1"
 
     @pytest.mark.asyncio
-    async def test_filter_multiple_link_types(self, service):
+    async def test_filter_multiple_link_types(self, service) -> None:
         """Test filtering to multiple link types."""
         root = Mock()
         root.id = "root"
@@ -593,7 +592,7 @@ class TestAnalyzeImpactFiltering:
         assert {item["id"] for item in result.affected_items} == {"item1", "item2"}
 
     @pytest.mark.asyncio
-    async def test_filter_no_matching_types(self, service):
+    async def test_filter_no_matching_types(self, service) -> None:
         """Test filtering with no matching link types."""
         root = Mock()
         root.id = "root"
@@ -625,7 +624,7 @@ class TestAnalyzeReverseImpact:
         return service
 
     @pytest.mark.asyncio
-    async def test_reverse_impact_single_parent(self, service):
+    async def test_reverse_impact_single_parent(self, service) -> None:
         """Test reverse impact with single parent."""
         parent = Mock()
         parent.id = "parent"
@@ -652,7 +651,7 @@ class TestAnalyzeReverseImpact:
         assert result.max_depth_reached == 1
 
     @pytest.mark.asyncio
-    async def test_reverse_impact_multiple_parents(self, service):
+    async def test_reverse_impact_multiple_parents(self, service) -> None:
         """Test reverse impact with multiple parents."""
         parent1 = Mock(id="p1", title="P1", view="REQ", item_type="requirement", status="active")
         parent2 = Mock(id="p2", title="P2", view="REQ", item_type="requirement", status="active")
@@ -685,7 +684,7 @@ class TestAnalyzeReverseImpact:
         assert result.total_affected == 2
 
     @pytest.mark.asyncio
-    async def test_reverse_impact_chain(self, service):
+    async def test_reverse_impact_chain(self, service) -> None:
         """Test reverse impact with chain of dependencies."""
         item1 = Mock(id="item1", title="Item 1", view="REQ", item_type="requirement", status="active")
         item2 = Mock(id="item2", title="Item 2", view="REQ", item_type="requirement", status="active")
@@ -728,7 +727,7 @@ class TestAnalyzeImpactAccuracy:
         return service
 
     @pytest.mark.asyncio
-    async def test_depth_count_accuracy(self, service):
+    async def test_depth_count_accuracy(self, service) -> None:
         """Test that affected_by_depth counts are accurate."""
         items = {}
         for i in range(5):
@@ -736,7 +735,7 @@ class TestAnalyzeImpactAccuracy:
                 items[f"item{i}"] = Mock(id=f"item{i}", title=f"Item {i}")
             else:
                 items[f"item{i}"] = Mock(
-                    id=f"item{i}", title=f"Item {i}", view="REQ", item_type="requirement", status="active"
+                    id=f"item{i}", title=f"Item {i}", view="REQ", item_type="requirement", status="active",
                 )
 
         links = {
@@ -750,7 +749,7 @@ class TestAnalyzeImpactAccuracy:
             "item4": [],
         }
 
-        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.items.get_by_id = AsyncMock(side_effect=items.get)
         service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
 
         result = await service.analyze_impact("item0")
@@ -764,7 +763,7 @@ class TestAnalyzeImpactAccuracy:
         assert result.affected_by_depth.get(2, 0) == 2  # item3, item4
 
     @pytest.mark.asyncio
-    async def test_view_count_accuracy(self, service):
+    async def test_view_count_accuracy(self, service) -> None:
         """Test that affected_by_view counts are accurate."""
         root = Mock()
         root.id = "root"
@@ -800,7 +799,7 @@ class TestAnalyzeImpactAccuracy:
         assert result.affected_by_view.get("DESIGN", 0) == 1
 
     @pytest.mark.asyncio
-    async def test_no_duplicate_items(self, service):
+    async def test_no_duplicate_items(self, service) -> None:
         """Test that items are not duplicated in results."""
         root = Mock()
         root.id = "root"
@@ -821,7 +820,7 @@ class TestAnalyzeImpactAccuracy:
         assert len(item_ids) == len(set(item_ids))  # No duplicates
 
     @pytest.mark.asyncio
-    async def test_path_correctness(self, service):
+    async def test_path_correctness(self, service) -> None:
         """Test that paths in affected items are correct."""
         root = Mock()
         root.id = "root"
@@ -836,7 +835,7 @@ class TestAnalyzeImpactAccuracy:
             "leaf": [],
         }
 
-        service.items.get_by_id = AsyncMock(side_effect=lambda id: {"root": root, "mid": mid, "leaf": leaf}.get(id))
+        service.items.get_by_id = AsyncMock(side_effect={"root": root, "mid": mid, "leaf": leaf}.get)
         service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
 
         result = await service.analyze_impact("root")
@@ -860,7 +859,7 @@ class TestAnalyzeImpactPerformance:
         return service
 
     @pytest.mark.asyncio
-    async def test_performance_linear_chain_20_items(self, service):
+    async def test_performance_linear_chain_20_items(self, service) -> None:
         """Test performance with linear chain of 20 items."""
         items = {}
         for i in range(20):
@@ -868,7 +867,7 @@ class TestAnalyzeImpactPerformance:
                 items[f"item{i}"] = Mock(id=f"item{i}", title=f"Item {i}")
             else:
                 items[f"item{i}"] = Mock(
-                    id=f"item{i}", title=f"Item {i}", view="REQ", item_type="requirement", status="active"
+                    id=f"item{i}", title=f"Item {i}", view="REQ", item_type="requirement", status="active",
                 )
 
         links = {}
@@ -876,7 +875,7 @@ class TestAnalyzeImpactPerformance:
             links[f"item{i}"] = [Mock(target_item_id=f"item{i + 1}", link_type="traces_to")]
         links["item19"] = []
 
-        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.items.get_by_id = AsyncMock(side_effect=items.get)
         service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
 
         start_time = time.time()
@@ -895,7 +894,7 @@ class TestAnalyzeImpactPerformance:
         assert result_extended.max_depth_reached == 19
 
     @pytest.mark.asyncio
-    async def test_performance_wide_branching(self, service):
+    async def test_performance_wide_branching(self, service) -> None:
         """Test performance with wide branching."""
         num_children = 50
 
@@ -906,7 +905,7 @@ class TestAnalyzeImpactPerformance:
         items = {"root": root}
         for i in range(num_children):
             items[f"child{i}"] = Mock(
-                id=f"child{i}", title=f"Child {i}", view="REQ", item_type="requirement", status="active"
+                id=f"child{i}", title=f"Child {i}", view="REQ", item_type="requirement", status="active",
             )
 
         links = {}
@@ -915,7 +914,7 @@ class TestAnalyzeImpactPerformance:
         for i in range(num_children):
             links[f"child{i}"] = []
 
-        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.items.get_by_id = AsyncMock(side_effect=items.get)
         service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
 
         start_time = time.time()
@@ -926,7 +925,7 @@ class TestAnalyzeImpactPerformance:
         assert elapsed < 2.0  # Should complete in less than 2 seconds
 
     @pytest.mark.asyncio
-    async def test_performance_multi_level_tree(self, service):
+    async def test_performance_multi_level_tree(self, service) -> None:
         """Test performance with multi-level tree structure."""
         # Create a balanced tree: 3 levels with branching factor 3
         # Total items: 1 + 3 + 9 = 13
@@ -960,7 +959,7 @@ class TestAnalyzeImpactPerformance:
             for j in range(3):
                 links[f"l2_{i}_{j}"] = []
 
-        service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
+        service.items.get_by_id = AsyncMock(side_effect=items.get)
         service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
 
         start_time = time.time()
@@ -984,7 +983,7 @@ class TestEdgeCases:
         return service
 
     @pytest.mark.asyncio
-    async def test_circular_dependency(self, service):
+    async def test_circular_dependency(self, service) -> None:
         """Test handling of circular dependencies."""
         item1 = Mock(id="item1", title="Item 1", view="REQ", item_type="requirement", status="active")
         item2 = Mock(id="item2", title="Item 2", view="REQ", item_type="requirement", status="active")
@@ -1014,7 +1013,7 @@ class TestEdgeCases:
         assert len(item_ids) == len(set(item_ids))  # No duplicates
 
     @pytest.mark.asyncio
-    async def test_missing_intermediate_item(self, service):
+    async def test_missing_intermediate_item(self, service) -> None:
         """Test handling of missing intermediate items."""
         root = Mock()
         root.id = "root"
@@ -1032,7 +1031,7 @@ class TestEdgeCases:
 
         service.items.get_by_id = AsyncMock(side_effect=get_by_id_side_effect)
         service.links.get_by_source = AsyncMock(
-            side_effect=lambda id: [link_to_missing, link_to_leaf] if id == "root" else []
+            side_effect=lambda id: [link_to_missing, link_to_leaf] if id == "root" else [],
         )
 
         result = await service.analyze_impact("root")
@@ -1042,7 +1041,7 @@ class TestEdgeCases:
         assert result.affected_items[0]["id"] == "leaf"
 
     @pytest.mark.asyncio
-    async def test_empty_link_types_parameter(self, service):
+    async def test_empty_link_types_parameter(self, service) -> None:
         """Test with empty link_types list."""
         root = Mock()
         root.id = "root"
@@ -1077,7 +1076,7 @@ class TestComplexScenarios:
         return service
 
     @pytest.mark.asyncio
-    async def test_multi_view_impact_chain(self, service):
+    async def test_multi_view_impact_chain(self, service) -> None:
         """Test impact across multiple views."""
         root = Mock(id="root", title="Root")
         req = Mock(id="req", title="Req", view="REQ", item_type="requirement", status="active")
@@ -1106,7 +1105,7 @@ class TestComplexScenarios:
         assert set(result.affected_by_view.keys()) == {"REQ", "DESIGN", "CODE", "TEST"}
 
     @pytest.mark.asyncio
-    async def test_mixed_link_types_impact(self, service):
+    async def test_mixed_link_types_impact(self, service) -> None:
         """Test impact with mixed link types."""
         root = Mock(id="root", title="Root")
 
@@ -1141,7 +1140,7 @@ class TestComplexScenarios:
 
 
 @pytest.mark.asyncio
-async def test_comprehensive_scenario():
+async def test_comprehensive_scenario() -> None:
     """Comprehensive integration test with mocked database operations."""
     from unittest.mock import AsyncMock, Mock
 

@@ -281,7 +281,7 @@ async def list_github_repos(
         if params.installation_id:
             client, installation = await _get_installation_client(params.installation_id, params.account_id, db)
             repos = await _fetch_repos_from_installation(
-                client, installation, params.search, params.per_page, params.page
+                client, installation, params.search, params.per_page, params.page,
             )
         elif params.credential_id:
             client = await _get_credential_client(params.credential_id, claims, db)
@@ -497,7 +497,7 @@ async def github_app_webhook(
         if action == "deleted":
             return await _handle_installation_deleted(payload, installation_repo, db)
 
-        if action in ["suspend", "unsuspend"]:
+        if action in {"suspend", "unsuspend"}:
             return await _handle_installation_suspended(payload, action, installation_repo, db)
 
     return {"status": "ok"}

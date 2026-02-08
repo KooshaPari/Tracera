@@ -17,7 +17,7 @@ class _Event(SimpleNamespace):
 
 
 @pytest.mark.asyncio
-async def test_project_metrics_counts_status_and_view(monkeypatch, async_session):
+async def test_project_metrics_counts_status_and_view(monkeypatch, async_session) -> None:
     items = [
         _Item(status="todo", view="FEATURE"),
         _Item(status="done", view="FEATURE"),
@@ -40,7 +40,7 @@ async def test_project_metrics_counts_status_and_view(monkeypatch, async_session
 
 
 @pytest.mark.asyncio
-async def test_team_analytics_counts_agents(monkeypatch, async_session):
+async def test_team_analytics_counts_agents(monkeypatch, async_session) -> None:
     events = [
         _Event(agent_id="a1"),
         _Event(agent_id="a1"),
@@ -60,7 +60,7 @@ async def test_team_analytics_counts_agents(monkeypatch, async_session):
 
 
 @pytest.mark.asyncio
-async def test_trend_analysis_filters_by_days(monkeypatch, async_session):
+async def test_trend_analysis_filters_by_days(monkeypatch, async_session) -> None:
     now = datetime.now(datetime.UTC)
     events = [
         _Event(created_at=now),
@@ -85,7 +85,7 @@ async def test_trend_analysis_filters_by_days(monkeypatch, async_session):
 
 
 @pytest.mark.asyncio
-async def test_dependency_metrics_handles_missing_links(monkeypatch, async_session):
+async def test_dependency_metrics_handles_missing_links(monkeypatch, async_session) -> None:
     items = [
         _Item(outgoing_links=[_Item(link_type="depends_on"), _Item(link_type="blocks")]),
         _Item(outgoing_links=[]),
@@ -103,7 +103,7 @@ async def test_dependency_metrics_handles_missing_links(monkeypatch, async_sessi
 
 
 @pytest.mark.asyncio
-async def test_quality_metrics_counts_descriptions(monkeypatch, async_session):
+async def test_quality_metrics_counts_descriptions(monkeypatch, async_session) -> None:
     items = [
         _Item(description="desc", outgoing_links=[1]),
         _Item(description=None, outgoing_links=[]),

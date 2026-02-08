@@ -1,13 +1,13 @@
-"""
-Python API client for TraceRTM (FR36-FR45).
+"""Python API client for TraceRTM (FR36-FR45).
 
 Provides programmatic access for AI agents to interact with TraceRTM.
 """
 
+import contextlib
 import json
 from collections.abc import Iterator
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Self
 from unittest.mock import Mock
 
 from sqlalchemy import select
@@ -28,41 +28,65 @@ from tracertm.services.concurrent_operations_service import (
 
 
 class BatchResult:
-    """
-    Wrapper that behaves like a list of items while exposing summary stats
-    (items_created/items_updated/items_deleted) for integration tests.
+    """Wrapper that behaves like a list of items while exposing summary stats.
+
+    This is primarily used by integration tests to validate batch operations.
     """
 
     def __init__(self, items: list[Any], stats: dict[str, Any]) -> None:
+        """Initialize a BatchResult.
+
+        Args:
+            items: Items returned by the operation.
+            stats: Summary stats (e.g., created/updated/deleted counts).
+        """
         self._items = items
         self._stats = stats
 
     def __iter__(self) -> Iterator[Any]:
+        """Iterate over the underlying items."""
         return iter(self._items)
 
     def __len__(self) -> int:
+        """Return the number of underlying items."""
         return len(self._items)
 
     def __getitem__(self, key: int | str) -> Any:
+        """Return an item by index or a stat by name.
+
+        Args:
+            key: Item index or stat name.
+
+        Returns:
+            Item at the given index, or a stat value when key is a known stat.
+        """
         if isinstance(key, str) and key in self._stats:
             return self._stats[key]
         if isinstance(key, int):
             return self._items[key]
-        raise TypeError(f"indices must be integers or strings, not {type(key).__name__}")
+        msg = f"indices must be integers or strings, not {type(key).__name__}"
+        raise TypeError(msg)
 
     def __bool__(self) -> bool:
+        """Return True to preserve truthiness semantics used by tests."""
         return True
 
     def __eq__(self, other: object) -> bool:
+        """Compare this result to another object.
+
+        This preserves backward-compatible semantics used in tests.
+        """
         if other is True:
             return True
         return self._items == other
 
     @property
     def items(self) -> list[Any]:
+        """Return the underlying items list."""
         return self._items
 
     def to_dict(self) -> dict[str, Any]:
+        """Return the summary stats as a dictionary."""
         return self._stats
 
 
@@ -70,6 +94,11 @@ class ItemView:
     """Lightweight, detached view of an Item that supports both attr and dict access."""
 
     def __init__(self, item: Item) -> None:
+        """Initialize an ItemView.
+
+        Args:
+            item: Item model instance to snapshot into a detached view.
+        """
         self._data = {
             "id": getattr(item, "id", None),
             "project_id": getattr(item, "project_id", None),
@@ -91,37 +120,60 @@ class ItemView:
         }
 
     def __getitem__(self, key: str) -> Any:
+        """Return a field value by key."""
         return self._data[key]
 
     def __getattr__(self, name: str) -> Any:
+        """Provide attribute-style access to known fields."""
         if name in self._data:
             return self._data[name]
         raise AttributeError(name)
 
     def __iter__(self) -> Iterator[str]:
+        """Iterate over available keys."""
         return iter(self._data)
 
     def items(self) -> Any:
+        """Return dict-like (key, value) pairs for the view."""
         return self._data.items()
 
     def __repr__(self) -> str:
+        """Return a debug representation of the view."""
         return f"ItemView({self._data})"
 
 
 # Helper factory functions (patched in tests)
 def get_session(database_url: str | None = None) -> Session:
+    """Create a synchronous SQLAlchemy Session for the configured database.
+
+    Args:
+        database_url: Optional override database URL.
+
+    Returns:
+        A synchronous SQLAlchemy Session.
+    """
     db_url = database_url or ConfigManager().get("database_url")
     if not isinstance(db_url, str):
-        raise ValueError("Database URL must be a string")
+        msg = "Database URL must be a string"
+        raise ValueError(msg)
     db = DatabaseConnection(db_url)
     db.connect()
     return Session(db.engine)
 
 
 def get_async_session(database_url: str | None = None) -> AsyncSession:
+    """Create an AsyncSession for the configured database.
+
+    Args:
+        database_url: Optional override database URL.
+
+    Returns:
+        An AsyncSession.
+    """
     db_url = database_url or ConfigManager().get("database_url")
     if not isinstance(db_url, str):
-        raise ValueError("Database URL must be a string")
+        msg = "Database URL must be a string"
+        raise ValueError(msg)
     db = DatabaseConnection(db_url)
     db.connect()
     if hasattr(db, "async_session"):
@@ -133,15 +185,13 @@ def get_async_session(database_url: str | None = None) -> AsyncSession:
 
 
 class TraceRTMClient:
-    """
-    Python API client for TraceRTM (FR36).
+    """Python API client for TraceRTM (FR36).
 
     Provides programmatic access for AI agents to interact with TraceRTM.
     """
 
-    def __init__(self, agent_id: str | None = None, agent_name: str | None = None):
-        """
-        Initialize TraceRTM client.
+    def __init__(self, agent_id: str | None = None, agent_name: str | None = None) -> None:
+        """Initialize TraceRTM client.
 
         Args:
             agent_id: Optional agent ID (if already registered)
@@ -157,14 +207,14 @@ class TraceRTMClient:
         self.retry_with_backoff = retry_with_backoff
 
     # Context manager support for tests
-    def __enter__(self) -> "TraceRTMClient":
+    def __enter__(self) -> Self:
+        """Enter context manager and return self."""
         return self
 
     def __exit__(self, exc_type: type[BaseException] | None, exc: BaseException | None, tb: Any) -> None:
-        try:
+        """Exit context manager and best-effort cleanup resources."""
+        with contextlib.suppress(Exception):
             self.cleanup()
-        except Exception:
-            pass
 
     def cleanup(self) -> None:
         """Close any open session/connection."""
@@ -234,7 +284,8 @@ class TraceRTMClient:
             use_async = False
             db_url = db_url or self.config_manager.get("database_url")
             if not db_url:
-                raise ValueError("Database not configured")
+                msg = "Database not configured"
+                raise ValueError(msg)
 
             self._db = DatabaseConnection(db_url)
             self._db.connect()
@@ -248,9 +299,7 @@ class TraceRTMClient:
         return isinstance(self._session, AsyncSession)
 
     def _ensure_sync_session(self) -> Session:
-        """
-        Return a synchronous Session, using sync_session when AsyncSession is patched in tests.
-        """
+        """Return a synchronous Session, using sync_session when AsyncSession is patched in tests."""
         session = self._get_session()
         if isinstance(session, Session) and not isinstance(session, AsyncSession):
             return session
@@ -266,13 +315,15 @@ class TraceRTMClient:
                 sync_session = session.sync_session
                 if isinstance(sync_session, Session):
                     return sync_session
-        raise ValueError("Synchronous session required for this operation")
+        msg = "Synchronous session required for this operation"
+        raise ValueError(msg)
 
     def _execute_query(self, stmt: Any) -> Any:
         """Execute a select statement compatible with both sync and async sessions."""
         try:
             if self._session is None:
-                raise ValueError("No session available")
+                msg = "No session available"
+                raise ValueError(msg)
             return self._session.execute(stmt)
         except Exception:
             # Fallback for AsyncSession in non-async context
@@ -294,7 +345,8 @@ class TraceRTMClient:
         """Get current project ID."""
         project_id = self.config_manager.get("current_project_id")
         if not isinstance(project_id, str) or not project_id:
-            raise ValueError("No project selected. Run 'rtm project switch <name>' first.")
+            msg = "No project selected. Run 'rtm project switch <name>' first."
+            raise ValueError(msg)
         return project_id
 
     def _log_operation(
@@ -343,8 +395,7 @@ class TraceRTMClient:
         project_ids: list[str] | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> str:
-        """
-        Register an agent (FR41, FR51).
+        """Register an agent (FR41, FR51).
 
         Supports the test harness signature with capabilities/config.
         """
@@ -398,8 +449,7 @@ class TraceRTMClient:
         return str(agent.id)
 
     def assign_agent_to_projects(self, agent_id: str, project_ids: list[str]) -> None:
-        """
-        Assign agent to multiple projects (FR51, FR52).
+        """Assign agent to multiple projects (FR51, FR52).
 
         Args:
             agent_id: Agent ID
@@ -426,7 +476,8 @@ class TraceRTMClient:
                 agent = None
 
         if not agent:
-            raise ValueError(f"Agent not found: {agent_id}")
+            msg = f"Agent not found: {agent_id}"
+            raise ValueError(msg)
 
         # Update metadata with assigned projects
         if agent.agent_metadata is None:
@@ -448,8 +499,7 @@ class TraceRTMClient:
         )
 
     def get_agent_projects(self, agent_id: str) -> list[str]:
-        """
-        Get projects assigned to an agent (FR52).
+        """Get projects assigned to an agent (FR52).
 
         Args:
             agent_id: Agent ID
@@ -474,9 +524,7 @@ class TraceRTMClient:
         return [str(p) for p in list(set(combined)) if p]
 
     def get_agent_capabilities(self, agent_id: str | None = None) -> list[str]:
-        """
-        Return capabilities for the given agent (or current agent).
-        """
+        """Return capabilities for the given agent (or current agent)."""
         session = self._ensure_sync_session()
         target_id = agent_id or self.agent_id
         if not target_id:
@@ -488,9 +536,7 @@ class TraceRTMClient:
         return list(capabilities_raw) if capabilities_raw else []
 
     def list_projects(self) -> list[Project]:
-        """
-        List projects visible to the current client.
-        """
+        """List projects visible to the current client."""
         session = self._ensure_sync_session()
         return session.query(Project).all()
 
@@ -583,7 +629,8 @@ class TraceRTMClient:
         )
         item_view = self._as_item_view(item)
         if item_view is None:
-            raise ValueError("Item not found after update")
+            msg = "Item not found after update"
+            raise ValueError(msg)
         return item_view
 
     # FR37: Query project state
@@ -598,14 +645,16 @@ class TraceRTMClient:
         order: str = "asc",
         **filters: Any,
     ) -> list[ItemView | Any]:
-        """
-        Query items in project (FR37, FR44).
+        """Query items in project (FR37, FR44).
 
         Args:
             view: Filter by view
             status: Filter by status
             item_type: Filter by item type
             limit: Maximum results
+            offset: Number of matching records to skip.
+            sort: Field name to sort by.
+            order: Sort direction ("asc" or "desc").
             **filters: Additional filters (FR44 - structured filter language)
 
         Returns:
@@ -639,8 +688,7 @@ class TraceRTMClient:
         return [self._as_item_view(item) for item in items]
 
     def get_item(self, item_id: str) -> ItemView | None:
-        """
-        Get a specific item (FR37).
+        """Get a specific item (FR37).
 
         Args:
             item_id: Item ID
@@ -677,8 +725,7 @@ class TraceRTMClient:
         project_id: str | None = None,
         **kwargs: Any,
     ) -> ItemView | Any:
-        """
-        Create a new item (FR38).
+        """Create a new item (FR38).
 
         Args:
             title: Item title
@@ -690,6 +737,8 @@ class TraceRTMClient:
             owner: Optional owner
             parent_id: Optional parent item ID
             metadata: Optional metadata
+            project_id: Optional project id override; defaults to current_project_id.
+            **kwargs: Backward-compatible extras (e.g. legacy `type` alias for item_type).
 
         Returns:
             Created item
@@ -697,9 +746,11 @@ class TraceRTMClient:
         session = self._ensure_sync_session()
         item_type = item_type or kwargs.get("type")
         if not title:
-            raise ValueError("title is required")
+            msg = "title is required"
+            raise ValueError(msg)
         if not view:
-            raise ValueError("view is required")
+            msg = "view is required"
+            raise ValueError(msg)
         project_id = project_id or self.config_manager.get("current_project_id")
 
         item: Item = Item(
@@ -767,8 +818,7 @@ class TraceRTMClient:
         owner: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> ItemView | Any:
-        """
-        Update an item with optimistic locking and retry logic (FR38, FR42, Story 5.3).
+        """Update an item with optimistic locking and retry logic (FR38, FR42, Story 5.3).
 
         Args:
             item_id: Item ID
@@ -790,7 +840,8 @@ class TraceRTMClient:
         item = session.query(Item).filter(Item.id.like(f"{item_id}%")).first()
 
         if not item:
-            raise ValueError(f"Item not found: {item_id}")
+            msg = f"Item not found: {item_id}"
+            raise ValueError(msg)
 
         # Store original version for conflict detection
         original_version = item.version
@@ -853,8 +904,7 @@ class TraceRTMClient:
         )
 
     def delete_item(self, item_id: str) -> bool:
-        """
-        Delete an item (soft delete) (FR38).
+        """Delete an item (soft delete) (FR38).
 
         Args:
             item_id: Item ID
@@ -866,7 +916,8 @@ class TraceRTMClient:
         item = session.query(Item).filter(Item.id.like(f"{item_id}%")).first()
 
         if not item:
-            raise ValueError(f"Item not found: {item_id}")
+            msg = f"Item not found: {item_id}"
+            raise ValueError(msg)
 
         # Soft delete
         from datetime import UTC, datetime
@@ -898,6 +949,18 @@ class TraceRTMClient:
         metadata: dict[str, Any] | None = None,
         project_id: str | None = None,
     ) -> Link:
+        """Create a link between two items.
+
+        Args:
+            source_id: Source item ID.
+            target_id: Target item ID.
+            link_type: Relationship type.
+            metadata: Optional link metadata.
+            project_id: Optional project id override.
+
+        Returns:
+            The created Link model.
+        """
         session = self._ensure_sync_session()
         project_id = project_id or self._get_project_id()
         link: Link = Link(
@@ -919,6 +982,7 @@ class TraceRTMClient:
         metadata: dict[str, Any] | None = None,
         project_id: str | None = None,
     ) -> Link:
+        """Async wrapper for create_link."""
         return self.create_link(
             source_id=source_id,
             target_id=target_id,
@@ -936,6 +1000,19 @@ class TraceRTMClient:
         metadata: dict[str, Any] | None = None,
         project_id: str | None = None,
     ) -> list[Link]:
+        """Create forward and reverse links between two items.
+
+        Args:
+            source_id: Source item ID.
+            target_id: Target item ID.
+            forward_type: Link type from source to target.
+            reverse_type: Link type from target to source.
+            metadata: Optional link metadata applied to both links.
+            project_id: Optional project id override.
+
+        Returns:
+            A list containing [forward_link, reverse_link].
+        """
         forward = self.create_link(
             source_id=source_id,
             target_id=target_id,
@@ -953,6 +1030,14 @@ class TraceRTMClient:
         return [forward, reverse]
 
     def get_link(self, link_id: str) -> Link | None:
+        """Return a link by id (prefix match) for the current project.
+
+        Args:
+            link_id: Link ID (or prefix).
+
+        Returns:
+            The Link if found, otherwise None.
+        """
         session = self._ensure_sync_session()
         project_id = self._get_project_id()
         return (
@@ -966,6 +1051,7 @@ class TraceRTMClient:
         )
 
     async def get_link_async(self, link_id: str) -> Link | None:
+        """Async wrapper for get_link."""
         return self.get_link(link_id)
 
     def update_link(
@@ -974,10 +1060,24 @@ class TraceRTMClient:
         link_type: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> Link:
+        """Update a link's type and/or metadata.
+
+        Args:
+            link_id: Link ID (or prefix).
+            link_type: Optional new link type.
+            metadata: Optional replacement metadata.
+
+        Returns:
+            The updated Link.
+
+        Raises:
+            ValueError: If the link is not found.
+        """
         session = self._ensure_sync_session()
         link = session.query(Link).filter(Link.id.like(f"{link_id}%")).first()
         if not link:
-            raise ValueError(f"Link not found: {link_id}")
+            msg = f"Link not found: {link_id}"
+            raise ValueError(msg)
         if link_type is not None:
             link.link_type = link_type
         if metadata is not None:
@@ -986,6 +1086,14 @@ class TraceRTMClient:
         return link
 
     def delete_link(self, link_id: str) -> bool:
+        """Delete a link by id (prefix match).
+
+        Args:
+            link_id: Link ID (or prefix).
+
+        Returns:
+            True if deleted, False if not found.
+        """
         session = self._ensure_sync_session()
         link = session.query(Link).filter(Link.id.like(f"{link_id}%")).first()
         if not link:
@@ -1001,6 +1109,17 @@ class TraceRTMClient:
         link_type: str | None = None,
         project_id: str | None = None,
     ) -> list[Link]:
+        """Query links for a project.
+
+        Args:
+            source_id: Optional source item id filter.
+            target_id: Optional target item id filter.
+            link_type: Optional link type filter.
+            project_id: Optional project id override.
+
+        Returns:
+            A list of Link models.
+        """
         session = self._ensure_sync_session()
         project_id = project_id or self._get_project_id()
         query = session.query(Link).filter(Link.project_id == project_id)
@@ -1016,8 +1135,17 @@ class TraceRTMClient:
     # Batch and utility helpers
     # =========================
     def batch_create_items(
-        self, items_data: list[dict[str, Any]], project_id: str | None = None
+        self, items_data: list[dict[str, Any]], project_id: str | None = None,
     ) -> list[ItemView | Any] | BatchResult:
+        """Create multiple items from payload dictionaries.
+
+        Args:
+            items_data: List of item payloads.
+            project_id: Optional project id override.
+
+        Returns:
+            A list of created items, or a BatchResult when not patched.
+        """
         project_id = project_id or self.config_manager.get("current_project_id")
         created: list[ItemView | Any] = []
         for data in items_data:
@@ -1031,6 +1159,14 @@ class TraceRTMClient:
         return created if self._patched_session else BatchResult(created, {"items_created": len(created)})
 
     def batch_update_items(self, updates: list[dict[str, Any]]) -> list[ItemView | Any] | BatchResult:
+        """Update multiple items from payload dictionaries.
+
+        Args:
+            updates: List of update payloads.
+
+        Returns:
+            A list of updated items, or a BatchResult when not patched.
+        """
         updated: list[ItemView | Any] = []
         for upd in updates:
             payload = dict[str, Any](upd)
@@ -1051,6 +1187,14 @@ class TraceRTMClient:
         return updated if self._patched_session else BatchResult(updated, {"items_updated": len(updated)})
 
     def batch_delete_items(self, item_ids: list[str]) -> bool | BatchResult:
+        """Soft-delete multiple items.
+
+        Args:
+            item_ids: Item IDs (or prefixes) to delete.
+
+        Returns:
+            True in patched mode; otherwise a BatchResult with deleted count.
+        """
         deleted = 0
         for item_id in item_ids:
             try:
@@ -1062,11 +1206,20 @@ class TraceRTMClient:
         return True if self._patched_session else BatchResult([], {"items_deleted": deleted})
 
     def get_item_statistics(self) -> dict[str, Any]:
+        """Return basic item statistics for the current project."""
         session = self._ensure_sync_session()
         total = session.query(Item).count()
         return {"total": total, "count": total}
 
     def export_items(self, format: str = "json") -> str:
+        """Export items for the current project.
+
+        Args:
+            format: Export format (currently only json is supported).
+
+        Returns:
+            Serialized export payload.
+        """
         items = self.query_items()
         data = [
             {
@@ -1083,13 +1236,39 @@ class TraceRTMClient:
         return json.dumps(data)
 
     def import_items(self, data: str, project_id: str | None = None) -> list[ItemView] | list[Any] | BatchResult:
+        """Import items from a serialized payload.
+
+        Args:
+            data: Serialized items payload.
+            project_id: Optional project id override.
+
+        Returns:
+            Created items, or a BatchResult.
+        """
         items_data = json.loads(data)
         return self.batch_create_items(items_data, project_id=project_id)
 
     def batch_create_links(self, links_data: list[dict[str, Any]]) -> list[Link]:
+        """Create multiple links from payload dictionaries.
+
+        Args:
+            links_data: List of link payloads.
+
+        Returns:
+            List of created Link models.
+        """
         return [self.create_link(**payload) for payload in links_data]
 
     def compute_transitive_closure(self, start_id: str, link_types: list[str] | None = None) -> list[str]:
+        """Compute reachable item IDs from a start node following links.
+
+        Args:
+            start_id: Starting item id.
+            link_types: Optional list of link types to traverse.
+
+        Returns:
+            List of visited item IDs.
+        """
         session = self._ensure_sync_session()
         visited = set()
         stack = [start_id]
@@ -1106,6 +1285,15 @@ class TraceRTMClient:
         return list(visited)
 
     def find_path(self, start_id: str, end_id: str) -> list[str]:
+        """Find a path between two items using BFS.
+
+        Args:
+            start_id: Start item id.
+            end_id: End item id.
+
+        Returns:
+            A list of item IDs representing the path, or an empty list.
+        """
         session = self._ensure_sync_session()
         from collections import deque
 
@@ -1125,8 +1313,7 @@ class TraceRTMClient:
 
     # FR39: Export project data
     def export_project(self, format: str = "json") -> str:
-        """
-        Export project data (FR39).
+        """Export project data (FR39).
 
         Args:
             format: Export format (json or yaml)
@@ -1180,8 +1367,7 @@ class TraceRTMClient:
 
     # FR40: Import bulk data
     def import_data(self, data: dict[str, Any]) -> dict[str, int]:
-        """
-        Import bulk data from JSON/YAML (FR40).
+        """Import bulk data from JSON/YAML (FR40).
 
         Args:
             data: Dictionary with 'items' and optionally 'links' keys
@@ -1244,8 +1430,7 @@ class TraceRTMClient:
 
     # FR45: Agent activity monitoring
     def get_agent_activity(self, agent_id: str | None = None, limit: int = 100) -> list[dict[str, Any]]:
-        """
-        Get agent activity history (FR45).
+        """Get agent activity history (FR45).
 
         Args:
             agent_id: Agent ID (default: current agent)
@@ -1285,8 +1470,7 @@ class TraceRTMClient:
         ]
 
     def get_all_agents_activity(self, limit: int = 100) -> dict[str, list[dict[str, Any]]]:
-        """
-        Get activity for all agents in project (FR45).
+        """Get activity for all agents in project (FR45).
 
         Args:
             limit: Maximum events per agent
@@ -1307,9 +1491,7 @@ class TraceRTMClient:
         return result
 
     def get_api_metrics(self) -> dict[str, Any]:
-        """
-        Lightweight metrics helper used by tests.
-        """
+        """Lightweight metrics helper used by tests."""
         session = self._ensure_sync_session()
         return {
             "items": session.query(Item).count(),
@@ -1323,8 +1505,7 @@ class TraceRTMClient:
 
     # Story 5.6: Task Assignment (FR45)
     def get_assigned_items(self, agent_id: str | None = None) -> list[dict[str, Any]]:
-        """
-        Get items assigned to an agent (Story 5.6, FR45).
+        """Get items assigned to an agent (Story 5.6, FR45).
 
         Args:
             agent_id: Agent ID (default: current agent)

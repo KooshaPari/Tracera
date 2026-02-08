@@ -95,7 +95,7 @@ class TestRequirementSpecServiceIntegration:
         }
 
     @pytest.mark.asyncio
-    async def test_create_spec_with_quality_analysis(self, session, setup):
+    async def test_create_spec_with_quality_analysis(self, session, setup) -> None:
         """Test creating spec with quality analysis."""
         service = RequirementSpecService(session)
 
@@ -107,7 +107,7 @@ class TestRequirementSpecServiceIntegration:
         assert "unambiguity" in spec.quality_scores
 
     @pytest.mark.asyncio
-    async def test_refresh_quality_analysis(self, session, setup):
+    async def test_refresh_quality_analysis(self, session, setup) -> None:
         """Test refreshing quality analysis."""
         service = RequirementSpecService(session)
 
@@ -123,7 +123,7 @@ class TestRequirementSpecServiceIntegration:
         assert spec2.last_analyzed_at is not None
 
     @pytest.mark.asyncio
-    async def test_calculate_impact_with_links(self, session, setup):
+    async def test_calculate_impact_with_links(self, session, setup) -> None:
         """Test impact analysis with upstream/downstream links."""
         analyzer = ImpactAnalyzer(session)
 
@@ -134,7 +134,7 @@ class TestRequirementSpecServiceIntegration:
         assert impact["change_propagation_index"] >= 0
 
     @pytest.mark.asyncio
-    async def test_record_change_updates_volatility(self, session, setup):
+    async def test_record_change_updates_volatility(self, session, setup) -> None:
         """Test that recording changes updates volatility."""
         service = RequirementSpecService(session)
 
@@ -157,7 +157,7 @@ class TestRequirementSpecServiceIntegration:
         assert updated.last_changed_at is not None
 
     @pytest.mark.asyncio
-    async def test_calculate_wsjf(self, session, setup):
+    async def test_calculate_wsjf(self, session, setup) -> None:
         """Test WSJF calculation."""
         service = RequirementSpecService(session)
 
@@ -178,7 +178,7 @@ class TestRequirementSpecServiceIntegration:
         assert updated.wsjf_components["business_value"] == 0.9
 
     @pytest.mark.asyncio
-    async def test_verify_requirement(self, session, setup):
+    async def test_verify_requirement(self, session, setup) -> None:
         """Test requirement verification."""
         service = RequirementSpecService(session)
 
@@ -200,7 +200,7 @@ class TestRequirementSpecServiceIntegration:
         assert len(verified.verification_evidence) > 0
 
     @pytest.mark.asyncio
-    async def test_get_health_report(self, session, setup):
+    async def test_get_health_report(self, session, setup) -> None:
         """Test generating health report for project."""
         service = RequirementSpecService(session)
 
@@ -218,7 +218,7 @@ class TestRequirementSpecServiceIntegration:
         assert 0 <= report["health_score"] <= 1.0
 
     @pytest.mark.asyncio
-    async def test_low_quality_requirement_analysis(self, session, setup):
+    async def test_low_quality_requirement_analysis(self, session, setup) -> None:
         """Test analysis identifies quality issues."""
         service = RequirementSpecService(session)
 
@@ -234,7 +234,7 @@ class TestRequirementSpecServiceIntegration:
         assert len(completeness_issues) > 0
 
     @pytest.mark.asyncio
-    async def test_refresh_impact_analysis(self, session, setup):
+    async def test_refresh_impact_analysis(self, session, setup) -> None:
         """Test refreshing impact analysis."""
         service = RequirementSpecService(session)
 
@@ -312,7 +312,7 @@ class TestImpactAnalyzerIntegration:
         return {"project": project, "graph": graph}
 
     @pytest.mark.asyncio
-    async def test_calculate_downstream_impact(self, session, setup_graph):
+    async def test_calculate_downstream_impact(self, session, setup_graph) -> None:
         """Test calculation of downstream impact."""
         analyzer = ImpactAnalyzer(session)
 
@@ -322,7 +322,7 @@ class TestImpactAnalyzerIntegration:
         assert impact["downstream_count"] >= 2
 
     @pytest.mark.asyncio
-    async def test_calculate_indirect_downstream(self, session, setup_graph):
+    async def test_calculate_indirect_downstream(self, session, setup_graph) -> None:
         """Test calculation of indirect downstream impact."""
         analyzer = ImpactAnalyzer(session)
 
@@ -360,7 +360,7 @@ class TestVolatilityTrackingIntegration:
         return project
 
     @pytest.mark.asyncio
-    async def test_volatility_increases_with_changes(self, session, setup):
+    async def test_volatility_increases_with_changes(self, session, setup) -> None:
         """Test volatility increases as changes accumulate."""
         service = RequirementSpecService(session)
 
@@ -385,7 +385,7 @@ class TestVolatilityTrackingIntegration:
 class TestQualityAnalyzerComplexScenarios:
     """Complex scenario tests for quality analyzer."""
 
-    def test_technical_requirement_analysis(self):
+    def test_technical_requirement_analysis(self) -> None:
         """Test analysis of technical requirement."""
         analyzer = RequirementQualityAnalyzer()
 
@@ -396,7 +396,7 @@ class TestQualityAnalyzerComplexScenarios:
         assert result["has_quantifiable_criteria"] is True
         assert result["scores"]["verifiability"] > 0.8
 
-    def test_business_requirement_analysis(self):
+    def test_business_requirement_analysis(self) -> None:
         """Test analysis of business requirement."""
         analyzer = RequirementQualityAnalyzer()
 
@@ -407,7 +407,7 @@ class TestQualityAnalyzerComplexScenarios:
         assert result["overall_score"] > 0.75
         assert len(result["issues"]) < 2
 
-    def test_mixed_quality_requirement(self):
+    def test_mixed_quality_requirement(self) -> None:
         """Test requirement with mixed quality issues."""
         analyzer = RequirementQualityAnalyzer()
 

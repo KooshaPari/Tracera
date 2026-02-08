@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-MCP Health Check Script
+"""MCP Health Check Script.
 
 Verifies that MCP server optimizations are working correctly:
 - Server is running and responsive
@@ -38,10 +37,10 @@ class HealthCheck:
 class MCPHealthChecker:
     """Health check runner for MCP server."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.checks: list[HealthCheck] = []
 
-    def add_check(self, check: HealthCheck):
+    def add_check(self, check: HealthCheck) -> None:
         """Add a health check result."""
         self.checks.append(check)
 
@@ -78,31 +77,19 @@ class MCPHealthChecker:
 
     def print_summary(self):
         """Print summary of health checks."""
-        print("\n" + "=" * 80)
-        print("MCP HEALTH CHECK SUMMARY")
-        print("=" * 80)
-
         passed = sum(1 for c in self.checks if c.status == "pass")
         failed = sum(1 for c in self.checks if c.status == "fail")
         warned = sum(1 for c in self.checks if c.status == "warn")
 
         for check in self.checks:
             symbol = "✓" if check.status == "pass" else "✗" if check.status == "fail" else "⚠"
-            print(f"\n{symbol} {check.name}")
-            print(f"  Status: {check.status.upper()}")
-            print(f"  Duration: {check.duration_ms:.2f}ms")
-            print(f"  Message: {check.message}")
 
             if check.details:
-                print(f"  Details: {json.dumps(check.details, indent=4)}")
-
-        print("\n" + "=" * 80)
-        print(f"Passed: {passed} | Failed: {failed} | Warnings: {warned}")
-        print("=" * 80)
+                pass
 
         return failed == 0
 
-    def save_results(self, filename: str = "health_check_results.json"):
+    def save_results(self, filename: str = "health_check_results.json") -> None:
         """Save health check results."""
         output_dir = Path(__file__).parent / "health_check_results"
         output_dir.mkdir(exist_ok=True)
@@ -122,10 +109,8 @@ class MCPHealthChecker:
             ],
         }
 
-        with Path(output_file).open("w") as f:
+        with Path(output_file).open("w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
-
-        print(f"\n✓ Results saved to: {output_file}")
 
 
 # ============================================================
@@ -173,7 +158,7 @@ def check_lazy_loading() -> dict[str, Any]:
 
     # Register a test tool
     registry.register_tool_loader(
-        "health_check_tool", "tracertm.mcp.tools.params.project", {"description": "Health check test tool"}
+        "health_check_tool", "tracertm.mcp.tools.params.project", {"description": "Health check test tool"},
     )
 
     # Check if module is loaded
@@ -208,7 +193,7 @@ def check_tool_metadata() -> dict[str, Any]:
 async def check_async_operations() -> dict[str, Any]:
     """Check that async operations work."""
 
-    async def test_async():
+    async def test_async() -> str:
         await asyncio.sleep(0.01)
         return "success"
 
@@ -289,43 +274,28 @@ def check_error_logs() -> dict[str, Any]:
 # ============================================================
 
 
-def run_health_checks():
+def run_health_checks() -> int:
     """Run all health checks."""
     checker = MCPHealthChecker()
 
-    print("=" * 80)
-    print("MCP HEALTH CHECK SUITE")
-    print("=" * 80)
-
     # Run checks
-    print("\n[1/10] Checking server status...")
     checker.run_check("Server Running", check_server_running)
 
-    print("[2/10] Checking tool registration...")
     checker.run_check("Tool Registration", check_tool_registration)
 
-    print("[3/10] Checking lazy loading...")
     checker.run_check("Lazy Loading", check_lazy_loading)
 
-    print("[4/10] Checking tool metadata...")
     checker.run_check("Tool Metadata", check_tool_metadata)
 
-    print("[5/10] Checking async operations...")
     checker.run_check("Async Operations", check_async_operations)
 
-    print("[6/10] Checking performance thresholds...")
     checker.run_check("Performance Thresholds", check_performance_thresholds)
 
-    print("[7/10] Checking environment variables...")
     checker.run_check("Environment Variables", check_environment_variables)
 
-    print("[8/10] Checking memory usage...")
     checker.run_check("Memory Usage", check_memory_usage)
 
-    print("[9/10] Checking error logs...")
     checker.run_check("Error Logs", check_error_logs)
-
-    print("[10/10] Health check complete!")
 
     # Print summary
     all_passed = checker.print_summary()
@@ -346,7 +316,6 @@ if __name__ == "__main__":
         try:
             import psutil  # type: ignore[import-untyped,import-not-found]
         except ImportError:
-            print("Installing psutil...")
             import subprocess
 
             subprocess.run([sys.executable, "-m", "pip", "install", "psutil"], check=True)
@@ -355,10 +324,8 @@ if __name__ == "__main__":
         sys.exit(exit_code)
 
     except KeyboardInterrupt:
-        print("\n\nHealth check interrupted.")
         sys.exit(130)
     except Exception as e:
-        print(f"\n✗ Health check failed: {e}")
         import traceback
 
         traceback.print_exc()

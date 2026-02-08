@@ -1,5 +1,4 @@
-"""
-Pytest test suite for Python backend route validation.
+"""Pytest test suite for Python backend route validation.
 
 Validates all API routes respond correctly without server errors,
 logs are captured for debugging, and comprehensive reporting is generated.
@@ -50,7 +49,7 @@ class TestRouteValidation:
     @pytest.mark.parametrize("route", ROUTES_TO_TEST, ids=lambda r: f"{r['method']} {r['path']}")
     @patch("tracertm.api.main.auth_guard")
     @patch("tracertm.api.main.get_db")
-    def test_route_responds(self, mock_db, mock_auth, route):
+    def test_route_responds(self, mock_db, mock_auth, route) -> None:
         """Test that each route responds without server errors (5xx).
 
         This test validates that routes are defined and respond with a valid
@@ -95,14 +94,12 @@ class TestRouteValidation:
             )
             assert response.status_code > 0, f"{route['method']} {route['path']} did not respond"
 
-            print(f"✅ {route['method']} {route['path']}: {response.status_code}")
-
         except Exception as e:
-            pytest.fail(f"Exception for {route['method']} {route['path']}: {str(e)}")
+            pytest.fail(f"Exception for {route['method']} {route['path']}: {e!s}")
 
     @patch("tracertm.api.main.auth_guard")
     @patch("tracertm.api.main.get_db")
-    def test_websocket_cors_headers(self, mock_db, mock_auth):
+    def test_websocket_cors_headers(self, mock_db, mock_auth) -> None:
         """Test WebSocket endpoint has proper CORS headers."""
         # Setup mocks
         mock_auth.return_value = {
@@ -137,11 +134,9 @@ class TestRouteValidation:
             assert cors_credentials == "true", "CORS credentials should allow true"
             assert "GET" in cors_methods or "*" in cors_methods, "CORS methods should include GET or *"
 
-        print("✅ WebSocket CORS headers validation complete")
-
     @patch("tracertm.api.main.auth_guard")
     @patch("tracertm.api.main.get_db")
-    def test_all_routes_summary(self, mock_db, mock_auth):
+    def test_all_routes_summary(self, mock_db, mock_auth) -> None:
         """Generate summary report of all routes.
 
         Validates that all routes respond without 5xx server errors.
@@ -205,13 +200,12 @@ class TestRouteValidation:
             f"\nDetailed Results:\n"
             f"{json.dumps(results, indent=2)}\n"
         )
-        print(summary_output)
 
         # Assert all successful (no 5xx errors)
         failed_routes = [r for r in results if not r["success"]]
         assert not failed_routes, f"Routes returned 5xx errors: {json.dumps(failed_routes, indent=2)}"
 
-    def test_health_endpoint_response_structure(self):
+    def test_health_endpoint_response_structure(self) -> None:
         """Test health endpoint returns expected response structure."""
         response = client.get("/health")
 
@@ -220,13 +214,11 @@ class TestRouteValidation:
 
         # Verify expected fields
         assert "status" in data, "Health response must include 'status' field"
-        assert data["status"] in ["healthy", "ok"], "Status must be 'healthy' or 'ok'"
-
-        print(f"✅ Health endpoint structure validated: {data}")
+        assert data["status"] in {"healthy", "ok"}, "Status must be 'healthy' or 'ok'"
 
     @patch("tracertm.api.main.auth_guard")
     @patch("tracertm.api.main.get_db")
-    def test_auth_required_routes_reject_missing_token(self, mock_db, mock_auth):
+    def test_auth_required_routes_reject_missing_token(self, mock_db, mock_auth) -> None:
         """Test that auth-required routes reject requests without token."""
         # Setup mock to raise for missing auth
         mock_auth.side_effect = Exception("Missing authorization header")
@@ -248,15 +240,14 @@ class TestRouteValidation:
                 # Main thing is it doesn't crash with 500
                 assert response.status_code < 500, f"{route} returned 500+ without auth: {response.status_code}"
 
-                print(f"✅ {route} properly handles missing auth: {response.status_code}")
             except Exception as e:
                 # Exception is OK if it's about missing auth
                 if "Missing authorization" not in str(e):
-                    pytest.fail(f"Unexpected exception for {route}: {str(e)}")
+                    pytest.fail(f"Unexpected exception for {route}: {e!s}")
 
     @patch("tracertm.api.main.auth_guard")
     @patch("tracertm.api.main.get_db")
-    def test_routes_return_json_or_error(self, mock_db, mock_auth):
+    def test_routes_return_json_or_error(self, mock_db, mock_auth) -> None:
         """Test that public routes return valid response (JSON or error)."""
         mock_auth.return_value = {
             "sub": "test-user-123",
@@ -278,5 +269,3 @@ class TestRouteValidation:
             # If 2xx or 3xx, should have content-type header
             if response.status_code < 400:
                 assert "content-type" in response.headers, f"{route} response missing content-type"
-
-            print(f"✅ {route} response format valid")

@@ -22,7 +22,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Create component_libraries and library_components tables."""
-
     # Create component_libraries table
     op.create_table(
         "component_libraries",

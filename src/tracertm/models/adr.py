@@ -1,6 +1,4 @@
-"""
-ADR (Architecture Decision Record) model.
-"""
+"""ADR (Architecture Decision Record) model."""
 
 from datetime import date as date_type
 from datetime import datetime
@@ -21,7 +19,7 @@ class ADR(Base, TimestampMixin):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     project_id: Mapped[str] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False,
     )
     adr_number: Mapped[str] = mapped_column(String(50), nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)

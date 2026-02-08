@@ -1,5 +1,4 @@
-"""
-Phase 5 - API Client Comprehensive Coverage Tests
+"""Phase 5 - API Client Comprehensive Coverage Tests.
 
 Target: 200+ tests covering 95%+ of src/tracertm/api/client.py (351 LOC @ 22.41% current)
 Focus lines: 67-73, 91, 108-116, 142->144, 185-187, 190-194, 196-199, 204, 220-240, 247, 252, 256-388, 400->401, 400->403, 420-450, 475-553, 568-651, 680-723, 731-769, 791-833, 846-900, 902, 905-949, 956-1023
@@ -119,7 +118,7 @@ class TestClientInitializationAndAuthentication:
 
     @pytest.mark.asyncio
     async def test_client_session_management_async(
-        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession
+        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession,
     ) -> None:
         """Test client session management for async database."""
         client = api_client_with_agent
@@ -142,14 +141,14 @@ class TestClientInitializationAndAuthentication:
             assert agent is not None
 
     def test_agent_registration_existing_agent(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session
+        self, api_client_with_agent: TraceRTMClient, db_session: Session,
     ) -> None:
         """Test registering with existing agent ID."""
         client = api_client_with_agent
 
         with patch("tracertm.api.client.get_session", return_value=db_session):
             agent_id = client.register_agent(
-                name="Updated Test Agent", capabilities=["updated"], config={"updated": True}
+                name="Updated Test Agent", capabilities=["updated"], config={"updated": True},
             )
             assert agent_id == "test-agent"
 
@@ -226,7 +225,7 @@ class TestClientInitializationAndAuthentication:
                 client._get_session()
 
     def test_client_agent_capability_validation(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session
+        self, api_client_with_agent: TraceRTMClient, db_session: Session,
     ) -> None:
         """Test client validates agent capabilities."""
         client = api_client_with_agent
@@ -237,7 +236,7 @@ class TestClientInitializationAndAuthentication:
             assert "test" in capabilities
 
     def test_client_project_scoping(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project,
     ) -> None:
         """Test client properly scopes operations to projects."""
         client = api_client_with_agent
@@ -248,7 +247,7 @@ class TestClientInitializationAndAuthentication:
             assert any(p.id == test_project.id for p in projects)
 
     def test_client_async_method_compatibility(
-        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession
+        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession,
     ) -> None:
         """Test client async method compatibility."""
         client = api_client_with_agent
@@ -263,7 +262,7 @@ class TestItemAPIOperations:
     """Test Item API Operations for TraceRTMClient."""
 
     def test_create_item_sync(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project,
     ) -> None:
         """Test synchronous item creation."""
         client = api_client_with_agent
@@ -289,7 +288,7 @@ class TestItemAPIOperations:
 
     @pytest.mark.asyncio
     async def test_create_item_async(
-        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession, test_project: Project
+        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession, test_project: Project,
     ) -> None:
         """Test asynchronous item creation."""
         client = api_client_with_agent
@@ -311,7 +310,7 @@ class TestItemAPIOperations:
             assert item.metadata["async_created"] is True
 
     def test_create_item_validation(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project,
     ) -> None:
         """Test item creation validation."""
         client = api_client_with_agent
@@ -351,7 +350,7 @@ class TestItemAPIOperations:
             assert child_item.parent_id == parent_item.id
 
     def test_get_item_sync(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test synchronous item retrieval."""
         client = api_client_with_agent
@@ -366,7 +365,7 @@ class TestItemAPIOperations:
 
     @pytest.mark.asyncio
     async def test_get_item_async(
-        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession, test_items: dict[str, Item],
     ) -> None:
         """Test asynchronous item retrieval."""
         client = api_client_with_agent
@@ -387,7 +386,7 @@ class TestItemAPIOperations:
             assert retrieved_item is None
 
     def test_update_item_sync(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test synchronous item update."""
         client = api_client_with_agent
@@ -405,7 +404,7 @@ class TestItemAPIOperations:
 
     @pytest.mark.asyncio
     async def test_update_item_async(
-        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession, test_items: dict[str, Item],
     ) -> None:
         """Test asynchronous item update."""
         client = api_client_with_agent
@@ -413,14 +412,14 @@ class TestItemAPIOperations:
 
         with patch("tracertm.api.client.get_async_session", return_value=async_db_session):
             updated_item = await client.update_item_async(
-                str(test_item.id), {"title": "Updated Test Item", "metadata": {"async_updated": True}}
+                str(test_item.id), {"title": "Updated Test Item", "metadata": {"async_updated": True}},
             )
 
             assert updated_item is not None
             assert updated_item.metadata["async_updated"] is True
 
     def test_delete_item_sync(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test synchronous item deletion."""
         client = api_client_with_agent
@@ -436,7 +435,7 @@ class TestItemAPIOperations:
 
     @pytest.mark.asyncio
     async def test_delete_item_async(
-        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession, test_items: dict[str, Item],
     ) -> None:
         """Test asynchronous item deletion."""
         client = api_client_with_agent
@@ -447,7 +446,7 @@ class TestItemAPIOperations:
             assert success is True
 
     def test_query_items_basic(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test basic item querying."""
         client = api_client_with_agent
@@ -459,19 +458,19 @@ class TestItemAPIOperations:
             assert all(item.view == "FEATURE" for item in results)
 
     def test_query_items_by_type(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test querying items by type."""
         client = api_client_with_agent
 
         with patch("tracertm.api.client.get_session", return_value=db_session):
-            results = client.query_items(**{"type": "function"})
+            results = client.query_items(type="function")
 
             assert len(results) >= 1
             assert all(item.type == "function" for item in results)
 
     def test_query_items_with_text_search(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test querying items with text search."""
         client = api_client_with_agent
@@ -483,14 +482,14 @@ class TestItemAPIOperations:
             assert all("user" in item.title.lower() or "user" in item.description.lower() for item in results)
 
     def test_query_items_with_metadata_filter(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test querying items with metadata filter."""
         client = api_client_with_agent
 
         # Add items with specific metadata
         for key, item in test_items.items():
-            if key in ["feature", "function"]:
+            if key in {"feature", "function"}:
                 item.metadata = {"tag": "important"}
                 db_session.commit()
 
@@ -501,7 +500,7 @@ class TestItemAPIOperations:
             assert all(item.metadata.get("tag") == "important" for item in results)
 
     def test_query_items_with_pagination(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test querying items with pagination."""
         client = api_client_with_agent
@@ -519,7 +518,7 @@ class TestItemAPIOperations:
                 assert len(paginated_results) <= 2
 
     def test_query_items_with_sorting(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test querying items with sorting."""
         client = api_client_with_agent
@@ -533,7 +532,7 @@ class TestItemAPIOperations:
             assert titles == sorted(titles)
 
     def test_batch_create_items(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project,
     ) -> None:
         """Test batch item creation."""
         client = api_client_with_agent
@@ -545,14 +544,14 @@ class TestItemAPIOperations:
 
         with patch("tracertm.api.client.get_session", return_value=db_session):
             created_items = client.batch_create_items(
-                items_data, project_id=str(test_project.id) if test_project.id else None
+                items_data, project_id=str(test_project.id) if test_project.id else None,
             )
 
             assert len(created_items) == len(items_data)
             assert all(item.project_id == test_project.id for item in created_items)
 
     def test_batch_update_items(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test batch item updates."""
         client = api_client_with_agent
@@ -570,7 +569,7 @@ class TestItemAPIOperations:
             assert updated_items[1].metadata["batch_updated"] is True
 
     def test_batch_delete_items(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test batch item deletion."""
         client = api_client_with_agent
@@ -588,7 +587,7 @@ class TestItemAPIOperations:
                 assert item is None or hasattr(item, "deleted_at")
 
     def test_item_statistics(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test item statistics calculation."""
         client = api_client_with_agent
@@ -600,7 +599,7 @@ class TestItemAPIOperations:
             assert isinstance(stats, dict)
 
     def test_item_export(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test item data export."""
         client = api_client_with_agent
@@ -614,7 +613,7 @@ class TestItemAPIOperations:
             assert isinstance(parsed, (list, dict))
 
     def test_item_import(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project,
     ) -> None:
         """Test item data import."""
         client = api_client_with_agent
@@ -635,7 +634,7 @@ class TestLinkAPIOperations:
     """Test Link API Operations for TraceRTMClient."""
 
     def test_create_link_sync(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test synchronous link creation."""
         client = api_client_with_agent
@@ -658,7 +657,7 @@ class TestLinkAPIOperations:
 
     @pytest.mark.asyncio
     async def test_create_link_async(
-        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession, test_items: dict[str, Item],
     ) -> None:
         """Test asynchronous link creation."""
         client = api_client_with_agent
@@ -678,7 +677,7 @@ class TestLinkAPIOperations:
             assert (getattr(link, "link_metadata", None) or {}).get("async_created") is True
 
     def test_create_link_bidirectional(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test creating bidirectional links."""
         client = api_client_with_agent
@@ -699,7 +698,7 @@ class TestLinkAPIOperations:
             assert links[1].link_type == "required_by"
 
     def test_get_link_sync(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test synchronous link retrieval."""
         client = api_client_with_agent
@@ -710,7 +709,7 @@ class TestLinkAPIOperations:
 
         with patch("tracertm.api.client.get_session", return_value=db_session):
             created_link = client.create_link(
-                source_id=str(source_item.id), target_id=str(target_item.id), link_type="implements"
+                source_id=str(source_item.id), target_id=str(target_item.id), link_type="implements",
             )
 
             # Retrieve link
@@ -722,7 +721,7 @@ class TestLinkAPIOperations:
 
     @pytest.mark.asyncio
     async def test_get_link_async(
-        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, async_db_session: AsyncSession, test_items: dict[str, Item],
     ) -> None:
         """Test asynchronous link retrieval."""
         client = api_client_with_agent
@@ -733,7 +732,7 @@ class TestLinkAPIOperations:
         with patch("tracertm.api.client.get_async_session", return_value=async_db_session):
             # Create link async
             created_link = await client.create_link_async(
-                source_id=str(source_item.id), target_id=str(target_item.id), link_type="tests"
+                source_id=str(source_item.id), target_id=str(target_item.id), link_type="tests",
             )
 
             # Retrieve link async
@@ -743,7 +742,7 @@ class TestLinkAPIOperations:
             assert retrieved_link.id == created_link.id
 
     def test_update_link_sync(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test synchronous link update."""
         client = api_client_with_agent
@@ -754,7 +753,7 @@ class TestLinkAPIOperations:
 
         with patch("tracertm.api.client.get_session", return_value=db_session):
             created_link = client.create_link(
-                source_id=str(source_item.id), target_id=str(target_item.id), link_type="implements"
+                source_id=str(source_item.id), target_id=str(target_item.id), link_type="implements",
             )
 
             # Update link
@@ -766,7 +765,7 @@ class TestLinkAPIOperations:
             assert meta.get("confidence") == "high"
 
     def test_delete_link_sync(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test synchronous link deletion."""
         client = api_client_with_agent
@@ -777,7 +776,7 @@ class TestLinkAPIOperations:
 
         with patch("tracertm.api.client.get_session", return_value=db_session):
             created_link = client.create_link(
-                source_id=str(source_item.id), target_id=str(target_item.id), link_type="tests"
+                source_id=str(source_item.id), target_id=str(target_item.id), link_type="tests",
             )
 
             # Delete link
@@ -789,7 +788,7 @@ class TestLinkAPIOperations:
             assert deleted_link is None
 
     def test_query_links_by_source(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test querying links by source item."""
         client = api_client_with_agent
@@ -808,7 +807,7 @@ class TestLinkAPIOperations:
             assert all(link.source_id == source_item.id for link in links)
 
     def test_query_links_by_target(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test querying links by target item."""
         client = api_client_with_agent
@@ -827,7 +826,7 @@ class TestLinkAPIOperations:
             assert all(link.target_id == target_item.id for link in links)
 
     def test_query_links_by_type(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test querying links by type."""
         client = api_client_with_agent
@@ -840,7 +839,7 @@ class TestLinkAPIOperations:
                 link_type="implements",
             )
             client.create_link(
-                source_id=str(test_items["api"].id), target_id=str(test_items["test"].id), link_type="tests"
+                source_id=str(test_items["api"].id), target_id=str(test_items["test"].id), link_type="tests",
             )
             client.create_link(
                 source_id=str(test_items["function"].id),
@@ -858,7 +857,7 @@ class TestLinkAPIOperations:
             assert all(link.link_type == "tests" for link in test_links)
 
     def test_batch_create_links(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test batch link creation."""
         client = api_client_with_agent
@@ -880,7 +879,7 @@ class TestLinkAPIOperations:
             assert created_links[1].link_type == "tests"
 
     def test_link_transitive_closure(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test computing transitive closure of links."""
         client = api_client_with_agent
@@ -896,13 +895,13 @@ class TestLinkAPIOperations:
 
             # Compute transitive closure
             closure = client.compute_transitive_closure(
-                start_id=str(test_items["feature"].id), link_types=["implements"]
+                start_id=str(test_items["feature"].id), link_types=["implements"],
             )
 
             assert len(closure) >= 4  # Should include all items in chain
 
     def test_link_path_finding(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test finding paths between linked items."""
         client = api_client_with_agent
@@ -928,7 +927,7 @@ class TestAdvancedAPIScenarios:
     """Test Advanced API Scenarios for TraceRTMClient."""
 
     def test_concurrent_operations_with_retry(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project,
     ) -> None:
         """Test concurrent operations with retry mechanism."""
         client = api_client_with_agent
@@ -940,7 +939,8 @@ class TestAdvancedAPIScenarios:
             nonlocal call_count
             call_count += 1
             if call_count == 1:
-                raise Exception("Temporary failure")
+                msg = "Temporary failure"
+                raise Exception(msg)
             return db_session
 
         with patch("tracertm.api.client.get_session", side_effect=mock_session):
@@ -973,7 +973,7 @@ class TestAdvancedAPIScenarios:
                 client.create_item("Error Test Item", "CODE", {"item_type": "function", "project_id": "test-project"})
 
     def test_event_logging(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test event logging for API operations."""
         client = api_client_with_agent
@@ -981,7 +981,7 @@ class TestAdvancedAPIScenarios:
         with patch("tracertm.api.client.get_session", return_value=db_session):
             # Create item should log event
             item = client.create_item(
-                "Event Test Item", "CODE", {"item_type": "function", "project_id": "test-project"}
+                "Event Test Item", "CODE", {"item_type": "function", "project_id": "test-project"},
             )
 
             # Check if event was logged (implementation specific)
@@ -991,7 +991,7 @@ class TestAdvancedAPIScenarios:
             assert len(events) >= 0  # Depending on event logging implementation
 
     def test_performance_optimization_bulk_operations(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project,
     ) -> None:
         """Test performance optimization for bulk operations."""
         client = api_client_with_agent
@@ -1009,7 +1009,7 @@ class TestAdvancedAPIScenarios:
             start_time = time.time()
 
             created_items = client.batch_create_items(
-                items_data, project_id=str(test_project.id) if test_project.id else None
+                items_data, project_id=str(test_project.id) if test_project.id else None,
             )
 
             end_time = time.time()
@@ -1019,7 +1019,7 @@ class TestAdvancedAPIScenarios:
             assert duration < 10.0  # Should complete within reasonable time
 
     def test_transaction_rollback_on_error(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test transaction rollback on errors."""
         client = api_client_with_agent
@@ -1042,7 +1042,7 @@ class TestAdvancedAPIScenarios:
             assert len(invalid_items) == 0
 
     def test_api_rate_limiting(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project,
     ) -> None:
         """Test API rate limiting functionality."""
         client = api_client_with_agent
@@ -1063,7 +1063,7 @@ class TestAdvancedAPIScenarios:
             assert len(items_created) == 10
 
     def test_api_caching_mechanism(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test API caching mechanisms."""
         client = api_client_with_agent
@@ -1119,7 +1119,7 @@ class TestAdvancedAPIScenarios:
                 assert "auth" in str(e).lower() or client.agent_id is not None
 
     def test_api_input_sanitization(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_project: Project,
     ) -> None:
         """Test API input sanitization."""
         client = api_client_with_agent
@@ -1148,7 +1148,7 @@ class TestAdvancedAPIScenarios:
                     pass
 
     def test_api_monitoring_and_metrics(
-        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item]
+        self, api_client_with_agent: TraceRTMClient, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test API monitoring and metrics collection."""
         client = api_client_with_agent

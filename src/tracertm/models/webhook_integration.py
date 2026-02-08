@@ -1,6 +1,4 @@
-"""
-Webhook Integration model for CI/CD integration.
-"""
+"""Webhook Integration model for CI/CD integration."""
 
 import secrets
 import uuid as uuid_module
@@ -66,8 +64,7 @@ class WebhookEventType(StrEnum):
 
 
 class WebhookIntegration(Base, TimestampMixin):
-    """
-    Webhook configuration for CI/CD integration.
+    """Webhook configuration for CI/CD integration.
     Allows external systems to submit test results.
     """
 
@@ -75,7 +72,7 @@ class WebhookIntegration(Base, TimestampMixin):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     project_id: Mapped[str] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False,
     )
 
     # Basic info
@@ -84,7 +81,7 @@ class WebhookIntegration(Base, TimestampMixin):
 
     # Provider configuration
     provider: Mapped[WebhookProvider] = mapped_column(
-        SQLEnum(WebhookProvider), nullable=False, default=WebhookProvider.CUSTOM
+        SQLEnum(WebhookProvider), nullable=False, default=WebhookProvider.CUSTOM,
     )
     status: Mapped[WebhookStatus] = mapped_column(SQLEnum(WebhookStatus), nullable=False, default=WebhookStatus.ACTIVE)
 
@@ -102,7 +99,7 @@ class WebhookIntegration(Base, TimestampMixin):
 
     # Default mapping (which suite/run to associate results with)
     default_suite_id: Mapped[str | None] = mapped_column(
-        String(36), ForeignKey("test_suites.id", ondelete="SET NULL"), nullable=True
+        String(36), ForeignKey("test_suites.id", ondelete="SET NULL"), nullable=True,
     )
 
     # Rate limiting
@@ -144,7 +141,7 @@ class WebhookLog(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     webhook_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("webhook_integrations.id", ondelete="CASCADE"), nullable=False
+        String(36), ForeignKey("webhook_integrations.id", ondelete="CASCADE"), nullable=False,
     )
 
     # Request details
@@ -171,7 +168,7 @@ class WebhookLog(Base):
 
     # Timestamp
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC),
     )
 
     __table_args__ = (

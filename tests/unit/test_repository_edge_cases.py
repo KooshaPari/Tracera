@@ -1,5 +1,4 @@
-"""
-Phase 15A: Quick Wins - Repository Layer Edge Cases
+"""Phase 15A: Quick Wins - Repository Layer Edge Cases.
 
 Focus: Edge cases and boundary conditions for repositories
 Target: LinkRepository and other repository methods
@@ -19,7 +18,7 @@ class TestLinkRepositoryEdgeCases:
     """Edge cases for LinkRepository."""
 
     @pytest.mark.asyncio
-    async def test_link_repository_init(self):
+    async def test_link_repository_init(self) -> None:
         """Test repository initialization."""
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
@@ -27,13 +26,13 @@ class TestLinkRepositoryEdgeCases:
         assert repo.session is mock_session
 
     @pytest.mark.asyncio
-    async def test_create_link_minimal(self):
+    async def test_create_link_minimal(self) -> None:
         """Test creating link with minimal required fields."""
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
 
         link = await repo.create(
-            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="depends_on"
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="depends_on",
         )
 
         assert link.project_id == "proj-1"
@@ -43,7 +42,7 @@ class TestLinkRepositoryEdgeCases:
         assert link.metadata == {}
 
     @pytest.mark.asyncio
-    async def test_create_link_with_metadata(self):
+    async def test_create_link_with_metadata(self) -> None:
         """Test creating link with metadata."""
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
@@ -60,37 +59,37 @@ class TestLinkRepositoryEdgeCases:
         assert link.metadata == metadata
 
     @pytest.mark.asyncio
-    async def test_create_link_with_empty_metadata(self):
+    async def test_create_link_with_empty_metadata(self) -> None:
         """Test creating link with explicitly empty metadata."""
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
 
         link = await repo.create(
-            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="related_to", metadata={}
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="related_to", metadata={},
         )
 
         assert link.metadata == {}
 
     @pytest.mark.asyncio
-    async def test_create_link_with_none_metadata(self):
+    async def test_create_link_with_none_metadata(self) -> None:
         """Test creating link with None metadata (should default to empty dict)."""
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
 
         link = await repo.create(
-            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="related_to", metadata=None
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="related_to", metadata=None,
         )
 
         assert link.metadata == {}
 
     @pytest.mark.asyncio
-    async def test_create_link_generates_uuid(self):
+    async def test_create_link_generates_uuid(self) -> None:
         """Test that link creation generates valid UUID."""
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
 
         link = await repo.create(
-            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="depends_on"
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="depends_on",
         )
 
         # UUID should be string format
@@ -98,7 +97,7 @@ class TestLinkRepositoryEdgeCases:
         assert len(link.id) == 36  # Standard UUID format
 
     @pytest.mark.asyncio
-    async def test_create_link_different_link_types(self):
+    async def test_create_link_different_link_types(self) -> None:
         """Test creating links with different link types."""
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
@@ -114,24 +113,24 @@ class TestLinkRepositoryEdgeCases:
 
         for link_type in link_types:
             link = await repo.create(
-                project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type=link_type
+                project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type=link_type,
             )
             assert link.link_type == link_type
 
     @pytest.mark.asyncio
-    async def test_create_link_same_source_target(self):
+    async def test_create_link_same_source_target(self) -> None:
         """Test creating self-referential link (edge case)."""
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
 
         link = await repo.create(
-            project_id="proj-1", source_item_id="item-1", target_item_id="item-1", link_type="related_to"
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-1", link_type="related_to",
         )
 
         assert link.source_item_id == link.target_item_id
 
     @pytest.mark.asyncio
-    async def test_create_link_calls_session_methods(self):
+    async def test_create_link_calls_session_methods(self) -> None:
         """Test that create calls appropriate session methods."""
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
@@ -143,11 +142,11 @@ class TestLinkRepositoryEdgeCases:
         mock_session.refresh.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_get_by_id_found(self):
+    async def test_get_by_id_found(self) -> None:
         """Test getting link by ID when it exists."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_link = Link(
-            id="link-1", project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="depends_on"
+            id="link-1", project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="depends_on",
         )
         # Use MagicMock for result object (sync methods)
         mock_result = MagicMock()
@@ -160,7 +159,7 @@ class TestLinkRepositoryEdgeCases:
         assert result is mock_link
 
     @pytest.mark.asyncio
-    async def test_get_by_id_not_found(self):
+    async def test_get_by_id_not_found(self) -> None:
         """Test getting link by ID when it doesn't exist."""
         mock_session = AsyncMock(spec=AsyncSession)
         # Use MagicMock for result object (sync methods)
@@ -174,7 +173,7 @@ class TestLinkRepositoryEdgeCases:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_get_by_project_empty(self):
+    async def test_get_by_project_empty(self) -> None:
         """Test getting links for project with no links."""
         mock_session = AsyncMock(spec=AsyncSession)
         # Use MagicMock for result and scalars (sync methods)
@@ -190,7 +189,7 @@ class TestLinkRepositoryEdgeCases:
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_get_by_project_multiple_links(self):
+    async def test_get_by_project_multiple_links(self) -> None:
         """Test getting multiple links for a project."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_links = [
@@ -223,7 +222,7 @@ class TestLinkRepositoryEdgeCases:
         assert all(isinstance(link, Link) for link in result)
 
     @pytest.mark.asyncio
-    async def test_get_by_source_no_links(self):
+    async def test_get_by_source_no_links(self) -> None:
         """Test getting links from source item with no outgoing links."""
         mock_session = AsyncMock(spec=AsyncSession)
         # Use MagicMock for result and scalars (sync methods)
@@ -239,7 +238,7 @@ class TestLinkRepositoryEdgeCases:
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_get_by_source_multiple_links(self):
+    async def test_get_by_source_multiple_links(self) -> None:
         """Test getting multiple links from source item."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_links = [
@@ -272,7 +271,7 @@ class TestLinkRepositoryEdgeCases:
         assert all(link.source_item_id == "item-1" for link in result)
 
     @pytest.mark.asyncio
-    async def test_get_by_target_no_links(self):
+    async def test_get_by_target_no_links(self) -> None:
         """Test getting links to target item with no incoming links."""
         mock_session = AsyncMock(spec=AsyncSession)
         # Use MagicMock for result and scalars (sync methods)
@@ -288,7 +287,7 @@ class TestLinkRepositoryEdgeCases:
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_get_by_target_multiple_links(self):
+    async def test_get_by_target_multiple_links(self) -> None:
         """Test getting multiple links to target item."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_links = [
@@ -321,7 +320,7 @@ class TestLinkRepositoryEdgeCases:
         assert all(link.target_item_id == "item-3" for link in result)
 
     @pytest.mark.asyncio
-    async def test_get_by_item_no_links(self):
+    async def test_get_by_item_no_links(self) -> None:
         """Test getting links for item with no connections."""
         mock_session = AsyncMock(spec=AsyncSession)
         # Use MagicMock for result and scalars (sync methods)
@@ -337,7 +336,7 @@ class TestLinkRepositoryEdgeCases:
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_get_by_item_as_source_and_target(self):
+    async def test_get_by_item_as_source_and_target(self) -> None:
         """Test getting links where item is both source and target."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_links = [
@@ -369,7 +368,7 @@ class TestLinkRepositoryEdgeCases:
         assert len(result) == 2
 
     @pytest.mark.asyncio
-    async def test_delete_link_found(self):
+    async def test_delete_link_found(self) -> None:
         """Test deleting existing link."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_result = AsyncMock()
@@ -382,7 +381,7 @@ class TestLinkRepositoryEdgeCases:
         assert result is True
 
     @pytest.mark.asyncio
-    async def test_delete_link_not_found(self):
+    async def test_delete_link_not_found(self) -> None:
         """Test deleting non-existent link."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_result = AsyncMock()
@@ -395,7 +394,7 @@ class TestLinkRepositoryEdgeCases:
         assert result is False
 
     @pytest.mark.asyncio
-    async def test_delete_by_item_no_links(self):
+    async def test_delete_by_item_no_links(self) -> None:
         """Test deleting links for item with no connections."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_result = AsyncMock()
@@ -408,7 +407,7 @@ class TestLinkRepositoryEdgeCases:
         assert count == 0
 
     @pytest.mark.asyncio
-    async def test_delete_by_item_multiple_links(self):
+    async def test_delete_by_item_multiple_links(self) -> None:
         """Test deleting multiple links for an item."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_result = AsyncMock()
@@ -421,7 +420,7 @@ class TestLinkRepositoryEdgeCases:
         assert count == 5
 
     @pytest.mark.asyncio
-    async def test_delete_by_item_as_source_and_target(self):
+    async def test_delete_by_item_as_source_and_target(self) -> None:
         """Test that delete_by_item removes links where item is source or target."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_result = AsyncMock()
@@ -435,7 +434,7 @@ class TestLinkRepositoryEdgeCases:
         assert count == 10
 
     @pytest.mark.asyncio
-    async def test_link_metadata_special_characters(self):
+    async def test_link_metadata_special_characters(self) -> None:
         """Test creating link with special characters in metadata."""
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
@@ -456,7 +455,7 @@ class TestLinkRepositoryEdgeCases:
         assert link.metadata == metadata
 
     @pytest.mark.asyncio
-    async def test_link_metadata_nested_structure(self):
+    async def test_link_metadata_nested_structure(self) -> None:
         """Test creating link with complex nested metadata."""
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
@@ -483,17 +482,17 @@ class TestLinkRepositoryEdgeCases:
         assert link.metadata == metadata
 
     @pytest.mark.asyncio
-    async def test_multiple_links_same_items_different_types(self):
+    async def test_multiple_links_same_items_different_types(self) -> None:
         """Test creating multiple links between same items with different types."""
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
 
         link1 = await repo.create(
-            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="depends_on"
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="depends_on",
         )
 
         link2 = await repo.create(
-            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="related_to"
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="related_to",
         )
 
         # Should create two separate links
@@ -501,7 +500,7 @@ class TestLinkRepositoryEdgeCases:
         assert link1.link_type != link2.link_type
 
     @pytest.mark.asyncio
-    async def test_link_with_very_long_ids(self):
+    async def test_link_with_very_long_ids(self) -> None:
         """Test creating link with very long IDs (boundary test)."""
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
@@ -509,38 +508,38 @@ class TestLinkRepositoryEdgeCases:
         long_id = "a" * 255  # Very long ID
 
         link = await repo.create(
-            project_id=long_id, source_item_id=long_id, target_item_id=long_id, link_type="related_to"
+            project_id=long_id, source_item_id=long_id, target_item_id=long_id, link_type="related_to",
         )
 
         assert link.project_id == long_id
 
     @pytest.mark.asyncio
-    async def test_link_with_numeric_string_ids(self):
+    async def test_link_with_numeric_string_ids(self) -> None:
         """Test creating link with numeric string IDs."""
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
 
         link = await repo.create(
-            project_id="12345", source_item_id="67890", target_item_id="11111", link_type="depends_on"
+            project_id="12345", source_item_id="67890", target_item_id="11111", link_type="depends_on",
         )
 
         assert link.project_id == "12345"
         assert link.source_item_id == "67890"
 
     @pytest.mark.asyncio
-    async def test_bidirectional_links(self):
+    async def test_bidirectional_links(self) -> None:
         """Test creating bidirectional links between items."""
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
 
         # Link from A to B
         link1 = await repo.create(
-            project_id="proj-1", source_item_id="item-A", target_item_id="item-B", link_type="depends_on"
+            project_id="proj-1", source_item_id="item-A", target_item_id="item-B", link_type="depends_on",
         )
 
         # Link from B to A (reverse direction)
         link2 = await repo.create(
-            project_id="proj-1", source_item_id="item-B", target_item_id="item-A", link_type="depends_on"
+            project_id="proj-1", source_item_id="item-B", target_item_id="item-A", link_type="depends_on",
         )
 
         assert link1.source_item_id == link2.target_item_id

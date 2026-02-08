@@ -2,21 +2,24 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.execution import Execution, ExecutionArtifact
 from tracertm.models.execution_config import ExecutionEnvironmentConfig
+
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class ExecutionRepository:
     """Repository for Execution CRUD operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -114,7 +117,7 @@ class ExecutionRepository:
 class ExecutionArtifactRepository:
     """Repository for ExecutionArtifact CRUD operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -171,13 +174,13 @@ class ExecutionArtifactRepository:
 class ExecutionEnvironmentConfigRepository:
     """Repository for ExecutionEnvironmentConfig CRUD operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def get_by_project(self, project_id: str) -> ExecutionEnvironmentConfig | None:
         """Get config by project ID (one per project)."""
         result = await self.session.execute(
-            select(ExecutionEnvironmentConfig).where(ExecutionEnvironmentConfig.project_id == project_id)
+            select(ExecutionEnvironmentConfig).where(ExecutionEnvironmentConfig.project_id == project_id),
         )
         return result.scalar_one_or_none()
 

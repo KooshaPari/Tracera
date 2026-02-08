@@ -1,5 +1,4 @@
-"""
-Phase 2 WP-2.4: Comprehensive API Layer Tests (280+ tests, 100% coverage)
+"""Phase 2 WP-2.4: Comprehensive API Layer Tests (280+ tests, 100% coverage).
 
 Tests for:
 - HTTP client operations
@@ -17,6 +16,7 @@ import asyncio
 import json
 import time
 from datetime import UTC, datetime, timedelta, timezone
+from typing import Never
 from unittest.mock import MagicMock, patch
 
 import httpx
@@ -72,10 +72,10 @@ def tracertm_client(sync_db_session):
     """Create TraceRTM Python client with sync session."""
     with patch("tracertm.api.client.ConfigManager") as mock_config_manager:
         mock_config = MagicMock()
-        mock_config.get.side_effect = lambda key: {
+        mock_config.get.side_effect = {
             "database_url": "sqlite:///:memory:",
             "current_project_id": "test-project-123",
-        }.get(key)
+        }.get
         mock_config_manager.return_value = mock_config
 
         client = TraceRTMClient(agent_id="test-agent-123", agent_name="Test Agent")
@@ -91,7 +91,7 @@ def tracertm_client(sync_db_session):
 class TestApiConfig:
     """Test ApiConfig initialization and methods."""
 
-    def test_api_config_initialization(self):
+    def test_api_config_initialization(self) -> None:
         """Test ApiConfig basic initialization."""
         config = ApiConfig(
             base_url="https://api.example.com",
@@ -104,7 +104,7 @@ class TestApiConfig:
         assert config.max_retries == 3
         assert config.retry_backoff_base == 2.0
 
-    def test_api_config_defaults(self):
+    def test_api_config_defaults(self) -> None:
         """Test ApiConfig default values."""
         config = ApiConfig(base_url="https://api.test.com")
         assert config.timeout == 30.0
@@ -112,15 +112,15 @@ class TestApiConfig:
         assert config.verify_ssl is True
         assert config.token is None
 
-    def test_api_config_from_config_manager(self):
+    def test_api_config_from_config_manager(self) -> None:
         """Test creating ApiConfig from ConfigManager."""
         mock_config_manager = MagicMock()
-        mock_config_manager.get.side_effect = lambda key: {
+        mock_config_manager.get.side_effect = {
             "api_url": "https://api.test.com",
             "api_token": "test-token",
             "api_timeout": "60.0",
             "api_max_retries": "5",
-        }.get(key)
+        }.get
 
         config = ApiConfig.from_config_manager(mock_config_manager)
         assert config.base_url == "https://api.test.com"
@@ -128,7 +128,7 @@ class TestApiConfig:
         assert config.timeout == 60.0
         assert config.max_retries == 5
 
-    def test_api_config_from_config_manager_defaults(self):
+    def test_api_config_from_config_manager_defaults(self) -> None:
         """Test creating ApiConfig with defaults from ConfigManager."""
         mock_config_manager = MagicMock()
         mock_config_manager.get.return_value = None
@@ -138,46 +138,46 @@ class TestApiConfig:
         assert config.timeout == 30.0
         assert config.max_retries == 3
 
-    def test_api_config_url_trailing_slash_removed(self):
+    def test_api_config_url_trailing_slash_removed(self) -> None:
         """Test that trailing slashes are removed from base_url via from_config_manager."""
         mock_config_manager = MagicMock()
-        mock_config_manager.get.side_effect = lambda key: {
+        mock_config_manager.get.side_effect = {
             "api_url": "https://api.test.com/",
-        }.get(key)
+        }.get
 
         config = ApiConfig.from_config_manager(mock_config_manager)
         assert config.base_url == "https://api.test.com"
 
-    def test_api_config_timeout_conversion(self):
+    def test_api_config_timeout_conversion(self) -> None:
         """Test timeout string to float conversion."""
         mock_config_manager = MagicMock()
-        mock_config_manager.get.side_effect = lambda key: {
+        mock_config_manager.get.side_effect = {
             "api_url": "https://api.test.com",
             "api_timeout": "45.5",
-        }.get(key)
+        }.get
 
         config = ApiConfig.from_config_manager(mock_config_manager)
         assert config.timeout == 45.5
         assert isinstance(config.timeout, float)
 
-    def test_api_config_max_retries_conversion(self):
+    def test_api_config_max_retries_conversion(self) -> None:
         """Test max_retries string to int conversion."""
         mock_config_manager = MagicMock()
-        mock_config_manager.get.side_effect = lambda key: {
+        mock_config_manager.get.side_effect = {
             "api_url": "https://api.test.com",
             "api_max_retries": "7",
-        }.get(key)
+        }.get
 
         config = ApiConfig.from_config_manager(mock_config_manager)
         assert config.max_retries == 7
         assert isinstance(config.max_retries, int)
 
-    def test_api_config_verify_ssl_default(self):
+    def test_api_config_verify_ssl_default(self) -> None:
         """Test verify_ssl defaults to True."""
         config = ApiConfig(base_url="https://api.test.com")
         assert config.verify_ssl is True
 
-    def test_api_config_verify_ssl_false(self):
+    def test_api_config_verify_ssl_false(self) -> None:
         """Test verify_ssl can be set to False."""
         config = ApiConfig(base_url="https://api.test.com", verify_ssl=False)
         assert config.verify_ssl is False
@@ -191,7 +191,7 @@ class TestApiConfig:
 class TestChangeDataclass:
     """Test Change dataclass."""
 
-    def test_change_initialization(self):
+    def test_change_initialization(self) -> None:
         """Test Change initialization."""
         change = Change(
             entity_type="item",
@@ -205,7 +205,7 @@ class TestChangeDataclass:
         assert change.data == {"title": "Test"}
         assert change.version == 1
 
-    def test_change_to_dict(self):
+    def test_change_to_dict(self) -> None:
         """Test Change.to_dict() serialization."""
         change = Change(
             entity_type="item",
@@ -223,7 +223,7 @@ class TestChangeDataclass:
         assert "timestamp" in result
         assert "client_id" in result
 
-    def test_change_with_client_id(self):
+    def test_change_with_client_id(self) -> None:
         """Test Change with client_id."""
         change = Change(
             entity_type="item",
@@ -236,7 +236,7 @@ class TestChangeDataclass:
         result = change.to_dict()
         assert result["client_id"] == "client-456"
 
-    def test_change_timestamp_default(self):
+    def test_change_timestamp_default(self) -> None:
         """Test Change timestamp defaults to now."""
         before = datetime.now(UTC)
         change = Change(
@@ -252,7 +252,7 @@ class TestChangeDataclass:
 class TestConflictDataclass:
     """Test Conflict dataclass."""
 
-    def test_conflict_initialization(self):
+    def test_conflict_initialization(self) -> None:
         """Test Conflict initialization."""
         conflict = Conflict(
             conflict_id="conflict-123",
@@ -268,7 +268,7 @@ class TestConflictDataclass:
         assert conflict.local_version == 2
         assert conflict.remote_version == 1
 
-    def test_conflict_from_dict(self):
+    def test_conflict_from_dict(self) -> None:
         """Test Conflict.from_dict() deserialization."""
         data = {
             "conflict_id": "conflict-123",
@@ -289,7 +289,7 @@ class TestConflictDataclass:
 class TestUploadResultDataclass:
     """Test UploadResult dataclass."""
 
-    def test_upload_result_initialization(self):
+    def test_upload_result_initialization(self) -> None:
         """Test UploadResult initialization."""
         result = UploadResult(
             applied=["item-1", "item-2"],
@@ -300,7 +300,7 @@ class TestUploadResultDataclass:
         assert result.conflicts == []
         assert result.errors == []
 
-    def test_upload_result_from_dict(self):
+    def test_upload_result_from_dict(self) -> None:
         """Test UploadResult.from_dict() deserialization."""
         data = {
             "applied": ["item-1", "item-2"],
@@ -321,33 +321,33 @@ class TestUploadResultDataclass:
 class TestExceptions:
     """Test API exception classes."""
 
-    def test_api_error(self):
+    def test_api_error(self) -> None:
         """Test ApiError initialization."""
         error = ApiError("Test error", status_code=500, response_data={"error": "server error"})
         assert str(error) == "Test error"
         assert error.status_code == 500
         assert error.response_data == {"error": "server error"}
 
-    def test_authentication_error(self):
+    def test_authentication_error(self) -> None:
         """Test AuthenticationError."""
         error = AuthenticationError("Invalid token", status_code=401)
         assert error.status_code == 401
         assert isinstance(error, ApiError)
 
-    def test_network_error(self):
+    def test_network_error(self) -> None:
         """Test NetworkError."""
         error = NetworkError("Connection failed", status_code=503)
         assert error.status_code == 503
         assert isinstance(error, ApiError)
 
-    def test_rate_limit_error(self):
+    def test_rate_limit_error(self) -> None:
         """Test RateLimitError."""
         error = RateLimitError("Rate limited", retry_after=60, status_code=429)
         assert error.retry_after == 60
         assert error.status_code == 429
         assert isinstance(error, ApiError)
 
-    def test_conflict_error(self):
+    def test_conflict_error(self) -> None:
         """Test ConflictError."""
         conflicts = [
             Conflict(
@@ -358,7 +358,7 @@ class TestExceptions:
                 remote_version=1,
                 local_data={},
                 remote_data={},
-            )
+            ),
         ]
         error = ConflictError("Conflicts found", conflicts=conflicts, status_code=409)
         assert error.status_code == 409
@@ -374,7 +374,7 @@ class TestApiClientInitialization:
     """Test ApiClient initialization."""
 
     @pytest.mark.asyncio
-    async def test_api_client_with_config(self, mock_config):
+    async def test_api_client_with_config(self, mock_config) -> None:
         """Test ApiClient initialization with config."""
         client = ApiClient(mock_config)
         assert client.config == mock_config
@@ -382,7 +382,7 @@ class TestApiClientInitialization:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_api_client_without_config(self):
+    async def test_api_client_without_config(self) -> None:
         """Test ApiClient initialization without config (creates default)."""
         with patch("tracertm.api.sync_client.ApiConfig.from_config_manager") as mock_create:
             mock_config = ApiConfig(base_url="https://api.test.com")
@@ -393,7 +393,7 @@ class TestApiClientInitialization:
             await client.close()
 
     @pytest.mark.asyncio
-    async def test_api_client_generate_client_id(self, mock_config):
+    async def test_api_client_generate_client_id(self, mock_config) -> None:
         """Test that client generates unique ID."""
         client1 = ApiClient(mock_config)
         client2 = ApiClient(mock_config)
@@ -402,7 +402,7 @@ class TestApiClientInitialization:
         await client2.close()
 
     @pytest.mark.asyncio
-    async def test_api_client_context_manager(self, mock_config):
+    async def test_api_client_context_manager(self, mock_config) -> None:
         """Test ApiClient as async context manager."""
         async with ApiClient(mock_config) as client:
             assert client is not None
@@ -413,7 +413,7 @@ class TestApiClientHTTPClient:
     """Test ApiClient HTTP client property."""
 
     @pytest.mark.asyncio
-    async def test_client_property_lazy_init(self, mock_config):
+    async def test_client_property_lazy_init(self, mock_config) -> None:
         """Test that HTTP client is lazily initialized."""
         client = ApiClient(mock_config)
         assert client._client is None
@@ -423,7 +423,7 @@ class TestApiClientHTTPClient:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_client_property_caching(self, mock_config):
+    async def test_client_property_caching(self, mock_config) -> None:
         """Test that HTTP client is cached."""
         client = ApiClient(mock_config)
         http_client1 = client.client
@@ -432,7 +432,7 @@ class TestApiClientHTTPClient:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_client_includes_auth_header(self, mock_config):
+    async def test_client_includes_auth_header(self, mock_config) -> None:
         """Test that client includes Authorization header."""
         client = ApiClient(mock_config)
         http_client = client.client
@@ -441,7 +441,7 @@ class TestApiClientHTTPClient:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_client_without_token(self):
+    async def test_client_without_token(self) -> None:
         """Test that client works without token."""
         config = ApiConfig(base_url="https://api.test.com", token=None)
         client = ApiClient(config)
@@ -450,7 +450,7 @@ class TestApiClientHTTPClient:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_client_headers_include_user_agent(self, mock_config):
+    async def test_client_headers_include_user_agent(self, mock_config) -> None:
         """Test that client includes User-Agent header."""
         client = ApiClient(mock_config)
         http_client = client.client
@@ -468,7 +468,7 @@ class TestApiClientRequests:
     """Test API client request handling."""
 
     @pytest.mark.asyncio
-    async def test_health_check_success(self, api_client):
+    async def test_health_check_success(self, api_client) -> None:
         """Test successful health check."""
         with patch.object(api_client, "_retry_request") as mock_request:
             mock_response = MagicMock()
@@ -480,7 +480,7 @@ class TestApiClientRequests:
             mock_request.assert_called_once_with("GET", "/api/health")
 
     @pytest.mark.asyncio
-    async def test_health_check_failure(self, api_client):
+    async def test_health_check_failure(self, api_client) -> None:
         """Test failed health check."""
         with patch.object(api_client, "_retry_request") as mock_request:
             mock_response = MagicMock()
@@ -491,7 +491,7 @@ class TestApiClientRequests:
             assert result is False
 
     @pytest.mark.asyncio
-    async def test_health_check_exception(self, api_client):
+    async def test_health_check_exception(self, api_client) -> None:
         """Test health check with exception."""
         with patch.object(api_client, "_retry_request") as mock_request:
             mock_request.side_effect = ApiError("Connection failed")
@@ -500,7 +500,7 @@ class TestApiClientRequests:
             assert result is False
 
     @pytest.mark.asyncio
-    async def test_upload_changes_success(self, api_client):
+    async def test_upload_changes_success(self, api_client) -> None:
         """Test successful changes upload."""
         changes = [
             Change(
@@ -508,7 +508,7 @@ class TestApiClientRequests:
                 entity_id="item-1",
                 operation=SyncOperation.CREATE,
                 data={"title": "New Item"},
-            )
+            ),
         ]
 
         with patch.object(api_client, "_retry_request") as mock_request:
@@ -526,7 +526,7 @@ class TestApiClientRequests:
             assert len(result.conflicts) == 0
 
     @pytest.mark.asyncio
-    async def test_upload_changes_with_last_sync(self, api_client):
+    async def test_upload_changes_with_last_sync(self, api_client) -> None:
         """Test upload changes with last_sync timestamp."""
         changes = [
             Change(
@@ -534,7 +534,7 @@ class TestApiClientRequests:
                 entity_id="item-1",
                 operation=SyncOperation.UPDATE,
                 data={"title": "Updated"},
-            )
+            ),
         ]
         last_sync = datetime.now(UTC) - timedelta(hours=1)
 
@@ -556,7 +556,7 @@ class TestApiClientRequests:
             assert payload["last_sync"] is not None
 
     @pytest.mark.asyncio
-    async def test_download_changes_success(self, api_client):
+    async def test_download_changes_success(self, api_client) -> None:
         """Test successful changes download."""
         since = datetime.now(UTC) - timedelta(hours=1)
 
@@ -571,8 +571,8 @@ class TestApiClientRequests:
                         "data": {"title": "Downloaded Item"},
                         "version": 1,
                         "timestamp": datetime.now(UTC).isoformat(),
-                    }
-                ]
+                    },
+                ],
             }
             mock_request.return_value = mock_response
 
@@ -581,7 +581,7 @@ class TestApiClientRequests:
             assert result[0].entity_id == "item-2"
 
     @pytest.mark.asyncio
-    async def test_download_changes_with_project_filter(self, api_client):
+    async def test_download_changes_with_project_filter(self, api_client) -> None:
         """Test download changes with project_id filter."""
         since = datetime.now(UTC) - timedelta(hours=1)
         project_id = "proj-123"
@@ -599,7 +599,7 @@ class TestApiClientRequests:
             assert params["project_id"] == project_id
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_success(self, api_client):
+    async def test_resolve_conflict_success(self, api_client) -> None:
         """Test successful conflict resolution."""
         with patch.object(api_client, "_retry_request") as mock_request:
             mock_response = MagicMock()
@@ -614,7 +614,7 @@ class TestApiClientRequests:
             assert result is True
 
     @pytest.mark.asyncio
-    async def test_get_sync_status_success(self, api_client):
+    async def test_get_sync_status_success(self, api_client) -> None:
         """Test successful sync status retrieval."""
         with patch.object(api_client, "_retry_request") as mock_request:
             mock_response = MagicMock()
@@ -640,7 +640,7 @@ class TestApiClientErrorHandling:
     """Test API client error handling."""
 
     @pytest.mark.asyncio
-    async def test_authentication_error_401(self, api_client):
+    async def test_authentication_error_401(self, api_client) -> None:
         """Test handling of 401 authentication error."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
@@ -657,7 +657,7 @@ class TestApiClientErrorHandling:
             assert err.status_code == 401
 
     @pytest.mark.asyncio
-    async def test_rate_limit_error_429(self, api_client):
+    async def test_rate_limit_error_429(self, api_client) -> None:
         """Test handling of 429 rate limit error."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
@@ -676,7 +676,7 @@ class TestApiClientErrorHandling:
             assert err.retry_after == 60
 
     @pytest.mark.asyncio
-    async def test_conflict_error_409(self, api_client):
+    async def test_conflict_error_409(self, api_client) -> None:
         """Test handling of 409 conflict error."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
@@ -691,11 +691,11 @@ class TestApiClientErrorHandling:
                         "remote_version": 1,
                         "local_data": {},
                         "remote_data": {},
-                    }
-                ]
+                    },
+                ],
             }
             mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-                "Conflict", request=MagicMock(), response=mock_response
+                "Conflict", request=MagicMock(), response=mock_response,
             )
             mock_request.return_value = mock_response
 
@@ -708,7 +708,7 @@ class TestApiClientErrorHandling:
             assert len(err.conflicts) == 1
 
     @pytest.mark.asyncio
-    async def test_network_error_handling(self, api_client):
+    async def test_network_error_handling(self, api_client) -> None:
         """Test handling of network errors."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_request.side_effect = httpx.NetworkError("Connection refused")
@@ -717,14 +717,14 @@ class TestApiClientErrorHandling:
                 await api_client._retry_request("GET", "/api/items")
 
     @pytest.mark.asyncio
-    async def test_server_error_500(self, api_client):
+    async def test_server_error_500(self, api_client) -> None:
         """Test handling of 500 server error."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
             mock_response.status_code = 500
             mock_response.text = "Internal Server Error"
             mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-                "Server error", request=MagicMock(), response=mock_response
+                "Server error", request=MagicMock(), response=mock_response,
             )
             mock_request.return_value = mock_response
 
@@ -741,7 +741,7 @@ class TestApiClientRetryLogic:
     """Test API client retry and backoff logic."""
 
     @pytest.mark.asyncio
-    async def test_retry_on_network_error(self, api_client):
+    async def test_retry_on_network_error(self, api_client) -> None:
         """Test that network errors trigger retries."""
         call_count = 0
 
@@ -749,7 +749,8 @@ class TestApiClientRetryLogic:
             nonlocal call_count
             call_count += 1
             if call_count < 2:
-                raise httpx.NetworkError("Connection failed")
+                msg = "Connection failed"
+                raise httpx.NetworkError(msg)
             mock_response = MagicMock()
             mock_response.status_code = 200
             return mock_response
@@ -760,7 +761,7 @@ class TestApiClientRetryLogic:
                 assert call_count == 2
 
     @pytest.mark.asyncio
-    async def test_max_retries_exceeded(self, api_client):
+    async def test_max_retries_exceeded(self, api_client) -> None:
         """Test that request fails after max retries exceeded."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_request.side_effect = httpx.NetworkError("Connection failed")
@@ -772,7 +773,7 @@ class TestApiClientRetryLogic:
                 assert "after 3 retries" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_auth_error_not_retried(self, api_client):
+    async def test_auth_error_not_retried(self, api_client) -> None:
         """Test that authentication errors are not retried."""
         call_count = 0
 
@@ -793,7 +794,7 @@ class TestApiClientRetryLogic:
             assert call_count == 1
 
     @pytest.mark.asyncio
-    async def test_rate_limit_with_retry_after(self, api_client):
+    async def test_rate_limit_with_retry_after(self, api_client) -> None:
         """Test rate limit retry with Retry-After header."""
         call_count = 0
 
@@ -817,7 +818,7 @@ class TestApiClientRetryLogic:
                 assert call_count == 2
 
     @pytest.mark.asyncio
-    async def test_exponential_backoff(self, api_client):
+    async def test_exponential_backoff(self, api_client) -> None:
         """Test exponential backoff with retries."""
         call_count = 0
         sleep_times = []
@@ -826,12 +827,13 @@ class TestApiClientRetryLogic:
             nonlocal call_count
             call_count += 1
             if call_count < 3:
-                raise httpx.NetworkError("Connection failed")
+                msg = "Connection failed"
+                raise httpx.NetworkError(msg)
             mock_response = MagicMock()
             mock_response.status_code = 200
             return mock_response
 
-        async def mock_sleep(duration):
+        async def mock_sleep(duration) -> None:
             sleep_times.append(duration)
 
         with patch.object(api_client.client, "request", side_effect=mock_request):
@@ -852,7 +854,7 @@ class TestApiClientTimeouts:
     """Test API client timeout handling."""
 
     @pytest.mark.asyncio
-    async def test_client_timeout_configuration(self, mock_config):
+    async def test_client_timeout_configuration(self, mock_config) -> None:
         """Test that client timeout is configured correctly."""
         config = ApiConfig(
             base_url="https://api.test.com",
@@ -866,7 +868,7 @@ class TestApiClientTimeouts:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_request_timeout_error(self, api_client):
+    async def test_request_timeout_error(self, api_client) -> None:
         """Test handling of request timeout."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_request.side_effect = httpx.TimeoutException("Request timeout")
@@ -885,7 +887,7 @@ class TestApiClientFullSync:
     """Test full sync operation."""
 
     @pytest.mark.asyncio
-    async def test_full_sync_success(self, api_client):
+    async def test_full_sync_success(self, api_client) -> None:
         """Test successful full sync."""
         local_changes = [
             Change(
@@ -893,7 +895,7 @@ class TestApiClientFullSync:
                 entity_id="item-1",
                 operation=SyncOperation.CREATE,
                 data={"title": "New"},
-            )
+            ),
         ]
 
         with patch.object(api_client, "upload_changes") as mock_upload:
@@ -913,7 +915,7 @@ class TestApiClientFullSync:
                 mock_download.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_full_sync_with_conflict_local_wins(self, api_client):
+    async def test_full_sync_with_conflict_local_wins(self, api_client) -> None:
         """Test full sync with LOCAL_WINS conflict resolution."""
         local_changes = [
             Change(
@@ -921,7 +923,7 @@ class TestApiClientFullSync:
                 entity_id="item-1",
                 operation=SyncOperation.UPDATE,
                 data={"title": "Local"},
-            )
+            ),
         ]
 
         conflict = Conflict(
@@ -958,7 +960,7 @@ class TestApiClientFullSync:
                     mock_resolve.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_full_sync_with_conflict_manual_raises(self, api_client):
+    async def test_full_sync_with_conflict_manual_raises(self, api_client) -> None:
         """Test full sync with MANUAL conflict resolution raises error."""
         local_changes = []
         conflict = Conflict(
@@ -989,21 +991,21 @@ class TestApiClientFullSync:
 class TestTraceRTMClientInitialization:
     """Test TraceRTMClient initialization."""
 
-    def test_tracertm_client_with_agent_id(self):
+    def test_tracertm_client_with_agent_id(self) -> None:
         """Test TraceRTMClient initialization with agent_id."""
         with patch("tracertm.config.manager.ConfigManager"):
             client = TraceRTMClient(agent_id="agent-123", agent_name="TestAgent")
             assert client.agent_id == "agent-123"
             assert client.agent_name == "TestAgent"
 
-    def test_tracertm_client_without_agent(self):
+    def test_tracertm_client_without_agent(self) -> None:
         """Test TraceRTMClient initialization without agent."""
         with patch("tracertm.config.manager.ConfigManager"):
             client = TraceRTMClient()
             assert client.agent_id is None
             assert client.agent_name is None
 
-    def test_tracertm_client_config_manager(self):
+    def test_tracertm_client_config_manager(self) -> None:
         """Test that TraceRTMClient initializes ConfigManager."""
         with patch("tracertm.config.manager.ConfigManager") as mock_cm:
             client = TraceRTMClient()
@@ -1014,7 +1016,7 @@ class TestTraceRTMClientInitialization:
 class TestTraceRTMClientItemOperations:
     """Test TraceRTMClient item operations."""
 
-    def test_query_items_basic(self, tracertm_client):
+    def test_query_items_basic(self, tracertm_client) -> None:
         """Test basic item query."""
         from tracertm.models.item import Item
 
@@ -1034,7 +1036,7 @@ class TestTraceRTMClientItemOperations:
         assert len(results) > 0
         assert results[0]["title"] == "Test Item"
 
-    def test_query_items_with_filter(self, tracertm_client):
+    def test_query_items_with_filter(self, tracertm_client) -> None:
         """Test item query with status filter."""
         from tracertm.models.item import Item
 
@@ -1052,7 +1054,7 @@ class TestTraceRTMClientItemOperations:
         assert len(results) == 1
         assert results[0]["status"] == "done"
 
-    def test_get_item_by_id(self, tracertm_client):
+    def test_get_item_by_id(self, tracertm_client) -> None:
         """Test getting a specific item."""
         from tracertm.models.item import Item
 
@@ -1070,12 +1072,12 @@ class TestTraceRTMClientItemOperations:
         assert result is not None
         assert result["title"] == "Specific Item"
 
-    def test_get_item_not_found(self, tracertm_client):
+    def test_get_item_not_found(self, tracertm_client) -> None:
         """Test getting non-existent item returns None."""
         result = tracertm_client.get_item("nonexistent-id")
         assert result is None
 
-    def test_create_item(self, tracertm_client):
+    def test_create_item(self, tracertm_client) -> None:
         """Test creating an item."""
         result = tracertm_client.create_item(
             "New Item",
@@ -1086,7 +1088,7 @@ class TestTraceRTMClientItemOperations:
         assert result["title"] == "New Item"
         assert result["view"] == "FEATURE"
 
-    def test_create_item_with_metadata(self, tracertm_client):
+    def test_create_item_with_metadata(self, tracertm_client) -> None:
         """Test creating item with metadata."""
         metadata = {"priority": "high", "owner": "team-1"}
         result = tracertm_client.create_item(
@@ -1096,7 +1098,7 @@ class TestTraceRTMClientItemOperations:
         )
         assert result["id"] is not None
 
-    def test_update_item_basic(self, tracertm_client):
+    def test_update_item_basic(self, tracertm_client) -> None:
         """Test updating an item."""
         from tracertm.models.item import Item
 
@@ -1113,13 +1115,13 @@ class TestTraceRTMClientItemOperations:
         assert result["title"] == "Updated Title"
         assert result["status"] == "done"
 
-    def test_update_item_not_found(self, tracertm_client):
+    def test_update_item_not_found(self, tracertm_client) -> None:
         """Test updating non-existent item raises error."""
         with pytest.raises(ValueError) as exc_info:
             tracertm_client.update_item("nonexistent-id", {"title": "Updated"})
         assert "Item not found" in str(exc_info.value)
 
-    def test_delete_item(self, tracertm_client):
+    def test_delete_item(self, tracertm_client) -> None:
         """Test deleting an item (soft delete)."""
         from tracertm.models.item import Item
 
@@ -1138,7 +1140,7 @@ class TestTraceRTMClientItemOperations:
         result = tracertm_client.get_item(item.id)
         assert result is None
 
-    def test_delete_item_not_found(self, tracertm_client):
+    def test_delete_item_not_found(self, tracertm_client) -> None:
         """Test deleting non-existent item raises error."""
         with pytest.raises(ValueError):
             tracertm_client.delete_item("nonexistent-id")
@@ -1147,7 +1149,7 @@ class TestTraceRTMClientItemOperations:
 class TestTraceRTMClientBatchOperations:
     """Test TraceRTMClient batch operations."""
 
-    def test_batch_create_items(self, tracertm_client):
+    def test_batch_create_items(self, tracertm_client) -> None:
         """Test batch creating items."""
         items = [
             {"title": "Item 1", "view": "FEATURE", "type": "requirement"},
@@ -1156,12 +1158,12 @@ class TestTraceRTMClientBatchOperations:
         result = tracertm_client.batch_create_items(items)
         assert result["items_created"] == 2
 
-    def test_batch_create_items_empty(self, tracertm_client):
+    def test_batch_create_items_empty(self, tracertm_client) -> None:
         """Test batch create with empty list."""
         result = tracertm_client.batch_create_items([])
         assert result["items_created"] == 0
 
-    def test_batch_update_items(self, tracertm_client):
+    def test_batch_update_items(self, tracertm_client) -> None:
         """Test batch updating items."""
         from tracertm.models.item import Item
 
@@ -1189,7 +1191,7 @@ class TestTraceRTMClientBatchOperations:
         result = tracertm_client.batch_update_items(updates)
         assert result["items_updated"] == 2
 
-    def test_batch_delete_items(self, tracertm_client):
+    def test_batch_delete_items(self, tracertm_client) -> None:
         """Test batch deleting items."""
         from tracertm.models.item import Item
 
@@ -1217,7 +1219,7 @@ class TestTraceRTMClientBatchOperations:
 class TestTraceRTMClientAgentOperations:
     """Test TraceRTMClient agent operations."""
 
-    def test_register_agent(self, tracertm_client):
+    def test_register_agent(self, tracertm_client) -> None:
         """Test registering an agent."""
         agent_id = tracertm_client.register_agent(
             name="Test Agent",
@@ -1226,7 +1228,7 @@ class TestTraceRTMClientAgentOperations:
         assert agent_id is not None
         assert tracertm_client.agent_id == agent_id
 
-    def test_register_agent_with_projects(self, tracertm_client):
+    def test_register_agent_with_projects(self, tracertm_client) -> None:
         """Test registering agent with project assignments."""
         agent_id = tracertm_client.register_agent(
             name="Multi-Project Agent",
@@ -1234,7 +1236,7 @@ class TestTraceRTMClientAgentOperations:
         )
         assert agent_id is not None
 
-    def test_assign_agent_to_projects(self, tracertm_client):
+    def test_assign_agent_to_projects(self, tracertm_client) -> None:
         """Test assigning agent to projects."""
         from tracertm.models.agent import Agent
 
@@ -1256,7 +1258,7 @@ class TestTraceRTMClientAgentOperations:
         projects = tracertm_client.get_agent_projects(agent.id)
         assert len(projects) >= 3
 
-    def test_get_agent_projects(self, tracertm_client):
+    def test_get_agent_projects(self, tracertm_client) -> None:
         """Test getting agent's assigned projects."""
         from tracertm.models.agent import Agent
 
@@ -1278,7 +1280,7 @@ class TestTraceRTMClientAgentOperations:
 class TestTraceRTMClientExportImport:
     """Test TraceRTMClient export/import operations."""
 
-    def test_export_project_json(self, tracertm_client):
+    def test_export_project_json(self, tracertm_client) -> None:
         """Test exporting project as JSON."""
         from tracertm.models.item import Item
         from tracertm.models.project import Project
@@ -1302,7 +1304,7 @@ class TestTraceRTMClientExportImport:
         assert "items" in data
         assert "links" in data
 
-    def test_import_data(self, tracertm_client):
+    def test_import_data(self, tracertm_client) -> None:
         """Test importing data."""
         data = {
             "items": [
@@ -1325,7 +1327,7 @@ class TestTraceRTMClientExportImport:
         assert result["items_created"] == 2
         assert result["links_created"] == 0
 
-    def test_import_data_with_links(self, tracertm_client):
+    def test_import_data_with_links(self, tracertm_client) -> None:
         """Test importing data with links."""
         from tracertm.models.item import Item
 
@@ -1352,7 +1354,7 @@ class TestTraceRTMClientExportImport:
                     "source_id": source.id,
                     "target_id": target.id,
                     "type": "verifies",
-                }
+                },
             ],
         }
         result = tracertm_client.import_data(data)
@@ -1362,7 +1364,7 @@ class TestTraceRTMClientExportImport:
 class TestTraceRTMClientActivity:
     """Test TraceRTMClient activity tracking."""
 
-    def test_get_agent_activity(self, tracertm_client):
+    def test_get_agent_activity(self, tracertm_client) -> None:
         """Test getting agent activity."""
         from tracertm.models.agent import Agent
         from tracertm.models.event import Event
@@ -1392,7 +1394,7 @@ class TestTraceRTMClientActivity:
         assert len(activity) > 0
         assert activity[0]["event_type"] == "item_created"
 
-    def test_get_all_agents_activity(self, tracertm_client):
+    def test_get_all_agents_activity(self, tracertm_client) -> None:
         """Test getting activity for all agents."""
         from tracertm.models.agent import Agent
 
@@ -1418,7 +1420,7 @@ class TestTraceRTMClientActivity:
 class TestTraceRTMClientAssignedItems:
     """Test TraceRTMClient assigned items retrieval."""
 
-    def test_get_assigned_items(self, tracertm_client):
+    def test_get_assigned_items(self, tracertm_client) -> None:
         """Test getting items assigned to agent."""
         from tracertm.models.item import Item
 
@@ -1437,7 +1439,7 @@ class TestTraceRTMClientAssignedItems:
         assert len(assigned) > 0
         assert assigned[0]["owner"] == agent_id
 
-    def test_get_assigned_items_no_agent(self, tracertm_client):
+    def test_get_assigned_items_no_agent(self, tracertm_client) -> None:
         """Test getting assigned items without agent returns empty."""
         tracertm_client.agent_id = None
         assigned = tracertm_client.get_assigned_items()
@@ -1447,7 +1449,7 @@ class TestTraceRTMClientAssignedItems:
 class TestTraceRTMClientConnectionManagement:
     """Test TraceRTMClient connection management."""
 
-    def test_close_connection(self, tracertm_client):
+    def test_close_connection(self, tracertm_client) -> None:
         """Test closing database connection."""
         tracertm_client.close()
         # Should not raise
@@ -1462,7 +1464,7 @@ class TestSyncClientBackwardCompat:
     """Test SyncClient backward compatibility alias."""
 
     @pytest.mark.asyncio
-    async def test_sync_client_alias(self, mock_config):
+    async def test_sync_client_alias(self, mock_config) -> None:
         """Test that SyncClient is an alias for ApiClient."""
         assert SyncClient == ApiClient
         client = SyncClient(mock_config)
@@ -1479,7 +1481,7 @@ class TestApiClientIntegration:
     """Integration tests for API client."""
 
     @pytest.mark.asyncio
-    async def test_api_client_context_manager_cleanup(self, mock_config):
+    async def test_api_client_context_manager_cleanup(self, mock_config) -> None:
         """Test that context manager properly cleans up."""
         async with ApiClient(mock_config) as client:
             http_client = client.client
@@ -1489,7 +1491,7 @@ class TestApiClientIntegration:
         assert client._client is None
 
     @pytest.mark.asyncio
-    async def test_concurrent_requests(self, api_client):
+    async def test_concurrent_requests(self, api_client) -> None:
         """Test handling concurrent requests."""
         requests = []
         responses = []
@@ -1517,7 +1519,7 @@ class TestApiClientPayloads:
     """Test API request payload construction."""
 
     @pytest.mark.asyncio
-    async def test_upload_changes_payload_structure(self, api_client):
+    async def test_upload_changes_payload_structure(self, api_client) -> None:
         """Test upload changes creates proper payload structure."""
         changes = [
             Change(
@@ -1526,7 +1528,7 @@ class TestApiClientPayloads:
                 operation=SyncOperation.CREATE,
                 data={"title": "New"},
                 version=1,
-            )
+            ),
         ]
 
         with patch.object(api_client.client, "request") as mock_request:
@@ -1549,7 +1551,7 @@ class TestApiClientPayloads:
             assert len(payload["changes"]) == 1
 
     @pytest.mark.asyncio
-    async def test_download_changes_params_structure(self, api_client):
+    async def test_download_changes_params_structure(self, api_client) -> None:
         """Test download changes creates proper params."""
         since = datetime.now(UTC) - timedelta(hours=1)
 
@@ -1577,7 +1579,7 @@ class TestApiClientResponseParsing:
     """Test API response parsing."""
 
     @pytest.mark.asyncio
-    async def test_parse_upload_result_with_conflicts(self, api_client):
+    async def test_parse_upload_result_with_conflicts(self, api_client) -> None:
         """Test parsing upload result with conflicts."""
         raw_response = {
             "applied": ["item-1"],
@@ -1591,7 +1593,7 @@ class TestApiClientResponseParsing:
                     "local_data": {"title": "Local"},
                     "remote_data": {"title": "Remote"},
                     "timestamp": datetime.now(UTC).isoformat(),
-                }
+                },
             ],
             "server_time": datetime.now(UTC).isoformat(),
             "errors": [{"id": "item-3", "reason": "invalid"}],
@@ -1613,7 +1615,7 @@ class TestApiClientEdgeCases:
     """Test edge cases and boundary conditions."""
 
     @pytest.mark.asyncio
-    async def test_empty_response_body(self, api_client):
+    async def test_empty_response_body(self, api_client) -> None:
         """Test handling empty response body."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
@@ -1626,7 +1628,7 @@ class TestApiClientEdgeCases:
                 await api_client.health_check()
 
     @pytest.mark.asyncio
-    async def test_large_payload(self, api_client):
+    async def test_large_payload(self, api_client) -> None:
         """Test handling large payload."""
         large_changes = [
             Change(
@@ -1652,7 +1654,7 @@ class TestApiClientEdgeCases:
             assert len(result.applied) == 100
 
     @pytest.mark.asyncio
-    async def test_special_characters_in_data(self, api_client):
+    async def test_special_characters_in_data(self, api_client) -> None:
         """Test handling special characters in data."""
         changes = [
             Change(
@@ -1660,7 +1662,7 @@ class TestApiClientEdgeCases:
                 entity_id="item-1",
                 operation=SyncOperation.CREATE,
                 data={"title": "Special: <>&\"'\\"},
-            )
+            ),
         ]
 
         with patch.object(api_client.client, "request") as mock_request:
@@ -1686,7 +1688,7 @@ class TestApiClientPerformance:
     """Test API client performance characteristics."""
 
     @pytest.mark.asyncio
-    async def test_rapid_retries_performance(self, api_client):
+    async def test_rapid_retries_performance(self, api_client) -> None:
         """Test performance of rapid retries."""
         start_time = time.time()
 
@@ -1697,7 +1699,8 @@ class TestApiClientPerformance:
                 nonlocal call_count
                 call_count += 1
                 if call_count < 3:
-                    raise httpx.NetworkError("Failed")
+                    msg = "Failed"
+                    raise httpx.NetworkError(msg)
                 mock_response = MagicMock()
                 mock_response.status_code = 200
                 return mock_response
@@ -1722,7 +1725,7 @@ class TestApiFinal:
     """Final validation tests to ensure 100% coverage."""
 
     @pytest.mark.asyncio
-    async def test_api_config_all_params(self):
+    async def test_api_config_all_params(self) -> None:
         """Test ApiConfig with all parameters specified."""
         config = ApiConfig(
             base_url="https://api.test.com/v1/",
@@ -1742,7 +1745,7 @@ class TestApiFinal:
         assert config.verify_ssl is False
 
     @pytest.mark.asyncio
-    async def test_api_client_generate_unique_ids(self, mock_config):
+    async def test_api_client_generate_unique_ids(self, mock_config) -> None:
         """Test that multiple clients generate unique IDs."""
         clients = [ApiClient(mock_config) for _ in range(10)]
         ids = [client._client_id for client in clients]
@@ -1751,7 +1754,7 @@ class TestApiFinal:
         for client in clients:
             await client.close()
 
-    def test_change_with_all_fields(self):
+    def test_change_with_all_fields(self) -> None:
         """Test Change with all fields."""
         timestamp = datetime.now(UTC)
         change = Change(
@@ -1769,7 +1772,7 @@ class TestApiFinal:
         assert dict_repr["client_id"] == "client-789"
         assert dict_repr["entity_type"] == "project"
 
-    def test_conflict_resolution_strategies(self):
+    def test_conflict_resolution_strategies(self) -> None:
         """Test all conflict resolution strategies."""
         strategies = [
             ConflictStrategy.LAST_WRITE_WINS,
@@ -1783,7 +1786,7 @@ class TestApiFinal:
             assert hasattr(strategy, "value")
 
     @pytest.mark.asyncio
-    async def test_api_close_idempotent(self, mock_config):
+    async def test_api_close_idempotent(self, mock_config) -> None:
         """Test that close can be called multiple times."""
         client = ApiClient(mock_config)
         await client.close()
@@ -1791,11 +1794,12 @@ class TestApiFinal:
         assert client._client is None
 
     @pytest.mark.asyncio
-    async def test_api_context_manager_exception_handling(self, mock_config):
+    async def test_api_context_manager_exception_handling(self, mock_config) -> None:
         """Test context manager handles exceptions properly."""
         try:
             async with ApiClient(mock_config) as client:
-                raise ValueError("Test exception")
+                msg = "Test exception"
+                raise ValueError(msg)
         except ValueError:
             pass
 
@@ -1812,7 +1816,7 @@ class TestWebhookHandling:
     """Test webhook handling in API."""
 
     @pytest.mark.asyncio
-    async def test_webhook_payload_validation(self):
+    async def test_webhook_payload_validation(self) -> None:
         """Test validating webhook payload structure."""
         payload = {
             "event_type": "item_created",
@@ -1829,7 +1833,7 @@ class TestWebhookHandling:
         assert "data" in payload
 
     @pytest.mark.asyncio
-    async def test_webhook_signature_verification(self):
+    async def test_webhook_signature_verification(self) -> None:
         """Test webhook signature verification."""
         import hashlib
         import hmac
@@ -1843,7 +1847,7 @@ class TestWebhookHandling:
         assert signature == expected
 
     @pytest.mark.asyncio
-    async def test_webhook_retry_on_failure(self, api_client):
+    async def test_webhook_retry_on_failure(self, api_client) -> None:
         """Test webhook delivery retry logic."""
         with patch.object(api_client.client, "request") as mock_request:
             call_count = 0
@@ -1856,7 +1860,8 @@ class TestWebhookHandling:
                     mock_response = MagicMock()
                     mock_response.status_code = 500
                     mock_response.text = "Server error"
-                    raise httpx.HTTPStatusError("Error", request=MagicMock(), response=mock_response)
+                    msg = "Error"
+                    raise httpx.HTTPStatusError(msg, request=MagicMock(), response=mock_response)
                 # Second call succeeds
                 mock_response = MagicMock()
                 mock_response.status_code = 200
@@ -1877,7 +1882,7 @@ class TestWebhookHandling:
             assert call_count >= 2
 
     @pytest.mark.asyncio
-    async def test_webhook_event_types(self):
+    async def test_webhook_event_types(self) -> None:
         """Test various webhook event types."""
         event_types = [
             "item_created",
@@ -1894,7 +1899,7 @@ class TestWebhookHandling:
             assert event_type in event_types
 
     @pytest.mark.asyncio
-    async def test_webhook_filter_by_event_type(self):
+    async def test_webhook_filter_by_event_type(self) -> None:
         """Test filtering webhooks by event type."""
         events = [
             {"event_type": "item_created", "data": {}},
@@ -1907,7 +1912,7 @@ class TestWebhookHandling:
         assert len(filtered) == 2
 
     @pytest.mark.asyncio
-    async def test_webhook_filter_by_entity_type(self):
+    async def test_webhook_filter_by_entity_type(self) -> None:
         """Test filtering webhooks by entity type."""
         events = [
             {"entity_type": "item", "data": {}},
@@ -1929,7 +1934,7 @@ class TestApiVersioning:
     """Test API versioning support."""
 
     @pytest.mark.asyncio
-    async def test_api_version_in_headers(self, api_client):
+    async def test_api_version_in_headers(self, api_client) -> None:
         """Test API version is included in request headers."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
@@ -1943,26 +1948,26 @@ class TestApiVersioning:
             mock_request.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_version_compatibility_check(self):
+    async def test_version_compatibility_check(self) -> None:
         """Test checking API version compatibility."""
         client_version = "1.0.0"
         server_version = "1.0.0"
 
         # Parse versions
-        client_major = int(client_version.split(".")[0])
-        server_major = int(server_version.split(".")[0])
+        client_major = int(client_version.split(".", maxsplit=1)[0])
+        server_major = int(server_version.split(".", maxsplit=1)[0])
 
         # Check compatibility
         assert client_major == server_major
 
     @pytest.mark.asyncio
-    async def test_api_version_mismatch_handling(self):
+    async def test_api_version_mismatch_handling(self) -> None:
         """Test handling API version mismatch."""
         client_version = "1.0.0"
         server_version = "2.0.0"
 
-        client_major = int(client_version.split(".")[0])
-        server_major = int(server_version.split(".")[0])
+        client_major = int(client_version.split(".", maxsplit=1)[0])
+        server_major = int(server_version.split(".", maxsplit=1)[0])
 
         if client_major != server_major:
             # Versions incompatible
@@ -1980,7 +1985,7 @@ class TestRequestHeaders:
     """Test HTTP request header management."""
 
     @pytest.mark.asyncio
-    async def test_headers_include_content_type(self, mock_config):
+    async def test_headers_include_content_type(self, mock_config) -> None:
         """Test Content-Type header is included."""
         client = ApiClient(mock_config)
         assert "Content-Type" in client.client.headers
@@ -1988,7 +1993,7 @@ class TestRequestHeaders:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_headers_include_user_agent(self, mock_config):
+    async def test_headers_include_user_agent(self, mock_config) -> None:
         """Test User-Agent header is included."""
         client = ApiClient(mock_config)
         assert "User-Agent" in client.client.headers
@@ -1996,7 +2001,7 @@ class TestRequestHeaders:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_custom_headers(self, mock_config):
+    async def test_custom_headers(self, mock_config) -> None:
         """Test custom headers can be added."""
         client = ApiClient(mock_config)
         # Client should have Authorization if token is set
@@ -2005,7 +2010,7 @@ class TestRequestHeaders:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_request_with_headers(self, api_client):
+    async def test_request_with_headers(self, api_client) -> None:
         """Test request includes all required headers."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
@@ -2028,12 +2033,12 @@ class TestRequestHeaders:
 class TestSSLTLS:
     """Test SSL/TLS configuration."""
 
-    def test_ssl_verify_enabled(self):
+    def test_ssl_verify_enabled(self) -> None:
         """Test SSL verification is enabled by default."""
         config = ApiConfig(base_url="https://api.test.com")
         assert config.verify_ssl is True
 
-    def test_ssl_verify_disabled(self):
+    def test_ssl_verify_disabled(self) -> None:
         """Test SSL verification can be disabled."""
         config = ApiConfig(
             base_url="https://api.test.com",
@@ -2042,7 +2047,7 @@ class TestSSLTLS:
         assert config.verify_ssl is False
 
     @pytest.mark.asyncio
-    async def test_ssl_configuration_passed_to_client(self):
+    async def test_ssl_configuration_passed_to_client(self) -> None:
         """Test SSL configuration is passed to HTTP client."""
         config = ApiConfig(
             base_url="https://api.test.com",
@@ -2063,7 +2068,7 @@ class TestResponseStatusCodes:
     """Test handling of various HTTP status codes."""
 
     @pytest.mark.asyncio
-    async def test_status_200_ok(self, api_client):
+    async def test_status_200_ok(self, api_client) -> None:
         """Test handling 200 OK response."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
@@ -2074,7 +2079,7 @@ class TestResponseStatusCodes:
             assert response.status_code == 200
 
     @pytest.mark.asyncio
-    async def test_status_201_created(self, api_client):
+    async def test_status_201_created(self, api_client) -> None:
         """Test handling 201 Created response."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
@@ -2085,7 +2090,7 @@ class TestResponseStatusCodes:
             assert response.status_code == 201
 
     @pytest.mark.asyncio
-    async def test_status_204_no_content(self, api_client):
+    async def test_status_204_no_content(self, api_client) -> None:
         """Test handling 204 No Content response."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
@@ -2096,14 +2101,14 @@ class TestResponseStatusCodes:
             assert response.status_code == 204
 
     @pytest.mark.asyncio
-    async def test_status_400_bad_request(self, api_client):
+    async def test_status_400_bad_request(self, api_client) -> None:
         """Test handling 400 Bad Request response."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
             mock_response.status_code = 400
             mock_response.text = "Bad request"
             mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-                "Error", request=MagicMock(), response=mock_response
+                "Error", request=MagicMock(), response=mock_response,
             )
             mock_request.return_value = mock_response
 
@@ -2111,14 +2116,14 @@ class TestResponseStatusCodes:
                 await api_client._retry_request("POST", "/api/items")
 
     @pytest.mark.asyncio
-    async def test_status_403_forbidden(self, api_client):
+    async def test_status_403_forbidden(self, api_client) -> None:
         """Test handling 403 Forbidden response."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
             mock_response.status_code = 403
             mock_response.text = "Forbidden"
             mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-                "Error", request=MagicMock(), response=mock_response
+                "Error", request=MagicMock(), response=mock_response,
             )
             mock_request.return_value = mock_response
 
@@ -2126,14 +2131,14 @@ class TestResponseStatusCodes:
                 await api_client._retry_request("GET", "/api/admin")
 
     @pytest.mark.asyncio
-    async def test_status_502_bad_gateway(self, api_client):
+    async def test_status_502_bad_gateway(self, api_client) -> None:
         """Test handling 502 Bad Gateway response."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
             mock_response.status_code = 502
             mock_response.text = "Bad gateway"
             mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-                "Error", request=MagicMock(), response=mock_response
+                "Error", request=MagicMock(), response=mock_response,
             )
             mock_request.return_value = mock_response
 
@@ -2141,14 +2146,14 @@ class TestResponseStatusCodes:
                 await api_client._retry_request("GET", "/api/items")
 
     @pytest.mark.asyncio
-    async def test_status_503_service_unavailable(self, api_client):
+    async def test_status_503_service_unavailable(self, api_client) -> None:
         """Test handling 503 Service Unavailable response."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
             mock_response.status_code = 503
             mock_response.text = "Service unavailable"
             mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-                "Error", request=MagicMock(), response=mock_response
+                "Error", request=MagicMock(), response=mock_response,
             )
             mock_request.return_value = mock_response
 
@@ -2165,7 +2170,7 @@ class TestClientIDManagement:
     """Test client ID generation and management."""
 
     @pytest.mark.asyncio
-    async def test_client_id_format(self, mock_config):
+    async def test_client_id_format(self, mock_config) -> None:
         """Test client ID format."""
         client = ApiClient(mock_config)
         # Should be 16 character hex string
@@ -2174,7 +2179,7 @@ class TestClientIDManagement:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_client_id_uniqueness_across_instances(self, mock_config):
+    async def test_client_id_uniqueness_across_instances(self, mock_config) -> None:
         """Test that different instances have unique client IDs."""
         clients = [ApiClient(mock_config) for _ in range(5)]
         ids = [c._client_id for c in clients]
@@ -2184,7 +2189,7 @@ class TestClientIDManagement:
             await client.close()
 
     @pytest.mark.asyncio
-    async def test_client_id_persistence(self, mock_config):
+    async def test_client_id_persistence(self, mock_config) -> None:
         """Test that client ID persists across requests."""
         client = ApiClient(mock_config)
         id1 = client._client_id
@@ -2198,7 +2203,7 @@ class TestClientIDManagement:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_client_id_included_in_requests(self, api_client):
+    async def test_client_id_included_in_requests(self, api_client) -> None:
         """Test that client ID is included in requests."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
@@ -2226,7 +2231,7 @@ class TestClientIDManagement:
 class TestDataSerialization:
     """Test data serialization and deserialization."""
 
-    def test_change_serialization_to_json(self):
+    def test_change_serialization_to_json(self) -> None:
         """Test Change can be serialized to JSON."""
         change = Change(
             entity_type="item",
@@ -2239,7 +2244,7 @@ class TestDataSerialization:
         assert "item" in json_str
         assert "item-1" in json_str
 
-    def test_change_deserialization_from_json(self):
+    def test_change_deserialization_from_json(self) -> None:
         """Test Change can be deserialized from JSON."""
         json_str = json.dumps({
             "entity_type": "item",
@@ -2262,7 +2267,7 @@ class TestDataSerialization:
         )
         assert change.entity_id == "item-1"
 
-    def test_upload_result_json_serialization(self):
+    def test_upload_result_json_serialization(self) -> None:
         """Test UploadResult can be serialized to JSON."""
         result = UploadResult(
             applied=["item-1", "item-2"],
@@ -2273,7 +2278,7 @@ class TestDataSerialization:
         assert "item-1" in json_str
         assert "applied" in json_str
 
-    def test_conflict_json_serialization(self):
+    def test_conflict_json_serialization(self) -> None:
         """Test Conflict can be serialized to JSON."""
         conflict = Conflict(
             conflict_id="c1",
@@ -2297,7 +2302,7 @@ class TestDataSerialization:
 class TestMultiProjectSupport:
     """Test multi-project support."""
 
-    def test_agent_multi_project_assignment(self, tracertm_client):
+    def test_agent_multi_project_assignment(self, tracertm_client) -> None:
         """Test agent can be assigned to multiple projects."""
         from tracertm.models.agent import Agent
 
@@ -2314,7 +2319,7 @@ class TestMultiProjectSupport:
         projects = tracertm_client.get_agent_projects(agent.id)
         assert len(projects) >= 3
 
-    def test_change_includes_project_context(self):
+    def test_change_includes_project_context(self) -> None:
         """Test changes can include project context."""
         change = Change(
             entity_type="item",
@@ -2328,7 +2333,7 @@ class TestMultiProjectSupport:
         assert change.data.get("project_id") == "proj-123"
 
     @pytest.mark.asyncio
-    async def test_download_changes_project_filter(self, api_client):
+    async def test_download_changes_project_filter(self, api_client) -> None:
         """Test downloading changes filtered by project."""
         since = datetime.now(UTC) - timedelta(hours=1)
 
@@ -2354,7 +2359,7 @@ class TestErrorRecovery:
     """Test error recovery mechanisms."""
 
     @pytest.mark.asyncio
-    async def test_recovery_from_transient_error(self, api_client):
+    async def test_recovery_from_transient_error(self, api_client) -> None:
         """Test recovery from transient network error."""
         call_count = 0
 
@@ -2362,7 +2367,8 @@ class TestErrorRecovery:
             nonlocal call_count
             call_count += 1
             if call_count == 1:
-                raise httpx.NetworkError("Connection failed")
+                msg = "Connection failed"
+                raise httpx.NetworkError(msg)
             mock_response = MagicMock()
             mock_response.status_code = 200
             return mock_response
@@ -2373,7 +2379,7 @@ class TestErrorRecovery:
             assert call_count == 2
 
     @pytest.mark.asyncio
-    async def test_graceful_degradation_on_failure(self, api_client):
+    async def test_graceful_degradation_on_failure(self, api_client) -> None:
         """Test graceful degradation when all retries fail."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_request.side_effect = httpx.NetworkError("Connection failed")
@@ -2394,7 +2400,7 @@ class TestConcurrentOperations:
     """Test concurrent API operations."""
 
     @pytest.mark.asyncio
-    async def test_concurrent_uploads(self, api_client):
+    async def test_concurrent_uploads(self, api_client) -> None:
         """Test concurrent change uploads."""
         changes_list = [
             [
@@ -2403,7 +2409,7 @@ class TestConcurrentOperations:
                     entity_id=f"item-{i}",
                     operation=SyncOperation.CREATE,
                     data={"title": f"Item {i}"},
-                )
+                ),
             ]
             for i in range(5)
         ]
@@ -2420,7 +2426,7 @@ class TestConcurrentOperations:
             assert len(results) == 5
 
     @pytest.mark.asyncio
-    async def test_concurrent_downloads(self, api_client):
+    async def test_concurrent_downloads(self, api_client) -> None:
         """Test concurrent change downloads."""
         since = datetime.now(UTC) - timedelta(hours=1)
 
@@ -2440,7 +2446,7 @@ class TestConcurrentOperations:
 class TestAdvancedQueryOperations:
     """Test advanced query operations in TraceRTMClient."""
 
-    def test_query_items_with_multiple_filters(self, tracertm_client):
+    def test_query_items_with_multiple_filters(self, tracertm_client) -> None:
         """Test querying items with multiple filters."""
         from tracertm.models.item import Item
 
@@ -2468,7 +2474,7 @@ class TestAdvancedQueryOperations:
         assert len(results) > 0
         assert results[0]["priority"] == "high"
 
-    def test_query_items_with_parent_filter(self, tracertm_client):
+    def test_query_items_with_parent_filter(self, tracertm_client) -> None:
         """Test querying items with parent_id filter."""
         from tracertm.models.item import Item
 
@@ -2495,7 +2501,7 @@ class TestAdvancedQueryOperations:
         assert len(results) > 0
         assert results[0]["parent_id"] == parent.id
 
-    def test_query_items_with_limit(self, tracertm_client):
+    def test_query_items_with_limit(self, tracertm_client) -> None:
         """Test querying items with limit."""
         from tracertm.models.item import Item
 
@@ -2512,12 +2518,12 @@ class TestAdvancedQueryOperations:
         results = tracertm_client.query_items(options={"limit": 5})
         assert len(results) == 5
 
-    def test_query_items_no_results(self, tracertm_client):
+    def test_query_items_no_results(self, tracertm_client) -> None:
         """Test querying items returns empty when no matches."""
         results = tracertm_client.query_items(options={"status": "nonexistent_status"})
         assert results == []
 
-    def test_get_item_with_prefix_match(self, tracertm_client):
+    def test_get_item_with_prefix_match(self, tracertm_client) -> None:
         """Test getting item with prefix matching."""
         from tracertm.models.item import Item
 
@@ -2535,7 +2541,7 @@ class TestAdvancedQueryOperations:
         assert result is not None
         assert result["id"] == item.id
 
-    def test_get_item_cross_project_isolation(self, tracertm_client):
+    def test_get_item_cross_project_isolation(self, tracertm_client) -> None:
         """Test that get_item respects project isolation."""
         from tracertm.models.item import Item
 
@@ -2561,13 +2567,13 @@ class TestAdvancedQueryOperations:
 class TestBatchOperationsEdgeCases:
     """Test edge cases in batch operations."""
 
-    def test_batch_create_single_item(self, tracertm_client):
+    def test_batch_create_single_item(self, tracertm_client) -> None:
         """Test batch create with single item."""
         items = [{"title": "Single Item", "view": "FEATURE", "type": "requirement"}]
         result = tracertm_client.batch_create_items(items)
         assert result["items_created"] == 1
 
-    def test_batch_create_with_metadata(self, tracertm_client):
+    def test_batch_create_with_metadata(self, tracertm_client) -> None:
         """Test batch create with metadata."""
         items = [
             {
@@ -2575,12 +2581,12 @@ class TestBatchOperationsEdgeCases:
                 "view": "FEATURE",
                 "type": "requirement",
                 "metadata": {"custom_field": "value"},
-            }
+            },
         ]
         result = tracertm_client.batch_create_items(items)
         assert result["items_created"] == 1
 
-    def test_batch_create_with_all_fields(self, tracertm_client):
+    def test_batch_create_with_all_fields(self, tracertm_client) -> None:
         """Test batch create with all fields."""
         items = [
             {
@@ -2593,18 +2599,18 @@ class TestBatchOperationsEdgeCases:
                 "owner": "agent-1",
                 "parent_id": None,
                 "metadata": {"key": "value"},
-            }
+            },
         ]
         result = tracertm_client.batch_create_items(items)
         assert result["items_created"] == 1
 
-    def test_batch_create_large_batch(self, tracertm_client):
+    def test_batch_create_large_batch(self, tracertm_client) -> None:
         """Test batch create with many items."""
         items = [{"title": f"Item {i}", "view": "FEATURE", "type": "requirement"} for i in range(50)]
         result = tracertm_client.batch_create_items(items)
         assert result["items_created"] == 50
 
-    def test_batch_update_non_existent_items(self, tracertm_client):
+    def test_batch_update_non_existent_items(self, tracertm_client) -> None:
         """Test batch update skips non-existent items."""
         updates = [
             {"item_id": "nonexistent-1", "status": "done"},
@@ -2613,7 +2619,7 @@ class TestBatchOperationsEdgeCases:
         result = tracertm_client.batch_update_items(updates)
         assert result["items_updated"] == 0
 
-    def test_batch_update_partial_success(self, tracertm_client):
+    def test_batch_update_partial_success(self, tracertm_client) -> None:
         """Test batch update with some non-existent items."""
         from tracertm.models.item import Item
 
@@ -2633,12 +2639,12 @@ class TestBatchOperationsEdgeCases:
         result = tracertm_client.batch_update_items(updates)
         assert result["items_updated"] == 1
 
-    def test_batch_delete_non_existent_items(self, tracertm_client):
+    def test_batch_delete_non_existent_items(self, tracertm_client) -> None:
         """Test batch delete skips non-existent items."""
         result = tracertm_client.batch_delete_items(["nonexistent-1", "nonexistent-2"])
         assert result["items_deleted"] == 0
 
-    def test_batch_delete_partial(self, tracertm_client):
+    def test_batch_delete_partial(self, tracertm_client) -> None:
         """Test batch delete with some non-existent items."""
         from tracertm.models.item import Item
 
@@ -2664,7 +2670,7 @@ class TestAuthenticationErrors:
     """Test authentication error scenarios."""
 
     @pytest.mark.asyncio
-    async def test_auth_error_with_empty_token(self):
+    async def test_auth_error_with_empty_token(self) -> None:
         """Test authentication error with empty token."""
         config = ApiConfig(base_url="https://api.test.com", token="")
         client = ApiClient(config)
@@ -2674,7 +2680,7 @@ class TestAuthenticationErrors:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_401_error_details_preserved(self, api_client):
+    async def test_401_error_details_preserved(self, api_client) -> None:
         """Test that 401 error details are preserved."""
         with patch.object(api_client.client, "request") as mock_request:
             mock_response = MagicMock()
@@ -2694,7 +2700,7 @@ class TestAuthenticationErrors:
             assert err.response_data["error_code"] == "AUTH_001"
 
     @pytest.mark.asyncio
-    async def test_auth_error_no_retry_immediately_raises(self, api_client):
+    async def test_auth_error_no_retry_immediately_raises(self, api_client) -> None:
         """Test auth errors are not retried."""
         call_count = 0
 
@@ -2723,7 +2729,7 @@ class TestConflictResolutionAdvanced:
     """Test advanced conflict resolution scenarios."""
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_with_local_wins_strategy(self, api_client):
+    async def test_resolve_conflict_with_local_wins_strategy(self, api_client) -> None:
         """Test resolving conflict with LOCAL_WINS strategy."""
         conflict = Conflict(
             conflict_id="c1",
@@ -2748,7 +2754,7 @@ class TestConflictResolutionAdvanced:
             assert result is True
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_with_remote_wins_strategy(self, api_client):
+    async def test_resolve_conflict_with_remote_wins_strategy(self, api_client) -> None:
         """Test resolving conflict with REMOTE_WINS strategy."""
         conflict = Conflict(
             conflict_id="c1",
@@ -2773,7 +2779,7 @@ class TestConflictResolutionAdvanced:
             assert result is True
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_without_merged_data(self, api_client):
+    async def test_resolve_conflict_without_merged_data(self, api_client) -> None:
         """Test resolving conflict without merged data."""
         with patch.object(api_client, "_retry_request") as mock_request:
             mock_response = MagicMock()
@@ -2792,7 +2798,7 @@ class TestConflictResolutionAdvanced:
             assert result is True
 
     @pytest.mark.asyncio
-    async def test_full_sync_with_multiple_conflicts(self, api_client):
+    async def test_full_sync_with_multiple_conflicts(self, api_client) -> None:
         """Test full sync handling multiple conflicts."""
         conflicts = [
             Conflict(
@@ -2837,7 +2843,7 @@ class TestConflictResolutionAdvanced:
 class TestMultiProjectOperations:
     """Test multi-project operations."""
 
-    def test_batch_create_items_multi_project_context(self, tracertm_client):
+    def test_batch_create_items_multi_project_context(self, tracertm_client) -> None:
         """Test batch create respects project context."""
         items = [{"title": "Project-specific Item", "view": "FEATURE", "type": "requirement"}]
         result = tracertm_client.batch_create_items(items)
@@ -2851,7 +2857,7 @@ class TestMultiProjectOperations:
                 retrieved = tracertm_client.get_item(item["id"])
                 assert retrieved is not None
 
-    def test_agent_operations_with_multiple_projects(self, tracertm_client):
+    def test_agent_operations_with_multiple_projects(self, tracertm_client) -> None:
         """Test agent can be assigned to multiple projects."""
         agent_id = tracertm_client.register_agent(
             name="Multi-Project Agent",
@@ -2865,7 +2871,7 @@ class TestMultiProjectOperations:
         assert "proj-3" in projects
 
     @pytest.mark.asyncio
-    async def test_download_changes_respects_project_filter(self, api_client):
+    async def test_download_changes_respects_project_filter(self, api_client) -> None:
         """Test download changes respects project filter."""
         since = datetime.now(UTC) - timedelta(hours=1)
 
@@ -2891,7 +2897,7 @@ class TestAdvancedErrorHandlingRetries:
     """Test advanced error handling and retry scenarios."""
 
     @pytest.mark.asyncio
-    async def test_retry_on_503_service_unavailable(self, api_client):
+    async def test_retry_on_503_service_unavailable(self, api_client) -> None:
         """Test retries on 503 Service Unavailable."""
         call_count = 0
 
@@ -2902,7 +2908,8 @@ class TestAdvancedErrorHandlingRetries:
                 mock_response = MagicMock()
                 mock_response.status_code = 503
                 mock_response.text = "Service unavailable"
-                raise httpx.HTTPStatusError("Error", request=MagicMock(), response=mock_response)
+                msg = "Error"
+                raise httpx.HTTPStatusError(msg, request=MagicMock(), response=mock_response)
             mock_response = MagicMock()
             mock_response.status_code = 200
             return mock_response
@@ -2913,7 +2920,7 @@ class TestAdvancedErrorHandlingRetries:
             assert call_count == 2
 
     @pytest.mark.asyncio
-    async def test_retry_on_502_bad_gateway(self, api_client):
+    async def test_retry_on_502_bad_gateway(self, api_client) -> None:
         """Test retries on 502 Bad Gateway."""
         call_count = 0
 
@@ -2923,7 +2930,8 @@ class TestAdvancedErrorHandlingRetries:
             if call_count < 2:
                 mock_response = MagicMock()
                 mock_response.status_code = 502
-                raise httpx.HTTPStatusError("Error", request=MagicMock(), response=mock_response)
+                msg = "Error"
+                raise httpx.HTTPStatusError(msg, request=MagicMock(), response=mock_response)
             mock_response = MagicMock()
             mock_response.status_code = 200
             return mock_response
@@ -2933,7 +2941,7 @@ class TestAdvancedErrorHandlingRetries:
             assert response.status_code == 200
 
     @pytest.mark.asyncio
-    async def test_rate_limit_with_custom_retry_after(self, api_client):
+    async def test_rate_limit_with_custom_retry_after(self, api_client) -> None:
         """Test rate limit with custom retry-after value."""
         call_count = 0
 
@@ -2958,14 +2966,15 @@ class TestAdvancedErrorHandlingRetries:
                 mock_sleep.assert_called_once_with(120)
 
     @pytest.mark.asyncio
-    async def test_network_error_accumulates_retries(self, api_client):
+    async def test_network_error_accumulates_retries(self, api_client) -> None:
         """Test network errors accumulate across retries."""
         call_count = 0
 
-        async def mock_request(*args, **kwargs):
+        async def mock_request(*args, **kwargs) -> Never:
             nonlocal call_count
             call_count += 1
-            raise httpx.NetworkError("Connection failed")
+            msg = "Connection failed"
+            raise httpx.NetworkError(msg)
 
         with patch.object(api_client.client, "request", side_effect=mock_request), patch("asyncio.sleep"):
             with pytest.raises(NetworkError):
@@ -2975,7 +2984,7 @@ class TestAdvancedErrorHandlingRetries:
             assert call_count == api_client.config.max_retries
 
     @pytest.mark.asyncio
-    async def test_backoff_increases_with_attempts(self, api_client):
+    async def test_backoff_increases_with_attempts(self, api_client) -> None:
         """Test backoff duration increases with each retry."""
         call_count = 0
         sleep_times = []
@@ -2984,12 +2993,13 @@ class TestAdvancedErrorHandlingRetries:
             nonlocal call_count
             call_count += 1
             if call_count < 3:
-                raise httpx.NetworkError("Connection failed")
+                msg = "Connection failed"
+                raise httpx.NetworkError(msg)
             mock_response = MagicMock()
             mock_response.status_code = 200
             return mock_response
 
-        async def mock_sleep(duration):
+        async def mock_sleep(duration) -> None:
             sleep_times.append(duration)
 
         with patch.object(api_client.client, "request", side_effect=mock_request):
@@ -3010,7 +3020,7 @@ class TestAdvancedErrorHandlingRetries:
 class TestDataEncodingEdgeCases:
     """Test data encoding and special characters."""
 
-    def test_create_item_with_unicode_characters(self, tracertm_client):
+    def test_create_item_with_unicode_characters(self, tracertm_client) -> None:
         """Test creating item with unicode characters."""
         result = tracertm_client.create_item(
             "Unicode Test: 你好世界 🌍 Привет мир",
@@ -3019,7 +3029,7 @@ class TestDataEncodingEdgeCases:
         )
         assert result["id"] is not None
 
-    def test_create_item_with_special_characters(self, tracertm_client):
+    def test_create_item_with_special_characters(self, tracertm_client) -> None:
         """Test creating item with special characters."""
         result = tracertm_client.create_item(
             "Special: <>&\"'\\n\\t",
@@ -3028,7 +3038,7 @@ class TestDataEncodingEdgeCases:
         )
         assert result["id"] is not None
 
-    def test_create_item_with_very_long_title(self, tracertm_client):
+    def test_create_item_with_very_long_title(self, tracertm_client) -> None:
         """Test creating item with very long title."""
         long_title = "a" * 500
         result = tracertm_client.create_item(
@@ -3039,7 +3049,7 @@ class TestDataEncodingEdgeCases:
         assert result["id"] is not None
 
     @pytest.mark.asyncio
-    async def test_upload_changes_preserves_special_characters(self, api_client):
+    async def test_upload_changes_preserves_special_characters(self, api_client) -> None:
         """Test that special characters are preserved in upload."""
         changes = [
             Change(
@@ -3047,7 +3057,7 @@ class TestDataEncodingEdgeCases:
                 entity_id="item-1",
                 operation=SyncOperation.CREATE,
                 data={"title": "Title with: <>&\"'\\"},
-            )
+            ),
         ]
 
         with patch.object(api_client.client, "request") as mock_request:
@@ -3073,7 +3083,7 @@ class TestSyncStatusMetadata:
     """Test sync status and metadata retrieval."""
 
     @pytest.mark.asyncio
-    async def test_get_sync_status_with_pending_changes(self, api_client):
+    async def test_get_sync_status_with_pending_changes(self, api_client) -> None:
         """Test get_sync_status with pending changes."""
         with patch.object(api_client, "_retry_request") as mock_request:
             mock_response = MagicMock()
@@ -3090,7 +3100,7 @@ class TestSyncStatusMetadata:
             assert status.online is True
 
     @pytest.mark.asyncio
-    async def test_get_sync_status_offline(self, api_client):
+    async def test_get_sync_status_offline(self, api_client) -> None:
         """Test get_sync_status when offline."""
         with patch.object(api_client, "_retry_request") as mock_request:
             mock_response = MagicMock()
@@ -3106,7 +3116,7 @@ class TestSyncStatusMetadata:
             assert status.online is False
             assert status.conflicts_pending == 2
 
-    def test_export_project_with_empty_items(self, tracertm_client):
+    def test_export_project_with_empty_items(self, tracertm_client) -> None:
         """Test exporting project with no items."""
         result = tracertm_client.export_project(format="json")
         data = json.loads(result)
@@ -3114,7 +3124,7 @@ class TestSyncStatusMetadata:
         assert "items" in data
         assert isinstance(data["items"], list)
 
-    def test_import_data_with_duplicate_items(self, tracertm_client):
+    def test_import_data_with_duplicate_items(self, tracertm_client) -> None:
         """Test importing data with duplicate items."""
         data = {
             "items": [
@@ -3135,12 +3145,12 @@ class TestSyncStatusMetadata:
 class TestActivityTrackingLogging:
     """Test activity tracking and logging."""
 
-    def test_get_agent_activity_with_no_events(self, tracertm_client):
+    def test_get_agent_activity_with_no_events(self, tracertm_client) -> None:
         """Test getting activity for agent with no events."""
         activity = tracertm_client.get_agent_activity("nonexistent-agent")
         assert activity == []
 
-    def test_get_agent_activity_limit_enforcement(self, tracertm_client):
+    def test_get_agent_activity_limit_enforcement(self, tracertm_client) -> None:
         """Test activity retrieval respects limit."""
         from tracertm.models.agent import Agent
         from tracertm.models.event import Event
@@ -3170,7 +3180,7 @@ class TestActivityTrackingLogging:
         activity = tracertm_client.get_agent_activity(agent.id, limit=5)
         assert len(activity) == 5
 
-    def test_get_all_agents_activity_multi_agent(self, tracertm_client):
+    def test_get_all_agents_activity_multi_agent(self, tracertm_client) -> None:
         """Test getting activity for multiple agents."""
         from tracertm.models.agent import Agent
 
@@ -3202,7 +3212,7 @@ class TestActivityTrackingLogging:
 class TestConfigurationInitialization:
     """Test configuration and initialization scenarios."""
 
-    def test_tracertm_client_without_database_url(self):
+    def test_tracertm_client_without_database_url(self) -> None:
         """Test TraceRTMClient initialization without database URL."""
         with patch("tracertm.api.client.ConfigManager") as mock_cm:
             mock_config = MagicMock()
@@ -3213,7 +3223,7 @@ class TestConfigurationInitialization:
             with pytest.raises(ValueError, match="Database not configured"):
                 client._get_session()
 
-    def test_tracertm_client_without_project(self):
+    def test_tracertm_client_without_project(self) -> None:
         """Test TraceRTMClient initialization without current project."""
         with patch("tracertm.api.client.ConfigManager") as mock_cm:
             mock_config = MagicMock()
@@ -3225,7 +3235,7 @@ class TestConfigurationInitialization:
                 client._get_project_id()
 
     @pytest.mark.asyncio
-    async def test_api_config_with_custom_backoff_parameters(self):
+    async def test_api_config_with_custom_backoff_parameters(self) -> None:
         """Test ApiConfig with custom backoff parameters."""
         config = ApiConfig(
             base_url="https://api.test.com",
@@ -3236,7 +3246,7 @@ class TestConfigurationInitialization:
         assert config.retry_backoff_max == 30.0
 
     @pytest.mark.asyncio
-    async def test_api_client_timeout_configuration_various_values(self):
+    async def test_api_client_timeout_configuration_various_values(self) -> None:
         """Test API client with various timeout values."""
         test_cases = [1.0, 15.0, 60.0, 120.0]
         for timeout in test_cases:
@@ -3254,7 +3264,7 @@ class TestConfigurationInitialization:
 class TestJSONSerializationEdgeCases:
     """Test JSON serialization edge cases."""
 
-    def test_change_serialization_with_none_values(self):
+    def test_change_serialization_with_none_values(self) -> None:
         """Test Change serialization with None values."""
         change = Change(
             entity_type="item",
@@ -3266,7 +3276,7 @@ class TestJSONSerializationEdgeCases:
         json_str = json.dumps(change_dict, default=str)
         assert "null" in json_str
 
-    def test_upload_result_with_large_error_list(self):
+    def test_upload_result_with_large_error_list(self) -> None:
         """Test UploadResult with many errors."""
         errors = [{"id": f"item-{i}", "reason": f"Error {i}"} for i in range(100)]
         result = UploadResult(
@@ -3277,7 +3287,7 @@ class TestJSONSerializationEdgeCases:
         )
         assert len(result.errors) == 100
 
-    def test_conflict_with_nested_data_structures(self):
+    def test_conflict_with_nested_data_structures(self) -> None:
         """Test Conflict with nested data structures."""
         conflict = Conflict(
             conflict_id="c1",

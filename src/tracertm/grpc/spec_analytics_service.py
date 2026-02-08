@@ -16,7 +16,7 @@ ISO_29148_COMPLIANCE_THRESHOLD = 0.80
 def _build_ears_patterns(ears_analysis: dict[str, Any]) -> list[tracertm_pb2.EARSPattern]:
     pattern_type = str(ears_analysis.get("pattern_type", "") or "")
     confidence = float(ears_analysis.get("confidence", 0.0) or 0.0)
-    matched = bool(ears_analysis.get("is_valid", False))
+    matched = bool(ears_analysis.get("is_valid"))
     if not pattern_type:
         return []
     return [
@@ -24,7 +24,7 @@ def _build_ears_patterns(ears_analysis: dict[str, Any]) -> list[tracertm_pb2.EAR
             type=pattern_type,
             matched=matched,
             confidence=confidence,
-        )
+        ),
     ]
 
 

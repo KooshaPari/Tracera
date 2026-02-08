@@ -37,14 +37,14 @@ async def _seed_items_and_links(session, edges, project_id="proj-1"):
                 target_item_id=tgt,
                 link_type=ltype,
                 metadata={},
-            )
+            ),
         )
     await session.commit()
     return items
 
 
 @pytest.mark.asyncio
-async def test_impact_analysis_counts_children(async_session):
+async def test_impact_analysis_counts_children(async_session) -> None:
     edges = [("root", "child1", "DEPENDS_ON"), ("root", "child2", "DEPENDS_ON"), ("child1", "leaf", "DEPENDS_ON")]
     await _seed_items_and_links(async_session, edges)
 
@@ -58,7 +58,7 @@ async def test_impact_analysis_counts_children(async_session):
 
 
 @pytest.mark.asyncio
-async def test_cycle_detection_async_detects_cycle(async_session):
+async def test_cycle_detection_async_detects_cycle(async_session) -> None:
     edges = [("a", "b", "depends_on"), ("b", "a", "depends_on")]
     await _seed_items_and_links(async_session, edges)
 
@@ -70,7 +70,7 @@ async def test_cycle_detection_async_detects_cycle(async_session):
 
 
 @pytest.mark.asyncio
-async def test_cycle_detection_async_respects_link_types(async_session):
+async def test_cycle_detection_async_respects_link_types(async_session) -> None:
     edges = [("a", "b", "tests"), ("b", "c", "implements")]
     await _seed_items_and_links(async_session, edges)
 
@@ -81,7 +81,7 @@ async def test_cycle_detection_async_respects_link_types(async_session):
 
 
 @pytest.mark.asyncio
-async def test_shortest_path_service_finds_path(async_session):
+async def test_shortest_path_service_finds_path(async_session) -> None:
     edges = [("a", "b", "depends_on"), ("b", "c", "depends_on"), ("a", "d", "depends_on")]
     await _seed_items_and_links(async_session, edges)
 
@@ -94,7 +94,7 @@ async def test_shortest_path_service_finds_path(async_session):
 
 
 @pytest.mark.asyncio
-async def test_shortest_path_service_no_path(async_session):
+async def test_shortest_path_service_no_path(async_session) -> None:
     edges = [("a", "b", "depends_on"), ("c", "d", "depends_on")]
     await _seed_items_and_links(async_session, edges)
 

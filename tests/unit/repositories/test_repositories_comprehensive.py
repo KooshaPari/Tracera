@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for repository layer.
+"""Comprehensive unit tests for repository layer.
 
 Tests all CRUD operations, query methods, error handling, and edge cases
 for all repositories.
@@ -25,7 +24,7 @@ from tracertm.repositories.project_repository import ProjectRepository
 class TestItemRepository:
     """Tests for ItemRepository CRUD operations."""
 
-    async def test_create_minimal_item(self, db_session: AsyncSession):
+    async def test_create_minimal_item(self, db_session: AsyncSession) -> None:
         """Test creating an item with minimal required fields."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -46,7 +45,7 @@ class TestItemRepository:
         assert item.status == "todo"
         assert item.priority == "medium"
 
-    async def test_create_item_with_all_fields(self, db_session: AsyncSession):
+    async def test_create_item_with_all_fields(self, db_session: AsyncSession) -> None:
         """Test creating an item with all optional fields."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -72,7 +71,7 @@ class TestItemRepository:
         assert item.owner == "user@example.com"
         assert item.priority == "high"
 
-    async def test_get_item_by_id(self, db_session: AsyncSession):
+    async def test_get_item_by_id(self, db_session: AsyncSession) -> None:
         """Test retrieving an item by ID."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -90,7 +89,7 @@ class TestItemRepository:
         assert retrieved.id == created.id
         assert retrieved.title == "Retrieve Test"
 
-    async def test_get_item_by_id_with_project_scope(self, db_session: AsyncSession):
+    async def test_get_item_by_id_with_project_scope(self, db_session: AsyncSession) -> None:
         """Test retrieving an item by ID with project scope."""
         project_repo = ProjectRepository(db_session)
         project1 = await project_repo.create(name="Project 1")
@@ -108,13 +107,13 @@ class TestItemRepository:
         retrieved = await item_repo.get_by_id(item.id, project_id=project1.id)
         assert retrieved is not None
 
-    async def test_get_nonexistent_item_returns_none(self, db_session: AsyncSession):
+    async def test_get_nonexistent_item_returns_none(self, db_session: AsyncSession) -> None:
         """Test retrieving non-existent item returns None."""
         item_repo = ItemRepository(db_session)
         item = await item_repo.get_by_id("nonexistent-id")
         assert item is None
 
-    async def test_list_by_view(self, db_session: AsyncSession):
+    async def test_list_by_view(self, db_session: AsyncSession) -> None:
         """Test listing items by view."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -147,7 +146,7 @@ class TestItemRepository:
         tests = await item_repo.list_by_view(project.id, "TEST")
         assert len(tests) == 1
 
-    async def test_list_all_items(self, db_session: AsyncSession):
+    async def test_list_all_items(self, db_session: AsyncSession) -> None:
         """Test listing all items in a project."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -166,7 +165,7 @@ class TestItemRepository:
         items = await item_repo.list_all(project.id)
         assert len(items) == items_to_create
 
-    async def test_get_by_project_with_pagination(self, db_session: AsyncSession):
+    async def test_get_by_project_with_pagination(self, db_session: AsyncSession) -> None:
         """Test get_by_project with limit and offset."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -189,7 +188,7 @@ class TestItemRepository:
         items = await item_repo.get_by_project(project.id, limit=5, offset=5)
         assert len(items) <= 5
 
-    async def test_get_by_project_with_status_filter(self, db_session: AsyncSession):
+    async def test_get_by_project_with_status_filter(self, db_session: AsyncSession) -> None:
         """Test get_by_project with status filter."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -215,7 +214,7 @@ class TestItemRepository:
         assert len(todos) == 1
         assert todos[0].status == "todo"
 
-    async def test_get_by_view_with_status_filter(self, db_session: AsyncSession):
+    async def test_get_by_view_with_status_filter(self, db_session: AsyncSession) -> None:
         """Test get_by_view with status filter."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -241,7 +240,7 @@ class TestItemRepository:
         assert len(features) == 1
         assert features[0].status == "done"
 
-    async def test_query_items_with_filters(self, db_session: AsyncSession):
+    async def test_query_items_with_filters(self, db_session: AsyncSession) -> None:
         """Test querying items with dynamic filters."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -264,7 +263,7 @@ class TestItemRepository:
         )
         assert len(items) == 3
 
-    async def test_count_by_status(self, db_session: AsyncSession):
+    async def test_count_by_status(self, db_session: AsyncSession) -> None:
         """Test counting items by status."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -293,7 +292,7 @@ class TestItemRepository:
         assert counts.get("todo") == 3
         assert counts.get("done") == 2
 
-    async def test_get_children_of_parent_item(self, db_session: AsyncSession):
+    async def test_get_children_of_parent_item(self, db_session: AsyncSession) -> None:
         """Test retrieving direct children of a parent item."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -319,7 +318,7 @@ class TestItemRepository:
         children = await item_repo.get_children(parent.id)
         assert len(children) == 3
 
-    async def test_get_ancestors(self, db_session: AsyncSession):
+    async def test_get_ancestors(self, db_session: AsyncSession) -> None:
         """Test retrieving all ancestors of an item."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -352,7 +351,7 @@ class TestItemRepository:
         ancestors = await item_repo.get_ancestors(child.id)
         assert len(ancestors) == 2
 
-    async def test_get_descendants(self, db_session: AsyncSession):
+    async def test_get_descendants(self, db_session: AsyncSession) -> None:
         """Test retrieving all descendants of an item."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -386,7 +385,7 @@ class TestItemRepository:
         descendants = await item_repo.get_descendants(parent.id)
         assert len(descendants) >= 4
 
-    async def test_soft_delete_item(self, db_session: AsyncSession):
+    async def test_soft_delete_item(self, db_session: AsyncSession) -> None:
         """Test soft deleting an item."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -403,7 +402,7 @@ class TestItemRepository:
         result = await item_repo.delete(item.id, soft=True)
         assert result is True
 
-    async def test_soft_delete_cascades_to_children(self, db_session: AsyncSession):
+    async def test_soft_delete_cascades_to_children(self, db_session: AsyncSession) -> None:
         """Test that soft delete cascades to children."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -429,7 +428,7 @@ class TestItemRepository:
         result = await item_repo.delete(parent.id, soft=True)
         assert result is True
 
-    async def test_hard_delete_item(self, db_session: AsyncSession):
+    async def test_hard_delete_item(self, db_session: AsyncSession) -> None:
         """Test hard deleting an item."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -449,7 +448,7 @@ class TestItemRepository:
         deleted = await item_repo.get_by_id(item.id)
         assert deleted is None
 
-    async def test_restore_soft_deleted_item(self, db_session: AsyncSession):
+    async def test_restore_soft_deleted_item(self, db_session: AsyncSession) -> None:
         """Test restoring a soft-deleted item."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -470,7 +469,7 @@ class TestItemRepository:
         # Restore may return None if item was hard deleted, just verify no exception
         assert restored is None or restored.id == item.id
 
-    async def test_parent_item_validation(self, db_session: AsyncSession):
+    async def test_parent_item_validation(self, db_session: AsyncSession) -> None:
         """Test that parent item validation works."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -487,7 +486,7 @@ class TestItemRepository:
                 parent_id="nonexistent",
             )
 
-    async def test_parent_project_validation(self, db_session: AsyncSession):
+    async def test_parent_project_validation(self, db_session: AsyncSession) -> None:
         """Test that parent must be in same project."""
         project_repo = ProjectRepository(db_session)
         project1 = await project_repo.create(name="Project 1")
@@ -512,7 +511,7 @@ class TestItemRepository:
                 parent_id=parent.id,
             )
 
-    async def test_list_excludes_deleted_by_default(self, db_session: AsyncSession):
+    async def test_list_excludes_deleted_by_default(self, db_session: AsyncSession) -> None:
         """Test that list operations have include_deleted parameter."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -537,7 +536,7 @@ class TestItemRepository:
         # Both should work without error
         assert items_include is not None
 
-    async def test_list_includes_deleted_when_requested(self, db_session: AsyncSession):
+    async def test_list_includes_deleted_when_requested(self, db_session: AsyncSession) -> None:
         """Test that list operations can include deleted items when requested."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -573,7 +572,7 @@ class TestItemRepository:
 class TestProjectRepository:
     """Tests for ProjectRepository CRUD operations."""
 
-    async def test_create_minimal_project(self, db_session: AsyncSession):
+    async def test_create_minimal_project(self, db_session: AsyncSession) -> None:
         """Test creating a project with minimal fields."""
         repo = ProjectRepository(db_session)
         project = await repo.create(name="Test Project")
@@ -582,7 +581,7 @@ class TestProjectRepository:
         assert project.name == "Test Project"
         assert project.description is None
 
-    async def test_create_project_with_all_fields(self, db_session: AsyncSession):
+    async def test_create_project_with_all_fields(self, db_session: AsyncSession) -> None:
         """Test creating a project with all fields."""
         repo = ProjectRepository(db_session)
         project = await repo.create(
@@ -595,7 +594,7 @@ class TestProjectRepository:
         assert project.name == "Complete Project"
         assert project.description == "Full description"
 
-    async def test_get_project_by_id(self, db_session: AsyncSession):
+    async def test_get_project_by_id(self, db_session: AsyncSession) -> None:
         """Test retrieving a project by ID."""
         repo = ProjectRepository(db_session)
         created = await repo.create(name="To Retrieve")
@@ -605,7 +604,7 @@ class TestProjectRepository:
         assert retrieved.id == created.id
         assert retrieved.name == "To Retrieve"
 
-    async def test_get_project_by_name(self, db_session: AsyncSession):
+    async def test_get_project_by_name(self, db_session: AsyncSession) -> None:
         """Test retrieving a project by name."""
         repo = ProjectRepository(db_session)
         project = await repo.create(name="Named Project")
@@ -614,13 +613,13 @@ class TestProjectRepository:
         assert retrieved is not None
         assert retrieved.id == project.id
 
-    async def test_get_nonexistent_project_returns_none(self, db_session: AsyncSession):
+    async def test_get_nonexistent_project_returns_none(self, db_session: AsyncSession) -> None:
         """Test retrieving non-existent project returns None."""
         repo = ProjectRepository(db_session)
         project = await repo.get_by_id("nonexistent")
         assert project is None
 
-    async def test_get_all_projects(self, db_session: AsyncSession):
+    async def test_get_all_projects(self, db_session: AsyncSession) -> None:
         """Test retrieving all projects."""
         repo = ProjectRepository(db_session)
 
@@ -641,7 +640,7 @@ class TestProjectRepository:
 class TestLinkRepository:
     """Tests for LinkRepository CRUD operations."""
 
-    async def test_create_link(self, db_session: AsyncSession):
+    async def test_create_link(self, db_session: AsyncSession) -> None:
         """Test creating a link between items."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -673,7 +672,7 @@ class TestLinkRepository:
         assert link.target_item_id == target.id
         assert link.link_type == "depends_on"
 
-    async def test_get_link_by_id(self, db_session: AsyncSession):
+    async def test_get_link_by_id(self, db_session: AsyncSession) -> None:
         """Test retrieving a link by ID."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -704,7 +703,7 @@ class TestLinkRepository:
         assert retrieved is not None
         assert retrieved.id == created.id
 
-    async def test_get_links_by_source(self, db_session: AsyncSession):
+    async def test_get_links_by_source(self, db_session: AsyncSession) -> None:
         """Test retrieving links by source item."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -739,7 +738,7 @@ class TestLinkRepository:
         links = await link_repo.get_by_source(source.id)
         assert len(links) == 3
 
-    async def test_get_links_by_target(self, db_session: AsyncSession):
+    async def test_get_links_by_target(self, db_session: AsyncSession) -> None:
         """Test retrieving links by target item."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -774,7 +773,7 @@ class TestLinkRepository:
         links = await link_repo.get_by_target(target.id)
         assert len(links) == 2
 
-    async def test_get_links_by_item(self, db_session: AsyncSession):
+    async def test_get_links_by_item(self, db_session: AsyncSession) -> None:
         """Test retrieving all links connected to an item."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -818,7 +817,7 @@ class TestLinkRepository:
         links = await link_repo.get_by_item(item1.id)
         assert len(links) == 2
 
-    async def test_delete_link(self, db_session: AsyncSession):
+    async def test_delete_link(self, db_session: AsyncSession) -> None:
         """Test deleting a link."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -852,7 +851,7 @@ class TestLinkRepository:
         deleted = await link_repo.get_by_id(link.id)
         assert deleted is None
 
-    async def test_delete_by_item(self, db_session: AsyncSession):
+    async def test_delete_by_item(self, db_session: AsyncSession) -> None:
         """Test deleting all links connected to an item."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -888,7 +887,7 @@ class TestLinkRepository:
         count = await link_repo.delete_by_item(item1.id)
         assert count == 2
 
-    async def test_get_all_links(self, db_session: AsyncSession):
+    async def test_get_all_links(self, db_session: AsyncSession) -> None:
         """Test retrieving all links."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -920,7 +919,7 @@ class TestLinkRepository:
         links = await link_repo.get_all()
         assert len(links) >= 3
 
-    async def test_get_links_by_type(self, db_session: AsyncSession):
+    async def test_get_links_by_type(self, db_session: AsyncSession) -> None:
         """Test retrieving links by type."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -976,7 +975,7 @@ class TestLinkRepository:
 class TestEventRepository:
     """Tests for EventRepository operations."""
 
-    async def test_log_event(self, db_session: AsyncSession):
+    async def test_log_event(self, db_session: AsyncSession) -> None:
         """Test logging an event."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -996,7 +995,7 @@ class TestEventRepository:
         assert event.entity_type == "item"
         assert event.entity_id == "item-123"
 
-    async def test_log_event_with_agent_id(self, db_session: AsyncSession):
+    async def test_log_event_with_agent_id(self, db_session: AsyncSession) -> None:
         """Test logging an event with agent ID."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1013,7 +1012,7 @@ class TestEventRepository:
 
         assert event.agent_id == "agent-456"
 
-    async def test_get_events_by_entity(self, db_session: AsyncSession):
+    async def test_get_events_by_entity(self, db_session: AsyncSession) -> None:
         """Test retrieving events by entity."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1033,7 +1032,7 @@ class TestEventRepository:
         events = await event_repo.get_by_entity(entity_id)
         assert len(events) >= 3
 
-    async def test_get_events_by_project(self, db_session: AsyncSession):
+    async def test_get_events_by_project(self, db_session: AsyncSession) -> None:
         """Test retrieving events by project."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1052,7 +1051,7 @@ class TestEventRepository:
         events = await event_repo.get_by_project(project.id)
         assert len(events) >= 5
 
-    async def test_get_events_by_agent(self, db_session: AsyncSession):
+    async def test_get_events_by_agent(self, db_session: AsyncSession) -> None:
         """Test retrieving events by agent."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1073,7 +1072,7 @@ class TestEventRepository:
         events = await event_repo.get_by_agent(agent_id)
         assert len(events) >= 3
 
-    async def test_event_replay_simple(self, db_session: AsyncSession):
+    async def test_event_replay_simple(self, db_session: AsyncSession) -> None:
         """Test simple event replay."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1095,7 +1094,7 @@ class TestEventRepository:
         assert state is not None
         assert state["title"] == "Item"
 
-    async def test_event_replay_with_update(self, db_session: AsyncSession):
+    async def test_event_replay_with_update(self, db_session: AsyncSession) -> None:
         """Test event replay with updates."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1126,7 +1125,7 @@ class TestEventRepository:
         assert state is not None
         assert state["status"] == "done"
 
-    async def test_event_replay_deleted_entity(self, db_session: AsyncSession):
+    async def test_event_replay_deleted_entity(self, db_session: AsyncSession) -> None:
         """Test event replay returns None for deleted entity."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1156,7 +1155,7 @@ class TestEventRepository:
         state = await event_repo.get_entity_at_time(entity_id, delete_event.created_at)
         assert state is None
 
-    async def test_event_replay_before_creation(self, db_session: AsyncSession):
+    async def test_event_replay_before_creation(self, db_session: AsyncSession) -> None:
         """Test event replay before entity creation returns None."""
         event_repo = EventRepository(db_session)
 
@@ -1176,7 +1175,7 @@ class TestEventRepository:
 class TestAgentRepository:
     """Tests for AgentRepository operations."""
 
-    async def test_create_agent(self, db_session: AsyncSession):
+    async def test_create_agent(self, db_session: AsyncSession) -> None:
         """Test creating an agent."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1194,7 +1193,7 @@ class TestAgentRepository:
         assert agent.agent_type == "analyzer"
         assert agent.status == "active"
 
-    async def test_get_agent_by_id(self, db_session: AsyncSession):
+    async def test_get_agent_by_id(self, db_session: AsyncSession) -> None:
         """Test retrieving an agent by ID."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1210,7 +1209,7 @@ class TestAgentRepository:
         assert retrieved is not None
         assert retrieved.id == created.id
 
-    async def test_get_agents_by_project(self, db_session: AsyncSession):
+    async def test_get_agents_by_project(self, db_session: AsyncSession) -> None:
         """Test retrieving agents by project."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1227,7 +1226,7 @@ class TestAgentRepository:
         agents = await agent_repo.get_by_project(project.id)
         assert len(agents) >= 3
 
-    async def test_get_agents_by_status(self, db_session: AsyncSession):
+    async def test_get_agents_by_status(self, db_session: AsyncSession) -> None:
         """Test retrieving agents by status."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1244,7 +1243,7 @@ class TestAgentRepository:
         agents = await agent_repo.get_by_project(project.id, status="active")
         assert len(agents) >= 2
 
-    async def test_update_agent_status(self, db_session: AsyncSession):
+    async def test_update_agent_status(self, db_session: AsyncSession) -> None:
         """Test updating agent status."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1259,7 +1258,7 @@ class TestAgentRepository:
         updated = await agent_repo.update_status(agent.id, "inactive")
         assert updated.status == "inactive"
 
-    async def test_update_agent_activity(self, db_session: AsyncSession):
+    async def test_update_agent_activity(self, db_session: AsyncSession) -> None:
         """Test updating agent last activity."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1275,7 +1274,7 @@ class TestAgentRepository:
 
         assert updated.last_activity_at is not None
 
-    async def test_delete_agent(self, db_session: AsyncSession):
+    async def test_delete_agent(self, db_session: AsyncSession) -> None:
         """Test deleting an agent."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1304,28 +1303,28 @@ class TestAgentRepository:
 class TestRepositoryErrorHandling:
     """Tests for repository error handling."""
 
-    async def test_item_update_nonexistent_raises_error(self, db_session: AsyncSession):
+    async def test_item_update_nonexistent_raises_error(self, db_session: AsyncSession) -> None:
         """Test updating non-existent item raises error."""
         item_repo = ItemRepository(db_session)
 
         with pytest.raises(ValueError, match=r"Item .* not found"):
             await item_repo.update("nonexistent", expected_version=1, title="Updated")
 
-    async def test_project_update_nonexistent_returns_none(self, db_session: AsyncSession):
+    async def test_project_update_nonexistent_returns_none(self, db_session: AsyncSession) -> None:
         """Test updating non-existent project returns None."""
         project_repo = ProjectRepository(db_session)
 
         result = await project_repo.update("nonexistent", name="Updated")
         assert result is None
 
-    async def test_agent_update_status_nonexistent_raises_error(self, db_session: AsyncSession):
+    async def test_agent_update_status_nonexistent_raises_error(self, db_session: AsyncSession) -> None:
         """Test updating status of non-existent agent raises error."""
         agent_repo = AgentRepository(db_session)
 
         with pytest.raises(ValueError, match=r"Agent .* not found"):
             await agent_repo.update_status("nonexistent", "inactive")
 
-    async def test_agent_update_activity_nonexistent_raises_error(self, db_session: AsyncSession):
+    async def test_agent_update_activity_nonexistent_raises_error(self, db_session: AsyncSession) -> None:
         """Test updating activity of non-existent agent raises error."""
         agent_repo = AgentRepository(db_session)
 
@@ -1343,7 +1342,7 @@ class TestRepositoryErrorHandling:
 class TestRepositoryEdgeCases:
     """Tests for edge cases and boundary conditions."""
 
-    async def test_item_with_empty_metadata(self, db_session: AsyncSession):
+    async def test_item_with_empty_metadata(self, db_session: AsyncSession) -> None:
         """Test creating item with empty metadata."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1359,7 +1358,7 @@ class TestRepositoryEdgeCases:
 
         assert item.item_metadata == {} or item.item_metadata is None
 
-    async def test_item_with_large_metadata(self, db_session: AsyncSession):
+    async def test_item_with_large_metadata(self, db_session: AsyncSession) -> None:
         """Test creating item with large metadata."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1377,7 +1376,7 @@ class TestRepositoryEdgeCases:
 
         assert item.id is not None
 
-    async def test_link_with_metadata(self, db_session: AsyncSession):
+    async def test_link_with_metadata(self, db_session: AsyncSession) -> None:
         """Test creating link with metadata."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1407,7 +1406,7 @@ class TestRepositoryEdgeCases:
 
         assert link.id is not None
 
-    async def test_deeply_nested_item_hierarchy(self, db_session: AsyncSession):
+    async def test_deeply_nested_item_hierarchy(self, db_session: AsyncSession) -> None:
         """Test deeply nested item hierarchy."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1432,7 +1431,7 @@ class TestRepositoryEdgeCases:
         ancestors = await item_repo.get_ancestors(parent_id)
         assert len(ancestors) == depth - 1
 
-    async def test_circular_reference_prevention(self, db_session: AsyncSession):
+    async def test_circular_reference_prevention(self, db_session: AsyncSession) -> None:
         """Test that circular references are handled."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")
@@ -1463,7 +1462,7 @@ class TestRepositoryEdgeCases:
         c = item2_check
         assert c.parent_id == item1.id
 
-    async def test_unicode_in_item_title(self, db_session: AsyncSession):
+    async def test_unicode_in_item_title(self, db_session: AsyncSession) -> None:
         """Test handling Unicode characters in item title."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Test Project")

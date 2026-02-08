@@ -12,8 +12,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
-from collections.abc import AsyncGenerator
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 import pytest_asyncio
@@ -29,6 +28,9 @@ from tracertm.mcp.http_transport import (
     mount_mcp_to_fastapi,
     run_http_server,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 JSON_HEADERS = {"Accept": "application/json"}
 
@@ -93,7 +95,7 @@ async def fastapi_client(fastapi_app):
 class TestStandaloneHTTPServer:
     """Test standalone MCP HTTP server."""
 
-    def test_app_creation_disallowed(self):
+    def test_app_creation_disallowed(self) -> None:
         """Standalone HTTP app creation is disallowed."""
         with pytest.raises(RuntimeError, match="Standalone MCP is not allowed"):
             create_standalone_http_app(
@@ -103,7 +105,7 @@ class TestStandaloneHTTPServer:
             )
 
     @pytest.mark.asyncio
-    async def test_run_http_server_disallowed(self):
+    async def test_run_http_server_disallowed(self) -> None:
         """Standalone HTTP server run is disallowed."""
         with pytest.raises(RuntimeError, match="Standalone MCP is not allowed"):
             await run_http_server()
@@ -118,7 +120,7 @@ class TestStandaloneHTTPServer:
 class TestFastAPIIntegration:
     """Test MCP mounted to FastAPI app."""
 
-    async def test_mounted_path(self, fastapi_client):
+    async def test_mounted_path(self, fastapi_client) -> None:
         """Test that MCP is mounted at correct path."""
         session_id = await open_mcp_session(fastapi_client)
         response = await fastapi_client.post(
@@ -133,7 +135,7 @@ class TestFastAPIIntegration:
 
         assert response.status_code == 200
 
-    async def test_fastapi_middleware_integration(self, fastapi_app):
+    async def test_fastapi_middleware_integration(self, fastapi_app) -> None:
         """Test that FastAPI middleware can be applied."""
         # Verify middleware stack exists
         assert hasattr(fastapi_app, "middleware_stack")
@@ -148,14 +150,14 @@ class TestFastAPIIntegration:
                     CORSMiddleware,
                     allow_origins=["*"],
                     allow_methods=["*"],
-                )
-            ]
+                ),
+            ],
         )
         mount_mcp_to_fastapi(test_app, path="/mcp")
 
         async with AsyncClient(transport=ASGITransport(app=test_app), base_url="http://test") as client:
             response = await client.options("/mcp")
-            assert response.status_code in (200, 204, 307, 405)  # CORS or redirect
+            assert response.status_code in {200, 204, 307, 405}  # CORS or redirect
 
 
 # =============================================================================
@@ -167,7 +169,7 @@ class TestFastAPIIntegration:
 class TestSSEProgressStreaming:
     """Test SSE progress streaming functionality."""
 
-    async def test_progress_stream_creation(self):
+    async def test_progress_stream_creation(self) -> None:
         """Test creating a progress stream."""
 
         async def mock_progress_generator() -> AsyncGenerator[dict[str, Any], None]:
@@ -189,7 +191,7 @@ class TestSSEProgressStreaming:
             assert event["data"]["task_id"] == "task-123"
             assert event["data"]["progress"] == i
 
-    async def test_progress_stream_cancellation(self):
+    async def test_progress_stream_cancellation(self) -> None:
         """Test that cancelled streams emit cancellation event."""
 
         async def slow_generator() -> AsyncGenerator[dict[str, Any], None]:
@@ -200,8 +202,7 @@ class TestSSEProgressStreaming:
         events = []
 
         async def consume_stream() -> None:
-            async for event in create_progress_stream("task-456", slow_generator()):
-                events.append(event)
+            events.extend([event async for event in create_progress_stream("task-456", slow_generator())])
 
         task = asyncio.create_task(consume_stream())
         await asyncio.sleep(0.35)
@@ -213,12 +214,13 @@ class TestSSEProgressStreaming:
         assert events[0]["event"] == "stream_start"
         assert any(e["event"] == "stream_cancelled" for e in events)
 
-    async def test_progress_stream_error_handling(self):
+    async def test_progress_stream_error_handling(self) -> None:
         """Test error handling in progress streams."""
 
         async def error_generator() -> AsyncGenerator[dict[str, Any], None]:
             yield {"progress": 1}
-            raise ValueError("Test error")
+            msg = "Test error"
+            raise ValueError(msg)
             yield {"progress": 2}  # Should never reach this
 
         events = [event async for event in create_progress_stream("task-789", error_generator())]
@@ -238,37 +240,37 @@ class TestSSEProgressStreaming:
 class TestTransportSelection:
     """Test transport type selection logic."""
 
-    def test_default_transport(self, monkeypatch):
+    def test_default_transport(self, monkeypatch) -> None:
         """Test default transport is http."""
         monkeypatch.delenv("TRACERTM_MCP_TRANSPORT", raising=False)
         transport = get_transport_type()
         assert transport == "http"
 
-    def test_env_transport_http(self, monkeypatch):
+    def test_env_transport_http(self, monkeypatch) -> None:
         """Test HTTP transport from environment."""
         monkeypatch.setenv("TRACERTM_MCP_TRANSPORT", "http")
         transport = get_transport_type()
         assert transport == "http"
 
-    def test_env_transport_streamable_http(self, monkeypatch):
+    def test_env_transport_streamable_http(self, monkeypatch) -> None:
         """Test streamable-http transport from environment."""
         monkeypatch.setenv("TRACERTM_MCP_TRANSPORT", "streamable-http")
         transport = get_transport_type()
         assert transport == "streamable-http"
 
-    def test_env_transport_sse(self, monkeypatch):
+    def test_env_transport_sse(self, monkeypatch) -> None:
         """Test SSE transport from environment."""
         monkeypatch.setenv("TRACERTM_MCP_TRANSPORT", "sse")
         transport = get_transport_type()
         assert transport == "sse"
 
-    def test_invalid_transport_fallback(self, monkeypatch):
+    def test_invalid_transport_fallback(self, monkeypatch) -> None:
         """Test fallback to http for invalid transport."""
         monkeypatch.setenv("TRACERTM_MCP_TRANSPORT", "invalid")
         transport = get_transport_type()
         assert transport == "http"
 
-    def test_case_insensitive_transport(self, monkeypatch):
+    def test_case_insensitive_transport(self, monkeypatch) -> None:
         """Test transport is case-insensitive."""
         monkeypatch.setenv("TRACERTM_MCP_TRANSPORT", "HTTP")
         transport = get_transport_type()
@@ -284,7 +286,7 @@ class TestTransportSelection:
 class TestConcurrentRequests:
     """Test handling of concurrent requests."""
 
-    async def test_concurrent_tool_calls(self, fastapi_client):
+    async def test_concurrent_tool_calls(self, fastapi_client) -> None:
         """Test multiple concurrent tool calls."""
         session_id = await open_mcp_session(fastapi_client)
         # Create multiple requests
@@ -310,7 +312,7 @@ class TestConcurrentRequests:
             data = response.json()
             assert data["id"] == i
 
-    async def test_request_isolation(self, fastapi_client):
+    async def test_request_isolation(self, fastapi_client) -> None:
         """Test that concurrent requests are isolated."""
         session_id = await open_mcp_session(fastapi_client)
         # Send requests with different IDs simultaneously
@@ -354,7 +356,7 @@ class TestConcurrentRequests:
 class TestPerformance:
     """Test performance characteristics of HTTP transport."""
 
-    async def test_throughput(self, fastapi_client):
+    async def test_throughput(self, fastapi_client) -> None:
         """Test request throughput."""
         import time
 
@@ -379,12 +381,11 @@ class TestPerformance:
         elapsed = time.time() - start
 
         throughput = num_requests / elapsed
-        print(f"\nThroughput: {throughput:.2f} requests/second")
 
         # Reasonable throughput threshold (adjust based on requirements)
         assert throughput > 10  # At least 10 req/s
 
-    async def test_response_time(self, fastapi_client):
+    async def test_response_time(self, fastapi_client) -> None:
         """Test average response time."""
         import time
 
@@ -406,7 +407,6 @@ class TestPerformance:
             times.append(elapsed)
 
         avg_time = sum(times) / len(times)
-        print(f"\nAverage response time: {avg_time * 1000:.2f}ms")
 
         # Response time should be reasonable
         assert avg_time < 0.5  # Less than 500ms on average

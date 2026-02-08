@@ -28,19 +28,24 @@ except Exception:
 
     class _SpecStub:
         async def create_adr(self, **kwargs: Any) -> None:
-            raise ToolError("Specification tools unavailable")
+            msg = "Specification tools unavailable"
+            raise ToolError(msg)
 
         async def list_adrs(self, **kwargs: Any) -> None:
-            raise ToolError("Specification tools unavailable")
+            msg = "Specification tools unavailable"
+            raise ToolError(msg)
 
         async def create_contract(self, **kwargs: Any) -> None:
-            raise ToolError("Specification tools unavailable")
+            msg = "Specification tools unavailable"
+            raise ToolError(msg)
 
         async def create_feature(self, **kwargs: Any) -> None:
-            raise ToolError("Specification tools unavailable")
+            msg = "Specification tools unavailable"
+            raise ToolError(msg)
 
         async def create_scenario(self, **kwargs: Any) -> None:
-            raise ToolError("Specification tools unavailable")
+            msg = "Specification tools unavailable"
+            raise ToolError(msg)
 
     spec_tools: Any = _SpecStub()
 
@@ -52,8 +57,7 @@ async def specification_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
-    """
-    Unified specification management tool.
+    """Unified specification management tool.
 
     Specification kinds and actions:
     - adr.create: Create Architecture Decision Record (requires: project_id, title, context, decision, consequences; optional: status, decision_drivers, tags)
@@ -127,4 +131,5 @@ async def specification_manage(
         )
         return _wrap(result, ctx, f"{kind}.{action}")
 
-    raise ToolError(f"Unknown spec action: {kind}.{action}")
+    msg = f"Unknown spec action: {kind}.{action}"
+    raise ToolError(msg)

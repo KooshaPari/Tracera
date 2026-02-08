@@ -30,9 +30,8 @@ class PathResult:
 class ShortestPathService:
     """Service for finding shortest paths using Dijkstra's algorithm with Redis caching."""
 
-    def __init__(self, session: AsyncSession, cache: CacheService | None = None):
-        """
-        Initialize shortest path service.
+    def __init__(self, session: AsyncSession, cache: CacheService | None = None) -> None:
+        """Initialize shortest path service.
 
         Args:
             session: Database session
@@ -50,8 +49,7 @@ class ShortestPathService:
         target_id: str | uuid.UUID,
         link_types: list[str] | None = None,
     ) -> PathResult:
-        """
-        Find shortest path between two items using Dijkstra's algorithm with caching.
+        """Find shortest path between two items using Dijkstra's algorithm with caching.
 
         Caching Strategy:
         - Cache key: tracertm:graph:{project_id}:path:{source_id}:{target_id}:{link_types_key}
@@ -85,7 +83,7 @@ class ShortestPathService:
             try:
                 cached = await self.cache.get(cache_key)
                 if cached:
-                    logger.debug(f"Cache hit for path {source_id} -> {target_id} in project {project_id}")
+                    logger.debug("Cache hit for path %s -> %s in project %s", source_id, target_id, project_id)
                     # Reconstruct PathResult from cached data
                     return PathResult(
                         source_id=cached["source_id"],
@@ -96,7 +94,7 @@ class ShortestPathService:
                         exists=cached["exists"],
                     )
             except Exception as e:
-                logger.warning(f"Cache read failed for path {source_id} -> {target_id}: {e}")
+                logger.warning("Cache read failed for path %s -> %s: %s", source_id, target_id, e)
 
         # Compute path (existing logic)
         result = await self._compute_path(project_id, source_id, target_id, link_types)
@@ -115,9 +113,9 @@ class ShortestPathService:
                 link_types_key = ":".join(sorted(link_types)) if link_types else "all"
                 cache_key = f"tracertm:graph:{project_id}:path:{source_id}:{target_id}:{link_types_key}"
                 await self.cache.set(cache_key, cache_data, ttl_seconds=300)
-                logger.debug(f"Cached path {source_id} -> {target_id} in project {project_id}")
+                logger.debug("Cached path %s -> %s in project %s", source_id, target_id, project_id)
             except Exception as e:
-                logger.warning(f"Cache write failed for path {source_id} -> {target_id}: {e}")
+                logger.warning("Cache write failed for path %s -> %s: %s", source_id, target_id, e)
 
         return result
 
@@ -128,8 +126,7 @@ class ShortestPathService:
         target_id: str | uuid.UUID,
         link_types: list[str] | None = None,
     ) -> PathResult:
-        """
-        Internal method to compute shortest path using Dijkstra's algorithm.
+        """Internal method to compute shortest path using Dijkstra's algorithm.
 
         Args:
             project_id: Project ID
@@ -170,8 +167,7 @@ class ShortestPathService:
         # Initialize distances for all nodes (including target)
         all_nodes = set(adjacency_list.keys())
         for neighbors in adjacency_list.values():
-            for neighbor, _ in neighbors:
-                all_nodes.add(neighbor)
+            all_nodes.update(neighbor for neighbor, _ in neighbors)
 
         distances: dict[str, int] = {node: float("inf") for node in all_nodes}
         distances[source_id] = 0
@@ -239,8 +235,7 @@ class ShortestPathService:
         source_id: str | uuid.UUID,
         link_types: list[str] | None = None,
     ) -> dict[str, PathResult]:
-        """
-        Find shortest paths from source to all reachable items with caching.
+        """Find shortest paths from source to all reachable items with caching.
 
         Caching Strategy:
         - Cache key: tracertm:graph:{project_id}:all_paths:{source_id}:{link_types_key}
@@ -270,7 +265,7 @@ class ShortestPathService:
             try:
                 cached = await self.cache.get(cache_key)
                 if cached:
-                    logger.debug(f"Cache hit for all paths from {source_id} in project {project_id}")
+                    logger.debug("Cache hit for all paths from %s in project %s", source_id, project_id)
                     # Reconstruct PathResult objects from cached data
                     results = {}
                     for target_id, data in cached.items():
@@ -284,7 +279,7 @@ class ShortestPathService:
                         )
                     return results
             except Exception as e:
-                logger.warning(f"Cache read failed for all paths from {source_id}: {e}")
+                logger.warning("Cache read failed for all paths from %s: %s", source_id, e)
 
         # Compute paths (existing logic)
         results = await self._compute_all_paths(project_id, source_id, link_types)
@@ -305,9 +300,9 @@ class ShortestPathService:
                 link_types_key = ":".join(sorted(link_types)) if link_types else "all"
                 cache_key = f"tracertm:graph:{project_id}:all_paths:{source_id}:{link_types_key}"
                 await self.cache.set(cache_key, cache_data, ttl_seconds=300)
-                logger.debug(f"Cached all paths from {source_id} in project {project_id}")
+                logger.debug("Cached all paths from %s in project %s", source_id, project_id)
             except Exception as e:
-                logger.warning(f"Cache write failed for all paths from {source_id}: {e}")
+                logger.warning("Cache write failed for all paths from %s: %s", source_id, e)
 
         return results
 
@@ -317,8 +312,7 @@ class ShortestPathService:
         source_id: str | uuid.UUID,
         link_types: list[str] | None = None,
     ) -> dict[str, PathResult]:
-        """
-        Internal method to compute all shortest paths from source.
+        """Internal method to compute all shortest paths from source.
 
         Args:
             project_id: Project ID

@@ -1,5 +1,4 @@
-"""
-Problem model for TraceRTM.
+"""Problem model for TraceRTM.
 
 Represents high-level problems that need investigation, root cause analysis,
 and resolution tracking. Follows ITIL problem management patterns.
@@ -75,8 +74,7 @@ class RootCauseCategory(StrEnum):
 
 
 class Problem(Base, TimestampMixin):
-    """
-    Problem model representing a tracked problem requiring investigation.
+    """Problem model representing a tracked problem requiring investigation.
 
     Problems have a complex lifecycle from Open through Investigation
     to Known Error and eventual resolution. They support:
@@ -201,8 +199,7 @@ class Problem(Base, TimestampMixin):
 
 
 class ProblemActivity(Base, TimestampMixin):
-    """
-    Activity log for problem changes.
+    """Activity log for problem changes.
 
     Tracks all status transitions and significant updates for audit trail.
     """

@@ -14,7 +14,7 @@ from tracertm.repositories.event_repository import EventRepository
 class ADRService:
     """Service for Architecture Decision Records."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def _log_event(
@@ -51,7 +51,7 @@ class ADRService:
         # Generate ADR number (simplistic implementation)
         # Ideally this should be robust against concurrency or use a sequence
         result = await self.session.execute(
-            select(ADR).where(ADR.project_id == project_id).order_by(ADR.created_at.desc()).limit(1)
+            select(ADR).where(ADR.project_id == project_id).order_by(ADR.created_at.desc()).limit(1),
         )
         last_adr = result.scalar_one_or_none()
 
@@ -119,7 +119,8 @@ class ADRService:
         async def do_update() -> ADR:
             adr = await self.get_adr(adr_id)
             if not adr:
-                raise ValueError(f"ADR {adr_id} not found")
+                msg = f"ADR {adr_id} not found"
+                raise ValueError(msg)
 
             before = {key: getattr(adr, key, None) for key in updates}
             for key, value in updates.items():

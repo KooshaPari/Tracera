@@ -36,7 +36,7 @@ def upgrade() -> None:
                 ALTER TABLE items ADD COLUMN position_y NUMERIC(10,2) DEFAULT 0;
             END IF;
         END $$;
-        """
+        """,
     )
 
     # Enable PostGIS extension if not already enabled (for advanced spatial operations)
@@ -51,7 +51,7 @@ def upgrade() -> None:
             box(point(position_x, position_y), point(position_x, position_y))
         )
         WHERE deleted_at IS NULL
-        """
+        """,
     )
 
 
@@ -78,5 +78,5 @@ def downgrade() -> None:
                 ALTER TABLE items DROP COLUMN position_y;
             END IF;
         END $$;
-        """
+        """,
     )

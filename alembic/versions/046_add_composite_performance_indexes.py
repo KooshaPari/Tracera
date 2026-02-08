@@ -1,4 +1,4 @@
-"""Add composite performance indexes for optimized query patterns
+"""Add composite performance indexes for optimized query patterns.
 
 This migration adds strategic composite indexes that improve query performance
 for common filtering patterns that aren't covered by existing single-column indexes.
@@ -23,14 +23,13 @@ depends_on = None
 
 def upgrade() -> None:
     """Add composite performance indexes for critical query patterns."""
-
     # =========================================================================
     # ITEMS TABLE - Soft Delete Filtering Optimization
     # =========================================================================
     # Critical for queries like: WHERE deleted_at IS NULL AND project_id = ?
     # This pattern is used in almost every item list query to filter out deleted items
     op.create_index(
-        "ix_items_deleted_project", "items", ["deleted_at", "project_id"], unique=False, postgresql_using="btree"
+        "ix_items_deleted_project", "items", ["deleted_at", "project_id"], unique=False, postgresql_using="btree",
     )
 
     # =========================================================================
@@ -50,6 +49,5 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop composite performance indexes."""
-
     op.drop_index("ix_items_project_deleted_type", table_name="items")
     op.drop_index("ix_items_deleted_project", table_name="items")

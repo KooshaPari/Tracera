@@ -17,7 +17,7 @@ class _FakeLink(SimpleNamespace):
 
 
 @pytest.mark.asyncio
-async def test_detect_zombies_finds_orphan_stale(monkeypatch, async_session):
+async def test_detect_zombies_finds_orphan_stale(monkeypatch, async_session) -> None:
     stale_item = _FakeItem(
         id="i1",
         title="Stale",
@@ -50,10 +50,10 @@ async def test_detect_zombies_finds_orphan_stale(monkeypatch, async_session):
 
 
 @pytest.mark.asyncio
-async def test_analyze_impact_returns_error_when_missing(monkeypatch, async_session):
+async def test_analyze_impact_returns_error_when_missing(monkeypatch, async_session) -> None:
     svc = ChaosModeService(async_session)
 
-    async def get_none(item_id):
+    async def get_none(item_id) -> None:
         return None
 
     monkeypatch.setattr(svc.items, "get_by_id", get_none)
@@ -63,7 +63,7 @@ async def test_analyze_impact_returns_error_when_missing(monkeypatch, async_sess
 
 
 @pytest.mark.asyncio
-async def test_analyze_impact_counts_links(monkeypatch, async_session):
+async def test_analyze_impact_counts_links(monkeypatch, async_session) -> None:
     item = _FakeItem(id="i1", title="Item", status="todo")
     direct = [_FakeLink(target_item_id="i2", link_type="depends_on")]
     deps = [_FakeLink(source_item_id="i3", target_item_id="i1", link_type="blocks")]

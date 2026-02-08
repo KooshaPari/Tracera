@@ -42,7 +42,7 @@ test.describe('MCP Authentication Flow', () => {
 
     // Verify successful authentication
     await expect(userMenu).toBeVisible({
-      timeout: 10000,
+      timeout: 10_000,
     });
   });
 

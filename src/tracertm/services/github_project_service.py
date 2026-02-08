@@ -1,6 +1,4 @@
-"""
-Service for GitHub Projects auto-linking and synchronization.
-"""
+"""Service for GitHub Projects auto-linking and synchronization."""
 
 from dataclasses import dataclass
 from typing import Any
@@ -27,7 +25,7 @@ class LinkProjectParams:
 class GitHubProjectService:
     """Service for GitHub Projects operations."""
 
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession) -> None:
         self.db = db
         self.repo = GitHubProjectRepository(db)
 

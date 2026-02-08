@@ -1,5 +1,4 @@
-"""
-Phase 5 - CLI Item Comprehensive Coverage Tests
+"""Phase 5 - CLI Item Comprehensive Coverage Tests.
 
 Target: 400+ tests covering 95%+ of src/tracertm/cli/commands/item.py (845 LOC @ 5.44% current)
 Focus lines: 63-71, 87-102, 115-126, 137-139, 153-171, 181-182, 214-345, 377-483, 505-649, 677-743, 762-825, 838-887, 920-1021, 1047-1087, 1099-1139, 1155-1222, 1239-1305, 1322-1379, 1401-1513, 1531-1554, 1570-1588, 1598-1630, 1643-1661, 1675-1691, 1705-1720
@@ -65,7 +64,7 @@ class TestBasicCRUDOperations:
     """Test Basic CRUD Operations for CLI item commands."""
 
     def test_create_item_basic_success(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test basic item creation success."""
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
@@ -88,7 +87,7 @@ class TestBasicCRUDOperations:
                 assert "Test Item" in result.stdout
 
     def test_create_item_all_views(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item creation with all valid views."""
         valid_views = ["FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"]
@@ -96,7 +95,7 @@ class TestBasicCRUDOperations:
         for view in valid_views:
             with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
                 with patch(
-                    "tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db
+                    "tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db,
                 ):
                     result = cli_runner.invoke(
                         item_app,
@@ -116,7 +115,7 @@ class TestBasicCRUDOperations:
                     assert f"Test {view}" in result.stdout
 
     def test_create_item_all_feature_types(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item creation with all FEATURE view types."""
         feature_types = ["epic", "feature", "story", "task", "bug"]
@@ -124,7 +123,7 @@ class TestBasicCRUDOperations:
         for item_type in feature_types:
             with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
                 with patch(
-                    "tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db
+                    "tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db,
                 ):
                     result = cli_runner.invoke(
                         item_app,
@@ -144,7 +143,7 @@ class TestBasicCRUDOperations:
                     assert f"Test {item_type}" in result.stdout
 
     def test_create_item_all_code_types(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item creation with all CODE view types."""
         code_types = ["file", "class", "function", "module"]
@@ -152,7 +151,7 @@ class TestBasicCRUDOperations:
         for item_type in code_types:
             with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
                 with patch(
-                    "tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db
+                    "tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db,
                 ):
                     result = cli_runner.invoke(
                         item_app,
@@ -171,7 +170,7 @@ class TestBasicCRUDOperations:
                     assert result.exit_code == 0, f"Failed for type: {item_type}"
 
     def test_create_item_with_metadata(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item creation with metadata."""
         metadata = {"priority": "high", "assignee": "user@example.com", "tags": ["urgent", "backend"]}
@@ -198,7 +197,7 @@ class TestBasicCRUDOperations:
                 assert "Test Item with Metadata" in result.stdout
 
     def test_create_item_invalid_view(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item creation with invalid view."""
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
@@ -221,7 +220,7 @@ class TestBasicCRUDOperations:
                 assert "Invalid view" in result.stdout
 
     def test_create_item_invalid_type(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item creation with invalid type for view."""
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
@@ -244,19 +243,19 @@ class TestBasicCRUDOperations:
                 assert "Invalid type" in result.stdout
 
     def test_create_item_missing_required_fields(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item creation with missing required fields."""
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 # Missing title
                 result = cli_runner.invoke(
-                    item_app, ["create", "--view", "FEATURE", "--type", "feature", "--description", "Test description"]
+                    item_app, ["create", "--view", "FEATURE", "--type", "feature", "--description", "Test description"],
                 )
                 assert result.exit_code != 0
 
     def test_create_item_with_parent(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item creation with parent item."""
         # Create parent item first
@@ -314,12 +313,12 @@ class TestBasicCRUDOperations:
                 assert "Test Item" in result.stdout
 
     def test_list_items_by_view(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item listing filtered by view."""
         # Create items in different views
         views = ["FEATURE", "CODE", "API"]
-        for _i, view in enumerate(views):
+        for view in views:
             item = Item(
                 title=f"Test {view} Item",
                 view=view,
@@ -339,12 +338,12 @@ class TestBasicCRUDOperations:
                 assert "Test CODE Item" not in result.stdout
 
     def test_list_items_by_type(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item listing filtered by type."""
         # Create items with different types
         types = ["feature", "task", "bug"]
-        for _i, item_type in enumerate(types):
+        for item_type in types:
             item = Item(
                 title=f"Test {item_type}",
                 view="FEATURE",
@@ -364,7 +363,7 @@ class TestBasicCRUDOperations:
                 assert "Test task" not in result.stdout
 
     def test_list_items_with_limit(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item listing with limit."""
         # Create more items than limit
@@ -388,7 +387,7 @@ class TestBasicCRUDOperations:
                 assert result.stdout.count("Test Item") <= 5
 
     def test_list_items_with_offset(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item listing with offset."""
         # Create items
@@ -413,7 +412,7 @@ class TestBasicCRUDOperations:
                 assert "Test Item 0" not in result.stdout
 
     def test_show_item_success(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test showing item details successfully."""
         # Create test item
@@ -437,7 +436,7 @@ class TestBasicCRUDOperations:
                 assert "high" in result.stdout
 
     def test_show_item_not_found(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test showing non-existent item."""
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
@@ -447,7 +446,7 @@ class TestBasicCRUDOperations:
                 assert "not found" in result.stdout.lower()
 
     def test_update_item_basic(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test basic item update."""
         # Create test item
@@ -472,7 +471,7 @@ class TestBasicCRUDOperations:
                 assert "Updated Title" in result.stdout
 
     def test_update_item_metadata(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test updating item metadata."""
         # Create test item
@@ -494,7 +493,7 @@ class TestBasicCRUDOperations:
                 assert result.exit_code == 0
 
     def test_delete_item_success(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test successful item deletion."""
         # Create test item
@@ -517,7 +516,7 @@ class TestBasicCRUDOperations:
                 assert "deleted" in result.stdout.lower()
 
     def test_delete_item_not_found(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test deleting non-existent item."""
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
@@ -527,7 +526,7 @@ class TestBasicCRUDOperations:
                 assert "not found" in result.stdout.lower()
 
     def test_undelete_item_success(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test successful item undeletion."""
         # Create and delete test item
@@ -551,7 +550,7 @@ class TestBasicCRUDOperations:
                 assert "restored" in result.stdout.lower()
 
     def test_bulk_create_items(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test bulk creation of items."""
         items_data = [
@@ -569,7 +568,7 @@ class TestBasicCRUDOperations:
                 assert "Item 3" in result.stdout
 
     def test_bulk_update_items(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test bulk update of items."""
         # Create test items
@@ -592,7 +591,7 @@ class TestBasicCRUDOperations:
                 {"id": item_ids[0], "title": "Updated Item 0"},
                 {"id": item_ids[1], "title": "Updated Item 1"},
                 {"id": item_ids[2], "description": "New description 2"},
-            ]
+            ],
         }
 
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
@@ -602,7 +601,7 @@ class TestBasicCRUDOperations:
                 assert "Updated Item" in result.stdout
 
     def test_shell_completion_item_ids(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test shell completion for item IDs."""
         # Create test items
@@ -654,7 +653,7 @@ class TestAdvancedWorkflowOperations:
     """Test Advanced Workflow Operations for CLI item commands."""
 
     def test_item_workflow_transition(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item status transition through workflow."""
         # Create item with initial status
@@ -673,12 +672,12 @@ class TestAdvancedWorkflowOperations:
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
-                    item_app, ["update", str(item.id), "--metadata", json.dumps({"status": "in-progress"})]
+                    item_app, ["update", str(item.id), "--metadata", json.dumps({"status": "in-progress"})],
                 )
                 assert result.exit_code == 0
 
     def test_item_hierarchy_management(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test managing item hierarchies (parent-child relationships)."""
         # Create parent items
@@ -728,7 +727,7 @@ class TestAdvancedWorkflowOperations:
                 assert "Child Story" in result.stdout
 
     def test_item_bulk_delete_with_dependencies(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test bulk deletion of items with dependency checking."""
         # Create items with relationships
@@ -771,7 +770,7 @@ class TestAdvancedWorkflowOperations:
                 assert "deleted" in result.stdout.lower()
 
     def test_item_search_operations(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test advanced item search operations."""
         # Create diverse items
@@ -808,7 +807,7 @@ class TestAdvancedWorkflowOperations:
                 assert "Frontend UI Component" not in result.stdout
 
     def test_item_filter_by_metadata(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test filtering items by metadata fields."""
         # Create items with different metadata
@@ -840,7 +839,7 @@ class TestAdvancedWorkflowOperations:
                 assert "Low Priority Item" not in result.stdout
 
     def test_item_sort_operations(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item sorting operations."""
         # Create items with different creation times
@@ -875,7 +874,7 @@ class TestAdvancedWorkflowOperations:
                 assert len(title_lines) > 0
 
     def test_item_export_operations(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item export operations."""
         # Create test items
@@ -901,7 +900,7 @@ class TestAdvancedWorkflowOperations:
                 assert result.stdout.strip().startswith("[") or result.stdout.strip().startswith("{")
 
     def test_item_import_operations(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item import operations."""
         # Create import data
@@ -967,7 +966,7 @@ class TestAdvancedWorkflowOperations:
                 assert "Total" in result.stdout
 
     def test_item_validation_rules(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item validation rules and constraints."""
         # Test creating item with invalid metadata
@@ -994,12 +993,12 @@ class TestAdvancedWorkflowOperations:
                 assert result.exit_code != 0
 
     def test_item_cross_project_operations(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test item operations across multiple projects."""
         # Create additional project
         project2 = Project(
-            id="test-project-2", name="Test Project 2", description="Second test project", config={"test": True}
+            id="test-project-2", name="Test Project 2", description="Second test project", config={"test": True},
         )
         db_session.add(project2)
         db_session.commit()
@@ -1056,7 +1055,7 @@ class TestAdvancedWorkflowOperations:
                 assert "Actual Item" in result.stdout
 
     def test_item_dependency_visualization(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test visualizing item dependencies."""
         # Create hierarchical items
@@ -1104,7 +1103,7 @@ class TestAdvancedWorkflowOperations:
                 assert "Child Item 2" in result.stdout
 
     def test_item_batch_status_update(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test batch update of item statuses."""
         # Create items
@@ -1155,7 +1154,7 @@ class TestAdvancedWorkflowOperations:
         for update in updates:
             with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
                 with patch(
-                    "tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db
+                    "tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db,
                 ):
                     result = cli_runner.invoke(
                         item_app,
@@ -1173,7 +1172,7 @@ class TestAdvancedWorkflowOperations:
                 assert "version" in result.stdout.lower()
 
     def test_item_workflow_validation(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test workflow validation and status transitions."""
         # Create item with workflow metadata
@@ -1193,17 +1192,17 @@ class TestAdvancedWorkflowOperations:
         for status in valid_transitions:
             with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
                 with patch(
-                    "tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db
+                    "tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db,
                 ):
                     result = cli_runner.invoke(
-                        item_app, ["update", str(item.id), "--metadata", json.dumps({"status": status})]
+                        item_app, ["update", str(item.id), "--metadata", json.dumps({"status": status})],
                     )
                     # Most status transitions should be valid
-                    if status in ["todo", "in-progress", "done"]:  # Simplified validation
+                    if status in {"todo", "in-progress", "done"}:  # Simplified validation
                         assert result.exit_code == 0
 
     def test_item_bulk_tagging(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test bulk tagging of items."""
         # Create items
@@ -1230,7 +1229,7 @@ class TestAdvancedWorkflowOperations:
                 assert "tagged" in result.stdout.lower()
 
     def test_item_workflow_automation(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test workflow automation rules."""
         # Create item with automation rules

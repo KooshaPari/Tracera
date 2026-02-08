@@ -1,5 +1,4 @@
-"""
-Conflict resolution system for TraceRTM local storage.
+"""Conflict resolution system for TraceRTM local storage.
 
 Handles conflicts that arise during sync between local and remote changes,
 implementing multiple resolution strategies and maintaining conflict history.
@@ -42,8 +41,7 @@ EntityType = Literal["project", "item", "link"]
 
 @dataclass
 class VectorClock:
-    """
-    Vector clock for ordering changes across distributed clients.
+    """Vector clock for ordering changes across distributed clients.
 
     Provides partial ordering of events in a distributed system where
     wall-clock time may not be reliable.
@@ -60,8 +58,7 @@ class VectorClock:
             self.timestamp = self.timestamp.replace(tzinfo=UTC)
 
     def happens_before(self, other: "VectorClock") -> bool:
-        """
-        Check if this clock happens before another.
+        """Check if this clock happens before another.
 
         Returns:
             True if this change definitely happened before other
@@ -74,8 +71,7 @@ class VectorClock:
         return self.timestamp < other.timestamp
 
     def is_concurrent(self, other: "VectorClock") -> bool:
-        """
-        Check if two clocks are concurrent (conflict).
+        """Check if two clocks are concurrent (conflict).
 
         Returns:
             True if neither happens before the other
@@ -181,8 +177,7 @@ class ResolvedEntity:
 
 
 class ConflictResolver:
-    """
-    Main conflict resolution logic for TraceRTM.
+    """Main conflict resolution logic for TraceRTM.
 
     Handles detection, resolution, and storage of conflicts between
     local and remote entity versions.
@@ -193,9 +188,8 @@ class ConflictResolver:
         session: Session,
         backup_dir: Path | None = None,
         default_strategy: ConflictStrategy = ConflictStrategy.LAST_WRITE_WINS,
-    ):
-        """
-        Initialize conflict resolver.
+    ) -> None:
+        """Initialize conflict resolver.
 
         Args:
             session: SQLAlchemy database session
@@ -248,8 +242,7 @@ class ConflictResolver:
         self.session.commit()
 
     def detect_conflict(self, local: EntityVersion, remote: EntityVersion) -> Conflict | None:
-        """
-        Detect if there's a conflict between local and remote versions.
+        """Detect if there's a conflict between local and remote versions.
 
         A conflict exists when:
         1. Both versions exist (not just create/delete)
@@ -275,10 +268,9 @@ class ConflictResolver:
         if local.content_hash and remote.content_hash:
             if local.content_hash == remote.content_hash:
                 return None
-        else:
-            # Fallback to data comparison
-            if local.data == remote.data:
-                return None
+        # Fallback to data comparison
+        elif local.data == remote.data:
+            return None
 
         # We have a conflict
         conflict_id = f"conflict_{local.entity_id}_{int(datetime.now(UTC).timestamp())}"
@@ -293,7 +285,7 @@ class ConflictResolver:
 
         logger.warning(
             f"Conflict detected for {local.entity_type} {local.entity_id}: "
-            f"local v{local.vector_clock.version} vs remote v{remote.vector_clock.version}"
+            f"local v{local.vector_clock.version} vs remote v{remote.vector_clock.version}",
         )
 
         # Store conflict in database
@@ -302,8 +294,7 @@ class ConflictResolver:
         return conflict
 
     def resolve(self, conflict: Conflict, strategy: ConflictStrategy | None = None) -> ResolvedEntity:
-        """
-        Resolve a conflict using the specified strategy.
+        """Resolve a conflict using the specified strategy.
 
         Args:
             conflict: Conflict to resolve
@@ -329,9 +320,11 @@ class ConflictResolver:
         elif strategy == ConflictStrategy.REMOTE_WINS:
             resolved_version = conflict.remote_version
         elif strategy == ConflictStrategy.MANUAL:
-            raise ValueError("MANUAL strategy requires calling resolve_manual() with merged content")
+            msg = "MANUAL strategy requires calling resolve_manual() with merged content"
+            raise ValueError(msg)
         else:
-            raise ValueError(f"Unknown strategy: {strategy}")
+            msg = f"Unknown strategy: {strategy}"
+            raise ValueError(msg)
 
         # Update conflict record
         conflict.status = ConflictStatus.RESOLVED_AUTO
@@ -343,7 +336,7 @@ class ConflictResolver:
 
         logger.info(
             f"Resolved conflict {conflict.id} using {strategy.value}, "
-            f"winner: {'local' if resolved_version == conflict.local_version else 'remote'}"
+            f"winner: {'local' if resolved_version == conflict.local_version else 'remote'}",
         )
 
         return ResolvedEntity(
@@ -369,10 +362,9 @@ class ConflictResolver:
         return conflict.remote_version
 
     def resolve_manual(
-        self, conflict: Conflict, merged_data: dict[str, Any], merged_by: str = "user"
+        self, conflict: Conflict, merged_data: dict[str, Any], merged_by: str = "user",
     ) -> ResolvedEntity:
-        """
-        Resolve conflict manually with user-provided merged content.
+        """Resolve conflict manually with user-provided merged content.
 
         Args:
             conflict: Conflict to resolve
@@ -430,8 +422,7 @@ class ConflictResolver:
         )
 
     def create_backup(self, conflict: Conflict) -> Path:
-        """
-        Create backup files for conflicting versions.
+        """Create backup files for conflicting versions.
 
         Args:
             conflict: Conflict to backup
@@ -470,12 +461,11 @@ class ConflictResolver:
                 indent=2,
             )
 
-        logger.info(f"Created conflict backup at {backup_dir}")
+        logger.info("Created conflict backup at %s", backup_dir)
         return backup_dir
 
     def list_unresolved(self, entity_type: EntityType | None = None) -> list[Conflict]:
-        """
-        List all unresolved conflicts.
+        """List all unresolved conflicts.
 
         Args:
             entity_type: Optional filter by entity type
@@ -503,8 +493,7 @@ class ConflictResolver:
         return conflicts
 
     def get_conflict(self, conflict_id: str) -> Conflict | None:
-        """
-        Get conflict by ID.
+        """Get conflict by ID.
 
         Args:
             conflict_id: Conflict identifier
@@ -534,7 +523,7 @@ class ConflictResolver:
                     :detected_at, :status, :resolution_strategy, :resolved_at,
                     :resolved_version, :backup_path, :metadata
                 )
-                """
+                """,
             ),
             {
                 "id": conflict.id,
@@ -568,7 +557,7 @@ class ConflictResolver:
                     backup_path = :backup_path,
                     metadata = :metadata
                 WHERE id = :id
-                """
+                """,
             ),
             {
                 "id": conflict.id,
@@ -604,8 +593,7 @@ class ConflictResolver:
         )
 
     def get_conflict_stats(self) -> dict[str, Any]:
-        """
-        Get statistics about conflicts.
+        """Get statistics about conflicts.
 
         Returns:
             Dict with conflict statistics
@@ -619,8 +607,8 @@ class ConflictResolver:
                     COUNT(*) as count
                 FROM conflicts
                 GROUP BY status, entity_type
-                """
-            )
+                """,
+            ),
         )
 
         stats: dict[str, Any] = {
@@ -650,9 +638,8 @@ class ConflictResolver:
 class ConflictBackup:
     """Helper class for managing conflict backups."""
 
-    def __init__(self, backup_dir: Path):
-        """
-        Initialize conflict backup manager.
+    def __init__(self, backup_dir: Path) -> None:
+        """Initialize conflict backup manager.
 
         Args:
             backup_dir: Directory for storing backups
@@ -661,8 +648,7 @@ class ConflictBackup:
         self.backup_dir.mkdir(parents=True, exist_ok=True)
 
     def list_backups(self, entity_type: EntityType | None = None) -> list[dict[str, Any]]:
-        """
-        List all conflict backups.
+        """List all conflict backups.
 
         Args:
             entity_type: Optional filter by entity type
@@ -695,8 +681,7 @@ class ConflictBackup:
         return backups
 
     def load_backup(self, backup_path: Path) -> tuple[EntityVersion, EntityVersion] | None:
-        """
-        Load local and remote versions from backup.
+        """Load local and remote versions from backup.
 
         Args:
             backup_path: Path to backup directory
@@ -719,8 +704,7 @@ class ConflictBackup:
         return local_version, remote_version
 
     def delete_backup(self, backup_path: Path) -> bool:
-        """
-        Delete a backup directory.
+        """Delete a backup directory.
 
         Args:
             backup_path: Path to backup directory
@@ -734,7 +718,7 @@ class ConflictBackup:
         import shutil
 
         shutil.rmtree(backup_path)
-        logger.info(f"Deleted backup at {backup_path}")
+        logger.info("Deleted backup at %s", backup_path)
         return True
 
 
@@ -742,8 +726,7 @@ class ConflictBackup:
 
 
 def format_conflict_summary(conflict: Conflict) -> str:
-    """
-    Format conflict as human-readable summary.
+    """Format conflict as human-readable summary.
 
     Args:
         conflict: Conflict to format
@@ -766,8 +749,7 @@ def format_conflict_summary(conflict: Conflict) -> str:
 
 
 def compare_versions(local: EntityVersion, remote: EntityVersion) -> dict[str, list[str]]:
-    """
-    Compare two entity versions and identify differences.
+    """Compare two entity versions and identify differences.
 
     Args:
         local: Local version

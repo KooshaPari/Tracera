@@ -908,6 +908,7 @@ forbidden_modules = [
 
 [tool.ruff.lint]
 # Strict profile: E/W/F/I/B/C4/UP/N/PT/SIM/RUF + RSE/PERF/LOG/S + ASYNC/PIE/RET/PTH + DTZ/FA/Q (strict best practices)
+# Maximum strictness - Phase 5: +9 categories (ANN, TRY, INT, PGH, ISC, FURB, G, ARG, TCH)
 select = [
     "E",    # pycodestyle errors
     "W",    # pycodestyle warnings
@@ -919,7 +920,7 @@ select = [
     "N",    # pep8-naming
     "PT",   # flake8-pytest-style
     "SIM",  # flake8-simplify
-    "RUF",  # ruff-specific rules
+    "RUF",  # ruff-specific rules (expanded to include RUF001-RUF060)
     "RSE",  # raise (RSE1xx)
     "PERF", # performance (PERF1xx)
     "LOG",  # logging (LOG0xx)
@@ -929,6 +930,7 @@ select = [
     "RET",  # flake8-return (explicit return, superfluous else)
     "PTH",  # flake8-use-pathlib (pathlib over os.path)
     "DTZ",  # flake8-datetimez (zoneinfo / datetime.UTC)
+    "D",    # pydocstyle (already enabled, critical for API docs)
     "FA",   # flake8-future-annotations (from __future__ import annotations)
     "Q",    # flake8-quotes (align with format quote-style)
     "C90",  # McCabe complexity
@@ -938,30 +940,52 @@ select = [
     "PLR0915",  # too-many-statements
     "PLR1702",  # too-many-nested-blocks
     "PLR2004",  # magic-value-comparison
+    # Maximum strictness - Phase 5 additions (9 categories)
+    "ANN",   # P0: flake8-annotations - Type annotation enforcement (prevents None bugs)
+    "TRY",   # P0: trycepty - Exception handling patterns (prevents silent failures)
+    "INT",   # P1: flake8-integer - UUID/int type safety (FastAPI validation)
+    "PGH",   # P1: pygrep-hooks - Async best practices (event loop safety)
+    "ISC",   # P1: flake8-implicit-str-concat - Prevents ["a"]["b"] → ["ab"] bugs
+    "FURB",  # P2: refurb - Modernization (list.copy() vs [*x], f-strings)
+    "G",     # P2: flake8-logging-format - Logging anti-patterns
+    "ARG",   # P1: flake8-unused-arguments - API correctness (dead params)
+    "TCH",   # P1: flake8-type-checking - Import safety (circular imports)
 ]
 ignore = [
     "E501",   # line too long (handled by formatter)
     "B008",   # do not perform function calls in argument defaults
     "SIM105", # use contextlib.suppress
+    # Maximum strictness - Phase 5: D rule conflicts
+    "D203",   # one-blank-line-before-class (conflicts with D211)
+    "D212",   # multi-line-summary-second-line (conflicts with D213)
 ]
 
+[tool.ruff.lint.pydocstyle]
+convention = "google"  # Google-style docstrings (FastAPI standard)
+
+# Maximum strictness - Phase 5: Type annotation configuration
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = false           # Strict: no *args: Any
+suppress-none-returning = false      # Strict: require -> None
+suppress-dummy-args = false          # Strict: annotate all params
+
 [tool.ruff.lint.mccabe]
-max-complexity = 7
+max-complexity = 6  # Down from 7 (Phase 5 tightening)
 
 [tool.ruff.lint.pylint]
-max-args = 5
-max-branches = 12
+max-args = 4         # Down from 5 (Phase 5 tightening)
+max-branches = 10    # Down from 12 (Phase 5 tightening)
 max-returns = 6
-max-statements = 50
+max-statements = 40  # Down from 50 (Phase 5 tightening)
 
 [tool.ruff.lint.per-file-ignores]
 # Phase 5 policy: tests get bounded ignore set; src fixed incrementally.
-"__init__.py" = ["F401", "F403"]
+"__init__.py" = ["F401", "F403", "D100", "D104"]
 "src/tracertm/mcp/tools/__init__.py" = ["S112"]
 "src/tracertm/mcp/__init__.py" = ["S110"]
 "**/*_pb2_grpc.py" = ["N802"]  # gRPC-generated stubs use PascalCase RPC method names
-"tests/*" = ["B011", "SIM105", "S101", "S110", "S105", "S106", "S108", "B017", "B904", "PT011", "PT003", "S311", "F841", "F405", "RUF029", "RUF059", "N806", "E402", "SIM117", "N816", "UP042", "SIM116", "PT018", "PT012", "RUF043", "B018", "E722", "F811", "E712", "S603", "S607", "S404", "LOG004", "LOG015", "F821", "F401", "E741", "N801", "S608", "PT015", "SIM115", "N802", "RUF012", "PT017", "B023", "B007", "RUF034", "B903", "F403", "N999", "RUF001", "UP035", "PERF402", "RUF003", "SIM102", "RUF052", "FA100", "DTZ", "Q"]
-"**/tests/**" = ["S101", "S110", "S105", "S106", "S108", "B017", "B904", "PT011", "PT003", "S311", "F841", "F405", "RUF029", "RUF059", "N806", "E402", "SIM117", "F821", "F401", "E741", "N801", "S608", "PT015", "SIM115", "N802", "RUF012", "PT017", "B023", "B007", "RUF034", "B903", "F403", "N999", "RUF001", "UP035", "PERF402", "RUF003", "SIM102", "RUF052", "FA100", "DTZ", "Q"]
+"tests/*" = ["B011", "SIM105", "S101", "S110", "S105", "S106", "S108", "B017", "B904", "PT011", "PT003", "S311", "F841", "F405", "RUF029", "RUF059", "N806", "E402", "SIM117", "N816", "UP042", "SIM116", "PT018", "PT012", "RUF043", "B018", "E722", "F811", "E712", "S603", "S607", "S404", "LOG004", "LOG015", "F821", "F401", "E741", "N801", "S608", "PT015", "SIM115", "N802", "RUF012", "PT017", "B023", "B007", "RUF034", "B903", "F403", "N999", "RUF001", "UP035", "PERF402", "RUF003", "SIM102", "RUF052", "FA100", "DTZ", "Q", "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107"]
+"**/tests/**" = ["S101", "S110", "S105", "S106", "S108", "B017", "B904", "PT011", "PT003", "S311", "F841", "F405", "RUF029", "RUF059", "N806", "E402", "SIM117", "F821", "F401", "E741", "N801", "S608", "PT015", "SIM115", "N802", "RUF012", "PT017", "B023", "B007", "RUF034", "B903", "F403", "N999", "RUF001", "UP035", "PERF402", "RUF003", "SIM102", "RUF052", "FA100", "DTZ", "Q", "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107"]
 # Phase 5: src baseline allowlist (fix incrementally; see docs/reports/PYTHON_QUALITY_E2E_PLAN.md). FA100/DTZ/Q enabled for src; fix annotations/quotes/datetime over time.
 "src/**" = ["E402", "B904", "RUF029", "S110", "S608", "F811", "S104", "S105", "S324", "E741", "SIM102", "F822", "N814", "RUF001", "RUF006", "RUF034", "RUF100", "S311", "S112"]
 "**/test_*.py" = ["S101", "S108"]  # pytest assert; test fixture paths
@@ -1008,7 +1032,7 @@ max-statements = 50
 "src/tracertm/mcp/tools/params/database.py" = ["C901", "RUF029"]
 "src/tracertm/mcp/tools/params/io_operations.py" = ["C901", "PLR0911", "PLR0912", "RUF029"]
 "src/tracertm/repositories/specification_repository.py" = ["PLR0913"]
-"conftest.py" = ["F401", "S101", "PT018"]  # assert for type narrowing; optional router/registry
+"conftest.py" = ["F401", "S101", "PT018", "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107"]  # assert for type narrowing; optional router/registry
 "scripts/generate_swiftride_data.py" = ["S608"]  # generator builds SQL from controlled data
 "scripts/seed_rich_single_project.py" = ["S311"]  # random for seed data only, not crypto
 "scripts/seed_comprehensive.py" = ["S311"]  # random for seed data only, not crypto
@@ -1166,6 +1190,7 @@ dev = [
     "ty>=0.0.2",
     "vulture>=2.14",
     "radon>=6.0.1",
+    "interrogate>=1.7.0",
 ]
 
 [tool.uv]

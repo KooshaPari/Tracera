@@ -22,7 +22,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Create doc_entities table with hierarchical structure."""
-
     op.create_table(
         "doc_entities",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),

@@ -1,5 +1,4 @@
-"""
-Toxiproxy HTTP API client for chaos engineering.
+"""Toxiproxy HTTP API client for chaos engineering.
 
 Provides a Python client to interact with Toxiproxy's REST API for creating
 proxies and injecting network-level failures (latency, bandwidth limits, etc.).
@@ -14,8 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class ToxiproxyClient:
-    """
-    Client for Toxiproxy HTTP API.
+    """Client for Toxiproxy HTTP API.
 
     Toxiproxy is a TCP proxy that can simulate network conditions and failures:
     - Latency injection
@@ -26,8 +24,7 @@ class ToxiproxyClient:
     """
 
     def __init__(self, base_url: str = "http://localhost:8474") -> None:
-        """
-        Initialize Toxiproxy client.
+        """Initialize Toxiproxy client.
 
         Args:
             base_url: Toxiproxy HTTP API URL (default: http://localhost:8474)
@@ -54,8 +51,7 @@ class ToxiproxyClient:
         upstream: str,
         enabled: bool = True,
     ) -> dict[str, Any]:
-        """
-        Create a new proxy.
+        """Create a new proxy.
 
         Args:
             name: Proxy name (unique identifier)
@@ -78,7 +74,7 @@ class ToxiproxyClient:
             json=payload,
         )
         response.raise_for_status()
-        logger.info(f"Created proxy '{name}': {listen} -> {upstream}")
+        logger.info("Created proxy '%s': %s -> %s", name, listen, upstream)
         return response.json()
 
     async def get_proxy(self, name: str) -> dict[str, Any]:
@@ -91,7 +87,7 @@ class ToxiproxyClient:
         """Delete a proxy."""
         response = await self.client.delete(f"{self.base_url}/proxies/{name}")
         response.raise_for_status()
-        logger.info(f"Deleted proxy '{name}'")
+        logger.info("Deleted proxy '%s'", name)
 
     async def enable_proxy(self, name: str) -> dict[str, Any]:
         """Enable a proxy."""
@@ -101,7 +97,7 @@ class ToxiproxyClient:
             json=payload,
         )
         response.raise_for_status()
-        logger.info(f"Enabled proxy '{name}'")
+        logger.info("Enabled proxy '%s'", name)
         return response.json()
 
     async def disable_proxy(self, name: str) -> dict[str, Any]:
@@ -112,7 +108,7 @@ class ToxiproxyClient:
             json=payload,
         )
         response.raise_for_status()
-        logger.info(f"Disabled proxy '{name}'")
+        logger.info("Disabled proxy '%s'", name)
         return response.json()
 
     # Toxic management
@@ -126,8 +122,7 @@ class ToxiproxyClient:
         toxicity: float = 1.0,
         stream: str = "downstream",
     ) -> dict[str, Any]:
-        """
-        Add a toxic to a proxy.
+        """Add a toxic to a proxy.
 
         Args:
             proxy_name: Target proxy name
@@ -153,7 +148,7 @@ class ToxiproxyClient:
             json=payload,
         )
         response.raise_for_status()
-        logger.info(f"Added toxic '{toxic_name}' ({toxic_type}) to proxy '{proxy_name}'")
+        logger.info("Added toxic '%s' (%s) to proxy '%s'", toxic_name, toxic_type, proxy_name)
         return response.json()
 
     async def list_toxics(self, proxy_name: str) -> list[dict[str, Any]]:
@@ -185,14 +180,14 @@ class ToxiproxyClient:
             json=payload,
         )
         response.raise_for_status()
-        logger.info(f"Updated toxic '{toxic_name}' on proxy '{proxy_name}'")
+        logger.info("Updated toxic '%s' on proxy '%s'", toxic_name, proxy_name)
         return response.json()
 
     async def remove_toxic(self, proxy_name: str, toxic_name: str) -> None:
         """Remove a toxic from a proxy."""
         response = await self.client.delete(f"{self.base_url}/proxies/{proxy_name}/toxics/{toxic_name}")
         response.raise_for_status()
-        logger.info(f"Removed toxic '{toxic_name}' from proxy '{proxy_name}'")
+        logger.info("Removed toxic '%s' from proxy '%s'", toxic_name, proxy_name)
 
     # Convenience methods for common toxics
 
@@ -204,8 +199,7 @@ class ToxiproxyClient:
         toxicity: float = 1.0,
         stream: str = "downstream",
     ) -> dict[str, Any]:
-        """
-        Add latency toxic.
+        """Add latency toxic.
 
         Args:
             proxy_name: Target proxy
@@ -229,8 +223,7 @@ class ToxiproxyClient:
         rate_kbps: int,
         stream: str = "downstream",
     ) -> dict[str, Any]:
-        """
-        Add bandwidth limit toxic.
+        """Add bandwidth limit toxic.
 
         Args:
             proxy_name: Target proxy
@@ -252,8 +245,7 @@ class ToxiproxyClient:
         timeout_ms: int,
         stream: str = "downstream",
     ) -> dict[str, Any]:
-        """
-        Add timeout toxic (connections hang for specified duration).
+        """Add timeout toxic (connections hang for specified duration).
 
         Args:
             proxy_name: Target proxy
@@ -275,8 +267,7 @@ class ToxiproxyClient:
         delay_ms: int,
         stream: str = "downstream",
     ) -> dict[str, Any]:
-        """
-        Add slow_close toxic (delays connection close).
+        """Add slow_close toxic (delays connection close).
 
         Args:
             proxy_name: Target proxy
@@ -300,6 +291,6 @@ class ToxiproxyClient:
                 await self.delete_proxy(proxy_name)
             logger.info("Cleaned up all Toxiproxy proxies")
         except Exception as e:
-            logger.warning(f"Error during Toxiproxy cleanup: {e}")
+            logger.warning("Error during Toxiproxy cleanup: %s", e)
         finally:
             await self.client.aclose()

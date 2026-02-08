@@ -1,5 +1,4 @@
-"""
-Performance tests for blockchain-style version tracking.
+"""Performance tests for blockchain-style version tracking.
 
 Tests:
 - Large baseline creation and verification
@@ -9,6 +8,7 @@ Tests:
 """
 
 import time
+from itertools import starmap
 
 import pytest
 import pytest_asyncio
@@ -29,7 +29,7 @@ class TestMerkleTreePerformance:
     def baseline_repo(self):
         return BaselineRepository()
 
-    def test_merkle_tree_build_1000_items(self, baseline_repo):
+    def test_merkle_tree_build_1000_items(self, baseline_repo) -> None:
         """Test building Merkle tree with 1000 items."""
         items = [(f"item-{i:04d}", f"hash-{i:04d}") for i in range(1000)]
 
@@ -42,7 +42,7 @@ class TestMerkleTreePerformance:
         # Should complete in under 1 second
         assert elapsed < 1.0, f"Tree build took {elapsed:.3f}s, expected < 1.0s"
 
-    def test_merkle_tree_build_10000_items(self, baseline_repo):
+    def test_merkle_tree_build_10000_items(self, baseline_repo) -> None:
         """Test building Merkle tree with 10000 items."""
         items = [(f"item-{i:05d}", f"hash-{i:05d}") for i in range(10000)]
 
@@ -55,7 +55,7 @@ class TestMerkleTreePerformance:
         # Should complete in under 5 seconds
         assert elapsed < 5.0, f"Tree build took {elapsed:.3f}s, expected < 5.0s"
 
-    def test_merkle_proof_generation_batch(self, baseline_repo):
+    def test_merkle_proof_generation_batch(self, baseline_repo) -> None:
         """Test generating proofs for all items in a large tree."""
         items = [(f"item-{i:04d}", f"hash-{i:04d}") for i in range(1000)]
         root, structure = baseline_repo.build_merkle_tree(items)
@@ -72,7 +72,7 @@ class TestMerkleTreePerformance:
         # Should generate 1000 proofs in under 2 seconds
         assert elapsed < 2.0, f"Proof generation took {elapsed:.3f}s, expected < 2.0s"
 
-    def test_merkle_proof_verification_batch(self, baseline_repo):
+    def test_merkle_proof_verification_batch(self, baseline_repo) -> None:
         """Test verifying proofs for all items in a large tree."""
         items = [(f"item-{i:04d}", f"hash-{i:04d}") for i in range(1000)]
         root, structure = baseline_repo.build_merkle_tree(items)
@@ -107,7 +107,7 @@ class TestHashingPerformance:
     def baseline_repo(self):
         return BaselineRepository()
 
-    def test_content_hash_throughput(self, version_repo):
+    def test_content_hash_throughput(self, version_repo) -> None:
         """Test throughput of content hash computation."""
         contents = [{"id": f"item-{i}", "name": f"Item {i}", "value": i} for i in range(1000)]
 
@@ -120,19 +120,19 @@ class TestHashingPerformance:
         # Should hash 1000 items in under 0.5 seconds
         assert elapsed < 0.5, f"Hashing took {elapsed:.3f}s, expected < 0.5s"
 
-    def test_leaf_hash_throughput(self, baseline_repo):
+    def test_leaf_hash_throughput(self, baseline_repo) -> None:
         """Test throughput of leaf hash computation."""
         items = [(f"item-{i:04d}", f"hash-{i:04d}") for i in range(10000)]
 
         start = time.perf_counter()
-        hashes = [baseline_repo.compute_leaf_hash(item_id, content_hash) for item_id, content_hash in items]
+        hashes = list(starmap(baseline_repo.compute_leaf_hash, items))
         elapsed = time.perf_counter() - start
 
         assert len(hashes) == 10000
         # Should hash 10000 items in under 1 second
         assert elapsed < 1.0, f"Leaf hashing took {elapsed:.3f}s, expected < 1.0s"
 
-    def test_block_hash_throughput(self, version_repo):
+    def test_block_hash_throughput(self, version_repo) -> None:
         """Test throughput of block hash computation."""
         from datetime import UTC, datetime
 
@@ -168,7 +168,7 @@ class TestDatabasePerformance:
         return project
 
     @pytest.mark.asyncio
-    async def test_baseline_creation_500_items(self, db_session, large_project):
+    async def test_baseline_creation_500_items(self, db_session, large_project) -> None:
         """Test creating baseline with 500 items."""
         repo = BaselineRepository()
 
@@ -192,7 +192,7 @@ class TestDatabasePerformance:
         assert elapsed < 5.0, f"Baseline creation took {elapsed:.3f}s, expected < 5.0s"
 
     @pytest.mark.asyncio
-    async def test_chain_growth_100_blocks(self, db_session, large_project):
+    async def test_chain_growth_100_blocks(self, db_session, large_project) -> None:
         """Test growing version chain to 100 blocks."""
         repo = VersionBlockRepository()
 
@@ -233,7 +233,7 @@ class TestDatabasePerformance:
         assert elapsed < 10.0, f"Chain growth took {elapsed:.3f}s, expected < 10.0s"
 
     @pytest.mark.asyncio
-    async def test_chain_retrieval_100_blocks(self, db_session, large_project):
+    async def test_chain_retrieval_100_blocks(self, db_session, large_project) -> None:
         """Test retrieving a 100-block chain."""
         repo = VersionBlockRepository()
 
@@ -276,7 +276,7 @@ class TestDatabasePerformance:
         assert elapsed < 1.0, f"Chain retrieval took {elapsed:.3f}s, expected < 1.0s"
 
     @pytest.mark.asyncio
-    async def test_chain_verification_100_blocks(self, db_session, large_project):
+    async def test_chain_verification_100_blocks(self, db_session, large_project) -> None:
         """Test verifying a 100-block chain."""
         repo = VersionBlockRepository()
 
@@ -326,7 +326,7 @@ class TestMemoryUsage:
     def baseline_repo(self):
         return BaselineRepository()
 
-    def test_large_tree_proof_memory(self, baseline_repo):
+    def test_large_tree_proof_memory(self, baseline_repo) -> None:
         """Test that proof size scales logarithmically."""
         import math
 
@@ -347,7 +347,7 @@ class TestMemoryUsage:
             expected_max = math.ceil(math.log2(size)) + 1
             assert length <= expected_max, f"Proof length {length} for {size} items exceeds expected max {expected_max}"
 
-    def test_tree_structure_size_reasonable(self, baseline_repo):
+    def test_tree_structure_size_reasonable(self, baseline_repo) -> None:
         """Test that tree structure size is reasonable."""
         import json
 
@@ -373,7 +373,7 @@ class TestScalabilityLimits:
     def version_repo(self):
         return VersionBlockRepository()
 
-    def test_merkle_tree_very_large(self, baseline_repo):
+    def test_merkle_tree_very_large(self, baseline_repo) -> None:
         """Test Merkle tree with 50000 items."""
         items = [(f"item-{i:06d}", f"hash-{i:06d}") for i in range(50000)]
 
@@ -386,7 +386,7 @@ class TestScalabilityLimits:
         # Should complete in under 30 seconds
         assert elapsed < 30.0, f"Large tree build took {elapsed:.3f}s, expected < 30.0s"
 
-    def test_hash_computation_stress(self, version_repo):
+    def test_hash_computation_stress(self, version_repo) -> None:
         """Stress test hash computation with 10000 operations."""
         from datetime import UTC, datetime
 

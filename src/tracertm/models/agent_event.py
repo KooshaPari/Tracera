@@ -1,6 +1,4 @@
-"""
-Agent Event model for TraceRTM - represents events from agents.
-"""
+"""Agent Event model for TraceRTM - represents events from agents."""
 
 import uuid
 
@@ -18,8 +16,7 @@ def generate_event_uuid() -> uuid.UUID:
 
 
 class AgentEvent(Base, TimestampMixin):
-    """
-    Represents an event from an agent.
+    """Represents an event from an agent.
 
     Events track:
     - Agent actions (create, update, delete)
@@ -32,14 +29,14 @@ class AgentEvent(Base, TimestampMixin):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=generate_event_uuid)
     project_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True
+        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True,
     )
     agent_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("agents.id"), nullable=False, index=True)
 
     # Event details
     event_type: Mapped[str] = mapped_column(String(50), nullable=False)  # item_created, item_updated, conflict, etc.
     item_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("items.id"), nullable=True, index=True
+        UUID(as_uuid=True), ForeignKey("items.id"), nullable=True, index=True,
     )
 
     # Event data

@@ -1,10 +1,7 @@
-"""
-GitHub App Installation model for account-level GitHub App installations.
-"""
+"""GitHub App Installation model for account-level GitHub App installations."""
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import DateTime, ForeignKey, Index, String
@@ -14,12 +11,13 @@ from tracertm.models.base import Base, TimestampMixin, generate_uuid
 from tracertm.models.types import JSONType
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from tracertm.models.account import Account
 
 
 class GitHubAppInstallation(Base, TimestampMixin):
-    """
-    GitHub App Installation model.
+    """GitHub App Installation model.
 
     Represents a GitHub App installation at the account level.
     Each installation is tied to an account and can access repos for that account.

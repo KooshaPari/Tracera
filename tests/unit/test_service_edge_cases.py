@@ -1,5 +1,4 @@
-"""
-Service & Storage Edge Case Tests
+"""Service & Storage Edge Case Tests.
 
 Focus Areas:
 - Large batch operations
@@ -12,7 +11,9 @@ Target: Additional +1-2% coverage
 """
 
 import asyncio
+import math
 from datetime import UTC, datetime
+from typing import Never
 from unittest.mock import AsyncMock
 
 import pytest
@@ -26,7 +27,7 @@ class TestBatchOperationEdgeCases:
     """Test edge cases in batch operations."""
 
     @pytest.mark.asyncio
-    async def test_batch_create_empty_list(self):
+    async def test_batch_create_empty_list(self) -> None:
         """Test batch creation with empty list."""
         session = AsyncMock()
         repo = ItemRepository(session)
@@ -36,7 +37,7 @@ class TestBatchOperationEdgeCases:
         assert len(items) == 0
 
     @pytest.mark.asyncio
-    async def test_batch_create_single_item(self):
+    async def test_batch_create_single_item(self) -> None:
         """Test batch creation with single item."""
         session = AsyncMock()
         session.flush = AsyncMock()
@@ -49,13 +50,13 @@ class TestBatchOperationEdgeCases:
                 "title": "Item 1",
                 "view": "requirements",
                 "item_type": "req",
-            }
+            },
         ]
 
         assert len(items_to_create) == 1
 
     @pytest.mark.asyncio
-    async def test_batch_create_very_large_count(self):
+    async def test_batch_create_very_large_count(self) -> None:
         """Test batch creation with very large number of items."""
         session = AsyncMock()
         session.flush = AsyncMock()
@@ -74,7 +75,7 @@ class TestBatchOperationEdgeCases:
         assert len(items_data) == 10000
 
     @pytest.mark.asyncio
-    async def test_batch_operation_with_duplicates(self):
+    async def test_batch_operation_with_duplicates(self) -> None:
         """Test batch operation containing duplicate IDs."""
         session = AsyncMock()
 
@@ -93,7 +94,7 @@ class TestConcurrentRepositoryOperations:
     """Test concurrent operations in repositories."""
 
     @pytest.mark.asyncio
-    async def test_concurrent_create_operations(self):
+    async def test_concurrent_create_operations(self) -> None:
         """Test multiple concurrent create operations."""
         session = AsyncMock()
         session.flush = AsyncMock()
@@ -101,7 +102,7 @@ class TestConcurrentRepositoryOperations:
 
         repo = ItemRepository(session)
 
-        async def create_item(idx):
+        async def create_item(idx) -> str:
             return f"item_{idx}"
 
         tasks = [create_item(i) for i in range(100)]
@@ -111,7 +112,7 @@ class TestConcurrentRepositoryOperations:
         assert all(r.startswith("item_") for r in results)
 
     @pytest.mark.asyncio
-    async def test_concurrent_read_operations(self):
+    async def test_concurrent_read_operations(self) -> None:
         """Test multiple concurrent read operations."""
         session = AsyncMock()
         mock_result = AsyncMock()
@@ -129,7 +130,7 @@ class TestConcurrentRepositoryOperations:
         assert len(results) == 50
 
     @pytest.mark.asyncio
-    async def test_concurrent_mixed_operations(self):
+    async def test_concurrent_mixed_operations(self) -> None:
         """Test concurrent mix of read/write operations."""
         session = AsyncMock()
         session.flush = AsyncMock()
@@ -155,7 +156,7 @@ class TestLinkRepositoryBoundaryConditions:
     """Test boundary conditions in link repository."""
 
     @pytest.mark.asyncio
-    async def test_get_all_links_empty_result(self):
+    async def test_get_all_links_empty_result(self) -> None:
         """Test getting all links when none exist."""
         session = AsyncMock()
         mock_result = AsyncMock()
@@ -168,7 +169,7 @@ class TestLinkRepositoryBoundaryConditions:
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_link_with_very_long_type(self):
+    async def test_link_with_very_long_type(self) -> None:
         """Test link with very long type string."""
         session = AsyncMock()
         session.flush = AsyncMock()
@@ -187,7 +188,7 @@ class TestLinkRepositoryBoundaryConditions:
         assert len(link.link_type) > 200
 
     @pytest.mark.asyncio
-    async def test_link_with_special_characters(self):
+    async def test_link_with_special_characters(self) -> None:
         """Test link type with special characters."""
         session = AsyncMock()
         session.flush = AsyncMock()
@@ -210,7 +211,7 @@ class TestProjectRepositoryBoundaryConditions:
     """Test boundary conditions in project repository."""
 
     @pytest.mark.asyncio
-    async def test_list_projects_empty_result(self):
+    async def test_list_projects_empty_result(self) -> None:
         """Test listing projects when none exist."""
         session = AsyncMock()
         mock_result = AsyncMock()
@@ -222,7 +223,7 @@ class TestProjectRepositoryBoundaryConditions:
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_project_repository_initialized(self):
+    async def test_project_repository_initialized(self) -> None:
         """Test project repository initialization."""
         session = AsyncMock()
         repo = ProjectRepository(session)
@@ -230,7 +231,7 @@ class TestProjectRepositoryBoundaryConditions:
         assert repo.session == session
 
     @pytest.mark.asyncio
-    async def test_create_project_with_unicode_name(self):
+    async def test_create_project_with_unicode_name(self) -> None:
         """Test creating project with unicode characters in name."""
         session = AsyncMock()
         session.flush = AsyncMock()
@@ -250,7 +251,7 @@ class TestProjectRepositoryBoundaryConditions:
             assert project.name == name
 
     @pytest.mark.asyncio
-    async def test_create_project_with_very_long_description(self):
+    async def test_create_project_with_very_long_description(self) -> None:
         """Test creating project with very long description."""
         session = AsyncMock()
         session.flush = AsyncMock()
@@ -271,7 +272,7 @@ class TestProjectRepositoryBoundaryConditions:
 class TestCacheEdgeCases:
     """Test edge cases in caching logic."""
 
-    def test_cache_with_none_key(self):
+    def test_cache_with_none_key(self) -> None:
         """Test cache behavior with None as key."""
         cache = {}
         key = None
@@ -280,18 +281,18 @@ class TestCacheEdgeCases:
         cache[key] = value
         assert cache[None] == value
 
-    def test_cache_with_empty_dict(self):
+    def test_cache_with_empty_dict(self) -> None:
         """Test cache as empty dict."""
         cache = {}
         assert len(cache) == 0
         assert cache.get("any_key") is None
 
-    def test_cache_with_many_entries(self):
+    def test_cache_with_many_entries(self) -> None:
         """Test cache with many entries."""
         cache = {f"key_{i}": f"value_{i}" for i in range(10000)}
         assert len(cache) == 10000
 
-    def test_cache_eviction_oldest(self):
+    def test_cache_eviction_oldest(self) -> None:
         """Test cache eviction (oldest entries first)."""
         cache = {}
         max_size = 100
@@ -311,7 +312,7 @@ class TestStorageSyncEdgeCases:
     """Test edge cases in storage synchronization."""
 
     @pytest.mark.asyncio
-    async def test_sync_with_no_changes(self):
+    async def test_sync_with_no_changes(self) -> None:
         """Test sync when there are no changes."""
         session = AsyncMock()
         changes = []
@@ -320,7 +321,7 @@ class TestStorageSyncEdgeCases:
         assert len(changes) == 0
 
     @pytest.mark.asyncio
-    async def test_sync_with_conflicting_changes(self):
+    async def test_sync_with_conflicting_changes(self) -> None:
         """Test sync with conflicting changes."""
         session = AsyncMock()
 
@@ -332,7 +333,7 @@ class TestStorageSyncEdgeCases:
         assert local_changes[0]["title"] != remote_changes[0]["title"]
 
     @pytest.mark.asyncio
-    async def test_sync_with_deleted_items(self):
+    async def test_sync_with_deleted_items(self) -> None:
         """Test sync handling deleted items."""
         session = AsyncMock()
 
@@ -345,7 +346,7 @@ class TestStorageSyncEdgeCases:
         assert all("deleted_at" in item for item in deleted_items)
 
     @pytest.mark.asyncio
-    async def test_sync_with_orphaned_links(self):
+    async def test_sync_with_orphaned_links(self) -> None:
         """Test sync handling orphaned links (source or target deleted)."""
         session = AsyncMock()
 
@@ -369,7 +370,7 @@ class TestErrorHandlingEdgeCases:
     """Test edge cases in error handling."""
 
     @pytest.mark.asyncio
-    async def test_repository_initialization(self):
+    async def test_repository_initialization(self) -> None:
         """Test repository initialization with session."""
         session = AsyncMock()
         repo = ItemRepository(session)
@@ -377,7 +378,7 @@ class TestErrorHandlingEdgeCases:
         assert repo.session == session
 
     @pytest.mark.asyncio
-    async def test_constraint_violation_error_message(self):
+    async def test_constraint_violation_error_message(self) -> None:
         """Test constraint violation error message."""
         session = AsyncMock()
         session.flush.side_effect = ValueError("Unique constraint violated")
@@ -387,7 +388,7 @@ class TestErrorHandlingEdgeCases:
         assert hasattr(repo, "create")
 
     @pytest.mark.asyncio
-    async def test_constraint_violation_on_create(self):
+    async def test_constraint_violation_on_create(self) -> None:
         """Test constraint violation during creation."""
         session = AsyncMock()
         session.flush.side_effect = ValueError("Constraint violation")
@@ -403,11 +404,11 @@ class TestErrorHandlingEdgeCases:
             )
 
     @pytest.mark.asyncio
-    async def test_timeout_on_operation(self):
+    async def test_timeout_on_operation(self) -> None:
         """Test operation timeout."""
         session = AsyncMock()
 
-        async def slow_operation():
+        async def slow_operation() -> str:
             await asyncio.sleep(10)
             return "result"
 
@@ -418,7 +419,7 @@ class TestErrorHandlingEdgeCases:
 class TestMetadataEdgeCases:
     """Test edge cases in metadata handling."""
 
-    def test_metadata_with_reserved_keys(self):
+    def test_metadata_with_reserved_keys(self) -> None:
         """Test metadata containing reserved field names."""
         metadata = {
             "id": "fake-id",
@@ -430,7 +431,7 @@ class TestMetadataEdgeCases:
         assert "id" in metadata
         assert metadata["version"] == 999
 
-    def test_metadata_with_special_key_names(self):
+    def test_metadata_with_special_key_names(self) -> None:
         """Test metadata with special characters in keys."""
         metadata = {
             "key.with.dots": "value",
@@ -442,12 +443,12 @@ class TestMetadataEdgeCases:
 
         assert len(metadata) == 5
 
-    def test_metadata_with_mixed_types(self):
+    def test_metadata_with_mixed_types(self) -> None:
         """Test metadata with mixed value types."""
         metadata = {
             "string": "value",
             "number": 42,
-            "float": 3.14,
+            "float": math.pi,
             "bool": True,
             "null": None,
             "list": [1, 2, 3],
@@ -457,7 +458,7 @@ class TestMetadataEdgeCases:
         assert len(metadata) == 7
         assert metadata["null"] is None
 
-    def test_metadata_with_circular_reference(self):
+    def test_metadata_with_circular_reference(self) -> None:
         """Test metadata with circular references."""
         metadata = {"key": "value"}
         metadata["self"] = metadata  # Circular reference
@@ -468,18 +469,18 @@ class TestMetadataEdgeCases:
 class TestDatabaseValueEdgeCases:
     """Test edge cases in database value handling."""
 
-    def test_json_type_with_null_bytes(self):
+    def test_json_type_with_null_bytes(self) -> None:
         """Test JSON type handling null bytes."""
         data = {"key": "value\x00with\x00nulls"}
         # Should be stored as-is or escaped
 
-    def test_json_type_with_very_large_data(self):
+    def test_json_type_with_very_large_data(self) -> None:
         """Test JSON type with very large data structure."""
         large_data = {f"key_{i}": "x" * 1000 for i in range(100)}
         # Simulate storing in JSON
         assert len(large_data) == 100
 
-    def test_json_type_with_unicode_keys(self):
+    def test_json_type_with_unicode_keys(self) -> None:
         """Test JSON with unicode keys."""
         unicode_data = {
             "键": "value",
@@ -488,7 +489,7 @@ class TestDatabaseValueEdgeCases:
         }
         assert len(unicode_data) == 3
 
-    def test_json_type_with_numeric_keys(self):
+    def test_json_type_with_numeric_keys(self) -> None:
         """Test JSON with numeric keys."""
         numeric_data = {
             "1": "value",
@@ -501,30 +502,30 @@ class TestDatabaseValueEdgeCases:
 class TestTimestampEdgeCases:
     """Test edge cases in timestamp handling."""
 
-    def test_timestamp_microsecond_precision(self):
+    def test_timestamp_microsecond_precision(self) -> None:
         """Test timestamp with microsecond precision."""
         now = datetime.now(UTC)
         assert now.microsecond >= 0
         assert now.microsecond < 1_000_000
 
-    def test_timestamp_epoch_zero(self):
+    def test_timestamp_epoch_zero(self) -> None:
         """Test timestamp at epoch (1970-01-01)."""
         epoch = datetime(1970, 1, 1, tzinfo=UTC)
         assert epoch.year == 1970
         assert epoch.month == 1
         assert epoch.day == 1
 
-    def test_timestamp_year_2038(self):
+    def test_timestamp_year_2038(self) -> None:
         """Test timestamp at 2038 (Unix 32-bit limit)."""
         year_2038 = datetime(2038, 1, 19, tzinfo=UTC)
         assert year_2038.year == 2038
 
-    def test_timestamp_far_future(self):
+    def test_timestamp_far_future(self) -> None:
         """Test timestamp far in the future."""
         year_9999 = datetime(9999, 12, 31, tzinfo=UTC)
         assert year_9999.year == 9999
 
-    def test_timestamp_comparison_edge_cases(self):
+    def test_timestamp_comparison_edge_cases(self) -> None:
         """Test timestamp comparison with edge cases."""
         dt1 = datetime(2024, 1, 1, 0, 0, 0, tzinfo=UTC)
         dt2 = datetime(2024, 1, 1, 0, 0, 0, 1, tzinfo=UTC)  # 1 microsecond later
@@ -536,20 +537,20 @@ class TestAsyncEdgeCases:
     """Test edge cases in async operations."""
 
     @pytest.mark.asyncio
-    async def test_async_operation_immediate_completion(self):
+    async def test_async_operation_immediate_completion(self) -> None:
         """Test async operation that completes immediately."""
 
-        async def immediate():
+        async def immediate() -> str:
             return "result"
 
         result = await immediate()
         assert result == "result"
 
     @pytest.mark.asyncio
-    async def test_async_operation_with_cancellation(self):
+    async def test_async_operation_with_cancellation(self) -> None:
         """Test async operation with cancellation."""
 
-        async def slow_operation():
+        async def slow_operation() -> None:
             await asyncio.sleep(10)
 
         task = asyncio.create_task(slow_operation())
@@ -559,31 +560,33 @@ class TestAsyncEdgeCases:
             await task
 
     @pytest.mark.asyncio
-    async def test_async_operation_exception_propagation(self):
+    async def test_async_operation_exception_propagation(self) -> None:
         """Test exception propagation in async operations."""
 
-        async def failing_operation():
-            raise ValueError("Test error")
+        async def failing_operation() -> Never:
+            msg = "Test error"
+            raise ValueError(msg)
 
         with pytest.raises(ValueError, match="Test error"):
             await failing_operation()
 
     @pytest.mark.asyncio
-    async def test_async_gather_with_empty_list(self):
+    async def test_async_gather_with_empty_list(self) -> None:
         """Test asyncio.gather with empty task list."""
         tasks = []
         results = await asyncio.gather(*tasks)
         assert results == []
 
     @pytest.mark.asyncio
-    async def test_async_gather_partial_failure(self):
+    async def test_async_gather_partial_failure(self) -> None:
         """Test asyncio.gather with some failures."""
 
-        async def success():
+        async def success() -> str:
             return "ok"
 
-        async def failure():
-            raise ValueError("error")
+        async def failure() -> Never:
+            msg = "error"
+            raise ValueError(msg)
 
         tasks = [success(), failure(), success()]
 

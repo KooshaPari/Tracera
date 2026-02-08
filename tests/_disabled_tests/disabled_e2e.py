@@ -1,6 +1,4 @@
-"""
-End-to-end integration tests
-"""
+"""End-to-end integration tests."""
 
 import pytest
 from hooks import (
@@ -14,21 +12,21 @@ from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
 
 @pytest.mark.asyncio
 class TestEndToEnd:
-    """End-to-end integration tests"""
+    """End-to-end integration tests."""
 
     @pytest.fixture
     def router(self):
-        """Create router"""
+        """Create router."""
         return ArchRouter()
 
     @pytest.fixture
     def registry(self):
-        """Create registry"""
+        """Create registry."""
         return ToolRegistry(TOOL_REGISTRY)
 
     @pytest.fixture
     def search_service(self):
-        """Create mock search service"""
+        """Create mock search service."""
 
         class MockSearchService:
             async def semantic_search(self, *args, **kwargs):
@@ -36,8 +34,8 @@ class TestEndToEnd:
 
         return MockSearchService()
 
-    async def test_cursor_agent_flow(self, router, registry, search_service):
-        """Test Cursor Agent discovery flow"""
+    async def test_cursor_agent_flow(self, router, registry, search_service) -> None:
+        """Test Cursor Agent discovery flow."""
         result = await cursor_agent_pre_discovery(
             action="generate",
             prompt="create FastAPI endpoint",
@@ -53,8 +51,8 @@ class TestEndToEnd:
         assert "cli_command" in result
         assert result["action"] == "generate"
 
-    async def test_claude_cli_flow(self, router, registry, search_service):
-        """Test Claude CLI discovery flow"""
+    async def test_claude_cli_flow(self, router, registry, search_service) -> None:
+        """Test Claude CLI discovery flow."""
         result = await claude_cli_pre_discovery(
             command="generate",
             args=["code", "for", "api"],
@@ -69,8 +67,8 @@ class TestEndToEnd:
         assert "cli_command" in result
         assert result["command"] == "generate"
 
-    async def test_auggie_flow(self, router, registry, search_service):
-        """Test Auggie discovery flow"""
+    async def test_auggie_flow(self, router, registry, search_service) -> None:
+        """Test Auggie discovery flow."""
         result = await auggie_pre_discovery(
             operation="transform",
             input_file="data.csv",
@@ -85,8 +83,8 @@ class TestEndToEnd:
         assert "cli_command" in result
         assert result["operation"] == "transform"
 
-    async def test_droid_flow(self, router, registry, search_service):
-        """Test Droid discovery flow"""
+    async def test_droid_flow(self, router, registry, search_service) -> None:
+        """Test Droid discovery flow."""
         result = await droid_pre_discovery(
             test_type="unit",
             target="tests/",
@@ -102,8 +100,8 @@ class TestEndToEnd:
         assert "cli_command" in result
         assert result["test_type"] == "unit"
 
-    async def test_routing_consistency(self, router, registry, search_service):
-        """Test routing consistency across hooks"""
+    async def test_routing_consistency(self, router, registry, search_service) -> None:
+        """Test routing consistency across hooks."""
         # Test multiple queries
         queries = [
             ("generate", "create API endpoint"),

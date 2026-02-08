@@ -42,7 +42,7 @@ def _create_tables() -> None:
         sa.Column("graph_type", sa.String(length=100), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column(
-            "root_item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="SET NULL"), nullable=True
+            "root_item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="SET NULL"), nullable=True,
         ),
         sa.Column("graph_metadata", JSONType, nullable=False, server_default=sa.text("'{}'")),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
@@ -55,7 +55,7 @@ def _create_tables() -> None:
         "graph_nodes",
         sa.Column("graph_id", sa.String(length=255), sa.ForeignKey("graphs.id", ondelete="CASCADE"), primary_key=True),
         sa.Column(
-            "item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), primary_key=True
+            "item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), primary_key=True,
         ),
         sa.Column(
             "project_id",
@@ -110,7 +110,7 @@ def _backfill_graphs_from_views(conn: sa.engine.Connection) -> dict[tuple[str, s
                 description=None,
                 root_item_id=None,
                 graph_metadata={},
-            )
+            ),
         )
 
     return graph_ids
@@ -165,8 +165,8 @@ def _update_link_graphs(conn: sa.engine.Connection) -> None:
             join graphs g on g.project_id = i.project_id and g.graph_type = v.name
             where l.graph_id is null
               and l.source_item_id = i.id
-            """
-        )
+            """,
+        ),
     )
 
 

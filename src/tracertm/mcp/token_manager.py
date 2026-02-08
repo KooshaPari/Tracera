@@ -82,7 +82,7 @@ class TokenInfo:
 class TokenManager:
     """Manages tokens for MCP operations."""
 
-    def __init__(self, config_dir: Path | None = None):
+    def __init__(self, config_dir: Path | None = None) -> None:
         """Initialize token manager.
 
         Args:
@@ -106,7 +106,7 @@ class TokenManager:
             self._current_token = token
             logger.debug(f"Token saved to {self._token_file}")
         except Exception as e:
-            logger.error(f"Failed to save token: {e}")
+            logger.exception("Failed to save token: %s", e)
             raise
 
     def load_token(self) -> TokenInfo | None:
@@ -127,7 +127,7 @@ class TokenManager:
             self._current_token = token
             return token
         except Exception as e:
-            logger.warning(f"Failed to load token: {e}")
+            logger.warning("Failed to load token: %s", e)
             return None
 
     def get_valid_token(self) -> str | None:
@@ -154,7 +154,7 @@ class TokenManager:
             self._current_token = None
             logger.debug("Token cleared")
         except Exception as e:
-            logger.error(f"Failed to clear token: {e}")
+            logger.exception("Failed to clear token: %s", e)
 
     def is_authenticated(self) -> bool:
         """Check if MCP is authenticated.

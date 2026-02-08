@@ -1,6 +1,4 @@
-"""
-Integration tests for Epic 5: Agent Metrics (Story 5.6).
-"""
+"""Integration tests for Epic 5: Agent Metrics (Story 5.6)."""
 
 from datetime import UTC, datetime, timedelta, timezone
 
@@ -51,7 +49,7 @@ def temp_project_setup(tmp_path, monkeypatch):
     return project_id, database_url
 
 
-def test_metrics_calculation(temp_project_setup):
+def test_metrics_calculation(temp_project_setup) -> None:
     """Test agent metrics calculation (Story 5.6)."""
     project_id, database_url = temp_project_setup
 
@@ -99,7 +97,7 @@ def test_metrics_calculation(temp_project_setup):
     db.close()
 
 
-def test_workload_calculation(temp_project_setup):
+def test_workload_calculation(temp_project_setup) -> None:
     """Test agent workload calculation (Story 5.6)."""
     project_id, database_url = temp_project_setup
 

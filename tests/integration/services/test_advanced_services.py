@@ -1,5 +1,4 @@
-"""
-Integration tests for advanced services.
+"""Integration tests for advanced services.
 
 Consolidated from batch1, batch2, and batch3 test files.
 Tests advanced analytics, traceability, agent coordination, agent performance,
@@ -66,14 +65,14 @@ from .test_advanced_services_batch3 import (
 
 # All test classes are now available in this consolidated module
 __all__ = [
-    # Batch 1
-    "TestAdvancedAnalyticsServiceIntegration",
-    "TestAdvancedTraceabilityServiceIntegration",
-    "TestAdvancedTraceabilityEnhancementsServiceIntegration",
-    "TestAgentCoordinationServiceIntegration",
-    "TestAgentPerformanceServiceIntegration",
     # Batch 2
     "TestAPIWebhooksServiceIntegration",
+    # Batch 1
+    "TestAdvancedAnalyticsServiceIntegration",
+    "TestAdvancedTraceabilityEnhancementsServiceIntegration",
+    "TestAdvancedTraceabilityServiceIntegration",
+    "TestAgentCoordinationServiceIntegration",
+    "TestAgentPerformanceServiceIntegration",
     "TestCommitLinkingServiceIntegration",
     "TestDocumentationServiceIntegration",
     "TestEventSourcingServiceIntegration",
@@ -81,7 +80,7 @@ __all__ = [
     # Batch 3
     "TestGitHubImportService",
     "TestImpactAnalysisService",
-    "TestTraceabilityMatrixService",
     "TestQueryOptimizationService",
     "TestSecurityComplianceService",
+    "TestTraceabilityMatrixService",
 ]

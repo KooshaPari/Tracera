@@ -33,7 +33,7 @@ test.describe('Authentication Flow - Login', () => {
     await page.waitForLoadState('networkidle');
 
     // Then: Login form elements should be visible
-    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10_000 });
     await expect(page.locator('input[name="email"]')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('input[name="password"]')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('button[type="submit"]')).toBeVisible({ timeout: 5000 });
@@ -99,7 +99,7 @@ test.describe('Authentication Flow - Login', () => {
 
     // Then: Should display validation error or prevent submission
     // Either stays on login page or shows error
-    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10_000 });
   });
 
   test('should require password field', async ({ page }) => {
@@ -269,7 +269,7 @@ test.describe('Authentication Flow - Session Management', () => {
     await newPage.waitForLoadState('networkidle');
 
     // Then: Should redirect to login
-    await expect(newPage).toHaveURL(/\/auth\/login/, { timeout: 10000 });
+    await expect(newPage).toHaveURL(/\/auth\/login/, { timeout: 10_000 });
 
     await newPage.close();
   });
@@ -304,7 +304,7 @@ test.describe('Authentication Flow - Logout', () => {
     await page.waitForLoadState('networkidle');
 
     // Then: Token should be cleared and user redirected
-    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10_000 });
     const tokenAfter = await page.evaluate(() => localStorage.getItem('authToken'));
     expect(tokenAfter).toBeNull();
   });
@@ -371,7 +371,7 @@ test.describe('Authentication Flow - Logout', () => {
     await page.waitForLoadState('networkidle');
 
     // Then: Should be redirected to login
-    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10_000 });
     const tokenAfterLogout = await page.evaluate(() => localStorage.getItem('authToken'));
     expect(tokenAfterLogout).toBeNull();
   });
@@ -487,7 +487,7 @@ test.describe('Authentication Flow - Token Management', () => {
     await page.waitForLoadState('networkidle');
 
     // Then: User should be redirected to login
-    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10_000 });
     const token = await page.evaluate(() => localStorage.getItem('authToken'));
     expect(token).toBeNull();
   });
@@ -780,7 +780,7 @@ test.describe('Authentication Flow - Protected Routes', () => {
     await page.waitForLoadState('networkidle');
 
     // Then: Should redirect to login
-    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10_000 });
   });
 
   test('should allow authenticated users to access protected routes', async ({ page }) => {
@@ -808,19 +808,19 @@ test.describe('Authentication Flow - Protected Routes', () => {
     const protectedRoutes = ['/items', '/projects', '/settings'];
 
     for (const route of protectedRoutes) {
-    // Clear auth
-    await page.evaluate(() => {
-      localStorage.removeItem('authToken');
-    });
+      // Clear auth
+      await page.evaluate(() => {
+        localStorage.removeItem('authToken');
+      });
 
-    // Try to access
-    await page.goto(route);
-    await page.waitForLoadState('networkidle');
+      // Try to access
+      await page.goto(route);
+      await page.waitForLoadState('networkidle');
 
-    // Should not be able to access (redirected to login)
-    await expect(page).toHaveURL(/\/auth\/login/, { timeout: 5000 });
-    const token = await page.evaluate(() => localStorage.getItem('authToken'));
-    expect(token).toBeNull();
-  }
-});
+      // Should not be able to access (redirected to login)
+      await expect(page).toHaveURL(/\/auth\/login/, { timeout: 5000 });
+      const token = await page.evaluate(() => localStorage.getItem('authToken'));
+      expect(token).toBeNull();
+    }
+  });
 });

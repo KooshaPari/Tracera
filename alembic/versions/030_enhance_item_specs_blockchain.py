@@ -22,7 +22,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Add blockchain/NFT-like fields to all spec tables."""
-
     bind = op.get_bind()
     inspector = sa.inspect(bind)
 
@@ -439,7 +438,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Remove blockchain/NFT-like fields from all spec tables."""
-
     # =========================================================================
     # TASK_SPECS
     # =========================================================================

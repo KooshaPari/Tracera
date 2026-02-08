@@ -5,6 +5,7 @@ Creates one directory per session under a base path; all tool operations
 """
 
 import asyncio
+import contextlib
 import logging
 import os
 import tempfile
@@ -33,7 +34,7 @@ def _get_base_dir() -> str:
 class LocalFilesystemSandboxProvider:
     """Sandbox provider using local directories under a base path."""
 
-    def __init__(self, base_dir: str | None = None):
+    def __init__(self, base_dir: str | None = None) -> None:
         self._base_dir = (base_dir or _get_base_dir()).rstrip("/")
         self._metadata: dict[str, SandboxMetadata] = {}
 
@@ -68,10 +69,12 @@ class LocalFilesystemSandboxProvider:
         shell injection vulnerabilities while still supporting complex commands.
         """
         if sandbox_id not in self._metadata:
-            raise ValueError(f"Sandbox not found: {sandbox_id}")
+            msg = f"Sandbox not found: {sandbox_id}"
+            raise ValueError(msg)
         root = self._metadata[sandbox_id].sandbox_root
         if not root:
-            raise ValueError(f"Sandbox has no root: {sandbox_id}")
+            msg = f"Sandbox has no root: {sandbox_id}"
+            raise ValueError(msg)
 
         def run():
             import shlex
@@ -106,10 +109,12 @@ class LocalFilesystemSandboxProvider:
     async def write_file(self, sandbox_id: str, path: str, content: str) -> dict[str, Any]:
         """Write file under sandbox root. Path is relative to sandbox root."""
         if sandbox_id not in self._metadata:
-            raise ValueError(f"Sandbox not found: {sandbox_id}")
+            msg = f"Sandbox not found: {sandbox_id}"
+            raise ValueError(msg)
         root = self._metadata[sandbox_id].sandbox_root
         if not root:
-            raise ValueError(f"Sandbox has no root: {sandbox_id}")
+            msg = f"Sandbox has no root: {sandbox_id}"
+            raise ValueError(msg)
 
         full = Path(root) / path.lstrip("/")
 
@@ -117,9 +122,10 @@ class LocalFilesystemSandboxProvider:
             return not str(full.resolve()).startswith(str(Path(root).resolve()))
 
         if await asyncio.to_thread(_path_escapes):
-            raise ValueError("Path escapes sandbox root")
+            msg = "Path escapes sandbox root"
+            raise ValueError(msg)
 
-        def do_write():
+        def do_write() -> None:
             full.parent.mkdir(parents=True, exist_ok=True)
             full.write_text(content, encoding="utf-8")
 
@@ -146,7 +152,5 @@ class LocalFilesystemSandboxProvider:
 def _rmtree_safe(path: str) -> None:
     import shutil
 
-    try:
+    with contextlib.suppress(OSError):
         shutil.rmtree(path, ignore_errors=True)
-    except OSError:
-        pass

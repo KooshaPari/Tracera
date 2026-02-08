@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Documentation Scanner - Phase 1 of Consolidation
+"""Documentation Scanner - Phase 1 of Consolidation.
 
 Scans all markdown files and creates comprehensive inventory.
 Outputs: docs_inventory.json with metadata, content hashes, categorization.
@@ -274,7 +273,7 @@ def generate_statistics(docs: list[DocMetadata]) -> dict:
     return stats
 
 
-def main():
+def main() -> None:
     """Main entry point."""
     root_dir = Path.cwd()
     output_dir = root_dir / "consolidation-output"

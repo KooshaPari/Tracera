@@ -78,7 +78,7 @@ export const handlers = [
   // Search endpoint
   http.get(`${API_BASE}/api/v1/search`, ({ request }) => {
     const url = new URL(request.url);
-    const query = url.searchParams.get('q') || '';
+    const query = url.searchParams.get('q') ?? '';
 
     return HttpResponse.json({
       results: [

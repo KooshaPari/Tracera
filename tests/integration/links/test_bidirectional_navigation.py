@@ -1,5 +1,4 @@
-"""
-Integration tests for Epic 4: Bidirectional link navigation (FR19).
+"""Integration tests for Epic 4: Bidirectional link navigation (FR19).
 
 Tests that users can navigate bidirectionally through links.
 """
@@ -19,7 +18,7 @@ def runner():
 
 
 @pytest.fixture
-def temp_project(runner, tmp_path, monkeypatch):
+def temp_project(runner, tmp_path, monkeypatch) -> str:
     """Create a temporary project for testing."""
     config_dir = tmp_path / ".config" / "tracertm"
     config_dir.mkdir(parents=True)
@@ -40,7 +39,7 @@ def temp_project(runner, tmp_path, monkeypatch):
     return "test-project"
 
 
-def test_bidirectional_link_navigation(runner, temp_project):
+def test_bidirectional_link_navigation(runner, temp_project) -> None:
     """Test bidirectional link navigation (FR19)."""
     # Create items in different views
     result1 = runner.invoke(
@@ -99,7 +98,7 @@ def test_bidirectional_link_navigation(runner, temp_project):
     # assert "Incoming Links" in result5.stdout
 
 
-def test_link_show_displays_both_directions(runner, temp_project):
+def test_link_show_displays_both_directions(runner, temp_project) -> None:
     """Test that link show displays both incoming and outgoing links."""
     # Create items and links
     # Verify that link show command shows both directions

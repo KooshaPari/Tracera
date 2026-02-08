@@ -1,6 +1,4 @@
-"""
-Tests for LocalStorageManager.
-"""
+"""Tests for LocalStorageManager."""
 
 import tempfile
 from pathlib import Path
@@ -46,14 +44,14 @@ def item_storage(project_storage):
 class TestLocalStorageManager:
     """Tests for LocalStorageManager."""
 
-    def test_init_creates_directories(self, temp_storage_dir):
+    def test_init_creates_directories(self, temp_storage_dir) -> None:
         """Test that initialization creates required directories."""
         manager = LocalStorageManager(base_dir=temp_storage_dir)
 
         assert (temp_storage_dir / "tracertm.db").exists()
         assert (temp_storage_dir / "projects").exists()
 
-    def test_database_schema_created(self, storage_manager):
+    def test_database_schema_created(self, storage_manager) -> None:
         """Test that database schema is created properly."""
         from sqlalchemy import text
 
@@ -72,7 +70,7 @@ class TestLocalStorageManager:
         finally:
             session.close()
 
-    def test_sync_queue_operations(self, storage_manager):
+    def test_sync_queue_operations(self, storage_manager) -> None:
         """Test sync queue operations."""
         # Queue a change
         storage_manager.queue_sync(
@@ -97,7 +95,7 @@ class TestLocalStorageManager:
         queue = storage_manager.get_sync_queue()
         assert len(queue) == 0
 
-    def test_sync_state_operations(self, storage_manager):
+    def test_sync_state_operations(self, storage_manager) -> None:
         """Test sync state operations."""
         # Set state
         storage_manager.update_sync_state("last_sync", "2024-01-15T10:30:00Z")
@@ -119,7 +117,7 @@ class TestLocalStorageManager:
 class TestProjectStorage:
     """Tests for ProjectStorage."""
 
-    def test_create_project(self, storage_manager, temp_storage_dir):
+    def test_create_project(self, storage_manager, temp_storage_dir) -> None:
         """Test project creation."""
         ps = storage_manager.get_project_storage("my-project")
         project = ps.create_or_update_project(
@@ -152,7 +150,7 @@ class TestProjectStorage:
         links_path = project_dir / ".meta" / "links.yaml"
         assert links_path.exists()
 
-    def test_update_project(self, project_storage):
+    def test_update_project(self, project_storage) -> None:
         """Test project update."""
         project = project_storage.get_project()
         original_id = project.id
@@ -168,7 +166,7 @@ class TestProjectStorage:
         assert updated_project.description == "Updated description"
         assert updated_project.project_metadata["updated"] is True
 
-    def test_get_project(self, project_storage):
+    def test_get_project(self, project_storage) -> None:
         """Test getting a project."""
         project = project_storage.get_project()
         assert project is not None
@@ -178,7 +176,7 @@ class TestProjectStorage:
 class TestItemStorage:
     """Tests for ItemStorage."""
 
-    def test_create_item(self, item_storage, temp_storage_dir):
+    def test_create_item(self, item_storage, temp_storage_dir) -> None:
         """Test item creation."""
         item = item_storage.create_item(
             title="User Authentication",
@@ -217,7 +215,7 @@ class TestItemStorage:
         assert frontmatter["priority"] == "high"
         assert frontmatter["tags"] == ["security", "auth"]
 
-    def test_update_item(self, item_storage):
+    def test_update_item(self, item_storage) -> None:
         """Test item update."""
         # Create item
         item = item_storage.create_item(
@@ -245,7 +243,7 @@ class TestItemStorage:
         # Verify new content hash
         assert "content_hash" in updated_item.item_metadata
 
-    def test_delete_item(self, item_storage):
+    def test_delete_item(self, item_storage) -> None:
         """Test item deletion."""
         # Create item
         item = item_storage.create_item(
@@ -264,7 +262,7 @@ class TestItemStorage:
         assert deleted_item is not None
         assert deleted_item.deleted_at is not None
 
-    def test_list_items(self, item_storage):
+    def test_list_items(self, item_storage) -> None:
         """Test listing items."""
         # Create multiple items
         item_storage.create_item(
@@ -300,7 +298,7 @@ class TestItemStorage:
         assert len(in_progress) == 2
         assert all(item.status == "in_progress" for item in in_progress)
 
-    def test_create_link(self, item_storage, temp_storage_dir):
+    def test_create_link(self, item_storage, temp_storage_dir) -> None:
         """Test creating traceability links."""
         # Create items
         epic = item_storage.create_item(
@@ -336,7 +334,7 @@ class TestItemStorage:
         assert links_content["links"][0]["target"] == "STORY-001"
         assert links_content["links"][0]["type"] == "implements"
 
-    def test_delete_link(self, item_storage):
+    def test_delete_link(self, item_storage) -> None:
         """Test deleting links."""
         # Create items
         epic = item_storage.create_item(
@@ -366,7 +364,7 @@ class TestItemStorage:
         links = item_storage.list_links()
         assert len(links) == 0
 
-    def test_list_links(self, item_storage):
+    def test_list_links(self, item_storage) -> None:
         """Test listing links."""
         # Create items
         epic = item_storage.create_item(
@@ -418,7 +416,7 @@ class TestItemStorage:
 class TestFullTextSearch:
     """Tests for full-text search."""
 
-    def test_search_items(self, storage_manager, item_storage):
+    def test_search_items(self, storage_manager, item_storage) -> None:
         """Test full-text search."""
         # Create items with searchable content
         item_storage.create_item(
@@ -453,7 +451,7 @@ class TestFullTextSearch:
 class TestMarkdownGeneration:
     """Tests for markdown file generation."""
 
-    def test_markdown_with_links(self, item_storage, temp_storage_dir):
+    def test_markdown_with_links(self, item_storage, temp_storage_dir) -> None:
         """Test markdown generation with traceability links."""
         # Create epic and story
         epic = item_storage.create_item(

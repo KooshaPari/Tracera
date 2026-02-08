@@ -225,7 +225,7 @@ describe(usePredictivePrefetch, () => {
     // Should only call once after debounce period
     await waitFor(
       () => {
-        expect(mockLoadViewport).toHaveBeenCalledOnce();
+        expect(mockLoadViewport).toHaveBeenCalledTimes(1);
       },
       { timeout: 200 },
     );

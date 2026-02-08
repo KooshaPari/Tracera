@@ -9,7 +9,7 @@ pytestmark = pytest.mark.integration
 
 
 @pytest.mark.asyncio
-async def test_preview_bulk_update_warns_on_large_operation(async_session, monkeypatch):
+async def test_preview_bulk_update_warns_on_large_operation(async_session, monkeypatch) -> None:
     service = BulkOperationService(async_session)
 
     fake_items = [SimpleNamespace(id=f"item-{i}", title=f"Item {i}", status="todo", version=1) for i in range(120)]
@@ -32,7 +32,7 @@ async def test_preview_bulk_update_warns_on_large_operation(async_session, monke
 
 
 @pytest.mark.asyncio
-async def test_execute_bulk_update_handles_conflicts_and_logs(async_session, monkeypatch):
+async def test_execute_bulk_update_handles_conflicts_and_logs(async_session, monkeypatch) -> None:
     service = BulkOperationService(async_session)
 
     item_ok = SimpleNamespace(id="ok", version=1, status="todo")
@@ -43,14 +43,15 @@ async def test_execute_bulk_update_handles_conflicts_and_logs(async_session, mon
 
     async def fake_update(item_id, expected_version, **updates):
         if item_id == "conflict":
-            raise ConcurrencyError("version mismatch")
+            msg = "version mismatch"
+            raise ConcurrencyError(msg)
         item_ok.status = updates["status"]
         item_ok.version += 1
         return item_ok
 
     logged = {}
 
-    async def fake_log(**data):
+    async def fake_log(**data) -> None:
         logged.update(data)
 
     monkeypatch.setattr(service.items, "query", fake_query)
@@ -71,7 +72,7 @@ async def test_execute_bulk_update_handles_conflicts_and_logs(async_session, mon
 
 
 @pytest.mark.asyncio
-async def test_execute_bulk_update_blocks_on_warnings(async_session, monkeypatch):
+async def test_execute_bulk_update_blocks_on_warnings(async_session, monkeypatch) -> None:
     service = BulkOperationService(async_session)
 
     fake_preview = BulkPreview(

@@ -27,7 +27,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Create blockchain and ML tables."""
-
     # ==========================================================================
     # Version Blocks Table (Blockchain-style version history)
     # ==========================================================================

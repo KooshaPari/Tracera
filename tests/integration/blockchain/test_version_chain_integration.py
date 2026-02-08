@@ -1,5 +1,4 @@
-"""
-Integration tests for version chain management.
+"""Integration tests for version chain management.
 
 Tests full workflow including:
 - Creating genesis blocks
@@ -30,7 +29,7 @@ class TestGenesisBlockCreation:
         return project
 
     @pytest.mark.asyncio
-    async def test_create_genesis_block(self, db_session, project):
+    async def test_create_genesis_block(self, db_session, project) -> None:
         """Test creating a genesis block."""
         repo = VersionBlockRepository()
 
@@ -56,7 +55,7 @@ class TestGenesisBlockCreation:
         assert len(block.content_hash) == 64
 
     @pytest.mark.asyncio
-    async def test_genesis_creates_chain_index(self, db_session, project):
+    async def test_genesis_creates_chain_index(self, db_session, project) -> None:
         """Test that genesis block creates a chain index."""
         repo = VersionBlockRepository()
 
@@ -84,7 +83,7 @@ class TestGenesisBlockCreation:
         assert chain.genesis_block_id == chain.chain_head_id
 
     @pytest.mark.asyncio
-    async def test_genesis_block_hash_deterministic(self, db_session, project):
+    async def test_genesis_block_hash_deterministic(self, db_session, project) -> None:
         """Test that block hash is deterministic based on inputs."""
         repo = VersionBlockRepository()
 
@@ -131,7 +130,7 @@ class TestChainGrowth:
         return project, genesis
 
     @pytest.mark.asyncio
-    async def test_add_block_to_chain(self, db_session, chain_with_genesis):
+    async def test_add_block_to_chain(self, db_session, chain_with_genesis) -> None:
         """Test adding a block to an existing chain."""
         project, genesis = chain_with_genesis
         repo = VersionBlockRepository()
@@ -153,7 +152,7 @@ class TestChainGrowth:
         assert new_block.change_type == "update"
 
     @pytest.mark.asyncio
-    async def test_chain_length_increases(self, db_session, chain_with_genesis):
+    async def test_chain_length_increases(self, db_session, chain_with_genesis) -> None:
         """Test that chain length increases with each block."""
         project, genesis = chain_with_genesis
         repo = VersionBlockRepository()
@@ -178,7 +177,7 @@ class TestChainGrowth:
         assert chain.chain_length == 4  # 1 genesis + 3 updates
 
     @pytest.mark.asyncio
-    async def test_chain_head_updated(self, db_session, chain_with_genesis):
+    async def test_chain_head_updated(self, db_session, chain_with_genesis) -> None:
         """Test that chain head is updated after adding block."""
         project, genesis = chain_with_genesis
         repo = VersionBlockRepository()
@@ -202,7 +201,7 @@ class TestChainGrowth:
         assert chain.genesis_block_id == genesis.block_id
 
     @pytest.mark.asyncio
-    async def test_add_block_creates_chain_if_missing(self, db_session):
+    async def test_add_block_creates_chain_if_missing(self, db_session) -> None:
         """Test that add_block creates genesis if no chain exists."""
         project = Project(id="auto-genesis-project", name="Auto Genesis")
         db_session.add(project)
@@ -269,7 +268,7 @@ class TestChainTraversal:
         return project, blocks
 
     @pytest.mark.asyncio
-    async def test_get_version_chain(self, db_session, populated_chain):
+    async def test_get_version_chain(self, db_session, populated_chain) -> None:
         """Test retrieving full version chain."""
         project, original_blocks = populated_chain
         repo = VersionBlockRepository()
@@ -286,7 +285,7 @@ class TestChainTraversal:
         assert chain[-1].version_number == 1  # Genesis
 
     @pytest.mark.asyncio
-    async def test_chain_links_valid(self, db_session, populated_chain):
+    async def test_chain_links_valid(self, db_session, populated_chain) -> None:
         """Test that chain links are correctly formed."""
         project, original_blocks = populated_chain
         repo = VersionBlockRepository()
@@ -307,7 +306,7 @@ class TestChainTraversal:
         assert chain[-1].previous_block_id is None
 
     @pytest.mark.asyncio
-    async def test_chain_limit(self, db_session, populated_chain):
+    async def test_chain_limit(self, db_session, populated_chain) -> None:
         """Test limiting chain retrieval."""
         project, _ = populated_chain
         repo = VersionBlockRepository()
@@ -361,7 +360,7 @@ class TestChainIntegrity:
         return project
 
     @pytest.mark.asyncio
-    async def test_verify_valid_chain(self, db_session, verified_chain):
+    async def test_verify_valid_chain(self, db_session, verified_chain) -> None:
         """Test that valid chain passes verification."""
         repo = VersionBlockRepository()
 
@@ -375,7 +374,7 @@ class TestChainIntegrity:
         assert broken_links == []
 
     @pytest.mark.asyncio
-    async def test_verification_updates_chain_index(self, db_session, verified_chain):
+    async def test_verification_updates_chain_index(self, db_session, verified_chain) -> None:
         """Test that verification updates chain index metadata."""
         repo = VersionBlockRepository()
 
@@ -397,7 +396,7 @@ class TestMultipleChains:
     """Test managing multiple independent chains."""
 
     @pytest.mark.asyncio
-    async def test_separate_chains_independent(self, db_session):
+    async def test_separate_chains_independent(self, db_session) -> None:
         """Test that separate chains don't interfere."""
         project = Project(id="multi-chain-project", name="Multi Chain")
         db_session.add(project)
@@ -447,7 +446,7 @@ class TestMultipleChains:
         assert chain_b.chain_length == 1
 
     @pytest.mark.asyncio
-    async def test_same_spec_id_different_types(self, db_session):
+    async def test_same_spec_id_different_types(self, db_session) -> None:
         """Test that same spec_id with different types creates separate chains."""
         project = Project(id="same-id-project", name="Same ID")
         db_session.add(project)
@@ -488,7 +487,7 @@ class TestVersionBlockMetadata:
     """Test version block metadata and hashing."""
 
     @pytest.mark.asyncio
-    async def test_author_tracking(self, db_session):
+    async def test_author_tracking(self, db_session) -> None:
         """Test that author IDs are tracked correctly."""
         project = Project(id="author-test-project", name="Author Test")
         db_session.add(project)
@@ -520,7 +519,7 @@ class TestVersionBlockMetadata:
         assert update.author_id == "bob"
 
     @pytest.mark.asyncio
-    async def test_timestamp_ordering(self, db_session):
+    async def test_timestamp_ordering(self, db_session) -> None:
         """Test that timestamps are properly ordered."""
         project = Project(id="time-test-project", name="Time Test")
         db_session.add(project)
@@ -557,7 +556,7 @@ class TestVersionBlockMetadata:
             assert blocks[i].timestamp >= blocks[i - 1].timestamp
 
     @pytest.mark.asyncio
-    async def test_null_author_allowed(self, db_session):
+    async def test_null_author_allowed(self, db_session) -> None:
         """Test that null author is allowed (e.g., system changes)."""
         project = Project(id="null-author-project", name="Null Author")
         db_session.add(project)
@@ -583,7 +582,7 @@ class TestEdgeCases:
     """Test edge cases and error conditions."""
 
     @pytest.mark.asyncio
-    async def test_empty_chain_retrieval(self, db_session):
+    async def test_empty_chain_retrieval(self, db_session) -> None:
         """Test retrieving chain that doesn't exist."""
         repo = VersionBlockRepository()
 
@@ -596,7 +595,7 @@ class TestEdgeCases:
         assert chain == []
 
     @pytest.mark.asyncio
-    async def test_verify_nonexistent_chain(self, db_session):
+    async def test_verify_nonexistent_chain(self, db_session) -> None:
         """Test verifying chain that doesn't exist."""
         repo = VersionBlockRepository()
 
@@ -611,7 +610,7 @@ class TestEdgeCases:
         assert broken_links == []
 
     @pytest.mark.asyncio
-    async def test_large_content_hashing(self, db_session):
+    async def test_large_content_hashing(self, db_session) -> None:
         """Test hashing large content."""
         project = Project(id="large-content-project", name="Large Content")
         db_session.add(project)

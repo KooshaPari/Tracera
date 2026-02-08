@@ -18,7 +18,8 @@ _TABLE_NAME_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
 
 def _safe_table_name(name: str) -> str:
     if not _TABLE_NAME_RE.match(name):
-        raise ToolError(f"Invalid table name: {name!r}")
+        msg = f"Invalid table name: {name!r}"
+        raise ToolError(msg)
     return name
 
 
@@ -47,8 +48,7 @@ async def sync_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
-    """
-    Unified sync management tool.
+    """Unified sync management tool.
 
     Actions:
     - status: Get sync status
@@ -109,7 +109,8 @@ async def _sync_manage_impl(
             action,
         )
 
-    raise ToolError(f"Unknown sync action: {action}")
+    msg = f"Unknown sync action: {action}"
+    raise ToolError(msg)
 
 
 @mcp.tool(description="Unified backup operations")
@@ -118,8 +119,7 @@ def backup_manage(  # noqa: C901, PLR0912, PLR0915
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
-    """
-    Unified backup management tool.
+    """Unified backup management tool.
 
     Actions:
     - backup: Create backup (optional: project_id, output, compress)
@@ -174,10 +174,12 @@ def backup_manage(  # noqa: C901, PLR0912, PLR0915
     if action == "restore":
         path = payload.get("path")
         if not path:
-            raise ToolError("path is required for restore.")
+            msg = "path is required for restore."
+            raise ToolError(msg)
         backup_file = Path(path)
         if not backup_file.exists():
-            raise ToolError(f"Backup file not found: {path}")
+            msg = f"Backup file not found: {path}"
+            raise ToolError(msg)
         if backup_file.suffix == ".gz":
             with gzip.open(backup_file, "rt", encoding="utf-8") as f:
                 backup_data = json.load(f)
@@ -185,7 +187,8 @@ def backup_manage(  # noqa: C901, PLR0912, PLR0915
             backup_data = json.loads(backup_file.read_text(encoding="utf-8"))
 
         if not isinstance(backup_data, dict) or "tables" not in backup_data:
-            raise ToolError("Invalid backup format.")
+            msg = "Invalid backup format."
+            raise ToolError(msg)
 
         with storage.get_session() as session:
             for table, rows in backup_data["tables"].items():
@@ -202,7 +205,8 @@ def backup_manage(  # noqa: C901, PLR0912, PLR0915
 
         return _wrap({"restored": True, "tables": len(backup_data["tables"])}, ctx, action)
 
-    raise ToolError(f"Unknown backup action: {action}")
+    msg = f"Unknown backup action: {action}"
+    raise ToolError(msg)
 
 
 @mcp.tool(description="Unified file watch operations")
@@ -211,8 +215,7 @@ def file_watch_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
-    """
-    Unified file watch management tool.
+    """Unified file watch management tool.
 
     Actions:
     - start: Start watching directory (optional: path, debounce, auto_sync, watch_id)
@@ -241,7 +244,8 @@ def file_watch_manage(
     if action == "stop":
         watch_id = payload.get("watch_id")
         if not watch_id or watch_id not in _WATCHERS:
-            raise ToolError("watch_id not found.")
+            msg = "watch_id not found."
+            raise ToolError(msg)
         watcher = _WATCHERS.pop(watch_id)
         watcher.stop()
         return _wrap({"watch_id": watch_id, "stopped": True}, ctx, action)
@@ -251,8 +255,10 @@ def file_watch_manage(
         if watch_id:
             target_watcher: Any = _WATCHERS.get(watch_id)
             if not target_watcher:
-                raise ToolError("watch_id not found.")
+                msg = "watch_id not found."
+                raise ToolError(msg)
             return _wrap({"watch_id": watch_id, "stats": target_watcher.get_stats()}, ctx, action)
         return _wrap({k: v.get_stats() for k, v in _WATCHERS.items()}, ctx, action)
 
-    raise ToolError(f"Unknown watch action: {action}")
+    msg = f"Unknown watch action: {action}"
+    raise ToolError(msg)

@@ -1,5 +1,4 @@
-"""
-Comprehensive integration tests for API module.
+"""Comprehensive integration tests for API module.
 
 Tests FastAPI endpoints with real HTTP requests and database backend.
 Targets: client.py, main.py, sync_client.py
@@ -213,7 +212,7 @@ def sample_links(test_session, test_project, sample_items):
 class TestTraceRTMClientInitialization:
     """Test client initialization and setup."""
 
-    def test_client_initialization_no_args(self, api_client_setup):
+    def test_client_initialization_no_args(self, api_client_setup) -> None:
         """Test initializing client without arguments."""
         client = TraceRTMClient()
         assert client.config_manager is not None
@@ -223,21 +222,21 @@ class TestTraceRTMClientInitialization:
         assert client._session is None
         client.close()
 
-    def test_client_initialization_with_agent_id(self, api_client_setup):
+    def test_client_initialization_with_agent_id(self, api_client_setup) -> None:
         """Test initializing client with agent ID."""
         client = TraceRTMClient(agent_id="test-agent-id")
         assert client.agent_id == "test-agent-id"
         assert client.agent_name is None
         client.close()
 
-    def test_client_initialization_with_agent_name(self, api_client_setup):
+    def test_client_initialization_with_agent_name(self, api_client_setup) -> None:
         """Test initializing client with agent name."""
         client = TraceRTMClient(agent_name="Test Agent")
         assert client.agent_name == "Test Agent"
         assert client.agent_id is None
         client.close()
 
-    def test_get_session_creates_connection(self, api_client_setup):
+    def test_get_session_creates_connection(self, api_client_setup) -> None:
         """Test that _get_session creates database connection."""
         client = TraceRTMClient()
         session = client._get_session()
@@ -246,7 +245,7 @@ class TestTraceRTMClientInitialization:
         assert client._session is not None
         client.close()
 
-    def test_get_session_reuses_connection(self, api_client_setup):
+    def test_get_session_reuses_connection(self, api_client_setup) -> None:
         """Test that _get_session reuses existing connection."""
         client = TraceRTMClient()
         session1 = client._get_session()
@@ -254,7 +253,7 @@ class TestTraceRTMClientInitialization:
         assert session1 is session2
         client.close()
 
-    def test_get_session_no_database_config(self, tmp_path, monkeypatch):
+    def test_get_session_no_database_config(self, tmp_path, monkeypatch) -> None:
         """Test _get_session raises error when database not configured."""
         config_dir = tmp_path / ".config" / "tracertm"
         config_dir.mkdir(parents=True)
@@ -265,14 +264,14 @@ class TestTraceRTMClientInitialization:
             client._get_session()
         client.close()
 
-    def test_get_project_id_success(self, api_client_setup):
+    def test_get_project_id_success(self, api_client_setup) -> None:
         """Test _get_project_id returns project ID."""
         client = TraceRTMClient()
         project_id = client._get_project_id()
         assert project_id == api_client_setup[1]
         client.close()
 
-    def test_get_project_id_no_project(self, tmp_path, monkeypatch):
+    def test_get_project_id_no_project(self, tmp_path, monkeypatch) -> None:
         """Test _get_project_id raises error when no project selected."""
         config_dir = tmp_path / ".config" / "tracertm"
         config_dir.mkdir(parents=True)
@@ -290,7 +289,7 @@ class TestTraceRTMClientInitialization:
 class TestTraceRTMClientAgentOperations:
     """Test agent registration and management."""
 
-    def test_register_agent_basic(self, api_client_setup):
+    def test_register_agent_basic(self, api_client_setup) -> None:
         """Test basic agent registration."""
         client = TraceRTMClient()
         agent_id = client.register_agent("Test Agent")
@@ -308,7 +307,7 @@ class TestTraceRTMClientAgentOperations:
         assert agent.status == "active"
         client.close()
 
-    def test_register_agent_with_type(self, api_client_setup):
+    def test_register_agent_with_type(self, api_client_setup) -> None:
         """Test agent registration with custom type."""
         client = TraceRTMClient()
         agent_id = client.register_agent("Custom Agent", agent_type="custom_type")
@@ -318,7 +317,7 @@ class TestTraceRTMClientAgentOperations:
         assert agent.agent_type == "custom_type"
         client.close()
 
-    def test_register_agent_with_metadata(self, api_client_setup):
+    def test_register_agent_with_metadata(self, api_client_setup) -> None:
         """Test agent registration with metadata."""
         client = TraceRTMClient()
         metadata = {"key": "value", "capabilities": ["test", "code"]}
@@ -330,7 +329,7 @@ class TestTraceRTMClientAgentOperations:
         assert "capabilities" in agent.agent_metadata
         client.close()
 
-    def test_register_agent_with_project_ids(self, api_client_setup):
+    def test_register_agent_with_project_ids(self, api_client_setup) -> None:
         """Test agent registration with multiple project IDs."""
         client = TraceRTMClient()
         project_ids = ["project-1", "project-2"]
@@ -342,7 +341,7 @@ class TestTraceRTMClientAgentOperations:
         assert agent.agent_metadata["assigned_projects"] == project_ids
         client.close()
 
-    def test_assign_agent_to_projects(self, api_client_setup):
+    def test_assign_agent_to_projects(self, api_client_setup) -> None:
         """Test assigning agent to multiple projects."""
         client = TraceRTMClient()
         agent_id = client.register_agent("Test Agent")
@@ -355,7 +354,7 @@ class TestTraceRTMClientAgentOperations:
         assert agent.agent_metadata["assigned_projects"] == project_ids
         client.close()
 
-    def test_assign_agent_to_projects_not_found(self, api_client_setup):
+    def test_assign_agent_to_projects_not_found(self, api_client_setup) -> None:
         """Test assigning non-existent agent raises error."""
         client = TraceRTMClient()
 
@@ -363,7 +362,7 @@ class TestTraceRTMClientAgentOperations:
             client.assign_agent_to_projects("nonexistent-id", ["proj-1"])
         client.close()
 
-    def test_get_agent_projects(self, api_client_setup):
+    def test_get_agent_projects(self, api_client_setup) -> None:
         """Test getting projects assigned to agent."""
         client = TraceRTMClient()
         project_ids = ["proj-1", "proj-2"]
@@ -377,14 +376,14 @@ class TestTraceRTMClientAgentOperations:
         assert "proj-2" in assigned_projects
         client.close()
 
-    def test_get_agent_projects_not_found(self, api_client_setup):
+    def test_get_agent_projects_not_found(self, api_client_setup) -> None:
         """Test getting projects for non-existent agent."""
         client = TraceRTMClient()
         projects = client.get_agent_projects("nonexistent-id")
         assert projects == []
         client.close()
 
-    def test_get_agent_projects_no_assignments(self, api_client_setup):
+    def test_get_agent_projects_no_assignments(self, api_client_setup) -> None:
         """Test getting projects for agent with no assignments."""
         client = TraceRTMClient()
         agent_id = client.register_agent("Test Agent")
@@ -399,7 +398,7 @@ class TestTraceRTMClientAgentOperations:
 class TestTraceRTMClientItemOperations:
     """Test item CRUD operations."""
 
-    def test_create_item_basic(self, api_client_setup):
+    def test_create_item_basic(self, api_client_setup) -> None:
         """Test creating basic item."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -414,7 +413,7 @@ class TestTraceRTMClientItemOperations:
         assert item["version"] == 1
         client.close()
 
-    def test_create_item_with_all_fields(self, api_client_setup):
+    def test_create_item_with_all_fields(self, api_client_setup) -> None:
         """Test creating item with all optional fields."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -442,7 +441,7 @@ class TestTraceRTMClientItemOperations:
         assert retrieved["metadata"] == metadata
         client.close()
 
-    def test_query_items_all(self, api_client_setup):
+    def test_query_items_all(self, api_client_setup) -> None:
         """Test querying all items."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -455,7 +454,7 @@ class TestTraceRTMClientItemOperations:
         assert len(items) == 3
         client.close()
 
-    def test_query_items_by_view(self, api_client_setup):
+    def test_query_items_by_view(self, api_client_setup) -> None:
         """Test querying items filtered by view."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -469,7 +468,7 @@ class TestTraceRTMClientItemOperations:
         assert all(item["view"] == "FEATURE" for item in features)
         client.close()
 
-    def test_query_items_by_status(self, api_client_setup):
+    def test_query_items_by_status(self, api_client_setup) -> None:
         """Test querying items filtered by status."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -483,7 +482,7 @@ class TestTraceRTMClientItemOperations:
         assert all(item["status"] == "todo" for item in todos)
         client.close()
 
-    def test_query_items_by_type(self, api_client_setup):
+    def test_query_items_by_type(self, api_client_setup) -> None:
         """Test querying items filtered by item type."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -496,7 +495,7 @@ class TestTraceRTMClientItemOperations:
         assert features[0]["type"] == "feature"
         client.close()
 
-    def test_query_items_with_filters(self, api_client_setup):
+    def test_query_items_with_filters(self, api_client_setup) -> None:
         """Test querying items with structured filters."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -513,7 +512,7 @@ class TestTraceRTMClientItemOperations:
         assert alice_items[0]["owner"] == "alice"
         client.close()
 
-    def test_query_items_limit(self, api_client_setup):
+    def test_query_items_limit(self, api_client_setup) -> None:
         """Test querying items with limit."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -525,7 +524,7 @@ class TestTraceRTMClientItemOperations:
         assert len(items) == 5
         client.close()
 
-    def test_get_item_success(self, api_client_setup):
+    def test_get_item_success(self, api_client_setup) -> None:
         """Test getting item by ID."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -538,7 +537,7 @@ class TestTraceRTMClientItemOperations:
         assert item["title"] == "Test Item"
         client.close()
 
-    def test_get_item_not_found(self, api_client_setup):
+    def test_get_item_not_found(self, api_client_setup) -> None:
         """Test getting non-existent item returns None."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -547,7 +546,7 @@ class TestTraceRTMClientItemOperations:
         assert item is None
         client.close()
 
-    def test_get_item_soft_deleted(self, api_client_setup):
+    def test_get_item_soft_deleted(self, api_client_setup) -> None:
         """Test getting soft-deleted item returns None."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -559,7 +558,7 @@ class TestTraceRTMClientItemOperations:
         assert item is None
         client.close()
 
-    def test_update_item_basic(self, api_client_setup):
+    def test_update_item_basic(self, api_client_setup) -> None:
         """Test updating item fields."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -572,7 +571,7 @@ class TestTraceRTMClientItemOperations:
         assert updated["version"] > created["version"]
         client.close()
 
-    def test_update_item_multiple_fields(self, api_client_setup):
+    def test_update_item_multiple_fields(self, api_client_setup) -> None:
         """Test updating multiple item fields."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -598,7 +597,7 @@ class TestTraceRTMClientItemOperations:
         assert item["metadata"] == {"new": "data"}
         client.close()
 
-    def test_update_item_not_found(self, api_client_setup):
+    def test_update_item_not_found(self, api_client_setup) -> None:
         """Test updating non-existent item raises error."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -607,7 +606,7 @@ class TestTraceRTMClientItemOperations:
             client.update_item("nonexistent-id", title="New")
         client.close()
 
-    def test_delete_item_success(self, api_client_setup):
+    def test_delete_item_success(self, api_client_setup) -> None:
         """Test deleting item (soft delete)."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -624,7 +623,7 @@ class TestTraceRTMClientItemOperations:
         assert item is None
         client.close()
 
-    def test_delete_item_not_found(self, api_client_setup):
+    def test_delete_item_not_found(self, api_client_setup) -> None:
         """Test deleting non-existent item raises error."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -637,7 +636,7 @@ class TestTraceRTMClientItemOperations:
 class TestTraceRTMClientBatchOperations:
     """Test batch operations."""
 
-    def test_batch_create_items(self, api_client_setup):
+    def test_batch_create_items(self, api_client_setup) -> None:
         """Test batch creating items."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -657,7 +656,7 @@ class TestTraceRTMClientBatchOperations:
         assert len(items) == 3
         client.close()
 
-    def test_batch_create_items_with_fields(self, api_client_setup):
+    def test_batch_create_items_with_fields(self, api_client_setup) -> None:
         """Test batch creating items with all fields."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -672,7 +671,7 @@ class TestTraceRTMClientBatchOperations:
                 "priority": "high",
                 "owner": "alice",
                 "metadata": {"key": "value"},
-            }
+            },
         ]
 
         result = client.batch_create_items(items_data)
@@ -683,7 +682,7 @@ class TestTraceRTMClientBatchOperations:
         assert items[0]["description"] == "Description"
         client.close()
 
-    def test_batch_update_items(self, api_client_setup):
+    def test_batch_update_items(self, api_client_setup) -> None:
         """Test batch updating items."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -713,7 +712,7 @@ class TestTraceRTMClientBatchOperations:
         assert updated2["priority"] == "high"
         client.close()
 
-    def test_batch_update_items_skip_missing(self, api_client_setup):
+    def test_batch_update_items_skip_missing(self, api_client_setup) -> None:
         """Test batch update skips missing items."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -730,7 +729,7 @@ class TestTraceRTMClientBatchOperations:
         assert result["items_updated"] == 1
         client.close()
 
-    def test_batch_delete_items(self, api_client_setup):
+    def test_batch_delete_items(self, api_client_setup) -> None:
         """Test batch deleting items."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -749,7 +748,7 @@ class TestTraceRTMClientBatchOperations:
         assert items[0]["id"] == item3["id"]
         client.close()
 
-    def test_batch_delete_items_skip_missing(self, api_client_setup):
+    def test_batch_delete_items_skip_missing(self, api_client_setup) -> None:
         """Test batch delete skips missing items."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -765,7 +764,7 @@ class TestTraceRTMClientBatchOperations:
 class TestTraceRTMClientExportImport:
     """Test export/import functionality."""
 
-    def test_export_project_json(self, api_client_setup):
+    def test_export_project_json(self, api_client_setup) -> None:
         """Test exporting project as JSON."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -781,7 +780,7 @@ class TestTraceRTMClientExportImport:
         assert len(data["items"]) >= 1
         client.close()
 
-    def test_export_project_yaml(self, api_client_setup):
+    def test_export_project_yaml(self, api_client_setup) -> None:
         """Test exporting project as YAML."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -793,7 +792,7 @@ class TestTraceRTMClientExportImport:
         assert "project:" in yaml_str
         client.close()
 
-    def test_import_data_items_only(self, api_client_setup):
+    def test_import_data_items_only(self, api_client_setup) -> None:
         """Test importing items only."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -802,7 +801,7 @@ class TestTraceRTMClientExportImport:
             "items": [
                 {"title": "Imported 1", "view": "FEATURE", "type": "feature"},
                 {"title": "Imported 2", "view": "CODE", "type": "file"},
-            ]
+            ],
         }
 
         result = client.import_data(data)
@@ -815,7 +814,7 @@ class TestTraceRTMClientExportImport:
         assert "Imported 2" in titles
         client.close()
 
-    def test_import_data_with_links(self, api_client_setup):
+    def test_import_data_with_links(self, api_client_setup) -> None:
         """Test importing items and links."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -837,7 +836,7 @@ class TestTraceRTMClientExportImport:
 class TestTraceRTMClientActivity:
     """Test activity monitoring."""
 
-    def test_get_agent_activity(self, api_client_setup):
+    def test_get_agent_activity(self, api_client_setup) -> None:
         """Test getting agent activity."""
         client = TraceRTMClient()
         agent_id = client.register_agent("Test Agent")
@@ -852,7 +851,7 @@ class TestTraceRTMClientActivity:
         assert any(e["event_type"] == "item_created" for e in activity)
         client.close()
 
-    def test_get_agent_activity_limit(self, api_client_setup):
+    def test_get_agent_activity_limit(self, api_client_setup) -> None:
         """Test getting agent activity with limit."""
         client = TraceRTMClient()
         agent_id = client.register_agent("Test Agent")
@@ -864,14 +863,14 @@ class TestTraceRTMClientActivity:
         assert len(activity) <= 5
         client.close()
 
-    def test_get_agent_activity_no_agent(self, api_client_setup):
+    def test_get_agent_activity_no_agent(self, api_client_setup) -> None:
         """Test getting activity with no agent."""
         client = TraceRTMClient()
         activity = client.get_agent_activity()
         assert activity == []
         client.close()
 
-    def test_get_all_agents_activity(self, api_client_setup):
+    def test_get_all_agents_activity(self, api_client_setup) -> None:
         """Test getting all agents activity."""
         client1 = TraceRTMClient()
         agent1 = client1.register_agent("Agent 1")
@@ -891,7 +890,7 @@ class TestTraceRTMClientActivity:
         client1.close()
         client2.close()
 
-    def test_get_assigned_items(self, api_client_setup):
+    def test_get_assigned_items(self, api_client_setup) -> None:
         """Test getting items assigned to agent."""
         client = TraceRTMClient()
         agent_id = client.register_agent("Test Agent")
@@ -905,7 +904,7 @@ class TestTraceRTMClientActivity:
         assert assigned[0]["title"] == "Assigned"
         client.close()
 
-    def test_get_assigned_items_no_agent(self, api_client_setup):
+    def test_get_assigned_items_no_agent(self, api_client_setup) -> None:
         """Test getting assigned items with no agent."""
         client = TraceRTMClient()
         assigned = client.get_assigned_items()
@@ -916,14 +915,14 @@ class TestTraceRTMClientActivity:
 class TestTraceRTMClientLogging:
     """Test operation logging."""
 
-    def test_log_operation_without_agent(self, api_client_setup):
+    def test_log_operation_without_agent(self, api_client_setup) -> None:
         """Test logging without agent ID skips silently."""
         client = TraceRTMClient()
         # Should not raise error
         client._log_operation("test", "test", "test-id", {"data": "value"})
         client.close()
 
-    def test_log_operation_with_agent(self, api_client_setup):
+    def test_log_operation_with_agent(self, api_client_setup) -> None:
         """Test logging with agent ID creates event."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -935,7 +934,7 @@ class TestTraceRTMClientLogging:
         assert len(events) >= 1
         client.close()
 
-    def test_log_operation_error_handling(self, api_client_setup):
+    def test_log_operation_error_handling(self, api_client_setup) -> None:
         """Test logging handles errors gracefully."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -956,7 +955,7 @@ class TestTraceRTMClientLogging:
 class TestFastAPIHealthEndpoint:
     """Test health check endpoint."""
 
-    def test_health_check_success(self, fastapi_test_client):
+    def test_health_check_success(self, fastapi_test_client) -> None:
         """Test health check returns healthy status."""
         response = fastapi_test_client.get("/health")
         assert response.status_code == 200
@@ -969,7 +968,7 @@ class TestFastAPIHealthEndpoint:
 class TestFastAPIItemEndpoints:
     """Test item-related endpoints."""
 
-    def test_list_items_empty(self, fastapi_test_client, test_project):
+    def test_list_items_empty(self, fastapi_test_client, test_project) -> None:
         """Test listing items when none exist."""
         response = fastapi_test_client.get(f"/api/v1/items?project_id={test_project.id}")
         assert response.status_code == 200
@@ -977,7 +976,7 @@ class TestFastAPIItemEndpoints:
         assert data["total"] == 0
         assert data["items"] == []
 
-    def test_list_items_with_data(self, fastapi_test_client, test_project, sample_items):
+    def test_list_items_with_data(self, fastapi_test_client, test_project, sample_items) -> None:
         """Test listing items with sample data."""
         response = fastapi_test_client.get(f"/api/v1/items?project_id={test_project.id}")
         assert response.status_code == 200
@@ -985,14 +984,14 @@ class TestFastAPIItemEndpoints:
         assert data["total"] == 3
         assert len(data["items"]) == 3
 
-    def test_list_items_pagination(self, fastapi_test_client, test_project, sample_items):
+    def test_list_items_pagination(self, fastapi_test_client, test_project, sample_items) -> None:
         """Test listing items with pagination."""
         response = fastapi_test_client.get(f"/api/v1/items?project_id={test_project.id}&skip=1&limit=2")
         assert response.status_code == 200
         data = response.json()
         assert len(data["items"]) == 2
 
-    def test_get_item_success(self, fastapi_test_client, sample_items):
+    def test_get_item_success(self, fastapi_test_client, sample_items) -> None:
         """Test getting specific item."""
         response = fastapi_test_client.get(f"/api/v1/items/{sample_items[0].id}")
         assert response.status_code == 200
@@ -1000,7 +999,7 @@ class TestFastAPIItemEndpoints:
         assert data["id"] == str(sample_items[0].id)
         assert data["title"] == sample_items[0].title
 
-    def test_get_item_not_found(self, fastapi_test_client):
+    def test_get_item_not_found(self, fastapi_test_client) -> None:
         """Test getting non-existent item."""
         response = fastapi_test_client.get("/api/v1/items/nonexistent")
         assert response.status_code == 404
@@ -1009,14 +1008,14 @@ class TestFastAPIItemEndpoints:
 class TestFastAPILinkEndpoints:
     """Test link-related endpoints."""
 
-    def test_list_links_empty(self, fastapi_test_client, test_project):
+    def test_list_links_empty(self, fastapi_test_client, test_project) -> None:
         """Test listing links when none exist."""
         response = fastapi_test_client.get(f"/api/v1/links?project_id={test_project.id}")
         assert response.status_code == 200
         data = response.json()
         assert data["total"] == 0
 
-    def test_list_links_with_data(self, fastapi_test_client, test_project, sample_links):
+    def test_list_links_with_data(self, fastapi_test_client, test_project, sample_links) -> None:
         """Test listing links with sample data."""
         response = fastapi_test_client.get(f"/api/v1/links?project_id={test_project.id}")
         assert response.status_code == 200
@@ -1024,14 +1023,14 @@ class TestFastAPILinkEndpoints:
         assert data["total"] == 2
         assert len(data["links"]) == 2
 
-    def test_list_links_pagination(self, fastapi_test_client, test_project, sample_links):
+    def test_list_links_pagination(self, fastapi_test_client, test_project, sample_links) -> None:
         """Test listing links with pagination."""
         response = fastapi_test_client.get(f"/api/v1/links?project_id={test_project.id}&skip=1&limit=1")
         assert response.status_code == 200
         data = response.json()
         assert len(data["links"]) == 1
 
-    def test_update_link_success(self, fastapi_test_client, sample_links):
+    def test_update_link_success(self, fastapi_test_client, sample_links) -> None:
         """Test updating link."""
         link_id = sample_links[0].id
         update_data = {"link_type": "new_type", "metadata": {"key": "value"}}
@@ -1042,7 +1041,7 @@ class TestFastAPILinkEndpoints:
         assert data["type"] == "new_type"
         assert data["metadata"] == {"key": "value"}
 
-    def test_update_link_not_found(self, fastapi_test_client):
+    def test_update_link_not_found(self, fastapi_test_client) -> None:
         """Test updating non-existent link."""
         response = fastapi_test_client.put("/api/v1/links/nonexistent", json={"link_type": "new"})
         assert response.status_code == 404
@@ -1051,7 +1050,7 @@ class TestFastAPILinkEndpoints:
 class TestFastAPIProjectEndpoints:
     """Test project-related endpoints."""
 
-    def test_list_projects(self, fastapi_test_client, test_project):
+    def test_list_projects(self, fastapi_test_client, test_project) -> None:
         """Test listing projects."""
         response = fastapi_test_client.get("/api/v1/projects")
         assert response.status_code == 200
@@ -1059,7 +1058,7 @@ class TestFastAPIProjectEndpoints:
         assert data["total"] >= 1
         assert len(data["projects"]) >= 1
 
-    def test_get_project_success(self, fastapi_test_client, test_project):
+    def test_get_project_success(self, fastapi_test_client, test_project) -> None:
         """Test getting specific project."""
         response = fastapi_test_client.get(f"/api/v1/projects/{test_project.id}")
         assert response.status_code == 200
@@ -1067,12 +1066,12 @@ class TestFastAPIProjectEndpoints:
         assert data["id"] == str(test_project.id)
         assert data["name"] == test_project.name
 
-    def test_get_project_not_found(self, fastapi_test_client):
+    def test_get_project_not_found(self, fastapi_test_client) -> None:
         """Test getting non-existent project."""
         response = fastapi_test_client.get("/api/v1/projects/nonexistent")
         assert response.status_code == 404
 
-    def test_create_project(self, fastapi_test_client):
+    def test_create_project(self, fastapi_test_client) -> None:
         """Test creating new project."""
         project_data = {
             "name": "New Project",
@@ -1086,7 +1085,7 @@ class TestFastAPIProjectEndpoints:
         assert data["name"] == "New Project"
         assert data["description"] == "Test Description"
 
-    def test_update_project(self, fastapi_test_client, test_project):
+    def test_update_project(self, fastapi_test_client, test_project) -> None:
         """Test updating project."""
         update_data = {"name": "Updated Name", "description": "Updated Description"}
 
@@ -1095,12 +1094,12 @@ class TestFastAPIProjectEndpoints:
         data = response.json()
         assert data["name"] == "Updated Name"
 
-    def test_update_project_not_found(self, fastapi_test_client):
+    def test_update_project_not_found(self, fastapi_test_client) -> None:
         """Test updating non-existent project."""
         response = fastapi_test_client.put("/api/v1/projects/nonexistent", json={"name": "New"})
         assert response.status_code == 404
 
-    def test_delete_project(self, fastapi_test_client, test_session):
+    def test_delete_project(self, fastapi_test_client, test_session) -> None:
         """Test deleting project."""
         # Create project to delete
         project = Project(id="delete-me", name="Delete Me")
@@ -1111,7 +1110,7 @@ class TestFastAPIProjectEndpoints:
         assert response.status_code == 200
         assert response.json()["success"] is True
 
-    def test_delete_project_not_found(self, fastapi_test_client):
+    def test_delete_project_not_found(self, fastapi_test_client) -> None:
         """Test deleting non-existent project."""
         response = fastapi_test_client.delete("/api/v1/projects/nonexistent")
         assert response.status_code == 404
@@ -1120,44 +1119,44 @@ class TestFastAPIProjectEndpoints:
 class TestFastAPIAnalysisEndpoints:
     """Test analysis endpoints."""
 
-    def test_get_impact_analysis(self, fastapi_test_client, test_project, sample_items):
+    def test_get_impact_analysis(self, fastapi_test_client, test_project, sample_items) -> None:
         """Test impact analysis endpoint."""
         # Note: This requires ImpactAnalysisService implementation
         response = fastapi_test_client.get(f"/api/v1/analysis/impact/{sample_items[0].id}?project_id={test_project.id}")
         # May return error if service not fully implemented
-        assert response.status_code in [200, 500]
+        assert response.status_code in {200, 500}
 
-    def test_detect_cycles(self, fastapi_test_client, test_project):
+    def test_detect_cycles(self, fastapi_test_client, test_project) -> None:
         """Test cycle detection endpoint."""
         response = fastapi_test_client.get(f"/api/v1/analysis/cycles/{test_project.id}")
         # May return error if service not fully implemented
-        assert response.status_code in [200, 500]
+        assert response.status_code in {200, 500}
 
-    def test_find_shortest_path(self, fastapi_test_client, test_project, sample_items):
+    def test_find_shortest_path(self, fastapi_test_client, test_project, sample_items) -> None:
         """Test shortest path endpoint."""
         response = fastapi_test_client.get(
             f"/api/v1/analysis/shortest-path?project_id={test_project.id}"
-            f"&source_id={sample_items[0].id}&target_id={sample_items[1].id}"
+            f"&source_id={sample_items[0].id}&target_id={sample_items[1].id}",
         )
         # May return error if service not fully implemented
-        assert response.status_code in [200, 500]
+        assert response.status_code in {200, 500}
 
 
 class TestFastAPIExportImportEndpoints:
     """Test export/import endpoints."""
 
-    def test_export_project_json(self, fastapi_test_client, test_project, sample_items):
+    def test_export_project_json(self, fastapi_test_client, test_project, sample_items) -> None:
         """Test exporting project as JSON."""
         response = fastapi_test_client.get(f"/api/v1/projects/{test_project.id}/export?format=json")
         # May return error if service not fully implemented
-        assert response.status_code in [200, 404, 500]
+        assert response.status_code in {200, 404, 500}
 
-    def test_export_project_unsupported_format(self, fastapi_test_client, test_project):
+    def test_export_project_unsupported_format(self, fastapi_test_client, test_project) -> None:
         """Test exporting with unsupported format."""
         response = fastapi_test_client.get(f"/api/v1/projects/{test_project.id}/export?format=xml")
         assert response.status_code == 400
 
-    def test_import_project_json(self, fastapi_test_client, test_project):
+    def test_import_project_json(self, fastapi_test_client, test_project) -> None:
         """Test importing project data."""
         import_data = {
             "format": "json",
@@ -1166,9 +1165,9 @@ class TestFastAPIExportImportEndpoints:
 
         response = fastapi_test_client.post(f"/api/v1/projects/{test_project.id}/import", json=import_data)
         # May return error if service not fully implemented
-        assert response.status_code in [200, 400, 500]
+        assert response.status_code in {200, 400, 500}
 
-    def test_import_project_unsupported_format(self, fastapi_test_client, test_project):
+    def test_import_project_unsupported_format(self, fastapi_test_client, test_project) -> None:
         """Test importing with unsupported format."""
         import_data = {"format": "xml", "data": "<xml></xml>"}
 
@@ -1179,7 +1178,7 @@ class TestFastAPIExportImportEndpoints:
 class TestFastAPISyncEndpoints:
     """Test sync-related endpoints."""
 
-    def test_get_sync_status(self, fastapi_test_client, test_project):
+    def test_get_sync_status(self, fastapi_test_client, test_project) -> None:
         """Test getting sync status."""
         response = fastapi_test_client.get(f"/api/v1/projects/{test_project.id}/sync/status")
         assert response.status_code == 200
@@ -1187,7 +1186,7 @@ class TestFastAPISyncEndpoints:
         assert "project_id" in data
         assert "status" in data
 
-    def test_sync_project(self, fastapi_test_client, test_project):
+    def test_sync_project(self, fastapi_test_client, test_project) -> None:
         """Test syncing project."""
         response = fastapi_test_client.post(f"/api/v1/projects/{test_project.id}/sync")
         assert response.status_code == 200
@@ -1198,41 +1197,41 @@ class TestFastAPISyncEndpoints:
 class TestFastAPISearchEndpoints:
     """Test search endpoints."""
 
-    def test_advanced_search(self, fastapi_test_client, test_project, sample_items):
+    def test_advanced_search(self, fastapi_test_client, test_project, sample_items) -> None:
         """Test advanced search endpoint."""
         search_data = {"query": "Feature", "filters": {"status": "todo"}}
 
         response = fastapi_test_client.post(f"/api/v1/projects/{test_project.id}/search/advanced", json=search_data)
         # May return error if service not fully implemented
-        assert response.status_code in [200, 500]
+        assert response.status_code in {200, 500}
 
 
 class TestFastAPIGraphEndpoints:
     """Test graph-related endpoints."""
 
-    def test_get_graph_neighbors_both(self, fastapi_test_client, test_project, sample_links):
+    def test_get_graph_neighbors_both(self, fastapi_test_client, test_project, sample_links) -> None:
         """Test getting neighbors in both directions."""
         response = fastapi_test_client.get(
             f"/api/v1/projects/{test_project.id}/graph/neighbors"
-            f"?item_id={sample_links[0].source_item_id}&direction=both"
+            f"?item_id={sample_links[0].source_item_id}&direction=both",
         )
         assert response.status_code == 200
         data = response.json()
         assert "neighbors" in data
 
-    def test_get_graph_neighbors_out(self, fastapi_test_client, test_project, sample_links):
+    def test_get_graph_neighbors_out(self, fastapi_test_client, test_project, sample_links) -> None:
         """Test getting outgoing neighbors."""
         response = fastapi_test_client.get(
-            f"/api/v1/projects/{test_project.id}/graph/neighbors?item_id={sample_links[0].source_item_id}&direction=out"
+            f"/api/v1/projects/{test_project.id}/graph/neighbors?item_id={sample_links[0].source_item_id}&direction=out",
         )
         assert response.status_code == 200
         data = response.json()
         assert data["direction"] == "out"
 
-    def test_get_graph_neighbors_in(self, fastapi_test_client, test_project, sample_links):
+    def test_get_graph_neighbors_in(self, fastapi_test_client, test_project, sample_links) -> None:
         """Test getting incoming neighbors."""
         response = fastapi_test_client.get(
-            f"/api/v1/projects/{test_project.id}/graph/neighbors?item_id={sample_links[0].target_item_id}&direction=in"
+            f"/api/v1/projects/{test_project.id}/graph/neighbors?item_id={sample_links[0].target_item_id}&direction=in",
         )
         assert response.status_code == 200
         data = response.json()
@@ -1247,7 +1246,7 @@ class TestFastAPIGraphEndpoints:
 class TestApiConfigClass:
     """Test ApiConfig dataclass."""
 
-    def test_api_config_initialization(self):
+    def test_api_config_initialization(self) -> None:
         """Test basic ApiConfig initialization."""
         config = ApiConfig(base_url="https://api.test.com", token="test-token")
         assert config.base_url == "https://api.test.com"
@@ -1255,7 +1254,7 @@ class TestApiConfigClass:
         assert config.timeout == 30.0
         assert config.max_retries == 3
 
-    def test_api_config_from_config_manager(self, tmp_path, monkeypatch):
+    def test_api_config_from_config_manager(self, tmp_path, monkeypatch) -> None:
         """Test creating ApiConfig from ConfigManager."""
         config_dir = tmp_path / ".config" / "tracertm"
         config_dir.mkdir(parents=True)
@@ -1273,7 +1272,7 @@ class TestApiConfigClass:
         assert config.timeout == 60.0
         assert config.max_retries == 5
 
-    def test_api_config_defaults(self, tmp_path, monkeypatch):
+    def test_api_config_defaults(self, tmp_path, monkeypatch) -> None:
         """Test ApiConfig defaults when values not set."""
         config_dir = tmp_path / ".config" / "tracertm"
         config_dir.mkdir(parents=True)
@@ -1287,7 +1286,7 @@ class TestApiConfigClass:
 class TestChangeClass:
     """Test Change dataclass."""
 
-    def test_change_initialization(self):
+    def test_change_initialization(self) -> None:
         """Test Change initialization."""
         change = Change(
             entity_type="item",
@@ -1300,7 +1299,7 @@ class TestChangeClass:
         assert change.operation == SyncOperation.CREATE
         assert change.data == {"title": "Test"}
 
-    def test_change_to_dict(self):
+    def test_change_to_dict(self) -> None:
         """Test converting Change to dictionary."""
         timestamp = datetime.now(UTC)
         change = Change(
@@ -1325,7 +1324,7 @@ class TestChangeClass:
 class TestConflictClass:
     """Test Conflict dataclass."""
 
-    def test_conflict_from_dict(self):
+    def test_conflict_from_dict(self) -> None:
         """Test creating Conflict from dictionary."""
         data = {
             "conflict_id": "conflict-123",
@@ -1348,7 +1347,7 @@ class TestConflictClass:
 class TestUploadResultClass:
     """Test UploadResult dataclass."""
 
-    def test_upload_result_from_dict(self):
+    def test_upload_result_from_dict(self) -> None:
         """Test creating UploadResult from dictionary."""
         data = {
             "applied": ["item-1", "item-2"],
@@ -1362,7 +1361,7 @@ class TestUploadResultClass:
         assert result.conflicts == []
         assert len(result.errors) == 0
 
-    def test_upload_result_with_conflicts(self):
+    def test_upload_result_with_conflicts(self) -> None:
         """Test UploadResult with conflicts."""
         data = {
             "applied": [],
@@ -1375,7 +1374,7 @@ class TestUploadResultClass:
                     "remote_version": 2,
                     "local_data": {},
                     "remote_data": {},
-                }
+                },
             ],
             "server_time": "2025-01-01T00:00:00",
         }
@@ -1387,7 +1386,7 @@ class TestUploadResultClass:
 class TestSyncStatusClass:
     """Test SyncStatus dataclass."""
 
-    def test_sync_status_from_dict(self):
+    def test_sync_status_from_dict(self) -> None:
         """Test creating SyncStatus from dictionary."""
         data = {
             "last_sync": "2025-01-01T00:00:00",
@@ -1402,7 +1401,7 @@ class TestSyncStatusClass:
         assert status.online is True
         assert status.conflicts_pending == 2
 
-    def test_sync_status_from_dict_minimal(self):
+    def test_sync_status_from_dict_minimal(self) -> None:
         """Test SyncStatus with minimal data."""
         data = {"pending_changes": 0, "online": False}
 
@@ -1415,27 +1414,27 @@ class TestSyncStatusClass:
 class TestApiClientInitialization:
     """Test ApiClient initialization."""
 
-    def test_api_client_init_default(self):
+    def test_api_client_init_default(self) -> None:
         """Test ApiClient with default config."""
         client = ApiClient()
         assert client.config is not None
         assert client._client is None
         assert client._client_id is not None
 
-    def test_api_client_init_custom_config(self):
+    def test_api_client_init_custom_config(self) -> None:
         """Test ApiClient with custom config."""
         config = ApiConfig(base_url="https://custom.com", token="test-token")
         client = ApiClient(config)
         assert client.config.base_url == "https://custom.com"
         assert client.config.token == "test-token"
 
-    def test_api_client_generate_client_id(self):
+    def test_api_client_generate_client_id(self) -> None:
         """Test client ID generation is unique."""
         client1 = ApiClient()
         client2 = ApiClient()
         assert client1._client_id != client2._client_id
 
-    def test_api_client_property(self):
+    def test_api_client_property(self) -> None:
         """Test client property creates httpx client."""
         config = ApiConfig(base_url="https://test.com", token="token")
         client = ApiClient(config)
@@ -1445,7 +1444,7 @@ class TestApiClientInitialization:
         assert "Authorization" in http_client.headers
 
     @pytest.mark.asyncio
-    async def test_api_client_close(self):
+    async def test_api_client_close(self) -> None:
         """Test closing API client."""
         client = ApiClient()
         # Access client to create it
@@ -1454,7 +1453,7 @@ class TestApiClientInitialization:
         assert client._client is None
 
     @pytest.mark.asyncio
-    async def test_api_client_context_manager(self):
+    async def test_api_client_context_manager(self) -> None:
         """Test using ApiClient as context manager."""
         async with ApiClient() as client:
             assert client is not None
@@ -1465,7 +1464,7 @@ class TestApiClientRetryLogic:
     """Test API client retry logic."""
 
     @pytest.mark.asyncio
-    async def test_retry_request_success(self):
+    async def test_retry_request_success(self) -> None:
         """Test successful request without retries."""
         config = ApiConfig(base_url="https://httpbin.org")
         client = ApiClient(config)
@@ -1483,7 +1482,7 @@ class TestApiClientRetryLogic:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_retry_request_rate_limit(self):
+    async def test_retry_request_rate_limit(self) -> None:
         """Test handling rate limit error."""
         config = ApiConfig(base_url="https://test.com", max_retries=1)
         client = ApiClient(config)
@@ -1503,7 +1502,7 @@ class TestApiClientRetryLogic:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_retry_request_auth_error(self):
+    async def test_retry_request_auth_error(self) -> None:
         """Test handling authentication error."""
         config = ApiConfig(base_url="https://test.com")
         client = ApiClient(config)
@@ -1521,7 +1520,7 @@ class TestApiClientRetryLogic:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_retry_request_network_error(self):
+    async def test_retry_request_network_error(self) -> None:
         """Test handling network error with retries."""
         config = ApiConfig(base_url="https://test.com", max_retries=2)
         client = ApiClient(config)
@@ -1542,7 +1541,7 @@ class TestApiClientHealthCheck:
     """Test health check functionality."""
 
     @pytest.mark.asyncio
-    async def test_health_check_success(self):
+    async def test_health_check_success(self) -> None:
         """Test successful health check."""
         client = ApiClient()
 
@@ -1557,7 +1556,7 @@ class TestApiClientHealthCheck:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_health_check_failure(self):
+    async def test_health_check_failure(self) -> None:
         """Test failed health check."""
         client = ApiClient()
 
@@ -1572,7 +1571,7 @@ class TestApiClientHealthCheck:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_health_check_exception(self):
+    async def test_health_check_exception(self) -> None:
         """Test health check with exception."""
         client = ApiClient()
 
@@ -1589,7 +1588,7 @@ class TestApiClientSyncOperations:
     """Test sync operations."""
 
     @pytest.mark.asyncio
-    async def test_upload_changes_success(self):
+    async def test_upload_changes_success(self) -> None:
         """Test uploading changes successfully."""
         client = ApiClient()
 
@@ -1613,7 +1612,7 @@ class TestApiClientSyncOperations:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_upload_changes_with_conflicts(self):
+    async def test_upload_changes_with_conflicts(self) -> None:
         """Test uploading changes with conflicts."""
         client = ApiClient()
 
@@ -1632,8 +1631,8 @@ class TestApiClientSyncOperations:
                         "remote_version": 2,
                         "local_data": {"status": "done"},
                         "remote_data": {"status": "in_progress"},
-                    }
-                ]
+                    },
+                ],
             }
             mock_request.side_effect = httpx.HTTPStatusError("Conflict", request=MagicMock(), response=mock_response)
 
@@ -1647,7 +1646,7 @@ class TestApiClientSyncOperations:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_download_changes(self):
+    async def test_download_changes(self) -> None:
         """Test downloading changes."""
         client = ApiClient()
 
@@ -1664,8 +1663,8 @@ class TestApiClientSyncOperations:
                         "data": {"title": "Remote Item"},
                         "version": 1,
                         "timestamp": datetime.now(UTC).isoformat(),
-                    }
-                ]
+                    },
+                ],
             }
             mock_request.return_value = mock_response
 
@@ -1676,7 +1675,7 @@ class TestApiClientSyncOperations:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict(self):
+    async def test_resolve_conflict(self) -> None:
         """Test resolving conflict."""
         client = ApiClient()
 
@@ -1691,7 +1690,7 @@ class TestApiClientSyncOperations:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_get_sync_status(self):
+    async def test_get_sync_status(self) -> None:
         """Test getting sync status."""
         client = ApiClient()
 
@@ -1711,7 +1710,7 @@ class TestApiClientSyncOperations:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_full_sync_no_conflicts(self):
+    async def test_full_sync_no_conflicts(self) -> None:
         """Test full bidirectional sync without conflicts."""
         client = ApiClient()
 
@@ -1736,7 +1735,7 @@ class TestApiClientSyncOperations:
         await client.close()
 
     @pytest.mark.asyncio
-    async def test_full_sync_with_auto_resolve(self):
+    async def test_full_sync_with_auto_resolve(self) -> None:
         """Test full sync with auto conflict resolution."""
         client = ApiClient()
 
@@ -1766,7 +1765,7 @@ class TestApiClientSyncOperations:
             mock_download.return_value = []
 
             upload_result, remote_changes = await client.full_sync(
-                local_changes, conflict_strategy=ConflictStrategy.LOCAL_WINS
+                local_changes, conflict_strategy=ConflictStrategy.LOCAL_WINS,
             )
 
             assert mock_resolve.called
@@ -1783,20 +1782,20 @@ class TestApiClientSyncOperations:
 class TestErrorHandling:
     """Test comprehensive error handling."""
 
-    def test_client_close_idempotent(self, api_client_setup):
+    def test_client_close_idempotent(self, api_client_setup) -> None:
         """Test closing client multiple times is safe."""
         client = TraceRTMClient()
         client.close()
         client.close()  # Should not raise error
 
     @pytest.mark.asyncio
-    async def test_api_client_multiple_close(self):
+    async def test_api_client_multiple_close(self) -> None:
         """Test closing API client multiple times."""
         client = ApiClient()
         await client.close()
         await client.close()  # Should not raise error
 
-    def test_batch_operations_rollback_on_error(self, api_client_setup):
+    def test_batch_operations_rollback_on_error(self, api_client_setup) -> None:
         """Test batch operations rollback on error."""
         client = TraceRTMClient()
         client.register_agent("Test Agent")
@@ -1809,7 +1808,7 @@ class TestErrorHandling:
         client.close()
 
     @pytest.mark.asyncio
-    async def test_api_error_hierarchy(self):
+    async def test_api_error_hierarchy(self) -> None:
         """Test API error class hierarchy."""
         base_error = ApiError("Base error", status_code=500)
         assert base_error.status_code == 500

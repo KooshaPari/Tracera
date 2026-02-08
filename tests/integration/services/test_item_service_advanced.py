@@ -1,5 +1,4 @@
-"""
-Advanced ItemService Test Suite (tests/integration/services/test_item_service_advanced.py)
+"""Advanced ItemService Test Suite (tests/integration/services/test_item_service_advanced.py).
 
 Comprehensive integration tests covering:
 - Complex queries with multiple filters, sorting, pagination
@@ -134,7 +133,7 @@ def sample_items(db_session, sample_project):
 class TestComplexQueries:
     """Tests for complex query scenarios."""
 
-    def test_query_with_multiple_filters(self, db_session, sample_project):
+    def test_query_with_multiple_filters(self, db_session, sample_project) -> None:
         """Test querying items with multiple filters applied."""
         # Create items with various attributes
         for i in range(10):
@@ -165,7 +164,7 @@ class TestComplexQueries:
         assert all(item.view == "FEATURE" for item in items)
         assert all(item.status == "todo" for item in items)
 
-    def test_pagination_with_offset_and_limit(self, db_session, sample_project):
+    def test_pagination_with_offset_and_limit(self, db_session, sample_project) -> None:
         """Test pagination with offset and limit."""
         # Create 50 items
         for i in range(50):
@@ -192,7 +191,7 @@ class TestComplexQueries:
         assert len(page2) == 10
         assert page1[0].id != page2[0].id
 
-    def test_hierarchical_query_ancestors(self, db_session, sample_project):
+    def test_hierarchical_query_ancestors(self, db_session, sample_project) -> None:
         """Test querying ancestors of an item."""
         # Create hierarchy: root -> child -> grandchild
         root = Item(
@@ -239,7 +238,7 @@ class TestComplexQueries:
         assert any(a.id == "h-root" for a in ancestors)
         assert any(a.id == "h-child" for a in ancestors)
 
-    def test_query_by_view_with_status_filter(self, db_session, sample_project):
+    def test_query_by_view_with_status_filter(self, db_session, sample_project) -> None:
         """Test querying items filtered by view and status."""
         # Create items in different views with different statuses
         for view in ["FEATURE", "TEST", "CODE"]:
@@ -263,7 +262,7 @@ class TestComplexQueries:
         assert all(item.view == "FEATURE" for item in items)
         assert len(items) == 3  # 3 statuses
 
-    def test_query_with_metadata_filter(self, db_session, sample_project):
+    def test_query_with_metadata_filter(self, db_session, sample_project) -> None:
         """Test querying items by metadata."""
         # Create items with different metadata
         for i in range(10):
@@ -291,7 +290,7 @@ class TestComplexQueries:
         prod_items = [i for i in items if i.item_metadata.get("environment") == "prod"]
         assert len(prod_items) > 0
 
-    def test_sort_items_by_priority(self, db_session, sample_project):
+    def test_sort_items_by_priority(self, db_session, sample_project) -> None:
         """Test sorting items by priority."""
         priorities = ["low", "high", "medium", "low", "high"]
         for i, priority in enumerate(priorities):
@@ -314,7 +313,7 @@ class TestComplexQueries:
 
         assert len(items) == 5
 
-    def test_count_items_by_status(self, db_session, sample_project):
+    def test_count_items_by_status(self, db_session, sample_project) -> None:
         """Test counting items grouped by status."""
         for i, status in enumerate(["todo", "todo", "in_progress", "done", "done", "done"]):
             item = Item(
@@ -339,7 +338,7 @@ class TestComplexQueries:
         assert counts.get("in_progress", 0) == 1
         assert counts.get("done", 0) == 3
 
-    def test_query_items_by_owner(self, db_session, sample_project):
+    def test_query_items_by_owner(self, db_session, sample_project) -> None:
         """Test querying items by owner."""
         owners = ["alice", "bob", "alice", "charlie", "bob"]
         for i, owner in enumerate(owners):
@@ -363,7 +362,7 @@ class TestComplexQueries:
         assert len(items) == 2
         assert all(item.owner == "alice" for item in items)
 
-    def test_list_items_with_view_filter(self, db_session, sample_project):
+    def test_list_items_with_view_filter(self, db_session, sample_project) -> None:
         """Test listing items filtered by view."""
         for i in range(10):
             view = ["FEATURE", "TEST", "CODE"][i % 3]
@@ -392,7 +391,7 @@ class TestComplexQueries:
 class TestConcurrentModifications:
     """Tests for concurrent modifications and locking behavior."""
 
-    def test_optimistic_locking_version_conflict(self, db_session, sample_project):
+    def test_optimistic_locking_version_conflict(self, db_session, sample_project) -> None:
         """Test that version conflict is detected during update."""
         item = Item(
             id="lock-test-1",
@@ -420,7 +419,7 @@ class TestConcurrentModifications:
         with pytest.raises(ConcurrencyError):
             repo.update("lock-test-1", expected_version=1, status="done")
 
-    def test_concurrent_updates_increment_version(self, db_session, sample_project):
+    def test_concurrent_updates_increment_version(self, db_session, sample_project) -> None:
         """Test that concurrent updates increment version correctly."""
         item = Item(
             id="version-test-1",
@@ -442,7 +441,7 @@ class TestConcurrentModifications:
             item = repo.update("version-test-1", expected_version=item.version, status="todo")
             assert item.version == i + 2
 
-    def test_metadata_update_version_increment(self, db_session, sample_project):
+    def test_metadata_update_version_increment(self, db_session, sample_project) -> None:
         """Test that metadata updates increment version correctly."""
         item = Item(
             id="meta-update-1",
@@ -471,7 +470,7 @@ class TestConcurrentModifications:
         assert updated.item_metadata["key"] == "new_value"
         assert updated.item_metadata["new_key"] == "new_value"
 
-    def test_update_multiple_fields_increments_once(self, db_session, sample_project):
+    def test_update_multiple_fields_increments_once(self, db_session, sample_project) -> None:
         """Test that updating multiple fields increments version once."""
         item = Item(
             id="multi-update-1",
@@ -503,7 +502,7 @@ class TestConcurrentModifications:
         assert updated.priority == "high"
         assert updated.owner == "alice"
 
-    def test_version_prevents_lost_updates(self, db_session, sample_project):
+    def test_version_prevents_lost_updates(self, db_session, sample_project) -> None:
         """Test that version prevents lost updates in race conditions."""
         item = Item(
             id="lost-update-1",
@@ -539,7 +538,7 @@ class TestConcurrentModifications:
 class TestConstraintViolations:
     """Tests for constraint violations and error handling."""
 
-    def test_invalid_status_transition(self, db_session, sample_project):
+    def test_invalid_status_transition(self, db_session, sample_project) -> None:
         """Test that invalid status transitions are rejected."""
         item = Item(
             id="status-test-1",
@@ -560,7 +559,7 @@ class TestConstraintViolations:
         valid_from_done = STATUS_TRANSITIONS.get("done", [])
         assert "in_progress" not in valid_from_done  # Invalid transition
 
-    def test_all_valid_status_values_allowed(self, db_session, sample_project):
+    def test_all_valid_status_values_allowed(self, db_session, sample_project) -> None:
         """Test that all valid status values are allowed."""
         for status in VALID_STATUSES:
             item = Item(
@@ -580,7 +579,7 @@ class TestConstraintViolations:
             assert item is not None
             assert item.status == status
 
-    def test_parent_item_must_exist(self, db_session, sample_project):
+    def test_parent_item_must_exist(self, db_session, sample_project) -> None:
         """Test that parent item must exist when creating child."""
         repo = ItemRepository(db_session)
 
@@ -594,7 +593,7 @@ class TestConstraintViolations:
                 parent_id="non-existent-parent",
             )
 
-    def test_parent_must_be_in_same_project(self, db_session):
+    def test_parent_must_be_in_same_project(self, db_session) -> None:
         """Test that parent must be in the same project."""
         # Create two projects
         proj1 = Project(id="proj-1", name="Project 1")
@@ -625,28 +624,28 @@ class TestConstraintViolations:
                 parent_id="item-in-proj1",
             )
 
-    def test_update_nonexistent_item_raises(self, db_session, sample_project):
+    def test_update_nonexistent_item_raises(self, db_session, sample_project) -> None:
         """Test updating an item that doesn't exist."""
         repo = ItemRepository(db_session)
 
         with pytest.raises(ValueError, match="not found"):
             repo.update("nonexistent", expected_version=1, status="done")
 
-    def test_get_nonexistent_returns_none(self, db_session, sample_project):
+    def test_get_nonexistent_returns_none(self, db_session, sample_project) -> None:
         """Test that getting non-existent item returns None."""
         repo = ItemRepository(db_session)
 
         item = repo.get_by_id("nonexistent")
         assert item is None
 
-    def test_delete_nonexistent_returns_false(self, db_session, sample_project):
+    def test_delete_nonexistent_returns_false(self, db_session, sample_project) -> None:
         """Test that deleting non-existent item returns False."""
         repo = ItemRepository(db_session)
 
         result = repo.delete("nonexistent", soft=True)
         assert result is False
 
-    def test_circular_parent_child_not_allowed(self, db_session, sample_project):
+    def test_circular_parent_child_not_allowed(self, db_session, sample_project) -> None:
         """Test that circular parent-child relationships are not allowed."""
         # Create item A
         item_a = Item(
@@ -681,7 +680,7 @@ class TestConstraintViolations:
             # For now, just verify we can detect the issue
             pass
 
-    def test_nullable_optional_fields(self, db_session, sample_project):
+    def test_nullable_optional_fields(self, db_session, sample_project) -> None:
         """Test that optional fields can be null."""
         repo = ItemRepository(db_session)
 
@@ -708,7 +707,7 @@ class TestConstraintViolations:
 class TestPerformance:
     """Tests for performance with large datasets."""
 
-    def test_list_100_items_performance(self, db_session, sample_project):
+    def test_list_100_items_performance(self, db_session, sample_project) -> None:
         """Test listing 100 items completes quickly."""
         # Create 100 items
         items = []
@@ -736,7 +735,7 @@ class TestPerformance:
         assert len(result) == 100
         assert elapsed < 1.0  # Should complete in less than 1 second
 
-    def test_filter_100_items_by_status(self, db_session, sample_project):
+    def test_filter_100_items_by_status(self, db_session, sample_project) -> None:
         """Test filtering 100 items by status."""
         # Create 100 items
         items = []
@@ -765,14 +764,14 @@ class TestPerformance:
         assert all(item.status == "done" for item in result)
         assert elapsed < 0.5
 
-    def test_bulk_create_100_items(self, db_session, sample_project):
+    def test_bulk_create_100_items(self, db_session, sample_project) -> None:
         """Test bulk creating 100 items."""
         repo = ItemRepository(db_session)
 
         start = time.time()
         for i in range(100):
             repo.create(
-                project_id=sample_project.id, title=f"Bulk Item {i}", view="FEATURE", item_type="feature", status="todo"
+                project_id=sample_project.id, title=f"Bulk Item {i}", view="FEATURE", item_type="feature", status="todo",
             )
         elapsed = time.time() - start
 
@@ -783,7 +782,7 @@ class TestPerformance:
         all_items = repo.get_by_project(sample_project.id, limit=200)
         assert len(all_items) >= 100
 
-    def test_update_100_items_in_transaction(self, db_session, sample_project):
+    def test_update_100_items_in_transaction(self, db_session, sample_project) -> None:
         """Test updating 100 items in a transaction."""
         # Create items
         items = []
@@ -814,7 +813,7 @@ class TestPerformance:
 
         assert elapsed < 10.0
 
-    def test_complex_hierarchy_query(self, db_session, sample_project):
+    def test_complex_hierarchy_query(self, db_session, sample_project) -> None:
         """Test querying complex hierarchy."""
         # Create hierarchy of items
         root = Item(
@@ -852,7 +851,7 @@ class TestPerformance:
         assert len(children) == 10
         assert elapsed < 0.5
 
-    def test_get_descendants_large_tree(self, db_session, sample_project):
+    def test_get_descendants_large_tree(self, db_session, sample_project) -> None:
         """Test getting descendants from a larger tree."""
         # Create parent
         parent = Item(
@@ -900,7 +899,7 @@ class TestPerformance:
 class TestDeletionAndRestoration:
     """Tests for soft delete, hard delete, and restoration."""
 
-    def test_soft_delete_marks_deleted_at(self, db_session, sample_project):
+    def test_soft_delete_marks_deleted_at(self, db_session, sample_project) -> None:
         """Test that soft delete sets deleted_at timestamp."""
         item = Item(
             id="soft-delete-1",
@@ -924,7 +923,7 @@ class TestDeletionAndRestoration:
         deleted_item = db_session.query(Item).filter_by(id="soft-delete-1").first()
         assert deleted_item.deleted_at is not None
 
-    def test_hard_delete_removes_row(self, db_session, sample_project):
+    def test_hard_delete_removes_row(self, db_session, sample_project) -> None:
         """Test that hard delete removes the row."""
         item = Item(
             id="hard-delete-1",
@@ -947,7 +946,7 @@ class TestDeletionAndRestoration:
         deleted_item = db_session.query(Item).filter_by(id="hard-delete-1").first()
         assert deleted_item is None
 
-    def test_soft_delete_cascade_to_children(self, db_session, sample_project):
+    def test_soft_delete_cascade_to_children(self, db_session, sample_project) -> None:
         """Test that soft deleting parent cascades to children."""
         parent = Item(
             id="parent-cascade",
@@ -981,7 +980,7 @@ class TestDeletionAndRestoration:
         deleted_child = db_session.query(Item).filter_by(id="child-cascade").first()
         assert deleted_child.deleted_at is not None
 
-    def test_restore_soft_deleted_item(self, db_session, sample_project):
+    def test_restore_soft_deleted_item(self, db_session, sample_project) -> None:
         """Test restoring a soft-deleted item."""
         item = Item(
             id="restore-1",
@@ -1004,7 +1003,7 @@ class TestDeletionAndRestoration:
         assert restored is not None
         assert restored.deleted_at is None
 
-    def test_deleted_items_excluded_from_queries(self, db_session, sample_project):
+    def test_deleted_items_excluded_from_queries(self, db_session, sample_project) -> None:
         """Test that deleted items are excluded from queries."""
         # Create items
         for i in range(5):
@@ -1034,14 +1033,14 @@ class TestDeletionAndRestoration:
 
         assert len(remaining) == initial_count - 2
 
-    def test_restore_nonexistent_returns_none(self, db_session, sample_project):
+    def test_restore_nonexistent_returns_none(self, db_session, sample_project) -> None:
         """Test that restoring non-existent item returns None."""
         repo = ItemRepository(db_session)
 
         result = repo.restore("nonexistent")
         assert result is None
 
-    def test_hard_delete_removes_links(self, db_session, sample_project):
+    def test_hard_delete_removes_links(self, db_session, sample_project) -> None:
         """Test that hard delete also removes associated links."""
         # Create two items
         source = Item(
@@ -1092,7 +1091,7 @@ class TestDeletionAndRestoration:
 class TestLinksAndRelationships:
     """Tests for item links and relationships."""
 
-    def test_create_item_with_links(self, db_session, sample_project):
+    def test_create_item_with_links(self, db_session, sample_project) -> None:
         """Test creating an item with links to other items."""
         # Create target items
         target1 = Item(
@@ -1142,7 +1141,7 @@ class TestLinksAndRelationships:
         links = db_session.query(Link).filter_by(source_item_id="source-with-links").all()
         assert len(links) == 2
 
-    def test_get_items_by_link_type(self, db_session, sample_project):
+    def test_get_items_by_link_type(self, db_session, sample_project) -> None:
         """Test getting items by link type."""
         # Create items and links
         items = []
@@ -1176,7 +1175,7 @@ class TestLinksAndRelationships:
 
         assert len(depends_on_links) == 2
 
-    def test_bidirectional_links(self, db_session, sample_project):
+    def test_bidirectional_links(self, db_session, sample_project) -> None:
         """Test creating bidirectional links between items."""
         item1 = Item(
             id="bidi-item-1",
@@ -1222,7 +1221,7 @@ class TestLinksAndRelationships:
         assert len(outgoing) == 1
         assert len(incoming) == 1
 
-    def test_delete_item_cascade_delete_links(self, db_session, sample_project):
+    def test_delete_item_cascade_delete_links(self, db_session, sample_project) -> None:
         """Test that deleting item cascades to delete links."""
         source = Item(
             id="cascade-source",
@@ -1271,7 +1270,7 @@ class TestLinksAndRelationships:
 class TestEdgeCases:
     """Tests for edge cases and boundary conditions."""
 
-    def test_very_long_title(self, db_session, sample_project):
+    def test_very_long_title(self, db_session, sample_project) -> None:
         """Test handling of very long titles."""
         repo = ItemRepository(db_session)
 
@@ -1285,7 +1284,7 @@ class TestEdgeCases:
 
         assert item.title == long_title
 
-    def test_unicode_in_title_and_description(self, db_session, sample_project):
+    def test_unicode_in_title_and_description(self, db_session, sample_project) -> None:
         """Test Unicode characters in title and description."""
         repo = ItemRepository(db_session)
 
@@ -1301,7 +1300,7 @@ class TestEdgeCases:
         assert "🚀" in item.title
         assert "日本語" in item.description
 
-    def test_null_optional_fields(self, db_session, sample_project):
+    def test_null_optional_fields(self, db_session, sample_project) -> None:
         """Test that optional fields can be null."""
         repo = ItemRepository(db_session)
 
@@ -1320,7 +1319,7 @@ class TestEdgeCases:
         assert item.owner is None
         assert item.parent_id is None
 
-    def test_empty_metadata(self, db_session, sample_project):
+    def test_empty_metadata(self, db_session, sample_project) -> None:
         """Test creating item with empty metadata."""
         repo = ItemRepository(db_session)
 
@@ -1328,7 +1327,7 @@ class TestEdgeCases:
 
         assert item.item_metadata == {}
 
-    def test_list_empty_project(self, db_session):
+    def test_list_empty_project(self, db_session) -> None:
         """Test listing items from empty project."""
         other_project = Project(id="empty-proj", name="Empty Project")
         db_session.add(other_project)
@@ -1340,7 +1339,7 @@ class TestEdgeCases:
 
         assert items == []
 
-    def test_special_characters_in_fields(self, db_session, sample_project):
+    def test_special_characters_in_fields(self, db_session, sample_project) -> None:
         """Test special characters in various fields."""
         repo = ItemRepository(db_session)
 
@@ -1355,7 +1354,7 @@ class TestEdgeCases:
         assert "quotes" in item.title
         assert item.owner == "user+test@example.com"
 
-    def test_multiple_projects_isolation(self, db_session):
+    def test_multiple_projects_isolation(self, db_session) -> None:
         """Test that items are isolated per project."""
         # Create two projects
         proj1 = Project(id="iso-proj-1", name="Project 1")

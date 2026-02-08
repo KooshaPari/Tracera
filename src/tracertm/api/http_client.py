@@ -1,5 +1,4 @@
-"""
-HTTP client for TraceRTM API (canonical contract for MCP/CLI/other clients).
+"""HTTP client for TraceRTM API (canonical contract for MCP/CLI/other clients).
 Includes wait+retry with exponential backoff for transient failures.
 """
 
@@ -96,7 +95,7 @@ class TraceRTMHttpClient:
             lambda e: (
                 isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
                 or (isinstance(e, TraceRTMHttpError) and _is_retryable_status(e.status))
-            )
+            ),
         ),
         reraise=True,
     )

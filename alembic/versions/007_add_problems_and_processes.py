@@ -1,4 +1,4 @@
-"""Add problems, processes, problem_activities, and process_executions tables
+"""Add problems, processes, problem_activities, and process_executions tables.
 
 Revision ID: 007_add_problems_and_processes
 Revises: 006_add_priority_owner
@@ -147,7 +147,7 @@ def upgrade() -> None:
         sa.Column("version_number", sa.Integer, nullable=False, server_default="1"),
         sa.Column("is_active_version", sa.Boolean, nullable=False, server_default="true"),
         sa.Column(
-            "parent_version_id", sa.String(255), sa.ForeignKey("processes.id", ondelete="SET NULL"), nullable=True
+            "parent_version_id", sa.String(255), sa.ForeignKey("processes.id", ondelete="SET NULL"), nullable=True,
         ),
         sa.Column("version_notes", sa.Text, nullable=True),
         # Process Definition

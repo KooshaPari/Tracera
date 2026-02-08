@@ -9,9 +9,15 @@ import { mockItems, mockLinks, mockProjects } from '../mocks/data';
 
 // Simple console-based logger
 const logger = {
-  info: (msg: string) => console.log(msg),
-  warn: (msg: string) => console.warn(msg),
-  error: (msg: string) => console.error(msg),
+  info: (msg: string) => {
+    console.log(msg);
+  },
+  warn: (msg: string) => {
+    console.warn(msg);
+  },
+  error: (msg: string) => {
+    console.error(msg);
+  },
 };
 
 // Mock fetch responses for API tests

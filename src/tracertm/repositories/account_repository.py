@@ -1,6 +1,4 @@
-"""
-Repository for Account model operations.
-"""
+"""Repository for Account model operations."""
 
 from typing import Any
 
@@ -14,7 +12,7 @@ from tracertm.models.account_user import AccountRole, AccountUser
 class AccountRepository:
     """Repository for account operations."""
 
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
     async def create(
@@ -48,7 +46,7 @@ class AccountRepository:
     async def list_by_user(self, user_id: str) -> list[Account]:
         """List all accounts for a user."""
         result = await self.db.execute(
-            select(Account).join(AccountUser).where(AccountUser.user_id == user_id).order_by(Account.created_at.desc())
+            select(Account).join(AccountUser).where(AccountUser.user_id == user_id).order_by(Account.created_at.desc()),
         )
         return list(result.scalars().all())
 
@@ -106,7 +104,7 @@ class AccountRepository:
             select(AccountUser).where(
                 AccountUser.account_id == account_id,
                 AccountUser.user_id == user_id,
-            )
+            ),
         )
         account_user = result.scalar_one_or_none()
         if not account_user:
@@ -122,7 +120,7 @@ class AccountRepository:
             select(AccountUser.role).where(
                 AccountUser.account_id == account_id,
                 AccountUser.user_id == user_id,
-            )
+            ),
         )
         return result.scalar_one_or_none()
 
@@ -132,7 +130,7 @@ class AccountRepository:
             select(AccountUser).where(
                 AccountUser.account_id == account_id,
                 AccountUser.user_id == user_id,
-            )
+            ),
         )
         account_user = result.scalar_one_or_none()
         if not account_user:

@@ -27,7 +27,7 @@ class CreateFeatureInput:
 class FeatureService:
     """Service for BDD Features."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def _log_event(
@@ -56,7 +56,7 @@ class FeatureService:
         opts = options or CreateFeatureInput()
         # Simple numbering
         result = await self.session.execute(
-            select(Feature).where(Feature.project_id == project_id).order_by(Feature.created_at.desc()).limit(1)
+            select(Feature).where(Feature.project_id == project_id).order_by(Feature.created_at.desc()).limit(1),
         )
         last = result.scalar_one_or_none()
 
@@ -121,7 +121,8 @@ class FeatureService:
         async def do_update() -> Feature:
             feature = await self.get_feature(feature_id)
             if not feature:
-                raise ValueError(f"Feature {feature_id} not found")
+                msg = f"Feature {feature_id} not found"
+                raise ValueError(msg)
 
             before = {key: getattr(feature, key, None) for key in updates}
             for key, value in updates.items():

@@ -1,5 +1,4 @@
-"""
-Token management and refresh flow tests.
+"""Token management and refresh flow tests.
 
 Tests for JWT token lifecycle, refresh tokens, token revocation,
 and token management scenarios.
@@ -19,7 +18,7 @@ def mock_token_manager():
 
 
 @pytest.fixture
-def mock_refresh_token():
+def mock_refresh_token() -> str:
     """Generate mock refresh token."""
     return "refresh_token_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh_payload.signature"
 
@@ -27,7 +26,7 @@ def mock_refresh_token():
 class TestAccessTokenGeneration:
     """Test access token generation."""
 
-    def test_access_token_contains_required_claims(self, mock_token_manager):
+    def test_access_token_contains_required_claims(self, mock_token_manager) -> None:
         """Test that access tokens contain required claims."""
         mock_token_manager.generate_access_token.return_value = {
             "access_token": "token",
@@ -41,7 +40,7 @@ class TestAccessTokenGeneration:
         assert "expires_in" in token
         assert token["token_type"] == "bearer"
 
-    def test_access_token_expiration_time_set(self, mock_token_manager):
+    def test_access_token_expiration_time_set(self, mock_token_manager) -> None:
         """Test that access token expiration is properly set."""
         mock_token_manager.generate_access_token.return_value = {
             "access_token": "token",
@@ -53,7 +52,7 @@ class TestAccessTokenGeneration:
         # Should have 1 hour expiration
         assert token["expires_in"] == 3600
 
-    def test_access_token_subject_claim(self, mock_token_manager):
+    def test_access_token_subject_claim(self, mock_token_manager) -> None:
         """Test that access token contains user subject claim."""
         mock_token_manager.generate_access_token.return_value = {
             "access_token": "token_with_sub",
@@ -65,7 +64,7 @@ class TestAccessTokenGeneration:
         # Token should contain user ID
         assert token.get("user_id") == "user123"
 
-    def test_access_token_scopes(self, mock_token_manager):
+    def test_access_token_scopes(self, mock_token_manager) -> None:
         """Test that access token includes scopes."""
         mock_token_manager.generate_access_token.return_value = {
             "access_token": "scoped_token",
@@ -80,7 +79,7 @@ class TestAccessTokenGeneration:
 class TestRefreshTokenFlow:
     """Test refresh token functionality."""
 
-    def test_refresh_token_generates_new_access_token(self, mock_refresh_token, mock_token_manager):
+    def test_refresh_token_generates_new_access_token(self, mock_refresh_token, mock_token_manager) -> None:
         """Test that refresh token generates new access token."""
         mock_token_manager.refresh_access_token.return_value = {
             "access_token": "new_access_token",
@@ -93,7 +92,7 @@ class TestRefreshTokenFlow:
         assert "access_token" in token
         assert token["access_token"] != mock_refresh_token
 
-    def test_refresh_token_preserves_user_identity(self, mock_refresh_token, mock_token_manager):
+    def test_refresh_token_preserves_user_identity(self, mock_refresh_token, mock_token_manager) -> None:
         """Test that refresh token generates token for same user."""
         mock_token_manager.refresh_access_token.return_value = {
             "access_token": "new_token",
@@ -105,7 +104,7 @@ class TestRefreshTokenFlow:
         # New token should be for same user
         assert token.get("user_id") == "user123"
 
-    def test_refresh_token_validation(self, mock_refresh_token, mock_token_manager):
+    def test_refresh_token_validation(self, mock_refresh_token, mock_token_manager) -> None:
         """Test refresh token validation."""
         mock_token_manager.validate_refresh_token.return_value = True
 
@@ -113,7 +112,7 @@ class TestRefreshTokenFlow:
 
         assert is_valid is True
 
-    def test_invalid_refresh_token_rejected(self, mock_token_manager):
+    def test_invalid_refresh_token_rejected(self, mock_token_manager) -> None:
         """Test that invalid refresh token is rejected."""
         mock_token_manager.validate_refresh_token.return_value = False
 
@@ -121,14 +120,14 @@ class TestRefreshTokenFlow:
 
         assert is_valid is False
 
-    def test_expired_refresh_token_rejected(self, mock_token_manager):
+    def test_expired_refresh_token_rejected(self, mock_token_manager) -> None:
         """Test that expired refresh token is rejected."""
         mock_token_manager.validate_refresh_token.side_effect = ValueError("Refresh token expired")
 
         with pytest.raises(ValueError, match="Refresh token expired"):
             mock_token_manager.validate_refresh_token("expired_refresh")
 
-    def test_refresh_token_single_use(self, mock_refresh_token, mock_token_manager):
+    def test_refresh_token_single_use(self, mock_refresh_token, mock_token_manager) -> None:
         """Test that refresh token can only be used once (rotation)."""
         mock_token_manager.refresh_access_token.return_value = {
             "access_token": "new_token",
@@ -149,7 +148,7 @@ class TestRefreshTokenFlow:
 class TestTokenRevocation:
     """Test token revocation and blacklisting."""
 
-    def test_token_revocation(self, mock_token_manager):
+    def test_token_revocation(self, mock_token_manager) -> None:
         """Test token revocation functionality."""
         token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.payload.signature"
 
@@ -159,7 +158,7 @@ class TestTokenRevocation:
 
         assert is_revoked is True
 
-    def test_revoked_token_rejected(self, mock_token_manager):
+    def test_revoked_token_rejected(self, mock_token_manager) -> None:
         """Test that revoked tokens are rejected."""
         token = "revoked_token"
 
@@ -168,7 +167,7 @@ class TestTokenRevocation:
         with pytest.raises(ValueError, match="Token is revoked"):
             mock_token_manager.validate_token(token)
 
-    def test_logout_revokes_all_tokens(self, mock_token_manager):
+    def test_logout_revokes_all_tokens(self, mock_token_manager) -> None:
         """Test that logout revokes all tokens for a user."""
         user_id = "user123"
 
@@ -178,7 +177,7 @@ class TestTokenRevocation:
 
         assert revoked_count == 3
 
-    def test_revoked_token_in_blacklist(self, mock_token_manager):
+    def test_revoked_token_in_blacklist(self, mock_token_manager) -> None:
         """Test that revoked tokens are added to blacklist."""
         token = "token_to_revoke"
 
@@ -193,7 +192,7 @@ class TestTokenRevocation:
 class TestTokenExpiration:
     """Test token expiration handling."""
 
-    def test_token_expiration_check(self, mock_token_manager):
+    def test_token_expiration_check(self, mock_token_manager) -> None:
         """Test token expiration validation."""
         token = {
             "exp": (datetime.now(UTC) + timedelta(hours=1)).timestamp(),
@@ -205,7 +204,7 @@ class TestTokenExpiration:
 
         assert is_expired is False
 
-    def test_expired_token_detected(self, mock_token_manager):
+    def test_expired_token_detected(self, mock_token_manager) -> None:
         """Test detection of expired tokens."""
         token = {
             "exp": (datetime.now(UTC) - timedelta(hours=1)).timestamp(),
@@ -217,7 +216,7 @@ class TestTokenExpiration:
 
         assert is_expired is True
 
-    def test_token_near_expiration_warning(self, mock_token_manager):
+    def test_token_near_expiration_warning(self, mock_token_manager) -> None:
         """Test warning for tokens nearing expiration."""
         token = {
             "exp": (datetime.now(UTC) + timedelta(minutes=5)).timestamp(),
@@ -229,7 +228,7 @@ class TestTokenExpiration:
 
         assert is_expiring is True
 
-    def test_token_grace_period(self, mock_token_manager):
+    def test_token_grace_period(self, mock_token_manager) -> None:
         """Test grace period for just-expired tokens."""
         token = {
             "exp": (datetime.now(UTC) - timedelta(seconds=10)).timestamp(),
@@ -245,7 +244,7 @@ class TestTokenExpiration:
 class TestTokenScopes:
     """Test token scopes and permissions."""
 
-    def test_token_scopes_validation(self, mock_token_manager):
+    def test_token_scopes_validation(self, mock_token_manager) -> None:
         """Test token scope validation."""
         token = {
             "scopes": ["read:projects", "write:items"],
@@ -257,7 +256,7 @@ class TestTokenScopes:
 
         assert has_scope is True
 
-    def test_insufficient_scopes_denied(self, mock_token_manager):
+    def test_insufficient_scopes_denied(self, mock_token_manager) -> None:
         """Test that insufficient scopes are denied."""
         token = {
             "scopes": ["read:projects"],
@@ -269,7 +268,7 @@ class TestTokenScopes:
 
         assert has_scope is False
 
-    def test_multiple_scopes_check(self, mock_token_manager):
+    def test_multiple_scopes_check(self, mock_token_manager) -> None:
         """Test checking multiple required scopes."""
         token = {
             "scopes": ["read:projects", "write:items"],
@@ -281,7 +280,7 @@ class TestTokenScopes:
 
         assert has_scopes is True
 
-    def test_scope_hierarchy(self, mock_token_manager):
+    def test_scope_hierarchy(self, mock_token_manager) -> None:
         """Test scope hierarchy (admin scope includes all)."""
         token = {
             "scopes": ["admin"],
@@ -297,7 +296,7 @@ class TestTokenScopes:
 class TestTokenEncoding:
     """Test token encoding and validation."""
 
-    def test_token_signature_validation(self, mock_token_manager):
+    def test_token_signature_validation(self, mock_token_manager) -> None:
         """Test token signature validation."""
         token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.payload.valid_signature"
 
@@ -307,7 +306,7 @@ class TestTokenEncoding:
 
         assert is_valid is True
 
-    def test_invalid_token_signature_rejected(self, mock_token_manager):
+    def test_invalid_token_signature_rejected(self, mock_token_manager) -> None:
         """Test that invalid signatures are rejected."""
         token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.payload.invalid_signature"
 
@@ -317,7 +316,7 @@ class TestTokenEncoding:
 
         assert is_valid is False
 
-    def test_token_format_validation(self, mock_token_manager):
+    def test_token_format_validation(self, mock_token_manager) -> None:
         """Test token format validation."""
         valid_token = "header.payload.signature"
         invalid_token = "invalid_format"
@@ -328,7 +327,7 @@ class TestTokenEncoding:
         mock_token_manager.validate_format.return_value = False
         assert mock_token_manager.validate_format(invalid_token) is False
 
-    def test_token_payload_decoding(self, mock_token_manager):
+    def test_token_payload_decoding(self, mock_token_manager) -> None:
         """Test token payload decoding."""
         token = "header.eyJzdWIiOiJ1c2VyMTIzIn0.signature"
 
@@ -344,7 +343,7 @@ class TestTokenEncoding:
 class TestTokenAudience:
     """Test token audience validation."""
 
-    def test_token_audience_claim(self, mock_token_manager):
+    def test_token_audience_claim(self, mock_token_manager) -> None:
         """Test token audience claim validation."""
         token = {
             "aud": "api.tracertm.com",
@@ -356,7 +355,7 @@ class TestTokenAudience:
 
         assert is_valid is True
 
-    def test_invalid_audience_rejected(self, mock_token_manager):
+    def test_invalid_audience_rejected(self, mock_token_manager) -> None:
         """Test that invalid audience is rejected."""
         token = {
             "aud": "api.other.com",
@@ -368,7 +367,7 @@ class TestTokenAudience:
 
         assert is_valid is False
 
-    def test_missing_audience_claim(self, mock_token_manager):
+    def test_missing_audience_claim(self, mock_token_manager) -> None:
         """Test handling of missing audience claim."""
         token = {}
 
@@ -381,7 +380,7 @@ class TestTokenAudience:
 class TestTokenIssuer:
     """Test token issuer validation."""
 
-    def test_token_issuer_claim(self, mock_token_manager):
+    def test_token_issuer_claim(self, mock_token_manager) -> None:
         """Test token issuer claim validation."""
         token = {
             "iss": "tracertm",
@@ -393,7 +392,7 @@ class TestTokenIssuer:
 
         assert is_valid is True
 
-    def test_invalid_issuer_rejected(self, mock_token_manager):
+    def test_invalid_issuer_rejected(self, mock_token_manager) -> None:
         """Test that invalid issuer is rejected."""
         token = {
             "iss": "unknown",
@@ -409,7 +408,7 @@ class TestTokenIssuer:
 class TestTokenNotBefore:
     """Test token not-before claim."""
 
-    def test_token_not_before_validation(self, mock_token_manager):
+    def test_token_not_before_validation(self, mock_token_manager) -> None:
         """Test token not-before claim validation."""
         token = {
             "nbf": (datetime.now(UTC) - timedelta(hours=1)).timestamp(),
@@ -421,7 +420,7 @@ class TestTokenNotBefore:
 
         assert is_valid is True
 
-    def test_token_not_yet_valid(self, mock_token_manager):
+    def test_token_not_yet_valid(self, mock_token_manager) -> None:
         """Test token not yet valid (future nbf)."""
         token = {
             "nbf": (datetime.now(UTC) + timedelta(hours=1)).timestamp(),
@@ -437,7 +436,7 @@ class TestTokenNotBefore:
 class TestTokenMetadata:
     """Test token metadata and claims."""
 
-    def test_token_user_id_claim(self, mock_token_manager):
+    def test_token_user_id_claim(self, mock_token_manager) -> None:
         """Test token contains user ID claim."""
         token = {"sub": "user123"}
 
@@ -447,7 +446,7 @@ class TestTokenMetadata:
 
         assert user_id == "user123"
 
-    def test_token_additional_claims(self, mock_token_manager):
+    def test_token_additional_claims(self, mock_token_manager) -> None:
         """Test token can contain additional claims."""
         token = {
             "sub": "user123",
@@ -461,7 +460,7 @@ class TestTokenMetadata:
 
         assert role == "admin"
 
-    def test_token_issued_at_claim(self, mock_token_manager):
+    def test_token_issued_at_claim(self, mock_token_manager) -> None:
         """Test token issued-at claim."""
         now = datetime.now(UTC).timestamp()
         token = {

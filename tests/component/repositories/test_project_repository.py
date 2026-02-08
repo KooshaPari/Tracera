@@ -6,7 +6,7 @@ pytestmark = pytest.mark.integration
 
 
 @pytest.mark.asyncio
-async def test_project_create_and_get(async_session):
+async def test_project_create_and_get(async_session) -> None:
     repo = ProjectRepository(async_session)
     project = await repo.create(name="Alpha", description="desc")
 
@@ -18,7 +18,7 @@ async def test_project_create_and_get(async_session):
 
 
 @pytest.mark.asyncio
-async def test_project_update(async_session):
+async def test_project_update(async_session) -> None:
     repo = ProjectRepository(async_session)
     project = await repo.create(name="Alpha", description="desc")
 

@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for TestSuiteRepository to achieve 85%+ coverage.
+"""Comprehensive unit tests for TestSuiteRepository to achieve 85%+ coverage.
 
 Tests for:
 - create() - test suite creation
@@ -44,7 +43,7 @@ def unique_project_name() -> str:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_suite_basic(db_session: AsyncSession):
+async def test_create_suite_basic(db_session: AsyncSession) -> None:
     """Test creating suite with basic fields."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -65,7 +64,7 @@ async def test_create_suite_basic(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_suite_with_description(db_session: AsyncSession):
+async def test_create_suite_with_description(db_session: AsyncSession) -> None:
     """Test creating suite with description and objective."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -85,7 +84,7 @@ async def test_create_suite_with_description(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_suite_with_hierarchy(db_session: AsyncSession):
+async def test_create_suite_with_hierarchy(db_session: AsyncSession) -> None:
     """Test creating suite with parent."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -108,7 +107,7 @@ async def test_create_suite_with_hierarchy(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_suite_with_classification(db_session: AsyncSession):
+async def test_create_suite_with_classification(db_session: AsyncSession) -> None:
     """Test creating suite with category and tags."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -128,7 +127,7 @@ async def test_create_suite_with_classification(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_suite_with_execution_settings(db_session: AsyncSession):
+async def test_create_suite_with_execution_settings(db_session: AsyncSession) -> None:
     """Test creating suite with execution settings."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -148,7 +147,7 @@ async def test_create_suite_with_execution_settings(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_suite_with_environment(db_session: AsyncSession):
+async def test_create_suite_with_environment(db_session: AsyncSession) -> None:
     """Test creating suite with environment settings."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -172,7 +171,7 @@ async def test_create_suite_with_environment(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_suite_with_ownership(db_session: AsyncSession):
+async def test_create_suite_with_ownership(db_session: AsyncSession) -> None:
     """Test creating suite with ownership fields."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -192,7 +191,7 @@ async def test_create_suite_with_ownership(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_suite_with_metadata(db_session: AsyncSession):
+async def test_create_suite_with_metadata(db_session: AsyncSession) -> None:
     """Test creating suite with custom metadata."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -210,7 +209,7 @@ async def test_create_suite_with_metadata(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_suite_logs_activity(db_session: AsyncSession):
+async def test_create_suite_logs_activity(db_session: AsyncSession) -> None:
     """Test that creating a suite logs a creation activity."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -237,7 +236,7 @@ async def test_create_suite_logs_activity(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_found(db_session: AsyncSession):
+async def test_get_by_id_found(db_session: AsyncSession) -> None:
     """Test retrieving suite by ID when found."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -255,7 +254,7 @@ async def test_get_by_id_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_not_found(db_session: AsyncSession):
+async def test_get_by_id_not_found(db_session: AsyncSession) -> None:
     """Test retrieving suite by ID when not found."""
     repo = SuiteRepository(db_session)
     found = await repo.get_by_id(str(uuid4()))
@@ -269,7 +268,7 @@ async def test_get_by_id_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_number_found(db_session: AsyncSession):
+async def test_get_by_number_found(db_session: AsyncSession) -> None:
     """Test retrieving suite by suite number when found."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -286,7 +285,7 @@ async def test_get_by_number_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_number_not_found(db_session: AsyncSession):
+async def test_get_by_number_not_found(db_session: AsyncSession) -> None:
     """Test retrieving suite by number when not found."""
     repo = SuiteRepository(db_session)
     found = await repo.get_by_number("TS-NONEXISTENT")
@@ -300,7 +299,7 @@ async def test_get_by_number_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_by_project_basic(db_session: AsyncSession):
+async def test_list_by_project_basic(db_session: AsyncSession) -> None:
     """Test listing suites for a project."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -319,7 +318,7 @@ async def test_list_by_project_basic(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_by_project_filter_by_status(db_session: AsyncSession):
+async def test_list_by_project_filter_by_status(db_session: AsyncSession) -> None:
     """Test filtering suites by status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -343,7 +342,7 @@ async def test_list_by_project_filter_by_status(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_by_project_filter_by_category(db_session: AsyncSession):
+async def test_list_by_project_filter_by_category(db_session: AsyncSession) -> None:
     """Test filtering suites by category."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -361,7 +360,7 @@ async def test_list_by_project_filter_by_category(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_by_project_filter_by_parent_id(db_session: AsyncSession):
+async def test_list_by_project_filter_by_parent_id(db_session: AsyncSession) -> None:
     """Test filtering suites by parent ID."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -387,7 +386,7 @@ async def test_list_by_project_filter_by_parent_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_by_project_filter_by_owner(db_session: AsyncSession):
+async def test_list_by_project_filter_by_owner(db_session: AsyncSession) -> None:
     """Test filtering suites by owner."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -405,7 +404,7 @@ async def test_list_by_project_filter_by_owner(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_by_project_search(db_session: AsyncSession):
+async def test_list_by_project_search(db_session: AsyncSession) -> None:
     """Test searching suites by name."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -423,7 +422,7 @@ async def test_list_by_project_search(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_by_project_pagination(db_session: AsyncSession):
+async def test_list_by_project_pagination(db_session: AsyncSession) -> None:
     """Test pagination in list_by_project."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -449,7 +448,7 @@ async def test_list_by_project_pagination(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_basic_fields(db_session: AsyncSession):
+async def test_update_basic_fields(db_session: AsyncSession) -> None:
     """Test updating basic suite fields."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -473,7 +472,7 @@ async def test_update_basic_fields(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_not_found(db_session: AsyncSession):
+async def test_update_not_found(db_session: AsyncSession) -> None:
     """Test updating non-existent suite."""
     repo = SuiteRepository(db_session)
     result = await repo.update(str(uuid4()), name="Test")
@@ -487,7 +486,7 @@ async def test_update_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_transition_status_valid(db_session: AsyncSession):
+async def test_transition_status_valid(db_session: AsyncSession) -> None:
     """Test valid status transition."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -505,7 +504,7 @@ async def test_transition_status_valid(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_transition_status_invalid(db_session: AsyncSession):
+async def test_transition_status_invalid(db_session: AsyncSession) -> None:
     """Test invalid status transition."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -522,7 +521,7 @@ async def test_transition_status_invalid(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_transition_status_not_found(db_session: AsyncSession):
+async def test_transition_status_not_found(db_session: AsyncSession) -> None:
     """Test transition for non-existent suite."""
     repo = SuiteRepository(db_session)
     result = await repo.transition_status(str(uuid4()), "active")
@@ -531,7 +530,7 @@ async def test_transition_status_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_transition_status_logs_activity(db_session: AsyncSession):
+async def test_transition_status_logs_activity(db_session: AsyncSession) -> None:
     """Test that status transition logs activity."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -563,7 +562,7 @@ async def test_transition_status_logs_activity(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_add_test_case(db_session: AsyncSession):
+async def test_add_test_case(db_session: AsyncSession) -> None:
     """Test adding a test case to a suite."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -600,7 +599,7 @@ async def test_add_test_case(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_add_test_case_updates_metrics(db_session: AsyncSession):
+async def test_add_test_case_updates_metrics(db_session: AsyncSession) -> None:
     """Test that adding test case updates suite metrics."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -630,7 +629,7 @@ async def test_add_test_case_updates_metrics(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_remove_test_case(db_session: AsyncSession):
+async def test_remove_test_case(db_session: AsyncSession) -> None:
     """Test removing a test case from a suite."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -663,7 +662,7 @@ async def test_remove_test_case(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_remove_test_case_not_found(db_session: AsyncSession):
+async def test_remove_test_case_not_found(db_session: AsyncSession) -> None:
     """Test removing non-existent test case."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -679,7 +678,7 @@ async def test_remove_test_case_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_test_cases(db_session: AsyncSession):
+async def test_get_test_cases(db_session: AsyncSession) -> None:
     """Test getting test cases for a suite."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -717,7 +716,7 @@ async def test_get_test_cases(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_reorder_test_cases(db_session: AsyncSession):
+async def test_reorder_test_cases(db_session: AsyncSession) -> None:
     """Test reordering test cases in a suite."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -767,7 +766,7 @@ async def test_reorder_test_cases(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_suite(db_session: AsyncSession):
+async def test_delete_suite(db_session: AsyncSession) -> None:
     """Test deleting a test suite."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -786,7 +785,7 @@ async def test_delete_suite(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_suite_not_found(db_session: AsyncSession):
+async def test_delete_suite_not_found(db_session: AsyncSession) -> None:
     """Test deleting non-existent suite."""
     repo = SuiteRepository(db_session)
     result = await repo.delete(str(uuid4()))
@@ -800,7 +799,7 @@ async def test_delete_suite_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_activities(db_session: AsyncSession):
+async def test_get_activities(db_session: AsyncSession) -> None:
     """Test getting activity log for a suite."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -824,7 +823,7 @@ async def test_get_activities(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_stats(db_session: AsyncSession):
+async def test_get_stats(db_session: AsyncSession) -> None:
     """Test getting project statistics."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -850,7 +849,7 @@ async def test_get_stats(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_stats_empty_project(db_session: AsyncSession):
+async def test_get_stats_empty_project(db_session: AsyncSession) -> None:
     """Test getting stats for project with no suites."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())

@@ -20,6 +20,7 @@
     "jest/require-hook": "off",
     "vitest/require-hook": "off",
     "boundaries/no-unknown-files": "off",
-    "promise/prefer-await-to-callbacks": "off"
+    "promise/prefer-await-to-callbacks": "off",
+    "import/no-nodejs-modules": "off"
   }
 }

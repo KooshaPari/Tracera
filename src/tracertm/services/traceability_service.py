@@ -36,7 +36,7 @@ class ImpactAnalysis:
 class TraceabilityService:
     """Service for traceability operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)
@@ -58,9 +58,11 @@ class TraceabilityService:
         target = await self.items.get_by_id(tid)
 
         if not source:
-            raise ValueError(f"Source item {source_item_id} not found")
+            msg = f"Source item {source_item_id} not found"
+            raise ValueError(msg)
         if not target:
-            raise ValueError(f"Target item {target_item_id} not found")
+            msg = f"Target item {target_item_id} not found"
+            raise ValueError(msg)
 
         # Create link
         return await self.links.create(
@@ -163,8 +165,7 @@ class TraceabilityService:
         indirectly_affected = []
         if max_depth > 1:
             visited = {iid}
-            for direct_item in directly_affected:
-                visited.add(str(direct_item.id))
+            visited.update(str(direct_item.id) for direct_item in directly_affected)
 
             for direct_item in directly_affected:
                 indirect = await self._get_downstream_items(

@@ -1,5 +1,4 @@
-"""
-Comprehensive integration tests for storage medium files (200+ tests, 100% coverage).
+"""Comprehensive integration tests for storage medium files (200+ tests, 100% coverage).
 
 Tests three core storage modules:
 - sync_engine.py: Bidirectional sync, queue management, conflict resolution
@@ -84,7 +83,7 @@ def db_connection(temp_base_dir):
     engine = create_engine(f"sqlite:///{db_path}")
 
     class MockDBConnection:
-        def __init__(self, engine):
+        def __init__(self, engine) -> None:
             self.engine = engine
 
     return MockDBConnection(engine)
@@ -143,64 +142,64 @@ def sync_engine(db_connection, mock_api_client, mock_storage_manager):
 class TestChangeDetector:
     """Tests for content hash-based change detection."""
 
-    def test_compute_hash_consistent(self):
+    def test_compute_hash_consistent(self) -> None:
         """Test that hashing same content produces consistent hash."""
         content = "Hello, World!"
         hash1 = ChangeDetector.compute_hash(content)
         hash2 = ChangeDetector.compute_hash(content)
         assert hash1 == hash2
 
-    def test_compute_hash_different_content(self):
+    def test_compute_hash_different_content(self) -> None:
         """Test that different content produces different hashes."""
         hash1 = ChangeDetector.compute_hash("content1")
         hash2 = ChangeDetector.compute_hash("content2")
         assert hash1 != hash2
 
-    def test_compute_hash_empty_string(self):
+    def test_compute_hash_empty_string(self) -> None:
         """Test hashing empty string."""
         hash_result = ChangeDetector.compute_hash("")
         assert isinstance(hash_result, str)
         assert len(hash_result) == 64  # SHA-256 hex digest length
 
-    def test_compute_hash_unicode(self):
+    def test_compute_hash_unicode(self) -> None:
         """Test hashing unicode content."""
         content = "こんにちは世界 🌍"
         hash_result = ChangeDetector.compute_hash(content)
         assert isinstance(hash_result, str)
         assert len(hash_result) == 64
 
-    def test_has_changed_no_previous_hash(self):
+    def test_has_changed_no_previous_hash(self) -> None:
         """Test change detection with no previous hash."""
         assert ChangeDetector.has_changed("new content", None)
 
-    def test_has_changed_same_content(self):
+    def test_has_changed_same_content(self) -> None:
         """Test change detection with same content."""
         content = "unchanged content"
         hash_val = ChangeDetector.compute_hash(content)
         assert not ChangeDetector.has_changed(content, hash_val)
 
-    def test_has_changed_different_content(self):
+    def test_has_changed_different_content(self) -> None:
         """Test change detection with different content."""
         hash_val = ChangeDetector.compute_hash("old content")
         assert ChangeDetector.has_changed("new content", hash_val)
 
-    def test_has_changed_whitespace(self):
+    def test_has_changed_whitespace(self) -> None:
         """Test that whitespace changes are detected."""
         hash_val = ChangeDetector.compute_hash("content")
         assert ChangeDetector.has_changed("content ", hash_val)
 
-    def test_detect_changes_in_directory_no_directory(self):
+    def test_detect_changes_in_directory_no_directory(self) -> None:
         """Test change detection on non-existent directory."""
         changes = ChangeDetector.detect_changes_in_directory(Path("/nonexistent"), {})
         assert changes == []
 
-    def test_detect_changes_in_directory_empty(self):
+    def test_detect_changes_in_directory_empty(self) -> None:
         """Test change detection in empty directory."""
         with tempfile.TemporaryDirectory() as tmpdir:
             changes = ChangeDetector.detect_changes_in_directory(Path(tmpdir), {})
             assert changes == []
 
-    def test_detect_changes_in_directory_new_files(self, temp_base_dir):
+    def test_detect_changes_in_directory_new_files(self, temp_base_dir) -> None:
         """Test detection of new markdown files."""
         # Create test files
         (temp_base_dir / "file1.md").write_text("content1")
@@ -209,7 +208,7 @@ class TestChangeDetector:
         changes = ChangeDetector.detect_changes_in_directory(temp_base_dir, {})
         assert len(changes) == 2
 
-    def test_detect_changes_in_directory_modified_files(self, temp_base_dir):
+    def test_detect_changes_in_directory_modified_files(self, temp_base_dir) -> None:
         """Test detection of modified markdown files."""
         file_path = temp_base_dir / "file.md"
         content1 = "initial content"
@@ -225,7 +224,7 @@ class TestChangeDetector:
         assert len(changes) == 1
         assert changes[0][0] == file_path
 
-    def test_detect_changes_in_directory_no_changes(self, temp_base_dir):
+    def test_detect_changes_in_directory_no_changes(self, temp_base_dir) -> None:
         """Test detection when no files changed."""
         file_path = temp_base_dir / "file.md"
         content = "unchanged content"
@@ -237,7 +236,7 @@ class TestChangeDetector:
         changes = ChangeDetector.detect_changes_in_directory(temp_base_dir, stored_hashes)
         assert len(changes) == 0
 
-    def test_detect_changes_recursive(self, temp_base_dir):
+    def test_detect_changes_recursive(self, temp_base_dir) -> None:
         """Test recursive directory scanning."""
         # Create nested structure
         subdir = temp_base_dir / "subdir"
@@ -248,7 +247,7 @@ class TestChangeDetector:
         changes = ChangeDetector.detect_changes_in_directory(temp_base_dir, {})
         assert len(changes) == 2
 
-    def test_detect_changes_ignores_non_markdown(self, temp_base_dir):
+    def test_detect_changes_ignores_non_markdown(self, temp_base_dir) -> None:
         """Test that non-markdown files are ignored."""
         (temp_base_dir / "file.md").write_text("markdown")
         (temp_base_dir / "file.txt").write_text("text")
@@ -266,72 +265,72 @@ class TestChangeDetector:
 class TestSyncQueue:
     """Tests for sync queue management."""
 
-    def test_enqueue_create_operation(self, sync_queue):
+    def test_enqueue_create_operation(self, sync_queue) -> None:
         """Test enqueueing a create operation."""
         queue_id = sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.CREATE, {"title": "New Item"})
         assert queue_id > 0
 
-    def test_enqueue_update_operation(self, sync_queue):
+    def test_enqueue_update_operation(self, sync_queue) -> None:
         """Test enqueueing an update operation."""
         queue_id = sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.UPDATE, {"title": "Updated Item"})
         assert queue_id > 0
 
-    def test_enqueue_delete_operation(self, sync_queue):
+    def test_enqueue_delete_operation(self, sync_queue) -> None:
         """Test enqueueing a delete operation."""
         queue_id = sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.DELETE, {})
         assert queue_id > 0
 
-    def test_enqueue_different_entity_types(self, sync_queue):
+    def test_enqueue_different_entity_types(self, sync_queue) -> None:
         """Test enqueueing different entity types."""
         for entity_type in [SyncEntityType.PROJECT, SyncEntityType.ITEM, SyncEntityType.LINK]:
             queue_id = sync_queue.enqueue(entity_type, f"{entity_type.value}-001", OperationType.CREATE, {})
             assert queue_id > 0
 
-    def test_enqueue_replaces_duplicate(self, sync_queue):
+    def test_enqueue_replaces_duplicate(self, sync_queue) -> None:
         """Test that duplicate entries are replaced."""
         id1 = sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.UPDATE, {"title": "First"})
         id2 = sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.UPDATE, {"title": "Second"})
         # Same entity/operation shouldn't create duplicate
         assert sync_queue.get_count() == 1
 
-    def test_get_pending_empty(self, sync_queue):
+    def test_get_pending_empty(self, sync_queue) -> None:
         """Test getting pending changes from empty queue."""
         pending = sync_queue.get_pending()
         assert pending == []
 
-    def test_get_pending_single(self, sync_queue):
+    def test_get_pending_single(self, sync_queue) -> None:
         """Test getting single pending change."""
         sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.CREATE, {"title": "Item"})
         pending = sync_queue.get_pending()
         assert len(pending) == 1
         assert pending[0].entity_id == "item-001"
 
-    def test_get_pending_multiple(self, sync_queue):
+    def test_get_pending_multiple(self, sync_queue) -> None:
         """Test getting multiple pending changes."""
         for i in range(5):
             sync_queue.enqueue(SyncEntityType.ITEM, f"item-{i:03d}", OperationType.CREATE, {"title": f"Item {i}"})
         pending = sync_queue.get_pending()
         assert len(pending) == 5
 
-    def test_get_pending_limit(self, sync_queue):
+    def test_get_pending_limit(self, sync_queue) -> None:
         """Test limit parameter in get_pending."""
         for i in range(10):
             sync_queue.enqueue(SyncEntityType.ITEM, f"item-{i:03d}", OperationType.CREATE, {})
         pending = sync_queue.get_pending(limit=3)
         assert len(pending) == 3
 
-    def test_remove_from_queue(self, sync_queue):
+    def test_remove_from_queue(self, sync_queue) -> None:
         """Test removing item from queue."""
         queue_id = sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.CREATE, {})
         assert sync_queue.get_count() == 1
         sync_queue.remove(queue_id)
         assert sync_queue.get_count() == 0
 
-    def test_remove_nonexistent(self, sync_queue):
+    def test_remove_nonexistent(self, sync_queue) -> None:
         """Test removing non-existent item doesn't raise error."""
         sync_queue.remove(99999)  # Should not raise
 
-    def test_update_retry(self, sync_queue):
+    def test_update_retry(self, sync_queue) -> None:
         """Test updating retry count and error."""
         queue_id = sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.CREATE, {})
         sync_queue.update_retry(queue_id, "Network error")
@@ -339,7 +338,7 @@ class TestSyncQueue:
         assert pending[0].retry_count == 1
         assert "Network error" in pending[0].last_error
 
-    def test_clear_queue(self, sync_queue):
+    def test_clear_queue(self, sync_queue) -> None:
         """Test clearing entire queue."""
         for i in range(5):
             sync_queue.enqueue(SyncEntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
@@ -347,7 +346,7 @@ class TestSyncQueue:
         sync_queue.clear()
         assert sync_queue.get_count() == 0
 
-    def test_get_count(self, sync_queue):
+    def test_get_count(self, sync_queue) -> None:
         """Test getting queue count."""
         assert sync_queue.get_count() == 0
         sync_queue.enqueue(SyncEntityType.ITEM, "i1", OperationType.CREATE, {})
@@ -364,14 +363,14 @@ class TestSyncQueue:
 class TestSyncStateManager:
     """Tests for sync state management."""
 
-    def test_sync_state_dataclass(self):
+    def test_sync_state_dataclass(self) -> None:
         """Test SyncState dataclass creation."""
         state = SyncState(status=SyncStatus.SYNCING, pending_changes=5, last_sync=datetime.now(UTC))
         assert state.status == SyncStatus.SYNCING
         assert state.pending_changes == 5
         assert state.last_sync is not None
 
-    def test_sync_status_enum_values(self):
+    def test_sync_status_enum_values(self) -> None:
         """Test SyncStatus enum has all values."""
         statuses = [
             SyncStatus.IDLE,
@@ -382,7 +381,7 @@ class TestSyncStateManager:
         ]
         assert all(s.value for s in statuses)
 
-    def test_sync_state_initial_values(self):
+    def test_sync_state_initial_values(self) -> None:
         """Test initial SyncState values."""
         state = SyncState()
         assert state.status == SyncStatus.IDLE
@@ -390,14 +389,14 @@ class TestSyncStateManager:
         assert state.last_sync is None
         assert state.last_error is None
 
-    def test_sync_state_with_error(self):
+    def test_sync_state_with_error(self) -> None:
         """Test SyncState with error set."""
         error_msg = "Sync failed"
         state = SyncState(status=SyncStatus.ERROR, last_error=error_msg)
         assert state.status == SyncStatus.ERROR
         assert state.last_error == error_msg
 
-    def test_sync_state_with_conflicts(self):
+    def test_sync_state_with_conflicts(self) -> None:
         """Test SyncState with conflicts count."""
         state = SyncState(conflicts_count=3)
         assert state.conflicts_count == 3
@@ -412,14 +411,14 @@ class TestSyncEngine:
     """Tests for main sync engine."""
 
     @pytest.mark.asyncio
-    async def test_sync_initial_state(self, sync_engine):
+    async def test_sync_initial_state(self, sync_engine) -> None:
         """Test sync engine initial state."""
         assert not sync_engine.is_syncing()
         state = sync_engine.get_status()
         assert state.status == SyncStatus.IDLE
 
     @pytest.mark.asyncio
-    async def test_sync_prevents_concurrent_syncs(self, sync_engine):
+    async def test_sync_prevents_concurrent_syncs(self, sync_engine) -> None:
         """Test that concurrent syncs are prevented."""
         sync_engine._syncing = True
         result = await sync_engine.sync()
@@ -427,21 +426,21 @@ class TestSyncEngine:
         assert "already in progress" in result.errors[0].lower()
 
     @pytest.mark.asyncio
-    async def test_queue_change(self, sync_engine):
+    async def test_queue_change(self, sync_engine) -> None:
         """Test queuing a change."""
         queue_id = sync_engine.queue_change(SyncEntityType.ITEM, "item-001", OperationType.CREATE, {"title": "Item"})
         assert queue_id > 0
         assert sync_engine.queue.get_count() == 1
 
     @pytest.mark.asyncio
-    async def test_sync_with_no_changes(self, sync_engine):
+    async def test_sync_with_no_changes(self, sync_engine) -> None:
         """Test sync with empty queue."""
         result = await sync_engine.sync()
         assert result.success
         assert result.entities_synced == 0
 
     @pytest.mark.asyncio
-    async def test_sync_updates_last_sync_time(self, sync_engine):
+    async def test_sync_updates_last_sync_time(self, sync_engine) -> None:
         """Test that sync updates last sync timestamp."""
         before = datetime.now(UTC)
         await sync_engine.sync()
@@ -452,7 +451,7 @@ class TestSyncEngine:
         assert before <= state.last_sync <= after
 
     @pytest.mark.asyncio
-    async def test_sync_clears_error_on_success(self, sync_engine):
+    async def test_sync_clears_error_on_success(self, sync_engine) -> None:
         """Test that successful sync clears error."""
         sync_engine.state_manager.update_error("Previous error")
         await sync_engine.sync()
@@ -460,7 +459,7 @@ class TestSyncEngine:
         assert state.last_error is None
 
     @pytest.mark.asyncio
-    async def test_sync_records_error(self, sync_engine):
+    async def test_sync_records_error(self, sync_engine) -> None:
         """Test that sync records errors."""
         sync_engine.queue_change(SyncEntityType.ITEM, "item-001", OperationType.CREATE, {})
         # Mock upload to fail
@@ -470,14 +469,14 @@ class TestSyncEngine:
         # Should have errors (from retry handling)
 
     @pytest.mark.asyncio
-    async def test_process_queue_empty(self, sync_engine):
+    async def test_process_queue_empty(self, sync_engine) -> None:
         """Test processing empty queue."""
         result = await sync_engine.process_queue()
         assert result.success
         assert result.entities_synced == 0
 
     @pytest.mark.asyncio
-    async def test_process_queue_respects_max_retries(self, sync_engine):
+    async def test_process_queue_respects_max_retries(self, sync_engine) -> None:
         """Test that queue respects max retries."""
         sync_engine.queue_change(SyncEntityType.ITEM, "item-001", OperationType.CREATE, {})
         # Set high retry count
@@ -489,20 +488,20 @@ class TestSyncEngine:
         assert len(result.errors) > 0
 
     @pytest.mark.asyncio
-    async def test_pull_changes_empty(self, sync_engine):
+    async def test_pull_changes_empty(self, sync_engine) -> None:
         """Test pulling changes with empty result."""
         result = await sync_engine.pull_changes()
         assert result.success
 
     @pytest.mark.asyncio
-    async def test_get_status(self, sync_engine):
+    async def test_get_status(self, sync_engine) -> None:
         """Test getting sync status."""
         state = sync_engine.get_status()
         assert isinstance(state, SyncState)
         assert isinstance(state.status, SyncStatus)
 
     @pytest.mark.asyncio
-    async def test_clear_queue(self, sync_engine):
+    async def test_clear_queue(self, sync_engine) -> None:
         """Test clearing sync queue."""
         for i in range(3):
             sync_engine.queue_change(SyncEntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
@@ -511,7 +510,7 @@ class TestSyncEngine:
         assert sync_engine.queue.get_count() == 0
 
     @pytest.mark.asyncio
-    async def test_reset_sync_state(self, sync_engine):
+    async def test_reset_sync_state(self, sync_engine) -> None:
         """Test resetting sync state."""
         sync_engine.state_manager.update_status(SyncStatus.ERROR)
         sync_engine.state_manager.update_error("Some error")
@@ -521,7 +520,7 @@ class TestSyncEngine:
         assert state.status == SyncStatus.IDLE
         assert state.last_error is None
 
-    def test_resolve_conflict_last_write_wins(self, sync_engine):
+    def test_resolve_conflict_last_write_wins(self, sync_engine) -> None:
         """Test conflict resolution with LAST_WRITE_WINS."""
         local_data = {"content": "local", "updated_at": "2024-01-01T10:00:00"}
         remote_data = {"content": "remote", "updated_at": "2024-01-01T11:00:00"}
@@ -529,7 +528,7 @@ class TestSyncEngine:
         result = sync_engine._resolve_conflict(local_data, remote_data)
         assert result["content"] == "remote"
 
-    def test_resolve_conflict_local_wins(self, db_connection, mock_api_client, mock_storage_manager):
+    def test_resolve_conflict_local_wins(self, db_connection, mock_api_client, mock_storage_manager) -> None:
         """Test conflict resolution with LOCAL_WINS."""
         engine = SyncEngine(
             db_connection,
@@ -543,7 +542,7 @@ class TestSyncEngine:
         result = engine._resolve_conflict(local_data, remote_data)
         assert result["content"] == "local"
 
-    def test_resolve_conflict_remote_wins(self, db_connection, mock_api_client, mock_storage_manager):
+    def test_resolve_conflict_remote_wins(self, db_connection, mock_api_client, mock_storage_manager) -> None:
         """Test conflict resolution with REMOTE_WINS."""
         engine = SyncEngine(
             db_connection,
@@ -557,7 +556,7 @@ class TestSyncEngine:
         result = engine._resolve_conflict(local_data, remote_data)
         assert result["content"] == "remote"
 
-    def test_create_vector_clock(self, sync_engine):
+    def test_create_vector_clock(self, sync_engine) -> None:
         """Test vector clock creation."""
         vc = sync_engine.create_vector_clock("client-1", 1, 0)
         assert vc.client_id == "client-1"
@@ -565,14 +564,14 @@ class TestSyncEngine:
         assert vc.parent_version == 0
 
     @pytest.mark.asyncio
-    async def test_exponential_backoff(self):
+    async def test_exponential_backoff(self) -> None:
         """Test exponential backoff calculation."""
         start = time.time()
         await exponential_backoff(0, initial_delay=0.01)
         elapsed = time.time() - start
         assert elapsed >= 0.01
 
-    def test_create_sync_engine_factory(self, db_connection, mock_api_client, mock_storage_manager):
+    def test_create_sync_engine_factory(self, db_connection, mock_api_client, mock_storage_manager) -> None:
         """Test factory function for creating sync engine."""
         engine = create_sync_engine(
             db_connection,
@@ -592,7 +591,7 @@ class TestSyncEngine:
 class TestMarkdownParser:
     """Tests for markdown parsing and serialization."""
 
-    def test_parse_item_data_frontmatter(self):
+    def test_parse_item_data_frontmatter(self) -> None:
         """Test parsing frontmatter from ItemData."""
         item = ItemData(
             id="1",
@@ -611,7 +610,7 @@ class TestMarkdownParser:
         assert frontmatter["status"] == "active"
         assert frontmatter["priority"] == "high"
 
-    def test_parse_item_data_markdown_body(self):
+    def test_parse_item_data_markdown_body(self) -> None:
         """Test converting ItemData to markdown body."""
         item = ItemData(
             id="1",
@@ -629,7 +628,7 @@ class TestMarkdownParser:
         assert "## Acceptance Criteria" in body
         assert "Email validation" in body
 
-    def test_create_item_from_frontmatter_and_body(self):
+    def test_create_item_from_frontmatter_and_body(self) -> None:
         """Test creating ItemData from frontmatter and body."""
         fm_data = {
             "id": "1",
@@ -646,7 +645,7 @@ class TestMarkdownParser:
         assert item.item_type == "story"
         assert item.title == "Test Item"
 
-    def test_write_and_parse_item_markdown(self, temp_base_dir):
+    def test_write_and_parse_item_markdown(self, temp_base_dir) -> None:
         """Test writing and parsing item markdown file."""
         item = ItemData(
             id="1",
@@ -666,7 +665,7 @@ class TestMarkdownParser:
         assert parsed.title == item.title
         assert parsed.description == item.description
 
-    def test_write_item_missing_required_fields(self, temp_base_dir):
+    def test_write_item_missing_required_fields(self, temp_base_dir) -> None:
         """Test that write raises error with missing required fields."""
         item = ItemData(
             id="",  # Missing id
@@ -677,7 +676,7 @@ class TestMarkdownParser:
         with pytest.raises(ValueError):
             write_item_markdown(item, temp_base_dir / "item.md")
 
-    def test_parse_item_missing_required_fields(self, temp_base_dir):
+    def test_parse_item_missing_required_fields(self, temp_base_dir) -> None:
         """Test parsing item with missing required fields."""
         file_path = temp_base_dir / "invalid.md"
         file_path.write_text("""---
@@ -689,7 +688,7 @@ external_id: "ITEM-001"
         with pytest.raises(ValueError):
             parse_item_markdown(file_path)
 
-    def test_link_data_to_dict(self):
+    def test_link_data_to_dict(self) -> None:
         """Test LinkData serialization."""
         link = LinkData(
             id="link-1",
@@ -704,7 +703,7 @@ external_id: "ITEM-001"
         assert link_dict["source"] == "EPIC-001"
         assert link_dict["type"] == "implements"
 
-    def test_link_data_from_dict(self):
+    def test_link_data_from_dict(self) -> None:
         """Test LinkData deserialization."""
         data = {
             "id": "link-1",
@@ -719,7 +718,7 @@ external_id: "ITEM-001"
         assert link.source == "EPIC-001"
         assert link.link_type == "implements"
 
-    def test_write_and_parse_links_yaml(self, temp_base_dir):
+    def test_write_and_parse_links_yaml(self, temp_base_dir) -> None:
         """Test writing and parsing links YAML file."""
         links = [
             LinkData(
@@ -747,7 +746,7 @@ external_id: "ITEM-001"
         assert parsed[0].source == "EPIC-001"
         assert parsed[1].link_type == "tested_by"
 
-    def test_parse_empty_links_yaml(self, temp_base_dir):
+    def test_parse_empty_links_yaml(self, temp_base_dir) -> None:
         """Test parsing empty links file."""
         file_path = temp_base_dir / "links.yaml"
         file_path.write_text("links: []")
@@ -755,7 +754,7 @@ external_id: "ITEM-001"
         links = parse_links_yaml(file_path)
         assert links == []
 
-    def test_write_and_parse_config_yaml(self, temp_base_dir):
+    def test_write_and_parse_config_yaml(self, temp_base_dir) -> None:
         """Test writing and parsing config YAML."""
         config = {
             "name": "Test Project",
@@ -771,30 +770,30 @@ external_id: "ITEM-001"
         assert parsed["name"] == "Test Project"
         assert parsed["version"] == "1.0.0"
 
-    def test_get_item_path(self, temp_base_dir):
+    def test_get_item_path(self, temp_base_dir) -> None:
         """Test get_item_path helper."""
         path = get_item_path(temp_base_dir, "test-project", "story", "STORY-001")
         expected = temp_base_dir / "projects" / "test-project" / "stories" / "STORY-001.md"
         assert path == expected
 
-    def test_get_links_path(self, temp_base_dir):
+    def test_get_links_path(self, temp_base_dir) -> None:
         """Test get_links_path helper."""
         path = get_links_path(temp_base_dir, "test-project")
         expected = temp_base_dir / "projects" / "test-project" / ".meta" / "links.yaml"
         assert path == expected
 
-    def test_get_config_path(self, temp_base_dir):
+    def test_get_config_path(self, temp_base_dir) -> None:
         """Test get_config_path helper."""
         path = get_config_path(temp_base_dir, "test-project")
         expected = temp_base_dir / "projects" / "test-project" / ".meta" / "config.yaml"
         assert path == expected
 
-    def test_list_items_empty_project(self, temp_base_dir):
+    def test_list_items_empty_project(self, temp_base_dir) -> None:
         """Test listing items in non-existent project."""
         items = list_items(temp_base_dir, "nonexistent")
         assert items == []
 
-    def test_list_items_by_type(self, temp_base_dir):
+    def test_list_items_by_type(self, temp_base_dir) -> None:
         """Test listing items filtered by type."""
         # Create structure
         project_dir = temp_base_dir / "projects" / "test" / "stories"
@@ -804,7 +803,7 @@ external_id: "ITEM-001"
         items = list_items(temp_base_dir, "test", "story")
         assert len(items) == 1
 
-    def test_list_all_items(self, temp_base_dir):
+    def test_list_all_items(self, temp_base_dir) -> None:
         """Test listing all items across types."""
         # Create items of different types
         epic_dir = temp_base_dir / "projects" / "test" / "epics"
@@ -815,7 +814,7 @@ external_id: "ITEM-001"
         items = list_items(temp_base_dir, "test")
         assert len(items) >= 1
 
-    def test_item_with_custom_fields(self):
+    def test_item_with_custom_fields(self) -> None:
         """Test ItemData with custom fields."""
         item = ItemData(
             id="1",
@@ -827,7 +826,7 @@ external_id: "ITEM-001"
         frontmatter = item.to_frontmatter_dict()
         assert frontmatter["custom_key"] == "custom_value"
 
-    def test_item_with_figma_fields(self):
+    def test_item_with_figma_fields(self) -> None:
         """Test ItemData with Figma-specific fields."""
         item = ItemData(
             id="1",
@@ -842,7 +841,7 @@ external_id: "ITEM-001"
         assert frontmatter["figma_url"] == "https://figma.com/file/abc123"
         assert frontmatter["figma_file_key"] == "abc123"
 
-    def test_item_with_history(self):
+    def test_item_with_history(self) -> None:
         """Test ItemData with history entries."""
         item = ItemData(
             id="1",
@@ -867,7 +866,7 @@ external_id: "ITEM-001"
 class TestFileWatcher:
     """Tests for file watching and event handling."""
 
-    def test_file_watcher_initialization(self, temp_base_dir):
+    def test_file_watcher_initialization(self, temp_base_dir) -> None:
         """Test file watcher initialization."""
         from tracertm.storage.file_watcher import TraceFileWatcher
         from tracertm.storage.local_storage import LocalStorageManager
@@ -888,7 +887,7 @@ class TestFileWatcher:
         assert str(watcher.trace_path).endswith(".trace")
         assert not watcher.is_running()
 
-    def test_file_watcher_start_stop(self, temp_base_dir):
+    def test_file_watcher_start_stop(self, temp_base_dir) -> None:
         """Test starting and stopping file watcher."""
         from tracertm.storage.file_watcher import TraceFileWatcher
         from tracertm.storage.local_storage import LocalStorageManager
@@ -906,7 +905,7 @@ class TestFileWatcher:
         watcher.stop()
         assert not watcher.is_running()
 
-    def test_file_watcher_statistics(self, temp_base_dir):
+    def test_file_watcher_statistics(self, temp_base_dir) -> None:
         """Test file watcher statistics tracking."""
         from tracertm.storage.file_watcher import TraceFileWatcher
         from tracertm.storage.local_storage import LocalStorageManager
@@ -926,7 +925,7 @@ class TestFileWatcher:
         assert stats["events_processed"] == 0
         assert stats["is_running"] is False
 
-    def test_debounce_event_timing(self, temp_base_dir):
+    def test_debounce_event_timing(self, temp_base_dir) -> None:
         """Test debouncing mechanism timing."""
         from tracertm.storage.file_watcher import TraceFileWatcher
         from tracertm.storage.local_storage import LocalStorageManager
@@ -944,7 +943,7 @@ class TestFileWatcher:
         watcher._debounce_event(test_file, "modified")
         assert watcher._events_pending == 1
 
-    def test_auto_sync_option(self, temp_base_dir):
+    def test_auto_sync_option(self, temp_base_dir) -> None:
         """Test auto-sync option."""
         from tracertm.storage.file_watcher import TraceFileWatcher
         from tracertm.storage.local_storage import LocalStorageManager
@@ -967,7 +966,7 @@ class TestFileWatcher:
 class TestStorageIntegration:
     """Integration tests combining multiple storage components."""
 
-    def test_full_sync_cycle(self, sync_engine, sync_queue):
+    def test_full_sync_cycle(self, sync_engine, sync_queue) -> None:
         """Test complete sync cycle with queue."""
         # Queue some changes
         sync_engine.queue_change(SyncEntityType.ITEM, "item-1", OperationType.CREATE, {"title": "Item 1"})
@@ -975,7 +974,7 @@ class TestStorageIntegration:
 
         assert sync_engine.queue.get_count() == 2
 
-    def test_markdown_roundtrip(self, temp_base_dir):
+    def test_markdown_roundtrip(self, temp_base_dir) -> None:
         """Test markdown write and parse roundtrip."""
         original = ItemData(
             id="test-1",
@@ -1005,7 +1004,7 @@ class TestStorageIntegration:
         assert parsed.owner == original.owner
 
     @pytest.mark.asyncio
-    async def test_sync_with_conflict_resolution(self, sync_engine):
+    async def test_sync_with_conflict_resolution(self, sync_engine) -> None:
         """Test sync with conflict resolution."""
         # Create conflicting versions
         local_version = {"content": "local", "updated_at": "2024-01-01T10:00:00"}
@@ -1015,7 +1014,7 @@ class TestStorageIntegration:
         resolved = sync_engine._resolve_conflict(local_version, remote_version)
         assert resolved["content"] == "remote"
 
-    def test_batch_markdown_operations(self, temp_base_dir):
+    def test_batch_markdown_operations(self, temp_base_dir) -> None:
         """Test batch operations on multiple markdown files."""
         items = [
             ItemData(
@@ -1040,7 +1039,7 @@ class TestStorageIntegration:
         parsed_items = [parse_item_markdown(f) for f in files]
         assert all(p.item_type == "story" for p in parsed_items)
 
-    def test_change_detection_with_directories(self, temp_base_dir):
+    def test_change_detection_with_directories(self, temp_base_dir) -> None:
         """Test change detection in nested directory structure."""
         # Create nested structure
         for dir_name in ["epics", "stories", "tests"]:
@@ -1053,11 +1052,11 @@ class TestStorageIntegration:
         changes = ChangeDetector.detect_changes_in_directory(temp_base_dir, {})
         assert len(changes) == 9
 
-    def test_concurrent_queue_operations(self, sync_queue):
+    def test_concurrent_queue_operations(self, sync_queue) -> None:
         """Test concurrent access to sync queue."""
         results = []
 
-        def enqueue_items(count, prefix):
+        def enqueue_items(count, prefix) -> None:
             for i in range(count):
                 queue_id = sync_queue.enqueue(SyncEntityType.ITEM, f"{prefix}-item-{i}", OperationType.CREATE, {})
                 results.append(queue_id)
@@ -1073,7 +1072,7 @@ class TestStorageIntegration:
         final_count = sync_queue.get_count()
         assert final_count >= 30
 
-    def test_large_markdown_file(self, temp_base_dir):
+    def test_large_markdown_file(self, temp_base_dir) -> None:
         """Test handling of large markdown files."""
         # Create item with large content
         large_description = "Lorem ipsum " * 10000
@@ -1094,7 +1093,7 @@ class TestStorageIntegration:
         # Check that large content is preserved (may vary slightly in length)
         assert len(parsed.description) >= len(large_description) - 1
 
-    def test_special_characters_in_markdown(self, temp_base_dir):
+    def test_special_characters_in_markdown(self, temp_base_dir) -> None:
         """Test handling of special characters in markdown."""
         special_content = "Test with special chars: < > & \" ' \\ | ~ ` ^ @ # $ % * ( ) { } [ ]"
         item = ItemData(
@@ -1112,7 +1111,7 @@ class TestStorageIntegration:
 
         assert special_content in parsed.description
 
-    def test_unicode_in_markdown(self, temp_base_dir):
+    def test_unicode_in_markdown(self, temp_base_dir) -> None:
         """Test unicode content in markdown."""
         unicode_content = "Unicode: 日本語 中文 한국어 العربية Ελληνικά"
         item = ItemData(
@@ -1139,7 +1138,7 @@ class TestStorageIntegration:
 class TestStoragePerformance:
     """Performance and edge case tests."""
 
-    def test_hash_performance(self):
+    def test_hash_performance(self) -> None:
         """Test hash computation performance."""
         content = "x" * 100000  # 100KB
         start = time.time()
@@ -1149,7 +1148,7 @@ class TestStoragePerformance:
         assert elapsed < 1.0  # Should be fast
         assert len(hash_val) == 64
 
-    def test_large_queue_operations(self, sync_queue):
+    def test_large_queue_operations(self, sync_queue) -> None:
         """Test queue with many items."""
         # Enqueue 1000 items
         for i in range(1000):
@@ -1161,12 +1160,12 @@ class TestStoragePerformance:
         pending = sync_queue.get_pending(limit=100)
         assert len(pending) == 100
 
-    def test_deeply_nested_directories(self, temp_base_dir):
+    def test_deeply_nested_directories(self, temp_base_dir) -> None:
         """Test handling deeply nested directory structure."""
         # Create nested structure
         deep_dir = temp_base_dir
         for i in range(10):
-            deep_dir = deep_dir / f"level-{i}"
+            deep_dir /= f"level-{i}"
             deep_dir.mkdir()
             (deep_dir / "file.md").write_text("content")
 
@@ -1174,7 +1173,7 @@ class TestStoragePerformance:
         changes = ChangeDetector.detect_changes_in_directory(temp_base_dir, {})
         assert len(changes) == 10
 
-    def test_sync_result_dataclass(self):
+    def test_sync_result_dataclass(self) -> None:
         """Test SyncResult dataclass."""
         result = SyncResult(success=True, entities_synced=10, duration_seconds=1.5)
         assert result.success
@@ -1182,7 +1181,7 @@ class TestStoragePerformance:
         assert result.duration_seconds == 1.5
 
     @pytest.mark.asyncio
-    async def test_max_retry_backoff(self):
+    async def test_max_retry_backoff(self) -> None:
         """Test exponential backoff with retries."""
         start = time.time()
         for attempt in range(3):
@@ -1192,7 +1191,7 @@ class TestStoragePerformance:
         # Should increase with each attempt
         assert elapsed > 0.03
 
-    def test_empty_file_parsing(self, temp_base_dir):
+    def test_empty_file_parsing(self, temp_base_dir) -> None:
         """Test parsing empty markdown file."""
         file_path = temp_base_dir / "empty.md"
         file_path.write_text("")
@@ -1200,7 +1199,7 @@ class TestStoragePerformance:
         with pytest.raises(ValueError):
             parse_item_markdown(file_path)
 
-    def test_malformed_yaml_frontmatter(self, temp_base_dir):
+    def test_malformed_yaml_frontmatter(self, temp_base_dir) -> None:
         """Test parsing file with malformed YAML."""
         file_path = temp_base_dir / "malformed.md"
         file_path.write_text("""---
@@ -1227,7 +1226,7 @@ class TestLocalStorageFileOperations:
 
         return LocalStorageManager(base_dir=temp_base_dir)
 
-    def test_init_project_creates_directory_structure(self, storage_manager, temp_base_dir):
+    def test_init_project_creates_directory_structure(self, storage_manager, temp_base_dir) -> None:
         """Test init_project creates proper directory structure."""
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
@@ -1245,7 +1244,7 @@ class TestLocalStorageFileOperations:
         assert (trace_dir / ".meta").exists()
         assert (trace_dir / "project.yaml").exists()
 
-    def test_init_project_with_file_path(self, storage_manager, temp_base_dir):
+    def test_init_project_with_file_path(self, storage_manager, temp_base_dir) -> None:
         """Test init_project accepts file path and finds parent directory."""
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
@@ -1257,7 +1256,7 @@ class TestLocalStorageFileOperations:
         assert trace_dir.parent.resolve() == project_path.resolve()
         assert trace_dir.exists()
 
-    def test_init_project_generates_valid_project_id(self, storage_manager, temp_base_dir):
+    def test_init_project_generates_valid_project_id(self, storage_manager, temp_base_dir) -> None:
         """Test init_project generates valid UUID."""
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
@@ -1271,7 +1270,7 @@ class TestLocalStorageFileOperations:
         except ValueError:
             assert False, f"Invalid project ID: {project_id}"
 
-    def test_init_project_creates_gitignore(self, storage_manager, temp_base_dir):
+    def test_init_project_creates_gitignore(self, storage_manager, temp_base_dir) -> None:
         """Test init_project creates or updates .gitignore."""
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
@@ -1283,7 +1282,7 @@ class TestLocalStorageFileOperations:
         content = gitignore.read_text()
         assert ".trace/.meta/sync.yaml" in content
 
-    def test_init_project_appends_to_existing_gitignore(self, storage_manager, temp_base_dir):
+    def test_init_project_appends_to_existing_gitignore(self, storage_manager, temp_base_dir) -> None:
         """Test init_project appends to existing .gitignore."""
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
@@ -1298,7 +1297,7 @@ class TestLocalStorageFileOperations:
         assert "*.log" in content
         assert ".trace/.meta/sync.yaml" in content
 
-    def test_init_project_creates_project_yaml_with_counters(self, storage_manager, temp_base_dir):
+    def test_init_project_creates_project_yaml_with_counters(self, storage_manager, temp_base_dir) -> None:
         """Test project.yaml is created with counter initialization."""
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
@@ -1313,7 +1312,7 @@ class TestLocalStorageFileOperations:
         assert config["counters"]["test"] == 0
         assert config["counters"]["task"] == 0
 
-    def test_get_project_trace_dir_with_file_path(self, storage_manager, temp_base_dir):
+    def test_get_project_trace_dir_with_file_path(self, storage_manager, temp_base_dir) -> None:
         """Test get_project_trace_dir with file path argument."""
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
@@ -1325,14 +1324,14 @@ class TestLocalStorageFileOperations:
         assert result is not None
         assert result.name == ".trace"
 
-    def test_is_trace_project_returns_false_for_non_trace_project(self, storage_manager, temp_base_dir):
+    def test_is_trace_project_returns_false_for_non_trace_project(self, storage_manager, temp_base_dir) -> None:
         """Test is_trace_project returns False when no .trace/ exists."""
         project_path = temp_base_dir / "non_trace_project"
         project_path.mkdir()
 
         assert not storage_manager.is_trace_project(project_path)
 
-    def test_is_trace_project_returns_true_for_trace_project(self, storage_manager, temp_base_dir):
+    def test_is_trace_project_returns_true_for_trace_project(self, storage_manager, temp_base_dir) -> None:
         """Test is_trace_project returns True when .trace/ exists."""
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
@@ -1340,7 +1339,7 @@ class TestLocalStorageFileOperations:
 
         assert storage_manager.is_trace_project(project_path)
 
-    def test_register_project_from_initialized_directory(self, storage_manager, temp_base_dir):
+    def test_register_project_from_initialized_directory(self, storage_manager, temp_base_dir) -> None:
         """Test registering an already initialized project."""
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
@@ -1351,7 +1350,7 @@ class TestLocalStorageFileOperations:
 
         assert registered_id == initial_id
 
-    def test_register_project_generates_id_if_missing(self, storage_manager, temp_base_dir):
+    def test_register_project_generates_id_if_missing(self, storage_manager, temp_base_dir) -> None:
         """Test register_project generates ID if missing from project.yaml."""
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
@@ -1370,7 +1369,7 @@ class TestLocalStorageFileOperations:
         updated_config = yaml.safe_load(project_yaml.read_text())
         assert updated_config["id"] == project_id
 
-    def test_increment_project_counter_epic(self, storage_manager, temp_base_dir):
+    def test_increment_project_counter_epic(self, storage_manager, temp_base_dir) -> None:
         """Test incrementing epic counter."""
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
@@ -1381,7 +1380,7 @@ class TestLocalStorageFileOperations:
         assert counter == 1
         assert external_id == "EPIC-001"
 
-    def test_increment_project_counter_multiple_times(self, storage_manager, temp_base_dir):
+    def test_increment_project_counter_multiple_times(self, storage_manager, temp_base_dir) -> None:
         """Test incrementing counter multiple times."""
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
@@ -1395,7 +1394,7 @@ class TestLocalStorageFileOperations:
         assert counter2 == 2 and id2 == "STORY-002"
         assert counter3 == 3 and id3 == "STORY-003"
 
-    def test_get_project_counters_from_yaml(self, storage_manager, temp_base_dir):
+    def test_get_project_counters_from_yaml(self, storage_manager, temp_base_dir) -> None:
         """Test reading counters from project.yaml."""
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
@@ -1410,7 +1409,7 @@ class TestLocalStorageFileOperations:
         assert counters["epic"] == 2
         assert counters["story"] == 0
 
-    def test_get_current_project_path_finds_trace_directory(self, storage_manager, temp_base_dir):
+    def test_get_current_project_path_finds_trace_directory(self, storage_manager, temp_base_dir) -> None:
         """Test get_current_project_path finds .trace/ in current directory."""
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
@@ -1428,7 +1427,7 @@ class TestLocalStorageFileOperations:
         finally:
             os.chdir(original_cwd)
 
-    def test_get_current_project_path_searches_parents(self, storage_manager, temp_base_dir):
+    def test_get_current_project_path_searches_parents(self, storage_manager, temp_base_dir) -> None:
         """Test get_current_project_path searches parent directories."""
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
@@ -1449,7 +1448,7 @@ class TestLocalStorageFileOperations:
         finally:
             os.chdir(original_cwd)
 
-    def test_get_current_project_path_returns_none_when_not_found(self, storage_manager, temp_base_dir):
+    def test_get_current_project_path_returns_none_when_not_found(self, storage_manager, temp_base_dir) -> None:
         """Test get_current_project_path returns None when not in trace project."""
         non_trace_path = temp_base_dir / "non_trace"
         non_trace_path.mkdir()
@@ -1464,12 +1463,12 @@ class TestLocalStorageFileOperations:
         finally:
             os.chdir(original_cwd)
 
-    def test_search_items_empty_result(self, storage_manager):
+    def test_search_items_empty_result(self, storage_manager) -> None:
         """Test search_items with no matches."""
         results = storage_manager.search_items("nonexistent_query")
         assert results == []
 
-    def test_queue_sync_creates_queue_entry(self, storage_manager):
+    def test_queue_sync_creates_queue_entry(self, storage_manager) -> None:
         """Test queue_sync creates entry in sync queue."""
         storage_manager.queue_sync("item", "item-123", "create", {"title": "Test"})
 
@@ -1477,7 +1476,7 @@ class TestLocalStorageFileOperations:
         assert len(queue) > 0
         assert any(q["entity_id"] == "item-123" for q in queue)
 
-    def test_get_sync_queue_limit(self, storage_manager):
+    def test_get_sync_queue_limit(self, storage_manager) -> None:
         """Test get_sync_queue respects limit parameter."""
         for i in range(10):
             storage_manager.queue_sync("item", f"item-{i}", "create", {})
@@ -1485,7 +1484,7 @@ class TestLocalStorageFileOperations:
         queue = storage_manager.get_sync_queue(limit=5)
         assert len(queue) == 5
 
-    def test_clear_sync_queue_entry_removes_item(self, storage_manager):
+    def test_clear_sync_queue_entry_removes_item(self, storage_manager) -> None:
         """Test clear_sync_queue_entry removes specific entry."""
         storage_manager.queue_sync("item", "item-123", "create", {})
         queue = storage_manager.get_sync_queue()
@@ -1496,7 +1495,7 @@ class TestLocalStorageFileOperations:
         remaining = storage_manager.get_sync_queue()
         assert not any(q["id"] == queue_id for q in remaining)
 
-    def test_update_sync_state_creates_and_updates(self, storage_manager):
+    def test_update_sync_state_creates_and_updates(self, storage_manager) -> None:
         """Test sync state can be created and updated."""
         storage_manager.update_sync_state("test_key", "initial_value")
         value1 = storage_manager.get_sync_state("test_key")
@@ -1507,7 +1506,7 @@ class TestLocalStorageFileOperations:
         assert value1 == "initial_value"
         assert value2 == "updated_value"
 
-    def test_get_sync_state_returns_none_for_missing_key(self, storage_manager):
+    def test_get_sync_state_returns_none_for_missing_key(self, storage_manager) -> None:
         """Test get_sync_state returns None for nonexistent key."""
         result = storage_manager.get_sync_state("nonexistent")
         assert result is None
@@ -1539,28 +1538,28 @@ class TestProjectStorage:
 
         return ProjectStorage(storage_manager, "Test Project", trace_dir=project_path / ".trace")
 
-    def test_project_storage_creates_subdirectories(self, project_storage):
+    def test_project_storage_creates_subdirectories(self, project_storage) -> None:
         """Test ProjectStorage initializes all required subdirectories."""
         assert project_storage.epics_dir.exists()
         assert project_storage.stories_dir.exists()
         assert project_storage.tests_dir.exists()
         assert project_storage.tasks_dir.exists()
 
-    def test_project_storage_detects_project_local_mode(self, project_storage):
+    def test_project_storage_detects_project_local_mode(self, project_storage) -> None:
         """Test ProjectStorage correctly identifies project-local mode."""
         assert project_storage.is_project_local is True
 
-    def test_create_or_update_project(self, project_storage):
+    def test_create_or_update_project(self, project_storage) -> None:
         """Test creating a project in ProjectStorage."""
         project = project_storage.create_or_update_project(
-            name="Test", description="Test description", metadata={"key": "value"}
+            name="Test", description="Test description", metadata={"key": "value"},
         )
 
         assert project is not None
         assert project.name == "Test"
         assert project.description == "Test description"
 
-    def test_create_or_update_existing_project(self, project_storage):
+    def test_create_or_update_existing_project(self, project_storage) -> None:
         """Test updating an existing project."""
         project1 = project_storage.create_or_update_project("Test", "Old description")
         project2 = project_storage.create_or_update_project("Test", "New description")
@@ -1568,7 +1567,7 @@ class TestProjectStorage:
         assert project1.id == project2.id
         assert project2.description == "New description"
 
-    def test_generate_project_readme(self, project_storage):
+    def test_generate_project_readme(self, project_storage) -> None:
         """Test project README is generated."""
         project = project_storage.create_or_update_project("Test", "Test description")
 
@@ -1579,7 +1578,7 @@ class TestProjectStorage:
         assert "Test" in content
         assert "Test description" in content
 
-    def test_get_project_returns_created_project(self, project_storage):
+    def test_get_project_returns_created_project(self, project_storage) -> None:
         """Test get_project retrieves created project."""
         # Use the project storage's project_name (which is "Test Project")
         created = project_storage.create_or_update_project("Test Project", "Description")
@@ -1614,7 +1613,7 @@ class TestItemStorage:
 
         return item_storage, storage_manager, project_storage, project
 
-    def test_create_item_with_all_fields(self, item_storage_setup):
+    def test_create_item_with_all_fields(self, item_storage_setup) -> None:
         """Test creating item with all fields."""
         item_storage, _, _, project = item_storage_setup
 
@@ -1635,7 +1634,7 @@ class TestItemStorage:
         assert item.priority == "high"
         assert item.owner == "Alice"
 
-    def test_create_item_generates_markdown_file(self, item_storage_setup):
+    def test_create_item_generates_markdown_file(self, item_storage_setup) -> None:
         """Test markdown file is created for item."""
         item_storage, _, project_storage, _ = item_storage_setup
 
@@ -1644,12 +1643,12 @@ class TestItemStorage:
         markdown_path = project_storage.epics_dir / "EPIC-001.md"
         assert markdown_path.exists()
 
-    def test_create_item_markdown_contains_frontmatter(self, item_storage_setup):
+    def test_create_item_markdown_contains_frontmatter(self, item_storage_setup) -> None:
         """Test generated markdown contains YAML frontmatter."""
         item_storage, _, project_storage, _ = item_storage_setup
 
         item = item_storage.create_item(
-            title="Test", item_type="story", external_id="STORY-001", description="Test description"
+            title="Test", item_type="story", external_id="STORY-001", description="Test description",
         )
 
         markdown_path = project_storage.stories_dir / "STORY-001.md"
@@ -1659,7 +1658,7 @@ class TestItemStorage:
         assert "external_id: STORY-001" in content
         assert "type: story" in content
 
-    def test_update_item_modifies_fields(self, item_storage_setup):
+    def test_update_item_modifies_fields(self, item_storage_setup) -> None:
         """Test updating item changes fields."""
         item_storage, _, _, _ = item_storage_setup
 
@@ -1670,7 +1669,7 @@ class TestItemStorage:
         assert updated.title == "Updated"
         assert updated.status == "done"
 
-    def test_delete_item_soft_deletes(self, item_storage_setup):
+    def test_delete_item_soft_deletes(self, item_storage_setup) -> None:
         """Test item deletion sets deleted_at timestamp."""
         item_storage, storage_manager, _, _ = item_storage_setup
 
@@ -1685,7 +1684,7 @@ class TestItemStorage:
         finally:
             session.close()
 
-    def test_delete_item_removes_markdown_file(self, item_storage_setup):
+    def test_delete_item_removes_markdown_file(self, item_storage_setup) -> None:
         """Test markdown file is deleted when item is deleted."""
         item_storage, _, project_storage, _ = item_storage_setup
 
@@ -1697,7 +1696,7 @@ class TestItemStorage:
         item_storage.delete_item(item.id)
         assert not markdown_path.exists()
 
-    def test_list_items_returns_all(self, item_storage_setup):
+    def test_list_items_returns_all(self, item_storage_setup) -> None:
         """Test list_items returns all items."""
         item_storage, _, _, _ = item_storage_setup
 
@@ -1707,7 +1706,7 @@ class TestItemStorage:
         items = item_storage.list_items()
         assert len(items) == 3
 
-    def test_list_items_filters_by_type(self, item_storage_setup):
+    def test_list_items_filters_by_type(self, item_storage_setup) -> None:
         """Test list_items can filter by item type."""
         item_storage, _, _, _ = item_storage_setup
 
@@ -1720,7 +1719,7 @@ class TestItemStorage:
         assert len(epics) == 1
         assert len(stories) == 1
 
-    def test_list_items_filters_by_status(self, item_storage_setup):
+    def test_list_items_filters_by_status(self, item_storage_setup) -> None:
         """Test list_items can filter by status."""
         item_storage, _, _, _ = item_storage_setup
 
@@ -1733,7 +1732,7 @@ class TestItemStorage:
         assert len(todos) == 1
         assert len(dones) == 1
 
-    def test_create_link_between_items(self, item_storage_setup):
+    def test_create_link_between_items(self, item_storage_setup) -> None:
         """Test creating a link between items."""
         item_storage, _, _, _ = item_storage_setup
 
@@ -1747,7 +1746,7 @@ class TestItemStorage:
         assert link.target_item_id == item2.id
         assert link.link_type == "implements"
 
-    def test_delete_link_removes_it(self, item_storage_setup):
+    def test_delete_link_removes_it(self, item_storage_setup) -> None:
         """Test deleting a link."""
         item_storage, _, _, _ = item_storage_setup
 
@@ -1760,7 +1759,7 @@ class TestItemStorage:
         remaining = item_storage.list_links()
         assert not any(l.id == link.id for l in remaining)
 
-    def test_list_links_filters_by_source(self, item_storage_setup):
+    def test_list_links_filters_by_source(self, item_storage_setup) -> None:
         """Test listing links filtered by source."""
         item_storage, _, _, _ = item_storage_setup
 
@@ -1774,7 +1773,7 @@ class TestItemStorage:
         links = item_storage.list_links(source_id=item1.id)
         assert len(links) == 2
 
-    def test_hash_content_consistency(self, item_storage_setup):
+    def test_hash_content_consistency(self, item_storage_setup) -> None:
         """Test content hashing is consistent."""
         item_storage, _, _, _ = item_storage_setup
 
@@ -1784,7 +1783,7 @@ class TestItemStorage:
 
         assert hash1 == hash2
 
-    def test_hash_content_differs_for_different_content(self, item_storage_setup):
+    def test_hash_content_differs_for_different_content(self, item_storage_setup) -> None:
         """Test different content produces different hashes."""
         item_storage, _, _, _ = item_storage_setup
 
@@ -1802,7 +1801,7 @@ class TestItemStorage:
 class TestStorageHelper:
     """Test StorageHelper utility functions."""
 
-    def test_get_storage_manager_returns_instance(self):
+    def test_get_storage_manager_returns_instance(self) -> None:
         """Test get_storage_manager returns LocalStorageManager."""
         from tracertm.cli.storage_helper import get_storage_manager, reset_storage_manager
 
@@ -1813,7 +1812,7 @@ class TestStorageHelper:
         assert hasattr(manager, "get_session")
         reset_storage_manager()
 
-    def test_reset_storage_manager_clears_singleton(self):
+    def test_reset_storage_manager_clears_singleton(self) -> None:
         """Test reset_storage_manager clears singleton."""
         from tracertm.cli.storage_helper import get_storage_manager, reset_storage_manager
 
@@ -1824,7 +1823,7 @@ class TestStorageHelper:
         assert manager1 is not manager2
         reset_storage_manager()
 
-    def test_format_item_for_display_returns_table(self):
+    def test_format_item_for_display_returns_table(self) -> None:
         """Test format_item_for_display returns Rich Table."""
         from tracertm.cli.storage_helper import format_item_for_display
         from tracertm.models import Item
@@ -1841,7 +1840,7 @@ class TestStorageHelper:
         table = format_item_for_display(item)
         assert table is not None
 
-    def test_format_link_for_display_returns_table(self):
+    def test_format_link_for_display_returns_table(self) -> None:
         """Test format_link_for_display returns Rich Table."""
         from tracertm.cli.storage_helper import format_link_for_display
 
@@ -1856,7 +1855,7 @@ class TestStorageHelper:
         table = format_link_for_display(link)
         assert table is not None
 
-    def test_format_items_table_with_multiple_items(self):
+    def test_format_items_table_with_multiple_items(self) -> None:
         """Test format_items_table with multiple items."""
         from tracertm.cli.storage_helper import format_items_table
         from tracertm.models import Item
@@ -1869,7 +1868,7 @@ class TestStorageHelper:
         table = format_items_table(items)
         assert table is not None
 
-    def test_format_links_table_with_context(self):
+    def test_format_links_table_with_context(self) -> None:
         """Test format_links_table with full context."""
         from tracertm.cli.storage_helper import format_links_table
         from tracertm.models import Item
@@ -1882,7 +1881,7 @@ class TestStorageHelper:
         table = format_links_table(links)
         assert table is not None
 
-    def test_human_time_delta_just_now(self):
+    def test_human_time_delta_just_now(self) -> None:
         """Test _human_time_delta for just now."""
         from datetime import datetime
 
@@ -1893,7 +1892,7 @@ class TestStorageHelper:
 
         assert "just now" in result
 
-    def test_human_time_delta_minutes_ago(self):
+    def test_human_time_delta_minutes_ago(self) -> None:
         """Test _human_time_delta for minutes."""
         from datetime import datetime
 
@@ -1904,7 +1903,7 @@ class TestStorageHelper:
 
         assert "minute" in result
 
-    def test_human_time_delta_hours_ago(self):
+    def test_human_time_delta_hours_ago(self) -> None:
         """Test _human_time_delta for hours."""
         from datetime import datetime
 
@@ -1915,7 +1914,7 @@ class TestStorageHelper:
 
         assert "hour" in result
 
-    def test_human_time_delta_days_ago(self):
+    def test_human_time_delta_days_ago(self) -> None:
         """Test _human_time_delta for days."""
         from datetime import datetime
 
@@ -1926,7 +1925,7 @@ class TestStorageHelper:
 
         assert "day" in result
 
-    def test_show_sync_status_display(self, capsys):
+    def test_show_sync_status_display(self, capsys) -> None:
         """Test show_sync_status displays status panel."""
         from tracertm.cli.storage_helper import reset_storage_manager, show_sync_status
 
@@ -1941,12 +1940,12 @@ class TestStorageHelper:
         finally:
             reset_storage_manager()
 
-    def test_require_project_decorator_passes_with_project(self, monkeypatch):
+    def test_require_project_decorator_passes_with_project(self, monkeypatch) -> None:
         """Test require_project allows execution when project is set."""
         from tracertm.cli.storage_helper import require_project
 
         @require_project()
-        def test_func():
+        def test_func() -> str:
             return "success"
 
         monkeypatch.setenv("RTM_PROJECT_ID", "test-id")
@@ -1956,12 +1955,12 @@ class TestStorageHelper:
         # This is a basic structure test
         assert callable(test_func)
 
-    def test_with_sync_decorator_structure(self):
+    def test_with_sync_decorator_structure(self) -> None:
         """Test with_sync decorator can be applied."""
         from tracertm.cli.storage_helper import with_sync
 
         @with_sync(enabled=False)
-        def test_func():
+        def test_func() -> str:
             return "result"
 
         result = test_func()

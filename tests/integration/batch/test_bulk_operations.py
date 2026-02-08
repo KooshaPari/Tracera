@@ -1,6 +1,4 @@
-"""
-Integration tests for Epic 2: Bulk Operations (Story 2.8, FR14).
-"""
+"""Integration tests for Epic 2: Bulk Operations (Story 2.8, FR14)."""
 
 import pytest
 
@@ -57,7 +55,7 @@ def temp_project_with_items(tmp_path, monkeypatch):
     return project_id, database_url
 
 
-def test_bulk_update_preview(temp_project_with_items):
+def test_bulk_update_preview(temp_project_with_items) -> None:
     """Test bulk update preview (Story 2.8, FR14)."""
     project_id, database_url = temp_project_with_items
 
@@ -80,7 +78,7 @@ def test_bulk_update_preview(temp_project_with_items):
         assert "estimated_duration_ms" in preview
 
 
-def test_bulk_update_atomicity(temp_project_with_items):
+def test_bulk_update_atomicity(temp_project_with_items) -> None:
     """Test bulk update atomicity (Story 2.8, FR14)."""
     project_id, database_url = temp_project_with_items
 
@@ -104,7 +102,7 @@ def test_bulk_update_atomicity(temp_project_with_items):
         assert updated_items == 10  # All 10 items should now be in_progress
 
 
-def test_bulk_delete_atomicity(temp_project_with_items):
+def test_bulk_delete_atomicity(temp_project_with_items) -> None:
     """Test bulk delete atomicity (Story 2.8, FR14)."""
     project_id, database_url = temp_project_with_items
 
@@ -135,7 +133,7 @@ def test_bulk_delete_atomicity(temp_project_with_items):
         assert active_items == 5  # Only in_progress items remain
 
 
-def test_bulk_create_preview(temp_project_with_items):
+def test_bulk_create_preview(temp_project_with_items) -> None:
     """Test bulk create preview from CSV (Story 2.8, FR14, FR74)."""
     project_id, database_url = temp_project_with_items
 
@@ -168,7 +166,7 @@ Task 1,FEATURE,task,todo,low,First task
         assert preview["sample_items"][0]["status"] == "todo"
 
 
-def test_bulk_create_preview_with_validation_errors(temp_project_with_items):
+def test_bulk_create_preview_with_validation_errors(temp_project_with_items) -> None:
     """Test bulk create preview with validation errors (Story 2.8, FR14, FR74)."""
     project_id, database_url = temp_project_with_items
 
@@ -196,7 +194,7 @@ Invalid View,INVALID,feature,todo
         assert preview["invalid_rows_count"] == 1
 
 
-def test_bulk_create_items_atomicity(temp_project_with_items):
+def test_bulk_create_items_atomicity(temp_project_with_items) -> None:
     """Test bulk create atomicity from CSV (Story 2.8, FR14, FR74)."""
     project_id, database_url = temp_project_with_items
 
@@ -242,7 +240,7 @@ New Task 1,FEATURE,task,todo,low,First new task
         assert item1.priority == "high"
 
 
-def test_bulk_create_with_metadata(temp_project_with_items):
+def test_bulk_create_with_metadata(temp_project_with_items) -> None:
     """Test bulk create with metadata from CSV (Story 2.8, FR14, FR74)."""
     project_id, database_url = temp_project_with_items
 
@@ -277,7 +275,7 @@ Feature with Metadata,FEATURE,feature,todo,"{""tags"": [""auth"", ""security""],
         assert item.item_metadata.get("priority") == "high"
 
 
-def test_bulk_create_skips_invalid_rows(temp_project_with_items):
+def test_bulk_create_skips_invalid_rows(temp_project_with_items) -> None:
     """Test that bulk create skips invalid rows and creates valid ones (Story 2.8, FR14, FR74)."""
     project_id, database_url = temp_project_with_items
 

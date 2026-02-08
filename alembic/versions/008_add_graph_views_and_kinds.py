@@ -67,7 +67,7 @@ def _create_tables() -> None:
     op.create_table(
         "item_views",
         sa.Column(
-            "item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), primary_key=True
+            "item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), primary_key=True,
         ),
         sa.Column("view_id", sa.String(length=255), sa.ForeignKey("views.id", ondelete="CASCADE"), primary_key=True),
         sa.Column(
@@ -136,7 +136,7 @@ def _add_columns() -> None:
     op.add_column(
         "items",
         sa.Column(
-            "node_kind_id", sa.String(length=255), sa.ForeignKey("node_kinds.id", ondelete="SET NULL"), nullable=True
+            "node_kind_id", sa.String(length=255), sa.ForeignKey("node_kinds.id", ondelete="SET NULL"), nullable=True,
         ),
     )
     op.create_index("idx_items_project_node_kind", "items", ["project_id", "node_kind_id"])
@@ -174,12 +174,12 @@ def _backfill_views_and_kinds(conn: sa.engine.Connection) -> tuple[dict[tuple[st
                 name=view_name,
                 description=None,
                 view_metadata={},
-            )
+            ),
         )
 
     # Backfill node kinds from items.item_type
     kind_rows = conn.execute(
-        sa.text("select distinct project_id, item_type from items where item_type is not null")
+        sa.text("select distinct project_id, item_type from items where item_type is not null"),
     ).fetchall()
     kind_id_map: dict[tuple[str, str], str] = {}
     for project_id, kind_name in kind_rows:
@@ -192,7 +192,7 @@ def _backfill_views_and_kinds(conn: sa.engine.Connection) -> tuple[dict[tuple[st
                 name=kind_name,
                 description=None,
                 kind_metadata={},
-            )
+            ),
         )
 
     return view_id_map, kind_id_map
@@ -226,8 +226,8 @@ def _migrate_data(conn: sa.engine.Connection, view_id_map: dict[tuple[str, str],
             where items.project_id = nk.project_id
               and items.item_type = nk.name
               and items.node_kind_id is null
-            """
-        )
+            """,
+        ),
     )
 
     # Backfill item_views from items.view
@@ -248,7 +248,7 @@ def _migrate_data(conn: sa.engine.Connection, view_id_map: dict[tuple[str, str],
 
     # Backfill link types from links.link_type
     link_type_rows = conn.execute(
-        sa.text("select distinct project_id, link_type from links where link_type is not null")
+        sa.text("select distinct project_id, link_type from links where link_type is not null"),
     ).fetchall()
     for project_id, link_type_name in link_type_rows:
         conn.execute(
@@ -258,7 +258,7 @@ def _migrate_data(conn: sa.engine.Connection, view_id_map: dict[tuple[str, str],
                 name=link_type_name,
                 description=None,
                 link_metadata={},
-            )
+            ),
         )
 
 

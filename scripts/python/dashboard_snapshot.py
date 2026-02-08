@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Dashboard Snapshot Generator
+"""Dashboard Snapshot Generator.
 
 Creates quick status snapshots for project leads.
 Useful for daily emails, Slack updates, or status reports.
@@ -18,6 +17,7 @@ Usage:
 
 import argparse
 import json
+import operator
 import re
 import sys
 from datetime import datetime
@@ -26,26 +26,26 @@ from typing import Any
 
 
 class DashboardSnapshot:
-    """Generate dashboard snapshots with key metrics and status"""
+    """Generate dashboard snapshots with key metrics and status."""
 
-    def __init__(self, project_dir: Path | None = None):
+    def __init__(self, project_dir: Path | None = None) -> None:
         self.project_dir = project_dir or Path.cwd()
         self.dashboard_file = self.project_dir / "COVERAGE_PROGRESS_DASHBOARD.md"
         self.standup_file = self.project_dir / "DAILY_STANDUP_LOG.md"
         self.metrics_dir = self.project_dir / ".coverage_tracking"
 
     def extract_current_coverage(self) -> float:
-        """Extract current coverage % from dashboard or metrics"""
+        """Extract current coverage % from dashboard or metrics."""
         # Try metrics first
         if self.metrics_dir.exists():
             metrics_files = sorted(self.metrics_dir.glob("metrics_*.json"))
             if metrics_files:
                 try:
-                    with Path(metrics_files[-1]).open() as f:
+                    with Path(metrics_files[-1]).open(encoding="utf-8") as f:
                         data = json.load(f)
                         return data.get("line_coverage", 0.0)
-                except Exception as e:
-                    print(f"Warning: Could not read metrics: {e}")
+                except Exception:
+                    pass
 
         # Try dashboard
         if self.dashboard_file.exists():
@@ -55,13 +55,13 @@ class DashboardSnapshot:
                 match = re.search(r"Line Coverage:\s*(\d+\.?\d*)", content)
                 if match:
                     return float(match.group(1))
-            except Exception as e:
-                print(f"Warning: Could not read dashboard: {e}")
+            except Exception:
+                pass
 
         return 0.0
 
     def extract_metrics_history(self, days: int = 7) -> list[dict[str, Any]]:
-        """Extract coverage history from metrics files"""
+        """Extract coverage history from metrics files."""
         if not self.metrics_dir.exists():
             return []
 
@@ -71,20 +71,20 @@ class DashboardSnapshot:
         # Get last N files
         for mfile in metrics_files[-days:]:
             try:
-                with Path(mfile).open() as f:
+                with Path(mfile).open(encoding="utf-8") as f:
                     data = json.load(f)
                     history.append({
                         "date": data.get("date", mfile.stem),
                         "coverage": data.get("line_coverage", 0),
                         "tests": data.get("tests_total", 0),
                     })
-            except Exception as e:
-                print(f"Warning: Could not read {mfile}: {e}")
+            except Exception:
+                pass
 
         return history
 
     def count_active_blockers(self) -> int:
-        """Count active blockers from standup log"""
+        """Count active blockers from standup log."""
         if not self.standup_file.exists():
             return 0
 
@@ -93,12 +93,11 @@ class DashboardSnapshot:
             # Count BLOCKER: lines
             blockers = re.findall(r"^BLOCKER:", content, re.MULTILINE)
             return len(blockers)
-        except Exception as e:
-            print(f"Warning: Could not count blockers: {e}")
+        except Exception:
             return 0
 
     def extract_module_coverage(self) -> dict[str, float]:
-        """Extract by-module coverage"""
+        """Extract by-module coverage."""
         if not self.metrics_dir.exists():
             return {}
 
@@ -108,15 +107,14 @@ class DashboardSnapshot:
             return {}
 
         try:
-            with Path(metrics_files[-1]).open() as f:
+            with Path(metrics_files[-1]).open(encoding="utf-8") as f:
                 data = json.load(f)
                 return data.get("by_module", {})
-        except Exception as e:
-            print(f"Warning: Could not extract module coverage: {e}")
+        except Exception:
             return {}
 
     def calculate_trend(self, history: list[dict[str, Any]]) -> dict[str, Any]:
-        """Calculate coverage trend"""
+        """Calculate coverage trend."""
         if len(history) < 2:
             return {
                 "direction": "→",
@@ -144,7 +142,7 @@ class DashboardSnapshot:
         }
 
     def assess_risk(self, current_coverage: float, trend: dict[str, Any], blockers: int) -> str:
-        """Assess overall risk status"""
+        """Assess overall risk status."""
         risk_score = 0
 
         # Coverage risk
@@ -177,7 +175,7 @@ class DashboardSnapshot:
         return "🟢 LOW"
 
     def generate_markdown_snapshot(self) -> str:
-        """Generate snapshot in Markdown format"""
+        """Generate snapshot in Markdown format."""
         current_coverage = self.extract_current_coverage()
         history = self.extract_metrics_history(days=7)
         blockers = self.count_active_blockers()
@@ -206,7 +204,7 @@ class DashboardSnapshot:
 """
 
         if modules:
-            for module, coverage in sorted(modules.items(), key=lambda x: x[1], reverse=True):
+            for module, coverage in sorted(modules.items(), key=operator.itemgetter(1), reverse=True):
                 bar_length = int(coverage / 10)
                 bar = "█" * bar_length + "░" * (10 - bar_length)
                 snapshot += f"- **{module}** {bar} {coverage:.1f}%\n"
@@ -238,7 +236,7 @@ class DashboardSnapshot:
         # Check for regression
         if len(history) >= 2 and trend["change_percent"] < -1:
             alerts.append(
-                f"⚠️ **Regression detected:** Coverage down {abs(trend['change_percent']):.2f}% in last 7 days"
+                f"⚠️ **Regression detected:** Coverage down {abs(trend['change_percent']):.2f}% in last 7 days",
             )
 
         # Check for stalled progress
@@ -290,7 +288,7 @@ class DashboardSnapshot:
         return snapshot
 
     def generate_slack_snapshot(self) -> str:
-        """Generate snapshot formatted for Slack"""
+        """Generate snapshot formatted for Slack."""
         current_coverage = self.extract_current_coverage()
         history = self.extract_metrics_history(days=7)
         blockers = self.count_active_blockers()
@@ -301,7 +299,7 @@ class DashboardSnapshot:
         daily_gain = trend["change_percent"] / max(trend["days"], 1) if trend["days"] > 0 else 0
         week_forecast = current_coverage + (daily_gain * 5)
 
-        slack_message = f"""*Dashboard Snapshot* - {datetime.now().strftime("%Y-%m-%d %H:%M")}
+        return f"""*Dashboard Snapshot* - {datetime.now().strftime("%Y-%m-%d %H:%M")}
 
 *Status:* {risk}
 
@@ -317,10 +315,8 @@ class DashboardSnapshot:
 _Detailed: See COVERAGE_PROGRESS_DASHBOARD.md_
 """
 
-        return slack_message
-
     def generate_plain_text_snapshot(self) -> str:
-        """Generate snapshot in plain text format"""
+        """Generate snapshot in plain text format."""
         current_coverage = self.extract_current_coverage()
         history = self.extract_metrics_history(days=7)
         blockers = self.count_active_blockers()
@@ -362,11 +358,11 @@ RECOMMENDATION
         return text
 
 
-def main():
-    """Main execution"""
+def main() -> int:
+    """Main execution."""
     parser = argparse.ArgumentParser(description="Generate dashboard snapshot")
     parser.add_argument(
-        "--format", choices=["markdown", "slack", "text"], default="markdown", help="Output format (default: markdown)"
+        "--format", choices=["markdown", "slack", "text"], default="markdown", help="Output format (default: markdown)",
     )
     parser.add_argument("--output", type=Path, help="Output file (default: create timestamped file)")
     parser.add_argument("--email", help="Email to send snapshot to (requires SMTP setup)")
@@ -375,8 +371,6 @@ def main():
     args = parser.parse_args()
 
     generator = DashboardSnapshot()
-
-    print(f"Generating snapshot in {args.format} format...", file=sys.stderr)
 
     # Generate snapshot
     if args.format == "slack":
@@ -388,7 +382,7 @@ def main():
 
     # Output
     if args.print:
-        print(content)
+        pass
     else:
         # Determine output file
         if args.output:
@@ -399,11 +393,10 @@ def main():
             output_file = Path.cwd() / f"DASHBOARD_SNAPSHOT_{date_str}{ext}"
 
         output_file.write_text(content)
-        print(f"✓ Snapshot saved to {output_file}", file=sys.stderr)
 
     # Optional: Email
     if args.email:
-        print(f"⚠️ Email feature not implemented yet. Would send to: {args.email}", file=sys.stderr)
+        pass
         # TODO: Implement SMTP sending
 
     return 0

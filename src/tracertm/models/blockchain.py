@@ -1,5 +1,4 @@
-"""
-Blockchain-style models for TraceRTM.
+"""Blockchain-style models for TraceRTM.
 
 Provides:
 - VersionBlock: Blockchain-style version history records
@@ -37,8 +36,7 @@ from tracertm.models.types import JSONType
 
 
 class VersionBlock(Base, TimestampMixin):
-    """
-    Blockchain-style version record with cryptographic linking.
+    """Blockchain-style version record with cryptographic linking.
 
     Each modification to a spec creates a new block that references
     the previous block via its hash, creating an immutable audit trail.
@@ -51,7 +49,7 @@ class VersionBlock(Base, TimestampMixin):
     # Blockchain linking
     block_id: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)  # SHA-256 hash of block
     previous_block_id: Mapped[str | None] = mapped_column(
-        String(64), ForeignKey("version_blocks.block_id"), nullable=True
+        String(64), ForeignKey("version_blocks.block_id"), nullable=True,
     )
 
     # Spec reference
@@ -62,7 +60,7 @@ class VersionBlock(Base, TimestampMixin):
     # Block content
     version_number: Mapped[int] = mapped_column(Integer, nullable=False)
     timestamp: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC),
     )
     author_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     change_type: Mapped[str] = mapped_column(String(50), nullable=False)  # 'create', 'update', 'delete', 'restore'
@@ -79,15 +77,14 @@ class VersionBlock(Base, TimestampMixin):
 
     # Self-referential relationship
     previous_block: Mapped["VersionBlock | None"] = relationship(
-        "VersionBlock", remote_side=[block_id], foreign_keys=[previous_block_id]
+        "VersionBlock", remote_side=[block_id], foreign_keys=[previous_block_id],
     )
 
     __table_args__ = (UniqueConstraint("spec_id", "spec_type", "version_number", name="uq_spec_version"),)
 
 
 class VersionChainIndex(Base, TimestampMixin):
-    """
-    Fast lookup index for version chains.
+    """Fast lookup index for version chains.
 
     Maintains the head pointer and chain metadata for quick access
     without traversing the entire chain.
@@ -124,8 +121,7 @@ class VersionChainIndex(Base, TimestampMixin):
 
 
 class Baseline(Base, TimestampMixin):
-    """
-    Merkle tree snapshot for baseline verification.
+    """Merkle tree snapshot for baseline verification.
 
     A baseline captures the state of specifications at a point in time,
     enabling verification that items haven't changed since the baseline.
@@ -159,16 +155,15 @@ class Baseline(Base, TimestampMixin):
 
     # Relationships
     items: Mapped[list["BaselineItem"]] = relationship(
-        "BaselineItem", back_populates="baseline", cascade="all, delete-orphan"
+        "BaselineItem", back_populates="baseline", cascade="all, delete-orphan",
     )
     proofs: Mapped[list["MerkleProofCache"]] = relationship(
-        "MerkleProofCache", back_populates="baseline", cascade="all, delete-orphan"
+        "MerkleProofCache", back_populates="baseline", cascade="all, delete-orphan",
     )
 
 
 class BaselineItem(Base):
-    """
-    Item included in a baseline snapshot.
+    """Item included in a baseline snapshot.
 
     Stores the content hash and leaf hash for each item at baseline time.
     """
@@ -204,8 +199,7 @@ class BaselineItem(Base):
 
 
 class MerkleProofCache(Base):
-    """
-    Cached Merkle proof for a baseline item.
+    """Cached Merkle proof for a baseline item.
 
     Proofs are pre-computed and cached to avoid expensive recomputation.
     """
@@ -244,8 +238,7 @@ class MerkleProofCache(Base):
 
 
 class SpecEmbedding(Base, TimestampMixin):
-    """
-    Sentence embedding for semantic similarity analysis.
+    """Sentence embedding for semantic similarity analysis.
 
     Stores vector embeddings computed from spec content for finding
     similar specifications.
@@ -263,7 +256,7 @@ class SpecEmbedding(Base, TimestampMixin):
     embedding: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)  # Serialized numpy array
     embedding_dimension: Mapped[int] = mapped_column(Integer, nullable=False)  # e.g., 384 for all-MiniLM-L6-v2
     embedding_model: Mapped[str] = mapped_column(
-        String(100), nullable=False
+        String(100), nullable=False,
     )  # e.g., 'sentence-transformers/all-MiniLM-L6-v2'
     model_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
 

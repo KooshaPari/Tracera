@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""
-Generate comprehensive Documentation Layer for SwiftRide
-Target: 50+ items per type with deep linking to existing items
+"""Generate comprehensive Documentation Layer for SwiftRide
+Target: 50+ items per type with deep linking to existing items.
 
 Documentation Types:
 1. architecture_decision (60 items) - ADRs with full context
@@ -420,7 +419,7 @@ API_DOCS = [
                 "ride_started": {"timestamp": "2025-01-31T10:16:30Z"},
                 "location_update": {"lat": 37.7849, "lng": -122.4094, "heading": 90},
                 "ride_completed": {"fare": 15.50, "distance": 5.2, "duration": 18},
-            }
+            },
         },
     },
 ]
@@ -1342,7 +1341,7 @@ async def create_item(
     status: str = "draft",
     **kwargs,
 ) -> str:
-    """Create an item and return its ID
+    """Create an item and return its ID.
 
     Args:
         priority: Integer 0-10 (0=lowest, 10=highest)
@@ -1375,7 +1374,7 @@ async def create_item(
 
 
 async def create_adr_as_item(session: AsyncSession, adr_data: dict) -> str:
-    """Create ADR as regular item (adrs table doesn't exist)"""
+    """Create ADR as regular item (adrs table doesn't exist)."""
     description = f"""
 ## ADR: {adr_data["number"]}
 **Status:** {adr_data["status"]}
@@ -1402,8 +1401,8 @@ async def create_adr_as_item(session: AsyncSession, adr_data: dict) -> str:
     )
 
 
-async def create_link(session: AsyncSession, source_id: str, target_id: str, link_type: str = "documents"):
-    """Create a link between items"""
+async def create_link(session: AsyncSession, source_id: str, target_id: str, link_type: str = "documents") -> None:
+    """Create a link between items."""
     link_id = str(uuid.uuid4())
 
     query = text("""
@@ -1415,14 +1414,12 @@ async def create_link(session: AsyncSession, source_id: str, target_id: str, lin
     """)
 
     await session.execute(
-        query, {"id": link_id, "source_id": source_id, "target_id": target_id, "link_type": link_type}
+        query, {"id": link_id, "source_id": source_id, "target_id": target_id, "link_type": link_type},
     )
 
 
-async def fetch_existing_items(session: AsyncSession):
-    """Fetch existing items to link documentation to"""
-    print("\n📥 Fetching existing items for linking...")
-
+async def fetch_existing_items(session: AsyncSession) -> None:
+    """Fetch existing items to link documentation to."""
     item_types = ["feature", "user_story", "epic", "capability", "task", "api_endpoint"]
 
     for item_type in item_types:
@@ -1436,7 +1433,6 @@ async def fetch_existing_items(session: AsyncSession):
 
         ids = [row[0] for row in result]
         existing_items[item_type] = ids
-        print(f"   ✓ Found {len(ids)} {item_type} items")
 
 
 # ============================================================================
@@ -1444,21 +1440,17 @@ async def fetch_existing_items(session: AsyncSession):
 # ============================================================================
 
 
-async def generate_documentation():
-    """Generate all documentation items with linking"""
-
+async def generate_documentation() -> None:
+    """Generate all documentation items with linking."""
     engine = create_async_engine(DATABASE_URL, echo=False)
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     async with async_session() as session:
-        print("📚 Generating SwiftRide Documentation Layer...")
-        print("=" * 70)
 
         # Fetch existing items for linking
         await fetch_existing_items(session)
 
         # 1. Architecture Decisions (60 items)
-        print("\n🏛️  Creating 60 Architecture Decision Records...")
         for idx, adr in enumerate(ARCHITECTURE_DECISIONS):
             # Create ADR as item
             adr_id = await create_adr_as_item(session, adr)
@@ -1469,13 +1461,11 @@ async def generate_documentation():
                 await create_link(session, adr_id, epic_id, "documents")
 
             if (idx + 1) % 10 == 0:
-                print(f"   ✓ Created {idx + 1} ADRs")
+                pass
 
         await session.commit()
-        print(f"✅ Created {len(items_db['architecture_decision'])} architecture decisions")
 
         # 2. Technical Specifications (80 items)
-        print("\n📋 Creating 80 Technical Specifications...")
         for idx, spec in enumerate(TECHNICAL_SPECS):
             spec_id = await create_item(
                 session,
@@ -1496,13 +1486,11 @@ async def generate_documentation():
                 await create_link(session, spec_id, story_id, "documents")
 
             if (idx + 1) % 10 == 0:
-                print(f"   ✓ Created {idx + 1} technical specs")
+                pass
 
         await session.commit()
-        print(f"✅ Created {len(items_db['technical_spec'])} technical specifications")
 
         # 3. API Documentation (100 items)
-        print("\n🔌 Creating 100 API Documentation Items...")
         for idx, api in enumerate(API_DOCS):
             api_id = await create_item(
                 session,
@@ -1523,13 +1511,11 @@ async def generate_documentation():
                 await create_link(session, api_id, spec_id, "documents")
 
             if (idx + 1) % 10 == 0:
-                print(f"   ✓ Created {idx + 1} API docs")
+                pass
 
         await session.commit()
-        print(f"✅ Created {len(items_db['api_documentation'])} API documentation items")
 
         # 4. User Guides (70 items)
-        print("\n📖 Creating 70 User Guides...")
         for idx, guide in enumerate(USER_GUIDES):
             guide_id = await create_item(
                 session,
@@ -1545,13 +1531,11 @@ async def generate_documentation():
                 await create_link(session, guide_id, feature_id, "documents")
 
             if (idx + 1) % 10 == 0:
-                print(f"   ✓ Created {idx + 1} user guides")
+                pass
 
         await session.commit()
-        print(f"✅ Created {len(items_db['user_guide'])} user guides")
 
         # 5. Tutorials (60 items)
-        print("\n🎓 Creating 60 Tutorials...")
         for idx, tutorial in enumerate(TUTORIALS):
             content = tutorial.get("content", "")
             desc = f"Duration: {tutorial.get('duration_minutes', 0)} min | Difficulty: {tutorial.get('difficulty', '')}\n\n{(content[:500] if isinstance(content, str) else str(content)[:500])}..."
@@ -1574,13 +1558,11 @@ async def generate_documentation():
                 await create_link(session, tutorial_id, feature_id, "demonstrates")
 
             if (idx + 1) % 10 == 0:
-                print(f"   ✓ Created {idx + 1} tutorials")
+                pass
 
         await session.commit()
-        print(f"✅ Created {len(items_db['tutorial'])} tutorials")
 
         # 6. Troubleshooting Guides (70 items)
-        print("\n🔧 Creating 70 Troubleshooting Guides...")
         for idx, guide in enumerate(TROUBLESHOOTING_GUIDES):
             solution = guide.get("solution", "")
             sol_str = (solution[:500] if isinstance(solution, str) else str(solution)[:500])
@@ -1603,13 +1585,11 @@ async def generate_documentation():
                 await create_link(session, ts_id, api_id, "documents")
 
             if (idx + 1) % 10 == 0:
-                print(f"   ✓ Created {idx + 1} troubleshooting guides")
+                pass
 
         await session.commit()
-        print(f"✅ Created {len(items_db['troubleshooting_guide'])} troubleshooting guides")
 
         # 7. Release Notes (80 items)
-        print("\n📦 Creating 80 Release Notes...")
         for idx, release in enumerate(RELEASE_NOTES):
             release_id = await create_item(
                 session,
@@ -1627,13 +1607,11 @@ async def generate_documentation():
                     await create_link(session, release_id, feature_id, "releases")
 
             if (idx + 1) % 10 == 0:
-                print(f"   ✓ Created {idx + 1} release notes")
+                pass
 
         await session.commit()
-        print(f"✅ Created {len(items_db['release_note'])} release notes")
 
         # 8. Architecture Diagrams (50 items)
-        print("\n📊 Creating 50 Architecture Diagrams...")
         for idx, diagram in enumerate(ARCHITECTURE_DIAGRAMS):
             diagram_id = await create_item(
                 session,
@@ -1654,33 +1632,17 @@ async def generate_documentation():
                 await create_link(session, diagram_id, spec_id, "illustrates")
 
             if (idx + 1) % 10 == 0:
-                print(f"   ✓ Created {idx + 1} diagrams")
+                pass
 
         await session.commit()
-        print(f"✅ Created {len(items_db['architecture_diagram'])} architecture diagrams")
 
         # Final summary
-        print("\n" + "=" * 70)
-        print("🎉 SwiftRide Documentation Layer Generation Complete!")
-        print("=" * 70)
-        print(f"🏛️  Architecture Decisions:      {len(items_db['architecture_decision'])}")
-        print(f"📋 Technical Specifications:    {len(items_db['technical_spec'])}")
-        print(f"🔌 API Documentation:           {len(items_db['api_documentation'])}")
-        print(f"📖 User Guides:                 {len(items_db['user_guide'])}")
-        print(f"🎓 Tutorials:                   {len(items_db['tutorial'])}")
-        print(f"🔧 Troubleshooting Guides:      {len(items_db['troubleshooting_guide'])}")
-        print(f"📦 Release Notes:               {len(items_db['release_note'])}")
-        print(f"📊 Architecture Diagrams:       {len(items_db['architecture_diagram'])}")
-        print("=" * 70)
-        print(f"📚 Total Documentation Items:   {sum(len(v) for v in items_db.values())}")
-        print("=" * 70)
 
         # Verify counts
         result = await session.execute(
-            text("SELECT COUNT(*) FROM items WHERE project_id = :project_id"), {"project_id": PROJECT_ID}
+            text("SELECT COUNT(*) FROM items WHERE project_id = :project_id"), {"project_id": PROJECT_ID},
         )
-        total_count = result.scalar()
-        print(f"\n✅ Database verification: {total_count} total items in project")
+        result.scalar()
 
         # Count links (project_id doesn't exist in links table - inferred through source item)
         result = await session.execute(
@@ -1691,8 +1653,7 @@ async def generate_documentation():
             """),
             {"project_id": PROJECT_ID},
         )
-        link_count = result.scalar()
-        print(f"✅ Total links created: {link_count}")
+        result.scalar()
 
         await engine.dispose()
 

@@ -1,4 +1,4 @@
-"""Recovery and transaction scenario tests for local_storage.py
+"""Recovery and transaction scenario tests for local_storage.py.
 
 Tests cover:
 - Initialization with corrupted index
@@ -25,7 +25,7 @@ from tracertm.storage.local_storage import (
 class TestLocalStorageRecovery:
     """Test recovery and transaction handling in local storage."""
 
-    def test_initialize_with_corrupted_database(self, tmp_path: Path):
+    def test_initialize_with_corrupted_database(self, tmp_path: Path) -> None:
         """Test initialization when database file is corrupted."""
         db_path = tmp_path / "tracertm.db"
 
@@ -41,7 +41,7 @@ class TestLocalStorageRecovery:
             # Some corruption might be unrecoverable
             pytest.skip("Database corruption scenario varies by SQLite version")
 
-    def test_register_project_handles_duplicates(self, tmp_path: Path):
+    def test_register_project_handles_duplicates(self, tmp_path: Path) -> None:
         """Test duplicate project registration is idempotent."""
         mgr = LocalStorageManager(base_dir=tmp_path / "global")
         project_path = tmp_path / "project"
@@ -56,7 +56,7 @@ class TestLocalStorageRecovery:
         # Should return same project ID
         assert project_id == project_id_2
 
-    def test_register_project_without_trace_dir(self, tmp_path: Path):
+    def test_register_project_without_trace_dir(self, tmp_path: Path) -> None:
         """Test registering project without .trace/ directory fails."""
         mgr = LocalStorageManager(base_dir=tmp_path / "global")
         project_path = tmp_path / "no_trace"
@@ -65,7 +65,7 @@ class TestLocalStorageRecovery:
         with pytest.raises(ValueError, match="No .trace/ directory found"):
             mgr.register_project(project_path)
 
-    def test_register_project_without_project_yaml(self, tmp_path: Path):
+    def test_register_project_without_project_yaml(self, tmp_path: Path) -> None:
         """Test registering project without project.yaml fails."""
         mgr = LocalStorageManager(base_dir=tmp_path / "global")
         project_path = tmp_path / "project"
@@ -75,7 +75,7 @@ class TestLocalStorageRecovery:
         with pytest.raises(ValueError, match="project.yaml not found"):
             mgr.register_project(project_path)
 
-    def test_register_project_generates_missing_id(self, tmp_path: Path):
+    def test_register_project_generates_missing_id(self, tmp_path: Path) -> None:
         """Test that missing project ID is generated during registration."""
         mgr = LocalStorageManager(base_dir=tmp_path / "global")
         project_path = tmp_path / "project"
@@ -97,7 +97,7 @@ class TestLocalStorageRecovery:
         config = yaml.safe_load(project_yaml.read_text(encoding="utf-8"))
         assert config["id"] == project_id
 
-    def test_partial_sync_state_recovery(self, tmp_path: Path):
+    def test_partial_sync_state_recovery(self, tmp_path: Path) -> None:
         """Test recovery from incomplete sync operations."""
         mgr = LocalStorageManager(base_dir=tmp_path)
 
@@ -115,7 +115,7 @@ class TestLocalStorageRecovery:
         remaining = mgr.get_sync_queue()
         assert len(remaining) >= 1
 
-    def test_database_transaction_rollback_on_error(self, tmp_path: Path):
+    def test_database_transaction_rollback_on_error(self, tmp_path: Path) -> None:
         """Test transaction rollback when operation fails."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
@@ -151,7 +151,7 @@ class TestLocalStorageRecovery:
         assert retrieved is not None
         assert retrieved.title == "Original Item"
 
-    def test_concurrent_access_to_same_project(self, tmp_path: Path):
+    def test_concurrent_access_to_same_project(self, tmp_path: Path) -> None:
         """Test concurrent access to same project resources."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_path = tmp_path / "project"
@@ -161,7 +161,7 @@ class TestLocalStorageRecovery:
         results = []
         errors = []
 
-        def worker(worker_id):
+        def worker(worker_id) -> None:
             try:
                 # Each worker increments counter
                 counter, external_id = mgr.increment_project_counter(project_path, "epic")
@@ -187,7 +187,7 @@ class TestLocalStorageRecovery:
         # we may have some duplicates - just verify all completed
         assert len(results) >= 1  # At least some succeeded
 
-    def test_recovery_from_incomplete_item_creation(self, tmp_path: Path):
+    def test_recovery_from_incomplete_item_creation(self, tmp_path: Path) -> None:
         """Test recovery when item creation is interrupted."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
@@ -214,7 +214,7 @@ class TestLocalStorageRecovery:
         finally:
             session.close()
 
-    def test_recovery_from_incomplete_link_creation(self, tmp_path: Path):
+    def test_recovery_from_incomplete_link_creation(self, tmp_path: Path) -> None:
         """Test recovery when link creation fails partway."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
@@ -238,7 +238,7 @@ class TestLocalStorageRecovery:
         # Might exist if commit happened before yaml write
         assert len(links) >= 0
 
-    def test_search_items_with_special_characters(self, tmp_path: Path):
+    def test_search_items_with_special_characters(self, tmp_path: Path) -> None:
         """Test full-text search with special characters."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
@@ -259,7 +259,7 @@ class TestLocalStorageRecovery:
         # May or may not find depending on FTS tokenization
         assert isinstance(results, list)
 
-    def test_index_project_with_malformed_files(self, tmp_path: Path):
+    def test_index_project_with_malformed_files(self, tmp_path: Path) -> None:
         """Test indexing project with some malformed markdown files."""
         mgr = LocalStorageManager(base_dir=tmp_path / "global")
         project_path = tmp_path / "project"
@@ -290,7 +290,7 @@ status: todo
         # At least valid file should be indexed
         assert counts["epics"] >= 1
 
-    def test_index_project_without_project_yaml(self, tmp_path: Path):
+    def test_index_project_without_project_yaml(self, tmp_path: Path) -> None:
         """Test indexing fails without project.yaml."""
         mgr = LocalStorageManager(base_dir=tmp_path / "global")
         project_path = tmp_path / "project"
@@ -302,7 +302,7 @@ status: todo
         with pytest.raises(ValueError, match="project.yaml not found"):
             mgr.index_project(project_path)
 
-    def test_index_project_without_id_in_yaml(self, tmp_path: Path):
+    def test_index_project_without_id_in_yaml(self, tmp_path: Path) -> None:
         """Test indexing fails without project ID in yaml."""
         mgr = LocalStorageManager(base_dir=tmp_path / "global")
         project_path = tmp_path / "project"
@@ -319,7 +319,7 @@ status: todo
         with pytest.raises(ValueError, match="Project ID not found"):
             mgr.index_project(project_path)
 
-    def test_get_current_project_path_from_deep_subdirectory(self, tmp_path: Path):
+    def test_get_current_project_path_from_deep_subdirectory(self, tmp_path: Path) -> None:
         """Test finding project from deep subdirectory."""
         mgr = LocalStorageManager(base_dir=tmp_path / "global")
         project_path = tmp_path / "project"
@@ -340,7 +340,7 @@ status: todo
         finally:
             os.chdir(old_cwd)
 
-    def test_get_current_project_path_not_in_project(self, tmp_path: Path):
+    def test_get_current_project_path_not_in_project(self, tmp_path: Path) -> None:
         """Test get_current_project_path returns None outside project."""
         mgr = LocalStorageManager(base_dir=tmp_path / "global")
 
@@ -354,7 +354,7 @@ status: todo
         finally:
             os.chdir(old_cwd)
 
-    def test_sync_queue_duplicate_entries(self, tmp_path: Path):
+    def test_sync_queue_duplicate_entries(self, tmp_path: Path) -> None:
         """Test that sync queue handles duplicate entries correctly."""
         mgr = LocalStorageManager(base_dir=tmp_path)
 
@@ -370,7 +370,7 @@ status: todo
         # Should have latest payload
         assert item_1_entries[0]["payload"]["v"] == 2
 
-    def test_update_item_preserves_metadata(self, tmp_path: Path):
+    def test_update_item_preserves_metadata(self, tmp_path: Path) -> None:
         """Test that updating item preserves existing metadata."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
@@ -395,7 +395,7 @@ status: todo
         assert updated.item_metadata["custom_field"] == "value"
         assert updated.item_metadata["new_field"] == "new_value"
 
-    def test_delete_item_soft_delete(self, tmp_path: Path):
+    def test_delete_item_soft_delete(self, tmp_path: Path) -> None:
         """Test that delete_item performs soft delete."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
@@ -417,7 +417,7 @@ status: todo
         finally:
             session.close()
 
-    def test_delete_item_removes_markdown(self, tmp_path: Path):
+    def test_delete_item_removes_markdown(self, tmp_path: Path) -> None:
         """Test that delete_item removes markdown file."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
@@ -437,7 +437,7 @@ status: todo
         # Markdown should be removed
         assert not md_path.exists()
 
-    def test_create_or_update_project_update_path(self, tmp_path: Path):
+    def test_create_or_update_project_update_path(self, tmp_path: Path) -> None:
         """Test updating existing project."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
@@ -452,7 +452,7 @@ status: todo
         assert updated.id == original_id
         assert updated.description == "Updated"
 
-    def test_get_project_returns_none_if_not_exists(self, tmp_path: Path):
+    def test_get_project_returns_none_if_not_exists(self, tmp_path: Path) -> None:
         """Test get_project returns None for non-existent project."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("NonExistent")
@@ -460,7 +460,7 @@ status: todo
         project = project_storage.get_project()
         assert project is None
 
-    def test_list_items_filters(self, tmp_path: Path):
+    def test_list_items_filters(self, tmp_path: Path) -> None:
         """Test list_items with various filters."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
@@ -508,7 +508,7 @@ status: todo
         children = item_storage.list_items(parent_id=str(epic1.id))
         assert len(children) == 2
 
-    def test_list_links_filters(self, tmp_path: Path):
+    def test_list_links_filters(self, tmp_path: Path) -> None:
         """Test list_links with various filters."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
@@ -539,7 +539,7 @@ status: todo
         tested_by = item_storage.list_links(link_type="tested_by")
         assert len(tested_by) == 1
 
-    def test_gitignore_creation_appends_if_exists(self, tmp_path: Path):
+    def test_gitignore_creation_appends_if_exists(self, tmp_path: Path) -> None:
         """Test that init_project appends to existing .gitignore."""
         mgr = LocalStorageManager(base_dir=tmp_path / "global")
         project_path = tmp_path / "project"
@@ -557,7 +557,7 @@ status: todo
         assert "*.pyc" in content  # Existing content preserved
         assert ".trace/.meta/sync.yaml" in content  # New entry added
 
-    def test_gitignore_not_duplicated(self, tmp_path: Path):
+    def test_gitignore_not_duplicated(self, tmp_path: Path) -> None:
         """Test that .gitignore entry is not duplicated on re-init."""
         mgr = LocalStorageManager(base_dir=tmp_path / "global")
         project_path = tmp_path / "project"

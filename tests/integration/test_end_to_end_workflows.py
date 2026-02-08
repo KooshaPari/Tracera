@@ -1,5 +1,4 @@
-"""
-Comprehensive end-to-end workflow and scenario tests.
+"""Comprehensive end-to-end workflow and scenario tests.
 
 Tests complete workflows: Item creation → Linking → Sync, project setup → management → export,
 conflict detection → resolution, bulk operations, multi-step scenarios, team collaboration,
@@ -23,7 +22,7 @@ class TestItemCreationLinkingSync:
     """Test complete workflow: Create items, link them, sync data."""
 
     @pytest.mark.integration
-    def test_simple_item_creation_workflow(self, sync_db_session):
+    def test_simple_item_creation_workflow(self, sync_db_session) -> None:
         """Test simple item creation workflow."""
         # Create project
         project = Project(id="workflow-project", name="Workflow Project", description="Test workflow project")
@@ -40,7 +39,7 @@ class TestItemCreationLinkingSync:
             status="todo",
         )
         item2 = Item(
-            id="API-001", project_id="workflow-project", title="Auth API", view="API", item_type="api", status="todo"
+            id="API-001", project_id="workflow-project", title="Auth API", view="API", item_type="api", status="todo",
         )
 
         sync_db_session.add(item1)
@@ -55,7 +54,7 @@ class TestItemCreationLinkingSync:
         assert len(items) == 2
 
     @pytest.mark.integration
-    def test_item_linking_workflow(self, db_with_sample_data):
+    def test_item_linking_workflow(self, db_with_sample_data) -> None:
         """Test item linking workflow."""
         # Items already exist: item-1, item-2, item-3, item-4
         # Create new links
@@ -85,7 +84,7 @@ class TestItemCreationLinkingSync:
         assert len(result_links) == 2
 
     @pytest.mark.integration
-    def test_item_modification_workflow(self, initialized_db):
+    def test_item_modification_workflow(self, initialized_db) -> None:
         """Test item modification workflow."""
         # Get item
         item = initialized_db.query(Item).filter_by(id="STORY-123").first()
@@ -104,7 +103,7 @@ class TestItemCreationLinkingSync:
         assert result.title != original_title
 
     @pytest.mark.integration
-    def test_complete_item_lifecycle(self, sync_db_session):
+    def test_complete_item_lifecycle(self, sync_db_session) -> None:
         """Test complete item lifecycle: create, update, link, delete."""
         # Create project
         project = Project(id="lifecycle-project", name="Lifecycle")
@@ -165,7 +164,7 @@ class TestProjectSetupManagementExport:
     """Test project setup, management, and export workflows."""
 
     @pytest.mark.integration
-    def test_project_creation_workflow(self, sync_db_session):
+    def test_project_creation_workflow(self, sync_db_session) -> None:
         """Test complete project creation workflow."""
         project = Project(
             id="new-project",
@@ -183,7 +182,7 @@ class TestProjectSetupManagementExport:
         assert result.project_metadata["team"] == "platform"
 
     @pytest.mark.integration
-    def test_project_configuration_workflow(self, sync_db_session):
+    def test_project_configuration_workflow(self, sync_db_session) -> None:
         """Test project configuration workflow."""
         project = Project(id="config-project", name="Config Project", project_metadata={"configured": False})
         sync_db_session.add(project)
@@ -198,7 +197,7 @@ class TestProjectSetupManagementExport:
         assert result.project_metadata["settings"]["theme"] == "dark"
 
     @pytest.mark.integration
-    def test_project_member_management(self, sync_db_session):
+    def test_project_member_management(self, sync_db_session) -> None:
         """Test project member management workflow."""
         project = Project(
             id="team-project",
@@ -223,7 +222,7 @@ class TestProjectSetupManagementExport:
         assert len(result.project_metadata["members"]) >= 2
 
     @pytest.mark.integration
-    def test_project_archive_workflow(self, sync_db_session):
+    def test_project_archive_workflow(self, sync_db_session) -> None:
         """Test project archival workflow."""
         project = Project(id="archive-project", name="Archive Project", project_metadata={"archived": False})
         sync_db_session.add(project)
@@ -241,7 +240,7 @@ class TestProjectSetupManagementExport:
         assert "archived_at" in result.project_metadata
 
     @pytest.mark.integration
-    def test_project_data_export_workflow(self, db_with_sample_data):
+    def test_project_data_export_workflow(self, db_with_sample_data) -> None:
         """Test project data export workflow."""
         # Gather all project data
         projects = db_with_sample_data.query(Project).all()
@@ -265,7 +264,7 @@ class TestConflictDetectionResolution:
     """Test conflict detection and resolution workflows."""
 
     @pytest.mark.integration
-    def test_concurrent_edit_conflict_detection(self, sync_db_session):
+    def test_concurrent_edit_conflict_detection(self, sync_db_session) -> None:
         """Test detection of concurrent edits."""
         project = Project(id="conflict-project", name="Conflict")
         sync_db_session.add(project)
@@ -290,7 +289,7 @@ class TestConflictDetectionResolution:
         assert result.title == "User Update"
 
     @pytest.mark.integration
-    def test_link_conflict_resolution(self, db_with_sample_data):
+    def test_link_conflict_resolution(self, db_with_sample_data) -> None:
         """Test link conflict resolution."""
         # Create conflicting links
         link1 = Link(
@@ -324,7 +323,7 @@ class TestConflictDetectionResolution:
         assert result2 is not None
 
     @pytest.mark.integration
-    def test_status_conflict_resolution(self, initialized_db):
+    def test_status_conflict_resolution(self, initialized_db) -> None:
         """Test status update conflict resolution."""
         item = initialized_db.query(Item).filter_by(id="STORY-123").first()
         original_status = item.status
@@ -342,7 +341,7 @@ class TestConflictDetectionResolution:
         assert result.status != original_status
 
     @pytest.mark.integration
-    def test_metadata_conflict_merge(self, sync_db_session):
+    def test_metadata_conflict_merge(self, sync_db_session) -> None:
         """Test metadata conflict merge."""
         project = Project(id="merge-project", name="Merge")
         sync_db_session.add(project)
@@ -373,7 +372,7 @@ class TestBulkOperationsWithRollback:
     """Test bulk operations with rollback scenarios."""
 
     @pytest.mark.integration
-    def test_bulk_item_creation(self, sync_db_session):
+    def test_bulk_item_creation(self, sync_db_session) -> None:
         """Test bulk item creation."""
         project = Project(id="bulk-project", name="Bulk")
         sync_db_session.add(project)
@@ -399,7 +398,7 @@ class TestBulkOperationsWithRollback:
         assert count == 10
 
     @pytest.mark.integration
-    def test_bulk_link_creation(self, sync_db_session):
+    def test_bulk_link_creation(self, sync_db_session) -> None:
         """Test bulk link creation."""
         project = Project(id="bulk-links", name="Bulk Links")
         sync_db_session.add(project)
@@ -439,7 +438,7 @@ class TestBulkOperationsWithRollback:
         assert count == 10
 
     @pytest.mark.integration
-    def test_bulk_update_operation(self, initialized_db):
+    def test_bulk_update_operation(self, initialized_db) -> None:
         """Test bulk update operation."""
         # Update multiple items
         items = initialized_db.query(Item).all()
@@ -452,7 +451,7 @@ class TestBulkOperationsWithRollback:
         assert len(updated_items) >= 2
 
     @pytest.mark.integration
-    def test_bulk_operation_partial_rollback(self, sync_db_session):
+    def test_bulk_operation_partial_rollback(self, sync_db_session) -> None:
         """Test partial rollback in bulk operation."""
         project = Project(id="partial-rollback", name="Partial")
         sync_db_session.add(project)
@@ -488,7 +487,7 @@ class TestMultiStepUserScenarios:
     """Test multi-step user scenarios."""
 
     @pytest.mark.integration
-    def test_feature_development_workflow(self, sync_db_session):
+    def test_feature_development_workflow(self, sync_db_session) -> None:
         """Test feature development workflow."""
         # Create project
         project = Project(id="feature-dev", name="Feature Development", project_metadata={"phase": "development"})
@@ -576,7 +575,7 @@ class TestMultiStepUserScenarios:
         assert len(items) == 4
 
     @pytest.mark.integration
-    def test_requirement_traceability_workflow(self, sync_db_session):
+    def test_requirement_traceability_workflow(self, sync_db_session) -> None:
         """Test requirement traceability workflow."""
         project = Project(id="requirements", name="Requirements")
         sync_db_session.add(project)
@@ -622,7 +621,7 @@ class TestMultiStepUserScenarios:
         assert result_link is not None
 
     @pytest.mark.integration
-    def test_bug_fixing_workflow(self, sync_db_session):
+    def test_bug_fixing_workflow(self, sync_db_session) -> None:
         """Test bug fixing workflow."""
         project = Project(id="bug-tracker", name="Bug Tracker")
         sync_db_session.add(project)
@@ -664,7 +663,7 @@ class TestImportExportWorkflows:
     """Test import and export workflows."""
 
     @pytest.mark.integration
-    def test_project_export_to_json(self, db_with_sample_data):
+    def test_project_export_to_json(self, db_with_sample_data) -> None:
         """Test project export to JSON."""
         project = db_with_sample_data.query(Project).first()
         items = db_with_sample_data.query(Item).filter_by(project_id=project.id).all()
@@ -685,7 +684,7 @@ class TestImportExportWorkflows:
         assert len(export["links"]) >= 1
 
     @pytest.mark.integration
-    def test_data_import_workflow(self, sync_db_session):
+    def test_data_import_workflow(self, sync_db_session) -> None:
         """Test data import workflow."""
         # Import data
         import_data: dict[str, Any] = {
@@ -723,7 +722,7 @@ class TestBackupRecoveryWorkflows:
     """Test backup and recovery workflows."""
 
     @pytest.mark.integration
-    def test_project_backup_creation(self, db_with_sample_data):
+    def test_project_backup_creation(self, db_with_sample_data) -> None:
         """Test project backup creation."""
         project = db_with_sample_data.query(Project).first()
         items = db_with_sample_data.query(Item).filter_by(project_id=project.id).all()
@@ -743,7 +742,7 @@ class TestBackupRecoveryWorkflows:
         assert len(items_list) == item_count
 
     @pytest.mark.integration
-    def test_data_recovery_workflow(self, sync_db_session):
+    def test_data_recovery_workflow(self, sync_db_session) -> None:
         """Test data recovery workflow."""
         # Create project with data
         project = Project(id="recovery-project", name="Recovery")
@@ -771,7 +770,7 @@ class TestBackupRecoveryWorkflows:
         assert len(recovered_items) == 3
 
     @pytest.mark.integration
-    def test_incremental_backup_workflow(self, sync_db_session):
+    def test_incremental_backup_workflow(self, sync_db_session) -> None:
         """Test incremental backup workflow."""
         project = Project(id="incremental-backup", name="Incremental")
         sync_db_session.add(project)

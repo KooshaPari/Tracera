@@ -1,5 +1,4 @@
-"""
-Async-specific tests for SyncEngine.
+"""Async-specific tests for SyncEngine.
 
 Tests for:
 - Async lock usage and deadlock prevention
@@ -32,7 +31,7 @@ class TestSyncEngineLocking:
     """Test async locking in SyncEngine."""
 
     @pytest.mark.asyncio
-    async def test_sync_lock_prevents_concurrent_syncs(self):
+    async def test_sync_lock_prevents_concurrent_syncs(self) -> None:
         """Test that sync lock prevents concurrent sync operations."""
         db_mock = MagicMock()
         api_mock = AsyncMock()
@@ -58,7 +57,7 @@ class TestSyncEngineLocking:
         assert len(gathered) == 2
 
     @pytest.mark.asyncio
-    async def test_sync_lock_timeout_behavior(self):
+    async def test_sync_lock_timeout_behavior(self) -> None:
         """Test timeout when waiting for sync lock."""
         db_mock = MagicMock()
         api_mock = AsyncMock()
@@ -88,7 +87,7 @@ class TestSyncEngineLocking:
         assert sync_done.is_set()
 
     @pytest.mark.asyncio
-    async def test_multiple_sync_attempts_serialized(self):
+    async def test_multiple_sync_attempts_serialized(self) -> None:
         """Test that multiple sync attempts are serialized."""
         sync_order = []
 
@@ -128,7 +127,7 @@ class TestQueueProcessingAsync:
     """Test async queue processing."""
 
     @pytest.mark.asyncio
-    async def test_process_queue_concurrent_uploads(self):
+    async def test_process_queue_concurrent_uploads(self) -> None:
         """Test processing queue with concurrent uploads."""
         db_mock = MagicMock()
         api_mock = AsyncMock()
@@ -164,7 +163,7 @@ class TestQueueProcessingAsync:
 
         upload_count = 0
 
-        async def mock_upload(change):
+        async def mock_upload(change) -> bool:
             nonlocal upload_count
             await asyncio.sleep(0)
             upload_count += 1
@@ -178,7 +177,7 @@ class TestQueueProcessingAsync:
         assert upload_count == 2
 
     @pytest.mark.asyncio
-    async def test_process_queue_with_timeout(self):
+    async def test_process_queue_with_timeout(self) -> None:
         """Test queue processing with timeout on uploads."""
         db_mock = MagicMock()
         api_mock = AsyncMock()
@@ -204,7 +203,7 @@ class TestQueueProcessingAsync:
 
         engine.queue.get_pending.return_value = changes
 
-        async def slow_upload(change):
+        async def slow_upload(change) -> bool:
             await asyncio.sleep(0.5)
             return True
 
@@ -215,7 +214,7 @@ class TestQueueProcessingAsync:
         assert isinstance(result, SyncResult)
 
     @pytest.mark.asyncio
-    async def test_queue_retry_exponential_backoff(self):
+    async def test_queue_retry_exponential_backoff(self) -> None:
         """Test exponential backoff in queue processing retries."""
         db_mock = MagicMock()
         api_mock = AsyncMock()
@@ -241,7 +240,7 @@ class TestQueueProcessingAsync:
 
         upload_times = []
 
-        async def failing_upload(ch):
+        async def failing_upload(ch) -> bool:
             await asyncio.sleep(0)
             upload_times.append(datetime.now(UTC))
             return False
@@ -257,7 +256,7 @@ class TestQueueProcessingAsync:
 class TestChangeDetectionAsync:
     """Test async change detection."""
 
-    def test_change_detection_hash_computation(self):
+    def test_change_detection_hash_computation(self) -> None:
         """Test hash computation for change detection."""
         content1 = "This is the content"
         content2 = "This is the content"
@@ -270,7 +269,7 @@ class TestChangeDetectionAsync:
         assert hash1 == hash2
         assert hash1 != hash3
 
-    def test_has_changed_detection(self):
+    def test_has_changed_detection(self) -> None:
         """Test change detection based on hash."""
         content = "file content"
         hash1 = ChangeDetector.compute_hash(content)
@@ -280,7 +279,7 @@ class TestChangeDetectionAsync:
         assert ChangeDetector.has_changed(content, None)
 
     @pytest.mark.asyncio
-    async def test_concurrent_change_detection(self):
+    async def test_concurrent_change_detection(self) -> None:
         """Test concurrent change detection operations."""
         import tempfile
         from pathlib import Path
@@ -306,7 +305,7 @@ class TestPullPushAsync:
     """Test async pull and push operations."""
 
     @pytest.mark.asyncio
-    async def test_pull_changes_concurrent(self):
+    async def test_pull_changes_concurrent(self) -> None:
         """Test concurrent pull of changes."""
         db_mock = MagicMock()
         api_mock = AsyncMock()
@@ -322,7 +321,7 @@ class TestPullPushAsync:
         assert result.success
 
     @pytest.mark.asyncio
-    async def test_upload_change_with_retry(self):
+    async def test_upload_change_with_retry(self) -> None:
         """Test uploading change with retry logic."""
         db_mock = MagicMock()
         api_mock = AsyncMock()
@@ -346,7 +345,7 @@ class TestPullPushAsync:
         assert result is True
 
     @pytest.mark.asyncio
-    async def test_apply_remote_change_async(self):
+    async def test_apply_remote_change_async(self) -> None:
         """Test applying remote changes asynchronously."""
         db_mock = MagicMock()
         api_mock = AsyncMock()
@@ -363,7 +362,7 @@ class TestPullPushAsync:
 class TestSyncStateManagementAsync:
     """Test async sync state management."""
 
-    def test_sync_state_creation(self):
+    def test_sync_state_creation(self) -> None:
         """Test SyncState creation and properties."""
         state = SyncState()
 
@@ -372,7 +371,7 @@ class TestSyncStateManagementAsync:
         assert state.pending_changes == 0
         assert state.conflicts_count == 0
 
-    def test_sync_state_updates(self):
+    def test_sync_state_updates(self) -> None:
         """Test updating sync state."""
         state = SyncState()
         state.status = SyncStatus.SYNCING
@@ -382,7 +381,7 @@ class TestSyncStateManagementAsync:
         assert state.pending_changes == 5
 
     @pytest.mark.asyncio
-    async def test_concurrent_state_updates(self):
+    async def test_concurrent_state_updates(self) -> None:
         """Test concurrent state updates."""
         db_mock = MagicMock()
         state_manager = SyncStateManager(db_mock)
@@ -407,7 +406,7 @@ class TestSyncEngineIntegrationAsync:
     """Integration tests for async sync operations."""
 
     @pytest.mark.asyncio
-    async def test_full_sync_cycle_async(self):
+    async def test_full_sync_cycle_async(self) -> None:
         """Test complete sync cycle asynchronously."""
         db_mock = MagicMock()
         api_mock = AsyncMock()
@@ -434,7 +433,7 @@ class TestSyncEngineIntegrationAsync:
             assert result.success
 
     @pytest.mark.asyncio
-    async def test_sync_with_concurrent_api_calls(self):
+    async def test_sync_with_concurrent_api_calls(self) -> None:
         """Test sync operations making concurrent API calls."""
         db_mock = MagicMock()
 
@@ -465,7 +464,7 @@ class TestSyncEngineIntegrationAsync:
             assert result.success
 
     @pytest.mark.asyncio
-    async def test_sync_cancellation_cleanup(self):
+    async def test_sync_cancellation_cleanup(self) -> None:
         """Test sync cleanup on cancellation."""
         db_mock = MagicMock()
         api_mock = AsyncMock()
@@ -498,14 +497,14 @@ class TestSyncEngineIntegrationAsync:
 class TestAsyncQueueOperations:
     """Test async queue-based operations."""
 
-    def test_queue_creation(self):
+    def test_queue_creation(self) -> None:
         """Test queue creation."""
         db_mock = MagicMock()
         queue = SyncQueue(db_mock)
 
         assert queue.db == db_mock
 
-    def test_queue_enqueue(self):
+    def test_queue_enqueue(self) -> None:
         """Test enqueueing changes."""
         db_mock = MagicMock()
         db_mock.engine.connect.return_value.__enter__.return_value.execute.return_value.lastrowid = 1
@@ -518,7 +517,7 @@ class TestAsyncQueueOperations:
 
             assert queue_id is not None
 
-    def test_queue_get_pending(self):
+    def test_queue_get_pending(self) -> None:
         """Test getting pending changes."""
         db_mock = MagicMock()
 
@@ -528,7 +527,7 @@ class TestAsyncQueueOperations:
 
             assert pending is not None
 
-    def test_queue_remove(self):
+    def test_queue_remove(self) -> None:
         """Test removing from queue."""
         db_mock = MagicMock()
 
@@ -536,7 +535,7 @@ class TestAsyncQueueOperations:
             queue = SyncQueue(db_mock)
             queue.remove(1)  # Should not raise
 
-    def test_queue_clear(self):
+    def test_queue_clear(self) -> None:
         """Test clearing queue."""
         db_mock = MagicMock()
 

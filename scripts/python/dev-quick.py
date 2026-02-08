@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Unified terminal for rtm dev start --quick.
+"""Unified terminal for rtm dev start --quick.
 
 Runs backend-go, backend-py, and frontend in one terminal. Output is intercepted
 in full phrases (blurbs), not line-by-line. Phrases from the same service are
@@ -55,7 +54,7 @@ ANSI_INFO = ANSI_DIM + ANSI_CYAN
 
 # Phrase boundary: new log entry often starts with date, level, or method (optional leading whitespace)
 LOG_START_PATTERN = re.compile(
-    r"^\s*(\d{4}-\d{2}-\d{2}|\d{2}:\d{2}:\d{2}|INFO|ERROR|WARN|WARNING|DEBUG|GET\s|POST\s|PUT\s|DELETE\s|PATCH\s|\[\s*\]|File\s+)"
+    r"^\s*(\d{4}-\d{2}-\d{2}|\d{2}:\d{2}:\d{2}|INFO|ERROR|WARN|WARNING|DEBUG|GET\s|POST\s|PUT\s|DELETE\s|PATCH\s|\[\s*\]|File\s+)",
 )
 # Filter: skip phrase that is only HTTP 200 success
 FILTER_200 = re.compile(r"^\s*(GET|POST|PUT|DELETE|PATCH)\s+.*\s+200\s*$", re.MULTILINE)
@@ -113,10 +112,7 @@ def _format_phrase_ansi(tag: str, phrase: str) -> str:
     for line in phrase.rstrip().splitlines(keepends=True):
         prefix = _line_style_ansi(line)
         if prefix:
-            out.append(prefix)
-            out.append(line.rstrip("\n"))
-            out.append(ANSI_RESET)
-            out.append("\n")
+            out.extend((prefix, line.rstrip("\n"), ANSI_RESET, "\n"))
         else:
             out.append(line)
     out.append("\n")

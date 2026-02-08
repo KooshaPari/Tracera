@@ -1,6 +1,4 @@
-"""
-Pydantic schemas for Authentication API.
-"""
+"""Pydantic schemas for Authentication API."""
 
 from pydantic import BaseModel, EmailStr, Field
 

@@ -9,17 +9,17 @@ import pytest_asyncio
 class MockNATSClient:
     """Mock NATS client for testing."""
 
-    def __init__(self, nats_url: str):
+    def __init__(self, nats_url: str) -> None:
         self.nats_url = nats_url
         self.connected = False
         self.published_messages: list[dict] = []
         self.subscriptions: dict[str, list] = {}
 
-    async def connect(self):
+    async def connect(self) -> None:
         """Simulate NATS connection."""
         self.connected = True
 
-    async def close(self):
+    async def close(self) -> None:
         """Simulate NATS disconnection."""
         self.connected = False
 
@@ -27,17 +27,17 @@ class MockNATSClient:
         """Check if connected."""
         return self.connected
 
-    async def publish(self, subject: str, data: dict):
+    async def publish(self, subject: str, data: dict) -> None:
         """Mock publish - store message for verification."""
         self.published_messages.append({"subject": subject, "data": data, "timestamp": asyncio.get_event_loop().time()})
 
-    async def subscribe(self, subject: str, consumer_name: str, handler):
+    async def subscribe(self, subject: str, consumer_name: str, handler) -> None:
         """Mock subscribe - register handler."""
         if subject not in self.subscriptions:
             self.subscriptions[subject] = []
         self.subscriptions[subject].append({"consumer": consumer_name, "handler": handler})
 
-    async def trigger_subscription(self, subject: str, data: dict):
+    async def trigger_subscription(self, subject: str, data: dict) -> None:
         """Manually trigger subscription handlers (for testing)."""
         if subject in self.subscriptions:
             for sub in self.subscriptions[subject]:
@@ -47,10 +47,10 @@ class MockNATSClient:
 class MockEventBus:
     """Mock Event Bus for testing."""
 
-    def __init__(self, nats_client: MockNATSClient):
+    def __init__(self, nats_client: MockNATSClient) -> None:
         self.nats = nats_client
 
-    async def publish(self, event_type: str, project_id: str, entity_id: str, entity_type: str, payload: dict):
+    async def publish(self, event_type: str, project_id: str, entity_id: str, entity_type: str, payload: dict) -> None:
         """Publish event to NATS."""
         subject = f"tracertm.events.{entity_type}.{event_type}"
         data = {
@@ -80,7 +80,7 @@ async def event_bus(nats_client):
 
 
 @pytest.mark.asyncio
-async def test_python_to_nats_flow(nats_client: MockNATSClient, event_bus: MockEventBus):
+async def test_python_to_nats_flow(nats_client: MockNATSClient, event_bus: MockEventBus) -> None:
     """Test Python publishes event to NATS."""
     await event_bus.publish(
         event_type="analyzed",
@@ -100,11 +100,11 @@ async def test_python_to_nats_flow(nats_client: MockNATSClient, event_bus: MockE
 
 
 @pytest.mark.asyncio
-async def test_nats_subscription(nats_client: MockNATSClient):
+async def test_nats_subscription(nats_client: MockNATSClient) -> None:
     """Test Python receives events from NATS."""
     received_events = []
 
-    async def handler(event: dict):
+    async def handler(event: dict) -> None:
         received_events.append(event)
 
     await nats_client.subscribe("tracertm.bridge.go.*.item.created", "test-consumer", handler)
@@ -125,7 +125,7 @@ async def test_nats_subscription(nats_client: MockNATSClient):
 
 
 @pytest.mark.asyncio
-async def test_event_format_validation(event_bus: MockEventBus, nats_client: MockNATSClient):
+async def test_event_format_validation(event_bus: MockEventBus, nats_client: MockNATSClient) -> None:
     """Test event payload matches schema."""
     await event_bus.publish(
         event_type="created",
@@ -147,15 +147,15 @@ async def test_event_format_validation(event_bus: MockEventBus, nats_client: Moc
 
 
 @pytest.mark.asyncio
-async def test_bidirectional_flow(nats_client: MockNATSClient, event_bus: MockEventBus):
+async def test_bidirectional_flow(nats_client: MockNATSClient, event_bus: MockEventBus) -> None:
     """Test bidirectional event flow between Go and Python."""
     go_events_received = []
     python_events_received = []
 
-    async def handle_go_event(event: dict):
+    async def handle_go_event(event: dict) -> None:
         go_events_received.append(event)
 
-    async def handle_python_event(event: dict):
+    async def handle_python_event(event: dict) -> None:
         python_events_received.append(event)
 
     await nats_client.subscribe("tracertm.bridge.go.*.item.updated", "python-consumer", handle_go_event)
@@ -177,7 +177,7 @@ async def test_bidirectional_flow(nats_client: MockNATSClient, event_bus: MockEv
     }
     await nats_client.trigger_subscription("tracertm.bridge.go.*.item.updated", go_event)
     await nats_client.trigger_subscription(
-        "tracertm.events.specification.analyzed", nats_client.published_messages[0]["data"]
+        "tracertm.events.specification.analyzed", nats_client.published_messages[0]["data"],
     )
     await asyncio.sleep(0.1)
 

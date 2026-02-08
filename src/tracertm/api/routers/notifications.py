@@ -1,6 +1,6 @@
 import logging
 from datetime import UTC, datetime
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
@@ -62,8 +62,8 @@ async def list_notifications(
 @router.post("/{notification_id}/read")
 async def mark_as_read(
     notification_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     user_id = claims.get("sub")
     if not user_id:
@@ -88,8 +88,8 @@ async def mark_as_read(
 
 @router.post("/read-all")
 async def mark_all_as_read(
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     user_id = claims.get("sub")
     if not await _notifications_table_exists(db):
@@ -104,7 +104,7 @@ async def mark_all_as_read(
     return {"status": "success"}
 
 
-async def seed_initial_notifications(db: AsyncSession, user_id: str):
+async def seed_initial_notifications(db: AsyncSession, user_id: str) -> None:
     """Seed authentic-looking notifications for a new user."""
     from datetime import datetime, timedelta
 
@@ -156,7 +156,7 @@ async def _notifications_table_exists(db: AsyncSession) -> bool:
             SELECT 1
             FROM information_schema.tables
             WHERE table_schema = 'public' AND table_name = 'notifications'
-            """
-        )
+            """,
+        ),
     )
     return result.scalar() is not None

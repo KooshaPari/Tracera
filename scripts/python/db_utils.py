@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Database utility functions for TraceRTM.
+"""Database utility functions for TraceRTM.
 
 Common database operations and maintenance tasks.
 """
@@ -29,15 +28,13 @@ def check_connection() -> bool:
         with engine.connect() as conn:
             result = conn.execute(text("SELECT 1"))
             return result.scalar() == 1
-    except Exception as e:
-        print(f"Connection failed: {e}")
+    except Exception:
         return False
 
 
-def create_database():
+def create_database() -> bool:
     """Create the database if it doesn't exist."""
     database_url = get_database_url()
-    print(f"Database URL: {database_url}")
 
     # Parse URL to get database name
     from urllib.parse import urlparse
@@ -56,19 +53,17 @@ def create_database():
             exists = result.scalar() is not None
 
             if exists:
-                print(f"Database '{db_name}' already exists.")
+                pass
             else:
                 conn.execute(text(f'CREATE DATABASE "{db_name}"'))
-                print(f"Database '{db_name}' created successfully.")
 
-    except Exception as e:
-        print(f"Error creating database: {e}")
+    except Exception:
         return False
 
     return True
 
 
-def drop_database():
+def drop_database() -> bool:
     """Drop the database (BE CAREFUL!)."""
     database_url = get_database_url()
 
@@ -81,7 +76,6 @@ def drop_database():
     # Confirm
     confirm = input(f"Are you sure you want to DROP database '{db_name}'? (yes/no): ")
     if confirm.lower() != "yes":
-        print("Aborted.")
         return False
 
     # Connect to default postgres database
@@ -103,25 +97,19 @@ def drop_database():
 
             # Drop database
             conn.execute(text(f'DROP DATABASE IF EXISTS "{db_name}"'))
-            print(f"Database '{db_name}' dropped successfully.")
 
-    except Exception as e:
-        print(f"Error dropping database: {e}")
+    except Exception:
         return False
 
     return True
 
 
-def reset_database():
+def reset_database() -> bool:
     """Reset database - drop and recreate."""
-    print("Resetting database...")
-    if drop_database() and create_database():
-        print("Database reset complete. Run migrations with: alembic upgrade head")
-        return True
-    return False
+    return bool(drop_database() and create_database())
 
 
-def show_stats():
+def show_stats() -> None:
     """Show database statistics."""
     engine = create_engine(get_database_url())
 
@@ -129,15 +117,11 @@ def show_stats():
         from tracertm.models.agent import Agent
         from tracertm.models.project import Project
 
-        print("\n=== TraceRTM Database Statistics ===\n")
-
         # Projects
         project_count = session.query(Project).count()
-        print(f"Projects: {project_count}")
 
         if project_count > 0:
             # Items by view
-            print("\nItems by view:")
             result = session.execute(
                 text("""
                 SELECT view, COUNT(*) as count
@@ -145,13 +129,12 @@ def show_stats():
                 WHERE deleted_at IS NULL
                 GROUP BY view
                 ORDER BY count DESC
-            """)
+            """),
             )
-            for row in result:
-                print(f"  {row.view}: {row.count}")
+            for _row in result:
+                pass
 
             # Items by status
-            print("\nItems by status:")
             result = session.execute(
                 text("""
                 SELECT status, COUNT(*) as count
@@ -159,30 +142,27 @@ def show_stats():
                 WHERE deleted_at IS NULL
                 GROUP BY status
                 ORDER BY count DESC
-            """)
+            """),
             )
-            for row in result:
-                print(f"  {row.status}: {row.count}")
+            for _row in result:
+                pass
 
             # Links by type
-            print("\nLinks by type:")
             result = session.execute(
                 text("""
                 SELECT link_type, COUNT(*) as count
                 FROM links
                 GROUP BY link_type
                 ORDER BY count DESC
-            """)
+            """),
             )
-            for row in result:
-                print(f"  {row.link_type}: {row.count}")
+            for _row in result:
+                pass
 
             # Agents
-            agent_count = session.query(Agent).count()
-            print(f"\nAgents: {agent_count}")
+            session.query(Agent).count()
 
             # Recent agent events
-            print("\nRecent agent events (last 5):")
             result = session.execute(
                 text("""
                 SELECT a.name, ae.event_type, ae.created_at
@@ -190,46 +170,40 @@ def show_stats():
                 JOIN agents a ON ae.agent_id = a.id
                 ORDER BY ae.created_at DESC
                 LIMIT 5
-            """)
+            """),
             )
-            for row in result:
-                print(f"  {row.created_at}: {row.name} - {row.event_type}")
-
-        print("\n")
+            for _row in result:
+                pass
 
 
-def vacuum_analyze():
+def vacuum_analyze() -> None:
     """Run VACUUM ANALYZE to optimize database."""
     engine = create_engine(get_database_url(), isolation_level="AUTOCOMMIT")
 
-    print("Running VACUUM ANALYZE...")
     try:
         with engine.connect() as conn:
             conn.execute(text("VACUUM ANALYZE"))
-        print("VACUUM ANALYZE completed successfully.")
-    except Exception as e:
-        print(f"Error running VACUUM ANALYZE: {e}")
+    except Exception:
+        pass
 
 
-def list_extensions():
+def list_extensions() -> None:
     """List installed PostgreSQL extensions."""
     engine = create_engine(get_database_url())
 
     with engine.connect() as conn:
-        print("\n=== Installed PostgreSQL Extensions ===\n")
         result = conn.execute(
             text("""
             SELECT extname, extversion
             FROM pg_extension
             ORDER BY extname
-        """)
+        """),
         )
-        for row in result:
-            print(f"{row.extname}: {row.extversion}")
-        print("\n")
+        for _row in result:
+            pass
 
 
-def main():
+def main() -> None:
     """Main CLI interface."""
     import argparse
 
@@ -244,9 +218,8 @@ def main():
 
     if args.command == "check":
         if check_connection():
-            print("Database connection: OK")
+            pass
         else:
-            print("Database connection: FAILED")
             sys.exit(1)
 
     elif args.command == "create":

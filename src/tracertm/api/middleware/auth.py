@@ -65,7 +65,7 @@ def verify_token(token: str, *_: Any, **__: Any) -> dict[str, Any]:
         bridge = get_token_bridge()
         return bridge.validate_token(token)
     except Exception as exc:
-        logger.warning(f"Token validation failed: {exc}")
+        logger.warning("Token validation failed: %s", exc)
         raise ValueError(str(exc)) from exc
 
 
@@ -85,7 +85,8 @@ def verify_refresh_token(refresh_token: str, *_: Any, **__: Any) -> dict[str, An
         result = authenticate_with_refresh_token(refresh_token)
         if isinstance(result, dict):
             return result
-        raise ValueError("Invalid refresh token response")
+        msg = "Invalid refresh token response"
+        raise ValueError(msg)
     except Exception as exc:
         raise ValueError(str(exc)) from exc
 
@@ -104,7 +105,8 @@ def generate_access_token(refresh_token_val: str, *_: Any, **__: Any) -> dict[st
     """
     result = verify_refresh_token(refresh_token_val)
     if not isinstance(result, dict):
-        raise ValueError("Unable to generate access token")
+        msg = "Unable to generate access token"
+        raise ValueError(msg)
     return {
         "access_token": result.get("access_token"),
         "refresh_token": result.get("refresh_token"),
@@ -274,7 +276,7 @@ def auth_guard(request: Request) -> dict[str, Any]:
     try:
         claims = verify_token(token)
     except Exception as exc:
-        logger.error(f"Authentication failed: {exc}")
+        logger.exception("Authentication failed: %s", exc)
         raise HTTPException(status_code=401, detail=f"Invalid token: {exc!s}") from exc
 
     if not isinstance(claims, dict):

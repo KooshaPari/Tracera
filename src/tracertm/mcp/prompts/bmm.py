@@ -10,8 +10,7 @@ from tracertm.mcp.core import mcp
 
 @mcp.prompt()
 async def workflow_execution_prompt(workflow_id: str) -> list[dict[str, str]]:
-    """
-    Generate prompt for executing a specific workflow.
+    """Generate prompt for executing a specific workflow.
 
     Args:
         workflow_id: The workflow to execute
@@ -26,7 +25,7 @@ async def workflow_execution_prompt(workflow_id: str) -> list[dict[str, str]]:
             {
                 "role": "user",
                 "content": f"Error: Workflow '{workflow_id}' not found",
-            }
+            },
         ]
 
     return [
@@ -57,8 +56,7 @@ Begin execution now.
 
 @mcp.prompt()
 async def phase_planning_prompt(phase: int) -> list[dict[str, str]]:
-    """
-    Generate prompt for planning a phase execution.
+    """Generate prompt for planning a phase execution.
 
     Args:
         phase: Phase number (0-3)
@@ -98,8 +96,7 @@ Provide a recommended execution strategy.
 
 @mcp.prompt()
 async def project_overview_prompt() -> list[dict[str, str]]:
-    """
-    Generate prompt for getting project overview.
+    """Generate prompt for getting project overview.
 
     Returns:
         List of messages for LLM

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-SwiftRide Comprehensive Test Layer Generator
+"""SwiftRide Comprehensive Test Layer Generator.
 
 Generates 950+ test items across 8 test types:
 - 300 unit_test items
@@ -40,29 +39,25 @@ SERVICES = [
 
 
 class TestGenerator:
-    """Generator for comprehensive test suite"""
+    """Generator for comprehensive test suite."""
 
-    def __init__(self, project_path: str):
+    def __init__(self, project_path: str) -> None:
         self.project_path = project_path
         self.generated_items = []
         self.test_counter = 1
 
     def run_cli(self, command: list[str]) -> bool:
-        """Execute TraceRTM CLI command"""
+        """Execute TraceRTM CLI command."""
         try:
             result = subprocess.run(command, cwd=self.project_path, capture_output=True, text=True)
-            if result.returncode != 0:
-                print(f"Error: {result.stderr}")
-                return False
-            return True
-        except Exception as e:
-            print(f"Exception running command: {e}")
+            return result.returncode == 0
+        except Exception:
             return False
 
     def create_test_item(
-        self, test_type: str, title: str, description: str, priority: str = "medium", status: str = "todo"
+        self, test_type: str, title: str, description: str, priority: str = "medium", status: str = "todo",
     ) -> str | None:
-        """Create a test item via CLI"""
+        """Create a test item via CLI."""
         test_id = f"TEST-{self.test_counter:04d}"
         self.test_counter += 1
 
@@ -86,21 +81,18 @@ class TestGenerator:
 
         if self.run_cli(command):
             self.generated_items.append({"id": test_id, "type": test_type, "title": title})
-            print(f"✓ Created {test_id}: {title}")
             return test_id
         return None
 
     def link_items(self, source_id: str, target_id: str, link_type: str) -> bool:
-        """Create link between items"""
+        """Create link between items."""
         command = ["trace", "link", "create", "--from", source_id, "--to", target_id, "--type", link_type]
         return self.run_cli(command)
 
     # ========== UNIT TESTS (300 items) ==========
 
-    def generate_unit_tests(self):
-        """Generate 300 unit test items"""
-        print("\n=== Generating Unit Tests (300) ===\n")
-
+    def generate_unit_tests(self) -> None:
+        """Generate 300 unit test items."""
         # Matching Service Tests (40)
         matching_tests = [
             ("test_find_nearest_driver_success", "Test finding nearest available driver within 5km radius"),
@@ -537,16 +529,10 @@ class TestGenerator:
         for test_name, description in infra_tests:
             self.create_test_item("unit_test", test_name, description, "medium")
 
-        print(
-            f"\n✓ Generated {len(matching_tests) + len(pricing_tests) + len(payment_tests) + len(driver_tests) + len(rider_tests) + len(trip_tests) + len(location_tests) + len(notification_tests) + len(rating_tests) + len(analytics_tests) + len(infra_tests)} unit tests"
-        )
-
     # ========== INTEGRATION TESTS (150 items) ==========
 
-    def generate_integration_tests(self):
-        """Generate 150 integration test items"""
-        print("\n=== Generating Integration Tests (150) ===\n")
-
+    def generate_integration_tests(self) -> None:
+        """Generate 150 integration test items."""
         integration_tests = [
             # Core Flow Integration (30)
             ("test_ride_request_to_completion_flow", "Test complete ride flow from request to completion", "critical"),
@@ -708,14 +694,10 @@ class TestGenerator:
         for test_name, description, priority in integration_tests:
             self.create_test_item("integration_test", test_name, description, priority)
 
-        print(f"\n✓ Generated {len(integration_tests)} integration tests")
-
     # ========== E2E TESTS (100 items) ==========
 
-    def generate_e2e_tests(self):
-        """Generate 100 end-to-end test items"""
-        print("\n=== Generating E2E Tests (100) ===\n")
-
+    def generate_e2e_tests(self) -> None:
+        """Generate 100 end-to-end test items."""
         e2e_tests = [
             # Rider Journey (25)
             ("test_rider_signup_to_first_ride", "Test complete rider signup to first ride completion", "critical"),
@@ -831,14 +813,10 @@ class TestGenerator:
         for test_name, description, priority in e2e_tests:
             self.create_test_item("e2e_test", test_name, description, priority)
 
-        print(f"\n✓ Generated {len(e2e_tests)} e2e tests")
-
     # ========== PERFORMANCE TESTS (80 items) ==========
 
-    def generate_performance_tests(self):
-        """Generate 80 performance test items"""
-        print("\n=== Generating Performance Tests (80) ===\n")
-
+    def generate_performance_tests(self) -> None:
+        """Generate 80 performance test items."""
         performance_tests = [
             # Load Tests (25)
             ("test_10k_concurrent_ride_requests", "Test system handling 10,000 concurrent ride requests", "critical"),
@@ -929,14 +907,10 @@ class TestGenerator:
         for test_name, description, priority in performance_tests:
             self.create_test_item("performance_test", test_name, description, priority)
 
-        print(f"\n✓ Generated {len(performance_tests)} performance tests")
-
     # ========== SECURITY TESTS (70 items) ==========
 
-    def generate_security_tests(self):
-        """Generate 70 security test items"""
-        print("\n=== Generating Security Tests (70) ===\n")
-
+    def generate_security_tests(self) -> None:
+        """Generate 70 security test items."""
         security_tests = [
             # Authentication & Authorization (15)
             ("test_sql_injection_prevention", "Test SQL injection attack prevention", "critical"),
@@ -1019,14 +993,10 @@ class TestGenerator:
         for test_name, description, priority in security_tests:
             self.create_test_item("security_test", test_name, description, priority)
 
-        print(f"\n✓ Generated {len(security_tests)} security tests")
-
     # ========== TEST SCENARIOS (100 items) ==========
 
-    def generate_test_scenarios(self):
-        """Generate 100 test scenario items"""
-        print("\n=== Generating Test Scenarios (100) ===\n")
-
+    def generate_test_scenarios(self) -> None:
+        """Generate 100 test scenario items."""
         test_scenarios = [
             # Happy Path Scenarios (20)
             ("scenario_rider_first_ride_success", "Scenario: New rider's first successful ride", "critical"),
@@ -1162,14 +1132,10 @@ class TestGenerator:
         for test_name, description, priority in test_scenarios:
             self.create_test_item("test_scenario", test_name, description, priority)
 
-        print(f"\n✓ Generated {len(test_scenarios)} test scenarios")
-
     # ========== TEST DATA (90 items) ==========
 
-    def generate_test_data(self):
-        """Generate 90 test data items"""
-        print("\n=== Generating Test Data (90) ===\n")
-
+    def generate_test_data(self) -> None:
+        """Generate 90 test data items."""
         test_data_items = [
             # User Data (20)
             ("test_data_valid_riders", "Valid rider profiles for testing", "high"),
@@ -1272,14 +1238,10 @@ class TestGenerator:
         for test_name, description, priority in test_data_items:
             self.create_test_item("test_data", test_name, description, priority)
 
-        print(f"\n✓ Generated {len(test_data_items)} test data items")
-
     # ========== ACCESSIBILITY TESTS (60 items) ==========
 
-    def generate_accessibility_tests(self):
-        """Generate 60 accessibility test items"""
-        print("\n=== Generating Accessibility Tests (60) ===\n")
-
+    def generate_accessibility_tests(self) -> None:
+        """Generate 60 accessibility test items."""
         accessibility_tests = [
             # WCAG 2.1 Level A (15)
             ("test_wcag_keyboard_navigation", "Test keyboard-only navigation (WCAG 2.1.1)", "critical"),
@@ -1352,14 +1314,8 @@ class TestGenerator:
         for test_name, description, priority in accessibility_tests:
             self.create_test_item("accessibility_test", test_name, description, priority)
 
-        print(f"\n✓ Generated {len(accessibility_tests)} accessibility tests")
-
-    def generate_all(self):
-        """Generate all test items"""
-        print("\n" + "=" * 60)
-        print("SwiftRide Comprehensive Test Generation")
-        print("=" * 60)
-
+    def generate_all(self) -> None:
+        """Generate all test items."""
         self.generate_unit_tests()
         self.generate_integration_tests()
         self.generate_e2e_tests()
@@ -1369,20 +1325,14 @@ class TestGenerator:
         self.generate_test_data()
         self.generate_accessibility_tests()
 
-        print("\n" + "=" * 60)
-        print(f"✓ Total Tests Generated: {len(self.generated_items)}")
-        print("=" * 60)
-
         # Save manifest
         manifest_path = Path(self.project_path) / "test_manifest.json"
         with manifest_path.open("w") as f:
             json.dump(self.generated_items, f, indent=2)
 
-        print(f"\n✓ Manifest saved to {self.project_path}/test_manifest.json")
 
-
-def main():
-    """Main execution"""
+def main() -> None:
+    """Main execution."""
     generator = TestGenerator(PROJECT_PATH)
     generator.generate_all()
 

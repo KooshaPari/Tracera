@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Generate comprehensive Security Layer for SwiftRide rideshare platform.
+"""Generate comprehensive Security Layer for SwiftRide rideshare platform.
 
 Targets:
 - 80 security_vulnerability items with CVSS scores

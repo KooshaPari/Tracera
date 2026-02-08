@@ -1,5 +1,4 @@
-"""
-Ensure problems, process, and agent_locks tables exist.
+"""Ensure problems, process, and agent_locks tables exist.
 
 Runs CREATE TABLE IF NOT EXISTS (and indexes) on the app's database at startup
 so that regardless of which DB URL or migration path was used, the tables exist.
@@ -176,8 +175,7 @@ AGENT_LOCKS_SQL = [
 
 
 async def ensure_problems_processes_tables() -> None:  # noqa: C901
-    """
-    Create problems, problem_activities, processes, and process_executions
+    """Create problems, problem_activities, processes, and process_executions
     tables if they do not exist. Uses the app's database (same as get_db).
     No-op for SQLite; only runs for PostgreSQL.
     """

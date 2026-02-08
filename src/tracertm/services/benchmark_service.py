@@ -51,12 +51,11 @@ class BenchmarkService:
         "agent_interface": 30,
     }
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def benchmark_view_query(self, view_name: str, limit: int = 100) -> BenchmarkResult:
-        """
-        Benchmark a single materialized view query.
+        """Benchmark a single materialized view query.
 
         Args:
             view_name: Name of the materialized view
@@ -105,8 +104,7 @@ class BenchmarkService:
             )
 
     async def benchmark_all_views(self) -> list[ViewPerformance]:
-        """
-        Benchmark all materialized views.
+        """Benchmark all materialized views.
 
         Returns:
             List of ViewPerformance objects
@@ -129,14 +127,13 @@ class BenchmarkService:
                     size_bytes=size_bytes,
                     meets_target=benchmark.duration_ms < target_ms,
                     target_ms=target_ms,
-                )
+                ),
             )
 
         return results
 
     async def benchmark_refresh_incremental(self) -> BenchmarkResult:
-        """
-        Benchmark incremental refresh operation.
+        """Benchmark incremental refresh operation.
 
         Returns:
             BenchmarkResult with timing
@@ -170,8 +167,7 @@ class BenchmarkService:
             )
 
     async def benchmark_refresh_full(self) -> BenchmarkResult:
-        """
-        Benchmark full refresh operation.
+        """Benchmark full refresh operation.
 
         Returns:
             BenchmarkResult with timing
@@ -205,8 +201,7 @@ class BenchmarkService:
             )
 
     async def get_performance_report(self) -> dict[str, Any]:
-        """
-        Generate comprehensive performance report.
+        """Generate comprehensive performance report.
 
         Returns:
             Dict with performance metrics for all views and operations

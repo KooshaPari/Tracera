@@ -1,5 +1,4 @@
-"""
-Load tests - Concurrent requests and stress testing
+"""Load tests - Concurrent requests and stress testing.
 
 Usage:
     pytest tests/performance/test_load.py -v --tb=short
@@ -13,20 +12,20 @@ from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
 
 
 class TestLoad:
-    """Load tests"""
+    """Load tests."""
 
     @pytest.fixture
     def router(self):
-        """Create router"""
+        """Create router."""
         return ArchRouter()
 
     @pytest.fixture
     def registry(self):
-        """Create registry"""
+        """Create registry."""
         return ToolRegistry(TOOL_REGISTRY)
 
-    def test_concurrent_routing_10_threads(self, router, registry):
-        """Test concurrent routing with 10 threads"""
+    def test_concurrent_routing_10_threads(self, router, registry) -> None:
+        """Test concurrent routing with 10 threads."""
         routes = registry.export_registry()
         queries = [
             "generate code",
@@ -48,8 +47,8 @@ class TestLoad:
         assert len(results) == 10
         assert elapsed < 1.0, f"Concurrent routing took {elapsed:.3f}s"
 
-    def test_concurrent_routing_50_threads(self, router, registry):
-        """Test concurrent routing with 50 threads"""
+    def test_concurrent_routing_50_threads(self, router, registry) -> None:
+        """Test concurrent routing with 50 threads."""
         routes = registry.export_registry()
         queries = [
             "generate code",
@@ -71,8 +70,8 @@ class TestLoad:
         assert len(results) == 50
         assert elapsed < 5.0, f"Concurrent routing took {elapsed:.3f}s"
 
-    def test_sustained_load_1000_requests(self, router, registry):
-        """Test sustained load with 1000 requests"""
+    def test_sustained_load_1000_requests(self, router, registry) -> None:
+        """Test sustained load with 1000 requests."""
         routes = registry.export_registry()
         queries = [
             "generate code",
@@ -95,8 +94,8 @@ class TestLoad:
         throughput = 1000 / elapsed
         assert throughput > 100, f"Throughput only {throughput:.1f} req/s"
 
-    def test_cache_effectiveness_under_load(self, router, registry):
-        """Test cache effectiveness under load"""
+    def test_cache_effectiveness_under_load(self, router, registry) -> None:
+        """Test cache effectiveness under load."""
         routes = registry.export_registry()
 
         # Warm up cache
@@ -122,8 +121,8 @@ class TestLoad:
         speedup = uncached_time / cached_time
         assert speedup > 1.5, f"Cache speedup only {speedup:.1f}x"
 
-    def test_memory_stability_under_load(self, router, registry):
-        """Test memory stability under load"""
+    def test_memory_stability_under_load(self, router, registry) -> None:
+        """Test memory stability under load."""
         routes = registry.export_registry()
 
         # Run 1000 requests
@@ -138,8 +137,8 @@ class TestLoad:
         assert stats["size"] <= stats["max_size"]
         assert stats["utilization"] <= 1.0
 
-    def test_error_handling_under_load(self, router, registry):
-        """Test error handling under load"""
+    def test_error_handling_under_load(self, router, registry) -> None:
+        """Test error handling under load."""
         routes = registry.export_registry()
 
         # Mix valid and invalid queries

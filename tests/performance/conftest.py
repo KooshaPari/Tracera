@@ -1,5 +1,4 @@
-"""
-Performance testing configuration and fixtures.
+"""Performance testing configuration and fixtures.
 
 Provides setup for benchmark tests, performance measurements, and baselines.
 """
@@ -87,7 +86,7 @@ def perf_tracker():
     """Track performance metrics during tests."""
 
     class PerfTracker:
-        def __init__(self):
+        def __init__(self) -> None:
             self.measurements: list[dict[str, Any]] = []
 
         def record(self, name: str, elapsed_ms: float, items_count: int = 1) -> None:

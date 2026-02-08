@@ -223,26 +223,37 @@ func (coordinator *Coordinator) AssignTask(task *Task) error {
 	defer coordinator.mu.Unlock()
 
 	// Find an available agent with matching capabilities
-	var selectedAgent *RegisteredAgent
-	for _, agent := range coordinator.agents {
-		if agent.Status == StatusIdle && agent.ProjectID == task.ProjectID {
-			// Check if agent has required capabilities
-			if coordinator.hasRequiredCapabilities(agent, task) {
-				selectedAgent = agent
-				break
-			}
-		}
-	}
+	selectedAgent := coordinator.findAgentForTask(task)
 
 	if selectedAgent == nil {
 		// No available agent, add to queue
 		return coordinator.TaskQueue.EnqueueTask(task)
 	}
 
+	return coordinator.assignTaskToAgent(task, selectedAgent)
+}
+
+// findAgentForTask finds an available agent with matching capabilities for a task.
+// Callers MUST hold the coordinator lock.
+func (coordinator *Coordinator) findAgentForTask(task *Task) *RegisteredAgent {
+	for _, agent := range coordinator.agents {
+		if agent.Status == StatusIdle && agent.ProjectID == task.ProjectID {
+			// Check if agent has required capabilities
+			if coordinator.hasRequiredCapabilities(agent, task) {
+				return agent
+			}
+		}
+	}
+	return nil
+}
+
+// assignTaskToAgent assigns a task to a specific agent and persists the change.
+// Callers MUST hold the coordinator lock.
+func (coordinator *Coordinator) assignTaskToAgent(task *Task, agent *RegisteredAgent) error {
 	// Assign task to agent
-	selectedAgent.CurrentTask = task
-	selectedAgent.Status = StatusBusy
-	task.AssignedTo = selectedAgent.ID
+	agent.CurrentTask = task
+	agent.Status = StatusBusy
+	task.AssignedTo = agent.ID
 	task.Status = TaskStatusAssigned
 	task.AssignedAt = time.Now()
 
@@ -255,14 +266,14 @@ func (coordinator *Coordinator) AssignTask(task *Task) error {
 	// Update database
 	if coordinator.db != nil {
 		if err := coordinator.db.Model(&models.Agent{}).
-			Where("id = ?", selectedAgent.ID).
+			Where("id = ?", agent.ID).
 			Update("status", StatusBusy).
 			Error; err != nil {
 			return fmt.Errorf("failed to update agent status: %w", err)
 		}
 	}
 
-	log.Printf("Task %s assigned to agent %s", task.ID, selectedAgent.ID)
+	log.Printf("Task %s assigned to agent %s", task.ID, agent.ID)
 	return nil
 }
 
@@ -456,22 +467,33 @@ func (coordinator *Coordinator) checkHeartbeats() {
 
 	now := time.Now()
 	for agentID, agent := range coordinator.agents {
-		if now.Sub(agent.LastHeartbeat) > coordinator.heartbeatTimeout {
-			log.Printf("Agent %s (%s) heartbeat timeout, marking as offline", agent.Name, agentID)
-			agent.Status = StatusOffline
+		coordinator.checkAgentHeartbeat(agentID, agent, now)
+	}
+}
 
-			// Return task to queue if agent was working on one
-			if agent.CurrentTask != nil {
-				if err := coordinator.TaskQueue.RequeueTask(agent.CurrentTask); err != nil {
-					panic(fmt.Errorf("agent coordinator requeue failed: %w", err))
-				}
-				agent.CurrentTask = nil
-			}
+// checkAgentHeartbeat checks if a single agent has timed out and handles it.
+// Callers MUST hold the coordinator lock.
+func (coordinator *Coordinator) checkAgentHeartbeat(agentID string, agent *RegisteredAgent, now time.Time) {
+	if now.Sub(agent.LastHeartbeat) <= coordinator.heartbeatTimeout {
+		return
+	}
 
-			// Update database
-			if coordinator.db != nil {
-				coordinator.db.Model(&models.Agent{}).Where("id = ?", agentID).Update("status", StatusOffline)
-			}
+	log.Printf("Agent %s (%s) heartbeat timeout, marking as offline", agent.Name, agentID)
+	agent.Status = StatusOffline
+
+	// Return task to queue if agent was working on one
+	if agent.CurrentTask != nil {
+		if err := coordinator.TaskQueue.RequeueTask(agent.CurrentTask); err != nil {
+			// We log instead of panic to keep the background worker running
+			log.Printf("Failed to requeue task %s after agent %s timeout: %v", agent.CurrentTask.ID, agentID, err)
+		}
+		agent.CurrentTask = nil
+	}
+
+	// Update database
+	if coordinator.db != nil {
+		if err := coordinator.db.Model(&models.Agent{}).Where("id = ?", agentID).Update("status", StatusOffline).Error; err != nil {
+			log.Printf("Failed to update agent %s status in DB after timeout: %v", agentID, err)
 		}
 	}
 }
@@ -501,29 +523,40 @@ func (coordinator *Coordinator) distributeTasks() {
 	// Find idle agents
 	for _, agent := range coordinator.agents {
 		if agent.Status == StatusIdle && agent.CurrentTask == nil {
-			// Try to get a task for this agent
-			task := coordinator.TaskQueue.DequeueTask(agent.ProjectID, agent.Capabilities)
-			if task != nil {
-				// Assign task to agent
-				agent.CurrentTask = task
-				agent.Status = StatusBusy
-				task.AssignedTo = agent.ID
-				task.Status = TaskStatusAssigned
-				task.AssignedAt = time.Now()
+			coordinator.tryAssignTaskToAgent(agent)
+		}
+	}
+}
 
-				// Update database
-				if coordinator.db != nil {
-					coordinator.db.Model(&models.Agent{}).Where("id = ?", agent.ID).Update("status", StatusBusy)
-				}
-				if coordinator.TaskQueue != nil && coordinator.db != nil {
-					if err := coordinator.TaskQueue.UpdateTaskStatus(task); err != nil {
-						panic(fmt.Errorf("failed to persist auto-assigned task %s: %w", task.ID, err))
-					}
-				}
-				log.Printf("Task %s auto-assigned to agent %s", task.ID, agent.ID)
+// tryAssignTaskToAgent attempts to find and assign a task to a specific idle agent.
+// Callers MUST hold the coordinator lock.
+func (coordinator *Coordinator) tryAssignTaskToAgent(agent *RegisteredAgent) {
+	// Try to get a task for this agent
+	task := coordinator.TaskQueue.DequeueTask(agent.ProjectID, agent.Capabilities)
+	if task == nil {
+		return
+	}
+
+	// Assign task to agent
+	agent.CurrentTask = task
+	agent.Status = StatusBusy
+	task.AssignedTo = agent.ID
+	task.Status = TaskStatusAssigned
+	task.AssignedAt = time.Now()
+
+	// Update database
+	if coordinator.db != nil {
+		if err := coordinator.db.Model(&models.Agent{}).Where("id = ?", agent.ID).Update("status", StatusBusy).Error; err != nil {
+			log.Printf("Failed to update agent %s status in DB: %v", agent.ID, err)
+		}
+		if coordinator.TaskQueue != nil {
+			if err := coordinator.TaskQueue.UpdateTaskStatus(task); err != nil {
+				// We don't panic here to avoid crashing the background worker
+				log.Printf("Failed to persist auto-assigned task %s: %v", task.ID, err)
 			}
 		}
 	}
+	log.Printf("Task %s auto-assigned to agent %s", task.ID, agent.ID)
 }
 
 // Shutdown gracefully shuts down the coordinator
@@ -532,7 +565,9 @@ func (c *Coordinator) Shutdown() {
 	c.cancel()
 	c.wg.Wait()
 	if c.db != nil {
-		_ = c.releaseSingletonLock()
+		if err := c.releaseSingletonLock(); err != nil {
+			log.Printf("Error releasing agent coordinator singleton lock: %v", err)
+		}
 	}
 	log.Println("Agent coordinator shut down")
 }

@@ -20,7 +20,7 @@ LINK_COUNT_CACHE_THRESHOLD = 50000
 class PerformanceService:
     """Service for performance analysis and optimization."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.projects = ProjectRepository(session)
 
@@ -34,7 +34,7 @@ class PerformanceService:
             select(func.count(Item.id)).where(
                 Item.project_id == project_id,
                 Item.deleted_at.is_(None),
-            )
+            ),
         )
         item_count = items_result.scalar() or 0
 
@@ -42,7 +42,7 @@ class PerformanceService:
         links_result = await self.session.execute(
             select(func.count(Link.id)).where(
                 Link.project_id == project_id,
-            )
+            ),
         )
         link_count = links_result.scalar() or 0
 
@@ -108,7 +108,7 @@ class PerformanceService:
         views_result = await self.session.execute(
             select(Item.view, func.count(Item.id))
             .where(Item.project_id == project_id, Item.deleted_at.is_(None))
-            .group_by(Item.view)
+            .group_by(Item.view),
         )
         views = {row[0]: row[1] for row in views_result.all()}
 
@@ -116,7 +116,7 @@ class PerformanceService:
         status_result = await self.session.execute(
             select(Item.status, func.count(Item.id))
             .where(Item.project_id == project_id, Item.deleted_at.is_(None))
-            .group_by(Item.status)
+            .group_by(Item.status),
         )
         statuses = {row[0]: row[1] for row in status_result.all()}
 

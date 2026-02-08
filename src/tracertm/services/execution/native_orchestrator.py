@@ -7,6 +7,7 @@ Provides workspace isolation and resource management.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import os
 import shutil
@@ -54,7 +55,7 @@ class NativeOrchestrator:
     - Graceful shutdown with timeouts
     """
 
-    def __init__(self, base_workspace: Path | str | None = None):
+    def __init__(self, base_workspace: Path | str | None = None) -> None:
         """Initialize the orchestrator.
 
         Args:
@@ -93,7 +94,8 @@ class NativeOrchestrator:
             handle_id = str(uuid.uuid4())
 
         if handle_id in self._handles:
-            raise NativeOrchestratorError(f"Workspace {handle_id} already exists. Use unique handle IDs.")
+            msg = f"Workspace {handle_id} already exists. Use unique handle IDs."
+            raise NativeOrchestratorError(msg)
 
         try:
             workspace = self._base / handle_id
@@ -106,11 +108,12 @@ class NativeOrchestrator:
             )
             self._handles[handle_id] = handle
 
-            logger.debug(f"Created workspace {handle_id} at {workspace}")
+            logger.debug("Created workspace %s at %s", handle_id, workspace)
             return handle_id
 
         except Exception as e:
-            raise NativeOrchestratorError(f"Failed to create workspace: {e}") from e
+            msg = f"Failed to create workspace: {e}"
+            raise NativeOrchestratorError(msg) from e
 
     async def run_command(
         self,
@@ -163,26 +166,28 @@ class NativeOrchestrator:
                 )
             except TimeoutError:
                 proc.kill()
-                try:
+                with contextlib.suppress(TimeoutError):
                     await asyncio.wait_for(proc.wait(), timeout=5)
-                except TimeoutError:
-                    pass
-                raise NativeOrchestratorError(f"Command timed out after {timeout}s: {' '.join(command_list)}") from None
+                msg = f"Command timed out after {timeout}s: {' '.join(command_list)}"
+                raise NativeOrchestratorError(msg) from None
 
             stdout = stdout_data.decode("utf-8", errors="replace")
             stderr = stderr_data.decode("utf-8", errors="replace")
             return_code = proc.returncode or 0
 
             if check and return_code != 0:
-                raise NativeOrchestratorError(f"Command failed with code {return_code}: {stderr}")
+                msg = f"Command failed with code {return_code}: {stderr}"
+                raise NativeOrchestratorError(msg)
 
-            logger.debug(f"Command completed with return code {return_code}")
+            logger.debug("Command completed with return code %s", return_code)
             return return_code, stdout, stderr
 
         except TimeoutError as e:
-            raise NativeOrchestratorError(f"Command execution timed out: {e}") from e
+            msg = f"Command execution timed out: {e}"
+            raise NativeOrchestratorError(msg) from e
         except Exception as e:
-            raise NativeOrchestratorError(f"Failed to execute command: {e}") from e
+            msg = f"Failed to execute command: {e}"
+            raise NativeOrchestratorError(msg) from e
 
     async def start_background(
         self,
@@ -206,7 +211,8 @@ class NativeOrchestrator:
         handle = self._get_handle(handle_id)
 
         if handle.is_running():
-            raise NativeOrchestratorError(f"Process already running in {handle_id}. Stop it first.")
+            msg = f"Process already running in {handle_id}. Stop it first."
+            raise NativeOrchestratorError(msg)
 
         # Convert string command to list
         command_list = command.split() if isinstance(command, str) else command
@@ -236,7 +242,8 @@ class NativeOrchestrator:
             return handle_id
 
         except Exception as e:
-            raise NativeOrchestratorError(f"Failed to start background process: {e}") from e
+            msg = f"Failed to start background process: {e}"
+            raise NativeOrchestratorError(msg) from e
 
     async def _wait_process(self, handle_id: str, timeout: int) -> None:
         """Wait for a background process to complete or timeout.
@@ -252,10 +259,10 @@ class NativeOrchestrator:
         try:
             await asyncio.wait_for(handle.proc.wait(), timeout=timeout)
         except TimeoutError:
-            logger.warning(f"Process {handle_id} timed out after {timeout}s, killing...")
+            logger.warning("Process %s timed out after %ss, killing...", handle_id, timeout)
             await self.stop(handle_id)
         except Exception as e:
-            logger.error(f"Error waiting for process {handle_id}: {e}")
+            logger.exception("Error waiting for process %s: %s", handle_id, e)
 
     async def stop(self, handle_id: str, timeout: int = 30) -> None:
         """Stop a running process gracefully.
@@ -272,7 +279,7 @@ class NativeOrchestrator:
         handle = self._get_handle(handle_id)
 
         if not handle.proc or not handle.is_running():
-            logger.debug(f"No running process in {handle_id}")
+            logger.debug("No running process in %s", handle_id)
             return
 
         try:
@@ -287,12 +294,12 @@ class NativeOrchestrator:
                 try:
                     await asyncio.wait_for(handle.proc.wait(), timeout=5)
                 except TimeoutError:
-                    logger.error(f"Failed to kill process {handle.pid}")
+                    logger.exception(f"Failed to kill process {handle.pid}")
 
             logger.info(f"Process {handle.pid} stopped")
 
         except Exception as e:
-            logger.error(f"Error stopping process {handle_id}: {e}")
+            logger.exception("Error stopping process %s: %s", handle_id, e)
 
     async def copy_to(self, handle_id: str, source: Path | str, dest_name: str = "") -> Path:
         """Copy a file into the workspace.
@@ -312,13 +319,14 @@ class NativeOrchestrator:
         source_path = Path(source)
 
         if not source_path.exists():
-            raise NativeOrchestratorError(f"Source file does not exist: {source_path}")
+            msg = f"Source file does not exist: {source_path}"
+            raise NativeOrchestratorError(msg)
 
         dest_filename = dest_name or source_path.name
         dest_path = handle.workspace / dest_filename
 
         try:
-            logger.debug(f"Copying {source_path} to {dest_path}")
+            logger.debug("Copying %s to %s", source_path, dest_path)
 
             if source_path.is_dir():
                 if dest_path.exists():
@@ -331,7 +339,8 @@ class NativeOrchestrator:
             return dest_path
 
         except Exception as e:
-            raise NativeOrchestratorError(f"Failed to copy file: {e}") from e
+            msg = f"Failed to copy file: {e}"
+            raise NativeOrchestratorError(msg) from e
 
     async def copy_from(self, handle_id: str, source_name: str, dest: Path | str) -> None:
         """Copy a file from workspace to host.
@@ -349,10 +358,11 @@ class NativeOrchestrator:
         dest_path = Path(dest)
 
         if not source_path.exists():
-            raise NativeOrchestratorError(f"Source file does not exist in workspace: {source_path}")
+            msg = f"Source file does not exist in workspace: {source_path}"
+            raise NativeOrchestratorError(msg)
 
         try:
-            logger.debug(f"Copying {source_path} to {dest_path}")
+            logger.debug("Copying %s to %s", source_path, dest_path)
 
             dest_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -364,7 +374,8 @@ class NativeOrchestrator:
                 shutil.copy2(source_path, dest_path)
 
         except Exception as e:
-            raise NativeOrchestratorError(f"Failed to copy file from workspace: {e}") from e
+            msg = f"Failed to copy file from workspace: {e}"
+            raise NativeOrchestratorError(msg) from e
 
     async def cleanup(self, handle_id: str) -> None:
         """Remove workspace and stop any running process.
@@ -391,7 +402,7 @@ class NativeOrchestrator:
 
         # Remove from tracking
         del self._handles[handle_id]
-        logger.info(f"Cleaned up workspace {handle_id}")
+        logger.info("Cleaned up workspace %s", handle_id)
 
     async def cleanup_all(self) -> None:
         """Cleanup all workspaces (for shutdown).
@@ -407,7 +418,7 @@ class NativeOrchestrator:
             try:
                 await self.cleanup(handle_id)
             except Exception as e:
-                logger.error(f"Error cleaning up {handle_id}: {e}")
+                logger.exception("Error cleaning up %s: %s", handle_id, e)
 
         logger.info("All workspaces cleaned up")
 
@@ -424,7 +435,8 @@ class NativeOrchestrator:
             NativeOrchestratorError: If handle doesn't exist.
         """
         if handle_id not in self._handles:
-            raise NativeOrchestratorError(f"Workspace not found: {handle_id}")
+            msg = f"Workspace not found: {handle_id}"
+            raise NativeOrchestratorError(msg)
         return self._handles[handle_id]
 
     def get_workspace_path(self, handle_id: str) -> Path:
@@ -470,7 +482,8 @@ class NativeOrchestrator:
         handle = self._get_handle(handle_id)
 
         if handle.is_running():
-            raise NativeOrchestratorError("Cannot modify environment while process is running")
+            msg = "Cannot modify environment while process is running"
+            raise NativeOrchestratorError(msg)
 
         handle.env.update(env)
         logger.debug(f"Updated environment for {handle_id}: {list(env.keys())}")
@@ -504,4 +517,4 @@ class NativeOrchestrator:
 
         if env_updates:
             await self.set_workspace_env(handle_id, env_updates)
-            logger.info(f"Applied resource limits to {handle_id}: {env_updates}")
+            logger.info("Applied resource limits to %s: %s", handle_id, env_updates)

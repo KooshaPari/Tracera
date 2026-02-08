@@ -252,8 +252,8 @@ describe(useTools, () => {
     });
 
     await waitFor(() => {
-      expect(initialListTools).toHaveBeenCalledTimes(1);
-      expect(mockClient.listTools).toHaveBeenCalledTimes(1);
+      expect(initialListTools).toHaveBeenCalledOnce();
+      expect(mockClient.listTools).toHaveBeenCalledOnce();
     });
   });
 

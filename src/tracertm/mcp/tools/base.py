@@ -1,5 +1,4 @@
-"""
-Base utilities for MCP tools.
+"""Base utilities for MCP tools.
 
 Provides shared database access patterns, response formatting,
 and context resolution used across all tool modules.
@@ -64,8 +63,9 @@ def require_project() -> str:
     """Get current project ID or raise ToolError if not set."""
     project_id = get_current_project_id()
     if not project_id:
+        msg = "No project selected. Use project_manage(action='select', payload={'project_id': '...'}) first."
         raise ToolError(
-            "No project selected. Use project_manage(action='select', payload={'project_id': '...'}) first."
+            msg,
         )
     return project_id
 
@@ -211,11 +211,13 @@ def resolve_project_from_token(  # noqa: C901
     if allowed:
         if project_id:
             if project_id not in allowed:
-                raise ToolError("Project access denied for requested project_id.")
+                msg = "Project access denied for requested project_id."
+                raise ToolError(msg)
             return project_id
         if len(allowed) == 1:
             return allowed[0]
-        raise ToolError("project_id required for this request (multiple projects available).")
+        msg = "project_id required for this request (multiple projects available)."
+        raise ToolError(msg)
 
     return project_id
 

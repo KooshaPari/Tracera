@@ -1,5 +1,4 @@
-"""
-CLI Benchmark Tests.
+"""CLI Benchmark Tests.
 
 Comprehensive benchmarking of CLI operations to track performance
 over time and identify regressions.
@@ -29,7 +28,7 @@ def benchmark_results():
 
     # Save results after tests
     output_file = Path(__file__).parent / "benchmark_results.json"
-    with Path(output_file).open("w") as f:
+    with Path(output_file).open("w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
 
 
@@ -41,7 +40,7 @@ def benchmark_results():
 class TestStartupBenchmarks:
     """Benchmark CLI startup performance."""
 
-    def test_benchmark_import_cli_app(self, benchmark, benchmark_results):
+    def test_benchmark_import_cli_app(self, benchmark, benchmark_results) -> None:
         """Benchmark importing the CLI app module."""
 
         def import_app():
@@ -66,7 +65,7 @@ class TestStartupBenchmarks:
             "max_ms": benchmark.stats["max"] * 1000,
         }
 
-    def test_benchmark_performance_module_import(self, benchmark, benchmark_results):
+    def test_benchmark_performance_module_import(self, benchmark, benchmark_results) -> None:
         """Benchmark importing performance module."""
 
         def import_performance():
@@ -91,7 +90,7 @@ class TestStartupBenchmarks:
             "stddev_ms": benchmark.stats["stddev"] * 1000,
         }
 
-    def test_benchmark_lazy_loader_creation(self, benchmark, benchmark_results):
+    def test_benchmark_lazy_loader_creation(self, benchmark, benchmark_results) -> None:
         """Benchmark creating a lazy loader instance."""
         from tracertm.cli.performance import LazyLoader
 
@@ -115,7 +114,7 @@ class TestStartupBenchmarks:
 class TestLazyLoadingBenchmarks:
     """Benchmark lazy loading performance."""
 
-    def test_benchmark_first_module_load(self, benchmark, benchmark_results):
+    def test_benchmark_first_module_load(self, benchmark, benchmark_results) -> None:
         """Benchmark first time loading a module."""
         from tracertm.cli.performance import LazyLoader
 
@@ -131,7 +130,7 @@ class TestLazyLoadingBenchmarks:
             "stddev_ms": benchmark.stats["stddev"] * 1000,
         }
 
-    def test_benchmark_cached_module_load(self, benchmark, benchmark_results):
+    def test_benchmark_cached_module_load(self, benchmark, benchmark_results) -> None:
         """Benchmark loading a cached module."""
         from tracertm.cli.performance import LazyLoader
 
@@ -150,13 +149,13 @@ class TestLazyLoadingBenchmarks:
             "stddev_ms": benchmark.stats["stddev"] * 1000,
         }
 
-    def test_benchmark_multiple_module_loads(self, benchmark, benchmark_results):
+    def test_benchmark_multiple_module_loads(self, benchmark, benchmark_results) -> None:
         """Benchmark loading multiple different modules."""
         from tracertm.cli.performance import LazyLoader
 
         modules = ["json", "os", "sys", "time", "pathlib"]
 
-        def load_multiple():
+        def load_multiple() -> None:
             loader = LazyLoader()
             for mod in modules:
                 loader.load(mod)
@@ -178,7 +177,7 @@ class TestLazyLoadingBenchmarks:
 class TestCacheBenchmarks:
     """Benchmark command cache performance."""
 
-    def test_benchmark_cache_creation(self, benchmark, benchmark_results):
+    def test_benchmark_cache_creation(self, benchmark, benchmark_results) -> None:
         """Benchmark cache instance creation."""
         from tracertm.cli.performance import CommandCache
 
@@ -192,14 +191,14 @@ class TestCacheBenchmarks:
             "mean_ms": benchmark.stats["mean"] * 1000,
         }
 
-    def test_benchmark_cache_set(self, benchmark, benchmark_results):
+    def test_benchmark_cache_set(self, benchmark, benchmark_results) -> None:
         """Benchmark cache set operation."""
         from tracertm.cli.performance import CommandCache
 
         cache = CommandCache()
         test_data = {"key": "value", "number": 42}
 
-        def cache_set():
+        def cache_set() -> None:
             cache.set("test_key", test_data)
 
         benchmark(cache_set)
@@ -209,7 +208,7 @@ class TestCacheBenchmarks:
             "ops_per_sec": 1000 / (benchmark.stats["mean"] * 1000),
         }
 
-    def test_benchmark_cache_get_hit(self, benchmark, benchmark_results):
+    def test_benchmark_cache_get_hit(self, benchmark, benchmark_results) -> None:
         """Benchmark cache get operation (hit)."""
         from tracertm.cli.performance import CommandCache
 
@@ -227,7 +226,7 @@ class TestCacheBenchmarks:
             "ops_per_sec": 1000 / (benchmark.stats["mean"] * 1000),
         }
 
-    def test_benchmark_cache_get_miss(self, benchmark, benchmark_results):
+    def test_benchmark_cache_get_miss(self, benchmark, benchmark_results) -> None:
         """Benchmark cache get operation (miss)."""
         from tracertm.cli.performance import CommandCache
 
@@ -244,7 +243,7 @@ class TestCacheBenchmarks:
             "ops_per_sec": 1000 / (benchmark.stats["mean"] * 1000),
         }
 
-    def test_benchmark_cache_bulk_operations(self, benchmark, benchmark_results):
+    def test_benchmark_cache_bulk_operations(self, benchmark, benchmark_results) -> None:
         """Benchmark bulk cache operations."""
         from tracertm.cli.performance import CommandCache
 
@@ -275,7 +274,7 @@ class TestCacheBenchmarks:
 class TestPerformanceMonitorBenchmarks:
     """Benchmark performance monitoring overhead."""
 
-    def test_benchmark_monitor_creation(self, benchmark, benchmark_results):
+    def test_benchmark_monitor_creation(self, benchmark, benchmark_results) -> None:
         """Benchmark performance monitor creation."""
         from tracertm.cli.performance import PerformanceMonitor
 
@@ -285,13 +284,13 @@ class TestPerformanceMonitorBenchmarks:
         result = benchmark(create_monitor)
         assert result is not None
 
-    def test_benchmark_monitor_mark(self, benchmark, benchmark_results):
+    def test_benchmark_monitor_mark(self, benchmark, benchmark_results) -> None:
         """Benchmark adding timing marks."""
         from tracertm.cli.performance import PerformanceMonitor
 
         monitor = PerformanceMonitor()
 
-        def add_mark():
+        def add_mark() -> None:
             monitor.mark("test_checkpoint")
 
         benchmark(add_mark)
@@ -300,7 +299,7 @@ class TestPerformanceMonitorBenchmarks:
             "mark_overhead_ms": benchmark.stats["mean"] * 1000,
         }
 
-    def test_benchmark_monitor_get_timings(self, benchmark, benchmark_results):
+    def test_benchmark_monitor_get_timings(self, benchmark, benchmark_results) -> None:
         """Benchmark retrieving timings."""
         from tracertm.cli.performance import PerformanceMonitor
 
@@ -323,7 +322,7 @@ class TestPerformanceMonitorBenchmarks:
 class TestCommandExecutionBenchmarks:
     """Benchmark command execution."""
 
-    def test_benchmark_help_command(self, benchmark, benchmark_results):
+    def test_benchmark_help_command(self, benchmark, benchmark_results) -> None:
         """Benchmark help command execution."""
         from typer.testing import CliRunner
 
@@ -342,7 +341,7 @@ class TestCommandExecutionBenchmarks:
             "stddev_ms": benchmark.stats["stddev"] * 1000,
         }
 
-    def test_benchmark_version_command(self, benchmark, benchmark_results):
+    def test_benchmark_version_command(self, benchmark, benchmark_results) -> None:
         """Benchmark version command execution."""
         from typer.testing import CliRunner
 
@@ -362,7 +361,7 @@ class TestCommandExecutionBenchmarks:
         }
 
     @pytest.mark.parametrize("command", ["config", "project", "item", "link"])
-    def test_benchmark_command_group_help(self, benchmark, command, benchmark_results):
+    def test_benchmark_command_group_help(self, benchmark, command, benchmark_results) -> None:
         """Benchmark command group help execution."""
         from typer.testing import CliRunner
 
@@ -393,7 +392,7 @@ class TestCommandExecutionBenchmarks:
 class TestComparativeBenchmarks:
     """Compare different implementation approaches."""
 
-    def test_benchmark_lazy_vs_direct_import(self, benchmark):
+    def test_benchmark_lazy_vs_direct_import(self, benchmark) -> None:
         """Compare lazy loading vs direct import performance."""
         from tracertm.cli.performance import LazyLoader
 
@@ -418,13 +417,10 @@ class TestComparativeBenchmarks:
         avg_lazy = sum(lazy_times) / len(lazy_times) * 1000
         avg_direct = sum(direct_times) / len(direct_times) * 1000
 
-        print(f"\nLazy loading: {avg_lazy:.4f}ms")
-        print(f"Direct import: {avg_direct:.4f}ms")
-
         # Lazy loading should be comparable or faster due to caching
         assert avg_lazy < avg_direct * 2, "Lazy loading significantly slower than direct"
 
-    def test_benchmark_cache_vs_recompute(self, benchmark):
+    def test_benchmark_cache_vs_recompute(self, benchmark) -> None:
         """Compare cached vs recomputed results."""
         from tracertm.cli.performance import CommandCache
 
@@ -454,10 +450,6 @@ class TestComparativeBenchmarks:
         avg_cache = sum(cache_times) / len(cache_times) * 1000
         avg_compute = sum(compute_times) / len(compute_times) * 1000
 
-        print(f"\nCache retrieval: {avg_cache:.4f}ms")
-        print(f"Recomputation: {avg_compute:.4f}ms")
-        print(f"Speedup: {avg_compute / avg_cache:.1f}x")
-
         # Cache should be significantly faster
         assert avg_cache < avg_compute, "Cache not faster than recomputation"
 
@@ -470,14 +462,14 @@ class TestComparativeBenchmarks:
 class TestRegressionDetection:
     """Detect performance regressions against baselines."""
 
-    def test_check_against_baselines(self, benchmark_results):
+    def test_check_against_baselines(self, benchmark_results) -> None:
         """Compare current results against baseline file."""
         baselines_file = Path(__file__).parent / "performance_baselines.json"
 
         if not baselines_file.exists():
             pytest.skip("No baseline file to compare against")
 
-        with Path(baselines_file).open() as f:
+        with Path(baselines_file).open(encoding="utf-8") as f:
             baselines = json.load(f)
 
         # Compare key metrics
@@ -487,7 +479,6 @@ class TestRegressionDetection:
             pytest.skip("No CLI baselines in file")
 
         # This is a smoke test - actual comparison would be more sophisticated
-        print(f"\nFound {len(cli_baselines)} CLI baseline metrics")
 
 
 # ============================================================
@@ -503,7 +494,7 @@ def generate_benchmark_report(request):
     # Run after all benchmark tests
     output_file = Path(__file__).parent / "benchmark_report.md"
 
-    with Path(output_file).open("w") as f:
+    with Path(output_file).open("w", encoding="utf-8") as f:
         f.write("# CLI Performance Benchmark Report\n\n")
         f.write(f"Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}\n\n")
 

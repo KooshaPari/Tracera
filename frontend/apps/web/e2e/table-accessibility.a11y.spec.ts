@@ -283,10 +283,9 @@ test.describe('Table Accessibility - Screen Reader Support', () => {
     const sortButton = page.locator('button[aria-label*="sorted"]');
 
     // Should have indication of sort state
-    if (await sortButton.isVisible()) {
-      const ariaLabel = await sortButton.getAttribute('aria-label');
-      expect(ariaLabel).toMatch(/sorted|not sorted/i);
-    }
+    await expect(sortButton.first()).toBeVisible({ timeout: 5000 });
+    const ariaLabel = await sortButton.first().getAttribute('aria-label');
+    expect(ariaLabel).toMatch(/sorted|not sorted/i);
   });
 
   test('should have accessible modal dialog', async ({ page }) => {
@@ -316,17 +315,17 @@ test.describe('Table Accessibility - Screen Reader Support', () => {
     await page.waitForTimeout(300);
 
     // All form inputs should have labels
-    const titleLabel = await page.locator('label:has-text("Title")').isVisible();
-    expect(titleLabel).toBe(true);
+    const titleLabel = page.locator('label:has-text("Title")');
+    await expect(titleLabel).toBeVisible({ timeout: 5000 });
 
-    const typeLabel = await page.locator('label:has-text("Type")').isVisible();
-    expect(typeLabel).toBe(true);
+    const typeLabel = page.locator('label:has-text("Type")');
+    await expect(typeLabel).toBeVisible({ timeout: 5000 });
 
-    const statusLabel = await page.locator('label:has-text("Status")').isVisible();
-    expect(statusLabel).toBe(true);
+    const statusLabel = page.locator('label:has-text("Status")');
+    await expect(statusLabel).toBeVisible({ timeout: 5000 });
 
-    const priorityLabel = await page.locator('label:has-text("Priority")').isVisible();
-    expect(priorityLabel).toBe(true);
+    const priorityLabel = page.locator('label:has-text("Priority")');
+    await expect(priorityLabel).toBeVisible({ timeout: 5000 });
   });
 });
 
@@ -431,10 +430,12 @@ test.describe('Table Accessibility - Focus Management', () => {
     await page.keyboard.press('Tab');
     await page.keyboard.press('Tab');
 
-    const finalElement = await page.evaluate(() => document.activeElement?.id);
+    const finalElementId = await page.evaluate(() => document.activeElement?.id);
 
     // Element should still be in modal context
-    const _inModal = await page.locator('[role="dialog"]').locator(`#${finalElement}`).isVisible();
+    await expect(page.locator('[role="dialog"]').locator(`#${finalElementId}`)).toBeVisible({
+      timeout: 5000,
+    });
 
     // Close modal
     await page.locator('button[aria-label*="Close dialog"]').click();
@@ -453,8 +454,8 @@ test.describe('Table Accessibility - WCAG 2.1 AA Compliance', () => {
 
     for (const button of buttons) {
       const box = await button.boundingBox();
-      const visible = await button.isVisible();
-      if (box !== null && visible) {
+      await expect(button).toBeVisible({ timeout: 2000 });
+      if (box !== null) {
         // Should meet minimum size requirement
         expect(box.width + box.height).toBeGreaterThan(40);
       }

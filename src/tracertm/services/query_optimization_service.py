@@ -22,7 +22,7 @@ INDEX_RECOMMEND_RATIO = 0.5
 class QueryOptimizationService:
     """Service for optimizing queries."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)

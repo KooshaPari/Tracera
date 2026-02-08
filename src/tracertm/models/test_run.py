@@ -1,6 +1,4 @@
-"""
-Test Run model for tracking test execution instances.
-"""
+"""Test Run model for tracking test execution instances."""
 
 import uuid as uuid_module
 from datetime import UTC, datetime
@@ -61,21 +59,19 @@ class TestRunType(StrEnum):
 
 
 class TestRun(Base, TimestampMixin):
-    """
-    Execution instance of a test suite or ad-hoc tests.
-    """
+    """Execution instance of a test suite or ad-hoc tests."""
 
     __tablename__ = "test_runs"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     run_number: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     project_id: Mapped[str] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False,
     )
 
     # Source
     suite_id: Mapped[str | None] = mapped_column(
-        String(36), ForeignKey("test_suites.id", ondelete="SET NULL"), nullable=True
+        String(36), ForeignKey("test_suites.id", ondelete="SET NULL"), nullable=True,
     )
 
     # Basic info
@@ -147,16 +143,14 @@ class TestRun(Base, TimestampMixin):
 
 
 class TestResult(Base, TimestampMixin):
-    """
-    Individual test case result within a test run.
-    """
+    """Individual test case result within a test run."""
 
     __tablename__ = "test_results"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     run_id: Mapped[str] = mapped_column(String(36), ForeignKey("test_runs.id", ondelete="CASCADE"), nullable=False)
     test_case_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("test_cases.id", ondelete="CASCADE"), nullable=False
+        String(36), ForeignKey("test_cases.id", ondelete="CASCADE"), nullable=False,
     )
 
     # Result
@@ -226,7 +220,7 @@ class TestRunActivity(Base):
     performed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
     run_metadata: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC),
     )
 
     __table_args__ = (
@@ -238,7 +232,7 @@ class TestRunActivity(Base):
 
 # Auto-generate run number
 @event.listens_for(TestRun, "before_insert")
-def generate_run_number(mapper, connection, target):
+def generate_run_number(mapper, connection, target) -> None:
     """Generate a sequential run number before insert."""
     if not target.run_number:
         import uuid

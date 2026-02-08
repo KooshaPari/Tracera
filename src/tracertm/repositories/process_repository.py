@@ -14,7 +14,7 @@ from tracertm.models.process import Process, ProcessExecution
 class ProcessRepository:
     """Repository for Process CRUD operations with optimistic locking."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     def _generate_process_number(self) -> str:
@@ -147,12 +147,16 @@ class ProcessRepository:
         process = result.scalar_one_or_none()
 
         if not process:
-            raise ValueError(f"Process {process_id} not found")
+            msg = f"Process {process_id} not found"
+            raise ValueError(msg)
 
         if process.version != expected_version:
-            raise ConcurrencyError(
+            msg = (
                 f"Process {process_id} was modified by another process "
                 f"(expected version {expected_version}, current version {process.version})"
+            )
+            raise ConcurrencyError(
+                msg,
             )
 
         for key, value in updates.items():
@@ -177,7 +181,8 @@ class ProcessRepository:
         original = result.scalar_one_or_none()
 
         if not original:
-            raise ValueError(f"Process {process_id} not found")
+            msg = f"Process {process_id} not found"
+            raise ValueError(msg)
 
         # Create new version as copy
         new_process = Process(
@@ -225,7 +230,8 @@ class ProcessRepository:
         process = result.scalar_one_or_none()
 
         if not process:
-            raise ValueError(f"Process {process_id} not found")
+            msg = f"Process {process_id} not found"
+            raise ValueError(msg)
 
         # Deactivate other versions
         deactivate_query = select(Process).where(
@@ -261,7 +267,8 @@ class ProcessRepository:
         process = result.scalar_one_or_none()
 
         if not process:
-            raise ValueError(f"Process {process_id} not found")
+            msg = f"Process {process_id} not found"
+            raise ValueError(msg)
 
         process.status = "deprecated"
         process.deprecated_at = datetime.now(UTC)
@@ -332,7 +339,8 @@ class ProcessRepository:
         # Verify process exists
         process = await self.get_by_id(process_id)
         if not process:
-            raise ValueError(f"Process {process_id} not found")
+            msg = f"Process {process_id} not found"
+            raise ValueError(msg)
 
         execution = ProcessExecution(
             id=str(uuid4()),
@@ -378,7 +386,8 @@ class ProcessRepository:
         execution = result.scalar_one_or_none()
 
         if not execution:
-            raise ValueError(f"Execution {execution_id} not found")
+            msg = f"Execution {execution_id} not found"
+            raise ValueError(msg)
 
         execution.status = "in_progress"
         execution.started_at = datetime.now(UTC)
@@ -398,7 +407,8 @@ class ProcessRepository:
         execution = result.scalar_one_or_none()
 
         if not execution:
-            raise ValueError(f"Execution {execution_id} not found")
+            msg = f"Execution {execution_id} not found"
+            raise ValueError(msg)
 
         # Mark current stage as completed
         completed = execution.completed_stages or []
@@ -425,7 +435,8 @@ class ProcessRepository:
         execution = result.scalar_one_or_none()
 
         if not execution:
-            raise ValueError(f"Execution {execution_id} not found")
+            msg = f"Execution {execution_id} not found"
+            raise ValueError(msg)
 
         execution.status = "completed"
         execution.completed_at = datetime.now(UTC)
@@ -448,7 +459,8 @@ class ProcessRepository:
         execution = result.scalar_one_or_none()
 
         if not execution:
-            raise ValueError(f"Execution {execution_id} not found")
+            msg = f"Execution {execution_id} not found"
+            raise ValueError(msg)
 
         execution.status = "failed"
         execution.completed_at = datetime.now(UTC)
@@ -469,7 +481,8 @@ class ProcessRepository:
         execution = result.scalar_one_or_none()
 
         if not execution:
-            raise ValueError(f"Execution {execution_id} not found")
+            msg = f"Execution {execution_id} not found"
+            raise ValueError(msg)
 
         execution.status = "cancelled"
         execution.completed_at = datetime.now(UTC)

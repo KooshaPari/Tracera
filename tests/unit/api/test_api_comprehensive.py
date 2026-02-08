@@ -1,5 +1,4 @@
-"""
-Comprehensive test suite for tracertm.api module.
+"""Comprehensive test suite for tracertm.api module.
 
 Tests all API client functionality including:
 - TraceRTMClient (local database access)
@@ -107,7 +106,7 @@ def client(mock_config_manager, mock_session):
 class TestTraceRTMClientInitialization:
     """Test TraceRTMClient initialization and configuration."""
 
-    def test_init_with_agent_id_and_name(self, mock_config_manager):
+    def test_init_with_agent_id_and_name(self, mock_config_manager) -> None:
         """Test initialization with agent ID and name."""
         client = TraceRTMClient(agent_id="agent-123", agent_name="My Agent")
 
@@ -116,14 +115,14 @@ class TestTraceRTMClientInitialization:
         assert client._session is None
         assert client._db is None
 
-    def test_init_without_agent(self, mock_config_manager):
+    def test_init_without_agent(self, mock_config_manager) -> None:
         """Test initialization without agent credentials."""
         client = TraceRTMClient()
 
         assert client.agent_id is None
         assert client.agent_name is None
 
-    def test_get_session_creates_connection(self, mock_config_manager, mock_db_connection):
+    def test_get_session_creates_connection(self, mock_config_manager, mock_db_connection) -> None:
         """Test _get_session creates database connection."""
         with patch("tracertm.api.client.Session") as mock_session_cls:
             mock_session = MagicMock()
@@ -135,14 +134,14 @@ class TestTraceRTMClientInitialization:
             assert session == mock_session
             mock_db_connection.connect.assert_called_once()
 
-    def test_get_session_reuses_existing(self, client):
+    def test_get_session_reuses_existing(self, client) -> None:
         """Test _get_session reuses existing session."""
         session1 = client._get_session()
         session2 = client._get_session()
 
         assert session1 is session2
 
-    def test_get_session_no_database_configured(self):
+    def test_get_session_no_database_configured(self) -> None:
         """Test _get_session raises error when database not configured."""
         with patch("tracertm.api.client.ConfigManager") as mock_cfg:
             manager = MagicMock()
@@ -154,12 +153,12 @@ class TestTraceRTMClientInitialization:
             with pytest.raises(ValueError, match="Database not configured"):
                 client._get_session()
 
-    def test_get_project_id_success(self, client, mock_config_manager):
+    def test_get_project_id_success(self, client, mock_config_manager) -> None:
         """Test _get_project_id returns current project."""
         project_id = client._get_project_id()
         assert project_id == "test-project-123"
 
-    def test_get_project_id_no_project_selected(self):
+    def test_get_project_id_no_project_selected(self) -> None:
         """Test _get_project_id raises error when no project selected."""
         with patch("tracertm.api.client.ConfigManager") as mock_cfg:
             manager = MagicMock()
@@ -176,7 +175,7 @@ class TestTraceRTMClientInitialization:
 class TestTraceRTMClientAgentOperations:
     """Test agent registration and management."""
 
-    def test_register_agent_basic(self, client, mock_session):
+    def test_register_agent_basic(self, client, mock_session) -> None:
         """Test basic agent registration."""
         mock_agent = MagicMock()
         mock_agent.id = "new-agent-123"
@@ -199,7 +198,7 @@ class TestTraceRTMClientAgentOperations:
                 assert mock_session.add.call_count >= 1
                 mock_session.commit.assert_called()
 
-    def test_register_agent_with_project_ids(self, client, mock_session):
+    def test_register_agent_with_project_ids(self, client, mock_session) -> None:
         """Test agent registration with multiple projects."""
         mock_agent = MagicMock()
         mock_agent.id = "agent-multi"
@@ -219,7 +218,7 @@ class TestTraceRTMClientAgentOperations:
             assert "agent_metadata" in call_kwargs
             assert call_kwargs["agent_metadata"]["assigned_projects"] == project_ids
 
-    def test_register_agent_with_metadata(self, client, mock_session):
+    def test_register_agent_with_metadata(self, client, mock_session) -> None:
         """Test agent registration with custom metadata."""
         mock_agent = MagicMock()
         mock_agent.id = "agent-meta"
@@ -236,7 +235,7 @@ class TestTraceRTMClientAgentOperations:
             call_kwargs = mock_agent_cls.call_args[1]
             assert call_kwargs["agent_metadata"]["custom_field"] == "value"
 
-    def test_assign_agent_to_projects(self, client, mock_session):
+    def test_assign_agent_to_projects(self, client, mock_session) -> None:
         """Test assigning agent to multiple projects."""
         mock_agent = MagicMock()
         mock_agent.agent_metadata = {}
@@ -248,14 +247,14 @@ class TestTraceRTMClientAgentOperations:
         assert mock_agent.agent_metadata["assigned_projects"] == ["proj-a", "proj-b"]
         mock_session.commit.assert_called()
 
-    def test_assign_agent_to_projects_not_found(self, client, mock_session):
+    def test_assign_agent_to_projects_not_found(self, client, mock_session) -> None:
         """Test assigning non-existent agent raises error."""
         mock_session.query.return_value.filter.return_value.first.return_value = None
 
         with pytest.raises(ValueError, match="Agent not found"):
             client.assign_agent_to_projects("nonexistent", ["proj-1"])
 
-    def test_get_agent_projects(self, client, mock_session):
+    def test_get_agent_projects(self, client, mock_session) -> None:
         """Test getting projects assigned to agent."""
         mock_agent = MagicMock()
         mock_agent.project_id = "primary-proj"
@@ -268,7 +267,7 @@ class TestTraceRTMClientAgentOperations:
         assert "proj-1" in projects
         assert "proj-2" in projects
 
-    def test_get_agent_projects_not_found(self, client, mock_session):
+    def test_get_agent_projects_not_found(self, client, mock_session) -> None:
         """Test getting projects for non-existent agent returns empty list."""
         mock_session.query.return_value.filter.return_value.first.return_value = None
 
@@ -276,7 +275,7 @@ class TestTraceRTMClientAgentOperations:
 
         assert projects == []
 
-    def test_get_agent_projects_no_assigned(self, client, mock_session):
+    def test_get_agent_projects_no_assigned(self, client, mock_session) -> None:
         """Test getting projects when none assigned returns only primary."""
         mock_agent = MagicMock()
         mock_agent.project_id = "primary-proj"
@@ -291,7 +290,7 @@ class TestTraceRTMClientAgentOperations:
 class TestTraceRTMClientQueryOperations:
     """Test item querying functionality."""
 
-    def test_query_items_basic(self, client, mock_session):
+    def test_query_items_basic(self, client, mock_session) -> None:
         """Test basic item query without filters."""
         mock_items = [
             MagicMock(
@@ -308,7 +307,7 @@ class TestTraceRTMClientQueryOperations:
                 version=1,
                 created_at=datetime(2024, 1, 1),
                 updated_at=datetime(2024, 1, 2),
-            )
+            ),
         ]
         mock_session.query.return_value.filter.return_value.order_by.return_value.all.return_value = mock_items
 
@@ -319,7 +318,7 @@ class TestTraceRTMClientQueryOperations:
         assert items[0]["title"] == "Item 1"
         mock_session.query.assert_called()
 
-    def test_query_items_with_view_filter(self, client, mock_session):
+    def test_query_items_with_view_filter(self, client, mock_session) -> None:
         """Test querying items filtered by view."""
         mock_session.query.return_value.filter.return_value.order_by.return_value.all.return_value = []
 
@@ -328,7 +327,7 @@ class TestTraceRTMClientQueryOperations:
         # Check filter was applied (view is uppercased)
         mock_session.query.return_value.filter.assert_called()
 
-    def test_query_items_with_status_filter(self, client, mock_session):
+    def test_query_items_with_status_filter(self, client, mock_session) -> None:
         """Test querying items filtered by status."""
         mock_session.query.return_value.filter.return_value.order_by.return_value.all.return_value = []
 
@@ -336,7 +335,7 @@ class TestTraceRTMClientQueryOperations:
 
         mock_session.query.return_value.filter.assert_called()
 
-    def test_query_items_with_type_filter(self, client, mock_session):
+    def test_query_items_with_type_filter(self, client, mock_session) -> None:
         """Test querying items filtered by type."""
         mock_session.query.return_value.filter.return_value.order_by.return_value.all.return_value = []
 
@@ -344,7 +343,7 @@ class TestTraceRTMClientQueryOperations:
 
         mock_session.query.return_value.filter.assert_called()
 
-    def test_query_items_with_priority_filter(self, client, mock_session):
+    def test_query_items_with_priority_filter(self, client, mock_session) -> None:
         """Test querying items with priority filter."""
         mock_session.query.return_value.filter.return_value.order_by.return_value.all.return_value = []
 
@@ -352,7 +351,7 @@ class TestTraceRTMClientQueryOperations:
 
         mock_session.query.return_value.filter.assert_called()
 
-    def test_query_items_with_owner_filter(self, client, mock_session):
+    def test_query_items_with_owner_filter(self, client, mock_session) -> None:
         """Test querying items with owner filter."""
         mock_session.query.return_value.filter.return_value.order_by.return_value.all.return_value = []
 
@@ -360,7 +359,7 @@ class TestTraceRTMClientQueryOperations:
 
         mock_session.query.return_value.filter.assert_called()
 
-    def test_query_items_with_parent_id_filter(self, client, mock_session):
+    def test_query_items_with_parent_id_filter(self, client, mock_session) -> None:
         """Test querying items with parent_id filter."""
         mock_session.query.return_value.filter.return_value.order_by.return_value.all.return_value = []
 
@@ -368,7 +367,7 @@ class TestTraceRTMClientQueryOperations:
 
         mock_session.query.return_value.filter.assert_called()
 
-    def test_query_items_with_limit(self, client, mock_session):
+    def test_query_items_with_limit(self, client, mock_session) -> None:
         """Test querying items respects limit parameter."""
         query_chain = mock_session.query.return_value
         query_chain.filter.return_value = query_chain
@@ -380,7 +379,7 @@ class TestTraceRTMClientQueryOperations:
 
         query_chain.limit.assert_called_with(50)
 
-    def test_query_items_excludes_deleted(self, client, mock_session):
+    def test_query_items_excludes_deleted(self, client, mock_session) -> None:
         """Test query excludes soft-deleted items."""
         query_chain = mock_session.query.return_value
         query_chain.filter.return_value = query_chain
@@ -392,7 +391,7 @@ class TestTraceRTMClientQueryOperations:
         # Verify deleted_at filter is applied
         query_chain.filter.assert_called()
 
-    def test_get_item_success(self, client, mock_session):
+    def test_get_item_success(self, client, mock_session) -> None:
         """Test getting a specific item by ID."""
         mock_item = MagicMock(
             id="item-123",
@@ -420,7 +419,7 @@ class TestTraceRTMClientQueryOperations:
         assert item["title"] == "Test Item"
         assert item["metadata"]["key"] == "value"
 
-    def test_get_item_not_found(self, client, mock_session):
+    def test_get_item_not_found(self, client, mock_session) -> None:
         """Test getting non-existent item returns None."""
         query_chain = mock_session.query.return_value
         query_chain.filter.return_value = query_chain
@@ -430,7 +429,7 @@ class TestTraceRTMClientQueryOperations:
 
         assert item is None
 
-    def test_get_item_soft_deleted_returns_none(self, client, mock_session):
+    def test_get_item_soft_deleted_returns_none(self, client, mock_session) -> None:
         """Test getting soft-deleted item returns None."""
         # Soft-deleted items are filtered out by query
         query_chain = mock_session.query.return_value
@@ -441,7 +440,7 @@ class TestTraceRTMClientQueryOperations:
 
         assert item is None
 
-    def test_get_item_with_prefix_match(self, client, mock_session):
+    def test_get_item_with_prefix_match(self, client, mock_session) -> None:
         """Test get_item uses prefix matching on ID."""
         mock_item = MagicMock(id="item-123-full")
         query_chain = mock_session.query.return_value
@@ -457,7 +456,7 @@ class TestTraceRTMClientQueryOperations:
 class TestTraceRTMClientItemCRUD:
     """Test item create, update, delete operations."""
 
-    def test_create_item_minimal(self, client, mock_session):
+    def test_create_item_minimal(self, client, mock_session) -> None:
         """Test creating item with minimal required fields."""
         mock_item = MagicMock(
             id="new-item",
@@ -482,7 +481,7 @@ class TestTraceRTMClientItemCRUD:
             mock_session.add.assert_called()  # May be called multiple times (item + event log)
             mock_session.commit.assert_called()
 
-    def test_create_item_full_fields(self, client, mock_session):
+    def test_create_item_full_fields(self, client, mock_session) -> None:
         """Test creating item with all fields populated."""
         mock_item = MagicMock(id="full-item")
 
@@ -508,7 +507,7 @@ class TestTraceRTMClientItemCRUD:
             assert call_kwargs["description"] == "A detailed description"
             assert call_kwargs["priority"] == "high"
 
-    def test_create_item_uppercases_view(self, client, mock_session):
+    def test_create_item_uppercases_view(self, client, mock_session) -> None:
         """Test view is uppercased during item creation."""
         mock_item = MagicMock(id="item-upper")
 
@@ -520,7 +519,7 @@ class TestTraceRTMClientItemCRUD:
             call_kwargs = mock_item_cls.call_args[1]
             assert call_kwargs["view"] == "FEATURE"
 
-    def test_update_item_single_field(self, client, mock_session):
+    def test_update_item_single_field(self, client, mock_session) -> None:
         """Test updating single field of an item."""
         mock_item = MagicMock(
             id="item-update",
@@ -536,7 +535,7 @@ class TestTraceRTMClientItemCRUD:
         assert mock_item.title == "New Title"
         mock_session.commit.assert_called()  # May be called multiple times (update + event log)
 
-    def test_update_item_multiple_fields(self, client, mock_session):
+    def test_update_item_multiple_fields(self, client, mock_session) -> None:
         """Test updating multiple fields simultaneously."""
         mock_item = MagicMock(
             id="item-multi",
@@ -560,7 +559,7 @@ class TestTraceRTMClientItemCRUD:
         assert mock_item.status == "done"
         assert mock_item.priority == "high"
 
-    def test_update_item_not_found(self, client, mock_session):
+    def test_update_item_not_found(self, client, mock_session) -> None:
         """Test updating non-existent item raises ValueError."""
         query_chain = mock_session.query.return_value
         query_chain.filter.return_value = query_chain
@@ -569,7 +568,7 @@ class TestTraceRTMClientItemCRUD:
         with pytest.raises(ValueError, match="Item not found"):
             client.update_item("nonexistent", title="New")
 
-    def test_update_item_with_metadata(self, client, mock_session):
+    def test_update_item_with_metadata(self, client, mock_session) -> None:
         """Test updating item metadata."""
         mock_item = MagicMock(
             id="item-meta",
@@ -585,7 +584,7 @@ class TestTraceRTMClientItemCRUD:
 
         assert mock_item.item_metadata == new_metadata
 
-    def test_update_item_optimistic_locking_conflict(self, client, mock_session):
+    def test_update_item_optimistic_locking_conflict(self, client, mock_session) -> None:
         """Test update handles optimistic locking conflicts."""
         from tracertm.services.concurrent_operations_service import ConcurrencyError
 
@@ -601,7 +600,7 @@ class TestTraceRTMClientItemCRUD:
 
         mock_session.rollback.assert_called()
 
-    def test_delete_item_success(self, client, mock_session):
+    def test_delete_item_success(self, client, mock_session) -> None:
         """Test soft deleting an item."""
         mock_item = MagicMock(id="item-delete", deleted_at=None)
         query_chain = mock_session.query.return_value
@@ -613,7 +612,7 @@ class TestTraceRTMClientItemCRUD:
         assert mock_item.deleted_at is not None
         mock_session.commit.assert_called()  # May be called multiple times (delete + event log)
 
-    def test_delete_item_not_found(self, client, mock_session):
+    def test_delete_item_not_found(self, client, mock_session) -> None:
         """Test deleting non-existent item raises ValueError."""
         query_chain = mock_session.query.return_value
         query_chain.filter.return_value = query_chain
@@ -626,7 +625,7 @@ class TestTraceRTMClientItemCRUD:
 class TestTraceRTMClientExportImport:
     """Test data export and import functionality."""
 
-    def test_export_project_json(self, client, mock_session):
+    def test_export_project_json(self, client, mock_session) -> None:
         """Test exporting project data as JSON."""
         mock_project = MagicMock(id="proj-1", name="Test Project")
         mock_items = [
@@ -637,7 +636,7 @@ class TestTraceRTMClientExportImport:
                 item_type="feature",
                 status="todo",
                 item_metadata={},
-            )
+            ),
         ]
         mock_links = [
             MagicMock(
@@ -645,7 +644,7 @@ class TestTraceRTMClientExportImport:
                 source_item_id="item-1",
                 target_item_id="item-2",
                 link_type="implements",
-            )
+            ),
         ]
 
         # Setup query chain
@@ -677,7 +676,7 @@ class TestTraceRTMClientExportImport:
         assert len(data["items"]) == 1
         assert len(data["links"]) == 1
 
-    def test_export_project_yaml(self, client, mock_session):
+    def test_export_project_yaml(self, client, mock_session) -> None:
         """Test exporting project data as YAML."""
         mock_project = MagicMock(id="proj-1", name="Test Project")
 
@@ -699,7 +698,7 @@ class TestTraceRTMClientExportImport:
                 assert result == "yaml: data"
                 mock_yaml_dump.assert_called_once()
 
-    def test_import_data_items_only(self, client, mock_session):
+    def test_import_data_items_only(self, client, mock_session) -> None:
         """Test importing items without links."""
         data = {
             "items": [
@@ -714,7 +713,7 @@ class TestTraceRTMClientExportImport:
                     "view": "code",
                     "type": "class",
                 },
-            ]
+            ],
         }
 
         with patch("tracertm.api.client.Item") as mock_item_cls:
@@ -726,7 +725,7 @@ class TestTraceRTMClientExportImport:
                 # 2 items + 1 event from _log_operation = 3 add calls
                 assert mock_session.add.call_count == 3
 
-    def test_import_data_with_links(self, client, mock_session):
+    def test_import_data_with_links(self, client, mock_session) -> None:
         """Test importing both items and links."""
         data = {
             "items": [{"title": "Item", "view": "feature", "type": "feat"}],
@@ -735,7 +734,7 @@ class TestTraceRTMClientExportImport:
                     "source_id": "item-1",
                     "target_id": "item-2",
                     "type": "implements",
-                }
+                },
             ],
         }
 
@@ -745,7 +744,7 @@ class TestTraceRTMClientExportImport:
             assert result["items_created"] == 1
             assert result["links_created"] == 1
 
-    def test_import_data_empty(self, client, mock_session):
+    def test_import_data_empty(self, client, mock_session) -> None:
         """Test importing empty data."""
         data = {}
 
@@ -758,7 +757,7 @@ class TestTraceRTMClientExportImport:
 class TestTraceRTMClientBatchOperations:
     """Test batch operations for items."""
 
-    def test_batch_create_items(self, client, mock_session):
+    def test_batch_create_items(self, client, mock_session) -> None:
         """Test batch creating multiple items."""
         items_data = [
             {"title": "Batch 1", "view": "feature", "type": "feat"},
@@ -773,7 +772,7 @@ class TestTraceRTMClientBatchOperations:
             # Commit is called twice: once for items, once for logging event
             assert mock_session.commit.call_count == 2
 
-    def test_batch_create_items_rollback_on_error(self, client, mock_session):
+    def test_batch_create_items_rollback_on_error(self, client, mock_session) -> None:
         """Test batch create rolls back on error."""
         mock_session.commit.side_effect = Exception("DB Error")
 
@@ -785,7 +784,7 @@ class TestTraceRTMClientBatchOperations:
 
             mock_session.rollback.assert_called_once()
 
-    def test_batch_update_items(self, client, mock_session):
+    def test_batch_update_items(self, client, mock_session) -> None:
         """Test batch updating multiple items."""
         mock_items = [MagicMock(id=f"item-{i}", title=f"Old {i}", version=1) for i in range(3)]
 
@@ -814,7 +813,7 @@ class TestTraceRTMClientBatchOperations:
             for item in mock_items:
                 assert "Updated" in item.title
 
-    def test_batch_update_items_skips_not_found(self, client, mock_session):
+    def test_batch_update_items_skips_not_found(self, client, mock_session) -> None:
         """Test batch update skips non-existent items."""
         mock_session.query.return_value.filter.return_value.first.return_value = None
 
@@ -827,7 +826,7 @@ class TestTraceRTMClientBatchOperations:
 
         assert result["items_updated"] == 0
 
-    def test_batch_delete_items(self, client, mock_session):
+    def test_batch_delete_items(self, client, mock_session) -> None:
         """Test batch deleting multiple items."""
         mock_items = [MagicMock(id=f"item-{i}", deleted_at=None) for i in range(3)]
 
@@ -860,7 +859,7 @@ class TestTraceRTMClientBatchOperations:
 class TestTraceRTMClientAgentActivity:
     """Test agent activity monitoring."""
 
-    def test_get_agent_activity(self, client, mock_session):
+    def test_get_agent_activity(self, client, mock_session) -> None:
         """Test getting activity for specific agent."""
         mock_events = [
             MagicMock(
@@ -894,7 +893,7 @@ class TestTraceRTMClientAgentActivity:
             assert activity[0]["event_type"] == "item_created"
             assert activity[1]["event_type"] == "item_updated"
 
-    def test_get_agent_activity_no_agent_id(self, client, mock_session):
+    def test_get_agent_activity_no_agent_id(self, client, mock_session) -> None:
         """Test get_agent_activity returns empty list without agent ID."""
         client.agent_id = None
 
@@ -902,7 +901,7 @@ class TestTraceRTMClientAgentActivity:
 
         assert activity == []
 
-    def test_get_all_agents_activity(self, client, mock_session):
+    def test_get_all_agents_activity(self, client, mock_session) -> None:
         """Test getting activity for all agents in project."""
         mock_agents = [
             MagicMock(id="agent-1"),
@@ -925,7 +924,7 @@ class TestTraceRTMClientAgentActivity:
             assert "agent-1" in result
             assert "agent-2" in result
 
-    def test_get_assigned_items(self, client, mock_session):
+    def test_get_assigned_items(self, client, mock_session) -> None:
         """Test getting items assigned to agent."""
         mock_items = [
             MagicMock(
@@ -955,7 +954,7 @@ class TestTraceRTMClientAgentActivity:
         assert len(items) == 2
         assert items[0]["title"] == "Task 1"
 
-    def test_get_assigned_items_no_agent_id(self, client, mock_session):
+    def test_get_assigned_items_no_agent_id(self, client, mock_session) -> None:
         """Test get_assigned_items returns empty list without agent ID."""
         client.agent_id = None
 
@@ -967,7 +966,7 @@ class TestTraceRTMClientAgentActivity:
 class TestTraceRTMClientLogging:
     """Test operation logging functionality."""
 
-    def test_log_operation_success(self, client, mock_session):
+    def test_log_operation_success(self, client, mock_session) -> None:
         """Test logging operation creates event."""
         client.agent_id = "test-agent"
 
@@ -985,7 +984,7 @@ class TestTraceRTMClientLogging:
             mock_session.add.assert_called_with(mock_event)
             mock_session.commit.assert_called()
 
-    def test_log_operation_no_agent_id(self, client, mock_session):
+    def test_log_operation_no_agent_id(self, client, mock_session) -> None:
         """Test logging skipped when no agent ID."""
         client.agent_id = None
 
@@ -994,7 +993,7 @@ class TestTraceRTMClientLogging:
         # Should not attempt to create event
         mock_session.add.assert_not_called()
 
-    def test_log_operation_handles_error_silently(self, client, mock_session):
+    def test_log_operation_handles_error_silently(self, client, mock_session) -> None:
         """Test logging errors are caught and ignored."""
         client.agent_id = "test-agent"
         mock_session.add.side_effect = Exception("DB Error")
@@ -1002,7 +1001,7 @@ class TestTraceRTMClientLogging:
         # Should not raise exception
         client._log_operation("test", "test", "test", {})
 
-    def test_log_operation_with_none_data(self, client, mock_session):
+    def test_log_operation_with_none_data(self, client, mock_session) -> None:
         """Test logging with None data converts to empty dict."""
         client.agent_id = "test-agent"
 
@@ -1017,7 +1016,7 @@ class TestTraceRTMClientLogging:
 class TestTraceRTMClientConnectionManagement:
     """Test connection lifecycle management."""
 
-    def test_close_closes_session_and_db(self, mock_config_manager):
+    def test_close_closes_session_and_db(self, mock_config_manager) -> None:
         """Test close method closes both session and connection."""
         with patch("tracertm.api.client.Session") as mock_session_cls:
             with patch("tracertm.api.client.DatabaseConnection") as mock_db_cls:
@@ -1034,7 +1033,7 @@ class TestTraceRTMClientConnectionManagement:
                 mock_session.close.assert_called_once()
                 mock_db.close.assert_called_once()
 
-    def test_close_handles_none_session(self, client):
+    def test_close_handles_none_session(self, client) -> None:
         """Test close works when session is None."""
         client._session = None
         client._db = None
@@ -1068,7 +1067,7 @@ def api_client(api_config):
 class TestApiConfig:
     """Test ApiConfig data class."""
 
-    def test_api_config_creation(self):
+    def test_api_config_creation(self) -> None:
         """Test creating ApiConfig with all parameters."""
         config = ApiConfig(
             base_url="https://api.example.com",
@@ -1086,7 +1085,7 @@ class TestApiConfig:
         assert config.max_retries == 5
         assert config.verify_ssl is False
 
-    def test_api_config_defaults(self):
+    def test_api_config_defaults(self) -> None:
         """Test ApiConfig uses sensible defaults."""
         config = ApiConfig(base_url="https://api.test.com")
 
@@ -1095,7 +1094,7 @@ class TestApiConfig:
         assert config.max_retries == 3
         assert config.verify_ssl is True
 
-    def test_api_config_from_config_manager(self):
+    def test_api_config_from_config_manager(self) -> None:
         """Test creating ApiConfig from ConfigManager."""
         with patch("tracertm.api.sync_client.ConfigManager") as mock_mgr_cls:
             manager = MagicMock()
@@ -1114,7 +1113,7 @@ class TestApiConfig:
             assert config.timeout == 45.0
             assert config.max_retries == 5
 
-    def test_api_config_from_config_manager_creates_new(self):
+    def test_api_config_from_config_manager_creates_new(self) -> None:
         """Test from_config_manager creates ConfigManager if None."""
         with patch("tracertm.api.sync_client.ConfigManager") as mock_mgr_cls:
             manager = MagicMock()
@@ -1136,7 +1135,7 @@ class TestApiConfig:
 class TestChangeDataClass:
     """Test Change data class."""
 
-    def test_change_creation(self):
+    def test_change_creation(self) -> None:
         """Test creating Change instance."""
         change = Change(
             entity_type="item",
@@ -1151,7 +1150,7 @@ class TestChangeDataClass:
         assert change.entity_id == "item-123"
         assert change.operation == SyncOperation.CREATE
 
-    def test_change_to_dict(self):
+    def test_change_to_dict(self) -> None:
         """Test converting Change to dictionary."""
         timestamp = datetime(2024, 1, 1, 12, 0, 0)
         change = Change(
@@ -1172,7 +1171,7 @@ class TestChangeDataClass:
         assert data["version"] == 2
         assert data["timestamp"] == "2024-01-01T12:00:00"
 
-    def test_change_default_timestamp(self):
+    def test_change_default_timestamp(self) -> None:
         """Test Change gets default timestamp."""
         change = Change(
             entity_type="item",
@@ -1188,7 +1187,7 @@ class TestChangeDataClass:
 class TestConflictDataClass:
     """Test Conflict data class."""
 
-    def test_conflict_from_dict(self):
+    def test_conflict_from_dict(self) -> None:
         """Test creating Conflict from dictionary."""
         data = {
             "conflict_id": "conflict-123",
@@ -1208,7 +1207,7 @@ class TestConflictDataClass:
         assert conflict.remote_version == 6
         assert conflict.local_data["title"] == "Local Title"
 
-    def test_conflict_from_dict_no_timestamp(self):
+    def test_conflict_from_dict_no_timestamp(self) -> None:
         """Test Conflict.from_dict handles missing timestamp."""
         data = {
             "conflict_id": "conflict-123",
@@ -1229,7 +1228,7 @@ class TestConflictDataClass:
 class TestUploadResultDataClass:
     """Test UploadResult data class."""
 
-    def test_upload_result_from_dict(self):
+    def test_upload_result_from_dict(self) -> None:
         """Test creating UploadResult from API response."""
         data = {
             "applied": ["item-1", "item-2"],
@@ -1244,7 +1243,7 @@ class TestUploadResultDataClass:
         assert result.applied[0] == "item-1"
         assert len(result.conflicts) == 0
 
-    def test_upload_result_with_conflicts(self):
+    def test_upload_result_with_conflicts(self) -> None:
         """Test UploadResult with conflicts."""
         data = {
             "applied": ["item-1"],
@@ -1257,7 +1256,7 @@ class TestUploadResultDataClass:
                     "remote_version": 2,
                     "local_data": {},
                     "remote_data": {},
-                }
+                },
             ],
             "server_time": "2024-01-01T12:00:00",
             "errors": [{"error": "Failed to process item-3"}],
@@ -1273,7 +1272,7 @@ class TestUploadResultDataClass:
 class TestSyncStatusDataClass:
     """Test SyncStatus data class."""
 
-    def test_sync_status_from_dict(self):
+    def test_sync_status_from_dict(self) -> None:
         """Test creating SyncStatus from API response."""
         data = {
             "last_sync": "2024-01-01T10:00:00",
@@ -1289,7 +1288,7 @@ class TestSyncStatusDataClass:
         assert status.online is True
         assert status.conflicts_pending == 2
 
-    def test_sync_status_from_dict_no_last_sync(self):
+    def test_sync_status_from_dict_no_last_sync(self) -> None:
         """Test SyncStatus handles missing last_sync."""
         data = {
             "pending_changes": 0,
@@ -1305,7 +1304,7 @@ class TestSyncStatusDataClass:
 class TestApiClientInitialization:
     """Test ApiClient initialization."""
 
-    def test_api_client_with_config(self, api_config):
+    def test_api_client_with_config(self, api_config) -> None:
         """Test creating ApiClient with custom config."""
         client = ApiClient(api_config)
 
@@ -1313,7 +1312,7 @@ class TestApiClientInitialization:
         assert client._client is None
         assert client._client_id is not None
 
-    def test_api_client_without_config(self):
+    def test_api_client_without_config(self) -> None:
         """Test creating ApiClient without config uses default."""
         with patch("tracertm.api.sync_client.ApiConfig.from_config_manager") as mock:
             mock.return_value = ApiConfig(base_url="https://default.com")
@@ -1322,7 +1321,7 @@ class TestApiClientInitialization:
 
             mock.assert_called_once()
 
-    def test_generate_client_id_uniqueness(self, api_client):
+    def test_generate_client_id_uniqueness(self, api_client) -> None:
         """Test generated client IDs are unique."""
         id1 = api_client._generate_client_id()
         id2 = api_client._generate_client_id()
@@ -1334,21 +1333,21 @@ class TestApiClientInitialization:
 class TestApiClientHttpClient:
     """Test HTTP client creation and management."""
 
-    def test_client_property_creates_client(self, api_client):
+    def test_client_property_creates_client(self, api_client) -> None:
         """Test client property creates httpx.AsyncClient."""
         client = api_client.client
 
         assert client is not None
         assert isinstance(client, httpx.AsyncClient)
 
-    def test_client_property_reuses_existing(self, api_client):
+    def test_client_property_reuses_existing(self, api_client) -> None:
         """Test client property reuses existing client."""
         client1 = api_client.client
         client2 = api_client.client
 
         assert client1 is client2
 
-    def test_client_includes_auth_header(self, api_config):
+    def test_client_includes_auth_header(self, api_config) -> None:
         """Test client includes Authorization header when token provided."""
         api_config.token = "my-secret-token"
         client = ApiClient(api_config)
@@ -1358,7 +1357,7 @@ class TestApiClientHttpClient:
         assert "Authorization" in http_client.headers
         assert http_client.headers["Authorization"] == "Bearer my-secret-token"
 
-    def test_client_no_auth_header_without_token(self):
+    def test_client_no_auth_header_without_token(self) -> None:
         """Test client doesn't include Authorization without token."""
         config = ApiConfig(base_url="https://api.test.com", token=None)
         client = ApiClient(config)
@@ -1368,7 +1367,7 @@ class TestApiClientHttpClient:
         assert "Authorization" not in http_client.headers
 
     @pytest.mark.asyncio
-    async def test_close_closes_http_client(self, api_client):
+    async def test_close_closes_http_client(self, api_client) -> None:
         """Test close method closes HTTP client."""
         # Create client
         _ = api_client.client
@@ -1378,7 +1377,7 @@ class TestApiClientHttpClient:
         assert api_client._client is None
 
     @pytest.mark.asyncio
-    async def test_close_when_client_none(self, api_client):
+    async def test_close_when_client_none(self, api_client) -> None:
         """Test close works when client is None."""
         api_client._client = None
 
@@ -1386,7 +1385,7 @@ class TestApiClientHttpClient:
         await api_client.close()
 
     @pytest.mark.asyncio
-    async def test_async_context_manager(self, api_config):
+    async def test_async_context_manager(self, api_config) -> None:
         """Test ApiClient works as async context manager."""
         async with ApiClient(api_config) as client:
             assert client is not None
@@ -1399,7 +1398,7 @@ class TestApiClientRetryLogic:
     """Test HTTP request retry logic."""
 
     @pytest.mark.asyncio
-    async def test_retry_request_success_first_try(self, api_client):
+    async def test_retry_request_success_first_try(self, api_client) -> None:
         """Test successful request on first try."""
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -1416,7 +1415,7 @@ class TestApiClientRetryLogic:
         mock_http_client.request.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_retry_request_retries_on_network_error(self, api_client):
+    async def test_retry_request_retries_on_network_error(self, api_client) -> None:
         """Test request retries on network error."""
         api_client.config.max_retries = 2
         mock_response = MagicMock()
@@ -1428,7 +1427,7 @@ class TestApiClientRetryLogic:
             side_effect=[
                 httpx.NetworkError("Connection failed"),
                 mock_response,
-            ]
+            ],
         )
         api_client._client = mock_http_client
 
@@ -1438,7 +1437,7 @@ class TestApiClientRetryLogic:
         assert mock_http_client.request.call_count == 2
 
     @pytest.mark.asyncio
-    async def test_retry_request_raises_after_max_retries(self, api_client):
+    async def test_retry_request_raises_after_max_retries(self, api_client) -> None:
         """Test request raises NetworkError after all retries."""
         api_client.config.max_retries = 2
 
@@ -1452,7 +1451,7 @@ class TestApiClientRetryLogic:
         assert mock_http_client.request.call_count == 2
 
     @pytest.mark.asyncio
-    async def test_retry_request_handles_rate_limit(self, api_client):
+    async def test_retry_request_handles_rate_limit(self, api_client) -> None:
         """Test request handles 429 rate limit."""
         mock_response = MagicMock()
         mock_response.status_code = 429
@@ -1470,7 +1469,7 @@ class TestApiClientRetryLogic:
         assert exc_info.value.retry_after == 5
 
     @pytest.mark.asyncio
-    async def test_retry_request_handles_auth_error(self, api_client):
+    async def test_retry_request_handles_auth_error(self, api_client) -> None:
         """Test request raises AuthenticationError on 401."""
         mock_response = MagicMock()
         mock_response.status_code = 401
@@ -1485,7 +1484,7 @@ class TestApiClientRetryLogic:
             await api_client._retry_request("GET", "/test")
 
     @pytest.mark.asyncio
-    async def test_retry_request_exponential_backoff(self, api_client):
+    async def test_retry_request_exponential_backoff(self, api_client) -> None:
         """Test retry uses exponential backoff."""
         api_client.config.max_retries = 3
         mock_response = MagicMock()
@@ -1498,7 +1497,7 @@ class TestApiClientRetryLogic:
                 httpx.NetworkError("Error"),
                 httpx.NetworkError("Error"),
                 mock_response,
-            ]
+            ],
         )
         api_client._client = mock_http_client
 
@@ -1513,7 +1512,7 @@ class TestApiClientHealthCheck:
     """Test API health check endpoint."""
 
     @pytest.mark.asyncio
-    async def test_health_check_success(self, api_client):
+    async def test_health_check_success(self, api_client) -> None:
         """Test health check returns True when API is healthy."""
         mock_response = MagicMock()
         mock_response.json.return_value = {"status": "healthy"}
@@ -1524,7 +1523,7 @@ class TestApiClientHealthCheck:
             assert result is True
 
     @pytest.mark.asyncio
-    async def test_health_check_unhealthy_status(self, api_client):
+    async def test_health_check_unhealthy_status(self, api_client) -> None:
         """Test health check returns False for non-healthy status."""
         mock_response = MagicMock()
         mock_response.json.return_value = {"status": "degraded"}
@@ -1535,7 +1534,7 @@ class TestApiClientHealthCheck:
             assert result is False
 
     @pytest.mark.asyncio
-    async def test_health_check_handles_error(self, api_client):
+    async def test_health_check_handles_error(self, api_client) -> None:
         """Test health check returns False on error."""
         with patch.object(
             api_client,
@@ -1551,7 +1550,7 @@ class TestApiClientUploadChanges:
     """Test uploading changes to server."""
 
     @pytest.mark.asyncio
-    async def test_upload_changes_success(self, api_client):
+    async def test_upload_changes_success(self, api_client) -> None:
         """Test successful upload of changes."""
         changes = [
             Change("item", "item-1", SyncOperation.CREATE, {"title": "New"}),
@@ -1572,7 +1571,7 @@ class TestApiClientUploadChanges:
             assert result.applied[0] == "item-1"
 
     @pytest.mark.asyncio
-    async def test_upload_changes_with_last_sync(self, api_client):
+    async def test_upload_changes_with_last_sync(self, api_client) -> None:
         """Test upload includes last_sync timestamp."""
         changes = [Change("item", "item-1", SyncOperation.CREATE, {})]
         last_sync = datetime(2024, 1, 1, 10, 0, 0)
@@ -1593,7 +1592,7 @@ class TestApiClientUploadChanges:
             assert payload["last_sync"] == "2024-01-01T10:00:00"
 
     @pytest.mark.asyncio
-    async def test_upload_changes_conflict_error(self, api_client):
+    async def test_upload_changes_conflict_error(self, api_client) -> None:
         """Test upload raises ConflictError on 409."""
         changes = [Change("item", "item-1", SyncOperation.UPDATE, {})]
 
@@ -1610,8 +1609,8 @@ class TestApiClientUploadChanges:
                     "remote_version": 2,
                     "local_data": {},
                     "remote_data": {},
-                }
-            ]
+                },
+            ],
         }
 
         error = httpx.HTTPStatusError("Conflict", request=MagicMock(), response=mock_response)
@@ -1627,7 +1626,7 @@ class TestApiClientDownloadChanges:
     """Test downloading changes from server."""
 
     @pytest.mark.asyncio
-    async def test_download_changes_success(self, api_client):
+    async def test_download_changes_success(self, api_client) -> None:
         """Test successful download of changes."""
         since = datetime(2024, 1, 1, 10, 0, 0)
 
@@ -1642,8 +1641,8 @@ class TestApiClientDownloadChanges:
                     "version": 1,
                     "timestamp": "2024-01-01T11:00:00",
                     "client_id": "other-client",
-                }
-            ]
+                },
+            ],
         }
 
         with patch.object(api_client, "_retry_request", AsyncMock(return_value=mock_response)):
@@ -1654,7 +1653,7 @@ class TestApiClientDownloadChanges:
             assert changes[0].operation == SyncOperation.CREATE
 
     @pytest.mark.asyncio
-    async def test_download_changes_with_project_filter(self, api_client):
+    async def test_download_changes_with_project_filter(self, api_client) -> None:
         """Test download with project_id filter."""
         since = datetime(2024, 1, 1)
         mock_response = MagicMock()
@@ -1669,7 +1668,7 @@ class TestApiClientDownloadChanges:
             assert params["project_id"] == "proj-123"
 
     @pytest.mark.asyncio
-    async def test_download_changes_empty_response(self, api_client):
+    async def test_download_changes_empty_response(self, api_client) -> None:
         """Test download with no changes."""
         since = datetime(2024, 1, 1)
         mock_response = MagicMock()
@@ -1685,7 +1684,7 @@ class TestApiClientConflictResolution:
     """Test conflict resolution."""
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_local_wins(self, api_client):
+    async def test_resolve_conflict_local_wins(self, api_client) -> None:
         """Test resolving conflict with local_wins strategy."""
         mock_response = MagicMock()
         mock_response.json.return_value = {"resolved": True}
@@ -1699,7 +1698,7 @@ class TestApiClientConflictResolution:
             assert result is True
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_with_merged_data(self, api_client):
+    async def test_resolve_conflict_with_merged_data(self, api_client) -> None:
         """Test resolving conflict with custom merged data."""
         mock_response = MagicMock()
         mock_response.json.return_value = {"resolved": True}
@@ -1719,7 +1718,7 @@ class TestApiClientConflictResolution:
             assert payload["merged_data"] == merged_data
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_failed(self, api_client):
+    async def test_resolve_conflict_failed(self, api_client) -> None:
         """Test conflict resolution failure."""
         mock_response = MagicMock()
         mock_response.json.return_value = {"resolved": False}
@@ -1737,7 +1736,7 @@ class TestApiClientSyncStatus:
     """Test getting sync status."""
 
     @pytest.mark.asyncio
-    async def test_get_sync_status_success(self, api_client):
+    async def test_get_sync_status_success(self, api_client) -> None:
         """Test successful sync status retrieval."""
         mock_response = MagicMock()
         mock_response.json.return_value = {
@@ -1760,7 +1759,7 @@ class TestApiClientFullSync:
     """Test full bidirectional sync."""
 
     @pytest.mark.asyncio
-    async def test_full_sync_success(self, api_client):
+    async def test_full_sync_success(self, api_client) -> None:
         """Test successful full sync without conflicts."""
         local_changes = [Change("item", "item-1", SyncOperation.CREATE, {})]
         last_sync = datetime(2024, 1, 1, 10, 0, 0)
@@ -1782,8 +1781,8 @@ class TestApiClientFullSync:
                     "data": {},
                     "version": 1,
                     "timestamp": "2024-01-01T11:00:00",
-                }
-            ]
+                },
+            ],
         }
 
         with patch.object(
@@ -1800,7 +1799,7 @@ class TestApiClientFullSync:
             assert len(remote_changes) == 1
 
     @pytest.mark.asyncio
-    async def test_full_sync_auto_resolve_local_wins(self, api_client):
+    async def test_full_sync_auto_resolve_local_wins(self, api_client) -> None:
         """Test full sync auto-resolves conflicts with local_wins."""
         local_changes = [Change("item", "item-1", SyncOperation.UPDATE, {})]
 
@@ -1814,8 +1813,8 @@ class TestApiClientFullSync:
                     "remote_version": 3,
                     "local_data": {"title": "Local"},
                     "remote_data": {"title": "Remote"},
-                }
-            ]
+                },
+            ],
         }
 
         # First upload raises conflict via upload_changes
@@ -1866,7 +1865,7 @@ class TestApiClientFullSync:
             assert mock_req.call_count == 4  # upload, resolve, retry upload, download
 
     @pytest.mark.asyncio
-    async def test_full_sync_manual_conflict_raises(self, api_client):
+    async def test_full_sync_manual_conflict_raises(self, api_client) -> None:
         """Test full sync raises ConflictError for manual strategy."""
         local_changes = [Change("item", "item-1", SyncOperation.UPDATE, {})]
 
@@ -1883,8 +1882,8 @@ class TestApiClientFullSync:
                     "remote_version": 2,
                     "local_data": {},
                     "remote_data": {},
-                }
-            ]
+                },
+            ],
         }
 
         error = httpx.HTTPStatusError("Conflict", request=MagicMock(), response=conflict_response)
@@ -1900,7 +1899,7 @@ class TestApiClientFullSync:
 class TestApiExceptions:
     """Test custom exception classes."""
 
-    def test_api_error_with_status_code(self):
+    def test_api_error_with_status_code(self) -> None:
         """Test ApiError stores status code and response data."""
         error = ApiError(
             "Test error",
@@ -1912,14 +1911,14 @@ class TestApiExceptions:
         assert error.status_code == 500
         assert error.response_data["detail"] == "Internal error"
 
-    def test_api_error_defaults(self):
+    def test_api_error_defaults(self) -> None:
         """Test ApiError with default values."""
         error = ApiError("Simple error")
 
         assert error.status_code is None
         assert error.response_data == {}
 
-    def test_rate_limit_error_with_retry_after(self):
+    def test_rate_limit_error_with_retry_after(self) -> None:
         """Test RateLimitError stores retry_after."""
         error = RateLimitError(
             "Rate limited",
@@ -1930,7 +1929,7 @@ class TestApiExceptions:
         assert error.retry_after == 60
         assert error.status_code == 429
 
-    def test_conflict_error_with_conflicts(self):
+    def test_conflict_error_with_conflicts(self) -> None:
         """Test ConflictError stores conflict list."""
         conflicts = [
             Conflict(
@@ -1941,7 +1940,7 @@ class TestApiExceptions:
                 remote_version=2,
                 local_data={},
                 remote_data={},
-            )
+            ),
         ]
 
         error = ConflictError("Conflicts detected", conflicts=conflicts)
@@ -1953,13 +1952,13 @@ class TestApiExceptions:
 class TestSyncClientBackwardCompat:
     """Test backward compatibility alias."""
 
-    def test_sync_client_alias_exists(self):
+    def test_sync_client_alias_exists(self) -> None:
         """Test SyncClient alias exists for backward compatibility."""
         from tracertm.api.sync_client import SyncClient
 
         assert SyncClient is ApiClient
 
-    def test_sync_client_alias_works(self):
+    def test_sync_client_alias_works(self) -> None:
         """Test SyncClient alias can be instantiated."""
         from tracertm.api.sync_client import SyncClient
 
@@ -1977,7 +1976,7 @@ class TestSyncClientBackwardCompat:
 class TestApiIntegration:
     """Test integration between TraceRTMClient and ApiClient."""
 
-    def test_can_import_all_exports(self):
+    def test_can_import_all_exports(self) -> None:
         """Test all exported names can be imported."""
         from tracertm.api import (
             ApiClient,
@@ -1988,13 +1987,13 @@ class TestApiIntegration:
         assert TraceRTMClient is not None
         assert ApiClient is not None
 
-    def test_sync_operation_enum_values(self):
+    def test_sync_operation_enum_values(self) -> None:
         """Test SyncOperation enum has correct values."""
         assert SyncOperation.CREATE == "create"
         assert SyncOperation.UPDATE == "update"
         assert SyncOperation.DELETE == "delete"
 
-    def test_conflict_strategy_enum_values(self):
+    def test_conflict_strategy_enum_values(self) -> None:
         """Test ConflictStrategy enum has correct values."""
         assert ConflictStrategy.LAST_WRITE_WINS == "last_write_wins"
         assert ConflictStrategy.LOCAL_WINS == "local_wins"

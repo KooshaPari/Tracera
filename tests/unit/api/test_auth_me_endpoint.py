@@ -1,5 +1,4 @@
-"""
-Tests for the /auth/me endpoint implementation.
+"""Tests for the /auth/me endpoint implementation.
 
 Verifies that the endpoint correctly fetches user data from WorkOS API.
 """
@@ -41,7 +40,7 @@ def mock_jwt_claims():
 class TestAuthMeEndpoint:
     """Test /auth/me endpoint functionality."""
 
-    def test_me_endpoint_returns_user_data(self, mock_workos_user, mock_jwt_claims):
+    def test_me_endpoint_returns_user_data(self, mock_workos_user, mock_jwt_claims) -> None:
         """Test that /me endpoint returns real user data from WorkOS."""
         from tracertm.api.main import app
 
@@ -86,7 +85,7 @@ class TestAuthMeEndpoint:
             # Verify get_user was called with correct user_id
             mock_get_user.assert_called_once_with("user_01HXYZ123")
 
-    def test_me_endpoint_missing_user_id_in_claims(self):
+    def test_me_endpoint_missing_user_id_in_claims(self) -> None:
         """Test that /me endpoint returns 401 if user_id missing in claims."""
         from tracertm.api.main import app
 
@@ -102,7 +101,7 @@ class TestAuthMeEndpoint:
             assert response.status_code == 401
             assert "missing user ID" in response.json()["detail"]
 
-    def test_me_endpoint_user_not_found(self, mock_jwt_claims):
+    def test_me_endpoint_user_not_found(self, mock_jwt_claims) -> None:
         """Test that /me endpoint returns 404 if user not found in WorkOS."""
         from tracertm.api.main import app
 
@@ -123,7 +122,7 @@ class TestAuthMeEndpoint:
             assert response.status_code == 404
             assert "not found" in response.json()["detail"]
 
-    def test_me_endpoint_workos_api_error(self, mock_jwt_claims):
+    def test_me_endpoint_workos_api_error(self, mock_jwt_claims) -> None:
         """Test that /me endpoint returns 500 on WorkOS API error."""
         from tracertm.api.main import app
 
@@ -144,7 +143,7 @@ class TestAuthMeEndpoint:
             assert response.status_code == 500
             assert "Failed to fetch user information" in response.json()["detail"]
 
-    def test_me_endpoint_workos_not_configured(self, mock_jwt_claims):
+    def test_me_endpoint_workos_not_configured(self, mock_jwt_claims) -> None:
         """Test that /me endpoint returns 500 if WorkOS not configured."""
         from tracertm.api.main import app
 
@@ -165,7 +164,7 @@ class TestAuthMeEndpoint:
             assert response.status_code == 500
             assert "not configured" in response.json()["detail"]
 
-    def test_me_endpoint_no_account_in_claims(self, mock_workos_user):
+    def test_me_endpoint_no_account_in_claims(self, mock_workos_user) -> None:
         """Test that /me endpoint handles missing account data in claims."""
         from tracertm.api.main import app
 

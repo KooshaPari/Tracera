@@ -14,7 +14,7 @@ from tracertm.models.agent import Agent
 class AgentRepository:
     """Repository for Agent operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -63,7 +63,8 @@ class AgentRepository:
         """Update agent status."""
         agent = await self.get_by_id(agent_id)
         if not agent:
-            raise ValueError(f"Agent {agent_id} not found")
+            msg = f"Agent {agent_id} not found"
+            raise ValueError(msg)
         agent.status = status
         await self.session.flush()
         await self.session.refresh(agent)
@@ -73,7 +74,8 @@ class AgentRepository:
         """Update agent last activity timestamp."""
         agent = await self.get_by_id(agent_id)
         if not agent:
-            raise ValueError(f"Agent {agent_id} not found")
+            msg = f"Agent {agent_id} not found"
+            raise ValueError(msg)
         agent.last_activity_at = datetime.now(UTC).isoformat()
         await self.session.flush()
         await self.session.refresh(agent)

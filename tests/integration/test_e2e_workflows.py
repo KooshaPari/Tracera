@@ -1,5 +1,4 @@
-"""
-End-to-end workflow tests for complete project lifecycle.
+"""End-to-end workflow tests for complete project lifecycle.
 
 Tests cover:
 - Project creation
@@ -31,7 +30,7 @@ pytestmark = pytest.mark.integration
 # ============================================================================
 
 
-def test_e2e_workflow_create_empty_project(db_session: Session):
+def test_e2e_workflow_create_empty_project(db_session: Session) -> None:
     """Test 1: Create an empty project."""
     project = Project(
         id=str(uuid4()),
@@ -52,7 +51,7 @@ def test_e2e_workflow_create_empty_project(db_session: Session):
     assert retrieved.name == "Test Project Alpha"
 
 
-def test_e2e_workflow_create_multiple_projects(db_session: Session):
+def test_e2e_workflow_create_multiple_projects(db_session: Session) -> None:
     """Test 2: Create multiple projects in sequence."""
     project_ids = []
     for i in range(5):
@@ -75,7 +74,7 @@ def test_e2e_workflow_create_multiple_projects(db_session: Session):
         assert retrieved is not None
 
 
-def test_e2e_workflow_project_metadata(db_session: Session):
+def test_e2e_workflow_project_metadata(db_session: Session) -> None:
     """Test 3: Create project with metadata."""
     metadata = {
         "team": "Platform",
@@ -103,7 +102,7 @@ def test_e2e_workflow_project_metadata(db_session: Session):
 # ============================================================================
 
 
-def test_e2e_workflow_add_single_item(db_session: Session):
+def test_e2e_workflow_add_single_item(db_session: Session) -> None:
     """Test 4: Add a single item to project."""
     project = Project(id=str(uuid4()), name="Item Test Project")
     db_session.add(project)
@@ -131,7 +130,7 @@ def test_e2e_workflow_add_single_item(db_session: Session):
     assert retrieved is not None
 
 
-def test_e2e_workflow_add_items_multiple_views(db_session: Session):
+def test_e2e_workflow_add_items_multiple_views(db_session: Session) -> None:
     """Test 5: Add items across different views (FEATURE, CODE, TEST, etc)."""
     project = Project(id=str(uuid4()), name="Multi-View Project")
     db_session.add(project)
@@ -164,7 +163,7 @@ def test_e2e_workflow_add_items_multiple_views(db_session: Session):
     assert [item.view for item in items] == ["FEATURE", "CODE", "TEST", "DESIGN", "REQUIREMENT"]
 
 
-def test_e2e_workflow_add_items_with_metadata(db_session: Session):
+def test_e2e_workflow_add_items_with_metadata(db_session: Session) -> None:
     """Test 6: Add items with custom metadata."""
     project = Project(id=str(uuid4()), name="Metadata Items Project")
     db_session.add(project)
@@ -195,7 +194,7 @@ def test_e2e_workflow_add_items_with_metadata(db_session: Session):
     assert retrieved.item_metadata == metadata
 
 
-def test_e2e_workflow_update_item_status(db_session: Session):
+def test_e2e_workflow_update_item_status(db_session: Session) -> None:
     """Test 7: Update item status through workflow."""
     project = Project(id=str(uuid4()), name="Status Update Project")
     db_session.add(project)
@@ -221,7 +220,7 @@ def test_e2e_workflow_update_item_status(db_session: Session):
         assert item.status == status
 
 
-def test_e2e_workflow_bulk_create_items(db_session: Session):
+def test_e2e_workflow_bulk_create_items(db_session: Session) -> None:
     """Test 8: Bulk create items (simulating large project setup)."""
     project = Project(id=str(uuid4()), name="Bulk Items Project")
     db_session.add(project)
@@ -255,7 +254,7 @@ def test_e2e_workflow_bulk_create_items(db_session: Session):
 # ============================================================================
 
 
-def test_e2e_workflow_create_single_link(db_session: Session):
+def test_e2e_workflow_create_single_link(db_session: Session) -> None:
     """Test 9: Create a single link between items."""
     project = Project(id=str(uuid4()), name="Link Test Project")
     db_session.add(project)
@@ -296,7 +295,7 @@ def test_e2e_workflow_create_single_link(db_session: Session):
     assert link.link_type == "implements"
 
 
-def test_e2e_workflow_create_multiple_link_types(db_session: Session):
+def test_e2e_workflow_create_multiple_link_types(db_session: Session) -> None:
     """Test 10: Create links with different link types."""
     project = Project(id=str(uuid4()), name="Link Types Project")
     db_session.add(project)
@@ -345,7 +344,7 @@ def test_e2e_workflow_create_multiple_link_types(db_session: Session):
     assert [link.link_type for link in links] == ["implements", "depends_on", "tests", "documents", "related_to"]
 
 
-def test_e2e_workflow_create_dependency_chain(db_session: Session):
+def test_e2e_workflow_create_dependency_chain(db_session: Session) -> None:
     """Test 11: Create a chain of dependencies (A -> B -> C -> D)."""
     project = Project(id=str(uuid4()), name="Dependency Chain Project")
     db_session.add(project)
@@ -353,16 +352,16 @@ def test_e2e_workflow_create_dependency_chain(db_session: Session):
 
     # Create items A, B, C, D
     item_a = Item(
-        id=f"A-{uuid4()}", project_id=project.id, title="Item A", view="FEATURE", item_type="feature", status="todo"
+        id=f"A-{uuid4()}", project_id=project.id, title="Item A", view="FEATURE", item_type="feature", status="todo",
     )
     item_b = Item(
-        id=f"B-{uuid4()}", project_id=project.id, title="Item B", view="FEATURE", item_type="feature", status="todo"
+        id=f"B-{uuid4()}", project_id=project.id, title="Item B", view="FEATURE", item_type="feature", status="todo",
     )
     item_c = Item(
-        id=f"C-{uuid4()}", project_id=project.id, title="Item C", view="FEATURE", item_type="feature", status="todo"
+        id=f"C-{uuid4()}", project_id=project.id, title="Item C", view="FEATURE", item_type="feature", status="todo",
     )
     item_d = Item(
-        id=f"D-{uuid4()}", project_id=project.id, title="Item D", view="FEATURE", item_type="feature", status="todo"
+        id=f"D-{uuid4()}", project_id=project.id, title="Item D", view="FEATURE", item_type="feature", status="todo",
     )
 
     db_session.add_all([item_a, item_b, item_c, item_d])
@@ -399,7 +398,7 @@ def test_e2e_workflow_create_dependency_chain(db_session: Session):
     assert len(links) >= 3
 
 
-def test_e2e_workflow_create_complex_graph(db_session: Session):
+def test_e2e_workflow_create_complex_graph(db_session: Session) -> None:
     """Test 12: Create a complex dependency graph with multiple connections."""
     project = Project(id=str(uuid4()), name="Complex Graph Project")
     db_session.add(project)
@@ -453,7 +452,7 @@ def test_e2e_workflow_create_complex_graph(db_session: Session):
 # ============================================================================
 
 
-def test_e2e_workflow_sync_project_state(db_session: Session):
+def test_e2e_workflow_sync_project_state(db_session: Session) -> None:
     """Test 13: Sync project state (verify consistency)."""
     project = Project(id=str(uuid4()), name="Sync Test Project")
     db_session.add(project)
@@ -494,7 +493,7 @@ def test_e2e_workflow_sync_project_state(db_session: Session):
     assert len(retrieved_links) >= 1
 
 
-def test_e2e_workflow_sync_with_item_updates(db_session: Session):
+def test_e2e_workflow_sync_with_item_updates(db_session: Session) -> None:
     """Test 14: Sync after updating items."""
     project = Project(id=str(uuid4()), name="Sync Update Project")
     db_session.add(project)
@@ -524,7 +523,7 @@ def test_e2e_workflow_sync_with_item_updates(db_session: Session):
     assert final.status == "done"
 
 
-def test_e2e_workflow_sync_event_creation(db_session: Session):
+def test_e2e_workflow_sync_event_creation(db_session: Session) -> None:
     """Test 15: Sync creates proper events for audit trail."""
     project = Project(id=str(uuid4()), name="Event Sync Project")
     db_session.add(project)
@@ -573,7 +572,7 @@ def test_e2e_workflow_sync_event_creation(db_session: Session):
 # ============================================================================
 
 
-def test_e2e_workflow_export_project_json(db_session: Session):
+def test_e2e_workflow_export_project_json(db_session: Session) -> None:
     """Test 16: Export project to JSON format."""
     project = Project(id=str(uuid4()), name="Export Test Project")
     db_session.add(project)
@@ -614,7 +613,7 @@ def test_e2e_workflow_export_project_json(db_session: Session):
     assert len(export_data["items"]) == 2
 
 
-def test_e2e_workflow_export_with_items_and_links(db_session: Session):
+def test_e2e_workflow_export_with_items_and_links(db_session: Session) -> None:
     """Test 17: Export project with items and links."""
     project = Project(id=str(uuid4()), name="Export Full Project")
     db_session.add(project)
@@ -662,7 +661,7 @@ def test_e2e_workflow_export_with_items_and_links(db_session: Session):
     assert len(export_data["items"]) >= 3
 
 
-def test_e2e_workflow_export_multiple_formats(db_session: Session):
+def test_e2e_workflow_export_multiple_formats(db_session: Session) -> None:
     """Test 18: Export project in multiple formats."""
     project = Project(id=str(uuid4()), name="Multi-Format Export")
     db_session.add(project)
@@ -692,7 +691,7 @@ def test_e2e_workflow_export_multiple_formats(db_session: Session):
 # ============================================================================
 
 
-def test_e2e_workflow_generate_traceability_matrix(db_session: Session):
+def test_e2e_workflow_generate_traceability_matrix(db_session: Session) -> None:
     """Test 19: Generate traceability matrix."""
     project = Project(id=str(uuid4()), name="Traceability Matrix Project")
     db_session.add(project)
@@ -745,7 +744,7 @@ def test_e2e_workflow_generate_traceability_matrix(db_session: Session):
     assert matrix["code"] == 1
 
 
-def test_e2e_workflow_analyze_impact(db_session: Session):
+def test_e2e_workflow_analyze_impact(db_session: Session) -> None:
     """Test 20: Analyze impact of item changes."""
     project = Project(id=str(uuid4()), name="Impact Analysis Project")
     db_session.add(project)
@@ -753,13 +752,13 @@ def test_e2e_workflow_analyze_impact(db_session: Session):
 
     # Create items
     item_a = Item(
-        id=f"A-{uuid4()}", project_id=project.id, title="Item A", view="FEATURE", item_type="feature", status="todo"
+        id=f"A-{uuid4()}", project_id=project.id, title="Item A", view="FEATURE", item_type="feature", status="todo",
     )
     item_b = Item(
-        id=f"B-{uuid4()}", project_id=project.id, title="Item B", view="FEATURE", item_type="feature", status="todo"
+        id=f"B-{uuid4()}", project_id=project.id, title="Item B", view="FEATURE", item_type="feature", status="todo",
     )
     item_c = Item(
-        id=f"C-{uuid4()}", project_id=project.id, title="Item C", view="FEATURE", item_type="feature", status="todo"
+        id=f"C-{uuid4()}", project_id=project.id, title="Item C", view="FEATURE", item_type="feature", status="todo",
     )
 
     db_session.add_all([item_a, item_b, item_c])
@@ -797,7 +796,7 @@ def test_e2e_workflow_analyze_impact(db_session: Session):
     assert isinstance(total_impact, int) and total_impact >= 0
 
 
-def test_e2e_workflow_coverage_analysis(db_session: Session):
+def test_e2e_workflow_coverage_analysis(db_session: Session) -> None:
     """Test 21: Analyze requirement coverage."""
     project = Project(id=str(uuid4()), name="Coverage Analysis Project")
     db_session.add(project)
@@ -866,7 +865,7 @@ def test_e2e_workflow_coverage_analysis(db_session: Session):
 # ============================================================================
 
 
-def test_e2e_workflow_complete_project_setup(db_session: Session):
+def test_e2e_workflow_complete_project_setup(db_session: Session) -> None:
     """Test 22: Complete project setup workflow."""
     # 1. Create project
     project = Project(
@@ -937,7 +936,7 @@ def test_e2e_workflow_complete_project_setup(db_session: Session):
         link_type="implements",
     )
     link3 = Link(
-        id=f"L3-{uuid4()}", project_id=project.id, source_item_id=code.id, target_item_id=test.id, link_type="tests"
+        id=f"L3-{uuid4()}", project_id=project.id, source_item_id=code.id, target_item_id=test.id, link_type="tests",
     )
 
     db_session.add_all([link1, link2, link3])
@@ -951,7 +950,7 @@ def test_e2e_workflow_complete_project_setup(db_session: Session):
     assert len(links) >= 3
 
 
-def test_e2e_workflow_agile_sprint_setup(db_session: Session):
+def test_e2e_workflow_agile_sprint_setup(db_session: Session) -> None:
     """Test 23: Agile sprint setup and progression."""
     project = Project(
         id=str(uuid4()),
@@ -1013,7 +1012,7 @@ def test_e2e_workflow_agile_sprint_setup(db_session: Session):
     assert len(verified_items) >= 9  # 3 stories + 6 tasks
 
 
-def test_e2e_workflow_cross_view_traceability(db_session: Session):
+def test_e2e_workflow_cross_view_traceability(db_session: Session) -> None:
     """Test 24: Traceability across multiple views."""
     project = Project(id=str(uuid4()), name="Cross-View Traceability")
     db_session.add(project)
@@ -1110,7 +1109,7 @@ def test_e2e_workflow_cross_view_traceability(db_session: Session):
     assert len(stored_links) >= 4
 
 
-def test_e2e_workflow_complete_lifecycle(db_session: Session):
+def test_e2e_workflow_complete_lifecycle(db_session: Session) -> None:
     """Test 25: Complete project lifecycle from creation to completion."""
     # Phase 1: Create project
     project = Project(
@@ -1211,7 +1210,7 @@ def test_e2e_workflow_complete_lifecycle(db_session: Session):
     assert export_data is not None
 
 
-def test_e2e_workflow_error_recovery(db_session: Session):
+def test_e2e_workflow_error_recovery(db_session: Session) -> None:
     """Test 26: Error recovery in workflow (test resilience)."""
     project = Project(id=str(uuid4()), name="Error Recovery Project")
     db_session.add(project)

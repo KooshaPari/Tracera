@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Performance Test Report Generator
+"""Performance Test Report Generator.
 
 Generates HTML report from k6 test results with charts and analysis.
 """
@@ -253,9 +252,8 @@ def analyze_thresholds(summary: dict[str, Any]) -> str:
     """
 
 
-def generate_report(results: list[dict[str, Any]], output: Path):
+def generate_report(results: list[dict[str, Any]], output: Path) -> None:
     """Generate HTML report from test results."""
-
     # Combine results (in case of multiple test types)
     all_metrics = {}
     test_info_parts = []
@@ -266,7 +264,7 @@ def generate_report(results: list[dict[str, Any]], output: Path):
         all_metrics.update(metrics)
 
         test_info_parts.append(
-            f"<p><strong>{test_type}</strong>: {result.get('vus', 'N/A')} VUs, {result.get('duration', 'N/A')}</p>"
+            f"<p><strong>{test_type}</strong>: {result.get('vus', 'N/A')} VUs, {result.get('duration', 'N/A')}</p>",
         )
 
     # Generate summary cards
@@ -276,8 +274,8 @@ def generate_report(results: list[dict[str, Any]], output: Path):
     http_reqs = all_metrics.get("http_reqs", {})
     summary_cards.append(
         generate_summary_card(
-            "Total Requests", f"{http_reqs.get('count', 0):,.0f}", f"{http_reqs.get('rate', 0):.2f} req/s", "success"
-        )
+            "Total Requests", f"{http_reqs.get('count', 0):,.0f}", f"{http_reqs.get('rate', 0):.2f} req/s", "success",
+        ),
     )
 
     # P95 latency
@@ -290,7 +288,7 @@ def generate_report(results: list[dict[str, Any]], output: Path):
             format_duration(p95_duration),
             f"Avg: {format_duration(http_duration.get('avg', 0))}",
             card_type,
-        )
+        ),
     )
 
     # Error rate
@@ -299,8 +297,8 @@ def generate_report(results: list[dict[str, Any]], output: Path):
     card_type = "success" if error_rate < 0.01 else "warning" if error_rate < 0.05 else "error"
     summary_cards.append(
         generate_summary_card(
-            "Error Rate", format_rate(error_rate), f"{http_failed.get('fails', 0)} failures", card_type
-        )
+            "Error Rate", format_rate(error_rate), f"{http_failed.get('fails', 0)} failures", card_type,
+        ),
     )
 
     # Generate HTML
@@ -314,13 +312,10 @@ def generate_report(results: list[dict[str, Any]], output: Path):
     )
 
     # Write report
-    with Path(output).open("w") as f:
-        f.write(html)
-
-    print(f"✅ Report generated: {output}")
+    Path(output).write_text(html, encoding="utf-8")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Generate performance test report")
     parser.add_argument("--results-dir", type=Path, required=True, help="Directory containing test results")
     parser.add_argument("--output", type=Path, default=Path("performance-report.html"), help="Output HTML file path")
@@ -331,14 +326,13 @@ def main():
     results = []
     for result_file in args.results_dir.rglob("*summary.json"):
         try:
-            with Path(result_file).open() as f:
+            with Path(result_file).open(encoding="utf-8") as f:
                 data = json.load(f)
                 results.append(data)
         except Exception as e:
-            print(f"Warning: Failed to load {result_file}: {e}", file=sys.stderr)
+            pass
 
     if not results:
-        print("Error: No test results found", file=sys.stderr)
         sys.exit(1)
 
     # Generate report

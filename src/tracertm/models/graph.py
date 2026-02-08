@@ -1,6 +1,4 @@
-"""
-Graph model for TraceRTM.
-"""
+"""Graph model for TraceRTM."""
 
 import uuid
 
@@ -19,9 +17,7 @@ def generate_graph_uuid() -> str:
 
 
 class Graph(Base, TimestampMixin):
-    """
-    Graph model representing a projection of nodes and edges.
-    """
+    """Graph model representing a projection of nodes and edges."""
 
     __tablename__ = "graphs"
     __table_args__ = (

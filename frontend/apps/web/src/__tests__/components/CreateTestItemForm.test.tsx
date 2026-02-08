@@ -51,7 +51,7 @@ describe(CreateTestItemForm, () => {
     const cancelButton = screen.getByRole('button', { name: /cancel/i });
     await user.click(cancelButton);
 
-    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(onCancel).toHaveBeenCalledOnce();
   });
 
   it('validates required fields on submit', async () => {
@@ -98,7 +98,7 @@ describe(CreateTestItemForm, () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(onSubmit).toHaveBeenCalledTimes(1);
+      expect(onSubmit).toHaveBeenCalledOnce();
     });
 
     // Verify submitted data structure

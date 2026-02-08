@@ -1,4 +1,4 @@
-"""Phase 7: Service Algorithm Deep Dive Tests
+"""Phase 7: Service Algorithm Deep Dive Tests.
 
 Complete coverage of complex service algorithms:
 - Impact analysis service internals
@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 class TestImpactAnalysisServiceInternals:
     """Test impact analysis service internal algorithms."""
 
-    def test_calculate_transitive_closure(self):
+    def test_calculate_transitive_closure(self) -> None:
         """Test transitive closure calculation."""
         # Graph: 1→2→3, 2→4, 4→5
         graph = {1: [2], 2: [3, 4], 3: [], 4: [5], 5: []}
@@ -41,7 +41,7 @@ class TestImpactAnalysisServiceInternals:
         assert 2 in result[1]
         assert 4 in result[1]
 
-    def test_calculate_impact_with_weights(self):
+    def test_calculate_impact_with_weights(self) -> None:
         """Test impact calculation with weighted edges."""
         # Weighted graph: edge weights represent impact magnitude
         graph = {
@@ -75,7 +75,7 @@ class TestImpactAnalysisServiceInternals:
         result = weighted_impact(1, graph)
         assert result[4] == max(0.8 * 0.7, 0.5 * 0.3)
 
-    def test_find_impact_paths(self):
+    def test_find_impact_paths(self) -> None:
         """Test finding all impact paths."""
         graph = {1: [2, 3], 2: [4], 3: [4], 4: []}
 
@@ -98,7 +98,7 @@ class TestImpactAnalysisServiceInternals:
         assert [1, 2, 4] in result
         assert [1, 3, 4] in result
 
-    def test_identify_impact_levels(self):
+    def test_identify_impact_levels(self) -> None:
         """Test identifying impact severity levels."""
         items = [
             {"id": 1, "impact_score": 0.95},
@@ -129,7 +129,7 @@ class TestImpactAnalysisServiceInternals:
         assert 3 in result["medium"]
         assert 4 in result["low"]
 
-    def test_detect_cascading_failures(self):
+    def test_detect_cascading_failures(self) -> None:
         """Test detecting cascading failure scenarios."""
         # Network: critical node is bottleneck
         graph = {1: [2], 2: [3], 3: [4, 5, 6], 4: [], 5: [], 6: []}
@@ -147,7 +147,7 @@ class TestImpactAnalysisServiceInternals:
         result = find_bottlenecks(graph)
         assert 3 in result  # Node 3 is bottleneck
 
-    def test_trace_impact_chain(self):
+    def test_trace_impact_chain(self) -> None:
         """Test tracing complete impact chain."""
         links = [
             {"source": 1, "target": 2},
@@ -172,13 +172,13 @@ class TestImpactAnalysisServiceInternals:
 
         result = build_chain(1, links)
         assert result[0] == 1
-        assert result[-1] in [3, 4, 5]
+        assert result[-1] in {3, 4, 5}
 
 
 class TestShortestPathServiceInternals:
     """Test shortest path service algorithm internals."""
 
-    def test_dijkstra_with_negative_weights(self):
+    def test_dijkstra_with_negative_weights(self) -> None:
         """Test Dijkstra behavior with negative weights."""
         # Should work with non-negative weights
         graph = {1: {2: 1, 3: 4}, 2: {3: 2, 4: 5}, 3: {4: 1}, 4: {}}
@@ -198,15 +198,14 @@ class TestShortestPathServiceInternals:
 
                 for neighbor, weight in graph.get(min_node, {}).items():
                     new_dist = dist[min_node] + weight
-                    if new_dist < dist[neighbor]:
-                        dist[neighbor] = new_dist
+                    dist[neighbor] = min(dist[neighbor], new_dist)
 
             return dist[end]
 
         result = dijkstra_detailed(1, 4, graph)
         assert result == 4  # 1→2→3→4 = 1+2+1
 
-    def test_bfs_vs_dijkstra_comparison(self):
+    def test_bfs_vs_dijkstra_comparison(self) -> None:
         """Test BFS vs Dijkstra on unweighted graph."""
         graph = {1: [2, 3], 2: [4], 3: [4], 4: []}
 
@@ -227,7 +226,7 @@ class TestShortestPathServiceInternals:
         result = bfs_distance(1, graph)
         assert result[4] == 2
 
-    def test_bidirectional_search(self):
+    def test_bidirectional_search(self) -> None:
         """Test bidirectional shortest path search."""
         graph = {1: [2, 3], 2: [4, 5], 3: [6], 4: [7], 5: [7], 6: [7], 7: []}
 
@@ -256,7 +255,7 @@ class TestShortestPathServiceInternals:
         assert result[0] == 1
         assert result[-1] == 7
 
-    def test_k_shortest_paths(self):
+    def test_k_shortest_paths(self) -> None:
         """Test finding k shortest paths."""
         graph = {1: {2: 1, 3: 4}, 2: {3: 2}, 3: {}}
 
@@ -264,7 +263,7 @@ class TestShortestPathServiceInternals:
             # Simple: find up to k shortest paths
             paths = []
 
-            def dfs(node, end, path, visited, paths_found):
+            def dfs(node, end, path, visited, paths_found) -> None:
                 if len(paths_found) >= k:
                     return
                 if node == end:
@@ -287,11 +286,11 @@ class TestShortestPathServiceInternals:
 class TestCacheServiceInternals:
     """Test cache service internal implementation."""
 
-    def test_cache_with_ttl_expiration(self):
+    def test_cache_with_ttl_expiration(self) -> None:
         """Test cache with TTL expiration logic."""
         cache = {}
 
-        def set_ttl(key, value, ttl_seconds):
+        def set_ttl(key, value, ttl_seconds) -> None:
             cache[key] = {"value": value, "expires": datetime.now() + timedelta(seconds=ttl_seconds)}
 
         def get_ttl(key):
@@ -309,12 +308,12 @@ class TestCacheServiceInternals:
         set_ttl("expire", "soon", -1)  # Already expired
         assert get_ttl("expire") is None
 
-    def test_lru_cache_ordering(self):
+    def test_lru_cache_ordering(self) -> None:
         """Test LRU cache maintains proper ordering."""
         from collections import OrderedDict
 
         class LRUCache:
-            def __init__(self, capacity):
+            def __init__(self, capacity) -> None:
                 self.cache = OrderedDict()
                 self.capacity = capacity
 
@@ -324,7 +323,7 @@ class TestCacheServiceInternals:
                 self.cache.move_to_end(key)
                 return self.cache[key]
 
-            def put(self, key, value):
+            def put(self, key, value) -> None:
                 if key in self.cache:
                     self.cache.move_to_end(key)
                 self.cache[key] = value
@@ -343,7 +342,7 @@ class TestCacheServiceInternals:
         lru.put("d", 4)  # Should evict 'a'
         assert lru.keys() == ["b", "c", "d"]
 
-    def test_cache_invalidation_patterns(self):
+    def test_cache_invalidation_patterns(self) -> None:
         """Test cache invalidation pattern matching."""
         cache = {
             "user:1": {"name": "Alice"},
@@ -363,7 +362,7 @@ class TestCacheServiceInternals:
         assert "user:1" not in cache
         assert "post:1" in cache
 
-    def test_cache_statistics_tracking(self):
+    def test_cache_statistics_tracking(self) -> None:
         """Test cache hit/miss statistics."""
         stats = {"hits": 0, "misses": 0}
         cache = {"key": "value"}
@@ -382,12 +381,12 @@ class TestCacheServiceInternals:
         assert stats["hits"] == 2
         assert stats["misses"] == 1
 
-    def test_cache_warm_preload(self):
+    def test_cache_warm_preload(self) -> None:
         """Test cache warming with preload."""
         cache = {}
         preload_data = {f"item:{i}": {"id": i, "data": f"data_{i}"} for i in range(1, 101)}
 
-        def warm_cache():
+        def warm_cache() -> None:
             cache.update(dict(preload_data.items()))
 
         warm_cache()
@@ -398,7 +397,7 @@ class TestCacheServiceInternals:
 class TestMaterializableViewService:
     """Test materialized view calculations."""
 
-    def test_view_materialization(self):
+    def test_view_materialization(self) -> None:
         """Test materializing a view from data."""
         items = [
             {"id": 1, "status": "active", "priority": "high"},
@@ -420,7 +419,7 @@ class TestMaterializableViewService:
         assert len(active_high) == 1
         assert active_high[0]["id"] == 1
 
-    def test_incremental_view_update(self):
+    def test_incremental_view_update(self) -> None:
         """Test incremental view updates."""
         view = {"total": 10, "active": 8, "inactive": 2}
 
@@ -437,7 +436,7 @@ class TestMaterializableViewService:
         assert view["total"] == 11
         assert view["active"] == 9
 
-    def test_view_consistency(self):
+    def test_view_consistency(self) -> None:
         """Test view consistency checks."""
         view = {"total": 10, "active": 6, "inactive": 4}
 
@@ -453,11 +452,11 @@ class TestMaterializableViewService:
 class TestTracingAndAuditing:
     """Test tracing and audit trail functionality."""
 
-    def test_audit_trail_recording(self):
+    def test_audit_trail_recording(self) -> None:
         """Test recording audit trail."""
         audit_log = []
 
-        def log_action(action, user, timestamp=None):
+        def log_action(action, user, timestamp=None) -> None:
             audit_log.append({"action": action, "user": user, "timestamp": timestamp or datetime.now()})
 
         log_action("create", "user1")
@@ -467,7 +466,7 @@ class TestTracingAndAuditing:
         assert len(audit_log) == 3
         assert audit_log[0]["action"] == "create"
 
-    def test_lineage_tracking(self):
+    def test_lineage_tracking(self) -> None:
         """Test data lineage tracking."""
         lineage = {"item_1": {"created_by": "user1", "modified_by": ["user2", "user3"], "children": [2, 3]}}
 
@@ -478,11 +477,11 @@ class TestTracingAndAuditing:
         assert result["created_by"] == "user1"
         assert "user2" in result["modified_by"]
 
-    def test_change_tracking(self):
+    def test_change_tracking(self) -> None:
         """Test change tracking."""
         changes = []
 
-        def track_change(item_id, field, old_value, new_value):
+        def track_change(item_id, field, old_value, new_value) -> None:
             changes.append({
                 "item_id": item_id,
                 "field": field,
@@ -501,7 +500,7 @@ class TestTracingAndAuditing:
 class TestPerformancePathOptimization:
     """Test performance path optimization algorithms."""
 
-    def test_query_optimization_path(self):
+    def test_query_optimization_path(self) -> None:
         """Test query optimization path."""
 
         def optimize_query(query):
@@ -518,7 +517,7 @@ class TestPerformancePathOptimization:
 
         assert optimize_query(optimized) > optimize_query(unoptimized)
 
-    def test_cache_hit_prediction(self):
+    def test_cache_hit_prediction(self) -> None:
         """Test cache hit prediction."""
 
         def predict_hit_rate(access_pattern):
@@ -531,7 +530,7 @@ class TestPerformancePathOptimization:
         assert 0 <= hit_rate <= 1
         assert hit_rate == 0.8
 
-    def test_parallel_path_execution(self):
+    def test_parallel_path_execution(self) -> None:
         """Test parallel execution paths."""
 
         def can_parallelize(tasks):

@@ -68,7 +68,7 @@ def sample_requests():
 
 
 async def make_request(
-    client: httpx.AsyncClient, request_data: dict[str, Any], headers: dict[str, str]
+    client: httpx.AsyncClient, request_data: dict[str, Any], headers: dict[str, str],
 ) -> tuple[int, float]:
     """Make a single HTTP request and measure response time.
 
@@ -110,7 +110,7 @@ class TestConcurrentRequests:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("concurrent_count", [1, 5, 10, 25])
-    async def test_concurrent_tools_list(self, auth_headers, concurrent_count):
+    async def test_concurrent_tools_list(self, auth_headers, concurrent_count) -> None:
         """Test concurrent tools/list requests."""
         request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
@@ -123,21 +123,15 @@ class TestConcurrentRequests:
             successful = [r for r in results if isinstance(r, tuple) and r[0] == 200]
             response_times = [r[1] for r in results if isinstance(r, tuple)]
 
-            print(f"\n{concurrent_count} concurrent requests:")
-            print(f"  Successful: {len(successful)}/{concurrent_count}")
             if response_times:
                 percentiles = calculate_percentiles(response_times)
-                print(
-                    f"  Response times: p50={percentiles['p50']:.2f}ms, "
-                    f"p95={percentiles['p95']:.2f}ms, p99={percentiles['p99']:.2f}ms"
-                )
 
             # Assertions
             assert len(successful) >= concurrent_count * 0.95  # 95% success rate
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("concurrent_count", [1, 5, 10])
-    async def test_concurrent_tool_calls(self, auth_headers, sample_requests, concurrent_count):
+    async def test_concurrent_tool_calls(self, auth_headers, sample_requests, concurrent_count) -> None:
         """Test concurrent tool call requests."""
         async with httpx.AsyncClient(base_url=MCP_BASE_URL, timeout=30.0) as client:
             tasks = []
@@ -149,17 +143,11 @@ class TestConcurrentRequests:
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
             # Analyze results
-            successful = [r for r in results if isinstance(r, tuple) and r[0] in [200, 201]]
+            successful = [r for r in results if isinstance(r, tuple) and r[0] in {200, 201}]
             response_times = [r[1] for r in results if isinstance(r, tuple)]
 
-            print(f"\n{concurrent_count} concurrent tool calls:")
-            print(f"  Successful: {len(successful)}/{concurrent_count}")
             if response_times:
                 percentiles = calculate_percentiles(response_times)
-                print(
-                    f"  Response times: p50={percentiles['p50']:.2f}ms, "
-                    f"p95={percentiles['p95']:.2f}ms, p99={percentiles['p99']:.2f}ms"
-                )
 
             assert len(successful) >= concurrent_count * 0.90  # 90% success rate
 
@@ -173,7 +161,7 @@ class TestResponseTime:
     """Test response time characteristics under load."""
 
     @pytest.mark.asyncio
-    async def test_response_time_baseline(self, auth_headers):
+    async def test_response_time_baseline(self, auth_headers) -> None:
         """Test baseline response time with no load."""
         request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
@@ -187,16 +175,11 @@ class TestResponseTime:
             avg_time = sum(response_times) / len(response_times)
             percentiles = calculate_percentiles(response_times)
 
-            print("\nBaseline response times:")
-            print(f"  Average: {avg_time:.2f}ms")
-            print(f"  p50: {percentiles['p50']:.2f}ms")
-            print(f"  p95: {percentiles['p95']:.2f}ms")
-
             # Baseline should be fast
             assert avg_time < 500  # < 500ms average
 
     @pytest.mark.asyncio
-    async def test_response_time_degradation(self, auth_headers):
+    async def test_response_time_degradation(self, auth_headers) -> None:
         """Test response time degradation under increasing load."""
         request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
@@ -214,9 +197,8 @@ class TestResponseTime:
                     percentiles = calculate_percentiles(response_times)
                     results_by_load[concurrent_count] = {"avg": avg_time, "p95": percentiles["p95"]}
 
-        print("\nResponse time degradation:")
         for load, metrics in results_by_load.items():
-            print(f"  {load} concurrent: avg={metrics['avg']:.2f}ms, p95={metrics['p95']:.2f}ms")
+            pass
 
         # p95 should stay reasonable even under load
         if 50 in results_by_load:
@@ -232,7 +214,7 @@ class TestConnectionPool:
     """Test connection pool behavior."""
 
     @pytest.mark.asyncio
-    async def test_connection_pool_limits(self, auth_headers):
+    async def test_connection_pool_limits(self, auth_headers) -> None:
         """Test connection pool limit handling."""
         request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
@@ -246,12 +228,11 @@ class TestConnectionPool:
 
             # All requests should complete despite pool limit
             successful = [r for r in results if isinstance(r, tuple) and r[0] == 200]
-            print(f"\nConnection pool test: {len(successful)}/20 successful")
 
             assert len(successful) >= 18  # 90% success rate
 
     @pytest.mark.asyncio
-    async def test_connection_reuse(self, auth_headers):
+    async def test_connection_reuse(self, auth_headers) -> None:
         """Test connection reuse efficiency."""
         request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
@@ -266,10 +247,6 @@ class TestConnectionPool:
             # Subsequent requests should be faster
             first_request = response_times[0]
             avg_subsequent = sum(response_times[1:]) / len(response_times[1:])
-
-            print("\nConnection reuse:")
-            print(f"  First request: {first_request:.2f}ms")
-            print(f"  Avg subsequent: {avg_subsequent:.2f}ms")
 
             # Subsequent requests should generally be faster
             # (or at least not significantly slower)
@@ -286,7 +263,7 @@ class TestResourceLeaks:
 
     @pytest.mark.asyncio
     @pytest.mark.slow
-    async def test_sustained_load_no_leaks(self, auth_headers):
+    async def test_sustained_load_no_leaks(self, auth_headers) -> None:
         """Test sustained load for resource leaks."""
         request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
@@ -309,16 +286,11 @@ class TestResourceLeaks:
                 # Small delay between requests
                 await asyncio.sleep(0.1)
 
-        print(f"\nSustained load test ({duration}s):")
-        print(f"  Total requests: {request_count}")
-        print(f"  Errors: {error_count}")
-        print(f"  Error rate: {error_count / request_count * 100:.2f}%")
-
         # Error rate should be low
         assert error_count / request_count < 0.05  # < 5% error rate
 
     @pytest.mark.asyncio
-    async def test_memory_stability(self, auth_headers):
+    async def test_memory_stability(self, auth_headers) -> None:
         """Test memory stability under load."""
         # This would ideally monitor memory usage
         # For now, just verify requests complete without errors
@@ -329,7 +301,7 @@ class TestResourceLeaks:
             # Make many requests
             for _ in range(100):
                 status, _ = await make_request(client, request_data, auth_headers)
-                assert status in [200, -1]  # Either success or connection error
+                assert status in {200, -1}  # Either success or connection error
 
         assert True  # Completed without crashes
 
@@ -343,7 +315,7 @@ class TestThroughput:
     """Test throughput measurement."""
 
     @pytest.mark.asyncio
-    async def test_max_throughput(self, auth_headers):
+    async def test_max_throughput(self, auth_headers) -> None:
         """Test maximum throughput (requests per second)."""
         request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
@@ -364,11 +336,6 @@ class TestThroughput:
             elapsed = time.time() - start_time
             throughput = request_count / elapsed
 
-            print("\nThroughput test:")
-            print(f"  Total requests: {request_count}")
-            print(f"  Duration: {elapsed:.2f}s")
-            print(f"  Throughput: {throughput:.2f} req/s")
-
             # Should handle at least 10 req/s
             assert throughput >= 10
 
@@ -382,7 +349,7 @@ class TestErrorScenarios:
     """Test error handling under load."""
 
     @pytest.mark.asyncio
-    async def test_invalid_requests_under_load(self, auth_headers):
+    async def test_invalid_requests_under_load(self, auth_headers) -> None:
         """Test handling invalid requests under load."""
         # Mix of valid and invalid requests
         valid_request = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
@@ -402,7 +369,7 @@ class TestErrorScenarios:
             assert len(results) == 20
 
     @pytest.mark.asyncio
-    async def test_timeout_handling(self, auth_headers):
+    async def test_timeout_handling(self, auth_headers) -> None:
         """Test timeout handling."""
         request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
@@ -417,7 +384,6 @@ class TestErrorScenarios:
                     results.append(-1)
 
             # Some requests may timeout
-            print(f"\nTimeout test: {results.count(200)}/10 successful")
             assert True  # Just verify no crashes
 
 

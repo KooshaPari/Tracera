@@ -1,5 +1,4 @@
-"""
-Comprehensive integration test suite for LinkService.
+"""Comprehensive integration test suite for LinkService.
 
 Tests all link functionality including:
 - All link types (depends_on, implements, tests, blocks, related_to, custom)
@@ -142,7 +141,7 @@ def cycle_detection_service(db_session):
 class TestLinkCreation:
     """Test basic link creation functionality."""
 
-    def test_create_simple_link(self, db_session, sample_project, sample_items_5):
+    def test_create_simple_link(self, db_session, sample_project, sample_items_5) -> None:
         """Test creating a simple link between two items."""
         link = Link(
             project_id=sample_project.id,
@@ -159,7 +158,7 @@ class TestLinkCreation:
         assert retrieved.target_item_id == sample_items_5[1].id
         assert retrieved.link_type == "depends_on"
 
-    def test_create_link_with_metadata(self, db_session, sample_project, sample_items_5):
+    def test_create_link_with_metadata(self, db_session, sample_project, sample_items_5) -> None:
         """Test creating a link with metadata."""
         metadata = {"priority": "high", "version": "1.0"}
         link = Link(
@@ -175,7 +174,7 @@ class TestLinkCreation:
         retrieved = db_session.query(Link).filter_by(id=link.id).first()
         assert retrieved.link_metadata == metadata
 
-    def test_create_link_generates_uuid(self, db_session, sample_project, sample_items_5):
+    def test_create_link_generates_uuid(self, db_session, sample_project, sample_items_5) -> None:
         """Test that link ID is auto-generated."""
         link = Link(
             project_id=sample_project.id,
@@ -190,7 +189,7 @@ class TestLinkCreation:
         assert len(link.id) > 0
         assert isinstance(link.id, str)
 
-    def test_create_link_timestamps(self, db_session, sample_project, sample_items_5):
+    def test_create_link_timestamps(self, db_session, sample_project, sample_items_5) -> None:
         """Test that link has created_at and updated_at timestamps."""
         link = Link(
             project_id=sample_project.id,
@@ -217,7 +216,7 @@ class TestAllLinkTypes:
     """Test support for all link types."""
 
     @pytest.mark.parametrize("link_type", ["depends_on", "implements", "tests", "blocks", "related_to", "custom_type"])
-    def test_all_standard_link_types(self, db_session, sample_project, sample_items_5, link_type):
+    def test_all_standard_link_types(self, db_session, sample_project, sample_items_5, link_type) -> None:
         """Test creating links of all standard types."""
         link = Link(
             project_id=sample_project.id,
@@ -232,7 +231,7 @@ class TestAllLinkTypes:
         assert retrieved is not None
         assert retrieved.link_type == link_type
 
-    def test_get_links_by_type(self, db_session, sample_project, sample_items_5):
+    def test_get_links_by_type(self, db_session, sample_project, sample_items_5) -> None:
         """Test filtering links by type."""
         # Create links of different types
         for i, link_type in enumerate(["depends_on", "implements", "tests"]):
@@ -258,7 +257,7 @@ class TestAllLinkTypes:
 class TestRelationshipValidation:
     """Test relationship validation logic."""
 
-    def test_same_source_and_target_self_reference(self, db_session, sample_project, sample_items_5):
+    def test_same_source_and_target_self_reference(self, db_session, sample_project, sample_items_5) -> None:
         """Test that self-referencing links are allowed but flagged."""
         link = Link(
             project_id=sample_project.id,
@@ -273,7 +272,7 @@ class TestRelationshipValidation:
         assert retrieved is not None
         assert retrieved.source_item_id == retrieved.target_item_id
 
-    def test_duplicate_links_creation(self, db_session, sample_project, sample_items_5):
+    def test_duplicate_links_creation(self, db_session, sample_project, sample_items_5) -> None:
         """Test creating duplicate links."""
         link1 = Link(
             project_id=sample_project.id,
@@ -303,7 +302,7 @@ class TestRelationshipValidation:
         )
         assert len(links) == 2
 
-    def test_bidirectional_links(self, db_session, sample_project, sample_items_5):
+    def test_bidirectional_links(self, db_session, sample_project, sample_items_5) -> None:
         """Test creating bidirectional links (A -> B and B -> A)."""
         link1 = Link(
             project_id=sample_project.id,
@@ -328,8 +327,8 @@ class TestRelationshipValidation:
         assert len(incoming) == 1
 
     def test_circular_dependency_detection_simple(
-        self, db_session, sample_project, sample_items_5, cycle_detection_service
-    ):
+        self, db_session, sample_project, sample_items_5, cycle_detection_service,
+    ) -> None:
         """Test detection of simple circular dependency (A -> B -> A)."""
         # A -> B
         link1 = Link(
@@ -351,13 +350,13 @@ class TestRelationshipValidation:
 
         # Check if cycle exists
         has_cycle = cycle_detection_service.has_cycle(
-            sample_project.id, sample_items_5[1].id, sample_items_5[0].id, "depends_on"
+            sample_project.id, sample_items_5[1].id, sample_items_5[0].id, "depends_on",
         )
         assert has_cycle is True
 
     def test_circular_dependency_complex_chain(
-        self, db_session, sample_project, sample_items_5, cycle_detection_service
-    ):
+        self, db_session, sample_project, sample_items_5, cycle_detection_service,
+    ) -> None:
         """Test detection of complex circular dependency (A -> B -> C -> A)."""
         links = [
             (sample_items_5[0].id, sample_items_5[1].id),
@@ -367,7 +366,7 @@ class TestRelationshipValidation:
 
         for source, target in links:
             link = Link(
-                project_id=sample_project.id, source_item_id=source, target_item_id=target, link_type="depends_on"
+                project_id=sample_project.id, source_item_id=source, target_item_id=target, link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
@@ -377,8 +376,8 @@ class TestRelationshipValidation:
         assert result.cycle_count > 0
 
     def test_no_circular_dependency_linear_chain(
-        self, db_session, sample_project, sample_items_5, cycle_detection_service
-    ):
+        self, db_session, sample_project, sample_items_5, cycle_detection_service,
+    ) -> None:
         """Test that linear chains don't trigger cycle detection."""
         # A -> B -> C -> D (no cycle)
         links = [
@@ -389,7 +388,7 @@ class TestRelationshipValidation:
 
         for source, target in links:
             link = Link(
-                project_id=sample_project.id, source_item_id=source, target_item_id=target, link_type="depends_on"
+                project_id=sample_project.id, source_item_id=source, target_item_id=target, link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
@@ -407,7 +406,7 @@ class TestRelationshipValidation:
 class TestDeletionCascades:
     """Test cascading deletion behavior."""
 
-    def test_delete_link_by_id(self, db_session, sample_project, sample_items_5):
+    def test_delete_link_by_id(self, db_session, sample_project, sample_items_5) -> None:
         """Test deleting a specific link."""
         link = Link(
             project_id=sample_project.id,
@@ -427,7 +426,7 @@ class TestDeletionCascades:
         retrieved = db_session.query(Link).filter_by(id=link_id).first()
         assert retrieved is None
 
-    def test_delete_item_cascades_to_links(self, db_session, sample_project, sample_items_5):
+    def test_delete_item_cascades_to_links(self, db_session, sample_project, sample_items_5) -> None:
         """Test that deleting an item should cascade to its links (FK constraint)."""
         # Create links involving sample_items_5[0]
         link1 = Link(
@@ -464,7 +463,7 @@ class TestDeletionCascades:
         item = db_session.query(Item).filter_by(id=sample_items_5[0].id).first()
         assert item is None
 
-    def test_delete_project_cascades_to_links(self, db_session, sample_project, sample_items_5):
+    def test_delete_project_cascades_to_links(self, db_session, sample_project, sample_items_5) -> None:
         """Test that deleting a project cascades to all its items and links."""
         # Create multiple links
         for i in range(4):
@@ -489,7 +488,7 @@ class TestDeletionCascades:
         project = db_session.query(Project).filter_by(id=sample_project.id).first()
         assert project is None
 
-    def test_delete_links_by_source_item(self, db_session, sample_project, sample_items_5):
+    def test_delete_links_by_source_item(self, db_session, sample_project, sample_items_5) -> None:
         """Test deleting all links from a source item."""
         # Create multiple links from item 0
         for i in range(1, 4):
@@ -510,7 +509,7 @@ class TestDeletionCascades:
         links = db_session.query(Link).filter_by(source_item_id=sample_items_5[0].id).all()
         assert len(links) == 0
 
-    def test_delete_links_by_target_item(self, db_session, sample_project, sample_items_5):
+    def test_delete_links_by_target_item(self, db_session, sample_project, sample_items_5) -> None:
         """Test deleting all links to a target item."""
         # Create multiple links to item 4
         for i in range(1, 4):
@@ -540,7 +539,7 @@ class TestDeletionCascades:
 class TestLinkRetrieval:
     """Test link retrieval and filtering functionality."""
 
-    def test_get_links_by_project(self, db_session, sample_project, sample_items_5):
+    def test_get_links_by_project(self, db_session, sample_project, sample_items_5) -> None:
         """Test retrieving all links in a project."""
         # Create multiple links
         for i in range(4):
@@ -556,7 +555,7 @@ class TestLinkRetrieval:
         links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
         assert len(links) == 4
 
-    def test_get_links_by_source_item(self, db_session, sample_project, sample_items_5):
+    def test_get_links_by_source_item(self, db_session, sample_project, sample_items_5) -> None:
         """Test retrieving links by source item."""
         # Create links from item 0
         for i in range(1, 4):
@@ -572,7 +571,7 @@ class TestLinkRetrieval:
         links = db_session.query(Link).filter_by(source_item_id=sample_items_5[0].id).all()
         assert len(links) == 3
 
-    def test_get_links_by_target_item(self, db_session, sample_project, sample_items_5):
+    def test_get_links_by_target_item(self, db_session, sample_project, sample_items_5) -> None:
         """Test retrieving links by target item."""
         # Create links to item 4
         for i in range(1, 4):
@@ -588,7 +587,7 @@ class TestLinkRetrieval:
         links = db_session.query(Link).filter_by(target_item_id=sample_items_5[4].id).all()
         assert len(links) == 3
 
-    def test_get_links_by_type(self, db_session, sample_project, sample_items_5):
+    def test_get_links_by_type(self, db_session, sample_project, sample_items_5) -> None:
         """Test retrieving links by type."""
         # Create links of different types
         for i, link_type in enumerate(["depends_on", "implements", "tests", "blocks"]):
@@ -605,7 +604,7 @@ class TestLinkRetrieval:
         assert len(depends_on) == 1
         assert depends_on[0].link_type == "depends_on"
 
-    def test_get_all_links_for_item_source_and_target(self, db_session, sample_project, sample_items_5):
+    def test_get_all_links_for_item_source_and_target(self, db_session, sample_project, sample_items_5) -> None:
         """Test getting all links connected to an item (source or target)."""
         # Create links where item 2 is both source and target
         link1 = Link(
@@ -641,7 +640,7 @@ class TestLinkRetrieval:
 class TestLinkMetrics:
     """Test link counting and metrics."""
 
-    def test_count_links_in_project(self, db_session, sample_project, sample_items_5):
+    def test_count_links_in_project(self, db_session, sample_project, sample_items_5) -> None:
         """Test counting links in a project."""
         for i in range(4):
             link = Link(
@@ -656,7 +655,7 @@ class TestLinkMetrics:
         count = db_session.query(func.count(Link.id)).filter_by(project_id=sample_project.id).scalar()
         assert count == 4
 
-    def test_count_links_by_type(self, db_session, sample_project, sample_items_5):
+    def test_count_links_by_type(self, db_session, sample_project, sample_items_5) -> None:
         """Test counting links by type."""
         link_types = ["depends_on", "implements", "tests"]
         for i, link_type in enumerate(link_types):
@@ -672,7 +671,7 @@ class TestLinkMetrics:
         count = db_session.query(func.count(Link.id)).filter_by(link_type="depends_on").scalar()
         assert count == 1
 
-    def test_count_outgoing_links_per_item(self, db_session, sample_project, sample_items_5):
+    def test_count_outgoing_links_per_item(self, db_session, sample_project, sample_items_5) -> None:
         """Test counting outgoing links per item."""
         for i in range(1, 4):
             link = Link(
@@ -687,7 +686,7 @@ class TestLinkMetrics:
         count = db_session.query(func.count(Link.id)).filter_by(source_item_id=sample_items_5[0].id).scalar()
         assert count == 3
 
-    def test_count_incoming_links_per_item(self, db_session, sample_project, sample_items_5):
+    def test_count_incoming_links_per_item(self, db_session, sample_project, sample_items_5) -> None:
         """Test counting incoming links per item."""
         for i in range(1, 4):
             link = Link(
@@ -711,7 +710,7 @@ class TestLinkMetrics:
 class TestLinkOrphans:
     """Test orphan detection (items with no links)."""
 
-    def test_detect_orphan_items(self, db_session, sample_project, sample_items_5, cycle_detection_service):
+    def test_detect_orphan_items(self, db_session, sample_project, sample_items_5, cycle_detection_service) -> None:
         """Test detecting items with no links."""
         # Create links only between first 3 items
         for i in range(2):
@@ -728,7 +727,7 @@ class TestLinkOrphans:
         assert result["has_orphans"] is True
         assert result["orphan_count"] >= 2  # Items 4 and at least one more
 
-    def test_no_orphan_items_all_linked(self, db_session, sample_project, sample_items_5, cycle_detection_service):
+    def test_no_orphan_items_all_linked(self, db_session, sample_project, sample_items_5, cycle_detection_service) -> None:
         """Test orphan detection when items have links."""
         # Link all items to item 0
         for i in range(1, 5):
@@ -746,7 +745,7 @@ class TestLinkOrphans:
         # So it should be considered having some linked items
         assert "has_orphans" in result
 
-    def test_detect_orphans_by_link_type(self, db_session, sample_project, sample_items_5, cycle_detection_service):
+    def test_detect_orphans_by_link_type(self, db_session, sample_project, sample_items_5, cycle_detection_service) -> None:
         """Test orphan detection filtered by link type."""
         # Create only depends_on links for first 3 items
         for i in range(2):
@@ -763,7 +762,7 @@ class TestLinkOrphans:
         result = cycle_detection_service.detect_orphans(sample_project.id, link_type="depends_on")
         assert result["has_orphans"] is True
 
-    def test_detect_missing_dependencies(self, db_session, sample_project, sample_items_5, cycle_detection_service):
+    def test_detect_missing_dependencies(self, db_session, sample_project, sample_items_5, cycle_detection_service) -> None:
         """Test detecting links to non-existent items."""
         # Create a link to a non-existent item
         link = Link(
@@ -789,7 +788,7 @@ class TestLinkOrphans:
 class TestImpactAnalysis:
     """Test impact analysis functionality."""
 
-    def test_analyze_impact_single_level(self, db_session, sample_project, sample_items_5, cycle_detection_service):
+    def test_analyze_impact_single_level(self, db_session, sample_project, sample_items_5, cycle_detection_service) -> None:
         """Test impact analysis with single level of dependencies."""
         # Item 0 -> Items 1, 2, 3 (forward dependencies)
         # Impact analysis looks for reverse dependencies (what depends on item 0)
@@ -809,7 +808,7 @@ class TestImpactAnalysis:
         # Impact analysis shows items that depend on the root
         assert "total_affected" in result
 
-    def test_analyze_impact_multi_level(self, db_session, sample_project, sample_items_20, cycle_detection_service):
+    def test_analyze_impact_multi_level(self, db_session, sample_project, sample_items_20, cycle_detection_service) -> None:
         """Test impact analysis with multiple dependency levels."""
         # Create reverse chain: 3 -> 2 -> 1 -> 0 (items depend on item 0)
         links_data = [(3, 2), (2, 1), (1, 0)]
@@ -828,8 +827,8 @@ class TestImpactAnalysis:
         assert "affected_items" in result
 
     def test_analyze_impact_respects_depth_limit(
-        self, db_session, sample_project, sample_items_20, cycle_detection_service
-    ):
+        self, db_session, sample_project, sample_items_20, cycle_detection_service,
+    ) -> None:
         """Test that impact analysis respects max_depth parameter."""
         # Create chain longer than max_depth
         for i in range(10):
@@ -856,7 +855,7 @@ class TestImpactAnalysis:
 class TestScaleAndPerformance:
     """Test performance at scale."""
 
-    def test_create_many_links_performance(self, db_session, sample_project, sample_items_20):
+    def test_create_many_links_performance(self, db_session, sample_project, sample_items_20) -> None:
         """Test creating 100+ links and verify performance."""
         start_time = time.time()
 
@@ -880,7 +879,7 @@ class TestScaleAndPerformance:
         assert count == 100
         assert elapsed < 10  # Should complete in < 10 seconds
 
-    def test_query_performance_large_link_set(self, db_session, sample_project, sample_items_20):
+    def test_query_performance_large_link_set(self, db_session, sample_project, sample_items_20) -> None:
         """Test query performance with 100+ links."""
         # Create 100 links
         for i in range(100):
@@ -903,7 +902,7 @@ class TestScaleAndPerformance:
         assert len(links) == 100
         assert elapsed < 1  # Should be very fast
 
-    def test_delete_bulk_links_performance(self, db_session, sample_project, sample_items_20):
+    def test_delete_bulk_links_performance(self, db_session, sample_project, sample_items_20) -> None:
         """Test bulk deleting links."""
         # Create 50 links from item 0
         for i in range(1, 20):
@@ -936,7 +935,7 @@ class TestScaleAndPerformance:
 class TestEdgeCases:
     """Test edge cases and error conditions."""
 
-    def test_link_with_empty_metadata(self, db_session, sample_project, sample_items_5):
+    def test_link_with_empty_metadata(self, db_session, sample_project, sample_items_5) -> None:
         """Test creating link with empty metadata."""
         link = Link(
             project_id=sample_project.id,
@@ -951,7 +950,7 @@ class TestEdgeCases:
         retrieved = db_session.query(Link).filter_by(id=link.id).first()
         assert retrieved.link_metadata == {}
 
-    def test_link_with_complex_metadata(self, db_session, sample_project, sample_items_5):
+    def test_link_with_complex_metadata(self, db_session, sample_project, sample_items_5) -> None:
         """Test creating link with complex nested metadata."""
         metadata = {"nested": {"level2": {"level3": ["value1", "value2"]}}, "array": [1, 2, 3], "string": "test"}
         link = Link(
@@ -967,7 +966,7 @@ class TestEdgeCases:
         retrieved = db_session.query(Link).filter_by(id=link.id).first()
         assert retrieved.link_metadata == metadata
 
-    def test_link_repr(self, db_session, sample_project, sample_items_5):
+    def test_link_repr(self, db_session, sample_project, sample_items_5) -> None:
         """Test link __repr__ method."""
         link = Link(
             project_id=sample_project.id,
@@ -982,7 +981,7 @@ class TestEdgeCases:
         assert "Link" in repr_str
         assert link.link_type in repr_str
 
-    def test_multiple_projects_isolation(self, db_session):
+    def test_multiple_projects_isolation(self, db_session) -> None:
         """Test that links are isolated by project."""
         # Create two projects
         proj1 = Project(id="proj-1", name="Project 1")
@@ -993,26 +992,26 @@ class TestEdgeCases:
 
         # Create items in both projects
         item1_p1 = Item(
-            id="item-1-p1", project_id=proj1.id, title="Item 1", view="FEATURE", item_type="feature", status="todo"
+            id="item-1-p1", project_id=proj1.id, title="Item 1", view="FEATURE", item_type="feature", status="todo",
         )
         item2_p1 = Item(
-            id="item-2-p1", project_id=proj1.id, title="Item 2", view="FEATURE", item_type="feature", status="todo"
+            id="item-2-p1", project_id=proj1.id, title="Item 2", view="FEATURE", item_type="feature", status="todo",
         )
         item1_p2 = Item(
-            id="item-1-p2", project_id=proj2.id, title="Item 1", view="FEATURE", item_type="feature", status="todo"
+            id="item-1-p2", project_id=proj2.id, title="Item 1", view="FEATURE", item_type="feature", status="todo",
         )
         item2_p2 = Item(
-            id="item-2-p2", project_id=proj2.id, title="Item 2", view="FEATURE", item_type="feature", status="todo"
+            id="item-2-p2", project_id=proj2.id, title="Item 2", view="FEATURE", item_type="feature", status="todo",
         )
         db_session.add_all([item1_p1, item2_p1, item1_p2, item2_p2])
         db_session.commit()
 
         # Create links in both projects
         link1 = Link(
-            project_id=proj1.id, source_item_id=item1_p1.id, target_item_id=item2_p1.id, link_type="depends_on"
+            project_id=proj1.id, source_item_id=item1_p1.id, target_item_id=item2_p1.id, link_type="depends_on",
         )
         link2 = Link(
-            project_id=proj2.id, source_item_id=item1_p2.id, target_item_id=item2_p2.id, link_type="depends_on"
+            project_id=proj2.id, source_item_id=item1_p2.id, target_item_id=item2_p2.id, link_type="depends_on",
         )
         db_session.add(link1)
         db_session.add(link2)
@@ -1026,7 +1025,7 @@ class TestEdgeCases:
         assert len(proj2_links) == 1
         assert proj1_links[0].id != proj2_links[0].id
 
-    def test_link_update_metadata(self, db_session, sample_project, sample_items_5):
+    def test_link_update_metadata(self, db_session, sample_project, sample_items_5) -> None:
         """Test updating link metadata."""
         link = Link(
             project_id=sample_project.id,
@@ -1056,7 +1055,7 @@ class TestAsyncOperations:
     """Test async link repository operations."""
 
     @pytest.mark.asyncio
-    async def test_async_link_repository_basic(self):
+    async def test_async_link_repository_basic(self) -> None:
         """Test basic async link repository operations."""
         # Create async engine and session
         engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
@@ -1094,7 +1093,7 @@ class TestAsyncOperations:
             # Create link using repository
             repo = LinkRepository(session)
             link = await repo.create(
-                project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
+                project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on",
             )
 
             assert link.id is not None
@@ -1104,7 +1103,7 @@ class TestAsyncOperations:
         await engine.dispose()
 
     @pytest.mark.asyncio
-    async def test_async_link_repository_get_operations(self):
+    async def test_async_link_repository_get_operations(self) -> None:
         """Test async link repository get operations."""
         # Create async engine and session
         engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
@@ -1150,7 +1149,7 @@ class TestAsyncOperations:
         await engine.dispose()
 
     @pytest.mark.asyncio
-    async def test_async_link_repository_delete(self):
+    async def test_async_link_repository_delete(self) -> None:
         """Test async link repository delete operation."""
         # Create async engine and session
         engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
@@ -1188,7 +1187,7 @@ class TestAsyncOperations:
             # Create and delete
             repo = LinkRepository(session)
             link = await repo.create(
-                project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
+                project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on",
             )
 
             result = await repo.delete(link.id)
@@ -1205,7 +1204,7 @@ class TestAsyncOperations:
 class TestCoverageSummary:
     """Test coverage summary."""
 
-    def test_coverage_summary(self):
+    def test_coverage_summary(self) -> None:
         """Summary of test coverage."""
         # This test documents the coverage achieved
         coverage_report = {

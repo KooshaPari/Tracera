@@ -67,7 +67,7 @@ def downgrade() -> None:
     # Remove linear_app_installation_id from integration_credentials
     op.drop_index("ix_integration_credentials_linear_app_installation_id", table_name="integration_credentials")
     op.drop_constraint(
-        "fk_integration_credentials_linear_app_installation_id", "integration_credentials", type_="foreignkey"
+        "fk_integration_credentials_linear_app_installation_id", "integration_credentials", type_="foreignkey",
     )
     op.drop_column("integration_credentials", "linear_app_installation_id")
 

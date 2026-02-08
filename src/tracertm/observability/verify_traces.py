@@ -14,7 +14,6 @@ import sys
 from typing import Any
 
 from opentelemetry import trace
-from opentelemetry.trace import Status, StatusCode
 
 # Configure logging
 logging.basicConfig(
@@ -39,7 +38,7 @@ async def verify_tracing_setup() -> dict[str, Any]:
 
     try:
         # Import and initialize tracing
-        from tracertm.observability import init_tracing, get_tracer
+        from tracertm.observability import get_tracer, init_tracing
 
         logger.info("Initializing OpenTelemetry tracing...")
 
@@ -48,10 +47,10 @@ async def verify_tracing_setup() -> dict[str, Any]:
         otlp_endpoint = os.getenv("OTLP_ENDPOINT", "127.0.0.1:4317")
         environment = os.getenv("TRACING_ENVIRONMENT", "development")
 
-        logger.info(f"Configuration:")
-        logger.info(f"  Service: {service_name}")
-        logger.info(f"  Endpoint: {otlp_endpoint}")
-        logger.info(f"  Environment: {environment}")
+        logger.info("Configuration:")
+        logger.info("  Service: %s", service_name)
+        logger.info("  Endpoint: %s", otlp_endpoint)
+        logger.info("  Environment: %s", environment)
 
         # Initialize tracing
         tracer = init_tracing(
@@ -90,9 +89,10 @@ async def verify_tracing_setup() -> dict[str, Any]:
         try:
             with tracer.start_as_current_span("test.error.operation") as span:
                 span.set_attribute("test.type", "error")
-                raise ValueError("Test error for verification")
+                msg = "Test error for verification"
+                raise ValueError(msg)
         except ValueError as e:
-            logger.info(f"Created error span with exception: {e}")
+            logger.info("Created error span with exception: %s", e)
 
         # Nested spans
         with tracer.start_as_current_span("test.parent.span") as parent_span:
@@ -114,13 +114,13 @@ async def verify_tracing_setup() -> dict[str, Any]:
 
     except ImportError as e:
         results["errors"].append(f"Import error: {e}")
-        logger.error(f"❌ Import error: {e}")
+        logger.exception("❌ Import error: %s", e)
     except RuntimeError as e:
         results["errors"].append(f"Runtime error: {e}")
-        logger.error(f"❌ Runtime error: {e}")
+        logger.exception("❌ Runtime error: %s", e)
     except Exception as e:
         results["errors"].append(f"Unexpected error: {e}")
-        logger.error(f"❌ Unexpected error: {e}")
+        logger.exception("❌ Unexpected error: %s", e)
 
     return results
 
@@ -208,12 +208,12 @@ async def main() -> None:
     logger.info("\nInstrumentation Packages:")
     for package, available in packages.items():
         status = "✅" if available else "⚠️ "
-        logger.info(f"  {status} {package}")
+        logger.info("  %s %s", status, package)
 
     if results["errors"]:
         logger.error("\nErrors encountered:")
         for error in results["errors"]:
-            logger.error(f"  ❌ {error}")
+            logger.error("  ❌ %s", error)
         sys.exit(1)
 
     if results["initialized"] and results["tracer_available"] and results["test_spans_created"]:

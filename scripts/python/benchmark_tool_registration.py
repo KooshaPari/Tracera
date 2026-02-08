@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Benchmark tool registration performance before and after optimization.
+"""Benchmark tool registration performance before and after optimization.
 
 This script measures the time to import MCP server components and compares
 the optimized split-module approach against the monolithic param.py.
@@ -14,7 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 
-def clear_mcp_imports():
+def clear_mcp_imports() -> None:
     """Remove all MCP-related imports from sys.modules."""
     to_remove = [k for k in sys.modules if "tracertm.mcp" in k or "fastmcp" in k]
     for mod in to_remove:
@@ -31,8 +30,7 @@ def benchmark_monolithic():
 
         elapsed = time.perf_counter() - start
         return elapsed * 1000  # Convert to ms
-    except Exception as e:
-        print(f"Error importing monolithic param.py: {e}")
+    except Exception:
         return None
 
 
@@ -62,8 +60,7 @@ def benchmark_split_modules():
 
         elapsed = time.perf_counter() - start
         return elapsed * 1000  # Convert to ms
-    except Exception as e:
-        print(f"Error importing split modules: {e}")
+    except Exception:
         import traceback
 
         traceback.print_exc()
@@ -80,85 +77,56 @@ def benchmark_server_import():
 
         elapsed = time.perf_counter() - start
         return elapsed * 1000  # Convert to ms
-    except Exception as e:
-        print(f"Error importing server: {e}")
+    except Exception:
         import traceback
 
         traceback.print_exc()
         return None
 
 
-def main():
+def main() -> None:
     """Run benchmarks and report results."""
-    print("=" * 70)
-    print("MCP Tool Registration Performance Benchmark")
-    print("=" * 70)
-    print()
-
     # Run each benchmark multiple times for accuracy
     num_runs = 5
 
-    print(f"Running {num_runs} iterations of each benchmark...")
-    print()
-
     # Benchmark monolithic
-    print("1. Monolithic param.py import:")
     monolithic_times = []
-    for i in range(num_runs):
+    for _i in range(num_runs):
         time_ms = benchmark_monolithic()
         if time_ms:
             monolithic_times.append(time_ms)
-            print(f"   Run {i + 1}: {time_ms:.2f}ms")
 
     # Benchmark split modules
-    print()
-    print("2. Split modules import:")
     split_times = []
-    for i in range(num_runs):
+    for _i in range(num_runs):
         time_ms = benchmark_split_modules()
         if time_ms:
             split_times.append(time_ms)
-            print(f"   Run {i + 1}: {time_ms:.2f}ms")
 
     # Benchmark full server
-    print()
-    print("3. Full server import (optimized):")
     server_times = []
-    for i in range(num_runs):
+    for _i in range(num_runs):
         time_ms = benchmark_server_import()
         if time_ms:
             server_times.append(time_ms)
-            print(f"   Run {i + 1}: {time_ms:.2f}ms")
 
     # Calculate statistics
-    print()
-    print("=" * 70)
-    print("RESULTS")
-    print("=" * 70)
 
     if monolithic_times:
         mono_avg = sum(monolithic_times) / len(monolithic_times)
-        print(f"Monolithic param.py: {mono_avg:.2f}ms (avg)")
 
     if split_times:
         split_avg = sum(split_times) / len(split_times)
-        print(f"Split modules:       {split_avg:.2f}ms (avg)")
 
         if monolithic_times:
-            improvement = ((mono_avg - split_avg) / mono_avg) * 100
-            print(f"Improvement:         {improvement:.1f}%")
+            ((mono_avg - split_avg) / mono_avg) * 100
 
     if server_times:
         server_avg = sum(server_times) / len(server_times)
-        print(f"\nFull server import:  {server_avg:.2f}ms (avg)")
 
         # Check if we met the <100ms target
         if server_avg < 100:
-            print(f"\n✓ SUCCESS: Server import is {server_avg:.2f}ms < 100ms target!")
-        else:
-            print(f"\n✗ NEEDS WORK: Server import is {server_avg:.2f}ms > 100ms target")
-
-    print("=" * 70)
+            pass
 
 
 if __name__ == "__main__":

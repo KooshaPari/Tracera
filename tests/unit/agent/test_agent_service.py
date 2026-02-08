@@ -34,7 +34,7 @@ class TestAgentServiceGetOrCreateSandbox:
         return AgentService(session_store=store)
 
     @pytest.mark.asyncio
-    async def test_get_or_create_returns_path_and_created(self, agent_service):
+    async def test_get_or_create_returns_path_and_created(self, agent_service) -> None:
         path, created = await agent_service.get_or_create_session_sandbox("s1")
         assert path
         assert await asyncio.to_thread(pathlib.Path(path).is_dir)
@@ -44,7 +44,7 @@ class TestAgentServiceGetOrCreateSandbox:
         assert created2 is False
 
     @pytest.mark.asyncio
-    async def test_get_or_create_empty_session_id_returns_none(self, agent_service):
+    async def test_get_or_create_empty_session_id_returns_none(self, agent_service) -> None:
         path, created = await agent_service.get_or_create_session_sandbox("")
         assert path is None
         assert created is False
@@ -53,14 +53,14 @@ class TestAgentServiceGetOrCreateSandbox:
         assert created2 is False
 
     @pytest.mark.asyncio
-    async def test_get_or_create_with_config_passes_to_store(self, agent_service):
+    async def test_get_or_create_with_config_passes_to_store(self, agent_service) -> None:
         config = SandboxConfig(project_id="proj-1")
         path, created = await agent_service.get_or_create_session_sandbox("s2", config=config)
         assert path
         assert created is True
 
     @pytest.mark.asyncio
-    async def test_get_or_create_publishes_event_when_created(self, store, base_dir):
+    async def test_get_or_create_publishes_event_when_created(self, store, base_dir) -> None:
         event_bus = AsyncMock()
         event_bus.publish = AsyncMock()
         agent_svc = AgentService(session_store=store, event_bus=event_bus)
@@ -93,7 +93,7 @@ class TestAgentServiceSimpleChatWithSandbox:
         return AgentService(session_store=store)
 
     @pytest.mark.asyncio
-    async def test_simple_chat_with_sandbox_calls_ai_and_returns_reply(self, agent_service):
+    async def test_simple_chat_with_sandbox_calls_ai_and_returns_reply(self, agent_service) -> None:
         messages = [{"role": "user", "content": "Hi"}]
         with patch("tracertm.services.ai_service.get_ai_service") as get_ai:
             mock_ai = MagicMock()
@@ -111,7 +111,7 @@ class TestAgentServiceSimpleChatWithSandbox:
             assert call_kw["messages"] == messages
 
     @pytest.mark.asyncio
-    async def test_simple_chat_without_session_id_uses_none_working_dir(self, agent_service):
+    async def test_simple_chat_without_session_id_uses_none_working_dir(self, agent_service) -> None:
         messages = [{"role": "user", "content": "Hi"}]
         with patch("tracertm.services.ai_service.get_ai_service") as get_ai:
             mock_ai = MagicMock()
@@ -127,7 +127,7 @@ class TestAgentServiceSimpleChatWithSandbox:
 class TestGetAgentService:
     """Test get_agent_service singleton."""
 
-    def test_get_agent_service_returns_agent_service(self):
+    def test_get_agent_service_returns_agent_service(self) -> None:
         import tracertm.agent.agent_service as mod
 
         try:

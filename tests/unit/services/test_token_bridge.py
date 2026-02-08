@@ -27,7 +27,7 @@ def token_bridge():
 class TestTokenBridgeInitialization:
     """Test token bridge initialization."""
 
-    def test_valid_configuration(self):
+    def test_valid_configuration(self) -> None:
         """Test token bridge with valid configuration."""
         bridge = TokenBridge(
             hs_secret=TEST_SECRET,
@@ -40,7 +40,7 @@ class TestTokenBridgeInitialization:
         assert bridge.audience == "client_test"
         assert bridge.issuer == "https://api.workos.com/"
 
-    def test_secret_too_short(self):
+    def test_secret_too_short(self) -> None:
         """Test that short secrets are rejected."""
         with pytest.raises(ValueError, match="at least 32 characters"):
             TokenBridge(
@@ -49,7 +49,7 @@ class TestTokenBridgeInitialization:
                 audience="client_test",
             )
 
-    def test_default_audience_from_env(self, monkeypatch):
+    def test_default_audience_from_env(self, monkeypatch) -> None:
         """Test audience defaults to WORKOS_CLIENT_ID."""
         monkeypatch.setenv("WORKOS_CLIENT_ID", "client_from_env")
         bridge = TokenBridge(
@@ -62,7 +62,7 @@ class TestTokenBridgeInitialization:
 class TestCreateBridgeToken:
     """Test service token creation."""
 
-    def test_creates_valid_hs256_token(self, token_bridge):
+    def test_creates_valid_hs256_token(self, token_bridge) -> None:
         """Test creating a valid HS256 service token."""
         user_id = "user_123"
         org_id = "org_456"
@@ -83,7 +83,7 @@ class TestCreateBridgeToken:
         assert decoded["org_id"] == org_id
         assert decoded["type"] == "service"
 
-    def test_token_expires_after_5_minutes(self, token_bridge):
+    def test_token_expires_after_5_minutes(self, token_bridge) -> None:
         """Test that service tokens have 5-minute TTL."""
         token = token_bridge.create_bridge_token("user_123", "org_456")
 
@@ -101,7 +101,7 @@ class TestCreateBridgeToken:
 
         assert 290 < expires_in < 310  # 5 min ± 10 sec tolerance
 
-    def test_custom_ttl(self, token_bridge):
+    def test_custom_ttl(self, token_bridge) -> None:
         """Test creating token with custom TTL."""
         token = token_bridge.create_bridge_token(
             "user_123",
@@ -126,7 +126,7 @@ class TestCreateBridgeToken:
 class TestValidateHS256Token:
     """Test HS256 service token validation."""
 
-    def test_valid_service_token(self, token_bridge):
+    def test_valid_service_token(self, token_bridge) -> None:
         """Test validating a valid service token."""
         token = token_bridge.create_bridge_token("user_123", "org_456")
 
@@ -135,7 +135,7 @@ class TestValidateHS256Token:
         assert claims["org_id"] == "org_456"
         assert claims["type"] == "service"
 
-    def test_wrong_secret(self, token_bridge):
+    def test_wrong_secret(self, token_bridge) -> None:
         """Test that wrong secret fails validation."""
         # Create token with different secret (test-only, not a real credential)
         wrong_secret = _TEST_WRONG_SECRET
@@ -153,7 +153,7 @@ class TestValidateHS256Token:
         with pytest.raises(jwt.InvalidTokenError):
             token_bridge._validate_hs256_token(wrong_token)
 
-    def test_expired_token(self, token_bridge):
+    def test_expired_token(self, token_bridge) -> None:
         """Test that expired tokens are rejected."""
         # Create expired token
         expired_token = jwt.encode(
@@ -171,7 +171,7 @@ class TestValidateHS256Token:
         with pytest.raises(jwt.ExpiredSignatureError):
             token_bridge._validate_hs256_token(expired_token)
 
-    def test_missing_type_claim_logs_warning(self, token_bridge, caplog):
+    def test_missing_type_claim_logs_warning(self, token_bridge, caplog) -> None:
         """Test that missing type=service logs a warning."""
         # Create token without type claim
         token = jwt.encode(
@@ -193,7 +193,7 @@ class TestValidateHS256Token:
 class TestValidateToken:
     """Test unified token validation (RS256 or HS256)."""
 
-    def test_validates_hs256_service_token(self, token_bridge):
+    def test_validates_hs256_service_token(self, token_bridge) -> None:
         """Test that ValidateToken accepts HS256 tokens."""
         token = token_bridge.create_bridge_token("user_123", "org_456")
 
@@ -203,17 +203,17 @@ class TestValidateToken:
         assert claims["org_id"] == "org_456"
         assert claims["type"] == "service"
 
-    def test_rejects_invalid_token(self, token_bridge):
+    def test_rejects_invalid_token(self, token_bridge) -> None:
         """Test that invalid tokens are rejected."""
         with pytest.raises(jwt.InvalidTokenError, match="validation failed"):
             token_bridge.validate_token("invalid.token.here")
 
-    def test_rejects_empty_token(self, token_bridge):
+    def test_rejects_empty_token(self, token_bridge) -> None:
         """Test that empty tokens are rejected."""
         with pytest.raises(jwt.InvalidTokenError):
             token_bridge.validate_token("")
 
-    def test_rejects_malformed_token(self, token_bridge):
+    def test_rejects_malformed_token(self, token_bridge) -> None:
         """Test that malformed tokens are rejected."""
         with pytest.raises(jwt.InvalidTokenError):
             token_bridge.validate_token("not-a-jwt")
@@ -222,7 +222,7 @@ class TestValidateToken:
 class TestGetTokenBridge:
     """Test token bridge factory function."""
 
-    def test_creates_bridge_from_env(self, monkeypatch):
+    def test_creates_bridge_from_env(self, monkeypatch) -> None:
         """Test creating bridge from environment variables."""
         monkeypatch.setenv("JWT_SECRET", TEST_SECRET)
         monkeypatch.setenv("WORKOS_JWKS_URL", TEST_JWKS_URL)
@@ -235,7 +235,7 @@ class TestGetTokenBridge:
         assert bridge.audience == "client_test"
         assert bridge.issuer == "https://api.workos.com/"
 
-    def test_constructs_default_jwks_url(self, monkeypatch):
+    def test_constructs_default_jwks_url(self, monkeypatch) -> None:
         """Test that JWKS URL is constructed from client ID if not provided."""
         monkeypatch.setenv("JWT_SECRET", TEST_SECRET)
         monkeypatch.setenv("WORKOS_CLIENT_ID", "client_abc123")
@@ -244,7 +244,7 @@ class TestGetTokenBridge:
         bridge = get_token_bridge()
         assert bridge.jwks_url == "https://api.workos.com/sso/jwks/client_abc123"
 
-    def test_custom_api_base_url(self, monkeypatch):
+    def test_custom_api_base_url(self, monkeypatch) -> None:
         """Test using custom WorkOS API base URL."""
         monkeypatch.setenv("JWT_SECRET", TEST_SECRET)
         monkeypatch.setenv("WORKOS_CLIENT_ID", "client_abc123")
@@ -254,7 +254,7 @@ class TestGetTokenBridge:
         bridge = get_token_bridge()
         assert bridge.jwks_url == "https://custom.workos.com/sso/jwks/client_abc123"
 
-    def test_missing_jwt_secret_raises_error(self, monkeypatch):
+    def test_missing_jwt_secret_raises_error(self, monkeypatch) -> None:
         """Test that missing JWT_SECRET raises error."""
         monkeypatch.delenv("JWT_SECRET", raising=False)
         monkeypatch.setenv("WORKOS_JWKS_URL", TEST_JWKS_URL)
@@ -262,7 +262,7 @@ class TestGetTokenBridge:
         with pytest.raises(ValueError, match="JWT_SECRET"):
             get_token_bridge()
 
-    def test_missing_jwks_url_and_client_id_raises_error(self, monkeypatch):
+    def test_missing_jwks_url_and_client_id_raises_error(self, monkeypatch) -> None:
         """Test that missing both JWKS_URL and CLIENT_ID raises error."""
         monkeypatch.setenv("JWT_SECRET", TEST_SECRET)
         monkeypatch.delenv("WORKOS_JWKS_URL", raising=False)
@@ -275,7 +275,7 @@ class TestGetTokenBridge:
 class TestRefreshJWKS:
     """Test JWKS refresh functionality."""
 
-    def test_refresh_jwks_creates_new_client(self, token_bridge):
+    def test_refresh_jwks_creates_new_client(self, token_bridge) -> None:
         """Test that refresh_jwks creates a new PyJWKClient."""
         old_client = token_bridge.jwks_client
         token_bridge.refresh_jwks()
@@ -289,7 +289,7 @@ class TestRefreshJWKS:
 class TestTokenBridgeIntegration:
     """Integration tests for token bridge."""
 
-    def test_roundtrip_service_token(self, token_bridge):
+    def test_roundtrip_service_token(self, token_bridge) -> None:
         """Test creating and validating a service token."""
         # Create token
         token = token_bridge.create_bridge_token("user_789", "org_xyz")
@@ -302,7 +302,7 @@ class TestTokenBridgeIntegration:
         assert claims["org_id"] == "org_xyz"
         assert claims["type"] == "service"
 
-    def test_token_lifecycle(self, token_bridge):
+    def test_token_lifecycle(self, token_bridge) -> None:
         """Test complete token lifecycle."""
         # 1. Create token
         token = token_bridge.create_bridge_token("user_123", "org_456")

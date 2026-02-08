@@ -1,5 +1,4 @@
-"""
-VHS Tape File Generator for QA Integration system.
+"""VHS Tape File Generator for QA Integration system.
 
 Provides a fluent API for generating VHS .tape files programmatically.
 VHS (charmbracelet/vhs) uses declarative .tape files to record terminal sessions.

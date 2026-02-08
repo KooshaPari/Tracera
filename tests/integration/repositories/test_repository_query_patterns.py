@@ -1,5 +1,4 @@
-"""
-Comprehensive integration tests for Repository query patterns.
+"""Comprehensive integration tests for Repository query patterns.
 
 Tests complex filtering, pagination, sorting, and aggregations across all repositories.
 Target coverage: 90%+ for query-related functionality.
@@ -149,7 +148,7 @@ async def setup_links(db_session: AsyncSession, setup_items: dict) -> dict[str, 
 class TestComplexFilters:
     """Test complex filtering patterns."""
 
-    async def test_filter_single_attribute(self, db_session: AsyncSession, setup_items: dict[str, Item]):
+    async def test_filter_single_attribute(self, db_session: AsyncSession, setup_items: dict[str, Item]) -> None:
         """Filter items by single attribute."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -159,7 +158,7 @@ class TestComplexFilters:
         assert len(todo_items) == 6  # items 1, 4, 6, 7, 8, and child2
         assert all(item.status == "todo" for item in todo_items)
 
-    async def test_filter_multiple_attributes(self, db_session: AsyncSession, setup_items: dict):
+    async def test_filter_multiple_attributes(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Filter items by multiple attributes."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -168,7 +167,7 @@ class TestComplexFilters:
         items = await repo.query(project_id, {"status": "todo", "priority": "high"})
         assert all(item.status == "todo" and item.priority == "high" for item in items)
 
-    async def test_filter_by_view(self, db_session: AsyncSession, setup_items: dict):
+    async def test_filter_by_view(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Filter items by view."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -177,7 +176,7 @@ class TestComplexFilters:
         assert all(item.view == "FEATURE" for item in feature_items)
         assert len(feature_items) > 0
 
-    async def test_filter_by_item_type(self, db_session: AsyncSession, setup_items: dict):
+    async def test_filter_by_item_type(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Filter items by type."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -185,7 +184,7 @@ class TestComplexFilters:
         bugs = await repo.query(project_id, {"item_type": "bug"})
         assert all(item.item_type == "bug" for item in bugs)
 
-    async def test_filter_by_priority(self, db_session: AsyncSession, setup_items: dict):
+    async def test_filter_by_priority(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Filter items by priority."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -193,7 +192,7 @@ class TestComplexFilters:
         high_priority = await repo.query(project_id, {"priority": "high"})
         assert all(item.priority == "high" for item in high_priority)
 
-    async def test_filter_with_nonexistent_status(self, db_session: AsyncSession, setup_items: dict):
+    async def test_filter_with_nonexistent_status(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Filter with status that doesn't exist."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -201,7 +200,7 @@ class TestComplexFilters:
         items = await repo.query(project_id, {"status": "nonexistent_status"})
         assert len(items) == 0
 
-    async def test_filter_with_parent_id(self, db_session: AsyncSession, setup_items: dict):
+    async def test_filter_with_parent_id(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Filter items by parent_id."""
         repo = ItemRepository(db_session)
         parent = setup_items["parent"]
@@ -211,7 +210,7 @@ class TestComplexFilters:
         assert len(children) == 2
         assert all(item.parent_id == parent.id for item in children)
 
-    async def test_filter_by_null_parent_id(self, db_session: AsyncSession, setup_items: dict):
+    async def test_filter_by_null_parent_id(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Filter items without parent (root items)."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -220,7 +219,7 @@ class TestComplexFilters:
         assert len(root_items) > 0
         assert all(item.parent_id is None for item in root_items)
 
-    async def test_filter_multiple_values_same_attribute(self, db_session: AsyncSession, setup_items: dict):
+    async def test_filter_multiple_values_same_attribute(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Filter with OR condition (multiple values for same attribute)."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -230,7 +229,7 @@ class TestComplexFilters:
         initial_count = len(items)
         assert initial_count > 0
 
-    async def test_get_by_view_with_status_filter(self, db_session: AsyncSession, setup_items: dict):
+    async def test_get_by_view_with_status_filter(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Get items by view with optional status filter."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -243,7 +242,7 @@ class TestComplexFilters:
         done_features = await repo.get_by_view(project_id, "FEATURE", status="done")
         assert all(item.view == "FEATURE" and item.status == "done" for item in done_features)
 
-    async def test_get_by_project_with_status_filter(self, db_session: AsyncSession, setup_items: dict):
+    async def test_get_by_project_with_status_filter(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Get items by project with optional status filter."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -266,7 +265,7 @@ class TestComplexFilters:
 class TestPagination:
     """Test pagination patterns."""
 
-    async def test_pagination_basic_first_page(self, db_session: AsyncSession, setup_items: dict):
+    async def test_pagination_basic_first_page(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Get first page with limit."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -274,7 +273,7 @@ class TestPagination:
         page = await repo.get_by_project(project_id, limit=5, offset=0)
         assert len(page) <= 5
 
-    async def test_pagination_basic_second_page(self, db_session: AsyncSession, setup_items: dict):
+    async def test_pagination_basic_second_page(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Get second page with offset."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -287,7 +286,7 @@ class TestPagination:
         page2_ids = {item.id for item in page2}
         assert len(page1_ids.intersection(page2_ids)) == 0
 
-    async def test_pagination_view_based(self, db_session: AsyncSession, setup_items: dict):
+    async def test_pagination_view_based(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Test pagination with get_by_view."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -298,7 +297,7 @@ class TestPagination:
         assert len(page1) > 0
         assert len(page2) >= 0
 
-    async def test_pagination_beyond_total(self, db_session: AsyncSession, setup_items: dict):
+    async def test_pagination_beyond_total(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Test pagination with offset beyond total items."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -311,7 +310,7 @@ class TestPagination:
         beyond = await repo.get_by_project(project_id, limit=5, offset=total + 10)
         assert len(beyond) == 0
 
-    async def test_pagination_limit_zero(self, db_session: AsyncSession, setup_items: dict):
+    async def test_pagination_limit_zero(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Test pagination with limit=0 (edge case)."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -320,7 +319,7 @@ class TestPagination:
         # SQLAlchemy limit(0) returns no results
         assert len(items) == 0
 
-    async def test_pagination_large_limit(self, db_session: AsyncSession, setup_items: dict):
+    async def test_pagination_large_limit(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Test pagination with very large limit."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -328,7 +327,7 @@ class TestPagination:
         items = await repo.get_by_project(project_id, limit=10000, offset=0)
         assert len(items) > 0
 
-    async def test_pagination_offset_negative(self, db_session: AsyncSession, setup_items: dict):
+    async def test_pagination_offset_negative(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Test pagination with negative offset (treated as 0)."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -341,7 +340,7 @@ class TestPagination:
         except Exception:
             pass
 
-    async def test_pagination_with_filter_and_limit(self, db_session: AsyncSession, setup_items: dict):
+    async def test_pagination_with_filter_and_limit(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Test pagination with filters applied."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -353,7 +352,7 @@ class TestPagination:
         for item in page1 + page2:
             assert item.status == "todo"
 
-    async def test_pagination_consistency(self, db_session: AsyncSession, setup_items: dict):
+    async def test_pagination_consistency(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Test that pagination is consistent across multiple calls."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -366,7 +365,7 @@ class TestPagination:
         ids2 = [item.id for item in page1_call2]
         assert ids1 == ids2
 
-    async def test_pagination_total_coverage(self, db_session: AsyncSession, setup_items: dict):
+    async def test_pagination_total_coverage(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Test that pagination covers all items without gap."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -398,7 +397,7 @@ class TestPagination:
 class TestSorting:
     """Test sorting patterns."""
 
-    async def test_sort_by_created_at_desc(self, db_session: AsyncSession, setup_items: dict):
+    async def test_sort_by_created_at_desc(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Items should be sorted by created_at descending."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -409,7 +408,7 @@ class TestSorting:
         for i in range(len(items) - 1):
             assert items[i].created_at >= items[i + 1].created_at
 
-    async def test_sort_by_created_at_within_view(self, db_session: AsyncSession, setup_items: dict):
+    async def test_sort_by_created_at_within_view(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Items within view should be sorted by created_at."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -420,7 +419,7 @@ class TestSorting:
         for i in range(len(items) - 1):
             assert items[i].created_at >= items[i + 1].created_at
 
-    async def test_consistent_sort_across_pages(self, db_session: AsyncSession, setup_items: dict):
+    async def test_consistent_sort_across_pages(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Sort order should be consistent across pages."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -432,7 +431,7 @@ class TestSorting:
         for i in range(len(combined) - 1):
             assert combined[i].created_at >= combined[i + 1].created_at
 
-    async def test_sort_preserves_data(self, db_session: AsyncSession, setup_items: dict):
+    async def test_sort_preserves_data(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Sorting should not modify item data."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -446,7 +445,7 @@ class TestSorting:
         assert found.title == setup_items["item1"].title
         assert found.status == setup_items["item1"].status
 
-    async def test_sort_with_filter(self, db_session: AsyncSession, setup_items: dict):
+    async def test_sort_with_filter(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Sort order should be maintained with filters."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -460,7 +459,7 @@ class TestSorting:
         for i in range(len(items) - 1):
             assert items[i].created_at >= items[i + 1].created_at
 
-    async def test_sort_title_consistency(self, db_session: AsyncSession, setup_items: dict):
+    async def test_sort_title_consistency(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Items with same created_at should maintain relative order."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -474,7 +473,7 @@ class TestSorting:
 
         assert ids1 == ids2
 
-    async def test_sort_with_pagination(self, db_session: AsyncSession, setup_items: dict):
+    async def test_sort_with_pagination(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Sorting with pagination should be consistent."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -491,7 +490,7 @@ class TestSorting:
 
         assert [item.id for item in combined] == [item.id for item in expected]
 
-    async def test_sort_stability_high_volume(self, db_session: AsyncSession):
+    async def test_sort_stability_high_volume(self, db_session: AsyncSession) -> None:
         """Test sort stability with many items."""
         repo = ItemRepository(db_session)
         proj_repo = ProjectRepository(db_session)
@@ -519,7 +518,7 @@ class TestSorting:
         assert ids1 == ids2
         assert len(ids1) == 50
 
-    async def test_list_all_items_ordered(self, db_session: AsyncSession, setup_items: dict):
+    async def test_list_all_items_ordered(self, db_session: AsyncSession, setup_items: dict) -> None:
         """list_all should return items in order."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -540,7 +539,7 @@ class TestSorting:
 class TestAggregations:
     """Test aggregation and counting patterns."""
 
-    async def test_count_by_status_basic(self, db_session: AsyncSession, setup_items: dict):
+    async def test_count_by_status_basic(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Count items by status."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -554,7 +553,7 @@ class TestAggregations:
         for count in counts.values():
             assert count > 0
 
-    async def test_count_by_status_empty_project(self, db_session: AsyncSession):
+    async def test_count_by_status_empty_project(self, db_session: AsyncSession) -> None:
         """Count by status on empty project."""
         repo = ItemRepository(db_session)
         proj_repo = ProjectRepository(db_session)
@@ -564,7 +563,7 @@ class TestAggregations:
 
         assert counts == {}
 
-    async def test_count_by_status_single_status(self, db_session: AsyncSession):
+    async def test_count_by_status_single_status(self, db_session: AsyncSession) -> None:
         """Count by status when all items have same status."""
         repo = ItemRepository(db_session)
         proj_repo = ProjectRepository(db_session)
@@ -586,7 +585,7 @@ class TestAggregations:
         assert counts.get("todo") == 5
         assert len(counts) == 1
 
-    async def test_count_by_status_multiple_statuses(self, db_session: AsyncSession):
+    async def test_count_by_status_multiple_statuses(self, db_session: AsyncSession) -> None:
         """Count by status with multiple different statuses."""
         repo = ItemRepository(db_session)
         proj_repo = ProjectRepository(db_session)
@@ -609,7 +608,7 @@ class TestAggregations:
         assert counts.get("in_progress") == 2
         assert counts.get("done") == 1
 
-    async def test_count_excludes_deleted(self, db_session: AsyncSession):
+    async def test_count_excludes_deleted(self, db_session: AsyncSession) -> None:
         """Count by status should exclude soft-deleted items."""
         repo = ItemRepository(db_session)
         proj_repo = ProjectRepository(db_session)
@@ -643,7 +642,7 @@ class TestAggregations:
         counts_after = await repo.count_by_status(project.id)
         assert counts_after.get("todo") == 1
 
-    async def test_query_result_count(self, db_session: AsyncSession, setup_items: dict):
+    async def test_query_result_count(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Verify query returns correct count."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -657,7 +656,7 @@ class TestAggregations:
         ])
         assert len(todo_items) == expected_count
 
-    async def test_count_by_view_manual(self, db_session: AsyncSession, setup_items: dict):
+    async def test_count_by_view_manual(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Manual count by view type."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -669,7 +668,7 @@ class TestAggregations:
         total = len(features) + len(bugs) + len(tasks)
         assert total > 0
 
-    async def test_count_by_priority_manual(self, db_session: AsyncSession, setup_items: dict):
+    async def test_count_by_priority_manual(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Manual count by priority."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -681,7 +680,7 @@ class TestAggregations:
         total = len(high) + len(medium) + len(low)
         assert total > 0
 
-    async def test_aggregation_with_hierarchical_items(self, db_session: AsyncSession, setup_items: dict):
+    async def test_aggregation_with_hierarchical_items(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Aggregation should count hierarchical items."""
         repo = ItemRepository(db_session)
         project_id = setup_items["parent"].project_id
@@ -691,7 +690,7 @@ class TestAggregations:
         # Should include parent and children
         assert sum(counts.values()) > 2
 
-    async def test_get_children_count(self, db_session: AsyncSession, setup_items: dict):
+    async def test_get_children_count(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Count direct children."""
         repo = ItemRepository(db_session)
         parent = setup_items["parent"]
@@ -701,7 +700,7 @@ class TestAggregations:
         assert len(children) == 2
         assert all(child.parent_id == parent.id for child in children)
 
-    async def test_get_descendants_count(self, db_session: AsyncSession, setup_items: dict):
+    async def test_get_descendants_count(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Count all descendants."""
         repo = ItemRepository(db_session)
         parent = setup_items["parent"]
@@ -710,7 +709,7 @@ class TestAggregations:
 
         assert len(descendants) >= 2  # At least the two direct children
 
-    async def test_get_ancestors_count(self, db_session: AsyncSession, setup_items: dict):
+    async def test_get_ancestors_count(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Count ancestors."""
         repo = ItemRepository(db_session)
         child = setup_items["child1"]
@@ -721,7 +720,7 @@ class TestAggregations:
         # Should contain the parent
         assert any(a.id == parent.id for a in ancestors)
 
-    async def test_status_distribution(self, db_session: AsyncSession):
+    async def test_status_distribution(self, db_session: AsyncSession) -> None:
         """Test distribution of statuses."""
         repo = ItemRepository(db_session)
         proj_repo = ProjectRepository(db_session)
@@ -751,7 +750,7 @@ class TestAggregations:
         assert counts["in_progress"] == 5
         assert counts["done"] == 3
 
-    async def test_complex_aggregation_query(self, db_session: AsyncSession, setup_items: dict):
+    async def test_complex_aggregation_query(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Test complex aggregation across multiple dimensions."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -779,7 +778,7 @@ class TestAggregations:
 class TestEdgeCases:
     """Test edge cases and boundary conditions."""
 
-    async def test_query_with_empty_filters(self, db_session: AsyncSession, setup_items: dict):
+    async def test_query_with_empty_filters(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Query with empty filter dict."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -790,7 +789,7 @@ class TestEdgeCases:
         all_items = await repo.list_all(project_id)
         assert len(items) > 0
 
-    async def test_query_with_nonexistent_attribute(self, db_session: AsyncSession, setup_items: dict):
+    async def test_query_with_nonexistent_attribute(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Query with attribute that doesn't exist on Item model."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -801,7 +800,7 @@ class TestEdgeCases:
         # Should still return results (filter skipped)
         assert isinstance(items, list)
 
-    async def test_query_unicode_string(self, db_session: AsyncSession):
+    async def test_query_unicode_string(self, db_session: AsyncSession) -> None:
         """Query with unicode characters."""
         repo = ItemRepository(db_session)
         proj_repo = ProjectRepository(db_session)
@@ -821,7 +820,7 @@ class TestEdgeCases:
         assert found is not None
         assert "🎉" in found.title
 
-    async def test_query_very_long_string(self, db_session: AsyncSession):
+    async def test_query_very_long_string(self, db_session: AsyncSession) -> None:
         """Query with very long string."""
         repo = ItemRepository(db_session)
         proj_repo = ProjectRepository(db_session)
@@ -840,7 +839,7 @@ class TestEdgeCases:
         found = next((i for i in items if i.id == item.id), None)
         assert found is not None
 
-    async def test_pagination_all_edge_values(self, db_session: AsyncSession, setup_items: dict):
+    async def test_pagination_all_edge_values(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Test pagination with edge case values."""
         repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -857,7 +856,7 @@ class TestEdgeCases:
         items = await repo.get_by_project(project_id, limit=5, offset=0)
         assert len(items) > 0
 
-    async def test_get_by_id_nonexistent(self, db_session: AsyncSession, setup_items: dict):
+    async def test_get_by_id_nonexistent(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Get item with nonexistent ID."""
         repo = ItemRepository(db_session)
 
@@ -865,8 +864,8 @@ class TestEdgeCases:
         assert item is None
 
     async def test_get_by_id_with_project_scope(
-        self, db_session: AsyncSession, setup_items: dict, setup_projects: dict
-    ):
+        self, db_session: AsyncSession, setup_items: dict, setup_projects: dict,
+    ) -> None:
         """Get by ID with project scoping."""
         repo = ItemRepository(db_session)
         item = setup_items["item1"]
@@ -880,7 +879,7 @@ class TestEdgeCases:
         found = await repo.get_by_id(item.id, project_id=other_project_id)
         assert found is None
 
-    async def test_list_by_view_empty(self, db_session: AsyncSession):
+    async def test_list_by_view_empty(self, db_session: AsyncSession) -> None:
         """List by view when no items exist."""
         repo = ItemRepository(db_session)
         proj_repo = ProjectRepository(db_session)
@@ -890,7 +889,7 @@ class TestEdgeCases:
         items = await repo.list_by_view(project.id, "NONEXISTENT_VIEW")
         assert items == []
 
-    async def test_count_status_after_restore(self, db_session: AsyncSession):
+    async def test_count_status_after_restore(self, db_session: AsyncSession) -> None:
         """Count should update after restore."""
         repo = ItemRepository(db_session)
         proj_repo = ProjectRepository(db_session)
@@ -919,7 +918,7 @@ class TestEdgeCases:
         counts_restored = await repo.count_by_status(project.id)
         assert counts_restored.get("todo") == 1
 
-    async def test_query_special_characters_in_title(self, db_session: AsyncSession):
+    async def test_query_special_characters_in_title(self, db_session: AsyncSession) -> None:
         """Query with special characters."""
         repo = ItemRepository(db_session)
         proj_repo = ProjectRepository(db_session)
@@ -949,7 +948,7 @@ class TestEdgeCases:
 class TestHierarchicalQueries:
     """Test hierarchical item queries."""
 
-    async def test_get_children_basic(self, db_session: AsyncSession, setup_items: dict):
+    async def test_get_children_basic(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Get direct children of an item."""
         repo = ItemRepository(db_session)
         parent = setup_items["parent"]
@@ -959,7 +958,7 @@ class TestHierarchicalQueries:
         assert len(children) == 2
         assert all(child.parent_id == parent.id for child in children)
 
-    async def test_get_descendants_recursive(self, db_session: AsyncSession, setup_items: dict):
+    async def test_get_descendants_recursive(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Get all descendants recursively."""
         repo = ItemRepository(db_session)
         parent = setup_items["parent"]
@@ -970,7 +969,7 @@ class TestHierarchicalQueries:
         parent_ids = {d.parent_id for d in descendants}
         assert parent.id in parent_ids
 
-    async def test_get_ancestors_recursive(self, db_session: AsyncSession, setup_items: dict):
+    async def test_get_ancestors_recursive(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Get all ancestors recursively."""
         repo = ItemRepository(db_session)
         child = setup_items["child1"]
@@ -980,7 +979,7 @@ class TestHierarchicalQueries:
 
         assert any(a.id == parent.id for a in ancestors)
 
-    async def test_hierarchical_query_no_parent(self, db_session: AsyncSession, setup_items: dict):
+    async def test_hierarchical_query_no_parent(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Query ancestors for item without parent."""
         repo = ItemRepository(db_session)
         root_item = setup_items["item1"]
@@ -990,7 +989,7 @@ class TestHierarchicalQueries:
         # Root item should have no ancestors
         assert len(ancestors) == 0
 
-    async def test_hierarchical_query_no_children(self, db_session: AsyncSession, setup_items: dict):
+    async def test_hierarchical_query_no_children(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Query children for leaf item."""
         repo = ItemRepository(db_session)
         child = setup_items["child1"]
@@ -1010,7 +1009,7 @@ class TestHierarchicalQueries:
 class TestLinkRepositoryQueries:
     """Test link repository query patterns."""
 
-    async def test_link_get_by_source(self, db_session: AsyncSession, setup_links: dict, setup_items: dict):
+    async def test_link_get_by_source(self, db_session: AsyncSession, setup_links: dict, setup_items: dict) -> None:
         """Get links by source item."""
         repo = LinkRepository(db_session)
         source_id = setup_items["item1"].id
@@ -1020,7 +1019,7 @@ class TestLinkRepositoryQueries:
         assert len(links) > 0
         assert all(link.source_item_id == source_id for link in links)
 
-    async def test_link_get_by_target(self, db_session: AsyncSession, setup_links: dict, setup_items: dict):
+    async def test_link_get_by_target(self, db_session: AsyncSession, setup_links: dict, setup_items: dict) -> None:
         """Get links by target item."""
         repo = LinkRepository(db_session)
         target_id = setup_items["item2"].id
@@ -1029,7 +1028,7 @@ class TestLinkRepositoryQueries:
 
         assert len(links) > 0 or len(links) == 0  # May or may not have links
 
-    async def test_link_get_by_type(self, db_session: AsyncSession, setup_links: dict):
+    async def test_link_get_by_type(self, db_session: AsyncSession, setup_links: dict) -> None:
         """Get links by type."""
         repo = LinkRepository(db_session)
 
@@ -1037,7 +1036,7 @@ class TestLinkRepositoryQueries:
 
         assert all(link.link_type == "relates_to" for link in relates_to_links)
 
-    async def test_link_query_all(self, db_session: AsyncSession, setup_links: dict):
+    async def test_link_query_all(self, db_session: AsyncSession, setup_links: dict) -> None:
         """Query all links in project."""
         repo = LinkRepository(db_session)
 
@@ -1048,7 +1047,7 @@ class TestLinkRepositoryQueries:
         links = await repo.get_all()
         assert len(links) > 0
 
-    async def test_link_count_by_type(self, db_session: AsyncSession, setup_links: dict):
+    async def test_link_count_by_type(self, db_session: AsyncSession, setup_links: dict) -> None:
         """Count links by type."""
         repo = LinkRepository(db_session)
 
@@ -1071,7 +1070,7 @@ class TestLinkRepositoryQueries:
 class TestMultiRepoQueries:
     """Test queries across multiple repositories."""
 
-    async def test_query_items_and_links(self, db_session: AsyncSession, setup_items: dict, setup_links: dict):
+    async def test_query_items_and_links(self, db_session: AsyncSession, setup_items: dict, setup_links: dict) -> None:
         """Query items and their related links."""
         item_repo = ItemRepository(db_session)
         link_repo = LinkRepository(db_session)
@@ -1087,7 +1086,7 @@ class TestMultiRepoQueries:
 
         assert isinstance(source_links, list)
 
-    async def test_filter_items_by_type_and_links(self, db_session: AsyncSession, setup_items: dict, setup_links: dict):
+    async def test_filter_items_by_type_and_links(self, db_session: AsyncSession, setup_items: dict, setup_links: dict) -> None:
         """Filter items by type and check links."""
         item_repo = ItemRepository(db_session)
         link_repo = LinkRepository(db_session)
@@ -1101,7 +1100,7 @@ class TestMultiRepoQueries:
             links = await link_repo.get_by_source(feature.id)
             assert isinstance(links, list)
 
-    async def test_hierarchical_with_links(self, db_session: AsyncSession, setup_items: dict, setup_links: dict):
+    async def test_hierarchical_with_links(self, db_session: AsyncSession, setup_items: dict, setup_links: dict) -> None:
         """Test hierarchical queries combined with link queries."""
         item_repo = ItemRepository(db_session)
         parent = setup_items["parent"]
@@ -1111,7 +1110,7 @@ class TestMultiRepoQueries:
 
         assert len(descendants) > 0
 
-    async def test_pagination_consistency_multi_repo(self, db_session: AsyncSession, setup_items: dict):
+    async def test_pagination_consistency_multi_repo(self, db_session: AsyncSession, setup_items: dict) -> None:
         """Pagination should be consistent across repos."""
         item_repo = ItemRepository(db_session)
         project_id = setup_items["item1"].project_id
@@ -1125,7 +1124,7 @@ class TestMultiRepoQueries:
         page2_ids = {item.id for item in page2}
         assert len(page1_ids.intersection(page2_ids)) == 0
 
-    async def test_complex_multi_repo_aggregation(self, db_session: AsyncSession, setup_items: dict, setup_links: dict):
+    async def test_complex_multi_repo_aggregation(self, db_session: AsyncSession, setup_items: dict, setup_links: dict) -> None:
         """Complex aggregation across repositories."""
         item_repo = ItemRepository(db_session)
         link_repo = LinkRepository(db_session)
@@ -1151,7 +1150,7 @@ class TestMultiRepoQueries:
 class TestProjectRepositoryQueries:
     """Test project repository query patterns."""
 
-    async def test_get_all_projects(self, db_session: AsyncSession, setup_projects: dict):
+    async def test_get_all_projects(self, db_session: AsyncSession, setup_projects: dict) -> None:
         """Get all projects."""
         repo = ProjectRepository(db_session)
 
@@ -1161,7 +1160,7 @@ class TestProjectRepositoryQueries:
         project_names = {p.name for p in all_projects}
         assert "Project 1" in project_names
 
-    async def test_get_project_by_name(self, db_session: AsyncSession, setup_projects: dict):
+    async def test_get_project_by_name(self, db_session: AsyncSession, setup_projects: dict) -> None:
         """Get project by name."""
         repo = ProjectRepository(db_session)
 
@@ -1170,7 +1169,7 @@ class TestProjectRepositoryQueries:
         assert project is not None
         assert project.name == "Project 1"
 
-    async def test_project_query_consistency(self, db_session: AsyncSession, setup_projects: dict):
+    async def test_project_query_consistency(self, db_session: AsyncSession, setup_projects: dict) -> None:
         """Query consistency for projects."""
         repo = ProjectRepository(db_session)
 

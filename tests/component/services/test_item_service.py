@@ -22,7 +22,7 @@ async def _seed_item(async_session, project_id="proj-1", status="todo"):
 
 
 @pytest.mark.asyncio
-async def test_update_item_logs_event_and_links(async_session):
+async def test_update_item_logs_event_and_links(async_session) -> None:
     item = await _seed_item(async_session)
     # create a target to link
     target = Item(
@@ -52,7 +52,7 @@ async def test_update_item_logs_event_and_links(async_session):
 
 
 @pytest.mark.asyncio
-async def test_delete_item_hard_and_soft(async_session):
+async def test_delete_item_hard_and_soft(async_session) -> None:
     await _seed_item(async_session)
     svc = ItemService(async_session)
 
@@ -71,14 +71,14 @@ async def test_delete_item_hard_and_soft(async_session):
 
 
 @pytest.mark.asyncio
-async def test_undelete_item_returns_none_when_missing(async_session):
+async def test_undelete_item_returns_none_when_missing(async_session) -> None:
     svc = ItemService(async_session)
     restored = await svc.undelete_item("missing", agent_id="agent")
     assert restored is None
 
 
 @pytest.mark.asyncio
-async def test_update_item_invalid_status_raises(async_session):
+async def test_update_item_invalid_status_raises(async_session) -> None:
     await _seed_item(async_session, status="todo")
     svc = ItemService(async_session)
     with pytest.raises(ValueError):

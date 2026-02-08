@@ -1,5 +1,4 @@
-"""
-Test Case model for TraceRTM Quality Engineering.
+"""Test Case model for TraceRTM Quality Engineering.
 
 Represents individual test cases with steps, expected results, and automation status.
 Supports lifecycle management from draft through approval to deprecation.
@@ -67,8 +66,7 @@ class AutomationStatus(StrEnum):
 
 
 class TestCase(Base, TimestampMixin):
-    """
-    Test Case model representing an individual test specification.
+    """Test Case model representing an individual test specification.
 
     Test cases define what to test, how to test it, and expected results.
     They can be linked to requirements for traceability and grouped into
@@ -106,7 +104,7 @@ class TestCase(Base, TimestampMixin):
 
     # Classification
     test_type: Mapped[str] = mapped_column(
-        String(50), nullable=False, default=TestCaseType.FUNCTIONAL.value, index=True
+        String(50), nullable=False, default=TestCaseType.FUNCTIONAL.value, index=True,
     )
     priority: Mapped[str] = mapped_column(String(20), nullable=False, default=TestCasePriority.MEDIUM.value, index=True)
     category: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
@@ -122,7 +120,7 @@ class TestCase(Base, TimestampMixin):
 
     # Automation
     automation_status: Mapped[str] = mapped_column(
-        String(50), nullable=False, default=AutomationStatus.NOT_AUTOMATED.value, index=True
+        String(50), nullable=False, default=AutomationStatus.NOT_AUTOMATED.value, index=True,
     )
     automation_script_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
     automation_framework: Mapped[str | None] = mapped_column(String(100), nullable=True)
@@ -188,8 +186,7 @@ class TestCase(Base, TimestampMixin):
 
 
 class TestCaseActivity(Base, TimestampMixin):
-    """
-    Activity log for test case changes.
+    """Activity log for test case changes.
 
     Tracks all status transitions and significant updates for audit trail.
     """

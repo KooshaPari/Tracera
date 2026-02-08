@@ -18,7 +18,7 @@ def _session():
     return Session(bind=engine)
 
 
-def _ensure_project(session, project_id):
+def _ensure_project(session, project_id) -> None:
     """Ensure a project exists before creating items (foreign key requirement)."""
     existing = session.query(Project).filter(Project.id == project_id).first()
     if not existing:
@@ -32,7 +32,7 @@ def _seed_items(session, project_id="proj-1"):
     _ensure_project(session, project_id)
 
     parent = Item(
-        id="p1", project_id=project_id, title="Parent", view="FEATURE", item_type="epic", status="in_progress"
+        id="p1", project_id=project_id, title="Parent", view="FEATURE", item_type="epic", status="in_progress",
     )
     child_done = Item(
         id="c1",
@@ -44,14 +44,14 @@ def _seed_items(session, project_id="proj-1"):
         parent_id="p1",
     )
     child_todo = Item(
-        id="c2", project_id=project_id, title="Todo", view="FEATURE", item_type="story", status="todo", parent_id="p1"
+        id="c2", project_id=project_id, title="Todo", view="FEATURE", item_type="story", status="todo", parent_id="p1",
     )
     session.add_all([parent, child_done, child_todo])
     session.commit()
     return parent, child_done, child_todo
 
 
-def test_calculate_completion_leaf():
+def test_calculate_completion_leaf() -> None:
     session = _session()
     # CRITICAL: Create project first to satisfy foreign key constraint
     _ensure_project(session, "proj")
@@ -64,7 +64,7 @@ def test_calculate_completion_leaf():
     assert svc.calculate_completion("i1") == 100.0
 
 
-def test_calculate_completion_parent_average():
+def test_calculate_completion_parent_average() -> None:
     session = _session()
     parent, child_done, child_todo = _seed_items(session)
     svc = ProgressService(session)
@@ -72,7 +72,7 @@ def test_calculate_completion_parent_average():
     assert pct == (100.0 + 0.0) / 2
 
 
-def test_get_blocked_items_returns_blockers():
+def test_get_blocked_items_returns_blockers() -> None:
     session = _session()
     # CRITICAL: Create project first to satisfy foreign key constraint
     _ensure_project(session, "proj")
@@ -93,7 +93,7 @@ def test_get_blocked_items_returns_blockers():
     assert results[0]["blockers"][0]["id"] == "blk1"
 
 
-def test_get_stalled_items_filters_by_threshold():
+def test_get_stalled_items_filters_by_threshold() -> None:
     session = _session()
     # CRITICAL: Create project first to satisfy foreign key constraint
     _ensure_project(session, "proj")
@@ -125,7 +125,7 @@ def test_get_stalled_items_filters_by_threshold():
     assert "old" in ids and "fresh" not in ids
 
 
-def test_calculate_velocity_counts_created_and_completed():
+def test_calculate_velocity_counts_created_and_completed() -> None:
     session = _session()
     # CRITICAL: Create project first to satisfy foreign key constraint
     _ensure_project(session, "proj")
@@ -135,7 +135,7 @@ def test_calculate_velocity_counts_created_and_completed():
     # Both done and created items will have created_at set to now by default
     # They will both be counted in items_created since they're in the 7-day window
     done = Item(
-        id="done", project_id="proj", title="Done", view="FEATURE", item_type="story", status="complete", updated_at=now
+        id="done", project_id="proj", title="Done", view="FEATURE", item_type="story", status="complete", updated_at=now,
     )
     created = Item(id="new", project_id="proj", title="New", view="FEATURE", item_type="story", status="todo")
     old_created = Item(

@@ -22,7 +22,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Create canonical_concepts table with pgvector support."""
-
     # Ensure pgvector extension is enabled
     op.execute("CREATE EXTENSION IF NOT EXISTS vector")
 

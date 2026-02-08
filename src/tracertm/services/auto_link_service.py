@@ -1,5 +1,4 @@
-"""
-Auto-linking service for Epic 4 (FR18).
+"""Auto-linking service for Epic 4 (FR18).
 
 Automatically links code commits to stories via commit message parsing.
 """
@@ -25,15 +24,14 @@ class AutoLinkService:
         r"story[-\s]?(\d+)",  # story-123 (case insensitive)
     ]
 
-    def __init__(self, session: Session):
+    def __init__(self, session: Session) -> None:
         """Initialize auto-linking service."""
         self.session = session
 
     def parse_commit_message(
-        self, project_id: str, commit_message: str, commit_hash: str | None = None
+        self, project_id: str, commit_message: str, commit_hash: str | None = None,
     ) -> list[tuple[str, str]]:
-        """
-        Parse commit message to extract story/item IDs (FR18).
+        """Parse commit message to extract story/item IDs (FR18).
 
         Args:
             project_id: Project ID
@@ -84,8 +82,7 @@ class AutoLinkService:
         code_item_id: str,
         commit_hash: str | None = None,
     ) -> list[Link]:
-        """
-        Create auto-links from commit message to code item (FR18).
+        """Create auto-links from commit message to code item (FR18).
 
         Args:
             project_id: Project ID
@@ -137,8 +134,7 @@ class AutoLinkService:
         return created_links
 
     def _determine_link_type(self, commit_message: str) -> str:
-        """
-        Determine link type from commit message keywords.
+        """Determine link type from commit message keywords.
 
         Args:
             commit_message: Commit message text

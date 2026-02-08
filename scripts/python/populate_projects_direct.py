@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Populate incomplete projects with rich, authentic mock data.
+"""Populate incomplete projects with rich, authentic mock data.
 Creates items directly in .trace/ directories (bypasses database).
 """
 
@@ -91,12 +90,9 @@ def create_item_markdown(
     return external_id
 
 
-def populate_demo_project():
+def populate_demo_project() -> None:
     """Populate DEMO_PROJECT with rich e-commerce data."""
     project_path = "./samples/DEMO_PROJECT"
-    print(f"\n{'=' * 60}")
-    print("Populating DEMO_PROJECT: E-Commerce Platform")
-    print(f"{'=' * 60}\n")
 
     # Epic 1: User Authentication (already exists)
     epic1_id = "EPIC-001"
@@ -126,8 +122,7 @@ def populate_demo_project():
     ]
 
     for title, desc, priority in stories:
-        story_id = create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic1_id)
-        print(f"  ✓ Created {story_id}: {title}")
+        create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic1_id)
 
     # Epic 2: Product Catalog
     epic2_id = create_item_markdown(
@@ -139,7 +134,6 @@ def populate_demo_project():
         "in_progress",
         "high",
     )
-    print(f"  ✓ Created {epic2_id}: Product Catalog & Search")
 
     catalog_stories = [
         (
@@ -175,8 +169,7 @@ def populate_demo_project():
     ]
 
     for title, desc, priority in catalog_stories:
-        story_id = create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic2_id)
-        print(f"    ✓ Created {story_id}: {title}")
+        create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic2_id)
 
     # Epic 3: Shopping Cart & Checkout
     epic3_id = create_item_markdown(
@@ -188,7 +181,6 @@ def populate_demo_project():
         "todo",
         "critical",
     )
-    print(f"  ✓ Created {epic3_id}: Shopping Cart & Checkout")
 
     checkout_stories = [
         (
@@ -229,8 +221,7 @@ def populate_demo_project():
     ]
 
     for title, desc, priority in checkout_stories:
-        story_id = create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic3_id)
-        print(f"    ✓ Created {story_id}: {title}")
+        create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic3_id)
 
     # API Endpoints
     api_endpoints = [
@@ -289,10 +280,8 @@ def populate_demo_project():
         ("GET /api/orders", "List user's orders with pagination and status filtering.", "medium"),
     ]
 
-    print("\n  Creating API Endpoints...")
     for title, desc, priority in api_endpoints:
-        endpoint_id = create_item_markdown(project_path, title, "API", "endpoint", desc, "todo", priority)
-        print(f"    ✓ Created {endpoint_id}: {title}")
+        create_item_markdown(project_path, title, "API", "endpoint", desc, "todo", priority)
 
     # Database Tables
     db_tables = [
@@ -348,10 +337,8 @@ def populate_demo_project():
         ),
     ]
 
-    print("\n  Creating Database Tables...")
     for title, desc, priority in db_tables:
-        table_id = create_item_markdown(project_path, title, "DATABASE", "table", desc, "todo", priority)
-        print(f"    ✓ Created {table_id}: {title}")
+        create_item_markdown(project_path, title, "DATABASE", "table", desc, "todo", priority)
 
     # Test Cases
     test_cases = [
@@ -397,10 +384,8 @@ def populate_demo_project():
         ),
     ]
 
-    print("\n  Creating Test Cases...")
     for title, desc, priority in test_cases:
-        test_id = create_item_markdown(project_path, title, "TEST", "test_case", desc, "todo", priority)
-        print(f"    ✓ Created {test_id}: {title}")
+        create_item_markdown(project_path, title, "TEST", "test_case", desc, "todo", priority)
 
     # Wireframes/Screens
     screens = [
@@ -451,10 +436,8 @@ def populate_demo_project():
         ),
     ]
 
-    print("\n  Creating Wireframes/Screens...")
     for title, desc, priority in screens:
-        screen_id = create_item_markdown(project_path, title, "WIREFRAME", "screen", desc, "todo", priority)
-        print(f"    ✓ Created {screen_id}: {title}")
+        create_item_markdown(project_path, title, "WIREFRAME", "screen", desc, "todo", priority)
 
     # Tasks for implementation
     tasks = [
@@ -496,13 +479,11 @@ def populate_demo_project():
         ),
     ]
 
-    print("\n  Creating Tasks...")
     for title, desc, priority, parent in tasks:
-        task_id = create_item_markdown(project_path, title, "FEATURE", "task", desc, "todo", priority, None, parent)
-        print(f"    ✓ Created {task_id}: {title}")
+        create_item_markdown(project_path, title, "FEATURE", "task", desc, "todo", priority, None, parent)
 
 
-def populate_frontend_project():
+def populate_frontend_project() -> None:
     """Populate frontend project with React/UI components."""
     project_path = "./frontend"
 
@@ -521,10 +502,6 @@ def populate_frontend_project():
         with project_yaml.open("w") as f:
             yaml.dump(config, f, default_flow_style=False)
 
-    print(f"\n{'=' * 60}")
-    print("Populating frontend: Frontend Application")
-    print(f"{'=' * 60}\n")
-
     # Epic: Component Library
     epic1_id = create_item_markdown(
         project_path,
@@ -535,7 +512,6 @@ def populate_frontend_project():
         "in_progress",
         "high",
     )
-    print(f"  ✓ Created {epic1_id}: Design System & Component Library")
 
     component_stories = [
         (
@@ -581,8 +557,7 @@ def populate_frontend_project():
     ]
 
     for title, desc, priority in component_stories:
-        story_id = create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic1_id)
-        print(f"    ✓ Created {story_id}: {title}")
+        create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic1_id)
 
     # Epic: Authentication UI
     epic2_id = create_item_markdown(
@@ -594,7 +569,6 @@ def populate_frontend_project():
         "todo",
         "high",
     )
-    print(f"  ✓ Created {epic2_id}: Authentication UI")
 
     auth_stories = [
         (
@@ -625,8 +599,7 @@ def populate_frontend_project():
     ]
 
     for title, desc, priority in auth_stories:
-        story_id = create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic2_id)
-        print(f"    ✓ Created {story_id}: {title}")
+        create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic2_id)
 
     # Epic: Product Catalog UI
     epic3_id = create_item_markdown(
@@ -638,7 +611,6 @@ def populate_frontend_project():
         "todo",
         "high",
     )
-    print(f"  ✓ Created {epic3_id}: Product Catalog UI")
 
     catalog_stories = [
         (
@@ -664,8 +636,7 @@ def populate_frontend_project():
     ]
 
     for title, desc, priority in catalog_stories:
-        story_id = create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic3_id)
-        print(f"    ✓ Created {story_id}: {title}")
+        create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic3_id)
 
     # Code Components (React)
     react_components = [
@@ -721,10 +692,8 @@ def populate_frontend_project():
         ),
     ]
 
-    print("\n  Creating React Components...")
     for title, desc, priority in react_components:
-        comp_id = create_item_markdown(project_path, title, "CODE", "file", desc, "todo", priority)
-        print(f"    ✓ Created {comp_id}: {title}")
+        create_item_markdown(project_path, title, "CODE", "file", desc, "todo", priority)
 
     # Wireframes
     wireframes = [
@@ -755,13 +724,11 @@ def populate_frontend_project():
         ),
     ]
 
-    print("\n  Creating Wireframes...")
     for title, desc, priority in wireframes:
-        wireframe_id = create_item_markdown(project_path, title, "WIREFRAME", "screen", desc, "todo", priority)
-        print(f"    ✓ Created {wireframe_id}: {title}")
+        create_item_markdown(project_path, title, "WIREFRAME", "screen", desc, "todo", priority)
 
 
-def populate_backend_project():
+def populate_backend_project() -> None:
     """Populate backend project with API and service data."""
     project_path = "./backend"
 
@@ -780,10 +747,6 @@ def populate_backend_project():
         with project_yaml.open("w") as f:
             yaml.dump(config, f, default_flow_style=False)
 
-    print(f"\n{'=' * 60}")
-    print("Populating backend: Backend API")
-    print(f"{'=' * 60}\n")
-
     # Epic: Authentication Service
     epic1_id = create_item_markdown(
         project_path,
@@ -794,7 +757,6 @@ def populate_backend_project():
         "in_progress",
         "critical",
     )
-    print(f"  ✓ Created {epic1_id}: Authentication & Authorization Service")
 
     auth_stories = [
         (
@@ -830,8 +792,7 @@ def populate_backend_project():
     ]
 
     for title, desc, priority in auth_stories:
-        story_id = create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic1_id)
-        print(f"    ✓ Created {story_id}: {title}")
+        create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic1_id)
 
     # Epic: Product Service
     epic2_id = create_item_markdown(
@@ -843,7 +804,6 @@ def populate_backend_project():
         "todo",
         "high",
     )
-    print(f"  ✓ Created {epic2_id}: Product Management Service")
 
     product_stories = [
         (
@@ -879,8 +839,7 @@ def populate_backend_project():
     ]
 
     for title, desc, priority in product_stories:
-        story_id = create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic2_id)
-        print(f"    ✓ Created {story_id}: {title}")
+        create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic2_id)
 
     # Epic: Order Processing Service
     epic3_id = create_item_markdown(
@@ -892,7 +851,6 @@ def populate_backend_project():
         "todo",
         "critical",
     )
-    print(f"  ✓ Created {epic3_id}: Order Processing Service")
 
     order_stories = [
         (
@@ -923,8 +881,7 @@ def populate_backend_project():
     ]
 
     for title, desc, priority in order_stories:
-        story_id = create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic3_id)
-        print(f"    ✓ Created {story_id}: {title}")
+        create_item_markdown(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic3_id)
 
     # API Endpoints
     api_endpoints = [
@@ -1010,10 +967,8 @@ def populate_backend_project():
         ),
     ]
 
-    print("\n  Creating API Endpoints...")
     for title, desc, priority in api_endpoints:
-        endpoint_id = create_item_markdown(project_path, title, "API", "endpoint", desc, "todo", priority)
-        print(f"    ✓ Created {endpoint_id}: {title}")
+        create_item_markdown(project_path, title, "API", "endpoint", desc, "todo", priority)
 
     # Database Tables
     db_tables = [
@@ -1079,10 +1034,8 @@ def populate_backend_project():
         ),
     ]
 
-    print("\n  Creating Database Tables...")
     for title, desc, priority in db_tables:
-        table_id = create_item_markdown(project_path, title, "DATABASE", "table", desc, "todo", priority)
-        print(f"    ✓ Created {table_id}: {title}")
+        create_item_markdown(project_path, title, "DATABASE", "table", desc, "todo", priority)
 
     # Code Files (Services)
     service_files = [
@@ -1128,10 +1081,8 @@ def populate_backend_project():
         ),
     ]
 
-    print("\n  Creating Service Files...")
     for title, desc, priority in service_files:
-        file_id = create_item_markdown(project_path, title, "CODE", "file", desc, "todo", priority)
-        print(f"    ✓ Created {file_id}: {title}")
+        create_item_markdown(project_path, title, "CODE", "file", desc, "todo", priority)
 
     # Test Suites
     test_suites = [
@@ -1162,31 +1113,16 @@ def populate_backend_project():
         ),
     ]
 
-    print("\n  Creating Test Suites...")
     for title, desc, priority in test_suites:
-        suite_id = create_item_markdown(project_path, title, "TEST", "test_suite", desc, "todo", priority)
-        print(f"    ✓ Created {suite_id}: {title}")
+        create_item_markdown(project_path, title, "TEST", "test_suite", desc, "todo", priority)
 
 
-def main():
+def main() -> None:
     """Main function to populate all projects."""
-    print("\n" + "=" * 60)
-    print("Populating Projects with Rich Mock Data")
-    print("=" * 60)
-
     # Populate each project
     populate_demo_project()
     populate_frontend_project()
     populate_backend_project()
-
-    print(f"\n{'=' * 60}")
-    print("✓ Project population complete!")
-    print(f"{'=' * 60}\n")
-    print("Summary:")
-    print("  - DEMO_PROJECT: E-commerce platform with epics, stories, APIs, DB tables, tests, and wireframes")
-    print("  - frontend: React application with component library, auth UI, and catalog UI")
-    print("  - backend: RESTful API with auth service, product service, order processing, and integrations")
-    print("\nAll items created directly in .trace/ directories with proper markdown format.")
 
 
 if __name__ == "__main__":

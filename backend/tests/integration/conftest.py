@@ -1,5 +1,4 @@
-"""
-Phase 6: E2E Integration Testing - Test Fixtures
+"""Phase 6: E2E Integration Testing - Test Fixtures.
 
 This module provides comprehensive test fixtures for all infrastructure components:
 - PostgreSQL (SQLAlchemy + asyncpg)
@@ -14,33 +13,35 @@ All fixtures handle lifecycle management and cleanup between tests.
 
 import asyncio
 import os
-from datetime import datetime, timezone
+
+# Import application components
+import sys
+from datetime import UTC, datetime, timezone
 from typing import AsyncGenerator, Generator
 from uuid import uuid4
 
 import pytest
 import pytest_asyncio
+from minio import Minio
 from nats.aio.client import Client as NATSClient
 from nats.js import JetStreamContext
-from neo4j import AsyncGraphDatabase, AsyncDriver
+from neo4j import AsyncDriver, AsyncGraphDatabase
 from redis.asyncio import Redis
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from minio import Minio
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from temporalio import activity, workflow
 from temporalio.testing import WorkflowEnvironment
 from temporalio.worker import Worker
-from temporalio import activity, workflow
 
-# Import application components
-import sys
 sys.path.insert(0, '/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src')
 
+import contextlib
+
 from tracertm.agent.agent_service import AgentService
-from tracertm.agent.graph_session_store import GraphSessionStore
 from tracertm.agent.events import AgentEventPublisher
+from tracertm.agent.graph_session_store import GraphSessionStore
 from tracertm.workflows.activities import (
     create_session_checkpoint,
 )
-
 
 # ============================================================================
 # Test Configuration
@@ -50,7 +51,7 @@ TEST_CONFIG = {
     # PostgreSQL
     "postgres_url": os.getenv(
         "TEST_POSTGRES_URL",
-        "postgresql+asyncpg://postgres:password@localhost:5432/tracertm_test"
+        "postgresql+asyncpg://postgres:password@localhost:5432/tracertm_test",
     ),
 
     # Neo4j
@@ -77,16 +78,16 @@ TEST_CONFIG = {
 # Pytest Configuration
 # ============================================================================
 
-def pytest_configure(config):
+def pytest_configure(config) -> None:
     """Configure pytest markers."""
     config.addinivalue_line(
-        "markers", "e2e: end-to-end integration tests requiring all infrastructure"
+        "markers", "e2e: end-to-end integration tests requiring all infrastructure",
     )
     config.addinivalue_line(
-        "markers", "slow: tests that take >5 seconds"
+        "markers", "slow: tests that take >5 seconds",
     )
     config.addinivalue_line(
-        "markers", "oauth: tests requiring OAuth mock"
+        "markers", "oauth: tests requiring OAuth mock",
     )
 
 
@@ -162,7 +163,7 @@ async def neo4j_session(neo4j_driver):
             MATCH (n)
             WHERE n:TestSession OR n:TestNode
             DETACH DELETE n
-            """
+            """,
         )
 
 
@@ -238,7 +239,7 @@ def minio_clean(minio_client):
     for obj in objects:
         minio_client.remove_object(TEST_CONFIG["minio_bucket"], obj.object_name)
 
-    yield minio_client
+    return minio_client
 
 
 # ============================================================================
@@ -266,10 +267,8 @@ async def nats_client() -> AsyncGenerator[NATSClient, None]:
     yield nc
 
     # Cleanup: Delete stream and close
-    try:
+    with contextlib.suppress(Exception):
         await js.delete_stream(TEST_CONFIG["nats_stream"])
-    except Exception:
-        pass
 
     await nc.close()
 
@@ -285,10 +284,8 @@ async def nats_jetstream(nats_client) -> JetStreamContext:
 async def nats_clean(nats_jetstream):
     """Provide clean NATS stream for each test."""
     # Purge stream before test
-    try:
+    with contextlib.suppress(Exception):
         await nats_jetstream.purge_stream(TEST_CONFIG["nats_stream"])
-    except Exception:
-        pass
 
     yield nats_jetstream
 
@@ -363,16 +360,16 @@ async def agent_service(
 def test_session_factory():
     """Factory for creating test session data."""
     def _create_session(
-        project_id: str = None,
-        user_id: str = None,
-        **kwargs
+        project_id: str | None = None,
+        user_id: str | None = None,
+        **kwargs,
     ) -> dict:
         return {
             "session_id": str(uuid4()),
             "project_id": project_id or str(uuid4()),
             "user_id": user_id or str(uuid4()),
             "sandbox_root": f"/tmp/test-{uuid4()}",
-            "created_at": datetime.now(timezone.utc),
+            "created_at": datetime.now(UTC),
             **kwargs,
         }
 
@@ -385,7 +382,7 @@ def test_checkpoint_factory():
     def _create_checkpoint(
         session_id: str,
         turn_number: int = 1,
-        **kwargs
+        **kwargs,
     ) -> dict:
         return {
             "checkpoint_id": str(uuid4()),
@@ -395,7 +392,7 @@ def test_checkpoint_factory():
                 "messages": [],
                 "context": {},
             },
-            "created_at": datetime.now(timezone.utc),
+            "created_at": datetime.now(UTC),
             **kwargs,
         }
 
@@ -413,9 +410,9 @@ async def cleanup_test_data(
     redis_clean,
     minio_clean,
     nats_clean,
-):
+) -> None:
     """Automatically clean up all test data after each test."""
-    yield
+    return
 
     # All cleanup happens in individual fixtures
     # This is just a marker that cleanup is handled

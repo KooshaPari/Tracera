@@ -1,5 +1,4 @@
-"""
-Performance benchmarks with detailed reporting and metric analysis.
+"""Performance benchmarks with detailed reporting and metric analysis.
 
 This extended test suite captures performance metrics with more granular
 timing data and generates comprehensive performance reports.
@@ -25,12 +24,12 @@ from tracertm.models.project import Project
 class PerformanceReporter:
     """Generates detailed performance reports with analysis."""
 
-    def __init__(self, output_dir: str = "performance_reports"):
+    def __init__(self, output_dir: str = "performance_reports") -> None:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
         self.metrics = {}
 
-    def record_test(self, test_name: str, duration_ms: float, item_count: int, details: dict | None = None):
+    def record_test(self, test_name: str, duration_ms: float, item_count: int, details: dict | None = None) -> None:
         """Record test metrics."""
         if test_name not in self.metrics:
             self.metrics[test_name] = {
@@ -87,7 +86,7 @@ class PerformanceReporter:
         }
 
         filepath = self.output_dir / filename
-        with Path(filepath).open("w") as f:
+        with Path(filepath).open("w", encoding="utf-8") as f:
             json.dump(report, f, indent=2)
 
         return filepath
@@ -146,8 +145,7 @@ class PerformanceReporter:
         ])
 
         filepath = self.output_dir / filename
-        with Path(filepath).open("w") as f:
-            f.write("\n".join(lines))
+        Path(filepath).write_text("\n".join(lines), encoding="utf-8")
 
         return filepath
 
@@ -166,7 +164,7 @@ def reporter():
 class TestDetailedBulkPerformance:
     """Detailed performance tests with fine-grained metrics."""
 
-    def test_bulk_create_with_metadata(self, db_session, reporter):
+    def test_bulk_create_with_metadata(self, db_session, reporter) -> None:
         """Test bulk creation with metadata tracking."""
         project = Project(id=f"proj-{uuid4()}", name="Test Project")
         db_session.add(project)
@@ -202,7 +200,7 @@ class TestDetailedBulkPerformance:
             {"metadata_size": "large", "batch_size": 500},
         )
 
-    def test_bulk_update_with_version_tracking(self, db_session, reporter):
+    def test_bulk_update_with_version_tracking(self, db_session, reporter) -> None:
         """Test bulk update with version tracking."""
         project = Project(id=f"proj-{uuid4()}", name="Test Project")
         db_session.add(project)
@@ -242,7 +240,7 @@ class TestDetailedBulkPerformance:
             {"version_increment": 1},
         )
 
-    def test_bulk_delete_simulation(self, db_session, reporter):
+    def test_bulk_delete_simulation(self, db_session, reporter) -> None:
         """Test bulk deletion simulation (soft delete with timestamp)."""
         project = Project(id=f"proj-{uuid4()}", name="Test Project")
         db_session.add(project)
@@ -284,7 +282,7 @@ class TestDetailedBulkPerformance:
 class TestDetailedGraphPerformance:
     """Detailed graph operation performance."""
 
-    def test_hierarchical_tree_creation(self, db_session, reporter):
+    def test_hierarchical_tree_creation(self, db_session, reporter) -> None:
         """Test creating a binary tree structure."""
         project = Project(id=f"proj-{uuid4()}", name="Test Project")
         db_session.add(project)
@@ -296,7 +294,7 @@ class TestDetailedGraphPerformance:
         items = []
         item_map = {}
 
-        def create_tree(level, index, parent_id=None):
+        def create_tree(level, index, parent_id=None) -> None:
             item_id = f"item-{level}-{index}"
             item = Item(
                 id=item_id,
@@ -327,7 +325,7 @@ class TestDetailedGraphPerformance:
             {"tree_depth": 7, "structure": "binary_tree"},
         )
 
-    def test_mesh_network_creation(self, db_session, reporter):
+    def test_mesh_network_creation(self, db_session, reporter) -> None:
         """Test creating a mesh network of links (N items, N^2 potential links)."""
         project = Project(id=f"proj-{uuid4()}", name="Test Project")
         db_session.add(project)
@@ -375,7 +373,7 @@ class TestDetailedGraphPerformance:
             {"nodes": 30, "potential_links": 435},
         )
 
-    def test_graph_traversal_bfs(self, db_session, reporter):
+    def test_graph_traversal_bfs(self, db_session, reporter) -> None:
         """Test breadth-first traversal performance."""
         project = Project(id=f"proj-{uuid4()}", name="Test Project")
         db_session.add(project)
@@ -460,7 +458,7 @@ class TestDetailedGraphPerformance:
 class TestDetailedQueryPerformance:
     """Detailed query performance benchmarks."""
 
-    def test_range_query_performance(self, db_session, reporter):
+    def test_range_query_performance(self, db_session, reporter) -> None:
         """Test range queries on large datasets."""
         project = Project(id=f"proj-{uuid4()}", name="Test Project")
         db_session.add(project)
@@ -499,7 +497,7 @@ class TestDetailedQueryPerformance:
             {"query_type": "range", "range": "200-600", "result_count": len(filtered)},
         )
 
-    def test_join_query_performance(self, db_session, reporter):
+    def test_join_query_performance(self, db_session, reporter) -> None:
         """Test join query performance with items and links."""
         project = Project(id=f"proj-{uuid4()}", name="Test Project")
         db_session.add(project)
@@ -578,7 +576,7 @@ def db_session_for_perf(db_session):
 # ============================================================================
 
 
-def test_generate_performance_reports(reporter):
+def test_generate_performance_reports(reporter) -> None:
     """Test that performance reports can be generated."""
     # Simulate some test runs
     reporter.record_test("test_1", 100.0, 50)
@@ -594,7 +592,7 @@ def test_generate_performance_reports(reporter):
     assert text_path.exists()
 
     # Verify JSON structure
-    with Path(json_path).open() as f:
+    with Path(json_path).open(encoding="utf-8") as f:
         data = json.load(f)
         assert "timestamp" in data
         assert "tests" in data

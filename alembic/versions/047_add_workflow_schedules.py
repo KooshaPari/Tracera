@@ -21,7 +21,7 @@ def upgrade() -> None:
         "workflow_schedules",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()")),
         sa.Column(
-            "project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=True
+            "project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=True,
         ),
         sa.Column("workflow_name", sa.String(length=200), nullable=False),
         sa.Column("schedule_id", sa.String(length=255), nullable=False),

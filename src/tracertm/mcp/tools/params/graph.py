@@ -28,8 +28,7 @@ async def graph_analyze(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
-    """
-    Unified graph analysis tool.
+    """Unified graph analysis tool.
 
     Analysis kinds:
     - detect_cycles: Detect cycles in dependency graph
@@ -53,4 +52,5 @@ async def graph_analyze(
         )
         return _wrap(result, ctx, kind)
 
-    raise ToolError(f"Unknown graph analysis kind: {kind}")
+    msg = f"Unknown graph analysis kind: {kind}"
+    raise ToolError(msg)

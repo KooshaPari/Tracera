@@ -1,6 +1,4 @@
-"""
-Integration tests for Epic 6: Project Switching & Isolation (Stories 6.3, 6.4).
-"""
+"""Integration tests for Epic 6: Project Switching & Isolation (Stories 6.3, 6.4)."""
 
 import time
 
@@ -51,7 +49,7 @@ def multi_project_setup(tmp_path, monkeypatch):
     return project1_id, project2_id, database_url
 
 
-def test_project_switching_speed(multi_project_setup):
+def test_project_switching_speed(multi_project_setup) -> None:
     """Test project switching completes in <500ms (Story 6.3, FR47)."""
     _project1_id, project2_id, _database_url = multi_project_setup
 
@@ -70,7 +68,7 @@ def test_project_switching_speed(multi_project_setup):
     assert config_manager.get("current_project_name") == "project-2"
 
 
-def test_project_isolation(multi_project_setup):
+def test_project_isolation(multi_project_setup) -> None:
     """Test project data isolation (Story 6.4, FR48)."""
     project1_id, project2_id, _database_url = multi_project_setup
 

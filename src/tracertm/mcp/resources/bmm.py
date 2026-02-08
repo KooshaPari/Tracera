@@ -17,8 +17,7 @@ from tracertm.mcp.core import mcp
 
 @mcp.resource("bmm://workflow-status")
 async def workflow_status_resource() -> str:
-    """
-    Current BMM workflow status in YAML format.
+    """Current BMM workflow status in YAML format.
     Clients can read this to understand project state without tool calls.
     """
     await asyncio.sleep(0)

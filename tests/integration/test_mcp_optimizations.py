@@ -1,5 +1,4 @@
-"""
-MCP Optimization Integration Tests
+"""MCP Optimization Integration Tests.
 
 Tests that all MCP optimizations work correctly together:
 - Lazy loading with real tools
@@ -84,7 +83,7 @@ def mcp_baseline_env():
 class TestLazyLoadingIntegration:
     """Test lazy loading with real tool modules."""
 
-    def test_all_tools_accessible_with_lazy_loading(self, mcp_optimized_env):
+    def test_all_tools_accessible_with_lazy_loading(self, mcp_optimized_env) -> None:
         """Test that all tools remain accessible with lazy loading."""
         from tracertm.mcp.registry import get_registry, register_all_tools
 
@@ -102,9 +101,7 @@ class TestLazyLoadingIntegration:
             assert metadata is not None
             assert "description" in metadata or "domain" in metadata
 
-        print(f"\n✓ All {len(tools)} tools accessible with lazy loading")
-
-    def test_lazy_loading_does_not_break_functionality(self, mcp_optimized_env):
+    def test_lazy_loading_does_not_break_functionality(self, mcp_optimized_env) -> None:
         """Test that lazy loading doesn't break tool functionality."""
         from tracertm.mcp.registry import get_registry
 
@@ -112,7 +109,7 @@ class TestLazyLoadingIntegration:
 
         # Register a tool
         registry.register_tool_loader(
-            "test_functional_tool", "tracertm.mcp.tools.params.project", {"description": "Test functionality"}
+            "test_functional_tool", "tracertm.mcp.tools.params.project", {"description": "Test functionality"},
         )
 
         # Verify not loaded initially
@@ -124,9 +121,7 @@ class TestLazyLoadingIntegration:
         # Verify loaded
         assert registry.is_loaded("tracertm.mcp.tools.params.project")
 
-        print("\n✓ Lazy loading maintains functionality")
-
-    def test_selective_tool_loading(self, mcp_optimized_env):
+    def test_selective_tool_loading(self, mcp_optimized_env) -> None:
         """Test that only requested tools are loaded."""
         from tracertm.mcp.registry import get_registry
 
@@ -145,8 +140,6 @@ class TestLazyLoadingIntegration:
         assert not registry.is_loaded("tracertm.mcp.tools.params.item")
         assert not registry.is_loaded("tracertm.mcp.tools.params.link")
 
-        print("\n✓ Selective tool loading works correctly")
-
 
 # ============================================================
 # Test: Streaming Integration
@@ -157,7 +150,7 @@ class TestStreamingIntegration:
     """Test streaming responses in real scenarios."""
 
     @pytest.mark.asyncio
-    async def test_streaming_large_dataset(self, mcp_optimized_env):
+    async def test_streaming_large_dataset(self, mcp_optimized_env) -> None:
         """Test streaming responses for large datasets."""
 
         async def stream_large_dataset(item_count: int):
@@ -178,10 +171,9 @@ class TestStreamingIntegration:
         chunks = [chunk async for chunk in stream_large_dataset(1000)]
 
         assert len(chunks) == 10  # 1000 items / 100 per chunk
-        print(f"\n✓ Streamed 1000 items in {len(chunks)} chunks")
 
     @pytest.mark.asyncio
-    async def test_streaming_with_error_handling(self, mcp_optimized_env):
+    async def test_streaming_with_error_handling(self, mcp_optimized_env) -> None:
         """Test that streaming handles errors gracefully."""
 
         async def stream_with_error():
@@ -189,7 +181,8 @@ class TestStreamingIntegration:
             yield b'{"chunk": 0, "data": "first"}'
             yield b'{"chunk": 1, "data": "second"}'
             # Error occurs here
-            raise ValueError("Simulated streaming error")
+            msg = "Simulated streaming error"
+            raise ValueError(msg)
 
         chunks_received = []
         error_caught = False
@@ -203,8 +196,6 @@ class TestStreamingIntegration:
         assert len(chunks_received) == 2
         assert error_caught
 
-        print("\n✓ Streaming handles errors correctly")
-
 
 # ============================================================
 # Test: Compression Integration
@@ -214,9 +205,8 @@ class TestStreamingIntegration:
 class TestCompressionIntegration:
     """Test compression in real scenarios."""
 
-    def test_compression_with_json_responses(self):
+    def test_compression_with_json_responses(self) -> None:
         """Test compression with typical JSON responses."""
-
         # Create a realistic response
         response = {
             "status": "success",
@@ -248,11 +238,8 @@ class TestCompressionIntegration:
         assert compression_ratio < 0.4  # At least 60% compression
         assert savings_percent > 60
 
-        print(f"\n✓ Compression: {original_size} → {compressed_size} bytes ({savings_percent:.1f}% savings)")
-
-    def test_compression_selective_by_content_type(self):
+    def test_compression_selective_by_content_type(self) -> None:
         """Test that compression is selective based on content type."""
-
         # Text content (should compress well)
         text_content = json.dumps({"data": "test " * 1000})
         text_compressed = gzip.compress(text_content.encode("utf-8"))
@@ -267,8 +254,6 @@ class TestCompressionIntegration:
         assert text_ratio < 0.3  # 70%+ compression
         assert binary_ratio > 0.95  # Minimal compression gain
 
-        print(f"\n✓ Selective compression: text={text_ratio:.2%}, binary={binary_ratio:.2%}")
-
 
 # ============================================================
 # Test: Connection Pooling Integration
@@ -279,11 +264,11 @@ class TestConnectionPoolingIntegration:
     """Test connection pooling in real scenarios."""
 
     @pytest.mark.asyncio
-    async def test_concurrent_requests_use_pool(self):
+    async def test_concurrent_requests_use_pool(self) -> None:
         """Test that concurrent requests efficiently use connection pool."""
 
         class ConnectionPool:
-            def __init__(self, size: int = 5):
+            def __init__(self, size: int = 5) -> None:
                 self.size = size
                 self.connections = []
                 self.in_use = set()
@@ -320,7 +305,7 @@ class TestConnectionPoolingIntegration:
                         return conn
                 return None
 
-            async def release(self, conn):
+            async def release(self, conn) -> None:
                 self.stats["releases"] += 1
                 self.in_use.discard(conn)
                 self._available.set()
@@ -328,7 +313,7 @@ class TestConnectionPoolingIntegration:
         pool = ConnectionPool(size=5)
 
         # Simulate 20 concurrent requests
-        async def make_request(request_id: int):
+        async def make_request(request_id: int) -> None:
             conn = await pool.acquire()
             await asyncio.sleep(0.01)  # Simulate work
             await pool.release(conn)
@@ -341,14 +326,13 @@ class TestConnectionPoolingIntegration:
         assert pool.stats["reuses"] > 10  # Most requests reused connections
 
         reuse_rate = (pool.stats["reuses"] / pool.stats["acquires"]) * 100
-        print(f"\n✓ Pool efficiency: {pool.stats['creates']} connections, {reuse_rate:.1f}% reuse rate")
 
     @pytest.mark.asyncio
-    async def test_pool_handles_connection_errors(self):
+    async def test_pool_handles_connection_errors(self) -> None:
         """Test that pool handles connection errors gracefully."""
 
         class ErrorHandlingPool:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.connections = []
                 self.error_count = 0
 
@@ -356,7 +340,8 @@ class TestConnectionPoolingIntegration:
                 # Simulate occasional connection error
                 if len(self.connections) == 2:
                     self.error_count += 1
-                    raise ConnectionError("Simulated connection error")
+                    msg = "Simulated connection error"
+                    raise ConnectionError(msg)
 
                 conn = MagicMock(id=len(self.connections))
                 self.connections.append(conn)
@@ -378,8 +363,6 @@ class TestConnectionPoolingIntegration:
         assert errors > 0  # Error occurred
         assert len(acquired) > 0  # Some connections succeeded
 
-        print(f"\n✓ Pool error handling: {errors} errors handled, {len(acquired)} connections successful")
-
 
 # ============================================================
 # Test: Token Management Integration
@@ -389,9 +372,8 @@ class TestConnectionPoolingIntegration:
 class TestTokenManagementIntegration:
     """Test token usage optimization."""
 
-    def test_token_aware_pagination(self):
+    def test_token_aware_pagination(self) -> None:
         """Test that pagination considers token budget."""
-
         max_tokens = 1000
         token_per_item = 50  # Approximate tokens per item
 
@@ -410,11 +392,8 @@ class TestTokenManagementIntegration:
 
         assert estimated_tokens < max_tokens
 
-        print(f"\n✓ Token-aware pagination: {safe_page_size} items, ~{estimated_tokens} tokens")
-
-    def test_token_efficient_error_messages(self):
+    def test_token_efficient_error_messages(self) -> None:
         """Test that error messages are token-efficient."""
-
         # Standard error
         error = {"error": {"code": "VALIDATION_ERROR", "message": "Invalid input", "field": "project_id"}}
 
@@ -430,7 +409,7 @@ class TestTokenManagementIntegration:
                     "suggestions": ["Check project list", "Verify ID format"],
                     "documentation": "https://docs.example.com/errors/validation",
                 },
-            }
+            },
         }
 
         standard_tokens = len(json.dumps(error)) // 4
@@ -439,8 +418,6 @@ class TestTokenManagementIntegration:
         # Standard should be much smaller
         assert standard_tokens < 50
         assert standard_tokens < verbose_tokens / 3
-
-        print(f"\n✓ Error token efficiency: standard={standard_tokens}, verbose={verbose_tokens}")
 
 
 # ============================================================
@@ -451,19 +428,15 @@ class TestTokenManagementIntegration:
 class TestFeatureFlagsAndRollback:
     """Test optimization feature flags and rollback capability."""
 
-    def test_lazy_loading_can_be_disabled(self, mcp_baseline_env):
+    def test_lazy_loading_can_be_disabled(self, mcp_baseline_env) -> None:
         """Test that lazy loading can be disabled via environment."""
-
         assert os.getenv("TRACERTM_MCP_LAZY_LOADING") == "false"
 
         # With lazy loading disabled, all tools should load immediately
         # (This is the baseline behavior for rollback)
 
-        print("\n✓ Lazy loading can be disabled for rollback")
-
-    def test_compression_can_be_toggled(self):
+    def test_compression_can_be_toggled(self) -> None:
         """Test that compression can be enabled/disabled."""
-
         # Test with compression enabled
         os.environ["TRACERTM_MCP_COMPRESSION"] = "true"
         compression_enabled = os.getenv("TRACERTM_MCP_COMPRESSION") == "true"
@@ -475,11 +448,8 @@ class TestFeatureFlagsAndRollback:
         assert compression_enabled
         assert compression_disabled
 
-        print("\n✓ Compression can be toggled via environment")
-
-    def test_streaming_can_be_toggled(self):
+    def test_streaming_can_be_toggled(self) -> None:
         """Test that streaming can be enabled/disabled."""
-
         # Enable streaming
         os.environ["TRACERTM_MCP_STREAMING"] = "true"
         streaming_enabled = os.getenv("TRACERTM_MCP_STREAMING") == "true"
@@ -491,18 +461,13 @@ class TestFeatureFlagsAndRollback:
         assert streaming_enabled
         assert streaming_disabled
 
-        print("\n✓ Streaming can be toggled via environment")
-
-    def test_all_optimizations_can_be_disabled(self, mcp_baseline_env):
+    def test_all_optimizations_can_be_disabled(self, mcp_baseline_env) -> None:
         """Test that all optimizations can be disabled for full rollback."""
-
         # Verify all optimization flags are disabled
         assert os.getenv("TRACERTM_MCP_LAZY_LOADING") == "false"
         assert os.getenv("TRACERTM_MCP_COMPRESSION") == "false"
         assert os.getenv("TRACERTM_MCP_STREAMING") == "false"
         assert os.getenv("TRACERTM_MCP_TOKEN_OPTIMIZATION") == "false"
-
-        print("\n✓ All optimizations can be disabled for full rollback")
 
 
 # ============================================================
@@ -513,7 +478,7 @@ class TestFeatureFlagsAndRollback:
 class TestRegressionPrevention:
     """Test that optimizations don't break existing functionality."""
 
-    def test_tool_registration_still_works(self, mcp_optimized_env):
+    def test_tool_registration_still_works(self, mcp_optimized_env) -> None:
         """Test that basic tool registration still works with optimizations."""
         from tracertm.mcp.registry import get_registry
 
@@ -521,23 +486,21 @@ class TestRegressionPrevention:
 
         # Register a tool
         registry.register_tool_loader(
-            "regression_test_tool", "tracertm.mcp.tools.params.project", {"description": "Test regression"}
+            "regression_test_tool", "tracertm.mcp.tools.params.project", {"description": "Test regression"},
         )
 
         # Verify registration
         tools = registry.list_registered_tools()
         assert "regression_test_tool" in tools
 
-        print("\n✓ Tool registration works with optimizations")
-
-    def test_tool_metadata_accessible(self, mcp_optimized_env):
+    def test_tool_metadata_accessible(self, mcp_optimized_env) -> None:
         """Test that tool metadata is still accessible."""
         from tracertm.mcp.registry import get_registry
 
         registry = get_registry()
 
         registry.register_tool_loader(
-            "metadata_test_tool", "tracertm.mcp.tools.params.item", {"description": "Metadata test", "version": "1.0"}
+            "metadata_test_tool", "tracertm.mcp.tools.params.item", {"description": "Metadata test", "version": "1.0"},
         )
 
         metadata = registry.get_tool_metadata("metadata_test_tool")
@@ -546,10 +509,8 @@ class TestRegressionPrevention:
         assert metadata["description"] == "Metadata test"
         assert metadata["version"] == "1.0"
 
-        print("\n✓ Tool metadata accessible with optimizations")
-
     @pytest.mark.asyncio
-    async def test_async_operations_still_work(self, mcp_optimized_env):
+    async def test_async_operations_still_work(self, mcp_optimized_env) -> None:
         """Test that async operations work with optimizations."""
 
         async def async_operation():
@@ -560,8 +521,6 @@ class TestRegressionPrevention:
 
         assert result["status"] == "success"
 
-        print("\n✓ Async operations work with optimizations")
-
 
 # ============================================================
 # Test: Performance Comparison
@@ -571,7 +530,7 @@ class TestRegressionPrevention:
 class TestPerformanceComparison:
     """Compare performance with and without optimizations."""
 
-    def test_startup_time_improvement(self, mcp_baseline_env, mcp_optimized_env):
+    def test_startup_time_improvement(self, mcp_baseline_env, mcp_optimized_env) -> None:
         """Test that startup time improves with optimizations."""
         import time
 
@@ -591,9 +550,3 @@ class TestPerformanceComparison:
 
         # Optimized should be faster (though this is a simple test)
         improvement = ((baseline_time - optimized_time) / baseline_time) * 100
-
-        print(
-            f"\n✓ Startup time: baseline={baseline_time * 1000:.2f}ms, "
-            f"optimized={optimized_time * 1000:.2f}ms, "
-            f"improvement={improvement:.1f}%"
-        )

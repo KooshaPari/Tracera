@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for ItemRepository to achieve 85%+ coverage.
+"""Comprehensive unit tests for ItemRepository to achieve 85%+ coverage.
 
 This file covers all missing functionality identified in coverage analysis:
 - Parent validation in create()
@@ -38,7 +37,7 @@ def unique_project_name() -> str:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_with_parent_validation_success(db_session: AsyncSession):
+async def test_create_with_parent_validation_success(db_session: AsyncSession) -> None:
     """Test creating item with valid parent."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -52,7 +51,7 @@ async def test_create_with_parent_validation_success(db_session: AsyncSession):
 
     # Create child with parent
     child = await item_repo.create(
-        project_id=str(project.id), title="Child Item", view="STORY", item_type="story", parent_id=str(parent.id)
+        project_id=str(project.id), title="Child Item", view="STORY", item_type="story", parent_id=str(parent.id),
     )
 
     assert child.parent_id == parent.id
@@ -61,7 +60,7 @@ async def test_create_with_parent_validation_success(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_with_invalid_parent_raises_error(db_session: AsyncSession):
+async def test_create_with_invalid_parent_raises_error(db_session: AsyncSession) -> None:
     """Test creating item with non-existent parent raises ValueError."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=f"Test Project {uuid4()}")
@@ -81,7 +80,7 @@ async def test_create_with_invalid_parent_raises_error(db_session: AsyncSession)
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_with_parent_different_project_raises_error(db_session: AsyncSession):
+async def test_create_with_parent_different_project_raises_error(db_session: AsyncSession) -> None:
     """Test creating item with parent from different project raises ValueError."""
     project_repo = ProjectRepository(db_session)
     project1 = await project_repo.create(name=unique_project_name())
@@ -97,7 +96,7 @@ async def test_create_with_parent_different_project_raises_error(db_session: Asy
     # Try to create child in project2 with parent from project1
     with pytest.raises(ValueError, match="not in same project"):
         await item_repo.create(
-            project_id=str(project2.id), title="Child", view="STORY", item_type="story", parent_id=str(parent.id)
+            project_id=str(project2.id), title="Child", view="STORY", item_type="story", parent_id=str(parent.id),
         )
 
 
@@ -108,7 +107,7 @@ async def test_create_with_parent_different_project_raises_error(db_session: Asy
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_with_project_scope_success(db_session: AsyncSession):
+async def test_get_by_id_with_project_scope_success(db_session: AsyncSession) -> None:
     """Test get_by_id with project_id filter returns item when in correct project."""
     project_repo = ProjectRepository(db_session)
     project1 = await project_repo.create(name=unique_project_name())
@@ -131,7 +130,7 @@ async def test_get_by_id_with_project_scope_success(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_without_project_scope(db_session: AsyncSession):
+async def test_get_by_id_without_project_scope(db_session: AsyncSession) -> None:
     """Test get_by_id without project_id filter returns item regardless of project."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -154,7 +153,7 @@ async def test_get_by_id_without_project_scope(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_by_view_excludes_deleted_by_default(db_session: AsyncSession):
+async def test_list_by_view_excludes_deleted_by_default(db_session: AsyncSession) -> None:
     """Test list_by_view excludes deleted items by default."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -164,7 +163,7 @@ async def test_list_by_view_excludes_deleted_by_default(db_session: AsyncSession
 
     item1 = await item_repo.create(project_id=str(project.id), title="Active Item", view="FEATURE", item_type="feature")
     item2 = await item_repo.create(
-        project_id=str(project.id), title="Deleted Item", view="FEATURE", item_type="feature"
+        project_id=str(project.id), title="Deleted Item", view="FEATURE", item_type="feature",
     )
     await db_session.commit()
 
@@ -180,7 +179,7 @@ async def test_list_by_view_excludes_deleted_by_default(db_session: AsyncSession
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_by_view_includes_deleted_when_requested(db_session: AsyncSession):
+async def test_list_by_view_includes_deleted_when_requested(db_session: AsyncSession) -> None:
     """Test list_by_view includes deleted items when include_deleted=True."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -190,7 +189,7 @@ async def test_list_by_view_includes_deleted_when_requested(db_session: AsyncSes
 
     item1 = await item_repo.create(project_id=str(project.id), title="Active Item", view="FEATURE", item_type="feature")
     item2 = await item_repo.create(
-        project_id=str(project.id), title="Deleted Item", view="FEATURE", item_type="feature"
+        project_id=str(project.id), title="Deleted Item", view="FEATURE", item_type="feature",
     )
     await db_session.commit()
 
@@ -213,7 +212,7 @@ async def test_list_by_view_includes_deleted_when_requested(db_session: AsyncSes
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_excludes_deleted_by_default(db_session: AsyncSession):
+async def test_list_all_excludes_deleted_by_default(db_session: AsyncSession) -> None:
     """Test list_all excludes deleted items by default."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -237,7 +236,7 @@ async def test_list_all_excludes_deleted_by_default(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_includes_deleted_when_requested(db_session: AsyncSession):
+async def test_list_all_includes_deleted_when_requested(db_session: AsyncSession) -> None:
     """Test list_all includes deleted items when include_deleted=True."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -268,7 +267,7 @@ async def test_list_all_includes_deleted_when_requested(db_session: AsyncSession
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_with_missing_item_raises_error(db_session: AsyncSession):
+async def test_update_with_missing_item_raises_error(db_session: AsyncSession) -> None:
     """Test update raises ValueError when item doesn't exist."""
     project_repo = ProjectRepository(db_session)
     _project = await project_repo.create(name=unique_project_name())
@@ -282,7 +281,7 @@ async def test_update_with_missing_item_raises_error(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_with_stale_version_raises_concurrency_error(db_session: AsyncSession):
+async def test_update_with_stale_version_raises_concurrency_error(db_session: AsyncSession) -> None:
     """Test update raises ConcurrencyError when version is stale."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -309,7 +308,7 @@ async def test_update_with_stale_version_raises_concurrency_error(db_session: As
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_version_increments(db_session: AsyncSession):
+async def test_update_version_increments(db_session: AsyncSession) -> None:
     """Test update increments version number."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -332,7 +331,7 @@ async def test_update_version_increments(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_soft_delete_cascades_to_children(db_session: AsyncSession):
+async def test_soft_delete_cascades_to_children(db_session: AsyncSession) -> None:
     """Test soft delete cascades to all children."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -346,10 +345,10 @@ async def test_soft_delete_cascades_to_children(db_session: AsyncSession):
 
     # Create children
     child1 = await item_repo.create(
-        project_id=str(project.id), title="Child 1", view="STORY", item_type="story", parent_id=str(parent.id)
+        project_id=str(project.id), title="Child 1", view="STORY", item_type="story", parent_id=str(parent.id),
     )
     child2 = await item_repo.create(
-        project_id=str(project.id), title="Child 2", view="STORY", item_type="story", parent_id=str(parent.id)
+        project_id=str(project.id), title="Child 2", view="STORY", item_type="story", parent_id=str(parent.id),
     )
     await db_session.commit()
 
@@ -377,7 +376,7 @@ async def test_soft_delete_cascades_to_children(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_soft_delete_nonexistent_item_returns_false(db_session: AsyncSession):
+async def test_soft_delete_nonexistent_item_returns_false(db_session: AsyncSession) -> None:
     """Test soft delete returns False when item doesn't exist."""
     project_repo = ProjectRepository(db_session)
     _project = await project_repo.create(name=unique_project_name())
@@ -392,7 +391,7 @@ async def test_soft_delete_nonexistent_item_returns_false(db_session: AsyncSessi
 @pytest.mark.unit
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("link_test_setup")
-async def test_hard_delete_removes_links(db_session: AsyncSession):
+async def test_hard_delete_removes_links(db_session: AsyncSession) -> None:
     """Test hard delete removes associated links."""
     from tracertm.repositories.link_repository import LinkRepository
 
@@ -409,7 +408,7 @@ async def test_hard_delete_removes_links(db_session: AsyncSession):
     # Create link using repository (which handles graph_id)
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on",
     )
     await db_session.commit()
 
@@ -432,7 +431,7 @@ async def test_hard_delete_removes_links(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_hard_delete_nonexistent_item_returns_false(db_session: AsyncSession):
+async def test_hard_delete_nonexistent_item_returns_false(db_session: AsyncSession) -> None:
     """Test hard delete returns False when item doesn't exist."""
     project_repo = ProjectRepository(db_session)
     _project = await project_repo.create(name=unique_project_name())
@@ -451,7 +450,7 @@ async def test_hard_delete_nonexistent_item_returns_false(db_session: AsyncSessi
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_restore_soft_deleted_item(db_session: AsyncSession):
+async def test_restore_soft_deleted_item(db_session: AsyncSession) -> None:
     """Test restoring a soft-deleted item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -459,7 +458,7 @@ async def test_restore_soft_deleted_item(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     item = await item_repo.create(
-        project_id=str(project.id), title="To Be Restored", view="FEATURE", item_type="feature"
+        project_id=str(project.id), title="To Be Restored", view="FEATURE", item_type="feature",
     )
     await db_session.commit()
 
@@ -486,7 +485,7 @@ async def test_restore_soft_deleted_item(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_restore_nonexistent_item_returns_none(db_session: AsyncSession):
+async def test_restore_nonexistent_item_returns_none(db_session: AsyncSession) -> None:
     """Test restore returns None when item doesn't exist."""
     project_repo = ProjectRepository(db_session)
     _project = await project_repo.create(name=unique_project_name())
@@ -500,7 +499,7 @@ async def test_restore_nonexistent_item_returns_none(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_restore_active_item_returns_none(db_session: AsyncSession):
+async def test_restore_active_item_returns_none(db_session: AsyncSession) -> None:
     """Test restore returns None when item is not deleted."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -522,7 +521,7 @@ async def test_restore_active_item_returns_none(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_with_status_filter(db_session: AsyncSession):
+async def test_get_by_project_with_status_filter(db_session: AsyncSession) -> None:
     """Test get_by_project filters by status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -532,13 +531,13 @@ async def test_get_by_project_with_status_filter(db_session: AsyncSession):
 
     # Create items with different statuses
     await item_repo.create(
-        project_id=str(project.id), title="Todo Item", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Todo Item", view="FEATURE", item_type="feature", status="todo",
     )
     await item_repo.create(
-        project_id=str(project.id), title="Done Item", view="FEATURE", item_type="feature", status="done"
+        project_id=str(project.id), title="Done Item", view="FEATURE", item_type="feature", status="done",
     )
     await item_repo.create(
-        project_id=str(project.id), title="Another Todo", view="STORY", item_type="story", status="todo"
+        project_id=str(project.id), title="Another Todo", view="STORY", item_type="story", status="todo",
     )
     await db_session.commit()
 
@@ -555,7 +554,7 @@ async def test_get_by_project_with_status_filter(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_with_pagination(db_session: AsyncSession):
+async def test_get_by_project_with_pagination(db_session: AsyncSession) -> None:
     """Test get_by_project supports pagination."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -590,7 +589,7 @@ async def test_get_by_project_with_pagination(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_without_status_filter(db_session: AsyncSession):
+async def test_get_by_project_without_status_filter(db_session: AsyncSession) -> None:
     """Test get_by_project returns all items when no status filter."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -600,10 +599,10 @@ async def test_get_by_project_without_status_filter(db_session: AsyncSession):
 
     # Create items with different statuses
     await item_repo.create(
-        project_id=str(project.id), title="Todo Item", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Todo Item", view="FEATURE", item_type="feature", status="todo",
     )
     await item_repo.create(
-        project_id=str(project.id), title="Done Item", view="FEATURE", item_type="feature", status="done"
+        project_id=str(project.id), title="Done Item", view="FEATURE", item_type="feature", status="done",
     )
     await db_session.commit()
 
@@ -622,7 +621,7 @@ async def test_get_by_project_without_status_filter(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_view_with_status_filter(db_session: AsyncSession):
+async def test_get_by_view_with_status_filter(db_session: AsyncSession) -> None:
     """Test get_by_view filters by status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -632,10 +631,10 @@ async def test_get_by_view_with_status_filter(db_session: AsyncSession):
 
     # Create items in same view with different statuses
     await item_repo.create(
-        project_id=str(project.id), title="Todo Feature", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Todo Feature", view="FEATURE", item_type="feature", status="todo",
     )
     await item_repo.create(
-        project_id=str(project.id), title="Done Feature", view="FEATURE", item_type="feature", status="done"
+        project_id=str(project.id), title="Done Feature", view="FEATURE", item_type="feature", status="done",
     )
     await item_repo.create(
         project_id=str(project.id),
@@ -654,7 +653,7 @@ async def test_get_by_view_with_status_filter(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_view_with_pagination(db_session: AsyncSession):
+async def test_get_by_view_with_pagination(db_session: AsyncSession) -> None:
     """Test get_by_view supports pagination."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -688,7 +687,7 @@ async def test_get_by_view_with_pagination(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_query_with_single_filter(db_session: AsyncSession):
+async def test_query_with_single_filter(db_session: AsyncSession) -> None:
     """Test query with single filter."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -698,10 +697,10 @@ async def test_query_with_single_filter(db_session: AsyncSession):
 
     # Create items
     await item_repo.create(
-        project_id=str(project.id), title="High Priority", view="FEATURE", item_type="feature", priority="high"
+        project_id=str(project.id), title="High Priority", view="FEATURE", item_type="feature", priority="high",
     )
     await item_repo.create(
-        project_id=str(project.id), title="Low Priority", view="FEATURE", item_type="feature", priority="low"
+        project_id=str(project.id), title="Low Priority", view="FEATURE", item_type="feature", priority="low",
     )
     await db_session.commit()
 
@@ -713,7 +712,7 @@ async def test_query_with_single_filter(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_query_with_multiple_filters(db_session: AsyncSession):
+async def test_query_with_multiple_filters(db_session: AsyncSession) -> None:
     """Test query with multiple filters."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -739,7 +738,7 @@ async def test_query_with_multiple_filters(db_session: AsyncSession):
         status="done",
     )
     await item_repo.create(
-        project_id=str(project.id), title="Low Todo", view="FEATURE", item_type="feature", priority="low", status="todo"
+        project_id=str(project.id), title="Low Todo", view="FEATURE", item_type="feature", priority="low", status="todo",
     )
     await db_session.commit()
 
@@ -752,7 +751,7 @@ async def test_query_with_multiple_filters(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_query_with_limit(db_session: AsyncSession):
+async def test_query_with_limit(db_session: AsyncSession) -> None:
     """Test query respects limit."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -772,7 +771,7 @@ async def test_query_with_limit(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_query_with_invalid_filter_attribute_ignored(db_session: AsyncSession):
+async def test_query_with_invalid_filter_attribute_ignored(db_session: AsyncSession) -> None:
     """Test query ignores filters for non-existent attributes."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -796,7 +795,7 @@ async def test_query_with_invalid_filter_attribute_ignored(db_session: AsyncSess
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_children_returns_direct_children(db_session: AsyncSession):
+async def test_get_children_returns_direct_children(db_session: AsyncSession) -> None:
     """Test get_children returns only direct children."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -810,16 +809,16 @@ async def test_get_children_returns_direct_children(db_session: AsyncSession):
 
     # Create direct children
     child1 = await item_repo.create(
-        project_id=str(project.id), title="Child 1", view="STORY", item_type="story", parent_id=str(parent.id)
+        project_id=str(project.id), title="Child 1", view="STORY", item_type="story", parent_id=str(parent.id),
     )
     child2 = await item_repo.create(
-        project_id=str(project.id), title="Child 2", view="STORY", item_type="story", parent_id=str(parent.id)
+        project_id=str(project.id), title="Child 2", view="STORY", item_type="story", parent_id=str(parent.id),
     )
     await db_session.commit()
 
     # Create grandchild (should not be returned)
     grandchild = await item_repo.create(
-        project_id=str(project.id), title="Grandchild", view="TASK", item_type="task", parent_id=str(child1.id)
+        project_id=str(project.id), title="Grandchild", view="TASK", item_type="task", parent_id=str(child1.id),
     )
     await db_session.commit()
 
@@ -834,7 +833,7 @@ async def test_get_children_returns_direct_children(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_children_excludes_deleted(db_session: AsyncSession):
+async def test_get_children_excludes_deleted(db_session: AsyncSession) -> None:
     """Test get_children excludes deleted children."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -848,10 +847,10 @@ async def test_get_children_excludes_deleted(db_session: AsyncSession):
 
     # Create children
     child1 = await item_repo.create(
-        project_id=str(project.id), title="Active Child", view="STORY", item_type="story", parent_id=str(parent.id)
+        project_id=str(project.id), title="Active Child", view="STORY", item_type="story", parent_id=str(parent.id),
     )
     child2 = await item_repo.create(
-        project_id=str(project.id), title="Deleted Child", view="STORY", item_type="story", parent_id=str(parent.id)
+        project_id=str(project.id), title="Deleted Child", view="STORY", item_type="story", parent_id=str(parent.id),
     )
     await db_session.commit()
 
@@ -867,7 +866,7 @@ async def test_get_children_excludes_deleted(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_children_empty_when_no_children(db_session: AsyncSession):
+async def test_get_children_empty_when_no_children(db_session: AsyncSession) -> None:
     """Test get_children returns empty list when item has no children."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -876,7 +875,7 @@ async def test_get_children_empty_when_no_children(db_session: AsyncSession):
     item_repo = ItemRepository(db_session)
 
     item = await item_repo.create(
-        project_id=str(project.id), title="Item Without Children", view="FEATURE", item_type="feature"
+        project_id=str(project.id), title="Item Without Children", view="FEATURE", item_type="feature",
     )
     await db_session.commit()
 
@@ -891,7 +890,7 @@ async def test_get_children_empty_when_no_children(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_ancestors_returns_all_parents(db_session: AsyncSession):
+async def test_get_ancestors_returns_all_parents(db_session: AsyncSession) -> None:
     """Test get_ancestors returns all ancestors up to root."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -904,12 +903,12 @@ async def test_get_ancestors_returns_all_parents(db_session: AsyncSession):
     await db_session.commit()
 
     parent = await item_repo.create(
-        project_id=str(project.id), title="Parent", view="STORY", item_type="story", parent_id=str(root.id)
+        project_id=str(project.id), title="Parent", view="STORY", item_type="story", parent_id=str(root.id),
     )
     await db_session.commit()
 
     child = await item_repo.create(
-        project_id=str(project.id), title="Child", view="TASK", item_type="task", parent_id=str(parent.id)
+        project_id=str(project.id), title="Child", view="TASK", item_type="task", parent_id=str(parent.id),
     )
     await db_session.commit()
 
@@ -924,7 +923,7 @@ async def test_get_ancestors_returns_all_parents(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_ancestors_handles_deep_hierarchy(db_session: AsyncSession):
+async def test_get_ancestors_handles_deep_hierarchy(db_session: AsyncSession) -> None:
     """Test get_ancestors handles deep hierarchies."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -937,17 +936,17 @@ async def test_get_ancestors_handles_deep_hierarchy(db_session: AsyncSession):
     await db_session.commit()
 
     level2 = await item_repo.create(
-        project_id=str(project.id), title="Level 2", view="STORY", item_type="story", parent_id=str(level1.id)
+        project_id=str(project.id), title="Level 2", view="STORY", item_type="story", parent_id=str(level1.id),
     )
     await db_session.commit()
 
     level3 = await item_repo.create(
-        project_id=str(project.id), title="Level 3", view="TASK", item_type="task", parent_id=str(level2.id)
+        project_id=str(project.id), title="Level 3", view="TASK", item_type="task", parent_id=str(level2.id),
     )
     await db_session.commit()
 
     level4 = await item_repo.create(
-        project_id=str(project.id), title="Level 4", view="TASK", item_type="task", parent_id=str(level3.id)
+        project_id=str(project.id), title="Level 4", view="TASK", item_type="task", parent_id=str(level3.id),
     )
     await db_session.commit()
 
@@ -962,7 +961,7 @@ async def test_get_ancestors_handles_deep_hierarchy(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_ancestors_empty_for_root_item(db_session: AsyncSession):
+async def test_get_ancestors_empty_for_root_item(db_session: AsyncSession) -> None:
     """Test get_ancestors returns empty list for root item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -984,7 +983,7 @@ async def test_get_ancestors_empty_for_root_item(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_descendants_returns_all_children(db_session: AsyncSession):
+async def test_get_descendants_returns_all_children(db_session: AsyncSession) -> None:
     """Test get_descendants returns all descendants."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -997,15 +996,15 @@ async def test_get_descendants_returns_all_children(db_session: AsyncSession):
     await db_session.commit()
 
     child1 = await item_repo.create(
-        project_id=str(project.id), title="Child 1", view="STORY", item_type="story", parent_id=str(parent.id)
+        project_id=str(project.id), title="Child 1", view="STORY", item_type="story", parent_id=str(parent.id),
     )
     child2 = await item_repo.create(
-        project_id=str(project.id), title="Child 2", view="STORY", item_type="story", parent_id=str(parent.id)
+        project_id=str(project.id), title="Child 2", view="STORY", item_type="story", parent_id=str(parent.id),
     )
     await db_session.commit()
 
     grandchild = await item_repo.create(
-        project_id=str(project.id), title="Grandchild", view="TASK", item_type="task", parent_id=str(child1.id)
+        project_id=str(project.id), title="Grandchild", view="TASK", item_type="task", parent_id=str(child1.id),
     )
     await db_session.commit()
 
@@ -1020,7 +1019,7 @@ async def test_get_descendants_returns_all_children(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_descendants_handles_deep_hierarchy(db_session: AsyncSession):
+async def test_get_descendants_handles_deep_hierarchy(db_session: AsyncSession) -> None:
     """Test get_descendants handles deep hierarchies."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -1033,17 +1032,17 @@ async def test_get_descendants_handles_deep_hierarchy(db_session: AsyncSession):
     await db_session.commit()
 
     level2 = await item_repo.create(
-        project_id=str(project.id), title="Level 2", view="STORY", item_type="story", parent_id=str(root.id)
+        project_id=str(project.id), title="Level 2", view="STORY", item_type="story", parent_id=str(root.id),
     )
     await db_session.commit()
 
     level3 = await item_repo.create(
-        project_id=str(project.id), title="Level 3", view="TASK", item_type="task", parent_id=str(level2.id)
+        project_id=str(project.id), title="Level 3", view="TASK", item_type="task", parent_id=str(level2.id),
     )
     await db_session.commit()
 
     level4 = await item_repo.create(
-        project_id=str(project.id), title="Level 4", view="TASK", item_type="task", parent_id=str(level3.id)
+        project_id=str(project.id), title="Level 4", view="TASK", item_type="task", parent_id=str(level3.id),
     )
     await db_session.commit()
 
@@ -1058,7 +1057,7 @@ async def test_get_descendants_handles_deep_hierarchy(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_descendants_empty_for_leaf_item(db_session: AsyncSession):
+async def test_get_descendants_empty_for_leaf_item(db_session: AsyncSession) -> None:
     """Test get_descendants returns empty list for leaf item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -1080,7 +1079,7 @@ async def test_get_descendants_empty_for_leaf_item(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_count_by_status_counts_correctly(db_session: AsyncSession):
+async def test_count_by_status_counts_correctly(db_session: AsyncSession) -> None:
     """Test count_by_status returns correct counts."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -1091,16 +1090,16 @@ async def test_count_by_status_counts_correctly(db_session: AsyncSession):
     # Create items with different statuses
     for i in range(3):
         await item_repo.create(
-            project_id=str(project.id), title=f"Todo {i}", view="FEATURE", item_type="feature", status="todo"
+            project_id=str(project.id), title=f"Todo {i}", view="FEATURE", item_type="feature", status="todo",
         )
 
     for i in range(2):
         await item_repo.create(
-            project_id=str(project.id), title=f"Done {i}", view="FEATURE", item_type="feature", status="done"
+            project_id=str(project.id), title=f"Done {i}", view="FEATURE", item_type="feature", status="done",
         )
 
     await item_repo.create(
-        project_id=str(project.id), title="In Progress", view="FEATURE", item_type="feature", status="in_progress"
+        project_id=str(project.id), title="In Progress", view="FEATURE", item_type="feature", status="in_progress",
     )
     await db_session.commit()
 
@@ -1113,7 +1112,7 @@ async def test_count_by_status_counts_correctly(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_count_by_status_excludes_deleted(db_session: AsyncSession):
+async def test_count_by_status_excludes_deleted(db_session: AsyncSession) -> None:
     """Test count_by_status excludes deleted items."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -1123,10 +1122,10 @@ async def test_count_by_status_excludes_deleted(db_session: AsyncSession):
 
     # Create items
     _item1 = await item_repo.create(
-        project_id=str(project.id), title="Todo Item", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Todo Item", view="FEATURE", item_type="feature", status="todo",
     )
     item2 = await item_repo.create(
-        project_id=str(project.id), title="Done Item", view="FEATURE", item_type="feature", status="done"
+        project_id=str(project.id), title="Done Item", view="FEATURE", item_type="feature", status="done",
     )
     await db_session.commit()
 
@@ -1142,7 +1141,7 @@ async def test_count_by_status_excludes_deleted(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_count_by_status_empty_project_returns_empty_dict(db_session: AsyncSession):
+async def test_count_by_status_empty_project_returns_empty_dict(db_session: AsyncSession) -> None:
     """Test count_by_status returns empty dict for project with no items."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())

@@ -74,7 +74,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column(
-            "item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), nullable=False
+            "item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), nullable=False,
         ),
         sa.Column("contract_number", sa.String(50), nullable=False),
         sa.Column("title", sa.String(255), nullable=False),

@@ -105,7 +105,7 @@ test.describe('General Settings Tab', () => {
 
     // Wait for success message
     const successMessage = page.getByText(/success|saved/i);
-    await expect(successMessage).toBeVisible({ timeout: 10000 });
+    await expect(successMessage).toBeVisible({ timeout: 10_000 });
   });
 
   test('should update email address', async ({ page }) => {
@@ -691,9 +691,7 @@ test.describe('Settings Error Handling', () => {
 
     // Check if button shows loading state (disabled or loading text)
     const isDisabled = await saveButton.isDisabled();
-    const loadingTextVisible = await saveButton
-      .getByText(/Saving/i)
-      .isVisible();
+    const loadingTextVisible = await saveButton.getByText(/Saving/i).isVisible();
 
     // Either disabled or shows loading text
     expect(isDisabled || loadingTextVisible).toBeTruthy();

@@ -1,13 +1,11 @@
-"""
-BMM workflow MCP tools.
-"""
+"""BMM workflow MCP tools."""
 
 from __future__ import annotations
 
 import asyncio
-from typing import Any, cast
+from itertools import starmap
+from typing import TYPE_CHECKING, Any, cast
 
-from fastmcp import Context
 from fastmcp.exceptions import ToolError
 from fastmcp.server.dependencies import Progress
 from fastmcp.server.elicitation import AcceptedElicitation
@@ -24,11 +22,14 @@ from tracertm.mcp.bmm_utils import (
 from tracertm.mcp.core import mcp
 from tracertm.mcp.workflow_executor import run_workflow_with_sub_agent
 
+if TYPE_CHECKING:
+    from fastmcp import Context
+    from mcp.types import SamplingMessage
+
 
 @mcp.tool(task=TaskConfig(mode="forbidden"))
 async def init_project(ctx: Context, progress: Progress | None = None) -> str:
-    """
-    Initialize a new BMM project by determining level, type, and creating workflow path.
+    """Initialize a new BMM project by determining level, type, and creating workflow path.
     Uses elicitation for interactive user input.
     """
     status = load_workflow_status()
@@ -95,8 +96,7 @@ async def run_workflow(  # noqa: C901, PLR0912, PLR0915
     auto: bool = False,
     progress: Progress | None = None,
 ) -> str:
-    """
-    Execute a BMM workflow by ID.
+    """Execute a BMM workflow by ID.
 
     Args:
         workflow_id: Workflow identifier (e.g., 'brainstorm-project', 'prd')
@@ -107,7 +107,8 @@ async def run_workflow(  # noqa: C901, PLR0912, PLR0915
     """
     workflow = get_workflow_config(workflow_id)
     if not workflow:
-        raise ToolError(f"Workflow not found: {workflow_id}")
+        msg = f"Workflow not found: {workflow_id}"
+        raise ToolError(msg)
 
     current_status = workflow.get("status", "")
     if isinstance(current_status, str) and current_status.startswith("docs/"):
@@ -187,10 +188,8 @@ async def run_workflow(  # noqa: C901, PLR0912, PLR0915
             current_progress = 25
         await progress.set_message("Preparing workflow execution...")
 
-        from mcp.types import SamplingMessage
-
         msg = cast(
-            SamplingMessage,
+            "SamplingMessage",
             {
                 "role": "user",
                 "content": (
@@ -238,8 +237,7 @@ async def run_phase(  # noqa: C901
     auto: bool = False,
     progress: Progress | None = None,
 ) -> str:
-    """
-    Execute all workflows in a phase.
+    """Execute all workflows in a phase.
 
     Args:
         phase: Phase number (0=Discovery, 1=Planning, 2=Solutioning, 3=Implementation)
@@ -249,8 +247,9 @@ async def run_phase(  # noqa: C901
     Returns:
         Summary of execution results
     """
-    if phase not in [0, 1, 2, 3]:
-        raise ToolError("Phase must be 0, 1, 2, or 3")
+    if phase not in {0, 1, 2, 3}:
+        msg = "Phase must be 0, 1, 2, or 3"
+        raise ToolError(msg)
 
     workflows = get_phase_workflows(phase)
     if not workflows:
@@ -281,7 +280,7 @@ async def run_phase(  # noqa: C901
                 agent_results.append(result)
             return agent_results
 
-        all_results = await asyncio.gather(*[run_agent_workflows(agent, wfs) for agent, wfs in agent_groups.items()])
+        all_results = await asyncio.gather(*list(starmap(run_agent_workflows, agent_groups.items())))
 
         for agent_results in all_results:
             results.extend(agent_results)
@@ -307,8 +306,7 @@ async def run_phase(  # noqa: C901
 
 @mcp.tool()
 async def get_status() -> dict[str, Any]:
-    """
-    Get comprehensive workflow status including progress, pending workflows, and completion stats.
+    """Get comprehensive workflow status including progress, pending workflows, and completion stats.
 
     Returns:
         Dictionary with status information

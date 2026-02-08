@@ -12,6 +12,7 @@ Create Date: 2026-02-01
 """
 
 import sqlalchemy as sa
+
 from alembic import op
 
 # revision identifiers, used by Alembic
@@ -23,10 +24,9 @@ depends_on = None
 
 def upgrade() -> None:
     """Create materialized views for performance."""
-
     conn = op.get_bind()
     has_test_coverage = conn.execute(
-        sa.text("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'test_coverage')")
+        sa.text("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'test_coverage')"),
     ).scalar()
 
     # =========================================================================
@@ -358,7 +358,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop materialized views and related functions."""
-
     # Drop triggers (if created)
     # op.execute("DROP TRIGGER IF EXISTS trigger_refresh_project_stats_on_item_change ON items")
 

@@ -1,6 +1,4 @@
-"""
-Repository for Webhook Integration operations.
-"""
+"""Repository for Webhook Integration operations."""
 
 import secrets
 import uuid
@@ -21,7 +19,7 @@ from tracertm.models.webhook_integration import (
 class WebhookRepository:
     """Repository for webhook CRUD and operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -285,7 +283,7 @@ class WebhookRepository:
         """Get webhook statistics for a project."""
         # Total webhooks
         total_result = await self.session.execute(
-            select(func.count()).where(WebhookIntegration.project_id == project_id)
+            select(func.count()).where(WebhookIntegration.project_id == project_id),
         )
         total = total_result.scalar() or 0
 
@@ -293,7 +291,7 @@ class WebhookRepository:
         status_result = await self.session.execute(
             select(WebhookIntegration.status, func.count())
             .where(WebhookIntegration.project_id == project_id)
-            .group_by(WebhookIntegration.status)
+            .group_by(WebhookIntegration.status),
         )
         by_status = {str(row[0].value): row[1] for row in status_result}
 
@@ -301,7 +299,7 @@ class WebhookRepository:
         provider_result = await self.session.execute(
             select(WebhookIntegration.provider, func.count())
             .where(WebhookIntegration.project_id == project_id)
-            .group_by(WebhookIntegration.provider)
+            .group_by(WebhookIntegration.provider),
         )
         by_provider = {str(row[0].value): row[1] for row in provider_result}
 
@@ -311,7 +309,7 @@ class WebhookRepository:
                 func.sum(WebhookIntegration.total_requests),
                 func.sum(WebhookIntegration.successful_requests),
                 func.sum(WebhookIntegration.failed_requests),
-            ).where(WebhookIntegration.project_id == project_id)
+            ).where(WebhookIntegration.project_id == project_id),
         )
         requests_row = requests_result.one()
 

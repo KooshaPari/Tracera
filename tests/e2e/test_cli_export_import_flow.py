@@ -14,7 +14,7 @@ runner = CliRunner()
 
 def _fake_storage_manager():
     class _FakeSession:
-        def __init__(self):
+        def __init__(self) -> None:
             self._project = SimpleNamespace(
                 id="proj-1",
                 name="Project One",
@@ -37,7 +37,7 @@ def _fake_storage_manager():
                     version=1,
                     created_at=None,
                     updated_at=None,
-                )
+                ),
             ]
             self._links = [
                 SimpleNamespace(
@@ -47,7 +47,7 @@ def _fake_storage_manager():
                     link_type="implements",
                     link_metadata={},
                     created_at=None,
-                )
+                ),
             ]
 
         # SQLAlchemy-like API shim
@@ -81,7 +81,7 @@ def _fake_storage_manager():
 
 
 @pytest.mark.e2e
-def test_export_json_writes_output(tmp_path):
+def test_export_json_writes_output(tmp_path) -> None:
     out_file = tmp_path / "export.json"
 
     with (
@@ -106,7 +106,7 @@ def test_export_json_writes_output(tmp_path):
 
 
 @pytest.mark.e2e
-def test_export_yaml_and_csv(tmp_path):
+def test_export_yaml_and_csv(tmp_path) -> None:
     yaml_out = tmp_path / "export.yaml"
     csv_out = tmp_path / "export.csv"
 
@@ -128,7 +128,7 @@ def test_export_yaml_and_csv(tmp_path):
 
 
 @pytest.mark.e2e
-def test_export_unsupported_format_fails():
+def test_export_unsupported_format_fails() -> None:
     with patch("tracertm.cli.commands.export.ConfigManager") as cfg:
         cfg_inst = MagicMock()
         cfg_inst.get.return_value = "proj-1"
@@ -141,7 +141,7 @@ def test_export_unsupported_format_fails():
 
 
 @pytest.mark.e2e
-def test_import_json_validate_only_passes(tmp_path):
+def test_import_json_validate_only_passes(tmp_path) -> None:
     payload = {
         "project": {"id": "proj-1", "name": "Project One"},
         "items": [],
@@ -161,7 +161,7 @@ def test_import_json_validate_only_passes(tmp_path):
 
 
 @pytest.mark.e2e
-def test_import_json_missing_file_fails(tmp_path):
+def test_import_json_missing_file_fails(tmp_path) -> None:
     missing = tmp_path / "nope.json"
     result = runner.invoke(app, ["import", "json", str(missing)], catch_exceptions=False)
     assert result.exit_code != 0
@@ -169,7 +169,7 @@ def test_import_json_missing_file_fails(tmp_path):
 
 
 @pytest.mark.e2e
-def test_import_json_validation_errors(tmp_path):
+def test_import_json_validation_errors(tmp_path) -> None:
     bad_payload = {"project": {}, "items": "not-a-list"}
     src = tmp_path / "bad.json"
     src.write_text(json.dumps(bad_payload))
@@ -182,7 +182,7 @@ def test_import_json_validation_errors(tmp_path):
 
 
 @pytest.mark.e2e
-def test_import_yaml_success(tmp_path):
+def test_import_yaml_success(tmp_path) -> None:
     payload = """
 project:
   id: proj-1

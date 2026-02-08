@@ -1,5 +1,4 @@
-"""
-Logging configuration for TraceRTM.
+"""Logging configuration for TraceRTM.
 
 Provides structured logging with both Loguru (for backwards compatibility)
 and structlog (for structured log aggregation with Loki).
@@ -101,8 +100,7 @@ def get_logger(name: str) -> Any:
 
 
 def get_structlog_logger(name: str | None = None):
-    """
-    Get a structlog logger instance for structured logging.
+    """Get a structlog logger instance for structured logging.
 
     Usage:
         logger = get_structlog_logger(__name__)

@@ -1,5 +1,4 @@
-"""
-Progress tracking service for Epic 7 (FR68-FR73).
+"""Progress tracking service for Epic 7 (FR68-FR73).
 
 Calculates completion percentages, tracks velocity, and identifies blocked/stalled items.
 """
@@ -17,13 +16,12 @@ from tracertm.models.link import Link
 class ProgressService:
     """Service for progress tracking and calculation."""
 
-    def __init__(self, session: Session):
+    def __init__(self, session: Session) -> None:
         """Initialize progress service."""
         self.session = session
 
     def calculate_completion(self, item_id: str) -> float:
-        """
-        Calculate completion percentage for an item (FR68).
+        """Calculate completion percentage for an item (FR68).
 
         For parent items, calculates average of children.
         For leaf items, uses status-based completion.
@@ -60,8 +58,7 @@ class ProgressService:
         return sum(child_completions) / len(child_completions)
 
     def get_blocked_items(self, project_id: str) -> list[dict[str, Any]]:
-        """
-        Get items that are blocking others (FR70).
+        """Get items that are blocking others (FR70).
 
         Args:
             project_id: Project ID
@@ -106,8 +103,7 @@ class ProgressService:
         return blocked_items
 
     def get_stalled_items(self, project_id: str, days_threshold: int = 7) -> list[dict[str, Any]]:
-        """
-        Get items with no progress (stalled items) (FR71).
+        """Get items with no progress (stalled items) (FR71).
 
         Args:
             project_id: Project ID
@@ -142,8 +138,7 @@ class ProgressService:
         ]
 
     def calculate_velocity(self, project_id: str, days: int = 7) -> dict[str, Any]:
-        """
-        Calculate velocity (items completed per time period) (FR73).
+        """Calculate velocity (items completed per time period) (FR73).
 
         Args:
             project_id: Project ID
@@ -188,10 +183,9 @@ class ProgressService:
         }
 
     def generate_progress_report(
-        self, project_id: str, start_date: datetime | None = None, end_date: datetime | None = None
+        self, project_id: str, start_date: datetime | None = None, end_date: datetime | None = None,
     ) -> dict[str, Any]:
-        """
-        Generate progress report for time period (FR72).
+        """Generate progress report for time period (FR72).
 
         Args:
             project_id: Project ID

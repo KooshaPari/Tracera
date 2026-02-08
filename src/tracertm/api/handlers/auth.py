@@ -138,7 +138,7 @@ async def auth_callback_handler(payload: AuthCallbackPayload) -> dict[str, Any]:
     try:
         return workos_auth_service.authenticate_with_code(payload.code)
     except Exception as exc:
-        logger.error(f"Auth callback failed: {exc}")
+        logger.exception("Auth callback failed: %s", exc)
         raise HTTPException(status_code=400, detail=str(exc))
 
 
@@ -185,7 +185,7 @@ async def auth_logout_handler(claims: dict[str, Any]) -> dict[str, Any]:
         try:
             logout_url = workos_auth_service.get_logout_url(session_id)
         except Exception as exc:
-            logger.warning(f"Failed to generate logout URL: {exc}")
+            logger.warning("Failed to generate logout URL: %s", exc)
 
     return {
         "status": "ok",

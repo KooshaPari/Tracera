@@ -1,6 +1,4 @@
-"""
-Repository for Test Run operations.
-"""
+"""Repository for Test Run operations."""
 
 import uuid
 from datetime import UTC, datetime
@@ -24,7 +22,7 @@ from tracertm.models.test_run import (
 class TestRunRepository:
     """Repository for test run CRUD and business operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -89,7 +87,7 @@ class TestRunRepository:
     async def get_by_id(self, run_id: str) -> TestRun | None:
         """Get a test run by ID."""
         result = await self.session.execute(
-            select(TestRun).options(selectinload(TestRun.results)).where(TestRun.id == run_id)
+            select(TestRun).options(selectinload(TestRun.results)).where(TestRun.id == run_id),
         )
         return result.scalar_one_or_none()
 
@@ -173,7 +171,8 @@ class TestRunRepository:
             return None
 
         if run.status != TestRunStatus.PENDING:
-            raise ValueError(f"Cannot start run in status {run.status.value}")
+            msg = f"Cannot start run in status {run.status.value}"
+            raise ValueError(msg)
 
         old_status = run.status
         run.status = TestRunStatus.RUNNING
@@ -209,7 +208,8 @@ class TestRunRepository:
             return None
 
         if run.status != TestRunStatus.RUNNING:
-            raise ValueError(f"Cannot complete run in status {run.status.value}")
+            msg = f"Cannot complete run in status {run.status.value}"
+            raise ValueError(msg)
 
         old_status = run.status
         completed_at = datetime.now(UTC)
@@ -220,13 +220,12 @@ class TestRunRepository:
         # Determine final status based on results if not provided
         if status:
             run.status = TestRunStatus(status)
+        elif run.failed_count > 0 or run.error_count > 0:
+            run.status = TestRunStatus.FAILED
+        elif run.blocked_count > 0:
+            run.status = TestRunStatus.BLOCKED
         else:
-            if run.failed_count > 0 or run.error_count > 0:
-                run.status = TestRunStatus.FAILED
-            elif run.blocked_count > 0:
-                run.status = TestRunStatus.BLOCKED
-            else:
-                run.status = TestRunStatus.PASSED
+            run.status = TestRunStatus.PASSED
 
         if notes:
             run.notes = notes
@@ -265,8 +264,9 @@ class TestRunRepository:
         if not run:
             return None
 
-        if run.status not in [TestRunStatus.PENDING, TestRunStatus.RUNNING]:
-            raise ValueError(f"Cannot cancel run in status {run.status.value}")
+        if run.status not in {TestRunStatus.PENDING, TestRunStatus.RUNNING}:
+            msg = f"Cannot cancel run in status {run.status.value}"
+            raise ValueError(msg)
 
         old_status = run.status
         run.status = TestRunStatus.CANCELLED
@@ -434,7 +434,7 @@ class TestRunRepository:
             select(TestRunActivity)
             .where(TestRunActivity.run_id == run_id)
             .order_by(TestRunActivity.created_at.desc())
-            .limit(limit)
+            .limit(limit),
         )
         return list(result.scalars().all())
 
@@ -455,13 +455,13 @@ class TestRunRepository:
 
         # By status
         status_result = await self.session.execute(
-            select(TestRun.status, func.count()).where(TestRun.project_id == project_id).group_by(TestRun.status)
+            select(TestRun.status, func.count()).where(TestRun.project_id == project_id).group_by(TestRun.status),
         )
         by_status = {str(row[0].value): row[1] for row in status_result}
 
         # By type
         type_result = await self.session.execute(
-            select(TestRun.run_type, func.count()).where(TestRun.project_id == project_id).group_by(TestRun.run_type)
+            select(TestRun.run_type, func.count()).where(TestRun.project_id == project_id).group_by(TestRun.run_type),
         )
         by_type = {str(row[0].value): row[1] for row in type_result}
 
@@ -472,9 +472,9 @@ class TestRunRepository:
                 and_(
                     TestRun.project_id == project_id,
                     TestRun.environment.isnot(None),
-                )
+                ),
             )
-            .group_by(TestRun.environment)
+            .group_by(TestRun.environment),
         )
         by_environment = {row[0]: row[1] for row in env_result}
 
@@ -484,8 +484,8 @@ class TestRunRepository:
                 and_(
                     TestRun.project_id == project_id,
                     TestRun.duration_seconds.isnot(None),
-                )
-            )
+                ),
+            ),
         )
         avg_duration = dur_result.scalar()
 
@@ -495,14 +495,14 @@ class TestRunRepository:
                 and_(
                     TestRun.project_id == project_id,
                     TestRun.pass_rate.isnot(None),
-                )
-            )
+                ),
+            ),
         )
         avg_pass_rate = rate_result.scalar()
 
         # Recent runs
         recent_result = await self.session.execute(
-            select(TestRun).where(TestRun.project_id == project_id).order_by(TestRun.created_at.desc()).limit(5)
+            select(TestRun).where(TestRun.project_id == project_id).order_by(TestRun.created_at.desc()).limit(5),
         )
         recent_runs = list(recent_result.scalars().all())
 

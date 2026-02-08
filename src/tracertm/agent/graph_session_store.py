@@ -39,7 +39,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
         cache_service: Any = None,
         neo4j_client: Any = None,
         nats_client: Any = None,
-    ):
+    ) -> None:
         super().__init__(sandbox_provider, cache_service)
         self._neo4j = neo4j_client
         self._event_publisher = AgentEventPublisher(nats_client) if nats_client else None
@@ -68,7 +68,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
         session_id: str,
         sandbox_root: str,
         config: SandboxConfig | None = None,
-    ):
+    ) -> None:
         """Create Session node in Neo4j with relationships."""
         if self._neo4j is None:
             return
@@ -116,7 +116,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
                 await result.consume()
                 logger.info("Created Neo4j session node: %s", session_id)
         except Exception as e:
-            logger.error("Neo4j session creation failed: %s", e)
+            logger.exception("Neo4j session creation failed: %s", e)
             raise
 
     async def create_session_fork(
@@ -142,7 +142,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
 
         return sandbox_root, created
 
-    async def _create_fork_relationship(self, new_session_id: str, parent_session_id: str):
+    async def _create_fork_relationship(self, new_session_id: str, parent_session_id: str) -> None:
         """Create FORKED_FROM relationship between sessions."""
         if self._neo4j is None:
             return
@@ -252,7 +252,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
                     return record["lineage"]
                 return []
         except Exception as e:
-            logger.error("Failed to get session lineage: %s", e)
+            logger.exception("Failed to get session lineage: %s", e)
             return []
 
     async def get_related_sessions(
@@ -286,7 +286,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
                 records = await result.data()
                 return [r["related_session"] for r in records]
         except Exception as e:
-            logger.error("Failed to get related sessions: %s", e)
+            logger.exception("Failed to get related sessions: %s", e)
             return []
 
     async def update_session_status(
@@ -295,7 +295,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
         status: str,
         old_status: str | None = None,
         project_id: str | None = None,
-    ):
+    ) -> None:
         """Update session status in Neo4j and publish event."""
         # Publish status change event
         if self._event_publisher and old_status:
@@ -307,7 +307,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
                     new_status=SessionStatus(status),
                 )
             except Exception as e:
-                logger.debug(f"Failed to publish status change event: {e}")
+                logger.debug("Failed to publish status change event: %s", e)
 
         # Update in Neo4j
         if self._neo4j is None:
@@ -339,7 +339,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
         db_session: Any = None,
         project_id: str | None = None,
         reason: str | None = None,
-    ):
+    ) -> None:
         """Delete session from PostgreSQL and Neo4j, publish event."""
         # Publish destruction event
         if self._event_publisher:
@@ -350,7 +350,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
                     reason=reason or "Session deleted",
                 )
             except Exception as e:
-                logger.debug(f"Failed to publish session destruction event: {e}")
+                logger.debug("Failed to publish session destruction event: %s", e)
 
         # Delete from PostgreSQL
         if db_session is not None:
@@ -371,7 +371,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
             except Exception as e:
                 logger.warning("Failed to delete Neo4j session node: %s", e)
 
-    async def _delete_session_node(self, session_id: str):
+    async def _delete_session_node(self, session_id: str) -> None:
         """Delete Session node and all its relationships."""
         if self._neo4j is None:
             return

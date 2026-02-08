@@ -5,6 +5,7 @@ Breaks down websocket_endpoint (complexity 29) into focused functions.
 """
 
 import asyncio
+import contextlib
 import logging
 from typing import Any
 
@@ -79,7 +80,7 @@ async def receive_auth_message(websocket: WebSocket, timeout_seconds: float = 10
     msg = await asyncio.wait_for(websocket.receive_json(), timeout=timeout_seconds)
     if isinstance(msg, dict) and msg.get("type") == "auth":
         token = (msg.get("token") or "").strip()
-        return token if token else None
+        return token or None
     return None
 
 
@@ -146,10 +147,8 @@ async def handle_auth_failure(
         message: Error message
         code: WebSocket close code (default 1008 = policy violation)
     """
-    try:
+    with contextlib.suppress(WebSocketDisconnect):
         await websocket.send_json({"type": "auth_failed", "message": message})
-    except WebSocketDisconnect:
-        pass
     await close_websocket_once(websocket, ws_closed, code, message)
 
 
@@ -241,7 +240,7 @@ async def websocket_message_loop(websocket: WebSocket) -> None:
         except WebSocketDisconnect:
             raise
         except Exception as e:
-            logger.error("WebSocket error: %s", e)
+            logger.exception("WebSocket error: %s", e)
             await websocket.send_json({"type": "error", "message": str(e)})
 
 
@@ -276,10 +275,8 @@ async def websocket_endpoint(websocket: WebSocket, verify_token_func) -> None:
     except WebSocketDisconnect:
         logger.info("WebSocket client disconnected")
     except Exception as e:
-        logger.error("WebSocket connection error: %s", e)
+        logger.exception("WebSocket connection error: %s", e)
     finally:
         if not ws_closed:
-            try:
+            with contextlib.suppress(Exception):
                 await websocket.close()
-            except Exception:
-                pass

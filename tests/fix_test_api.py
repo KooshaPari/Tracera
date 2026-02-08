@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
-"""
-Script to systematically fix test_api_comprehensive.py
-Applies all AsyncMock and fixture corrections
+"""Script to systematically fix test_api_comprehensive.py
+Applies all AsyncMock and fixture corrections.
 """
 
 import pathlib
 import re
 
 
-def fix_test_file():
+def fix_test_file() -> None:
     """Apply all fixes to the test file."""
     file_path = "tests/unit/api/test_api_comprehensive.py"
 
-    with pathlib.Path(file_path).open() as f:
-        content = f.read()
+    content = pathlib.Path(file_path).read_text(encoding="utf-8")
 
     # Fix 1: Update create_query_chain signature
     content = re.sub(
@@ -42,15 +40,8 @@ def fix_test_file():
     )
 
     # Write back
-    with pathlib.Path(file_path).open("w") as f:
-        f.write(content)
-
-    print("✓ Fixed create_query_chain signature")
-    print("✓ Fixed _retry_request AsyncMock patterns")
-    print(f"✓ Updated {file_path}")
+    pathlib.Path(file_path).write_text(content, encoding="utf-8")
 
 
 if __name__ == "__main__":
     fix_test_file()
-    print("\nAll fixes applied successfully!")
-    print("Run: pytest tests/unit/api/test_api_comprehensive.py::TestApiClientRetryLogic -v")

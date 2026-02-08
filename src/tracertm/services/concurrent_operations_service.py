@@ -1,5 +1,4 @@
-"""
-Concurrent operations service for Epic 5 (Story 5.2, FR40).
+"""Concurrent operations service for Epic 5 (Story 5.2, FR40).
 
 Provides retry logic, exponential backoff, and concurrent operation support.
 """
@@ -26,8 +25,7 @@ def retry_with_backoff(
     exponential_base: float = 2.0,
     jitter: bool = True,
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:
-    """
-    Decorator for retrying operations with exponential backoff (Story 5.3).
+    """Decorator for retrying operations with exponential backoff (Story 5.3).
 
     Args:
         max_retries: Maximum number of retry attempts
@@ -70,7 +68,8 @@ def retry_with_backoff(
                         delay = min(delay * exponential_base, max_delay)
                     else:
                         # Max retries exceeded
-                        raise ConcurrencyError(f"Operation failed after {max_retries} retries: {e!s}") from e
+                        msg = f"Operation failed after {max_retries} retries: {e!s}"
+                        raise ConcurrencyError(msg) from e
                 except Exception:
                     # Non-retryable error
                     raise
@@ -78,7 +77,8 @@ def retry_with_backoff(
             # Should never reach here
             if last_exception:
                 raise last_exception
-            raise RuntimeError("Unexpected retry logic failure")
+            msg = "Unexpected retry logic failure"
+            raise RuntimeError(msg)
 
         return wrapper
 
@@ -86,8 +86,7 @@ def retry_with_backoff(
 
 
 class ConcurrentOperationsService:
-    """
-    Service for managing concurrent operations (Story 5.2, FR40).
+    """Service for managing concurrent operations (Story 5.2, FR40).
 
     Provides retry logic, conflict detection, and transaction support.
     """
@@ -102,8 +101,7 @@ class ConcurrentOperationsService:
         max_retries: int = 3,
         initial_delay: float = 0.1,
     ) -> T:
-        """
-        Execute operation with retry logic (Story 5.3).
+        """Execute operation with retry logic (Story 5.3).
 
         Args:
             operation: Function to execute
@@ -133,15 +131,16 @@ class ConcurrentOperationsService:
                     time.sleep(actual_delay)
                     delay = min(delay * 2.0, 2.0)  # Exponential backoff, max 2s
                 else:
-                    raise ConcurrencyError(f"Operation failed after {max_retries} retries: {e!s}") from e
+                    msg = f"Operation failed after {max_retries} retries: {e!s}"
+                    raise ConcurrencyError(msg) from e
 
         if last_exception:
             raise last_exception
-        raise RuntimeError("Unexpected retry failure")
+        msg = "Unexpected retry failure"
+        raise RuntimeError(msg)
 
     def execute_in_transaction(self, operations: list[Callable[[], Any]]) -> list[Any]:
-        """
-        Execute multiple operations in a single transaction (Story 5.2).
+        """Execute multiple operations in a single transaction (Story 5.2).
 
         Args:
             operations: List of operations to execute

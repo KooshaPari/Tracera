@@ -15,20 +15,21 @@ test.describe('WebSocket Real-time Flow', () => {
     await expect(page.getByText(`Project: ${projectId}`)).toBeVisible();
 
     // 2. Setup WebSocket message listener in browser context to verify event reception
-    const eventReceivedPromise = page.evaluate(() => {
-      return new Promise((resolve) => {
-        // Access the global realtimeClient (assuming it's attached to window or accessible)
-        // Since it's a module, we might need to use a hook or capture logs
-        // Alternatively, we can just look for the UI change
-        console.log('Waiting for item.created event...');
-      });
-    });
+    const eventReceivedPromise = page.evaluate(
+      async () =>
+        new Promise((resolve) => {
+          // Access the global realtimeClient (assuming it's attached to window or accessible)
+          // Since it's a module, we might need to use a hook or capture logs
+          // Alternatively, we can just look for the UI change
+          console.log('Waiting for item.created event...');
+        }),
+    );
 
     // 3. Trigger item creation via API (simulating another user/process)
     // We use page.evaluate to make a fetch request with the same auth token
     await page.evaluate(
       async ({ projectId, itemName }) => {
-        const authData = JSON.parse(localStorage.getItem('tracertm-auth-store') || '{}');
+        const authData = JSON.parse(localStorage.getItem('tracertm-auth-store') ?? '{}');
         const token = authData.state?.token;
 
         const response = await fetch('http://localhost:4000/api/v1/items', {
@@ -55,7 +56,7 @@ test.describe('WebSocket Real-time Flow', () => {
     // 4. Verify UI updates automatically
     // We'll look for the new item title in the page
     // The useRealtimeUpdates hook should have invalidated the query, triggering a refetch
-    await expect(page.getByText(itemName)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(itemName)).toBeVisible({ timeout: 10_000 });
 
     console.log('✅ Real-time UI update verified via WebSocket flow');
   });
@@ -68,7 +69,7 @@ test.describe('WebSocket Real-time Flow', () => {
     // Trigger project update via API
     await page.evaluate(
       async ({ projectId, newDescription }) => {
-        const authData = JSON.parse(localStorage.getItem('tracertm-auth-store') || '{}');
+        const authData = JSON.parse(localStorage.getItem('tracertm-auth-store') ?? '{}');
         const token = authData.state?.token;
 
         await fetch(`http://localhost:4000/api/v1/projects/${projectId}`, {
@@ -86,7 +87,7 @@ test.describe('WebSocket Real-time Flow', () => {
     );
 
     // Verify UI updates automatically
-    await expect(page.getByText(newDescription)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(newDescription)).toBeVisible({ timeout: 10_000 });
 
     console.log('✅ Real-time project update verified via WebSocket flow');
   });

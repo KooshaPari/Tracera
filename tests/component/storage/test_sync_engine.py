@@ -1,6 +1,7 @@
 import asyncio
 from datetime import UTC, datetime, timedelta, timezone
 from types import SimpleNamespace
+from typing import Never
 
 import pytest
 
@@ -21,7 +22,7 @@ from tracertm.storage.sync_engine import (
 class _DummyQueue:
     """Lightweight queue double for exercising SyncEngine upload logic."""
 
-    def __init__(self, changes):
+    def __init__(self, changes) -> None:
         self._changes = list(changes)
         self.removed: list[int] = []
         self.retried: list[tuple[int, str]] = []
@@ -29,17 +30,17 @@ class _DummyQueue:
     def get_pending(self, limit=100):
         return list(self._changes)[:limit]
 
-    def remove(self, queue_id: int):
+    def remove(self, queue_id: int) -> None:
         self.removed.append(queue_id)
 
-    def update_retry(self, queue_id: int, error: str):
+    def update_retry(self, queue_id: int, error: str) -> None:
         self.retried.append((queue_id, error))
 
 
 class _NoOpState:
     """Minimal state manager stub to avoid sqlite churn in tests."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.status_updates: list[SyncStatus] = []
         self.errors: list[str | None] = []
         self.last_sync_set: list[datetime | None] = []
@@ -47,13 +48,13 @@ class _NoOpState:
     def get_state(self) -> SyncState:
         return SyncState(last_sync=None, pending_changes=0, status=SyncStatus.IDLE)
 
-    def update_status(self, status: SyncStatus):
+    def update_status(self, status: SyncStatus) -> None:
         self.status_updates.append(status)
 
-    def update_error(self, error: str | None):
+    def update_error(self, error: str | None) -> None:
         self.errors.append(error)
 
-    def update_last_sync(self, timestamp: datetime | None = None):
+    def update_last_sync(self, timestamp: datetime | None = None) -> None:
         self.last_sync_set.append(timestamp)
 
 
@@ -90,12 +91,12 @@ def _queued(change_id=1, retries=0):
 
 
 @pytest.mark.asyncio
-async def test_process_queue_success_removes_items(tmp_path, monkeypatch):
+async def test_process_queue_success_removes_items(tmp_path, monkeypatch) -> None:
     engine = _engine(tmp_path, monkeypatch)
     change = _queued()
     engine.queue = _DummyQueue([change])
 
-    async def succeed(_change):
+    async def succeed(_change) -> bool:
         return True
 
     engine._upload_change = succeed  # type: ignore[assignment]
@@ -108,12 +109,12 @@ async def test_process_queue_success_removes_items(tmp_path, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_process_queue_skips_after_max_retries(tmp_path, monkeypatch):
+async def test_process_queue_skips_after_max_retries(tmp_path, monkeypatch) -> None:
     engine = _engine(tmp_path, monkeypatch)
     change = _queued(change_id=5, retries=engine.max_retries)
     engine.queue = _DummyQueue([change])
 
-    async def succeed(_change):
+    async def succeed(_change) -> bool:
         return True
 
     engine._upload_change = succeed  # type: ignore[assignment]
@@ -125,13 +126,14 @@ async def test_process_queue_skips_after_max_retries(tmp_path, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_process_queue_records_errors_on_exception(tmp_path, monkeypatch):
+async def test_process_queue_records_errors_on_exception(tmp_path, monkeypatch) -> None:
     engine = _engine(tmp_path, monkeypatch)
     change = _queued(change_id=9, retries=0)
     engine.queue = _DummyQueue([change])
 
-    async def boom(_change):
-        raise RuntimeError("upload failed")
+    async def boom(_change) -> Never:
+        msg = "upload failed"
+        raise RuntimeError(msg)
 
     engine._upload_change = boom  # type: ignore[assignment]
 
@@ -142,7 +144,7 @@ async def test_process_queue_records_errors_on_exception(tmp_path, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_sync_prevents_reentry(tmp_path, monkeypatch):
+async def test_sync_prevents_reentry(tmp_path, monkeypatch) -> None:
     engine = _engine(tmp_path, monkeypatch)
     engine._syncing = True
 
@@ -153,11 +155,11 @@ async def test_sync_prevents_reentry(tmp_path, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_sync_happy_path_aggregates_counts(tmp_path, monkeypatch):
+async def test_sync_happy_path_aggregates_counts(tmp_path, monkeypatch) -> None:
     engine = _engine(tmp_path, monkeypatch)
     engine.queue = _DummyQueue([])
 
-    async def fake_detect():
+    async def fake_detect() -> int:
         return 1
 
     async def fake_upload():
@@ -179,7 +181,7 @@ async def test_sync_happy_path_aggregates_counts(tmp_path, monkeypatch):
     assert engine.state_manager.status_updates[-1] == SyncStatus.SUCCESS
 
 
-def test_resolve_conflict_strategies(tmp_path, monkeypatch):
+def test_resolve_conflict_strategies(tmp_path, monkeypatch) -> None:
     engine = _engine(tmp_path, monkeypatch)
     newer = {"updated_at": (datetime.now(UTC)).isoformat()}
     older = {"updated_at": (datetime.now(UTC) - timedelta(minutes=1)).isoformat()}
@@ -199,10 +201,10 @@ def test_resolve_conflict_strategies(tmp_path, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_exponential_backoff_caps_delay(monkeypatch):
+async def test_exponential_backoff_caps_delay(monkeypatch) -> None:
     captured = {}
 
-    async def fake_sleep(delay):
+    async def fake_sleep(delay) -> None:
         captured["delay"] = delay
 
     monkeypatch.setattr(asyncio, "sleep", fake_sleep)
@@ -212,7 +214,7 @@ async def test_exponential_backoff_caps_delay(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_pull_changes_applies_remote_errors_are_collected(tmp_path, monkeypatch):
+async def test_pull_changes_applies_remote_errors_are_collected(tmp_path, monkeypatch) -> None:
     engine = _engine(tmp_path, monkeypatch)
 
     # fake remote changes with one failing apply
@@ -221,10 +223,10 @@ async def test_pull_changes_applies_remote_errors_are_collected(tmp_path, monkey
     async def fake_pull(since=None):
         return SyncResult(success=True, entities_synced=0)
 
-    async def apply(change):
+    async def apply(change) -> None:
         if change["id"] == "c2":
-            raise RuntimeError("fail")
-        return
+            msg = "fail"
+            raise RuntimeError(msg)
 
     # monkeypatch pull_changes internals
     engine._apply_remote_change = apply  # type: ignore[assignment]

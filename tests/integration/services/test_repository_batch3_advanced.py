@@ -1,5 +1,4 @@
-"""
-Advanced Repository Integration Tests - Phase 3 Batch 1B
+"""Advanced Repository Integration Tests - Phase 3 Batch 1B.
 
 Target: +4-5% coverage expansion with 65+ comprehensive tests
 Focus areas:
@@ -118,19 +117,19 @@ class TestItemRepositoryCRUD:
     """Tests for Item CRUD operations."""
 
     @pytest.mark.asyncio
-    async def test_create_item_minimal(self, item_repo, async_session):
+    async def test_create_item_minimal(self, item_repo, async_session) -> None:
         """Test creating item with minimal fields."""
         item = create_mock_item()
         async_session.execute.return_value.scalar_one_or_none.return_value = item
 
         result = await item_repo.create(
-            project_id="proj-1", title="New Item", view="REQUIREMENTS", item_type="requirement"
+            project_id="proj-1", title="New Item", view="REQUIREMENTS", item_type="requirement",
         )
 
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_create_item_all_fields(self, item_repo, async_session):
+    async def test_create_item_all_fields(self, item_repo, async_session) -> None:
         """Test creating item with all available fields."""
         item = create_mock_item(
             title="Complete Item",
@@ -155,7 +154,7 @@ class TestItemRepositoryCRUD:
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_get_item_by_id(self, item_repo, async_session):
+    async def test_get_item_by_id(self, item_repo, async_session) -> None:
         """Test retrieving item by ID."""
         item = create_mock_item()
         async_session.execute.return_value.scalar_one_or_none.return_value = item
@@ -166,7 +165,7 @@ class TestItemRepositoryCRUD:
         assert result.id == "item-1"
 
     @pytest.mark.asyncio
-    async def test_get_item_not_found(self, item_repo, async_session):
+    async def test_get_item_not_found(self, item_repo, async_session) -> None:
         """Test retrieving non-existent item returns None."""
         async_session.execute.return_value.scalar_one_or_none.return_value = None
 
@@ -175,7 +174,7 @@ class TestItemRepositoryCRUD:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_update_item_single_field(self, item_repo, async_session):
+    async def test_update_item_single_field(self, item_repo, async_session) -> None:
         """Test updating single field on item."""
         updated_item = create_mock_item(title="Updated Title")
         async_session.execute.return_value.scalar_one_or_none.return_value = updated_item
@@ -185,7 +184,7 @@ class TestItemRepositoryCRUD:
         assert result.title == "Updated Title"
 
     @pytest.mark.asyncio
-    async def test_update_item_multiple_fields(self, item_repo, async_session):
+    async def test_update_item_multiple_fields(self, item_repo, async_session) -> None:
         """Test updating multiple fields."""
         updated_item = create_mock_item(status="done", owner="user-2", priority="low")
         async_session.execute.return_value.scalar_one_or_none.return_value = updated_item
@@ -195,7 +194,7 @@ class TestItemRepositoryCRUD:
         assert result.status == "done"
 
     @pytest.mark.asyncio
-    async def test_delete_item_soft_delete(self, item_repo, async_session):
+    async def test_delete_item_soft_delete(self, item_repo, async_session) -> None:
         """Test soft-deleting item."""
         deleted_item = create_mock_item(deleted_at=datetime.now(UTC))
         async_session.execute.return_value.scalar_one_or_none.return_value = deleted_item
@@ -205,7 +204,7 @@ class TestItemRepositoryCRUD:
         assert result.deleted_at is not None
 
     @pytest.mark.asyncio
-    async def test_delete_item_hard_delete(self, item_repo, async_session):
+    async def test_delete_item_hard_delete(self, item_repo, async_session) -> None:
         """Test hard-deleting item."""
         async_session.execute.return_value = None
 
@@ -214,7 +213,7 @@ class TestItemRepositoryCRUD:
         async_session.execute.assert_called()
 
     @pytest.mark.asyncio
-    async def test_bulk_create_items(self, item_repo, async_session):
+    async def test_bulk_create_items(self, item_repo, async_session) -> None:
         """Test creating multiple items at once."""
         items = [create_mock_item(f"item-{i}") for i in range(5)]
         async_session.execute.return_value.scalars.return_value.all.return_value = items
@@ -233,7 +232,7 @@ class TestItemRepositoryQueries:
     """Tests for complex item queries."""
 
     @pytest.mark.asyncio
-    async def test_list_by_project(self, item_repo, async_session):
+    async def test_list_by_project(self, item_repo, async_session) -> None:
         """Test listing all items in project."""
         items = [create_mock_item(f"item-{i}") for i in range(3)]
         async_session.execute.return_value.scalars.return_value.all.return_value = items
@@ -243,7 +242,7 @@ class TestItemRepositoryQueries:
         assert len(result) == 3
 
     @pytest.mark.asyncio
-    async def test_list_with_pagination(self, item_repo, async_session):
+    async def test_list_with_pagination(self, item_repo, async_session) -> None:
         """Test listing with limit and offset."""
         items = [create_mock_item(f"item-{i}") for i in range(2)]
         async_session.execute.return_value.scalars.return_value.all.return_value = items
@@ -253,7 +252,7 @@ class TestItemRepositoryQueries:
         assert len(result) == 2
 
     @pytest.mark.asyncio
-    async def test_list_by_status(self, item_repo, async_session):
+    async def test_list_by_status(self, item_repo, async_session) -> None:
         """Test filtering items by status."""
         items = [create_mock_item(status="done")]
         async_session.execute.return_value.scalars.return_value.all.return_value = items
@@ -263,7 +262,7 @@ class TestItemRepositoryQueries:
         assert all(item.status == "done" for item in result)
 
     @pytest.mark.asyncio
-    async def test_list_by_view(self, item_repo, async_session):
+    async def test_list_by_view(self, item_repo, async_session) -> None:
         """Test filtering items by view."""
         items = [create_mock_item(view="REQUIREMENTS")]
         async_session.execute.return_value.scalars.return_value.all.return_value = items
@@ -273,7 +272,7 @@ class TestItemRepositoryQueries:
         assert all(item.view == "REQUIREMENTS" for item in result)
 
     @pytest.mark.asyncio
-    async def test_list_exclude_deleted(self, item_repo, async_session):
+    async def test_list_exclude_deleted(self, item_repo, async_session) -> None:
         """Test excluding soft-deleted items."""
         items = [create_mock_item(deleted_at=None)]
         async_session.execute.return_value.scalars.return_value.all.return_value = items
@@ -283,7 +282,7 @@ class TestItemRepositoryQueries:
         assert all(item.deleted_at is None for item in result)
 
     @pytest.mark.asyncio
-    async def test_search_by_title(self, item_repo, async_session):
+    async def test_search_by_title(self, item_repo, async_session) -> None:
         """Test searching items by title."""
         items = [create_mock_item(title="Create new feature")]
         async_session.execute.return_value.scalars.return_value.all.return_value = items
@@ -293,7 +292,7 @@ class TestItemRepositoryQueries:
         assert len(result) == 1
 
     @pytest.mark.asyncio
-    async def test_get_children(self, item_repo, async_session):
+    async def test_get_children(self, item_repo, async_session) -> None:
         """Test getting child items."""
         children = [create_mock_item(parent_id="item-1")]
         async_session.execute.return_value.scalars.return_value.all.return_value = children
@@ -303,7 +302,7 @@ class TestItemRepositoryQueries:
         assert all(item.parent_id == "item-1" for item in result)
 
     @pytest.mark.asyncio
-    async def test_get_ancestors(self, item_repo, async_session):
+    async def test_get_ancestors(self, item_repo, async_session) -> None:
         """Test getting ancestor items (parent chain)."""
         ancestors = [create_mock_item("item-2", parent_id="item-3"), create_mock_item("item-3", parent_id=None)]
         async_session.execute.return_value.scalars.return_value.all.return_value = ancestors
@@ -322,7 +321,7 @@ class TestProjectRepository:
     """Tests for Project repository operations."""
 
     @pytest.mark.asyncio
-    async def test_create_project(self, project_repo, async_session):
+    async def test_create_project(self, project_repo, async_session) -> None:
         """Test creating new project."""
         project = create_mock_project()
         async_session.execute.return_value.scalar_one_or_none.return_value = project
@@ -332,7 +331,7 @@ class TestProjectRepository:
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_get_project_by_id(self, project_repo, async_session):
+    async def test_get_project_by_id(self, project_repo, async_session) -> None:
         """Test retrieving project."""
         project = create_mock_project()
         async_session.execute.return_value.scalar_one_or_none.return_value = project
@@ -343,7 +342,7 @@ class TestProjectRepository:
         assert result.id == "proj-1"
 
     @pytest.mark.asyncio
-    async def test_list_projects(self, project_repo, async_session):
+    async def test_list_projects(self, project_repo, async_session) -> None:
         """Test listing projects."""
         projects = [
             create_mock_project("proj-1"),
@@ -357,7 +356,7 @@ class TestProjectRepository:
         assert len(result) == 3
 
     @pytest.mark.asyncio
-    async def test_update_project(self, project_repo, async_session):
+    async def test_update_project(self, project_repo, async_session) -> None:
         """Test updating project."""
         updated = create_mock_project(name="Updated Name")
         async_session.execute.return_value.scalar_one_or_none.return_value = updated
@@ -367,7 +366,7 @@ class TestProjectRepository:
         assert result.name == "Updated Name"
 
     @pytest.mark.asyncio
-    async def test_delete_project(self, project_repo, async_session):
+    async def test_delete_project(self, project_repo, async_session) -> None:
         """Test deleting project."""
         async_session.execute.return_value = None
 
@@ -376,7 +375,7 @@ class TestProjectRepository:
         async_session.execute.assert_called()
 
     @pytest.mark.asyncio
-    async def test_get_project_items_count(self, project_repo, async_session):
+    async def test_get_project_items_count(self, project_repo, async_session) -> None:
         """Test getting count of items in project."""
         async_session.execute.return_value.scalar_one_or_none.return_value = 42
 
@@ -394,19 +393,19 @@ class TestLinkRepository:
     """Tests for Link repository operations."""
 
     @pytest.mark.asyncio
-    async def test_create_link(self, link_repo, async_session):
+    async def test_create_link(self, link_repo, async_session) -> None:
         """Test creating link between items."""
         link = create_mock_link()
         async_session.execute.return_value.scalar_one_or_none.return_value = link
 
         result = await link_repo.create(
-            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="relates_to"
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="relates_to",
         )
 
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_get_link_by_id(self, link_repo, async_session):
+    async def test_get_link_by_id(self, link_repo, async_session) -> None:
         """Test retrieving link."""
         link = create_mock_link()
         async_session.execute.return_value.scalar_one_or_none.return_value = link
@@ -416,7 +415,7 @@ class TestLinkRepository:
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_delete_link(self, link_repo, async_session):
+    async def test_delete_link(self, link_repo, async_session) -> None:
         """Test deleting link."""
         async_session.execute.return_value = None
 
@@ -425,7 +424,7 @@ class TestLinkRepository:
         async_session.execute.assert_called()
 
     @pytest.mark.asyncio
-    async def test_get_links_by_source(self, link_repo, async_session):
+    async def test_get_links_by_source(self, link_repo, async_session) -> None:
         """Test getting all outgoing links from item."""
         links = [create_mock_link("link-1"), create_mock_link("link-2")]
         async_session.execute.return_value.scalars.return_value.all.return_value = links
@@ -435,7 +434,7 @@ class TestLinkRepository:
         assert len(result) == 2
 
     @pytest.mark.asyncio
-    async def test_get_links_by_target(self, link_repo, async_session):
+    async def test_get_links_by_target(self, link_repo, async_session) -> None:
         """Test getting all incoming links to item."""
         links = [create_mock_link("link-1"), create_mock_link("link-2")]
         async_session.execute.return_value.scalars.return_value.all.return_value = links
@@ -445,7 +444,7 @@ class TestLinkRepository:
         assert len(result) == 2
 
     @pytest.mark.asyncio
-    async def test_bulk_create_links(self, link_repo, async_session):
+    async def test_bulk_create_links(self, link_repo, async_session) -> None:
         """Test creating multiple links."""
         links = [create_mock_link(f"link-{i}") for i in range(3)]
         async_session.execute.return_value.scalars.return_value.all.return_value = links
@@ -471,19 +470,19 @@ class TestTransactionHandling:
     """Tests for transaction handling and consistency."""
 
     @pytest.mark.asyncio
-    async def test_transaction_commit_on_success(self, item_repo, async_session):
+    async def test_transaction_commit_on_success(self, item_repo, async_session) -> None:
         """Test transaction commits on successful operation."""
         item = create_mock_item()
         async_session.execute.return_value.scalar_one_or_none.return_value = item
 
         result = await item_repo.create(
-            project_id="proj-1", title="New Item", view="REQUIREMENTS", item_type="requirement"
+            project_id="proj-1", title="New Item", view="REQUIREMENTS", item_type="requirement",
         )
 
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_transaction_rollback_on_error(self, item_repo, async_session):
+    async def test_transaction_rollback_on_error(self, item_repo, async_session) -> None:
         """Test transaction rollback on error."""
         async_session.execute.side_effect = Exception("Database error")
 
@@ -491,7 +490,7 @@ class TestTransactionHandling:
             await item_repo.create(project_id="proj-1", title="New Item", view="REQUIREMENTS", item_type="requirement")
 
     @pytest.mark.asyncio
-    async def test_concurrent_updates_isolation(self, item_repo, async_session):
+    async def test_concurrent_updates_isolation(self, item_repo, async_session) -> None:
         """Test isolation between concurrent updates."""
         item1 = create_mock_item(version=1)
         item2 = create_mock_item(version=1)
@@ -505,7 +504,7 @@ class TestTransactionHandling:
         assert result2 is not None
 
     @pytest.mark.asyncio
-    async def test_version_conflict_detection(self, item_repo, async_session):
+    async def test_version_conflict_detection(self, item_repo, async_session) -> None:
         """Test detecting version conflicts."""
         async_session.execute.side_effect = Exception("Version mismatch")
 
@@ -522,7 +521,7 @@ class TestRelationshipIntegrity:
     """Tests for maintaining relationship integrity."""
 
     @pytest.mark.asyncio
-    async def test_cascade_delete_children(self, item_repo, async_session):
+    async def test_cascade_delete_children(self, item_repo, async_session) -> None:
         """Test cascading delete of child items."""
         async_session.execute.return_value = None
 
@@ -531,7 +530,7 @@ class TestRelationshipIntegrity:
         async_session.execute.assert_called()
 
     @pytest.mark.asyncio
-    async def test_prevent_orphaning_children(self, item_repo, async_session):
+    async def test_prevent_orphaning_children(self, item_repo, async_session) -> None:
         """Test preventing orphaned child items."""
         child = create_mock_item(parent_id="parent-1")
         async_session.execute.return_value.scalar_one_or_none.return_value = child
@@ -541,7 +540,7 @@ class TestRelationshipIntegrity:
         assert result.parent_id is not None
 
     @pytest.mark.asyncio
-    async def test_maintain_link_referential_integrity(self, link_repo, async_session):
+    async def test_maintain_link_referential_integrity(self, link_repo, async_session) -> None:
         """Test maintaining referential integrity on links."""
         async_session.execute.side_effect = Exception("Foreign key violation")
 
@@ -554,7 +553,7 @@ class TestRelationshipIntegrity:
             )
 
     @pytest.mark.asyncio
-    async def test_automatic_relationship_cleanup(self, link_repo, async_session):
+    async def test_automatic_relationship_cleanup(self, link_repo, async_session) -> None:
         """Test automatic cleanup of links when items deleted."""
         async_session.execute.return_value = None
 
@@ -572,7 +571,7 @@ class TestRepositoryPerformance:
     """Tests for repository performance characteristics."""
 
     @pytest.mark.asyncio
-    async def test_bulk_operation_efficiency(self, item_repo, async_session):
+    async def test_bulk_operation_efficiency(self, item_repo, async_session) -> None:
         """Test that bulk operations are more efficient."""
         items = [create_mock_item(f"item-{i}") for i in range(100)]
         async_session.execute.return_value.scalars.return_value.all.return_value = items
@@ -582,7 +581,7 @@ class TestRepositoryPerformance:
         assert len(result) == 100
 
     @pytest.mark.asyncio
-    async def test_index_usage_on_lookups(self, item_repo, async_session):
+    async def test_index_usage_on_lookups(self, item_repo, async_session) -> None:
         """Test that queries use indexes efficiently."""
         item = create_mock_item()
         async_session.execute.return_value.scalar_one_or_none.return_value = item
@@ -592,7 +591,7 @@ class TestRepositoryPerformance:
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_lazy_loading_relationships(self, item_repo, async_session):
+    async def test_lazy_loading_relationships(self, item_repo, async_session) -> None:
         """Test lazy loading of relationships."""
         item = create_mock_item()
         async_session.execute.return_value.scalar_one_or_none.return_value = item
@@ -603,7 +602,7 @@ class TestRepositoryPerformance:
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_eager_loading_option(self, item_repo, async_session):
+    async def test_eager_loading_option(self, item_repo, async_session) -> None:
         """Test eager loading of relationships when specified."""
         item = create_mock_item()
         async_session.execute.return_value.scalar_one_or_none.return_value = item

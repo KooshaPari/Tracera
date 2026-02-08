@@ -21,7 +21,7 @@ const Login = () => {
       await login(email, password);
       toast.success('Welcome back!');
       navigate({ to: '/home' });
-    } catch (error) {
+    } catch {
       toast.error('Invalid credentials');
     }
   };

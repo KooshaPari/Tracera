@@ -41,11 +41,13 @@ def _load_data_from_path(path: str) -> Any:
     """Sync helper: load import data from file path (run via asyncio.to_thread)."""
     p = Path(path)
     if not p.exists():
-        raise ToolError(f"File not found: {path}")
+        msg = f"File not found: {path}"
+        raise ToolError(msg)
     if p.suffix.lower() in {".yaml", ".yml"}:
         result = yaml.safe_load(p.read_text(encoding="utf-8"))
         if result is None:
-            raise ToolError(f"Failed to parse YAML file: {path}")
+            msg = f"Failed to parse YAML file: {path}"
+            raise ToolError(msg)
         return result
     return json.loads(p.read_text(encoding="utf-8"))
 
@@ -62,9 +64,11 @@ def _load_data_from_payload(payload: dict[str, Any]) -> Any:
         except json.JSONDecodeError:
             result = yaml.safe_load(content)
             if result is None:
-                raise ToolError("Failed to parse YAML content")
+                msg = "Failed to parse YAML content"
+                raise ToolError(msg)
             return result
-    raise ToolError("Provide data, content, or path for import.")
+    msg = "Provide data, content, or path for import."
+    raise ToolError(msg)
 
 
 async def _get_import_data(payload: dict[str, Any]) -> Any:
@@ -166,8 +170,7 @@ async def export_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
-    """
-    Unified export management tool.
+    """Unified export management tool.
 
     Actions (formats):
     - json: Export as JSON (items + project metadata)
@@ -191,12 +194,14 @@ async def export_manage(
         "markdown": export_cmd.export_to_markdown,
     }
     if action not in format_map:
-        raise ToolError("Unsupported export format. Use json|full|yaml|csv|markdown.")
+        msg = "Unsupported export format. Use json|full|yaml|csv|markdown."
+        raise ToolError(msg)
 
     config = ConfigManager()
     project_id = payload.get("project_id") or config.get("current_project_id")
     if not project_id:
-        raise ToolError("project_id is required for export.")
+        msg = "project_id is required for export."
+        raise ToolError(msg)
 
     storage = LocalStorageManager()
     with storage.get_session() as session:
@@ -220,8 +225,7 @@ async def import_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
-    """
-    Unified import management tool.
+    """Unified import management tool.
 
     Actions:
     - validate: Validate import data
@@ -254,7 +258,8 @@ async def import_manage(
     }
     handler = handlers.get(action)
     if handler is None:
-        raise ToolError(f"Unknown import action: {action}")
+        msg = f"Unknown import action: {action}"
+        raise ToolError(msg)
     return handler()
 
 
@@ -264,8 +269,7 @@ def ingestion_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
-    """
-    Unified ingestion management tool.
+    """Unified ingestion management tool.
 
     Actions:
     - markdown/md: Ingest Markdown file
@@ -280,7 +284,8 @@ def ingestion_manage(
     action = action.lower()
     file_path = payload.get("path")
     if not file_path:
-        raise ToolError("path is required for ingestion.")
+        msg = "path is required for ingestion."
+        raise ToolError(msg)
 
     project_id = payload.get("project_id")
     view = payload.get("view", "FEATURE")
@@ -297,13 +302,15 @@ def ingestion_manage(
         }
         handler = handlers.get(action)
         if handler is None:
-            raise ToolError(f"Unknown ingest action: {action}")
+            msg = f"Unknown ingest action: {action}"
+            raise ToolError(msg)
         return handler(file_path, project_id, view, dry_run, validate)
 
     def _ingest_directory(service: StatelessIngestionService) -> dict[str, Any]:
         directory = Path(file_path)
         if not directory.exists():
-            raise ToolError(f"Directory not found: {file_path}")
+            msg = f"Directory not found: {file_path}"
+            raise ToolError(msg)
         recursive = bool(payload.get("recursive", True))
         patterns = {".md", ".mdx", ".yaml", ".yml"}
         files = directory.rglob("*") if recursive else directory.iterdir()

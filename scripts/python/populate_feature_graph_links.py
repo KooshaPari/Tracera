@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import operator
 import os
 import re
 import uuid
@@ -217,7 +218,7 @@ def main() -> None:
                 item_id: str,
                 _graph_node_set: set = graph_node_set,
                 _project_id: str = project_id,
-            ):
+            ) -> None:
                 if not graph_id:
                     return
                 key = (graph_id, item_id)
@@ -240,7 +241,7 @@ def main() -> None:
                 link_type: str,
                 _link_set: set = link_set,
                 _project_id: str = project_id,
-            ):
+            ) -> None:
                 if not graph_id or source_id == target_id:
                     return
                 key = (graph_id, source_id, target_id, link_type)
@@ -382,7 +383,7 @@ def main() -> None:
             journey_graph_id = graph_by_type.get("journey")
             if journey_graph_id:
                 for domain, journeys in by_view_domain.get("journey", {}).items():
-                    ordered = sorted(journeys, key=lambda j: j["title"])
+                    ordered = sorted(journeys, key=operator.itemgetter("title"))
                     for idx in range(len(ordered) - 1):
                         insert_link(journey_graph_id, ordered[idx]["id"], ordered[idx + 1]["id"], "related_to")
                     uis = by_view_domain.get("ui_components", {}).get(domain, [])

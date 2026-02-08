@@ -1,5 +1,4 @@
-"""
-Tests for async database adapter and shared connection pool.
+"""Tests for async database adapter and shared connection pool.
 
 Validates:
 - Async engine creation and sharing
@@ -7,6 +6,8 @@ Validates:
 - Connection pool sharing with FastAPI
 - Session lifecycle
 """
+
+from typing import Never
 
 import pytest
 from sqlalchemy import select, text
@@ -29,7 +30,7 @@ async def cleanup_engine():
 
 
 @pytest.mark.asyncio
-async def test_get_async_engine_creates_singleton():
+async def test_get_async_engine_creates_singleton() -> None:
     """Test that get_async_engine creates a singleton instance."""
     # Engine is already initialized by setup_test_database fixture
     engine1 = await get_async_engine()
@@ -40,7 +41,7 @@ async def test_get_async_engine_creates_singleton():
 
 
 @pytest.mark.asyncio
-async def test_get_async_engine_connects_to_database():
+async def test_get_async_engine_connects_to_database() -> None:
     """Test that engine successfully connects to database."""
     engine = await get_async_engine()
 
@@ -51,7 +52,7 @@ async def test_get_async_engine_connects_to_database():
 
 
 @pytest.mark.asyncio
-async def test_get_mcp_session_provides_valid_session():
+async def test_get_mcp_session_provides_valid_session() -> None:
     """Test that get_mcp_session provides a working session."""
     async with get_mcp_session() as session:
         result = await session.execute(text("SELECT 1"))
@@ -60,7 +61,7 @@ async def test_get_mcp_session_provides_valid_session():
 
 
 @pytest.mark.asyncio
-async def test_get_mcp_session_sets_rls_context(mocker):
+async def test_get_mcp_session_sets_rls_context(mocker) -> None:
     """Test that get_mcp_session sets RLS context for PostgreSQL."""
     # Mock current_user_id context
     mocker.patch("tracertm.mcp.database_adapter.current_user_id.get", return_value="user-123")
@@ -79,7 +80,7 @@ async def test_get_mcp_session_sets_rls_context(mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_mcp_session_commits_on_success():
+async def test_get_mcp_session_commits_on_success() -> None:
     """Test that session commits changes on successful execution."""
     async with get_mcp_session() as session:
         # Create a test project
@@ -100,10 +101,10 @@ async def test_get_mcp_session_commits_on_success():
 
 
 @pytest.mark.asyncio
-async def test_get_mcp_session_rollsback_on_error():
+async def test_get_mcp_session_rollsback_on_error() -> None:
     """Test that session rolls back changes on error."""
 
-    async def _rollback_scenario():
+    async def _rollback_scenario() -> Never:
         async with get_mcp_session() as session:
             project = Project(
                 id="test-project-2",
@@ -111,7 +112,8 @@ async def test_get_mcp_session_rollsback_on_error():
                 description="Test",
             )
             session.add(project)
-            raise ValueError("Test error")
+            msg = "Test error"
+            raise ValueError(msg)
 
     with pytest.raises(ValueError, match="Test error"):
         await _rollback_scenario()
@@ -124,7 +126,7 @@ async def test_get_mcp_session_rollsback_on_error():
 
 
 @pytest.mark.asyncio
-async def test_get_pool_status_returns_metrics():
+async def test_get_pool_status_returns_metrics() -> None:
     """Test that get_pool_status returns pool metrics."""
     # Initialize engine
     await get_async_engine()
@@ -139,7 +141,7 @@ async def test_get_pool_status_returns_metrics():
 
 
 @pytest.mark.asyncio
-async def test_get_pool_status_before_init():
+async def test_get_pool_status_before_init() -> None:
     """Test that get_pool_status handles uninitialized engine."""
     status = await get_pool_status()
 
@@ -147,7 +149,7 @@ async def test_get_pool_status_before_init():
 
 
 @pytest.mark.asyncio
-async def test_engine_sharing_reduces_connections():
+async def test_engine_sharing_reduces_connections() -> None:
     """Test that multiple sessions share the same connection pool."""
     # Get pool status via adapter (avoids typing issues with pool.size())
     initial_status = await get_pool_status()
@@ -166,7 +168,7 @@ async def test_engine_sharing_reduces_connections():
 
 
 @pytest.mark.asyncio
-async def test_reset_engine_clears_singleton():
+async def test_reset_engine_clears_singleton() -> None:
     """Test that reset_engine clears the singleton."""
     engine1 = await get_async_engine()
     await reset_engine()
@@ -176,7 +178,7 @@ async def test_reset_engine_clears_singleton():
 
 
 @pytest.mark.asyncio
-async def test_concurrent_sessions_use_pool():
+async def test_concurrent_sessions_use_pool() -> None:
     """Test that concurrent sessions properly use connection pool."""
     import asyncio
 
@@ -193,7 +195,7 @@ async def test_concurrent_sessions_use_pool():
 
 
 @pytest.mark.asyncio
-async def test_fastapi_integration_shares_engine(mocker):
+async def test_fastapi_integration_shares_engine(mocker) -> None:
     """Test that FastAPI's get_db uses the same engine."""
     # Get MCP engine
     mcp_engine = await get_async_engine()

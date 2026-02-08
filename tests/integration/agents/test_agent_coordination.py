@@ -1,6 +1,4 @@
-"""
-Integration tests for Epic 5: Agent Coordination (Story 5.4).
-"""
+"""Integration tests for Epic 5: Agent Coordination (Story 5.4)."""
 
 import pytest
 
@@ -45,7 +43,7 @@ def temp_project_setup(tmp_path, monkeypatch):
     return project_id
 
 
-def test_agent_coordination_detection(temp_project_setup):
+def test_agent_coordination_detection(temp_project_setup) -> None:
     """Test agent coordination conflict detection (Story 5.4)."""
     client1 = TraceRTMClient()
     agent1_id = client1.register_agent("agent-1", agent_type="ai_agent")

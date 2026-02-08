@@ -37,7 +37,7 @@ else:
     except ImportError:
         logger.warning(
             "APM instrumentation not available: No module named 'opentelemetry.exporter'. "
-            "Install with: pip install 'tracertm[observability]'"
+            "Install with: pip install 'tracertm[observability]'",
         )
         _exporter_available = False
 
@@ -80,9 +80,12 @@ def init_tracing(
 
         # Check if exporter is available
         if not _exporter_available:
-            raise RuntimeError(
+            msg = (
                 "Distributed tracing is enabled but OpenTelemetry exporter is not installed. "
                 "Install with: pip install 'tracertm[observability]'"
+            )
+            raise RuntimeError(
+                msg,
             )
 
         # Get configuration from environment with fallbacks
@@ -90,7 +93,7 @@ def init_tracing(
         otlp_endpoint = otlp_endpoint or os.getenv("OTLP_ENDPOINT") or os.getenv("JAEGER_ENDPOINT", "127.0.0.1:4317")
 
         logger.info(
-            f"Initializing distributed tracing (service: {service_name}, env: {environment}, endpoint: {otlp_endpoint})"
+            "Initializing distributed tracing (service: %s, env: %s, endpoint: %s)", service_name, environment, otlp_endpoint,
         )
 
         current_provider = trace.get_tracer_provider()
@@ -123,7 +126,7 @@ def init_tracing(
                     max_queue_size=2048,
                     max_export_batch_size=512,
                     schedule_delay_millis=5000,
-                )
+                ),
             )
 
             # Set as global tracer provider
@@ -137,7 +140,8 @@ def init_tracing(
             return _tracer
 
         except Exception as e:
-            raise RuntimeError(f"Failed to initialize tracing: {e}") from e
+            msg = f"Failed to initialize tracing: {e}"
+            raise RuntimeError(msg) from e
 
 
 def get_tracer() -> Tracer:

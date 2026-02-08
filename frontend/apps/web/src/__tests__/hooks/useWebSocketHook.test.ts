@@ -97,8 +97,8 @@ describe('WebSocket Hooks and Store', () => {
 
       state.clearEvents();
       expect(useWebSocketStore.getState().events).toHaveLength(0);
-      // lastEvent is set to undefined after clear
-      const lastEvent = useWebSocketStore.getState().lastEvent;
+      // LastEvent is set to undefined after clear
+      const { lastEvent } = useWebSocketStore.getState();
       expect(lastEvent === undefined || lastEvent === null).toBeTruthy();
     });
   });

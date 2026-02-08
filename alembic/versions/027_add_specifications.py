@@ -23,7 +23,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Add step_definitions table with all required columns."""
-
     # Step Definitions table for BDD automation
     op.create_table(
         "step_definitions",
@@ -39,7 +38,7 @@ def upgrade() -> None:
         sa.Column("pattern", sa.String(500), nullable=False),  # Regex pattern to match steps
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column(
-            "implementation_language", sa.String(50), nullable=False, server_default="python"
+            "implementation_language", sa.String(50), nullable=False, server_default="python",
         ),  # python, javascript, etc.
         sa.Column("implementation_code", sa.Text(), nullable=False),  # The actual step code
         sa.Column("file_path", sa.String(500), nullable=True),  # Path to implementation file

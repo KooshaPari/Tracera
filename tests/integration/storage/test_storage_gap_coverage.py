@@ -1,5 +1,4 @@
-"""
-Integration tests targeting uncovered lines in storage module.
+"""Integration tests targeting uncovered lines in storage module.
 
 This test suite focuses on achieving 85%+ coverage for:
 - local_storage.py (current: 87.81%, target: maintain/improve)
@@ -20,7 +19,7 @@ import tempfile
 import time
 from datetime import UTC, datetime, timezone
 from pathlib import Path
-from typing import cast
+from typing import Never, cast
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -83,7 +82,7 @@ def project_path(temp_base_dir):
 def initialized_project(storage_manager, project_path):
     """Initialize a .trace/ project."""
     trace_dir, project_id = storage_manager.init_project(
-        project_path, project_name="Test Project", description="Test Description", metadata={"key": "value"}
+        project_path, project_name="Test Project", description="Test Description", metadata={"key": "value"},
     )
     return trace_dir, project_id, project_path
 
@@ -96,7 +95,7 @@ def db_connection(temp_base_dir):
     Base.metadata.create_all(engine)
 
     class MockDB:
-        def __init__(self):
+        def __init__(self) -> None:
             self.engine = engine
 
     return MockDB()
@@ -123,7 +122,7 @@ def mock_api_client():
 class TestLocalStorageManagerEdgeCases:
     """Test uncovered paths in LocalStorageManager."""
 
-    def test_is_trace_project_with_file_path(self, initialized_project):
+    def test_is_trace_project_with_file_path(self, initialized_project) -> None:
         """Test is_trace_project with file path instead of directory."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -135,7 +134,7 @@ class TestLocalStorageManagerEdgeCases:
         # Should check parent directory
         assert storage.is_trace_project(test_file) is True
 
-    def test_get_project_trace_dir_with_file_path(self, initialized_project):
+    def test_get_project_trace_dir_with_file_path(self, initialized_project) -> None:
         """Test get_project_trace_dir with file path."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -146,7 +145,7 @@ class TestLocalStorageManagerEdgeCases:
         result = storage.get_project_trace_dir(test_file)
         assert result == trace_dir
 
-    def test_get_project_trace_dir_not_found(self, temp_base_dir):
+    def test_get_project_trace_dir_not_found(self, temp_base_dir) -> None:
         """Test get_project_trace_dir when .trace/ doesn't exist."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "no_trace_project"
@@ -155,7 +154,7 @@ class TestLocalStorageManagerEdgeCases:
         result = storage.get_project_trace_dir(project_path)
         assert result is None
 
-    def test_init_project_already_exists(self, initialized_project):
+    def test_init_project_already_exists(self, initialized_project) -> None:
         """Test initializing project that already has .trace/."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -163,7 +162,7 @@ class TestLocalStorageManagerEdgeCases:
         with pytest.raises(ValueError, match="already initialized"):
             storage.init_project(project_path)
 
-    def test_init_project_with_file_path(self, temp_base_dir):
+    def test_init_project_with_file_path(self, temp_base_dir) -> None:
         """Test init_project with file path resolves to parent."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "file_test_project"
@@ -176,7 +175,7 @@ class TestLocalStorageManagerEdgeCases:
 
         assert trace_dir == project_path / ".trace"
 
-    def test_init_project_creates_gitignore_appends_to_existing(self, temp_base_dir):
+    def test_init_project_creates_gitignore_appends_to_existing(self, temp_base_dir) -> None:
         """Test .gitignore creation when file exists without newline."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "gitignore_test"
@@ -192,7 +191,7 @@ class TestLocalStorageManagerEdgeCases:
         assert "# TraceRTM" in content
         assert ".trace/.meta/sync.yaml" in content
 
-    def test_register_project_no_trace_dir(self, temp_base_dir):
+    def test_register_project_no_trace_dir(self, temp_base_dir) -> None:
         """Test registering project without .trace/ directory."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "no_trace"
@@ -201,7 +200,7 @@ class TestLocalStorageManagerEdgeCases:
         with pytest.raises(ValueError, match="No .trace/ directory found"):
             storage.register_project(project_path)
 
-    def test_register_project_no_project_yaml(self, temp_base_dir):
+    def test_register_project_no_project_yaml(self, temp_base_dir) -> None:
         """Test registering project without project.yaml."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "no_yaml"
@@ -211,7 +210,7 @@ class TestLocalStorageManagerEdgeCases:
         with pytest.raises(ValueError, match="project.yaml not found"):
             storage.register_project(project_path)
 
-    def test_register_project_generates_id_if_missing(self, temp_base_dir):
+    def test_register_project_generates_id_if_missing(self, temp_base_dir) -> None:
         """Test project ID generation when missing from project.yaml."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "no_id_project"
@@ -230,7 +229,7 @@ class TestLocalStorageManagerEdgeCases:
         assert "id" in config
         assert config["id"] == project_id
 
-    def test_index_project_with_file_path(self, initialized_project):
+    def test_index_project_with_file_path(self, initialized_project) -> None:
         """Test index_project with file path."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -241,7 +240,7 @@ class TestLocalStorageManagerEdgeCases:
         counts = storage.index_project(test_file)
         assert isinstance(counts, dict)
 
-    def test_index_project_no_trace_dir(self, temp_base_dir):
+    def test_index_project_no_trace_dir(self, temp_base_dir) -> None:
         """Test indexing project without .trace/."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "no_trace"
@@ -250,7 +249,7 @@ class TestLocalStorageManagerEdgeCases:
         with pytest.raises(ValueError, match="No .trace/ directory found"):
             storage.index_project(project_path)
 
-    def test_index_project_no_id_in_yaml(self, temp_base_dir):
+    def test_index_project_no_id_in_yaml(self, temp_base_dir) -> None:
         """Test indexing project without ID in project.yaml."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "no_id"
@@ -264,7 +263,7 @@ class TestLocalStorageManagerEdgeCases:
         with pytest.raises(ValueError, match="Project ID not found"):
             storage.index_project(project_path)
 
-    def test_index_project_creates_project_if_not_exists(self, initialized_project):
+    def test_index_project_creates_project_if_not_exists(self, initialized_project) -> None:
         """Test index_project creates project in DB if missing."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -290,7 +289,7 @@ class TestLocalStorageManagerEdgeCases:
         finally:
             session.close()
 
-    def test_index_markdown_file_with_malformed_frontmatter(self, initialized_project):
+    def test_index_markdown_file_with_malformed_frontmatter(self, initialized_project) -> None:
         """Test _index_markdown_file with malformed markdown."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -302,7 +301,7 @@ class TestLocalStorageManagerEdgeCases:
         # Should handle gracefully
         storage._index_markdown_file(md_file, project_id, "epic")
 
-    def test_index_markdown_file_extracts_title_from_body(self, initialized_project):
+    def test_index_markdown_file_extracts_title_from_body(self, initialized_project) -> None:
         """Test title extraction from markdown body when not in frontmatter."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -333,7 +332,7 @@ Test description
         finally:
             session.close()
 
-    def test_index_markdown_file_updates_existing_item(self, initialized_project):
+    def test_index_markdown_file_updates_existing_item(self, initialized_project) -> None:
         """Test updating existing item via _index_markdown_file."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -373,7 +372,7 @@ updated: '2024-01-01T00:00:00'
         finally:
             session.close()
 
-    def test_index_markdown_file_handles_datetime_objects(self, initialized_project):
+    def test_index_markdown_file_handles_datetime_objects(self, initialized_project) -> None:
         """Test handling datetime objects from YAML."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -400,7 +399,7 @@ updated: 2024-01-02T00:00:00
         finally:
             session.close()
 
-    def test_get_project_counters_no_trace_dir(self, temp_base_dir):
+    def test_get_project_counters_no_trace_dir(self, temp_base_dir) -> None:
         """Test get_project_counters without .trace/."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "no_trace"
@@ -409,7 +408,7 @@ updated: 2024-01-02T00:00:00
         with pytest.raises(ValueError, match="No .trace/ directory found"):
             storage.get_project_counters(project_path)
 
-    def test_get_project_counters_no_yaml(self, temp_base_dir):
+    def test_get_project_counters_no_yaml(self, temp_base_dir) -> None:
         """Test get_project_counters returns defaults without project.yaml."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "no_yaml"
@@ -419,7 +418,7 @@ updated: 2024-01-02T00:00:00
         counters = storage.get_project_counters(project_path)
         assert counters == {"epic": 0, "story": 0, "test": 0, "task": 0}
 
-    def test_increment_project_counter_no_trace_dir(self, temp_base_dir):
+    def test_increment_project_counter_no_trace_dir(self, temp_base_dir) -> None:
         """Test increment_project_counter without .trace/."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "no_trace"
@@ -428,7 +427,7 @@ updated: 2024-01-02T00:00:00
         with pytest.raises(ValueError, match="No .trace/ directory found"):
             storage.increment_project_counter(project_path, "epic")
 
-    def test_increment_project_counter_no_yaml(self, temp_base_dir):
+    def test_increment_project_counter_no_yaml(self, temp_base_dir) -> None:
         """Test increment_project_counter without project.yaml."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "no_yaml"
@@ -438,7 +437,7 @@ updated: 2024-01-02T00:00:00
         with pytest.raises(ValueError, match="project.yaml not found"):
             storage.increment_project_counter(project_path, "epic")
 
-    def test_get_current_project_path_reaches_root(self, temp_base_dir):
+    def test_get_current_project_path_reaches_root(self, temp_base_dir) -> None:
         """Test get_current_project_path when reaching filesystem root."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
 
@@ -451,7 +450,7 @@ updated: 2024-01-02T00:00:00
             result = storage.get_current_project_path()
             assert result is None
 
-    def test_get_project_storage_for_path_no_trace_dir(self, temp_base_dir):
+    def test_get_project_storage_for_path_no_trace_dir(self, temp_base_dir) -> None:
         """Test get_project_storage_for_path without .trace/."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "no_trace"
@@ -460,7 +459,7 @@ updated: 2024-01-02T00:00:00
         result = storage.get_project_storage_for_path(project_path)
         assert result is None
 
-    def test_get_project_storage_for_path_no_yaml(self, temp_base_dir):
+    def test_get_project_storage_for_path_no_yaml(self, temp_base_dir) -> None:
         """Test get_project_storage_for_path without project.yaml."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "no_yaml"
@@ -470,7 +469,7 @@ updated: 2024-01-02T00:00:00
         result = storage.get_project_storage_for_path(project_path)
         assert result is None
 
-    def test_search_items_with_project_filter(self, initialized_project):
+    def test_search_items_with_project_filter(self, initialized_project) -> None:
         """Test search_items with project_id filter."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -514,7 +513,7 @@ updated: 2024-01-02T00:00:00
 class TestItemStorageEdgeCases:
     """Test uncovered paths in ItemStorage."""
 
-    def test_update_item_not_found(self, initialized_project):
+    def test_update_item_not_found(self, initialized_project) -> None:
         """Test updating non-existent item raises error."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -524,14 +523,14 @@ class TestItemStorageEdgeCases:
         try:
             project = session.get(Project, project_id)
             assert project_storage is not None and project is not None
-            item_storage = ItemStorage(storage, cast(ProjectStorage, project_storage), cast(Project, project))
+            item_storage = ItemStorage(storage, cast("ProjectStorage", project_storage), cast("Project", project))
         finally:
             session.close()
 
         with pytest.raises(ValueError, match="Item not found"):
             item_storage.update_item("nonexistent-id", title="New Title")
 
-    def test_update_item_with_metadata_merge(self, initialized_project):
+    def test_update_item_with_metadata_merge(self, initialized_project) -> None:
         """Test metadata merging in update_item."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -541,13 +540,13 @@ class TestItemStorageEdgeCases:
         try:
             project = session.get(Project, project_id)
             assert project_storage is not None and project is not None
-            item_storage = ItemStorage(storage, cast(ProjectStorage, project_storage), cast(Project, project))
+            item_storage = ItemStorage(storage, cast("ProjectStorage", project_storage), cast("Project", project))
         finally:
             session.close()
 
         # Create item with initial metadata
         item = item_storage.create_item(
-            title="Test", item_type="epic", external_id="EPIC-001", metadata={"key1": "value1"}
+            title="Test", item_type="epic", external_id="EPIC-001", metadata={"key1": "value1"},
         )
 
         # Update with additional metadata
@@ -556,7 +555,7 @@ class TestItemStorageEdgeCases:
         assert "key1" in updated.item_metadata
         assert "key2" in updated.item_metadata
 
-    def test_delete_item_not_found(self, initialized_project):
+    def test_delete_item_not_found(self, initialized_project) -> None:
         """Test deleting non-existent item."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -566,14 +565,14 @@ class TestItemStorageEdgeCases:
         try:
             project = session.get(Project, project_id)
             assert project_storage is not None and project is not None
-            item_storage = ItemStorage(storage, cast(ProjectStorage, project_storage), cast(Project, project))
+            item_storage = ItemStorage(storage, cast("ProjectStorage", project_storage), cast("Project", project))
         finally:
             session.close()
 
         with pytest.raises(ValueError, match="Item not found"):
             item_storage.delete_item("nonexistent-id")
 
-    def test_delete_item_without_external_id(self, initialized_project):
+    def test_delete_item_without_external_id(self, initialized_project) -> None:
         """Test deleting item without external_id in metadata."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -583,11 +582,11 @@ class TestItemStorageEdgeCases:
         try:
             project = session.get(Project, project_id)
             assert project_storage is not None and project is not None
-            item_storage = ItemStorage(storage, cast(ProjectStorage, project_storage), cast(Project, project))
+            item_storage = ItemStorage(storage, cast("ProjectStorage", project_storage), cast("Project", project))
 
             # Create item without external_id
             item = Item(
-                id="test-no-ext", project_id=project_id, title="Test", item_type="epic", status="todo", item_metadata={}
+                id="test-no-ext", project_id=project_id, title="Test", item_type="epic", status="todo", item_metadata={},
             )
             session.add(item)
             session.commit()
@@ -598,7 +597,7 @@ class TestItemStorageEdgeCases:
         # Delete should not fail
         item_storage.delete_item("test-no-ext")
 
-    def test_delete_link_not_found(self, initialized_project):
+    def test_delete_link_not_found(self, initialized_project) -> None:
         """Test deleting non-existent link."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -608,14 +607,14 @@ class TestItemStorageEdgeCases:
         try:
             project = session.get(Project, project_id)
             assert project_storage is not None and project is not None
-            item_storage = ItemStorage(storage, cast(ProjectStorage, project_storage), cast(Project, project))
+            item_storage = ItemStorage(storage, cast("ProjectStorage", project_storage), cast("Project", project))
         finally:
             session.close()
 
         with pytest.raises(ValueError, match="Link not found"):
             item_storage.delete_link("nonexistent-link")
 
-    def test_write_item_markdown_without_external_id(self, initialized_project):
+    def test_write_item_markdown_without_external_id(self, initialized_project) -> None:
         """Test _write_item_markdown returns early without external_id."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -625,7 +624,7 @@ class TestItemStorageEdgeCases:
         try:
             project = session.get(Project, project_id)
             assert project_storage is not None and project is not None
-            item_storage = ItemStorage(storage, cast(ProjectStorage, project_storage), cast(Project, project))
+            item_storage = ItemStorage(storage, cast("ProjectStorage", project_storage), cast("Project", project))
 
             item = Item(id="test", project_id=project_id, title="Test", item_type="epic", status="todo")
         finally:
@@ -634,7 +633,7 @@ class TestItemStorageEdgeCases:
         # Should return early
         item_storage._write_item_markdown(item, None, "content")
 
-    def test_get_item_path_unknown_type(self, initialized_project):
+    def test_get_item_path_unknown_type(self, initialized_project) -> None:
         """Test _get_item_path with unknown item type."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -644,7 +643,7 @@ class TestItemStorageEdgeCases:
         try:
             project = session.get(Project, project_id)
             assert project_storage is not None and project is not None
-            item_storage = ItemStorage(storage, cast(ProjectStorage, project_storage), cast(Project, project))
+            item_storage = ItemStorage(storage, cast("ProjectStorage", project_storage), cast("Project", project))
         finally:
             session.close()
 
@@ -662,7 +661,7 @@ class TestItemStorageEdgeCases:
 class TestMarkdownParserEdgeCases:
     """Test uncovered paths in markdown_parser."""
 
-    def test_item_data_to_frontmatter_all_optional_fields(self):
+    def test_item_data_to_frontmatter_all_optional_fields(self) -> None:
         """Test ItemData.to_frontmatter_dict with all optional fields."""
         item = ItemData(
             id="test-001",
@@ -703,7 +702,7 @@ class TestMarkdownParserEdgeCases:
         assert fm["implements"] == ["EPIC-001", "STORY-002"]
         assert fm["custom"] == "value"
 
-    def test_item_data_to_markdown_body_wireframe_with_figma(self):
+    def test_item_data_to_markdown_body_wireframe_with_figma(self) -> None:
         """Test markdown body generation for wireframe with Figma."""
         item = ItemData(
             id="wire-001",
@@ -731,7 +730,7 @@ class TestMarkdownParserEdgeCases:
         assert "## Screens" in body
         assert "- Login" in body
 
-    def test_item_data_to_markdown_body_wireframe_without_node_id(self):
+    def test_item_data_to_markdown_body_wireframe_without_node_id(self) -> None:
         """Test wireframe Figma preview without node_id."""
         item = ItemData(
             id="wire-002",
@@ -746,7 +745,7 @@ class TestMarkdownParserEdgeCases:
         assert "[View in Figma](https://figma.com/file/123)" in body
         assert "![Figma Preview]" not in body
 
-    def test_item_data_to_markdown_body_with_history(self):
+    def test_item_data_to_markdown_body_with_history(self) -> None:
         """Test markdown body with history table."""
         item = ItemData(
             id="test-001",
@@ -766,14 +765,14 @@ class TestMarkdownParserEdgeCases:
         assert "| Version | Date | Author | Changes |" in body
         assert "| 1 | 2024-01-01 | user1 | Initial |" in body
 
-    def test_parse_item_markdown_file_not_found(self, temp_base_dir):
+    def test_parse_item_markdown_file_not_found(self, temp_base_dir) -> None:
         """Test parse_item_markdown with non-existent file."""
         non_existent = temp_base_dir / "does_not_exist.md"
 
         with pytest.raises(FileNotFoundError):
             parse_item_markdown(non_existent)
 
-    def test_parse_item_markdown_no_frontmatter(self, temp_base_dir):
+    def test_parse_item_markdown_no_frontmatter(self, temp_base_dir) -> None:
         """Test parsing markdown without frontmatter."""
         md_file = temp_base_dir / "no_fm.md"
         md_file.write_text("# Just a title\n\nNo frontmatter")
@@ -781,7 +780,7 @@ class TestMarkdownParserEdgeCases:
         with pytest.raises(ValueError, match="No YAML frontmatter found"):
             parse_item_markdown(md_file)
 
-    def test_parse_item_markdown_missing_required_fields(self, temp_base_dir):
+    def test_parse_item_markdown_missing_required_fields(self, temp_base_dir) -> None:
         """Test parsing markdown with missing required fields."""
         md_file = temp_base_dir / "missing.md"
         md_file.write_text("""---
@@ -795,19 +794,19 @@ type: epic
         with pytest.raises(ValueError, match="Missing required frontmatter fields"):
             parse_item_markdown(md_file)
 
-    def test_write_item_markdown_missing_required_fields(self, temp_base_dir):
+    def test_write_item_markdown_missing_required_fields(self, temp_base_dir) -> None:
         """Test writing ItemData with missing fields."""
         item = ItemData(id="", external_id="", item_type="", status="")
 
         with pytest.raises(ValueError, match="missing required fields"):
             write_item_markdown(item, temp_base_dir / "test.md")
 
-    def test_parse_links_yaml_file_not_found(self, temp_base_dir):
+    def test_parse_links_yaml_file_not_found(self, temp_base_dir) -> None:
         """Test parse_links_yaml with non-existent file."""
         with pytest.raises(FileNotFoundError):
             parse_links_yaml(temp_base_dir / "missing.yaml")
 
-    def test_parse_links_yaml_empty_or_no_links(self, temp_base_dir):
+    def test_parse_links_yaml_empty_or_no_links(self, temp_base_dir) -> None:
         """Test parse_links_yaml with empty file."""
         links_file = temp_base_dir / "empty_links.yaml"
         links_file.write_text("")
@@ -815,7 +814,7 @@ type: epic
         result = parse_links_yaml(links_file)
         assert result == []
 
-    def test_parse_links_yaml_invalid_link_format(self, temp_base_dir):
+    def test_parse_links_yaml_invalid_link_format(self, temp_base_dir) -> None:
         """Test parse_links_yaml with invalid link format."""
         links_file = temp_base_dir / "bad_links.yaml"
         links_file.write_text("""links:
@@ -827,12 +826,12 @@ type: epic
         with pytest.raises(ValueError, match="Invalid link format"):
             parse_links_yaml(links_file)
 
-    def test_parse_config_yaml_file_not_found(self, temp_base_dir):
+    def test_parse_config_yaml_file_not_found(self, temp_base_dir) -> None:
         """Test parse_config_yaml with non-existent file."""
         with pytest.raises(FileNotFoundError):
             parse_config_yaml(temp_base_dir / "missing.yaml")
 
-    def test_parse_markdown_body_empty_sections(self):
+    def test_parse_markdown_body_empty_sections(self) -> None:
         """Test _parse_markdown_body with empty sections."""
         body = """# Title
 
@@ -855,14 +854,14 @@ type: epic
         assert notes == ""
         assert history == []
 
-    def test_parse_history_table_too_few_lines(self):
+    def test_parse_history_table_too_few_lines(self) -> None:
         """Test _parse_history_table with incomplete table."""
         table = "| Version | Date |\n"
 
         result = _parse_history_table(table)
         assert result == []
 
-    def test_parse_history_table_malformed_rows(self):
+    def test_parse_history_table_malformed_rows(self) -> None:
         """Test _parse_history_table with malformed rows."""
         table = """| Version | Date | Author | Changes |
 |---------|------|--------|---------|
@@ -874,12 +873,12 @@ not a table row
         # Should skip malformed rows
         assert len(result) == 0
 
-    def test_list_items_project_not_exists(self, temp_base_dir):
+    def test_list_items_project_not_exists(self, temp_base_dir) -> None:
         """Test list_items with non-existent project."""
         result = list_items(temp_base_dir, "nonexistent_project")
         assert result == []
 
-    def test_list_items_type_dir_not_exists(self, temp_base_dir):
+    def test_list_items_type_dir_not_exists(self, temp_base_dir) -> None:
         """Test list_items with non-existent type directory."""
         project_dir = temp_base_dir / "projects" / "test"
         project_dir.mkdir(parents=True)
@@ -897,7 +896,7 @@ class TestSyncEngineEdgeCases:
     """Test uncovered paths in sync_engine."""
 
     @pytest.mark.asyncio
-    async def test_sync_already_in_progress(self, db_connection, mock_api_client):
+    async def test_sync_already_in_progress(self, db_connection, mock_api_client) -> None:
         """Test sync returns error when already syncing."""
         mock_storage = MagicMock()
         engine = SyncEngine(db_connection, mock_api_client, mock_storage)
@@ -911,14 +910,15 @@ class TestSyncEngineEdgeCases:
         assert "already in progress" in result.errors[0]
 
     @pytest.mark.asyncio
-    async def test_sync_exception_handling(self, db_connection, mock_api_client):
+    async def test_sync_exception_handling(self, db_connection, mock_api_client) -> None:
         """Test sync handles exceptions properly."""
         mock_storage = MagicMock()
         engine = SyncEngine(db_connection, mock_api_client, mock_storage)
 
         # Make detect_and_queue_changes raise exception
-        async def raise_error():
-            raise RuntimeError("Test error")
+        async def raise_error() -> Never:
+            msg = "Test error"
+            raise RuntimeError(msg)
 
         engine.detect_and_queue_changes = raise_error  # type: ignore[assignment]
 
@@ -929,7 +929,7 @@ class TestSyncEngineEdgeCases:
         assert engine._syncing is False
 
     @pytest.mark.asyncio
-    async def test_process_queue_max_retries_exceeded(self, db_connection, mock_api_client):
+    async def test_process_queue_max_retries_exceeded(self, db_connection, mock_api_client) -> None:
         """Test process_queue skips items with too many retries."""
         mock_storage = MagicMock()
         engine = SyncEngine(db_connection, mock_api_client, mock_storage, max_retries=3)
@@ -947,13 +947,13 @@ class TestSyncEngineEdgeCases:
         assert "Max retries exceeded" in str(result.errors)
 
     @pytest.mark.asyncio
-    async def test_process_queue_upload_failure_with_retry(self, db_connection, mock_api_client):
+    async def test_process_queue_upload_failure_with_retry(self, db_connection, mock_api_client) -> None:
         """Test process_queue retries failed uploads."""
         mock_storage = MagicMock()
         engine = SyncEngine(db_connection, mock_api_client, mock_storage, retry_delay=0.01)
 
         # Mock _upload_change to fail
-        async def fail_upload(change):
+        async def fail_upload(change) -> bool:
             return False
 
         engine._upload_change = fail_upload  # type: ignore[assignment]
@@ -967,14 +967,15 @@ class TestSyncEngineEdgeCases:
         assert engine.queue.get_count() > 0
 
     @pytest.mark.asyncio
-    async def test_pull_changes_exception_handling(self, db_connection, mock_api_client):
+    async def test_pull_changes_exception_handling(self, db_connection, mock_api_client) -> None:
         """Test pull_changes handles exceptions."""
         mock_storage = MagicMock()
         engine = SyncEngine(db_connection, mock_api_client, mock_storage)
 
         # Mock _apply_remote_change to raise exception
-        async def raise_error(change):
-            raise RuntimeError("Apply error")
+        async def raise_error(change) -> Never:
+            msg = "Apply error"
+            raise RuntimeError(msg)
 
         engine._apply_remote_change = raise_error  # type: ignore[assignment]
 
@@ -985,11 +986,11 @@ class TestSyncEngineEdgeCases:
             # Default implementation has empty changes, so success
             assert result.success is True
 
-    def test_resolve_conflict_last_write_wins(self, db_connection, mock_api_client):
+    def test_resolve_conflict_last_write_wins(self, db_connection, mock_api_client) -> None:
         """Test conflict resolution with LAST_WRITE_WINS."""
         mock_storage = MagicMock()
         engine = SyncEngine(
-            db_connection, mock_api_client, mock_storage, conflict_strategy=ConflictStrategy.LAST_WRITE_WINS
+            db_connection, mock_api_client, mock_storage, conflict_strategy=ConflictStrategy.LAST_WRITE_WINS,
         )
 
         local_data = {"id": "1", "title": "Local", "updated_at": "2024-01-01T00:00:00"}
@@ -1000,7 +1001,7 @@ class TestSyncEngineEdgeCases:
         # Remote is newer
         assert result["title"] == "Remote"
 
-    def test_resolve_conflict_local_wins(self, db_connection, mock_api_client):
+    def test_resolve_conflict_local_wins(self, db_connection, mock_api_client) -> None:
         """Test conflict resolution with LOCAL_WINS."""
         mock_storage = MagicMock()
         engine = SyncEngine(db_connection, mock_api_client, mock_storage, conflict_strategy=ConflictStrategy.LOCAL_WINS)
@@ -1011,11 +1012,11 @@ class TestSyncEngineEdgeCases:
         result = engine._resolve_conflict(local_data, remote_data)
         assert result["title"] == "Local"
 
-    def test_resolve_conflict_remote_wins(self, db_connection, mock_api_client):
+    def test_resolve_conflict_remote_wins(self, db_connection, mock_api_client) -> None:
         """Test conflict resolution with REMOTE_WINS."""
         mock_storage = MagicMock()
         engine = SyncEngine(
-            db_connection, mock_api_client, mock_storage, conflict_strategy=ConflictStrategy.REMOTE_WINS
+            db_connection, mock_api_client, mock_storage, conflict_strategy=ConflictStrategy.REMOTE_WINS,
         )
 
         local_data = {"id": "1", "title": "Local"}
@@ -1024,7 +1025,7 @@ class TestSyncEngineEdgeCases:
         result = engine._resolve_conflict(local_data, remote_data)
         assert result["title"] == "Remote"
 
-    def test_resolve_conflict_manual(self, db_connection, mock_api_client):
+    def test_resolve_conflict_manual(self, db_connection, mock_api_client) -> None:
         """Test conflict resolution with MANUAL strategy."""
         mock_storage = MagicMock()
         engine = SyncEngine(db_connection, mock_api_client, mock_storage, conflict_strategy=ConflictStrategy.MANUAL)
@@ -1037,9 +1038,8 @@ class TestSyncEngineEdgeCases:
         assert result["title"] == "Local"
 
     @pytest.mark.asyncio
-    async def test_exponential_backoff(self):
+    async def test_exponential_backoff(self) -> None:
         """Test exponential backoff utility function."""
-
         start = time.time()
         await exponential_backoff(0, initial_delay=0.01, max_delay=1.0)
         elapsed = time.time() - start
@@ -1056,7 +1056,7 @@ class TestSyncEngineEdgeCases:
 class TestFileWatcherEdgeCases:
     """Test uncovered paths in file_watcher."""
 
-    def test_init_no_trace_directory(self, temp_base_dir):
+    def test_init_no_trace_directory(self, temp_base_dir) -> None:
         """Test FileWatcher initialization without .trace/."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "no_trace"
@@ -1065,7 +1065,7 @@ class TestFileWatcherEdgeCases:
         with pytest.raises(ValueError, match="No .trace/ directory found"):
             TraceFileWatcher(project_path, storage)
 
-    def test_init_project_yaml_parse_error(self, initialized_project):
+    def test_init_project_yaml_parse_error(self, initialized_project) -> None:
         """Test _init_project with malformed project.yaml."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1078,7 +1078,7 @@ class TestFileWatcherEdgeCases:
         watcher = TraceFileWatcher(project_path, storage)
         assert watcher.project is not None
 
-    def test_init_project_no_yaml_uses_defaults(self, temp_base_dir):
+    def test_init_project_no_yaml_uses_defaults(self, temp_base_dir) -> None:
         """Test _init_project creates project with defaults."""
         storage = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "default_project"
@@ -1090,7 +1090,7 @@ class TestFileWatcherEdgeCases:
 
         assert watcher.project.name == "default_project"
 
-    def test_start_already_running(self, initialized_project):
+    def test_start_already_running(self, initialized_project) -> None:
         """Test starting watcher when already running."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1105,7 +1105,7 @@ class TestFileWatcherEdgeCases:
         finally:
             watcher.stop()
 
-    def test_stop_not_running(self, initialized_project):
+    def test_stop_not_running(self, initialized_project) -> None:
         """Test stopping watcher when not running."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1115,7 +1115,7 @@ class TestFileWatcherEdgeCases:
         # Stop without starting
         watcher.stop()  # Should log warning
 
-    def test_process_event_markdown_parsing_error(self, initialized_project):
+    def test_process_event_markdown_parsing_error(self, initialized_project) -> None:
         """Test _process_event with unparseable markdown."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1129,7 +1129,7 @@ class TestFileWatcherEdgeCases:
         # Should handle error gracefully
         watcher._process_event(bad_md, "created")
 
-    def test_process_event_ignored_file_type(self, initialized_project):
+    def test_process_event_ignored_file_type(self, initialized_project) -> None:
         """Test _process_event ignores non-md/yaml files."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1143,7 +1143,7 @@ class TestFileWatcherEdgeCases:
         watcher._process_event(txt_file, "created")
         assert watcher._events_processed == 0
 
-    def test_handle_item_change_delete_not_found(self, initialized_project):
+    def test_handle_item_change_delete_not_found(self, initialized_project) -> None:
         """Test _handle_item_change delete when item not in DB."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1155,7 +1155,7 @@ class TestFileWatcherEdgeCases:
         # Should handle gracefully
         watcher._handle_item_change(deleted_file, "deleted")
 
-    def test_handle_item_change_update_existing(self, initialized_project):
+    def test_handle_item_change_update_existing(self, initialized_project) -> None:
         """Test _handle_item_change updates existing item."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1201,7 +1201,7 @@ status: done
         finally:
             session.close()
 
-    def test_handle_links_change_deleted(self, initialized_project):
+    def test_handle_links_change_deleted(self, initialized_project) -> None:
         """Test _handle_links_change with deletion."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1213,7 +1213,7 @@ status: done
         # Should log warning
         watcher._handle_links_change(links_file, "deleted")
 
-    def test_handle_links_change_parse_error(self, initialized_project):
+    def test_handle_links_change_parse_error(self, initialized_project) -> None:
         """Test _handle_links_change with parse error."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1226,7 +1226,7 @@ status: done
         # Should handle error gracefully
         watcher._handle_links_change(links_file, "modified")
 
-    def test_handle_project_change_deleted(self, initialized_project):
+    def test_handle_project_change_deleted(self, initialized_project) -> None:
         """Test _handle_project_change with deletion."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1238,7 +1238,7 @@ status: done
         # Should log warning
         watcher._handle_project_change(project_yaml, "deleted")
 
-    def test_handle_project_change_parse_error(self, initialized_project):
+    def test_handle_project_change_parse_error(self, initialized_project) -> None:
         """Test _handle_project_change with parse error."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1251,7 +1251,7 @@ status: done
         # Should handle error gracefully
         watcher._handle_project_change(project_yaml, "modified")
 
-    def test_queue_for_sync_disabled(self, initialized_project):
+    def test_queue_for_sync_disabled(self, initialized_project) -> None:
         """Test _queue_for_sync when auto_sync is False."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1261,7 +1261,7 @@ status: done
         # Should return early
         watcher._queue_for_sync("item", "test-001", "create", {})
 
-    def test_event_handler_on_created_directory(self, initialized_project):
+    def test_event_handler_on_created_directory(self, initialized_project) -> None:
         """Test event handler ignores directory creation."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1276,7 +1276,7 @@ status: done
         # Should return early
         handler.on_created(event)
 
-    def test_event_handler_on_modified_directory(self, initialized_project):
+    def test_event_handler_on_modified_directory(self, initialized_project) -> None:
         """Test event handler ignores directory modification."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1290,7 +1290,7 @@ status: done
 
         handler.on_modified(event)
 
-    def test_event_handler_on_deleted_directory(self, initialized_project):
+    def test_event_handler_on_deleted_directory(self, initialized_project) -> None:
         """Test event handler ignores directory deletion."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1304,7 +1304,7 @@ status: done
 
         handler.on_deleted(event)
 
-    def test_should_process_hidden_files(self, initialized_project):
+    def test_should_process_hidden_files(self, initialized_project) -> None:
         """Test _should_process filters hidden files."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1316,7 +1316,7 @@ status: done
 
         assert handler._should_process(hidden) is False
 
-    def test_should_process_sync_yaml(self, initialized_project):
+    def test_should_process_sync_yaml(self, initialized_project) -> None:
         """Test _should_process filters sync.yaml."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1328,7 +1328,7 @@ status: done
 
         assert handler._should_process(sync_file) is False
 
-    def test_should_process_wrong_extension(self, initialized_project):
+    def test_should_process_wrong_extension(self, initialized_project) -> None:
         """Test _should_process filters non-md/yaml files."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1340,7 +1340,7 @@ status: done
 
         assert handler._should_process(txt_file) is False
 
-    def test_debounce_cancels_existing_timer(self, initialized_project):
+    def test_debounce_cancels_existing_timer(self, initialized_project) -> None:
         """Test debounce cancels existing timer for same path."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1357,7 +1357,7 @@ status: done
         assert len(watcher._debounce_timers) == 1
         assert watcher._events_pending == 1
 
-    def test_get_stats(self, initialized_project):
+    def test_get_stats(self, initialized_project) -> None:
         """Test get_stats returns correct statistics."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1380,17 +1380,17 @@ status: done
 class TestChangeDetectorEdgeCases:
     """Test ChangeDetector utility."""
 
-    def test_has_changed_no_stored_hash(self):
+    def test_has_changed_no_stored_hash(self) -> None:
         """Test has_changed returns True when no stored hash."""
         result = ChangeDetector.has_changed("content", None)
         assert result is True
 
-    def test_detect_changes_in_directory_not_exists(self, temp_base_dir):
+    def test_detect_changes_in_directory_not_exists(self, temp_base_dir) -> None:
         """Test detect_changes_in_directory with non-existent directory."""
         changes = ChangeDetector.detect_changes_in_directory(temp_base_dir / "nonexistent", {})
         assert changes == []
 
-    def test_detect_changes_new_files(self, temp_base_dir):
+    def test_detect_changes_new_files(self, temp_base_dir) -> None:
         """Test detect_changes_in_directory finds new files."""
         test_dir = temp_base_dir / "test_changes"
         test_dir.mkdir()
@@ -1403,7 +1403,7 @@ class TestChangeDetectorEdgeCases:
         assert len(changes) == 1
         assert changes[0][0] == md_file
 
-    def test_detect_changes_modified_files(self, temp_base_dir):
+    def test_detect_changes_modified_files(self, temp_base_dir) -> None:
         """Test detect_changes_in_directory finds modified files."""
         test_dir = temp_base_dir / "test_changes"
         test_dir.mkdir()
@@ -1431,7 +1431,7 @@ class TestChangeDetectorEdgeCases:
 class TestAdditionalEdgeCases:
     """Additional edge cases for maximum coverage."""
 
-    def test_link_data_to_dict_with_metadata(self):
+    def test_link_data_to_dict_with_metadata(self) -> None:
         """Test LinkData.to_dict includes metadata."""
         link = LinkData(
             id="link-001",
@@ -1446,7 +1446,7 @@ class TestAdditionalEdgeCases:
         assert "metadata" in data
         assert data["metadata"]["key"] == "value"
 
-    def test_link_data_to_dict_without_metadata(self):
+    def test_link_data_to_dict_without_metadata(self) -> None:
         """Test LinkData.to_dict excludes empty metadata."""
         link = LinkData(
             id="link-002",
@@ -1460,7 +1460,7 @@ class TestAdditionalEdgeCases:
         data = link.to_dict()
         assert "metadata" not in data
 
-    def test_link_data_from_dict_with_z_suffix(self):
+    def test_link_data_from_dict_with_z_suffix(self) -> None:
         """Test LinkData.from_dict handles Z suffix in timestamp."""
         data = {
             "id": "link-003",
@@ -1474,7 +1474,7 @@ class TestAdditionalEdgeCases:
         link = LinkData.from_dict(data)
         assert link.created is not None
 
-    def test_project_storage_create_or_update_project_update_path(self, initialized_project):
+    def test_project_storage_create_or_update_project_update_path(self, initialized_project) -> None:
         """Test create_or_update_project updates existing project."""
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
@@ -1486,7 +1486,7 @@ class TestAdditionalEdgeCases:
 
         assert updated.description == "Updated Description"
 
-    def test_sync_queue_get_count(self, db_connection):
+    def test_sync_queue_get_count(self, db_connection) -> None:
         """Test SyncQueue.get_count."""
         queue = SyncQueue(db_connection)
 
@@ -1496,7 +1496,7 @@ class TestAdditionalEdgeCases:
 
         assert queue.get_count() == initial_count + 1
 
-    def test_sync_queue_clear(self, db_connection):
+    def test_sync_queue_clear(self, db_connection) -> None:
         """Test SyncQueue.clear removes all entries."""
         queue = SyncQueue(db_connection)
 
@@ -1507,7 +1507,7 @@ class TestAdditionalEdgeCases:
         assert queue.get_count() == 0
 
     @pytest.mark.asyncio
-    async def test_sync_engine_clear_queue(self, db_connection, mock_api_client):
+    async def test_sync_engine_clear_queue(self, db_connection, mock_api_client) -> None:
         """Test SyncEngine.clear_queue."""
         mock_storage = MagicMock()
         engine = SyncEngine(db_connection, mock_api_client, mock_storage)
@@ -1519,7 +1519,7 @@ class TestAdditionalEdgeCases:
         assert engine.queue.get_count() == 0
 
     @pytest.mark.asyncio
-    async def test_sync_engine_reset_sync_state(self, db_connection, mock_api_client):
+    async def test_sync_engine_reset_sync_state(self, db_connection, mock_api_client) -> None:
         """Test SyncEngine.reset_sync_state."""
         mock_storage = MagicMock()
         engine = SyncEngine(db_connection, mock_api_client, mock_storage)
@@ -1533,7 +1533,7 @@ class TestAdditionalEdgeCases:
         assert state.last_sync is None
         assert state.status == SyncStatus.IDLE
 
-    def test_sync_engine_is_syncing(self, db_connection, mock_api_client):
+    def test_sync_engine_is_syncing(self, db_connection, mock_api_client) -> None:
         """Test SyncEngine.is_syncing."""
         mock_storage = MagicMock()
         engine = SyncEngine(db_connection, mock_api_client, mock_storage)
@@ -1543,7 +1543,7 @@ class TestAdditionalEdgeCases:
         engine._syncing = True
         assert engine.is_syncing() is True
 
-    def test_sync_engine_create_vector_clock(self, db_connection, mock_api_client):
+    def test_sync_engine_create_vector_clock(self, db_connection, mock_api_client) -> None:
         """Test SyncEngine.create_vector_clock."""
         mock_storage = MagicMock()
         engine = SyncEngine(db_connection, mock_api_client, mock_storage)

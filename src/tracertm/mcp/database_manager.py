@@ -1,5 +1,4 @@
-"""
-Database manager for MCP tools with connection pooling and query optimization.
+"""Database manager for MCP tools with connection pooling and query optimization.
 
 This module provides a singleton DatabaseManager that:
 - Manages async connection pools
@@ -12,16 +11,18 @@ from __future__ import annotations
 
 import asyncio
 import time
-from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import event, text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import AsyncAdaptedQueuePool
 
 from tracertm.config.manager import ConfigManager
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 # Max number of slow queries to retain in memory
 _MAX_SLOW_QUERIES = 100
@@ -30,13 +31,13 @@ _MAX_SLOW_QUERIES = 100
 class QueryMetrics:
     """Track query performance metrics."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.slow_queries: list[dict[str, Any]] = []
         self.query_count = 0
         self.total_duration = 0.0
         self.slow_threshold_ms = 100.0
 
-    def record_query(self, query: str, duration_ms: float, params: dict[str, Any] | None = None):
+    def record_query(self, query: str, duration_ms: float, params: dict[str, Any] | None = None) -> None:
         """Record a query execution."""
         self.query_count += 1
         self.total_duration += duration_ms
@@ -62,7 +63,7 @@ class QueryMetrics:
             "recent_slow_queries": self.slow_queries[-10:] if self.slow_queries else [],
         }
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset metrics."""
         self.slow_queries.clear()
         self.query_count = 0
@@ -70,8 +71,7 @@ class QueryMetrics:
 
 
 class DatabaseManager:
-    """
-    Singleton database manager with connection pooling and optimization.
+    """Singleton database manager with connection pooling and optimization.
 
     Features:
     - Async connection pooling (pool_size=10, max_overflow=20)
@@ -83,7 +83,7 @@ class DatabaseManager:
     _instance: DatabaseManager | None = None
     _lock: asyncio.Lock = asyncio.Lock()
 
-    def __init__(self, database_url: str | None = None):
+    def __init__(self, database_url: str | None = None) -> None:
         """Initialize database manager.
 
         Args:
@@ -119,7 +119,7 @@ class DatabaseManager:
                     await cls._instance.initialize()
         return cls._instance
 
-    async def initialize(self):
+    async def initialize(self) -> None:
         """Initialize connection pool and engine."""
         if self._initialized:
             return
@@ -153,17 +153,17 @@ class DatabaseManager:
 
         self._initialized = True
 
-    def _setup_instrumentation(self):
+    def _setup_instrumentation(self) -> None:
         """Set up query performance tracking."""
         if not self._engine:
             return
 
         @event.listens_for(self._engine.sync_engine, "before_cursor_execute")
-        def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):  # noqa: PLR0913
+        def before_cursor_execute(conn, cursor, statement, parameters, context, executemany) -> None:  # noqa: PLR0913
             context._query_start_time = time.perf_counter()
 
         @event.listens_for(self._engine.sync_engine, "after_cursor_execute")
-        def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):  # noqa: PLR0913
+        def after_cursor_execute(conn, cursor, statement, parameters, context, executemany) -> None:  # noqa: PLR0913
             duration_ms = (time.perf_counter() - context._query_start_time) * 1000
             self.metrics.record_query(statement, duration_ms, parameters)
 
@@ -176,7 +176,8 @@ class DatabaseManager:
                 result = await session.execute(query)
         """
         if not self._session_factory:
-            raise RuntimeError("DatabaseManager not initialized. Call initialize() first.")
+            msg = "DatabaseManager not initialized. Call initialize() first."
+            raise RuntimeError(msg)
 
         async with self._session_factory() as session:
             try:
@@ -236,7 +237,7 @@ class DatabaseManager:
                 "error": str(e),
             }
 
-    async def close(self):
+    async def close(self) -> None:
         """Close all connections and dispose of pool."""
         if self._engine:
             await self._engine.dispose()

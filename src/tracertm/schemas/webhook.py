@@ -1,6 +1,4 @@
-"""
-Pydantic schemas for Webhook Integrations.
-"""
+"""Pydantic schemas for Webhook Integrations."""
 
 from datetime import datetime
 from typing import Any

@@ -26,7 +26,7 @@ SMELL_PATTERNS = {
 class RequirementQualityService:
     """Service for Requirement Quality Analysis."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def analyze_quality(self, item_id: str) -> RequirementQuality:
@@ -36,7 +36,8 @@ class RequirementQualityService:
         item = result.scalar_one_or_none()
 
         if not item:
-            raise ValueError(f"Item {item_id} not found")
+            msg = f"Item {item_id} not found"
+            raise ValueError(msg)
 
         text = f"{item.title} {item.description or ''}".lower()
 

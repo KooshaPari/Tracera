@@ -1,5 +1,4 @@
-"""
-WP-4.3: Concurrency and Race Condition Tests (50+ tests)
+"""WP-4.3: Concurrency and Race Condition Tests (50+ tests).
 
 Tests race conditions, concurrent operations, stress scenarios, and lock management.
 Ensures the system handles high concurrency safely and consistently.
@@ -28,10 +27,10 @@ pytestmark = [pytest.mark.integration]
 
 
 class TestConcurrentReads:
-    """Test concurrent read operations (8 tests)"""
+    """Test concurrent read operations (8 tests)."""
 
     def test_concurrent_project_reads(self, db_session: Session) -> None:
-        """Test 10 concurrent reads of same project"""
+        """Test 10 concurrent reads of same project."""
         project = Project(id="concurrent-read-proj", name="Concurrent Test")
         db_session.add(project)
         db_session.commit()
@@ -46,7 +45,7 @@ class TestConcurrentReads:
         assert all(r == "Concurrent Test" for r in results)
 
     def test_concurrent_item_reads(self, db_session: Session) -> None:
-        """Test 15 concurrent reads of items"""
+        """Test 15 concurrent reads of items."""
         project = Project(id="concurrent-item-proj", name="Test")
         db_session.add(project)
         db_session.flush()
@@ -73,7 +72,7 @@ class TestConcurrentReads:
         assert all(r == 5 for r in results)
 
     def test_concurrent_link_reads(self, db_session: Session) -> None:
-        """Test concurrent reads of links"""
+        """Test concurrent reads of links."""
         project = Project(id="concurrent-link-proj", name="Test")
         db_session.add(project)
         db_session.flush()
@@ -114,7 +113,7 @@ class TestConcurrentReads:
         assert all(results)
 
     def test_read_heavy_workload(self, db_session: Session) -> None:
-        """Test read-heavy workload with 100+ reads"""
+        """Test read-heavy workload with 100+ reads."""
         project = Project(id="heavy-read-proj", name="Heavy Test")
         db_session.add(project)
         db_session.flush()
@@ -140,10 +139,10 @@ class TestConcurrentReads:
 
 
 class TestConcurrentWrites:
-    """Test concurrent write operations (10 tests)"""
+    """Test concurrent write operations (10 tests)."""
 
     def test_concurrent_item_creation(self, db_session: Session) -> None:
-        """Test creating 25 items concurrently"""
+        """Test creating 25 items concurrently."""
         project = Project(id="concurrent-create-proj", name="Create Test")
         db_session.add(project)
         db_session.commit()
@@ -167,7 +166,7 @@ class TestConcurrentWrites:
         assert count == 25
 
     def test_concurrent_item_updates(self, db_session: Session) -> None:
-        """Test updating 20 items concurrently"""
+        """Test updating 20 items concurrently."""
         project = Project(id="concurrent-update-proj", name="Update Test")
         db_session.add(project)
         db_session.flush()
@@ -195,7 +194,7 @@ class TestConcurrentWrites:
         assert updated == 20
 
     def test_concurrent_link_creation(self, db_session: Session) -> None:
-        """Test creating 20 links concurrently"""
+        """Test creating 20 links concurrently."""
         project = Project(id="concurrent-link-create-proj", name="Link Create Test")
         db_session.add(project)
         db_session.flush()
@@ -231,7 +230,7 @@ class TestConcurrentWrites:
         assert count == 20
 
     def test_concurrent_metadata_updates(self, db_session: Session) -> None:
-        """Test concurrent metadata updates on same items"""
+        """Test concurrent metadata updates on same items."""
         project = Project(id="concurrent-meta-proj", name="Meta Test")
         db_session.add(project)
         db_session.flush()
@@ -257,7 +256,7 @@ class TestConcurrentWrites:
         assert len(retrieved.item_metadata) == 10
 
     def test_mixed_concurrent_operations(self, db_session: Session) -> None:
-        """Test mixed creates and updates"""
+        """Test mixed creates and updates."""
         project = Project(id="concurrent-mixed-proj", name="Mixed Test")
         db_session.add(project)
         db_session.commit()
@@ -298,10 +297,10 @@ class TestConcurrentWrites:
 
 
 class TestReadWriteConflicts:
-    """Test read-write conflict scenarios (8 tests)"""
+    """Test read-write conflict scenarios (8 tests)."""
 
     def test_read_during_write(self, db_session: Session) -> None:
-        """Test reading while write is in progress"""
+        """Test reading while write is in progress."""
         project = Project(id="rw-conflict-proj", name="RW Conflict Test")
         db_session.add(project)
         db_session.flush()
@@ -325,7 +324,7 @@ class TestReadWriteConflicts:
         assert retrieved.title == "Updated"
 
     def test_multiple_writers_same_resource(self, db_session: Session) -> None:
-        """Test multiple concurrent writers on same resource"""
+        """Test multiple concurrent writers on same resource."""
         project = Project(id="multi-write-proj", name="Multi Write Test")
         db_session.add(project)
         db_session.flush()
@@ -351,7 +350,7 @@ class TestReadWriteConflicts:
         assert retrieved.status == "done"
 
     def test_read_after_partial_write(self, db_session: Session) -> None:
-        """Test reading after incomplete write"""
+        """Test reading after incomplete write."""
         project = Project(id="partial-write-proj", name="Partial Write Test")
         db_session.add(project)
         db_session.flush()
@@ -376,7 +375,7 @@ class TestReadWriteConflicts:
         assert retrieved.title == "Updated Title"
 
     def test_write_after_read(self, db_session: Session) -> None:
-        """Test writing after reading stale data"""
+        """Test writing after reading stale data."""
         project = Project(id="write-after-read-proj", name="Write After Read Test")
         db_session.add(project)
         db_session.flush()
@@ -406,10 +405,10 @@ class TestReadWriteConflicts:
 
 
 class TestLockManagement:
-    """Test lock management and deadlock prevention (10 tests)"""
+    """Test lock management and deadlock prevention (10 tests)."""
 
     def test_optimistic_lock_simulation(self, db_session: Session) -> None:
-        """Test optimistic locking pattern"""
+        """Test optimistic locking pattern."""
         project = Project(id="opt-lock-proj", name="Optimistic Lock Test")
         db_session.add(project)
         db_session.flush()
@@ -437,7 +436,7 @@ class TestLockManagement:
         assert item.item_metadata["version"] == 2
 
     def test_lock_timeout_scenario(self, db_session: Session) -> None:
-        """Test handling of lock timeouts"""
+        """Test handling of lock timeouts."""
         project = Project(id="lock-timeout-proj", name="Lock Timeout Test", project_metadata={"lock_timeout": 30})
         db_session.add(project)
         db_session.commit()
@@ -445,19 +444,19 @@ class TestLockManagement:
         # Verify lock config
         retrieved = db_session.query(Project).filter_by(id="lock-timeout-proj").first()
         assert retrieved is not None
-        assert cast(Project, retrieved).project_metadata["lock_timeout"] == 30
+        assert cast("Project", retrieved).project_metadata["lock_timeout"] == 30
 
     def test_deadlock_detection(self, db_session: Session) -> None:
-        """Test deadlock detection scenario"""
+        """Test deadlock detection scenario."""
         project = Project(id="deadlock-proj", name="Deadlock Test")
         db_session.add(project)
         db_session.flush()
 
         item1 = Item(
-            id="deadlock-1", project_id="deadlock-proj", title="Item 1", view="DEFAULT", item_type="task", status="todo"
+            id="deadlock-1", project_id="deadlock-proj", title="Item 1", view="DEFAULT", item_type="task", status="todo",
         )
         item2 = Item(
-            id="deadlock-2", project_id="deadlock-proj", title="Item 2", view="DEFAULT", item_type="task", status="todo"
+            id="deadlock-2", project_id="deadlock-proj", title="Item 2", view="DEFAULT", item_type="task", status="todo",
         )
         db_session.add_all([item1, item2])
         db_session.commit()
@@ -472,7 +471,7 @@ class TestLockManagement:
         assert True  # No deadlock occurred
 
     def test_lock_escalation(self, db_session: Session) -> None:
-        """Test lock escalation from read to write"""
+        """Test lock escalation from read to write."""
         project = Project(id="lock-escalate-proj", name="Lock Escalation Test")
         db_session.add(project)
         db_session.flush()
@@ -499,7 +498,7 @@ class TestLockManagement:
         assert read_item.status == "in_progress"
 
     def test_priority_inversion_handling(self, db_session: Session) -> None:
-        """Test handling priority inversion in locks"""
+        """Test handling priority inversion in locks."""
         project = Project(id="priority-proj", name="Priority Test")
         db_session.add(project)
         db_session.flush()
@@ -523,10 +522,10 @@ class TestLockManagement:
 
 
 class TestStressTesting:
-    """Test stress scenarios and high-volume operations (8 tests)"""
+    """Test stress scenarios and high-volume operations (8 tests)."""
 
     def test_100_item_creation(self, db_session: Session) -> None:
-        """Test creating 100 items"""
+        """Test creating 100 items."""
         project = Project(id="stress-100-proj", name="Stress 100 Test")
         db_session.add(project)
         db_session.commit()
@@ -547,7 +546,7 @@ class TestStressTesting:
         assert count == 100
 
     def test_dense_link_graph(self, db_session: Session) -> None:
-        """Test creating dense link graph (30 items, 100+ links)"""
+        """Test creating dense link graph (30 items, 100+ links)."""
         project = Project(id="dense-graph-proj", name="Dense Graph Test")
         db_session.add(project)
         db_session.flush()
@@ -587,7 +586,7 @@ class TestStressTesting:
         assert link_count > 50
 
     def test_high_metadata_volume(self, db_session: Session) -> None:
-        """Test items with large metadata"""
+        """Test items with large metadata."""
         project = Project(id="meta-volume-proj", name="Meta Volume Test")
         db_session.add(project)
         db_session.flush()
@@ -609,10 +608,10 @@ class TestStressTesting:
 
         retrieved = db_session.query(Item).filter_by(id="meta-volume-item").first()
         assert retrieved is not None
-        assert len(cast(Item, retrieved).item_metadata) == 50
+        assert len(cast("Item", retrieved).item_metadata) == 50
 
     def test_rapid_status_transitions(self, db_session: Session) -> None:
-        """Test rapid status changes on single item"""
+        """Test rapid status changes on single item."""
         project = Project(id="rapid-status-proj", name="Rapid Status Test")
         db_session.add(project)
         db_session.flush()
@@ -638,7 +637,7 @@ class TestStressTesting:
         assert item.status == "todo"
 
     def test_bulk_metadata_updates(self, db_session: Session) -> None:
-        """Test bulk metadata updates"""
+        """Test bulk metadata updates."""
         project = Project(id="bulk-meta-proj", name="Bulk Meta Test")
         db_session.add(project)
         db_session.flush()
@@ -669,10 +668,10 @@ class TestStressTesting:
 
 
 class TestDeadlockPrevention:
-    """Test deadlock prevention mechanisms (8+ tests)"""
+    """Test deadlock prevention mechanisms (8+ tests)."""
 
     def test_ordered_lock_acquisition(self, db_session: Session) -> None:
-        """Test ordered acquisition of locks to prevent deadlock"""
+        """Test ordered acquisition of locks to prevent deadlock."""
         project = Project(id="ordered-lock-proj", name="Ordered Lock Test")
         db_session.add(project)
         db_session.flush()
@@ -695,25 +694,25 @@ class TestDeadlockPrevention:
         for i in range(3):
             row = db_session.query(Item).filter_by(id=f"ordered-{i}").first()
             assert row is not None
-            cast(Item, row).status = "in_progress"
+            cast("Item", row).status = "in_progress"
         db_session.commit()
 
         assert True  # No deadlock
 
     def test_timeout_based_deadlock_recovery(self, db_session: Session) -> None:
-        """Test timeout-based recovery from potential deadlock"""
+        """Test timeout-based recovery from potential deadlock."""
         project = Project(
-            id="timeout-deadlock-proj", name="Timeout Deadlock Test", project_metadata={"deadlock_timeout": 1}
+            id="timeout-deadlock-proj", name="Timeout Deadlock Test", project_metadata={"deadlock_timeout": 1},
         )
         db_session.add(project)
         db_session.commit()
 
         retrieved = db_session.query(Project).filter_by(id="timeout-deadlock-proj").first()
         assert retrieved is not None
-        assert cast(Project, retrieved).project_metadata["deadlock_timeout"] == 1
+        assert cast("Project", retrieved).project_metadata["deadlock_timeout"] == 1
 
     def test_lock_free_read_approach(self, db_session: Session) -> None:
-        """Test lock-free read optimistic approach"""
+        """Test lock-free read optimistic approach."""
         project = Project(id="lock-free-proj", name="Lock Free Test")
         db_session.add(project)
         db_session.flush()

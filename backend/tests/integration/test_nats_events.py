@@ -1,5 +1,4 @@
-"""
-Phase 6: E2E Integration Testing - NATS Event Streaming Tests
+"""Phase 6: E2E Integration Testing - NATS Event Streaming Tests.
 
 Tests real-time event streaming via NATS JetStream.
 
@@ -23,10 +22,10 @@ from .test_helpers import (
     create_test_session,
 )
 
-
 # ============================================================================
 # Session Event Tests
 # ============================================================================
+
 
 @pytest.mark.e2e
 @pytest.mark.asyncio
@@ -35,9 +34,8 @@ async def test_session_created_event(
     neo4j_driver,
     nats_client,
     event_publisher,
-):
-    """
-    Test session.created event is published correctly.
+) -> None:
+    """Test session.created event is published correctly.
 
     Verifies:
     - Event published to correct subject
@@ -91,9 +89,8 @@ async def test_session_checkpoint_event(
     neo4j_driver,
     nats_client,
     event_publisher,
-):
-    """
-    Test session.checkpoint event is published correctly.
+) -> None:
+    """Test session.checkpoint event is published correctly.
 
     Verifies:
     - Event published on checkpoint creation
@@ -143,9 +140,8 @@ async def test_session_destroyed_event(
     neo4j_driver,
     nats_client,
     event_publisher,
-):
-    """
-    Test session.destroyed event is published on cleanup.
+) -> None:
+    """Test session.destroyed event is published on cleanup.
 
     Verifies:
     - Event published when session deleted
@@ -194,9 +190,8 @@ async def test_chat_message_event(
     neo4j_driver,
     nats_client,
     event_publisher,
-):
-    """
-    Test chat.message event is published correctly.
+) -> None:
+    """Test chat.message event is published correctly.
 
     Verifies:
     - Event published for user and assistant messages
@@ -244,9 +239,8 @@ async def test_chat_tool_use_event(
     neo4j_driver,
     nats_client,
     event_publisher,
-):
-    """
-    Test chat.tool_use event is published correctly.
+) -> None:
+    """Test chat.tool_use event is published correctly.
 
     Verifies:
     - Event includes tool_name, success, input, output
@@ -295,9 +289,8 @@ async def test_chat_error_event(
     neo4j_driver,
     nats_client,
     event_publisher,
-):
-    """
-    Test chat.error event is published on failures.
+) -> None:
+    """Test chat.error event is published on failures.
 
     Verifies:
     - Event includes error message and stack trace
@@ -347,9 +340,8 @@ async def test_snapshot_created_event(
     neo4j_driver,
     nats_client,
     event_publisher,
-):
-    """
-    Test snapshot.created event is published correctly.
+) -> None:
+    """Test snapshot.created event is published correctly.
 
     Verifies:
     - Event includes S3 key, file count, size
@@ -403,9 +395,8 @@ async def test_event_replay_from_timestamp(
     neo4j_driver,
     nats_jetstream,
     event_publisher,
-):
-    """
-    Test event replay from specific timestamp.
+) -> None:
+    """Test event replay from specific timestamp.
 
     Verifies:
     - Events published to JetStream
@@ -415,7 +406,6 @@ async def test_event_replay_from_timestamp(
     """
     # This test would require JetStream consumer setup
     # and is skipped for now
-    pass
 
 
 # ============================================================================
@@ -429,9 +419,8 @@ async def test_wildcard_subscription_all_events(
     neo4j_driver,
     nats_client,
     event_publisher,
-):
-    """
-    Test wildcard subscription receives all event types.
+) -> None:
+    """Test wildcard subscription receives all event types.
 
     Verifies:
     - Subscribe to "tracertm.>" receives all events
@@ -495,9 +484,8 @@ async def test_wildcard_subscription_all_events(
 async def test_event_publishing_without_nats(
     db_session,
     neo4j_driver,
-):
-    """
-    Test event publishing gracefully degrades without NATS.
+) -> None:
+    """Test event publishing gracefully degrades without NATS.
 
     Verifies:
     - Publishing with None client doesn't raise exception
@@ -541,9 +529,8 @@ async def test_event_content_truncation(
     neo4j_driver,
     nats_client,
     event_publisher,
-):
-    """
-    Test large content is truncated in events.
+) -> None:
+    """Test large content is truncated in events.
 
     Verifies:
     - Content > 500 chars truncated

@@ -27,9 +27,9 @@ def default_json(value):
     return str(value)
 
 
-def export_project(conn, project_id, out_dir):
+def export_project(conn, project_id, out_dir) -> None:
     project = fetch_all(
-        conn, "select id, name, description, project_metadata from projects where id = %(pid)s", {"pid": project_id}
+        conn, "select id, name, description, project_metadata from projects where id = %(pid)s", {"pid": project_id},
     )
     if not project:
         return
@@ -129,7 +129,7 @@ def export_project(conn, project_id, out_dir):
         json.dump(data, f, ensure_ascii=False, indent=2, sort_keys=True, default=default_json)
 
 
-def main():
+def main() -> None:
     Path(EXPORT_ROOT).mkdir(exist_ok=True, parents=True)
     timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
     out_dir = Path(EXPORT_ROOT) / f"graphs_only_snapshot_{timestamp}"
@@ -152,8 +152,6 @@ def main():
             export_project(conn, project["id"], out_dir)
     finally:
         conn.close()
-
-    print(f"EXPORT_DIR {out_dir}")
 
 
 if __name__ == "__main__":

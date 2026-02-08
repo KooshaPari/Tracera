@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for concurrency control module.
+"""Comprehensive unit tests for concurrency control module.
 
 Tests concurrency.py:
 - ConcurrencyError exception
@@ -9,6 +8,7 @@ Tests concurrency.py:
 """
 
 import asyncio
+from typing import Never
 
 import pytest
 
@@ -18,23 +18,24 @@ from tracertm.core.concurrency import ConcurrencyError, update_with_retry
 class TestConcurrencyError:
     """Test ConcurrencyError exception."""
 
-    def test_create_concurrency_error(self):
+    def test_create_concurrency_error(self) -> None:
         """Test creating ConcurrencyError."""
         error = ConcurrencyError("Version mismatch")
         assert str(error) == "Version mismatch"
 
-    def test_raise_concurrency_error(self):
+    def test_raise_concurrency_error(self) -> Never:
         """Test raising ConcurrencyError."""
         with pytest.raises(ConcurrencyError) as exc_info:
-            raise ConcurrencyError("Optimistic lock failed")
+            msg = "Optimistic lock failed"
+            raise ConcurrencyError(msg)
         assert str(exc_info.value) == "Optimistic lock failed"
 
-    def test_concurrency_error_is_exception(self):
+    def test_concurrency_error_is_exception(self) -> None:
         """Test that ConcurrencyError is an Exception."""
         error = ConcurrencyError("Test")
         assert isinstance(error, Exception)
 
-    def test_concurrency_error_with_details(self):
+    def test_concurrency_error_with_details(self) -> None:
         """Test ConcurrencyError with detailed message."""
         error = ConcurrencyError("Version mismatch: expected 5, got 7")
         assert "Version mismatch" in str(error)
@@ -45,11 +46,11 @@ class TestUpdateWithRetrySuccess:
     """Test update_with_retry successful scenarios."""
 
     @pytest.mark.asyncio
-    async def test_successful_update_first_try(self):
+    async def test_successful_update_first_try(self) -> None:
         """Test successful update on first attempt."""
         call_count = 0
 
-        async def update_fn():
+        async def update_fn() -> str:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
@@ -60,16 +61,17 @@ class TestUpdateWithRetrySuccess:
         assert call_count == 1
 
     @pytest.mark.asyncio
-    async def test_successful_update_after_retries(self):
+    async def test_successful_update_after_retries(self) -> None:
         """Test successful update after retries."""
         call_count = 0
 
-        async def update_fn():
+        async def update_fn() -> str:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             if call_count < 3:
-                raise ConcurrencyError("Retry me")
+                msg = "Retry me"
+                raise ConcurrencyError(msg)
             return "success"
 
         result = await update_with_retry(update_fn, max_retries=3)
@@ -77,10 +79,10 @@ class TestUpdateWithRetrySuccess:
         assert call_count == 3
 
     @pytest.mark.asyncio
-    async def test_returns_different_types(self):
+    async def test_returns_different_types(self) -> None:
         """Test that update_with_retry can return different types."""
 
-        async def return_int():
+        async def return_int() -> int:
             await asyncio.sleep(0)
             return 42
 
@@ -88,19 +90,18 @@ class TestUpdateWithRetrySuccess:
             await asyncio.sleep(0)
             return {"key": "value"}
 
-        async def return_none():
+        async def return_none() -> None:
             await asyncio.sleep(0)
-            return
 
         assert await update_with_retry(return_int) == 42
         assert await update_with_retry(return_dict) == {"key": "value"}
         assert await update_with_retry(return_none) is None
 
     @pytest.mark.asyncio
-    async def test_zero_retries_needed(self):
+    async def test_zero_retries_needed(self) -> None:
         """Test when no retries are needed."""
 
-        async def always_succeed():
+        async def always_succeed() -> str:
             await asyncio.sleep(0)
             return "immediate_success"
 
@@ -112,15 +113,16 @@ class TestUpdateWithRetryFailure:
     """Test update_with_retry failure scenarios."""
 
     @pytest.mark.asyncio
-    async def test_all_retries_fail(self):
+    async def test_all_retries_fail(self) -> None:
         """Test when all retries fail."""
         call_count = 0
 
-        async def always_fail():
+        async def always_fail() -> Never:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
-            raise ConcurrencyError("Always fails")
+            msg = "Always fails"
+            raise ConcurrencyError(msg)
 
         with pytest.raises(ConcurrencyError) as exc_info:
             await update_with_retry(always_fail, max_retries=3)
@@ -129,15 +131,16 @@ class TestUpdateWithRetryFailure:
         assert call_count == 3
 
     @pytest.mark.asyncio
-    async def test_single_retry_exhausted(self):
+    async def test_single_retry_exhausted(self) -> None:
         """Test with max_retries=1."""
         call_count = 0
 
-        async def always_fail():
+        async def always_fail() -> Never:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
-            raise ConcurrencyError("Fail")
+            msg = "Fail"
+            raise ConcurrencyError(msg)
 
         with pytest.raises(ConcurrencyError) as exc_info:
             await update_with_retry(always_fail, max_retries=1)
@@ -146,12 +149,13 @@ class TestUpdateWithRetryFailure:
         assert call_count == 1
 
     @pytest.mark.asyncio
-    async def test_original_error_message_preserved(self):
+    async def test_original_error_message_preserved(self) -> None:
         """Test that original error message is preserved in final error."""
 
-        async def fail_with_message():
+        async def fail_with_message() -> Never:
             await asyncio.sleep(0)
-            raise ConcurrencyError("Original error: version mismatch")
+            msg = "Original error: version mismatch"
+            raise ConcurrencyError(msg)
 
         with pytest.raises(ConcurrencyError) as exc_info:
             await update_with_retry(fail_with_message, max_retries=2)
@@ -161,15 +165,16 @@ class TestUpdateWithRetryFailure:
         assert "Original error: version mismatch" in error_msg
 
     @pytest.mark.asyncio
-    async def test_non_concurrency_error_propagates(self):
+    async def test_non_concurrency_error_propagates(self) -> None:
         """Test that non-ConcurrencyError exceptions are not retried."""
         call_count = 0
 
-        async def raise_other_error():
+        async def raise_other_error() -> Never:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
-            raise ValueError("Different error")
+            msg = "Different error"
+            raise ValueError(msg)
 
         with pytest.raises(ValueError, match="Different error"):
             await update_with_retry(raise_other_error, max_retries=3)
@@ -182,15 +187,16 @@ class TestUpdateWithRetryBackoff:
     """Test exponential backoff behavior."""
 
     @pytest.mark.asyncio
-    async def test_backoff_delays_increase(self):
+    async def test_backoff_delays_increase(self) -> None:
         """Test that delays increase exponentially."""
         call_times = []
 
-        async def track_calls():
+        async def track_calls() -> str:
             await asyncio.sleep(0)
             call_times.append(asyncio.get_event_loop().time())
             if len(call_times) < 3:
-                raise ConcurrencyError("Retry")
+                msg = "Retry"
+                raise ConcurrencyError(msg)
             return "done"
 
         _ = asyncio.get_event_loop().time()
@@ -207,15 +213,16 @@ class TestUpdateWithRetryBackoff:
             assert delay2 > delay1
 
     @pytest.mark.asyncio
-    async def test_base_delay_parameter(self):
+    async def test_base_delay_parameter(self) -> None:
         """Test that base_delay parameter works."""
         call_times = []
 
-        async def track_calls():
+        async def track_calls() -> str:
             await asyncio.sleep(0)
             call_times.append(asyncio.get_event_loop().time())
             if len(call_times) < 2:
-                raise ConcurrencyError("Retry")
+                msg = "Retry"
+                raise ConcurrencyError(msg)
             return "done"
 
         await update_with_retry(track_calls, max_retries=2, base_delay=0.05)
@@ -226,7 +233,7 @@ class TestUpdateWithRetryBackoff:
             assert delay >= 0.05  # At least base_delay
 
     @pytest.mark.asyncio
-    async def test_jitter_adds_randomness(self):
+    async def test_jitter_adds_randomness(self) -> None:
         """Test that jitter adds 10% randomness to delays."""
         # Run multiple times to observe jitter variance
         delays = []
@@ -234,11 +241,12 @@ class TestUpdateWithRetryBackoff:
         for _ in range(5):
             call_times = []
 
-            async def track_calls(_ct=call_times):
+            async def track_calls(_ct=call_times) -> str:
                 await asyncio.sleep(0)
                 _ct.append(asyncio.get_event_loop().time())
                 if len(_ct) < 2:
-                    raise ConcurrencyError("Retry")
+                    msg = "Retry"
+                    raise ConcurrencyError(msg)
                 return "done"
 
             await update_with_retry(track_calls, max_retries=2, base_delay=0.01)
@@ -257,15 +265,16 @@ class TestUpdateWithRetryEdgeCases:
     """Test edge cases and parameter validation."""
 
     @pytest.mark.asyncio
-    async def test_max_retries_default(self):
+    async def test_max_retries_default(self) -> None:
         """Test default max_retries value is 3."""
         call_count = 0
 
-        async def count_calls():
+        async def count_calls() -> Never:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
-            raise ConcurrencyError("Fail")
+            msg = "Fail"
+            raise ConcurrencyError(msg)
 
         with pytest.raises(ConcurrencyError):
             await update_with_retry(count_calls)  # No max_retries specified
@@ -273,15 +282,16 @@ class TestUpdateWithRetryEdgeCases:
         assert call_count == 3  # Default is 3
 
     @pytest.mark.asyncio
-    async def test_base_delay_default(self):
+    async def test_base_delay_default(self) -> None:
         """Test default base_delay value is 0.1."""
         call_times = []
 
-        async def track_calls():
+        async def track_calls() -> str:
             await asyncio.sleep(0)
             call_times.append(asyncio.get_event_loop().time())
             if len(call_times) < 2:
-                raise ConcurrencyError("Retry")
+                msg = "Retry"
+                raise ConcurrencyError(msg)
             return "done"
 
         await update_with_retry(track_calls, max_retries=2)
@@ -292,16 +302,17 @@ class TestUpdateWithRetryEdgeCases:
             assert delay >= 0.1
 
     @pytest.mark.asyncio
-    async def test_high_retry_count(self):
+    async def test_high_retry_count(self) -> None:
         """Test with high retry count."""
         call_count = 0
 
-        async def fail_then_succeed():
+        async def fail_then_succeed() -> str:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             if call_count < 10:
-                raise ConcurrencyError("Retry")
+                msg = "Retry"
+                raise ConcurrencyError(msg)
             return "finally_succeeded"
 
         result = await update_with_retry(fail_then_succeed, max_retries=10, base_delay=0.001)
@@ -309,16 +320,17 @@ class TestUpdateWithRetryEdgeCases:
         assert call_count == 10
 
     @pytest.mark.asyncio
-    async def test_zero_base_delay(self):
+    async def test_zero_base_delay(self) -> None:
         """Test with zero base_delay (immediate retries)."""
         call_count = 0
 
-        async def count_retries():
+        async def count_retries() -> str:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             if call_count < 3:
-                raise ConcurrencyError("Retry")
+                msg = "Retry"
+                raise ConcurrencyError(msg)
             return "done"
 
         start = asyncio.get_event_loop().time()
@@ -331,11 +343,11 @@ class TestUpdateWithRetryEdgeCases:
         assert elapsed < 0.5
 
     @pytest.mark.asyncio
-    async def test_async_function_required(self):
+    async def test_async_function_required(self) -> None:
         """Test that function must be async."""
 
         # This test verifies the type signature works with async functions
-        async def valid_async_fn():
+        async def valid_async_fn() -> str:
             await asyncio.sleep(0)
             return "async_result"
 
@@ -343,7 +355,7 @@ class TestUpdateWithRetryEdgeCases:
         assert result == "async_result"
 
     @pytest.mark.asyncio
-    async def test_complex_return_value(self):
+    async def test_complex_return_value(self) -> None:
         """Test with complex return values."""
 
         async def return_complex():
@@ -360,7 +372,7 @@ class TestUpdateWithRetryEdgeCases:
         assert result["nested"]["deep"]["value"] == 42
 
     @pytest.mark.asyncio
-    async def test_retry_after_different_errors(self):
+    async def test_retry_after_different_errors(self) -> None:
         """Test retrying after different ConcurrencyError messages."""
         call_count = 0
         errors = [
@@ -369,7 +381,7 @@ class TestUpdateWithRetryEdgeCases:
             "Version mismatch: expected 3",
         ]
 
-        async def different_errors():
+        async def different_errors() -> str:
             await asyncio.sleep(0)
             nonlocal call_count
             if call_count < len(errors):

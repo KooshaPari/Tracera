@@ -28,7 +28,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Add item specification tables."""
-
     # === requirement_specs ===
     op.create_table(
         "requirement_specs",

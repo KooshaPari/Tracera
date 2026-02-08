@@ -10,6 +10,7 @@ Tests verify:
 """
 
 import asyncio
+import math
 import os
 from unittest.mock import MagicMock, Mock, patch
 
@@ -49,7 +50,7 @@ def reset_tracing_state():
 class TestTracerInitialization:
     """Test tracer provider initialization."""
 
-    def test_init_tracing_creates_provider(self, reset_tracing_state):
+    def test_init_tracing_creates_provider(self, reset_tracing_state) -> None:
         """Test that init_tracing creates a valid tracer provider."""
         # Initialize tracing
         tracer = init_tracing(
@@ -67,7 +68,7 @@ class TestTracerInitialization:
         provider = trace.get_tracer_provider()
         assert isinstance(provider, TracerProvider)
 
-    def test_init_tracing_idempotent(self, reset_tracing_state):
+    def test_init_tracing_idempotent(self, reset_tracing_state) -> None:
         """Test that multiple calls to init_tracing return same tracer."""
         # Initialize twice
         tracer1 = init_tracing(service_name="test-1")
@@ -76,7 +77,7 @@ class TestTracerInitialization:
         # Should return same instance
         assert tracer1 is tracer2
 
-    def test_init_tracing_respects_environment_variables(self, reset_tracing_state, monkeypatch):
+    def test_init_tracing_respects_environment_variables(self, reset_tracing_state, monkeypatch) -> None:
         """Test that init_tracing reads environment variables."""
         monkeypatch.setenv("OTLP_ENDPOINT", "custom-endpoint:4317")
         monkeypatch.setenv("TRACING_ENVIRONMENT", "staging")
@@ -85,7 +86,7 @@ class TestTracerInitialization:
         tracer = init_tracing(service_name="test-service")
         assert tracer is not None
 
-    def test_init_tracing_requires_exporter(self, reset_tracing_state):
+    def test_init_tracing_requires_exporter(self, reset_tracing_state) -> None:
         """Test that init_tracing fails gracefully if exporter unavailable."""
         import tracertm.observability.tracing as tracing_module
 
@@ -98,12 +99,12 @@ class TestTracerInitialization:
 class TestGetTracer:
     """Test tracer getter."""
 
-    def test_get_tracer_initializes_if_needed(self, reset_tracing_state):
+    def test_get_tracer_initializes_if_needed(self, reset_tracing_state) -> None:
         """Test that get_tracer initializes tracing if needed."""
         tracer = get_tracer()
         assert tracer is not None
 
-    def test_get_tracer_returns_cached_instance(self, reset_tracing_state):
+    def test_get_tracer_returns_cached_instance(self, reset_tracing_state) -> None:
         """Test that get_tracer returns cached instance."""
         tracer1 = get_tracer()
         tracer2 = get_tracer()
@@ -115,7 +116,7 @@ class TestTraceMethodDecorator:
     """Test @trace_method decorator."""
 
     @pytest.mark.asyncio
-    async def test_trace_method_sync_function(self, reset_tracing_state):
+    async def test_trace_method_sync_function(self, reset_tracing_state) -> None:
         """Test tracing synchronous functions."""
 
         @trace_method(span_name="test.sync")
@@ -126,7 +127,7 @@ class TestTraceMethodDecorator:
         assert result == 84
 
     @pytest.mark.asyncio
-    async def test_trace_method_async_function(self, reset_tracing_state):
+    async def test_trace_method_async_function(self, reset_tracing_state) -> None:
         """Test tracing asynchronous functions."""
 
         @trace_method(span_name="test.async")
@@ -138,7 +139,7 @@ class TestTraceMethodDecorator:
         assert result == 84
 
     @pytest.mark.asyncio
-    async def test_trace_method_with_attributes(self, reset_tracing_state):
+    async def test_trace_method_with_attributes(self, reset_tracing_state) -> None:
         """Test that trace_method includes custom attributes."""
 
         @trace_method(
@@ -152,12 +153,13 @@ class TestTraceMethodDecorator:
         assert result == "result"
 
     @pytest.mark.asyncio
-    async def test_trace_method_error_handling(self, reset_tracing_state):
+    async def test_trace_method_error_handling(self, reset_tracing_state) -> None:
         """Test that trace_method records exceptions."""
 
         @trace_method(span_name="test.error")
         async def function_with_error() -> None:
-            raise ValueError("Test error")
+            msg = "Test error"
+            raise ValueError(msg)
 
         with pytest.raises(ValueError, match="Test error"):
             await function_with_error()
@@ -167,7 +169,7 @@ class TestSpanCreation:
     """Test manual span creation."""
 
     @pytest.mark.asyncio
-    async def test_create_sync_span(self, reset_tracing_state):
+    async def test_create_sync_span(self, reset_tracing_state) -> None:
         """Test creating synchronous spans."""
         tracer = get_tracer()
 
@@ -176,7 +178,7 @@ class TestSpanCreation:
             span.set_attribute("test.key", "test.value")
 
     @pytest.mark.asyncio
-    async def test_create_async_span(self, reset_tracing_state):
+    async def test_create_async_span(self, reset_tracing_state) -> None:
         """Test creating asynchronous spans."""
         tracer = get_tracer()
 
@@ -185,7 +187,7 @@ class TestSpanCreation:
             await asyncio.sleep(0.01)
 
     @pytest.mark.asyncio
-    async def test_nested_spans(self, reset_tracing_state):
+    async def test_nested_spans(self, reset_tracing_state) -> None:
         """Test creating nested spans."""
         tracer = get_tracer()
 
@@ -196,21 +198,21 @@ class TestSpanCreation:
                 child.set_attribute("span.type", "child")
 
     @pytest.mark.asyncio
-    async def test_span_attributes(self, reset_tracing_state):
+    async def test_span_attributes(self, reset_tracing_state) -> None:
         """Test setting span attributes."""
         tracer = get_tracer()
 
         with tracer.start_as_current_span("test.attributes") as span:
             span.set_attribute("string.attr", "value")
             span.set_attribute("int.attr", 42)
-            span.set_attribute("float.attr", 3.14)
+            span.set_attribute("float.attr", math.pi)
             span.set_attribute("bool.attr", True)
 
 
 class TestFastAPIInstrumentation:
     """Test FastAPI instrumentation."""
 
-    def test_instrument_app_available(self):
+    def test_instrument_app_available(self) -> None:
         """Test that FastAPI instrumentation is available."""
         try:
             from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -219,7 +221,7 @@ class TestFastAPIInstrumentation:
         except ImportError:
             pytest.skip("FastAPI instrumentation not installed")
 
-    def test_instrument_app_with_fastapi(self):
+    def test_instrument_app_with_fastapi(self) -> None:
         """Test instrumenting a FastAPI app."""
         try:
             from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -234,7 +236,7 @@ class TestFastAPIInstrumentation:
         except ImportError:
             pytest.skip("FastAPI instrumentation not installed")
 
-    def test_instrument_app_idempotent(self):
+    def test_instrument_app_idempotent(self) -> None:
         """Test that instrument_app is idempotent."""
         try:
             from tracertm.observability import instrument_app
@@ -252,7 +254,7 @@ class TestFastAPIInstrumentation:
 class TestInstrumentationPackages:
     """Test availability of instrumentation packages."""
 
-    def test_fastapi_instrumentation_available(self):
+    def test_fastapi_instrumentation_available(self) -> None:
         """Test FastAPI instrumentation package."""
         try:
             from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -261,7 +263,7 @@ class TestInstrumentationPackages:
         except ImportError:
             pytest.skip("Package not installed")
 
-    def test_sqlalchemy_instrumentation_available(self):
+    def test_sqlalchemy_instrumentation_available(self) -> None:
         """Test SQLAlchemy instrumentation package."""
         try:
             from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
@@ -270,7 +272,7 @@ class TestInstrumentationPackages:
         except ImportError:
             pytest.skip("Package not installed")
 
-    def test_httpx_instrumentation_available(self):
+    def test_httpx_instrumentation_available(self) -> None:
         """Test HTTPX instrumentation package."""
         try:
             from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
@@ -283,7 +285,7 @@ class TestInstrumentationPackages:
 class TestOTLPExporter:
     """Test OTLP exporter configuration."""
 
-    def test_otlp_exporter_available(self):
+    def test_otlp_exporter_available(self) -> None:
         """Test that OTLP exporter is available."""
         try:
             from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
@@ -292,7 +294,7 @@ class TestOTLPExporter:
         except ImportError:
             pytest.fail("OTLP exporter not installed")
 
-    def test_otlp_exporter_initialization(self):
+    def test_otlp_exporter_initialization(self) -> None:
         """Test that OTLP exporter can be initialized."""
         try:
             from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
@@ -307,7 +309,7 @@ class TestOTLPExporter:
         except ImportError:
             pytest.skip("OTLP exporter not installed")
 
-    def test_otlp_exporter_with_custom_endpoint(self):
+    def test_otlp_exporter_with_custom_endpoint(self) -> None:
         """Test OTLP exporter with custom endpoint."""
         try:
             from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
@@ -326,7 +328,7 @@ class TestOTLPExporter:
 class TestResourceMetadata:
     """Test resource metadata in spans."""
 
-    def test_resource_has_service_name(self, reset_tracing_state):
+    def test_resource_has_service_name(self, reset_tracing_state) -> None:
         """Test that resource includes service name."""
         init_tracing(service_name="test-service")
 
@@ -335,7 +337,7 @@ class TestResourceMetadata:
 
         assert resource.attributes.get("service.name") == "test-service"
 
-    def test_resource_has_environment(self, reset_tracing_state):
+    def test_resource_has_environment(self, reset_tracing_state) -> None:
         """Test that resource includes deployment environment."""
         # Note: init_tracing is idempotent, so different envs on subsequent calls don't change
         # This test verifies that ANY initialization includes deployment.environment attribute
@@ -347,7 +349,7 @@ class TestResourceMetadata:
         # Just verify the attribute exists (it was set in the first initialization)
         assert "deployment.environment" in resource.attributes
 
-    def test_resource_has_version(self, reset_tracing_state):
+    def test_resource_has_version(self, reset_tracing_state) -> None:
         """Test that resource includes service version."""
         # Note: init_tracing is idempotent, so different versions on subsequent calls don't change
         # This test verifies that ANY initialization includes service.version attribute
@@ -363,7 +365,7 @@ class TestResourceMetadata:
 class TestTraceContextPropagation:
     """Test W3C Trace Context propagation."""
 
-    def test_trace_context_propagator_configured(self, reset_tracing_state):
+    def test_trace_context_propagator_configured(self, reset_tracing_state) -> None:
         """Test that trace context propagator is configured."""
         init_tracing()
 

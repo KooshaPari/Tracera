@@ -39,7 +39,7 @@ class AgentConflict:
 class AgentCoordinationService:
     """Service for agent coordination and conflict resolution."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.agents = AgentRepository(session)
         self.events = EventRepository(session)
@@ -103,7 +103,7 @@ class AgentCoordinationService:
                                 conflict_type="concurrent_activity",
                                 entity_id="unknown",
                                 description=f"Agents {primary_agent.name} and {secondary_agent.name} have concurrent activity",
-                            )
+                            ),
                         )
 
         return conflicts
@@ -119,7 +119,8 @@ class AgentCoordinationService:
         secondary_agent = await self.agents.get_by_id(conflict.secondary_agent_id)
 
         if not primary_agent or not secondary_agent:
-            raise ValueError("One or both agents not found")
+            msg = "One or both agents not found"
+            raise ValueError(msg)
 
         # Apply resolution strategy
         if strategy == "last_write_wins":
@@ -140,7 +141,8 @@ class AgentCoordinationService:
             loser_id = secondary_agent.id
 
         else:
-            raise ValueError(f"Unknown resolution strategy: {strategy}")
+            msg = f"Unknown resolution strategy: {strategy}"
+            raise ValueError(msg)
 
         # Log resolution
         await self.events.log(

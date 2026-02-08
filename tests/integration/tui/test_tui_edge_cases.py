@@ -1,5 +1,4 @@
-"""
-TUI Edge Case Tests: State Transitions, Long Strings, Keyboard/Mouse Combos, Display Limits
+"""TUI Edge Case Tests: State Transitions, Long Strings, Keyboard/Mouse Combos, Display Limits.
 
 Comprehensive edge case testing covering:
 - State transitions (initialization, transitions, edge states)
@@ -52,7 +51,7 @@ if TEXTUAL_AVAILABLE:
 class TestStateTransitions:
     """Test widget state transitions."""
 
-    def test_sync_status_initial_state(self):
+    def test_sync_status_initial_state(self) -> None:
         """Test SyncStatusWidget initial state."""
         widget = SyncStatusWidget()
         assert widget.is_online is False
@@ -62,7 +61,7 @@ class TestStateTransitions:
         assert widget.conflicts_count == 0
         assert widget.last_error is None
 
-    def test_sync_status_transition_online_to_offline(self):
+    def test_sync_status_transition_online_to_offline(self) -> None:
         """Test transition from online to offline state."""
         widget = SyncStatusWidget()
         widget.is_online = True
@@ -71,7 +70,7 @@ class TestStateTransitions:
         widget.is_online = False
         assert widget.is_online is False
 
-    def test_sync_status_transition_syncing_states(self):
+    def test_sync_status_transition_syncing_states(self) -> None:
         """Test transitions between syncing states."""
         widget = SyncStatusWidget()
         # Idle -> Syncing
@@ -87,7 +86,7 @@ class TestStateTransitions:
         widget.is_syncing = False
         assert widget.is_syncing is False
 
-    def test_sync_status_pending_changes_accumulation(self):
+    def test_sync_status_pending_changes_accumulation(self) -> None:
         """Test pending changes counter accumulation and reset."""
         widget = SyncStatusWidget()
         assert widget.pending_changes == 0
@@ -103,7 +102,7 @@ class TestStateTransitions:
         widget.pending_changes = 0
         assert widget.pending_changes == 0
 
-    def test_sync_status_conflicts_count_transitions(self):
+    def test_sync_status_conflicts_count_transitions(self) -> None:
         """Test conflicts count state transitions."""
         widget = SyncStatusWidget()
         assert widget.conflicts_count == 0
@@ -120,7 +119,7 @@ class TestStateTransitions:
         widget.conflicts_count = 0
         assert widget.conflicts_count == 0
 
-    def test_sync_status_last_sync_timestamp_update(self):
+    def test_sync_status_last_sync_timestamp_update(self) -> None:
         """Test last_sync timestamp updates."""
         widget = SyncStatusWidget()
         assert widget.last_sync is None
@@ -135,7 +134,7 @@ class TestStateTransitions:
         widget.last_sync = later
         assert widget.last_sync == later
 
-    def test_sync_status_error_state_transitions(self):
+    def test_sync_status_error_state_transitions(self) -> None:
         """Test error state transitions."""
         widget = SyncStatusWidget()
         assert widget.last_error is None
@@ -152,7 +151,7 @@ class TestStateTransitions:
         widget.last_error = "Timeout occurred"
         assert widget.last_error == "Timeout occurred"
 
-    def test_sync_status_complex_state_transition(self):
+    def test_sync_status_complex_state_transition(self) -> None:
         """Test complex multi-property state transition."""
         widget = SyncStatusWidget()
 
@@ -174,22 +173,22 @@ class TestStateTransitions:
         assert widget.is_syncing is False
         assert widget.last_error is None
 
-    def test_item_list_widget_creation_state(self):
+    def test_item_list_widget_creation_state(self) -> None:
         """Test ItemListWidget initial state."""
         widget = ItemListWidget()
         assert widget._columns_added is False
 
-    def test_state_display_widget_initial_state(self):
+    def test_state_display_widget_initial_state(self) -> None:
         """Test StateDisplayWidget initial state."""
         widget = StateDisplayWidget()
         assert widget._columns_added is False
 
-    def test_view_switcher_initial_state(self):
+    def test_view_switcher_initial_state(self) -> None:
         """Test ViewSwitcherWidget initial state."""
         widget = ViewSwitcherWidget()
         assert widget is not None
 
-    def test_multiple_widgets_independent_states(self):
+    def test_multiple_widgets_independent_states(self) -> None:
         """Test that multiple widgets maintain independent states."""
         widget1 = SyncStatusWidget()
         widget2 = SyncStatusWidget()
@@ -199,7 +198,7 @@ class TestStateTransitions:
         assert widget2.is_online is False
         assert widget2.pending_changes == 0
 
-    def test_state_transition_with_extremes(self):
+    def test_state_transition_with_extremes(self) -> None:
         """Test state transitions with extreme values."""
         widget = SyncStatusWidget()
 
@@ -217,7 +216,7 @@ class TestStateTransitions:
         assert widget.pending_changes == 0
         assert widget.conflicts_count == 0
 
-    def test_conflict_panel_state(self):
+    def test_conflict_panel_state(self) -> None:
         """Test ConflictPanel state management."""
         with patch("tracertm.tui.widgets.conflict_panel.Static"):
             panel = ConflictPanel()
@@ -232,7 +231,7 @@ class TestStateTransitions:
 class TestLongStringHandling:
     """Test widgets handling extremely long strings."""
 
-    def test_sync_status_long_error_message(self):
+    def test_sync_status_long_error_message(self) -> None:
         """Test very long error message handling."""
         widget = SyncStatusWidget()
         long_error = "E" * 1000
@@ -240,14 +239,14 @@ class TestLongStringHandling:
         assert widget.last_error == long_error
         assert len(widget.last_error) == 1000
 
-    def test_sync_status_unicode_error_message(self):
+    def test_sync_status_unicode_error_message(self) -> None:
         """Test unicode characters in error messages."""
         widget = SyncStatusWidget()
         unicode_error = "ERROR: 日本語テスト 🔴 αβγ δεζ ñ ü"
         widget.last_error = unicode_error
         assert widget.last_error == unicode_error
 
-    def test_sync_status_multiline_error_message(self):
+    def test_sync_status_multiline_error_message(self) -> None:
         """Test multiline error messages."""
         widget = SyncStatusWidget()
         multiline_error = "Error on line 1\nError on line 2\nError on line 3"
@@ -255,56 +254,56 @@ class TestLongStringHandling:
         assert widget.last_error == multiline_error
         assert "\n" in widget.last_error
 
-    def test_sync_status_special_characters_in_error(self):
+    def test_sync_status_special_characters_in_error(self) -> None:
         """Test special characters in error messages."""
         widget = SyncStatusWidget()
         special_error = "Error: <>&\"'{}[]|\\~`!@#$%^&*()"
         widget.last_error = special_error
         assert widget.last_error == special_error
 
-    def test_item_list_very_long_column_content(self):
+    def test_item_list_very_long_column_content(self) -> None:
         """Test ItemListWidget with very long content."""
         widget = ItemListWidget()
         # Widget should handle being passed long strings
         assert widget is not None
 
-    def test_state_display_long_state_names(self):
+    def test_state_display_long_state_names(self) -> None:
         """Test StateDisplayWidget handling long state names."""
         widget = StateDisplayWidget()
         long_name = "VeryLongStateName" * 50
         assert len(long_name) > 800
 
-    def test_sync_status_empty_string_error(self):
+    def test_sync_status_empty_string_error(self) -> None:
         """Test empty string error handling."""
         widget = SyncStatusWidget()
         widget.last_error = ""
         assert widget.last_error == ""
 
-    def test_sync_status_whitespace_only_error(self):
+    def test_sync_status_whitespace_only_error(self) -> None:
         """Test whitespace-only error messages."""
         widget = SyncStatusWidget()
         widget.last_error = "   " * 100
         assert widget.last_error is not None
 
-    def test_sync_status_null_bytes_in_error(self):
+    def test_sync_status_null_bytes_in_error(self) -> None:
         """Test handling null-like strings."""
         widget = SyncStatusWidget()
         # Test with normal string containing null sequences
         widget.last_error = "Error\\x00Code"
         assert widget.last_error is not None
 
-    def test_item_list_column_text_encoding(self):
+    def test_item_list_column_text_encoding(self) -> None:
         """Test proper encoding of column text."""
         widget = ItemListWidget()
         # Widget should exist and be properly encoded
         assert isinstance(widget, DataTable)
 
-    def test_state_display_column_text_encoding(self):
+    def test_state_display_column_text_encoding(self) -> None:
         """Test state display column encoding."""
         widget = StateDisplayWidget()
         assert isinstance(widget, DataTable)
 
-    def test_sync_status_rapid_error_message_changes(self):
+    def test_sync_status_rapid_error_message_changes(self) -> None:
         """Test rapid changes to error messages."""
         widget = SyncStatusWidget()
         for i in range(100):
@@ -320,30 +319,30 @@ class TestLongStringHandling:
 class TestKeyboardMouseCombinations:
     """Test keyboard and mouse event combinations."""
 
-    def test_mouse_click_on_widget(self):
+    def test_mouse_click_on_widget(self) -> None:
         """Test mouse click event on widget."""
         widget = ItemListWidget()
         assert widget is not None
         # Widget should be a valid DataTable
         assert isinstance(widget, DataTable)
 
-    def test_widget_focus_handling(self):
+    def test_widget_focus_handling(self) -> None:
         """Test widget focus and blur."""
         widget = ItemListWidget()
         # Should be able to receive focus
         assert widget is not None
 
-    def test_item_list_data_table_interaction(self):
+    def test_item_list_data_table_interaction(self) -> None:
         """Test ItemListWidget as DataTable interaction."""
         widget = ItemListWidget()
         assert isinstance(widget, DataTable)
 
-    def test_state_display_data_table_interaction(self):
+    def test_state_display_data_table_interaction(self) -> None:
         """Test StateDisplayWidget as DataTable interaction."""
         widget = StateDisplayWidget()
         assert isinstance(widget, DataTable)
 
-    def test_sync_status_reactive_updates(self):
+    def test_sync_status_reactive_updates(self) -> None:
         """Test reactive property updates trigger watchers."""
         widget = SyncStatusWidget()
         # Change reactive property
@@ -353,7 +352,7 @@ class TestKeyboardMouseCombinations:
         widget.is_syncing = True
         assert widget.is_syncing is True
 
-    def test_multiple_rapid_state_changes(self):
+    def test_multiple_rapid_state_changes(self) -> None:
         """Test multiple rapid state changes."""
         widget = SyncStatusWidget()
         for i in range(50):
@@ -366,25 +365,25 @@ class TestKeyboardMouseCombinations:
         assert widget.pending_changes == 49
         assert widget.is_syncing is False  # 49 % 3 != 0
 
-    def test_widget_composition(self):
+    def test_widget_composition(self) -> None:
         """Test widget composition handling."""
         widget = SyncStatusWidget()
         # Should have compose method
         assert hasattr(widget, "compose")
 
-    def test_widget_mount_handling(self):
+    def test_widget_mount_handling(self) -> None:
         """Test widget on_mount handling."""
         widget = SyncStatusWidget()
         # Should have on_mount method
         assert hasattr(widget, "on_mount")
 
-    def test_conflict_panel_widget_composition(self):
+    def test_conflict_panel_widget_composition(self) -> None:
         """Test ConflictPanel widget composition."""
         with patch("tracertm.tui.widgets.conflict_panel.Static"):
             panel = ConflictPanel()
             assert hasattr(panel, "compose")
 
-    def test_view_switcher_composition(self):
+    def test_view_switcher_composition(self) -> None:
         """Test ViewSwitcherWidget composition."""
         widget = ViewSwitcherWidget()
         assert hasattr(widget, "compose")
@@ -398,38 +397,38 @@ class TestKeyboardMouseCombinations:
 class TestDisplayLimits:
     """Test widgets with display and rendering limits."""
 
-    def test_sync_status_many_pending_changes(self):
+    def test_sync_status_many_pending_changes(self) -> None:
         """Test display with very large pending changes count."""
         widget = SyncStatusWidget()
         # Set to maximum displayable number
         widget.pending_changes = 2147483647  # Max 32-bit int
         assert widget.pending_changes == 2147483647
 
-    def test_sync_status_many_conflicts(self):
+    def test_sync_status_many_conflicts(self) -> None:
         """Test display with many conflicts."""
         widget = SyncStatusWidget()
         widget.conflicts_count = 1000000
         assert widget.conflicts_count == 1000000
 
-    def test_sync_status_rapid_pending_changes_updates(self):
+    def test_sync_status_rapid_pending_changes_updates(self) -> None:
         """Test rapid pending changes updates."""
         widget = SyncStatusWidget()
         for i in range(1000):
             widget.pending_changes = i
         assert widget.pending_changes == 999
 
-    def test_item_list_many_rows_simulation(self):
+    def test_item_list_many_rows_simulation(self) -> None:
         """Test ItemListWidget with many simulated rows."""
         widget = ItemListWidget()
         # Widget should be created successfully
         assert widget is not None
 
-    def test_state_display_many_rows_simulation(self):
+    def test_state_display_many_rows_simulation(self) -> None:
         """Test StateDisplayWidget with many simulated rows."""
         widget = StateDisplayWidget()
         assert widget is not None
 
-    def test_sync_status_timestamp_precision(self):
+    def test_sync_status_timestamp_precision(self) -> None:
         """Test timestamp precision under high-frequency updates."""
         widget = SyncStatusWidget()
         start_time = datetime.now(tz=UTC)
@@ -441,7 +440,7 @@ class TestDisplayLimits:
         expected = start_time + timedelta(milliseconds=99)
         assert (widget.last_sync - expected).total_seconds() < 0.001
 
-    def test_widget_state_memory_under_many_changes(self):
+    def test_widget_state_memory_under_many_changes(self) -> None:
         """Test widget state memory with many changes."""
         widget = SyncStatusWidget()
 
@@ -455,7 +454,7 @@ class TestDisplayLimits:
         # Widget should still be responsive
         assert widget.pending_changes == 99  # 10000 % 100
 
-    def test_container_with_multiple_widgets(self):
+    def test_container_with_multiple_widgets(self) -> None:
         """Test container with multiple widgets."""
         widget1 = SyncStatusWidget()
         widget2 = ItemListWidget()
@@ -475,7 +474,7 @@ class TestDisplayLimits:
 class TestErrorRecovery:
     """Test error handling and recovery."""
 
-    def test_sync_status_error_to_success_recovery(self):
+    def test_sync_status_error_to_success_recovery(self) -> None:
         """Test recovery from error to success state."""
         widget = SyncStatusWidget()
 
@@ -492,7 +491,7 @@ class TestErrorRecovery:
         assert widget.last_error is None
         assert widget.is_online is True
 
-    def test_sync_status_cascading_errors(self):
+    def test_sync_status_cascading_errors(self) -> None:
         """Test handling cascading errors."""
         widget = SyncStatusWidget()
 
@@ -505,7 +504,7 @@ class TestErrorRecovery:
         assert widget.last_error == "Sync timeout"
         assert "Connection lost" not in widget.last_error
 
-    def test_conflict_resolution_state(self):
+    def test_conflict_resolution_state(self) -> None:
         """Test conflict resolution state transitions."""
         widget = SyncStatusWidget()
 
@@ -520,7 +519,7 @@ class TestErrorRecovery:
         assert widget.conflicts_count == 0
         assert widget.last_error is None
 
-    def test_sync_status_offline_online_cycle(self):
+    def test_sync_status_offline_online_cycle(self) -> None:
         """Test offline/online cycling."""
         widget = SyncStatusWidget()
 
@@ -531,7 +530,7 @@ class TestErrorRecovery:
             widget.is_online = True
             assert widget.is_online is True
 
-    def test_sync_with_pending_changes_recovery(self):
+    def test_sync_with_pending_changes_recovery(self) -> None:
         """Test sync recovery with pending changes."""
         widget = SyncStatusWidget()
 
@@ -548,7 +547,7 @@ class TestErrorRecovery:
         assert widget.is_syncing is False
         assert widget.pending_changes == 0
 
-    def test_widget_state_after_display_limits(self):
+    def test_widget_state_after_display_limits(self) -> None:
         """Test widget state after reaching display limits."""
         widget = SyncStatusWidget()
 
@@ -562,7 +561,7 @@ class TestErrorRecovery:
         assert widget.pending_changes == 0
         assert widget.conflicts_count == 0
 
-    def test_error_message_recovery_sequence(self):
+    def test_error_message_recovery_sequence(self) -> None:
         """Test sequence of error messages and recovery."""
         widget = SyncStatusWidget()
 
@@ -580,7 +579,7 @@ class TestErrorRecovery:
             else:
                 assert widget.last_error is not None
 
-    def test_all_states_reset_to_default(self):
+    def test_all_states_reset_to_default(self) -> None:
         """Test resetting all states to default."""
         widget = SyncStatusWidget()
 
@@ -617,26 +616,26 @@ class TestErrorRecovery:
 class TestBoundaryEdgeCases:
     """Test boundary conditions and edge cases."""
 
-    def test_negative_pending_changes_handling(self):
+    def test_negative_pending_changes_handling(self) -> None:
         """Test handling negative pending changes (shouldn't happen but test)."""
         widget = SyncStatusWidget()
         # Should allow setting to negative (no validation)
         widget.pending_changes = -1
         assert widget.pending_changes == -1
 
-    def test_negative_conflicts_handling(self):
+    def test_negative_conflicts_handling(self) -> None:
         """Test handling negative conflicts count."""
         widget = SyncStatusWidget()
         widget.conflicts_count = -1
         assert widget.conflicts_count == -1
 
-    def test_none_timestamp_handling(self):
+    def test_none_timestamp_handling(self) -> None:
         """Test None timestamp handling."""
         widget = SyncStatusWidget()
         widget.last_sync = None
         assert widget.last_sync is None
 
-    def test_datetime_with_different_timezones(self):
+    def test_datetime_with_different_timezones(self) -> None:
         """Test datetime with different timezone info."""
         widget = SyncStatusWidget()
 
@@ -650,21 +649,21 @@ class TestBoundaryEdgeCases:
         widget.last_sync = naive_time
         assert widget.last_sync == naive_time
 
-    def test_very_old_timestamp(self):
+    def test_very_old_timestamp(self) -> None:
         """Test very old timestamp."""
         widget = SyncStatusWidget()
         old_time = datetime(1970, 1, 1, tzinfo=UTC)
         widget.last_sync = old_time
         assert widget.last_sync == old_time
 
-    def test_future_timestamp(self):
+    def test_future_timestamp(self) -> None:
         """Test future timestamp."""
         widget = SyncStatusWidget()
         future_time = datetime(2099, 12, 31, tzinfo=UTC)
         widget.last_sync = future_time
         assert widget.last_sync == future_time
 
-    def test_zero_pending_changes_boundary(self):
+    def test_zero_pending_changes_boundary(self) -> None:
         """Test zero as boundary for pending changes."""
         widget = SyncStatusWidget()
         widget.pending_changes = 0
@@ -685,7 +684,7 @@ class TestBoundaryEdgeCases:
 class TestComprehensiveIntegration:
     """Comprehensive integration tests combining multiple features."""
 
-    def test_realistic_sync_workflow(self):
+    def test_realistic_sync_workflow(self) -> None:
         """Test realistic sync workflow with all state changes."""
         widget = SyncStatusWidget()
 
@@ -716,7 +715,7 @@ class TestComprehensiveIntegration:
         assert widget.pending_changes == 0
         assert widget.last_sync is not None
 
-    def test_conflict_detection_and_resolution_workflow(self):
+    def test_conflict_detection_and_resolution_workflow(self) -> None:
         """Test conflict detection and resolution workflow."""
         widget = SyncStatusWidget()
 
@@ -743,7 +742,7 @@ class TestComprehensiveIntegration:
         assert widget.last_error is None
         assert widget.is_syncing is False
 
-    def test_stress_test_state_transitions(self):
+    def test_stress_test_state_transitions(self) -> None:
         """Stress test with many rapid state transitions."""
         widget = SyncStatusWidget()
 

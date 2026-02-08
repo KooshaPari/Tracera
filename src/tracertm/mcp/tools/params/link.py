@@ -28,8 +28,7 @@ async def link_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
-    """
-    Unified link management tool.
+    """Unified link management tool.
 
     Actions:
     - create: Create link between items (requires: source_id, target_id, link_type; optional: metadata)
@@ -72,4 +71,5 @@ async def link_manage(
         )
         return _wrap(result, ctx, action)
 
-    raise ToolError(f"Unknown link action: {action}")
+    msg = f"Unknown link action: {action}"
+    raise ToolError(msg)

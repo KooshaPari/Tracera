@@ -39,8 +39,8 @@ async def check_database(db: AsyncSession) -> dict[str, Any]:
         result = await db.execute(
             text(
                 "SELECT EXISTS (SELECT 1 FROM information_schema.tables "
-                "WHERE table_schema = 'public' AND table_name = 'test_cases')"
-            )
+                "WHERE table_schema = 'public' AND table_name = 'test_cases')",
+            ),
         )
         tables_ok = result.scalar() is True
         if not tables_ok:
@@ -93,7 +93,7 @@ async def check_nats(nats_client: Any | None) -> dict[str, Any]:
             "nats": {
                 "status": "healthy" if nats_health.get("connected") else "unhealthy",
                 "details": nats_health,
-            }
+            },
         }
     except Exception as exc:
         return {"nats": {"status": "unhealthy", "error": str(exc)}}
@@ -111,7 +111,7 @@ async def check_temporal() -> dict[str, Any]:
             "temporal": {
                 "status": "healthy" if temporal_health.get("status") == "ready" else "unhealthy",
                 "details": temporal_health,
-            }
+            },
         }
     except Exception as exc:
         return {"temporal": {"status": "unhealthy", "error": str(exc)}}
@@ -133,7 +133,7 @@ async def check_go_backend() -> dict[str, Any]:
                 "go_backend": {
                     "status": "healthy" if resp.status_code < HTTP_SERVER_ERROR_START else "unhealthy",
                     "http_status": resp.status_code,
-                }
+                },
             }
     except Exception as exc:
         return {"go_backend": {"status": "unhealthy", "error": str(exc)}}

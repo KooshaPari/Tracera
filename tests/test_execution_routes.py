@@ -99,7 +99,7 @@ def mock_config():
 
 
 @pytest.mark.asyncio
-async def test_create_execution_success(mock_db, mock_claims, mock_execution):
+async def test_create_execution_success(mock_db, mock_claims, mock_execution) -> None:
     """Test creating an execution successfully."""
     with patch("tracertm.api.routers.execution.ExecutionService") as MockService:
         service = MagicMock()
@@ -128,7 +128,7 @@ async def test_create_execution_success(mock_db, mock_claims, mock_execution):
 
 
 @pytest.mark.asyncio
-async def test_create_execution_with_config(mock_db, mock_claims, mock_execution):
+async def test_create_execution_with_config(mock_db, mock_claims, mock_execution) -> None:
     """Test creating an execution with custom config."""
     with patch("tracertm.api.routers.execution.ExecutionService") as MockService:
         service = MagicMock()
@@ -174,7 +174,7 @@ async def test_create_execution_with_config(mock_db, mock_claims, mock_execution
 
 
 @pytest.mark.asyncio
-async def test_list_executions_success(mock_db, mock_claims, mock_execution):
+async def test_list_executions_success(mock_db, mock_claims, mock_execution) -> None:
     """Test listing executions for a project."""
     with patch("tracertm.api.routers.execution.ExecutionService") as MockService:
         service = MagicMock()
@@ -200,7 +200,7 @@ async def test_list_executions_success(mock_db, mock_claims, mock_execution):
 
 
 @pytest.mark.asyncio
-async def test_list_executions_with_filters(mock_db, mock_claims, mock_execution):
+async def test_list_executions_with_filters(mock_db, mock_claims, mock_execution) -> None:
     """Test listing executions with status and type filters."""
     with patch("tracertm.api.routers.execution.ExecutionService") as MockService:
         service = MagicMock()
@@ -233,7 +233,7 @@ async def test_list_executions_with_filters(mock_db, mock_claims, mock_execution
 
 
 @pytest.mark.asyncio
-async def test_get_execution_success(mock_db, mock_claims, mock_execution):
+async def test_get_execution_success(mock_db, mock_claims, mock_execution) -> None:
     """Test getting an execution by ID."""
     with patch("tracertm.api.routers.execution.ExecutionService") as MockService:
         service = MagicMock()
@@ -254,7 +254,7 @@ async def test_get_execution_success(mock_db, mock_claims, mock_execution):
 
 
 @pytest.mark.asyncio
-async def test_get_execution_not_found(mock_db, mock_claims):
+async def test_get_execution_not_found(mock_db, mock_claims) -> None:
     """Test getting a non-existent execution."""
     with patch("tracertm.api.routers.execution.ExecutionService") as MockService:
         service = MagicMock()
@@ -276,7 +276,7 @@ async def test_get_execution_not_found(mock_db, mock_claims):
 
 
 @pytest.mark.asyncio
-async def test_get_execution_forbidden(mock_db, mock_claims):
+async def test_get_execution_forbidden(mock_db, mock_claims) -> None:
     """Test getting an execution from a different project."""
     mock_execution = MagicMock()
     mock_execution.id = "exec123"
@@ -307,7 +307,7 @@ async def test_get_execution_forbidden(mock_db, mock_claims):
 
 
 @pytest.mark.asyncio
-async def test_start_execution_success(mock_db, mock_claims, mock_execution):
+async def test_start_execution_success(mock_db, mock_claims, mock_execution) -> None:
     """Test starting an execution."""
     with patch("tracertm.api.routers.execution.ExecutionService") as MockService:
         service = MagicMock()
@@ -332,7 +332,7 @@ async def test_start_execution_success(mock_db, mock_claims, mock_execution):
 
 
 @pytest.mark.asyncio
-async def test_start_execution_wrong_status(mock_db, mock_claims):
+async def test_start_execution_wrong_status(mock_db, mock_claims) -> None:
     """Test starting an execution that's not pending."""
     mock_execution = MagicMock()
     mock_execution.id = "exec123"
@@ -365,7 +365,7 @@ async def test_start_execution_wrong_status(mock_db, mock_claims):
 
 
 @pytest.mark.asyncio
-async def test_complete_execution_success(mock_db, mock_claims, mock_execution):
+async def test_complete_execution_success(mock_db, mock_claims, mock_execution) -> None:
     """Test completing an execution."""
     with patch("tracertm.api.routers.execution.ExecutionService") as MockService:
         service = MagicMock()
@@ -401,7 +401,7 @@ async def test_complete_execution_success(mock_db, mock_claims, mock_execution):
 
 
 @pytest.mark.asyncio
-async def test_list_artifacts_success(mock_db, mock_claims, mock_execution, mock_artifact):
+async def test_list_artifacts_success(mock_db, mock_claims, mock_execution, mock_artifact) -> None:
     """Test listing artifacts for an execution."""
     with patch("tracertm.api.routers.execution.ExecutionService") as MockService:
         service = MagicMock()
@@ -423,7 +423,7 @@ async def test_list_artifacts_success(mock_db, mock_claims, mock_execution, mock
 
 
 @pytest.mark.asyncio
-async def test_add_artifact_success(mock_db, mock_claims, mock_execution, mock_artifact):
+async def test_add_artifact_success(mock_db, mock_claims, mock_execution, mock_artifact) -> None:
     """Test adding an artifact to an execution."""
     with patch("tracertm.api.routers.execution.ExecutionService") as MockService:
         service = MagicMock()
@@ -456,7 +456,7 @@ async def test_add_artifact_success(mock_db, mock_claims, mock_execution, mock_a
 
 
 @pytest.mark.asyncio
-async def test_get_execution_config_success(mock_db, mock_claims, mock_config):
+async def test_get_execution_config_success(mock_db, mock_claims, mock_config) -> None:
     """Test getting execution configuration."""
     with patch("tracertm.api.routers.execution.ExecutionService") as MockService:
         service = MagicMock()
@@ -475,7 +475,7 @@ async def test_get_execution_config_success(mock_db, mock_claims, mock_config):
 
 
 @pytest.mark.asyncio
-async def test_update_execution_config_success(mock_db, mock_claims, mock_config):
+async def test_update_execution_config_success(mock_db, mock_claims, mock_config) -> None:
     """Test updating execution configuration."""
     with patch("tracertm.api.routers.execution.ExecutionService") as MockService:
         service = MagicMock()
@@ -511,7 +511,7 @@ async def test_update_execution_config_success(mock_db, mock_claims, mock_config
 
 
 @pytest.mark.asyncio
-async def test_generate_vhs_tape_success(mock_db, mock_claims, mock_execution, mock_artifact, mock_config):
+async def test_generate_vhs_tape_success(mock_db, mock_claims, mock_execution, mock_artifact, mock_config) -> None:
     """Test generating a VHS tape."""
     with patch("tracertm.api.routers.execution.ExecutionService") as MockService:
         with patch("tracertm.api.routers.execution.VHSService"):
@@ -534,7 +534,7 @@ async def test_generate_vhs_tape_success(mock_db, mock_claims, mock_execution, m
 
 
 @pytest.mark.asyncio
-async def test_generate_vhs_tape_no_artifacts(mock_db, mock_claims, mock_execution):
+async def test_generate_vhs_tape_no_artifacts(mock_db, mock_claims, mock_execution) -> None:
     """Test generating a VHS tape with no artifacts."""
     with patch("tracertm.api.routers.execution.ExecutionService") as MockService:
         service = MagicMock()

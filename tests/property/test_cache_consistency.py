@@ -8,11 +8,10 @@ import hashlib
 from typing import Any
 
 import pytest
-from hypothesis import given, settings, assume
+from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 
 from tracertm.services.cache_service import CACHE_CONFIG, CacheService
-
 
 # ---------------------------------------------------------------------------
 # Strategies
@@ -105,7 +104,7 @@ class TestCacheKeyDeterminism:
     )
     @settings(max_examples=100)
     def test_different_kwargs_produce_different_keys(
-        self, cache_type: str, kwargs_a: dict[str, Any], kwargs_b: dict[str, Any]
+        self, cache_type: str, kwargs_a: dict[str, Any], kwargs_b: dict[str, Any],
     ) -> None:
         """Different non-None kwargs produce different keys (collision resistance)."""
         # Filter None values (they are ignored in key generation)
@@ -148,8 +147,8 @@ class TestCacheTTLConsistency:
 
     @given(
         cache_type=st.text(min_size=1, max_size=50, alphabet=st.characters(whitelist_categories=("L",))).filter(
-            lambda s: s not in CACHE_CONFIG
-        )
+            lambda s: s not in CACHE_CONFIG,
+        ),
     )
     @settings(max_examples=100)
     def test_ttl_defaults_for_unknown_types(self, cache_type: str) -> None:

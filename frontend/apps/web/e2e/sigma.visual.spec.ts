@@ -23,7 +23,7 @@ test.describe('Sigma Graph Visual Regression', () => {
 
     // Try to navigate to a test project or create one
     const createButton = page.locator('button:has-text("Create")').first();
-    await expect(createButton).toBeVisible({ timeout: 10000 });
+    await expect(createButton).toBeVisible({ timeout: 10_000 });
   });
 
   test('desktop viewport - container renders correctly', async ({ page }) => {
@@ -101,7 +101,7 @@ test.describe('Sigma Graph Visual Regression', () => {
 
     // Look for rendered nodes (could be canvas or SVG)
     const nodes = page.locator('circle[class*="node"], [data-testid*="node"]').first();
-    await expect(nodes).toBeVisible({ timeout: 10000 });
+    await expect(nodes).toBeVisible({ timeout: 10_000 });
   });
 
   test('edge rendering - lines between nodes', async ({ page }) => {
@@ -112,7 +112,7 @@ test.describe('Sigma Graph Visual Regression', () => {
     const edges = page
       .locator('line[class*="edge"], path[class*="edge"], [data-testid*="edge"]')
       .first();
-    await expect(edges).toBeVisible({ timeout: 10000 });
+    await expect(edges).toBeVisible({ timeout: 10_000 });
   });
 
   test('LOD switching - zoom level affects detail', async ({ page }) => {
@@ -218,6 +218,6 @@ test.describe('Sigma Graph Component Tests', () => {
 
     // Look for any content indicators
     const content = page.locator('main, [role="main"]');
-    await expect(content).toBeVisible({ timeout: 10000 });
+    await expect(content).toBeVisible({ timeout: 10_000 });
   });
 });

@@ -1,5 +1,4 @@
-"""
-Pandera schemas for DataFrame validation.
+"""Pandera schemas for DataFrame validation.
 
 Provides type-safe DataFrame schemas for data validation at boundaries.
 """

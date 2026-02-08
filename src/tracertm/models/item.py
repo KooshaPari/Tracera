@@ -1,6 +1,4 @@
-"""
-Item model for TraceRTM.
-"""
+"""Item model for TraceRTM."""
 
 import uuid
 from datetime import datetime
@@ -20,8 +18,7 @@ def generate_item_uuid() -> uuid.UUID:
 
 
 class Item(Base, TimestampMixin):
-    """
-    Item model representing a traceable item in any view.
+    """Item model representing a traceable item in any view.
 
     Items can be features, code files, tests, APIs, etc.
     """

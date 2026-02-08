@@ -335,7 +335,7 @@ test.describe('Graph Performance - Zoom Operations', () => {
     // Find zoom in button
     const zoomInBtn = page.locator('.react-flow__controls-zoomin');
 
-    await expect(zoomInBtn).toBeVisible({ timeout: 10000 });
+    await expect(zoomInBtn).toBeVisible({ timeout: 10_000 });
     // Measure response time for zoom button clicks
     const clickTimes: number[] = [];
 
@@ -986,7 +986,7 @@ test.describe('Graph Performance - Interaction Responsiveness', () => {
   test('should update layout controls without lag', async ({ page }) => {
     const layoutSelector = page.locator('button').filter({ hasText: /layout/i });
 
-    await expect(layoutSelector.first()).toBeVisible({ timeout: 10000 });
+    await expect(layoutSelector.first()).toBeVisible({ timeout: 10_000 });
     const responseTime = await measureInteractionTime(page, async () => {
       await layoutSelector.first().click();
     });

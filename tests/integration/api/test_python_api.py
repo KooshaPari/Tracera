@@ -1,5 +1,4 @@
-"""
-Integration tests for Epic 5: Python API (FR36-FR45).
+"""Integration tests for Epic 5: Python API (FR36-FR45).
 
 Tests programmatic access for AI agents.
 """
@@ -51,14 +50,14 @@ def temp_project_setup(tmp_path, monkeypatch):
     return project_id
 
 
-def test_api_client_initialization(temp_project_setup):
+def test_api_client_initialization(temp_project_setup) -> None:
     """Test API client initialization (FR36)."""
     client = TraceRTMClient()
     assert client.config_manager is not None
     client.close()
 
 
-def test_register_agent(temp_project_setup):
+def test_register_agent(temp_project_setup) -> None:
     """Test agent registration (FR41)."""
     client = TraceRTMClient()
     agent_id = client.register_agent("Test Agent", capabilities=["code", "test"], agent_type="ai_agent")
@@ -68,7 +67,7 @@ def test_register_agent(temp_project_setup):
     client.close()
 
 
-def test_query_items(temp_project_setup):
+def test_query_items(temp_project_setup) -> None:
     """Test querying items (FR37, FR44)."""
     client = TraceRTMClient()
     client.register_agent("Query Agent")
@@ -98,7 +97,7 @@ def test_query_items(temp_project_setup):
     client.close()
 
 
-def test_get_item(temp_project_setup):
+def test_get_item(temp_project_setup) -> None:
     """Test getting a specific item (FR37)."""
     client = TraceRTMClient()
     client.register_agent("Get Agent")
@@ -120,7 +119,7 @@ def test_get_item(temp_project_setup):
     client.close()
 
 
-def test_create_item(temp_project_setup):
+def test_create_item(temp_project_setup) -> None:
     """Test creating items (FR38)."""
     client = TraceRTMClient()
     client.register_agent("Create Agent")
@@ -149,7 +148,7 @@ def test_create_item(temp_project_setup):
     client.close()
 
 
-def test_update_item_optimistic_locking(temp_project_setup):
+def test_update_item_optimistic_locking(temp_project_setup) -> None:
     """Test updating items with optimistic locking (FR38, FR42)."""
     client1 = TraceRTMClient()
     client1.register_agent("Agent 1")
@@ -167,7 +166,7 @@ def test_update_item_optimistic_locking(temp_project_setup):
     client1.close()
 
 
-def test_update_item_conflict_detection(temp_project_setup):
+def test_update_item_conflict_detection(temp_project_setup) -> None:
     """Test conflict detection on concurrent updates (FR43)."""
     client1 = TraceRTMClient()
     client1.register_agent("Agent 1")
@@ -196,7 +195,7 @@ def test_update_item_conflict_detection(temp_project_setup):
     client2.close()
 
 
-def test_delete_item(temp_project_setup):
+def test_delete_item(temp_project_setup) -> None:
     """Test deleting items (FR38)."""
     client = TraceRTMClient()
     client.register_agent("Delete Agent")
@@ -216,7 +215,7 @@ def test_delete_item(temp_project_setup):
     client.close()
 
 
-def test_export_project(temp_project_setup):
+def test_export_project(temp_project_setup) -> None:
     """Test exporting project data (FR39)."""
     client = TraceRTMClient()
     client.register_agent("Export Agent")
@@ -240,7 +239,7 @@ def test_export_project(temp_project_setup):
     client.close()
 
 
-def test_import_data(temp_project_setup):
+def test_import_data(temp_project_setup) -> None:
     """Test importing bulk data (FR40)."""
     client = TraceRTMClient()
     client.register_agent("Import Agent")
@@ -279,7 +278,7 @@ def test_import_data(temp_project_setup):
     client.close()
 
 
-def test_agent_activity_monitoring(temp_project_setup):
+def test_agent_activity_monitoring(temp_project_setup) -> None:
     """Test agent activity monitoring (FR45)."""
     client = TraceRTMClient()
     agent_id = client.register_agent("Activity Agent")
@@ -297,7 +296,7 @@ def test_agent_activity_monitoring(temp_project_setup):
     client.close()
 
 
-def test_structured_filter_language(temp_project_setup):
+def test_structured_filter_language(temp_project_setup) -> None:
     """Test structured filter language (FR44)."""
     client = TraceRTMClient()
     client.register_agent("Filter Agent")

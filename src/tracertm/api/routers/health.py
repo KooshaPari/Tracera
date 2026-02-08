@@ -9,7 +9,7 @@ This module provides endpoints for:
 Extracted from main.py as part of Phase 4.1 decomposition.
 """
 
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
@@ -57,8 +57,8 @@ async def metrics() -> Response:
 
 @router.get("/ready")
 async def readiness_check(
-    db: AsyncSession = Depends(get_db),
-    cache: CacheService = Depends(get_cache_service),
+    db: Annotated[AsyncSession, Depends(get_db)],
+    cache: Annotated[CacheService, Depends(get_cache_service)],
 ) -> dict[str, Any] | JSONResponse:
     """Readiness check endpoint for orchestrators (k8s, etc.).
 
@@ -102,8 +102,8 @@ async def readiness_check(
 @router.get("/api/v1/health")
 async def api_health_check(
     request: Request,
-    db: AsyncSession = Depends(get_db),
-    cache: CacheService = Depends(get_cache_service),
+    db: Annotated[AsyncSession, Depends(get_db)],
+    cache: Annotated[CacheService, Depends(get_cache_service)],
 ) -> dict[str, Any] | JSONResponse:
     """Comprehensive API health check endpoint with component status.
 

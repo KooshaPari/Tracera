@@ -524,7 +524,7 @@ describe(debounce, () => {
     expect(fn).not.toHaveBeenCalled();
 
     vi.advanceTimersByTime(100);
-    expect(fn).toHaveBeenCalledOnce();
+    expect(fn).toHaveBeenCalledTimes(1);
   });
 
   it('should reset timer on multiple calls', () => {
@@ -538,7 +538,7 @@ describe(debounce, () => {
     expect(fn).not.toHaveBeenCalled();
 
     vi.advanceTimersByTime(50);
-    expect(fn).toHaveBeenCalledOnce();
+    expect(fn).toHaveBeenCalledTimes(1);
   });
 
   it('should pass arguments to function', () => {
@@ -565,7 +565,7 @@ describe(throttle, () => {
     const throttled = throttle(fn, 100);
 
     throttled();
-    expect(fn).toHaveBeenCalledOnce();
+    expect(fn).toHaveBeenCalledTimes(1);
   });
 
   it('should ignore calls within throttle period', () => {
@@ -575,7 +575,7 @@ describe(throttle, () => {
     throttled();
     throttled();
     throttled();
-    expect(fn).toHaveBeenCalledOnce();
+    expect(fn).toHaveBeenCalledTimes(1);
   });
 
   it('should allow calls after throttle period', () => {

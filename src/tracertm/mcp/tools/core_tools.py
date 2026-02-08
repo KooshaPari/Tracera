@@ -41,7 +41,6 @@ def _get_config_manager() -> ConfigManager:
     For now this uses the default config location (~/.tracertm).
     Later we can make this project-root aware if needed for tests.
     """
-
     return ConfigManager()
 
 
@@ -130,7 +129,8 @@ async def select_project(project_id: str) -> dict[str, Any]:
                 project = cand
                 break
     if not project:
-        raise ToolError(f"Project not found: {project_id}")
+        msg = f"Project not found: {project_id}"
+        raise ToolError(msg)
 
     config.set("current_project_id", str(project.get("id")))
     config.set("current_project_name", project.get("name"))
@@ -196,7 +196,8 @@ async def create_item(  # noqa: PLR0913
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     try:
@@ -246,7 +247,8 @@ async def query_items(
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     try:
@@ -290,7 +292,8 @@ async def summarize_view(view: str) -> dict[str, Any]:
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     try:
@@ -311,7 +314,8 @@ async def get_item(item_id: str) -> dict[str, Any]:
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     try:
@@ -331,7 +335,8 @@ async def get_item(item_id: str) -> dict[str, Any]:
             external_id = str(entry.get("external_id", ""))
             if candidate_id.startswith(item_id) or external_id.startswith(item_id):
                 return entry
-        raise ToolError(f"Item not found: {item_id}") from None
+        msg = f"Item not found: {item_id}"
+        raise ToolError(msg) from None
 
 
 @mcp.tool()
@@ -345,11 +350,11 @@ def update_item(  # noqa: C901, PLR0913
     metadata: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Update an existing item (optimistic locking via SQLAlchemy version)."""
-
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     payload = {
@@ -387,7 +392,8 @@ def update_item(  # noqa: C901, PLR0913
                 resolved_id = candidate_id
                 break
         if not resolved_id:
-            raise ToolError(f"Item not found: {item_id}") from None
+            msg = f"Item not found: {item_id}"
+            raise ToolError(msg) from None
         try:
             item = client.put(f"/api/v1/items/{resolved_id}", json=payload)
         except TraceRTMHttpError as inner_exc:
@@ -409,11 +415,11 @@ def update_item(  # noqa: C901, PLR0913
 @mcp.tool()
 def delete_item(item_id: str) -> dict[str, Any]:  # noqa: C901
     """Soft-delete an item in the current project (sets deleted_at)."""
-
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     resolved_id = item_id
@@ -437,7 +443,8 @@ def delete_item(item_id: str) -> dict[str, Any]:  # noqa: C901
                 resolved_id = candidate_id
                 break
         if not resolved_id:
-            raise ToolError(f"Item not found: {item_id}") from None
+            msg = f"Item not found: {item_id}"
+            raise ToolError(msg) from None
         try:
             result = client.delete(f"/api/v1/items/{resolved_id}")
         except TraceRTMHttpError as inner_exc:
@@ -459,14 +466,15 @@ def bulk_update_items(
 
     Mirrors `rtm item bulk-update` but *without* interactive confirmation.
     """
-
     if not new_status:
-        raise ToolError("new_status is required for bulk_update_items")
+        msg = "new_status is required for bulk_update_items"
+        raise ToolError(msg)
 
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     try:
@@ -497,11 +505,11 @@ def find_gaps(from_view: str, to_view: str) -> dict[str, Any]:
 
     Uses the async TraceabilityService under the hood.
     """
-
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     try:
@@ -528,11 +536,11 @@ def get_trace_matrix(
 
     Wraps TraceabilityMatrixService.generate_matrix.
     """
-
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     try:
@@ -557,11 +565,11 @@ def analyze_impact(
     link_types: list[str] | None = None,
 ) -> dict[str, Any]:
     """Analyze downstream impact of changing an item (BFS)."""
-
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     try:
@@ -583,11 +591,11 @@ def analyze_reverse_impact(
     max_depth: int = 5,
 ) -> dict[str, Any]:
     """Analyze reverse impact (what depends on this item)."""
-
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     try:
@@ -607,11 +615,11 @@ def project_health() -> dict[str, Any]:
 
     Wraps PerformanceService.get_project_statistics.
     """
-
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     try:
@@ -628,11 +636,11 @@ def detect_cycles() -> dict[str, Any]:
 
     Wraps CycleDetectionService.detect_cycles.
     """
-
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     try:
@@ -649,11 +657,11 @@ def shortest_path(
     target_id: str,
 ) -> dict[str, Any]:
     """Find the shortest dependency path between two items."""
-
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     try:
@@ -679,11 +687,11 @@ def create_link(
     metadata: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Create a link between two items in the current project (with metadata)."""
-
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first or use the CLI to initialize.")
+        msg = "No current project. Call select_project first or use the CLI to initialize."
+        raise ToolError(msg)
 
     client = _api_client()
     try:
@@ -721,7 +729,8 @@ async def list_links(  # noqa: C901
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     resolved_id = None
@@ -740,7 +749,8 @@ async def list_links(  # noqa: C901
                 resolved_id = candidate_id
                 break
         if not resolved_id:
-            raise ToolError(f"Item not found: {item_id}") from None
+            msg = f"Item not found: {item_id}"
+            raise ToolError(msg) from None
 
     links: list[dict[str, Any]] = []
     try:
@@ -788,11 +798,11 @@ def show_links(
     view: str | None = None,
 ) -> dict[str, Any]:
     """Show all links for a specific item (grouped as incoming/outgoing)."""
-
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError("No current project. Call select_project first.")
+        msg = "No current project. Call select_project first."
+        raise ToolError(msg)
 
     client = _api_client()
     try:

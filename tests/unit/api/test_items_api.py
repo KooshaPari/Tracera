@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for Items API endpoints.
+"""Comprehensive tests for Items API endpoints.
 
 Tests all CRUD operations, validation, filtering, and edge cases for items.
 """
@@ -20,7 +19,7 @@ class TestItemsCRUD:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_items_default_pagination(self, mock_auth, mock_db):
+    def test_list_items_default_pagination(self, mock_auth, mock_db) -> None:
         """Test items list uses default pagination values."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -57,7 +56,7 @@ class TestItemsCRUD:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_get_item_with_all_fields(self, mock_auth, mock_db):
+    def test_get_item_with_all_fields(self, mock_auth, mock_db) -> None:
         """Test get item returns all expected fields."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -92,7 +91,7 @@ class TestItemsCRUD:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_items_various_statuses(self, mock_auth, mock_db):
+    def test_list_items_various_statuses(self, mock_auth, mock_db) -> None:
         """Test items list handles various status values."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -131,7 +130,7 @@ class TestItemsCRUD:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_items_priorities(self, mock_auth, mock_db):
+    def test_list_items_priorities(self, mock_auth, mock_db) -> None:
         """Test items list handles various priority levels."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -172,7 +171,7 @@ class TestItemsFiltering:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_items_respects_project_isolation(self, mock_auth, mock_db):
+    def test_list_items_respects_project_isolation(self, mock_auth, mock_db) -> None:
         """Test items from other projects are not returned."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -208,7 +207,7 @@ class TestItemsFiltering:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_items_skip_offset(self, mock_auth, mock_db):
+    def test_list_items_skip_offset(self, mock_auth, mock_db) -> None:
         """Test skip parameter correctly offsets results."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -242,7 +241,7 @@ class TestItemsFiltering:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_items_limit_boundary(self, mock_auth, mock_db):
+    def test_list_items_limit_boundary(self, mock_auth, mock_db) -> None:
         """Test limit parameter correctly limits results."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -282,7 +281,7 @@ class TestItemsEdgeCases:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_item_with_no_created_at(self, mock_auth, mock_db):
+    def test_item_with_no_created_at(self, mock_auth, mock_db) -> None:
         """Test handling of item without created_at timestamp."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -312,7 +311,7 @@ class TestItemsEdgeCases:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_item_with_special_characters_in_title(self, mock_auth, mock_db):
+    def test_item_with_special_characters_in_title(self, mock_auth, mock_db) -> None:
         """Test items with special characters in title."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -342,7 +341,7 @@ class TestItemsEdgeCases:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_item_with_very_long_title(self, mock_auth, mock_db):
+    def test_item_with_very_long_title(self, mock_auth, mock_db) -> None:
         """Test items with very long titles."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -372,7 +371,7 @@ class TestItemsEdgeCases:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_item_with_special_project_id(self, mock_auth, mock_db):
+    def test_item_with_special_project_id(self, mock_auth, mock_db) -> None:
         """Test items with special characters in project ID."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -409,7 +408,7 @@ class TestItemsEdgeCases:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_get_item_with_uuid_id(self, mock_auth, mock_db):
+    def test_get_item_with_uuid_id(self, mock_auth, mock_db) -> None:
         """Test getting item with UUID format ID."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -439,7 +438,7 @@ class TestItemsEdgeCases:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_items_large_limit(self, mock_auth, mock_db):
+    def test_list_items_large_limit(self, mock_auth, mock_db) -> None:
         """Test list items with very large limit parameter."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -475,7 +474,7 @@ class TestItemsEdgeCases:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_get_item_with_numeric_string_id(self, mock_auth, mock_db):
+    def test_get_item_with_numeric_string_id(self, mock_auth, mock_db) -> None:
         """Test getting item with numeric string ID."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()

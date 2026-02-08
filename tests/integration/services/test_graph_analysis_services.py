@@ -1,5 +1,4 @@
-"""
-Comprehensive integration test suite for Graph Analysis Services.
+"""Comprehensive integration test suite for Graph Analysis Services.
 
 Tests cycle detection and impact analysis including:
 - CycleDetectionService: has_cycle, detect_cycles, detect_cycles_async
@@ -141,7 +140,7 @@ def cycle_detection_service(db_session):
 class TestSimpleCycleDetection:
     """Tests for simple cycle detection scenarios."""
 
-    def test_self_referential_link(self, db_session, sample_project, sample_items_basic):
+    def test_self_referential_link(self, db_session, sample_project, sample_items_basic) -> None:
         """Test self-referential link detection."""
         # item-1 depends on itself
         service = CycleDetectionService(db_session)
@@ -151,7 +150,7 @@ class TestSimpleCycleDetection:
             is True
         )
 
-    def test_two_item_cycle(self, db_session, sample_project, sample_items_basic):
+    def test_two_item_cycle(self, db_session, sample_project, sample_items_basic) -> None:
         """Test two-item cycle detection."""
         service = CycleDetectionService(db_session)
 
@@ -172,7 +171,7 @@ class TestSimpleCycleDetection:
             is True
         )
 
-    def test_no_cycle_simple(self, db_session, sample_project, sample_items_basic):
+    def test_no_cycle_simple(self, db_session, sample_project, sample_items_basic) -> None:
         """Test that simple dependencies don't create cycles."""
         service = CycleDetectionService(db_session)
 
@@ -193,7 +192,7 @@ class TestSimpleCycleDetection:
             is False
         )
 
-    def test_non_depends_on_links_ignored(self, db_session, sample_project, sample_items_basic):
+    def test_non_depends_on_links_ignored(self, db_session, sample_project, sample_items_basic) -> None:
         """Test that non-depends_on links are ignored for cycle detection."""
         service = CycleDetectionService(db_session)
 
@@ -214,7 +213,7 @@ class TestSimpleCycleDetection:
             is False
         )
 
-    def test_isolated_items_no_cycle(self, db_session, sample_project, sample_items_basic):
+    def test_isolated_items_no_cycle(self, db_session, sample_project, sample_items_basic) -> None:
         """Test that isolated items don't create cycles."""
         service = CycleDetectionService(db_session)
 
@@ -233,7 +232,7 @@ class TestSimpleCycleDetection:
 class TestComplexCycleDetection:
     """Tests for complex multi-level cycles."""
 
-    def test_three_level_cycle(self, db_session, sample_project, sample_items_basic):
+    def test_three_level_cycle(self, db_session, sample_project, sample_items_basic) -> None:
         """Test three-item circular dependency."""
         service = CycleDetectionService(db_session)
 
@@ -264,7 +263,7 @@ class TestComplexCycleDetection:
             is True
         )
 
-    def test_four_level_cycle(self, db_session, sample_project, sample_items_basic):
+    def test_four_level_cycle(self, db_session, sample_project, sample_items_basic) -> None:
         """Test four-item circular dependency."""
         service = CycleDetectionService(db_session)
 
@@ -289,7 +288,7 @@ class TestComplexCycleDetection:
             is True
         )
 
-    def test_multiple_paths_to_cycle(self, db_session, sample_project, sample_items_basic):
+    def test_multiple_paths_to_cycle(self, db_session, sample_project, sample_items_basic) -> None:
         """Test cycle detection with multiple dependency paths."""
         service = CycleDetectionService(db_session)
 
@@ -336,7 +335,7 @@ class TestComplexCycleDetection:
             is True
         )
 
-    def test_deep_dependency_chain(self, db_session, sample_project, sample_items_large):
+    def test_deep_dependency_chain(self, db_session, sample_project, sample_items_large) -> None:
         """Test cycle detection in deep dependency chains."""
         service = CycleDetectionService(db_session)
 
@@ -364,7 +363,7 @@ class TestComplexCycleDetection:
 class TestFullGraphCycleAnalysis:
     """Tests for detect_cycles method."""
 
-    def test_detect_no_cycles(self, db_session, sample_project, sample_items_basic):
+    def test_detect_no_cycles(self, db_session, sample_project, sample_items_basic) -> None:
         """Test detection when no cycles exist."""
         service = CycleDetectionService(db_session)
 
@@ -384,7 +383,7 @@ class TestFullGraphCycleAnalysis:
         assert result is not None
         assert result.get("cycles_detected") is False
 
-    def test_detect_single_cycle(self, db_session, sample_project, sample_items_basic):
+    def test_detect_single_cycle(self, db_session, sample_project, sample_items_basic) -> None:
         """Test detection of single cycle."""
         service = CycleDetectionService(db_session)
 
@@ -415,7 +414,7 @@ class TestFullGraphCycleAnalysis:
         assert result.get("cycles_detected") is True
         assert "cycles" in result
 
-    def test_detect_multiple_cycles(self, db_session, sample_project, sample_items_large):
+    def test_detect_multiple_cycles(self, db_session, sample_project, sample_items_large) -> None:
         """Test detection of multiple cycles in same graph."""
         service = CycleDetectionService(db_session)
 
@@ -461,7 +460,7 @@ class TestFullGraphCycleAnalysis:
         assert result is not None
         assert result.get("cycles_detected") is True
 
-    def test_detect_cycles_with_multiple_link_types(self, db_session, sample_project, sample_items_basic):
+    def test_detect_cycles_with_multiple_link_types(self, db_session, sample_project, sample_items_basic) -> None:
         """Test cycle detection with multiple link types specified."""
         service = CycleDetectionService(db_session)
 
@@ -500,7 +499,7 @@ class TestFullGraphCycleAnalysis:
 class TestCycleBreakingStrategies:
     """Tests for breaking cycles and impact analysis."""
 
-    def test_break_two_item_cycle(self, db_session, sample_project, sample_items_basic):
+    def test_break_two_item_cycle(self, db_session, sample_project, sample_items_basic) -> None:
         """Test breaking a simple two-item cycle."""
         service = CycleDetectionService(db_session)
 
@@ -536,7 +535,7 @@ class TestCycleBreakingStrategies:
             is False
         )
 
-    def test_identify_breaking_link_in_cycle(self, db_session, sample_project, sample_items_basic):
+    def test_identify_breaking_link_in_cycle(self, db_session, sample_project, sample_items_basic) -> None:
         """Test identifying which link breaks a cycle."""
         service = CycleDetectionService(db_session)
 
@@ -592,7 +591,7 @@ class TestCycleBreakingStrategies:
 class TestLargeGraphPerformance:
     """Tests for performance on large graphs."""
 
-    def test_performance_100_items_no_cycle(self, db_session, sample_project, sample_items_large):
+    def test_performance_100_items_no_cycle(self, db_session, sample_project, sample_items_large) -> None:
         """Test performance with 100 items and no cycles."""
         service = CycleDetectionService(db_session)
 
@@ -615,7 +614,7 @@ class TestLargeGraphPerformance:
         assert result.get("cycles_detected") is False
         assert elapsed < 2.0  # Should complete in < 2 seconds
 
-    def test_performance_500_items_with_cycle(self, db_session, sample_project, sample_items_xlarge):
+    def test_performance_500_items_with_cycle(self, db_session, sample_project, sample_items_xlarge) -> None:
         """Test performance with 500 items and a cycle."""
         service = CycleDetectionService(db_session)
 
@@ -648,7 +647,7 @@ class TestLargeGraphPerformance:
         assert result.get("cycles_detected") is True
         assert elapsed < 5.0  # Should complete in < 5 seconds
 
-    def test_performance_wide_dependency_graph(self, db_session, sample_project, sample_items_large):
+    def test_performance_wide_dependency_graph(self, db_session, sample_project, sample_items_large) -> None:
         """Test performance with wide dependency graph."""
         service = CycleDetectionService(db_session)
 
@@ -681,14 +680,14 @@ class TestImpactAnalysis:
     """Tests for impact analysis functionality."""
 
     @pytest.mark.asyncio
-    async def test_single_item_impact(self, async_session):
+    async def test_single_item_impact(self, async_session) -> None:
         """Test impact analysis on single item."""
         project = Project(id="test-proj", name="Test Project")
         async_session.add(project)
         await async_session.flush()
 
         item = Item(
-            id="item-1", project_id=project.id, title="Item 1", view="FEATURE", item_type="feature", status="todo"
+            id="item-1", project_id=project.id, title="Item 1", view="FEATURE", item_type="feature", status="todo",
         )
         async_session.add(item)
         await async_session.flush()
@@ -702,7 +701,7 @@ class TestImpactAnalysis:
         assert result.max_depth_reached == 0
 
     @pytest.mark.asyncio
-    async def test_linear_dependency_impact(self, async_session):
+    async def test_linear_dependency_impact(self, async_session) -> None:
         """Test impact analysis on linear dependencies."""
         project = Project(id="test-proj", name="Test Project")
         async_session.add(project)
@@ -725,10 +724,10 @@ class TestImpactAnalysis:
 
         # item-1 depends on item-2 depends on item-3
         link1 = Link(
-            id="link-1", project_id=project.id, source_item_id="item-1", target_item_id="item-2", link_type="depends_on"
+            id="link-1", project_id=project.id, source_item_id="item-1", target_item_id="item-2", link_type="depends_on",
         )
         link2 = Link(
-            id="link-2", project_id=project.id, source_item_id="item-2", target_item_id="item-3", link_type="depends_on"
+            id="link-2", project_id=project.id, source_item_id="item-2", target_item_id="item-3", link_type="depends_on",
         )
         async_session.add(link1)
         async_session.add(link2)
@@ -741,7 +740,7 @@ class TestImpactAnalysis:
         assert result.max_depth_reached >= 0
 
     @pytest.mark.asyncio
-    async def test_impact_with_max_depth(self, async_session):
+    async def test_impact_with_max_depth(self, async_session) -> None:
         """Test impact analysis respects max depth."""
         project = Project(id="test-proj", name="Test Project")
         async_session.add(project)
@@ -778,7 +777,7 @@ class TestImpactAnalysis:
         assert result.max_depth_reached <= 3
 
     @pytest.mark.asyncio
-    async def test_impact_with_link_type_filter(self, async_session):
+    async def test_impact_with_link_type_filter(self, async_session) -> None:
         """Test impact analysis with specific link types."""
         project = Project(id="test-proj", name="Test Project")
         async_session.add(project)
@@ -798,10 +797,10 @@ class TestImpactAnalysis:
 
         # Mixed link types
         link1 = Link(
-            id="link-1", project_id=project.id, source_item_id="item-1", target_item_id="item-2", link_type="depends_on"
+            id="link-1", project_id=project.id, source_item_id="item-1", target_item_id="item-2", link_type="depends_on",
         )
         link2 = Link(
-            id="link-2", project_id=project.id, source_item_id="item-2", target_item_id="item-3", link_type="relates_to"
+            id="link-2", project_id=project.id, source_item_id="item-2", target_item_id="item-3", link_type="relates_to",
         )
         async_session.add(link1)
         async_session.add(link2)
@@ -813,7 +812,7 @@ class TestImpactAnalysis:
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_impact_analysis_missing_item(self, async_session):
+    async def test_impact_analysis_missing_item(self, async_session) -> None:
         """Test impact analysis with non-existent item."""
         service = ImpactAnalysisService(async_session)
 
@@ -829,7 +828,7 @@ class TestImpactAnalysis:
 class TestCircularDependencyHandling:
     """Tests for handling circular dependencies."""
 
-    def test_prevent_circular_dependency_creation(self, db_session, sample_project, sample_items_basic):
+    def test_prevent_circular_dependency_creation(self, db_session, sample_project, sample_items_basic) -> None:
         """Test preventing creation of circular dependencies."""
         service = CycleDetectionService(db_session)
 
@@ -846,12 +845,12 @@ class TestCircularDependencyHandling:
 
         # Attempt to create circular dependency should be detected
         would_create_cycle = service.has_cycle(
-            sample_project.id, sample_items_basic[1].id, sample_items_basic[0].id, "depends_on"
+            sample_project.id, sample_items_basic[1].id, sample_items_basic[0].id, "depends_on",
         )
 
         assert would_create_cycle is True
 
-    def test_orphan_detection_after_cycle_break(self, db_session, sample_project, sample_items_basic):
+    def test_orphan_detection_after_cycle_break(self, db_session, sample_project, sample_items_basic) -> None:
         """Test detecting orphans after breaking a cycle."""
         service = CycleDetectionService(db_session)
 
@@ -890,7 +889,7 @@ class TestCircularDependencyHandling:
 class TestErrorHandlingAndEdgeCases:
     """Tests for error handling and edge cases."""
 
-    def test_empty_project(self, db_session, sample_project):
+    def test_empty_project(self, db_session, sample_project) -> None:
         """Test cycle detection on empty project."""
         service = CycleDetectionService(db_session)
 
@@ -899,7 +898,7 @@ class TestErrorHandlingAndEdgeCases:
         assert result is not None
         assert result.get("cycles_detected") is False
 
-    def test_single_item_no_links(self, db_session, sample_project, sample_items_basic):
+    def test_single_item_no_links(self, db_session, sample_project, sample_items_basic) -> None:
         """Test with single item and no links."""
         service = CycleDetectionService(db_session)
 
@@ -908,7 +907,7 @@ class TestErrorHandlingAndEdgeCases:
         assert result is not None
         assert result.get("cycles_detected") is False
 
-    def test_nonexistent_project(self, db_session):
+    def test_nonexistent_project(self, db_session) -> None:
         """Test cycle detection on non-existent project."""
         service = CycleDetectionService(db_session)
 
@@ -916,7 +915,7 @@ class TestErrorHandlingAndEdgeCases:
 
         assert result is not None
 
-    def test_invalid_link_type(self, db_session, sample_project, sample_items_basic):
+    def test_invalid_link_type(self, db_session, sample_project, sample_items_basic) -> None:
         """Test with invalid link type."""
         service = CycleDetectionService(db_session)
 
@@ -926,7 +925,7 @@ class TestErrorHandlingAndEdgeCases:
             is False
         )
 
-    def test_null_item_ids(self, db_session, sample_project):
+    def test_null_item_ids(self, db_session, sample_project) -> None:
         """Test handling of null/empty item IDs."""
         service = CycleDetectionService(db_session)
 
@@ -934,7 +933,7 @@ class TestErrorHandlingAndEdgeCases:
         result = service.detect_cycles(sample_project.id)
         assert result is not None
 
-    def test_duplicate_links_same_direction(self, db_session, sample_project, sample_items_basic):
+    def test_duplicate_links_same_direction(self, db_session, sample_project, sample_items_basic) -> None:
         """Test with duplicate links in same direction."""
         service = CycleDetectionService(db_session)
 
@@ -969,7 +968,7 @@ class TestErrorHandlingAndEdgeCases:
 class TestIntegrationScenarios:
     """Integration tests combining multiple features."""
 
-    def test_complex_workflow_cycle_and_impact(self, db_session, sample_project, sample_items_large):
+    def test_complex_workflow_cycle_and_impact(self, db_session, sample_project, sample_items_large) -> None:
         """Test complex workflow with cycle detection and impact analysis."""
         cycle_service = CycleDetectionService(db_session)
 
@@ -989,7 +988,7 @@ class TestIntegrationScenarios:
         result = cycle_service.detect_cycles(sample_project.id)
         assert result is not None
 
-    def test_rapid_cycle_detection_calls(self, db_session, sample_project, sample_items_basic):
+    def test_rapid_cycle_detection_calls(self, db_session, sample_project, sample_items_basic) -> None:
         """Test rapid successive cycle detection calls."""
         service = CycleDetectionService(db_session)
 
@@ -1006,11 +1005,11 @@ class TestIntegrationScenarios:
         # Rapid calls should not cause issues
         for _ in range(10):
             result = service.has_cycle(
-                sample_project.id, sample_items_basic[1].id, sample_items_basic[0].id, "depends_on"
+                sample_project.id, sample_items_basic[1].id, sample_items_basic[0].id, "depends_on",
             )
             assert result is True
 
-    def test_mixed_cycle_and_non_cycle_links(self, db_session, sample_project, sample_items_large):
+    def test_mixed_cycle_and_non_cycle_links(self, db_session, sample_project, sample_items_large) -> None:
         """Test graph with mix of cyclic and acyclic relationships."""
         service = CycleDetectionService(db_session)
 

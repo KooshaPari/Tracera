@@ -1,6 +1,4 @@
-"""
-Project model for TraceRTM.
-"""
+"""Project model for TraceRTM."""
 
 import uuid
 from typing import Any, ClassVar
@@ -19,8 +17,7 @@ def generate_uuid() -> uuid.UUID:
 
 
 class Project(Base, TimestampMixin):
-    """
-    Project model representing a TraceRTM project.
+    """Project model representing a TraceRTM project.
 
     A project contains items, links, and configuration.
     """

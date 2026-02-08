@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for config schema validation.
+"""Comprehensive tests for config schema validation.
 
 Target: +1% coverage on schema validation paths
 """
@@ -14,7 +13,7 @@ class TestConfigSchemaDefaults:
     """Test suite for Config schema defaults."""
 
     @pytest.mark.unit
-    def test_config_defaults(self):
+    def test_config_defaults(self) -> None:
         """Test Config default values."""
         config = Config()
 
@@ -35,7 +34,7 @@ class TestConfigSchemaDefaults:
         assert config.sync_conflict_strategy == "last_write_wins"
 
     @pytest.mark.unit
-    def test_config_with_values(self):
+    def test_config_with_values(self) -> None:
         """Test Config initialization with values."""
         config = Config(
             database_url="postgresql://localhost/test",
@@ -58,37 +57,37 @@ class TestConfigDatabaseUrlValidation:
     """Test suite for database URL validation."""
 
     @pytest.mark.unit
-    def test_database_url_none(self):
+    def test_database_url_none(self) -> None:
         """Test database_url can be None."""
         config = Config(database_url=None)
         assert config.database_url is None
 
     @pytest.mark.unit
-    def test_database_url_postgresql(self):
+    def test_database_url_postgresql(self) -> None:
         """Test valid PostgreSQL URL."""
         config = Config(database_url="postgresql://user:pass@localhost/db")
         assert config.database_url == "postgresql://user:pass@localhost/db"
 
     @pytest.mark.unit
-    def test_database_url_sqlite(self):
+    def test_database_url_sqlite(self) -> None:
         """Test valid SQLite URL."""
         config = Config(database_url="sqlite:///test.db")
         assert config.database_url == "sqlite:///test.db"
 
     @pytest.mark.unit
-    def test_database_url_invalid_mysql(self):
+    def test_database_url_invalid_mysql(self) -> None:
         """Test invalid MySQL URL."""
         with pytest.raises(ValidationError):
             Config(database_url="mysql://localhost/db")
 
     @pytest.mark.unit
-    def test_database_url_invalid_mongodb(self):
+    def test_database_url_invalid_mongodb(self) -> None:
         """Test invalid MongoDB URL."""
         with pytest.raises(ValidationError):
             Config(database_url="mongodb://localhost/db")
 
     @pytest.mark.unit
-    def test_database_url_invalid_http(self):
+    def test_database_url_invalid_http(self) -> None:
         """Test invalid HTTP URL."""
         with pytest.raises(ValidationError):
             Config(database_url="http://localhost:5432/db")
@@ -98,7 +97,7 @@ class TestConfigViewTypeValidation:
     """Test suite for view type validation."""
 
     @pytest.mark.unit
-    def test_all_valid_view_types(self):
+    def test_all_valid_view_types(self) -> None:
         """Test all valid view types."""
         views = [
             "FEATURE",
@@ -115,7 +114,7 @@ class TestConfigViewTypeValidation:
             assert config.default_view == view
 
     @pytest.mark.unit
-    def test_invalid_view_type(self):
+    def test_invalid_view_type(self) -> None:
         """Test invalid view type."""
         with pytest.raises(ValidationError):
             Config(default_view="INVALID")
@@ -125,7 +124,7 @@ class TestConfigOutputFormatValidation:
     """Test suite for output format validation."""
 
     @pytest.mark.unit
-    def test_all_valid_formats(self):
+    def test_all_valid_formats(self) -> None:
         """Test all valid output formats."""
         formats = ["table", "json", "yaml", "csv"]
         for fmt in formats:
@@ -133,7 +132,7 @@ class TestConfigOutputFormatValidation:
             assert config.output_format == fmt
 
     @pytest.mark.unit
-    def test_invalid_format(self):
+    def test_invalid_format(self) -> None:
         """Test invalid output format."""
         with pytest.raises(ValidationError):
             Config(output_format="xml")
@@ -143,7 +142,7 @@ class TestConfigLogLevelValidation:
     """Test suite for log level validation."""
 
     @pytest.mark.unit
-    def test_all_valid_log_levels(self):
+    def test_all_valid_log_levels(self) -> None:
         """Test all valid log levels."""
         levels = ["DEBUG", "INFO", "WARNING", "ERROR"]
         for level in levels:
@@ -151,7 +150,7 @@ class TestConfigLogLevelValidation:
             assert config.log_level == level
 
     @pytest.mark.unit
-    def test_invalid_log_level(self):
+    def test_invalid_log_level(self) -> None:
         """Test invalid log level."""
         with pytest.raises(ValidationError):
             Config(log_level="TRACE")
@@ -161,7 +160,7 @@ class TestConfigMaxAgentsValidation:
     """Test suite for max_agents validation."""
 
     @pytest.mark.unit
-    def test_max_agents_valid(self):
+    def test_max_agents_valid(self) -> None:
         """Test valid max_agents values."""
         config = Config(max_agents=1)
         assert config.max_agents == 1
@@ -173,13 +172,13 @@ class TestConfigMaxAgentsValidation:
         assert config.max_agents == 5000
 
     @pytest.mark.unit
-    def test_max_agents_invalid_below_min(self):
+    def test_max_agents_invalid_below_min(self) -> None:
         """Test max_agents below minimum."""
         with pytest.raises(ValidationError):
             Config(max_agents=0)
 
     @pytest.mark.unit
-    def test_max_agents_invalid_above_max(self):
+    def test_max_agents_invalid_above_max(self) -> None:
         """Test max_agents above maximum."""
         with pytest.raises(ValidationError):
             Config(max_agents=10001)
@@ -189,31 +188,31 @@ class TestConfigApiValidation:
     """Test suite for API configuration validation."""
 
     @pytest.mark.unit
-    def test_api_url_https(self):
+    def test_api_url_https(self) -> None:
         """Test HTTPS API URL."""
         config = Config(api_url="https://api.example.com")
         assert config.api_url == "https://api.example.com"
 
     @pytest.mark.unit
-    def test_api_url_http(self):
+    def test_api_url_http(self) -> None:
         """Test HTTP API URL."""
         config = Config(api_url="http://localhost:8000")
         assert config.api_url == "http://localhost:8000"
 
     @pytest.mark.unit
-    def test_api_url_trailing_slash_removed(self):
+    def test_api_url_trailing_slash_removed(self) -> None:
         """Test trailing slash removed from API URL."""
         config = Config(api_url="https://api.example.com/")
         assert config.api_url == "https://api.example.com"
 
     @pytest.mark.unit
-    def test_api_url_invalid(self):
+    def test_api_url_invalid(self) -> None:
         """Test invalid API URL."""
         with pytest.raises(ValidationError):
             Config(api_url="ftp://example.com")
 
     @pytest.mark.unit
-    def test_api_url_no_protocol(self):
+    def test_api_url_no_protocol(self) -> None:
         """Test API URL without protocol."""
         with pytest.raises(ValidationError):
             Config(api_url="example.com")
@@ -223,7 +222,7 @@ class TestConfigApiTimeoutValidation:
     """Test suite for API timeout validation."""
 
     @pytest.mark.unit
-    def test_api_timeout_valid(self):
+    def test_api_timeout_valid(self) -> None:
         """Test valid API timeout values."""
         config = Config(api_timeout=1.0)
         assert config.api_timeout == 1.0
@@ -232,13 +231,13 @@ class TestConfigApiTimeoutValidation:
         assert config.api_timeout == 300.0
 
     @pytest.mark.unit
-    def test_api_timeout_invalid_below_min(self):
+    def test_api_timeout_invalid_below_min(self) -> None:
         """Test API timeout below minimum."""
         with pytest.raises(ValidationError):
             Config(api_timeout=0.5)
 
     @pytest.mark.unit
-    def test_api_timeout_invalid_above_max(self):
+    def test_api_timeout_invalid_above_max(self) -> None:
         """Test API timeout above maximum."""
         with pytest.raises(ValidationError):
             Config(api_timeout=300.1)
@@ -248,7 +247,7 @@ class TestConfigApiRetriesValidation:
     """Test suite for API retries validation."""
 
     @pytest.mark.unit
-    def test_api_max_retries_valid(self):
+    def test_api_max_retries_valid(self) -> None:
         """Test valid max retries values."""
         config = Config(api_max_retries=1)
         assert config.api_max_retries == 1
@@ -257,13 +256,13 @@ class TestConfigApiRetriesValidation:
         assert config.api_max_retries == 10
 
     @pytest.mark.unit
-    def test_api_max_retries_invalid_below_min(self):
+    def test_api_max_retries_invalid_below_min(self) -> None:
         """Test max retries below minimum."""
         with pytest.raises(ValidationError):
             Config(api_max_retries=0)
 
     @pytest.mark.unit
-    def test_api_max_retries_invalid_above_max(self):
+    def test_api_max_retries_invalid_above_max(self) -> None:
         """Test max retries above maximum."""
         with pytest.raises(ValidationError):
             Config(api_max_retries=11)
@@ -273,7 +272,7 @@ class TestConfigSyncIntervalValidation:
     """Test suite for sync interval validation."""
 
     @pytest.mark.unit
-    def test_sync_interval_valid(self):
+    def test_sync_interval_valid(self) -> None:
         """Test valid sync interval values."""
         config = Config(sync_interval_seconds=10)
         assert config.sync_interval_seconds == 10
@@ -282,7 +281,7 @@ class TestConfigSyncIntervalValidation:
         assert config.sync_interval_seconds == 60
 
     @pytest.mark.unit
-    def test_sync_interval_invalid_below_min(self):
+    def test_sync_interval_invalid_below_min(self) -> None:
         """Test sync interval below minimum."""
         with pytest.raises(ValidationError):
             Config(sync_interval_seconds=9)
@@ -292,7 +291,7 @@ class TestConfigSyncConflictStrategy:
     """Test suite for sync conflict strategy validation."""
 
     @pytest.mark.unit
-    def test_sync_conflict_strategies(self):
+    def test_sync_conflict_strategies(self) -> None:
         """Test all valid sync conflict strategies."""
         strategies = [
             "last_write_wins",
@@ -305,7 +304,7 @@ class TestConfigSyncConflictStrategy:
             assert config.sync_conflict_strategy == strategy
 
     @pytest.mark.unit
-    def test_invalid_sync_conflict_strategy(self):
+    def test_invalid_sync_conflict_strategy(self) -> None:
         """Test invalid sync conflict strategy."""
         with pytest.raises(ValidationError):
             Config(sync_conflict_strategy="invalid_strategy")
@@ -315,20 +314,20 @@ class TestConfigAliases:
     """Test suite for aliases configuration."""
 
     @pytest.mark.unit
-    def test_aliases_default_empty(self):
+    def test_aliases_default_empty(self) -> None:
         """Test default aliases is empty."""
         config = Config()
         assert config.aliases == {}
 
     @pytest.mark.unit
-    def test_aliases_custom(self):
+    def test_aliases_custom(self) -> None:
         """Test custom aliases."""
         aliases = {"ll": "list", "cr": "create"}
         config = Config(aliases=aliases)
         assert config.aliases == aliases
 
     @pytest.mark.unit
-    def test_aliases_single(self):
+    def test_aliases_single(self) -> None:
         """Test single alias."""
         config = Config(aliases={"ls": "list"})
         assert config.aliases == {"ls": "list"}
@@ -338,19 +337,19 @@ class TestConfigProjectSettings:
     """Test suite for project-specific settings."""
 
     @pytest.mark.unit
-    def test_current_project_id(self):
+    def test_current_project_id(self) -> None:
         """Test current_project_id."""
         config = Config(current_project_id="my-project")
         assert config.current_project_id == "my-project"
 
     @pytest.mark.unit
-    def test_current_project_name(self):
+    def test_current_project_name(self) -> None:
         """Test current_project_name."""
         config = Config(current_project_name="My Project")
         assert config.current_project_name == "My Project"
 
     @pytest.mark.unit
-    def test_both_project_settings(self):
+    def test_both_project_settings(self) -> None:
         """Test both project settings together."""
         config = Config(current_project_id="proj-123", current_project_name="Test Project")
         assert config.current_project_id == "proj-123"
@@ -361,7 +360,7 @@ class TestConfigIntegration:
     """Integration tests for config schema."""
 
     @pytest.mark.unit
-    def test_full_config(self):
+    def test_full_config(self) -> None:
         """Test full config with all settings."""
         config = Config(
             database_url="postgresql://localhost/tracertm",
@@ -388,14 +387,14 @@ class TestConfigIntegration:
         assert config.log_level == "DEBUG"
 
     @pytest.mark.unit
-    def test_config_minimal(self):
+    def test_config_minimal(self) -> None:
         """Test minimal config."""
         config = Config()
         # All fields have defaults
         assert config is not None
 
     @pytest.mark.unit
-    def test_config_forbid_extra_fields(self):
+    def test_config_forbid_extra_fields(self) -> None:
         """Test config forbids extra fields."""
         with pytest.raises(ValidationError):
             Config(unknown_field="value")

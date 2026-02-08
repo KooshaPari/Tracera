@@ -1,5 +1,4 @@
-"""
-Concurrency tests for optimistic locking (RISK-002 validation).
+"""Concurrency tests for optimistic locking (RISK-002 validation).
 
 This test validates that optimistic locking prevents data corruption
 when multiple agents update the same item concurrently.
@@ -24,7 +23,7 @@ from tracertm.services.item_service import ItemService
 class TestOptimisticLocking:
     """Tests for optimistic locking conflict detection."""
 
-    async def test_concurrent_updates_same_item(self, db_session, project_factory, item_factory):
+    async def test_concurrent_updates_same_item(self, db_session, project_factory, item_factory) -> None:
         """Test concurrent updates to same item detect conflicts."""
         project = project_factory()
         item = item_factory(project_id=project.id, title="Original")
@@ -33,7 +32,7 @@ class TestOptimisticLocking:
         conflicts = []
         successes = []
 
-        async def update_item(agent_id: int, new_title: str):
+        async def update_item(agent_id: int, new_title: str) -> None:
             """Attempt to update item."""
             try:
                 updated = await item_service.update_item(
@@ -53,7 +52,7 @@ class TestOptimisticLocking:
         assert len(conflicts) > 0, "Expected conflicts not detected"
         assert len(successes) > 0, "Some updates should succeed"
 
-    async def test_version_increment_on_update(self, db_session, project_factory, item_factory):
+    async def test_version_increment_on_update(self, db_session, project_factory, item_factory) -> None:
         """Test that version increments on successful update."""
         project = project_factory()
         item = item_factory(project_id=project.id)
@@ -69,7 +68,7 @@ class TestOptimisticLocking:
         # Assertions
         assert updated.version == initial_version + 1
 
-    async def test_retry_logic_on_conflict(self, db_session, project_factory, item_factory):
+    async def test_retry_logic_on_conflict(self, db_session, project_factory, item_factory) -> None:
         """Test retry logic handles conflicts gracefully."""
         project = project_factory()
         item = item_factory(project_id=project.id)
@@ -99,7 +98,7 @@ class TestOptimisticLocking:
         result = await update_with_retry()
         assert result is not None
 
-    async def test_no_deadlocks_under_contention(self, db_session, project_factory, item_factory):
+    async def test_no_deadlocks_under_contention(self, db_session, project_factory, item_factory) -> None:
         """Test no deadlocks occur under high contention."""
         project = project_factory()
         items = [item_factory(project_id=project.id) for _ in range(10)]
@@ -108,7 +107,7 @@ class TestOptimisticLocking:
         completed = []
         timeout_errors = []
 
-        async def update_items(agent_id: int):
+        async def update_items(agent_id: int) -> None:
             """Update multiple items."""
             try:
                 for item in items:

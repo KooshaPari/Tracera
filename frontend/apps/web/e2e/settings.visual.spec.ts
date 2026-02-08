@@ -176,7 +176,7 @@ test.describe('Settings Visual Regression @visual', () => {
         await page.waitForLoadState('networkidle');
 
         const heading = page.getByRole('heading', { name: /settings/i });
-        await expect(heading).toBeVisible({ timeout: 10000 });
+        await expect(heading).toBeVisible({ timeout: 10_000 });
 
         await page.waitForTimeout(500);
         await disableAnimations(page);

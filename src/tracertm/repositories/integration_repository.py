@@ -23,7 +23,7 @@ SYNC_ERROR_FAILURE_THRESHOLD = 5
 class IntegrationCredentialRepository:
     """Repository for integration credentials."""
 
-    def __init__(self, session: AsyncSession, encryption_service=None):
+    def __init__(self, session: AsyncSession, encryption_service=None) -> None:
         self.session = session
         self._encryption = encryption_service
 
@@ -70,7 +70,7 @@ class IntegrationCredentialRepository:
     async def get_by_id(self, credential_id: str) -> IntegrationCredential | None:
         """Get credential by ID."""
         result = await self.session.execute(
-            select(IntegrationCredential).where(IntegrationCredential.id == credential_id)
+            select(IntegrationCredential).where(IntegrationCredential.id == credential_id),
         )
         return result.scalar_one_or_none()
 
@@ -88,7 +88,7 @@ class IntegrationCredentialRepository:
                 | (
                     IntegrationCredential.project_id.is_(None)
                     & (IntegrationCredential.created_by_user_id == include_global_user_id)
-                )
+                ),
             )
         if provider:
             query = query.where(IntegrationCredential.provider == provider)
@@ -112,7 +112,7 @@ class IntegrationCredentialRepository:
             select(IntegrationCredential).where(
                 IntegrationCredential.project_id == project_id,
                 IntegrationCredential.provider == provider,
-            )
+            ),
         )
         return result.scalar_one_or_none()
 
@@ -123,7 +123,7 @@ class IntegrationCredentialRepository:
                 IntegrationCredential.project_id.is_(None),
                 IntegrationCredential.created_by_user_id == user_id,
                 IntegrationCredential.provider == provider,
-            )
+            ),
         )
         return result.scalar_one_or_none()
 
@@ -134,7 +134,7 @@ class IntegrationCredentialRepository:
                 IntegrationCredential.project_id == project_id,
                 IntegrationCredential.provider == provider,
                 IntegrationCredential.status == "active",
-            )
+            ),
         )
         return result.scalar_one_or_none()
 
@@ -169,7 +169,7 @@ class IntegrationCredentialRepository:
             update_data["refresh_token"] = self.encryption.encrypt(refresh_token)
 
         await self.session.execute(
-            update(IntegrationCredential).where(IntegrationCredential.id == credential_id).values(**update_data)
+            update(IntegrationCredential).where(IntegrationCredential.id == credential_id).values(**update_data),
         )
 
     async def update(
@@ -203,7 +203,7 @@ class IntegrationCredentialRepository:
             update_data["status"] = status
 
         await self.session.execute(
-            update(IntegrationCredential).where(IntegrationCredential.id == credential_id).values(**update_data)
+            update(IntegrationCredential).where(IntegrationCredential.id == credential_id).values(**update_data),
         )
 
     async def update_validation_status(
@@ -225,7 +225,7 @@ class IntegrationCredentialRepository:
             update_data["validation_error"] = error
 
         await self.session.execute(
-            update(IntegrationCredential).where(IntegrationCredential.id == credential_id).values(**update_data)
+            update(IntegrationCredential).where(IntegrationCredential.id == credential_id).values(**update_data),
         )
 
     async def revoke(self, credential_id: str) -> None:
@@ -233,7 +233,7 @@ class IntegrationCredentialRepository:
         await self.session.execute(
             update(IntegrationCredential)
             .where(IntegrationCredential.id == credential_id)
-            .values(status="revoked", updated_at=datetime.now(UTC))
+            .values(status="revoked", updated_at=datetime.now(UTC)),
         )
 
     async def delete(self, credential_id: str) -> None:
@@ -246,7 +246,7 @@ class IntegrationCredentialRepository:
 class IntegrationMappingRepository:
     """Repository for item-to-external mappings."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -292,7 +292,7 @@ class IntegrationMappingRepository:
     async def get_by_tracertm_item(self, item_id: str) -> list[IntegrationMapping]:
         """Get all mappings for TraceRTM item."""
         result = await self.session.execute(
-            select(IntegrationMapping).where(IntegrationMapping.tracertm_item_id == item_id)
+            select(IntegrationMapping).where(IntegrationMapping.tracertm_item_id == item_id),
         )
         return list(result.scalars().all())
 
@@ -302,7 +302,7 @@ class IntegrationMappingRepository:
             select(IntegrationMapping).where(
                 IntegrationMapping.project_id == project_id,
                 IntegrationMapping.external_id == external_id,
-            )
+            ),
         )
         return result.scalar_one_or_none()
 
@@ -338,7 +338,7 @@ class IntegrationMappingRepository:
     async def list_by_credential(self, credential_id: str) -> list[IntegrationMapping]:
         """Get all mappings for credential."""
         result = await self.session.execute(
-            select(IntegrationMapping).where(IntegrationMapping.integration_credential_id == credential_id)
+            select(IntegrationMapping).where(IntegrationMapping.integration_credential_id == credential_id),
         )
         return list(result.scalars().all())
 
@@ -350,7 +350,7 @@ class IntegrationMappingRepository:
         """Update mapping fields."""
         kwargs["updated_at"] = datetime.now(UTC)
         await self.session.execute(
-            update(IntegrationMapping).where(IntegrationMapping.id == mapping_id).values(**kwargs)
+            update(IntegrationMapping).where(IntegrationMapping.id == mapping_id).values(**kwargs),
         )
 
     async def update_sync_status(
@@ -380,7 +380,7 @@ class IntegrationMappingRepository:
                     update_data["status"] = "sync_error"
 
         await self.session.execute(
-            update(IntegrationMapping).where(IntegrationMapping.id == mapping_id).values(**update_data)
+            update(IntegrationMapping).where(IntegrationMapping.id == mapping_id).values(**update_data),
         )
 
     async def delete(self, mapping_id: str) -> None:
@@ -393,7 +393,7 @@ class IntegrationMappingRepository:
 class IntegrationSyncQueueRepository:
     """Repository for sync queue."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def enqueue(
@@ -439,7 +439,7 @@ class IntegrationSyncQueueRepository:
             select(IntegrationSyncQueue)
             .where(IntegrationSyncQueue.status == "pending")
             .order_by(priority_order, IntegrationSyncQueue.created_at)
-            .limit(limit)
+            .limit(limit),
         )
         return list(result.scalars().all())
 
@@ -449,7 +449,7 @@ class IntegrationSyncQueueRepository:
             select(IntegrationSyncQueue).where(
                 IntegrationSyncQueue.status == "retried",
                 IntegrationSyncQueue.next_retry_at <= datetime.now(UTC),
-            )
+            ),
         )
         return list(result.scalars().all())
 
@@ -485,7 +485,7 @@ class IntegrationSyncQueueRepository:
                 status="processing",
                 started_at=datetime.now(UTC),
                 updated_at=datetime.now(UTC),
-            )
+            ),
         )
 
     async def mark_completed(self, queue_id: str, processing_time_ms: int) -> None:
@@ -498,7 +498,7 @@ class IntegrationSyncQueueRepository:
                 completed_at=datetime.now(UTC),
                 processing_time_ms=processing_time_ms,
                 updated_at=datetime.now(UTC),
-            )
+            ),
         )
 
     async def mark_failed(self, queue_id: str, error: str, error_code: str | None = None) -> None:
@@ -527,7 +527,7 @@ class IntegrationSyncQueueRepository:
                 error_code=error_code,
                 next_retry_at=next_retry_at,
                 updated_at=datetime.now(UTC),
-            )
+            ),
         )
 
     async def reschedule_retry(self, queue_id: str, delay_seconds: int) -> None:
@@ -539,7 +539,7 @@ class IntegrationSyncQueueRepository:
                 status="retried",
                 next_retry_at=datetime.now(UTC) + timedelta(seconds=delay_seconds),
                 updated_at=datetime.now(UTC),
-            )
+            ),
         )
 
     async def cancel(self, queue_id: str) -> None:
@@ -550,14 +550,14 @@ class IntegrationSyncQueueRepository:
                 IntegrationSyncQueue.id == queue_id,
                 IntegrationSyncQueue.status.in_(["pending", "retried"]),
             )
-            .values(status="failed", error_message="Cancelled by user", updated_at=datetime.now(UTC))
+            .values(status="failed", error_message="Cancelled by user", updated_at=datetime.now(UTC)),
         )
 
 
 class IntegrationSyncLogRepository:
     """Repository for sync logs."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -645,7 +645,7 @@ class IntegrationSyncLogRepository:
 class IntegrationConflictRepository:
     """Repository for sync conflicts."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -674,7 +674,7 @@ class IntegrationConflictRepository:
         return result.scalar_one_or_none()
 
     async def list_pending_by_project(
-        self, project_id: str, skip: int = 0, limit: int = 50
+        self, project_id: str, skip: int = 0, limit: int = 50,
     ) -> tuple[list[IntegrationConflict], int]:
         """Get pending conflicts for project."""
         query = (
@@ -711,7 +711,7 @@ class IntegrationConflictRepository:
                 resolved_value=resolved_value,
                 resolution_strategy_used=strategy_used,
                 resolved_at=datetime.now(UTC),
-            )
+            ),
         )
 
     async def ignore(self, conflict_id: str) -> None:
@@ -722,14 +722,14 @@ class IntegrationConflictRepository:
             .values(
                 resolution_status="ignored",
                 resolved_at=datetime.now(UTC),
-            )
+            ),
         )
 
 
 class IntegrationRateLimitRepository:
     """Repository for rate limit tracking."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def get_or_create(
@@ -745,7 +745,7 @@ class IntegrationRateLimitRepository:
             select(IntegrationRateLimit).where(
                 IntegrationRateLimit.integration_credential_id == credential_id,
                 IntegrationRateLimit.api_endpoint == api_endpoint,
-            )
+            ),
         )
         rate_limit = result.scalar_one_or_none()
 
@@ -769,7 +769,7 @@ class IntegrationRateLimitRepository:
                         is_rate_limited=False,
                         backoff_until=None,
                         updated_at=now,
-                    )
+                    ),
                 )
                 await self.session.refresh(rate_limit)
             return rate_limit
@@ -792,7 +792,7 @@ class IntegrationRateLimitRepository:
     async def increment_usage(self, rate_limit_id: str) -> tuple[int, int]:
         """Increment usage counter. Returns (used, limit)."""
         rate_limit = await self.session.execute(
-            select(IntegrationRateLimit).where(IntegrationRateLimit.id == rate_limit_id)
+            select(IntegrationRateLimit).where(IntegrationRateLimit.id == rate_limit_id),
         )
         rate_limit = rate_limit.scalar_one()
 
@@ -806,7 +806,7 @@ class IntegrationRateLimitRepository:
                 requests_used=new_used,
                 is_rate_limited=is_limited,
                 updated_at=datetime.now(UTC),
-            )
+            ),
         )
         return new_used, rate_limit.requests_limit
 
@@ -819,5 +819,5 @@ class IntegrationRateLimitRepository:
                 is_rate_limited=True,
                 backoff_until=datetime.now(UTC) + timedelta(seconds=backoff_seconds),
                 updated_at=datetime.now(UTC),
-            )
+            ),
         )

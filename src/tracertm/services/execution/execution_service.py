@@ -7,10 +7,7 @@ Supports both native subprocess execution (default) and Docker containers (optio
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from pathlib import Path
-from typing import Any
-
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import TYPE_CHECKING, Any
 
 from tracertm.repositories.execution_repository import (
     ExecutionArtifactRepository,
@@ -27,6 +24,11 @@ from tracertm.services.execution.native_orchestrator import (
     NativeOrchestratorError,
 )
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from sqlalchemy.ext.asyncio import AsyncSession
+
 
 class ExecutionService:
     """Orchestrates test/recording executions with native subprocess or Docker and artifact storage."""
@@ -38,7 +40,7 @@ class ExecutionService:
         artifact_storage: ArtifactStorageService | None = None,
         orchestrator: NativeOrchestrator | None = None,
         docker_orchestrator: DockerOrchestrator | None = None,
-    ):
+    ) -> None:
         self.session = session
         self._exec_repo = ExecutionRepository(session)
         self._artifact_repo = ExecutionArtifactRepository(session)
@@ -179,8 +181,9 @@ class ExecutionService:
     ) -> bool:
         """Start execution using Docker container orchestrator."""
         if not self._docker:
+            msg = "Docker orchestrator not configured. Pass docker_orchestrator to ExecutionService."
             raise DockerOrchestratorError(
-                "Docker orchestrator not configured. Pass docker_orchestrator to ExecutionService."
+                msg,
             )
 
         if not await self._docker.is_available():

@@ -1,5 +1,4 @@
-"""
-Comprehensive test coverage for CycleDetection algorithms.
+"""Comprehensive test coverage for CycleDetection algorithms.
 
 Targets: 80-120 tests covering:
 - DFS-based cycle detection
@@ -40,7 +39,7 @@ class TestDFSBasedCycleDetection:
         """Create service instance."""
         return CycleDetectionService(mock_session)
 
-    def test_dfs_simple_cycle_two_nodes(self, service, mock_session):
+    def test_dfs_simple_cycle_two_nodes(self, service, mock_session) -> None:
         """Test DFS detects simple 2-node cycle: A -> B -> A."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -54,7 +53,7 @@ class TestDFSBasedCycleDetection:
         assert result.cycle_count > 0
         assert len(result.cycles) > 0
 
-    def test_dfs_three_node_cycle(self, service, mock_session):
+    def test_dfs_three_node_cycle(self, service, mock_session) -> None:
         """Test DFS detects 3-node cycle: A -> B -> C -> A."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -68,7 +67,7 @@ class TestDFSBasedCycleDetection:
         assert result.has_cycles is True
         assert result.cycle_count > 0
 
-    def test_dfs_four_node_cycle(self, service, mock_session):
+    def test_dfs_four_node_cycle(self, service, mock_session) -> None:
         """Test DFS detects 4-node cycle: A -> B -> C -> D -> A."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -82,7 +81,7 @@ class TestDFSBasedCycleDetection:
 
         assert result.has_cycles is True
 
-    def test_dfs_no_cycle_linear_chain(self, service, mock_session):
+    def test_dfs_no_cycle_linear_chain(self, service, mock_session) -> None:
         """Test DFS finds no cycle in linear chain: A -> B -> C -> D."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -96,7 +95,7 @@ class TestDFSBasedCycleDetection:
         assert result.has_cycles is False
         assert result.cycle_count == 0
 
-    def test_dfs_multiple_independent_chains(self, service, mock_session):
+    def test_dfs_multiple_independent_chains(self, service, mock_session) -> None:
         """Test DFS with multiple independent chains: A->B->C and D->E->F."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -110,7 +109,7 @@ class TestDFSBasedCycleDetection:
 
         assert result.has_cycles is False
 
-    def test_dfs_visited_tracking(self, service, mock_session):
+    def test_dfs_visited_tracking(self, service, mock_session) -> None:
         """Test DFS properly tracks visited nodes to avoid infinite loops."""
         # Diamond pattern: A -> B, A -> C, B -> D, C -> D (no cycle)
         links = [
@@ -142,7 +141,7 @@ class TestSingleNodeGraphs:
     def service(self, mock_session):
         return CycleDetectionService(mock_session)
 
-    def test_single_node_no_self_loop(self, service, mock_session):
+    def test_single_node_no_self_loop(self, service, mock_session) -> None:
         """Test single node with no self-loop: no cycle."""
         links = []
         mock_session.query.return_value.filter.return_value.all.return_value = links
@@ -151,7 +150,7 @@ class TestSingleNodeGraphs:
 
         assert result.has_cycles is False
 
-    def test_single_node_self_loop(self, service, mock_session):
+    def test_single_node_self_loop(self, service, mock_session) -> None:
         """Test single node with self-loop: A -> A."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="A", link_type="depends_on"),
@@ -163,7 +162,7 @@ class TestSingleNodeGraphs:
         assert result.has_cycles is True
         assert result.cycle_count > 0
 
-    def test_has_cycle_self_loop_detection(self, service, mock_session):
+    def test_has_cycle_self_loop_detection(self, service, mock_session) -> None:
         """Test has_cycle detects self-loop (A -> A)."""
         mock_session.query.return_value.filter.return_value.all.return_value = []
 
@@ -171,7 +170,7 @@ class TestSingleNodeGraphs:
 
         assert result is True
 
-    def test_single_node_no_change_detection(self, service, mock_session):
+    def test_single_node_no_change_detection(self, service, mock_session) -> None:
         """Test adding same node as source and target."""
         links = []
         mock_session.query.return_value.filter.return_value.all.return_value = links
@@ -197,7 +196,7 @@ class TestEmptyGraphs:
     def service(self, mock_session):
         return CycleDetectionService(mock_session)
 
-    def test_empty_graph_detect_cycles(self, service, mock_session):
+    def test_empty_graph_detect_cycles(self, service, mock_session) -> None:
         """Test detect_cycles on empty graph."""
         mock_session.query.return_value.filter.return_value.all.return_value = []
 
@@ -208,7 +207,7 @@ class TestEmptyGraphs:
         assert result.total_cycles == 0
         assert len(result.cycles) == 0
 
-    def test_empty_graph_has_cycle(self, service, mock_session):
+    def test_empty_graph_has_cycle(self, service, mock_session) -> None:
         """Test has_cycle on empty graph."""
         mock_session.query.return_value.filter.return_value.all.return_value = []
 
@@ -216,7 +215,7 @@ class TestEmptyGraphs:
 
         assert result is False
 
-    def test_empty_graph_missing_dependencies(self, service, mock_session):
+    def test_empty_graph_missing_dependencies(self, service, mock_session) -> None:
         """Test detect_missing_dependencies on empty graph."""
         # Mock query returns empty for both links and items
         filter_mock = Mock()
@@ -231,7 +230,7 @@ class TestEmptyGraphs:
         assert result["has_missing_dependencies"] is False
         assert result["missing_count"] == 0
 
-    def test_empty_graph_orphans(self, service, mock_session):
+    def test_empty_graph_orphans(self, service, mock_session) -> None:
         """Test detect_orphans on empty graph."""
         # Mock for items query
         items_filter = Mock()
@@ -269,7 +268,7 @@ class TestDisconnectedComponents:
     def service(self, mock_session):
         return CycleDetectionService(mock_session)
 
-    def test_two_disconnected_acyclic_components(self, service, mock_session):
+    def test_two_disconnected_acyclic_components(self, service, mock_session) -> None:
         """Test two independent chains with no cycles."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -281,7 +280,7 @@ class TestDisconnectedComponents:
 
         assert result.has_cycles is False
 
-    def test_one_cyclic_one_acyclic_component(self, service, mock_session):
+    def test_one_cyclic_one_acyclic_component(self, service, mock_session) -> None:
         """Test one component with cycle and one without."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -295,7 +294,7 @@ class TestDisconnectedComponents:
         assert result.has_cycles is True
         assert result.cycle_count > 0
 
-    def test_both_components_cyclic(self, service, mock_session):
+    def test_both_components_cyclic(self, service, mock_session) -> None:
         """Test when both components have cycles."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -310,7 +309,7 @@ class TestDisconnectedComponents:
         assert result.has_cycles is True
         assert result.cycle_count >= 2
 
-    def test_isolated_node_in_graph(self, service, mock_session):
+    def test_isolated_node_in_graph(self, service, mock_session) -> None:
         """Test graph with isolated node (no links)."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -339,7 +338,7 @@ class TestComplexCyclePatterns:
     def service(self, mock_session):
         return CycleDetectionService(mock_session)
 
-    def test_multiple_cycles_in_graph(self, service, mock_session):
+    def test_multiple_cycles_in_graph(self, service, mock_session) -> None:
         """Test detection when multiple cycles exist."""
         # Cycles: A->B->A and C->D->E->C
         links = [
@@ -356,7 +355,7 @@ class TestComplexCyclePatterns:
         assert result.has_cycles is True
         assert result.cycle_count >= 2
 
-    def test_cycle_with_branch_structure(self, service, mock_session):
+    def test_cycle_with_branch_structure(self, service, mock_session) -> None:
         """Test cycle with branching: A->B->C, A->D, D->B creates path C->A->D->B."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -371,7 +370,7 @@ class TestComplexCyclePatterns:
         # No cycle in this configuration
         assert result.has_cycles is False
 
-    def test_complex_branching_no_cycle(self, service, mock_session):
+    def test_complex_branching_no_cycle(self, service, mock_session) -> None:
         """Test complex graph structure without cycles."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -386,7 +385,7 @@ class TestComplexCyclePatterns:
 
         assert result.has_cycles is False
 
-    def test_long_cycle_many_nodes(self, service, mock_session):
+    def test_long_cycle_many_nodes(self, service, mock_session) -> None:
         """Test detection of long cycle: A->B->C->D->E->F->G->A."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -420,17 +419,17 @@ class TestHasCycleMethod:
     def service(self, mock_session):
         return CycleDetectionService(mock_session)
 
-    def test_has_cycle_checks_link_type(self, service, mock_session):
+    def test_has_cycle_checks_link_type(self, service, mock_session) -> None:
         """Test has_cycle returns False for non-depends_on link types."""
         result = service.has_cycle("proj1", "A", "B", link_type="references")
         assert result is False
 
-    def test_has_cycle_checks_blocks_type(self, service, mock_session):
+    def test_has_cycle_checks_blocks_type(self, service, mock_session) -> None:
         """Test has_cycle returns False for 'blocks' link type."""
         result = service.has_cycle("proj1", "A", "B", link_type="blocks")
         assert result is False
 
-    def test_has_cycle_simple_path_exists(self, service, mock_session):
+    def test_has_cycle_simple_path_exists(self, service, mock_session) -> None:
         """Test when path exists from target to source."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -443,7 +442,7 @@ class TestHasCycleMethod:
 
         assert result is True
 
-    def test_has_cycle_no_path(self, service, mock_session):
+    def test_has_cycle_no_path(self, service, mock_session) -> None:
         """Test when no path exists from target to source."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -455,7 +454,7 @@ class TestHasCycleMethod:
 
         assert result is False
 
-    def test_has_cycle_with_intermediate_nodes(self, service, mock_session):
+    def test_has_cycle_with_intermediate_nodes(self, service, mock_session) -> None:
         """Test has_cycle through intermediate nodes."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -486,7 +485,7 @@ class TestGraphBuilding:
     def service(self, mock_session):
         return CycleDetectionService(mock_session)
 
-    def test_build_graph_empty_links(self, service, mock_session):
+    def test_build_graph_empty_links(self, service, mock_session) -> None:
         """Test building graph from empty links."""
         mock_session.query.return_value.filter.return_value.all.return_value = []
 
@@ -494,7 +493,7 @@ class TestGraphBuilding:
 
         assert graph == {}
 
-    def test_build_graph_single_link(self, service, mock_session):
+    def test_build_graph_single_link(self, service, mock_session) -> None:
         """Test building graph from single link."""
         links = [Mock(spec=Link, source_item_id="A", target_item_id="B")]
         mock_session.query.return_value.filter.return_value.all.return_value = links
@@ -505,7 +504,7 @@ class TestGraphBuilding:
         assert "B" in graph
         assert "B" in graph["A"]
 
-    def test_build_graph_multiple_links(self, service, mock_session):
+    def test_build_graph_multiple_links(self, service, mock_session) -> None:
         """Test building graph from multiple links."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B"),
@@ -520,7 +519,7 @@ class TestGraphBuilding:
         assert graph["B"] == {"C"}
         assert graph["C"] == set()
 
-    def test_build_graph_with_self_loop(self, service, mock_session):
+    def test_build_graph_with_self_loop(self, service, mock_session) -> None:
         """Test building graph that includes self-loop."""
         links = [Mock(spec=Link, source_item_id="A", target_item_id="A")]
         mock_session.query.return_value.filter.return_value.all.return_value = links
@@ -529,10 +528,10 @@ class TestGraphBuilding:
 
         assert "A" in graph["A"]  # A points to itself
 
-    def test_build_graph_database_error(self, service, mock_session):
+    def test_build_graph_database_error(self, service, mock_session) -> None:
         """Test building graph handles database errors gracefully."""
         mock_session.query.return_value.filter.return_value.all.side_effect = OperationalError(
-            "test", None, Exception("test")
+            "test", None, Exception("test"),
         )
 
         graph = service._build_dependency_graph("proj1", "depends_on")
@@ -561,7 +560,7 @@ class TestAsyncCycleDetection:
         return CycleDetectionService(mock_async_session, links=mock_links_repo)
 
     @pytest.mark.asyncio
-    async def test_detect_cycles_async_empty_graph(self, service, mock_links_repo):
+    async def test_detect_cycles_async_empty_graph(self, service, mock_links_repo) -> None:
         """Test async detection on empty graph."""
         mock_links_repo.get_by_project = AsyncMock(return_value=[])
 
@@ -571,7 +570,7 @@ class TestAsyncCycleDetection:
         assert result.cycle_count == 0
 
     @pytest.mark.asyncio
-    async def test_detect_cycles_async_simple_cycle(self, service, mock_links_repo):
+    async def test_detect_cycles_async_simple_cycle(self, service, mock_links_repo) -> None:
         """Test async detection of simple cycle."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -585,7 +584,7 @@ class TestAsyncCycleDetection:
         assert result.cycle_count > 0
 
     @pytest.mark.asyncio
-    async def test_detect_cycles_async_with_link_types(self, mock_async_session, mock_links_repo):
+    async def test_detect_cycles_async_with_link_types(self, mock_async_session, mock_links_repo) -> None:
         """Test async detection with multiple link types."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -616,7 +615,7 @@ class TestMissingDependencies:
     def service(self, mock_session):
         return CycleDetectionService(mock_session)
 
-    def test_no_missing_dependencies(self, service, mock_session):
+    def test_no_missing_dependencies(self, service, mock_session) -> None:
         """Test when all dependencies exist."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B"),
@@ -638,7 +637,7 @@ class TestMissingDependencies:
         assert result["has_missing_dependencies"] is False
         assert result["missing_count"] == 0
 
-    def test_missing_source_item(self, service, mock_session):
+    def test_missing_source_item(self, service, mock_session) -> None:
         """Test detection of missing source item."""
         links = [
             Mock(spec=Link, id="link1", source_item_id="MISSING", target_item_id="B"),
@@ -656,7 +655,7 @@ class TestMissingDependencies:
         assert result["has_missing_dependencies"] is True
         assert any(d["issue"] == "source_item_missing" for d in result["missing_dependencies"])
 
-    def test_missing_target_item(self, service, mock_session):
+    def test_missing_target_item(self, service, mock_session) -> None:
         """Test detection of missing target item."""
         links = [
             Mock(spec=Link, id="link1", source_item_id="A", target_item_id="MISSING"),
@@ -674,7 +673,7 @@ class TestMissingDependencies:
         assert result["has_missing_dependencies"] is True
         assert any(d["issue"] == "target_item_missing" for d in result["missing_dependencies"])
 
-    def test_both_items_missing(self, service, mock_session):
+    def test_both_items_missing(self, service, mock_session) -> None:
         """Test when both source and target items are missing."""
         links = [
             Mock(spec=Link, id="link1", source_item_id="MISSING_A", target_item_id="MISSING_B"),
@@ -709,7 +708,7 @@ class TestLinkTypeFiltering:
     def service(self, mock_session):
         return CycleDetectionService(mock_session)
 
-    def test_only_depends_on_checked_for_has_cycle(self, service):
+    def test_only_depends_on_checked_for_has_cycle(self, service) -> None:
         """Test that has_cycle only checks depends_on link type."""
         result = service.has_cycle("proj1", "A", "B", link_type="blocks")
         assert result is False
@@ -717,7 +716,7 @@ class TestLinkTypeFiltering:
         result = service.has_cycle("proj1", "A", "B", link_type="references")
         assert result is False
 
-    def test_detect_cycles_with_link_types_parameter(self, service, mock_session):
+    def test_detect_cycles_with_link_types_parameter(self, service, mock_session) -> None:
         """Test detect_cycles with link_types list parameter."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -745,7 +744,7 @@ class TestLargeGraphs:
     def service(self, mock_session):
         return CycleDetectionService(mock_session)
 
-    def test_large_acyclic_graph_100_nodes(self, service, mock_session):
+    def test_large_acyclic_graph_100_nodes(self, service, mock_session) -> None:
         """Test handling of large acyclic graph with 100 nodes."""
         # Create a chain: 0 -> 1 -> 2 -> ... -> 99
         links = [
@@ -757,7 +756,7 @@ class TestLargeGraphs:
 
         assert result.has_cycles is False
 
-    def test_large_cyclic_graph_with_many_branches(self, service, mock_session):
+    def test_large_cyclic_graph_with_many_branches(self, service, mock_session) -> None:
         """Test detection in large graph with branching."""
         # Create a tree structure that eventually cycles
         links = [
@@ -782,7 +781,7 @@ class TestLargeGraphs:
 class TestServiceInitialization:
     """Test CycleDetectionService initialization."""
 
-    def test_init_with_sync_session_no_repos(self):
+    def test_init_with_sync_session_no_repos(self) -> None:
         """Test initialization with sync session and no repositories."""
         session = Mock(spec=Session)
         service = CycleDetectionService(session)
@@ -791,14 +790,14 @@ class TestServiceInitialization:
         assert service.items is None
         assert service.links is None
 
-    def test_init_with_async_session_no_repos(self):
+    def test_init_with_async_session_no_repos(self) -> None:
         """Test initialization with async session."""
         session = AsyncMock(spec=AsyncSession)
         service = CycleDetectionService(session)
 
         assert service.session == session
 
-    def test_init_with_repositories(self):
+    def test_init_with_repositories(self) -> None:
         """Test initialization with repository instances."""
         session = Mock(spec=Session)
         items_repo = Mock()
@@ -809,7 +808,7 @@ class TestServiceInitialization:
         assert service.items == items_repo
         assert service.links == links_repo
 
-    def test_init_with_async_session_creates_default_repos(self):
+    def test_init_with_async_session_creates_default_repos(self) -> None:
         """Test that async session creates default repos if not provided."""
         session = AsyncMock(spec=AsyncSession)
         service = CycleDetectionService(session)
@@ -831,43 +830,43 @@ class TestCanReachAlgorithm:
     def service(self):
         return CycleDetectionService(Mock(spec=Session))
 
-    def test_can_reach_same_node(self, service):
+    def test_can_reach_same_node(self, service) -> None:
         """Test can_reach with same node (start == target)."""
         graph = {"A": {"B"}}
         result = service._can_reach(graph, "A", "A")
         assert result is True
 
-    def test_can_reach_direct_neighbor(self, service):
+    def test_can_reach_direct_neighbor(self, service) -> None:
         """Test can_reach with direct neighbor."""
         graph = {"A": {"B"}, "B": set()}
         result = service._can_reach(graph, "A", "B")
         assert result is True
 
-    def test_can_reach_through_chain(self, service):
+    def test_can_reach_through_chain(self, service) -> None:
         """Test can_reach through chain of nodes."""
         graph = {"A": {"B"}, "B": {"C"}, "C": set()}
         result = service._can_reach(graph, "A", "C")
         assert result is True
 
-    def test_can_reach_not_reachable(self, service):
+    def test_can_reach_not_reachable(self, service) -> None:
         """Test can_reach when target is not reachable."""
         graph = {"A": {"B"}, "B": set(), "C": set()}
         result = service._can_reach(graph, "A", "C")
         assert result is False
 
-    def test_can_reach_isolated_node(self, service):
+    def test_can_reach_isolated_node(self, service) -> None:
         """Test can_reach from isolated node."""
         graph = {"A": set(), "B": set()}
         result = service._can_reach(graph, "A", "B")
         assert result is False
 
-    def test_can_reach_empty_graph(self, service):
+    def test_can_reach_empty_graph(self, service) -> None:
         """Test can_reach with empty graph."""
         graph = {}
         result = service._can_reach(graph, "A", "B")
         assert result is False
 
-    def test_can_reach_branching_path(self, service):
+    def test_can_reach_branching_path(self, service) -> None:
         """Test can_reach with multiple paths."""
         graph = {"A": {"B", "C"}, "B": {"D"}, "C": {"D"}, "D": set()}
         result = service._can_reach(graph, "A", "D")
@@ -886,37 +885,37 @@ class TestFindCyclesAlgorithm:
     def service(self):
         return CycleDetectionService(Mock(spec=Session))
 
-    def test_find_cycles_empty_graph(self, service):
+    def test_find_cycles_empty_graph(self, service) -> None:
         """Test finding cycles in empty graph."""
         graph = {}
         cycles = service._find_cycles(graph)
         assert cycles == []
 
-    def test_find_cycles_single_node_cycle(self, service):
+    def test_find_cycles_single_node_cycle(self, service) -> None:
         """Test finding self-loop cycle."""
         graph = {"A": {"A"}}
         cycles = service._find_cycles(graph)
         assert len(cycles) > 0
 
-    def test_find_cycles_two_node_cycle(self, service):
+    def test_find_cycles_two_node_cycle(self, service) -> None:
         """Test finding two-node cycle."""
         graph = {"A": {"B"}, "B": {"A"}}
         cycles = service._find_cycles(graph)
         assert len(cycles) > 0
 
-    def test_find_cycles_no_cycles(self, service):
+    def test_find_cycles_no_cycles(self, service) -> None:
         """Test no cycles in acyclic graph."""
         graph = {"A": {"B"}, "B": {"C"}, "C": set()}
         cycles = service._find_cycles(graph)
         assert cycles == []
 
-    def test_find_cycles_three_node_cycle(self, service):
+    def test_find_cycles_three_node_cycle(self, service) -> None:
         """Test finding three-node cycle."""
         graph = {"A": {"B"}, "B": {"C"}, "C": {"A"}}
         cycles = service._find_cycles(graph)
         assert len(cycles) > 0
 
-    def test_find_cycles_complex_graph_with_multiple_cycles(self, service):
+    def test_find_cycles_complex_graph_with_multiple_cycles(self, service) -> None:
         """Test finding multiple cycles in complex graph."""
         graph = {
             "A": {"B"},
@@ -927,7 +926,7 @@ class TestFindCyclesAlgorithm:
         cycles = service._find_cycles(graph)
         assert len(cycles) >= 2
 
-    def test_find_cycles_returns_cycle_paths(self, service):
+    def test_find_cycles_returns_cycle_paths(self, service) -> None:
         """Test that cycles include complete paths."""
         graph = {"A": {"B"}, "B": {"C"}, "C": {"A"}}
         cycles = service._find_cycles(graph)
@@ -961,7 +960,7 @@ class TestRepositoryIntegration:
         return AsyncMock()
 
     @pytest.mark.asyncio
-    async def test_detect_cycles_async_uses_repository(self, mock_async_session, mock_links_repo, mock_items_repo):
+    async def test_detect_cycles_async_uses_repository(self, mock_async_session, mock_links_repo, mock_items_repo) -> None:
         """Test that async detection uses repository."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -975,7 +974,7 @@ class TestRepositoryIntegration:
         mock_links_repo.get_by_project.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_async_detects_cycles_from_repository(self, mock_async_session, mock_links_repo):
+    async def test_async_detects_cycles_from_repository(self, mock_async_session, mock_links_repo) -> None:
         """Test async cycle detection using repository data."""
         # Create a cycle via repository
         links = [

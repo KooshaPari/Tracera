@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for Pydantic schema models.
+"""Comprehensive unit tests for Pydantic schema models.
 
 Tests all schemas in tracertm.schemas:
 - ItemCreate
@@ -24,7 +23,7 @@ from tracertm.schemas.link import LinkCreate, LinkResponse
 class TestItemCreateSchema:
     """Test ItemCreate schema validation."""
 
-    def test_create_item_minimal(self):
+    def test_create_item_minimal(self) -> None:
         """Test creating item with minimal required fields."""
         item = ItemCreate(
             title="Test Item",
@@ -37,7 +36,7 @@ class TestItemCreateSchema:
         assert item.status == "todo"  # Default value
         assert item.metadata == {}  # Default empty dict
 
-    def test_create_item_full(self):
+    def test_create_item_full(self) -> None:
         """Test creating item with all fields."""
         item = ItemCreate(
             title="Test Item",
@@ -54,68 +53,68 @@ class TestItemCreateSchema:
         assert item.parent_id == "parent-123"
         assert item.metadata == {"key": "value"}
 
-    def test_create_item_title_required(self):
+    def test_create_item_title_required(self) -> None:
         """Test that title is required."""
         with pytest.raises(ValidationError) as exc_info:
             ItemCreate(view="FEATURE", item_type="requirement")
         assert "title" in str(exc_info.value)
 
-    def test_create_item_title_not_empty(self):
+    def test_create_item_title_not_empty(self) -> None:
         """Test that title cannot be empty."""
         with pytest.raises(ValidationError) as exc_info:
             ItemCreate(title="", view="FEATURE", item_type="requirement")
         assert "title" in str(exc_info.value)
 
-    def test_create_item_title_max_length(self):
+    def test_create_item_title_max_length(self) -> None:
         """Test that title has max length of 500."""
         long_title = "x" * 501
         with pytest.raises(ValidationError) as exc_info:
             ItemCreate(title=long_title, view="FEATURE", item_type="requirement")
         assert "title" in str(exc_info.value)
 
-    def test_create_item_title_at_max_length(self):
+    def test_create_item_title_at_max_length(self) -> None:
         """Test that title accepts exactly 500 characters."""
         title = "x" * 500
         item = ItemCreate(title=title, view="FEATURE", item_type="requirement")
         assert len(item.title) == 500
 
-    def test_create_item_view_required(self):
+    def test_create_item_view_required(self) -> None:
         """Test that view is required."""
         with pytest.raises(ValidationError) as exc_info:
             ItemCreate(title="Test", item_type="requirement")
         assert "view" in str(exc_info.value)
 
-    def test_create_item_view_not_empty(self):
+    def test_create_item_view_not_empty(self) -> None:
         """Test that view cannot be empty."""
         with pytest.raises(ValidationError) as exc_info:
             ItemCreate(title="Test", view="", item_type="requirement")
         assert "view" in str(exc_info.value)
 
-    def test_create_item_view_max_length(self):
+    def test_create_item_view_max_length(self) -> None:
         """Test that view has max length of 50."""
         with pytest.raises(ValidationError) as exc_info:
             ItemCreate(title="Test", view="x" * 51, item_type="requirement")
         assert "view" in str(exc_info.value)
 
-    def test_create_item_type_required(self):
+    def test_create_item_type_required(self) -> None:
         """Test that item_type is required."""
         with pytest.raises(ValidationError) as exc_info:
             ItemCreate(title="Test", view="FEATURE")
         assert "item_type" in str(exc_info.value)
 
-    def test_create_item_type_not_empty(self):
+    def test_create_item_type_not_empty(self) -> None:
         """Test that item_type cannot be empty."""
         with pytest.raises(ValidationError) as exc_info:
             ItemCreate(title="Test", view="FEATURE", item_type="")
         assert "item_type" in str(exc_info.value)
 
-    def test_create_item_type_max_length(self):
+    def test_create_item_type_max_length(self) -> None:
         """Test that item_type has max length of 50."""
         with pytest.raises(ValidationError) as exc_info:
             ItemCreate(title="Test", view="FEATURE", item_type="x" * 51)
         assert "item_type" in str(exc_info.value)
 
-    def test_create_item_status_max_length(self):
+    def test_create_item_status_max_length(self) -> None:
         """Test that status has max length of 50."""
         with pytest.raises(ValidationError) as exc_info:
             ItemCreate(
@@ -126,22 +125,22 @@ class TestItemCreateSchema:
             )
         assert "status" in str(exc_info.value)
 
-    def test_create_item_description_optional(self):
+    def test_create_item_description_optional(self) -> None:
         """Test that description is optional."""
         item = ItemCreate(title="Test", view="FEATURE", item_type="requirement")
         assert item.description is None
 
-    def test_create_item_parent_id_optional(self):
+    def test_create_item_parent_id_optional(self) -> None:
         """Test that parent_id is optional."""
         item = ItemCreate(title="Test", view="FEATURE", item_type="requirement")
         assert item.parent_id is None
 
-    def test_create_item_metadata_default_empty(self):
+    def test_create_item_metadata_default_empty(self) -> None:
         """Test that metadata defaults to empty dict."""
         item = ItemCreate(title="Test", view="FEATURE", item_type="requirement")
         assert item.metadata == {}
 
-    def test_create_item_metadata_nested(self):
+    def test_create_item_metadata_nested(self) -> None:
         """Test that metadata can contain nested structures."""
         metadata = {
             "tags": ["tag1", "tag2"],
@@ -160,7 +159,7 @@ class TestItemCreateSchema:
 class TestItemUpdateSchema:
     """Test ItemUpdate schema validation."""
 
-    def test_update_item_all_optional(self):
+    def test_update_item_all_optional(self) -> None:
         """Test that all fields are optional in update."""
         update = ItemUpdate()
         assert update.title is None
@@ -169,36 +168,36 @@ class TestItemUpdateSchema:
         assert update.parent_id is None
         assert update.metadata is None
 
-    def test_update_item_title_only(self):
+    def test_update_item_title_only(self) -> None:
         """Test updating only title."""
         update = ItemUpdate(title="New Title")
         assert update.title == "New Title"
         assert update.description is None
 
-    def test_update_item_title_not_empty(self):
+    def test_update_item_title_not_empty(self) -> None:
         """Test that title cannot be empty string when provided."""
         with pytest.raises(ValidationError) as exc_info:
             ItemUpdate(title="")
         assert "title" in str(exc_info.value)
 
-    def test_update_item_title_max_length(self):
+    def test_update_item_title_max_length(self) -> None:
         """Test that title has max length of 500."""
         with pytest.raises(ValidationError) as exc_info:
             ItemUpdate(title="x" * 501)
         assert "title" in str(exc_info.value)
 
-    def test_update_item_status_only(self):
+    def test_update_item_status_only(self) -> None:
         """Test updating only status."""
         update = ItemUpdate(status="done")
         assert update.status == "done"
 
-    def test_update_item_status_max_length(self):
+    def test_update_item_status_max_length(self) -> None:
         """Test that status has max length of 50."""
         with pytest.raises(ValidationError) as exc_info:
             ItemUpdate(status="x" * 51)
         assert "status" in str(exc_info.value)
 
-    def test_update_item_multiple_fields(self):
+    def test_update_item_multiple_fields(self) -> None:
         """Test updating multiple fields."""
         update = ItemUpdate(
             title="New Title",
@@ -209,18 +208,18 @@ class TestItemUpdateSchema:
         assert update.description == "New description"
         assert update.status == "in_progress"
 
-    def test_update_item_metadata(self):
+    def test_update_item_metadata(self) -> None:
         """Test updating metadata."""
         metadata = {"key": "new_value"}
         update = ItemUpdate(metadata=metadata)
         assert update.metadata == metadata
 
-    def test_update_item_clear_description(self):
+    def test_update_item_clear_description(self) -> None:
         """Test clearing description by setting to None."""
         update = ItemUpdate(description=None)
         assert update.description is None
 
-    def test_update_item_clear_parent_id(self):
+    def test_update_item_clear_parent_id(self) -> None:
         """Test clearing parent_id by setting to None."""
         update = ItemUpdate(parent_id=None)
         assert update.parent_id is None
@@ -229,7 +228,7 @@ class TestItemUpdateSchema:
 class TestItemResponseSchema:
     """Test ItemResponse schema validation."""
 
-    def test_response_from_dict(self):
+    def test_response_from_dict(self) -> None:
         """Test creating response from dictionary."""
         data = {
             "id": "item-123",
@@ -251,14 +250,14 @@ class TestItemResponseSchema:
         assert response.project_id == "proj-456"
         assert response.title == "Test Item"
 
-    def test_response_all_fields_required(self):
+    def test_response_all_fields_required(self) -> None:
         """Test that all fields are required."""
         with pytest.raises(ValidationError) as exc_info:
             ItemResponse(id="item-123")
         error_str = str(exc_info.value)
         assert "project_id" in error_str or "title" in error_str
 
-    def test_response_from_attributes_config(self):
+    def test_response_from_attributes_config(self) -> None:
         """Test that from_attributes config is set."""
         assert ItemResponse.model_config.get("from_attributes") is True
 
@@ -266,7 +265,7 @@ class TestItemResponseSchema:
 class TestLinkCreateSchema:
     """Test LinkCreate schema validation."""
 
-    def test_create_link_minimal(self):
+    def test_create_link_minimal(self) -> None:
         """Test creating link with minimal fields."""
         link = LinkCreate(
             source_item_id="source-123",
@@ -278,7 +277,7 @@ class TestLinkCreateSchema:
         assert link.link_type == "dependency"
         assert link.metadata == {}
 
-    def test_create_link_with_metadata(self):
+    def test_create_link_with_metadata(self) -> None:
         """Test creating link with metadata."""
         metadata = {"strength": "strong", "bidirectional": True}
         link = LinkCreate(
@@ -289,25 +288,25 @@ class TestLinkCreateSchema:
         )
         assert link.metadata == metadata
 
-    def test_create_link_source_required(self):
+    def test_create_link_source_required(self) -> None:
         """Test that source_item_id is required."""
         with pytest.raises(ValidationError) as exc_info:
             LinkCreate(target_item_id="target-456", link_type="dependency")
         assert "source_item_id" in str(exc_info.value)
 
-    def test_create_link_target_required(self):
+    def test_create_link_target_required(self) -> None:
         """Test that target_item_id is required."""
         with pytest.raises(ValidationError) as exc_info:
             LinkCreate(source_item_id="source-123", link_type="dependency")
         assert "target_item_id" in str(exc_info.value)
 
-    def test_create_link_type_required(self):
+    def test_create_link_type_required(self) -> None:
         """Test that link_type is required."""
         with pytest.raises(ValidationError) as exc_info:
             LinkCreate(source_item_id="source-123", target_item_id="target-456")
         assert "link_type" in str(exc_info.value)
 
-    def test_create_link_type_not_empty(self):
+    def test_create_link_type_not_empty(self) -> None:
         """Test that link_type cannot be empty."""
         with pytest.raises(ValidationError) as exc_info:
             LinkCreate(
@@ -317,7 +316,7 @@ class TestLinkCreateSchema:
             )
         assert "link_type" in str(exc_info.value)
 
-    def test_create_link_type_max_length(self):
+    def test_create_link_type_max_length(self) -> None:
         """Test that link_type has max length of 50."""
         with pytest.raises(ValidationError) as exc_info:
             LinkCreate(
@@ -327,7 +326,7 @@ class TestLinkCreateSchema:
             )
         assert "link_type" in str(exc_info.value)
 
-    def test_create_link_metadata_default_empty(self):
+    def test_create_link_metadata_default_empty(self) -> None:
         """Test that metadata defaults to empty dict."""
         link = LinkCreate(
             source_item_id="source-123",
@@ -340,7 +339,7 @@ class TestLinkCreateSchema:
 class TestLinkResponseSchema:
     """Test LinkResponse schema validation."""
 
-    def test_response_from_dict(self):
+    def test_response_from_dict(self) -> None:
         """Test creating response from dictionary."""
         data = {
             "id": "link-123",
@@ -356,14 +355,14 @@ class TestLinkResponseSchema:
         assert response.source_item_id == "source-789"
         assert response.link_type == "dependency"
 
-    def test_response_all_fields_required(self):
+    def test_response_all_fields_required(self) -> None:
         """Test that all fields are required."""
         with pytest.raises(ValidationError) as exc_info:
             LinkResponse(id="link-123")
         error_str = str(exc_info.value)
         assert "project_id" in error_str or "source_item_id" in error_str
 
-    def test_response_from_attributes_config(self):
+    def test_response_from_attributes_config(self) -> None:
         """Test that from_attributes config is set."""
         assert LinkResponse.model_config.get("from_attributes") is True
 
@@ -371,7 +370,7 @@ class TestLinkResponseSchema:
 class TestEventCreateSchema:
     """Test EventCreate schema validation."""
 
-    def test_create_event_minimal(self):
+    def test_create_event_minimal(self) -> None:
         """Test creating event with minimal fields."""
         event = EventCreate(
             event_type="item_created",
@@ -383,7 +382,7 @@ class TestEventCreateSchema:
         assert event.agent_id == "agent-456"
         assert event.item_id is None
 
-    def test_create_event_with_item_id(self):
+    def test_create_event_with_item_id(self) -> None:
         """Test creating event with item_id."""
         event = EventCreate(
             event_type="item_updated",
@@ -393,19 +392,19 @@ class TestEventCreateSchema:
         )
         assert event.item_id == "item-789"
 
-    def test_create_event_type_required(self):
+    def test_create_event_type_required(self) -> None:
         """Test that event_type is required."""
         with pytest.raises(ValidationError) as exc_info:
             EventCreate(event_data={}, agent_id="agent-456")
         assert "event_type" in str(exc_info.value)
 
-    def test_create_event_type_not_empty(self):
+    def test_create_event_type_not_empty(self) -> None:
         """Test that event_type cannot be empty."""
         with pytest.raises(ValidationError) as exc_info:
             EventCreate(event_type="", event_data={}, agent_id="agent-456")
         assert "event_type" in str(exc_info.value)
 
-    def test_create_event_type_max_length(self):
+    def test_create_event_type_max_length(self) -> None:
         """Test that event_type has max length of 50."""
         with pytest.raises(ValidationError) as exc_info:
             EventCreate(
@@ -415,19 +414,19 @@ class TestEventCreateSchema:
             )
         assert "event_type" in str(exc_info.value)
 
-    def test_create_event_data_required(self):
+    def test_create_event_data_required(self) -> None:
         """Test that event_data is required."""
         with pytest.raises(ValidationError) as exc_info:
             EventCreate(event_type="item_created", agent_id="agent-456")
         assert "event_data" in str(exc_info.value)
 
-    def test_create_event_agent_id_required(self):
+    def test_create_event_agent_id_required(self) -> None:
         """Test that agent_id is required."""
         with pytest.raises(ValidationError) as exc_info:
             EventCreate(event_type="item_created", event_data={})
         assert "agent_id" in str(exc_info.value)
 
-    def test_create_event_data_nested(self):
+    def test_create_event_data_nested(self) -> None:
         """Test that event_data can contain nested structures."""
         event_data = {
             "changes": [
@@ -447,7 +446,7 @@ class TestEventCreateSchema:
 class TestEventResponseSchema:
     """Test EventResponse schema validation."""
 
-    def test_response_from_dict(self):
+    def test_response_from_dict(self) -> None:
         """Test creating response from dictionary."""
         data = {
             "id": "event-123",
@@ -463,18 +462,18 @@ class TestEventResponseSchema:
         assert response.event_type == "item_created"
         assert response.agent_id == "agent-012"
 
-    def test_response_all_fields_required(self):
+    def test_response_all_fields_required(self) -> None:
         """Test that all fields are required."""
         with pytest.raises(ValidationError) as exc_info:
             EventResponse(id="event-123")
         error_str = str(exc_info.value)
         assert "project_id" in error_str or "event_type" in error_str
 
-    def test_response_from_attributes_config(self):
+    def test_response_from_attributes_config(self) -> None:
         """Test that from_attributes config is set."""
         assert EventResponse.model_config.get("from_attributes") is True
 
-    def test_response_with_item_id(self):
+    def test_response_with_item_id(self) -> None:
         """Test response with item_id set."""
         data = {
             "id": "event-123",
@@ -488,7 +487,7 @@ class TestEventResponseSchema:
         response = EventResponse(**data)
         assert response.item_id == "item-789"
 
-    def test_response_without_item_id(self):
+    def test_response_without_item_id(self) -> None:
         """Test response with item_id as None."""
         data = {
             "id": "event-123",

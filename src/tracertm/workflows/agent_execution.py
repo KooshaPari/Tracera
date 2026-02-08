@@ -49,7 +49,7 @@ class AgentExecutionWorkflow:
     _session_id: str
     _last_checkpoint_turn: int
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize workflow state."""
         self._turn_count = 0
         self._session_id = ""
@@ -79,7 +79,7 @@ class AgentExecutionWorkflow:
 
         workflow.logger.info(
             f"Starting agent execution for session {session_id} "
-            f"(max_turns={cfg.max_turns}, checkpoint_interval={cfg.checkpoint_interval})"
+            f"(max_turns={cfg.max_turns}, checkpoint_interval={cfg.checkpoint_interval})",
         )
 
         # Initialize conversation state
@@ -257,7 +257,7 @@ class AgentExecutionResumeWorkflow:
             dict: Execution summary
         """
         workflow.logger.info(
-            f"Resuming agent execution for session {session_id} from turn {checkpoint_turn or 'latest'}"
+            f"Resuming agent execution for session {session_id} from turn {checkpoint_turn or 'latest'}",
         )
 
         # Load checkpoint
@@ -275,7 +275,8 @@ class AgentExecutionResumeWorkflow:
             )
 
         if not checkpoint_data:
-            raise ValueError(f"No checkpoint found for session {session_id}")
+            msg = f"No checkpoint found for session {session_id}"
+            raise ValueError(msg)
 
         # Resume execution using main workflow
         state = checkpoint_data.get("state_snapshot") or {}

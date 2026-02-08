@@ -15,7 +15,7 @@ from tracertm.mcp.tools.response_optimizer import (
 class TestResponseFormat:
     """Test response formatting."""
 
-    def test_lean_format(self):
+    def test_lean_format(self) -> None:
         """Test lean response format (just data)."""
         data = {"id": "123", "title": "Test"}
         result = format_response(data, format_mode=ResponseFormat.LEAN)
@@ -24,7 +24,7 @@ class TestResponseFormat:
         assert "ok" not in result
         assert "actor" not in result
 
-    def test_standard_format(self):
+    def test_standard_format(self) -> None:
         """Test standard response format (minimal metadata)."""
         data = {"id": "123", "title": "Test"}
         result = format_response(data, format_mode=ResponseFormat.STANDARD)
@@ -33,7 +33,7 @@ class TestResponseFormat:
         assert result["data"] == data
         assert "actor" not in result
 
-    def test_verbose_format(self):
+    def test_verbose_format(self) -> None:
         """Test verbose response format (full metadata)."""
         data = {"id": "123", "title": "Test"}
         result = format_response(data, format_mode=ResponseFormat.VERBOSE)
@@ -42,7 +42,7 @@ class TestResponseFormat:
         assert result["data"] == data
         assert "actor" in result
 
-    def test_compression_threshold(self):
+    def test_compression_threshold(self) -> None:
         """Test compression is applied when threshold exceeded."""
         # Create data larger than threshold
         large_data = {"items": [{"id": str(i), "title": f"Item {i}"} for i in range(100)]}
@@ -58,7 +58,7 @@ class TestResponseFormat:
         assert "data" in result
         assert result["compressed_size"] < result["original_size"]
 
-    def test_no_compression_below_threshold(self):
+    def test_no_compression_below_threshold(self) -> None:
         """Test compression not applied below threshold."""
         small_data = {"id": "123"}
 
@@ -75,7 +75,7 @@ class TestResponseFormat:
 class TestErrorFormatting:
     """Test error response formatting."""
 
-    def test_lean_error(self):
+    def test_lean_error(self) -> None:
         """Test lean error format."""
         result = format_error("Test error", action="test", format_mode=ResponseFormat.LEAN)
 
@@ -85,7 +85,7 @@ class TestErrorFormatting:
         assert "action" not in result
         assert "actor" not in result
 
-    def test_error_with_suggestions(self):
+    def test_error_with_suggestions(self) -> None:
         """Test error includes suggestions."""
         result = format_error(
             "Item not found",
@@ -97,7 +97,7 @@ class TestErrorFormatting:
         assert len(result["suggestions"]) == 2
         assert "Check item ID" in result["suggestions"]
 
-    def test_error_categorization(self):
+    def test_error_categorization(self) -> None:
         """Test automatic error categorization."""
         # Test not_found
         result = format_error("Item not found: abc", format_mode=ResponseFormat.LEAN)
@@ -111,14 +111,14 @@ class TestErrorFormatting:
         result = format_error("access denied", format_mode=ResponseFormat.LEAN)
         assert result["category"] == "auth"
 
-    def test_auto_suggestions_not_found(self):
+    def test_auto_suggestions_not_found(self) -> None:
         """Test auto-generated suggestions for not_found errors."""
         result = format_error("Project not found", category="not_found")
 
         assert "suggestions" in result
         assert any("select_project" in s for s in result["suggestions"])
 
-    def test_auto_suggestions_validation(self):
+    def test_auto_suggestions_validation(self) -> None:
         """Test auto-generated suggestions for validation errors."""
         result = format_error("project_id is required", category="validation")
 
@@ -129,7 +129,7 @@ class TestErrorFormatting:
 class TestItemOptimization:
     """Test item response optimization."""
 
-    def test_optimize_item_dict(self):
+    def test_optimize_item_dict(self) -> None:
         """Test optimizing item from dict."""
         item = {
             "id": "12345678-1234-1234-1234-123456789012",
@@ -149,7 +149,7 @@ class TestItemOptimization:
         assert result["status"] == "active"
         assert "metadata" not in result
 
-    def test_optimize_item_with_metadata(self):
+    def test_optimize_item_with_metadata(self) -> None:
         """Test optimizing item includes metadata when requested."""
         item = {
             "id": "12345678-1234-1234-1234-123456789012",
@@ -165,7 +165,7 @@ class TestItemOptimization:
         assert "metadata" in result
         assert result["metadata"] == {"key": "value"}
 
-    def test_optimize_item_model(self):
+    def test_optimize_item_model(self) -> None:
         """Test optimizing item from model object."""
 
         class MockItem:
@@ -186,7 +186,7 @@ class TestItemOptimization:
 class TestLinkOptimization:
     """Test link response optimization."""
 
-    def test_optimize_link_dict(self):
+    def test_optimize_link_dict(self) -> None:
         """Test optimizing link from dict."""
         link = {
             "id": "abcdefgh-1234-1234-1234-123456789012",
@@ -202,7 +202,7 @@ class TestLinkOptimization:
         assert result["target"] == "87654321"
         assert result["type"] == "implements"
 
-    def test_optimize_link_model(self):
+    def test_optimize_link_model(self) -> None:
         """Test optimizing link from model object."""
 
         class MockLink:
@@ -222,7 +222,7 @@ class TestLinkOptimization:
 class TestPagination:
     """Test pagination helper."""
 
-    def test_paginate_basic(self):
+    def test_paginate_basic(self) -> None:
         """Test basic pagination."""
         items = [{"id": str(i)} for i in range(100)]
 
@@ -233,7 +233,7 @@ class TestPagination:
         assert result["total"] == 100
         assert result["has_more"] is True
 
-    def test_paginate_last_page(self):
+    def test_paginate_last_page(self) -> None:
         """Test pagination on last page."""
         items = [{"id": str(i)} for i in range(100)]
 
@@ -244,7 +244,7 @@ class TestPagination:
         assert result["total"] == 100
         assert result["has_more"] is False
 
-    def test_paginate_with_optimizer(self):
+    def test_paginate_with_optimizer(self) -> None:
         """Test pagination with optimizer function."""
         items = [
             {
@@ -266,7 +266,7 @@ class TestPagination:
 class TestTokenReduction:
     """Test actual token reduction metrics."""
 
-    def test_single_item_reduction(self):
+    def test_single_item_reduction(self) -> None:
         """Test token reduction for single item."""
         full_item = {
             "id": "12345678-1234-1234-1234-123456789012",
@@ -306,9 +306,8 @@ class TestTokenReduction:
 
         # Should achieve >50% reduction
         assert reduction > 50
-        print(f"Single item reduction: {reduction:.1f}%")
 
-    def test_list_reduction(self):
+    def test_list_reduction(self) -> None:
         """Test token reduction for list of items."""
         items = [
             {
@@ -358,4 +357,3 @@ class TestTokenReduction:
 
         # Should achieve >50% reduction
         assert reduction > 50
-        print(f"List (50 items) reduction: {reduction:.1f}%")

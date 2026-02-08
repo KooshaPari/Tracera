@@ -1,5 +1,4 @@
-"""
-Performance tests - Latency, throughput, and resource usage
+"""Performance tests - Latency, throughput, and resource usage.
 
 Usage:
     pytest tests/performance/test_performance.py -v --tb=short
@@ -12,20 +11,20 @@ from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
 
 
 class TestPerformance:
-    """Performance tests"""
+    """Performance tests."""
 
     @pytest.fixture
     def router(self):
-        """Create router"""
+        """Create router."""
         return ArchRouter()
 
     @pytest.fixture
     def registry(self):
-        """Create registry"""
+        """Create registry."""
         return ToolRegistry(TOOL_REGISTRY)
 
-    def test_router_initialization_time(self, router):
-        """Test router initialization time"""
+    def test_router_initialization_time(self, router) -> None:
+        """Test router initialization time."""
         start = time.time()
         ArchRouter()
         elapsed = time.time() - start
@@ -33,8 +32,8 @@ class TestPerformance:
         # Should initialize in <100ms
         assert elapsed < 0.1, f"Router init took {elapsed:.3f}s"
 
-    def test_registry_initialization_time(self, registry):
-        """Test registry initialization time"""
+    def test_registry_initialization_time(self, registry) -> None:
+        """Test registry initialization time."""
         start = time.time()
         ToolRegistry(TOOL_REGISTRY)
         elapsed = time.time() - start
@@ -42,8 +41,8 @@ class TestPerformance:
         # Should initialize in <50ms
         assert elapsed < 0.05, f"Registry init took {elapsed:.3f}s"
 
-    def test_routing_latency(self, router, registry):
-        """Test routing latency"""
+    def test_routing_latency(self, router, registry) -> None:
+        """Test routing latency."""
         routes = registry.export_registry()
         query = "generate FastAPI endpoint"
 
@@ -55,8 +54,8 @@ class TestPerformance:
         assert elapsed < 0.05, f"Routing took {elapsed:.3f}s"
         assert result.route is not None
 
-    def test_batch_routing_latency(self, router, registry):
-        """Test batch routing latency"""
+    def test_batch_routing_latency(self, router, registry) -> None:
+        """Test batch routing latency."""
         routes = registry.export_registry()
         queries = [
             "generate code",
@@ -74,8 +73,8 @@ class TestPerformance:
         assert elapsed < 0.3, f"Batch routing took {elapsed:.3f}s"
         assert len(results) == 5
 
-    def test_cache_hit_latency(self, router, registry):
-        """Test cache hit latency"""
+    def test_cache_hit_latency(self, router, registry) -> None:
+        """Test cache hit latency."""
         routes = registry.export_registry()
         query = "generate endpoint"
 
@@ -91,8 +90,8 @@ class TestPerformance:
         assert elapsed < 0.005, f"Cache hit took {elapsed:.3f}s"
         assert result.cached is True
 
-    def test_registry_lookup_latency(self, registry):
-        """Test registry lookup latency"""
+    def test_registry_lookup_latency(self, registry) -> None:
+        """Test registry lookup latency."""
         start = time.time()
         route = registry.get_route("data_processing")
         elapsed = time.time() - start
@@ -101,8 +100,8 @@ class TestPerformance:
         assert elapsed < 0.001, f"Registry lookup took {elapsed:.3f}s"
         assert route is not None
 
-    def test_registry_list_routes_latency(self, registry):
-        """Test registry list routes latency"""
+    def test_registry_list_routes_latency(self, registry) -> None:
+        """Test registry list routes latency."""
         start = time.time()
         routes = registry.list_routes()
         elapsed = time.time() - start
@@ -111,8 +110,8 @@ class TestPerformance:
         assert elapsed < 0.001, f"List routes took {elapsed:.3f}s"
         assert len(routes) > 0
 
-    def test_cache_memory_usage(self, router, registry):
-        """Test cache memory usage"""
+    def test_cache_memory_usage(self, router, registry) -> None:
+        """Test cache memory usage."""
         routes = registry.export_registry()
 
         # Fill cache with 100 queries
@@ -124,8 +123,8 @@ class TestPerformance:
         assert stats["size"] == 100
         assert stats["utilization"] == 0.1  # 100/1000
 
-    def test_throughput_queries_per_second(self, router, registry):
-        """Test throughput (queries per second)"""
+    def test_throughput_queries_per_second(self, router, registry) -> None:
+        """Test throughput (queries per second)."""
         routes = registry.export_registry()
         query = "generate endpoint"
 

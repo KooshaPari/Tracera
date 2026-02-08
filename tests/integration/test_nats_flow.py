@@ -16,17 +16,17 @@ class MockNATSClient:
 
     SUBJECT_PREFIX = "tracertm.events"
 
-    def __init__(self, nats_url: str):
+    def __init__(self, nats_url: str) -> None:
         self.nats_url = nats_url
         self.connected = False
         self.published_messages: list[dict] = []
         self.subscriptions: dict[str, list] = {}
 
-    async def connect(self):
+    async def connect(self) -> None:
         """Simulate NATS connection."""
         self.connected = True
 
-    async def close(self):
+    async def close(self) -> None:
         """Simulate NATS disconnection."""
         self.connected = False
 
@@ -45,7 +45,7 @@ class MockNATSClient:
         entity_type: str | None = None,
         source: str | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         """Mock publish - store message for verification. Accepts subject+data or event_type/project_id/... kwargs."""
         payload: dict[str, Any] = dict(data) if data else {}
         if kwargs:
@@ -74,13 +74,13 @@ class MockNATSClient:
     async def unsubscribe(self, consumer_name: str) -> None:
         """Mock unsubscribe - no-op for tests."""
 
-    async def subscribe(self, subject: str, consumer_name: str, handler):
+    async def subscribe(self, subject: str, consumer_name: str, handler) -> None:
         """Mock subscribe - register handler."""
         if subject not in self.subscriptions:
             self.subscriptions[subject] = []
         self.subscriptions[subject].append({"consumer": consumer_name, "handler": handler})
 
-    async def trigger_subscription(self, subject: str, data: dict):
+    async def trigger_subscription(self, subject: str, data: dict) -> None:
         """Manually trigger subscription handlers (for testing)."""
         if subject in self.subscriptions:
             for sub in self.subscriptions[subject]:
@@ -95,7 +95,7 @@ class MockEventBus:
     EVENT_SPEC_CREATED = "spec.created"
     EVENT_AI_ANALYSIS_COMPLETE = "ai.analysis.complete"
 
-    def __init__(self, nats_client: MockNATSClient):
+    def __init__(self, nats_client: MockNATSClient) -> None:
         self.nats = nats_client
         self._handlers: dict[str, list] = {}
 
@@ -121,7 +121,7 @@ class MockEventBus:
         payload: dict | None = None,
         *,
         data: dict | None = None,
-    ):
+    ) -> None:
         """Publish event to NATS. Accepts payload= or data= (alias)."""
         payload = payload if payload is not None else data or {}
         subject = f"tracertm.events.{entity_type}.{event_type}"
@@ -161,7 +161,7 @@ async def event_bus(nats_client):
 
 
 @pytest.mark.asyncio
-async def test_python_to_nats_flow(nats_client: MockNATSClient, event_bus: MockEventBus):
+async def test_python_to_nats_flow(nats_client: MockNATSClient, event_bus: MockEventBus) -> None:
     """Test Python publishes event to NATS."""
     # Publish event
     await event_bus.publish(
@@ -347,7 +347,8 @@ async def test_python_to_nats_flow(nats_client: MockNATSClient, event_bus: MockE
             nonlocal error_count, success_count
             if error_count < 2:
                 error_count += 1
-                raise ValueError("Test error")
+                msg = "Test error"
+                raise ValueError(msg)
             success_count += 1
 
         # Subscribe with failing handler

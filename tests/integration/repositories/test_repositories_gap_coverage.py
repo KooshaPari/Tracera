@@ -1,5 +1,4 @@
-"""
-Comprehensive Integration Tests for Repository Layer - Gap Coverage
+"""Comprehensive Integration Tests for Repository Layer - Gap Coverage.
 
 This module provides extensive test coverage for repository layer to achieve 85%+ coverage.
 Tests cover CRUD operations, complex queries, error handling, transaction management,
@@ -34,11 +33,10 @@ from tracertm.repositories.project_repository import ProjectRepository
 
 
 @pytest.mark.asyncio
-async def test_project_create_minimal_fields(db_session: AsyncSession):
-    """
-    GIVEN: Minimal project data (only name)
+async def test_project_create_minimal_fields(db_session: AsyncSession) -> None:
+    """GIVEN: Minimal project data (only name)
     WHEN: Creating project without optional fields
-    THEN: Project is created with defaults
+    THEN: Project is created with defaults.
     """
     repo = ProjectRepository(db_session)
 
@@ -55,11 +53,10 @@ async def test_project_create_minimal_fields(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_create_with_complex_metadata(db_session: AsyncSession):
-    """
-    GIVEN: Project with nested metadata
+async def test_project_create_with_complex_metadata(db_session: AsyncSession) -> None:
+    """GIVEN: Project with nested metadata
     WHEN: Creating project with complex metadata structure
-    THEN: Metadata is stored correctly
+    THEN: Metadata is stored correctly.
     """
     repo = ProjectRepository(db_session)
 
@@ -79,11 +76,10 @@ async def test_project_create_with_complex_metadata(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_update_partial_fields(db_session: AsyncSession):
-    """
-    GIVEN: An existing project
+async def test_project_update_partial_fields(db_session: AsyncSession) -> None:
+    """GIVEN: An existing project
     WHEN: Updating only one field at a time
-    THEN: Only specified field is updated
+    THEN: Only specified field is updated.
     """
     repo = ProjectRepository(db_session)
 
@@ -109,11 +105,10 @@ async def test_project_update_partial_fields(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_get_by_name_case_sensitive(db_session: AsyncSession):
-    """
-    GIVEN: Projects with similar names
+async def test_project_get_by_name_case_sensitive(db_session: AsyncSession) -> None:
+    """GIVEN: Projects with similar names
     WHEN: Querying by name with different case
-    THEN: Only exact match is returned
+    THEN: Only exact match is returned.
     """
     repo = ProjectRepository(db_session)
 
@@ -132,11 +127,10 @@ async def test_project_get_by_name_case_sensitive(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_update_preserves_timestamps(db_session: AsyncSession):
-    """
-    GIVEN: An existing project
+async def test_project_update_preserves_timestamps(db_session: AsyncSession) -> None:
+    """GIVEN: An existing project
     WHEN: Updating project
-    THEN: created_at is preserved, updated_at changes
+    THEN: created_at is preserved, updated_at changes.
     """
     repo = ProjectRepository(db_session)
 
@@ -162,11 +156,10 @@ async def test_project_update_preserves_timestamps(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_create_with_all_optional_fields(db_session: AsyncSession):
-    """
-    GIVEN: Complete item data with all optional fields
+async def test_item_create_with_all_optional_fields(db_session: AsyncSession) -> None:
+    """GIVEN: Complete item data with all optional fields
     WHEN: Creating item with every field populated
-    THEN: All fields are stored correctly
+    THEN: All fields are stored correctly.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -199,11 +192,10 @@ async def test_item_create_with_all_optional_fields(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_create_with_defaults(db_session: AsyncSession):
-    """
-    GIVEN: Minimal item data
+async def test_item_create_with_defaults(db_session: AsyncSession) -> None:
+    """GIVEN: Minimal item data
     WHEN: Creating item with only required fields
-    THEN: Defaults are applied correctly
+    THEN: Defaults are applied correctly.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -226,11 +218,10 @@ async def test_item_create_with_defaults(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_update_multiple_fields(db_session: AsyncSession):
-    """
-    GIVEN: An existing item
+async def test_item_update_multiple_fields(db_session: AsyncSession) -> None:
+    """GIVEN: An existing item
     WHEN: Updating multiple fields simultaneously
-    THEN: All updates are applied and version increments
+    THEN: All updates are applied and version increments.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -238,7 +229,7 @@ async def test_item_update_multiple_fields(db_session: AsyncSession):
 
     repo = ItemRepository(db_session)
     item = await repo.create(
-        project_id=str(project.id), title="Original", view="FEATURE", item_type="feature", status="todo", priority="low"
+        project_id=str(project.id), title="Original", view="FEATURE", item_type="feature", status="todo", priority="low",
     )
     await db_session.commit()
 
@@ -263,11 +254,10 @@ async def test_item_update_multiple_fields(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_update_ignores_invalid_attributes(db_session: AsyncSession):
-    """
-    GIVEN: An existing item
+async def test_item_update_ignores_invalid_attributes(db_session: AsyncSession) -> None:
+    """GIVEN: An existing item
     WHEN: Updating with non-existent attribute
-    THEN: Invalid attributes are ignored, valid ones applied
+    THEN: Invalid attributes are ignored, valid ones applied.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -288,11 +278,10 @@ async def test_item_update_ignores_invalid_attributes(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_soft_delete_already_deleted(db_session: AsyncSession):
-    """
-    GIVEN: An already soft-deleted item
+async def test_item_soft_delete_already_deleted(db_session: AsyncSession) -> None:
+    """GIVEN: An already soft-deleted item
     WHEN: Attempting to soft delete again
-    THEN: Operation succeeds (idempotent)
+    THEN: Operation succeeds (idempotent).
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -313,11 +302,10 @@ async def test_item_soft_delete_already_deleted(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_hard_delete_with_links(db_session: AsyncSession):
-    """
-    GIVEN: Item with associated links
+async def test_item_hard_delete_with_links(db_session: AsyncSession) -> None:
+    """GIVEN: Item with associated links
     WHEN: Hard deleting the item
-    THEN: Links are also deleted (FK cascade)
+    THEN: Links are also deleted (FK cascade).
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -330,7 +318,7 @@ async def test_item_hard_delete_with_links(db_session: AsyncSession):
 
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements",
     )
     await db_session.commit()
 
@@ -345,11 +333,10 @@ async def test_item_hard_delete_with_links(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_list_all_ordering(db_session: AsyncSession):
-    """
-    GIVEN: Multiple items created at different times
+async def test_item_list_all_ordering(db_session: AsyncSession) -> None:
+    """GIVEN: Multiple items created at different times
     WHEN: Listing all items
-    THEN: Items are ordered by created_at descending
+    THEN: Items are ordered by created_at descending.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -380,11 +367,10 @@ async def test_item_list_all_ordering(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_by_project_limit_offset_edge_cases(db_session: AsyncSession):
-    """
-    GIVEN: 10 items in project
+async def test_item_get_by_project_limit_offset_edge_cases(db_session: AsyncSession) -> None:
+    """GIVEN: 10 items in project
     WHEN: Using various limit/offset combinations
-    THEN: Correct slices are returned
+    THEN: Correct slices are returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -410,11 +396,10 @@ async def test_item_get_by_project_limit_offset_edge_cases(db_session: AsyncSess
 
 
 @pytest.mark.asyncio
-async def test_item_query_with_empty_filters(db_session: AsyncSession):
-    """
-    GIVEN: Items in project
+async def test_item_query_with_empty_filters(db_session: AsyncSession) -> None:
+    """GIVEN: Items in project
     WHEN: Querying with empty filters dict
-    THEN: All items are returned
+    THEN: All items are returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -431,11 +416,10 @@ async def test_item_query_with_empty_filters(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_query_with_invalid_filter_key(db_session: AsyncSession):
-    """
-    GIVEN: Items in project
+async def test_item_query_with_invalid_filter_key(db_session: AsyncSession) -> None:
+    """GIVEN: Items in project
     WHEN: Querying with non-existent attribute in filters
-    THEN: Invalid filters are ignored
+    THEN: Invalid filters are ignored.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -453,11 +437,10 @@ async def test_item_query_with_invalid_filter_key(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_children_excludes_deleted(db_session: AsyncSession):
-    """
-    GIVEN: Parent with deleted and active children
+async def test_item_get_children_excludes_deleted(db_session: AsyncSession) -> None:
+    """GIVEN: Parent with deleted and active children
     WHEN: Getting children
-    THEN: Only active children are returned
+    THEN: Only active children are returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -467,10 +450,10 @@ async def test_item_get_children_excludes_deleted(db_session: AsyncSession):
 
     parent = await repo.create(project_id=str(project.id), title="Parent", view="EPIC", item_type="epic")
     child1 = await repo.create(
-        project_id=str(project.id), title="Active Child", view="STORY", item_type="story", parent_id=str(parent.id)
+        project_id=str(project.id), title="Active Child", view="STORY", item_type="story", parent_id=str(parent.id),
     )
     child2 = await repo.create(
-        project_id=str(project.id), title="Deleted Child", view="STORY", item_type="story", parent_id=str(parent.id)
+        project_id=str(project.id), title="Deleted Child", view="STORY", item_type="story", parent_id=str(parent.id),
     )
     await db_session.commit()
 
@@ -484,11 +467,10 @@ async def test_item_get_children_excludes_deleted(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_ancestors_no_parent(db_session: AsyncSession):
-    """
-    GIVEN: Root item with no parent
+async def test_item_get_ancestors_no_parent(db_session: AsyncSession) -> None:
+    """GIVEN: Root item with no parent
     WHEN: Getting ancestors
-    THEN: Empty list is returned
+    THEN: Empty list is returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -504,11 +486,10 @@ async def test_item_get_ancestors_no_parent(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_descendants_no_children(db_session: AsyncSession):
-    """
-    GIVEN: Leaf item with no children
+async def test_item_get_descendants_no_children(db_session: AsyncSession) -> None:
+    """GIVEN: Leaf item with no children
     WHEN: Getting descendants
-    THEN: Empty list is returned
+    THEN: Empty list is returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -524,11 +505,10 @@ async def test_item_get_descendants_no_children(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_count_by_status_empty_project(db_session: AsyncSession):
-    """
-    GIVEN: Empty project
+async def test_item_count_by_status_empty_project(db_session: AsyncSession) -> None:
+    """GIVEN: Empty project
     WHEN: Counting by status
-    THEN: Empty dict is returned
+    THEN: Empty dict is returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Empty Project")
@@ -541,11 +521,10 @@ async def test_item_count_by_status_empty_project(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_count_by_status_excludes_deleted(db_session: AsyncSession):
-    """
-    GIVEN: Items with some deleted
+async def test_item_count_by_status_excludes_deleted(db_session: AsyncSession) -> None:
+    """GIVEN: Items with some deleted
     WHEN: Counting by status
-    THEN: Deleted items are not counted
+    THEN: Deleted items are not counted.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -554,10 +533,10 @@ async def test_item_count_by_status_excludes_deleted(db_session: AsyncSession):
     repo = ItemRepository(db_session)
 
     item1 = await repo.create(
-        project_id=str(project.id), title="Todo 1", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Todo 1", view="FEATURE", item_type="feature", status="todo",
     )
     item2 = await repo.create(
-        project_id=str(project.id), title="Todo 2", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Todo 2", view="FEATURE", item_type="feature", status="todo",
     )
     await db_session.commit()
 
@@ -575,11 +554,10 @@ async def test_item_count_by_status_excludes_deleted(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_create_with_empty_metadata(db_session: AsyncSession):
-    """
-    GIVEN: Items exist
+async def test_link_create_with_empty_metadata(db_session: AsyncSession) -> None:
+    """GIVEN: Items exist
     WHEN: Creating link without metadata
-    THEN: Empty dict is stored
+    THEN: Empty dict is stored.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -593,7 +571,7 @@ async def test_link_create_with_empty_metadata(db_session: AsyncSession):
     repo = LinkRepository(db_session)
 
     link = await repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements",
     )
 
     assert link.link_metadata == {}
@@ -601,11 +579,10 @@ async def test_link_create_with_empty_metadata(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_create_self_reference(db_session: AsyncSession):
-    """
-    GIVEN: A single item
+async def test_link_create_self_reference(db_session: AsyncSession) -> None:
+    """GIVEN: A single item
     WHEN: Creating link from item to itself
-    THEN: Link is created (no constraint preventing self-loops)
+    THEN: Link is created (no constraint preventing self-loops).
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -618,7 +595,7 @@ async def test_link_create_self_reference(db_session: AsyncSession):
     repo = LinkRepository(db_session)
 
     link = await repo.create(
-        project_id=str(project.id), source_item_id=str(item.id), target_item_id=str(item.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item.id), target_item_id=str(item.id), link_type="depends_on",
     )
 
     assert link.source_item_id == item.id
@@ -627,11 +604,10 @@ async def test_link_create_self_reference(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_get_by_source_empty(db_session: AsyncSession):
-    """
-    GIVEN: Item with no outgoing links
+async def test_link_get_by_source_empty(db_session: AsyncSession) -> None:
+    """GIVEN: Item with no outgoing links
     WHEN: Getting links by source
-    THEN: Empty list is returned
+    THEN: Empty list is returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -648,11 +624,10 @@ async def test_link_get_by_source_empty(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_get_by_target_empty(db_session: AsyncSession):
-    """
-    GIVEN: Item with no incoming links
+async def test_link_get_by_target_empty(db_session: AsyncSession) -> None:
+    """GIVEN: Item with no incoming links
     WHEN: Getting links by target
-    THEN: Empty list is returned
+    THEN: Empty list is returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -669,11 +644,10 @@ async def test_link_get_by_target_empty(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_delete_by_item_zero_links(db_session: AsyncSession):
-    """
-    GIVEN: Item with no links
+async def test_link_delete_by_item_zero_links(db_session: AsyncSession) -> None:
+    """GIVEN: Item with no links
     WHEN: Deleting by item
-    THEN: Zero is returned
+    THEN: Zero is returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -690,11 +664,10 @@ async def test_link_delete_by_item_zero_links(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_get_by_project_empty(db_session: AsyncSession):
-    """
-    GIVEN: Project with no links
+async def test_link_get_by_project_empty(db_session: AsyncSession) -> None:
+    """GIVEN: Project with no links
     WHEN: Getting links by project
-    THEN: Empty list is returned
+    THEN: Empty list is returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -712,11 +685,10 @@ async def test_link_get_by_project_empty(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_agent_create_minimal(db_session: AsyncSession):
-    """
-    GIVEN: Minimal agent data
+async def test_agent_create_minimal(db_session: AsyncSession) -> None:
+    """GIVEN: Minimal agent data
     WHEN: Creating agent without metadata
-    THEN: Agent is created with defaults
+    THEN: Agent is created with defaults.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -733,11 +705,10 @@ async def test_agent_create_minimal(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_agent_update_status_transitions(db_session: AsyncSession):
-    """
-    GIVEN: An agent
+async def test_agent_update_status_transitions(db_session: AsyncSession) -> None:
+    """GIVEN: An agent
     WHEN: Transitioning through various statuses
-    THEN: Status changes are persisted
+    THEN: Status changes are persisted.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -770,11 +741,10 @@ async def test_agent_update_status_transitions(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_agent_get_by_project_all_statuses(db_session: AsyncSession):
-    """
-    GIVEN: Agents with various statuses
+async def test_agent_get_by_project_all_statuses(db_session: AsyncSession) -> None:
+    """GIVEN: Agents with various statuses
     WHEN: Getting all agents without status filter
-    THEN: All agents are returned
+    THEN: All agents are returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -794,11 +764,10 @@ async def test_agent_get_by_project_all_statuses(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_agent_update_activity_multiple_times(db_session: AsyncSession):
-    """
-    GIVEN: An agent
+async def test_agent_update_activity_multiple_times(db_session: AsyncSession) -> None:
+    """GIVEN: An agent
     WHEN: Updating activity timestamp multiple times
-    THEN: Timestamp is updated each time
+    THEN: Timestamp is updated each time.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -831,11 +800,10 @@ async def test_agent_update_activity_multiple_times(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_log_sequential_ids(db_session: AsyncSession):
-    """
-    GIVEN: Multiple events
+async def test_event_log_sequential_ids(db_session: AsyncSession) -> None:
+    """GIVEN: Multiple events
     WHEN: Logging events sequentially
-    THEN: IDs increment correctly
+    THEN: IDs increment correctly.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -865,11 +833,10 @@ async def test_event_log_sequential_ids(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_log_with_agent(db_session: AsyncSession):
-    """
-    GIVEN: An agent exists
+async def test_event_log_with_agent(db_session: AsyncSession) -> None:
+    """GIVEN: An agent exists
     WHEN: Logging event with agent_id
-    THEN: Event is associated with agent
+    THEN: Event is associated with agent.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -895,11 +862,10 @@ async def test_event_log_with_agent(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_get_by_entity_empty(db_session: AsyncSession):
-    """
-    GIVEN: No events for entity
+async def test_event_get_by_entity_empty(db_session: AsyncSession) -> None:
+    """GIVEN: No events for entity
     WHEN: Getting events by entity
-    THEN: Empty list is returned
+    THEN: Empty list is returned.
     """
     repo = EventRepository(db_session)
 
@@ -908,11 +874,10 @@ async def test_event_get_by_entity_empty(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_get_by_entity_with_limit(db_session: AsyncSession):
-    """
-    GIVEN: Many events for entity
+async def test_event_get_by_entity_with_limit(db_session: AsyncSession) -> None:
+    """GIVEN: Many events for entity
     WHEN: Getting events with limit
-    THEN: Only limit number of events returned
+    THEN: Only limit number of events returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -923,7 +888,7 @@ async def test_event_get_by_entity_with_limit(db_session: AsyncSession):
     # Create 10 events
     for i in range(10):
         await repo.log(
-            project_id=str(project.id), event_type="updated", entity_type="item", entity_id="item1", data={"step": i}
+            project_id=str(project.id), event_type="updated", entity_type="item", entity_id="item1", data={"step": i},
         )
     await db_session.commit()
 
@@ -933,11 +898,10 @@ async def test_event_get_by_entity_with_limit(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_get_by_project_empty(db_session: AsyncSession):
-    """
-    GIVEN: Project with no events
+async def test_event_get_by_project_empty(db_session: AsyncSession) -> None:
+    """GIVEN: Project with no events
     WHEN: Getting events by project
-    THEN: Empty list is returned
+    THEN: Empty list is returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -950,11 +914,10 @@ async def test_event_get_by_project_empty(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_get_by_project_ordering(db_session: AsyncSession):
-    """
-    GIVEN: Multiple events
+async def test_event_get_by_project_ordering(db_session: AsyncSession) -> None:
+    """GIVEN: Multiple events
     WHEN: Getting events by project
-    THEN: Events are ordered by created_at descending
+    THEN: Events are ordered by created_at descending.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -963,14 +926,14 @@ async def test_event_get_by_project_ordering(db_session: AsyncSession):
     repo = EventRepository(db_session)
 
     event1 = await repo.log(
-        project_id=str(project.id), event_type="created", entity_type="item", entity_id="item1", data={"step": 1}
+        project_id=str(project.id), event_type="created", entity_type="item", entity_id="item1", data={"step": 1},
     )
     await db_session.flush()
 
     await asyncio.sleep(0.01)
 
     event2 = await repo.log(
-        project_id=str(project.id), event_type="updated", entity_type="item", entity_id="item1", data={"step": 2}
+        project_id=str(project.id), event_type="updated", entity_type="item", entity_id="item1", data={"step": 2},
     )
     await db_session.commit()
 
@@ -982,11 +945,10 @@ async def test_event_get_by_project_ordering(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_get_by_agent_empty(db_session: AsyncSession):
-    """
-    GIVEN: Agent with no events
+async def test_event_get_by_agent_empty(db_session: AsyncSession) -> None:
+    """GIVEN: Agent with no events
     WHEN: Getting events by agent
-    THEN: Empty list is returned
+    THEN: Empty list is returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -1003,11 +965,10 @@ async def test_event_get_by_agent_empty(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_get_entity_at_time_created(db_session: AsyncSession):
-    """
-    GIVEN: Entity with created event
+async def test_event_get_entity_at_time_created(db_session: AsyncSession) -> None:
+    """GIVEN: Entity with created event
     WHEN: Reconstructing state at time after creation
-    THEN: Created state is returned
+    THEN: Created state is returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -1034,11 +995,10 @@ async def test_event_get_entity_at_time_created(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_get_entity_at_time_with_updates(db_session: AsyncSession):
-    """
-    GIVEN: Entity with create and update events
+async def test_event_get_entity_at_time_with_updates(db_session: AsyncSession) -> None:
+    """GIVEN: Entity with create and update events
     WHEN: Reconstructing state at various times
-    THEN: Correct state is returned for each time
+    THEN: Correct state is returned for each time.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -1062,7 +1022,7 @@ async def test_event_get_entity_at_time_with_updates(db_session: AsyncSession):
     # Update event
     update_time = datetime.now(UTC)
     await repo.log(
-        project_id=str(project.id), event_type="updated", entity_type="item", entity_id="item1", data={"status": "done"}
+        project_id=str(project.id), event_type="updated", entity_type="item", entity_id="item1", data={"status": "done"},
     )
     await db_session.commit()
 
@@ -1076,11 +1036,10 @@ async def test_event_get_entity_at_time_with_updates(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_get_entity_at_time_deleted(db_session: AsyncSession):
-    """
-    GIVEN: Entity with deleted event
+async def test_event_get_entity_at_time_deleted(db_session: AsyncSession) -> None:
+    """GIVEN: Entity with deleted event
     WHEN: Reconstructing state after deletion
-    THEN: None is returned
+    THEN: None is returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -1107,11 +1066,10 @@ async def test_event_get_entity_at_time_deleted(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_get_entity_at_time_no_events(db_session: AsyncSession):
-    """
-    GIVEN: Entity with no events
+async def test_event_get_entity_at_time_no_events(db_session: AsyncSession) -> None:
+    """GIVEN: Entity with no events
     WHEN: Reconstructing state
-    THEN: None is returned
+    THEN: None is returned.
     """
     repo = EventRepository(db_session)
 
@@ -1121,11 +1079,10 @@ async def test_event_get_entity_at_time_no_events(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_get_entity_at_time_before_creation(db_session: AsyncSession):
-    """
-    GIVEN: Entity created at specific time
+async def test_event_get_entity_at_time_before_creation(db_session: AsyncSession) -> None:
+    """GIVEN: Entity created at specific time
     WHEN: Reconstructing state before creation time
-    THEN: None is returned
+    THEN: None is returned.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -1154,12 +1111,11 @@ async def test_event_get_entity_at_time_before_creation(db_session: AsyncSession
 
 
 @pytest.mark.asyncio
-async def test_cascade_delete_project_items_links(db_session: AsyncSession):
-    """
-    GIVEN: Project with items and links
+async def test_cascade_delete_project_items_links(db_session: AsyncSession) -> None:
+    """GIVEN: Project with items and links
     WHEN: Deleting project (if supported)
     THEN: Items and links cascade delete
-    Note: This tests FK cascade behavior
+    Note: This tests FK cascade behavior.
     """
     # This test validates FK constraints are properly configured
     # Actual implementation depends on whether projects can be deleted
@@ -1167,11 +1123,10 @@ async def test_cascade_delete_project_items_links(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_concurrent_item_updates_version_conflict(db_session: AsyncSession):
-    """
-    GIVEN: Item with version 1
+async def test_concurrent_item_updates_version_conflict(db_session: AsyncSession) -> None:
+    """GIVEN: Item with version 1
     WHEN: Two concurrent updates with same version
-    THEN: Second update raises ConcurrencyError
+    THEN: Second update raises ConcurrencyError.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -1191,11 +1146,10 @@ async def test_concurrent_item_updates_version_conflict(db_session: AsyncSession
 
 
 @pytest.mark.asyncio
-async def test_item_link_deletion_integrity(db_session: AsyncSession):
-    """
-    GIVEN: Items connected by links
+async def test_item_link_deletion_integrity(db_session: AsyncSession) -> None:
+    """GIVEN: Items connected by links
     WHEN: Deleting item (hard delete)
-    THEN: Associated links are cleaned up
+    THEN: Associated links are cleaned up.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -1209,10 +1163,10 @@ async def test_item_link_deletion_integrity(db_session: AsyncSession):
 
     link_repo = LinkRepository(db_session)
     link1 = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements",
     )
     link2 = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item3.id), link_type="tests"
+        project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item3.id), link_type="tests",
     )
     await db_session.commit()
 
@@ -1226,11 +1180,10 @@ async def test_item_link_deletion_integrity(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_sourcing_full_lifecycle(db_session: AsyncSession):
-    """
-    GIVEN: Event repository
+async def test_event_sourcing_full_lifecycle(db_session: AsyncSession) -> None:
+    """GIVEN: Event repository
     WHEN: Logging complete entity lifecycle (create, updates, delete)
-    THEN: State can be reconstructed at any point
+    THEN: State can be reconstructed at any point.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -1280,7 +1233,7 @@ async def test_event_sourcing_full_lifecycle(db_session: AsyncSession):
     # Delete
     t4 = datetime.now(UTC)
     await repo.log(
-        project_id=str(project.id), event_type="deleted", entity_type="item", entity_id="lifecycle-item", data={}
+        project_id=str(project.id), event_type="deleted", entity_type="item", entity_id="lifecycle-item", data={},
     )
     await db_session.commit()
 
@@ -1300,11 +1253,10 @@ async def test_event_sourcing_full_lifecycle(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_agent_event_correlation(db_session: AsyncSession):
-    """
-    GIVEN: Agent and events
+async def test_agent_event_correlation(db_session: AsyncSession) -> None:
+    """GIVEN: Agent and events
     WHEN: Logging events associated with agent
-    THEN: Events can be queried by agent
+    THEN: Events can be queried by agent.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -1340,11 +1292,10 @@ async def test_agent_event_correlation(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_update_metadata_merge_behavior(db_session: AsyncSession):
-    """
-    GIVEN: Item with existing metadata
+async def test_item_update_metadata_merge_behavior(db_session: AsyncSession) -> None:
+    """GIVEN: Item with existing metadata
     WHEN: Updating with item_metadata key
-    THEN: Metadata is replaced, not merged
+    THEN: Metadata is replaced, not merged.
     """
     proj_repo = ProjectRepository(db_session)
     project = await proj_repo.create(name="Test")
@@ -1369,11 +1320,10 @@ async def test_item_update_metadata_merge_behavior(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_multiple_repositories_same_session(db_session: AsyncSession):
-    """
-    GIVEN: Multiple repositories using same session
+async def test_multiple_repositories_same_session(db_session: AsyncSession) -> None:
+    """GIVEN: Multiple repositories using same session
     WHEN: Creating entities across repositories
-    THEN: All share same transaction
+    THEN: All share same transaction.
     """
     proj_repo = ProjectRepository(db_session)
     item_repo = ItemRepository(db_session)
@@ -1386,7 +1336,7 @@ async def test_multiple_repositories_same_session(db_session: AsyncSession):
     item1 = await item_repo.create(project_id=str(project.id), title="Item 1", view="FEATURE", item_type="feature")
     item2 = await item_repo.create(project_id=str(project.id), title="Item 2", view="API", item_type="api")
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements",
     )
 
     # Commit all at once
@@ -1400,11 +1350,10 @@ async def test_multiple_repositories_same_session(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_session_rollback_multiple_repositories(db_session: AsyncSession):
-    """
-    GIVEN: Multiple repository operations
+async def test_session_rollback_multiple_repositories(db_session: AsyncSession) -> None:
+    """GIVEN: Multiple repository operations
     WHEN: Rolling back transaction
-    THEN: All changes are reverted
+    THEN: All changes are reverted.
     """
     proj_repo = ProjectRepository(db_session)
     item_repo = ItemRepository(db_session)

@@ -30,7 +30,7 @@ class CLITokenAdapter:
         self,
         cli_token_storage: TokenStorage | None = None,
         mcp_token_manager: TokenManager | None = None,
-    ):
+    ) -> None:
         """Initialize adapter.
 
         Args:
@@ -73,7 +73,7 @@ class CLITokenAdapter:
             return True
 
         except Exception as e:
-            logger.warning(f"Failed to sync CLI tokens: {e}")
+            logger.warning("Failed to sync CLI tokens: %s", e)
             return False
 
     def sync_to_cli(self) -> bool:
@@ -110,7 +110,7 @@ class CLITokenAdapter:
             return True
 
         except Exception as e:
-            logger.warning(f"Failed to sync MCP tokens to CLI: {e}")
+            logger.warning("Failed to sync MCP tokens to CLI: %s", e)
             return False
 
     def get_mcp_token(self, fallback_to_cli: bool = False) -> str | None:
@@ -138,7 +138,7 @@ class CLITokenAdapter:
                     self.sync_from_cli()
                     return getattr(cli_tokens, "access_token", None)
             except Exception as e:
-                logger.debug(f"Could not get CLI token: {e}")
+                logger.debug("Could not get CLI token: %s", e)
 
         return None
 
@@ -174,7 +174,7 @@ def create_cli_adapter() -> CLITokenAdapter | None:
         cli_storage = get_token_storage()
         return CLITokenAdapter(cli_token_storage=cli_storage)
     except Exception as e:
-        logger.warning(f"Could not create CLI adapter: {e}")
+        logger.warning("Could not create CLI adapter: %s", e)
         return None
 
 

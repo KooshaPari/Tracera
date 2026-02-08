@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Seed database with sample data for TraceRTM.
+"""Seed database with sample data for TraceRTM.
 
 This script creates a sample project with items, links, agents, and events
 to demonstrate the TraceRTM system.
@@ -63,7 +62,7 @@ def create_sample_items(session: Session, project_id: str) -> dict:
                 "Users can register with email",
                 "Users can login securely",
                 "Password reset functionality",
-            ]
+            ],
         },
     )
     items["req1"] = req1
@@ -379,10 +378,9 @@ def create_sample_events(session: Session, project_id: str, agents: dict, items:
         session.add(event)
 
 
-def seed_database():
+def seed_database() -> None:
     """Main seeding function."""
     database_url = get_database_url()
-    print(f"Seeding database: {database_url}")
 
     engine = create_engine(database_url)
 
@@ -395,36 +393,22 @@ def seed_database():
             existing_project = session.query(Project).filter_by(name="Sample TraceRTM Project").first()
 
             if existing_project:
-                print("Sample project already exists. Skipping seed.")
                 return
 
-            print("Creating sample project...")
             project_id = create_sample_project(session)
 
-            print("Creating sample items...")
             items = create_sample_items(session, project_id)
 
-            print("Creating sample links...")
             create_sample_links(session, project_id, items)
 
-            print("Creating sample agents...")
             agents = create_sample_agents(session, project_id)
 
-            print("Creating sample events...")
             create_sample_events(session, project_id, agents, items)
 
             session.commit()
-            print("\nSeed completed successfully!")
-            print("Created:")
-            print("  - 1 project")
-            print(f"  - {len(items)} items across 5 views")
-            print("  - 8 links between items")
-            print(f"  - {len(agents)} agents")
-            print("  - 4 agent events")
 
-        except Exception as e:
+        except Exception:
             session.rollback()
-            print(f"Error seeding database: {e}")
             raise
 
 

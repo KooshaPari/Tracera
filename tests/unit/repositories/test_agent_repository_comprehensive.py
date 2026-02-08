@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for AgentRepository to achieve 85%+ coverage.
+"""Comprehensive unit tests for AgentRepository to achieve 85%+ coverage.
 
 This file covers all missing functionality identified in coverage analysis:
 - create() agent creation
@@ -32,7 +31,7 @@ def unique_project_name() -> str:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_agent_basic(db_session: AsyncSession):
+async def test_create_agent_basic(db_session: AsyncSession) -> None:
     """Test creating agent with basic fields."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -51,7 +50,7 @@ async def test_create_agent_basic(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_agent_with_metadata(db_session: AsyncSession):
+async def test_create_agent_with_metadata(db_session: AsyncSession) -> None:
     """Test creating agent with metadata."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -59,7 +58,7 @@ async def test_create_agent_with_metadata(db_session: AsyncSession):
 
     agent_repo = AgentRepository(db_session)
     agent = await agent_repo.create(
-        project_id=str(project.id), name="Test Agent", agent_type="test", metadata={"key": "value", "version": "1.0"}
+        project_id=str(project.id), name="Test Agent", agent_type="test", metadata={"key": "value", "version": "1.0"},
     )
 
     assert agent.agent_metadata == {"key": "value", "version": "1.0"}
@@ -67,7 +66,7 @@ async def test_create_agent_with_metadata(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_agent_with_none_metadata(db_session: AsyncSession):
+async def test_create_agent_with_none_metadata(db_session: AsyncSession) -> None:
     """Test creating agent with None metadata uses empty dict."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -86,7 +85,7 @@ async def test_create_agent_with_none_metadata(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_existing_agent(db_session: AsyncSession):
+async def test_get_by_id_existing_agent(db_session: AsyncSession) -> None:
     """Test get_by_id returns agent when it exists."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -104,7 +103,7 @@ async def test_get_by_id_existing_agent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_nonexistent_agent(db_session: AsyncSession):
+async def test_get_by_id_nonexistent_agent(db_session: AsyncSession) -> None:
     """Test get_by_id returns None when agent doesn't exist."""
     agent_repo = AgentRepository(db_session)
 
@@ -119,7 +118,7 @@ async def test_get_by_id_nonexistent_agent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_all_agents(db_session: AsyncSession):
+async def test_get_by_project_all_agents(db_session: AsyncSession) -> None:
     """Test get_by_project returns all agents when no status filter."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -145,7 +144,7 @@ async def test_get_by_project_all_agents(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_with_status_filter(db_session: AsyncSession):
+async def test_get_by_project_with_status_filter(db_session: AsyncSession) -> None:
     """Test get_by_project filters by status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -174,7 +173,7 @@ async def test_get_by_project_with_status_filter(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_empty_when_no_agents(db_session: AsyncSession):
+async def test_get_by_project_empty_when_no_agents(db_session: AsyncSession) -> None:
     """Test get_by_project returns empty list when no agents exist."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -188,7 +187,7 @@ async def test_get_by_project_empty_when_no_agents(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_filters_by_project(db_session: AsyncSession):
+async def test_get_by_project_filters_by_project(db_session: AsyncSession) -> None:
     """Test get_by_project only returns agents for specified project."""
     project_repo = ProjectRepository(db_session)
     project1 = await project_repo.create(name=unique_project_name())
@@ -219,7 +218,7 @@ async def test_get_by_project_filters_by_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_status_success(db_session: AsyncSession):
+async def test_update_status_success(db_session: AsyncSession) -> None:
     """Test update_status updates agent status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -242,7 +241,7 @@ async def test_update_status_success(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_status_nonexistent_agent_raises_error(db_session: AsyncSession):
+async def test_update_status_nonexistent_agent_raises_error(db_session: AsyncSession) -> None:
     """Test update_status raises ValueError when agent doesn't exist."""
     agent_repo = AgentRepository(db_session)
 
@@ -252,7 +251,7 @@ async def test_update_status_nonexistent_agent_raises_error(db_session: AsyncSes
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_status_multiple_updates(db_session: AsyncSession):
+async def test_update_status_multiple_updates(db_session: AsyncSession) -> None:
     """Test update_status can be called multiple times."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -284,7 +283,7 @@ async def test_update_status_multiple_updates(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_activity_success(db_session: AsyncSession):
+async def test_update_activity_success(db_session: AsyncSession) -> None:
     """Test update_activity updates last_activity_at timestamp."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -310,7 +309,7 @@ async def test_update_activity_success(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_activity_nonexistent_agent_raises_error(db_session: AsyncSession):
+async def test_update_activity_nonexistent_agent_raises_error(db_session: AsyncSession) -> None:
     """Test update_activity raises ValueError when agent doesn't exist."""
     agent_repo = AgentRepository(db_session)
 
@@ -320,7 +319,7 @@ async def test_update_activity_nonexistent_agent_raises_error(db_session: AsyncS
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_activity_updates_timestamp(db_session: AsyncSession):
+async def test_update_activity_updates_timestamp(db_session: AsyncSession) -> None:
     """Test update_activity updates timestamp on each call."""
     import time
 
@@ -356,7 +355,7 @@ async def test_update_activity_updates_timestamp(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_agent_success(db_session: AsyncSession):
+async def test_delete_agent_success(db_session: AsyncSession) -> None:
     """Test delete removes agent."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -378,7 +377,7 @@ async def test_delete_agent_success(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_nonexistent_agent_returns_false(db_session: AsyncSession):
+async def test_delete_nonexistent_agent_returns_false(db_session: AsyncSession) -> None:
     """Test delete returns False when agent doesn't exist."""
     agent_repo = AgentRepository(db_session)
 
@@ -388,7 +387,7 @@ async def test_delete_nonexistent_agent_returns_false(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_multiple_agents(db_session: AsyncSession):
+async def test_delete_multiple_agents(db_session: AsyncSession) -> None:
     """Test delete can remove multiple agents."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())

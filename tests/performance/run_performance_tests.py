@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Performance test runner script.
+"""Performance test runner script.
 
 Provides utilities for running, analyzing, and comparing performance tests.
 
@@ -26,7 +25,7 @@ from typing import Any
 class PerformanceTestRunner:
     """Run and manage performance tests."""
 
-    def __init__(self, test_dir: Path):
+    def __init__(self, test_dir: Path) -> None:
         """Initialize runner.
 
         Args:
@@ -39,9 +38,6 @@ class PerformanceTestRunner:
 
     def run_baseline(self) -> bool:
         """Establish performance baseline."""
-        print("Establishing performance baseline...")
-        print("=" * 70)
-
         cmd = [
             "pytest",
             str(self.test_dir),
@@ -54,18 +50,10 @@ class PerformanceTestRunner:
 
         result = subprocess.run(cmd)
 
-        if result.returncode == 0:
-            print("\n" + "=" * 70)
-            print("Baseline established successfully!")
-            print(f"Results stored in: {self.results_dir / 'baseline.json'}")
-            return True
-        return False
+        return result.returncode == 0
 
     def run_regression_check(self) -> bool:
         """Check for performance regressions."""
-        print("Checking for performance regressions...")
-        print("=" * 70)
-
         cmd = [
             "pytest",
             str(self.test_dir),
@@ -91,14 +79,9 @@ class PerformanceTestRunner:
         }
 
         if suite not in suite_map:
-            print(f"Unknown suite: {suite}")
-            print(f"Available suites: {', '.join(suite_map.keys())}")
             return False
 
         test_file = self.test_dir / suite_map[suite]
-
-        print(f"Running {suite} performance tests...")
-        print("=" * 70)
 
         cmd = [
             "pytest",
@@ -112,14 +95,10 @@ class PerformanceTestRunner:
 
     def generate_report(self) -> bool:
         """Generate performance report."""
-        print("Generating performance report...")
-        print("=" * 70)
-
         try:
-            with Path(self.baselines_file).open() as f:
+            with Path(self.baselines_file).open(encoding="utf-8") as f:
                 baselines = json.load(f)
         except FileNotFoundError:
-            print("Baselines file not found!")
             return False
 
         # Generate report
@@ -127,12 +106,8 @@ class PerformanceTestRunner:
 
         # Save report
         report_file = self.test_dir / f"performance_report_{datetime.now().isoformat()}.txt"
-        with Path(report_file).open("w") as f:
-            f.write(report)
+        Path(report_file).write_text(report, encoding="utf-8")
 
-        print(report)
-        print("\n" + "=" * 70)
-        print(f"Report saved to: {report_file}")
         return True
 
     def _create_report(self, baselines: dict[str, Any]) -> str:
@@ -157,12 +132,10 @@ class PerformanceTestRunner:
         # Add baselines by category
         baselines_data = baselines.get("baselines", {})
         for category, operations in baselines_data.items():
-            lines.append(f"\n{category.upper()}")
-            lines.append("-" * 70)
+            lines.extend((f"\n{category.upper()}", "-" * 70))
 
             for op_name, op_data in operations.items():
-                lines.append(f"\n  {op_name}:")
-                lines.append(f"    Operation: {op_data.get('operation', 'N/A')}")
+                lines.extend((f"\n  {op_name}:", f"    Operation: {op_data.get('operation', 'N/A')}"))
 
                 # Add threshold
                 if "threshold_ms" in op_data:
@@ -205,9 +178,6 @@ class PerformanceTestRunner:
 
     def run_all_tests(self) -> bool:
         """Run all performance tests."""
-        print("Running all performance tests...")
-        print("=" * 70)
-
         cmd = [
             "pytest",
             str(self.test_dir),
@@ -220,9 +190,6 @@ class PerformanceTestRunner:
 
     def list_tests(self) -> None:
         """List available tests."""
-        print("Available Performance Tests:")
-        print("=" * 70)
-
         test_files = [
             ("test_database_performance.py", "Database query performance"),
             ("test_bulk_operations_performance.py", "Bulk operations performance"),
@@ -233,15 +200,12 @@ class PerformanceTestRunner:
             test_path = self.test_dir / filename
             if test_path.exists():
                 # Count tests in file
-                with Path(test_path).open() as f:
+                with Path(test_path).open(encoding="utf-8") as f:
                     content = f.read()
                     test_count = content.count("def test_")
-                print(f"\n  {filename}")
-                print(f"    Description: {description}")
-                print(f"    Tests: {test_count}")
 
 
-def main():
+def main() -> int:
     """Main entry point."""
     parser = argparse.ArgumentParser(
         description="Performance test runner",

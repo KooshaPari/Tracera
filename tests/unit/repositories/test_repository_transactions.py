@@ -13,7 +13,7 @@ pytestmark = pytest.mark.usefixtures("link_test_setup")
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_item_soft_delete_cascades_to_children(db_session: AsyncSession):
+async def test_item_soft_delete_cascades_to_children(db_session: AsyncSession) -> None:
     """Test soft delete cascades to child items."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project")
@@ -63,7 +63,7 @@ async def test_item_soft_delete_cascades_to_children(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_item_hard_delete_removes_links(db_session: AsyncSession):
+async def test_item_hard_delete_removes_links(db_session: AsyncSession) -> None:
     """Test hard delete removes associated links."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Hard Delete Test Project")
@@ -103,7 +103,7 @@ async def test_item_hard_delete_removes_links(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_restore_soft_deleted_item(db_session: AsyncSession):
+async def test_restore_soft_deleted_item(db_session: AsyncSession) -> None:
     """Test restoring a soft-deleted item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Restore Test Project")
@@ -138,7 +138,7 @@ async def test_restore_soft_deleted_item(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_multiple_updates_increment_version(db_session: AsyncSession):
+async def test_multiple_updates_increment_version(db_session: AsyncSession) -> None:
     """Test multiple updates correctly increment version."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Version Test Project")
@@ -168,7 +168,7 @@ async def test_multiple_updates_increment_version(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_item_by_links_count(db_session: AsyncSession):
+async def test_delete_item_by_links_count(db_session: AsyncSession) -> None:
     """Test deleting all links for an item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Delete Links Test Project")
@@ -226,7 +226,7 @@ async def test_delete_item_by_links_count(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_project_update_partial_fields(db_session: AsyncSession):
+async def test_project_update_partial_fields(db_session: AsyncSession) -> None:
     """Test updating only specific project fields."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(

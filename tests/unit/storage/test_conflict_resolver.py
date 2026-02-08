@@ -1,5 +1,4 @@
-"""
-Unit tests for conflict resolver.
+"""Unit tests for conflict resolver.
 
 Tests conflict detection, resolution strategies, vector clocks,
 backup creation, and conflict history management.
@@ -57,7 +56,7 @@ def resolver(temp_db, temp_backup_dir):
 class TestVectorClock:
     """Test vector clock functionality."""
 
-    def test_happens_before_same_client(self):
+    def test_happens_before_same_client(self) -> None:
         """Test happens_before for same client."""
         clock1 = VectorClock(
             client_id="client-1",
@@ -73,7 +72,7 @@ class TestVectorClock:
         assert clock1.happens_before(clock2)
         assert not clock2.happens_before(clock1)
 
-    def test_happens_before_different_clients(self):
+    def test_happens_before_different_clients(self) -> None:
         """Test happens_before for different clients using timestamps."""
         now = datetime.now(UTC)
         clock1 = VectorClock(
@@ -90,7 +89,7 @@ class TestVectorClock:
         assert clock1.happens_before(clock2)
         assert not clock2.happens_before(clock1)
 
-    def test_is_concurrent(self):
+    def test_is_concurrent(self) -> None:
         """Test concurrent clocks detection."""
         now = datetime.now(UTC)
         clock1 = VectorClock(
@@ -107,7 +106,7 @@ class TestVectorClock:
         assert clock1.is_concurrent(clock2)
         assert clock2.is_concurrent(clock1)
 
-    def test_serialization(self):
+    def test_serialization(self) -> None:
         """Test vector clock serialization."""
         clock = VectorClock(
             client_id="client-1",
@@ -124,7 +123,7 @@ class TestVectorClock:
         assert restored.timestamp == clock.timestamp
         assert restored.parent_version == clock.parent_version
 
-    def test_timezone_aware(self):
+    def test_timezone_aware(self) -> None:
         """Test that timestamps are always timezone-aware."""
         naive_dt = datetime(2024, 1, 1, 12, 0, 0)
         clock = VectorClock(
@@ -139,7 +138,7 @@ class TestVectorClock:
 class TestEntityVersion:
     """Test entity version functionality."""
 
-    def test_serialization(self):
+    def test_serialization(self) -> None:
         """Test entity version serialization."""
         clock = VectorClock(
             client_id="client-1",
@@ -167,7 +166,7 @@ class TestEntityVersion:
 class TestConflictDetection:
     """Test conflict detection logic."""
 
-    def test_no_conflict_sequential_changes(self, resolver):
+    def test_no_conflict_sequential_changes(self, resolver) -> None:
         """Test no conflict when changes are sequential."""
         now = datetime.now(UTC)
 
@@ -188,7 +187,7 @@ class TestConflictDetection:
         conflict = resolver.detect_conflict(local, remote)
         assert conflict is None  # No conflict, remote is newer
 
-    def test_conflict_concurrent_changes(self, resolver):
+    def test_conflict_concurrent_changes(self, resolver) -> None:
         """Test conflict when changes are concurrent."""
         now = datetime.now(UTC)
 
@@ -213,7 +212,7 @@ class TestConflictDetection:
         assert conflict.entity_id == "item-1"
         assert conflict.status == ConflictStatus.UNRESOLVED
 
-    def test_no_conflict_same_content(self, resolver):
+    def test_no_conflict_same_content(self, resolver) -> None:
         """Test no conflict when content is identical."""
         now = datetime.now(UTC)
 
@@ -240,7 +239,7 @@ class TestConflictDetection:
 class TestConflictResolution:
     """Test conflict resolution strategies."""
 
-    def test_last_write_wins_local_newer(self, resolver):
+    def test_last_write_wins_local_newer(self, resolver) -> None:
         """Test last-write-wins with local version newer."""
         now = datetime.now(UTC)
 
@@ -271,7 +270,7 @@ class TestConflictResolution:
         assert result.version == local
         assert result.strategy_used == ConflictStrategy.LAST_WRITE_WINS
 
-    def test_last_write_wins_remote_newer(self, resolver):
+    def test_last_write_wins_remote_newer(self, resolver) -> None:
         """Test last-write-wins with remote version newer."""
         now = datetime.now(UTC)
 
@@ -302,7 +301,7 @@ class TestConflictResolution:
         assert result.version == remote
         assert result.strategy_used == ConflictStrategy.LAST_WRITE_WINS
 
-    def test_local_wins_strategy(self, resolver):
+    def test_local_wins_strategy(self, resolver) -> None:
         """Test local-wins always picks local."""
         now = datetime.now(UTC)
 
@@ -332,7 +331,7 @@ class TestConflictResolution:
 
         assert result.version == local
 
-    def test_remote_wins_strategy(self, resolver):
+    def test_remote_wins_strategy(self, resolver) -> None:
         """Test remote-wins always picks remote."""
         now = datetime.now(UTC)
 
@@ -362,7 +361,7 @@ class TestConflictResolution:
 
         assert result.version == remote
 
-    def test_manual_resolution(self, resolver):
+    def test_manual_resolution(self, resolver) -> None:
         """Test manual conflict resolution."""
         now = datetime.now(UTC)
 
@@ -401,7 +400,7 @@ class TestConflictResolution:
         assert result.version.vector_clock.version == 3  # Incremented
         assert result.strategy_used == ConflictStrategy.MANUAL
 
-    def test_manual_strategy_requires_merged_content(self, resolver):
+    def test_manual_strategy_requires_merged_content(self, resolver) -> None:
         """Test that MANUAL strategy requires resolve_manual()."""
         now = datetime.now(UTC)
 
@@ -434,7 +433,7 @@ class TestConflictResolution:
 class TestConflictBackup:
     """Test conflict backup functionality."""
 
-    def test_create_backup(self, resolver):
+    def test_create_backup(self, resolver) -> None:
         """Test backup creation."""
         now = datetime.now(UTC)
 
@@ -468,15 +467,15 @@ class TestConflictBackup:
         assert (backup_path / "conflict.json").exists()
 
         # Verify content
-        with Path(backup_path / "local.json").open() as f:
+        with Path(backup_path / "local.json").open(encoding="utf-8") as f:
             local_data = json.load(f)
             assert local_data["data"]["title"] == "Local"
 
-        with Path(backup_path / "remote.json").open() as f:
+        with Path(backup_path / "remote.json").open(encoding="utf-8") as f:
             remote_data = json.load(f)
             assert remote_data["data"]["title"] == "Remote"
 
-    def test_backup_manager_list(self, temp_backup_dir):
+    def test_backup_manager_list(self, temp_backup_dir) -> None:
         """Test listing backups."""
         backup_mgr = ConflictBackup(temp_backup_dir)
 
@@ -491,7 +490,7 @@ class TestConflictBackup:
             "detected_at": "2024-01-01T12:00:00+00:00",
         }
 
-        with Path(item_dir / "conflict.json").open("w") as f:
+        with Path(item_dir / "conflict.json").open("w", encoding="utf-8") as f:
             json.dump(conflict_meta, f)
 
         backups = backup_mgr.list_backups()
@@ -499,7 +498,7 @@ class TestConflictBackup:
         assert len(backups) == 1
         assert backups[0]["conflict_id"] == "test-1"
 
-    def test_backup_manager_load(self, temp_backup_dir):
+    def test_backup_manager_load(self, temp_backup_dir) -> None:
         """Test loading backup."""
         backup_mgr = ConflictBackup(temp_backup_dir)
 
@@ -521,10 +520,10 @@ class TestConflictBackup:
             vector_clock=VectorClock("client-2", 1, datetime.now(UTC)),
         )
 
-        with Path(backup_path / "local.json").open("w") as f:
+        with Path(backup_path / "local.json").open("w", encoding="utf-8") as f:
             json.dump(local_version.to_dict(), f)
 
-        with Path(backup_path / "remote.json").open("w") as f:
+        with Path(backup_path / "remote.json").open("w", encoding="utf-8") as f:
             json.dump(remote_version.to_dict(), f)
 
         loaded = backup_mgr.load_backup(backup_path)
@@ -538,7 +537,7 @@ class TestConflictBackup:
 class TestConflictQueries:
     """Test conflict querying and statistics."""
 
-    def test_list_unresolved(self, resolver):
+    def test_list_unresolved(self, resolver) -> None:
         """Test listing unresolved conflicts."""
         now = datetime.now(UTC)
 
@@ -565,7 +564,7 @@ class TestConflictQueries:
         unresolved = resolver.list_unresolved()
         assert len(unresolved) == 3
 
-    def test_list_unresolved_by_type(self, resolver):
+    def test_list_unresolved_by_type(self, resolver) -> None:
         """Test filtering unresolved by entity type."""
         now = datetime.now(UTC)
 
@@ -612,7 +611,7 @@ class TestConflictQueries:
         assert len(item_conflicts) == 1
         assert len(project_conflicts) == 1
 
-    def test_get_conflict_stats(self, resolver):
+    def test_get_conflict_stats(self, resolver) -> None:
         """Test conflict statistics."""
         now = datetime.now(UTC)
 
@@ -648,7 +647,7 @@ class TestConflictQueries:
 class TestUtilities:
     """Test utility functions."""
 
-    def test_format_conflict_summary(self):
+    def test_format_conflict_summary(self) -> None:
         """Test conflict summary formatting."""
         now = datetime.now(UTC)
 
@@ -681,7 +680,7 @@ class TestUtilities:
         assert "v2" in summary
         assert "unresolved" in summary.lower()
 
-    def test_compare_versions(self):
+    def test_compare_versions(self) -> None:
         """Test version comparison."""
         local = EntityVersion(
             entity_id="item-1",

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Aggressive Documentation Scanner - Deep Consolidation Strategy
+"""Aggressive Documentation Scanner - Deep Consolidation Strategy.
 
 Scans project markdown files (excludes dependencies) and categorizes
 for aggressive consolidation targeting <2,000 files.
@@ -152,7 +151,7 @@ def is_project_readme(path: Path, root_dir: Path) -> bool:
         return True
 
     # Include if in docs/, src/, tests/, etc.
-    return parts[0] in ["docs", "src", "tests", "frontend", "backend", "scripts"]
+    return parts[0] in {"docs", "src", "tests", "frontend", "backend", "scripts"}
 
 
 def classify_consolidation_category(path: Path, content: str) -> str | None:
@@ -239,7 +238,7 @@ def scan_documentation_aggressive(root_dir: Path = Path.cwd()) -> list[DocMetada
                 continue
 
             # Special handling for README files
-            if md_file.name.lower() in ["readme.md", "readme"] and not is_project_readme(md_file, root_dir):
+            if md_file.name.lower() in {"readme.md", "readme"} and not is_project_readme(md_file, root_dir):
                 progress.update(task, advance=1)
                 continue
 
@@ -331,7 +330,7 @@ def generate_consolidation_statistics(docs: list[DocMetadata]) -> dict:
     return stats
 
 
-def print_consolidation_plan(stats: dict):
+def print_consolidation_plan(stats: dict) -> None:
     """Print consolidation plan table."""
     table = Table(title="Consolidation Plan", show_header=True, header_style="bold magenta")
     table.add_column("Category", style="cyan")
@@ -359,11 +358,11 @@ def print_consolidation_plan(stats: dict):
     total_reduction = ((total_current - total_target) / total_current * 100) if total_current > 0 else 0
 
     console.print(
-        f"\n[bold]Total:[/bold] {total_current:,} → {total_target:,} files ({total_reduction:.1f}% reduction)"
+        f"\n[bold]Total:[/bold] {total_current:,} → {total_target:,} files ({total_reduction:.1f}% reduction)",
     )
 
 
-def main():
+def main() -> None:
     """Main entry point."""
     root_dir = Path.cwd()
     output_dir = root_dir / "consolidation-output"

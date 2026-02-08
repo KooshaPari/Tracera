@@ -1,5 +1,4 @@
-"""
-Process model for TraceRTM.
+"""Process model for TraceRTM.
 
 Represents high-level processes that define workflows, procedures,
 and operational patterns. Supports versioning and BPMN visualization.
@@ -46,8 +45,7 @@ class ProcessCategory(StrEnum):
 
 
 class Process(Base, TimestampMixin):
-    """
-    Process model representing a defined workflow or procedure.
+    """Process model representing a defined workflow or procedure.
 
     Processes have a lifecycle from Draft through Active to eventual
     retirement. They support:
@@ -203,8 +201,7 @@ class Process(Base, TimestampMixin):
 
 
 class ProcessExecution(Base, TimestampMixin):
-    """
-    Tracks individual executions/instances of a process.
+    """Tracks individual executions/instances of a process.
 
     Each time a process is initiated, an execution record is created
     to track its progress through the stages.
@@ -229,7 +226,7 @@ class ProcessExecution(Base, TimestampMixin):
 
     # Status
     status: Mapped[str] = mapped_column(
-        String(50), nullable=False, default="pending", index=True
+        String(50), nullable=False, default="pending", index=True,
     )  # pending, in_progress, completed, failed, cancelled
 
     # Progress

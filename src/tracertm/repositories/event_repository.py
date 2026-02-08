@@ -13,7 +13,7 @@ from tracertm.models.event import Event
 class EventRepository:
     """Repository for Event operations (event sourcing lite)."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def log(
@@ -53,7 +53,7 @@ class EventRepository:
     ) -> list[Event]:
         """Get all events for an entity."""
         result = await self.session.execute(
-            select(Event).where(Event.entity_id == entity_id).order_by(Event.created_at.desc()).limit(limit)
+            select(Event).where(Event.entity_id == entity_id).order_by(Event.created_at.desc()).limit(limit),
         )
         return list(result.scalars().all())
 
@@ -65,7 +65,7 @@ class EventRepository:
         """Get all events for a project."""
         pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
         result = await self.session.execute(
-            select(Event).where(Event.project_id == pid).order_by(Event.created_at.desc()).limit(limit)
+            select(Event).where(Event.project_id == pid).order_by(Event.created_at.desc()).limit(limit),
         )
         return list(result.scalars().all())
 
@@ -77,7 +77,7 @@ class EventRepository:
         """Get all events by an agent."""
         agent_id_val = str(agent_id) if isinstance(agent_id, uuid.UUID) else agent_id
         result = await self.session.execute(
-            select(Event).where(Event.agent_id == agent_id_val).order_by(Event.created_at.desc()).limit(limit)
+            select(Event).where(Event.agent_id == agent_id_val).order_by(Event.created_at.desc()).limit(limit),
         )
         return list(result.scalars().all())
 
@@ -91,7 +91,7 @@ class EventRepository:
         result = await self.session.execute(
             select(Event)
             .where(Event.entity_id == entity_id, Event.created_at <= at_time)
-            .order_by(Event.created_at.asc())
+            .order_by(Event.created_at.asc()),
         )
         events = list(result.scalars().all())
 

@@ -1,6 +1,4 @@
-"""
-GitHub Project model for linking TraceRTM projects to GitHub Projects v2.
-"""
+"""GitHub Project model for linking TraceRTM projects to GitHub Projects v2."""
 
 from __future__ import annotations
 
@@ -18,8 +16,7 @@ if TYPE_CHECKING:
 
 
 class GitHubProject(Base, TimestampMixin):
-    """
-    GitHub Project model.
+    """GitHub Project model.
 
     Links a TraceRTM project to a GitHub Project v2, which is inherently tied to a repository.
     """
@@ -33,7 +30,7 @@ class GitHubProject(Base, TimestampMixin):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     project_id: Mapped[str] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False,
     )
 
     # GitHub repository info

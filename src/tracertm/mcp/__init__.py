@@ -1,5 +1,4 @@
-"""
-TraceRTM MCP Server - FastMCP 3.0.0b1 based MCP server for AI-native CLI.
+"""TraceRTM MCP Server - FastMCP 3.0.0b1 based MCP server for AI-native CLI.
 
 This package intentionally avoids importing heavy MCP exports at module import
 time to prevent blocking API startup. Accessing exported symbols will load

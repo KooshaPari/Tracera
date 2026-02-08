@@ -9,13 +9,9 @@ External clients must use the gateway; no wildcard origins are allowed.
 """
 
 import os
-from typing import TYPE_CHECKING
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-if TYPE_CHECKING:
-    pass
 
 
 def setup_cors(app: FastAPI) -> None:

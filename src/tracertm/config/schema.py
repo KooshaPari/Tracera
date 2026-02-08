@@ -1,6 +1,4 @@
-"""
-Pydantic configuration schema for TraceRTM.
-"""
+"""Pydantic configuration schema for TraceRTM."""
 
 from typing import Literal
 
@@ -11,8 +9,7 @@ OutputFormat = Literal["table", "json", "yaml", "csv"]
 
 
 class Config(BaseModel):
-    """
-    TraceRTM configuration schema.
+    """TraceRTM configuration schema.
 
     Configuration hierarchy (highest to lowest precedence):
     1. CLI flags (--flag)
@@ -57,7 +54,7 @@ class Config(BaseModel):
     sync_interval_seconds: int = Field(300, ge=10, description="Auto-sync interval in seconds (default: 5 minutes)")
 
     sync_conflict_strategy: Literal["last_write_wins", "local_wins", "remote_wins", "manual"] = Field(
-        "last_write_wins", description="Default conflict resolution strategy"
+        "last_write_wins", description="Default conflict resolution strategy",
     )
 
     @field_validator("database_url")
@@ -69,7 +66,8 @@ class Config(BaseModel):
 
         # Allow PostgreSQL (production) and SQLite (testing/development)
         if not v.startswith(("postgresql://", "sqlite:///")):
-            raise ValueError("Database URL must start with 'postgresql://' or 'sqlite:///'")
+            msg = "Database URL must start with 'postgresql://' or 'sqlite:///'"
+            raise ValueError(msg)
 
         return v
 
@@ -78,7 +76,8 @@ class Config(BaseModel):
     def validate_api_url(cls, v: str) -> str:
         """Validate API URL format."""
         if not v.startswith(("http://", "https://")):
-            raise ValueError("API URL must start with 'http://' or 'https://'")
+            msg = "API URL must start with 'http://' or 'https://'"
+            raise ValueError(msg)
 
         return v.rstrip("/")
 

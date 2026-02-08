@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Generate comprehensive Data & Integration items for SwiftRide project.
+"""Generate comprehensive Data & Integration items for SwiftRide project.
 
 Creates 440+ items across 7 types:
 - database_schema (60 items)
@@ -68,7 +67,7 @@ def create_item_file(
 
     # Generate frontmatter
     frontmatter = generate_item_frontmatter(
-        external_id=external_id, item_type=item_type, priority=priority, status=status, links=links
+        external_id=external_id, item_type=item_type, priority=priority, status=status, links=links,
     )
 
     # Build content
@@ -215,7 +214,7 @@ def generate_database_schemas() -> list[Path]:
                 desc,
                 priority="critical" if counter <= 3 else "high",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -336,7 +335,7 @@ def generate_database_schemas() -> list[Path]:
                 desc,
                 priority="high",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -401,7 +400,7 @@ def generate_database_schemas() -> list[Path]:
                 desc,
                 priority="high",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -535,7 +534,7 @@ def generate_database_schemas() -> list[Path]:
                 desc,
                 priority="critical" if name == "rides" else "high",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -651,7 +650,7 @@ def generate_database_schemas() -> list[Path]:
                 desc,
                 priority="critical" if counter <= 35 else "high",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -720,7 +719,7 @@ def generate_database_schemas() -> list[Path]:
                 desc,
                 priority="high",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -789,7 +788,7 @@ def generate_database_schemas() -> list[Path]:
                 desc,
                 priority="medium",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -883,7 +882,7 @@ def generate_database_schemas() -> list[Path]:
                 desc,
                 priority="medium",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -972,11 +971,10 @@ def generate_database_schemas() -> list[Path]:
                 desc,
                 priority="medium",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
-    print(f"✓ Generated {len(schemas)} database schema items")
     return schemas
 
 
@@ -1064,7 +1062,7 @@ def generate_external_apis() -> list[Path]:
                 desc,
                 priority="critical",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -1161,7 +1159,7 @@ def generate_external_apis() -> list[Path]:
                 desc,
                 priority="critical",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -1256,8 +1254,8 @@ def generate_external_apis() -> list[Path]:
     for name, desc, meta in twilio_apis:
         apis.append(
             create_item_file(
-                "external_apis", f"EXT_API-{counter:03d}", "external_api", name, desc, priority="high", metadata=meta
-            )
+                "external_apis", f"EXT_API-{counter:03d}", "external_api", name, desc, priority="high", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -1308,8 +1306,8 @@ def generate_external_apis() -> list[Path]:
     for name, desc, meta in s3_apis:
         apis.append(
             create_item_file(
-                "external_apis", f"EXT_API-{counter:03d}", "external_api", name, desc, priority="high", metadata=meta
-            )
+                "external_apis", f"EXT_API-{counter:03d}", "external_api", name, desc, priority="high", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -1360,8 +1358,8 @@ def generate_external_apis() -> list[Path]:
     for name, desc, meta in sendgrid_apis:
         apis.append(
             create_item_file(
-                "external_apis", f"EXT_API-{counter:03d}", "external_api", name, desc, priority="medium", metadata=meta
-            )
+                "external_apis", f"EXT_API-{counter:03d}", "external_api", name, desc, priority="medium", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -1412,8 +1410,8 @@ def generate_external_apis() -> list[Path]:
     for name, desc, meta in onesignal_apis:
         apis.append(
             create_item_file(
-                "external_apis", f"EXT_API-{counter:03d}", "external_api", name, desc, priority="high", metadata=meta
-            )
+                "external_apis", f"EXT_API-{counter:03d}", "external_api", name, desc, priority="high", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -1454,8 +1452,8 @@ def generate_external_apis() -> list[Path]:
     for name, desc, meta in checkr_apis:
         apis.append(
             create_item_file(
-                "external_apis", f"EXT_API-{counter:03d}", "external_api", name, desc, priority="high", metadata=meta
-            )
+                "external_apis", f"EXT_API-{counter:03d}", "external_api", name, desc, priority="high", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -1500,8 +1498,8 @@ def generate_external_apis() -> list[Path]:
     for name, desc, meta in plaid_apis:
         apis.append(
             create_item_file(
-                "external_apis", f"EXT_API-{counter:03d}", "external_api", name, desc, priority="high", metadata=meta
-            )
+                "external_apis", f"EXT_API-{counter:03d}", "external_api", name, desc, priority="high", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -1537,12 +1535,11 @@ def generate_external_apis() -> list[Path]:
     for name, desc, meta in weather_apis:
         apis.append(
             create_item_file(
-                "external_apis", f"EXT_API-{counter:03d}", "external_api", name, desc, priority="low", metadata=meta
-            )
+                "external_apis", f"EXT_API-{counter:03d}", "external_api", name, desc, priority="low", metadata=meta,
+            ),
         )
         counter += 1
 
-    print(f"✓ Generated {len(apis)} external API integration items")
     return apis
 
 
@@ -1622,8 +1619,8 @@ def generate_webhooks() -> list[Path]:
     for name, desc, meta in stripe_webhooks:
         webhooks.append(
             create_item_file(
-                "webhooks", f"WEBHOOK-{counter:03d}", "webhook", name, desc, priority="critical", metadata=meta
-            )
+                "webhooks", f"WEBHOOK-{counter:03d}", "webhook", name, desc, priority="critical", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -1668,8 +1665,8 @@ def generate_webhooks() -> list[Path]:
     for name, desc, meta in twilio_webhooks:
         webhooks.append(
             create_item_file(
-                "webhooks", f"WEBHOOK-{counter:03d}", "webhook", name, desc, priority="high", metadata=meta
-            )
+                "webhooks", f"WEBHOOK-{counter:03d}", "webhook", name, desc, priority="high", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -1710,8 +1707,8 @@ def generate_webhooks() -> list[Path]:
     for name, desc, meta in sendgrid_webhooks:
         webhooks.append(
             create_item_file(
-                "webhooks", f"WEBHOOK-{counter:03d}", "webhook", name, desc, priority="medium", metadata=meta
-            )
+                "webhooks", f"WEBHOOK-{counter:03d}", "webhook", name, desc, priority="medium", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -1742,8 +1739,8 @@ def generate_webhooks() -> list[Path]:
     for name, desc, meta in checkr_webhooks:
         webhooks.append(
             create_item_file(
-                "webhooks", f"WEBHOOK-{counter:03d}", "webhook", name, desc, priority="high", metadata=meta
-            )
+                "webhooks", f"WEBHOOK-{counter:03d}", "webhook", name, desc, priority="high", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -1769,8 +1766,8 @@ def generate_webhooks() -> list[Path]:
     for name, desc, meta in plaid_webhooks:
         webhooks.append(
             create_item_file(
-                "webhooks", f"WEBHOOK-{counter:03d}", "webhook", name, desc, priority="high", metadata=meta
-            )
+                "webhooks", f"WEBHOOK-{counter:03d}", "webhook", name, desc, priority="high", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -1794,8 +1791,8 @@ def generate_webhooks() -> list[Path]:
     for name, desc, meta in onesignal_webhooks:
         webhooks.append(
             create_item_file(
-                "webhooks", f"WEBHOOK-{counter:03d}", "webhook", name, desc, priority="medium", metadata=meta
-            )
+                "webhooks", f"WEBHOOK-{counter:03d}", "webhook", name, desc, priority="medium", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -1840,11 +1837,10 @@ def generate_webhooks() -> list[Path]:
                 desc,
                 priority="high" if "sos" in name.lower() or "ride" in name.lower() else "medium",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
-    print(f"✓ Generated {len(webhooks)} webhook items")
     return webhooks
 
 
@@ -1942,7 +1938,7 @@ def generate_data_pipelines() -> list[Path]:
                 desc,
                 priority="critical",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -1998,8 +1994,8 @@ def generate_data_pipelines() -> list[Path]:
     for name, desc, meta in earnings_pipelines:
         pipelines.append(
             create_item_file(
-                "data_pipelines", f"PIPELINE-{counter:03d}", "data_pipeline", name, desc, priority="high", metadata=meta
-            )
+                "data_pipelines", f"PIPELINE-{counter:03d}", "data_pipeline", name, desc, priority="high", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -2102,7 +2098,7 @@ def generate_data_pipelines() -> list[Path]:
                 desc,
                 priority="medium",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -2195,7 +2191,7 @@ def generate_data_pipelines() -> list[Path]:
                 desc,
                 priority="critical",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -2251,8 +2247,8 @@ def generate_data_pipelines() -> list[Path]:
     for name, desc, meta in compliance_pipelines:
         pipelines.append(
             create_item_file(
-                "data_pipelines", f"PIPELINE-{counter:03d}", "data_pipeline", name, desc, priority="high", metadata=meta
-            )
+                "data_pipelines", f"PIPELINE-{counter:03d}", "data_pipeline", name, desc, priority="high", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -2330,11 +2326,10 @@ def generate_data_pipelines() -> list[Path]:
                 desc,
                 priority="medium",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
-    print(f"✓ Generated {len(pipelines)} data pipeline items")
     return pipelines
 
 
@@ -2402,7 +2397,7 @@ def generate_cache_strategies() -> list[Path]:
                 desc,
                 priority="critical" if "session" in name.lower() else "high",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -2455,7 +2450,7 @@ def generate_cache_strategies() -> list[Path]:
                 desc,
                 priority="critical",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -2523,7 +2518,7 @@ def generate_cache_strategies() -> list[Path]:
                 desc,
                 priority="critical" if "active" in name.lower() or "surge" in name.lower() else "high",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -2564,8 +2559,8 @@ def generate_cache_strategies() -> list[Path]:
     for name, desc, meta in payment_caches:
         caches.append(
             create_item_file(
-                "cache_strategies", f"CACHE-{counter:03d}", "cache_strategy", name, desc, priority="high", metadata=meta
-            )
+                "cache_strategies", f"CACHE-{counter:03d}", "cache_strategy", name, desc, priority="high", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -2611,8 +2606,8 @@ def generate_cache_strategies() -> list[Path]:
     for name, desc, meta in geo_caches:
         caches.append(
             create_item_file(
-                "cache_strategies", f"CACHE-{counter:03d}", "cache_strategy", name, desc, priority="high", metadata=meta
-            )
+                "cache_strategies", f"CACHE-{counter:03d}", "cache_strategy", name, desc, priority="high", metadata=meta,
+            ),
         )
         counter += 1
 
@@ -2660,7 +2655,7 @@ def generate_cache_strategies() -> list[Path]:
                 desc,
                 priority="medium",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -2708,11 +2703,10 @@ def generate_cache_strategies() -> list[Path]:
                 desc,
                 priority="medium",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
-    print(f"✓ Generated {len(caches)} cache strategy items")
     return caches
 
 
@@ -2804,7 +2798,7 @@ def generate_queue_definitions() -> list[Path]:
                 desc,
                 priority="critical",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -2872,7 +2866,7 @@ def generate_queue_definitions() -> list[Path]:
                 desc,
                 priority="high",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -2930,7 +2924,7 @@ def generate_queue_definitions() -> list[Path]:
                 desc,
                 priority="high",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -3008,7 +3002,7 @@ def generate_queue_definitions() -> list[Path]:
                 desc,
                 priority="critical",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -3076,7 +3070,7 @@ def generate_queue_definitions() -> list[Path]:
                 desc,
                 priority="high",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -3134,7 +3128,7 @@ def generate_queue_definitions() -> list[Path]:
                 desc,
                 priority="medium",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -3202,11 +3196,10 @@ def generate_queue_definitions() -> list[Path]:
                 desc,
                 priority="medium" if "dead_letter" not in name.lower() else "high",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
-    print(f"✓ Generated {len(queues)} queue definition items")
     return queues
 
 
@@ -3284,7 +3277,7 @@ def generate_stream_processors() -> list[Path]:
                 desc,
                 priority="critical",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -3350,7 +3343,7 @@ def generate_stream_processors() -> list[Path]:
                 desc,
                 priority="high",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -3412,7 +3405,7 @@ def generate_stream_processors() -> list[Path]:
                 desc,
                 priority="medium",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -3470,7 +3463,7 @@ def generate_stream_processors() -> list[Path]:
                 desc,
                 priority="critical",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -3528,7 +3521,7 @@ def generate_stream_processors() -> list[Path]:
                 desc,
                 priority="high",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
@@ -3586,11 +3579,10 @@ def generate_stream_processors() -> list[Path]:
                 desc,
                 priority="medium",
                 metadata=meta,
-            )
+            ),
         )
         counter += 1
 
-    print(f"✓ Generated {len(processors)} stream processor items")
     return processors
 
 
@@ -3599,30 +3591,23 @@ def generate_stream_processors() -> list[Path]:
 # ============================================================================
 
 
-def update_project_counters(counters: dict[str, int]):
+def update_project_counters(counters: dict[str, int]) -> None:
     """Update project.yaml with new counters."""
     project_file = PROJECT_DIR / "project.yaml"
 
-    with Path(project_file).open() as f:
+    with Path(project_file).open(encoding="utf-8") as f:
         project_data = yaml.safe_load(f)
 
     # Update counters
     for key, value in counters.items():
         project_data["counters"][key] = value
 
-    with Path(project_file).open("w") as f:
+    with Path(project_file).open("w", encoding="utf-8") as f:
         yaml.dump(project_data, f, default_flow_style=False, sort_keys=False)
 
-    print("✓ Updated project counters")
 
-
-def main():
+def main() -> None:
     """Generate all data & integration items."""
-    print("=" * 80)
-    print("SwiftRide Data & Integration Item Generator")
-    print("=" * 80)
-    print()
-
     # Generate all item types
     schemas = generate_database_schemas()
     apis = generate_external_apis()
@@ -3633,24 +3618,9 @@ def main():
     processors = generate_stream_processors()
 
     # Calculate totals
-    total_items = (
+    (
         len(schemas) + len(apis) + len(webhooks) + len(pipelines) + len(caches) + len(queues) + len(processors)
     )
-
-    print()
-    print("=" * 80)
-    print("GENERATION COMPLETE")
-    print("=" * 80)
-    print(f"Database Schemas:     {len(schemas):3d} items")
-    print(f"External APIs:        {len(apis):3d} items")
-    print(f"Webhooks:             {len(webhooks):3d} items")
-    print(f"Data Pipelines:       {len(pipelines):3d} items")
-    print(f"Cache Strategies:     {len(caches):3d} items")
-    print(f"Queue Definitions:    {len(queues):3d} items")
-    print(f"Stream Processors:    {len(processors):3d} items")
-    print("-" * 80)
-    print(f"TOTAL:                {total_items:3d} items")
-    print("=" * 80)
 
     # Update project counters
     update_project_counters({
@@ -3662,10 +3632,6 @@ def main():
         "queue_definition": 70,
         "stream_processor": 50,
     })
-
-    print()
-    print("✓ All items generated successfully!")
-    print(f"✓ Items saved to: {PROJECT_DIR}")
 
 
 if __name__ == "__main__":

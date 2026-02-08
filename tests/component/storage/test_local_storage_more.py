@@ -6,13 +6,13 @@ from sqlalchemy import text
 from tracertm.storage.local_storage import LocalStorageManager
 
 
-def test_register_project_requires_trace_dir(tmp_path: Path):
+def test_register_project_requires_trace_dir(tmp_path: Path) -> None:
     mgr = LocalStorageManager(base_dir=tmp_path / "global")
     with pytest.raises(ValueError):
         mgr.register_project(tmp_path / "missing")
 
 
-def test_register_project_is_idempotent(tmp_path: Path):
+def test_register_project_is_idempotent(tmp_path: Path) -> None:
     mgr = LocalStorageManager(base_dir=tmp_path / "global")
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -27,7 +27,7 @@ def test_register_project_is_idempotent(tmp_path: Path):
         assert count == 1
 
 
-def test_queue_sync_records_entry(tmp_path: Path):
+def test_queue_sync_records_entry(tmp_path: Path) -> None:
     mgr = LocalStorageManager(base_dir=tmp_path / "global")
     repo = tmp_path / "repo"
     repo.mkdir()

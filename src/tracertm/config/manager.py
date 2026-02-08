@@ -1,5 +1,4 @@
-"""
-Configuration manager for TraceRTM.
+"""Configuration manager for TraceRTM.
 
 Handles configuration hierarchy:
 1. CLI flags (highest precedence)
@@ -18,8 +17,7 @@ from tracertm.config.schema import Config
 
 
 class ConfigManager:
-    """
-    Manages TraceRTM configuration with hierarchical precedence.
+    """Manages TraceRTM configuration with hierarchical precedence.
 
     Configuration locations:
     - Global: ~/.tracertm/config.yaml
@@ -27,9 +25,8 @@ class ConfigManager:
     - User project: ~/.tracertm/projects/<project_id>/config.yaml
     """
 
-    def __init__(self, config_dir: Path | None = None):
-        """
-        Initialize config manager.
+    def __init__(self, config_dir: Path | None = None) -> None:
+        """Initialize config manager.
 
         Args:
             config_dir: Override default config directory (for testing)
@@ -39,8 +36,7 @@ class ConfigManager:
         self.projects_dir = self.config_dir / "projects"
 
     def _resolve_config_dir(self, config_dir: Path | None) -> Path:
-        """
-        Resolve the config directory.
+        """Resolve the config directory.
 
         Precedence:
         1) Explicit config_dir argument (tests/overrides)
@@ -66,8 +62,7 @@ class ConfigManager:
         return preferred
 
     def init(self, database_url: str) -> Config:
-        """
-        Initialize TraceRTM configuration.
+        """Initialize TraceRTM configuration.
 
         Args:
             database_url: PostgreSQL database URL
@@ -99,8 +94,7 @@ class ConfigManager:
         return config
 
     def load(self, project_id: str | None = None) -> Config:
-        """
-        Load configuration with hierarchy.
+        """Load configuration with hierarchy.
 
         Args:
             project_id: Optional project ID for project-specific config
@@ -120,8 +114,9 @@ class ConfigManager:
                 global_config = yaml.safe_load(f) or {}
                 config_data.update(global_config)
         else:
+            msg = f"Configuration not found. Run 'rtm config init' first.\nExpected location: {self.config_path}"
             raise FileNotFoundError(
-                f"Configuration not found. Run 'rtm config init' first.\nExpected location: {self.config_path}"
+                msg,
             )
 
         # Load repo-level project config (if present)
@@ -145,8 +140,7 @@ class ConfigManager:
         return Config(**config_data)
 
     def set(self, key: str, value: Any, project_id: str | None = None) -> None:
-        """
-        Set a configuration value.
+        """Set a configuration value.
 
         Args:
             key: Configuration key
@@ -190,8 +184,7 @@ class ConfigManager:
             yaml.safe_dump(config_data, f, default_flow_style=False)
 
     def get(self, key: str, project_id: str | None = None) -> Any | None:  # noqa: C901
-        """
-        Get a configuration value.
+        """Get a configuration value.
 
         Args:
             key: Configuration key
@@ -231,8 +224,7 @@ class ConfigManager:
         return config_data.get(key)
 
     def get_config(self, project_id: str | None = None) -> dict[str, Any]:
-        """
-        Return the resolved configuration as a dictionary for tests and callers
+        """Return the resolved configuration as a dictionary for tests and callers
         that expect a simple mapping.
 
         This method is intentionally tolerant of missing on-disk config files;
@@ -261,7 +253,7 @@ class ConfigManager:
         config_dict = config.model_dump()
         # Convert Path objects to strings for YAML serialization
         config_dict = self._convert_paths_to_strings(config_dict)
-        with path.open("w") as f:
+        with path.open("w", encoding="utf-8") as f:
             yaml.safe_dump(config_dict, f, default_flow_style=False)
 
     def _convert_paths_to_strings(self, data: dict[str, Any]) -> dict[str, Any]:

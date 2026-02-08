@@ -123,16 +123,16 @@ class IntegrationCredential(Base, TimestampMixin):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     account_id: Mapped[str | None] = mapped_column(
-        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=True, index=True
+        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=True, index=True,
     )
     project_id: Mapped[str | None] = mapped_column(
-        String(36), ForeignKey("projects.id", ondelete="CASCADE"), nullable=True
+        String(36), ForeignKey("projects.id", ondelete="CASCADE"), nullable=True,
     )
     github_app_installation_id: Mapped[str | None] = mapped_column(
-        String(36), ForeignKey("github_app_installations.id", ondelete="SET NULL"), nullable=True, index=True
+        String(36), ForeignKey("github_app_installations.id", ondelete="SET NULL"), nullable=True, index=True,
     )
     linear_app_installation_id: Mapped[str | None] = mapped_column(
-        String(36), ForeignKey("linear_app_installations.id", ondelete="SET NULL"), nullable=True, index=True
+        String(36), ForeignKey("linear_app_installations.id", ondelete="SET NULL"), nullable=True, index=True,
     )
 
     # Credential metadata
@@ -168,7 +168,7 @@ class IntegrationCredential(Base, TimestampMixin):
 
     # Relationships
     mappings: Mapped[list["IntegrationMapping"]] = relationship(
-        "IntegrationMapping", back_populates="credential", cascade="all, delete-orphan"
+        "IntegrationMapping", back_populates="credential", cascade="all, delete-orphan",
     )
 
     __table_args__ = (
@@ -187,7 +187,7 @@ class IntegrationMapping(Base, TimestampMixin):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     project_id: Mapped[str] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False,
     )
     integration_credential_id: Mapped[str] = mapped_column(
         String(36),
@@ -197,7 +197,7 @@ class IntegrationMapping(Base, TimestampMixin):
 
     # TraceRTM side
     tracertm_item_id: Mapped[str] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("items.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("items.id", ondelete="CASCADE"), nullable=False,
     )
     tracertm_item_type: Mapped[str] = mapped_column(String(50), nullable=False)
 
@@ -231,13 +231,13 @@ class IntegrationMapping(Base, TimestampMixin):
     # Relationships
     credential: Mapped["IntegrationCredential"] = relationship("IntegrationCredential", back_populates="mappings")
     sync_queue_items: Mapped[list["IntegrationSyncQueue"]] = relationship(
-        "IntegrationSyncQueue", back_populates="mapping", cascade="all, delete-orphan"
+        "IntegrationSyncQueue", back_populates="mapping", cascade="all, delete-orphan",
     )
     sync_logs: Mapped[list["IntegrationSyncLog"]] = relationship(
-        "IntegrationSyncLog", back_populates="mapping", cascade="all, delete-orphan"
+        "IntegrationSyncLog", back_populates="mapping", cascade="all, delete-orphan",
     )
     conflicts: Mapped[list["IntegrationConflict"]] = relationship(
-        "IntegrationConflict", back_populates="mapping", cascade="all, delete-orphan"
+        "IntegrationConflict", back_populates="mapping", cascade="all, delete-orphan",
     )
 
     __table_args__ = (
@@ -346,12 +346,12 @@ class IntegrationSyncLog(Base):
 
     # Timestamp
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False,
     )
 
     # Relationships
     sync_queue_item: Mapped[Optional["IntegrationSyncQueue"]] = relationship(
-        "IntegrationSyncQueue", back_populates="sync_logs"
+        "IntegrationSyncQueue", back_populates="sync_logs",
     )
     mapping: Mapped["IntegrationMapping"] = relationship("IntegrationMapping", back_populates="sync_logs")
 
@@ -388,7 +388,7 @@ class IntegrationConflict(Base):
 
     # Timestamps
     detected_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False,
     )
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 

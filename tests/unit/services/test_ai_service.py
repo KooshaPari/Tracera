@@ -58,7 +58,7 @@ def sample_messages():
 
 
 @pytest.fixture
-def sample_system_prompt():
+def sample_system_prompt() -> str:
     """Sample system prompt for testing."""
     return "You are a helpful assistant."
 
@@ -71,7 +71,7 @@ def sample_system_prompt():
 class TestSSEEvent:
     """Test SSE event type constants."""
 
-    def test_sse_event_types_defined(self):
+    def test_sse_event_types_defined(self) -> None:
         """All SSE event types are defined."""
         assert SSEEvent.TEXT == "text"
         assert SSEEvent.TOOL_USE_START == "tool_use_start"
@@ -84,7 +84,7 @@ class TestSSEEvent:
 class TestFormatSSE:
     """Test the format_sse helper function."""
 
-    def test_format_sse_text_event(self):
+    def test_format_sse_text_event(self) -> None:
         """format_sse creates proper SSE format for text events."""
         result = format_sse(SSEEvent.TEXT, {"content": "Hello"})
 
@@ -97,7 +97,7 @@ class TestFormatSSE:
         assert data["type"] == "text"
         assert data["data"]["content"] == "Hello"
 
-    def test_format_sse_tool_use_start(self):
+    def test_format_sse_tool_use_start(self) -> None:
         """format_sse creates proper format for tool_use_start."""
         result = format_sse(
             SSEEvent.TOOL_USE_START,
@@ -112,7 +112,7 @@ class TestFormatSSE:
         assert data["data"]["tool_name"] == "read_file"
         assert data["data"]["tool_use_id"] == "tool_123"
 
-    def test_format_sse_done_event(self):
+    def test_format_sse_done_event(self) -> None:
         """format_sse creates proper format for done event."""
         result = format_sse(SSEEvent.DONE, {})
 
@@ -120,7 +120,7 @@ class TestFormatSSE:
         assert data["type"] == "done"
         assert data["data"] == {}
 
-    def test_format_sse_error_event(self):
+    def test_format_sse_error_event(self) -> None:
         """format_sse creates proper format for error event."""
         result = format_sse(SSEEvent.ERROR, {"error": "Something went wrong"})
 
@@ -137,12 +137,12 @@ class TestFormatSSE:
 class TestAIServiceInitialization:
     """Test AIService initialization and configuration."""
 
-    def test_ai_service_creates_without_client(self):
+    def test_ai_service_creates_without_client(self) -> None:
         """AIService initializes with lazy client loading."""
         service = AIService()
         assert service._anthropic_client is None
 
-    def test_ai_service_client_property_requires_api_key(self):
+    def test_ai_service_client_property_requires_api_key(self) -> None:
         """Accessing anthropic_client without API key raises error."""
         service = AIService()
 
@@ -155,7 +155,7 @@ class TestAIServiceInitialization:
 
         assert "ANTHROPIC_API_KEY" in str(exc_info.value)
 
-    def test_get_ai_service_returns_singleton(self):
+    def test_get_ai_service_returns_singleton(self) -> None:
         """get_ai_service returns the same instance."""
         # Reset the global instance for testing
         import tracertm.services.ai_service as ai_module
@@ -177,7 +177,7 @@ class TestStreamChat:
     """Test the main stream_chat method."""
 
     @pytest.mark.asyncio
-    async def test_stream_chat_unsupported_provider(self, ai_service, sample_messages):
+    async def test_stream_chat_unsupported_provider(self, ai_service, sample_messages) -> None:
         """stream_chat raises error for unsupported providers."""
         with pytest.raises(AIServiceError) as exc_info:
             async for _ in ai_service.stream_chat(
@@ -189,7 +189,7 @@ class TestStreamChat:
         assert "Unknown provider" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_stream_chat_codex_not_implemented(self, ai_service, sample_messages):
+    async def test_stream_chat_codex_not_implemented(self, ai_service, sample_messages) -> None:
         """stream_chat raises error for codex provider (not implemented)."""
         with pytest.raises(AIServiceError) as exc_info:
             async for _ in ai_service.stream_chat(
@@ -201,7 +201,7 @@ class TestStreamChat:
         assert "not yet implemented" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_stream_chat_gemini_not_implemented(self, ai_service, sample_messages):
+    async def test_stream_chat_gemini_not_implemented(self, ai_service, sample_messages) -> None:
         """stream_chat raises error for gemini provider (not implemented)."""
         with pytest.raises(AIServiceError) as exc_info:
             async for _ in ai_service.stream_chat(
@@ -222,7 +222,7 @@ class TestStreamChatWithTools:
     """Test streaming chat with tool use (non-streaming API)."""
 
     @pytest.mark.asyncio
-    async def test_stream_chat_text_only_response(self, ai_service, mock_anthropic_client, sample_messages):
+    async def test_stream_chat_text_only_response(self, ai_service, mock_anthropic_client, sample_messages) -> None:
         """stream_chat handles text-only responses without tool use."""
         # Mock a simple text response
         mock_response = MagicMock()
@@ -249,7 +249,7 @@ class TestStreamChatWithTools:
         assert len(done_events) == 1
 
     @pytest.mark.asyncio
-    async def test_stream_chat_with_tool_use(self, ai_service, mock_anthropic_client, sample_messages, mock_db_session):
+    async def test_stream_chat_with_tool_use(self, ai_service, mock_anthropic_client, sample_messages, mock_db_session) -> None:
         """stream_chat handles tool use and continues after tool result."""
 
         # First response with tool use - use real values, not MagicMock
@@ -295,8 +295,8 @@ class TestStreamChatWithTools:
 
     @pytest.mark.asyncio
     async def test_stream_chat_max_iterations(
-        self, ai_service, mock_anthropic_client, sample_messages, mock_db_session
-    ):
+        self, ai_service, mock_anthropic_client, sample_messages, mock_db_session,
+    ) -> None:
         """stream_chat respects max_tool_iterations limit."""
         # Always return tool use (infinite loop scenario)
         tool_use_response = MagicMock()
@@ -329,7 +329,7 @@ class TestStreamChatWithTools:
         assert tool_starts <= 3
 
     @pytest.mark.asyncio
-    async def test_stream_chat_handles_api_error(self, ai_service, mock_anthropic_client, sample_messages):
+    async def test_stream_chat_handles_api_error(self, ai_service, mock_anthropic_client, sample_messages) -> None:
         """stream_chat handles API errors gracefully."""
         mock_anthropic_client.messages.create = AsyncMock(side_effect=Exception("API Error: Rate limit exceeded"))
 
@@ -358,7 +358,7 @@ class TestStreamChatWithToolsStreaming:
     """Test true streaming with tool use support."""
 
     @pytest.mark.asyncio
-    async def test_streaming_text_deltas(self, ai_service, mock_anthropic_client, sample_messages):
+    async def test_streaming_text_deltas(self, ai_service, mock_anthropic_client, sample_messages) -> None:
         """Streaming mode yields text deltas as they arrive."""
         # Mock the streaming context manager
         mock_stream = AsyncMock()
@@ -399,7 +399,7 @@ class TestStreamChatWithToolsStreaming:
         assert len(text_events) >= 2
 
     @pytest.mark.asyncio
-    async def test_streaming_tool_use(self, ai_service, mock_anthropic_client, sample_messages, mock_db_session):
+    async def test_streaming_tool_use(self, ai_service, mock_anthropic_client, sample_messages, mock_db_session) -> None:
         """Streaming mode handles tool use with JSON input deltas."""
 
         # Define proper event objects with real attribute values
@@ -517,7 +517,7 @@ class TestStreamChatWithToolsStreaming:
         assert SSEEvent.TOOL_RESULT in event_types
 
     @pytest.mark.asyncio
-    async def test_streaming_handles_error(self, ai_service, mock_anthropic_client, sample_messages):
+    async def test_streaming_handles_error(self, ai_service, mock_anthropic_client, sample_messages) -> None:
         """Streaming mode handles errors gracefully."""
         async_cm = AsyncMock()
         async_cm.__aenter__.side_effect = Exception("Connection error")
@@ -545,7 +545,7 @@ class TestSimpleChat:
     """Test non-streaming simple_chat method."""
 
     @pytest.mark.asyncio
-    async def test_simple_chat_returns_text(self, ai_service, mock_anthropic_client, sample_messages):
+    async def test_simple_chat_returns_text(self, ai_service, mock_anthropic_client, sample_messages) -> None:
         """simple_chat returns concatenated text response."""
 
         # Mock the streaming method to return text events
@@ -565,7 +565,7 @@ class TestSimpleChat:
         assert result == "Hello World"
 
     @pytest.mark.asyncio
-    async def test_simple_chat_handles_empty_response(self, ai_service, mock_anthropic_client, sample_messages):
+    async def test_simple_chat_handles_empty_response(self, ai_service, mock_anthropic_client, sample_messages) -> None:
         """simple_chat handles empty responses."""
 
         async def mock_stream(*args, **kwargs):
@@ -591,7 +591,7 @@ class TestRunChatTurnWithTools:
     """Test non-streaming run_chat_turn_with_tools (tool loop, returns final text)."""
 
     @pytest.mark.asyncio
-    async def test_run_chat_turn_with_tools_returns_text(self, ai_service, mock_anthropic_client, sample_messages):
+    async def test_run_chat_turn_with_tools_returns_text(self, ai_service, mock_anthropic_client, sample_messages) -> None:
         """run_chat_turn_with_tools returns final assistant text when no tool use."""
         mock_response = MagicMock()
         mock_response.content = [MagicMock(type="text", text="Here is the answer.")]
@@ -607,8 +607,8 @@ class TestRunChatTurnWithTools:
 
     @pytest.mark.asyncio
     async def test_run_chat_turn_with_tools_tool_use_then_text(
-        self, ai_service, mock_anthropic_client, sample_messages
-    ):
+        self, ai_service, mock_anthropic_client, sample_messages,
+    ) -> None:
         """run_chat_turn_with_tools runs tool loop and returns final text after tool result."""
         tool_block = MagicMock()
         tool_block.type = "tool_use"
@@ -644,7 +644,7 @@ class TestRunChatTurnWithTools:
         mock_execute.assert_called()
 
     @pytest.mark.asyncio
-    async def test_run_chat_turn_with_tools_handles_error(self, ai_service, mock_anthropic_client, sample_messages):
+    async def test_run_chat_turn_with_tools_handles_error(self, ai_service, mock_anthropic_client, sample_messages) -> None:
         """run_chat_turn_with_tools returns error message on API exception."""
         mock_anthropic_client.messages.create = AsyncMock(side_effect=Exception("API error"))
 
@@ -666,7 +666,7 @@ class TestMessageConversion:
     """Test message format conversion for Anthropic API."""
 
     @pytest.mark.asyncio
-    async def test_filters_system_messages(self, ai_service, mock_anthropic_client):
+    async def test_filters_system_messages(self, ai_service, mock_anthropic_client) -> None:
         """System messages are filtered out (handled separately)."""
         messages = [
             {"role": "system", "content": "You are helpful"},
@@ -692,7 +692,7 @@ class TestMessageConversion:
         assert "system" not in message_roles
 
     @pytest.mark.asyncio
-    async def test_preserves_message_order(self, ai_service, mock_anthropic_client):
+    async def test_preserves_message_order(self, ai_service, mock_anthropic_client) -> None:
         """Message order is preserved in conversion."""
         messages = [
             {"role": "user", "content": "First"},
@@ -727,7 +727,7 @@ class TestToolIntegration:
     """Test integration between AI service and tool execution."""
 
     @pytest.mark.asyncio
-    async def test_tool_result_format(self, ai_service, mock_anthropic_client, sample_messages, mock_db_session):
+    async def test_tool_result_format(self, ai_service, mock_anthropic_client, sample_messages, mock_db_session) -> None:
         """Tool results are properly formatted for API."""
 
         # Define proper block classes
@@ -774,8 +774,8 @@ class TestToolIntegration:
 
     @pytest.mark.asyncio
     async def test_failed_tool_continues_conversation(
-        self, ai_service, mock_anthropic_client, sample_messages, mock_db_session
-    ):
+        self, ai_service, mock_anthropic_client, sample_messages, mock_db_session,
+    ) -> None:
         """Failed tool execution continues conversation with error result."""
 
         class ToolUseBlock:

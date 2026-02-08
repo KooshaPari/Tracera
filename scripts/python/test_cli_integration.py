@@ -1,5 +1,4 @@
-"""
-CLI Integration Test Script
+"""CLI Integration Test Script.
 
 Tests all CLI hooks with sample data.
 
@@ -24,23 +23,19 @@ from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
 
 
 class MockSearchService:
-    """Mock search service for testing"""
+    """Mock search service for testing."""
 
     async def semantic_search(self, *args, **kwargs):
         return []
 
 
-async def test_cursor_agent():
-    """Test Cursor Agent hook"""
-    print("\n" + "=" * 60)
-    print("Testing Cursor Agent Hook")
-    print("=" * 60)
-
+async def test_cursor_agent() -> None:
+    """Test Cursor Agent hook."""
     router = ArchRouter()
     registry = ToolRegistry(TOOL_REGISTRY)
     search_service = MockSearchService()
 
-    result = await cursor_agent_pre_discovery(
+    await cursor_agent_pre_discovery(
         action="generate",
         prompt="create FastAPI endpoint for user management",
         router=router,
@@ -50,23 +45,14 @@ async def test_cursor_agent():
         language="python",
     )
 
-    print(f"✓ Route: {result['route']}")
-    print(f"✓ Tools: {result['tools']}")
-    print(f"✓ CLI Command: {result['cli_command']}")
-    print(f"✓ Confidence: {result['confidence']}")
 
-
-async def test_claude_cli():
-    """Test Claude CLI hook"""
-    print("\n" + "=" * 60)
-    print("Testing Claude CLI Hook")
-    print("=" * 60)
-
+async def test_claude_cli() -> None:
+    """Test Claude CLI hook."""
     router = ArchRouter()
     registry = ToolRegistry(TOOL_REGISTRY)
     search_service = MockSearchService()
 
-    result = await claude_cli_pre_discovery(
+    await claude_cli_pre_discovery(
         command="generate",
         args=["code", "for", "REST", "API"],
         router=router,
@@ -75,23 +61,14 @@ async def test_claude_cli():
         model="claude-3-sonnet",
     )
 
-    print(f"✓ Route: {result['route']}")
-    print(f"✓ Tools: {result['tools']}")
-    print(f"✓ CLI Command: {result['cli_command']}")
-    print(f"✓ Model: {result['model']}")
 
-
-async def test_auggie():
-    """Test Auggie hook"""
-    print("\n" + "=" * 60)
-    print("Testing Auggie Hook")
-    print("=" * 60)
-
+async def test_auggie() -> None:
+    """Test Auggie hook."""
     router = ArchRouter()
     registry = ToolRegistry(TOOL_REGISTRY)
     search_service = MockSearchService()
 
-    result = await auggie_pre_discovery(
+    await auggie_pre_discovery(
         operation="transform",
         input_file="data.csv",
         router=router,
@@ -100,23 +77,14 @@ async def test_auggie():
         output_format="parquet",
     )
 
-    print(f"✓ Route: {result['route']}")
-    print(f"✓ Tools: {result['tools']}")
-    print(f"✓ CLI Command: {result['cli_command']}")
-    print(f"✓ Output Format: {result['output_format']}")
 
-
-async def test_droid():
-    """Test Droid hook"""
-    print("\n" + "=" * 60)
-    print("Testing Droid Hook")
-    print("=" * 60)
-
+async def test_droid() -> None:
+    """Test Droid hook."""
     router = ArchRouter()
     registry = ToolRegistry(TOOL_REGISTRY)
     search_service = MockSearchService()
 
-    result = await droid_pre_discovery(
+    await droid_pre_discovery(
         test_type="unit",
         target="tests/unit/",
         router=router,
@@ -126,31 +94,18 @@ async def test_droid():
         coverage=True,
     )
 
-    print(f"✓ Route: {result['route']}")
-    print(f"✓ Tools: {result['tools']}")
-    print(f"✓ CLI Command: {result['cli_command']}")
-    print(f"✓ Framework: {result['framework']}")
 
-
-async def main():
-    """Run all tests"""
-    print("\n" + "=" * 60)
-    print("CLI Integration Tests")
-    print("=" * 60)
-
+async def main() -> bool | None:
+    """Run all tests."""
     try:
         await test_cursor_agent()
         await test_claude_cli()
         await test_auggie()
         await test_droid()
 
-        print("\n" + "=" * 60)
-        print("✓ All CLI integration tests passed!")
-        print("=" * 60 + "\n")
         return True
 
-    except Exception as e:
-        print(f"\n✗ Test failed: {e}")
+    except Exception:
         return False
 
 

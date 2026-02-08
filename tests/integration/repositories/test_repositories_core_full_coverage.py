@@ -1,5 +1,4 @@
-"""
-WP-3.4: Comprehensive Repository & Core Layer Tests with 100% Coverage
+"""WP-3.4: Comprehensive Repository & Core Layer Tests with 100% Coverage.
 
 This test suite provides complete coverage of:
 - Project repository CRUD operations
@@ -80,7 +79,7 @@ async def db_session_wp34(test_db_engine_wp34):
 
 
 @pytest.mark.asyncio
-async def test_project_create_minimal(db_session_wp34: AsyncSession):
+async def test_project_create_minimal(db_session_wp34: AsyncSession) -> None:
     """Test creating a project with only required fields."""
     repo = ProjectRepository(db_session_wp34)
     project = await repo.create(name="Minimal Project")
@@ -92,7 +91,7 @@ async def test_project_create_minimal(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_create_full(db_session_wp34: AsyncSession):
+async def test_project_create_full(db_session_wp34: AsyncSession) -> None:
     """Test creating a project with all fields."""
     repo = ProjectRepository(db_session_wp34)
     metadata = {"env": "prod", "owner": "alice", "tags": ["critical"]}
@@ -106,7 +105,7 @@ async def test_project_create_full(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_get_by_id(db_session_wp34: AsyncSession):
+async def test_project_get_by_id(db_session_wp34: AsyncSession) -> None:
     """Test retrieving project by ID."""
     repo = ProjectRepository(db_session_wp34)
     created = await repo.create(name=f"Get-{uuid4()}")
@@ -118,7 +117,7 @@ async def test_project_get_by_id(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_get_by_id_not_found(db_session_wp34: AsyncSession):
+async def test_project_get_by_id_not_found(db_session_wp34: AsyncSession) -> None:
     """Test get_by_id returns None for nonexistent project."""
     repo = ProjectRepository(db_session_wp34)
     found = await repo.get_by_id("nonexistent-id")
@@ -126,7 +125,7 @@ async def test_project_get_by_id_not_found(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_get_by_name(db_session_wp34: AsyncSession):
+async def test_project_get_by_name(db_session_wp34: AsyncSession) -> None:
     """Test retrieving project by name."""
     repo = ProjectRepository(db_session_wp34)
     name = f"NameTest-{uuid4()}"
@@ -139,7 +138,7 @@ async def test_project_get_by_name(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_get_by_name_not_found(db_session_wp34: AsyncSession):
+async def test_project_get_by_name_not_found(db_session_wp34: AsyncSession) -> None:
     """Test get_by_name returns None for nonexistent name."""
     repo = ProjectRepository(db_session_wp34)
     found = await repo.get_by_name(f"Nonexistent-{uuid4()}")
@@ -147,7 +146,7 @@ async def test_project_get_by_name_not_found(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_get_all(db_session_wp34: AsyncSession):
+async def test_project_get_all(db_session_wp34: AsyncSession) -> None:
     """Test get_all returns all projects."""
     repo = ProjectRepository(db_session_wp34)
     for _i in range(3):
@@ -159,7 +158,7 @@ async def test_project_get_all(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_update_name(db_session_wp34: AsyncSession):
+async def test_project_update_name(db_session_wp34: AsyncSession) -> None:
     """Test updating project name."""
     repo = ProjectRepository(db_session_wp34)
     project = await repo.create(name=f"Original-{uuid4()}")
@@ -171,7 +170,7 @@ async def test_project_update_name(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_update_description(db_session_wp34: AsyncSession):
+async def test_project_update_description(db_session_wp34: AsyncSession) -> None:
     """Test updating project description."""
     repo = ProjectRepository(db_session_wp34)
     project = await repo.create(name=f"Test-{uuid4()}")
@@ -183,7 +182,7 @@ async def test_project_update_description(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_update_metadata(db_session_wp34: AsyncSession):
+async def test_project_update_metadata(db_session_wp34: AsyncSession) -> None:
     """Test updating project metadata."""
     repo = ProjectRepository(db_session_wp34)
     project = await repo.create(name=f"Test-{uuid4()}")
@@ -195,14 +194,14 @@ async def test_project_update_metadata(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_update_all_fields(db_session_wp34: AsyncSession):
+async def test_project_update_all_fields(db_session_wp34: AsyncSession) -> None:
     """Test updating all project fields."""
     repo = ProjectRepository(db_session_wp34)
     project = await repo.create(name=f"Original-{uuid4()}")
     await db_session_wp34.commit()
 
     updated = await repo.update(
-        str(project.id), name="Updated", description="New description", metadata={"key": "value"}
+        str(project.id), name="Updated", description="New description", metadata={"key": "value"},
     )
     assert updated is not None
     assert updated.name == "Updated"
@@ -211,7 +210,7 @@ async def test_project_update_all_fields(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_update_nonexistent(db_session_wp34: AsyncSession):
+async def test_project_update_nonexistent(db_session_wp34: AsyncSession) -> None:
     """Test updating nonexistent project returns None."""
     repo = ProjectRepository(db_session_wp34)
     result = await repo.update("nonexistent", name="New Name")
@@ -219,7 +218,7 @@ async def test_project_update_nonexistent(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_update_persists(db_session_wp34: AsyncSession):
+async def test_project_update_persists(db_session_wp34: AsyncSession) -> None:
     """Test that updates are persisted to database."""
     repo = ProjectRepository(db_session_wp34)
     project = await repo.create(name=f"Original-{uuid4()}")
@@ -239,7 +238,7 @@ async def test_project_update_persists(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_create_minimal(db_session_wp34: AsyncSession):
+async def test_item_create_minimal(db_session_wp34: AsyncSession) -> None:
     """Test creating item with minimal fields."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -254,7 +253,7 @@ async def test_item_create_minimal(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_create_full(db_session_wp34: AsyncSession):
+async def test_item_create_full(db_session_wp34: AsyncSession) -> None:
     """Test creating item with all fields."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -280,7 +279,7 @@ async def test_item_create_full(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_create_with_parent(db_session_wp34: AsyncSession):
+async def test_item_create_with_parent(db_session_wp34: AsyncSession) -> None:
     """Test creating item with parent reference."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -291,14 +290,14 @@ async def test_item_create_with_parent(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     child = await item_repo.create(
-        project_id=str(project.id), title="Child", view="FEATURE", item_type="feature", parent_id=str(parent.id)
+        project_id=str(project.id), title="Child", view="FEATURE", item_type="feature", parent_id=str(parent.id),
     )
 
     assert child.parent_id == parent.id
 
 
 @pytest.mark.asyncio
-async def test_item_create_invalid_parent(db_session_wp34: AsyncSession):
+async def test_item_create_invalid_parent(db_session_wp34: AsyncSession) -> None:
     """Test creating item with nonexistent parent fails."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -307,12 +306,12 @@ async def test_item_create_invalid_parent(db_session_wp34: AsyncSession):
 
     with pytest.raises(ValueError, match="Parent item .* not found"):
         await item_repo.create(
-            project_id=str(project.id), title="Child", view="FEATURE", item_type="feature", parent_id="nonexistent"
+            project_id=str(project.id), title="Child", view="FEATURE", item_type="feature", parent_id="nonexistent",
         )
 
 
 @pytest.mark.asyncio
-async def test_item_get_by_id(db_session_wp34: AsyncSession):
+async def test_item_get_by_id(db_session_wp34: AsyncSession) -> None:
     """Test retrieving item by ID."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -327,7 +326,7 @@ async def test_item_get_by_id(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_by_id_excludes_deleted(db_session_wp34: AsyncSession):
+async def test_item_get_by_id_excludes_deleted(db_session_wp34: AsyncSession) -> None:
     """Test that get_by_id excludes soft-deleted items."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -344,7 +343,7 @@ async def test_item_get_by_id_excludes_deleted(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_list_by_view(db_session_wp34: AsyncSession):
+async def test_item_list_by_view(db_session_wp34: AsyncSession) -> None:
     """Test listing items by view."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -363,7 +362,7 @@ async def test_item_list_by_view(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_update_optimistic_locking(db_session_wp34: AsyncSession):
+async def test_item_update_optimistic_locking(db_session_wp34: AsyncSession) -> None:
     """Test update with optimistic locking."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -381,7 +380,7 @@ async def test_item_update_optimistic_locking(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_update_concurrency_error(db_session_wp34: AsyncSession):
+async def test_item_update_concurrency_error(db_session_wp34: AsyncSession) -> None:
     """Test that version mismatch raises ConcurrencyError."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -395,7 +394,7 @@ async def test_item_update_concurrency_error(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_soft_delete(db_session_wp34: AsyncSession):
+async def test_item_soft_delete(db_session_wp34: AsyncSession) -> None:
     """Test soft delete sets deleted_at timestamp."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -414,7 +413,7 @@ async def test_item_soft_delete(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_soft_delete_cascades(db_session_wp34: AsyncSession):
+async def test_item_soft_delete_cascades(db_session_wp34: AsyncSession) -> None:
     """Test soft delete cascades to child items."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -423,7 +422,7 @@ async def test_item_soft_delete_cascades(db_session_wp34: AsyncSession):
 
     parent = await item_repo.create(project_id=str(project.id), title="Parent", view="FEATURE", item_type="feature")
     child = await item_repo.create(
-        project_id=str(project.id), title="Child", view="FEATURE", item_type="feature", parent_id=str(parent.id)
+        project_id=str(project.id), title="Child", view="FEATURE", item_type="feature", parent_id=str(parent.id),
     )
     await db_session_wp34.commit()
 
@@ -440,7 +439,7 @@ async def test_item_soft_delete_cascades(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_hard_delete(db_session_wp34: AsyncSession):
+async def test_item_hard_delete(db_session_wp34: AsyncSession) -> None:
     """Test hard delete removes item from database."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -457,7 +456,7 @@ async def test_item_hard_delete(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_restore_soft_deleted(db_session_wp34: AsyncSession):
+async def test_item_restore_soft_deleted(db_session_wp34: AsyncSession) -> None:
     """Test restoring a soft-deleted item."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -475,7 +474,7 @@ async def test_item_restore_soft_deleted(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_restore_nonexistent(db_session_wp34: AsyncSession):
+async def test_item_restore_nonexistent(db_session_wp34: AsyncSession) -> None:
     """Test restore returns None for nonexistent item."""
     item_repo = ItemRepository(db_session_wp34)
     result = await item_repo.restore("nonexistent")
@@ -483,7 +482,7 @@ async def test_item_restore_nonexistent(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_by_project(db_session_wp34: AsyncSession):
+async def test_item_get_by_project(db_session_wp34: AsyncSession) -> None:
     """Test get_by_project queries."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -505,7 +504,7 @@ async def test_item_get_by_project(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_by_project_with_status(db_session_wp34: AsyncSession):
+async def test_item_get_by_project_with_status(db_session_wp34: AsyncSession) -> None:
     """Test get_by_project with status filter."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -528,7 +527,7 @@ async def test_item_get_by_project_with_status(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_pagination(db_session_wp34: AsyncSession):
+async def test_item_pagination(db_session_wp34: AsyncSession) -> None:
     """Test item pagination."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -547,7 +546,7 @@ async def test_item_pagination(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_by_view(db_session_wp34: AsyncSession):
+async def test_item_get_by_view(db_session_wp34: AsyncSession) -> None:
     """Test get_by_view with status filter."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -556,7 +555,7 @@ async def test_item_get_by_view(db_session_wp34: AsyncSession):
 
     for i in range(2):
         await item_repo.create(
-            project_id=str(project.id), title=f"Feature {i}", view="FEATURE", item_type="feature", status="todo"
+            project_id=str(project.id), title=f"Feature {i}", view="FEATURE", item_type="feature", status="todo",
         )
     await db_session_wp34.commit()
 
@@ -565,7 +564,7 @@ async def test_item_get_by_view(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_query_dynamic_filters(db_session_wp34: AsyncSession):
+async def test_item_query_dynamic_filters(db_session_wp34: AsyncSession) -> None:
     """Test dynamic query with filters."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -573,10 +572,10 @@ async def test_item_query_dynamic_filters(db_session_wp34: AsyncSession):
     project = await proj_repo.create(name=f"P-{uuid4()}")
 
     await item_repo.create(
-        project_id=str(project.id), title="High Priority", view="FEATURE", item_type="feature", priority="high"
+        project_id=str(project.id), title="High Priority", view="FEATURE", item_type="feature", priority="high",
     )
     await item_repo.create(
-        project_id=str(project.id), title="Low Priority", view="FEATURE", item_type="feature", priority="low"
+        project_id=str(project.id), title="Low Priority", view="FEATURE", item_type="feature", priority="low",
     )
     await db_session_wp34.commit()
 
@@ -586,7 +585,7 @@ async def test_item_query_dynamic_filters(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_children(db_session_wp34: AsyncSession):
+async def test_item_get_children(db_session_wp34: AsyncSession) -> None:
     """Test getting direct children of item."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -610,7 +609,7 @@ async def test_item_get_children(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_ancestors(db_session_wp34: AsyncSession):
+async def test_item_get_ancestors(db_session_wp34: AsyncSession) -> None:
     """Test getting all ancestors of item."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -619,10 +618,10 @@ async def test_item_get_ancestors(db_session_wp34: AsyncSession):
 
     root = await item_repo.create(project_id=str(project.id), title="Root", view="FEATURE", item_type="feature")
     level1 = await item_repo.create(
-        project_id=str(project.id), title="Level 1", view="FEATURE", item_type="feature", parent_id=str(root.id)
+        project_id=str(project.id), title="Level 1", view="FEATURE", item_type="feature", parent_id=str(root.id),
     )
     level2 = await item_repo.create(
-        project_id=str(project.id), title="Level 2", view="FEATURE", item_type="feature", parent_id=str(level1.id)
+        project_id=str(project.id), title="Level 2", view="FEATURE", item_type="feature", parent_id=str(level1.id),
     )
     await db_session_wp34.commit()
 
@@ -633,7 +632,7 @@ async def test_item_get_ancestors(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_descendants(db_session_wp34: AsyncSession):
+async def test_item_get_descendants(db_session_wp34: AsyncSession) -> None:
     """Test getting all descendants of item."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -643,7 +642,7 @@ async def test_item_get_descendants(db_session_wp34: AsyncSession):
     root = await item_repo.create(project_id=str(project.id), title="Root", view="FEATURE", item_type="feature")
     for i in range(2):
         child = await item_repo.create(
-            project_id=str(project.id), title=f"Child {i}", view="FEATURE", item_type="feature", parent_id=str(root.id)
+            project_id=str(project.id), title=f"Child {i}", view="FEATURE", item_type="feature", parent_id=str(root.id),
         )
         for j in range(2):
             await item_repo.create(
@@ -660,7 +659,7 @@ async def test_item_get_descendants(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_count_by_status(db_session_wp34: AsyncSession):
+async def test_item_count_by_status(db_session_wp34: AsyncSession) -> None:
     """Test counting items by status."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -669,11 +668,11 @@ async def test_item_count_by_status(db_session_wp34: AsyncSession):
 
     for i in range(3):
         await item_repo.create(
-            project_id=str(project.id), title=f"Todo {i}", view="FEATURE", item_type="feature", status="todo"
+            project_id=str(project.id), title=f"Todo {i}", view="FEATURE", item_type="feature", status="todo",
         )
     for i in range(2):
         await item_repo.create(
-            project_id=str(project.id), title=f"Done {i}", view="FEATURE", item_type="feature", status="done"
+            project_id=str(project.id), title=f"Done {i}", view="FEATURE", item_type="feature", status="done",
         )
     await db_session_wp34.commit()
 
@@ -688,7 +687,7 @@ async def test_item_count_by_status(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_create(db_session_wp34: AsyncSession):
+async def test_link_create(db_session_wp34: AsyncSession) -> None:
     """Test creating a link between items."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -700,7 +699,7 @@ async def test_link_create(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements",
     )
 
     assert link.id is not None
@@ -709,7 +708,7 @@ async def test_link_create(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_create_with_metadata(db_session_wp34: AsyncSession):
+async def test_link_create_with_metadata(db_session_wp34: AsyncSession) -> None:
     """Test creating link with metadata."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -734,7 +733,7 @@ async def test_link_create_with_metadata(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_get_by_id(db_session_wp34: AsyncSession):
+async def test_link_get_by_id(db_session_wp34: AsyncSession) -> None:
     """Test retrieving link by ID."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -746,7 +745,7 @@ async def test_link_get_by_id(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="tests"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="tests",
     )
     await db_session_wp34.commit()
 
@@ -756,7 +755,7 @@ async def test_link_get_by_id(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_get_by_project(db_session_wp34: AsyncSession):
+async def test_link_get_by_project(db_session_wp34: AsyncSession) -> None:
     """Test getting all links in a project."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -769,10 +768,10 @@ async def test_link_get_by_project(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item3.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item3.id), link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -781,7 +780,7 @@ async def test_link_get_by_project(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_get_by_source(db_session_wp34: AsyncSession):
+async def test_link_get_by_source(db_session_wp34: AsyncSession) -> None:
     """Test getting links by source item."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -794,10 +793,10 @@ async def test_link_get_by_source(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item3.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item3.id), link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -807,7 +806,7 @@ async def test_link_get_by_source(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_get_by_target(db_session_wp34: AsyncSession):
+async def test_link_get_by_target(db_session_wp34: AsyncSession) -> None:
     """Test getting links by target item."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -820,10 +819,10 @@ async def test_link_get_by_target(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item3.id), link_type="implements"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item3.id), link_type="implements",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item3.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item3.id), link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -833,7 +832,7 @@ async def test_link_get_by_target(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_get_by_item(db_session_wp34: AsyncSession):
+async def test_link_get_by_item(db_session_wp34: AsyncSession) -> None:
     """Test getting all links connected to an item."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -846,10 +845,10 @@ async def test_link_get_by_item(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item3.id), target_item_id=str(item1.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item3.id), target_item_id=str(item1.id), link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -858,7 +857,7 @@ async def test_link_get_by_item(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_delete(db_session_wp34: AsyncSession):
+async def test_link_delete(db_session_wp34: AsyncSession) -> None:
     """Test deleting a link."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -870,7 +869,7 @@ async def test_link_delete(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements",
     )
     await db_session_wp34.commit()
 
@@ -882,7 +881,7 @@ async def test_link_delete(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_delete_nonexistent(db_session_wp34: AsyncSession):
+async def test_link_delete_nonexistent(db_session_wp34: AsyncSession) -> None:
     """Test delete returns False for nonexistent link."""
     link_repo = LinkRepository(db_session_wp34)
     result = await link_repo.delete("nonexistent")
@@ -890,7 +889,7 @@ async def test_link_delete_nonexistent(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_delete_by_item(db_session_wp34: AsyncSession):
+async def test_link_delete_by_item(db_session_wp34: AsyncSession) -> None:
     """Test deleting all links for an item."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -903,13 +902,13 @@ async def test_link_delete_by_item(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item3.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item3.id), link_type="depends_on",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item3.id), target_item_id=str(item1.id), link_type="tests"
+        project_id=str(project.id), source_item_id=str(item3.id), target_item_id=str(item1.id), link_type="tests",
     )
     await db_session_wp34.commit()
 
@@ -923,7 +922,7 @@ async def test_link_delete_by_item(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_log(db_session_wp34: AsyncSession):
+async def test_event_log(db_session_wp34: AsyncSession) -> None:
     """Test logging an event."""
     proj_repo = ProjectRepository(db_session_wp34)
     event_repo = EventRepository(db_session_wp34)
@@ -945,7 +944,7 @@ async def test_event_log(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_log_with_agent(db_session_wp34: AsyncSession):
+async def test_event_log_with_agent(db_session_wp34: AsyncSession) -> None:
     """Test logging event with agent ID."""
     proj_repo = ProjectRepository(db_session_wp34)
     event_repo = EventRepository(db_session_wp34)
@@ -966,7 +965,7 @@ async def test_event_log_with_agent(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_get_by_entity(db_session_wp34: AsyncSession):
+async def test_event_get_by_entity(db_session_wp34: AsyncSession) -> None:
     """Test getting all events for an entity."""
     proj_repo = ProjectRepository(db_session_wp34)
     event_repo = EventRepository(db_session_wp34)
@@ -977,7 +976,7 @@ async def test_event_get_by_entity(db_session_wp34: AsyncSession):
     entity_id = "item-123"
     for i in range(3):
         await event_repo.log(
-            project_id=str(project.id), event_type=f"event_{i}", entity_type="item", entity_id=entity_id, data={}
+            project_id=str(project.id), event_type=f"event_{i}", entity_type="item", entity_id=entity_id, data={},
         )
     await db_session_wp34.commit()
 
@@ -987,7 +986,7 @@ async def test_event_get_by_entity(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_get_by_project(db_session_wp34: AsyncSession):
+async def test_event_get_by_project(db_session_wp34: AsyncSession) -> None:
     """Test getting all events for a project."""
     proj_repo = ProjectRepository(db_session_wp34)
     event_repo = EventRepository(db_session_wp34)
@@ -997,7 +996,7 @@ async def test_event_get_by_project(db_session_wp34: AsyncSession):
 
     for i in range(5):
         await event_repo.log(
-            project_id=str(project.id), event_type="event", entity_type="item", entity_id=f"item-{i}", data={}
+            project_id=str(project.id), event_type="event", entity_type="item", entity_id=f"item-{i}", data={},
         )
     await db_session_wp34.commit()
 
@@ -1006,7 +1005,7 @@ async def test_event_get_by_project(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_event_get_by_agent(db_session_wp34: AsyncSession):
+async def test_event_get_by_agent(db_session_wp34: AsyncSession) -> None:
     """Test getting all events by an agent."""
     proj_repo = ProjectRepository(db_session_wp34)
     event_repo = EventRepository(db_session_wp34)
@@ -1037,7 +1036,7 @@ async def test_event_get_by_agent(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_agent_create(db_session_wp34: AsyncSession):
+async def test_agent_create(db_session_wp34: AsyncSession) -> None:
     """Test creating an agent."""
     proj_repo = ProjectRepository(db_session_wp34)
     agent_repo = AgentRepository(db_session_wp34)
@@ -1054,7 +1053,7 @@ async def test_agent_create(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_agent_create_with_metadata(db_session_wp34: AsyncSession):
+async def test_agent_create_with_metadata(db_session_wp34: AsyncSession) -> None:
     """Test creating agent with metadata."""
     proj_repo = ProjectRepository(db_session_wp34)
     agent_repo = AgentRepository(db_session_wp34)
@@ -1070,7 +1069,7 @@ async def test_agent_create_with_metadata(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_agent_get_by_id(db_session_wp34: AsyncSession):
+async def test_agent_get_by_id(db_session_wp34: AsyncSession) -> None:
     """Test retrieving agent by ID."""
     proj_repo = ProjectRepository(db_session_wp34)
     agent_repo = AgentRepository(db_session_wp34)
@@ -1087,7 +1086,7 @@ async def test_agent_get_by_id(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_agent_get_by_project(db_session_wp34: AsyncSession):
+async def test_agent_get_by_project(db_session_wp34: AsyncSession) -> None:
     """Test getting all agents for a project."""
     proj_repo = ProjectRepository(db_session_wp34)
     agent_repo = AgentRepository(db_session_wp34)
@@ -1104,7 +1103,7 @@ async def test_agent_get_by_project(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_agent_get_by_project_with_status(db_session_wp34: AsyncSession):
+async def test_agent_get_by_project_with_status(db_session_wp34: AsyncSession) -> None:
     """Test get_by_project with status filter."""
     proj_repo = ProjectRepository(db_session_wp34)
     agent_repo = AgentRepository(db_session_wp34)
@@ -1125,7 +1124,7 @@ async def test_agent_get_by_project_with_status(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_agent_update_status(db_session_wp34: AsyncSession):
+async def test_agent_update_status(db_session_wp34: AsyncSession) -> None:
     """Test updating agent status."""
     proj_repo = ProjectRepository(db_session_wp34)
     agent_repo = AgentRepository(db_session_wp34)
@@ -1141,7 +1140,7 @@ async def test_agent_update_status(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_agent_update_status_nonexistent(db_session_wp34: AsyncSession):
+async def test_agent_update_status_nonexistent(db_session_wp34: AsyncSession) -> None:
     """Test updating nonexistent agent status fails."""
     agent_repo = AgentRepository(db_session_wp34)
 
@@ -1150,7 +1149,7 @@ async def test_agent_update_status_nonexistent(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_agent_update_activity(db_session_wp34: AsyncSession):
+async def test_agent_update_activity(db_session_wp34: AsyncSession) -> None:
     """Test updating agent last activity."""
     proj_repo = ProjectRepository(db_session_wp34)
     agent_repo = AgentRepository(db_session_wp34)
@@ -1166,7 +1165,7 @@ async def test_agent_update_activity(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_agent_delete(db_session_wp34: AsyncSession):
+async def test_agent_delete(db_session_wp34: AsyncSession) -> None:
     """Test deleting an agent."""
     proj_repo = ProjectRepository(db_session_wp34)
     agent_repo = AgentRepository(db_session_wp34)
@@ -1190,7 +1189,7 @@ async def test_agent_delete(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_concurrency_error_raised(db_session_wp34: AsyncSession):
+async def test_concurrency_error_raised(db_session_wp34: AsyncSession) -> None:
     """Test ConcurrencyError is raised on version mismatch."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1204,7 +1203,7 @@ async def test_concurrency_error_raised(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_update_with_retry_success(db_session_wp34: AsyncSession):
+async def test_update_with_retry_success(db_session_wp34: AsyncSession) -> None:
     """Test update_with_retry succeeds on first attempt."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1221,7 +1220,7 @@ async def test_update_with_retry_success(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_transaction_rollback(db_session_wp34: AsyncSession):
+async def test_transaction_rollback(db_session_wp34: AsyncSession) -> None:
     """Test transaction rollback on error."""
     proj_repo = ProjectRepository(db_session_wp34)
 
@@ -1243,7 +1242,7 @@ async def test_transaction_rollback(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_multiple_operations_transaction(db_session_wp34: AsyncSession):
+async def test_multiple_operations_transaction(db_session_wp34: AsyncSession) -> None:
     """Test multiple operations in single transaction."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1263,7 +1262,7 @@ async def test_multiple_operations_transaction(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_query_multiple_filters(db_session_wp34: AsyncSession):
+async def test_item_query_multiple_filters(db_session_wp34: AsyncSession) -> None:
     """Test query with multiple filter conditions."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1305,7 +1304,7 @@ async def test_item_query_multiple_filters(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_query_by_owner(db_session_wp34: AsyncSession):
+async def test_item_query_by_owner(db_session_wp34: AsyncSession) -> None:
     """Test query items by owner."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1314,13 +1313,13 @@ async def test_item_query_by_owner(db_session_wp34: AsyncSession):
 
     alice_items = [
         await item_repo.create(
-            project_id=str(project.id), title=f"Alice Task {i}", view="FEATURE", item_type="feature", owner="alice"
+            project_id=str(project.id), title=f"Alice Task {i}", view="FEATURE", item_type="feature", owner="alice",
         )
         for i in range(3)
     ]
     bob_items = [
         await item_repo.create(
-            project_id=str(project.id), title=f"Bob Task {i}", view="FEATURE", item_type="feature", owner="bob"
+            project_id=str(project.id), title=f"Bob Task {i}", view="FEATURE", item_type="feature", owner="bob",
         )
         for i in range(2)
     ]
@@ -1332,7 +1331,7 @@ async def test_item_query_by_owner(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_query_by_view_and_status(db_session_wp34: AsyncSession):
+async def test_item_query_by_view_and_status(db_session_wp34: AsyncSession) -> None:
     """Test query with view and status combination."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1342,7 +1341,7 @@ async def test_item_query_by_view_and_status(db_session_wp34: AsyncSession):
     for view in ["FEATURE", "TEST", "API"]:
         for status in ["todo", "in_progress", "done"]:
             await item_repo.create(
-                project_id=str(project.id), title=f"{view}-{status}", view=view, item_type=view.lower(), status=status
+                project_id=str(project.id), title=f"{view}-{status}", view=view, item_type=view.lower(), status=status,
             )
     await db_session_wp34.commit()
 
@@ -1354,14 +1353,14 @@ async def test_item_query_by_view_and_status(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_query_nonexistent_filter_value(db_session_wp34: AsyncSession):
+async def test_item_query_nonexistent_filter_value(db_session_wp34: AsyncSession) -> None:
     """Test query with filter value that matches no items."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
 
     project = await proj_repo.create(name=f"P-{uuid4()}")
     await item_repo.create(
-        project_id=str(project.id), title="Only Item", view="FEATURE", item_type="feature", priority="high"
+        project_id=str(project.id), title="Only Item", view="FEATURE", item_type="feature", priority="high",
     )
     await db_session_wp34.commit()
 
@@ -1370,7 +1369,7 @@ async def test_item_query_nonexistent_filter_value(db_session_wp34: AsyncSession
 
 
 @pytest.mark.asyncio
-async def test_item_query_empty_project(db_session_wp34: AsyncSession):
+async def test_item_query_empty_project(db_session_wp34: AsyncSession) -> None:
     """Test query on project with no items."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1383,7 +1382,7 @@ async def test_item_query_empty_project(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_by_view_pagination(db_session_wp34: AsyncSession):
+async def test_item_get_by_view_pagination(db_session_wp34: AsyncSession) -> None:
     """Test pagination on get_by_view."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1412,7 +1411,7 @@ async def test_item_get_by_view_pagination(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_by_view_offset_beyond_total(db_session_wp34: AsyncSession):
+async def test_item_get_by_view_offset_beyond_total(db_session_wp34: AsyncSession) -> None:
     """Test pagination with offset beyond total items."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1428,7 +1427,7 @@ async def test_item_get_by_view_offset_beyond_total(db_session_wp34: AsyncSessio
 
 
 @pytest.mark.asyncio
-async def test_item_get_by_project_pagination_large_dataset(db_session_wp34: AsyncSession):
+async def test_item_get_by_project_pagination_large_dataset(db_session_wp34: AsyncSession) -> None:
     """Test pagination on large dataset."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1459,7 +1458,7 @@ async def test_item_get_by_project_pagination_large_dataset(db_session_wp34: Asy
 
 
 @pytest.mark.asyncio
-async def test_item_get_by_project_status_pagination(db_session_wp34: AsyncSession):
+async def test_item_get_by_project_status_pagination(db_session_wp34: AsyncSession) -> None:
     """Test pagination with status filter."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1490,7 +1489,7 @@ async def test_item_get_by_project_status_pagination(db_session_wp34: AsyncSessi
 
 
 @pytest.mark.asyncio
-async def test_item_count_by_status_multiple_statuses(db_session_wp34: AsyncSession):
+async def test_item_count_by_status_multiple_statuses(db_session_wp34: AsyncSession) -> None:
     """Test count_by_status with multiple different statuses."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1503,7 +1502,7 @@ async def test_item_count_by_status_multiple_statuses(db_session_wp34: AsyncSess
     for status in statuses:
         for i in range(2 if status == "done" else (3 if status == "todo" else 1)):
             await item_repo.create(
-                project_id=str(project.id), title=f"{status}-{i}", view="FEATURE", item_type="feature", status=status
+                project_id=str(project.id), title=f"{status}-{i}", view="FEATURE", item_type="feature", status=status,
             )
             status_counts[status] = status_counts.get(status, 0) + 1
 
@@ -1516,7 +1515,7 @@ async def test_item_count_by_status_multiple_statuses(db_session_wp34: AsyncSess
 
 
 @pytest.mark.asyncio
-async def test_item_count_by_status_empty_project(db_session_wp34: AsyncSession):
+async def test_item_count_by_status_empty_project(db_session_wp34: AsyncSession) -> None:
     """Test count_by_status on empty project."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1529,7 +1528,7 @@ async def test_item_count_by_status_empty_project(db_session_wp34: AsyncSession)
 
 
 @pytest.mark.asyncio
-async def test_item_count_by_status_excludes_deleted(db_session_wp34: AsyncSession):
+async def test_item_count_by_status_excludes_deleted(db_session_wp34: AsyncSession) -> None:
     """Test count_by_status excludes soft-deleted items."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1537,10 +1536,10 @@ async def test_item_count_by_status_excludes_deleted(db_session_wp34: AsyncSessi
     project = await proj_repo.create(name=f"P-{uuid4()}")
 
     item1 = await item_repo.create(
-        project_id=str(project.id), title="Item 1", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Item 1", view="FEATURE", item_type="feature", status="todo",
     )
     await item_repo.create(
-        project_id=str(project.id), title="Item 2", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Item 2", view="FEATURE", item_type="feature", status="todo",
     )
     await db_session_wp34.commit()
 
@@ -1558,7 +1557,7 @@ async def test_item_count_by_status_excludes_deleted(db_session_wp34: AsyncSessi
 
 
 @pytest.mark.asyncio
-async def test_item_hierarchy_deep_nesting(db_session_wp34: AsyncSession):
+async def test_item_hierarchy_deep_nesting(db_session_wp34: AsyncSession) -> None:
     """Test deeply nested item hierarchy (5 levels)."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1570,7 +1569,7 @@ async def test_item_hierarchy_deep_nesting(db_session_wp34: AsyncSession):
     for level in range(5):
         parent_id = level_items[-1].id if level_items else None
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Level {level}", view="FEATURE", item_type="feature", parent_id=parent_id
+            project_id=str(project.id), title=f"Level {level}", view="FEATURE", item_type="feature", parent_id=parent_id,
         )
         level_items.append(item)
     await db_session_wp34.commit()
@@ -1588,7 +1587,7 @@ async def test_item_hierarchy_deep_nesting(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_children_with_multiple_levels(db_session_wp34: AsyncSession):
+async def test_item_get_children_with_multiple_levels(db_session_wp34: AsyncSession) -> None:
     """Test get_children returns only direct children, not grandchildren."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1627,7 +1626,7 @@ async def test_item_get_children_with_multiple_levels(db_session_wp34: AsyncSess
 
 
 @pytest.mark.asyncio
-async def test_item_descendants_tree_shape(db_session_wp34: AsyncSession):
+async def test_item_descendants_tree_shape(db_session_wp34: AsyncSession) -> None:
     """Test get_descendants with branching tree structure."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1644,10 +1643,10 @@ async def test_item_descendants_tree_shape(db_session_wp34: AsyncSession):
     root = await item_repo.create(project_id=str(project.id), title="Root", view="FEATURE", item_type="feature")
 
     branch_a = await item_repo.create(
-        project_id=str(project.id), title="A", view="FEATURE", item_type="feature", parent_id=str(root.id)
+        project_id=str(project.id), title="A", view="FEATURE", item_type="feature", parent_id=str(root.id),
     )
     branch_b = await item_repo.create(
-        project_id=str(project.id), title="B", view="FEATURE", item_type="feature", parent_id=str(root.id)
+        project_id=str(project.id), title="B", view="FEATURE", item_type="feature", parent_id=str(root.id),
     )
 
     for letter, branch in [("A", branch_a), ("B", branch_b)]:
@@ -1667,7 +1666,7 @@ async def test_item_descendants_tree_shape(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_ancestors_with_deleted_parent(db_session_wp34: AsyncSession):
+async def test_item_ancestors_with_deleted_parent(db_session_wp34: AsyncSession) -> None:
     """Test get_ancestors doesn't include deleted ancestors."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1676,7 +1675,7 @@ async def test_item_ancestors_with_deleted_parent(db_session_wp34: AsyncSession)
 
     root = await item_repo.create(project_id=str(project.id), title="Root", view="FEATURE", item_type="feature")
     child = await item_repo.create(
-        project_id=str(project.id), title="Child", view="FEATURE", item_type="feature", parent_id=str(root.id)
+        project_id=str(project.id), title="Child", view="FEATURE", item_type="feature", parent_id=str(root.id),
     )
     await db_session_wp34.commit()
 
@@ -1696,7 +1695,7 @@ async def test_item_ancestors_with_deleted_parent(db_session_wp34: AsyncSession)
 
 
 @pytest.mark.asyncio
-async def test_item_get_descendants_from_leaf_node(db_session_wp34: AsyncSession):
+async def test_item_get_descendants_from_leaf_node(db_session_wp34: AsyncSession) -> None:
     """Test get_descendants on leaf node returns empty list."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1705,7 +1704,7 @@ async def test_item_get_descendants_from_leaf_node(db_session_wp34: AsyncSession
 
     parent = await item_repo.create(project_id=str(project.id), title="Parent", view="FEATURE", item_type="feature")
     leaf = await item_repo.create(
-        project_id=str(project.id), title="Leaf", view="FEATURE", item_type="feature", parent_id=str(parent.id)
+        project_id=str(project.id), title="Leaf", view="FEATURE", item_type="feature", parent_id=str(parent.id),
     )
     await db_session_wp34.commit()
 
@@ -1714,7 +1713,7 @@ async def test_item_get_descendants_from_leaf_node(db_session_wp34: AsyncSession
 
 
 @pytest.mark.asyncio
-async def test_item_query_by_metadata_field(db_session_wp34: AsyncSession):
+async def test_item_query_by_metadata_field(db_session_wp34: AsyncSession) -> None:
     """Test query items by metadata (note: basic queries work on direct fields)."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1723,7 +1722,7 @@ async def test_item_query_by_metadata_field(db_session_wp34: AsyncSession):
 
     # Create items with different priorities
     await item_repo.create(
-        project_id=str(project.id), title="Critical", view="FEATURE", item_type="feature", priority="critical"
+        project_id=str(project.id), title="Critical", view="FEATURE", item_type="feature", priority="critical",
     )
     await item_repo.create(project_id=str(project.id), title="Low", view="FEATURE", item_type="feature", priority="low")
     await db_session_wp34.commit()
@@ -1733,7 +1732,7 @@ async def test_item_query_by_metadata_field(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_list_all_respects_soft_delete(db_session_wp34: AsyncSession):
+async def test_item_list_all_respects_soft_delete(db_session_wp34: AsyncSession) -> None:
     """Test list_all excludes soft-deleted items by default."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1759,7 +1758,7 @@ async def test_item_list_all_respects_soft_delete(db_session_wp34: AsyncSession)
 
 
 @pytest.mark.asyncio
-async def test_item_list_all_include_deleted_flag(db_session_wp34: AsyncSession):
+async def test_item_list_all_include_deleted_flag(db_session_wp34: AsyncSession) -> None:
     """Test list_all with include_deleted=True."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1779,7 +1778,7 @@ async def test_item_list_all_include_deleted_flag(db_session_wp34: AsyncSession)
 
 
 @pytest.mark.asyncio
-async def test_item_list_by_view_include_deleted(db_session_wp34: AsyncSession):
+async def test_item_list_by_view_include_deleted(db_session_wp34: AsyncSession) -> None:
     """Test list_by_view with include_deleted flag."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1808,7 +1807,7 @@ async def test_item_list_by_view_include_deleted(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_count_by_status_with_owner_distribution(db_session_wp34: AsyncSession):
+async def test_item_count_by_status_with_owner_distribution(db_session_wp34: AsyncSession) -> None:
     """Test count_by_status groups across all items."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1835,7 +1834,7 @@ async def test_item_count_by_status_with_owner_distribution(db_session_wp34: Asy
 
 
 @pytest.mark.asyncio
-async def test_project_multiple_get_all_calls(db_session_wp34: AsyncSession):
+async def test_project_multiple_get_all_calls(db_session_wp34: AsyncSession) -> None:
     """Test get_all returns consistent results across calls."""
     proj_repo = ProjectRepository(db_session_wp34)
 
@@ -1856,7 +1855,7 @@ async def test_project_multiple_get_all_calls(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_query_returns_limited_results(db_session_wp34: AsyncSession):
+async def test_item_query_returns_limited_results(db_session_wp34: AsyncSession) -> None:
     """Test query respects limit parameter."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1877,7 +1876,7 @@ async def test_item_query_returns_limited_results(db_session_wp34: AsyncSession)
 
 
 @pytest.mark.asyncio
-async def test_item_create_empty_title(db_session_wp34: AsyncSession):
+async def test_item_create_empty_title(db_session_wp34: AsyncSession) -> None:
     """Test creating item with empty title."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1890,7 +1889,7 @@ async def test_item_create_empty_title(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_create_very_long_title(db_session_wp34: AsyncSession):
+async def test_item_create_very_long_title(db_session_wp34: AsyncSession) -> None:
     """Test creating item with very long title."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1904,7 +1903,7 @@ async def test_item_create_very_long_title(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_update_with_empty_updates(db_session_wp34: AsyncSession):
+async def test_item_update_with_empty_updates(db_session_wp34: AsyncSession) -> None:
     """Test update with no actual changes."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1921,7 +1920,7 @@ async def test_item_update_with_empty_updates(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_by_id_with_project_scope(db_session_wp34: AsyncSession):
+async def test_item_get_by_id_with_project_scope(db_session_wp34: AsyncSession) -> None:
     """Test get_by_id with project_id parameter for scope."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1942,7 +1941,7 @@ async def test_item_get_by_id_with_project_scope(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_get_children_with_no_children(db_session_wp34: AsyncSession):
+async def test_item_get_children_with_no_children(db_session_wp34: AsyncSession) -> None:
     """Test get_children returns empty list for item with no children."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1956,7 +1955,7 @@ async def test_item_get_children_with_no_children(db_session_wp34: AsyncSession)
 
 
 @pytest.mark.asyncio
-async def test_item_get_by_project_zero_limit(db_session_wp34: AsyncSession):
+async def test_item_get_by_project_zero_limit(db_session_wp34: AsyncSession) -> None:
     """Test get_by_project with limit=0."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -1973,7 +1972,7 @@ async def test_item_get_by_project_zero_limit(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_project_update_preserves_other_fields(db_session_wp34: AsyncSession):
+async def test_project_update_preserves_other_fields(db_session_wp34: AsyncSession) -> None:
     """Test that updating one field doesn't affect others."""
     repo = ProjectRepository(db_session_wp34)
 
@@ -1991,7 +1990,7 @@ async def test_project_update_preserves_other_fields(db_session_wp34: AsyncSessi
 
 
 @pytest.mark.asyncio
-async def test_item_get_ancestors_of_root(db_session_wp34: AsyncSession):
+async def test_item_get_ancestors_of_root(db_session_wp34: AsyncSession) -> None:
     """Test get_ancestors on root item returns empty list."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2005,7 +2004,7 @@ async def test_item_get_ancestors_of_root(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_pagination_with_limit_greater_than_total(db_session_wp34: AsyncSession):
+async def test_item_pagination_with_limit_greater_than_total(db_session_wp34: AsyncSession) -> None:
     """Test pagination when limit exceeds total items."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2026,7 +2025,7 @@ async def test_item_pagination_with_limit_greater_than_total(db_session_wp34: As
 
 
 @pytest.mark.asyncio
-async def test_item_update_nonexistent_item(db_session_wp34: AsyncSession):
+async def test_item_update_nonexistent_item(db_session_wp34: AsyncSession) -> None:
     """Test update on nonexistent item raises ValueError."""
     item_repo = ItemRepository(db_session_wp34)
 
@@ -2035,7 +2034,7 @@ async def test_item_update_nonexistent_item(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_create_with_circular_parent(db_session_wp34: AsyncSession):
+async def test_item_create_with_circular_parent(db_session_wp34: AsyncSession) -> None:
     """Test creating item would create a cycle (self-parent)."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2058,7 +2057,7 @@ async def test_item_create_with_circular_parent(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_item_query_with_invalid_filter_attribute(db_session_wp34: AsyncSession):
+async def test_item_query_with_invalid_filter_attribute(db_session_wp34: AsyncSession) -> None:
     """Test query with non-existent attribute is safely handled."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2074,7 +2073,7 @@ async def test_item_query_with_invalid_filter_attribute(db_session_wp34: AsyncSe
 
 
 @pytest.mark.asyncio
-async def test_item_delete_nonexistent(db_session_wp34: AsyncSession):
+async def test_item_delete_nonexistent(db_session_wp34: AsyncSession) -> None:
     """Test delete on nonexistent item returns False."""
     item_repo = ItemRepository(db_session_wp34)
 
@@ -2091,7 +2090,7 @@ async def test_item_delete_nonexistent(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_full_workflow(db_session_wp34: AsyncSession):
+async def test_full_workflow(db_session_wp34: AsyncSession) -> None:
     """Test a complete workflow with all repositories."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2111,13 +2110,13 @@ async def test_full_workflow(db_session_wp34: AsyncSession):
         status="in_progress",
     )
     test = await item_repo.create(
-        project_id=str(project.id), title="Auth Tests", view="TEST", item_type="test", status="todo"
+        project_id=str(project.id), title="Auth Tests", view="TEST", item_type="test", status="todo",
     )
     await db_session_wp34.commit()
 
     # Create link
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(test.id), target_item_id=str(feature.id), link_type="tests"
+        project_id=str(project.id), source_item_id=str(test.id), target_item_id=str(feature.id), link_type="tests",
     )
     await db_session_wp34.commit()
 
@@ -2153,7 +2152,7 @@ async def test_full_workflow(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_hierarchy_with_links(db_session_wp34: AsyncSession):
+async def test_hierarchy_with_links(db_session_wp34: AsyncSession) -> None:
     """Test item hierarchy combined with links."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2164,16 +2163,16 @@ async def test_hierarchy_with_links(db_session_wp34: AsyncSession):
     # Create hierarchy
     epic = await item_repo.create(project_id=str(project.id), title="Epic", view="FEATURE", item_type="feature")
     story = await item_repo.create(
-        project_id=str(project.id), title="Story", view="FEATURE", item_type="feature", parent_id=epic.id
+        project_id=str(project.id), title="Story", view="FEATURE", item_type="feature", parent_id=epic.id,
     )
     task = await item_repo.create(
-        project_id=str(project.id), title="Task", view="FEATURE", item_type="feature", parent_id=story.id
+        project_id=str(project.id), title="Task", view="FEATURE", item_type="feature", parent_id=story.id,
     )
     await db_session_wp34.commit()
 
     # Create link across hierarchy
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(task.id), target_item_id=str(epic.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(task.id), target_item_id=str(epic.id), link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -2197,7 +2196,7 @@ async def test_hierarchy_with_links(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_type_implements(db_session_wp34: AsyncSession):
+async def test_link_type_implements(db_session_wp34: AsyncSession) -> None:
     """Test 'implements' relationship type."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2205,13 +2204,13 @@ async def test_link_type_implements(db_session_wp34: AsyncSession):
 
     project = await proj_repo.create(name=f"P-{uuid4()}")
     req = await item_repo.create(
-        project_id=str(project.id), title="Requirement", view="REQUIREMENT", item_type="requirement"
+        project_id=str(project.id), title="Requirement", view="REQUIREMENT", item_type="requirement",
     )
     feature = await item_repo.create(project_id=str(project.id), title="Feature", view="FEATURE", item_type="feature")
     await db_session_wp34.commit()
 
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(req.id), target_item_id=str(feature.id), link_type="implements"
+        project_id=str(project.id), source_item_id=str(req.id), target_item_id=str(feature.id), link_type="implements",
     )
     await db_session_wp34.commit()
 
@@ -2221,7 +2220,7 @@ async def test_link_type_implements(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_type_tests(db_session_wp34: AsyncSession):
+async def test_link_type_tests(db_session_wp34: AsyncSession) -> None:
     """Test 'tests' relationship type."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2233,7 +2232,7 @@ async def test_link_type_tests(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(test.id), target_item_id=str(feature.id), link_type="tests"
+        project_id=str(project.id), source_item_id=str(test.id), target_item_id=str(feature.id), link_type="tests",
     )
     await db_session_wp34.commit()
 
@@ -2244,7 +2243,7 @@ async def test_link_type_tests(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_type_depends_on(db_session_wp34: AsyncSession):
+async def test_link_type_depends_on(db_session_wp34: AsyncSession) -> None:
     """Test 'depends_on' relationship type."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2256,7 +2255,7 @@ async def test_link_type_depends_on(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -2264,7 +2263,7 @@ async def test_link_type_depends_on(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_type_blocks(db_session_wp34: AsyncSession):
+async def test_link_type_blocks(db_session_wp34: AsyncSession) -> None:
     """Test 'blocks' relationship type."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2276,7 +2275,7 @@ async def test_link_type_blocks(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(blocker.id), target_item_id=str(blocked.id), link_type="blocks"
+        project_id=str(project.id), source_item_id=str(blocker.id), target_item_id=str(blocked.id), link_type="blocks",
     )
     await db_session_wp34.commit()
 
@@ -2284,7 +2283,7 @@ async def test_link_type_blocks(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_type_related_to(db_session_wp34: AsyncSession):
+async def test_link_type_related_to(db_session_wp34: AsyncSession) -> None:
     """Test 'related_to' relationship type."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2296,7 +2295,7 @@ async def test_link_type_related_to(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="related_to"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="related_to",
     )
     await db_session_wp34.commit()
 
@@ -2304,7 +2303,7 @@ async def test_link_type_related_to(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_type_custom(db_session_wp34: AsyncSession):
+async def test_link_type_custom(db_session_wp34: AsyncSession) -> None:
     """Test custom relationship type."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2327,7 +2326,7 @@ async def test_link_type_custom(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_type_duplicates_allowed(db_session_wp34: AsyncSession):
+async def test_link_type_duplicates_allowed(db_session_wp34: AsyncSession) -> None:
     """Test that multiple links of same type between different items are allowed."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2337,7 +2336,7 @@ async def test_link_type_duplicates_allowed(db_session_wp34: AsyncSession):
     items = []
     for i in range(3):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature",
         )
         items.append(item)
     await db_session_wp34.commit()
@@ -2366,7 +2365,7 @@ async def test_link_type_duplicates_allowed(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_bidirectional_link_manual_creation(db_session_wp34: AsyncSession):
+async def test_bidirectional_link_manual_creation(db_session_wp34: AsyncSession) -> None:
     """Test manually creating bidirectional links."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2379,11 +2378,11 @@ async def test_bidirectional_link_manual_creation(db_session_wp34: AsyncSession)
 
     # Create forward link
     forward = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="related_to"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="related_to",
     )
     # Create reverse link
     reverse = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item1.id), link_type="related_to"
+        project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item1.id), link_type="related_to",
     )
     await db_session_wp34.commit()
 
@@ -2394,7 +2393,7 @@ async def test_bidirectional_link_manual_creation(db_session_wp34: AsyncSession)
 
 
 @pytest.mark.asyncio
-async def test_bidirectional_navigation_outgoing(db_session_wp34: AsyncSession):
+async def test_bidirectional_navigation_outgoing(db_session_wp34: AsyncSession) -> None:
     """Test navigating from source item (outgoing links)."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2405,7 +2404,7 @@ async def test_bidirectional_navigation_outgoing(db_session_wp34: AsyncSession):
     targets = []
     for i in range(3):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Target {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Target {i}", view="FEATURE", item_type="feature",
         )
         targets.append(item)
     await db_session_wp34.commit()
@@ -2425,7 +2424,7 @@ async def test_bidirectional_navigation_outgoing(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_bidirectional_navigation_incoming(db_session_wp34: AsyncSession):
+async def test_bidirectional_navigation_incoming(db_session_wp34: AsyncSession) -> None:
     """Test navigating to target item (incoming links)."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2436,7 +2435,7 @@ async def test_bidirectional_navigation_incoming(db_session_wp34: AsyncSession):
     sources = []
     for i in range(3):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Source {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Source {i}", view="FEATURE", item_type="feature",
         )
         sources.append(item)
     await db_session_wp34.commit()
@@ -2456,7 +2455,7 @@ async def test_bidirectional_navigation_incoming(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_bidirectional_mixed_operations(db_session_wp34: AsyncSession):
+async def test_bidirectional_mixed_operations(db_session_wp34: AsyncSession) -> None:
     """Test item with both incoming and outgoing links."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2466,7 +2465,7 @@ async def test_bidirectional_mixed_operations(db_session_wp34: AsyncSession):
     middle = await item_repo.create(project_id=str(project.id), title="Middle", view="FEATURE", item_type="feature")
     upstream = await item_repo.create(project_id=str(project.id), title="Upstream", view="FEATURE", item_type="feature")
     downstream = await item_repo.create(
-        project_id=str(project.id), title="Downstream", view="FEATURE", item_type="feature"
+        project_id=str(project.id), title="Downstream", view="FEATURE", item_type="feature",
     )
     await db_session_wp34.commit()
 
@@ -2505,7 +2504,7 @@ async def test_bidirectional_mixed_operations(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_transitive_dependency_chain_linear(db_session_wp34: AsyncSession):
+async def test_transitive_dependency_chain_linear(db_session_wp34: AsyncSession) -> None:
     """Test linear dependency chain: A -> B -> C -> D."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2515,7 +2514,7 @@ async def test_transitive_dependency_chain_linear(db_session_wp34: AsyncSession)
     items = []
     for i in range(4):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Item {chr(65 + i)}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Item {chr(65 + i)}", view="FEATURE", item_type="feature",
         )
         items.append(item)
     await db_session_wp34.commit()
@@ -2539,7 +2538,7 @@ async def test_transitive_dependency_chain_linear(db_session_wp34: AsyncSession)
 
 
 @pytest.mark.asyncio
-async def test_transitive_dependency_chain_branching(db_session_wp34: AsyncSession):
+async def test_transitive_dependency_chain_branching(db_session_wp34: AsyncSession) -> None:
     """Test branching dependency: A -> B,C,D."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2550,7 +2549,7 @@ async def test_transitive_dependency_chain_branching(db_session_wp34: AsyncSessi
     children = []
     for i in range(3):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Child {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Child {i}", view="FEATURE", item_type="feature",
         )
         children.append(item)
     await db_session_wp34.commit()
@@ -2570,7 +2569,7 @@ async def test_transitive_dependency_chain_branching(db_session_wp34: AsyncSessi
 
 
 @pytest.mark.asyncio
-async def test_transitive_dependency_chain_diamond(db_session_wp34: AsyncSession):
+async def test_transitive_dependency_chain_diamond(db_session_wp34: AsyncSession) -> None:
     """Test diamond dependency: A -> B,C -> D."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2585,16 +2584,16 @@ async def test_transitive_dependency_chain_diamond(db_session_wp34: AsyncSession
 
     # Create diamond: top -> left -> bottom, top -> right -> bottom
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(top.id), target_item_id=str(left.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(top.id), target_item_id=str(left.id), link_type="depends_on",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(top.id), target_item_id=str(right.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(top.id), target_item_id=str(right.id), link_type="depends_on",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(left.id), target_item_id=str(bottom.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(left.id), target_item_id=str(bottom.id), link_type="depends_on",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(right.id), target_item_id=str(bottom.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(right.id), target_item_id=str(bottom.id), link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -2606,7 +2605,7 @@ async def test_transitive_dependency_chain_diamond(db_session_wp34: AsyncSession
 
 
 @pytest.mark.asyncio
-async def test_multiple_link_types_same_items(db_session_wp34: AsyncSession):
+async def test_multiple_link_types_same_items(db_session_wp34: AsyncSession) -> None:
     """Test multiple link types between same pair of items."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2614,17 +2613,17 @@ async def test_multiple_link_types_same_items(db_session_wp34: AsyncSession):
 
     project = await proj_repo.create(name=f"P-{uuid4()}")
     req = await item_repo.create(
-        project_id=str(project.id), title="Requirement", view="REQUIREMENT", item_type="requirement"
+        project_id=str(project.id), title="Requirement", view="REQUIREMENT", item_type="requirement",
     )
     feature = await item_repo.create(project_id=str(project.id), title="Feature", view="FEATURE", item_type="feature")
     await db_session_wp34.commit()
 
     # Create multiple link types
     link1 = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(req.id), target_item_id=str(feature.id), link_type="implements"
+        project_id=str(project.id), source_item_id=str(req.id), target_item_id=str(feature.id), link_type="implements",
     )
     link2 = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(req.id), target_item_id=str(feature.id), link_type="tests"
+        project_id=str(project.id), source_item_id=str(req.id), target_item_id=str(feature.id), link_type="tests",
     )
     await db_session_wp34.commit()
 
@@ -2639,7 +2638,7 @@ async def test_multiple_link_types_same_items(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_cycle_detection_simple_self_reference(db_session_wp34: AsyncSession):
+async def test_cycle_detection_simple_self_reference(db_session_wp34: AsyncSession) -> None:
     """Test detection of self-referencing link."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2651,7 +2650,7 @@ async def test_cycle_detection_simple_self_reference(db_session_wp34: AsyncSessi
 
     # Create self-reference
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item.id), target_item_id=str(item.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item.id), target_item_id=str(item.id), link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -2659,7 +2658,7 @@ async def test_cycle_detection_simple_self_reference(db_session_wp34: AsyncSessi
 
 
 @pytest.mark.asyncio
-async def test_cycle_detection_two_item_cycle(db_session_wp34: AsyncSession):
+async def test_cycle_detection_two_item_cycle(db_session_wp34: AsyncSession) -> None:
     """Test detection of two-item cycle: A -> B -> A."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2672,10 +2671,10 @@ async def test_cycle_detection_two_item_cycle(db_session_wp34: AsyncSession):
 
     # Create cycle: 1 -> 2 -> 1
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on",
     )
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item1.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item1.id), link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -2687,7 +2686,7 @@ async def test_cycle_detection_two_item_cycle(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_cycle_detection_three_item_cycle(db_session_wp34: AsyncSession):
+async def test_cycle_detection_three_item_cycle(db_session_wp34: AsyncSession) -> None:
     """Test detection of three-item cycle: A -> B -> C -> A."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2697,7 +2696,7 @@ async def test_cycle_detection_three_item_cycle(db_session_wp34: AsyncSession):
     items = []
     for i in range(3):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature",
         )
         items.append(item)
     await db_session_wp34.commit()
@@ -2735,7 +2734,7 @@ async def test_cycle_detection_three_item_cycle(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_metadata_empty(db_session_wp34: AsyncSession):
+async def test_link_metadata_empty(db_session_wp34: AsyncSession) -> None:
     """Test link with empty metadata."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2759,7 +2758,7 @@ async def test_link_metadata_empty(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_metadata_complex(db_session_wp34: AsyncSession):
+async def test_link_metadata_complex(db_session_wp34: AsyncSession) -> None:
     """Test link with complex metadata structure."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2794,7 +2793,7 @@ async def test_link_metadata_complex(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_filtering_by_type_multiple_types(db_session_wp34: AsyncSession):
+async def test_link_filtering_by_type_multiple_types(db_session_wp34: AsyncSession) -> None:
     """Test filtering links by type when multiple types exist."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2804,7 +2803,7 @@ async def test_link_filtering_by_type_multiple_types(db_session_wp34: AsyncSessi
     items = []
     for i in range(4):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature",
         )
         items.append(item)
     await db_session_wp34.commit()
@@ -2837,7 +2836,7 @@ async def test_link_filtering_by_type_multiple_types(db_session_wp34: AsyncSessi
 
 
 @pytest.mark.asyncio
-async def test_link_deletion_single(db_session_wp34: AsyncSession):
+async def test_link_deletion_single(db_session_wp34: AsyncSession) -> None:
     """Test deleting a single link."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2849,7 +2848,7 @@ async def test_link_deletion_single(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements",
     )
     await db_session_wp34.commit()
 
@@ -2861,7 +2860,7 @@ async def test_link_deletion_single(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_deletion_cascade_on_source_delete(db_session_wp34: AsyncSession):
+async def test_link_deletion_cascade_on_source_delete(db_session_wp34: AsyncSession) -> None:
     """Test that deleting source item cascades to delete links."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2873,7 +2872,7 @@ async def test_link_deletion_cascade_on_source_delete(db_session_wp34: AsyncSess
     await db_session_wp34.commit()
 
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(source.id), target_item_id=str(target.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(source.id), target_item_id=str(target.id), link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -2887,7 +2886,7 @@ async def test_link_deletion_cascade_on_source_delete(db_session_wp34: AsyncSess
 
 
 @pytest.mark.asyncio
-async def test_link_deletion_cascade_on_target_delete(db_session_wp34: AsyncSession):
+async def test_link_deletion_cascade_on_target_delete(db_session_wp34: AsyncSession) -> None:
     """Test that deleting target item cascades to delete links."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2899,7 +2898,7 @@ async def test_link_deletion_cascade_on_target_delete(db_session_wp34: AsyncSess
     await db_session_wp34.commit()
 
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(source.id), target_item_id=str(target.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(source.id), target_item_id=str(target.id), link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -2913,7 +2912,7 @@ async def test_link_deletion_cascade_on_target_delete(db_session_wp34: AsyncSess
 
 
 @pytest.mark.asyncio
-async def test_link_deletion_cascade_on_project_delete(db_session_wp34: AsyncSession):
+async def test_link_deletion_cascade_on_project_delete(db_session_wp34: AsyncSession) -> None:
     """Test that deleting items cascades to delete all project links."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2925,7 +2924,7 @@ async def test_link_deletion_cascade_on_project_delete(db_session_wp34: AsyncSes
     await db_session_wp34.commit()
 
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -2944,7 +2943,7 @@ async def test_link_deletion_cascade_on_project_delete(db_session_wp34: AsyncSes
 
 
 @pytest.mark.asyncio
-async def test_link_query_all_links_in_project(db_session_wp34: AsyncSession):
+async def test_link_query_all_links_in_project(db_session_wp34: AsyncSession) -> None:
     """Test getting all links in a project."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -2954,7 +2953,7 @@ async def test_link_query_all_links_in_project(db_session_wp34: AsyncSession):
     items = []
     for i in range(5):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature",
         )
         items.append(item)
     await db_session_wp34.commit()
@@ -2974,7 +2973,7 @@ async def test_link_query_all_links_in_project(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_query_nonexistent_link(db_session_wp34: AsyncSession):
+async def test_link_query_nonexistent_link(db_session_wp34: AsyncSession) -> None:
     """Test querying for non-existent link returns None."""
     link_repo = LinkRepository(db_session_wp34)
 
@@ -2983,7 +2982,7 @@ async def test_link_query_nonexistent_link(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_query_empty_project(db_session_wp34: AsyncSession):
+async def test_link_query_empty_project(db_session_wp34: AsyncSession) -> None:
     """Test querying links in project with no links."""
     proj_repo = ProjectRepository(db_session_wp34)
     link_repo = LinkRepository(db_session_wp34)
@@ -2996,7 +2995,7 @@ async def test_link_query_empty_project(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_query_item_with_no_links(db_session_wp34: AsyncSession):
+async def test_link_query_item_with_no_links(db_session_wp34: AsyncSession) -> None:
     """Test querying links for item with no connections."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3021,7 +3020,7 @@ async def test_link_query_item_with_no_links(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_graph_operations_connected_component(db_session_wp34: AsyncSession):
+async def test_graph_operations_connected_component(db_session_wp34: AsyncSession) -> None:
     """Test identifying connected components in graph."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3033,7 +3032,7 @@ async def test_graph_operations_connected_component(db_session_wp34: AsyncSessio
     items = []
     for i in range(4):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature",
         )
         items.append(item)
     await db_session_wp34.commit()
@@ -3058,7 +3057,7 @@ async def test_graph_operations_connected_component(db_session_wp34: AsyncSessio
 
 
 @pytest.mark.asyncio
-async def test_graph_operations_isolated_item(db_session_wp34: AsyncSession):
+async def test_graph_operations_isolated_item(db_session_wp34: AsyncSession) -> None:
     """Test isolated item in project with other links."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3070,7 +3069,7 @@ async def test_graph_operations_isolated_item(db_session_wp34: AsyncSession):
     items = []
     for i in range(4):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature",
         )
         items.append(item)
     await db_session_wp34.commit()
@@ -3096,7 +3095,7 @@ async def test_graph_operations_isolated_item(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_edge_case_link_with_null_metadata(db_session_wp34: AsyncSession):
+async def test_edge_case_link_with_null_metadata(db_session_wp34: AsyncSession) -> None:
     """Test creating link without metadata field."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3109,7 +3108,7 @@ async def test_edge_case_link_with_null_metadata(db_session_wp34: AsyncSession):
 
     # Create without explicit metadata
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="implements",
     )
     await db_session_wp34.commit()
 
@@ -3119,7 +3118,7 @@ async def test_edge_case_link_with_null_metadata(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_edge_case_many_links_single_source(db_session_wp34: AsyncSession):
+async def test_edge_case_many_links_single_source(db_session_wp34: AsyncSession) -> None:
     """Test item with many outgoing links."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3131,7 +3130,7 @@ async def test_edge_case_many_links_single_source(db_session_wp34: AsyncSession)
     # Create 15 target items
     for i in range(15):
         target = await item_repo.create(
-            project_id=str(project.id), title=f"Target {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Target {i}", view="FEATURE", item_type="feature",
         )
         await link_repo.create(
             project_id=str(project.id),
@@ -3146,7 +3145,7 @@ async def test_edge_case_many_links_single_source(db_session_wp34: AsyncSession)
 
 
 @pytest.mark.asyncio
-async def test_edge_case_many_links_single_target(db_session_wp34: AsyncSession):
+async def test_edge_case_many_links_single_target(db_session_wp34: AsyncSession) -> None:
     """Test item with many incoming links."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3158,7 +3157,7 @@ async def test_edge_case_many_links_single_target(db_session_wp34: AsyncSession)
     # Create 15 source items
     for i in range(15):
         source = await item_repo.create(
-            project_id=str(project.id), title=f"Source {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Source {i}", view="FEATURE", item_type="feature",
         )
         await link_repo.create(
             project_id=str(project.id),
@@ -3173,7 +3172,7 @@ async def test_edge_case_many_links_single_target(db_session_wp34: AsyncSession)
 
 
 @pytest.mark.asyncio
-async def test_link_get_all(db_session_wp34: AsyncSession):
+async def test_link_get_all(db_session_wp34: AsyncSession) -> None:
     """Test getting all links in database."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3190,7 +3189,7 @@ async def test_link_get_all(db_session_wp34: AsyncSession):
 
     # Create link
     await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -3210,7 +3209,7 @@ async def test_link_get_all(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_traversal_depth_first_ordering(db_session_wp34: AsyncSession):
+async def test_traversal_depth_first_ordering(db_session_wp34: AsyncSession) -> None:
     """Test traversal maintains path depth consistency."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3220,7 +3219,7 @@ async def test_traversal_depth_first_ordering(db_session_wp34: AsyncSession):
     items = []
     for i in range(5):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature",
         )
         items.append(item)
     await db_session_wp34.commit()
@@ -3242,7 +3241,7 @@ async def test_traversal_depth_first_ordering(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_traversal_breadth_first_ordering(db_session_wp34: AsyncSession):
+async def test_traversal_breadth_first_ordering(db_session_wp34: AsyncSession) -> None:
     """Test breadth-first traversal from one source."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3253,14 +3252,14 @@ async def test_traversal_breadth_first_ordering(db_session_wp34: AsyncSession):
     level1 = []
     for i in range(3):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Level1-{i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Level1-{i}", view="FEATURE", item_type="feature",
         )
         level1.append(item)
     await db_session_wp34.commit()
 
     for item in level1:
         await link_repo.create(
-            project_id=str(project.id), source_item_id=str(root.id), target_item_id=str(item.id), link_type="depends_on"
+            project_id=str(project.id), source_item_id=str(root.id), target_item_id=str(item.id), link_type="depends_on",
         )
     await db_session_wp34.commit()
 
@@ -3271,7 +3270,7 @@ async def test_traversal_breadth_first_ordering(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_complex_graph_all_paths(db_session_wp34: AsyncSession):
+async def test_complex_graph_all_paths(db_session_wp34: AsyncSession) -> None:
     """Test complex graph with multiple paths."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3281,7 +3280,7 @@ async def test_complex_graph_all_paths(db_session_wp34: AsyncSession):
     items = {}
     for name in ["a", "b", "c", "d", "e"]:
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Item-{name}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Item-{name}", view="FEATURE", item_type="feature",
         )
         items[name] = item
     await db_session_wp34.commit()
@@ -3310,7 +3309,7 @@ async def test_complex_graph_all_paths(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_type_case_sensitivity(db_session_wp34: AsyncSession):
+async def test_link_type_case_sensitivity(db_session_wp34: AsyncSession) -> None:
     """Test that link types are case-sensitive."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3323,7 +3322,7 @@ async def test_link_type_case_sensitivity(db_session_wp34: AsyncSession):
     await db_session_wp34.commit()
 
     link1 = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on",
     )
     link2 = await link_repo.create(
         project_id=str(project.id),
@@ -3341,7 +3340,7 @@ async def test_link_type_case_sensitivity(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_type_special_characters(db_session_wp34: AsyncSession):
+async def test_link_type_special_characters(db_session_wp34: AsyncSession) -> None:
     """Test link types with special characters."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3370,7 +3369,7 @@ async def test_link_type_special_characters(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_duplicate_links_same_type_allowed(db_session_wp34: AsyncSession):
+async def test_duplicate_links_same_type_allowed(db_session_wp34: AsyncSession) -> None:
     """Test creating duplicate links of same type (not prevented at repo level)."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3383,10 +3382,10 @@ async def test_duplicate_links_same_type_allowed(db_session_wp34: AsyncSession):
 
     # Create same link twice
     link1 = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on",
     )
     link2 = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -3397,7 +3396,7 @@ async def test_duplicate_links_same_type_allowed(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_different_directions_same_items(db_session_wp34: AsyncSession):
+async def test_different_directions_same_items(db_session_wp34: AsyncSession) -> None:
     """Test different directional links between same items."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3410,10 +3409,10 @@ async def test_different_directions_same_items(db_session_wp34: AsyncSession):
 
     # Create A->B and B->A
     link_ab = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on",
     )
     link_ba = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item1.id), link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item2.id), target_item_id=str(item1.id), link_type="depends_on",
     )
     await db_session_wp34.commit()
 
@@ -3427,7 +3426,7 @@ async def test_different_directions_same_items(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_count_by_type(db_session_wp34: AsyncSession):
+async def test_link_count_by_type(db_session_wp34: AsyncSession) -> None:
     """Test getting count statistics by link type."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3437,7 +3436,7 @@ async def test_link_count_by_type(db_session_wp34: AsyncSession):
     items = []
     for i in range(6):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature",
         )
         items.append(item)
     await db_session_wp34.commit()
@@ -3468,7 +3467,7 @@ async def test_link_count_by_type(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_count_by_item_hub(db_session_wp34: AsyncSession):
+async def test_link_count_by_item_hub(db_session_wp34: AsyncSession) -> None:
     """Test counting links for a hub item."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3479,14 +3478,14 @@ async def test_link_count_by_item_hub(db_session_wp34: AsyncSession):
     spokes = []
     for i in range(10):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Spoke {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Spoke {i}", view="FEATURE", item_type="feature",
         )
         spokes.append(item)
     await db_session_wp34.commit()
 
     for spoke in spokes:
         await link_repo.create(
-            project_id=str(project.id), source_item_id=str(hub.id), target_item_id=str(spoke.id), link_type="depends_on"
+            project_id=str(project.id), source_item_id=str(hub.id), target_item_id=str(spoke.id), link_type="depends_on",
         )
     await db_session_wp34.commit()
 
@@ -3495,7 +3494,7 @@ async def test_link_count_by_item_hub(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_link_count_all(db_session_wp34: AsyncSession):
+async def test_link_count_all(db_session_wp34: AsyncSession) -> None:
     """Test getting total link count."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3505,7 +3504,7 @@ async def test_link_count_all(db_session_wp34: AsyncSession):
     items = []
     for i in range(4):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature",
         )
         items.append(item)
     await db_session_wp34.commit()
@@ -3531,7 +3530,7 @@ async def test_link_count_all(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_metadata_deep_nesting(db_session_wp34: AsyncSession):
+async def test_metadata_deep_nesting(db_session_wp34: AsyncSession) -> None:
     """Test deeply nested metadata structures."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3559,7 +3558,7 @@ async def test_metadata_deep_nesting(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_metadata_large_array(db_session_wp34: AsyncSession):
+async def test_metadata_large_array(db_session_wp34: AsyncSession) -> None:
     """Test metadata with large arrays."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3592,7 +3591,7 @@ async def test_metadata_large_array(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_scale_50_items_multiple_links(db_session_wp34: AsyncSession):
+async def test_scale_50_items_multiple_links(db_session_wp34: AsyncSession) -> None:
     """Test performance with 50 items and multiple links."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3602,7 +3601,7 @@ async def test_scale_50_items_multiple_links(db_session_wp34: AsyncSession):
     items = []
     for i in range(50):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature",
         )
         items.append(item)
     await db_session_wp34.commit()
@@ -3622,7 +3621,7 @@ async def test_scale_50_items_multiple_links(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_scale_complex_dependency_graph(db_session_wp34: AsyncSession):
+async def test_scale_complex_dependency_graph(db_session_wp34: AsyncSession) -> None:
     """Test complex graph with multiple link types."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3632,7 +3631,7 @@ async def test_scale_complex_dependency_graph(db_session_wp34: AsyncSession):
     items = []
     for i in range(20):
         item = await item_repo.create(
-            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature"
+            project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature",
         )
         items.append(item)
     await db_session_wp34.commit()
@@ -3658,7 +3657,7 @@ async def test_scale_complex_dependency_graph(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_validation_empty_link_type(db_session_wp34: AsyncSession):
+async def test_validation_empty_link_type(db_session_wp34: AsyncSession) -> None:
     """Test creating link with empty string type."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3671,7 +3670,7 @@ async def test_validation_empty_link_type(db_session_wp34: AsyncSession):
 
     # Empty string type should be allowed at repo level
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type=""
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="",
     )
     await db_session_wp34.commit()
 
@@ -3680,7 +3679,7 @@ async def test_validation_empty_link_type(db_session_wp34: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_validation_very_long_link_type(db_session_wp34: AsyncSession):
+async def test_validation_very_long_link_type(db_session_wp34: AsyncSession) -> None:
     """Test creating link with very long type string."""
     proj_repo = ProjectRepository(db_session_wp34)
     item_repo = ItemRepository(db_session_wp34)
@@ -3695,7 +3694,7 @@ async def test_validation_very_long_link_type(db_session_wp34: AsyncSession):
     long_type = "x" * 50
 
     link = await link_repo.create(
-        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type=long_type
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type=long_type,
     )
     await db_session_wp34.commit()
 

@@ -1,5 +1,4 @@
-"""
-Performance tests for memory efficiency and API operations.
+"""Performance tests for memory efficiency and API operations.
 
 Tests performance-critical paths:
 - Memory efficiency during large operations
@@ -33,7 +32,7 @@ async def mock_async_session() -> AsyncMock:
 class TestMemoryEfficiency:
     """Tests for memory efficiency in operations."""
 
-    def test_json_serialization_small_payload(self):
+    def test_json_serialization_small_payload(self) -> None:
         """Test JSON serialization performance for small payload."""
         data = {
             "id": "item-001",
@@ -50,7 +49,7 @@ class TestMemoryEfficiency:
         assert elapsed < 0.001
         assert isinstance(json_str, str)
 
-    def test_json_serialization_large_payload(self):
+    def test_json_serialization_large_payload(self) -> None:
         """Test JSON serialization for large payload."""
         # Create large payload (10KB)
         items = [
@@ -70,7 +69,7 @@ class TestMemoryEfficiency:
         assert elapsed < 0.01, "Large serialization should be < 10ms"
         assert len(json_str) > 10000
 
-    def test_memory_during_large_iteration(self):
+    def test_memory_during_large_iteration(self) -> None:
         """Test memory during iteration over large dataset."""
         import tracemalloc
 
@@ -88,7 +87,7 @@ class TestMemoryEfficiency:
 
         assert total > 0
 
-    def test_data_transformation_memory(self):
+    def test_data_transformation_memory(self) -> None:
         """Test memory during data transformation."""
         import tracemalloc
 
@@ -106,7 +105,7 @@ class TestMemoryEfficiency:
 
         assert len(transformed) == 500
 
-    def test_list_comprehension_vs_loop(self):
+    def test_list_comprehension_vs_loop(self) -> None:
         """Compare memory efficiency of list comprehension vs loop."""
         import tracemalloc
 
@@ -123,7 +122,7 @@ class TestMemoryEfficiency:
 
         assert len(result) == 10000
 
-    def test_string_concatenation_memory(self):
+    def test_string_concatenation_memory(self) -> None:
         """Test memory during string operations."""
         import tracemalloc
 
@@ -140,7 +139,7 @@ class TestMemoryEfficiency:
 
         assert len(result) > 0
 
-    def test_generator_memory_efficiency(self):
+    def test_generator_memory_efficiency(self) -> None:
         """Test memory efficiency of generators."""
         import tracemalloc
 
@@ -169,7 +168,7 @@ class TestAPIPerformance:
     """Tests for API operation performance."""
 
     @pytest.mark.asyncio
-    async def test_api_request_response_performance(self):
+    async def test_api_request_response_performance(self) -> None:
         """Test API request/response cycle."""
         request_payload = {
             "project_id": "proj-001",
@@ -196,7 +195,7 @@ class TestAPIPerformance:
         assert elapsed < 0.1, "Full request/response should be < 100ms"
 
     @pytest.mark.asyncio
-    async def test_api_throughput(self):
+    async def test_api_throughput(self) -> None:
         """Test API throughput (requests/second)."""
 
         async def handle_request(req_id: int):
@@ -213,7 +212,7 @@ class TestAPIPerformance:
         assert throughput > 5, f"Throughput {throughput} req/s is too low"
 
     @pytest.mark.asyncio
-    async def test_large_response_handling(self):
+    async def test_large_response_handling(self) -> None:
         """Test handling of large API responses."""
         # Create large response
         large_items = [
@@ -236,7 +235,7 @@ class TestAPIPerformance:
         assert elapsed < 0.2, "Parsing 1000 items should be < 200ms"
 
     @pytest.mark.asyncio
-    async def test_batch_api_requests(self):
+    async def test_batch_api_requests(self) -> None:
         """Test batch API requests."""
         batch_size = 50
 
@@ -255,7 +254,7 @@ class TestAPIPerformance:
         assert elapsed < 0.5
 
     @pytest.mark.asyncio
-    async def test_concurrent_api_requests(self):
+    async def test_concurrent_api_requests(self) -> None:
         """Test concurrent API requests."""
 
         async def api_call(call_id: int):
@@ -278,7 +277,7 @@ class TestAPIPerformance:
         assert elapsed < 0.3, f"Concurrent requests took {elapsed}s"
 
     @pytest.mark.asyncio
-    async def test_connection_pooling_efficiency(self):
+    async def test_connection_pooling_efficiency(self) -> None:
         """Test connection pooling efficiency."""
         # Simulate connection pool
         pool = []
@@ -291,12 +290,12 @@ class TestAPIPerformance:
                 return MagicMock()
             return pool.pop()
 
-        async def release_connection(conn):
+        async def release_connection(conn) -> None:
             """Release connection to pool."""
             if len(pool) < pool_size:
                 pool.append(conn)
 
-        async def execute_query():
+        async def execute_query() -> str | None:
             """Execute query using pooled connection."""
             conn = await acquire_connection()
             try:
@@ -313,7 +312,7 @@ class TestAPIPerformance:
         assert elapsed < 2.0, "With pooling should be efficient"
 
     @pytest.mark.asyncio
-    async def test_pagination_api(self):
+    async def test_pagination_api(self) -> None:
         """Test pagination API performance."""
 
         async def fetch_page(page: int, page_size: int = 100):
@@ -335,7 +334,7 @@ class TestAPIPerformance:
         assert elapsed < 0.5
 
     @pytest.mark.asyncio
-    async def test_data_aggregation_performance(self):
+    async def test_data_aggregation_performance(self) -> None:
         """Test data aggregation performance."""
 
         async def fetch_items(category: int):
@@ -356,7 +355,7 @@ class TestAPIPerformance:
         assert elapsed < 0.5
 
     @pytest.mark.asyncio
-    async def test_filtering_performance(self):
+    async def test_filtering_performance(self) -> None:
         """Test filtering performance on large dataset."""
         # Create large dataset
         items = [
@@ -383,7 +382,7 @@ class TestAPIPerformance:
 class TestSerializationPerformance:
     """Tests for serialization performance."""
 
-    def test_json_encode_decode(self):
+    def test_json_encode_decode(self) -> None:
         """Test JSON encode/decode performance."""
         data = {"items": [{"id": f"item-{i:04d}", "title": f"Item {i}", "data": list(range(10))} for i in range(500)]}
 
@@ -395,7 +394,7 @@ class TestSerializationPerformance:
         assert elapsed < 0.05
         assert len(decoded["items"]) == 500
 
-    def test_dict_vs_dataclass_serialization(self):
+    def test_dict_vs_dataclass_serialization(self) -> None:
         """Test dict vs dataclass serialization."""
         # Dict version
         dict_data = [{"id": f"item-{i}", "title": f"Title {i}"} for i in range(1000)]
@@ -407,13 +406,13 @@ class TestSerializationPerformance:
         assert dict_time < 0.05
         assert len(dict_json) > 0
 
-    def test_nested_structure_serialization(self):
+    def test_nested_structure_serialization(self) -> None:
         """Test nested structure serialization."""
         data = {
             "project": {
                 "id": "proj-001",
                 "items": [{"id": f"item-{i}", "links": [f"link-{j}" for j in range(5)]} for i in range(100)],
-            }
+            },
         }
 
         start_time = time.time()

@@ -33,8 +33,8 @@ def upgrade() -> None:
             SELECT table_schema FROM information_schema.columns
             WHERE table_name = 'agent_locks' AND column_name = 'project_id'
             LIMIT 1
-            """
-        )
+            """,
+        ),
     ).fetchone()
     if r is not None:
         schema = r[0]
@@ -44,7 +44,7 @@ def upgrade() -> None:
 
     # Find schema of agent_locks
     r2 = conn.execute(
-        text("SELECT table_schema FROM information_schema.tables WHERE table_name = 'agent_locks' LIMIT 1")
+        text("SELECT table_schema FROM information_schema.tables WHERE table_name = 'agent_locks' LIMIT 1"),
     ).fetchone()
     if r2 is None:
         return
@@ -55,7 +55,7 @@ def upgrade() -> None:
 
     op.execute(f"ALTER TABLE {qual} ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES {proj_ref} ON DELETE CASCADE")
     op.execute(
-        f"UPDATE {qual} SET project_id = (SELECT project_id FROM {items_qual} WHERE id = {qual}.item_id::uuid) WHERE project_id IS NULL"  # noqa: S608
+        f"UPDATE {qual} SET project_id = (SELECT project_id FROM {items_qual} WHERE id = {qual}.item_id::uuid) WHERE project_id IS NULL",  # noqa: S608
     )
     # Only set NOT NULL if no nulls remain (orphan locks may have no matching item)
     null_count = conn.execute(text(f"SELECT COUNT(*) FROM {qual} WHERE project_id IS NULL")).scalar()  # noqa: S608

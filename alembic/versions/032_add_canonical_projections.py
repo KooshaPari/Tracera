@@ -22,7 +22,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Create canonical_projections junction table."""
-
     op.create_table(
         "canonical_projections",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),

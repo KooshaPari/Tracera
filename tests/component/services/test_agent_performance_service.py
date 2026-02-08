@@ -45,7 +45,7 @@ async def _event(async_session, project_id, agent_id, event_type, created_at=Non
 
 
 @pytest.mark.asyncio
-async def test_get_agent_stats_filters_time_window(async_session):
+async def test_get_agent_stats_filters_time_window(async_session) -> None:
     await _seed_agent(async_session)
     now = datetime.now(UTC)
     await _event(async_session, "proj-1", "agent-1", "updated", created_at=now)
@@ -59,14 +59,14 @@ async def test_get_agent_stats_filters_time_window(async_session):
 
 
 @pytest.mark.asyncio
-async def test_get_agent_stats_missing_agent(async_session):
+async def test_get_agent_stats_missing_agent(async_session) -> None:
     svc = AgentPerformanceService(async_session)
     stats = await svc.get_agent_stats("missing")
     assert stats == {"error": "Agent not found"}
 
 
 @pytest.mark.asyncio
-async def test_get_agent_workload_classifies_levels(async_session):
+async def test_get_agent_workload_classifies_levels(async_session) -> None:
     await _seed_agent(async_session)
     now = datetime.now(UTC)
     # 12 events in last 24h => events_per_hour = 0.5, still "Idle" threshold (<=1)
@@ -81,7 +81,7 @@ async def test_get_agent_workload_classifies_levels(async_session):
 
 
 @pytest.mark.asyncio
-async def test_recommend_agent_assignment_picks_lowest_workload(async_session):
+async def test_recommend_agent_assignment_picks_lowest_workload(async_session) -> None:
     await _seed_agent(async_session, agent_id="agent-1", project_id="proj-2")
     await _seed_agent(async_session, agent_id="agent-2", project_id="proj-2")
     now = datetime.now(UTC)

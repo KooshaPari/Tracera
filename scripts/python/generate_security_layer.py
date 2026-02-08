@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""
-SwiftRide Security Layer Generator
+"""SwiftRide Security Layer Generator
 Generates 450+ comprehensive security items:
 - 80 security_vulnerability with CVSS scores
 - 100 security_control
 - 60 threat_model
 - 90 security_test
 - 50 encryption_requirement
-- 70 access_control
+- 70 access_control.
 
 Usage: python generate_security_layer.py
 """
@@ -52,7 +51,7 @@ created_items = {k: [] for k in stats}
 
 
 async def create_item(session, item_type, ext_id, title, desc, status="todo", priority="medium", metadata=None):
-    """Create security item"""
+    """Create security item."""
     item_id = str(uuid.uuid4())
 
     query = text("""
@@ -86,13 +85,13 @@ async def create_item(session, item_type, ext_id, title, desc, status="todo", pr
     created_items[item_type].append((item_id, title))
 
     if stats[item_type] % 10 == 0:
-        print(f"  Created {stats[item_type]} {item_type} items...")
+        pass
 
     return item_id
 
 
-async def create_link(session, source_id, target_id, link_type):
-    """Create link between items"""
+async def create_link(session, source_id, target_id, link_type) -> None:
+    """Create link between items."""
     query = text("""
         INSERT INTO links (id, project_id, source_id, target_id, type, created_at)
         VALUES (:id, :project_id, :source_id, :target_id, :type, :created_at)
@@ -112,10 +111,8 @@ async def create_link(session, source_id, target_id, link_type):
     stats["links"] += 1
 
 
-async def generate_vulnerabilities(session):
-    """Generate 80 security vulnerabilities"""
-    print("\n🔴 Generating 80 Security Vulnerabilities...")
-
+async def generate_vulnerabilities(session) -> None:
+    """Generate 80 security vulnerabilities."""
     # SQL Injection (12)
     sql_vulns = [
         ("Driver Search SQL Injection", 9.1, "CWE-89", "/api/v1/drivers/search"),
@@ -263,10 +260,8 @@ async def generate_vulnerabilities(session):
         )
 
 
-async def generate_security_controls(session):
-    """Generate 100 security controls"""
-    print("\n🛡️  Generating 100 Security Controls...")
-
+async def generate_security_controls(session) -> None:
+    """Generate 100 security controls."""
     controls = [
         ("JWT Token Authentication", "Implement RS256 JWT tokens with 15min expiry"),
         ("API Rate Limiting", "100 requests/min per user, 1000/min per IP"),
@@ -310,10 +305,8 @@ async def generate_security_controls(session):
         )
 
 
-async def generate_threat_models(session):
-    """Generate 60 threat models"""
-    print("\n⚠️  Generating 60 Threat Models...")
-
+async def generate_threat_models(session) -> None:
+    """Generate 60 threat models."""
     threats = [
         ("Rider Account Takeover", "Attacker gains access to rider account via credential stuffing"),
         ("Driver Location Spoofing", "Malicious driver falsifies GPS to manipulate fares"),
@@ -350,15 +343,13 @@ async def generate_threat_models(session):
                     "Information Disclosure",
                     "Denial of Service",
                     "Elevation of Privilege",
-                ][i % 6]
+                ][i % 6],
             },
         )
 
 
-async def generate_security_tests(session):
-    """Generate 90 security tests"""
-    print("\n🧪 Generating 90 Security Tests...")
-
+async def generate_security_tests(session) -> None:
+    """Generate 90 security tests."""
     tests = [
         ("SQL Injection Pentest - Driver Search", "Automated SQLMap scan of driver search endpoint"),
         ("XSS Testing - Chat Messages", "Manual XSS payload injection in chat"),
@@ -391,10 +382,8 @@ async def generate_security_tests(session):
         )
 
 
-async def generate_encryption_requirements(session):
-    """Generate 50 encryption requirements"""
-    print("\n🔐 Generating 50 Encryption Requirements...")
-
+async def generate_encryption_requirements(session) -> None:
+    """Generate 50 encryption requirements."""
     for i in range(1, 51):
         title = f"Encryption Requirement {i}"
         desc = f"Data encryption specification {i}"
@@ -411,10 +400,8 @@ async def generate_encryption_requirements(session):
         )
 
 
-async def generate_access_controls(session):
-    """Generate 70 access control policies"""
-    print("\n🔑 Generating 70 Access Control Policies...")
-
+async def generate_access_controls(session) -> None:
+    """Generate 70 access control policies."""
     roles = ["Admin", "Driver", "Rider", "Support", "Analytics", "Finance", "Operations"]
 
     for i in range(1, 71):
@@ -434,10 +421,8 @@ async def generate_access_controls(session):
         )
 
 
-async def create_security_links(session):
-    """Create links between security items"""
-    print("\n🔗 Creating Security Item Relationships...")
-
+async def create_security_links(session) -> None:
+    """Create links between security items."""
     # Link vulnerabilities to controls that mitigate them
     for i in range(min(20, len(created_items["security_vulnerability"]))):
         vuln_id = created_items["security_vulnerability"][i][0]
@@ -459,18 +444,9 @@ async def create_security_links(session):
             vuln_id = created_items["security_vulnerability"][i][0]
             await create_link(session, test_id, vuln_id, "verifies")
 
-    print(f"  Created {stats['links']} security relationships")
 
-
-async def main():
-    """Main execution"""
-    print("=" * 60)
-    print("SwiftRide Security Layer Generator")
-    print("=" * 60)
-    print(f"Project ID: {PROJECT_ID}")
-    print(f"Database: {db_url.split('@')[1]}")
-    print()
-
+async def main() -> None:
+    """Main execution."""
     engine = create_async_engine(db_url, echo=False)
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
@@ -483,13 +459,8 @@ async def main():
         await generate_access_controls(session)
         await create_security_links(session)
 
-    print("\n" + "=" * 60)
-    print("✅ Security Layer Generation Complete!")
-    print("=" * 60)
-    for item_type, count in stats.items():
-        print(f"  {item_type:30s}: {count:4d} items")
-    print(f"\n  Total: {sum(stats.values())} items created")
-    print("=" * 60)
+    for _item_type, _count in stats.items():
+        pass
 
 
 if __name__ == "__main__":

@@ -1,5 +1,4 @@
-"""
-Tests for Specification Repositories (ADR, Contract, Feature, Scenario).
+"""Tests for Specification Repositories (ADR, Contract, Feature, Scenario).
 
 Comprehensive test coverage for specification CRUD and query operations.
 """
@@ -32,7 +31,7 @@ class TestADRRepositoryCreate:
         return await project_repo.create(name="ADR Test Project", description="Project for testing ADRs")
 
     @pytest.mark.asyncio
-    async def test_create_adr_success(self, db_session: AsyncSession, project):
+    async def test_create_adr_success(self, db_session: AsyncSession, project) -> None:
         """Test creating an ADR successfully."""
         repo = ADRRepository(db_session)
 
@@ -59,7 +58,7 @@ class TestADRRepositoryCreate:
         assert adr.version == 1
 
     @pytest.mark.asyncio
-    async def test_create_adr_with_decision_drivers(self, db_session: AsyncSession, project):
+    async def test_create_adr_with_decision_drivers(self, db_session: AsyncSession, project) -> None:
         """Test creating ADR with decision drivers."""
         repo = ADRRepository(db_session)
 
@@ -76,7 +75,7 @@ class TestADRRepositoryCreate:
         assert adr.decision_drivers == drivers
 
     @pytest.mark.asyncio
-    async def test_create_adr_with_considered_options(self, db_session: AsyncSession, project):
+    async def test_create_adr_with_considered_options(self, db_session: AsyncSession, project) -> None:
         """Test creating ADR with considered options."""
         repo = ADRRepository(db_session)
 
@@ -96,7 +95,7 @@ class TestADRRepositoryCreate:
         assert adr.considered_options == options
 
     @pytest.mark.asyncio
-    async def test_create_adr_with_related_requirements(self, db_session: AsyncSession, project):
+    async def test_create_adr_with_related_requirements(self, db_session: AsyncSession, project) -> None:
         """Test creating ADR with related requirements."""
         repo = ADRRepository(db_session)
 
@@ -113,7 +112,7 @@ class TestADRRepositoryCreate:
         assert adr.related_requirements == requirements
 
     @pytest.mark.asyncio
-    async def test_create_adr_with_stakeholders(self, db_session: AsyncSession, project):
+    async def test_create_adr_with_stakeholders(self, db_session: AsyncSession, project) -> None:
         """Test creating ADR with stakeholders."""
         repo = ADRRepository(db_session)
 
@@ -130,7 +129,7 @@ class TestADRRepositoryCreate:
         assert adr.stakeholders == stakeholders
 
     @pytest.mark.asyncio
-    async def test_create_adr_with_tags(self, db_session: AsyncSession, project):
+    async def test_create_adr_with_tags(self, db_session: AsyncSession, project) -> None:
         """Test creating ADR with tags."""
         repo = ADRRepository(db_session)
 
@@ -147,7 +146,7 @@ class TestADRRepositoryCreate:
         assert adr.tags == tags
 
     @pytest.mark.asyncio
-    async def test_create_adr_with_supersedes(self, db_session: AsyncSession, project):
+    async def test_create_adr_with_supersedes(self, db_session: AsyncSession, project) -> None:
         """Test creating ADR that supersedes another."""
         repo = ADRRepository(db_session)
 
@@ -194,7 +193,7 @@ class TestADRRepositoryGet:
         return {"project": project, "adr": adr}
 
     @pytest.mark.asyncio
-    async def test_get_by_id(self, db_session: AsyncSession, adr_setup):
+    async def test_get_by_id(self, db_session: AsyncSession, adr_setup) -> None:
         """Test getting ADR by ID."""
         repo = ADRRepository(db_session)
         adr = await repo.get_by_id(adr_setup["adr"].id)
@@ -203,7 +202,7 @@ class TestADRRepositoryGet:
         assert adr.id == adr_setup["adr"].id
 
     @pytest.mark.asyncio
-    async def test_get_by_id_with_project_id(self, db_session: AsyncSession, adr_setup):
+    async def test_get_by_id_with_project_id(self, db_session: AsyncSession, adr_setup) -> None:
         """Test getting ADR by ID with project scope."""
         repo = ADRRepository(db_session)
         adr = await repo.get_by_id(adr_setup["adr"].id, project_id=adr_setup["project"].id)
@@ -212,7 +211,7 @@ class TestADRRepositoryGet:
         assert adr.id == adr_setup["adr"].id
 
     @pytest.mark.asyncio
-    async def test_get_by_id_not_found(self, db_session: AsyncSession):
+    async def test_get_by_id_not_found(self, db_session: AsyncSession) -> None:
         """Test getting non-existent ADR."""
         repo = ADRRepository(db_session)
         adr = await repo.get_by_id(str(uuid4()))
@@ -220,7 +219,7 @@ class TestADRRepositoryGet:
         assert adr is None
 
     @pytest.mark.asyncio
-    async def test_get_by_number(self, db_session: AsyncSession, adr_setup):
+    async def test_get_by_number(self, db_session: AsyncSession, adr_setup) -> None:
         """Test getting ADR by ADR number."""
         repo = ADRRepository(db_session)
         adr = await repo.get_by_number(adr_setup["adr"].adr_number)
@@ -229,7 +228,7 @@ class TestADRRepositoryGet:
         assert adr.adr_number == adr_setup["adr"].adr_number
 
     @pytest.mark.asyncio
-    async def test_get_by_number_with_project_id(self, db_session: AsyncSession, adr_setup):
+    async def test_get_by_number_with_project_id(self, db_session: AsyncSession, adr_setup) -> None:
         """Test getting ADR by number with project scope."""
         repo = ADRRepository(db_session)
         adr = await repo.get_by_number(adr_setup["adr"].adr_number, project_id=adr_setup["project"].id)
@@ -237,7 +236,7 @@ class TestADRRepositoryGet:
         assert adr is not None
 
     @pytest.mark.asyncio
-    async def test_get_by_number_not_found(self, db_session: AsyncSession):
+    async def test_get_by_number_not_found(self, db_session: AsyncSession) -> None:
         """Test getting ADR by non-existent number."""
         repo = ADRRepository(db_session)
         adr = await repo.get_by_number("ADR-NONEXISTENT")
@@ -272,7 +271,7 @@ class TestADRRepositoryList:
         return {"project": project, "adrs": adrs}
 
     @pytest.mark.asyncio
-    async def test_list_by_project(self, db_session: AsyncSession, multiple_adrs):
+    async def test_list_by_project(self, db_session: AsyncSession, multiple_adrs) -> None:
         """Test listing ADRs by project."""
         repo = ADRRepository(db_session)
         adrs = await repo.list_by_project(multiple_adrs["project"].id)
@@ -280,7 +279,7 @@ class TestADRRepositoryList:
         assert len(adrs) == 3
 
     @pytest.mark.asyncio
-    async def test_list_by_project_with_status_filter(self, db_session: AsyncSession, multiple_adrs):
+    async def test_list_by_project_with_status_filter(self, db_session: AsyncSession, multiple_adrs) -> None:
         """Test listing ADRs filtered by status."""
         repo = ADRRepository(db_session)
         adrs = await repo.list_by_project(multiple_adrs["project"].id, status="proposed")
@@ -289,7 +288,7 @@ class TestADRRepositoryList:
         assert adrs[0].status == "proposed"
 
     @pytest.mark.asyncio
-    async def test_list_by_project_with_pagination(self, db_session: AsyncSession, multiple_adrs):
+    async def test_list_by_project_with_pagination(self, db_session: AsyncSession, multiple_adrs) -> None:
         """Test listing ADRs with pagination."""
         repo = ADRRepository(db_session)
         adrs = await repo.list_by_project(multiple_adrs["project"].id, limit=2, offset=0)
@@ -297,7 +296,7 @@ class TestADRRepositoryList:
         assert len(adrs) == 2
 
     @pytest.mark.asyncio
-    async def test_find_by_status(self, db_session: AsyncSession, multiple_adrs):
+    async def test_find_by_status(self, db_session: AsyncSession, multiple_adrs) -> None:
         """Test finding ADRs by status."""
         repo = ADRRepository(db_session)
         adrs = await repo.find_by_status(multiple_adrs["project"].id, status="accepted")
@@ -325,7 +324,7 @@ class TestADRRepositoryUpdate:
         )
 
     @pytest.mark.asyncio
-    async def test_update_adr_success(self, db_session: AsyncSession, adr_for_update):
+    async def test_update_adr_success(self, db_session: AsyncSession, adr_for_update) -> None:
         """Test updating ADR successfully."""
         repo = ADRRepository(db_session)
 
@@ -341,7 +340,7 @@ class TestADRRepositoryUpdate:
         assert updated.version == 2
 
     @pytest.mark.asyncio
-    async def test_update_adr_not_found(self, db_session: AsyncSession):
+    async def test_update_adr_not_found(self, db_session: AsyncSession) -> None:
         """Test updating non-existent ADR."""
         repo = ADRRepository(db_session)
 
@@ -349,7 +348,7 @@ class TestADRRepositoryUpdate:
             await repo.update(str(uuid4()), expected_version=1, title="New Title")
 
     @pytest.mark.asyncio
-    async def test_update_adr_concurrency_error(self, db_session: AsyncSession, adr_for_update):
+    async def test_update_adr_concurrency_error(self, db_session: AsyncSession, adr_for_update) -> None:
         """Test optimistic locking on update."""
         repo = ADRRepository(db_session)
 
@@ -381,7 +380,7 @@ class TestADRRepositoryTransition:
         )
 
     @pytest.mark.asyncio
-    async def test_transition_proposed_to_accepted(self, db_session: AsyncSession, adr_for_transition):
+    async def test_transition_proposed_to_accepted(self, db_session: AsyncSession, adr_for_transition) -> None:
         """Test transitioning from proposed to accepted."""
         repo = ADRRepository(db_session)
 
@@ -391,7 +390,7 @@ class TestADRRepositoryTransition:
         assert updated.version == 2
 
     @pytest.mark.asyncio
-    async def test_transition_proposed_to_rejected(self, db_session: AsyncSession, adr_for_transition):
+    async def test_transition_proposed_to_rejected(self, db_session: AsyncSession, adr_for_transition) -> None:
         """Test transitioning from proposed to rejected."""
         repo = ADRRepository(db_session)
 
@@ -400,7 +399,7 @@ class TestADRRepositoryTransition:
         assert updated.status == "rejected"
 
     @pytest.mark.asyncio
-    async def test_transition_invalid(self, db_session: AsyncSession, adr_for_transition):
+    async def test_transition_invalid(self, db_session: AsyncSession, adr_for_transition) -> None:
         """Test invalid status transition."""
         repo = ADRRepository(db_session)
 
@@ -408,7 +407,7 @@ class TestADRRepositoryTransition:
             await repo.transition_status(adr_for_transition.id, "deprecated")
 
     @pytest.mark.asyncio
-    async def test_transition_not_found(self, db_session: AsyncSession):
+    async def test_transition_not_found(self, db_session: AsyncSession) -> None:
         """Test transition on non-existent ADR."""
         repo = ADRRepository(db_session)
 
@@ -435,7 +434,7 @@ class TestADRRepositoryVerify:
         )
 
     @pytest.mark.asyncio
-    async def test_verify_compliance(self, db_session: AsyncSession, adr_for_verify):
+    async def test_verify_compliance(self, db_session: AsyncSession, adr_for_verify) -> None:
         """Test verifying compliance score."""
         repo = ADRRepository(db_session)
 
@@ -446,7 +445,7 @@ class TestADRRepositoryVerify:
         assert updated.version == 2
 
     @pytest.mark.asyncio
-    async def test_verify_compliance_not_found(self, db_session: AsyncSession):
+    async def test_verify_compliance_not_found(self, db_session: AsyncSession) -> None:
         """Test verifying non-existent ADR."""
         repo = ADRRepository(db_session)
 
@@ -473,7 +472,7 @@ class TestADRRepositoryDelete:
         )
 
     @pytest.mark.asyncio
-    async def test_delete_adr(self, db_session: AsyncSession, adr_for_delete):
+    async def test_delete_adr(self, db_session: AsyncSession, adr_for_delete) -> None:
         """Test deleting ADR."""
         repo = ADRRepository(db_session)
 
@@ -485,7 +484,7 @@ class TestADRRepositoryDelete:
         assert deleted is None
 
     @pytest.mark.asyncio
-    async def test_delete_adr_not_found(self, db_session: AsyncSession):
+    async def test_delete_adr_not_found(self, db_session: AsyncSession) -> None:
         """Test deleting non-existent ADR."""
         repo = ADRRepository(db_session)
 
@@ -528,7 +527,7 @@ class TestADRRepositoryStats:
         return project
 
     @pytest.mark.asyncio
-    async def test_count_by_status(self, db_session: AsyncSession, adrs_for_stats):
+    async def test_count_by_status(self, db_session: AsyncSession, adrs_for_stats) -> None:
         """Test counting ADRs by status."""
         repo = ADRRepository(db_session)
 
@@ -563,7 +562,7 @@ class TestContractRepositoryCreate:
         return {"project": project, "item": item}
 
     @pytest.mark.asyncio
-    async def test_create_contract_success(self, db_session: AsyncSession, setup_for_contract):
+    async def test_create_contract_success(self, db_session: AsyncSession, setup_for_contract) -> None:
         """Test creating a contract successfully."""
         repo = ContractRepository(db_session)
 
@@ -584,7 +583,7 @@ class TestContractRepositoryCreate:
         assert contract.version == 1
 
     @pytest.mark.asyncio
-    async def test_create_contract_with_preconditions(self, db_session: AsyncSession, setup_for_contract):
+    async def test_create_contract_with_preconditions(self, db_session: AsyncSession, setup_for_contract) -> None:
         """Test creating contract with preconditions."""
         repo = ContractRepository(db_session)
 
@@ -603,7 +602,7 @@ class TestContractRepositoryCreate:
         assert contract.preconditions == preconditions
 
     @pytest.mark.asyncio
-    async def test_create_contract_with_postconditions(self, db_session: AsyncSession, setup_for_contract):
+    async def test_create_contract_with_postconditions(self, db_session: AsyncSession, setup_for_contract) -> None:
         """Test creating contract with postconditions."""
         repo = ContractRepository(db_session)
 
@@ -621,7 +620,7 @@ class TestContractRepositoryCreate:
         assert contract.postconditions == postconditions
 
     @pytest.mark.asyncio
-    async def test_create_contract_with_states(self, db_session: AsyncSession, setup_for_contract):
+    async def test_create_contract_with_states(self, db_session: AsyncSession, setup_for_contract) -> None:
         """Test creating contract with state machine."""
         repo = ContractRepository(db_session)
 
@@ -671,7 +670,7 @@ class TestContractRepositoryGet:
         return {"project": project, "item": item, "contract": contract}
 
     @pytest.mark.asyncio
-    async def test_get_by_id(self, db_session: AsyncSession, contract_setup):
+    async def test_get_by_id(self, db_session: AsyncSession, contract_setup) -> None:
         """Test getting contract by ID."""
         repo = ContractRepository(db_session)
         contract = await repo.get_by_id(contract_setup["contract"].id)
@@ -680,7 +679,7 @@ class TestContractRepositoryGet:
         assert contract.id == contract_setup["contract"].id
 
     @pytest.mark.asyncio
-    async def test_get_by_id_not_found(self, db_session: AsyncSession):
+    async def test_get_by_id_not_found(self, db_session: AsyncSession) -> None:
         """Test getting non-existent contract."""
         repo = ContractRepository(db_session)
         contract = await repo.get_by_id(str(uuid4()))
@@ -688,7 +687,7 @@ class TestContractRepositoryGet:
         assert contract is None
 
     @pytest.mark.asyncio
-    async def test_get_by_number(self, db_session: AsyncSession, contract_setup):
+    async def test_get_by_number(self, db_session: AsyncSession, contract_setup) -> None:
         """Test getting contract by number."""
         repo = ContractRepository(db_session)
         contract = await repo.get_by_number(contract_setup["contract"].contract_number)
@@ -731,7 +730,7 @@ class TestContractRepositoryList:
         return {"project": project, "items": items, "contracts": contracts}
 
     @pytest.mark.asyncio
-    async def test_list_by_project(self, db_session: AsyncSession, multiple_contracts):
+    async def test_list_by_project(self, db_session: AsyncSession, multiple_contracts) -> None:
         """Test listing contracts by project."""
         repo = ContractRepository(db_session)
         contracts = await repo.list_by_project(multiple_contracts["project"].id)
@@ -739,7 +738,7 @@ class TestContractRepositoryList:
         assert len(contracts) == 3
 
     @pytest.mark.asyncio
-    async def test_list_by_project_filter_by_type(self, db_session: AsyncSession, multiple_contracts):
+    async def test_list_by_project_filter_by_type(self, db_session: AsyncSession, multiple_contracts) -> None:
         """Test listing contracts filtered by type."""
         repo = ContractRepository(db_session)
         contracts = await repo.list_by_project(multiple_contracts["project"].id, contract_type="api")
@@ -747,7 +746,7 @@ class TestContractRepositoryList:
         assert len(contracts) == 2
 
     @pytest.mark.asyncio
-    async def test_list_by_item(self, db_session: AsyncSession, multiple_contracts):
+    async def test_list_by_item(self, db_session: AsyncSession, multiple_contracts) -> None:
         """Test listing contracts by item."""
         repo = ContractRepository(db_session)
         contracts = await repo.list_by_item(multiple_contracts["items"][0].id)
@@ -770,7 +769,7 @@ class TestFeatureRepositoryCreate:
         return await project_repo.create(name="Feature Test Project")
 
     @pytest.mark.asyncio
-    async def test_create_feature_success(self, db_session: AsyncSession, project):
+    async def test_create_feature_success(self, db_session: AsyncSession, project) -> None:
         """Test creating a feature successfully."""
         repo = FeatureRepository(db_session)
 
@@ -789,7 +788,7 @@ class TestFeatureRepositoryCreate:
         assert feature.version == 1
 
     @pytest.mark.asyncio
-    async def test_create_feature_with_user_story(self, db_session: AsyncSession, project):
+    async def test_create_feature_with_user_story(self, db_session: AsyncSession, project) -> None:
         """Test creating feature with user story format."""
         repo = FeatureRepository(db_session)
 
@@ -824,7 +823,7 @@ class TestFeatureRepositoryGet:
         return {"project": project, "feature": feature}
 
     @pytest.mark.asyncio
-    async def test_get_by_id(self, db_session: AsyncSession, feature_setup):
+    async def test_get_by_id(self, db_session: AsyncSession, feature_setup) -> None:
         """Test getting feature by ID."""
         repo = FeatureRepository(db_session)
         feature = await repo.get_by_id(feature_setup["feature"].id)
@@ -833,7 +832,7 @@ class TestFeatureRepositoryGet:
         assert feature.id == feature_setup["feature"].id
 
     @pytest.mark.asyncio
-    async def test_get_by_number(self, db_session: AsyncSession, feature_setup):
+    async def test_get_by_number(self, db_session: AsyncSession, feature_setup) -> None:
         """Test getting feature by number."""
         repo = FeatureRepository(db_session)
         feature = await repo.get_by_number(feature_setup["feature"].feature_number)
@@ -862,7 +861,7 @@ class TestFeatureRepositoryList:
         return {"project": project, "features": features}
 
     @pytest.mark.asyncio
-    async def test_list_by_project(self, db_session: AsyncSession, multiple_features):
+    async def test_list_by_project(self, db_session: AsyncSession, multiple_features) -> None:
         """Test listing features by project."""
         repo = FeatureRepository(db_session)
         features = await repo.list_by_project(multiple_features["project"].id)
@@ -893,7 +892,7 @@ class TestScenarioRepositoryCreate:
         return {"project": project, "feature": feature}
 
     @pytest.mark.asyncio
-    async def test_create_scenario_success(self, db_session: AsyncSession, feature_setup):
+    async def test_create_scenario_success(self, db_session: AsyncSession, feature_setup) -> None:
         """Test creating a scenario successfully."""
         repo = ScenarioRepository(db_session)
 
@@ -918,7 +917,7 @@ class TestScenarioRepositoryCreate:
         assert scenario.version == 1
 
     @pytest.mark.asyncio
-    async def test_create_scenario_outline(self, db_session: AsyncSession, feature_setup):
+    async def test_create_scenario_outline(self, db_session: AsyncSession, feature_setup) -> None:
         """Test creating a scenario outline with examples."""
         repo = ScenarioRepository(db_session)
 
@@ -960,7 +959,7 @@ class TestScenarioRepositoryGet:
         return {"project": project, "feature": feature, "scenario": scenario}
 
     @pytest.mark.asyncio
-    async def test_get_by_id(self, db_session: AsyncSession, scenario_setup):
+    async def test_get_by_id(self, db_session: AsyncSession, scenario_setup) -> None:
         """Test getting scenario by ID."""
         repo = ScenarioRepository(db_session)
         scenario = await repo.get_by_id(scenario_setup["scenario"].id)
@@ -969,7 +968,7 @@ class TestScenarioRepositoryGet:
         assert scenario.id == scenario_setup["scenario"].id
 
     @pytest.mark.asyncio
-    async def test_get_by_number(self, db_session: AsyncSession, scenario_setup):
+    async def test_get_by_number(self, db_session: AsyncSession, scenario_setup) -> None:
         """Test getting scenario by number."""
         repo = ScenarioRepository(db_session)
         scenario = await repo.get_by_number(scenario_setup["scenario"].scenario_number)
@@ -1005,7 +1004,7 @@ class TestScenarioRepositoryList:
         return {"project": project, "feature": feature, "scenarios": scenarios}
 
     @pytest.mark.asyncio
-    async def test_list_by_feature(self, db_session: AsyncSession, multiple_scenarios):
+    async def test_list_by_feature(self, db_session: AsyncSession, multiple_scenarios) -> None:
         """Test listing scenarios by feature."""
         repo = ScenarioRepository(db_session)
         scenarios = await repo.list_by_feature(multiple_scenarios["feature"].id)
@@ -1028,7 +1027,7 @@ class TestADRRepositoryAdditionalTransitions:
         return await project_repo.create(name="ADR Transition Test Project")
 
     @pytest.mark.asyncio
-    async def test_transition_accepted_to_deprecated(self, db_session: AsyncSession, project):
+    async def test_transition_accepted_to_deprecated(self, db_session: AsyncSession, project) -> None:
         """Test transitioning from accepted to deprecated."""
         adr_repo = ADRRepository(db_session)
 
@@ -1050,7 +1049,7 @@ class TestADRRepositoryAdditionalTransitions:
         assert updated.version == 3  # created=1, accepted=2, deprecated=3
 
     @pytest.mark.asyncio
-    async def test_transition_rejected_to_proposed(self, db_session: AsyncSession, project):
+    async def test_transition_rejected_to_proposed(self, db_session: AsyncSession, project) -> None:
         """Test transitioning from rejected back to proposed."""
         adr_repo = ADRRepository(db_session)
 
@@ -1072,7 +1071,7 @@ class TestADRRepositoryAdditionalTransitions:
         assert updated.version == 3
 
     @pytest.mark.asyncio
-    async def test_transition_deprecated_is_terminal(self, db_session: AsyncSession, project):
+    async def test_transition_deprecated_is_terminal(self, db_session: AsyncSession, project) -> None:
         """Test that deprecated is a terminal state."""
         adr_repo = ADRRepository(db_session)
 
@@ -1102,7 +1101,7 @@ class TestADRNumberFormat:
         return await project_repo.create(name="ADR Number Test Project")
 
     @pytest.mark.asyncio
-    async def test_adr_number_format(self, db_session: AsyncSession, project):
+    async def test_adr_number_format(self, db_session: AsyncSession, project) -> None:
         """Test ADR number format is ADR-YYYYMMDD-XXXXXXXX."""
         import re
 
@@ -1153,7 +1152,7 @@ class TestADRRepositoryFindRelated:
         return {"project": project, "original": original, "superseding": superseding}
 
     @pytest.mark.asyncio
-    async def test_find_related_adrs(self, db_session: AsyncSession, related_adrs):
+    async def test_find_related_adrs(self, db_session: AsyncSession, related_adrs) -> None:
         """Test finding related ADRs."""
         repo = ADRRepository(db_session)
         related = await repo.find_related(related_adrs["original"].id)
@@ -1197,7 +1196,7 @@ class TestContractRepositoryUpdate:
         return {"project": project, "item": item, "contract": contract}
 
     @pytest.mark.asyncio
-    async def test_update_contract_success(self, db_session: AsyncSession, contract_for_update):
+    async def test_update_contract_success(self, db_session: AsyncSession, contract_for_update) -> None:
         """Test updating contract successfully."""
         repo = ContractRepository(db_session)
 
@@ -1211,7 +1210,7 @@ class TestContractRepositoryUpdate:
         assert updated.version == 2
 
     @pytest.mark.asyncio
-    async def test_update_contract_not_found(self, db_session: AsyncSession):
+    async def test_update_contract_not_found(self, db_session: AsyncSession) -> None:
         """Test updating non-existent contract."""
         repo = ContractRepository(db_session)
 
@@ -1223,7 +1222,7 @@ class TestContractRepositoryUpdate:
             )
 
     @pytest.mark.asyncio
-    async def test_update_contract_concurrency_error(self, db_session: AsyncSession, contract_for_update):
+    async def test_update_contract_concurrency_error(self, db_session: AsyncSession, contract_for_update) -> None:
         """Test optimistic locking on contract update."""
         repo = ContractRepository(db_session)
 
@@ -1262,7 +1261,7 @@ class TestContractRepositoryTransition:
         )
 
     @pytest.mark.asyncio
-    async def test_transition_draft_to_review(self, db_session: AsyncSession, contract_for_transition):
+    async def test_transition_draft_to_review(self, db_session: AsyncSession, contract_for_transition) -> None:
         """Test transitioning contract from draft to review."""
         repo = ContractRepository(db_session)
 
@@ -1272,7 +1271,7 @@ class TestContractRepositoryTransition:
         assert updated.version == 2
 
     @pytest.mark.asyncio
-    async def test_transition_review_to_approved(self, db_session: AsyncSession, contract_for_transition):
+    async def test_transition_review_to_approved(self, db_session: AsyncSession, contract_for_transition) -> None:
         """Test transitioning contract from review to approved."""
         repo = ContractRepository(db_session)
 
@@ -1286,7 +1285,7 @@ class TestContractRepositoryTransition:
         assert updated.version == 3
 
     @pytest.mark.asyncio
-    async def test_transition_approved_to_archived(self, db_session: AsyncSession, contract_for_transition):
+    async def test_transition_approved_to_archived(self, db_session: AsyncSession, contract_for_transition) -> None:
         """Test transitioning contract from approved to archived."""
         repo = ContractRepository(db_session)
 
@@ -1300,7 +1299,7 @@ class TestContractRepositoryTransition:
         assert updated.status == "archived"
 
     @pytest.mark.asyncio
-    async def test_transition_invalid(self, db_session: AsyncSession, contract_for_transition):
+    async def test_transition_invalid(self, db_session: AsyncSession, contract_for_transition) -> None:
         """Test invalid status transition."""
         repo = ContractRepository(db_session)
 
@@ -1309,7 +1308,7 @@ class TestContractRepositoryTransition:
             await repo.transition_status(contract_for_transition.id, "approved")
 
     @pytest.mark.asyncio
-    async def test_transition_archived_is_terminal(self, db_session: AsyncSession, contract_for_transition):
+    async def test_transition_archived_is_terminal(self, db_session: AsyncSession, contract_for_transition) -> None:
         """Test that archived is a terminal state."""
         repo = ContractRepository(db_session)
 
@@ -1323,7 +1322,7 @@ class TestContractRepositoryTransition:
             await repo.transition_status(contract_for_transition.id, "draft")
 
     @pytest.mark.asyncio
-    async def test_transition_not_found(self, db_session: AsyncSession):
+    async def test_transition_not_found(self, db_session: AsyncSession) -> None:
         """Test transition on non-existent contract."""
         repo = ContractRepository(db_session)
 
@@ -1357,7 +1356,7 @@ class TestContractRepositoryDelete:
         )
 
     @pytest.mark.asyncio
-    async def test_delete_contract(self, db_session: AsyncSession, contract_for_delete):
+    async def test_delete_contract(self, db_session: AsyncSession, contract_for_delete) -> None:
         """Test deleting contract."""
         repo = ContractRepository(db_session)
 
@@ -1369,7 +1368,7 @@ class TestContractRepositoryDelete:
         assert deleted is None
 
     @pytest.mark.asyncio
-    async def test_delete_contract_not_found(self, db_session: AsyncSession):
+    async def test_delete_contract_not_found(self, db_session: AsyncSession) -> None:
         """Test deleting non-existent contract."""
         repo = ContractRepository(db_session)
 
@@ -1412,7 +1411,7 @@ class TestContractRepositoryStats:
         return project
 
     @pytest.mark.asyncio
-    async def test_count_by_type(self, db_session: AsyncSession, contracts_for_stats):
+    async def test_count_by_type(self, db_session: AsyncSession, contracts_for_stats) -> None:
         """Test counting contracts by type."""
         repo = ContractRepository(db_session)
 
@@ -1448,7 +1447,7 @@ class TestContractRepositoryVerify:
         )
 
     @pytest.mark.asyncio
-    async def test_verify_contract(self, db_session: AsyncSession, contract_for_verify):
+    async def test_verify_contract(self, db_session: AsyncSession, contract_for_verify) -> None:
         """Test verifying contract."""
         repo = ContractRepository(db_session)
 
@@ -1460,7 +1459,7 @@ class TestContractRepositoryVerify:
         assert updated.version == 2
 
     @pytest.mark.asyncio
-    async def test_verify_contract_not_found(self, db_session: AsyncSession):
+    async def test_verify_contract_not_found(self, db_session: AsyncSession) -> None:
         """Test verifying non-existent contract."""
         repo = ContractRepository(db_session)
 
@@ -1488,7 +1487,7 @@ class TestContractNumberFormat:
         return {"project": project, "item": item}
 
     @pytest.mark.asyncio
-    async def test_contract_number_format(self, db_session: AsyncSession, setup):
+    async def test_contract_number_format(self, db_session: AsyncSession, setup) -> None:
         """Test contract number format is CTR-YYYYMMDD-XXXXXXXX."""
         import re
 
@@ -1528,7 +1527,7 @@ class TestFeatureRepositoryUpdate:
         )
 
     @pytest.mark.asyncio
-    async def test_update_feature_success(self, db_session: AsyncSession, feature_for_update):
+    async def test_update_feature_success(self, db_session: AsyncSession, feature_for_update) -> None:
         """Test updating feature successfully."""
         repo = FeatureRepository(db_session)
 
@@ -1544,7 +1543,7 @@ class TestFeatureRepositoryUpdate:
         assert updated.version == 2
 
     @pytest.mark.asyncio
-    async def test_update_feature_not_found(self, db_session: AsyncSession):
+    async def test_update_feature_not_found(self, db_session: AsyncSession) -> None:
         """Test updating non-existent feature."""
         repo = FeatureRepository(db_session)
 
@@ -1556,7 +1555,7 @@ class TestFeatureRepositoryUpdate:
             )
 
     @pytest.mark.asyncio
-    async def test_update_feature_concurrency_error(self, db_session: AsyncSession, feature_for_update):
+    async def test_update_feature_concurrency_error(self, db_session: AsyncSession, feature_for_update) -> None:
         """Test optimistic locking on feature update."""
         repo = FeatureRepository(db_session)
 
@@ -1585,7 +1584,7 @@ class TestFeatureRepositoryTransition:
         )
 
     @pytest.mark.asyncio
-    async def test_transition_draft_to_review(self, db_session: AsyncSession, feature_for_transition):
+    async def test_transition_draft_to_review(self, db_session: AsyncSession, feature_for_transition) -> None:
         """Test transitioning feature from draft to review."""
         repo = FeatureRepository(db_session)
 
@@ -1595,7 +1594,7 @@ class TestFeatureRepositoryTransition:
         assert updated.version == 2
 
     @pytest.mark.asyncio
-    async def test_transition_review_to_approved(self, db_session: AsyncSession, feature_for_transition):
+    async def test_transition_review_to_approved(self, db_session: AsyncSession, feature_for_transition) -> None:
         """Test transitioning feature from review to approved."""
         repo = FeatureRepository(db_session)
 
@@ -1605,7 +1604,7 @@ class TestFeatureRepositoryTransition:
         assert updated.status == "approved"
 
     @pytest.mark.asyncio
-    async def test_transition_approved_to_implemented(self, db_session: AsyncSession, feature_for_transition):
+    async def test_transition_approved_to_implemented(self, db_session: AsyncSession, feature_for_transition) -> None:
         """Test transitioning feature from approved to implemented."""
         repo = FeatureRepository(db_session)
 
@@ -1616,7 +1615,7 @@ class TestFeatureRepositoryTransition:
         assert updated.status == "implemented"
 
     @pytest.mark.asyncio
-    async def test_transition_invalid(self, db_session: AsyncSession, feature_for_transition):
+    async def test_transition_invalid(self, db_session: AsyncSession, feature_for_transition) -> None:
         """Test invalid status transition."""
         repo = FeatureRepository(db_session)
 
@@ -1625,7 +1624,7 @@ class TestFeatureRepositoryTransition:
             await repo.transition_status(feature_for_transition.id, "implemented")
 
     @pytest.mark.asyncio
-    async def test_transition_not_found(self, db_session: AsyncSession):
+    async def test_transition_not_found(self, db_session: AsyncSession) -> None:
         """Test transition on non-existent feature."""
         repo = FeatureRepository(db_session)
 
@@ -1661,7 +1660,7 @@ class TestFeatureRepositoryDelete:
         return {"project": project, "feature": feature, "scenarios": scenarios}
 
     @pytest.mark.asyncio
-    async def test_delete_feature_cascades_to_scenarios(self, db_session: AsyncSession, feature_with_scenarios):
+    async def test_delete_feature_cascades_to_scenarios(self, db_session: AsyncSession, feature_with_scenarios) -> None:
         """Test that deleting a feature also deletes its scenarios."""
         feature_repo = FeatureRepository(db_session)
         scenario_repo = ScenarioRepository(db_session)
@@ -1683,7 +1682,7 @@ class TestFeatureRepositoryDelete:
         assert len(scenarios_after) == 0
 
     @pytest.mark.asyncio
-    async def test_delete_feature_not_found(self, db_session: AsyncSession):
+    async def test_delete_feature_not_found(self, db_session: AsyncSession) -> None:
         """Test deleting non-existent feature."""
         repo = FeatureRepository(db_session)
 
@@ -1722,7 +1721,7 @@ class TestFeatureRepositoryListWithScenarios:
         return {"project": project, "features": features}
 
     @pytest.mark.asyncio
-    async def test_list_with_scenarios(self, db_session: AsyncSession, features_with_scenarios):
+    async def test_list_with_scenarios(self, db_session: AsyncSession, features_with_scenarios) -> None:
         """Test listing features with their scenarios."""
         repo = FeatureRepository(db_session)
 
@@ -1743,7 +1742,7 @@ class TestFeatureNumberFormat:
         return await project_repo.create(name="Feature Number Test")
 
     @pytest.mark.asyncio
-    async def test_feature_number_format(self, db_session: AsyncSession, project):
+    async def test_feature_number_format(self, db_session: AsyncSession, project) -> None:
         """Test feature number format is FEAT-YYYYMMDD-XXXXXXXX."""
         import re
 
@@ -1788,7 +1787,7 @@ class TestScenarioRepositoryUpdate:
         )
 
     @pytest.mark.asyncio
-    async def test_update_scenario_success(self, db_session: AsyncSession, scenario_for_update):
+    async def test_update_scenario_success(self, db_session: AsyncSession, scenario_for_update) -> None:
         """Test updating scenario successfully."""
         repo = ScenarioRepository(db_session)
 
@@ -1804,7 +1803,7 @@ class TestScenarioRepositoryUpdate:
         assert updated.version == 2
 
     @pytest.mark.asyncio
-    async def test_update_scenario_not_found(self, db_session: AsyncSession):
+    async def test_update_scenario_not_found(self, db_session: AsyncSession) -> None:
         """Test updating non-existent scenario."""
         repo = ScenarioRepository(db_session)
 
@@ -1816,7 +1815,7 @@ class TestScenarioRepositoryUpdate:
             )
 
     @pytest.mark.asyncio
-    async def test_update_scenario_concurrency_error(self, db_session: AsyncSession, scenario_for_update):
+    async def test_update_scenario_concurrency_error(self, db_session: AsyncSession, scenario_for_update) -> None:
         """Test optimistic locking on scenario update."""
         repo = ScenarioRepository(db_session)
 
@@ -1852,7 +1851,7 @@ class TestScenarioRepositoryTransition:
         )
 
     @pytest.mark.asyncio
-    async def test_transition_draft_to_ready(self, db_session: AsyncSession, scenario_for_transition):
+    async def test_transition_draft_to_ready(self, db_session: AsyncSession, scenario_for_transition) -> None:
         """Test transitioning scenario from draft to ready."""
         repo = ScenarioRepository(db_session)
 
@@ -1862,7 +1861,7 @@ class TestScenarioRepositoryTransition:
         assert updated.version == 2
 
     @pytest.mark.asyncio
-    async def test_transition_ready_to_executing(self, db_session: AsyncSession, scenario_for_transition):
+    async def test_transition_ready_to_executing(self, db_session: AsyncSession, scenario_for_transition) -> None:
         """Test transitioning scenario from ready to executing."""
         repo = ScenarioRepository(db_session)
 
@@ -1872,7 +1871,7 @@ class TestScenarioRepositoryTransition:
         assert updated.status == "executing"
 
     @pytest.mark.asyncio
-    async def test_transition_executing_to_passed(self, db_session: AsyncSession, scenario_for_transition):
+    async def test_transition_executing_to_passed(self, db_session: AsyncSession, scenario_for_transition) -> None:
         """Test transitioning scenario from executing to passed."""
         repo = ScenarioRepository(db_session)
 
@@ -1883,7 +1882,7 @@ class TestScenarioRepositoryTransition:
         assert updated.status == "passed"
 
     @pytest.mark.asyncio
-    async def test_transition_executing_to_failed(self, db_session: AsyncSession, scenario_for_transition):
+    async def test_transition_executing_to_failed(self, db_session: AsyncSession, scenario_for_transition) -> None:
         """Test transitioning scenario from executing to failed."""
         repo = ScenarioRepository(db_session)
 
@@ -1894,7 +1893,7 @@ class TestScenarioRepositoryTransition:
         assert updated.status == "failed"
 
     @pytest.mark.asyncio
-    async def test_transition_failed_to_executing_retry(self, db_session: AsyncSession, scenario_for_transition):
+    async def test_transition_failed_to_executing_retry(self, db_session: AsyncSession, scenario_for_transition) -> None:
         """Test transitioning scenario from failed back to executing (retry)."""
         repo = ScenarioRepository(db_session)
 
@@ -1908,7 +1907,7 @@ class TestScenarioRepositoryTransition:
         assert updated.status == "executing"
 
     @pytest.mark.asyncio
-    async def test_transition_invalid(self, db_session: AsyncSession, scenario_for_transition):
+    async def test_transition_invalid(self, db_session: AsyncSession, scenario_for_transition) -> None:
         """Test invalid status transition."""
         repo = ScenarioRepository(db_session)
 
@@ -1917,7 +1916,7 @@ class TestScenarioRepositoryTransition:
             await repo.transition_status(scenario_for_transition.id, "passed")
 
     @pytest.mark.asyncio
-    async def test_transition_not_found(self, db_session: AsyncSession):
+    async def test_transition_not_found(self, db_session: AsyncSession) -> None:
         """Test transition on non-existent scenario."""
         repo = ScenarioRepository(db_session)
 
@@ -1948,7 +1947,7 @@ class TestScenarioRepositoryDelete:
         )
 
     @pytest.mark.asyncio
-    async def test_delete_scenario(self, db_session: AsyncSession, scenario_for_delete):
+    async def test_delete_scenario(self, db_session: AsyncSession, scenario_for_delete) -> None:
         """Test deleting scenario."""
         repo = ScenarioRepository(db_session)
 
@@ -1960,7 +1959,7 @@ class TestScenarioRepositoryDelete:
         assert deleted is None
 
     @pytest.mark.asyncio
-    async def test_delete_scenario_not_found(self, db_session: AsyncSession):
+    async def test_delete_scenario_not_found(self, db_session: AsyncSession) -> None:
         """Test deleting non-existent scenario."""
         repo = ScenarioRepository(db_session)
 
@@ -2001,7 +2000,7 @@ class TestScenarioRepositoryStats:
         return feature
 
     @pytest.mark.asyncio
-    async def test_count_by_status(self, db_session: AsyncSession, scenarios_for_stats):
+    async def test_count_by_status(self, db_session: AsyncSession, scenarios_for_stats) -> None:
         """Test counting scenarios by status."""
         repo = ScenarioRepository(db_session)
 
@@ -2013,7 +2012,7 @@ class TestScenarioRepositoryStats:
         assert counts.get("failed") == 1
 
     @pytest.mark.asyncio
-    async def test_get_average_pass_rate(self, db_session: AsyncSession, scenarios_for_stats):
+    async def test_get_average_pass_rate(self, db_session: AsyncSession, scenarios_for_stats) -> None:
         """Test getting average pass rate for scenarios."""
         repo = ScenarioRepository(db_session)
 
@@ -2023,7 +2022,7 @@ class TestScenarioRepositoryStats:
         assert abs(avg_pass_rate - 0.3) < 0.01
 
     @pytest.mark.asyncio
-    async def test_get_average_pass_rate_no_scenarios(self, db_session: AsyncSession):
+    async def test_get_average_pass_rate_no_scenarios(self, db_session: AsyncSession) -> None:
         """Test getting average pass rate when no scenarios exist."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Empty Feature Test")
@@ -2064,7 +2063,7 @@ class TestScenarioRepositoryUpdatePassRate:
         )
 
     @pytest.mark.asyncio
-    async def test_update_pass_rate(self, db_session: AsyncSession, scenario_for_pass_rate):
+    async def test_update_pass_rate(self, db_session: AsyncSession, scenario_for_pass_rate) -> None:
         """Test updating scenario pass rate."""
         repo = ScenarioRepository(db_session)
 
@@ -2074,7 +2073,7 @@ class TestScenarioRepositoryUpdatePassRate:
         assert updated.version == 2
 
     @pytest.mark.asyncio
-    async def test_update_pass_rate_not_found(self, db_session: AsyncSession):
+    async def test_update_pass_rate_not_found(self, db_session: AsyncSession) -> None:
         """Test updating pass rate for non-existent scenario."""
         repo = ScenarioRepository(db_session)
 
@@ -2111,7 +2110,7 @@ class TestScenarioRepositoryFindByStatus:
         return feature
 
     @pytest.mark.asyncio
-    async def test_find_by_status_draft(self, db_session: AsyncSession, scenarios_with_statuses):
+    async def test_find_by_status_draft(self, db_session: AsyncSession, scenarios_with_statuses) -> None:
         """Test finding scenarios by draft status."""
         repo = ScenarioRepository(db_session)
 
@@ -2122,7 +2121,7 @@ class TestScenarioRepositoryFindByStatus:
             assert s.status == "draft"
 
     @pytest.mark.asyncio
-    async def test_find_by_status_ready(self, db_session: AsyncSession, scenarios_with_statuses):
+    async def test_find_by_status_ready(self, db_session: AsyncSession, scenarios_with_statuses) -> None:
         """Test finding scenarios by ready status."""
         repo = ScenarioRepository(db_session)
 
@@ -2133,7 +2132,7 @@ class TestScenarioRepositoryFindByStatus:
             assert s.status == "ready"
 
     @pytest.mark.asyncio
-    async def test_find_by_status_passed(self, db_session: AsyncSession, scenarios_with_statuses):
+    async def test_find_by_status_passed(self, db_session: AsyncSession, scenarios_with_statuses) -> None:
         """Test finding scenarios by passed status."""
         repo = ScenarioRepository(db_session)
 
@@ -2159,7 +2158,7 @@ class TestScenarioNumberFormat:
         )
 
     @pytest.mark.asyncio
-    async def test_scenario_number_format(self, db_session: AsyncSession, feature):
+    async def test_scenario_number_format(self, db_session: AsyncSession, feature) -> None:
         """Test scenario number format is SC-YYYYMMDD-XXXXXXXX."""
         import re
 
@@ -2201,7 +2200,7 @@ class TestADRRepositoryUpdateEdgeCases:
         )
 
     @pytest.mark.asyncio
-    async def test_update_with_invalid_attribute(self, db_session: AsyncSession, adr_for_edge_cases):
+    async def test_update_with_invalid_attribute(self, db_session: AsyncSession, adr_for_edge_cases) -> None:
         """Test update ignores invalid attributes that don't exist on model."""
         repo = ADRRepository(db_session)
 
@@ -2221,7 +2220,7 @@ class TestADRRepositoryUpdateEdgeCases:
         assert not hasattr(updated, "nonexistent_field")
 
     @pytest.mark.asyncio
-    async def test_update_with_only_invalid_attributes(self, db_session: AsyncSession, adr_for_edge_cases):
+    async def test_update_with_only_invalid_attributes(self, db_session: AsyncSession, adr_for_edge_cases) -> None:
         """Test update with only invalid attributes still increments version."""
         repo = ADRRepository(db_session)
 
@@ -2272,7 +2271,7 @@ class TestContractRepositoryListFilters:
         return {"project": project, "contracts": contracts}
 
     @pytest.mark.asyncio
-    async def test_list_by_project_filter_by_status(self, db_session: AsyncSession, contracts_with_statuses):
+    async def test_list_by_project_filter_by_status(self, db_session: AsyncSession, contracts_with_statuses) -> None:
         """Test listing contracts filtered by status."""
         repo = ContractRepository(db_session)
 
@@ -2289,13 +2288,13 @@ class TestContractRepositoryListFilters:
         assert len(approved_contracts) == 1
 
     @pytest.mark.asyncio
-    async def test_list_by_project_filter_by_type_and_status(self, db_session: AsyncSession, contracts_with_statuses):
+    async def test_list_by_project_filter_by_type_and_status(self, db_session: AsyncSession, contracts_with_statuses) -> None:
         """Test listing contracts with both type and status filters."""
         repo = ContractRepository(db_session)
 
         # Filter by both type and status
         filtered = await repo.list_by_project(
-            contracts_with_statuses["project"].id, contract_type="api", status="draft"
+            contracts_with_statuses["project"].id, contract_type="api", status="draft",
         )
         assert len(filtered) == 2
 
@@ -2326,7 +2325,7 @@ class TestContractRepositoryUpdateEdgeCases:
         )
 
     @pytest.mark.asyncio
-    async def test_update_with_invalid_attribute(self, db_session: AsyncSession, contract_for_edge_cases):
+    async def test_update_with_invalid_attribute(self, db_session: AsyncSession, contract_for_edge_cases) -> None:
         """Test update ignores invalid attributes that don't exist on model."""
         repo = ContractRepository(db_session)
 
@@ -2373,7 +2372,7 @@ class TestContractRepositoryTransitionEdgeCases:
         return {"project": project, "item": item, "draft": draft}
 
     @pytest.mark.asyncio
-    async def test_transition_draft_to_deprecated(self, db_session: AsyncSession, contracts_for_transition):
+    async def test_transition_draft_to_deprecated(self, db_session: AsyncSession, contracts_for_transition) -> None:
         """Test transitioning from draft directly to deprecated."""
         repo = ContractRepository(db_session)
 
@@ -2382,7 +2381,7 @@ class TestContractRepositoryTransitionEdgeCases:
         assert updated.status == "deprecated"
 
     @pytest.mark.asyncio
-    async def test_transition_review_to_draft(self, db_session: AsyncSession, contracts_for_transition):
+    async def test_transition_review_to_draft(self, db_session: AsyncSession, contracts_for_transition) -> None:
         """Test transitioning from review back to draft."""
         repo = ContractRepository(db_session)
 
@@ -2395,7 +2394,7 @@ class TestContractRepositoryTransitionEdgeCases:
         assert updated.status == "draft"
 
     @pytest.mark.asyncio
-    async def test_transition_deprecated_to_draft(self, db_session: AsyncSession, contracts_for_transition):
+    async def test_transition_deprecated_to_draft(self, db_session: AsyncSession, contracts_for_transition) -> None:
         """Test transitioning from deprecated back to draft (revival)."""
         repo = ContractRepository(db_session)
 
@@ -2451,7 +2450,7 @@ class TestFeatureRepositoryFilters:
         }
 
     @pytest.mark.asyncio
-    async def test_get_by_id_with_project_scope(self, db_session: AsyncSession, features_setup):
+    async def test_get_by_id_with_project_scope(self, db_session: AsyncSession, features_setup) -> None:
         """Test getting feature by ID with project scope."""
         repo = FeatureRepository(db_session)
 
@@ -2462,12 +2461,12 @@ class TestFeatureRepositoryFilters:
 
         # Try to get feature1 with wrong project scope
         feature_wrong_project = await repo.get_by_id(
-            features_setup["features"][0].id, project_id=features_setup["project2"].id
+            features_setup["features"][0].id, project_id=features_setup["project2"].id,
         )
         assert feature_wrong_project is None
 
     @pytest.mark.asyncio
-    async def test_get_by_number_with_project_scope(self, db_session: AsyncSession, features_setup):
+    async def test_get_by_number_with_project_scope(self, db_session: AsyncSession, features_setup) -> None:
         """Test getting feature by number with project scope."""
         repo = FeatureRepository(db_session)
 
@@ -2482,7 +2481,7 @@ class TestFeatureRepositoryFilters:
         assert feature_wrong_project is None
 
     @pytest.mark.asyncio
-    async def test_list_by_project_with_status_filter(self, db_session: AsyncSession, features_setup):
+    async def test_list_by_project_with_status_filter(self, db_session: AsyncSession, features_setup) -> None:
         """Test listing features filtered by status."""
         repo = FeatureRepository(db_session)
 
@@ -2511,7 +2510,7 @@ class TestFeatureRepositoryUpdateEdgeCases:
         )
 
     @pytest.mark.asyncio
-    async def test_update_with_invalid_attribute(self, db_session: AsyncSession, feature_for_edge_cases):
+    async def test_update_with_invalid_attribute(self, db_session: AsyncSession, feature_for_edge_cases) -> None:
         """Test update ignores invalid attributes that don't exist on model."""
         repo = FeatureRepository(db_session)
 
@@ -2558,7 +2557,7 @@ class TestScenarioRepositoryFilters:
         return {"feature": feature, "scenarios": scenarios}
 
     @pytest.mark.asyncio
-    async def test_list_by_feature_with_status_filter(self, db_session: AsyncSession, scenarios_for_filters):
+    async def test_list_by_feature_with_status_filter(self, db_session: AsyncSession, scenarios_for_filters) -> None:
         """Test listing scenarios filtered by status."""
         repo = ScenarioRepository(db_session)
 
@@ -2598,7 +2597,7 @@ class TestScenarioRepositoryUpdateEdgeCases:
         )
 
     @pytest.mark.asyncio
-    async def test_update_with_invalid_attribute(self, db_session: AsyncSession, scenario_for_edge_cases):
+    async def test_update_with_invalid_attribute(self, db_session: AsyncSession, scenario_for_edge_cases) -> None:
         """Test update ignores invalid attributes that don't exist on model."""
         repo = ScenarioRepository(db_session)
 
@@ -2614,7 +2613,7 @@ class TestScenarioRepositoryUpdateEdgeCases:
         assert not hasattr(updated, "nonexistent_field")
 
     @pytest.mark.asyncio
-    async def test_update_gherkin_steps(self, db_session: AsyncSession, scenario_for_edge_cases):
+    async def test_update_gherkin_steps(self, db_session: AsyncSession, scenario_for_edge_cases) -> None:
         """Test updating scenario with new Gherkin steps."""
         repo = ScenarioRepository(db_session)
 
@@ -2660,7 +2659,7 @@ class TestScenarioRepositoryTransitionEdgeCases:
         )
 
     @pytest.mark.asyncio
-    async def test_transition_draft_to_review(self, db_session: AsyncSession, scenario_for_transition):
+    async def test_transition_draft_to_review(self, db_session: AsyncSession, scenario_for_transition) -> None:
         """Test transitioning scenario from draft to review."""
         repo = ScenarioRepository(db_session)
 
@@ -2669,7 +2668,7 @@ class TestScenarioRepositoryTransitionEdgeCases:
         assert updated.status == "review"
 
     @pytest.mark.asyncio
-    async def test_transition_review_to_draft(self, db_session: AsyncSession, scenario_for_transition):
+    async def test_transition_review_to_draft(self, db_session: AsyncSession, scenario_for_transition) -> None:
         """Test transitioning scenario from review back to draft."""
         repo = ScenarioRepository(db_session)
 
@@ -2682,7 +2681,7 @@ class TestScenarioRepositoryTransitionEdgeCases:
         assert updated.status == "draft"
 
     @pytest.mark.asyncio
-    async def test_transition_review_to_ready(self, db_session: AsyncSession, scenario_for_transition):
+    async def test_transition_review_to_ready(self, db_session: AsyncSession, scenario_for_transition) -> None:
         """Test transitioning scenario from review to ready."""
         repo = ScenarioRepository(db_session)
 
@@ -2695,7 +2694,7 @@ class TestScenarioRepositoryTransitionEdgeCases:
         assert updated.status == "ready"
 
     @pytest.mark.asyncio
-    async def test_transition_passed_to_executing_retest(self, db_session: AsyncSession, scenario_for_transition):
+    async def test_transition_passed_to_executing_retest(self, db_session: AsyncSession, scenario_for_transition) -> None:
         """Test transitioning scenario from passed back to executing (retest)."""
         repo = ScenarioRepository(db_session)
 
@@ -2710,7 +2709,7 @@ class TestScenarioRepositoryTransitionEdgeCases:
         assert updated.status == "executing"
 
     @pytest.mark.asyncio
-    async def test_transition_ready_to_executing(self, db_session: AsyncSession, scenario_for_transition):
+    async def test_transition_ready_to_executing(self, db_session: AsyncSession, scenario_for_transition) -> None:
         """Test transitioning scenario from ready to executing."""
         repo = ScenarioRepository(db_session)
 
@@ -2720,7 +2719,7 @@ class TestScenarioRepositoryTransitionEdgeCases:
         assert updated.status == "executing"
 
     @pytest.mark.asyncio
-    async def test_transition_deprecated_is_terminal(self, db_session: AsyncSession, scenario_for_transition):
+    async def test_transition_deprecated_is_terminal(self, db_session: AsyncSession, scenario_for_transition) -> None:
         """Test that deprecated is a terminal state."""
         repo = ScenarioRepository(db_session)
 
@@ -2749,7 +2748,7 @@ class TestFeatureRepositoryTransitionEdgeCases:
         )
 
     @pytest.mark.asyncio
-    async def test_transition_draft_to_deprecated(self, db_session: AsyncSession, feature_for_transition):
+    async def test_transition_draft_to_deprecated(self, db_session: AsyncSession, feature_for_transition) -> None:
         """Test transitioning feature from draft directly to deprecated."""
         repo = FeatureRepository(db_session)
 
@@ -2758,7 +2757,7 @@ class TestFeatureRepositoryTransitionEdgeCases:
         assert updated.status == "deprecated"
 
     @pytest.mark.asyncio
-    async def test_transition_review_to_draft(self, db_session: AsyncSession, feature_for_transition):
+    async def test_transition_review_to_draft(self, db_session: AsyncSession, feature_for_transition) -> None:
         """Test transitioning feature from review back to draft."""
         repo = FeatureRepository(db_session)
 
@@ -2768,7 +2767,7 @@ class TestFeatureRepositoryTransitionEdgeCases:
         assert updated.status == "draft"
 
     @pytest.mark.asyncio
-    async def test_transition_implemented_to_deprecated(self, db_session: AsyncSession, feature_for_transition):
+    async def test_transition_implemented_to_deprecated(self, db_session: AsyncSession, feature_for_transition) -> None:
         """Test transitioning feature from implemented to deprecated."""
         repo = FeatureRepository(db_session)
 
@@ -2783,7 +2782,7 @@ class TestFeatureRepositoryTransitionEdgeCases:
         assert updated.status == "deprecated"
 
     @pytest.mark.asyncio
-    async def test_transition_deprecated_is_terminal(self, db_session: AsyncSession, feature_for_transition):
+    async def test_transition_deprecated_is_terminal(self, db_session: AsyncSession, feature_for_transition) -> None:
         """Test that deprecated is a terminal state for features."""
         repo = FeatureRepository(db_session)
 
@@ -2840,25 +2839,25 @@ class TestContractRepositoryProjectScope:
         }
 
     @pytest.mark.asyncio
-    async def test_get_by_id_with_project_scope(self, db_session: AsyncSession, contracts_multi_project):
+    async def test_get_by_id_with_project_scope(self, db_session: AsyncSession, contracts_multi_project) -> None:
         """Test getting contract by ID with project scope."""
         repo = ContractRepository(db_session)
 
         # Get contract1 with correct project scope
         contract = await repo.get_by_id(
-            contracts_multi_project["contract1"].id, project_id=contracts_multi_project["project1"].id
+            contracts_multi_project["contract1"].id, project_id=contracts_multi_project["project1"].id,
         )
         assert contract is not None
         assert contract.title == "Contract in Project 1"
 
         # Try to get contract1 with wrong project scope
         contract_wrong = await repo.get_by_id(
-            contracts_multi_project["contract1"].id, project_id=contracts_multi_project["project2"].id
+            contracts_multi_project["contract1"].id, project_id=contracts_multi_project["project2"].id,
         )
         assert contract_wrong is None
 
     @pytest.mark.asyncio
-    async def test_get_by_number_with_project_scope(self, db_session: AsyncSession, contracts_multi_project):
+    async def test_get_by_number_with_project_scope(self, db_session: AsyncSession, contracts_multi_project) -> None:
         """Test getting contract by number with project scope."""
         repo = ContractRepository(db_session)
 
@@ -2898,7 +2897,7 @@ class TestADRVerifyComplianceExplicitTime:
         )
 
     @pytest.mark.asyncio
-    async def test_verify_compliance_with_explicit_verified_at(self, db_session: AsyncSession, adr_for_verify):
+    async def test_verify_compliance_with_explicit_verified_at(self, db_session: AsyncSession, adr_for_verify) -> None:
         """Test verify_compliance with explicit verified_at to cover lines 220-225."""
         repo = ADRRepository(db_session)
 
@@ -2938,7 +2937,7 @@ class TestContractVerifyMethod:
         )
 
     @pytest.mark.asyncio
-    async def test_verify_contract_success(self, db_session: AsyncSession, contract_for_verify):
+    async def test_verify_contract_success(self, db_session: AsyncSession, contract_for_verify) -> None:
         """Test contract verification to cover lines 398-401."""
         repo = ContractRepository(db_session)
 
@@ -2952,7 +2951,7 @@ class TestContractVerifyMethod:
         assert updated.version == 2
 
     @pytest.mark.asyncio
-    async def test_verify_contract_not_found(self, db_session: AsyncSession):
+    async def test_verify_contract_not_found(self, db_session: AsyncSession) -> None:
         """Test contract verification with non-existent contract to cover line 396."""
         repo = ContractRepository(db_session)
 

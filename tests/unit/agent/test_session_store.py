@@ -24,7 +24,7 @@ pytestmark = pytest.mark.unit
 class TestCacheKey:
     """Test cache key helper."""
 
-    def test_agent_session_cache_key(self):
+    def test_agent_session_cache_key(self) -> None:
         assert _agent_session_cache_key("s1") == f"{AGENT_SESSION_CACHE_PREFIX}:s1"
         assert _agent_session_cache_key("abc-123") == f"{AGENT_SESSION_CACHE_PREFIX}:abc-123"
 
@@ -43,7 +43,7 @@ class TestSessionSandboxStore:
         return SessionSandboxStore(sandbox_provider=provider)
 
     @pytest.mark.asyncio
-    async def test_get_or_create_creates_sandbox(self, store):
+    async def test_get_or_create_creates_sandbox(self, store) -> None:
         path, created = await store.get_or_create("session-1")
         assert created is True
         assert path
@@ -51,7 +51,7 @@ class TestSessionSandboxStore:
         assert "session-1" in path
 
     @pytest.mark.asyncio
-    async def test_get_or_create_idempotent(self, store):
+    async def test_get_or_create_idempotent(self, store) -> None:
         path1, created1 = await store.get_or_create("session-2")
         path2, created2 = await store.get_or_create("session-2")
         assert path1 == path2
@@ -59,7 +59,7 @@ class TestSessionSandboxStore:
         assert created2 is False
 
     @pytest.mark.asyncio
-    async def test_get_returns_metadata_after_create(self, store):
+    async def test_get_returns_metadata_after_create(self, store) -> None:
         path, _ = await store.get_or_create("session-3")
         meta = store.get("session-3")
         assert meta is not None
@@ -67,10 +67,10 @@ class TestSessionSandboxStore:
         assert meta.sandbox_root == path
         assert meta.status == SandboxStatus.READY
 
-    def test_get_missing_returns_none(self, store):
+    def test_get_missing_returns_none(self, store) -> None:
         assert store.get("nonexistent") is None
 
-    def test_delete_removes_from_store(self, store):
+    def test_delete_removes_from_store(self, store) -> None:
         # Create via get_or_create first (sync test only checks delete of in-memory)
         # We need to populate _store manually for a sync test, or run async get_or_create then delete
         store._store["session-x"] = SandboxMetadata(
@@ -94,7 +94,7 @@ class TestSessionSandboxStoreDB:
             yield d
 
     @pytest.mark.asyncio
-    async def test_get_or_create_without_db_uses_provider(self, base_dir):
+    async def test_get_or_create_without_db_uses_provider(self, base_dir) -> None:
         """When db_session is None, behaves like base store (provider only)."""
         provider = LocalFilesystemSandboxProvider(base_dir=base_dir)
         store = SessionSandboxStoreDB(sandbox_provider=provider, cache_service=None)
@@ -104,7 +104,7 @@ class TestSessionSandboxStoreDB:
         assert await asyncio.to_thread(pathlib.Path(path).is_dir)
 
     @pytest.mark.asyncio
-    async def test_get_or_create_with_cache_miss_then_provider(self, base_dir):
+    async def test_get_or_create_with_cache_miss_then_provider(self, base_dir) -> None:
         """When cache is present but returns None, falls through to provider when no DB."""
         provider = LocalFilesystemSandboxProvider(base_dir=base_dir)
         cache = AsyncMock()
@@ -118,7 +118,7 @@ class TestSessionSandboxStoreDB:
         cache.set.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_get_or_create_with_cache_hit_returns_cached_path(self, base_dir):
+    async def test_get_or_create_with_cache_hit_returns_cached_path(self, base_dir) -> None:
         """When cache returns a path, return it without creating sandbox."""
         provider = LocalFilesystemSandboxProvider(base_dir=base_dir)
         cache = AsyncMock()

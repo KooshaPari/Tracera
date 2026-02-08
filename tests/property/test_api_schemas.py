@@ -4,16 +4,18 @@ Validates that API response schemas preserve information, that list wrappers
 maintain totals, and that enum-constrained fields reject out-of-band values.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from typing import Any
 
 import pytest
-from hypothesis import given, settings, assume
+from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 from pydantic import ValidationError
 
 from tracertm.schemas.item import ItemCreate, ItemResponse, ItemUpdate
 from tracertm.schemas.link import LinkCreate, LinkResponse
+from tracertm.schemas.problem import ImpactLevel, ProblemStatus, RCAMethod, ResolutionType
+from tracertm.schemas.process import ProcessCategory, ProcessStatus
 from tracertm.schemas.specification import (
     ADRCreate,
     ADRListResponse,
@@ -30,17 +32,26 @@ from tracertm.schemas.specification import (
     ScenarioStatus,
 )
 from tracertm.schemas.test_case import (
-    TestCaseCreate as TCCreate,
-    TestCaseListResponse as TCListResponse,
-    TestCaseResponse as TCResponse,
-    TestCasePriority as TCPriority,
-    TestCaseType as TCType,
     AutomationStatus,
+)
+from tracertm.schemas.test_case import (
+    TestCaseCreate as TCCreate,
+)
+from tracertm.schemas.test_case import (
+    TestCaseListResponse as TCListResponse,
+)
+from tracertm.schemas.test_case import (
+    TestCasePriority as TCPriority,
+)
+from tracertm.schemas.test_case import (
+    TestCaseResponse as TCResponse,
+)
+from tracertm.schemas.test_case import (
     TestCaseStats as TCStats,
 )
-from tracertm.schemas.process import ProcessStatus, ProcessCategory
-from tracertm.schemas.problem import ImpactLevel, ProblemStatus, RCAMethod, ResolutionType
-
+from tracertm.schemas.test_case import (
+    TestCaseType as TCType,
+)
 
 # ---------------------------------------------------------------------------
 # Shared strategies
@@ -54,7 +65,7 @@ safe_text = st.text(
 
 uuid_st = st.uuids().map(str)
 
-now = datetime.now(tz=timezone.utc)
+now = datetime.now(tz=UTC)
 now_str = now.isoformat()
 
 

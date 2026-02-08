@@ -1,5 +1,4 @@
-"""
-Async repository tests for concurrent database operations.
+"""Async repository tests for concurrent database operations.
 
 Tests for:
 - Concurrent read operations
@@ -20,11 +19,11 @@ class TestAsyncDatabaseOperations:
     """Test async database operation patterns."""
 
     @pytest.mark.asyncio
-    async def test_concurrent_async_reads(self):
+    async def test_concurrent_async_reads(self) -> None:
         """Test concurrent async database reads."""
         session_mock = AsyncMock(spec=AsyncSession)
         session_mock.execute = AsyncMock(
-            return_value=MagicMock(scalars=MagicMock(return_value=MagicMock(all=MagicMock(return_value=[]))))
+            return_value=MagicMock(scalars=MagicMock(return_value=MagicMock(all=MagicMock(return_value=[])))),
         )
 
         async def read_items(item_id: int) -> dict:
@@ -38,7 +37,7 @@ class TestAsyncDatabaseOperations:
         assert all(r["name"].startswith("Item") for r in results)
 
     @pytest.mark.asyncio
-    async def test_concurrent_async_writes(self):
+    async def test_concurrent_async_writes(self) -> None:
         """Test concurrent async database writes."""
         session_mock = AsyncMock(spec=AsyncSession)
         session_mock.add = MagicMock()
@@ -57,7 +56,7 @@ class TestAsyncDatabaseOperations:
         assert all(r["status"] == "created" for r in results)
 
     @pytest.mark.asyncio
-    async def test_async_transaction_commit(self):
+    async def test_async_transaction_commit(self) -> None:
         """Test async transaction commit."""
         session_mock = AsyncMock(spec=AsyncSession)
         session_mock.commit = AsyncMock()
@@ -76,7 +75,7 @@ class TestAsyncDatabaseOperations:
         session_mock.commit.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_async_transaction_rollback(self):
+    async def test_async_transaction_rollback(self) -> None:
         """Test async transaction rollback on error."""
         session_mock = AsyncMock(spec=AsyncSession)
         session_mock.commit = AsyncMock(side_effect=Exception("Commit failed"))
@@ -95,11 +94,11 @@ class TestAsyncDatabaseOperations:
         session_mock.rollback.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_async_context_manager_session(self):
+    async def test_async_context_manager_session(self) -> None:
         """Test async context manager for session handling."""
 
         class AsyncSessionContext:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.entered = False
                 self.exited = False
 
@@ -121,11 +120,11 @@ class TestAsyncDatabaseOperations:
         assert session.exited
 
     @pytest.mark.asyncio
-    async def test_concurrent_async_contexts(self):
+    async def test_concurrent_async_contexts(self) -> None:
         """Test concurrent async context manager usage."""
 
         class AsyncResource:
-            def __init__(self, resource_id: int):
+            def __init__(self, resource_id: int) -> None:
                 self.resource_id = resource_id
                 self.acquired = False
                 self.released = False
@@ -156,11 +155,11 @@ class TestAsyncOptimisticLocking:
     """Test optimistic locking in async operations."""
 
     @pytest.mark.asyncio
-    async def test_version_check_during_concurrent_updates(self):
+    async def test_version_check_during_concurrent_updates(self) -> None:
         """Test version checking in concurrent updates."""
 
         class VersionedItem:
-            def __init__(self, item_id: int, version: int = 1):
+            def __init__(self, item_id: int, version: int = 1) -> None:
                 self.item_id = item_id
                 self.version = version
                 self.value = "initial"
@@ -188,11 +187,11 @@ class TestAsyncOptimisticLocking:
         assert result2 is False
 
     @pytest.mark.asyncio
-    async def test_concurrent_updates_with_version_conflict(self):
+    async def test_concurrent_updates_with_version_conflict(self) -> None:
         """Test concurrent updates detecting version conflicts."""
 
         class VersionedData:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.version = 1
                 self.value = "initial"
                 self.lock = asyncio.Lock()
@@ -223,11 +222,11 @@ class TestAsyncOptimisticLocking:
         assert data.version == 2  # Only one update succeeded
 
     @pytest.mark.asyncio
-    async def test_retry_on_version_conflict(self):
+    async def test_retry_on_version_conflict(self) -> None:
         """Test retry logic on version conflict."""
 
         class RetryableItem:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.version = 1
                 self.value = "initial"
 
@@ -255,11 +254,11 @@ class TestAsyncConnectionPool:
     """Test async connection pool behavior."""
 
     @pytest.mark.asyncio
-    async def test_concurrent_connection_usage(self):
+    async def test_concurrent_connection_usage(self) -> None:
         """Test using multiple connections from pool."""
 
         class ConnectionPool:
-            def __init__(self, max_size: int = 3):
+            def __init__(self, max_size: int = 3) -> None:
                 self.max_size = max_size
                 self.available = asyncio.Semaphore(max_size)
                 self.in_use = 0
@@ -287,11 +286,11 @@ class TestAsyncConnectionPool:
         assert pool.peak_usage == 2
 
     @pytest.mark.asyncio
-    async def test_connection_pool_exhaustion(self):
+    async def test_connection_pool_exhaustion(self) -> None:
         """Test behavior when connection pool is exhausted."""
 
         class LimitedPool:
-            def __init__(self, max_size: int = 1):
+            def __init__(self, max_size: int = 1) -> None:
                 self.semaphore = asyncio.Semaphore(max_size)
                 self.acquired = 0
 
@@ -318,7 +317,7 @@ class TestAsyncBatchOperations:
     """Test async batch database operations."""
 
     @pytest.mark.asyncio
-    async def test_async_bulk_insert(self):
+    async def test_async_bulk_insert(self) -> None:
         """Test async bulk insert operation."""
         session_mock = AsyncMock(spec=AsyncSession)
         session_mock.add_all = MagicMock()
@@ -335,7 +334,7 @@ class TestAsyncBatchOperations:
         assert count == 10
 
     @pytest.mark.asyncio
-    async def test_async_bulk_update(self):
+    async def test_async_bulk_update(self) -> None:
         """Test async bulk update operation."""
         updated_items = []
 
@@ -351,7 +350,7 @@ class TestAsyncBatchOperations:
         assert len(updated_items) == 5
 
     @pytest.mark.asyncio
-    async def test_async_batch_with_partial_failure(self):
+    async def test_async_batch_with_partial_failure(self) -> None:
         """Test batch operation with partial failure."""
 
         async def process_batch(items: list[int]) -> dict:
@@ -379,7 +378,7 @@ class TestAsyncQueryOperations:
     """Test async query operations."""
 
     @pytest.mark.asyncio
-    async def test_async_query_execution(self):
+    async def test_async_query_execution(self) -> None:
         """Test async query execution."""
         session_mock = AsyncMock(spec=AsyncSession)
 
@@ -396,7 +395,7 @@ class TestAsyncQueryOperations:
         assert items == []
 
     @pytest.mark.asyncio
-    async def test_async_query_with_pagination(self):
+    async def test_async_query_with_pagination(self) -> None:
         """Test async paginated queries."""
 
         async def fetch_page(page: int, page_size: int) -> dict:
@@ -415,7 +414,7 @@ class TestAsyncQueryOperations:
         assert all(p["total"] == 100 for p in pages)
 
     @pytest.mark.asyncio
-    async def test_async_query_timeout(self):
+    async def test_async_query_timeout(self) -> None:
         """Test timeout on async query."""
 
         async def slow_query() -> list:
@@ -430,11 +429,11 @@ class TestAsyncTransactionPatterns:
     """Test async transaction patterns."""
 
     @pytest.mark.asyncio
-    async def test_nested_async_transactions(self):
+    async def test_nested_async_transactions(self) -> None:
         """Test nested transaction behavior."""
 
         class AsyncTransaction:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.transaction_stack = []
 
             async def begin(self) -> None:
@@ -459,11 +458,11 @@ class TestAsyncTransactionPatterns:
         assert tx.transaction_stack == ["begin", "begin", "commit", "commit"]
 
     @pytest.mark.asyncio
-    async def test_transaction_savepoint(self):
+    async def test_transaction_savepoint(self) -> None:
         """Test transaction savepoint."""
 
         class TransactionWithSavepoint:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.state = []
 
             async def create_savepoint(self) -> str:
@@ -484,11 +483,11 @@ class TestAsyncTransactionPatterns:
         assert ("rollback", sp) in tx.state
 
     @pytest.mark.asyncio
-    async def test_concurrent_transaction_isolation(self):
+    async def test_concurrent_transaction_isolation(self) -> None:
         """Test isolation in concurrent transactions."""
 
         class Database:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.data = {"counter": 0}
                 self.lock = asyncio.Lock()
 
@@ -512,11 +511,11 @@ class TestAsyncRepositoryPatterns:
     """Test async repository patterns."""
 
     @pytest.mark.asyncio
-    async def test_async_crud_operations(self):
+    async def test_async_crud_operations(self) -> None:
         """Test async CRUD operations."""
 
         class AsyncRepository:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.data = {}
                 self.next_id = 1
 
@@ -569,11 +568,11 @@ class TestAsyncRepositoryPatterns:
         assert item is None
 
     @pytest.mark.asyncio
-    async def test_async_repository_concurrent_operations(self):
+    async def test_async_repository_concurrent_operations(self) -> None:
         """Test concurrent operations on async repository."""
 
         class ConcurrentRepository:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.items = {}
 
             async def batch_create(self, items: list[dict]) -> list[int]:

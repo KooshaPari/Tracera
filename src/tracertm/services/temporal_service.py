@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 from temporalio.client import (
@@ -16,6 +15,9 @@ from temporalio.client import (
     ScheduleIntervalSpec,
     ScheduleSpec,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 @dataclass(frozen=True)
@@ -30,7 +32,7 @@ class TemporalSettings:
 class TemporalService:
     """Service for interacting with Temporal workflows."""
 
-    def __init__(self, settings: TemporalSettings | None = None):
+    def __init__(self, settings: TemporalSettings | None = None) -> None:
         self.settings = settings or self._load_settings()
         self._client: Client | None = None
 
@@ -66,7 +68,8 @@ class TemporalService:
                 namespace=self.settings.namespace,
             )
         if self._client is None:
-            raise RuntimeError("Temporal client not initialized")
+            msg = "Temporal client not initialized"
+            raise RuntimeError(msg)
         return self._client
 
     async def health_check(self) -> dict[str, Any]:
@@ -117,7 +120,8 @@ class TemporalService:
             dict: Workflow execution information
         """
         if not self.settings:
-            raise ValueError("Temporal not configured")
+            msg = "Temporal not configured"
+            raise ValueError(msg)
 
         client = await self.get_client()
 
@@ -156,7 +160,8 @@ class TemporalService:
 
         workflow_class = workflow_map.get(workflow_name)
         if not workflow_class:
-            raise ValueError(f"Unknown workflow: {workflow_name}")
+            msg = f"Unknown workflow: {workflow_name}"
+            raise ValueError(msg)
 
         # Start workflow execution
         # Type ignore: workflow classes have @workflow.run decorated methods which type checker can't infer
@@ -182,7 +187,8 @@ class TemporalService:
         workflow_id: str | None = None,
     ) -> ScheduleActionStartWorkflow:
         if not self.settings:
-            raise ValueError("Temporal not configured")
+            msg = "Temporal not configured"
+            raise ValueError(msg)
 
         return ScheduleActionStartWorkflow(
             workflow_name,
@@ -206,11 +212,13 @@ class TemporalService:
         end_at: datetime | None = None,
     ) -> dict[str, Any]:
         if not self.settings:
-            raise ValueError("Temporal not configured")
+            msg = "Temporal not configured"
+            raise ValueError(msg)
 
         client = await self.get_client()
         if not cron_expressions and interval_seconds is None:
-            raise ValueError("Schedule must include cron expressions or interval seconds")
+            msg = "Schedule must include cron expressions or interval seconds"
+            raise ValueError(msg)
 
         intervals: list[ScheduleIntervalSpec] = []
         if interval_seconds is not None:
@@ -250,21 +258,24 @@ class TemporalService:
 
     async def delete_schedule(self, schedule_id: str) -> None:
         if not self.settings:
-            raise ValueError("Temporal not configured")
+            msg = "Temporal not configured"
+            raise ValueError(msg)
         client = await self.get_client()
         handle = client.get_schedule_handle(schedule_id)
         await handle.delete()
 
     async def list_schedules(self, query: str | None = None) -> list[dict[str, Any]]:
         if not self.settings:
-            raise ValueError("Temporal not configured")
+            msg = "Temporal not configured"
+            raise ValueError(msg)
         client = await self.get_client()
         schedules_iter = await client.list_schedules(query=query)
         return [{"id": schedule.id, "memo": schedule.memo} async for schedule in schedules_iter]
 
     async def list_schedules_summary(self, limit: int = 200) -> dict[str, Any]:
         if not self.settings:
-            raise ValueError("Temporal not configured")
+            msg = "Temporal not configured"
+            raise ValueError(msg)
         client = await self.get_client()
         schedules: list[dict[str, Any]] = []
         count = 0
@@ -278,7 +289,8 @@ class TemporalService:
 
     async def list_workflows_summary(self, limit: int = 100) -> dict[str, Any]:
         if not self.settings:
-            raise ValueError("Temporal not configured")
+            msg = "Temporal not configured"
+            raise ValueError(msg)
         client = await self.get_client()
         status_counts: dict[str, int] = {}
         workflows: list[dict[str, Any]] = []
@@ -318,7 +330,8 @@ class TemporalService:
             dict: Workflow result
         """
         if not self.settings:
-            raise ValueError("Temporal not configured")
+            msg = "Temporal not configured"
+            raise ValueError(msg)
 
         client = await self.get_client()
 

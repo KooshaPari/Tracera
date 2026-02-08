@@ -1,5 +1,4 @@
-"""
-Comprehensive Integration Tests for Storage Module.
+"""Comprehensive Integration Tests for Storage Module.
 
 Tests the entire storage stack with real file system and databases:
 - LocalStorageManager
@@ -135,10 +134,10 @@ def conflict_resolver(test_session, temp_storage_dir):
 class TestLocalStorageManagerIntegration:
     """Integration tests for LocalStorageManager with real filesystem."""
 
-    def test_init_creates_directory_structure(self, temp_storage_dir):
+    def test_init_creates_directory_structure(self, temp_storage_dir) -> None:
         """Given: New storage directory
         When: LocalStorageManager initialized
-        Then: All required directories and database created
+        Then: All required directories and database created.
         """
         manager = LocalStorageManager(base_dir=temp_storage_dir)
 
@@ -161,13 +160,13 @@ class TestLocalStorageManagerIntegration:
         finally:
             session.close()
 
-    def test_init_project_creates_trace_directory(self, temp_project_dir, storage_manager):
+    def test_init_project_creates_trace_directory(self, temp_project_dir, storage_manager) -> None:
         """Given: Empty project directory
         When: init_project called
-        Then: .trace/ directory created with all subdirectories
+        Then: .trace/ directory created with all subdirectories.
         """
         trace_dir, project_id = storage_manager.init_project(
-            temp_project_dir, project_name="TestProject", description="Test project"
+            temp_project_dir, project_name="TestProject", description="Test project",
         )
 
         # Verify .trace/ directory structure
@@ -192,10 +191,10 @@ class TestLocalStorageManagerIntegration:
         assert "counters" in config
         assert config["counters"]["epic"] == 0
 
-    def test_init_project_creates_gitignore(self, temp_project_dir, storage_manager):
+    def test_init_project_creates_gitignore(self, temp_project_dir, storage_manager) -> None:
         """Given: Project without .gitignore
         When: init_project called
-        Then: .gitignore created with .trace exclusions
+        Then: .gitignore created with .trace exclusions.
         """
         storage_manager.init_project(temp_project_dir, project_name="Test")
 
@@ -205,10 +204,10 @@ class TestLocalStorageManagerIntegration:
         content = gitignore.read_text()
         assert ".trace/.meta/sync.yaml" in content
 
-    def test_init_project_appends_to_existing_gitignore(self, temp_project_dir, storage_manager):
+    def test_init_project_appends_to_existing_gitignore(self, temp_project_dir, storage_manager) -> None:
         """Given: Project with existing .gitignore
         When: init_project called
-        Then: .gitignore appended, not overwritten
+        Then: .gitignore appended, not overwritten.
         """
         # Create existing .gitignore
         gitignore = temp_project_dir / ".gitignore"
@@ -220,20 +219,20 @@ class TestLocalStorageManagerIntegration:
         assert "node_modules/" in content
         assert ".trace/.meta/sync.yaml" in content
 
-    def test_init_project_raises_if_already_initialized(self, temp_project_dir, storage_manager):
+    def test_init_project_raises_if_already_initialized(self, temp_project_dir, storage_manager) -> None:
         """Given: Project already initialized
         When: init_project called again
-        Then: ValueError raised
+        Then: ValueError raised.
         """
         storage_manager.init_project(temp_project_dir, project_name="Test")
 
         with pytest.raises(ValueError, match="already initialized"):
             storage_manager.init_project(temp_project_dir, project_name="Test")
 
-    def test_register_project_adds_to_database(self, temp_project_dir, storage_manager):
+    def test_register_project_adds_to_database(self, temp_project_dir, storage_manager) -> None:
         """Given: Initialized .trace/ directory
         When: register_project called
-        Then: Project registered in global database
+        Then: Project registered in global database.
         """
         trace_dir, project_id = storage_manager.init_project(temp_project_dir, project_name="RegisterTest")
 
@@ -254,10 +253,10 @@ class TestLocalStorageManagerIntegration:
         finally:
             session.close()
 
-    def test_register_project_generates_id_if_missing(self, temp_project_dir, storage_manager):
+    def test_register_project_generates_id_if_missing(self, temp_project_dir, storage_manager) -> None:
         """Given: project.yaml without id
         When: register_project called
-        Then: ID generated and written to project.yaml
+        Then: ID generated and written to project.yaml.
         """
         trace_dir = temp_project_dir / ".trace"
         trace_dir.mkdir(parents=True)
@@ -273,51 +272,51 @@ class TestLocalStorageManagerIntegration:
         config = yaml.safe_load(project_yaml.read_text())
         assert config["id"] == project_id
 
-    def test_register_project_raises_without_trace_dir(self, temp_project_dir, storage_manager):
+    def test_register_project_raises_without_trace_dir(self, temp_project_dir, storage_manager) -> None:
         """Given: Directory without .trace/
         When: register_project called
-        Then: ValueError raised
+        Then: ValueError raised.
         """
         with pytest.raises(ValueError, match="No .trace/ directory"):
             storage_manager.register_project(temp_project_dir)
 
-    def test_is_trace_project_detects_trace_directory(self, temp_project_dir, storage_manager):
+    def test_is_trace_project_detects_trace_directory(self, temp_project_dir, storage_manager) -> None:
         """Given: Directory with .trace/
         When: is_trace_project called
-        Then: Returns True
+        Then: Returns True.
         """
         storage_manager.init_project(temp_project_dir, project_name="Test")
         assert storage_manager.is_trace_project(temp_project_dir) is True
 
-    def test_is_trace_project_returns_false_without_trace(self, temp_project_dir, storage_manager):
+    def test_is_trace_project_returns_false_without_trace(self, temp_project_dir, storage_manager) -> None:
         """Given: Directory without .trace/
         When: is_trace_project called
-        Then: Returns False
+        Then: Returns False.
         """
         assert storage_manager.is_trace_project(temp_project_dir) is False
 
-    def test_get_project_trace_dir_returns_path(self, temp_project_dir, storage_manager):
+    def test_get_project_trace_dir_returns_path(self, temp_project_dir, storage_manager) -> None:
         """Given: Initialized project
         When: get_project_trace_dir called
-        Then: Returns .trace/ path
+        Then: Returns .trace/ path.
         """
         trace_dir, _ = storage_manager.init_project(temp_project_dir, project_name="Test")
         result = storage_manager.get_project_trace_dir(temp_project_dir)
         # Resolve symlinks for comparison (macOS has /var -> /private/var)
         assert result.resolve() == trace_dir.resolve()
 
-    def test_get_project_trace_dir_returns_none_without_trace(self, temp_project_dir, storage_manager):
+    def test_get_project_trace_dir_returns_none_without_trace(self, temp_project_dir, storage_manager) -> None:
         """Given: Directory without .trace/
         When: get_project_trace_dir called
-        Then: Returns None
+        Then: Returns None.
         """
         result = storage_manager.get_project_trace_dir(temp_project_dir)
         assert result is None
 
-    def test_increment_project_counter_updates_yaml(self, temp_project_dir, storage_manager):
+    def test_increment_project_counter_updates_yaml(self, temp_project_dir, storage_manager) -> None:
         """Given: Initialized project
         When: increment_project_counter called
-        Then: Counter incremented in project.yaml and ID returned
+        Then: Counter incremented in project.yaml and ID returned.
         """
         storage_manager.init_project(temp_project_dir, project_name="Test")
 
@@ -331,10 +330,10 @@ class TestLocalStorageManagerIntegration:
         config = yaml.safe_load((trace_dir / "project.yaml").read_text())
         assert config["counters"]["epic"] == 1
 
-    def test_increment_project_counter_sequential_increments(self, temp_project_dir, storage_manager):
+    def test_increment_project_counter_sequential_increments(self, temp_project_dir, storage_manager) -> None:
         """Given: Project with existing counter
         When: increment_project_counter called multiple times
-        Then: Counter increments sequentially
+        Then: Counter increments sequentially.
         """
         storage_manager.init_project(temp_project_dir, project_name="Test")
 
@@ -346,10 +345,10 @@ class TestLocalStorageManagerIntegration:
         assert id2 == "STORY-002"
         assert id3 == "STORY-003"
 
-    def test_get_project_counters_returns_all_counters(self, temp_project_dir, storage_manager):
+    def test_get_project_counters_returns_all_counters(self, temp_project_dir, storage_manager) -> None:
         """Given: Project with counters
         When: get_project_counters called
-        Then: All counter values returned
+        Then: All counter values returned.
         """
         storage_manager.init_project(temp_project_dir, project_name="Test")
         storage_manager.increment_project_counter(temp_project_dir, "epic")
@@ -362,10 +361,10 @@ class TestLocalStorageManagerIntegration:
         assert counters["story"] == 2
         assert counters["test"] == 0
 
-    def test_index_project_parses_markdown_files(self, temp_project_dir, storage_manager):
+    def test_index_project_parses_markdown_files(self, temp_project_dir, storage_manager) -> None:
         """Given: .trace/ with markdown items
         When: index_project called
-        Then: Items indexed into SQLite database
+        Then: Items indexed into SQLite database.
         """
         trace_dir, project_id = storage_manager.init_project(temp_project_dir, project_name="IndexTest")
 
@@ -407,10 +406,10 @@ Implement user authentication system.
         finally:
             session.close()
 
-    def test_index_project_updates_fts_index(self, temp_project_dir, storage_manager):
+    def test_index_project_updates_fts_index(self, temp_project_dir, storage_manager) -> None:
         """Given: Markdown items with searchable content
         When: index_project called
-        Then: FTS index populated for search
+        Then: FTS index populated for search.
         """
         trace_dir, project_id = storage_manager.init_project(temp_project_dir, project_name="SearchTest")
 
@@ -439,10 +438,10 @@ RESTful API endpoint for user authentication.
         assert len(results) == 1
         assert results[0].title == "Login API Endpoint"
 
-    def test_search_items_returns_matching_items(self, temp_project_dir, storage_manager):
+    def test_search_items_returns_matching_items(self, temp_project_dir, storage_manager) -> None:
         """Given: Multiple indexed items
         When: search_items called with query
-        Then: Matching items returned
+        Then: Matching items returned.
         """
         trace_dir, project_id = storage_manager.init_project(temp_project_dir, project_name="Test")
 
@@ -472,10 +471,10 @@ Test item {i}
         assert len(results) == 1
         assert results[0].title == "Authentication Service"
 
-    def test_queue_sync_adds_to_sync_queue(self, storage_manager):
+    def test_queue_sync_adds_to_sync_queue(self, storage_manager) -> None:
         """Given: Storage manager initialized
         When: queue_sync called
-        Then: Change added to sync queue
+        Then: Change added to sync queue.
         """
         storage_manager.queue_sync(
             entity_type="item",
@@ -491,10 +490,10 @@ Test item {i}
         assert queued[0]["entity_id"] == "test-item-1"
         assert queued[0]["operation"] == "create"
 
-    def test_get_sync_queue_respects_limit(self, storage_manager):
+    def test_get_sync_queue_respects_limit(self, storage_manager) -> None:
         """Given: Multiple queued items
         When: get_sync_queue called with limit
-        Then: Only limited items returned
+        Then: Only limited items returned.
         """
         for i in range(10):
             storage_manager.queue_sync(
@@ -507,10 +506,10 @@ Test item {i}
         queued = storage_manager.get_sync_queue(limit=5)
         assert len(queued) == 5
 
-    def test_clear_sync_queue_entry_removes_item(self, storage_manager):
+    def test_clear_sync_queue_entry_removes_item(self, storage_manager) -> None:
         """Given: Item in sync queue
         When: clear_sync_queue_entry called
-        Then: Item removed from queue
+        Then: Item removed from queue.
         """
         storage_manager.queue_sync(entity_type="item", entity_id="test-1", operation="create", payload={})
 
@@ -523,10 +522,10 @@ Test item {i}
         queued = storage_manager.get_sync_queue(limit=10)
         assert len(queued) == 0
 
-    def test_update_and_get_sync_state(self, storage_manager):
+    def test_update_and_get_sync_state(self, storage_manager) -> None:
         """Given: Storage manager
         When: update_sync_state and get_sync_state called
-        Then: State persisted and retrieved
+        Then: State persisted and retrieved.
         """
         storage_manager.update_sync_state("last_sync_time", "2024-01-01T00:00:00Z")
         storage_manager.update_sync_state("sync_count", "42")
@@ -537,10 +536,10 @@ Test item {i}
         assert last_sync == "2024-01-01T00:00:00Z"
         assert sync_count == "42"
 
-    def test_get_sync_state_returns_none_for_missing_key(self, storage_manager):
+    def test_get_sync_state_returns_none_for_missing_key(self, storage_manager) -> None:
         """Given: No sync state
         When: get_sync_state called with unknown key
-        Then: None returned
+        Then: None returned.
         """
         result = storage_manager.get_sync_state("nonexistent")
         assert result is None
@@ -554,10 +553,10 @@ Test item {i}
 class TestProjectStorageIntegration:
     """Integration tests for ProjectStorage with real filesystem."""
 
-    def test_create_project_in_global_projects_dir(self, storage_manager):
+    def test_create_project_in_global_projects_dir(self, storage_manager) -> None:
         """Given: ProjectStorage (global projects dir)
         When: create_or_update_project called
-        Then: Project created in database and filesystem
+        Then: Project created in database and filesystem.
         """
         project_storage = storage_manager.get_project_storage("GlobalProject")
         project = project_storage.create_or_update_project(name="GlobalProject", description="Test global projects dir")
@@ -570,10 +569,10 @@ class TestProjectStorageIntegration:
         assert readme.exists()
         assert "GlobalProject" in readme.read_text()
 
-    def test_create_project_in_project_local_mode(self, temp_project_dir, storage_manager):
+    def test_create_project_in_project_local_mode(self, temp_project_dir, storage_manager) -> None:
         """Given: ProjectStorage in project-local mode
         When: create_or_update_project called
-        Then: Project uses .trace/ directory
+        Then: Project uses .trace/ directory.
         """
         trace_dir, project_id = storage_manager.init_project(temp_project_dir, project_name="LocalProject")
 
@@ -582,10 +581,10 @@ class TestProjectStorageIntegration:
         # Resolve symlinks for comparison (macOS has /var -> /private/var)
         assert project_storage.project_dir.resolve() == trace_dir.resolve()
 
-    def test_update_existing_project(self, storage_manager):
+    def test_update_existing_project(self, storage_manager) -> None:
         """Given: Existing project
         When: create_or_update_project called again
-        Then: Project updated, not duplicated
+        Then: Project updated, not duplicated.
         """
         project_storage = storage_manager.get_project_storage("UpdateTest")
         project1 = project_storage.create_or_update_project(name="UpdateTest", description="Original")
@@ -595,10 +594,10 @@ class TestProjectStorageIntegration:
         assert project1.id == project2.id
         assert project2.description == "Updated"
 
-    def test_get_project_returns_project(self, storage_manager):
+    def test_get_project_returns_project(self, storage_manager) -> None:
         """Given: Created project
         When: get_project called
-        Then: Project returned
+        Then: Project returned.
         """
         project_storage = storage_manager.get_project_storage("GetTest")
         created = project_storage.create_or_update_project(name="GetTest", description="Test")
@@ -607,10 +606,10 @@ class TestProjectStorageIntegration:
         assert retrieved is not None
         assert retrieved.id == created.id
 
-    def test_get_project_returns_none_for_nonexistent(self, storage_manager):
+    def test_get_project_returns_none_for_nonexistent(self, storage_manager) -> None:
         """Given: No project created
         When: get_project called
-        Then: None returned
+        Then: None returned.
         """
         project_storage = storage_manager.get_project_storage("NonExistent")
         result = project_storage.get_project()
@@ -633,10 +632,10 @@ class TestItemStorageIntegration:
         project = project_storage.create_or_update_project(name="ItemTest", description="Test")
         return project_storage.get_item_storage(project)
 
-    def test_create_item_writes_to_database_and_filesystem(self, item_storage, temp_project_dir):
+    def test_create_item_writes_to_database_and_filesystem(self, item_storage, temp_project_dir) -> None:
         """Given: ItemStorage initialized
         When: create_item called
-        Then: Item saved to both SQLite and markdown file
+        Then: Item saved to both SQLite and markdown file.
         """
         item = item_storage.create_item(
             title="Test Epic",
@@ -662,10 +661,10 @@ class TestItemStorageIntegration:
         assert "Test Epic" in content
         assert "Test epic description" in content
 
-    def test_create_item_updates_fts_index(self, item_storage):
+    def test_create_item_updates_fts_index(self, item_storage) -> None:
         """Given: ItemStorage
         When: create_item called
-        Then: Item searchable via FTS
+        Then: Item searchable via FTS.
         """
         item_storage.create_item(
             title="Searchable Item",
@@ -686,10 +685,10 @@ class TestItemStorageIntegration:
         finally:
             session.close()
 
-    def test_update_item_modifies_database_and_filesystem(self, item_storage, temp_project_dir):
+    def test_update_item_modifies_database_and_filesystem(self, item_storage, temp_project_dir) -> None:
         """Given: Existing item
         When: update_item called
-        Then: Both database and markdown file updated
+        Then: Both database and markdown file updated.
         """
         item = item_storage.create_item(
             title="Original Title",
@@ -709,10 +708,10 @@ class TestItemStorageIntegration:
         assert "Updated Title" in content
         assert "New description" in content
 
-    def test_update_item_increments_version(self, item_storage):
+    def test_update_item_increments_version(self, item_storage) -> None:
         """Given: Item with version 1
         When: update_item called
-        Then: Version incremented automatically
+        Then: Version incremented automatically.
         """
         item = item_storage.create_item(title="Version Test", item_type="story", external_id="STORY-001")
 
@@ -724,10 +723,10 @@ class TestItemStorageIntegration:
         # Version is auto-incremented on update (optimistic locking)
         assert updated.version > original_version
 
-    def test_delete_item_soft_deletes_in_database(self, item_storage):
+    def test_delete_item_soft_deletes_in_database(self, item_storage) -> None:
         """Given: Existing item
         When: delete_item called
-        Then: Item soft-deleted (deleted_at set)
+        Then: Item soft-deleted (deleted_at set).
         """
         item = item_storage.create_item(title="Delete Test", item_type="task", external_id="TASK-001")
 
@@ -741,10 +740,10 @@ class TestItemStorageIntegration:
         finally:
             session.close()
 
-    def test_delete_item_removes_markdown_file(self, item_storage, temp_project_dir):
+    def test_delete_item_removes_markdown_file(self, item_storage, temp_project_dir) -> None:
         """Given: Item with markdown file
         When: delete_item called
-        Then: Markdown file deleted
+        Then: Markdown file deleted.
         """
         item_storage.create_item(title="Delete File Test", item_type="test", external_id="TEST-001")
 
@@ -757,10 +756,10 @@ class TestItemStorageIntegration:
 
         assert not test_file.exists()
 
-    def test_list_items_filters_by_type(self, item_storage):
+    def test_list_items_filters_by_type(self, item_storage) -> None:
         """Given: Items of different types
         When: list_items called with type filter
-        Then: Only matching items returned
+        Then: Only matching items returned.
         """
         item_storage.create_item(title="Epic 1", item_type="epic", external_id="EPIC-001")
         item_storage.create_item(title="Story 1", item_type="story", external_id="STORY-001")
@@ -772,10 +771,10 @@ class TestItemStorageIntegration:
         assert len(epics) == 2
         assert len(stories) == 1
 
-    def test_list_items_filters_by_status(self, item_storage):
+    def test_list_items_filters_by_status(self, item_storage) -> None:
         """Given: Items with different statuses
         When: list_items called with status filter
-        Then: Only matching items returned
+        Then: Only matching items returned.
         """
         item_storage.create_item(title="Todo 1", item_type="story", external_id="STORY-001", status="todo")
         item_storage.create_item(title="In Progress", item_type="story", external_id="STORY-002", status="in_progress")
@@ -787,10 +786,10 @@ class TestItemStorageIntegration:
         assert len(todo_items) == 2
         assert len(in_progress_items) == 1
 
-    def test_list_items_excludes_deleted(self, item_storage):
+    def test_list_items_excludes_deleted(self, item_storage) -> None:
         """Given: Mix of active and deleted items
         When: list_items called
-        Then: Deleted items excluded
+        Then: Deleted items excluded.
         """
         item1 = item_storage.create_item(title="Active", item_type="story", external_id="STORY-001")
         item2 = item_storage.create_item(title="Deleted", item_type="story", external_id="STORY-002")
@@ -801,10 +800,10 @@ class TestItemStorageIntegration:
         assert len(items) == 1
         assert items[0].id == item1.id
 
-    def test_create_link_creates_in_database_and_yaml(self, item_storage, temp_project_dir):
+    def test_create_link_creates_in_database_and_yaml(self, item_storage, temp_project_dir) -> None:
         """Given: Two items
         When: create_link called
-        Then: Link created in database and links.yaml
+        Then: Link created in database and links.yaml.
         """
         item1 = item_storage.create_item(title="Epic", item_type="epic", external_id="EPIC-001")
         item2 = item_storage.create_item(title="Story", item_type="story", external_id="STORY-001")
@@ -834,10 +833,10 @@ class TestItemStorageIntegration:
         assert len(links_data["links"]) == 1
         assert links_data["links"][0]["type"] == "implements"
 
-    def test_delete_link_removes_from_database_and_yaml(self, item_storage, temp_project_dir):
+    def test_delete_link_removes_from_database_and_yaml(self, item_storage, temp_project_dir) -> None:
         """Given: Existing link
         When: delete_link called
-        Then: Link removed from database and links.yaml
+        Then: Link removed from database and links.yaml.
         """
         item1 = item_storage.create_item(title="Item 1", item_type="epic", external_id="EPIC-001")
         item2 = item_storage.create_item(title="Item 2", item_type="story", external_id="STORY-001")
@@ -860,10 +859,10 @@ class TestItemStorageIntegration:
         links_data = yaml.safe_load(links_file.read_text())
         assert len(links_data["links"]) == 0
 
-    def test_list_links_filters_by_source(self, item_storage):
+    def test_list_links_filters_by_source(self, item_storage) -> None:
         """Given: Multiple links
         When: list_links called with source_id
-        Then: Only links from that source returned
+        Then: Only links from that source returned.
         """
         item1 = item_storage.create_item(title="Source", item_type="epic", external_id="EPIC-001")
         item2 = item_storage.create_item(title="Target 1", item_type="story", external_id="STORY-001")
@@ -876,10 +875,10 @@ class TestItemStorageIntegration:
         links = item_storage.list_links(source_id=item1.id)
         assert len(links) == 2
 
-    def test_list_links_filters_by_target(self, item_storage):
+    def test_list_links_filters_by_target(self, item_storage) -> None:
         """Given: Multiple links
         When: list_links called with target_id
-        Then: Only links to that target returned
+        Then: Only links to that target returned.
         """
         item1 = item_storage.create_item(title="Source 1", item_type="epic", external_id="EPIC-001")
         item2 = item_storage.create_item(title="Source 2", item_type="epic", external_id="EPIC-002")
@@ -891,10 +890,10 @@ class TestItemStorageIntegration:
         links = item_storage.list_links(target_id=item3.id)
         assert len(links) == 2
 
-    def test_list_links_filters_by_type(self, item_storage):
+    def test_list_links_filters_by_type(self, item_storage) -> None:
         """Given: Links of different types
         When: list_links called with link_type
-        Then: Only matching links returned
+        Then: Only matching links returned.
         """
         item1 = item_storage.create_item(title="Item 1", item_type="epic", external_id="EPIC-001")
         item2 = item_storage.create_item(title="Item 2", item_type="story", external_id="STORY-001")
@@ -918,10 +917,10 @@ class TestItemStorageIntegration:
 class TestMarkdownParserIntegration:
     """Integration tests for markdown parsing with real files."""
 
-    def test_write_and_parse_item_roundtrip(self, temp_storage_dir):
+    def test_write_and_parse_item_roundtrip(self, temp_storage_dir) -> None:
         """Given: ItemData object
         When: write_item_markdown then parse_item_markdown
-        Then: Data preserved perfectly
+        Then: Data preserved perfectly.
         """
         original = ItemData(
             id="item-123",
@@ -954,10 +953,10 @@ class TestMarkdownParserIntegration:
         assert parsed.owner == original.owner
         assert parsed.tags == original.tags
 
-    def test_parse_item_with_links_in_frontmatter(self, temp_storage_dir):
+    def test_parse_item_with_links_in_frontmatter(self, temp_storage_dir) -> None:
         """Given: Markdown with links in frontmatter
         When: parse_item_markdown called
-        Then: Links parsed correctly
+        Then: Links parsed correctly.
         """
         content = """---
 id: story-1
@@ -982,18 +981,18 @@ links:
         assert parsed.links[0]["type"] == "implements"
         assert parsed.links[1]["target"] == "STORY-002"
 
-    def test_parse_item_raises_on_missing_file(self, temp_storage_dir):
+    def test_parse_item_raises_on_missing_file(self, temp_storage_dir) -> None:
         """Given: Non-existent file path
         When: parse_item_markdown called
-        Then: FileNotFoundError raised
+        Then: FileNotFoundError raised.
         """
         with pytest.raises(FileNotFoundError):
             parse_item_markdown(temp_storage_dir / "nonexistent.md")
 
-    def test_parse_item_raises_on_invalid_frontmatter(self, temp_storage_dir):
+    def test_parse_item_raises_on_invalid_frontmatter(self, temp_storage_dir) -> None:
         """Given: Markdown without frontmatter
         When: parse_item_markdown called
-        Then: ValueError raised
+        Then: ValueError raised.
         """
         file_path = temp_storage_dir / "invalid.md"
         file_path.write_text("# Just a title\n\nNo frontmatter here")
@@ -1001,10 +1000,10 @@ links:
         with pytest.raises(ValueError, match="No YAML frontmatter"):
             parse_item_markdown(file_path)
 
-    def test_parse_item_raises_on_missing_required_fields(self, temp_storage_dir):
+    def test_parse_item_raises_on_missing_required_fields(self, temp_storage_dir) -> None:
         """Given: Frontmatter missing required fields
         When: parse_item_markdown called
-        Then: ValueError raised
+        Then: ValueError raised.
         """
         content = """---
 id: item-1
@@ -1019,10 +1018,10 @@ type: story
         with pytest.raises(ValueError, match="Missing required frontmatter fields"):
             parse_item_markdown(file_path)
 
-    def test_write_and_parse_links_roundtrip(self, temp_storage_dir):
+    def test_write_and_parse_links_roundtrip(self, temp_storage_dir) -> None:
         """Given: List of LinkData
         When: write_links_yaml then parse_links_yaml
-        Then: Links preserved
+        Then: Links preserved.
         """
         original_links = [
             LinkData(
@@ -1054,18 +1053,18 @@ type: story
         assert parsed_links[0].source == "EPIC-001"
         assert parsed_links[1].metadata["coverage"] == "90%"
 
-    def test_parse_links_returns_empty_for_missing_file(self, temp_storage_dir):
+    def test_parse_links_returns_empty_for_missing_file(self, temp_storage_dir) -> None:
         """Given: Non-existent links.yaml
         When: parse_links_yaml called
-        Then: FileNotFoundError raised
+        Then: FileNotFoundError raised.
         """
         with pytest.raises(FileNotFoundError):
             parse_links_yaml(temp_storage_dir / "nonexistent.yaml")
 
-    def test_parse_links_handles_empty_file(self, temp_storage_dir):
+    def test_parse_links_handles_empty_file(self, temp_storage_dir) -> None:
         """Given: links.yaml with no links
         When: parse_links_yaml called
-        Then: Empty list returned
+        Then: Empty list returned.
         """
         file_path = temp_storage_dir / "links.yaml"
         file_path.write_text("links: []\n")
@@ -1073,10 +1072,10 @@ type: story
         links = parse_links_yaml(file_path)
         assert len(links) == 0
 
-    def test_write_and_parse_config_roundtrip(self, temp_storage_dir):
+    def test_write_and_parse_config_roundtrip(self, temp_storage_dir) -> None:
         """Given: Configuration dict
         When: write_config_yaml then parse_config_yaml
-        Then: Config preserved
+        Then: Config preserved.
         """
         config = {
             "project_name": "TestProject",
@@ -1092,10 +1091,10 @@ type: story
         assert parsed["project_name"] == "TestProject"
         assert parsed["settings"]["auto_sync"] is True
 
-    def test_list_items_finds_all_markdown_files(self, temp_storage_dir):
+    def test_list_items_finds_all_markdown_files(self, temp_storage_dir) -> None:
         """Given: Project with multiple item files
         When: list_items called
-        Then: All markdown files found
+        Then: All markdown files found.
         """
         project_dir = temp_storage_dir / "projects" / "TestProject"
 
@@ -1109,10 +1108,10 @@ type: story
         items = list_items(temp_storage_dir, "TestProject")
         assert len(items) == 3
 
-    def test_list_items_filters_by_type(self, temp_storage_dir):
+    def test_list_items_filters_by_type(self, temp_storage_dir) -> None:
         """Given: Items of multiple types
         When: list_items called with type filter
-        Then: Only matching files returned
+        Then: Only matching files returned.
         """
         project_dir = temp_storage_dir / "projects" / "TestProject"
 
@@ -1128,30 +1127,30 @@ type: story
         epics = list_items(temp_storage_dir, "TestProject", item_type="epic")
         assert len(epics) == 2
 
-    def test_get_item_path_constructs_correct_path(self, temp_storage_dir):
+    def test_get_item_path_constructs_correct_path(self, temp_storage_dir) -> None:
         """Given: Item parameters
         When: get_item_path called
-        Then: Correct path constructed
+        Then: Correct path constructed.
         """
         path = get_item_path(temp_storage_dir, "MyProject", "epic", "EPIC-001")
 
         expected = temp_storage_dir / "projects" / "MyProject" / "epics" / "EPIC-001.md"
         assert path == expected
 
-    def test_get_links_path_constructs_correct_path(self, temp_storage_dir):
+    def test_get_links_path_constructs_correct_path(self, temp_storage_dir) -> None:
         """Given: Project name
         When: get_links_path called
-        Then: Correct path to links.yaml
+        Then: Correct path to links.yaml.
         """
         path = get_links_path(temp_storage_dir, "MyProject")
 
         expected = temp_storage_dir / "projects" / "MyProject" / ".meta" / "links.yaml"
         assert path == expected
 
-    def test_get_config_path_constructs_correct_path(self, temp_storage_dir):
+    def test_get_config_path_constructs_correct_path(self, temp_storage_dir) -> None:
         """Given: Project name
         When: get_config_path called
-        Then: Correct path to config.yaml
+        Then: Correct path to config.yaml.
         """
         path = get_config_path(temp_storage_dir, "MyProject")
 
@@ -1201,10 +1200,10 @@ class TestSyncEngineIntegration:
             storage_manager=storage_manager,
         )
 
-    def test_sync_queue_enqueue_creates_entry(self, sync_queue):
+    def test_sync_queue_enqueue_creates_entry(self, sync_queue) -> None:
         """Given: Empty sync queue
         When: enqueue called
-        Then: Entry added to queue
+        Then: Entry added to queue.
         """
         queue_id = sync_queue.enqueue(
             entity_type=SyncEntityType.ITEM,
@@ -1219,10 +1218,10 @@ class TestSyncEngineIntegration:
         assert len(pending) == 1
         assert pending[0].entity_id == "item-123"
 
-    def test_sync_queue_enqueue_replaces_duplicate(self, sync_queue):
+    def test_sync_queue_enqueue_replaces_duplicate(self, sync_queue) -> None:
         """Given: Existing queue entry
         When: enqueue called with same entity/operation
-        Then: Entry replaced, not duplicated
+        Then: Entry replaced, not duplicated.
         """
         sync_queue.enqueue(SyncEntityType.ITEM, "item-1", OperationType.UPDATE, {"version": 1})
         sync_queue.enqueue(SyncEntityType.ITEM, "item-1", OperationType.UPDATE, {"version": 2})
@@ -1231,10 +1230,10 @@ class TestSyncEngineIntegration:
         assert len(pending) == 1
         assert pending[0].payload["version"] == 2
 
-    def test_sync_queue_get_pending_orders_by_created_at(self, sync_queue):
+    def test_sync_queue_get_pending_orders_by_created_at(self, sync_queue) -> None:
         """Given: Multiple queue entries
         When: get_pending called
-        Then: Entries ordered by creation time (oldest first)
+        Then: Entries ordered by creation time (oldest first).
         """
         import time
 
@@ -1249,10 +1248,10 @@ class TestSyncEngineIntegration:
         assert pending[1].entity_id == "item-2"
         assert pending[2].entity_id == "item-3"
 
-    def test_sync_queue_remove_deletes_entry(self, sync_queue):
+    def test_sync_queue_remove_deletes_entry(self, sync_queue) -> None:
         """Given: Queue entry
         When: remove called
-        Then: Entry deleted from queue
+        Then: Entry deleted from queue.
         """
         queue_id = sync_queue.enqueue(SyncEntityType.ITEM, "item-1", OperationType.CREATE, {})
 
@@ -1261,10 +1260,10 @@ class TestSyncEngineIntegration:
         pending = sync_queue.get_pending(limit=10)
         assert len(pending) == 0
 
-    def test_sync_queue_clear_removes_all(self, sync_queue):
+    def test_sync_queue_clear_removes_all(self, sync_queue) -> None:
         """Given: Multiple queue entries
         When: clear called
-        Then: All entries removed
+        Then: All entries removed.
         """
         for i in range(5):
             sync_queue.enqueue(SyncEntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
@@ -1274,10 +1273,10 @@ class TestSyncEngineIntegration:
         pending = sync_queue.get_pending(limit=10)
         assert len(pending) == 0
 
-    def test_sync_queue_get_count_returns_correct_count(self, sync_queue):
+    def test_sync_queue_get_count_returns_correct_count(self, sync_queue) -> None:
         """Given: Queue with entries
         When: get_count called
-        Then: Correct count returned
+        Then: Correct count returned.
         """
         for i in range(7):
             sync_queue.enqueue(SyncEntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
@@ -1285,10 +1284,10 @@ class TestSyncEngineIntegration:
         count = sync_queue.get_count()
         assert count == 7
 
-    def test_sync_state_manager_get_state_returns_defaults(self, sync_state_manager):
+    def test_sync_state_manager_get_state_returns_defaults(self, sync_state_manager) -> None:
         """Given: No sync state
         When: get_state called
-        Then: Default state returned
+        Then: Default state returned.
         """
         state = sync_state_manager.get_state()
 
@@ -1296,10 +1295,10 @@ class TestSyncEngineIntegration:
         assert state.pending_changes == 0
         assert state.status == SyncStatus.IDLE
 
-    def test_sync_state_manager_update_last_sync_persists(self, sync_state_manager):
+    def test_sync_state_manager_update_last_sync_persists(self, sync_state_manager) -> None:
         """Given: State manager
         When: update_last_sync called
-        Then: Timestamp persisted
+        Then: Timestamp persisted.
         """
         timestamp = datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC)
         sync_state_manager.update_last_sync(timestamp)
@@ -1307,30 +1306,30 @@ class TestSyncEngineIntegration:
         state = sync_state_manager.get_state()
         assert state.last_sync == timestamp
 
-    def test_sync_state_manager_update_status_persists(self, sync_state_manager):
+    def test_sync_state_manager_update_status_persists(self, sync_state_manager) -> None:
         """Given: State manager
         When: update_status called
-        Then: Status persisted
+        Then: Status persisted.
         """
         sync_state_manager.update_status(SyncStatus.SYNCING)
 
         state = sync_state_manager.get_state()
         assert state.status == SyncStatus.SYNCING
 
-    def test_sync_state_manager_update_error_persists(self, sync_state_manager):
+    def test_sync_state_manager_update_error_persists(self, sync_state_manager) -> None:
         """Given: State manager
         When: update_error called
-        Then: Error persisted
+        Then: Error persisted.
         """
         sync_state_manager.update_error("Test error message")
 
         state = sync_state_manager.get_state()
         assert state.last_error == "Test error message"
 
-    def test_sync_state_manager_update_error_clears_on_none(self, sync_state_manager):
+    def test_sync_state_manager_update_error_clears_on_none(self, sync_state_manager) -> None:
         """Given: Error state
         When: update_error called with None
-        Then: Error cleared
+        Then: Error cleared.
         """
         sync_state_manager.update_error("Error")
         sync_state_manager.update_error(None)
@@ -1338,10 +1337,10 @@ class TestSyncEngineIntegration:
         state = sync_state_manager.get_state()
         assert state.last_error is None
 
-    def test_change_detector_compute_hash_is_deterministic(self):
+    def test_change_detector_compute_hash_is_deterministic(self) -> None:
         """Given: Same content
         When: compute_hash called multiple times
-        Then: Same hash returned
+        Then: Same hash returned.
         """
         content = "Test content for hashing"
 
@@ -1350,10 +1349,10 @@ class TestSyncEngineIntegration:
 
         assert hash1 == hash2
 
-    def test_change_detector_has_changed_detects_change(self):
+    def test_change_detector_has_changed_detects_change(self) -> None:
         """Given: Different content
         When: has_changed called
-        Then: Returns True
+        Then: Returns True.
         """
         original = "Original content"
         modified = "Modified content"
@@ -1363,10 +1362,10 @@ class TestSyncEngineIntegration:
 
         assert changed is True
 
-    def test_change_detector_has_changed_detects_no_change(self):
+    def test_change_detector_has_changed_detects_no_change(self) -> None:
         """Given: Identical content
         When: has_changed called
-        Then: Returns False
+        Then: Returns False.
         """
         content = "Same content"
 
@@ -1375,10 +1374,10 @@ class TestSyncEngineIntegration:
 
         assert changed is False
 
-    def test_change_detector_detect_changes_in_directory(self, temp_storage_dir):
+    def test_change_detector_detect_changes_in_directory(self, temp_storage_dir) -> None:
         """Given: Directory with markdown files
         When: detect_changes_in_directory called
-        Then: Changed files detected
+        Then: Changed files detected.
         """
         md_dir = temp_storage_dir / "items"
         md_dir.mkdir()
@@ -1405,10 +1404,10 @@ class TestSyncEngineIntegration:
         assert changes[0][0].name == "item2.md"
 
     @pytest.mark.asyncio
-    async def test_exponential_backoff_increases_delay(self):
+    async def test_exponential_backoff_increases_delay(self) -> None:
         """Given: Retry attempts
         When: exponential_backoff called
-        Then: Delay increases exponentially
+        Then: Delay increases exponentially.
         """
         import time
 
@@ -1437,10 +1436,10 @@ class TestSyncEngineIntegration:
 class TestConflictResolverIntegration:
     """Integration tests for ConflictResolver with real database and filesystem."""
 
-    def test_detect_conflict_identifies_concurrent_changes(self, conflict_resolver):
+    def test_detect_conflict_identifies_concurrent_changes(self, conflict_resolver) -> None:
         """Given: Two concurrent versions of same entity
         When: detect_conflict called
-        Then: Conflict detected
+        Then: Conflict detected.
         """
         now = datetime.now(UTC)
 
@@ -1469,10 +1468,10 @@ class TestConflictResolverIntegration:
         assert conflict.entity_id == "item-1"
         assert conflict.status == ConflictStatus.UNRESOLVED
 
-    def test_detect_conflict_returns_none_for_ordered_changes(self, conflict_resolver):
+    def test_detect_conflict_returns_none_for_ordered_changes(self, conflict_resolver) -> None:
         """Given: One version clearly before another
         When: detect_conflict called
-        Then: No conflict detected
+        Then: No conflict detected.
         """
         now = datetime.now(UTC)
 
@@ -1496,10 +1495,10 @@ class TestConflictResolverIntegration:
         conflict = conflict_resolver.detect_conflict(local, remote)
         assert conflict is None
 
-    def test_detect_conflict_returns_none_for_same_content(self, conflict_resolver):
+    def test_detect_conflict_returns_none_for_same_content(self, conflict_resolver) -> None:
         """Given: Concurrent versions with same content
         When: detect_conflict called
-        Then: No conflict (same hash)
+        Then: No conflict (same hash).
         """
         now = datetime.now(UTC)
 
@@ -1527,10 +1526,10 @@ class TestConflictResolverIntegration:
         conflict = conflict_resolver.detect_conflict(local, remote)
         assert conflict is None
 
-    def test_resolve_last_write_wins_chooses_newer(self, conflict_resolver):
+    def test_resolve_last_write_wins_chooses_newer(self, conflict_resolver) -> None:
         """Given: Conflict with different timestamps
         When: resolve called with LAST_WRITE_WINS
-        Then: Newer version wins
+        Then: Newer version wins.
         """
         now = datetime.now(UTC)
         older = now - timedelta(hours=1)
@@ -1565,10 +1564,10 @@ class TestConflictResolverIntegration:
         assert resolved.version == remote
         assert resolved.version.data["title"] == "New"
 
-    def test_resolve_local_wins_always_chooses_local(self, conflict_resolver):
+    def test_resolve_local_wins_always_chooses_local(self, conflict_resolver) -> None:
         """Given: Conflict
         When: resolve called with LOCAL_WINS
-        Then: Local version always wins
+        Then: Local version always wins.
         """
         now = datetime.now(UTC)
 
@@ -1598,10 +1597,10 @@ class TestConflictResolverIntegration:
 
         assert resolved.version == local
 
-    def test_resolve_remote_wins_always_chooses_remote(self, conflict_resolver):
+    def test_resolve_remote_wins_always_chooses_remote(self, conflict_resolver) -> None:
         """Given: Conflict
         When: resolve called with REMOTE_WINS
-        Then: Remote version always wins
+        Then: Remote version always wins.
         """
         now = datetime.now(UTC)
 
@@ -1631,10 +1630,10 @@ class TestConflictResolverIntegration:
 
         assert resolved.version == remote
 
-    def test_resolve_creates_backup(self, conflict_resolver, temp_storage_dir):
+    def test_resolve_creates_backup(self, conflict_resolver, temp_storage_dir) -> None:
         """Given: Conflict
         When: resolve called
-        Then: Backup created before resolution
+        Then: Backup created before resolution.
         """
         now = datetime.now(UTC)
 
@@ -1668,10 +1667,10 @@ class TestConflictResolverIntegration:
         assert (conflict.backup_path / "local.json").exists()
         assert (conflict.backup_path / "remote.json").exists()
 
-    def test_resolve_manual_creates_merged_version(self, conflict_resolver):
+    def test_resolve_manual_creates_merged_version(self, conflict_resolver) -> None:
         """Given: Conflict
         When: resolve_manual called with merged data
-        Then: New version created with merged content
+        Then: New version created with merged content.
         """
         now = datetime.now(UTC)
 
@@ -1709,10 +1708,10 @@ class TestConflictResolverIntegration:
         assert resolved.version.vector_clock.version == 6  # max(5,5) + 1
         assert conflict.metadata["merged_by"] == "alice"
 
-    def test_create_backup_writes_all_files(self, conflict_resolver, temp_storage_dir):
+    def test_create_backup_writes_all_files(self, conflict_resolver, temp_storage_dir) -> None:
         """Given: Conflict
         When: create_backup called
-        Then: All backup files written
+        Then: All backup files written.
         """
         now = datetime.now(UTC)
 
@@ -1745,14 +1744,14 @@ class TestConflictResolverIntegration:
         assert (backup_path / "conflict.json").exists()
 
         # Verify content
-        with Path(backup_path / "local.json").open() as f:
+        with Path(backup_path / "local.json").open(encoding="utf-8") as f:
             local_data = json.load(f)
             assert local_data["data"]["title"] == "Local"
 
-    def test_list_unresolved_returns_unresolved_conflicts(self, conflict_resolver):
+    def test_list_unresolved_returns_unresolved_conflicts(self, conflict_resolver) -> None:
         """Given: Mix of resolved and unresolved conflicts
         When: list_unresolved called
-        Then: Only unresolved conflicts returned
+        Then: Only unresolved conflicts returned.
         """
         now = datetime.now(UTC)
 
@@ -1772,10 +1771,10 @@ class TestConflictResolverIntegration:
         assert len(unresolved) == 1
         assert unresolved[0].entity_id == "item-1"
 
-    def test_get_conflict_retrieves_by_id(self, conflict_resolver):
+    def test_get_conflict_retrieves_by_id(self, conflict_resolver) -> None:
         """Given: Stored conflict
         When: get_conflict called with ID
-        Then: Conflict retrieved
+        Then: Conflict retrieved.
         """
         now = datetime.now(UTC)
 
@@ -1791,18 +1790,18 @@ class TestConflictResolverIntegration:
         assert retrieved.id == conflict_id
         assert retrieved.entity_id == "item-1"
 
-    def test_get_conflict_returns_none_for_unknown_id(self, conflict_resolver):
+    def test_get_conflict_returns_none_for_unknown_id(self, conflict_resolver) -> None:
         """Given: No conflicts
         When: get_conflict called with unknown ID
-        Then: None returned
+        Then: None returned.
         """
         result = conflict_resolver.get_conflict("nonexistent-conflict-id")
         assert result is None
 
-    def test_get_conflict_stats_returns_statistics(self, conflict_resolver):
+    def test_get_conflict_stats_returns_statistics(self, conflict_resolver) -> None:
         """Given: Multiple conflicts
         When: get_conflict_stats called
-        Then: Correct statistics returned
+        Then: Correct statistics returned.
         """
         now = datetime.now(UTC)
 
@@ -1822,10 +1821,10 @@ class TestConflictResolverIntegration:
         assert ConflictStatus.UNRESOLVED.value in stats["by_status"]
         assert "item" in stats["by_entity_type"]
 
-    def test_vector_clock_happens_before_same_client(self):
+    def test_vector_clock_happens_before_same_client(self) -> None:
         """Given: Two clocks from same client
         When: happens_before called
-        Then: Version comparison used
+        Then: Version comparison used.
         """
         now = datetime.now(UTC)
 
@@ -1835,10 +1834,10 @@ class TestConflictResolverIntegration:
         assert clock1.happens_before(clock2) is True
         assert clock2.happens_before(clock1) is False
 
-    def test_vector_clock_happens_before_different_clients(self):
+    def test_vector_clock_happens_before_different_clients(self) -> None:
         """Given: Two clocks from different clients
         When: happens_before called
-        Then: Timestamp comparison used
+        Then: Timestamp comparison used.
         """
         now = datetime.now(UTC)
         earlier = now - timedelta(hours=1)
@@ -1848,10 +1847,10 @@ class TestConflictResolverIntegration:
 
         assert clock1.happens_before(clock2) is True
 
-    def test_vector_clock_is_concurrent_detects_conflict(self):
+    def test_vector_clock_is_concurrent_detects_conflict(self) -> None:
         """Given: Two concurrent clocks
         When: is_concurrent called
-        Then: Returns True
+        Then: Returns True.
         """
         now = datetime.now(UTC)
 
@@ -1860,10 +1859,10 @@ class TestConflictResolverIntegration:
 
         assert clock1.is_concurrent(clock2) is True
 
-    def test_compare_versions_identifies_differences(self):
+    def test_compare_versions_identifies_differences(self) -> None:
         """Given: Two versions with different fields
         When: compare_versions called
-        Then: Differences identified
+        Then: Differences identified.
         """
         now = datetime.now(UTC)
 
@@ -1887,10 +1886,10 @@ class TestConflictResolverIntegration:
         assert "remote_only" in diff["added"]
         assert "local_only" in diff["removed"]
 
-    def test_format_conflict_summary_creates_readable_output(self):
+    def test_format_conflict_summary_creates_readable_output(self) -> None:
         """Given: Conflict
         When: format_conflict_summary called
-        Then: Human-readable summary generated
+        Then: Human-readable summary generated.
         """
         now = datetime.now(UTC)
 
@@ -1926,10 +1925,10 @@ class TestConflictBackupIntegration:
         """Create ConflictBackup instance."""
         return ConflictBackup(temp_storage_dir / "backups")
 
-    def test_list_backups_finds_all_backups(self, backup_manager, temp_storage_dir):
+    def test_list_backups_finds_all_backups(self, backup_manager, temp_storage_dir) -> None:
         """Given: Multiple backup directories
         When: list_backups called
-        Then: All backups listed
+        Then: All backups listed.
         """
         backup_dir = temp_storage_dir / "backups"
 
@@ -1949,10 +1948,10 @@ class TestConflictBackupIntegration:
         backups = backup_manager.list_backups()
         assert len(backups) == 3
 
-    def test_list_backups_filters_by_entity_type(self, backup_manager, temp_storage_dir):
+    def test_list_backups_filters_by_entity_type(self, backup_manager, temp_storage_dir) -> None:
         """Given: Backups of different entity types
         When: list_backups called with entity_type filter
-        Then: Only matching backups returned
+        Then: Only matching backups returned.
         """
         backup_dir = temp_storage_dir / "backups"
 
@@ -1960,24 +1959,24 @@ class TestConflictBackupIntegration:
         item_backup = backup_dir / "item" / "item-1_20240101_120000"
         item_backup.mkdir(parents=True)
         (item_backup / "conflict.json").write_text(
-            json.dumps({"conflict_id": "c1", "entity_id": "item-1", "detected_at": "2024-01-01T12:00:00Z"})
+            json.dumps({"conflict_id": "c1", "entity_id": "item-1", "detected_at": "2024-01-01T12:00:00Z"}),
         )
 
         # Create link backup
         link_backup = backup_dir / "link" / "link-1_20240101_120000"
         link_backup.mkdir(parents=True)
         (link_backup / "conflict.json").write_text(
-            json.dumps({"conflict_id": "c2", "entity_id": "link-1", "detected_at": "2024-01-01T12:00:00Z"})
+            json.dumps({"conflict_id": "c2", "entity_id": "link-1", "detected_at": "2024-01-01T12:00:00Z"}),
         )
 
         backups = backup_manager.list_backups(entity_type="item")
         assert len(backups) == 1
         assert backups[0]["entity_id"] == "item-1"
 
-    def test_load_backup_restores_versions(self, backup_manager, temp_storage_dir):
+    def test_load_backup_restores_versions(self, backup_manager, temp_storage_dir) -> None:
         """Given: Backup directory with version files
         When: load_backup called
-        Then: Versions restored
+        Then: Versions restored.
         """
         now = datetime.now(UTC)
         backup_dir = temp_storage_dir / "backups" / "item" / "test_backup"
@@ -1997,10 +1996,10 @@ class TestConflictBackupIntegration:
         assert local_loaded.data["title"] == "Local"
         assert remote_loaded.data["title"] == "Remote"
 
-    def test_load_backup_returns_none_for_incomplete_backup(self, backup_manager, temp_storage_dir):
+    def test_load_backup_returns_none_for_incomplete_backup(self, backup_manager, temp_storage_dir) -> None:
         """Given: Backup directory with missing files
         When: load_backup called
-        Then: None returned
+        Then: None returned.
         """
         backup_dir = temp_storage_dir / "incomplete"
         backup_dir.mkdir()
@@ -2011,10 +2010,10 @@ class TestConflictBackupIntegration:
         result = backup_manager.load_backup(backup_dir)
         assert result is None
 
-    def test_delete_backup_removes_directory(self, backup_manager, temp_storage_dir):
+    def test_delete_backup_removes_directory(self, backup_manager, temp_storage_dir) -> None:
         """Given: Backup directory
         When: delete_backup called
-        Then: Directory removed
+        Then: Directory removed.
         """
         backup_dir = temp_storage_dir / "backups" / "item" / "test_backup"
         backup_dir.mkdir(parents=True)
@@ -2027,10 +2026,10 @@ class TestConflictBackupIntegration:
         assert result is True
         assert not backup_dir.exists()
 
-    def test_delete_backup_returns_false_for_nonexistent(self, backup_manager, temp_storage_dir):
+    def test_delete_backup_returns_false_for_nonexistent(self, backup_manager, temp_storage_dir) -> None:
         """Given: Non-existent backup directory
         When: delete_backup called
-        Then: False returned
+        Then: False returned.
         """
         nonexistent = temp_storage_dir / "nonexistent"
 

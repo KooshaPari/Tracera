@@ -1,6 +1,4 @@
-"""
-Webhook Service for processing inbound webhooks.
-"""
+"""Webhook Service for processing inbound webhooks."""
 
 import hashlib
 import hmac
@@ -18,7 +16,7 @@ from tracertm.repositories.webhook_repository import WebhookRepository
 class WebhookService:
     """Service for processing webhook requests."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.webhook_repo: WebhookRepository = WebhookRepository(session)
         self.test_run_repo: TestRunRepository = TestRunRepository(session)
@@ -30,8 +28,7 @@ class WebhookService:
         signature: str,
         algorithm: str = "sha256",
     ) -> bool:
-        """
-        Verify HMAC signature of webhook payload.
+        """Verify HMAC signature of webhook payload.
 
         Supports common signature formats:
         - sha256=<hex_signature>
@@ -77,8 +74,7 @@ class WebhookService:
         source_ip: str | None = None,
         user_agent: str | None = None,
     ) -> dict[str, Any]:
-        """
-        Process an inbound webhook request.
+        """Process an inbound webhook request.
 
         Returns a response dict with:
         - success: bool
@@ -214,7 +210,8 @@ class WebhookService:
                 test_run_id = event_payload.get("run_id")
 
             else:
-                raise ValueError(f"Unknown action: {action}")
+                msg = f"Unknown action: {action}"
+                raise ValueError(msg)
 
             # Log success
             processing_time = int((time.time() - start_time) * 1000)
@@ -299,14 +296,16 @@ class WebhookService:
         """Handle start_run action."""
         run_id = payload.get("run_id")
         if not run_id:
-            raise ValueError("run_id is required")
+            msg = "run_id is required"
+            raise ValueError(msg)
 
         run = await self.test_run_repo.start(
             run_id,
             executed_by=payload.get("executed_by"),
         )
         if not run:
-            raise ValueError("Test run not found")
+            msg = "Test run not found"
+            raise ValueError(msg)
 
         return {
             "run_id": run.id,
@@ -338,11 +337,13 @@ class WebhookService:
             await self.test_run_repo.start(run_id)
 
         if not run_id:
-            raise ValueError("run_id is required or auto_create_run must be enabled")
+            msg = "run_id is required or auto_create_run must be enabled"
+            raise ValueError(msg)
 
         test_case_id = payload.get("test_case_id")
         if not test_case_id:
-            raise ValueError("test_case_id is required")
+            msg = "test_case_id is required"
+            raise ValueError(msg)
 
         result = await self.test_run_repo.add_result(
             run_id=run_id,
@@ -389,11 +390,13 @@ class WebhookService:
             await self.test_run_repo.start(run_id)
 
         if not run_id:
-            raise ValueError("run_id is required or auto_create_run must be enabled")
+            msg = "run_id is required or auto_create_run must be enabled"
+            raise ValueError(msg)
 
         results = payload.get("results", [])
         if not results:
-            raise ValueError("results array is required")
+            msg = "results array is required"
+            raise ValueError(msg)
 
         # Submit each result
         submitted = 0
@@ -433,7 +436,8 @@ class WebhookService:
         """Handle complete_run action."""
         run_id = payload.get("run_id")
         if not run_id:
-            raise ValueError("run_id is required")
+            msg = "run_id is required"
+            raise ValueError(msg)
 
         run = await self.test_run_repo.complete(
             run_id,
@@ -441,7 +445,8 @@ class WebhookService:
             notes=payload.get("notes"),
         )
         if not run:
-            raise ValueError("Test run not found")
+            msg = "Test run not found"
+            raise ValueError(msg)
 
         return {
             "run_id": run.id,

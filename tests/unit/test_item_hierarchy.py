@@ -25,7 +25,7 @@ def item_service(mock_session):
 class TestItemHierarchy:
     """Test suite for item hierarchy operations."""
 
-    async def test_get_children(self, item_service, mock_session):
+    async def test_get_children(self, item_service, mock_session) -> None:
         """Test retrieving item children."""
         parent_id = str(uuid.uuid4())
 
@@ -42,7 +42,7 @@ class TestItemHierarchy:
         assert all(c.parent_id == parent_id for c in result)
         item_service.items.get_children.assert_called_once_with(parent_id)
 
-    async def test_get_ancestors(self, item_service, mock_session):
+    async def test_get_ancestors(self, item_service, mock_session) -> None:
         """Test retrieving item ancestors."""
         item_id = str(uuid.uuid4())
 
@@ -58,7 +58,7 @@ class TestItemHierarchy:
         assert len(result) == 2
         item_service.items.get_ancestors.assert_called_once_with(item_id)
 
-    async def test_get_descendants(self, item_service, mock_session):
+    async def test_get_descendants(self, item_service, mock_session) -> None:
         """Test retrieving all descendants."""
         item_id = str(uuid.uuid4())
 
@@ -74,7 +74,7 @@ class TestItemHierarchy:
         assert len(result) == 2
         item_service.items.get_descendants.assert_called_once_with(item_id)
 
-    async def test_create_child_item_validation(self, item_service, mock_session):
+    async def test_create_child_item_validation(self, item_service, mock_session) -> None:
         """Test validation when creating a child item."""
         # This tests the logic in create_item service method if we add specific parent validation logic there
         # Currently simple pass-through to repo, but good to have a placeholder or test repo constraints

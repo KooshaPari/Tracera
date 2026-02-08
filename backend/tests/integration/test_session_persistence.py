@@ -1,5 +1,4 @@
-"""
-Phase 6: E2E Integration Testing - Session Persistence Tests
+"""Phase 6: E2E Integration Testing - Session Persistence Tests.
 
 Tests dual-write session persistence across PostgreSQL and Neo4j.
 
@@ -36,9 +35,8 @@ async def test_session_creation_dual_write(
     db_session,
     neo4j_driver,
     redis_clean,
-):
-    """
-    Test session creation writes to both PostgreSQL and Neo4j.
+) -> None:
+    """Test session creation writes to both PostgreSQL and Neo4j.
 
     Verifies:
     - PostgreSQL: agent_sessions row exists
@@ -79,9 +77,8 @@ async def test_session_creation_dual_write(
 async def test_session_creation_with_project_relationship(
     db_session,
     neo4j_driver,
-):
-    """
-    Test session creation establishes BELONGS_TO relationship.
+) -> None:
+    """Test session creation establishes BELONGS_TO relationship.
 
     Verifies:
     - Session node created
@@ -143,9 +140,8 @@ async def test_session_creation_with_project_relationship(
 async def test_session_fork_lineage(
     db_session,
     neo4j_driver,
-):
-    """
-    Test session forking creates lineage in Neo4j.
+) -> None:
+    """Test session forking creates lineage in Neo4j.
 
     Verifies:
     - Parent session created
@@ -218,9 +214,8 @@ async def test_session_fork_lineage(
 async def test_session_fork_preserves_context(
     db_session,
     neo4j_driver,
-):
-    """
-    Test session fork preserves context from parent.
+) -> None:
+    """Test session fork preserves context from parent.
 
     Verifies:
     - Child session references parent
@@ -292,9 +287,8 @@ async def test_tool_call_tracking(
     db_session,
     neo4j_driver,
     event_publisher,
-):
-    """
-    Test tool call tracking in Neo4j.
+) -> None:
+    """Test tool call tracking in Neo4j.
 
     Verifies:
     - Tool call creates TOOL_CALL relationship
@@ -371,9 +365,8 @@ async def test_tool_call_tracking(
 async def test_tool_call_sequence_tracking(
     db_session,
     neo4j_driver,
-):
-    """
-    Test tracking multiple tool calls in sequence.
+) -> None:
+    """Test tracking multiple tool calls in sequence.
 
     Verifies:
     - Multiple TOOL_CALL relationships
@@ -445,9 +438,8 @@ async def test_tool_call_sequence_tracking(
 async def test_session_status_update(
     db_session,
     neo4j_driver,
-):
-    """
-    Test session status updates in both databases.
+) -> None:
+    """Test session status updates in both databases.
 
     Verifies:
     - Status updated in PostgreSQL
@@ -466,7 +458,7 @@ async def test_session_status_update(
 
     await db_session.execute(
         text("UPDATE agent_sessions SET status = :status WHERE id = :id"),
-        {"status": "paused", "id": session_id}
+        {"status": "paused", "id": session_id},
     )
     await db_session.commit()
 
@@ -499,9 +491,8 @@ async def test_session_status_update(
 async def test_session_deletion_cascade(
     db_session,
     neo4j_driver,
-):
-    """
-    Test session deletion cascades to all related data.
+) -> None:
+    """Test session deletion cascades to all related data.
 
     Verifies:
     - Session deleted from PostgreSQL
@@ -533,9 +524,8 @@ async def test_session_deletion_cascade(
 async def test_session_soft_delete(
     db_session,
     neo4j_driver,
-):
-    """
-    Test soft delete marks session as deleted without removing.
+) -> None:
+    """Test soft delete marks session as deleted without removing.
 
     Verifies:
     - Status changed to 'deleted'
@@ -554,7 +544,7 @@ async def test_session_soft_delete(
 
     await db_session.execute(
         text("UPDATE agent_sessions SET status = 'deleted' WHERE id = :id"),
-        {"id": session_id}
+        {"id": session_id},
     )
     await db_session.commit()
 

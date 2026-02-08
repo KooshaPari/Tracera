@@ -1,5 +1,4 @@
-"""
-Conflict panel widget for TUI.
+"""Conflict panel widget for TUI.
 
 Displays and manages sync conflicts with resolution options.
 """
@@ -56,8 +55,7 @@ except ImportError:
 if TEXTUAL_AVAILABLE:
 
     class ConflictPanel(Container):
-        """
-        Panel for displaying and resolving sync conflicts.
+        """Panel for displaying and resolving sync conflicts.
 
         Shows:
         - List of unresolved conflicts
@@ -117,9 +115,8 @@ if TEXTUAL_AVAILABLE:
         }
         """
 
-        def __init__(self, conflicts: list[Any] | None = None, *args, **kwargs):
-            """
-            Initialize conflict panel.
+        def __init__(self, conflicts: list[Any] | None = None, *args, **kwargs) -> None:
+            """Initialize conflict panel.
 
             Args:
                 conflicts: List of Conflict objects
@@ -177,8 +174,7 @@ if TEXTUAL_AVAILABLE:
                 self.show_conflict_detail(self.selected_conflict)
 
         def show_conflict_detail(self, conflict) -> None:
-            """
-            Show detailed view of a conflict.
+            """Show detailed view of a conflict.
 
             Args:
                 conflict: Conflict object to display
@@ -253,7 +249,7 @@ if TEXTUAL_AVAILABLE:
         class ConflictResolved(Message):
             """Message sent when conflict is resolved."""
 
-            def __init__(self, conflict, strategy: str):
+            def __init__(self, conflict, strategy: str) -> None:
                 super().__init__()
                 self.conflict = conflict
                 self.strategy = strategy
@@ -261,7 +257,7 @@ if TEXTUAL_AVAILABLE:
         class ConflictPanelClosed(Message):
             """Message sent when panel is closed."""
 
-            def __init__(self):
+            def __init__(self) -> None:
                 super().__init__()
 
 

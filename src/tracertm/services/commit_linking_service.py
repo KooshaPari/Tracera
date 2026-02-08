@@ -13,7 +13,7 @@ from tracertm.repositories.link_repository import LinkRepository
 class CommitLinkingService:
     """Service for parsing commits and auto-linking to items."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)

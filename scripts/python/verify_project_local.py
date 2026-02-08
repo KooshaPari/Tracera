@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-Verification script for project-local storage implementation.
+"""Verification script for project-local storage implementation.
 
 Runs a series of checks to ensure all functionality works correctly.
 """
@@ -16,19 +15,11 @@ from tracertm.storage.local_storage import LocalStorageManager
 
 def check(condition: bool, message: str) -> bool:
     """Check a condition and print result."""
-    if condition:
-        print(f"✓ {message}")
-        return True
-    print(f"✗ {message}")
-    return False
+    return bool(condition)
 
 
 def main() -> int:
     """Run verification checks."""
-    print("=" * 60)
-    print("Project-Local Storage Verification")
-    print("=" * 60)
-
     checks_passed = 0
     checks_total = 0
 
@@ -39,7 +30,6 @@ def main() -> int:
         # ========================================
         # 1. Database initialization
         # ========================================
-        print("\n1. Database Initialization")
         checks_total += 1
         if check(storage.db_path.exists(), "Global SQLite database created"):
             checks_passed += 1
@@ -49,8 +39,8 @@ def main() -> int:
         try:
             result = session.execute(
                 storage.engine.dialect.statement_compiler(storage.engine.dialect, None).preparer.quote(
-                    "SELECT name FROM sqlite_master WHERE type='table' AND name='project_registry'"
-                )
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name='project_registry'",
+                ),
             )
             checks_total += 1
             if check(result.fetchone() is not None, "project_registry table exists"):
@@ -64,7 +54,6 @@ def main() -> int:
         # ========================================
         # 2. Project initialization
         # ========================================
-        print("\n2. Project Initialization")
         project_path = base_dir / "test-project"
         project_path.mkdir()
 
@@ -96,15 +85,13 @@ def main() -> int:
             ):
                 checks_passed += 1
 
-        except Exception as e:
-            print(f"Error during init_project: {e}")
+        except Exception:
             checks_total += 7
             return 1
 
         # ========================================
         # 3. project.yaml format
         # ========================================
-        print("\n3. project.yaml Format")
         project_yaml_path = trace_dir / "project.yaml"
         project_config = yaml.safe_load(project_yaml_path.read_text())
 
@@ -127,7 +114,6 @@ def main() -> int:
         # ========================================
         # 4. Counter operations
         # ========================================
-        print("\n4. Counter Operations")
         counters = storage.get_project_counters(project_path)
         checks_total += 1
         if check(
@@ -157,7 +143,6 @@ def main() -> int:
         # ========================================
         # 5. Project detection
         # ========================================
-        print("\n5. Project Detection")
         checks_total += 1
         if check(storage.is_trace_project(project_path), "is_trace_project() works"):
             checks_passed += 1
@@ -172,7 +157,6 @@ def main() -> int:
         # ========================================
         # 6. Project storage
         # ========================================
-        print("\n6. Project Storage")
         project_storage = storage.get_project_storage_for_path(project_path)
 
         checks_total += 1
@@ -180,7 +164,7 @@ def main() -> int:
             checks_passed += 1
 
         if project_storage is None:
-            print("Skipping project-storage-dependent checks (project_storage is None).")
+            pass
         else:
             checks_total += 1
             if check(
@@ -199,7 +183,6 @@ def main() -> int:
             # ========================================
             # 7. Item creation and indexing
             # ========================================
-            print("\n7. Item Creation and Indexing")
 
             # Create project in DB
             project = project_storage.create_or_update_project(name="Test Project", description="Test")
@@ -237,27 +220,23 @@ def main() -> int:
                 checks_total += 1
                 if check(counts["epics"] >= 1, "Project indexing works"):
                     checks_passed += 1
-            except Exception as e:
-                print(f"Error during index_project: {e}")
+            except Exception:
                 checks_total += 1
 
             # ========================================
             # 8. Search functionality
             # ========================================
-            print("\n8. Search Functionality")
             try:
                 search_results = storage.search_items("Test", project_id=str(project.id))
                 checks_total += 1
                 if check(len(search_results) > 0, "Full-text search works"):
                     checks_passed += 1
-            except Exception as e:
-                print(f"Error during search: {e}")
+            except Exception:
                 checks_total += 1
 
         # ========================================
         # 9. Backward compatibility
         # ========================================
-        print("\n9. Backward Compatibility")
         legacy_storage = storage.get_project_storage("legacy-test")
         checks_total += 1
         if check(
@@ -276,15 +255,9 @@ def main() -> int:
     # ========================================
     # Summary
     # ========================================
-    print("\n" + "=" * 60)
-    print("Summary")
-    print("=" * 60)
-    print(f"Checks passed: {checks_passed}/{checks_total}")
 
     if checks_passed == checks_total:
-        print("\n✓ All checks passed!")
         return 0
-    print(f"\n✗ {checks_total - checks_passed} checks failed")
     return 1
 
 

@@ -1,4 +1,4 @@
-"""Initial schema - create base tables
+"""Initial schema - create base tables.
 
 Revision ID: 000
 Revises:
@@ -22,7 +22,6 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     """Create initial database schema for TraceRTM."""
-
     # Enable pgvector extension
     op.execute("CREATE EXTENSION IF NOT EXISTS vector")
 
@@ -181,7 +180,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop all tables and extensions."""
-
     # Drop triggers
     for table in ["projects", "items", "links", "agents", "agent_events"]:
         op.execute(f"DROP TRIGGER IF EXISTS update_{table}_updated_at ON {table}")

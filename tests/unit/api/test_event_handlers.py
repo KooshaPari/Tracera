@@ -6,7 +6,7 @@ import pytest
 
 
 @pytest.mark.asyncio
-async def test_handle_item_created_invalidates_cache():
+async def test_handle_item_created_invalidates_cache() -> None:
     """Test that handle_item_created properly invalidates caches."""
     # Mock cache service
     mock_cache = AsyncMock()
@@ -41,7 +41,7 @@ async def test_handle_item_created_invalidates_cache():
 
 
 @pytest.mark.asyncio
-async def test_handle_link_created_invalidates_graph_caches():
+async def test_handle_link_created_invalidates_graph_caches() -> None:
     """Test that handle_link_created invalidates graph and ancestor/descendant caches."""
     # Mock cache service
     mock_cache = AsyncMock()
@@ -78,7 +78,7 @@ async def test_handle_link_created_invalidates_graph_caches():
 
 
 @pytest.mark.asyncio
-async def test_handle_project_updated_invalidates_all_project_caches():
+async def test_handle_project_updated_invalidates_all_project_caches() -> None:
     """Test that handle_project_updated invalidates all project-related caches."""
     # Mock cache service
     mock_cache = AsyncMock()
@@ -109,7 +109,7 @@ async def test_handle_project_updated_invalidates_all_project_caches():
 
 
 @pytest.mark.asyncio
-async def test_handle_item_deleted_invalidates_items_and_links():
+async def test_handle_item_deleted_invalidates_items_and_links() -> None:
     """Test that handle_item_deleted invalidates items, graph, and links caches."""
     # Mock cache service
     mock_cache = AsyncMock()
@@ -144,7 +144,7 @@ async def test_handle_item_deleted_invalidates_items_and_links():
 
 
 @pytest.mark.asyncio
-async def test_event_handler_handles_missing_project_id():
+async def test_event_handler_handles_missing_project_id() -> None:
     """Test that handlers gracefully handle missing project_id."""
     # Mock cache service
     mock_cache = AsyncMock()
@@ -168,7 +168,7 @@ async def test_event_handler_handles_missing_project_id():
 
 
 @pytest.mark.asyncio
-async def test_event_handler_gracefully_handles_cache_errors():
+async def test_event_handler_gracefully_handles_cache_errors() -> None:
     """Test that handlers don't crash when cache operations fail."""
     # Mock cache service that raises exceptions
     mock_cache = AsyncMock()

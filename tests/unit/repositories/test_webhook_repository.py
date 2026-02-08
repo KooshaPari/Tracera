@@ -1,5 +1,4 @@
-"""
-Tests for WebhookRepository.
+"""Tests for WebhookRepository.
 
 Comprehensive tests covering webhook integration CRUD operations, rate limiting,
 request logging, and statistics.
@@ -59,7 +58,7 @@ class TestWebhookCreate:
     """Tests for WebhookRepository.create."""
 
     @pytest.mark.asyncio
-    async def test_create_minimal(self, project_setup):
+    async def test_create_minimal(self, project_setup) -> None:
         """Test creating a webhook with minimal fields."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -78,7 +77,7 @@ class TestWebhookCreate:
         assert webhook.provider == WebhookProvider.CUSTOM
 
     @pytest.mark.asyncio
-    async def test_create_with_all_fields(self, project_setup):
+    async def test_create_with_all_fields(self, project_setup) -> None:
         """Test creating a webhook with all fields."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -114,7 +113,7 @@ class TestWebhookCreate:
         assert webhook.webhook_metadata == {"key": "value"}
 
     @pytest.mark.asyncio
-    async def test_create_different_providers(self, project_setup):
+    async def test_create_different_providers(self, project_setup) -> None:
         """Test creating webhooks with different providers."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -130,7 +129,7 @@ class TestWebhookCreate:
             assert webhook.provider == WebhookProvider(provider_name)
 
     @pytest.mark.asyncio
-    async def test_create_generates_uuid(self, project_setup):
+    async def test_create_generates_uuid(self, project_setup) -> None:
         """Test that create generates a valid UUID."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -146,7 +145,7 @@ class TestWebhookCreate:
         assert webhook.id.count("-") == 4
 
     @pytest.mark.asyncio
-    async def test_create_default_enabled_events(self, project_setup):
+    async def test_create_default_enabled_events(self, project_setup) -> None:
         """Test that default enabled events are set."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -171,7 +170,7 @@ class TestWebhookGet:
     """Tests for WebhookRepository.get_by_id."""
 
     @pytest.mark.asyncio
-    async def test_get_by_id_found(self, webhook_setup):
+    async def test_get_by_id_found(self, webhook_setup) -> None:
         """Test getting a webhook by ID."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -183,7 +182,7 @@ class TestWebhookGet:
         assert result.name == webhook.name
 
     @pytest.mark.asyncio
-    async def test_get_by_id_not_found(self, webhook_setup):
+    async def test_get_by_id_not_found(self, webhook_setup) -> None:
         """Test getting a non-existent webhook."""
         repo = webhook_setup["repo"]
 
@@ -199,7 +198,7 @@ class TestWebhookList:
     """Tests for WebhookRepository.list_by_project."""
 
     @pytest.mark.asyncio
-    async def test_list_by_project_empty(self, project_setup):
+    async def test_list_by_project_empty(self, project_setup) -> None:
         """Test listing webhooks for project with no webhooks."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -211,7 +210,7 @@ class TestWebhookList:
         assert total == 0
 
     @pytest.mark.asyncio
-    async def test_list_by_project_multiple(self, project_setup):
+    async def test_list_by_project_multiple(self, project_setup) -> None:
         """Test listing multiple webhooks."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -230,7 +229,7 @@ class TestWebhookList:
         assert total == 5
 
     @pytest.mark.asyncio
-    async def test_list_by_project_filter_provider(self, project_setup):
+    async def test_list_by_project_filter_provider(self, project_setup) -> None:
         """Test filtering webhooks by provider."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -247,7 +246,7 @@ class TestWebhookList:
         assert total == 2
 
     @pytest.mark.asyncio
-    async def test_list_by_project_filter_status(self, project_setup):
+    async def test_list_by_project_filter_status(self, project_setup) -> None:
         """Test filtering webhooks by status."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -264,7 +263,7 @@ class TestWebhookList:
         assert webhooks[0].name == "Active"
 
     @pytest.mark.asyncio
-    async def test_list_by_project_pagination(self, project_setup):
+    async def test_list_by_project_pagination(self, project_setup) -> None:
         """Test pagination of webhook list."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -296,7 +295,7 @@ class TestWebhookUpdate:
     """Tests for WebhookRepository.update."""
 
     @pytest.mark.asyncio
-    async def test_update_name(self, webhook_setup):
+    async def test_update_name(self, webhook_setup) -> None:
         """Test updating webhook name."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -308,7 +307,7 @@ class TestWebhookUpdate:
         assert result.version == 2
 
     @pytest.mark.asyncio
-    async def test_update_multiple_fields(self, webhook_setup):
+    async def test_update_multiple_fields(self, webhook_setup) -> None:
         """Test updating multiple fields."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -327,7 +326,7 @@ class TestWebhookUpdate:
         assert result.rate_limit_per_minute == 200
 
     @pytest.mark.asyncio
-    async def test_update_not_found(self, webhook_setup):
+    async def test_update_not_found(self, webhook_setup) -> None:
         """Test updating a non-existent webhook."""
         repo = webhook_setup["repo"]
 
@@ -336,7 +335,7 @@ class TestWebhookUpdate:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_update_increments_version(self, webhook_setup):
+    async def test_update_increments_version(self, webhook_setup) -> None:
         """Test that update increments version."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -358,7 +357,7 @@ class TestWebhookSetStatus:
     """Tests for WebhookRepository.set_status."""
 
     @pytest.mark.asyncio
-    async def test_set_status_paused(self, webhook_setup):
+    async def test_set_status_paused(self, webhook_setup) -> None:
         """Test pausing a webhook."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -369,7 +368,7 @@ class TestWebhookSetStatus:
         assert result.status == WebhookStatus.PAUSED
 
     @pytest.mark.asyncio
-    async def test_set_status_disabled(self, webhook_setup):
+    async def test_set_status_disabled(self, webhook_setup) -> None:
         """Test disabling a webhook."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -379,7 +378,7 @@ class TestWebhookSetStatus:
         assert result.status == WebhookStatus.DISABLED
 
     @pytest.mark.asyncio
-    async def test_set_status_active(self, webhook_setup):
+    async def test_set_status_active(self, webhook_setup) -> None:
         """Test reactivating a webhook."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -392,7 +391,7 @@ class TestWebhookSetStatus:
         assert result.status == WebhookStatus.ACTIVE
 
     @pytest.mark.asyncio
-    async def test_set_status_not_found(self, webhook_setup):
+    async def test_set_status_not_found(self, webhook_setup) -> None:
         """Test setting status on non-existent webhook."""
         repo = webhook_setup["repo"]
 
@@ -408,7 +407,7 @@ class TestWebhookRegenerateSecret:
     """Tests for WebhookRepository.regenerate_secret."""
 
     @pytest.mark.asyncio
-    async def test_regenerate_secret(self, webhook_setup):
+    async def test_regenerate_secret(self, webhook_setup) -> None:
         """Test regenerating webhook secret."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -422,7 +421,7 @@ class TestWebhookRegenerateSecret:
         assert len(result.webhook_secret) > 20  # Should be a long token
 
     @pytest.mark.asyncio
-    async def test_regenerate_secret_not_found(self, webhook_setup):
+    async def test_regenerate_secret_not_found(self, webhook_setup) -> None:
         """Test regenerating secret for non-existent webhook."""
         repo = webhook_setup["repo"]
 
@@ -431,7 +430,7 @@ class TestWebhookRegenerateSecret:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_regenerate_secret_increments_version(self, webhook_setup):
+    async def test_regenerate_secret_increments_version(self, webhook_setup) -> None:
         """Test that regenerating secret increments version."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -451,7 +450,7 @@ class TestWebhookDelete:
     """Tests for WebhookRepository.delete."""
 
     @pytest.mark.asyncio
-    async def test_delete_success(self, webhook_setup):
+    async def test_delete_success(self, webhook_setup) -> None:
         """Test deleting a webhook."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -465,7 +464,7 @@ class TestWebhookDelete:
         assert fetched is None
 
     @pytest.mark.asyncio
-    async def test_delete_not_found(self, webhook_setup):
+    async def test_delete_not_found(self, webhook_setup) -> None:
         """Test deleting a non-existent webhook."""
         repo = webhook_setup["repo"]
 
@@ -481,7 +480,7 @@ class TestWebhookRateLimit:
     """Tests for WebhookRepository.check_rate_limit."""
 
     @pytest.mark.asyncio
-    async def test_check_rate_limit_allowed(self, webhook_setup):
+    async def test_check_rate_limit_allowed(self, webhook_setup) -> None:
         """Test rate limit when allowed."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -492,7 +491,7 @@ class TestWebhookRateLimit:
         assert remaining >= 0
 
     @pytest.mark.asyncio
-    async def test_check_rate_limit_exhausted(self, project_setup):
+    async def test_check_rate_limit_exhausted(self, project_setup) -> None:
         """Test rate limit when exhausted."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -516,7 +515,7 @@ class TestWebhookRateLimit:
         assert remaining == 0
 
     @pytest.mark.asyncio
-    async def test_check_rate_limit_not_found(self, webhook_setup):
+    async def test_check_rate_limit_not_found(self, webhook_setup) -> None:
         """Test rate limit check for non-existent webhook."""
         repo = webhook_setup["repo"]
 
@@ -533,7 +532,7 @@ class TestWebhookRecordRequest:
     """Tests for WebhookRepository.record_request."""
 
     @pytest.mark.asyncio
-    async def test_record_successful_request(self, webhook_setup):
+    async def test_record_successful_request(self, webhook_setup) -> None:
         """Test recording a successful request."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -547,7 +546,7 @@ class TestWebhookRecordRequest:
         assert result.last_success_at is not None
 
     @pytest.mark.asyncio
-    async def test_record_failed_request(self, webhook_setup):
+    async def test_record_failed_request(self, webhook_setup) -> None:
         """Test recording a failed request."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -562,7 +561,7 @@ class TestWebhookRecordRequest:
         assert result.last_error_message == "Connection timeout"
 
     @pytest.mark.asyncio
-    async def test_record_multiple_requests(self, webhook_setup):
+    async def test_record_multiple_requests(self, webhook_setup) -> None:
         """Test recording multiple requests."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -577,7 +576,7 @@ class TestWebhookRecordRequest:
         assert result.failed_requests == 1
 
     @pytest.mark.asyncio
-    async def test_record_request_not_found(self, webhook_setup):
+    async def test_record_request_not_found(self, webhook_setup) -> None:
         """Test recording request for non-existent webhook (no error)."""
         repo = webhook_setup["repo"]
 
@@ -592,7 +591,7 @@ class TestWebhookLogs:
     """Tests for WebhookRepository log operations."""
 
     @pytest.mark.asyncio
-    async def test_create_log(self, webhook_setup):
+    async def test_create_log(self, webhook_setup) -> None:
         """Test creating a webhook log."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -615,7 +614,7 @@ class TestWebhookLogs:
         assert log.status_code == 200
 
     @pytest.mark.asyncio
-    async def test_create_log_with_all_fields(self, webhook_setup):
+    async def test_create_log_with_all_fields(self, webhook_setup) -> None:
         """Test creating a log with all fields."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -643,7 +642,7 @@ class TestWebhookLogs:
         assert log.results_submitted == 50
 
     @pytest.mark.asyncio
-    async def test_get_logs_empty(self, webhook_setup):
+    async def test_get_logs_empty(self, webhook_setup) -> None:
         """Test getting logs when none exist."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -654,7 +653,7 @@ class TestWebhookLogs:
         assert total == 0
 
     @pytest.mark.asyncio
-    async def test_get_logs_multiple(self, webhook_setup):
+    async def test_get_logs_multiple(self, webhook_setup) -> None:
         """Test getting multiple logs."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -673,7 +672,7 @@ class TestWebhookLogs:
         assert total == 5
 
     @pytest.mark.asyncio
-    async def test_get_logs_filter_success(self, webhook_setup):
+    async def test_get_logs_filter_success(self, webhook_setup) -> None:
         """Test filtering logs by success status."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -688,7 +687,7 @@ class TestWebhookLogs:
         assert total == 2
 
     @pytest.mark.asyncio
-    async def test_get_logs_filter_event_type(self, webhook_setup):
+    async def test_get_logs_filter_event_type(self, webhook_setup) -> None:
         """Test filtering logs by event type."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -703,7 +702,7 @@ class TestWebhookLogs:
         assert total == 2
 
     @pytest.mark.asyncio
-    async def test_get_logs_pagination(self, webhook_setup):
+    async def test_get_logs_pagination(self, webhook_setup) -> None:
         """Test log pagination."""
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
@@ -726,7 +725,7 @@ class TestWebhookStats:
     """Tests for WebhookRepository.get_stats."""
 
     @pytest.mark.asyncio
-    async def test_get_stats_empty(self, project_setup):
+    async def test_get_stats_empty(self, project_setup) -> None:
         """Test getting stats for project with no webhooks."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -739,7 +738,7 @@ class TestWebhookStats:
         assert stats["total_requests"] == 0
 
     @pytest.mark.asyncio
-    async def test_get_stats_with_webhooks(self, project_setup):
+    async def test_get_stats_with_webhooks(self, project_setup) -> None:
         """Test getting stats with multiple webhooks."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -765,7 +764,7 @@ class TestWebhookStats:
         assert stats["failed_requests"] == 1
 
     @pytest.mark.asyncio
-    async def test_get_stats_by_status(self, project_setup):
+    async def test_get_stats_by_status(self, project_setup) -> None:
         """Test stats grouped by status."""
         session = project_setup["session"]
         project = project_setup["project"]

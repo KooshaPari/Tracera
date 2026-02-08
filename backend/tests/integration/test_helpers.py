@@ -1,5 +1,4 @@
-"""
-Phase 6: E2E Integration Testing - Test Helpers
+"""Phase 6: E2E Integration Testing - Test Helpers.
 
 Utility functions for integration tests including:
 - Database state verification
@@ -11,7 +10,7 @@ Utility functions for integration tests including:
 
 import asyncio
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
@@ -23,20 +22,19 @@ from redis.asyncio import Redis
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
 # ============================================================================
 # Session Helpers
 # ============================================================================
 
+
 async def create_test_session(
     db_session: AsyncSession,
     neo4j_driver: AsyncDriver,
-    project_id: str = None,
-    user_id: str = None,
-    sandbox_root: str = None,
-) -> Dict[str, Any]:
-    """
-    Create a test session in both PostgreSQL and Neo4j.
+    project_id: str | None = None,
+    user_id: str | None = None,
+    sandbox_root: str | None = None,
+) -> dict[str, Any]:
+    """Create a test session in both PostgreSQL and Neo4j.
 
     Returns session data dict.
     """
@@ -60,8 +58,8 @@ async def create_test_session(
             "user_id": user_id,
             "sandbox_root": sandbox_root,
             "status": "active",
-            "created_at": datetime.now(timezone.utc),
-        }
+            "created_at": datetime.now(UTC),
+        },
     )
     row = result.first()
     await db_session.commit()
@@ -99,10 +97,9 @@ async def create_test_checkpoint(
     db_session: AsyncSession,
     session_id: str,
     turn_number: int = 1,
-    s3_key: str = None,
-) -> Dict[str, Any]:
-    """
-    Create a test checkpoint in PostgreSQL.
+    s3_key: str | None = None,
+) -> dict[str, Any]:
+    """Create a test checkpoint in PostgreSQL.
 
     Returns checkpoint data dict.
     """
@@ -129,8 +126,8 @@ async def create_test_checkpoint(
                 "turn": turn_number,
             }),
             "s3_key": s3_key,
-            "created_at": datetime.now(timezone.utc),
-        }
+            "created_at": datetime.now(UTC),
+        },
     )
     row = result.first()
     await db_session.commit()
@@ -151,15 +148,14 @@ async def create_test_checkpoint(
 async def verify_postgres_session(
     db_session: AsyncSession,
     session_id: str,
-) -> Optional[Dict[str, Any]]:
-    """
-    Verify session exists in PostgreSQL.
+) -> dict[str, Any] | None:
+    """Verify session exists in PostgreSQL.
 
     Returns session data or None.
     """
     result = await db_session.execute(
         text("SELECT * FROM agent_sessions WHERE id = :id"),
-        {"id": session_id}
+        {"id": session_id},
     )
     row = result.first()
     if not row:
@@ -178,15 +174,14 @@ async def verify_postgres_session(
 async def verify_postgres_checkpoint(
     db_session: AsyncSession,
     checkpoint_id: str,
-) -> Optional[Dict[str, Any]]:
-    """
-    Verify checkpoint exists in PostgreSQL.
+) -> dict[str, Any] | None:
+    """Verify checkpoint exists in PostgreSQL.
 
     Returns checkpoint data or None.
     """
     result = await db_session.execute(
         text("SELECT * FROM agent_checkpoints WHERE id = :id"),
-        {"id": checkpoint_id}
+        {"id": checkpoint_id},
     )
     row = result.first()
     if not row:
@@ -205,12 +200,10 @@ async def count_postgres_checkpoints(
     db_session: AsyncSession,
     session_id: str,
 ) -> int:
-    """
-    Count checkpoints for a session in PostgreSQL.
-    """
+    """Count checkpoints for a session in PostgreSQL."""
     result = await db_session.execute(
         text("SELECT COUNT(*) FROM agent_checkpoints WHERE session_id = :id"),
-        {"id": session_id}
+        {"id": session_id},
     )
     return result.scalar()
 
@@ -218,9 +211,8 @@ async def count_postgres_checkpoints(
 async def verify_neo4j_session(
     neo4j_driver: AsyncDriver,
     session_id: str,
-) -> Optional[Dict[str, Any]]:
-    """
-    Verify session exists in Neo4j.
+) -> dict[str, Any] | None:
+    """Verify session exists in Neo4j.
 
     Returns session data or None.
     """
@@ -249,10 +241,9 @@ async def verify_neo4j_relationship(
     neo4j_driver: AsyncDriver,
     session_id: str,
     relationship_type: str,
-    target_id: str = None,
+    target_id: str | None = None,
 ) -> bool:
-    """
-    Verify a relationship exists in Neo4j.
+    """Verify a relationship exists in Neo4j.
 
     Args:
         session_id: Source session ID
@@ -264,16 +255,16 @@ async def verify_neo4j_relationship(
     """
     async with neo4j_driver.session() as session:
         if target_id:
-            query = """
-            MATCH (s:Session {id: $session_id})-[r:%s]->(t {id: $target_id})
+            query = f"""
+            MATCH (s:Session {{id: $session_id}})-[r:{relationship_type}]->(t {{id: $target_id}})
             RETURN count(r) AS count
-            """ % relationship_type
+            """
             params = {"session_id": session_id, "target_id": target_id}
         else:
-            query = """
-            MATCH (s:Session {id: $session_id})-[r:%s]->()
+            query = f"""
+            MATCH (s:Session {{id: $session_id}})-[r:{relationship_type}]->()
             RETURN count(r) AS count
-            """ % relationship_type
+            """
             params = {"session_id": session_id}
 
         result = await session.run(query, **params)
@@ -284,9 +275,8 @@ async def verify_neo4j_relationship(
 async def verify_redis_cache(
     redis_client: Redis,
     key: str,
-) -> Optional[str]:
-    """
-    Verify cache entry exists in Redis.
+) -> str | None:
+    """Verify cache entry exists in Redis.
 
     Returns cached value or None.
     """
@@ -301,9 +291,8 @@ def verify_s3_object(
     minio_client: Minio,
     bucket: str,
     object_key: str,
-) -> Optional[Dict[str, Any]]:
-    """
-    Verify object exists in MinIO.
+) -> dict[str, Any] | None:
+    """Verify object exists in MinIO.
 
     Returns object metadata or None.
     """
@@ -324,8 +313,7 @@ def download_s3_object(
     bucket: str,
     object_key: str,
 ) -> bytes:
-    """
-    Download object from MinIO.
+    """Download object from MinIO.
 
     Returns object data as bytes.
     """
@@ -342,9 +330,7 @@ def count_s3_objects(
     bucket: str,
     prefix: str = "",
 ) -> int:
-    """
-    Count objects in MinIO with optional prefix.
-    """
+    """Count objects in MinIO with optional prefix."""
     objects = list(minio_client.list_objects(bucket, prefix=prefix, recursive=True))
     return len(objects)
 
@@ -354,38 +340,36 @@ def count_s3_objects(
 # ============================================================================
 
 class EventCollector:
-    """
-    Helper class to collect NATS events during tests.
-    """
+    """Helper class to collect NATS events during tests."""
 
-    def __init__(self):
-        self.events: List[Dict[str, Any]] = []
+    def __init__(self) -> None:
+        self.events: list[dict[str, Any]] = []
         self._lock = asyncio.Lock()
 
-    async def callback(self, msg):
+    async def callback(self, msg) -> None:
         """Callback for NATS subscription."""
         async with self._lock:
             try:
                 event = json.loads(msg.data.decode())
                 self.events.append(event)
             except Exception as e:
-                print(f"Failed to parse event: {e}")
+                pass
 
-    def get_events(self, event_type: str = None) -> List[Dict[str, Any]]:
+    def get_events(self, event_type: str | None = None) -> list[dict[str, Any]]:
         """Get collected events, optionally filtered by type."""
         if event_type:
             return [e for e in self.events if e.get("event_type") == event_type]
         return self.events
 
-    def count(self, event_type: str = None) -> int:
+    def count(self, event_type: str | None = None) -> int:
         """Count collected events, optionally filtered by type."""
         return len(self.get_events(event_type))
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear collected events."""
         self.events.clear()
 
-    def find_event(self, **criteria) -> Optional[Dict[str, Any]]:
+    def find_event(self, **criteria) -> dict[str, Any] | None:
         """Find first event matching all criteria."""
         for event in self.events:
             if all(event.get(k) == v for k, v in criteria.items()):
@@ -398,8 +382,7 @@ async def subscribe_to_events(
     subject: str,
     collector: EventCollector = None,
 ) -> tuple[Any, EventCollector]:
-    """
-    Subscribe to NATS events and collect them.
+    """Subscribe to NATS events and collect them.
 
     Args:
         nats_client: NATS client
@@ -421,9 +404,8 @@ async def wait_for_event(
     collector: EventCollector,
     event_type: str,
     timeout: float = 5.0,
-) -> Optional[Dict[str, Any]]:
-    """
-    Wait for a specific event type to be collected.
+) -> dict[str, Any] | None:
+    """Wait for a specific event type to be collected.
 
     Args:
         collector: Event collector
@@ -448,9 +430,7 @@ async def verify_nats_stream_exists(
     nats_jetstream: JetStreamContext,
     stream_name: str,
 ) -> bool:
-    """
-    Verify NATS stream exists.
-    """
+    """Verify NATS stream exists."""
     try:
         await nats_jetstream.stream_info(stream_name)
         return True
@@ -461,10 +441,9 @@ async def verify_nats_stream_exists(
 async def get_nats_stream_messages(
     nats_jetstream: JetStreamContext,
     stream_name: str,
-    subject: str = None,
-) -> List[Dict[str, Any]]:
-    """
-    Get all messages from a NATS stream.
+    subject: str | None = None,
+) -> list[dict[str, Any]]:
+    """Get all messages from a NATS stream.
 
     Args:
         nats_jetstream: JetStream context
@@ -502,12 +481,10 @@ async def get_nats_stream_messages(
 # ============================================================================
 
 def assert_session_data_matches(
-    postgres_session: Dict[str, Any],
-    neo4j_session: Dict[str, Any],
-):
-    """
-    Assert PostgreSQL and Neo4j session data matches.
-    """
+    postgres_session: dict[str, Any],
+    neo4j_session: dict[str, Any],
+) -> None:
+    """Assert PostgreSQL and Neo4j session data matches."""
     assert postgres_session["session_id"] == neo4j_session["session_id"]
     assert postgres_session["project_id"] == neo4j_session["project_id"]
     assert postgres_session["status"] == neo4j_session["status"]
@@ -515,12 +492,10 @@ def assert_session_data_matches(
 
 
 def assert_event_payload_valid(
-    event: Dict[str, Any],
+    event: dict[str, Any],
     required_fields: list[str] | None = None,
-):
-    """
-    Assert event payload has required structure.
-    """
+) -> None:
+    """Assert event payload has required structure."""
     # Standard fields
     assert "event_id" in event
     assert "event_type" in event
@@ -542,18 +517,16 @@ async def cleanup_test_session(
     db_session: AsyncSession,
     neo4j_driver: AsyncDriver,
     session_id: str,
-):
-    """
-    Clean up test session from all databases.
-    """
+) -> None:
+    """Clean up test session from all databases."""
     # PostgreSQL
     await db_session.execute(
         text("DELETE FROM agent_checkpoints WHERE session_id = :id"),
-        {"id": session_id}
+        {"id": session_id},
     )
     await db_session.execute(
         text("DELETE FROM agent_sessions WHERE id = :id"),
-        {"id": session_id}
+        {"id": session_id},
     )
     await db_session.commit()
 
@@ -569,10 +542,8 @@ def cleanup_s3_objects(
     minio_client: Minio,
     bucket: str,
     prefix: str,
-):
-    """
-    Clean up S3 objects with given prefix.
-    """
+) -> None:
+    """Clean up S3 objects with given prefix."""
     objects = minio_client.list_objects(bucket, prefix=prefix, recursive=True)
     for obj in objects:
         minio_client.remove_object(bucket, obj.object_name)

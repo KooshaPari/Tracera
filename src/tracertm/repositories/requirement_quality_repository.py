@@ -13,7 +13,7 @@ from tracertm.models.requirement_quality import RequirementQuality
 class RequirementQualityRepository:
     """Repository for RequirementQuality CRUD and query operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -102,7 +102,7 @@ class RequirementQualityRepository:
                 RequirementQuality.overall_quality_score <= max_score,
             )
             .order_by(RequirementQuality.overall_quality_score.asc())
-            .limit(limit)
+            .limit(limit),
         )
         return list(result.scalars().all())
 
@@ -120,7 +120,7 @@ class RequirementQualityRepository:
                 RequirementQuality.volatility_index >= threshold,
             )
             .order_by(RequirementQuality.volatility_index.desc())
-            .limit(limit)
+            .limit(limit),
         )
         return list(result.scalars().all())
 
@@ -138,7 +138,7 @@ class RequirementQualityRepository:
                 RequirementQuality.change_propagation_index >= threshold,
             )
             .order_by(RequirementQuality.change_propagation_index.desc())
-            .limit(limit)
+            .limit(limit),
         )
         return list(result.scalars().all())
 
@@ -155,7 +155,7 @@ class RequirementQualityRepository:
                 RequirementQuality.is_verified.is_(False),
             )
             .order_by(RequirementQuality.created_at.desc())
-            .limit(limit)
+            .limit(limit),
         )
         return list(result.scalars().all())
 
@@ -172,7 +172,7 @@ class RequirementQualityRepository:
                 RequirementQuality.wsjf_score.isnot(None),
             )
             .order_by(RequirementQuality.wsjf_score.desc())
-            .limit(limit)
+            .limit(limit),
         )
         return list(result.scalars().all())
 
@@ -202,7 +202,8 @@ class RequirementQualityRepository:
         """Update requirement quality spec."""
         spec = await self.get_by_id(spec_id)
         if not spec:
-            raise ValueError(f"RequirementQuality {spec_id} not found")
+            msg = f"RequirementQuality {spec_id} not found"
+            raise ValueError(msg)
 
         # Update fields conditionally
         if quality_scores is not None:
@@ -267,7 +268,7 @@ class RequirementQualityRepository:
     async def count_by_project(self, project_id: str) -> int:
         """Count specs in a project."""
         result = await self.session.execute(
-            select(func.count(RequirementQuality.id)).where(RequirementQuality.project_id == project_id)
+            select(func.count(RequirementQuality.id)).where(RequirementQuality.project_id == project_id),
         )
         return result.scalar() or 0
 
@@ -280,7 +281,7 @@ class RequirementQualityRepository:
                 func.avg(RequirementQuality.volatility_index).label("avg_volatility"),
                 func.avg(RequirementQuality.change_propagation_index).label("avg_cpi"),
                 func.sum(func.cast(RequirementQuality.is_verified, Integer)).label("verified_count"),
-            ).where(RequirementQuality.project_id == project_id)
+            ).where(RequirementQuality.project_id == project_id),
         )
 
         row = result.one()

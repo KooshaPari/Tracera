@@ -1,10 +1,12 @@
-"""Add UUID format constraints
+"""Add UUID format constraints.
 
 Revision ID: 006_add_uuid_constraints
 Revises: 005
 Create Date: 2026-01-30 16:30:00.000000
 
 """
+
+import contextlib
 
 import sqlalchemy as sa
 
@@ -17,9 +19,8 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
-    """Add CHECK constraints for UUID format validation on all primary key columns"""
-
+def upgrade() -> None:
+    """Add CHECK constraints for UUID format validation on all primary key columns."""
     # List of tables with UUID primary keys
     tables = [
         "items",
@@ -48,28 +49,24 @@ def upgrade():
                 ALTER TABLE {table}
                 ADD CONSTRAINT {constraint_name}
                 CHECK (id::TEXT ~ '^[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{12}}$')
-                """
+                """,
             )
             continue
 
         inspector = sa.inspect(connection)
         if table in inspector.get_table_names():
-            try:
+            with contextlib.suppress(Exception):
                 op.execute(
                     f"""
                     ALTER TABLE {table}
                     ADD CONSTRAINT {constraint_name}
                     CHECK (id::TEXT ~ '^[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{12}}$')
-                    """
+                    """,
                 )
-                print(f"Added UUID constraint to {table}")
-            except Exception as e:
-                print(f"Warning: Could not add constraint to {table}: {e}")
 
 
-def downgrade():
-    """Remove UUID format constraints"""
-
+def downgrade() -> None:
+    """Remove UUID format constraints."""
     tables = [
         "items",
         "links",
@@ -89,7 +86,5 @@ def downgrade():
 
     for table in tables:
         constraint_name = f"{table}_id_uuid_check"
-        try:
+        with contextlib.suppress(Exception):
             op.execute(f"ALTER TABLE {table} DROP CONSTRAINT IF EXISTS {constraint_name}")
-        except Exception as e:
-            print(f"Warning: Could not drop constraint from {table}: {e}")

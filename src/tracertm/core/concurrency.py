@@ -16,8 +16,7 @@ async def update_with_retry[T](
     max_retries: int = 3,
     base_delay: float = 0.1,
 ) -> T:
-    """
-    Execute update function with automatic retry on ConcurrencyError.
+    """Execute update function with automatic retry on ConcurrencyError.
 
     Uses exponential backoff with jitter to prevent thundering herd.
 
@@ -38,7 +37,8 @@ async def update_with_retry[T](
         except ConcurrencyError as e:
             if attempt == max_retries - 1:
                 # Last attempt failed, re-raise
-                raise ConcurrencyError(f"Failed after {max_retries} retries: {e!s}") from e
+                msg = f"Failed after {max_retries} retries: {e!s}"
+                raise ConcurrencyError(msg) from e
 
             # Calculate delay with exponential backoff and jitter
             delay = base_delay * (2**attempt)
@@ -46,4 +46,5 @@ async def update_with_retry[T](
             await asyncio.sleep(delay + jitter)
 
     # Should never reach here, but satisfy type checker
-    raise ConcurrencyError(f"Failed after {max_retries} retries")
+    msg = f"Failed after {max_retries} retries"
+    raise ConcurrencyError(msg)

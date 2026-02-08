@@ -1,6 +1,4 @@
-"""
-Link model for TraceRTM.
-"""
+"""Link model for TraceRTM."""
 
 import uuid
 
@@ -18,8 +16,7 @@ def generate_link_uuid() -> uuid.UUID:
 
 
 class Link(Base, TimestampMixin):
-    """
-    Link model representing relationships between items.
+    """Link model representing relationships between items.
 
     Links are bidirectional and typed (implements, tests, depends_on, etc.).
     """

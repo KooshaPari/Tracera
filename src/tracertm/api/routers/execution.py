@@ -1,6 +1,6 @@
 """FastAPI routes for execution system (QA Integration executions, artifacts, config)."""
 
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -32,8 +32,8 @@ router = APIRouter(prefix="/projects/{project_id}/executions", tags=["Executions
 async def create_execution(
     project_id: str,
     execution_create: ExecutionCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create a new execution."""
     service = ExecutionService(db)
@@ -59,10 +59,10 @@ async def create_execution(
 @router.get("", response_model=ExecutionListResponse)
 async def list_executions(
     project_id: str,
-    status: str | None = Query(None, description="Filter by status"),
-    execution_type: str | None = Query(None, description="Filter by type"),
-    limit: int = Query(100, ge=1, le=1000),
-    offset: int = Query(0, ge=0),
+    status: Annotated[str | None, Query(description="Filter by status")] = None,
+    execution_type: Annotated[str | None, Query(description="Filter by type")] = None,
+    limit: Annotated[int, Query(ge=1, le=1000)] = 100,
+    offset: Annotated[int, Query(ge=0)] = 0,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -95,8 +95,8 @@ async def list_executions(
 async def get_execution(
     project_id: str,
     execution_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get execution details by ID."""
     service = ExecutionService(db)
@@ -124,8 +124,8 @@ async def start_execution(
     project_id: str,
     execution_id: str,
     start_data: ExecutionStart,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Start an execution (transition from pending to running)."""
     service = ExecutionService(db)
@@ -163,8 +163,8 @@ async def complete_execution(
     project_id: str,
     execution_id: str,
     complete_data: ExecutionComplete,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Complete an execution (stop container, record duration, mark status)."""
     service = ExecutionService(db)
@@ -201,7 +201,7 @@ async def complete_execution(
 async def list_artifacts(
     project_id: str,
     execution_id: str,
-    artifact_type: str | None = Query(None, description="Filter by artifact type"),
+    artifact_type: Annotated[str | None, Query(description="Filter by artifact type")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -230,8 +230,8 @@ async def add_artifact(
     project_id: str,
     execution_id: str,
     artifact_create: ExecutionArtifactCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Add an artifact to an execution."""
     service = ExecutionService(db)
@@ -267,8 +267,8 @@ async def add_artifact(
 )
 async def get_execution_config(
     project_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get execution environment configuration for a project."""
     service = ExecutionService(db)
@@ -287,8 +287,8 @@ async def get_execution_config(
 async def update_execution_config(
     project_id: str,
     config_update: ExecutionEnvironmentConfigUpdate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Update execution environment configuration for a project."""
     service = ExecutionService(db)
@@ -314,9 +314,9 @@ async def update_execution_config(
 )
 async def generate_vhs_tape(
     project_id: str,
-    execution_id: str = Query(..., description="Execution ID to generate tape for"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    execution_id: Annotated[str, Query(description="Execution ID to generate tape for")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Generate a VHS tape file (terminal recording) from execution artifacts."""
     service = ExecutionService(db)

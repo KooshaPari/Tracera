@@ -1,5 +1,4 @@
-"""
-TraceRTM MCP Tools.
+"""TraceRTM MCP Tools.
 
 This package contains all MCP tool implementations organized by domain.
 Tools are registered via decorators on the shared `mcp` instance.

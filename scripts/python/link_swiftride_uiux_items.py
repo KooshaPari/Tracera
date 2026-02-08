@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Create links between UI/UX items and SwiftRide features, user stories, and requirements.
-"""
+"""Create links between UI/UX items and SwiftRide features, user stories, and requirements."""
 
 from pathlib import Path
 
@@ -22,7 +20,6 @@ LINK_TYPES = {
 
 def generate_linking_queries():
     """Generate SQL to create links between UI/UX items and existing items."""
-
     queries = []
 
     queries.append("-- ========================================")
@@ -499,20 +496,13 @@ ORDER BY count DESC;
     return "\n".join(queries)
 
 
-def main():
+def main() -> None:
     """Generate linking SQL file."""
-    print("Generating UI/UX Item Links...")
-    print("=" * 80)
-
     sql = generate_linking_queries()
 
     output_file = Path(__file__).resolve().parent.parent / "data" / "tmp" / "swiftride_uiux_links.sql"
     with output_file.open("w") as f:
         f.write(sql)
-
-    print(f"\n✅ SQL file generated: {output_file}")
-    print("\nTo execute:")
-    print(f'  psql "postgresql://tracertm:tracertm_password@localhost:5432/tracertm" < {output_file}')
 
 
 if __name__ == "__main__":

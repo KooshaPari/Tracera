@@ -11,7 +11,7 @@ pytestmark = pytest.mark.integration
 
 
 @pytest.mark.asyncio
-async def test_create_and_get_item(async_session):
+async def test_create_and_get_item(async_session) -> None:
     project = Project(id="proj-1", name="Proj")
     async_session.add(project)
     await async_session.commit()
@@ -26,7 +26,7 @@ async def test_create_and_get_item(async_session):
 
 
 @pytest.mark.asyncio
-async def test_update_optimistic_lock(async_session):
+async def test_update_optimistic_lock(async_session) -> None:
     project = Project(id="proj-1", name="Proj")
     async_session.add(project)
     await async_session.commit()
@@ -44,7 +44,7 @@ async def test_update_optimistic_lock(async_session):
 
 
 @pytest.mark.asyncio
-async def test_soft_delete_and_restore(async_session):
+async def test_soft_delete_and_restore(async_session) -> None:
     project = Project(id="proj-1", name="Proj")
     async_session.add(project)
     await async_session.commit()
@@ -65,7 +65,7 @@ async def test_soft_delete_and_restore(async_session):
 
 
 @pytest.mark.asyncio
-async def test_hard_delete_cascades_links(async_session):
+async def test_hard_delete_cascades_links(async_session) -> None:
     project = Project(id="proj-1", name="Proj")
     async_session.add(project)
     await async_session.commit()
@@ -76,7 +76,7 @@ async def test_hard_delete_cascades_links(async_session):
     a = await item_repo.create("proj-1", "A", "FEATURE", "feature")
     b = await item_repo.create("proj-1", "B", "FEATURE", "feature")
     link = Link(
-        id="link-1", project_id="proj-1", source_item_id=a.id, target_item_id=b.id, link_type="implements", metadata={}
+        id="link-1", project_id="proj-1", source_item_id=a.id, target_item_id=b.id, link_type="implements", metadata={},
     )
     async_session.add(link)
     await async_session.commit()

@@ -7,7 +7,7 @@ Provides REST endpoints for:
 """
 
 from datetime import datetime
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from pydantic import BaseModel, Field
@@ -134,10 +134,10 @@ class VersionChainStatsResponse(BaseModel):
     status_code=201,
 )
 async def create_baseline(
-    project_id: str = Path(..., description="Project ID"),
-    request: CreateBaselineRequest = Body(...),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    project_id: Annotated[str, Path(description="Project ID")],
+    request: Annotated[CreateBaselineRequest, Body()],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Create a new baseline snapshot.
 
@@ -199,11 +199,11 @@ async def create_baseline(
     response_model=BaselineListResponse,
 )
 async def list_baselines(
-    project_id: str = Path(..., description="Project ID"),
-    baseline_type: str | None = Query(None, description="Filter by type"),
-    spec_type: str | None = Query(None, description="Filter by spec type"),
-    limit: int = Query(50, ge=1, le=200),
-    offset: int = Query(0, ge=0),
+    project_id: Annotated[str, Path(description="Project ID")],
+    baseline_type: Annotated[str | None, Query(description="Filter by type")] = None,
+    spec_type: Annotated[str | None, Query(description="Filter by spec type")] = None,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -276,10 +276,10 @@ async def list_baselines(
     response_model=BaselineDetailResponse,
 )
 async def get_baseline(
-    project_id: str = Path(..., description="Project ID"),
-    baseline_id: str = Path(..., description="Baseline ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    project_id: Annotated[str, Path(description="Project ID")],
+    baseline_id: Annotated[str, Path(description="Baseline ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get baseline details with items.
 
@@ -302,7 +302,7 @@ async def get_baseline(
             select(Baseline)
             .options(selectinload(Baseline.items))
             .where(Baseline.baseline_id == baseline_id)
-            .where(Baseline.project_id == project_id)
+            .where(Baseline.project_id == project_id),
         )
         baseline = result.scalar_one_or_none()
 
@@ -348,11 +348,11 @@ async def get_baseline(
     status_code=204,
 )
 async def delete_baseline(
-    project_id: str = Path(..., description="Project ID"),
-    baseline_id: str = Path(..., description="Baseline ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    baseline_id: Annotated[str, Path(description="Baseline ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Delete a baseline.
 
     Args:
@@ -368,7 +368,7 @@ async def delete_baseline(
 
         # Verify exists
         result = await db.execute(
-            select(Baseline).where(Baseline.baseline_id == baseline_id).where(Baseline.project_id == project_id)
+            select(Baseline).where(Baseline.baseline_id == baseline_id).where(Baseline.project_id == project_id),
         )
         baseline = result.scalar_one_or_none()
 
@@ -396,10 +396,10 @@ async def delete_baseline(
     response_model=EmbeddingStatusResponse,
 )
 async def generate_embeddings(
-    project_id: str = Path(..., description="Project ID"),
-    request: GenerateEmbeddingsRequest = Body(...),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    project_id: Annotated[str, Path(description="Project ID")],
+    request: Annotated[GenerateEmbeddingsRequest, Body()],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Generate embeddings for specifications.
 
@@ -429,7 +429,7 @@ async def generate_embeddings(
             model = SentenceTransformer(request.model_name)
         except ImportError:
             raise HTTPException(
-                status_code=501, detail="sentence-transformers not installed. Install with: pip install 'tracertm[ml]'"
+                status_code=501, detail="sentence-transformers not installed. Install with: pip install 'tracertm[ml]'",
             ) from None
 
         for spec_id in request.spec_ids:
@@ -506,9 +506,9 @@ async def generate_embeddings(
     response_model=dict,
 )
 async def get_embedding_stats(
-    project_id: str = Path(..., description="Project ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    project_id: Annotated[str, Path(description="Project ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get embedding statistics for a project.
 
@@ -533,7 +533,7 @@ async def get_embedding_stats(
                 func.count(SpecEmbedding.id).label("count"),
             )
             .where(SpecEmbedding.project_id == project_id)
-            .group_by(SpecEmbedding.spec_type, SpecEmbedding.embedding_model)
+            .group_by(SpecEmbedding.spec_type, SpecEmbedding.embedding_model),
         )
         rows = result.all()
 
@@ -563,12 +563,12 @@ async def get_embedding_stats(
     status_code=204,
 )
 async def delete_embeddings(
-    project_id: str = Path(..., description="Project ID"),
-    spec_type: str | None = Query(None, description="Filter by spec type"),
-    model_name: str | None = Query(None, description="Filter by model"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_type: Annotated[str | None, Query(description="Filter by spec type")] = None,
+    model_name: Annotated[str | None, Query(description="Filter by model")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Delete embeddings for a project.
 
     Args:
@@ -608,9 +608,9 @@ async def delete_embeddings(
     response_model=VersionChainStatsResponse,
 )
 async def get_version_chain_stats(
-    project_id: str = Path(..., description="Project ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    project_id: Annotated[str, Path(description="Project ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get version chain statistics for a project.
 
@@ -632,7 +632,7 @@ async def get_version_chain_stats(
             select(
                 func.count(VersionChainIndex.id).label("total"),
                 func.sum(func.cast(VersionChainIndex.is_valid, Integer)).label("valid"),
-            ).where(VersionChainIndex.project_id == project_id)
+            ).where(VersionChainIndex.project_id == project_id),
         )
         chains_row = chains_result.one()
         total_chains = chains_row.total or 0
@@ -640,7 +640,7 @@ async def get_version_chain_stats(
 
         # Count blocks
         blocks_result = await db.execute(
-            select(func.count(VersionBlock.id)).where(VersionBlock.project_id == project_id)
+            select(func.count(VersionBlock.id)).where(VersionBlock.project_id == project_id),
         )
         total_blocks = blocks_result.scalar() or 0
 
@@ -651,7 +651,7 @@ async def get_version_chain_stats(
                 func.count(VersionChainIndex.id).label("count"),
             )
             .where(VersionChainIndex.project_id == project_id)
-            .group_by(VersionChainIndex.spec_type)
+            .group_by(VersionChainIndex.spec_type),
         )
         chains_by_type: dict[str, int] = {row.spec_type: row.count for row in by_type_result.all()}
 

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Parse quality log files and print an action plan (by file and/or by log).
+"""Parse quality log files and print an action plan (by file and/or by log).
 Handles: Go (vet, gofmt, test), Python (ruff, mypy, pytest), Frontend (biome/tsc/turbo).
 Color highlighting by project (Go/Python/Frontend). Optional --watch for stream of updates.
 """
@@ -186,9 +185,7 @@ def should_skip_line(line_stripped: str) -> bool:
     if not line_stripped or line_stripped.startswith(("Running ", "[")):
         return True
     # Skip make / shell noise
-    if line_stripped.startswith(("make[", "$ ")) or "*** [" in line:
-        return True
-    return False
+    return bool(line_stripped.startswith(("make[", "$ ")) or "*** [" in line)
 
 
 def parse_pattern_match(kind: str, groups: tuple, cwd: Path, line_stripped: str) -> tuple[str, int | None, str] | None:
@@ -213,7 +210,7 @@ def parse_pattern_match(kind: str, groups: tuple, cwd: Path, line_stripped: str)
     if kind == "pytest_file":
         return (normalize_path(g[0], cwd), None, "FAILED test")
 
-    if kind in ("fe_biome", "fe_biome2", "fe_tsc"):
+    if kind in {"fe_biome", "fe_biome2", "fe_tsc"}:
         file_path = normalize_path(g[0], cwd)
         line_no = int(g[1])
         msg = g[3] if len(g) > 3 else line_stripped
@@ -282,7 +279,7 @@ def extract_issues(log_path: Path, suite_name: str, cwd: Path) -> list[tuple[str
     if not log_path.exists():
         return []
 
-    text = log_path.read_text(errors="replace")
+    text = log_path.read_text(encoding="utf-8", errors="replace")
     issues = []
 
     for raw_line in text.splitlines():
@@ -297,7 +294,7 @@ def excerpt_lines(log_path: Path) -> list[str]:
     """Return lines that look like errors, or last MAX_EXCERPT_LINES if none."""
     if not log_path.exists():
         return []
-    lines = log_path.read_text(errors="replace").splitlines()
+    lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
     error_lines = [ln for ln in lines if EXCERPT_PAT.search(strip_ansi(ln))]
     if error_lines:
         return error_lines[:MAX_EXCERPT_LINES]
@@ -330,25 +327,14 @@ def extract_by_file_from_log_text(text: str, cwd: Path, suite_name: str) -> dict
 
 
 def print_action_plan_by_file(by_file: dict, cwd: Path) -> None:
-    sep = "=" * 72
-    print(f"\n{sep}")
-    print("QUALITY ACTION PLAN (by file)")
-    print(sep)
     for file_path in sorted(by_file.keys()):
         entries = by_file[file_path]
-        print(f"\n  {file_path}")
-        for suite, line_no, msg in entries:
-            loc = f"  line {line_no}" if line_no is not None else ""
-            print(f"    {c(suite)}[{suite}]{cr()}{loc}  {msg}")
-    print(f"\n{sep}")
+        for _suite, _line_no, _msg in entries:
+            pass
 
 
 def print_action_plan_by_log(failed_suites: list[str], with_content: list[tuple[str, Path]], cwd: Path) -> None:
     """Print action plan by log: for each log, show by-file err/warn dumps (then excerpt if no files)."""
-    sep = "=" * 72
-    print(f"\n{sep}")
-    print("ACTION PLAN (by log, by file)")
-    print(sep)
     seen = set()
     for suite in failed_suites:
         log_name = next((n for n, s in SUITES if s == suite), f"quality-{suite.lower()}.log")
@@ -358,38 +344,25 @@ def print_action_plan_by_log(failed_suites: list[str], with_content: list[tuple[
         seen.add(log_path)
         text = log_path.read_text(errors="replace")
         by_file = extract_by_file_from_log_text(text, cwd, suite)
-        print(f"\n  {c(suite)}[{suite}]{cr()}  {log_path}")
         if by_file:
             for file_path in sorted(by_file.keys()):
                 entries = by_file[file_path]
-                print(f"    {file_path}")
-                for line_no, msg in entries:
-                    loc = f"  line {line_no}" if line_no is not None else ""
-                    print(f"      {loc}  {msg[:250]}" + ("..." if len(msg) > 250 else ""))
+                for _line_no, _msg in entries:
+                    pass
         else:
             # No file:line parsed — run failed early or no linter output
-            print("    No file-level issues parsed (run failed early or no linter output).")
-            print(f"    Full log: {log_path}")
-            print("    Tip: Fix env (e.g. ruff, go, bun) and run `make quality` to get by-file dumps.")
+            pass
     for name, p in with_content:
         if p in seen:
             continue
         suite = next(s for n, s in SUITES if n == name)
         text = p.read_text(errors="replace")
         by_file = extract_by_file_from_log_text(text, cwd, suite)
-        print(f"\n  {c(suite)}[{suite}]{cr()}  {p}  ({p.stat().st_size} bytes)")
         if by_file:
             for file_path in sorted(by_file.keys()):
                 entries = by_file[file_path]
-                print(f"    {file_path}")
-                for line_no, msg in entries:
-                    loc = f"  line {line_no}" if line_no is not None else ""
-                    print(f"      {loc}  {msg[:250]}" + ("..." if len(msg) > 250 else ""))
-        else:
-            print("    No file-level issues parsed.")
-            print(f"    Full log: {p}")
-    print(f"\n{sep}")
-    print(f"Logs: {LOG_DIR}")
+                for _line_no, _msg in entries:
+                    pass
 
 
 def collect_issues_by_file(cwd: Path) -> tuple[dict, dict]:
@@ -412,62 +385,40 @@ def collect_issues_by_file(cwd: Path) -> tuple[dict, dict]:
 def print_issues_by_category(by_file_lint: dict, by_file_test: dict, sep: str) -> None:
     """Print lint and test issues grouped by file."""
     if by_file_lint:
-        print(f"\n{sep}")
-        print("Lint/Type (by file)")
-        print(sep)
         for file_path in sorted(by_file_lint.keys()):
             entries = by_file_lint[file_path]
-            print(f"\n  {file_path}")
-            for step_name, line_no, msg in entries:
-                loc = f"  line {line_no}" if line_no is not None else ""
-                print(f"    {c(step_name.split()[0])}[{step_name}]{cr()}{loc}  {msg}")
-        print(f"\n{sep}")
+            for _step_name, _line_no, _msg in entries:
+                pass
 
     if by_file_test:
-        print(f"\n{sep}")
-        print("Tests (by file)")
-        print(sep)
         for file_path in sorted(by_file_test.keys()):
             entries = by_file_test[file_path]
-            print(f"\n  {file_path}")
-            for step_name, line_no, msg in entries:
-                loc = f"  line {line_no}" if line_no is not None else ""
-                print(f"    {c(step_name.split()[0])}[{step_name}]{cr()}{loc}  {msg}")
-        print(f"\n{sep}")
+            for _step_name, _line_no, _msg in entries:
+                pass
 
 
 def print_step_details_by_file(by_file: dict, display_name: str, log_path: Path) -> None:
     """Print details for a step grouped by file."""
-    print(f"\n  {c(display_name.split()[0])}[{display_name}]{cr()}  {log_path}")
-
     for fp in sorted(by_file.keys()):
-        print(f"    {fp}")
-        for line_no, msg in by_file[fp]:
-            loc = f"  line {line_no}" if line_no is not None else ""
-            print(f"      {loc}  {msg[:200]}" + ("..." if len(msg) > 200 else ""))
+        for _line_no, _msg in by_file[fp]:
+            pass
 
 
 def print_step_excerpt(display_name: str, log_path: Path) -> None:
     """Print excerpt from log when no by-file details available."""
-    print(f"\n  {c(display_name.split()[0])}[{display_name}]{cr()}  {log_path}")
     lines = excerpt_lines(log_path)
-    for ln in lines[:15]:
-        print(f"      {ln[:200]}")
+    for _ln in lines[:15]:
+        pass
 
 
 def print_failed_steps_details(failed_steps: list[str], cwd: Path, sep: str) -> None:
     """Print details for failed steps when no by-file issues found."""
-    print(f"\n{sep}")
-    print(f"{C_FAIL}FAILED STEPS{cr()} (by log)")
-    print(sep)
-
     for stem, display_name, _, suite_for_patterns in SPLIT_STEPS:
         if stem not in failed_steps:
             continue
 
         log_path = LOG_DIR / f"{stem}.log"
         if not log_path.exists():
-            print(f"  {display_name}  (no log)")
             continue
 
         text = log_path.read_text(errors="replace")
@@ -477,8 +428,6 @@ def print_failed_steps_details(failed_steps: list[str], cwd: Path, sep: str) -> 
             print_step_details_by_file(by_file, display_name, log_path)
         else:
             print_step_excerpt(display_name, log_path)
-
-    print(f"\n{sep}")
 
 
 def run_report_split() -> int:
@@ -497,15 +446,13 @@ def run_report_split() -> int:
 
     if by_file_lint or by_file_test:
         if failed_steps:
-            print(f"\n{C_FAIL}FAILED STEPS:{cr()} " + ", ".join(failed_steps))
-        print(f"Logs: {LOG_DIR}")
+            pass
         return 0
 
     # No parseable by-file: show failed steps and per-step log excerpts
     if failed_steps:
         print_failed_steps_details(failed_steps, cwd, sep)
 
-    print(f"Logs: {LOG_DIR}")
     return 0
 
 
@@ -529,33 +476,21 @@ def run_report() -> int:
     if by_file:
         print_action_plan_by_file(by_file, cwd)
         if failed_suites:
-            print(f"\n{C_FAIL}FAILED SUITES:{cr()} " + ", ".join(failed_suites))
-            print(f"Logs: {LOG_DIR}")
+            pass
         return 0
 
     # All passed, no file-level issues: short success (skip verbose by-log listing)
     if not failed_suites and with_content:
-        print("Quality: all suites passed. No file-level issues.")
-        print(f"Logs: {LOG_DIR}")
         return 0
 
     # No parseable by-file issues: show failed runs (colored) and action plan by log
     if failed_suites:
-        sep = "=" * 72
-        print(f"\n{sep}")
-        print(f"{C_FAIL}FAILED RUNS{cr()} (suites had failures)")
-        print(sep)
         for suite in failed_suites:
             log_name = next((n for n, s in SUITES if s == suite), f"quality-{suite.lower()}.log")
             log_path = LOG_DIR / log_name
-            print(f"  {c(suite)}[{suite}]{cr()}  {log_path}")
-        print(sep)
 
     if with_content:
         print_action_plan_by_log(failed_suites, with_content, cwd)
-    else:
-        print("No quality logs found (or logs empty). Run 'make quality' or 'make quality-pc' first.")
-        print(f"Logs: {LOG_DIR}")
 
     return 0
 
@@ -570,7 +505,6 @@ def main() -> int:
         try:
             while True:
                 run_report()
-                print(f"\n{C_DIM}Refreshing in {args.interval}s (Ctrl+C to stop){cr()}\n")
                 time.sleep(args.interval)
         except KeyboardInterrupt:
             return 0

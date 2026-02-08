@@ -46,7 +46,7 @@ class SnapshotEventPublisher:
     when snapshots are created or restored.
     """
 
-    def __init__(self, event_publisher: Any):
+    def __init__(self, event_publisher: Any) -> None:
         """Initialize snapshot event publisher.
 
         Args:
@@ -87,7 +87,7 @@ class SnapshotEventPublisher:
         try:
             file_count, size_bytes = await asyncio.to_thread(_compute_stats)
         except Exception as e:
-            logger.warning(f"Failed to calculate snapshot stats: {e}")
+            logger.warning("Failed to calculate snapshot stats: %s", e)
             file_count = 0
             size_bytes = 0
 
@@ -183,7 +183,7 @@ async def create_snapshot_with_events(params: CreateSnapshotParams) -> dict[str,
         return result
 
     except Exception as e:
-        logger.error("Snapshot creation failed: %s", e)
+        logger.exception("Snapshot creation failed: %s", e)
         raise
 
 
@@ -236,5 +236,5 @@ async def restore_snapshot_with_events(params: RestoreSnapshotParams) -> dict[st
         return result
 
     except Exception as e:
-        logger.error("Snapshot restoration failed: %s", e)
+        logger.exception("Snapshot restoration failed: %s", e)
         raise

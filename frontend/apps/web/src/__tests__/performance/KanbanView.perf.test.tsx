@@ -68,7 +68,7 @@ describe('ItemsKanbanView Performance', () => {
     render(<WrappedView />);
 
     // Initial render
-    expect(renderSpy).toHaveBeenCalledOnce();
+    expect(renderSpy).toHaveBeenCalledTimes(1);
 
     // Re-render with same props should not increase count significantly
     rerender(<WrappedView />);

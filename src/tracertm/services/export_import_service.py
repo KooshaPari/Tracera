@@ -16,7 +16,7 @@ from tracertm.repositories.project_repository import ProjectRepository
 class ExportImportService:
     """Service for exporting and importing project data."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)

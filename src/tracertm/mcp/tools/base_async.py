@@ -1,5 +1,4 @@
-"""
-Async base utilities for MCP tools with optimized database access.
+"""Async base utilities for MCP tools with optimized database access.
 
 Provides:
 - Async database session management with shared connection pool
@@ -33,8 +32,7 @@ def get_config_manager() -> ConfigManager:
 
 # Re-export get_mcp_session for convenience
 async def get_async_session():
-    """
-    Get an async database session with RLS context.
+    """Get an async database session with RLS context.
 
     This is an alias for get_mcp_session() for backward compatibility.
 
@@ -52,8 +50,7 @@ async def get_async_session():
 
 
 async def get_current_project_id() -> str | None:
-    """
-    Get the currently selected project ID from config.
+    """Get the currently selected project ID from config.
 
     Returns:
         Project ID if set, None otherwise
@@ -64,8 +61,7 @@ async def get_current_project_id() -> str | None:
 
 
 async def require_project() -> str:
-    """
-    Get current project ID or raise ToolError if not set.
+    """Get current project ID or raise ToolError if not set.
 
     Returns:
         Current project ID
@@ -75,15 +71,15 @@ async def require_project() -> str:
     """
     project_id = await get_current_project_id()
     if not project_id:
+        msg = "No project selected. Use project_manage(action='select', payload={'project_id': '...'}) first."
         raise ToolError(
-            "No project selected. Use project_manage(action='select', payload={'project_id': '...'}) first."
+            msg,
         )
     return project_id
 
 
 async def set_current_project(project_id: str) -> None:
-    """
-    Set the current project ID in config.
+    """Set the current project ID in config.
 
     Args:
         project_id: Project ID to set as current
@@ -189,11 +185,13 @@ def resolve_project_from_token(  # noqa: C901
     if allowed:
         if project_id:
             if project_id not in allowed:
-                raise ToolError("Project access denied for requested project_id.")
+                msg = "Project access denied for requested project_id."
+                raise ToolError(msg)
             return project_id
         if len(allowed) == 1:
             return allowed[0]
-        raise ToolError("project_id required for this request (multiple projects available).")
+        msg = "project_id required for this request (multiple projects available)."
+        raise ToolError(msg)
 
     return project_id
 
@@ -229,7 +227,7 @@ async def cached_query(
     )
 
 
-def invalidate_cache(prefix: str | None = None):
+def invalidate_cache(prefix: str | None = None) -> None:
     """Invalidate cache entries.
 
     Args:

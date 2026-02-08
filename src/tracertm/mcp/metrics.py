@@ -108,7 +108,7 @@ auth_failures_total = Counter(
 class MetricsMiddleware(Middleware):
     """Middleware that collects Prometheus metrics for all MCP tool calls."""
 
-    def __init__(self, track_payload_size: bool = True):
+    def __init__(self, track_payload_size: bool = True) -> None:
         """Initialize metrics middleware.
 
         Args:

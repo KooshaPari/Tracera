@@ -10,7 +10,7 @@ import { Button, Input } from '@tracertm/ui';
 const Register = () => {
   const navigate = useNavigate();
   // Note: auth-store doesn't expose a direct 'register' action,
-  // but we can call the API directly or add it to the store.
+  // But we can call the API directly or add it to the store.
   // The backend has /api/v1/auth/register.
   // For now, I'll fetch directly here or assume we should add 'register' to store.
   // Given I modified auth-store.ts, let's check if it has register.

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Generate man pages for TraceRTM commands (Story 3.5, FR29, FR30).
+"""Generate man pages for TraceRTM commands (Story 3.5, FR29, FR30).
 
 Usage:
     python scripts/generate_man_pages.py [output_dir]
@@ -12,18 +11,15 @@ from pathlib import Path
 from tracertm.cli.help_system import HELP_TOPICS, generate_man_page
 
 
-def main():
+def main() -> None:
     """Generate man pages for all commands."""
     output_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("man/man1")
     output_dir.mkdir(parents=True, exist_ok=True)
-
-    print(f"Generating man pages in {output_dir}...")
 
     for topic in HELP_TOPICS:
         man_page = generate_man_page(topic)
         output_file = output_dir / f"rtm-{topic}.1"
         output_file.write_text(man_page)
-        print(f"  Generated {output_file}")
 
     # Generate main rtm.1 man page
     main_man = """
@@ -77,11 +73,6 @@ rtm-item(1), rtm-project(1), rtm-link(1), rtm-config(1), rtm-agents(1)
 TraceRTM Development Team
 """
     (output_dir / "rtm.1").write_text(main_man)
-    print(f"  Generated {output_dir / 'rtm.1'}")
-
-    print("\nMan pages generated successfully!")
-    print(f"Install with: sudo cp {output_dir}/*.1 /usr/local/share/man/man1/")
-    print("Then run: sudo mandb")
 
 
 if __name__ == "__main__":

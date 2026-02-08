@@ -1,5 +1,4 @@
-"""
-Phase 6: E2E Integration Testing - Checkpoint & Resume Tests
+"""Phase 6: E2E Integration Testing - Checkpoint & Resume Tests.
 
 Tests checkpoint creation and session resume functionality.
 
@@ -12,31 +11,31 @@ Verifies:
 - Temporal workflow integration
 """
 
-import pytest
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from uuid import uuid4
 
-from .test_helpers import (
-    create_test_session,
-    create_test_checkpoint,
-    verify_postgres_checkpoint,
-    count_postgres_checkpoints,
-    cleanup_test_session,
-)
+import pytest
 
+from .test_helpers import (
+    cleanup_test_session,
+    count_postgres_checkpoints,
+    create_test_checkpoint,
+    create_test_session,
+    verify_postgres_checkpoint,
+)
 
 # ============================================================================
 # Checkpoint Creation Tests
 # ============================================================================
+
 
 @pytest.mark.e2e
 @pytest.mark.asyncio
 async def test_checkpoint_creation(
     db_session,
     neo4j_driver,
-):
-    """
-    Test checkpoint creation stores state snapshot.
+) -> None:
+    """Test checkpoint creation stores state snapshot.
 
     Verifies:
     - Checkpoint row created in agent_checkpoints
@@ -76,9 +75,8 @@ async def test_checkpoint_creation(
 async def test_checkpoint_turn_number_increment(
     db_session,
     neo4j_driver,
-):
-    """
-    Test checkpoint turn numbers increment correctly.
+) -> None:
+    """Test checkpoint turn numbers increment correctly.
 
     Verifies:
     - First checkpoint has turn_number = 1
@@ -117,9 +115,8 @@ async def test_checkpoint_turn_number_increment(
 async def test_checkpoint_state_snapshot(
     db_session,
     neo4j_driver,
-):
-    """
-    Test checkpoint stores complete state snapshot.
+) -> None:
+    """Test checkpoint stores complete state snapshot.
 
     Verifies:
     - State snapshot includes messages
@@ -166,8 +163,8 @@ async def test_checkpoint_state_snapshot(
             "session_id": session_id,
             "turn_number": 1,
             "state_snapshot": json.dumps(complex_state),
-            "created_at": datetime.now(timezone.utc),
-        }
+            "created_at": datetime.now(UTC),
+        },
     )
     checkpoint_id = result.scalar()
     await db_session.commit()
@@ -179,7 +176,7 @@ async def test_checkpoint_state_snapshot(
     # Query and parse state_snapshot
     result = await db_session.execute(
         text("SELECT state_snapshot FROM agent_checkpoints WHERE id = :id"),
-        {"id": checkpoint_id}
+        {"id": checkpoint_id},
     )
     row = result.first()
     stored_state = json.loads(row.state_snapshot)
@@ -203,9 +200,8 @@ async def test_checkpoint_state_snapshot(
 async def test_session_resume_from_checkpoint(
     db_session,
     neo4j_driver,
-):
-    """
-    Test session can resume from checkpoint.
+) -> None:
+    """Test session can resume from checkpoint.
 
     Verifies:
     - Latest checkpoint retrieved
@@ -238,7 +234,7 @@ async def test_session_resume_from_checkpoint(
             ORDER BY turn_number DESC
             LIMIT 1
         """),
-        {"session_id": session_id}
+        {"session_id": session_id},
     )
     latest = result.first()
 
@@ -258,9 +254,8 @@ async def test_session_resume_from_checkpoint(
 async def test_session_resume_specific_turn(
     db_session,
     neo4j_driver,
-):
-    """
-    Test session can resume from specific turn number.
+) -> None:
+    """Test session can resume from specific turn number.
 
     Verifies:
     - Checkpoint retrieved by turn number
@@ -290,7 +285,7 @@ async def test_session_resume_specific_turn(
             SELECT * FROM agent_checkpoints
             WHERE session_id = :session_id AND turn_number = :turn
         """),
-        {"session_id": session_id, "turn": 5}
+        {"session_id": session_id, "turn": 5},
     )
     checkpoint = result.first()
 
@@ -310,9 +305,8 @@ async def test_session_resume_specific_turn(
 async def test_session_resume_no_duplicate_messages(
     db_session,
     neo4j_driver,
-):
-    """
-    Test resumed session doesn't duplicate messages.
+) -> None:
+    """Test resumed session doesn't duplicate messages.
 
     Verifies:
     - Message history preserved in checkpoint
@@ -320,6 +314,7 @@ async def test_session_resume_no_duplicate_messages(
     - New messages appended (not duplicated)
     """
     import json
+
     from sqlalchemy import text
 
     # Create session
@@ -348,8 +343,8 @@ async def test_session_resume_no_duplicate_messages(
             "session_id": session_id,
             "turn_number": 5,
             "state_snapshot": json.dumps({"messages": messages}),
-            "created_at": datetime.now(timezone.utc),
-        }
+            "created_at": datetime.now(UTC),
+        },
     )
     checkpoint_id = result.scalar()
     await db_session.commit()
@@ -357,7 +352,7 @@ async def test_session_resume_no_duplicate_messages(
     # Resume: Load messages from checkpoint
     result = await db_session.execute(
         text("SELECT state_snapshot FROM agent_checkpoints WHERE id = :id"),
-        {"id": checkpoint_id}
+        {"id": checkpoint_id},
     )
     row = result.first()
     state = json.loads(row.state_snapshot)
@@ -389,9 +384,8 @@ async def test_session_resume_no_duplicate_messages(
 async def test_checkpoint_cleanup_old_checkpoints(
     db_session,
     neo4j_driver,
-):
-    """
-    Test old checkpoints are cleaned up, keeping only recent ones.
+) -> None:
+    """Test old checkpoints are cleaned up, keeping only recent ones.
 
     Verifies:
     - 20 checkpoints created
@@ -433,7 +427,7 @@ async def test_checkpoint_cleanup_old_checkpoints(
                 LIMIT :keep_count
             )
         """),
-        {"session_id": session_id, "keep_count": keep_count}
+        {"session_id": session_id, "keep_count": keep_count},
     )
     await db_session.commit()
 
@@ -448,7 +442,7 @@ async def test_checkpoint_cleanup_old_checkpoints(
             WHERE session_id = :session_id
             ORDER BY turn_number
         """),
-        {"session_id": session_id}
+        {"session_id": session_id},
     )
     turns = [row.turn_number for row in result.all()]
     assert turns == [16, 17, 18, 19, 20]
@@ -462,9 +456,8 @@ async def test_checkpoint_cleanup_old_checkpoints(
 async def test_checkpoint_cleanup_by_age(
     db_session,
     neo4j_driver,
-):
-    """
-    Test checkpoints can be cleaned up by age.
+) -> None:
+    """Test checkpoints can be cleaned up by age.
 
     Verifies:
     - Old checkpoints identified by timestamp
@@ -472,6 +465,7 @@ async def test_checkpoint_cleanup_by_age(
     - Recent checkpoints preserved
     """
     from datetime import timedelta
+
     from sqlalchemy import text
 
     # Create session
@@ -482,7 +476,7 @@ async def test_checkpoint_cleanup_by_age(
     session_id = session_data["session_id"]
 
     # Create checkpoints with different ages
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     # Old checkpoint (30 days ago)
     await db_session.execute(
@@ -498,7 +492,7 @@ async def test_checkpoint_cleanup_by_age(
             "turn_number": 1,
             "state_snapshot": '{}',
             "created_at": now - timedelta(days=30),
-        }
+        },
     )
 
     # Recent checkpoint (1 day ago)
@@ -515,7 +509,7 @@ async def test_checkpoint_cleanup_by_age(
             "turn_number": 2,
             "state_snapshot": '{}',
             "created_at": now - timedelta(days=1),
-        }
+        },
     )
 
     await db_session.commit()
@@ -528,7 +522,7 @@ async def test_checkpoint_cleanup_by_age(
             WHERE session_id = :session_id
             AND created_at < NOW() - INTERVAL ':days days'
         """),
-        {"session_id": session_id, "days": retention_days}
+        {"session_id": session_id, "days": retention_days},
     )
     await db_session.commit()
 
@@ -541,7 +535,7 @@ async def test_checkpoint_cleanup_by_age(
             SELECT turn_number FROM agent_checkpoints
             WHERE session_id = :session_id
         """),
-        {"session_id": session_id}
+        {"session_id": session_id},
     )
     row = result.first()
     assert row.turn_number == 2
@@ -559,9 +553,8 @@ async def test_checkpoint_cleanup_by_age(
 async def test_checkpoint_with_s3_snapshot(
     db_session,
     neo4j_driver,
-):
-    """
-    Test checkpoint references S3 snapshot.
+) -> None:
+    """Test checkpoint references S3 snapshot.
 
     Verifies:
     - Checkpoint stores S3 key
@@ -600,9 +593,8 @@ async def test_checkpoint_with_s3_snapshot(
 async def test_checkpoint_without_snapshot(
     db_session,
     neo4j_driver,
-):
-    """
-    Test checkpoint can be created without S3 snapshot.
+) -> None:
+    """Test checkpoint can be created without S3 snapshot.
 
     Verifies:
     - Checkpoint created with NULL s3_key

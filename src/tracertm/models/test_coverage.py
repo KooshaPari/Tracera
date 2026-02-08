@@ -1,6 +1,4 @@
-"""
-Test Coverage model for tracking test-to-requirement traceability.
-"""
+"""Test Coverage model for tracking test-to-requirement traceability."""
 
 import uuid as uuid_module
 from datetime import UTC, datetime
@@ -47,8 +45,7 @@ class CoverageStatus(StrEnum):
 
 
 class TestCoverage(Base, TimestampMixin):
-    """
-    Links test cases to requirements (items) for traceability.
+    """Links test cases to requirements (items) for traceability.
     Enables coverage analysis and traceability matrices.
     """
 
@@ -56,25 +53,25 @@ class TestCoverage(Base, TimestampMixin):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     project_id: Mapped[str] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False,
     )
 
     # The test case providing coverage
     test_case_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("test_cases.id", ondelete="CASCADE"), nullable=False
+        String(36), ForeignKey("test_cases.id", ondelete="CASCADE"), nullable=False,
     )
 
     # The requirement/item being covered
     requirement_id: Mapped[str] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("items.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("items.id", ondelete="CASCADE"), nullable=False,
     )
 
     # Coverage details
     coverage_type: Mapped[CoverageType] = mapped_column(
-        SQLEnum(CoverageType), nullable=False, default=CoverageType.DIRECT
+        SQLEnum(CoverageType), nullable=False, default=CoverageType.DIRECT,
     )
     status: Mapped[CoverageStatus] = mapped_column(
-        SQLEnum(CoverageStatus), nullable=False, default=CoverageStatus.ACTIVE
+        SQLEnum(CoverageStatus), nullable=False, default=CoverageStatus.ACTIVE,
     )
 
     # Coverage percentage (0-100) for partial coverage
@@ -121,7 +118,7 @@ class CoverageActivity(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     coverage_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("test_coverages.id", ondelete="CASCADE"), nullable=False
+        String(36), ForeignKey("test_coverages.id", ondelete="CASCADE"), nullable=False,
     )
     activity_type: Mapped[str] = mapped_column(String(100), nullable=False)
     from_value: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -130,7 +127,7 @@ class CoverageActivity(Base):
     performed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
     activity_metadata: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC),
     )
 
     __table_args__ = (

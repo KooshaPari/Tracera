@@ -1,6 +1,4 @@
-"""
-Repository for GitHub Project operations.
-"""
+"""Repository for GitHub Project operations."""
 
 import uuid
 
@@ -13,7 +11,7 @@ from tracertm.models.github_project import GitHubProject
 class GitHubProjectRepository:
     """Repository for GitHub Project operations."""
 
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
     async def create(

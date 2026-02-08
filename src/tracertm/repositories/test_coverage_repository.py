@@ -1,6 +1,4 @@
-"""
-Repository for Test Coverage operations.
-"""
+"""Repository for Test Coverage operations."""
 
 import uuid
 from datetime import UTC, datetime
@@ -22,7 +20,7 @@ from tracertm.models.test_coverage import (
 class TestCoverageRepository:
     """Repository for test coverage CRUD and traceability operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -75,7 +73,7 @@ class TestCoverageRepository:
                 selectinload(TestCoverage.test_case),
                 selectinload(TestCoverage.requirement),
             )
-            .where(TestCoverage.id == coverage_id)
+            .where(TestCoverage.id == coverage_id),
         )
         return result.scalar_one_or_none()
 
@@ -90,8 +88,8 @@ class TestCoverageRepository:
                 and_(
                     TestCoverage.test_case_id == test_case_id,
                     TestCoverage.requirement_id == requirement_id,
-                )
-            )
+                ),
+            ),
         )
         return result.scalar_one_or_none()
 
@@ -151,8 +149,8 @@ class TestCoverageRepository:
                 and_(
                     TestCoverage.test_case_id == test_case_id,
                     TestCoverage.status == CoverageStatus.ACTIVE,
-                )
-            )
+                ),
+            ),
         )
         return list(result.scalars().all())
 
@@ -168,8 +166,8 @@ class TestCoverageRepository:
                 and_(
                     TestCoverage.requirement_id == requirement_id,
                     TestCoverage.status == CoverageStatus.ACTIVE,
-                )
-            )
+                ),
+            ),
         )
         return list(result.scalars().all())
 
@@ -254,8 +252,7 @@ class TestCoverageRepository:
         project_id: str,
         requirement_view: str | None = None,
     ) -> dict[str, Any]:
-        """
-        Generate a traceability matrix for a project.
+        """Generate a traceability matrix for a project.
         Returns requirements mapped to their covering test cases.
         """
         # Get all requirements (items) for the project
@@ -270,7 +267,7 @@ class TestCoverageRepository:
             and_(
                 TestCoverage.project_id == project_id,
                 TestCoverage.status == CoverageStatus.ACTIVE,
-            )
+            ),
         )
         cov_result = await self.session.execute(cov_query)
         coverages = list(cov_result.scalars().all())
@@ -339,9 +336,7 @@ class TestCoverageRepository:
         project_id: str,
         requirement_view: str | None = None,
     ) -> dict[str, Any]:
-        """
-        Find requirements that have no test coverage.
-        """
+        """Find requirements that have no test coverage."""
         # Get all requirements
         req_query = select(Item).where(Item.project_id == project_id)
         if requirement_view:
@@ -356,7 +351,7 @@ class TestCoverageRepository:
                 and_(
                     TestCoverage.project_id == project_id,
                     TestCoverage.status == CoverageStatus.ACTIVE,
-                )
+                ),
             )
             .distinct()
         )
@@ -425,7 +420,7 @@ class TestCoverageRepository:
         type_result = await self.session.execute(
             select(TestCoverage.coverage_type, func.count())
             .where(TestCoverage.project_id == project_id)
-            .group_by(TestCoverage.coverage_type)
+            .group_by(TestCoverage.coverage_type),
         )
         by_type = {str(row[0].value): row[1] for row in type_result}
 
@@ -433,16 +428,16 @@ class TestCoverageRepository:
         status_result = await self.session.execute(
             select(TestCoverage.status, func.count())
             .where(TestCoverage.project_id == project_id)
-            .group_by(TestCoverage.status)
+            .group_by(TestCoverage.status),
         )
         by_status = {str(row[0].value): row[1] for row in status_result}
 
         # Unique test cases and requirements
         unique_tests = await self.session.execute(
-            select(func.count(func.distinct(TestCoverage.test_case_id))).where(TestCoverage.project_id == project_id)
+            select(func.count(func.distinct(TestCoverage.test_case_id))).where(TestCoverage.project_id == project_id),
         )
         unique_reqs = await self.session.execute(
-            select(func.count(func.distinct(TestCoverage.requirement_id))).where(TestCoverage.project_id == project_id)
+            select(func.count(func.distinct(TestCoverage.requirement_id))).where(TestCoverage.project_id == project_id),
         )
 
         return {
@@ -464,6 +459,6 @@ class TestCoverageRepository:
             select(CoverageActivity)
             .where(CoverageActivity.coverage_id == coverage_id)
             .order_by(CoverageActivity.created_at.desc())
-            .limit(limit)
+            .limit(limit),
         )
         return list(result.scalars().all())

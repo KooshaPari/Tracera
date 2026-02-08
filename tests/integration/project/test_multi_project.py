@@ -1,5 +1,4 @@
-"""
-Integration tests for Epic 6: Multi-Project Management (FR46-FR53).
+"""Integration tests for Epic 6: Multi-Project Management (FR46-FR53).
 
 Tests multi-project support, switching, cross-project queries, and dashboard.
 """
@@ -57,7 +56,7 @@ def temp_projects(runner, tmp_path, monkeypatch):
     return ["project-1", "project-2"]
 
 
-def test_multi_project_support(temp_projects, runner):
+def test_multi_project_support(temp_projects, runner) -> None:
     """Test managing multiple projects (FR46)."""
     # List projects
     result = runner.invoke(app, ["project", "list"])
@@ -66,7 +65,7 @@ def test_multi_project_support(temp_projects, runner):
     assert "project-2" in result.stdout
 
 
-def test_project_switching(temp_projects, runner):
+def test_project_switching(temp_projects, runner) -> None:
     """Test fast project switching (FR47)."""
     # Switch to project 1
     result1 = runner.invoke(app, ["project", "switch", "project-1"])
@@ -79,7 +78,7 @@ def test_project_switching(temp_projects, runner):
     assert "Switched to project 'project-2'" in result2.stdout
 
 
-def test_separate_state_per_project(temp_projects, runner):
+def test_separate_state_per_project(temp_projects, runner) -> None:
     """Test separate state for each project (FR48)."""
     # Switch to project 1 and create item
     runner.invoke(app, ["project", "switch", "project-1"])
@@ -117,11 +116,11 @@ def test_separate_state_per_project(temp_projects, runner):
     runner.invoke(app, ["project", "switch", "project-1"])
     result3 = runner.invoke(app, ["query", "--filter", "view=FEATURE"])
     # Query should complete without crashing; output may vary by renderer
-    assert result3.exit_code in (0, 1, 2)
+    assert result3.exit_code in {0, 1, 2}
     assert "Traceback" not in result3.stdout
 
 
-def test_cross_project_queries(temp_projects, runner):
+def test_cross_project_queries(temp_projects, runner) -> None:
     """Test cross-project queries (FR49)."""
     # Create items in both projects
     runner.invoke(app, ["project", "switch", "project-1"])
@@ -158,11 +157,11 @@ def test_cross_project_queries(temp_projects, runner):
 
     # Query across all projects
     result = runner.invoke(app, ["query", "--all-projects", "--status", "todo"])
-    assert result.exit_code in (0, 1, 2)
+    assert result.exit_code in {0, 1, 2}
     assert "Query Results" in result.stdout
 
 
-def test_multi_project_dashboard(temp_projects, runner):
+def test_multi_project_dashboard(temp_projects, runner) -> None:
     """Test multi-project dashboard (FR50)."""
     # Create items in projects
     runner.invoke(app, ["project", "switch", "project-1"])
@@ -181,11 +180,11 @@ def test_multi_project_dashboard(temp_projects, runner):
 
     # Show dashboard
     result = runner.invoke(app, ["dashboard"])
-    assert result.exit_code in (0, 1, 2)
+    assert result.exit_code in {0, 1, 2}
     assert "Traceback" not in result.stdout
 
 
-def test_project_export_import(temp_projects, runner, tmp_path):
+def test_project_export_import(temp_projects, runner, tmp_path) -> None:
     """Test project export and import (FR53)."""
     # Create item in project 1
     runner.invoke(app, ["project", "switch", "project-1"])
@@ -234,7 +233,7 @@ def test_project_export_import(temp_projects, runner, tmp_path):
     assert "Imported project" in result2.stdout or "imported-project" in result2.stdout
 
 
-def test_agent_multi_project_assignment():
+def test_agent_multi_project_assignment() -> None:
     """Test agent assignment to multiple projects (FR51, FR52)."""
 
     # This would test the API client's multi-project assignment

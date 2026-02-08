@@ -17,7 +17,7 @@ class TestCheckpointService:
     """Test checkpoint service CRUD operations."""
 
     @pytest.mark.asyncio
-    async def test_create_checkpoint(self, db_session):
+    async def test_create_checkpoint(self, db_session) -> None:
         """Test creating a checkpoint."""
         # Create test session
         session_id = f"test-session-{uuid4()}"
@@ -56,7 +56,7 @@ class TestCheckpointService:
         assert checkpoint.sandbox_snapshot_s3_key is not None
 
     @pytest.mark.asyncio
-    async def test_load_latest_checkpoint(self, db_session):
+    async def test_load_latest_checkpoint(self, db_session) -> None:
         """Test loading the most recent checkpoint."""
         # Create test session
         session_id = f"test-session-{uuid4()}"
@@ -85,7 +85,7 @@ class TestCheckpointService:
         assert latest.state_snapshot["turn"] == 3
 
     @pytest.mark.asyncio
-    async def test_load_checkpoint_by_turn(self, db_session):
+    async def test_load_checkpoint_by_turn(self, db_session) -> None:
         """Test loading checkpoint for specific turn."""
         # Create test session
         session_id = f"test-session-{uuid4()}"
@@ -114,7 +114,7 @@ class TestCheckpointService:
         assert checkpoint.state_snapshot["turn"] == 2
 
     @pytest.mark.asyncio
-    async def test_list_checkpoints(self, db_session):
+    async def test_list_checkpoints(self, db_session) -> None:
         """Test listing all checkpoints for a session."""
         # Create test session
         session_id = f"test-session-{uuid4()}"
@@ -144,7 +144,7 @@ class TestCheckpointService:
         assert checkpoints[-1].turn_number == 1
 
     @pytest.mark.asyncio
-    async def test_cleanup_old_checkpoints(self, db_session):
+    async def test_cleanup_old_checkpoints(self, db_session) -> None:
         """Test cleaning up old checkpoints."""
         # Create test session
         session_id = f"test-session-{uuid4()}"
@@ -180,7 +180,7 @@ class TestCheckpointService:
         assert remaining[-1].turn_number == 8
 
     @pytest.mark.asyncio
-    async def test_get_checkpoint_stats(self, db_session):
+    async def test_get_checkpoint_stats(self, db_session) -> None:
         """Test getting checkpoint statistics."""
         # Create test session
         session_id = f"test-session-{uuid4()}"
@@ -211,7 +211,7 @@ class TestCheckpointService:
         assert "latest_checkpoint_at" in stats
 
     @pytest.mark.asyncio
-    async def test_duplicate_checkpoint_raises_error(self, db_session):
+    async def test_duplicate_checkpoint_raises_error(self, db_session) -> None:
         """Test that creating duplicate checkpoint raises error."""
         # Create test session
         session_id = f"test-session-{uuid4()}"

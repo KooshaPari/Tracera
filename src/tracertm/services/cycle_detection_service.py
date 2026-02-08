@@ -1,10 +1,10 @@
-"""
-Cycle detection service for Epic 4 (FR22).
+"""Cycle detection service for Epic 4 (FR22).
 
 Prevents circular dependencies in depends_on relationships.
 """
 
 import asyncio
+import operator
 import uuid
 from types import SimpleNamespace
 from typing import Any, cast
@@ -22,7 +22,7 @@ from tracertm.repositories.link_repository import LinkRepository
 class CycleDetectionService:
     """Service for detecting cycles in dependency graphs."""
 
-    def __init__(self, session: Session | AsyncSession, items=None, links=None):
+    def __init__(self, session: Session | AsyncSession, items=None, links=None) -> None:
         """Initialize cycle detection service."""
         self.session = session
         # Accept repository instances for easier testing
@@ -42,8 +42,7 @@ class CycleDetectionService:
         target_id: str | uuid.UUID,
         link_type: str = "depends_on",
     ) -> bool:
-        """
-        Check if adding a link would create a cycle (FR22).
+        """Check if adding a link would create a cycle (FR22).
 
         Args:
             project_id: Project ID
@@ -73,8 +72,7 @@ class CycleDetectionService:
         link_type: str = "depends_on",
         link_types: list[str] | None = None,
     ):
-        """
-        Detect all cycles in the dependency graph (sync version).
+        """Detect all cycles in the dependency graph (sync version).
 
         Args:
             project_id: Project ID
@@ -97,7 +95,7 @@ class CycleDetectionService:
                     graph = loop.run_until_complete(self._build_dependency_graph_async(project_id, types_to_check))
             except RuntimeError:
                 graph = asyncio.get_event_loop().run_until_complete(
-                    self._build_dependency_graph_async(project_id, types_to_check)
+                    self._build_dependency_graph_async(project_id, types_to_check),
                 )
         else:
             graph = self._build_dependency_graph(project_id, link_type)
@@ -121,8 +119,7 @@ class CycleDetectionService:
         link_type: str = "depends_on",
         link_types: list[str] | None = None,
     ) -> dict[str, Any]:
-        """
-        Detect all cycles in the dependency graph (async version).
+        """Detect all cycles in the dependency graph (async version).
 
         Args:
             project_id: Project ID
@@ -163,7 +160,7 @@ class CycleDetectionService:
             return {}
 
         graph: dict[str, set[str]] = {}
-        session = cast(Session, self.session)
+        session = cast("Session", self.session)
 
         try:
             links = (
@@ -191,9 +188,7 @@ class CycleDetectionService:
         return graph
 
     async def _build_dependency_graph_async(self, project_id: str, link_types: list[str]) -> dict[str, set[str]]:
-        """
-        Build dependency graph from links (async version using repositories).
-        """
+        """Build dependency graph from links (async version using repositories)."""
         graph: dict[str, set[str]] = {}
 
         # Fetch links from repository and build graph
@@ -271,8 +266,7 @@ class CycleDetectionService:
         return cycles
 
     def detect_missing_dependencies(self, project_id: str | uuid.UUID, link_type: str = "depends_on") -> dict[str, Any]:
-        """
-        Detect missing dependencies (items that reference non-existent items) (Story 4.6, FR22).
+        """Detect missing dependencies (items that reference non-existent items) (Story 4.6, FR22).
 
         Args:
             project_id: Project ID
@@ -282,7 +276,7 @@ class CycleDetectionService:
             Dictionary with missing dependency information
         """
         pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
-        session = cast(Session, self.session)
+        session = cast("Session", self.session)
         # Get all links of the specified type
         links = (
             session
@@ -333,8 +327,7 @@ class CycleDetectionService:
         }
 
     def detect_orphans(self, project_id: str | uuid.UUID, link_type: str | None = None) -> dict[str, Any]:
-        """
-        Detect orphaned items (items with no links) (Story 4.6, FR22).
+        """Detect orphaned items (items with no links) (Story 4.6, FR22).
 
         Args:
             project_id: Project ID
@@ -344,7 +337,7 @@ class CycleDetectionService:
             Dictionary with orphan information
         """
         pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
-        session = cast(Session, self.session)
+        session = cast("Session", self.session)
         # Get all items
         items = (
             session
@@ -393,8 +386,7 @@ class CycleDetectionService:
         max_depth: int = 10,
         link_type: str = "depends_on",
     ) -> dict[str, Any]:
-        """
-        Analyze impact of changing an item (Story 4.6, FR22, NFR-R2).
+        """Analyze impact of changing an item (Story 4.6, FR22, NFR-R2).
 
         Shows all items that would be affected if the given item changes.
 
@@ -409,7 +401,7 @@ class CycleDetectionService:
         """
         pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
         iid = str(item_id) if isinstance(item_id, uuid.UUID) else item_id
-        sess = cast(Session, self.session)
+        sess = cast("Session", self.session)
         # Build reverse dependency graph (what depends on each item)
         graph = self._build_dependency_graph(pid, link_type)
         reverse_graph: dict[str, set[str]] = {}
@@ -472,7 +464,7 @@ class CycleDetectionService:
             "root_item_id": item_id,
             "root_item_title": root_item.title if root_item else "Unknown",
             "total_affected": len(affected_items),
-            "max_depth_reached": max(affected_items, key=lambda x: x["depth"])["depth"] if affected_items else 0,
+            "max_depth_reached": max(affected_items, key=operator.itemgetter("depth"))["depth"] if affected_items else 0,
             "affected_by_depth": affected_by_depth,
             "affected_by_view": affected_by_view,
             "affected_items": affected_items[:50],  # Limit to first 50 for performance

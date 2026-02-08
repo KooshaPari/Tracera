@@ -197,7 +197,7 @@ describe('Confirmation Dialogs - User Interactions', () => {
     render(<MockConfirmDialog open confirmLabel='Confirm' onConfirm={handleConfirm} />);
 
     await user.click(screen.getByRole('button', { name: 'Confirm' }));
-    expect(handleConfirm).toHaveBeenCalledTimes(1);
+    expect(handleConfirm).toHaveBeenCalledOnce();
   });
 
   it('should call onCancel when cancel button clicked', async () => {
@@ -206,7 +206,7 @@ describe('Confirmation Dialogs - User Interactions', () => {
     render(<MockConfirmDialog open cancelLabel='Cancel' onCancel={handleCancel} />);
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(handleCancel).toHaveBeenCalledTimes(1);
+    expect(handleCancel).toHaveBeenCalledOnce();
   });
 
   it('should close dialog when backdrop clicked', async () => {

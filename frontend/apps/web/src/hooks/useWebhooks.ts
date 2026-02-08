@@ -1,4 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 import type {
   WebhookIntegration,
@@ -12,61 +14,78 @@ import { client } from '@/api/client';
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
+
+const toNumber = (value: unknown, fallback: number): number =>
+  value === undefined ? fallback : Number(value);
+
+const toString = (value: unknown, fallback: string): string =>
+  value === undefined ? fallback : String(value);
+
+const toStringOrUndefined = (value: unknown): string | undefined =>
+  value === undefined ? undefined : String(value);
+
+const toRecordOrUndefined = <T extends Record<string, unknown>>(value: unknown): T | undefined =>
+  value === undefined ? undefined : (value as T);
+
+const toStringArrayOrUndefined = (value: unknown): string[] | undefined =>
+  value === undefined ? undefined : (value as string[]);
+
+const toBoolean = (value: unknown): boolean => value === true;
 
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformWebhook(data: Record<string, unknown>): WebhookIntegration {
   return {
-    apiKey: (data['api_key'] as string | undefined) ?? '',
-    autoCompleteRun: data['auto_complete_run'] as boolean,
-    autoCreateRun: data['auto_create_run'] as boolean,
-    callbackHeaders: data['callback_headers'] as Record<string, string> | undefined,
-    callbackUrl: (data['callback_url'] as string | undefined) ?? '',
-    createdAt: (data['created_at'] as string | undefined) ?? '',
-    defaultSuiteId: (data['default_suite_id'] as string | undefined) ?? '',
-    description: data['description'] as string | undefined,
-    enabledEvents: data['enabled_events'] as string[] | undefined,
-    eventFilters: data['event_filters'] as Record<string, unknown> | undefined,
-    failedRequests: (data['failed_requests'] as number | undefined) ?? 0,
-    id: data['id'] as string,
-    lastErrorMessage: data['last_error_message'] as string | undefined,
-    lastFailureAt: data['last_failure_at'] as string | undefined,
-    lastRequestAt: (data['last_request_at'] as string | undefined) ?? '',
-    lastSuccessAt: data['last_success_at'] as string | undefined,
-    metadata: data['webhook_metadata'] as Record<string, unknown> | undefined,
-    name: data['name'] as string,
-    projectId: data['project_id'] as string,
+    apiKey: toString(data['api_key'], ''),
+    autoCompleteRun: toBoolean(data['auto_complete_run']),
+    autoCreateRun: toBoolean(data['auto_create_run']),
+    callbackHeaders: toRecordOrUndefined<Record<string, string>>(data['callback_headers']),
+    callbackUrl: toString(data['callback_url'], ''),
+    createdAt: toString(data['created_at'], ''),
+    defaultSuiteId: toString(data['default_suite_id'], ''),
+    description: toStringOrUndefined(data['description']),
+    enabledEvents: toStringArrayOrUndefined(data['enabled_events']),
+    eventFilters: toRecordOrUndefined<Record<string, unknown>>(data['event_filters']),
+    failedRequests: toNumber(data['failed_requests'], 0),
+    id: String(data['id']),
+    lastErrorMessage: toStringOrUndefined(data['last_error_message']),
+    lastFailureAt: toStringOrUndefined(data['last_failure_at']),
+    lastRequestAt: toString(data['last_request_at'], ''),
+    lastSuccessAt: toStringOrUndefined(data['last_success_at']),
+    metadata: toRecordOrUndefined<Record<string, unknown>>(data['webhook_metadata']),
+    name: String(data['name']),
+    projectId: String(data['project_id']),
     provider: data['provider'] as WebhookProvider,
-    rateLimitPerMinute: data['rate_limit_per_minute'] as number,
+    rateLimitPerMinute: toNumber(data['rate_limit_per_minute'], 0),
     status: data['status'] as WebhookStatus,
-    successfulRequests: data['successful_requests'] as number,
-    totalRequests: (data['total_requests'] as number | undefined) ?? 0,
-    updatedAt: (data['updated_at'] as string | undefined) ?? '',
-    verifySignatures: data['verify_signatures'] as boolean,
-    version: (data['version'] as number | undefined) ?? 0,
-    webhookSecret: (data['webhook_secret'] as string | undefined) ?? '',
+    successfulRequests: toNumber(data['successful_requests'], 0),
+    totalRequests: toNumber(data['total_requests'], 0),
+    updatedAt: toString(data['updated_at'], ''),
+    verifySignatures: toBoolean(data['verify_signatures']),
+    version: toNumber(data['version'], 0),
+    webhookSecret: toString(data['webhook_secret'], ''),
   };
 }
 
 function transformWebhookLog(data: Record<string, unknown>): WebhookLog {
   return {
-    createdAt: data['created_at'] as string,
-    errorMessage: data['error_message'] as string | undefined,
-    eventType: data['event_type'] as string,
-    httpMethod: data['http_method'] as string,
-    id: data['id'] as string,
+    createdAt: String(data['created_at']),
+    errorMessage: toStringOrUndefined(data['error_message']),
+    eventType: String(data['event_type']),
+    httpMethod: String(data['http_method']),
+    id: String(data['id']),
     payloadSizeBytes: data['payload_size_bytes'] as number | undefined,
-    processingTimeMs: (data['processing_time_ms'] as number | undefined) ?? 0,
-    requestBodyPreview: data['request_body_preview'] as string | undefined,
-    requestHeaders: data['request_headers'] as Record<string, unknown> | undefined,
-    requestId: (data['request_id'] as string | undefined) ?? '',
+    processingTimeMs: toNumber(data['processing_time_ms'], 0),
+    requestBodyPreview: toStringOrUndefined(data['request_body_preview']),
+    requestHeaders: toRecordOrUndefined<Record<string, unknown>>(data['request_headers']),
+    requestId: toString(data['request_id'], ''),
     resultsSubmitted: Number(data['results_submitted'] ?? 0),
-    sourceIp: data['source_ip'] as string | undefined,
-    statusCode: (data['status_code'] as number | undefined) ?? 0,
-    success: data['success'] as boolean,
-    testRunId: data['test_run_id'] as string | undefined,
-    userAgent: data['user_agent'] as string | undefined,
-    webhookId: data['webhook_id'] as string,
+    sourceIp: toStringOrUndefined(data['source_ip']),
+    statusCode: toNumber(data['status_code'], 0),
+    success: toBoolean(data['success']),
+    testRunId: toStringOrUndefined(data['test_run_id']),
+    userAgent: toStringOrUndefined(data['user_agent']),
+    webhookId: String(data['webhook_id']),
   };
 }
 
@@ -83,10 +102,10 @@ async function fetchWebhooks(
 ): Promise<{ webhooks: WebhookIntegration[]; total: number }> {
   const params = new URLSearchParams();
   params.set('project_id', filters.projectId);
-  if (filters.provider) {
+  if (filters.provider !== undefined) {
     params.set('provider', filters.provider);
   }
-  if (filters.status) {
+  if (filters.status !== undefined) {
     params.set('status', filters.status);
   }
   if (filters.skip !== undefined) {
@@ -107,9 +126,10 @@ async function fetchWebhooks(
     throw new Error(`Failed to fetch webhooks: ${res.status} ${errorText}`);
   }
   const data = await res.json();
+  const webhooks = (data['webhooks'] as Record<string, unknown>[] | undefined) ?? [];
   return {
-    total: data['total'] || 0,
-    webhooks: (data['webhooks'] || []).map(transformWebhook),
+    total: Number(data['total'] ?? 0),
+    webhooks: webhooks.map((item) => transformWebhook(item)),
   };
 }
 
@@ -124,7 +144,7 @@ async function fetchWebhook(id: string): Promise<WebhookIntegration> {
   return transformWebhook(data);
 }
 
-export interface CreateWebhookData {
+interface CreateWebhookData {
   projectId: string;
   name: string;
   description?: string;
@@ -155,7 +175,7 @@ async function createWebhook(data: CreateWebhookData): Promise<WebhookIntegratio
       metadata: data['metadata'],
       name: data.name,
       project_id: data['projectId'],
-      provider: data['provider'] || 'custom',
+      provider: data['provider'] ?? 'custom',
       rate_limit_per_minute: data['rateLimitPerMinute'] ?? 60,
       verify_signatures: data['verifySignatures'] ?? true,
     }),
@@ -185,44 +205,30 @@ interface UpdateWebhookData {
   metadata?: Record<string, unknown>;
 }
 
+const setPayload = <T>(
+  payload: Record<string, unknown>,
+  key: string,
+  value: T | undefined,
+): void => {
+  if (value !== undefined) {
+    payload[key] = value;
+  }
+};
+
 async function updateWebhook(id: string, data: UpdateWebhookData): Promise<WebhookIntegration> {
   const payload: Record<string, unknown> = {};
-  if (data['name'] !== undefined) {
-    payload['name'] = data['name'] as string;
-  }
-  if (data['description'] !== undefined) {
-    payload['description'] = data['description'];
-  }
-  if (data['enabledEvents'] !== undefined) {
-    payload['enabled_events'] = data['enabledEvents'];
-  }
-  if (data['eventFilters'] !== undefined) {
-    payload['event_filters'] = data['eventFilters'];
-  }
-  if (data['callbackUrl'] !== undefined) {
-    payload['callback_url'] = data['callbackUrl'];
-  }
-  if (data['callbackHeaders'] !== undefined) {
-    payload['callback_headers'] = data['callbackHeaders'];
-  }
-  if (data['defaultSuiteId'] !== undefined) {
-    payload['default_suite_id'] = data['defaultSuiteId'];
-  }
-  if (data['rateLimitPerMinute'] !== undefined) {
-    payload['rate_limit_per_minute'] = data['rateLimitPerMinute'];
-  }
-  if (data['autoCreateRun'] !== undefined) {
-    payload['auto_create_run'] = data['autoCreateRun'];
-  }
-  if (data['autoCompleteRun'] !== undefined) {
-    payload['auto_complete_run'] = data['autoCompleteRun'];
-  }
-  if (data['verifySignatures'] !== undefined) {
-    payload['verify_signatures'] = data['verifySignatures'];
-  }
-  if (data['metadata'] !== undefined) {
-    payload['metadata'] = data['metadata'];
-  }
+  setPayload(payload, 'name', data['name']);
+  setPayload(payload, 'description', data['description']);
+  setPayload(payload, 'enabled_events', data['enabledEvents']);
+  setPayload(payload, 'event_filters', data['eventFilters']);
+  setPayload(payload, 'callback_url', data['callbackUrl']);
+  setPayload(payload, 'callback_headers', data['callbackHeaders']);
+  setPayload(payload, 'default_suite_id', data['defaultSuiteId']);
+  setPayload(payload, 'rate_limit_per_minute', data['rateLimitPerMinute']);
+  setPayload(payload, 'auto_create_run', data['autoCreateRun']);
+  setPayload(payload, 'auto_complete_run', data['autoCompleteRun']);
+  setPayload(payload, 'verify_signatures', data['verifySignatures']);
+  setPayload(payload, 'metadata', data['metadata']);
 
   const res = await fetch(`${API_URL}/api/v1/webhooks/${id}`, {
     body: JSON.stringify(payload),
@@ -298,7 +304,7 @@ async function fetchWebhookLogs(
   if (filters.success !== undefined) {
     params.set('success', String(filters.success));
   }
-  if (filters.eventType) {
+  if (filters.eventType !== undefined && filters.eventType !== '') {
     params.set('event_type', filters.eventType);
   }
   if (filters.skip !== undefined) {
@@ -315,9 +321,10 @@ async function fetchWebhookLogs(
     throw new Error('Failed to fetch webhook logs');
   }
   const data = await res.json();
+  const logs = (data['logs'] as Record<string, unknown>[] | undefined) ?? [];
   return {
-    logs: (data['logs'] || []).map(transformWebhookLog),
-    total: data['total'] || 0,
+    logs: logs.map((item) => transformWebhookLog(item)),
+    total: Number(data['total'] ?? 0),
   };
 }
 
@@ -342,75 +349,94 @@ async function fetchWebhookStats(projectId: string): Promise<WebhookStats> {
 
 // ==================== HOOKS ====================
 
-export function useWebhooks(filters: WebhookFilters) {
+function useWebhooks(
+  filters: WebhookFilters,
+): UseQueryResult<{ webhooks: WebhookIntegration[]; total: number }, Error> {
   return useQuery({
-    enabled: Boolean(filters.projectId),
+    enabled: filters.projectId !== '',
     queryFn: () => fetchWebhooks(filters),
     queryKey: ['webhooks', JSON.stringify(filters)],
   });
 }
 
-export function useWebhook(id: string | undefined) {
+function useWebhook(id = ''): UseQueryResult<WebhookIntegration, Error> {
   return useQuery({
-    enabled: Boolean(id),
-    queryFn: () => fetchWebhook(id!),
+    enabled: id !== '',
+    queryFn: () => fetchWebhook(id),
     queryKey: ['webhook', id],
   });
 }
 
-export function useCreateWebhook() {
-  const _queryClient = useQueryClient();
+function useCreateWebhook(): UseMutationResult<WebhookIntegration, Error, CreateWebhookData> {
   return useMutation({
     mutationFn: createWebhook,
-    onSuccess: (_data) => {},
   });
 }
 
-export function useUpdateWebhook() {
-  const _queryClient = useQueryClient();
+function useUpdateWebhook(): UseMutationResult<
+  WebhookIntegration,
+  Error,
+  { id: string; data: UpdateWebhookData }
+> {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateWebhookData }) => updateWebhook(id, data),
-    onSuccess: (_data) => {},
   });
 }
 
-export function useSetWebhookStatus() {
-  const _queryClient = useQueryClient();
+function useSetWebhookStatus(): UseMutationResult<
+  { id: string; status: string; version: number },
+  Error,
+  { id: string; status: WebhookStatus }
+> {
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: WebhookStatus }) =>
       setWebhookStatus(id, status),
-    onSuccess: (_data) => {},
   });
 }
 
-export function useRegenerateWebhookSecret() {
-  const _queryClient = useQueryClient();
+function useRegenerateWebhookSecret(): UseMutationResult<
+  { id: string; webhookSecret: string; version: number },
+  Error,
+  string
+> {
   return useMutation({
     mutationFn: regenerateSecret,
-    onSuccess: (_data) => {},
   });
 }
 
-export function useDeleteWebhook() {
-  const _queryClient = useQueryClient();
+function useDeleteWebhook(): UseMutationResult<void, Error, string> {
   return useMutation({
     mutationFn: deleteWebhook,
-    onSuccess: () => {},
   });
 }
 
-export function useWebhookLogs(filters: WebhookLogFilters) {
+function useWebhookLogs(
+  filters: WebhookLogFilters,
+): UseQueryResult<{ logs: WebhookLog[]; total: number }, Error> {
   return useQuery({
-    enabled: Boolean(filters.webhookId),
+    enabled: filters.webhookId !== '',
     queryFn: () => fetchWebhookLogs(filters),
     queryKey: ['webhookLogs', JSON.stringify(filters)],
   });
 }
 
-export function useWebhookStats(projectId: string | undefined) {
+function useWebhookStats(projectId = ''): UseQueryResult<WebhookStats, Error> {
   return useQuery({
-    enabled: Boolean(projectId),
-    queryFn: () => fetchWebhookStats(projectId!),
+    enabled: projectId !== '',
+    queryFn: () => fetchWebhookStats(projectId),
     queryKey: ['webhookStats', projectId],
   });
 }
+
+export {
+  CreateWebhookData,
+  useCreateWebhook,
+  useDeleteWebhook,
+  useRegenerateWebhookSecret,
+  useSetWebhookStatus,
+  useUpdateWebhook,
+  useWebhook,
+  useWebhookLogs,
+  useWebhookStats,
+  useWebhooks,
+};

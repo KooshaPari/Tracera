@@ -8,7 +8,8 @@
     "**/api/schema.ts",
     "**/*.gen.ts",
     "**/*.generated.*",
-    "**/apps/desktop/*.mjs"
+    "**/apps/desktop/*.mjs",
+    "**/public/**"
   ],
   "plugins": [
     "eslint",
@@ -67,207 +68,231 @@
       },
       {
         "type": "entry",
-        "pattern": "apps/web/src/{main,router}.tsx"
+        "pattern": "**/apps/web/src/main.tsx"
       },
       {
         "type": "entry",
-        "pattern": "frontend/apps/web/src/{main,router}.tsx"
+        "pattern": "**/apps/web/src/router.tsx"
       },
       {
         "type": "entry",
-        "pattern": "src/{main,router}.tsx"
+        "pattern": "**/frontend/apps/web/src/main.tsx"
       },
       {
-        "type": "root",
-        "pattern": "apps/web/src/*.*"
+        "type": "entry",
+        "pattern": "**/frontend/apps/web/src/router.tsx"
       },
       {
-        "type": "root",
-        "pattern": "frontend/apps/web/src/*.*"
+        "type": "entry",
+        "pattern": "**/src/main.tsx"
       },
       {
-        "type": "root",
-        "pattern": "src/*.*"
-      },
-      {
-        "type": "routes",
-        "pattern": "apps/web/src/routes/**"
+        "type": "entry",
+        "pattern": "**/src/router.tsx"
       },
       {
         "type": "routes",
-        "pattern": "frontend/apps/web/src/routes/**"
+        "pattern": "**/apps/web/src/routes/**"
       },
       {
         "type": "routes",
-        "pattern": "src/routes/**"
+        "pattern": "**/frontend/apps/web/src/routes/**"
+      },
+      {
+        "type": "routes",
+        "pattern": "**/src/routes/**"
       },
       {
         "type": "pages",
-        "pattern": "apps/web/src/pages/**"
+        "pattern": "**/apps/web/src/pages/**"
       },
       {
         "type": "pages",
-        "pattern": "frontend/apps/web/src/pages/**"
+        "pattern": "**/frontend/apps/web/src/pages/**"
       },
       {
         "type": "pages",
-        "pattern": "src/pages/**"
+        "pattern": "**/src/pages/**"
       },
       {
         "type": "views",
-        "pattern": "apps/web/src/views/**"
+        "pattern": "**/apps/web/src/views/**"
       },
       {
         "type": "views",
-        "pattern": "frontend/apps/web/src/views/**"
+        "pattern": "**/frontend/apps/web/src/views/**"
       },
       {
         "type": "views",
-        "pattern": "src/views/**"
+        "pattern": "**/src/views/**"
       },
       {
         "type": "components",
-        "pattern": "apps/web/src/components/**"
+        "pattern": "**/apps/web/src/components/**"
       },
       {
         "type": "components",
-        "pattern": "frontend/apps/web/src/components/**"
+        "pattern": "**/frontend/apps/web/src/components/**"
       },
       {
         "type": "components",
-        "pattern": "src/components/**"
+        "pattern": "**/src/components/**"
       },
       {
         "type": "hooks",
-        "pattern": "apps/web/src/hooks/**"
+        "pattern": "**/apps/web/src/hooks/**"
       },
       {
         "type": "hooks",
-        "pattern": "frontend/apps/web/src/hooks/**"
+        "pattern": "**/frontend/apps/web/src/hooks/**"
       },
       {
         "type": "hooks",
-        "pattern": "src/hooks/**"
+        "pattern": "**/src/hooks/**"
       },
       {
         "type": "stores",
-        "pattern": "apps/web/src/stores/**"
+        "pattern": "**/apps/web/src/stores/**"
       },
       {
         "type": "stores",
-        "pattern": "frontend/apps/web/src/stores/**"
+        "pattern": "**/frontend/apps/web/src/stores/**"
       },
       {
         "type": "stores",
-        "pattern": "src/stores/**"
+        "pattern": "**/src/stores/**"
       },
       {
         "type": "providers",
-        "pattern": "apps/web/src/providers/**"
+        "pattern": "**/apps/web/src/providers/**"
       },
       {
         "type": "providers",
-        "pattern": "frontend/apps/web/src/providers/**"
+        "pattern": "**/frontend/apps/web/src/providers/**"
       },
       {
         "type": "providers",
-        "pattern": "src/providers/**"
+        "pattern": "**/src/providers/**"
       },
       {
         "type": "api",
-        "pattern": "apps/web/src/api/**"
+        "pattern": "**/apps/web/src/api/**"
       },
       {
         "type": "api",
-        "pattern": "frontend/apps/web/src/api/**"
+        "pattern": "**/frontend/apps/web/src/api/**"
       },
       {
         "type": "api",
-        "pattern": "src/api/**"
+        "pattern": "**/src/api/**"
       },
       {
         "type": "lib",
-        "pattern": "apps/web/src/lib/**"
+        "pattern": "**/apps/web/src/lib/**"
       },
       {
         "type": "lib",
-        "pattern": "frontend/apps/web/src/lib/**"
+        "pattern": "**/frontend/apps/web/src/lib/**"
       },
       {
         "type": "lib",
-        "pattern": "src/lib/**"
+        "pattern": "**/src/lib/**"
       },
       {
         "type": "types",
-        "pattern": "apps/web/src/types/**"
+        "pattern": "**/apps/web/src/types/**"
       },
       {
         "type": "types",
-        "pattern": "frontend/apps/web/src/types/**"
+        "pattern": "**/frontend/apps/web/src/types/**"
       },
       {
         "type": "types",
-        "pattern": "src/types/**"
+        "pattern": "**/src/types/**"
       },
       {
         "type": "utils",
-        "pattern": "apps/web/src/utils/**"
+        "pattern": "**/apps/web/src/utils/**"
       },
       {
         "type": "utils",
-        "pattern": "frontend/apps/web/src/utils/**"
+        "pattern": "**/frontend/apps/web/src/utils/**"
       },
       {
         "type": "utils",
-        "pattern": "src/utils/**"
+        "pattern": "**/src/utils/**"
       },
       {
         "type": "styles",
-        "pattern": "apps/web/src/styles/**"
+        "pattern": "**/apps/web/src/styles/**"
       },
       {
         "type": "styles",
-        "pattern": "frontend/apps/web/src/styles/**"
+        "pattern": "**/frontend/apps/web/src/styles/**"
       },
       {
         "type": "styles",
-        "pattern": "src/styles/**"
+        "pattern": "**/src/styles/**"
       },
       {
         "type": "config",
-        "pattern": "apps/web/src/config/**"
+        "pattern": "**/apps/web/src/config.ts"
       },
       {
         "type": "config",
-        "pattern": "frontend/apps/web/src/config/**"
+        "pattern": "**/frontend/apps/web/src/config.ts"
       },
       {
         "type": "config",
-        "pattern": "src/config/**"
+        "pattern": "**/src/config.ts"
+      },
+      {
+        "type": "config",
+        "pattern": "**/apps/web/src/config/**"
+      },
+      {
+        "type": "config",
+        "pattern": "**/frontend/apps/web/src/config/**"
+      },
+      {
+        "type": "config",
+        "pattern": "**/src/config/**"
       },
       {
         "type": "workers",
-        "pattern": "apps/web/src/workers/**"
+        "pattern": "**/apps/web/src/workers/**"
       },
       {
         "type": "workers",
-        "pattern": "frontend/apps/web/src/workers/**"
+        "pattern": "**/frontend/apps/web/src/workers/**"
       },
       {
         "type": "workers",
-        "pattern": "src/workers/**"
+        "pattern": "**/src/workers/**"
       },
       {
         "type": "shaders",
-        "pattern": "apps/web/src/shaders/**"
+        "pattern": "**/apps/web/src/shaders/**"
       },
       {
         "type": "shaders",
-        "pattern": "frontend/apps/web/src/shaders/**"
+        "pattern": "**/frontend/apps/web/src/shaders/**"
       },
       {
         "type": "shaders",
-        "pattern": "src/shaders/**"
+        "pattern": "**/src/shaders/**"
+      },
+      {
+        "type": "root",
+        "pattern": "**/apps/web/src/**"
+      },
+      {
+        "type": "root",
+        "pattern": "**/frontend/apps/web/src/**"
+      },
+      {
+        "type": "root",
+        "pattern": "**/src/**"
       }
     ]
   },

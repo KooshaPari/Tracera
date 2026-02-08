@@ -78,6 +78,7 @@ type AgentTeam struct {
 // JSONMap persists map[string]interface{} as JSON for sqlite/mysql/postgres.
 type JSONMap map[string]interface{}
 
+// Value persists map[string]interface{} as JSON for sqlite/mysql/postgres.
 func (m JSONMap) Value() (driver.Value, error) {
 	if m == nil {
 		return []byte("{}"), nil

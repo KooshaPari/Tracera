@@ -1,5 +1,4 @@
-"""
-Modern pydantic-settings based configuration for TraceRTM.
+"""Modern pydantic-settings based configuration for TraceRTM.
 
 This module provides type-safe, validated configuration management with support for:
 - Environment variables (TRACERTM_* prefix)
@@ -35,7 +34,8 @@ class DatabaseSettings(BaseSettings):
     def validate_url(cls, v: str) -> str:
         """Validate database URL format."""
         if not v.startswith(("postgresql://", "sqlite:///")):
-            raise ValueError("Database URL must start with 'postgresql://' or 'sqlite:///'")
+            msg = "Database URL must start with 'postgresql://' or 'sqlite:///'"
+            raise ValueError(msg)
         return v
 
 
@@ -88,7 +88,7 @@ class TraceSettings(BaseSettings):
     enable_async: bool = Field(True, description="Enable async operations")
     enable_validation: bool = Field(True, description="Enable strict validation")
 
-    def __init__(self, **data):
+    def __init__(self, **data) -> None:
         """Initialize settings and create directories."""
         super().__init__(**data)
         self.data_dir.mkdir(parents=True, exist_ok=True)

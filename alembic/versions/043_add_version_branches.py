@@ -22,7 +22,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Create version branches and related tables."""
-
     # =========================================================================
     # VERSION BRANCHES TABLE
     # =========================================================================

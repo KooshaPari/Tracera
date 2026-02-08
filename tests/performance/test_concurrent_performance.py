@@ -1,5 +1,4 @@
-"""
-Concurrent operations performance benchmarks.
+"""Concurrent operations performance benchmarks.
 
 Tests measure performance under concurrent load:
 - Concurrent item creation (10, 50, 100 threads)
@@ -23,7 +22,7 @@ pytestmark = pytest.mark.performance
 # ============================================================
 
 
-def test_concurrent_create_10_items_10_threads(benchmark, perf_sync_db_engine):
+def test_concurrent_create_10_items_10_threads(benchmark, perf_sync_db_engine) -> None:
     """Benchmark concurrent creation: 10 items across 10 threads."""
     SessionLocal = sessionmaker(bind=perf_sync_db_engine)
 
@@ -58,7 +57,7 @@ def test_concurrent_create_10_items_10_threads(benchmark, perf_sync_db_engine):
     assert result is True
 
 
-def test_concurrent_create_100_items_10_threads(benchmark, perf_sync_db_engine):
+def test_concurrent_create_100_items_10_threads(benchmark, perf_sync_db_engine) -> None:
     """Benchmark concurrent creation: 100 items across 10 threads."""
     SessionLocal = sessionmaker(bind=perf_sync_db_engine)
 
@@ -94,7 +93,7 @@ def test_concurrent_create_100_items_10_threads(benchmark, perf_sync_db_engine):
     assert result == 100
 
 
-def test_concurrent_create_500_items_50_threads(benchmark, perf_sync_db_engine):
+def test_concurrent_create_500_items_50_threads(benchmark, perf_sync_db_engine) -> None:
     """Benchmark concurrent creation: 500 items across 50 threads."""
     SessionLocal = sessionmaker(bind=perf_sync_db_engine)
 
@@ -135,7 +134,7 @@ def test_concurrent_create_500_items_50_threads(benchmark, perf_sync_db_engine):
 # ============================================================
 
 
-def test_concurrent_update_100_items_10_threads(benchmark, perf_sync_db_engine):
+def test_concurrent_update_100_items_10_threads(benchmark, perf_sync_db_engine) -> None:
     """Benchmark concurrent updates: 100 items across 10 threads."""
     SessionLocal = sessionmaker(bind=perf_sync_db_engine)
 
@@ -193,7 +192,7 @@ def test_concurrent_update_100_items_10_threads(benchmark, perf_sync_db_engine):
 # ============================================================
 
 
-def test_concurrent_query_100_items_10_threads(benchmark, perf_sync_db_engine):
+def test_concurrent_query_100_items_10_threads(benchmark, perf_sync_db_engine) -> None:
     """Benchmark concurrent queries: 100 items across 10 threads."""
     SessionLocal = sessionmaker(bind=perf_sync_db_engine)
 
@@ -243,7 +242,7 @@ def test_concurrent_query_100_items_10_threads(benchmark, perf_sync_db_engine):
 # ============================================================
 
 
-def test_concurrent_create_links_50_threads(benchmark, perf_sync_db_engine):
+def test_concurrent_create_links_50_threads(benchmark, perf_sync_db_engine) -> None:
     """Benchmark concurrent link creation: 500 links across 50 threads."""
     SessionLocal = sessionmaker(bind=perf_sync_db_engine)
 
@@ -319,7 +318,7 @@ def test_concurrent_create_links_50_threads(benchmark, perf_sync_db_engine):
 # ============================================================
 
 
-def test_high_contention_single_item_updates(benchmark, perf_sync_db_engine):
+def test_high_contention_single_item_updates(benchmark, perf_sync_db_engine) -> None:
     """Test high contention: 50 threads updating same item."""
     SessionLocal = sessionmaker(bind=perf_sync_db_engine)
 

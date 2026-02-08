@@ -1,5 +1,4 @@
-"""
-Service-to-Repository Integration Tests.
+"""Service-to-Repository Integration Tests.
 
 These tests validate the integration between services and repositories:
 - Services using repositories for data access
@@ -31,7 +30,7 @@ async def test_project(db_session: AsyncSession):
     """Create a test project."""
     repo = ProjectRepository(db_session)
     project = await repo.create(
-        name="Service Test Project", description="Project for service integration tests", metadata={"test": True}
+        name="Service Test Project", description="Project for service integration tests", metadata={"test": True},
     )
     await db_session.commit()
     return project
@@ -66,7 +65,7 @@ async def test_items(db_session: AsyncSession, test_project):
 
 
 @pytest.mark.asyncio
-async def test_item_creation_and_retrieval(db_session: AsyncSession, test_project):
+async def test_item_creation_and_retrieval(db_session: AsyncSession, test_project) -> None:
     """Test creating and retrieving items through repository."""
     item_repo = ItemRepository(db_session)
 
@@ -89,7 +88,7 @@ async def test_item_creation_and_retrieval(db_session: AsyncSession, test_projec
 
 
 @pytest.mark.asyncio
-async def test_bulk_item_operations(db_session: AsyncSession, test_project):
+async def test_bulk_item_operations(db_session: AsyncSession, test_project) -> None:
     """Test bulk operations on items."""
     item_repo = ItemRepository(db_session)
 
@@ -97,7 +96,7 @@ async def test_bulk_item_operations(db_session: AsyncSession, test_project):
     items = []
     for i in range(10):
         item = await item_repo.create(
-            project_id=test_project.id, title=f"Bulk Item {i}", view="FEATURE", item_type="feature", status="todo"
+            project_id=test_project.id, title=f"Bulk Item {i}", view="FEATURE", item_type="feature", status="todo",
         )
         items.append(item)
 
@@ -114,13 +113,13 @@ async def test_bulk_item_operations(db_session: AsyncSession, test_project):
 
 
 @pytest.mark.asyncio
-async def test_item_hierarchy_with_repository(db_session: AsyncSession, test_project):
+async def test_item_hierarchy_with_repository(db_session: AsyncSession, test_project) -> None:
     """Test item parent-child relationships through repository."""
     item_repo = ItemRepository(db_session)
 
     # Create parent
     parent = await item_repo.create(
-        project_id=test_project.id, title="Parent Feature", view="FEATURE", item_type="feature"
+        project_id=test_project.id, title="Parent Feature", view="FEATURE", item_type="feature",
     )
 
     # Create children
@@ -158,12 +157,12 @@ async def test_item_hierarchy_with_repository(db_session: AsyncSession, test_pro
 
 
 @pytest.mark.asyncio
-async def test_item_status_transitions(db_session: AsyncSession, test_project):
+async def test_item_status_transitions(db_session: AsyncSession, test_project) -> None:
     """Test item status transitions."""
     item_repo = ItemRepository(db_session)
 
     item = await item_repo.create(
-        project_id=test_project.id, title="Status Test Item", view="FEATURE", item_type="feature", status="todo"
+        project_id=test_project.id, title="Status Test Item", view="FEATURE", item_type="feature", status="todo",
     )
     await db_session.commit()
 
@@ -178,7 +177,7 @@ async def test_item_status_transitions(db_session: AsyncSession, test_project):
 
 
 @pytest.mark.asyncio
-async def test_item_metadata_operations(db_session: AsyncSession, test_project):
+async def test_item_metadata_operations(db_session: AsyncSession, test_project) -> None:
     """Test item metadata handling."""
     item_repo = ItemRepository(db_session)
 
@@ -190,7 +189,7 @@ async def test_item_metadata_operations(db_session: AsyncSession, test_project):
     }
 
     item = await item_repo.create(
-        project_id=test_project.id, title="Metadata Item", view="FEATURE", item_type="feature", metadata=metadata
+        project_id=test_project.id, title="Metadata Item", view="FEATURE", item_type="feature", metadata=metadata,
     )
     await db_session.commit()
 
@@ -205,7 +204,7 @@ async def test_item_metadata_operations(db_session: AsyncSession, test_project):
 
 
 @pytest.mark.asyncio
-async def test_link_creation_between_items(db_session: AsyncSession, test_items):
+async def test_link_creation_between_items(db_session: AsyncSession, test_items) -> None:
     """Test creating links between items."""
     link_repo = LinkRepository(db_session)
     project_id = test_items[0].project_id
@@ -226,7 +225,7 @@ async def test_link_creation_between_items(db_session: AsyncSession, test_items)
 
 
 @pytest.mark.asyncio
-async def test_link_graph_construction(db_session: AsyncSession, test_items):
+async def test_link_graph_construction(db_session: AsyncSession, test_items) -> None:
     """Test building a complex link graph."""
     link_repo = LinkRepository(db_session)
     project_id = test_items[0].project_id
@@ -242,7 +241,7 @@ async def test_link_graph_construction(db_session: AsyncSession, test_items):
 
     # Add cross-links
     await link_repo.create(
-        project_id=project_id, source_item_id=test_items[0].id, target_item_id=test_items[3].id, link_type="related_to"
+        project_id=project_id, source_item_id=test_items[0].id, target_item_id=test_items[3].id, link_type="related_to",
     )
 
     await db_session.commit()
@@ -256,18 +255,18 @@ async def test_link_graph_construction(db_session: AsyncSession, test_items):
 
 
 @pytest.mark.asyncio
-async def test_link_navigation_patterns(db_session: AsyncSession, test_items):
+async def test_link_navigation_patterns(db_session: AsyncSession, test_items) -> None:
     """Test different link navigation patterns."""
     link_repo = LinkRepository(db_session)
     project_id = test_items[0].project_id
 
     # Create bidirectional links
     await link_repo.create(
-        project_id=project_id, source_item_id=test_items[0].id, target_item_id=test_items[1].id, link_type="depends_on"
+        project_id=project_id, source_item_id=test_items[0].id, target_item_id=test_items[1].id, link_type="depends_on",
     )
 
     await link_repo.create(
-        project_id=project_id, source_item_id=test_items[1].id, target_item_id=test_items[2].id, link_type="depends_on"
+        project_id=project_id, source_item_id=test_items[1].id, target_item_id=test_items[2].id, link_type="depends_on",
     )
 
     await db_session.commit()
@@ -286,7 +285,7 @@ async def test_link_navigation_patterns(db_session: AsyncSession, test_items):
 
 
 @pytest.mark.asyncio
-async def test_link_type_management(db_session: AsyncSession, test_items):
+async def test_link_type_management(db_session: AsyncSession, test_items) -> None:
     """Test managing different link types."""
     link_repo = LinkRepository(db_session)
     project_id = test_items[0].project_id
@@ -318,7 +317,7 @@ async def test_link_type_management(db_session: AsyncSession, test_items):
 
 
 @pytest.mark.asyncio
-async def test_project_items_links_integration(db_session: AsyncSession, test_project):
+async def test_project_items_links_integration(db_session: AsyncSession, test_project) -> None:
     """Test complete integration of projects, items, and links."""
     proj_repo = ProjectRepository(db_session)
     item_repo = ItemRepository(db_session)
@@ -326,26 +325,26 @@ async def test_project_items_links_integration(db_session: AsyncSession, test_pr
 
     # Create items
     req1 = await item_repo.create(
-        project_id=test_project.id, title="Requirement 1", view="REQUIREMENT", item_type="requirement", status="done"
+        project_id=test_project.id, title="Requirement 1", view="REQUIREMENT", item_type="requirement", status="done",
     )
 
     feat1 = await item_repo.create(
-        project_id=test_project.id, title="Feature 1", view="FEATURE", item_type="feature", status="in_progress"
+        project_id=test_project.id, title="Feature 1", view="FEATURE", item_type="feature", status="in_progress",
     )
 
     feat2 = await item_repo.create(
-        project_id=test_project.id, title="Feature 2", view="FEATURE", item_type="feature", status="todo"
+        project_id=test_project.id, title="Feature 2", view="FEATURE", item_type="feature", status="todo",
     )
 
     await db_session.commit()
 
     # Create links
     link1 = await link_repo.create(
-        project_id=test_project.id, source_item_id=req1.id, target_item_id=feat1.id, link_type="implements"
+        project_id=test_project.id, source_item_id=req1.id, target_item_id=feat1.id, link_type="implements",
     )
 
     link2 = await link_repo.create(
-        project_id=test_project.id, source_item_id=feat1.id, target_item_id=feat2.id, link_type="depends_on"
+        project_id=test_project.id, source_item_id=feat1.id, target_item_id=feat2.id, link_type="depends_on",
     )
 
     await db_session.commit()
@@ -363,7 +362,7 @@ async def test_project_items_links_integration(db_session: AsyncSession, test_pr
 
 
 @pytest.mark.asyncio
-async def test_cascading_delete_integration(db_session: AsyncSession, test_project):
+async def test_cascading_delete_integration(db_session: AsyncSession, test_project) -> None:
     """Test cascading delete through repositories."""
     item_repo = ItemRepository(db_session)
     link_repo = LinkRepository(db_session)
@@ -372,18 +371,18 @@ async def test_cascading_delete_integration(db_session: AsyncSession, test_proje
     parent = await item_repo.create(project_id=test_project.id, title="Parent", view="FEATURE", item_type="feature")
 
     child1 = await item_repo.create(
-        project_id=test_project.id, title="Child 1", view="FEATURE", item_type="feature", parent_id=parent.id
+        project_id=test_project.id, title="Child 1", view="FEATURE", item_type="feature", parent_id=parent.id,
     )
 
     child2 = await item_repo.create(
-        project_id=test_project.id, title="Child 2", view="FEATURE", item_type="feature", parent_id=parent.id
+        project_id=test_project.id, title="Child 2", view="FEATURE", item_type="feature", parent_id=parent.id,
     )
 
     external = await item_repo.create(project_id=test_project.id, title="External", view="FEATURE", item_type="feature")
 
     # Create links
     await link_repo.create(
-        project_id=test_project.id, source_item_id=child1.id, target_item_id=external.id, link_type="depends_on"
+        project_id=test_project.id, source_item_id=child1.id, target_item_id=external.id, link_type="depends_on",
     )
 
     await db_session.commit()
@@ -401,7 +400,7 @@ async def test_cascading_delete_integration(db_session: AsyncSession, test_proje
 
 
 @pytest.mark.asyncio
-async def test_complex_query_patterns(db_session: AsyncSession, test_project):
+async def test_complex_query_patterns(db_session: AsyncSession, test_project) -> None:
     """Test complex querying patterns."""
     item_repo = ItemRepository(db_session)
 
@@ -440,7 +439,7 @@ async def test_complex_query_patterns(db_session: AsyncSession, test_project):
 
 
 @pytest.mark.asyncio
-async def test_transaction_boundaries(db_session: AsyncSession, test_project):
+async def test_transaction_boundaries(db_session: AsyncSession, test_project) -> None:
     """Test transaction boundaries in service operations."""
     item_repo = ItemRepository(db_session)
 
@@ -467,7 +466,7 @@ async def test_transaction_boundaries(db_session: AsyncSession, test_project):
 
 
 @pytest.mark.asyncio
-async def test_transaction_rollback_integration(db_session: AsyncSession, test_project):
+async def test_transaction_rollback_integration(db_session: AsyncSession, test_project) -> None:
     """Test transaction rollback across multiple repositories."""
     item_repo = ItemRepository(db_session)
     link_repo = LinkRepository(db_session)
@@ -480,7 +479,7 @@ async def test_transaction_rollback_integration(db_session: AsyncSession, test_p
 
     # Start operations but rollback
     link = await link_repo.create(
-        project_id=test_project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
+        project_id=test_project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on",
     )
 
     await db_session.rollback()
@@ -497,7 +496,7 @@ async def test_transaction_rollback_integration(db_session: AsyncSession, test_p
 
 
 @pytest.mark.asyncio
-async def test_invalid_parent_reference(db_session: AsyncSession, test_project):
+async def test_invalid_parent_reference(db_session: AsyncSession, test_project) -> None:
     """Test creating item with invalid parent."""
     item_repo = ItemRepository(db_session)
 
@@ -512,7 +511,7 @@ async def test_invalid_parent_reference(db_session: AsyncSession, test_project):
 
 
 @pytest.mark.asyncio
-async def test_cross_project_parent_reference(db_session: AsyncSession):
+async def test_cross_project_parent_reference(db_session: AsyncSession) -> None:
     """Test that parent from different project is rejected."""
     proj_repo = ProjectRepository(db_session)
     item_repo = ItemRepository(db_session)
@@ -521,30 +520,30 @@ async def test_cross_project_parent_reference(db_session: AsyncSession):
     proj2 = await proj_repo.create(name="Project 2")
 
     parent = await item_repo.create(
-        project_id=proj1.id, title="Parent in Project 1", view="FEATURE", item_type="feature"
+        project_id=proj1.id, title="Parent in Project 1", view="FEATURE", item_type="feature",
     )
 
     await db_session.commit()
 
     with pytest.raises(ValueError):
         await item_repo.create(
-            project_id=proj2.id, title="Child in Project 2", view="FEATURE", item_type="feature", parent_id=parent.id
+            project_id=proj2.id, title="Child in Project 2", view="FEATURE", item_type="feature", parent_id=parent.id,
         )
 
 
 @pytest.mark.asyncio
-async def test_empty_metadata_handling(db_session: AsyncSession, test_project):
+async def test_empty_metadata_handling(db_session: AsyncSession, test_project) -> None:
     """Test handling of empty or null metadata."""
     item_repo = ItemRepository(db_session)
 
     # None metadata
     item1 = await item_repo.create(
-        project_id=test_project.id, title="Item with None metadata", view="FEATURE", item_type="feature", metadata=None
+        project_id=test_project.id, title="Item with None metadata", view="FEATURE", item_type="feature", metadata=None,
     )
 
     # Empty dict metadata
     item2 = await item_repo.create(
-        project_id=test_project.id, title="Item with empty metadata", view="FEATURE", item_type="feature", metadata={}
+        project_id=test_project.id, title="Item with empty metadata", view="FEATURE", item_type="feature", metadata={},
     )
 
     await db_session.commit()

@@ -55,7 +55,7 @@ describe(useLinks, () => {
     });
 
     expect(result.current.data).toEqual(mockResponse);
-    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockFetch).toHaveBeenCalledOnce();
   });
 
   it('should fetch links with source filter', async () => {

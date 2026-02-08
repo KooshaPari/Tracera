@@ -20,7 +20,7 @@ class DockerOrchestratorError(Exception):
 class DockerOrchestrator:
     """Orchestrates Docker containers for execution runs."""
 
-    def __init__(self, docker_host: str | None = None):
+    def __init__(self, docker_host: str | None = None) -> None:
         """Initialize orchestrator.
 
         Args:
@@ -48,7 +48,8 @@ class DockerOrchestrator:
         except TimeoutError as e:
             proc.kill()
             await proc.wait()
-            raise DockerOrchestratorError(f"Docker command timed out after {timeout}s: {' '.join(cmd)}") from e
+            msg = f"Docker command timed out after {timeout}s: {' '.join(cmd)}"
+            raise DockerOrchestratorError(msg) from e
         return proc.returncode or 0, stdout.decode(), stderr.decode()
 
     async def is_available(self) -> bool:
@@ -126,14 +127,16 @@ class DockerOrchestrator:
 
         code, stdout, stderr = await self._run(*args, timeout=timeout)
         if code != 0:
-            raise DockerOrchestratorError(f"Docker run failed: {stderr.strip() or stdout.strip()}")
+            msg = f"Docker run failed: {stderr.strip() or stdout.strip()}"
+            raise DockerOrchestratorError(msg)
         return stdout.strip()[:12]
 
     async def stop(self, container_id: str, timeout: int = 30) -> None:
         """Stop a running container (SIGTERM then SIGKILL)."""
         code, _, stderr = await self._run("stop", "-t", str(timeout), container_id, timeout=timeout + 5)
         if code != 0 and "No such container" not in stderr:
-            raise DockerOrchestratorError(f"Docker stop failed: {stderr.strip()}")
+            msg = f"Docker stop failed: {stderr.strip()}"
+            raise DockerOrchestratorError(msg)
 
     async def exec(
         self,
@@ -159,4 +162,5 @@ class DockerOrchestrator:
         host_path.parent.mkdir(parents=True, exist_ok=True)
         code, _, stderr = await self._run("cp", f"{container_id}:{container_path}", str(host_path), timeout=timeout)
         if code != 0:
-            raise DockerOrchestratorError(f"Docker cp failed: {stderr.strip()}")
+            msg = f"Docker cp failed: {stderr.strip()}"
+            raise DockerOrchestratorError(msg)

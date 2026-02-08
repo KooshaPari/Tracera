@@ -1,6 +1,4 @@
-"""
-Integration tests for Epic 5: Agent Monitoring (Story 5.8).
-"""
+"""Integration tests for Epic 5: Agent Monitoring (Story 5.8)."""
 
 from datetime import UTC, datetime, timedelta, timezone
 
@@ -49,7 +47,7 @@ def temp_project_setup(tmp_path, monkeypatch):
     return project_id, database_url
 
 
-def test_health_check(temp_project_setup):
+def test_health_check(temp_project_setup) -> None:
     """Test agent health check (Story 5.8)."""
     project_id, database_url = temp_project_setup
 
@@ -75,12 +73,12 @@ def test_health_check(temp_project_setup):
 
         assert len(health) == 1
         assert health[0]["agent_id"] == agent_id
-        assert health[0]["health"] in ["healthy", "idle", "stale", "unknown"]
+        assert health[0]["health"] in {"healthy", "idle", "stale", "unknown"}
 
     db.close()
 
 
-def test_alerts_generation(temp_project_setup):
+def test_alerts_generation(temp_project_setup) -> None:
     """Test alert generation (Story 5.8)."""
     project_id, database_url = temp_project_setup
 

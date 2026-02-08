@@ -13,7 +13,7 @@ from tracertm.models.link import Link
 class LinkRepository:
     """Repository for Link CRUD operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -43,7 +43,7 @@ class LinkRepository:
                     ItemView.item_id == source_item_id,
                     ItemView.is_primary.is_(True),
                 )
-                .limit(1)
+                .limit(1),
             )
             graph_id = graph_result.scalar_one_or_none()
 
@@ -53,12 +53,13 @@ class LinkRepository:
             from tracertm.models.graph import Graph
 
             fallback = await self.session.execute(
-                select(Graph.id).where(Graph.project_id == project_id, Graph.graph_type == "default")
+                select(Graph.id).where(Graph.project_id == project_id, Graph.graph_type == "default"),
             )
             graph_id = fallback.scalar_one_or_none()
 
         if graph_id is None:
-            raise ValueError("graph_id is required and could not be resolved")
+            msg = "graph_id is required and could not be resolved"
+            raise ValueError(msg)
 
         # Handle both parameter names for compatibility
         final_metadata = link_metadata or metadata or {}
@@ -122,7 +123,7 @@ class LinkRepository:
     async def delete_by_item(self, item_id: str | uuid.UUID) -> int:
         """Delete all links connected to item."""
         result = await self.session.execute(
-            delete(Link).where((Link.source_item_id == item_id) | (Link.target_item_id == item_id))
+            delete(Link).where((Link.source_item_id == item_id) | (Link.target_item_id == item_id)),
         )
         return getattr(result, "rowcount", 0)
 

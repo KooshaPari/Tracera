@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Weekly Report Generator
+"""Weekly Report Generator.
 
 Compiles standup logs into streamlined weekly summary (15-min format)
 Automatically extracts metrics and calculates progress.
@@ -15,6 +14,7 @@ Output:
 """
 
 import json
+import operator
 import re
 import sys
 from datetime import UTC, datetime
@@ -23,18 +23,17 @@ from typing import Any
 
 
 class WeeklyReportGenerator:
-    """Generate weekly summary from standup logs"""
+    """Generate weekly summary from standup logs."""
 
-    def __init__(self, standup_log: Path | None = None, project_dir: Path | None = None):
+    def __init__(self, standup_log: Path | None = None, project_dir: Path | None = None) -> None:
         self.project_dir = project_dir or Path.cwd()
         self.standup_log = standup_log or self.project_dir / "DAILY_STANDUP_LOG.md"
         self.dashboard = self.project_dir / "COVERAGE_PROGRESS_DASHBOARD.md"
         self.metrics_dir = self.project_dir / ".coverage_tracking"
 
     def extract_week_data(self, week_number: int) -> dict[str, Any]:
-        """Extract all entries for a specific week from standup log"""
+        """Extract all entries for a specific week from standup log."""
         if not self.standup_log.exists():
-            print(f"Error: {self.standup_log} not found")
             return {}
 
         content = self.standup_log.read_text()
@@ -44,7 +43,6 @@ class WeeklyReportGenerator:
         match = re.search(week_pattern, content, re.DOTALL | re.IGNORECASE)
 
         if not match:
-            print(f"Warning: Week {week_number} not found in standup log")
             return {}
 
         week_content = match.group(1)
@@ -70,7 +68,7 @@ class WeeklyReportGenerator:
         }
 
     def _parse_day_entries(self, day_content: str) -> list[dict[str, str]]:
-        """Parse individual agent entries from a day"""
+        """Parse individual agent entries from a day."""
         entries = []
 
         # Pattern for agent entries
@@ -89,13 +87,13 @@ class WeeklyReportGenerator:
         return entries
 
     def _extract_field(self, text: str, field_name: str) -> str:
-        """Extract a field from entry text"""
+        """Extract a field from entry text."""
         pattern = rf"\*\*{field_name}:\*?\*?\s*([^\n]*)"
         match = re.search(pattern, text, re.IGNORECASE)
         return match.group(1).strip() if match else ""
 
     def get_coverage_progress(self, week_number: int) -> dict[str, float]:
-        """Extract coverage start and end from metrics"""
+        """Extract coverage start and end from metrics."""
         if not self.metrics_dir.exists():
             return {"start": 0.0, "end": 0.0}
 
@@ -115,8 +113,8 @@ class WeeklyReportGenerator:
                         "date": data.get("date", date_str),
                         "coverage": data.get("line_coverage", 0),
                     })
-            except Exception as e:
-                print(f"Warning: Could not read {mfile}: {e}")
+            except Exception:
+                pass
 
         if week_metrics:
             return {
@@ -126,7 +124,7 @@ class WeeklyReportGenerator:
         return {"start": 0.0, "end": 0.0}
 
     def count_blockers_by_category(self, week_data: dict[str, Any]) -> dict[str, int]:
-        """Count blockers by category from week data"""
+        """Count blockers by category from week data."""
         categories = {}
 
         # Search all entries for BLOCKER lines
@@ -139,7 +137,7 @@ class WeeklyReportGenerator:
         return categories
 
     def calculate_metrics(self, week_data: dict[str, Any]) -> dict[str, Any]:
-        """Calculate aggregate metrics for the week"""
+        """Calculate aggregate metrics for the week."""
         metrics = {
             "total_days": len(week_data.get("days", {})),
             "total_blockers": 0,
@@ -163,7 +161,7 @@ class WeeklyReportGenerator:
         return metrics
 
     def generate_report(self, week_number: int) -> str:
-        """Generate the weekly report markdown"""
+        """Generate the weekly report markdown."""
         week_data = self.extract_week_data(week_number)
         if not week_data:
             return ""
@@ -201,7 +199,7 @@ Total Blockers: {metrics["total_blockers"]}
 By Category:
 """
 
-        for category, count in sorted(blockers_by_category.items(), key=lambda x: x[1], reverse=True):
+        for category, count in sorted(blockers_by_category.items(), key=operator.itemgetter(1), reverse=True):
             report += f"- **{category}:** {count}\n"
 
         report += f"""
@@ -238,15 +236,14 @@ By Category:
         return report
 
     def save_report(self, week_number: int, report_content: str) -> Path:
-        """Save report to file"""
+        """Save report to file."""
         output_file = self.project_dir / f"WEEKLY_REPORT_WEEK_{week_number}.md"
         output_file.write_text(report_content)
         return output_file
 
     def append_to_standup_log(self, week_number: int, report_content: str) -> bool:
-        """Append report to standup log"""
+        """Append report to standup log."""
         if not self.standup_log.exists():
-            print(f"Warning: {self.standup_log} not found")
             return False
 
         try:
@@ -267,25 +264,19 @@ By Category:
             self.standup_log.write_text(content)
             return True
 
-        except Exception as e:
-            print(f"Error appending to standup log: {e}")
+        except Exception:
             return False
 
 
-def main():
-    """Main execution"""
+def main() -> int:
+    """Main execution."""
     if len(sys.argv) < 2:
-        print("Usage: python3 generate_weekly_report.py [week_number]")
-        print("Example: python3 generate_weekly_report.py 1")
         return 1
 
     try:
         week_number = int(sys.argv[1])
     except ValueError:
-        print(f"Error: Invalid week number '{sys.argv[1]}'")
         return 1
-
-    print(f"Generating weekly report for Week {week_number}...")
 
     generator = WeeklyReportGenerator()
 
@@ -293,25 +284,16 @@ def main():
     report = generator.generate_report(week_number)
 
     if not report:
-        print(f"Error: Could not generate report for Week {week_number}")
         return 1
 
-    print(f"✓ Report generated ({len(report)} chars)")
-
     # Save to file
-    output_file = generator.save_report(week_number, report)
-    print(f"✓ Saved to {output_file}")
+    generator.save_report(week_number, report)
 
     # Append to standup log
     if generator.append_to_standup_log(week_number, report):
-        print("✓ Appended to DAILY_STANDUP_LOG.md")
-    else:
-        print("⚠ Could not append to standup log (file may not exist)")
+        pass
 
     # Print report for verification
-    print("\n[REPORT_PREVIEW]")
-    print(report[:500] + "..." if len(report) > 500 else report)
-    print("[/REPORT_PREVIEW]")
 
     return 0
 

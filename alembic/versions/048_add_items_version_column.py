@@ -34,8 +34,8 @@ def downgrade() -> None:
             """
             SELECT 1 FROM information_schema.columns
             WHERE table_schema = 'public' AND table_name = 'items' AND column_name = 'version'
-            """
-        )
+            """,
+        ),
     ).fetchone()
     if result is not None:
         op.drop_column("items", "version")

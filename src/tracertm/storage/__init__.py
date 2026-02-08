@@ -1,5 +1,4 @@
-"""
-Storage module for TraceRTM.
+"""Storage module for TraceRTM.
 
 Provides local storage with SQLite + Markdown hybrid storage,
 offline sync capabilities, and conflict resolution.

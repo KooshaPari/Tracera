@@ -1,6 +1,4 @@
-"""
-Integration tests for Epic 5: Retry Logic (Story 5.3).
-"""
+"""Integration tests for Epic 5: Retry Logic (Story 5.3)."""
 
 import time
 
@@ -47,7 +45,7 @@ def temp_project_setup(tmp_path, monkeypatch):
     return project_id
 
 
-def test_retry_on_conflict(temp_project_setup):
+def test_retry_on_conflict(temp_project_setup) -> None:
     """Test retry logic on conflict (Story 5.3)."""
     client1 = TraceRTMClient()
     client1.register_agent("agent-1", agent_type="ai_agent")
@@ -69,7 +67,7 @@ def test_retry_on_conflict(temp_project_setup):
     client2.close()
 
 
-def test_retry_exponential_backoff(temp_project_setup):
+def test_retry_exponential_backoff(temp_project_setup) -> None:
     """Test exponential backoff in retry logic (Story 5.3)."""
     client = TraceRTMClient()
     client.register_agent("test-agent", agent_type="ai_agent")

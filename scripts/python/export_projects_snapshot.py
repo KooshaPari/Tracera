@@ -37,7 +37,7 @@ def fetch_all(conn, query, params=None):
         return cur.fetchall()
 
 
-def export_project(conn, project_id, out_dir):
+def export_project(conn, project_id, out_dir) -> None:
     data = {}
     for table in TABLES:
         if table == "projects":
@@ -65,7 +65,7 @@ def default_json(value):
     return str(value)
 
 
-def main():
+def main() -> None:
     Path(EXPORT_ROOT).mkdir(exist_ok=True, parents=True)
     timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
     out_dir = Path(EXPORT_ROOT) / f"post_cleanup_snapshot_{timestamp}"
@@ -87,8 +87,6 @@ def main():
             export_project(conn, project["id"], out_dir)
     finally:
         conn.close()
-
-    print(f"EXPORT_DIR {out_dir}")
 
 
 if __name__ == "__main__":

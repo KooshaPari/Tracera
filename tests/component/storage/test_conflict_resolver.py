@@ -38,7 +38,7 @@ def _make_conflict(local, remote, cid="c1"):
     )
 
 
-def test_last_write_wins_prefers_newer_timestamp(tmp_path: Path):
+def test_last_write_wins_prefers_newer_timestamp(tmp_path: Path) -> None:
     session = _make_session(tmp_path)
     resolver = ConflictResolver(session=session, backup_dir=tmp_path)
     now = datetime.now(UTC)
@@ -50,7 +50,7 @@ def test_last_write_wins_prefers_newer_timestamp(tmp_path: Path):
     assert resolved.version.data["title"] == "new"
 
 
-def test_local_wins_returns_local(tmp_path: Path):
+def test_local_wins_returns_local(tmp_path: Path) -> None:
     session = _make_session(tmp_path)
     resolver = ConflictResolver(session=session, backup_dir=tmp_path)
     now = datetime.now(UTC)
@@ -62,7 +62,7 @@ def test_local_wins_returns_local(tmp_path: Path):
     assert resolved.version.data["title"] == "local"
 
 
-def test_remote_wins_returns_remote(tmp_path: Path):
+def test_remote_wins_returns_remote(tmp_path: Path) -> None:
     session = _make_session(tmp_path)
     resolver = ConflictResolver(session=session, backup_dir=tmp_path)
     now = datetime.now(UTC)
@@ -74,7 +74,7 @@ def test_remote_wins_returns_remote(tmp_path: Path):
     assert resolved.version.data["title"] == "remote"
 
 
-def test_manual_writes_conflict_file(tmp_path: Path):
+def test_manual_writes_conflict_file(tmp_path: Path) -> None:
     session = _make_session(tmp_path)
     resolver = ConflictResolver(session=session, backup_dir=tmp_path)
     now = datetime.now(UTC)

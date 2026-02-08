@@ -10,8 +10,7 @@ from tracertm.repositories.github_app_repository import GitHubAppInstallationRep
 
 
 async def verify_webhook_signature(request: Request) -> tuple[bytes, str, dict[str, Any]]:
-    """
-    Verify GitHub webhook signature and extract event data.
+    """Verify GitHub webhook signature and extract event data.
 
     Args:
         request: FastAPI request object
@@ -41,8 +40,7 @@ async def handle_installation_created(
     installation_repo: GitHubAppInstallationRepository,
     db: AsyncSession,
 ) -> dict[str, Any]:
-    """
-    Handle GitHub App installation created event.
+    """Handle GitHub App installation created event.
 
     Args:
         payload: GitHub webhook payload
@@ -82,8 +80,7 @@ async def handle_installation_deleted(
     installation_repo: GitHubAppInstallationRepository,
     db: AsyncSession,
 ) -> dict[str, str]:
-    """
-    Handle GitHub App installation deleted event.
+    """Handle GitHub App installation deleted event.
 
     Args:
         payload: GitHub webhook payload
@@ -110,8 +107,7 @@ async def handle_installation_suspended(
     db: AsyncSession,
     suspended: bool,
 ) -> dict[str, str]:
-    """
-    Handle GitHub App installation suspend/unsuspend event.
+    """Handle GitHub App installation suspend/unsuspend event.
 
     Args:
         payload: GitHub webhook payload
@@ -142,8 +138,7 @@ async def process_installation_event(
     installation_repo: GitHubAppInstallationRepository,
     db: AsyncSession,
 ) -> dict[str, Any]:
-    """
-    Process GitHub App installation events.
+    """Process GitHub App installation events.
 
     Args:
         payload: GitHub webhook payload
@@ -174,8 +169,7 @@ async def github_app_webhook(
     request: Request,
     db: AsyncSession,
 ) -> dict[str, Any]:
-    """
-    Handle GitHub App webhook events.
+    """Handle GitHub App webhook events.
 
     Args:
         request: FastAPI request object

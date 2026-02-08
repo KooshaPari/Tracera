@@ -1,5 +1,4 @@
-"""
-Comprehensive edge case and boundary condition tests.
+"""Comprehensive edge case and boundary condition tests.
 
 Tests empty data, large datasets, null/None values, boundary conditions,
 unicode/special characters, concurrent modifications, resource cleanup,
@@ -22,32 +21,32 @@ class TestEmptyDataHandling:
     """Test handling of empty datasets and null values."""
 
     @pytest.mark.integration
-    def test_empty_project_list(self, sync_db_session):
+    def test_empty_project_list(self, sync_db_session) -> None:
         """Test querying empty project list."""
         projects = sync_db_session.query(Project).all()
         assert projects == []
         assert len(projects) == 0
 
     @pytest.mark.integration
-    def test_empty_item_list(self, initialized_db):
+    def test_empty_item_list(self, initialized_db) -> None:
         """Test querying items with no results."""
         items = initialized_db.query(Item).filter_by(status="nonexistent").all()
         assert items == []
 
     @pytest.mark.integration
-    def test_empty_link_list(self, initialized_db):
+    def test_empty_link_list(self, initialized_db) -> None:
         """Test querying links with no results."""
         links = initialized_db.query(Link).filter_by(link_type="nonexistent").all()
         assert links == []
 
     @pytest.mark.integration
-    def test_empty_event_list(self, initialized_db):
+    def test_empty_event_list(self, initialized_db) -> None:
         """Test querying events with no results."""
         events = initialized_db.query(Event).filter_by(event_type="nonexistent").all()
         assert events == []
 
     @pytest.mark.integration
-    def test_null_item_metadata(self, initialized_db):
+    def test_null_item_metadata(self, initialized_db) -> None:
         """Test item with null metadata."""
         item = Item(
             id="NULL-METADATA",
@@ -67,7 +66,7 @@ class TestEmptyDataHandling:
         assert result.item_metadata == {} or result.item_metadata is None
 
     @pytest.mark.integration
-    def test_empty_string_fields(self, initialized_db):
+    def test_empty_string_fields(self, initialized_db) -> None:
         """Test item with empty string fields."""
         item = Item(
             id="EMPTY-STRING",
@@ -86,7 +85,7 @@ class TestEmptyDataHandling:
         assert result.item_type == ""
 
     @pytest.mark.integration
-    def test_null_optional_fields(self, db_with_sample_data):
+    def test_null_optional_fields(self, db_with_sample_data) -> None:
         """Test item with null optional fields."""
         item = Item(
             id="NULL-OPTIONAL",
@@ -106,7 +105,7 @@ class TestEmptyDataHandling:
         assert result.item_metadata == {} or result.item_metadata is None
 
     @pytest.mark.integration
-    def test_zero_count_aggregation(self, sync_db_session):
+    def test_zero_count_aggregation(self, sync_db_session) -> None:
         """Test aggregation on empty dataset."""
         project = Project(id="zero-count", name="Zero Count")
         sync_db_session.add(project)
@@ -120,7 +119,7 @@ class TestLargeDatasetProcessing:
     """Test handling of large datasets."""
 
     @pytest.mark.integration
-    def test_large_item_batch_creation(self, initialized_db):
+    def test_large_item_batch_creation(self, initialized_db) -> None:
         """Test creating large number of items."""
         items = [
             Item(
@@ -142,7 +141,7 @@ class TestLargeDatasetProcessing:
         assert count == 100
 
     @pytest.mark.integration
-    def test_large_link_network(self, initialized_db):
+    def test_large_link_network(self, initialized_db) -> None:
         """Test creating large number of links."""
         project = Project(id="large-links", name="Large Links")
         initialized_db.add(project)
@@ -182,7 +181,7 @@ class TestLargeDatasetProcessing:
         assert link_count > 50
 
     @pytest.mark.integration
-    def test_large_event_log(self, db_with_sample_data):
+    def test_large_event_log(self, db_with_sample_data) -> None:
         """Test handling large event log."""
         events = [
             Event(
@@ -204,7 +203,7 @@ class TestLargeDatasetProcessing:
         assert event_count >= 100
 
     @pytest.mark.integration
-    def test_large_metadata_json(self, initialized_db):
+    def test_large_metadata_json(self, initialized_db) -> None:
         """Test handling large metadata JSON."""
         large_metadata = {f"key_{i}": f"value_{i}" * 100 for i in range(100)}
 
@@ -225,7 +224,7 @@ class TestLargeDatasetProcessing:
         assert len(result.item_metadata) == 100
 
     @pytest.mark.integration
-    def test_pagination_with_large_dataset(self, initialized_db):
+    def test_pagination_with_large_dataset(self, initialized_db) -> None:
         """Test pagination on large dataset."""
         # Create items
         for i in range(50):
@@ -257,7 +256,7 @@ class TestBoundaryConditions:
     """Test boundary conditions and limits."""
 
     @pytest.mark.integration
-    def test_maximum_string_length(self, initialized_db):
+    def test_maximum_string_length(self, initialized_db) -> None:
         """Test item with very long title."""
         long_title = "X" * 10000
         item = Item(
@@ -276,7 +275,7 @@ class TestBoundaryConditions:
         assert len(result.title) == 10000
 
     @pytest.mark.integration
-    def test_maximum_id_length(self, initialized_db):
+    def test_maximum_id_length(self, initialized_db) -> None:
         """Test item with very long ID."""
         long_id = "ID-" + "X" * 100
         item = Item(
@@ -296,7 +295,7 @@ class TestBoundaryConditions:
             initialized_db.rollback()
 
     @pytest.mark.integration
-    def test_single_character_fields(self, initialized_db):
+    def test_single_character_fields(self, initialized_db) -> None:
         """Test item with single character fields."""
         item = Item(id="X", project_id="X", title="X", view="X", item_type="X", status="X")
         initialized_db.add(item)
@@ -308,7 +307,7 @@ class TestBoundaryConditions:
             initialized_db.rollback()
 
     @pytest.mark.integration
-    def test_maximum_metadata_depth(self, initialized_db):
+    def test_maximum_metadata_depth(self, initialized_db) -> None:
         """Test deeply nested metadata."""
         nested_metadata = {"level1": {"level2": {"level3": {"level4": {"value": "deep"}}}}}
 
@@ -329,7 +328,7 @@ class TestBoundaryConditions:
         assert result.item_metadata["level1"]["level2"]["level3"]["level4"]["value"] == "deep"
 
     @pytest.mark.integration
-    def test_boundary_date_values(self, db_with_sample_data):
+    def test_boundary_date_values(self, db_with_sample_data) -> None:
         """Test boundary date values."""
         # Very old date
         event = Event(
@@ -353,7 +352,7 @@ class TestUnicodeAndSpecialCharacters:
     """Test unicode and special character handling."""
 
     @pytest.mark.integration
-    def test_unicode_item_title(self, initialized_db):
+    def test_unicode_item_title(self, initialized_db) -> None:
         """Test item with unicode characters."""
         unicode_title = "Test 中文 العربية हिन्दी Русский"
         item = Item(
@@ -372,7 +371,7 @@ class TestUnicodeAndSpecialCharacters:
         assert result.title == unicode_title
 
     @pytest.mark.integration
-    def test_emoji_in_metadata(self, initialized_db):
+    def test_emoji_in_metadata(self, initialized_db) -> None:
         """Test emoji characters in metadata."""
         item = Item(
             id="EMOJI-TEST",
@@ -391,7 +390,7 @@ class TestUnicodeAndSpecialCharacters:
         assert "🎉" in result.item_metadata["emoji"]
 
     @pytest.mark.integration
-    def test_special_characters_in_id(self, initialized_db):
+    def test_special_characters_in_id(self, initialized_db) -> None:
         """Test special characters in ID."""
         special_id = "ID-WITH-SPECIAL_!@#$%"
         item = Item(
@@ -411,7 +410,7 @@ class TestUnicodeAndSpecialCharacters:
             initialized_db.rollback()
 
     @pytest.mark.integration
-    def test_sql_injection_attempt(self, initialized_db):
+    def test_sql_injection_attempt(self, initialized_db) -> None:
         """Test SQL injection protection."""
         injection_text = "'; DROP TABLE item; --"
         item = Item(
@@ -431,7 +430,7 @@ class TestUnicodeAndSpecialCharacters:
         assert result.title == injection_text
 
     @pytest.mark.integration
-    def test_newline_and_whitespace(self, initialized_db):
+    def test_newline_and_whitespace(self, initialized_db) -> None:
         """Test newline and whitespace handling."""
         whitespace_text = "Line1\nLine2\rLine3\tTabbed"
         item = Item(
@@ -455,7 +454,7 @@ class TestConcurrentModifications:
     """Test concurrent modification scenarios."""
 
     @pytest.mark.integration
-    def test_concurrent_item_updates(self, sync_db_session):
+    def test_concurrent_item_updates(self, sync_db_session) -> None:
         """Test concurrent updates to same item."""
         project = Project(id="concurrent-project", name="Concurrent")
         sync_db_session.add(project)
@@ -484,7 +483,7 @@ class TestConcurrentModifications:
         assert result.title == "Update 2"
 
     @pytest.mark.integration
-    def test_concurrent_link_creation(self, db_with_sample_data):
+    def test_concurrent_link_creation(self, db_with_sample_data) -> None:
         """Test concurrent link creation."""
         # Create links between same items
         link1 = Link(
@@ -513,7 +512,7 @@ class TestConcurrentModifications:
         assert link2_result is not None
 
     @pytest.mark.integration
-    def test_rapid_sequential_updates(self, sync_db_session):
+    def test_rapid_sequential_updates(self, sync_db_session) -> None:
         """Test rapid sequential updates."""
         project = Project(id="rapid-updates", name="Rapid")
         sync_db_session.add(project)
@@ -543,7 +542,7 @@ class TestResourceCleanup:
     """Test resource cleanup and finalization."""
 
     @pytest.mark.integration
-    def test_session_cleanup_on_error(self, sync_db_session):
+    def test_session_cleanup_on_error(self, sync_db_session) -> None:
         """Test session cleanup after error."""
         project = Project(id="cleanup-test", name="Cleanup")
         sync_db_session.add(project)
@@ -554,7 +553,7 @@ class TestResourceCleanup:
         assert items is not None
 
     @pytest.mark.integration
-    def test_orphaned_record_cleanup(self, initialized_db):
+    def test_orphaned_record_cleanup(self, initialized_db) -> None:
         """Test cleanup of orphaned records."""
         item = Item(
             id="ORPHAN-001",
@@ -575,7 +574,7 @@ class TestResourceCleanup:
         assert result is None
 
     @pytest.mark.integration
-    def test_cleanup_on_session_close(self, sync_db_session):
+    def test_cleanup_on_session_close(self, sync_db_session) -> None:
         """Test cleanup when session closes."""
         project = Project(id="session-close", name="Close")
         sync_db_session.add(project)
@@ -590,7 +589,7 @@ class TestStateConsistency:
     """Test state consistency and invariants."""
 
     @pytest.mark.integration
-    def test_item_project_consistency(self, initialized_db):
+    def test_item_project_consistency(self, initialized_db) -> None:
         """Test item and project relationship consistency."""
         items = initialized_db.query(Item).all()
         for item in items:
@@ -598,7 +597,7 @@ class TestStateConsistency:
             assert project is not None
 
     @pytest.mark.integration
-    def test_link_item_consistency(self, db_with_sample_data):
+    def test_link_item_consistency(self, db_with_sample_data) -> None:
         """Test link and item consistency."""
         links = db_with_sample_data.query(Link).all()
         for link in links:
@@ -607,7 +606,7 @@ class TestStateConsistency:
             assert source is not None or target is not None
 
     @pytest.mark.integration
-    def test_event_reference_consistency(self, db_with_sample_data):
+    def test_event_reference_consistency(self, db_with_sample_data) -> None:
         """Test event reference consistency."""
         events = db_with_sample_data.query(Event).all()
         for event in events:
@@ -617,7 +616,7 @@ class TestStateConsistency:
             assert event.project_id is not None
 
     @pytest.mark.integration
-    def test_metadata_integrity(self, initialized_db):
+    def test_metadata_integrity(self, initialized_db) -> None:
         """Test metadata integrity after operations."""
         original_metadata = {"key": "value", "nested": {"inner": "data"}}
 
@@ -637,7 +636,7 @@ class TestStateConsistency:
         assert result.item_metadata == original_metadata
 
     @pytest.mark.integration
-    def test_timestamp_ordering(self, db_with_sample_data):
+    def test_timestamp_ordering(self, db_with_sample_data) -> None:
         """Test event timestamp ordering."""
         events = db_with_sample_data.query(Event).order_by(Event.created_at).all()
 
@@ -646,7 +645,7 @@ class TestStateConsistency:
                 assert events[i].created_at <= events[i + 1].created_at
 
     @pytest.mark.integration
-    def test_unique_id_constraint(self, initialized_db):
+    def test_unique_id_constraint(self, initialized_db) -> None:
         """Test unique ID constraint enforcement."""
         item1 = Item(
             id="UNIQUE-TEST",

@@ -16,6 +16,7 @@ import argparse
 import dataclasses
 import datetime as dt
 import json
+import operator
 import os
 import shutil
 from collections import defaultdict
@@ -24,8 +25,9 @@ from pathlib import Path
 try:
     from markdown import Markdown
 except ImportError as exc:  # pragma: no cover - dependency guard
+    msg = "Missing dependency: markdown. Install via `pip install pheno-sdk[docs]` or `pip install markdown pygments`."
     raise SystemExit(
-        "Missing dependency: markdown. Install via `pip install pheno-sdk[docs]` or `pip install markdown pygments`."
+        msg,
     ) from exc
 
 
@@ -274,7 +276,8 @@ def main() -> None:
     args = parse_args()
     targets = [d for d in DOCSETS if args.docset is None or d.name in args.docset]
     if not targets:
-        raise SystemExit("No docsets selected.")
+        msg = "No docsets selected."
+        raise SystemExit(msg)
 
     output_root = args.output.resolve()
     if args.clean and output_root.exists():
@@ -287,7 +290,8 @@ def main() -> None:
 
 def build_docset(docset: Docset, output_root: Path, quiet: bool = False) -> None:
     if not docset.source.exists():
-        raise SystemExit(f"Docset '{docset.name}' source not found: {docset.source}")
+        msg = f"Docset '{docset.name}' source not found: {docset.source}"
+        raise SystemExit(msg)
 
     destination = output_root / docset.name
     if destination.exists():
@@ -331,12 +335,11 @@ def build_docset(docset: Docset, output_root: Path, quiet: bool = False) -> None
         })
 
         if not quiet:
-            print(f"[{docset.name}] {rel_md} -> {html_path.relative_to(destination)}")
+            pass
 
     write_index(docset, manifest, destination)
     copy_assets(docset.source, destination)
     (destination / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    print(f"✔ Built docset '{docset.name}' into {destination} ({len(manifest)} pages)")
 
 
 def render_markdown(text: str) -> tuple[str, str]:
@@ -431,7 +434,7 @@ def write_index(docset: Docset, manifest: list[dict], destination: Path) -> None
         display_name = "Root Files" if group_name == "root" else derive_title(Path(group_name))
         links = "\n".join(
             f'<li><a href="{entry["relative_html"]}">{entry["title"]}</a></li>'
-            for entry in sorted(entries, key=lambda e: e["relative_html"])
+            for entry in sorted(entries, key=operator.itemgetter("relative_html"))
         )
         groups_html.append(f"<section class='group'><h2>{display_name}</h2><ul>{links}</ul></section>")
 

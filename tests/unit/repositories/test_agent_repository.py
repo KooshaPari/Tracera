@@ -9,7 +9,7 @@ from tracertm.repositories.project_repository import ProjectRepository
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_agent(db_session: AsyncSession):
+async def test_create_agent(db_session: AsyncSession) -> None:
     """Test creating an agent."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -31,7 +31,7 @@ async def test_create_agent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id(db_session: AsyncSession):
+async def test_get_by_id(db_session: AsyncSession) -> None:
     """Test retrieving an agent by ID."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -51,7 +51,7 @@ async def test_get_by_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project(db_session: AsyncSession):
+async def test_get_by_project(db_session: AsyncSession) -> None:
     """Test getting agents by project."""
     project_repo = ProjectRepository(db_session)
     project1 = await project_repo.create(name="Project 1", description="Test")
@@ -73,7 +73,7 @@ async def test_get_by_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_status(db_session: AsyncSession):
+async def test_update_status(db_session: AsyncSession) -> None:
     """Test updating agent status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -91,7 +91,7 @@ async def test_update_status(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_activity(db_session: AsyncSession):
+async def test_update_activity(db_session: AsyncSession) -> None:
     """Test updating agent last activity."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -111,7 +111,7 @@ async def test_update_activity(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_active_agents(db_session: AsyncSession):
+async def test_get_active_agents(db_session: AsyncSession) -> None:
     """Test getting only active agents."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -133,7 +133,7 @@ async def test_get_active_agents(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_agent(db_session: AsyncSession):
+async def test_delete_agent(db_session: AsyncSession) -> None:
     """Test deleting an agent."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")

@@ -1,10 +1,9 @@
-"""
-Gap coverage tests for CLI test framework modules.
+"""Gap coverage tests for CLI test framework modules.
 Targets: cli/commands/test.py (0%), cli/commands/test/app.py (0%),
          cli/commands/test/coverage.py (0%), cli/commands/test/discover.py (0%),
          cli/commands/test/env_manager.py (0%), cli/commands/test/grouping.py (0%),
          cli/commands/test/orchestrator.py (0%), cli/commands/test/reporting.py (0%),
-         cli/commands/test/main.py (18.46%), cli/commands/test/runner.py (31.08%)
+         cli/commands/test/main.py (18.46%), cli/commands/test/runner.py (31.08%).
 """
 
 import pytest
@@ -13,13 +12,13 @@ import pytest
 class TestTestCommand:
     """Tests for test CLI command module."""
 
-    def test_test_module_import(self):
+    def test_test_module_import(self) -> None:
         """Test test module can be imported."""
         from tracertm.cli.commands import test
 
         assert test is not None
 
-    def test_test_app_exists(self):
+    def test_test_app_exists(self) -> None:
         """Test test module has app."""
         from tracertm.cli.commands import test
 
@@ -29,7 +28,7 @@ class TestTestCommand:
 class TestTestAppModule:
     """Tests for test/app.py module."""
 
-    def test_test_app_module_import(self):
+    def test_test_app_module_import(self) -> None:
         """Test test.app module can be imported."""
         try:
             from tracertm.cli.commands.test import app
@@ -42,7 +41,7 @@ class TestTestAppModule:
 class TestTestCoverageModule:
     """Tests for test/coverage.py module."""
 
-    def test_test_coverage_module_import(self):
+    def test_test_coverage_module_import(self) -> None:
         """Test test.coverage module can be imported."""
         try:
             from tracertm.cli.commands.test import coverage
@@ -55,7 +54,7 @@ class TestTestCoverageModule:
 class TestTestDiscoverModule:
     """Tests for test/discover.py module."""
 
-    def test_test_discover_module_import(self):
+    def test_test_discover_module_import(self) -> None:
         """Test test.discover module can be imported."""
         try:
             from tracertm.cli.commands.test import discover
@@ -68,7 +67,7 @@ class TestTestDiscoverModule:
 class TestTestDiscoveryModule:
     """Tests for test/discovery.py module."""
 
-    def test_test_discovery_module_import(self):
+    def test_test_discovery_module_import(self) -> None:
         """Test test.discovery module can be imported."""
         try:
             from tracertm.cli.commands.test import discovery
@@ -77,7 +76,7 @@ class TestTestDiscoveryModule:
         except ImportError:
             pytest.skip("test.discovery module not available")
 
-    def test_discovery_has_discover_function(self):
+    def test_discovery_has_discover_function(self) -> None:
         """Test discovery module has discover tests function."""
         try:
             from tracertm.cli.commands.test import discovery
@@ -95,7 +94,7 @@ class TestTestDiscoveryModule:
 class TestTestEnvManagerModule:
     """Tests for test/env_manager.py module."""
 
-    def test_test_env_manager_module_import(self):
+    def test_test_env_manager_module_import(self) -> None:
         """Test test.env_manager module can be imported."""
         try:
             from tracertm.cli.commands.test import env_manager
@@ -108,7 +107,7 @@ class TestTestEnvManagerModule:
 class TestTestGroupingModule:
     """Tests for test/grouping.py module."""
 
-    def test_test_grouping_module_import(self):
+    def test_test_grouping_module_import(self) -> None:
         """Test test.grouping module can be imported."""
         try:
             from tracertm.cli.commands.test import grouping
@@ -121,7 +120,7 @@ class TestTestGroupingModule:
 class TestTestOrchestratorModule:
     """Tests for test/orchestrator.py module."""
 
-    def test_test_orchestrator_module_import(self):
+    def test_test_orchestrator_module_import(self) -> None:
         """Test test.orchestrator module can be imported."""
         try:
             from tracertm.cli.commands.test import orchestrator
@@ -130,7 +129,7 @@ class TestTestOrchestratorModule:
         except ImportError:
             pytest.skip("test.orchestrator module not available")
 
-    def test_orchestrator_has_run_function(self):
+    def test_orchestrator_has_run_function(self) -> None:
         """Test orchestrator module has run function."""
         try:
             from tracertm.cli.commands.test import orchestrator
@@ -147,7 +146,7 @@ class TestTestOrchestratorModule:
 class TestTestReportingModule:
     """Tests for test/reporting.py module."""
 
-    def test_test_reporting_module_import(self):
+    def test_test_reporting_module_import(self) -> None:
         """Test test.reporting module can be imported."""
         try:
             from tracertm.cli.commands.test import reporting
@@ -156,7 +155,7 @@ class TestTestReportingModule:
         except ImportError:
             pytest.skip("test.reporting module not available")
 
-    def test_reporting_has_report_function(self):
+    def test_reporting_has_report_function(self) -> None:
         """Test reporting module has report function."""
         try:
             from tracertm.cli.commands.test import reporting
@@ -173,7 +172,7 @@ class TestTestReportingModule:
 class TestTestMainModule:
     """Tests for test/main.py module."""
 
-    def test_test_main_module_import(self):
+    def test_test_main_module_import(self) -> None:
         """Test test.main module can be imported."""
         try:
             from tracertm.cli.commands.test import main
@@ -186,7 +185,7 @@ class TestTestMainModule:
 class TestTestRunnerModule:
     """Tests for test/runner.py module."""
 
-    def test_test_runner_module_import(self):
+    def test_test_runner_module_import(self) -> None:
         """Test test.runner module can be imported."""
         try:
             from tracertm.cli.commands.test import runner
@@ -195,7 +194,7 @@ class TestTestRunnerModule:
         except ImportError:
             pytest.skip("test.runner module not available")
 
-    def test_runner_has_run_function(self):
+    def test_runner_has_run_function(self) -> None:
         """Test runner module has run function."""
         try:
             from tracertm.cli.commands.test import runner
@@ -208,14 +207,14 @@ class TestTestRunnerModule:
 class TestAgentsCommand:
     """Tests for agents CLI command (54.57% coverage)."""
 
-    def test_agents_module_import(self):
+    def test_agents_module_import(self) -> None:
         """Test agents module can be imported."""
         from tracertm.cli.commands import agents
 
         assert agents is not None
         assert agents.app is not None
 
-    def test_agents_app_registered(self):
+    def test_agents_app_registered(self) -> None:
         """Test agents app is a Typer app."""
         import typer
 
@@ -227,14 +226,14 @@ class TestAgentsCommand:
 class TestItemCommand:
     """Tests for item CLI command (53.12% coverage)."""
 
-    def test_item_module_import(self):
+    def test_item_module_import(self) -> None:
         """Test item module can be imported."""
         from tracertm.cli.commands import item
 
         assert item is not None
         assert item.app is not None
 
-    def test_item_app_registered(self):
+    def test_item_app_registered(self) -> None:
         """Test item app is a Typer app."""
         import typer
 
@@ -246,13 +245,13 @@ class TestItemCommand:
 class TestInitCommand:
     """Tests for init CLI command (74.77% coverage)."""
 
-    def test_init_module_import(self):
+    def test_init_module_import(self) -> None:
         """Test init module can be imported."""
         from tracertm.cli.commands import init
 
         assert init is not None
 
-    def test_init_has_functions(self):
+    def test_init_has_functions(self) -> None:
         """Test init module is a valid Python module."""
         from tracertm.cli.commands import init
 

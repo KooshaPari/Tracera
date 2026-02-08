@@ -1,6 +1,4 @@
-"""
-Unit tests for specification services.
-"""
+"""Unit tests for specification services."""
 
 from unittest.mock import AsyncMock, MagicMock
 
@@ -33,7 +31,7 @@ class TestADRService:
         return ADRService(mock_session)
 
     @pytest.mark.asyncio
-    async def test_create_adr(self, service, mock_session):
+    async def test_create_adr(self, service, mock_session) -> None:
         """Test creating an ADR."""
         # Setup
         mock_session.execute.return_value.scalar_one_or_none.return_value = None
@@ -60,7 +58,7 @@ class TestADRService:
         mock_session.flush.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_get_adr(self, service, mock_session):
+    async def test_get_adr(self, service, mock_session) -> None:
         """Test getting an ADR by ID."""
         # Setup
         mock_adr = ADR(
@@ -83,7 +81,7 @@ class TestADRService:
         mock_session.execute.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_list_adr_by_project(self, service, mock_session):
+    async def test_list_adr_by_project(self, service, mock_session) -> None:
         """Test listing ADRs for a project."""
         # Setup
         mock_adr1 = ADR(
@@ -111,7 +109,7 @@ class TestADRService:
         mock_session.execute.side_effect = [
             MagicMock(scalar=MagicMock(return_value=2)),  # count query
             MagicMock(
-                scalars=MagicMock(return_value=MagicMock(all=MagicMock(return_value=[mock_adr1, mock_adr2])))
+                scalars=MagicMock(return_value=MagicMock(all=MagicMock(return_value=[mock_adr1, mock_adr2]))),
             ),  # list query
         ]
 
@@ -123,7 +121,7 @@ class TestADRService:
         assert len(results) == 2
 
     @pytest.mark.asyncio
-    async def test_update_adr(self, service, mock_session):
+    async def test_update_adr(self, service, mock_session) -> None:
         """Test updating an ADR."""
         # Setup
         mock_adr = ADR(
@@ -149,7 +147,7 @@ class TestADRService:
         mock_session.add.assert_called()
 
     @pytest.mark.asyncio
-    async def test_delete_adr(self, service, mock_session):
+    async def test_delete_adr(self, service, mock_session) -> None:
         """Test deleting an ADR."""
         # Setup
         mock_session.execute.return_value.rowcount = 1
@@ -163,7 +161,7 @@ class TestADRService:
         mock_session.flush.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_verify_compliance(self, service, mock_session):
+    async def test_verify_compliance(self, service, mock_session) -> None:
         """Test verifying ADR compliance."""
         # Setup
         mock_adr = ADR(
@@ -189,7 +187,7 @@ class TestADRService:
         assert result.last_verified_at is not None
 
     @pytest.mark.asyncio
-    async def test_link_requirements(self, service, mock_session):
+    async def test_link_requirements(self, service, mock_session) -> None:
         """Test linking requirements to ADR."""
         # Setup
         mock_adr = ADR(
@@ -215,7 +213,7 @@ class TestADRService:
         assert "REQ-003" in result.related_requirements
 
     @pytest.mark.asyncio
-    async def test_supersede(self, service, mock_session):
+    async def test_supersede(self, service, mock_session) -> None:
         """Test marking ADR as superseded."""
         # Setup
         mock_adr = ADR(
@@ -253,7 +251,7 @@ class TestContractService:
         return ContractService(mock_session)
 
     @pytest.mark.asyncio
-    async def test_create_contract(self, service, mock_session):
+    async def test_create_contract(self, service, mock_session) -> None:
         """Test creating a Contract."""
         # Setup
         mock_session.execute.return_value.scalar_one_or_none.return_value = None
@@ -277,7 +275,7 @@ class TestContractService:
         mock_session.add.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_verify_contract(self, service, mock_session):
+    async def test_verify_contract(self, service, mock_session) -> None:
         """Test verifying a contract."""
         # Setup
         mock_contract = Contract(
@@ -302,7 +300,7 @@ class TestContractService:
         assert result.version == 2
 
     @pytest.mark.asyncio
-    async def test_execute_transition(self, service, mock_session):
+    async def test_execute_transition(self, service, mock_session) -> None:
         """Test executing state transition."""
         # Setup
         mock_contract = Contract(
@@ -345,7 +343,7 @@ class TestFeatureService:
         return FeatureService(mock_session)
 
     @pytest.mark.asyncio
-    async def test_create_feature(self, service, mock_session):
+    async def test_create_feature(self, service, mock_session) -> None:
         """Test creating a Feature."""
         # Setup
         mock_session.execute.return_value.scalar_one_or_none.return_value = None
@@ -368,7 +366,7 @@ class TestFeatureService:
         assert feature.as_a == "User"
 
     @pytest.mark.asyncio
-    async def test_get_feature(self, service, mock_session):
+    async def test_get_feature(self, service, mock_session) -> None:
         """Test getting a Feature by ID."""
         # Setup
         mock_feature = Feature(
@@ -387,7 +385,7 @@ class TestFeatureService:
         assert result == mock_feature
 
     @pytest.mark.asyncio
-    async def test_calculate_pass_rate(self, service, mock_session):
+    async def test_calculate_pass_rate(self, service, mock_session) -> None:
         """Test calculating feature pass rate from scenarios."""
         # Setup
         mock_session.execute.return_value.scalar.return_value = 0.75
@@ -413,7 +411,7 @@ class TestScenarioService:
         return ScenarioService(mock_session)
 
     @pytest.mark.asyncio
-    async def test_create_scenario(self, service, mock_session):
+    async def test_create_scenario(self, service, mock_session) -> None:
         """Test creating a Scenario."""
         # Setup
         mock_feature = Feature(
@@ -446,7 +444,7 @@ class TestScenarioService:
         assert scenario.pass_rate == 0.0
 
     @pytest.mark.asyncio
-    async def test_run_scenario(self, service, mock_session):
+    async def test_run_scenario(self, service, mock_session) -> None:
         """Test running a scenario."""
         # Setup
         mock_scenario = Scenario(
@@ -474,7 +472,7 @@ class TestScenarioService:
         assert result.metadata_.get("last_run") == results
 
     @pytest.mark.asyncio
-    async def test_update_pass_rate(self, service, mock_session):
+    async def test_update_pass_rate(self, service, mock_session) -> None:
         """Test updating scenario pass rate."""
         # Setup
         mock_scenario = Scenario(
@@ -496,7 +494,7 @@ class TestScenarioService:
         assert result.version == 2
 
     @pytest.mark.asyncio
-    async def test_link_test_cases(self, service, mock_session):
+    async def test_link_test_cases(self, service, mock_session) -> None:
         """Test linking test cases to scenario."""
         # Setup
         mock_scenario = Scenario(
@@ -533,7 +531,7 @@ class TestStepDefinitionService:
         return StepDefinitionService(mock_session)
 
     @pytest.mark.asyncio
-    async def test_create_step_definition(self, service, mock_session):
+    async def test_create_step_definition(self, service, mock_session) -> None:
         """Test creating a Step Definition."""
         # Execute
         step = await service.create(
@@ -555,7 +553,7 @@ class TestStepDefinitionService:
         assert step["version"] == 1
 
     @pytest.mark.asyncio
-    async def test_find_matching_steps(self, service, mock_session):
+    async def test_find_matching_steps(self, service, mock_session) -> None:
         """Test finding matching step definitions."""
         # Execute
         results = await service.find_matching(
@@ -568,7 +566,7 @@ class TestStepDefinitionService:
         assert isinstance(results, list)
 
     @pytest.mark.asyncio
-    async def test_get_step(self, service, mock_session):
+    async def test_get_step(self, service, mock_session) -> None:
         """Test getting a Step Definition."""
         # Execute
         result = await service.get("step-1")
@@ -577,7 +575,7 @@ class TestStepDefinitionService:
         assert result is None  # Placeholder implementation
 
     @pytest.mark.asyncio
-    async def test_list_steps_by_project(self, service, mock_session):
+    async def test_list_steps_by_project(self, service, mock_session) -> None:
         """Test listing step definitions for a project."""
         # Execute
         steps, total = await service.list_by_project("proj-1")
@@ -587,7 +585,7 @@ class TestStepDefinitionService:
         assert total == 0
 
     @pytest.mark.asyncio
-    async def test_increment_usage(self, service, mock_session):
+    async def test_increment_usage(self, service, mock_session) -> None:
         """Test incrementing step usage count."""
         # Execute
         result = await service.increment_usage("step-1")

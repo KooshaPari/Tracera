@@ -1,5 +1,4 @@
-"""
-Tests for GitHubAppInstallationRepository.
+"""Tests for GitHubAppInstallationRepository.
 
 Comprehensive tests covering GitHub App installation CRUD operations.
 """
@@ -62,7 +61,7 @@ class TestCreate:
     """Tests for GitHubAppInstallationRepository.create."""
 
     @pytest.mark.asyncio
-    async def test_create_happy_path(self, github_app_repo: GitHubAppInstallationRepository, account_for_github_app):
+    async def test_create_happy_path(self, github_app_repo: GitHubAppInstallationRepository, account_for_github_app) -> None:
         """Test creating a GitHub App installation with standard fields."""
         installation = await github_app_repo.create(
             account_id=account_for_github_app.id,
@@ -89,8 +88,8 @@ class TestCreate:
 
     @pytest.mark.asyncio
     async def test_create_with_permissions_dict(
-        self, github_app_repo: GitHubAppInstallationRepository, account_for_github_app
-    ):
+        self, github_app_repo: GitHubAppInstallationRepository, account_for_github_app,
+    ) -> None:
         """Test creating an installation with complex permissions dictionary."""
         complex_permissions = {
             "contents": "write",
@@ -115,8 +114,8 @@ class TestCreate:
 
     @pytest.mark.asyncio
     async def test_create_minimal_fields(
-        self, github_app_repo: GitHubAppInstallationRepository, account_for_github_app
-    ):
+        self, github_app_repo: GitHubAppInstallationRepository, account_for_github_app,
+    ) -> None:
         """Test creating an installation with minimal required fields (default repository_selection)."""
         installation = await github_app_repo.create(
             account_id=account_for_github_app.id,
@@ -141,7 +140,7 @@ class TestGetById:
     """Tests for GitHubAppInstallationRepository.get_by_id."""
 
     @pytest.mark.asyncio
-    async def test_get_by_id_found(self, github_app_setup):
+    async def test_get_by_id_found(self, github_app_setup) -> None:
         """Test getting an installation by ID."""
         repo = github_app_setup["repo"]
         installation = github_app_setup["installation"]
@@ -154,7 +153,7 @@ class TestGetById:
         assert result.account_login == installation.account_login
 
     @pytest.mark.asyncio
-    async def test_get_by_id_not_found(self, github_app_repo: GitHubAppInstallationRepository):
+    async def test_get_by_id_not_found(self, github_app_repo: GitHubAppInstallationRepository) -> None:
         """Test getting a non-existent installation returns None."""
         result = await github_app_repo.get_by_id(str(uuid4()))
 
@@ -168,7 +167,7 @@ class TestGetByGitHubInstallationId:
     """Tests for GitHubAppInstallationRepository.get_by_github_installation_id."""
 
     @pytest.mark.asyncio
-    async def test_get_by_github_installation_id_found(self, github_app_setup):
+    async def test_get_by_github_installation_id_found(self, github_app_setup) -> None:
         """Test getting an installation by GitHub's installation ID."""
         repo = github_app_setup["repo"]
         installation = github_app_setup["installation"]
@@ -180,7 +179,7 @@ class TestGetByGitHubInstallationId:
         assert result.installation_id == installation.installation_id
 
     @pytest.mark.asyncio
-    async def test_get_by_github_installation_id_not_found(self, github_app_repo: GitHubAppInstallationRepository):
+    async def test_get_by_github_installation_id_not_found(self, github_app_repo: GitHubAppInstallationRepository) -> None:
         """Test getting by non-existent GitHub installation ID returns None."""
         result = await github_app_repo.get_by_github_installation_id(99999999)
 
@@ -194,7 +193,7 @@ class TestListByAccount:
     """Tests for GitHubAppInstallationRepository.list_by_account."""
 
     @pytest.mark.asyncio
-    async def test_list_by_account_returns_list(self, github_app_setup):
+    async def test_list_by_account_returns_list(self, github_app_setup) -> None:
         """Test listing installations returns a list for the account."""
         repo = github_app_setup["repo"]
         account = github_app_setup["account"]
@@ -207,8 +206,8 @@ class TestListByAccount:
 
     @pytest.mark.asyncio
     async def test_list_by_account_excludes_suspended(
-        self, github_app_repo: GitHubAppInstallationRepository, account_for_github_app
-    ):
+        self, github_app_repo: GitHubAppInstallationRepository, account_for_github_app,
+    ) -> None:
         """Test that list_by_account excludes suspended installations."""
         # Create an active installation
         active = await github_app_repo.create(
@@ -237,7 +236,7 @@ class TestListByAccount:
         assert result[0].id == active.id
 
     @pytest.mark.asyncio
-    async def test_list_by_account_empty_when_none(self, github_app_repo: GitHubAppInstallationRepository):
+    async def test_list_by_account_empty_when_none(self, github_app_repo: GitHubAppInstallationRepository) -> None:
         """Test listing installations for an account with no installations returns empty list."""
         result = await github_app_repo.list_by_account(str(uuid4()))
 
@@ -245,8 +244,8 @@ class TestListByAccount:
 
     @pytest.mark.asyncio
     async def test_list_by_account_multiple_installations(
-        self, github_app_repo: GitHubAppInstallationRepository, account_for_github_app
-    ):
+        self, github_app_repo: GitHubAppInstallationRepository, account_for_github_app,
+    ) -> None:
         """Test listing multiple installations for an account."""
         # Create multiple installations
         expected_installation_ids = set()
@@ -276,7 +275,7 @@ class TestUpdate:
     """Tests for GitHubAppInstallationRepository.update."""
 
     @pytest.mark.asyncio
-    async def test_update_permissions(self, github_app_setup):
+    async def test_update_permissions(self, github_app_setup) -> None:
         """Test updating installation permissions."""
         repo = github_app_setup["repo"]
         installation = github_app_setup["installation"]
@@ -288,7 +287,7 @@ class TestUpdate:
         assert result.permissions == new_permissions
 
     @pytest.mark.asyncio
-    async def test_update_suspend_installation(self, github_app_setup):
+    async def test_update_suspend_installation(self, github_app_setup) -> None:
         """Test suspending an installation."""
         repo = github_app_setup["repo"]
         installation = github_app_setup["installation"]
@@ -300,7 +299,7 @@ class TestUpdate:
         assert isinstance(result.suspended_at, datetime)
 
     @pytest.mark.asyncio
-    async def test_update_unsuspend_installation(self, github_app_setup):
+    async def test_update_unsuspend_installation(self, github_app_setup) -> None:
         """Test unsuspending an installation."""
         repo = github_app_setup["repo"]
         installation = github_app_setup["installation"]
@@ -315,7 +314,7 @@ class TestUpdate:
         assert result.suspended_at is None
 
     @pytest.mark.asyncio
-    async def test_update_not_found(self, github_app_repo: GitHubAppInstallationRepository):
+    async def test_update_not_found(self, github_app_repo: GitHubAppInstallationRepository) -> None:
         """Test updating a non-existent installation returns None."""
         result = await github_app_repo.update(str(uuid4()), permissions={"contents": "read"})
 
@@ -329,7 +328,7 @@ class TestDelete:
     """Tests for GitHubAppInstallationRepository.delete."""
 
     @pytest.mark.asyncio
-    async def test_delete_success(self, github_app_setup):
+    async def test_delete_success(self, github_app_setup) -> None:
         """Test deleting an installation successfully."""
         repo = github_app_setup["repo"]
         installation = github_app_setup["installation"]
@@ -339,7 +338,7 @@ class TestDelete:
         assert result is True
 
     @pytest.mark.asyncio
-    async def test_delete_verify_deleted(self, github_app_setup):
+    async def test_delete_verify_deleted(self, github_app_setup) -> None:
         """Test that deleted installation cannot be retrieved."""
         repo = github_app_setup["repo"]
         installation = github_app_setup["installation"]
@@ -351,7 +350,7 @@ class TestDelete:
         assert fetched is None
 
     @pytest.mark.asyncio
-    async def test_delete_not_found(self, github_app_repo: GitHubAppInstallationRepository):
+    async def test_delete_not_found(self, github_app_repo: GitHubAppInstallationRepository) -> None:
         """Test deleting a non-existent installation returns False."""
         result = await github_app_repo.delete(str(uuid4()))
 

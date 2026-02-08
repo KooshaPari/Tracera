@@ -12,7 +12,7 @@ from tracertm.api import main
 
 
 class _FakeItem:
-    def __init__(self, item_id: str, title: str, view: str = "FEATURE", status: str = "OPEN"):
+    def __init__(self, item_id: str, title: str, view: str = "FEATURE", status: str = "OPEN") -> None:
         self.id = item_id
         self.title = title
         self.view = view
@@ -24,7 +24,7 @@ class _FakeItem:
 
 
 class _FakeLink:
-    def __init__(self, link_id: str, source: str, target: str, link_type: str = "DEPENDS_ON"):
+    def __init__(self, link_id: str, source: str, target: str, link_type: str = "DEPENDS_ON") -> None:
         self.id = link_id
         self.source_item_id = source
         self.target_item_id = target
@@ -34,7 +34,7 @@ class _FakeLink:
 class _FakeItemRepository:
     _seeded_ids = ["item-a", "item-b", "item-c"]
 
-    def __init__(self, _db):
+    def __init__(self, _db) -> None:
         self._items = [
             _FakeItem(self._seeded_ids[0], "Item A"),
             _FakeItem(self._seeded_ids[1], "Item B"),
@@ -49,7 +49,7 @@ class _FakeItemRepository:
 
 
 class _FakeLinkRepository:
-    def __init__(self, _db):
+    def __init__(self, _db) -> None:
         self._links = [
             _FakeLink(str(uuid4()), "source-1", "target-1"),
             _FakeLink(str(uuid4()), "source-2", "target-2"),
@@ -60,7 +60,7 @@ class _FakeLinkRepository:
 
 
 class _FakeImpactService:
-    def __init__(self, _db):
+    def __init__(self, _db) -> None:
         pass
 
     async def analyze_impact(self, item_id: str):
@@ -73,7 +73,7 @@ class _FakeImpactService:
 
 
 class _FakeCycleService:
-    def __init__(self, _db):
+    def __init__(self, _db) -> None:
         pass
 
     async def detect_cycles(self, project_id: str):
@@ -81,7 +81,7 @@ class _FakeCycleService:
 
 
 class _FakeShortestPathService:
-    def __init__(self, _db):
+    def __init__(self, _db) -> None:
         pass
 
     async def find_shortest_path(self, project_id: str, source_id: str, target_id: str):
@@ -96,7 +96,7 @@ def reset_overrides():
 
 
 @pytest.fixture(autouse=True)
-def patch_repositories(monkeypatch):
+def patch_repositories(monkeypatch) -> None:
     monkeypatch.setattr("tracertm.repositories.item_repository.ItemRepository", _FakeItemRepository)
     monkeypatch.setattr("tracertm.repositories.link_repository.LinkRepository", _FakeLinkRepository)
     monkeypatch.setattr("tracertm.services.impact_analysis_service.ImpactAnalysisService", _FakeImpactService)
@@ -116,7 +116,7 @@ async def client():
 
 
 @pytest.mark.asyncio
-async def test_health_check(client: AsyncClient):
+async def test_health_check(client: AsyncClient) -> None:
     response = await client.get("/health")
     assert response.status_code == 200
     payload = response.json()
@@ -125,7 +125,7 @@ async def test_health_check(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_list_items_returns_paginated_subset(client: AsyncClient):
+async def test_list_items_returns_paginated_subset(client: AsyncClient) -> None:
     response = await client.get("/api/v1/items", params={"project_id": "p1", "skip": 1, "limit": 1})
     assert response.status_code == 200
     payload = response.json()
@@ -135,7 +135,7 @@ async def test_list_items_returns_paginated_subset(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_get_item_returns_data(client: AsyncClient):
+async def test_get_item_returns_data(client: AsyncClient) -> None:
     target_id = _FakeItemRepository._seeded_ids[0]
     response = await client.get(f"/api/v1/items/{target_id}")
     assert response.status_code == 200
@@ -146,13 +146,13 @@ async def test_get_item_returns_data(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_get_item_not_found_returns_404(client: AsyncClient):
+async def test_get_item_not_found_returns_404(client: AsyncClient) -> None:
     response = await client.get("/api/v1/items/missing-id")
     assert response.status_code == 404
 
 
 @pytest.mark.asyncio
-async def test_list_links(client: AsyncClient):
+async def test_list_links(client: AsyncClient) -> None:
     response = await client.get("/api/v1/links", params={"project_id": "p1"})
     assert response.status_code == 200
     payload = response.json()
@@ -162,7 +162,7 @@ async def test_list_links(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_get_impact_analysis(client: AsyncClient):
+async def test_get_impact_analysis(client: AsyncClient) -> None:
     response = await client.get("/api/v1/analysis/impact/item-1", params={"project_id": "p1"})
     assert response.status_code == 200
     payload = response.json()
@@ -173,7 +173,7 @@ async def test_get_impact_analysis(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_detect_cycles(client: AsyncClient):
+async def test_detect_cycles(client: AsyncClient) -> None:
     response = await client.get("/api/v1/analysis/cycles/p1")
     assert response.status_code == 200
     payload = response.json()
@@ -184,7 +184,7 @@ async def test_detect_cycles(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_find_shortest_path(client: AsyncClient):
+async def test_find_shortest_path(client: AsyncClient) -> None:
     response = await client.get(
         "/api/v1/analysis/shortest-path",
         params={"project_id": "p1", "source_id": "a", "target_id": "b"},
@@ -198,9 +198,9 @@ async def test_find_shortest_path(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_get_db_raises_when_missing_database_url(monkeypatch):
+async def test_get_db_raises_when_missing_database_url(monkeypatch) -> None:
     monkeypatch.setattr("tracertm.config.manager.ConfigManager.get", lambda self, key: None)
     with pytest.raises(HTTPException) as exc_info:
         await anext(main.get_db())
-    exc = cast(HTTPException, exc_info.value)
+    exc = cast("HTTPException", exc_info.value)
     assert exc.status_code == 500

@@ -1,5 +1,4 @@
-"""
-File watcher for auto-indexing .trace/ changes into SQLite.
+"""File watcher for auto-indexing .trace/ changes into SQLite.
 
 This module provides a file watcher that monitors .trace/ directory changes
 and automatically indexes them into the local SQLite database. It supports
@@ -13,24 +12,25 @@ from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
 from threading import Lock, Timer
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
-from tracertm.storage.local_storage import LocalStorageManager
 from tracertm.storage.markdown_parser import (
     parse_config_yaml,
     parse_item_markdown,
     parse_links_yaml,
 )
 
+if TYPE_CHECKING:
+    from tracertm.storage.local_storage import LocalStorageManager
+
 logger = logging.getLogger(__name__)
 
 
 class TraceFileWatcher:
-    """
-    File watcher for auto-indexing .trace/ directory changes.
+    """File watcher for auto-indexing .trace/ directory changes.
 
     Watches for changes to:
     - .trace/**/*.md - Item markdown files
@@ -50,9 +50,8 @@ class TraceFileWatcher:
         storage: LocalStorageManager,
         debounce_ms: int = 500,
         auto_sync: bool = False,
-    ):
-        """
-        Initialize file watcher.
+    ) -> None:
+        """Initialize file watcher.
 
         Args:
             project_path: Path to project root (containing .trace/)
@@ -67,7 +66,8 @@ class TraceFileWatcher:
         self.auto_sync = auto_sync
 
         if not self.trace_path.exists():
-            raise ValueError(f"No .trace/ directory found at {self.project_path}")
+            msg = f"No .trace/ directory found at {self.project_path}"
+            raise ValueError(msg)
 
         # Debouncing state
         self._debounce_timers: dict[Path, Timer] = {}
@@ -96,7 +96,7 @@ class TraceFileWatcher:
                 project_name = config.get("name", self.project_path.name)
                 description = config.get("description")
             except Exception as e:
-                logger.warning(f"Failed to parse project.yaml: {e}, using defaults")
+                logger.warning("Failed to parse project.yaml: %s, using defaults", e)
                 project_name = self.project_path.name
                 description = None
         else:
@@ -163,8 +163,7 @@ class TraceFileWatcher:
         }
 
     def _debounce_event(self, path: Path, event_type: str) -> None:
-        """
-        Debounce file system events.
+        """Debounce file system events.
 
         Args:
             path: Path to changed file
@@ -187,8 +186,7 @@ class TraceFileWatcher:
             self._events_pending += 1
 
     def _process_event(self, path: Path, event_type: str) -> None:
-        """
-        Process a file system event after debouncing.
+        """Process a file system event after debouncing.
 
         Args:
             path: Path to changed file
@@ -208,7 +206,7 @@ class TraceFileWatcher:
             elif path.name == "project.yaml":
                 self._handle_project_change(path, event_type)
             else:
-                logger.debug(f"Ignoring change to: {path}")
+                logger.debug("Ignoring change to: %s", path)
 
             # Update stats
             self._events_processed += 1
@@ -216,11 +214,10 @@ class TraceFileWatcher:
             self._changes_by_type[event_type] += 1
 
         except Exception as e:
-            logger.error(f"Error processing {event_type} event for {path}: {e}", exc_info=True)
+            logger.error("Error processing %s event for %s: %s", event_type, path, e, exc_info=True)
 
     def _handle_item_change(self, path: Path, event_type: str) -> None:
-        """
-        Handle change to an item markdown file.
+        """Handle change to an item markdown file.
 
         Args:
             path: Path to item .md file
@@ -250,9 +247,9 @@ class TraceFileWatcher:
 
                 if item:
                     self.item_storage.delete_item(item.id)
-                    logger.info(f"Deleted item: {external_id}")
+                    logger.info("Deleted item: %s", external_id)
                 else:
-                    logger.warning(f"Item not found for deletion: {external_id}")
+                    logger.warning("Item not found for deletion: %s", external_id)
             finally:
                 session.close()
 
@@ -261,7 +258,7 @@ class TraceFileWatcher:
             try:
                 item_data = parse_item_markdown(path)
             except Exception as e:
-                logger.error(f"Failed to parse {path}: {e}")
+                logger.exception("Failed to parse %s: %s", path, e)
                 return
 
             # Check if item already exists
@@ -309,8 +306,7 @@ class TraceFileWatcher:
                 session.close()
 
     def _handle_links_change(self, path: Path, event_type: str) -> None:
-        """
-        Handle change to links.yaml file.
+        """Handle change to links.yaml file.
 
         Args:
             path: Path to links.yaml
@@ -326,7 +322,7 @@ class TraceFileWatcher:
         try:
             links = parse_links_yaml(path)
         except Exception as e:
-            logger.error(f"Failed to parse links.yaml: {e}")
+            logger.exception("Failed to parse links.yaml: %s", e)
             return
 
         # Sync links to database
@@ -340,8 +336,7 @@ class TraceFileWatcher:
         # TODO: Implement full link synchronization
 
     def _handle_project_change(self, path: Path, event_type: str) -> None:
-        """
-        Handle change to project.yaml file.
+        """Handle change to project.yaml file.
 
         Args:
             path: Path to project.yaml
@@ -357,7 +352,7 @@ class TraceFileWatcher:
         try:
             config = parse_config_yaml(path)
         except Exception as e:
-            logger.error(f"Failed to parse project.yaml: {e}")
+            logger.exception("Failed to parse project.yaml: %s", e)
             return
 
         # Update project metadata
@@ -370,11 +365,10 @@ class TraceFileWatcher:
             metadata=config,
         )
 
-        logger.info(f"Updated project config: {project_name}")
+        logger.info("Updated project config: %s", project_name)
 
     def _queue_for_sync(self, entity_type: str, entity_id: str, operation: str, payload: dict[str, Any]) -> None:
-        """
-        Queue a change for remote sync.
+        """Queue a change for remote sync.
 
         Args:
             entity_type: Type of entity (project, item, link)
@@ -386,15 +380,14 @@ class TraceFileWatcher:
             return
 
         self.storage.queue_sync(entity_type, entity_id, operation, payload)
-        logger.debug(f"Queued for sync: {entity_type} {entity_id} ({operation})")
+        logger.debug("Queued for sync: %s %s (%s)", entity_type, entity_id, operation)
 
 
 class _TraceEventHandler(FileSystemEventHandler):
     """Internal event handler for watchdog."""
 
-    def __init__(self, watcher: TraceFileWatcher):
-        """
-        Initialize event handler.
+    def __init__(self, watcher: TraceFileWatcher) -> None:
+        """Initialize event handler.
 
         Args:
             watcher: Parent TraceFileWatcher instance
@@ -409,7 +402,7 @@ class _TraceEventHandler(FileSystemEventHandler):
         src_path = event.src_path if isinstance(event.src_path, str) else event.src_path.decode("utf-8")
         path = Path(src_path)
         if self._should_process(path):
-            logger.debug(f"File created: {path}")
+            logger.debug("File created: %s", path)
             self.watcher._debounce_event(path, "created")
 
     def on_modified(self, event: FileSystemEvent) -> None:
@@ -420,7 +413,7 @@ class _TraceEventHandler(FileSystemEventHandler):
         src_path = event.src_path if isinstance(event.src_path, str) else event.src_path.decode("utf-8")
         path = Path(src_path)
         if self._should_process(path):
-            logger.debug(f"File modified: {path}")
+            logger.debug("File modified: %s", path)
             self.watcher._debounce_event(path, "modified")
 
     def on_deleted(self, event: FileSystemEvent) -> None:
@@ -431,12 +424,11 @@ class _TraceEventHandler(FileSystemEventHandler):
         src_path = event.src_path if isinstance(event.src_path, str) else event.src_path.decode("utf-8")
         path = Path(src_path)
         if self._should_process(path):
-            logger.debug(f"File deleted: {path}")
+            logger.debug("File deleted: %s", path)
             self.watcher._debounce_event(path, "deleted")
 
     def _should_process(self, path: Path) -> bool:
-        """
-        Determine if a file should be processed.
+        """Determine if a file should be processed.
 
         Args:
             path: Path to file

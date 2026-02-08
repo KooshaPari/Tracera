@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,8 +19,8 @@ router = APIRouter(prefix="/adrs", tags=["ADRs"])
 @router.post("/", response_model=ADRResponse, status_code=201)
 async def create_adr(
     adr: ADRCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     service = ADRService(db)
     return await service.create_adr(
@@ -41,8 +41,8 @@ async def create_adr(
 @router.get("/{adr_id}", response_model=ADRResponse)
 async def get_adr(
     adr_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     service = ADRService(db)
     adr = await service.get_adr(adr_id)
@@ -54,7 +54,7 @@ async def get_adr(
 @router.get("/{adr_id}/activities", response_model=ADRActivityListResponse)
 async def get_adr_activities(
     adr_id: str,
-    limit: int = Query(100, description="Max activities to return"),
+    limit: Annotated[int, Query(description="Max activities to return")] = 100,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -82,8 +82,8 @@ async def get_adr_activities(
 async def update_adr(
     adr_id: str,
     updates: ADRUpdate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     service = ADRService(db)
     # Filter out None values
@@ -97,9 +97,9 @@ async def update_adr(
 @router.delete("/{adr_id}", status_code=204)
 async def delete_adr(
     adr_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     service = ADRService(db)
     success = await service.delete_adr(adr_id)
     if not success:
@@ -108,8 +108,8 @@ async def delete_adr(
 
 @router.get("/", response_model=list[ADRResponse])
 async def list_adrs(
-    project_id: str = Query(..., description="Project ID"),
-    status: str | None = Query(None, description="Filter by status"),
+    project_id: Annotated[str, Query(description="Project ID")],
+    status: Annotated[str | None, Query(description="Filter by status")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):

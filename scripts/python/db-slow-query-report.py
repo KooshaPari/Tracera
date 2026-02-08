@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Database Slow Query Report Generator
+"""Database Slow Query Report Generator.
 
 Connects to PostgreSQL database, analyzes slow queries using pg_stat_statements,
 runs EXPLAIN ANALYZE on top queries, and generates a markdown report.
@@ -22,25 +21,22 @@ try:
     import psycopg2
     from psycopg2.extras import RealDictCursor
 except ImportError:
-    print("Error: psycopg2 not installed. Install with: pip install psycopg2-binary")
     sys.exit(1)
 
 
 class SlowQueryAnalyzer:
-    def __init__(self, database_url: str):
+    def __init__(self, database_url: str) -> None:
         self.database_url = database_url
         self.conn = None
 
-    def connect(self):
+    def connect(self) -> None:
         """Connect to database."""
         try:
             self.conn = psycopg2.connect(self.database_url)
-            print("✓ Connected to database")
-        except Exception as e:
-            print(f"✗ Failed to connect to database: {e}")
+        except Exception:
             sys.exit(1)
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         """Disconnect from database."""
         if self.conn:
             self.conn.close()
@@ -68,10 +64,8 @@ class SlowQueryAnalyzer:
             with self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
                 cursor.execute(query, (limit,))
                 results = cursor.fetchall()
-                print(f"✓ Found {len(results)} slow queries")
                 return [dict(row) for row in results]
-        except Exception as e:
-            print(f"✗ Failed to fetch slow queries: {e}")
+        except Exception:
             return []
 
     def explain_query(self, query: str) -> dict[str, Any]:
@@ -83,8 +77,7 @@ class SlowQueryAnalyzer:
                 cursor.execute(explain_query)
                 result = cursor.fetchone()[0]
                 return result[0] if result else {}
-        except Exception as e:
-            print(f"  Warning: Failed to EXPLAIN query: {e}")
+        except Exception:
             return {}
 
     def analyze_query(self, query_data: dict[str, Any]) -> dict[str, Any]:
@@ -113,7 +106,7 @@ class SlowQueryAnalyzer:
         # Generate suggestions
         if mean_time > 100:
             analysis["suggestions"].append(
-                f"⚠️  Very slow query ({mean_time:.2f}ms avg) - immediate optimization needed"
+                f"⚠️  Very slow query ({mean_time:.2f}ms avg) - immediate optimization needed",
             )
 
         if calls > 1000 and mean_time > 10:
@@ -131,7 +124,6 @@ class SlowQueryAnalyzer:
             analysis["suggestions"].append("💡 Consider adding LIMIT to reduce result set")
 
         # Run EXPLAIN ANALYZE
-        print(f"  Analyzing query (mean: {mean_time:.2f}ms, calls: {calls:,})...")
         explain_result = self.explain_query(query)
 
         if explain_result:
@@ -140,7 +132,7 @@ class SlowQueryAnalyzer:
 
         return analysis
 
-    def _analyze_explain_plan(self, plan: dict[str, Any], analysis: dict[str, Any]):
+    def _analyze_explain_plan(self, plan: dict[str, Any], analysis: dict[str, Any]) -> None:
         """Analyze EXPLAIN plan and add suggestions."""
         plan_text = json.dumps(plan, indent=2).lower()
 
@@ -302,12 +294,8 @@ WHERE datname = current_database();
 
         return md
 
-    def run_analysis(self, limit: int = 20, output_file: str | None = None):
+    def run_analysis(self, limit: int = 20, output_file: str | None = None) -> None:
         """Run full analysis and generate report."""
-        print("\n" + "=" * 60)
-        print("DATABASE SLOW QUERY ANALYSIS")
-        print("=" * 60 + "\n")
-
         self.connect()
 
         try:
@@ -315,43 +303,32 @@ WHERE datname = current_database();
             slow_queries = self.get_slow_queries(limit)
 
             if not slow_queries:
-                print("✓ No slow queries found!")
                 return
 
             # Analyze each query
             analyses = []
-            for i, query_data in enumerate(slow_queries, 1):
-                print(f"\n[{i}/{len(slow_queries)}] Analyzing query...")
+            for query_data in slow_queries:
                 analysis = self.analyze_query(query_data)
                 analyses.append(analysis)
 
             # Generate report
-            print("\n✓ Generating report...")
             report = self.generate_markdown_report(analyses)
 
             # Save to file
             if output_file:
-                with pathlib.Path(output_file).open("w") as f:
-                    f.write(report)
-                print(f"✓ Report saved to: {output_file}")
+                pathlib.Path(output_file).write_text(report, encoding="utf-8")
             else:
                 # Default location
                 report_date = datetime.now().strftime("%Y-%m-%d")
                 output_file = f"docs/reports/db-slow-query-report-{report_date}.md"
-                pathlib.Path(os.path.dirname(output_file)).mkdir(exist_ok=True, parents=True)
-                with pathlib.Path(output_file).open("w") as f:
-                    f.write(report)
-                print(f"✓ Report saved to: {output_file}")
-
-            print("\n" + "=" * 60)
-            print("ANALYSIS COMPLETE")
-            print("=" * 60 + "\n")
+                pathlib.Path(pathlib.Path(output_file).parent).mkdir(exist_ok=True, parents=True)
+                pathlib.Path(output_file).write_text(report, encoding="utf-8")
 
         finally:
             self.disconnect()
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Generate database slow query analysis report")
     parser.add_argument(
         "--database-url",
@@ -364,7 +341,6 @@ def main():
     args = parser.parse_args()
 
     if not args.database_url:
-        print("Error: --database-url required or set DATABASE_URL environment variable")
         sys.exit(1)
 
     analyzer = SlowQueryAnalyzer(args.database_url)

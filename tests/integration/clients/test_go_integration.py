@@ -58,7 +58,7 @@ async def mock_go_server(aiohttp_server, aiohttp_client):
 
 
 @pytest.mark.asyncio
-async def test_go_client_health_check(mock_go_server):
+async def test_go_client_health_check(mock_go_server) -> None:
     """Test health check endpoint."""
     base_url = f"http://{mock_go_server.host}:{mock_go_server.port}"
     async with GoBackendClient(base_url) as client:
@@ -68,7 +68,7 @@ async def test_go_client_health_check(mock_go_server):
 
 
 @pytest.mark.asyncio
-async def test_go_client_get_item(mock_go_server):
+async def test_go_client_get_item(mock_go_server) -> None:
     """Test getting an item by ID."""
     base_url = f"http://{mock_go_server.host}:{mock_go_server.port}"
     async with GoBackendClient(base_url) as client:
@@ -79,7 +79,7 @@ async def test_go_client_get_item(mock_go_server):
 
 
 @pytest.mark.asyncio
-async def test_go_client_create_link(mock_go_server):
+async def test_go_client_create_link(mock_go_server) -> None:
     """Test creating a link between items."""
     base_url = f"http://{mock_go_server.host}:{mock_go_server.port}"
     async with GoBackendClient(base_url) as client:
@@ -97,7 +97,7 @@ async def test_go_client_create_link(mock_go_server):
 
 
 @pytest.mark.asyncio
-async def test_go_client_search_items(mock_go_server):
+async def test_go_client_search_items(mock_go_server) -> None:
     """Test searching for items."""
     base_url = f"http://{mock_go_server.host}:{mock_go_server.port}"
     async with GoBackendClient(base_url) as client:
@@ -108,7 +108,7 @@ async def test_go_client_search_items(mock_go_server):
 
 
 @pytest.mark.asyncio
-async def test_go_client_retry_logic(mock_go_server):
+async def test_go_client_retry_logic(mock_go_server) -> None:
     """Test that client retries on network errors."""
     base_url = f"http://{mock_go_server.host}:{mock_go_server.port}"
     async with GoBackendClient(base_url) as client:
@@ -119,7 +119,7 @@ async def test_go_client_retry_logic(mock_go_server):
 
 
 @pytest.mark.asyncio
-async def test_go_client_connection_pooling():
+async def test_go_client_connection_pooling() -> None:
     """Test that connection pooling works correctly."""
     with patch("httpx.AsyncClient") as mock_client_class:
         mock_client = AsyncMock()
@@ -136,7 +136,7 @@ async def test_go_client_connection_pooling():
 
 
 @pytest.mark.asyncio
-async def test_go_client_service_token_injection():
+async def test_go_client_service_token_injection() -> None:
     """Test that service token is properly injected."""
     with patch("httpx.AsyncClient") as mock_client_class:
         mock_client = AsyncMock()
@@ -155,7 +155,7 @@ async def test_go_client_service_token_injection():
 
 
 @pytest.mark.asyncio
-async def test_go_client_error_handling():
+async def test_go_client_error_handling() -> None:
     """Test error handling for various HTTP errors."""
     with patch("httpx.AsyncClient") as mock_client_class:
         mock_client = AsyncMock()
@@ -166,7 +166,7 @@ async def test_go_client_error_handling():
         mock_response.status_code = 404
         mock_response.text = "Not Found"
         mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-            "404", request=AsyncMock(), response=mock_response
+            "404", request=AsyncMock(), response=mock_response,
         )
         mock_client.request.return_value = mock_response
 
@@ -177,7 +177,7 @@ async def test_go_client_error_handling():
 
 
 @pytest.mark.asyncio
-async def test_go_client_timeout():
+async def test_go_client_timeout() -> None:
     """Test request timeout behavior."""
     with patch("httpx.AsyncClient") as mock_client_class:
         mock_client = AsyncMock()
@@ -193,7 +193,7 @@ async def test_go_client_timeout():
 
 
 @pytest.mark.asyncio
-async def test_go_client_context_manager():
+async def test_go_client_context_manager() -> None:
     """Test async context manager properly closes client."""
     with patch("httpx.AsyncClient") as mock_client_class:
         mock_client = AsyncMock()
@@ -205,7 +205,7 @@ async def test_go_client_context_manager():
         mock_client.aclose.assert_called_once()
 
 
-def test_generate_cache_key():
+def test_generate_cache_key() -> None:
     """Test cache key generation."""
     key1 = generate_cache_key("prefix", "GET", "/path", {"foo": "bar"})
     key2 = generate_cache_key("prefix", "GET", "/path", {"foo": "bar"})
@@ -217,7 +217,7 @@ def test_generate_cache_key():
 
 
 @pytest.mark.asyncio
-async def test_go_client_concurrent_requests():
+async def test_go_client_concurrent_requests() -> None:
     """Test handling of concurrent requests."""
     with patch("httpx.AsyncClient") as mock_client_class:
         mock_client = AsyncMock()
@@ -238,7 +238,7 @@ async def test_go_client_concurrent_requests():
 
 
 @pytest.mark.asyncio
-async def test_go_client_update_item(mock_go_server):
+async def test_go_client_update_item(mock_go_server) -> None:
     """Test updating an item."""
 
     async def update_handler(request):
@@ -264,7 +264,7 @@ async def test_go_client_update_item(mock_go_server):
 
 
 @pytest.mark.asyncio
-async def test_go_client_delete_item(mock_go_server):
+async def test_go_client_delete_item(mock_go_server) -> None:
     """Test deleting an item."""
 
     async def delete_handler(request):

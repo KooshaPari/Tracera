@@ -13,14 +13,16 @@ import logging
 import secrets
 import time
 import uuid
-from typing import Any
+from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.services.workos_auth_service import WorkOSAuthService, get_user
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -180,7 +182,7 @@ async def request_device_code(
 @router.post("/device/token", response_model=TokenResponse)
 async def exchange_device_code(
     request: TokenRequest,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
 ) -> TokenResponse:
     """Exchange device code for access token.
 
@@ -242,7 +244,7 @@ async def exchange_device_code(
     # Clean up flow
     _DEVICE_FLOWS.pop(device_code, None)
 
-    logger.info(f"Device flow completed for user {user_id}")
+    logger.info("Device flow completed for user %s", user_id)
 
     return TokenResponse(
         access_token=access_token,
@@ -292,7 +294,7 @@ async def complete_device_authorization(
         workos_service = _get_workos_service()
         result = workos_service.authenticate_with_code(request.code)
     except Exception as e:
-        logger.error(f"Device flow authorization failed: {e}")
+        logger.exception("Device flow authorization failed: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Authentication failed: {e!s}",
@@ -310,7 +312,7 @@ async def complete_device_authorization(
                 "email": claims.get("email"),
             }
         except Exception as e:
-            logger.warning(f"Failed to verify access token: {e}")
+            logger.warning("Failed to verify access token: %s", e)
 
     # Update the device flow with authorization
     _DEVICE_FLOWS[found_device_code]["status"] = "authorized"
@@ -327,8 +329,8 @@ async def complete_device_authorization(
 
 @router.get("/me", response_model=MeResponse)
 async def get_current_user(
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ) -> MeResponse:
     """Get current authenticated user from WorkOS.
 
@@ -385,14 +387,14 @@ async def get_current_user(
         raise
     except ValueError as e:
         # API key or configuration error
-        logger.error(f"WorkOS configuration error: {e}")
+        logger.exception("WorkOS configuration error: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Authentication service not configured",
         ) from e
     except Exception as e:
         # WorkOS API error or user not found
-        logger.error(f"Failed to fetch user {user_id} from WorkOS: {e}")
+        logger.exception("Failed to fetch user %s from WorkOS: %s", user_id, e)
 
         # Check if it's a 404 (user not found)
         if "404" in str(e) or "not found" in str(e).lower():
@@ -411,7 +413,7 @@ async def get_current_user(
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_access_token(
     request: RefreshTokenRequest,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
 ) -> TokenResponse:
     """Refresh an access token using refresh token.
 
@@ -453,7 +455,7 @@ async def refresh_access_token(
 @router.post("/revoke")
 async def revoke_token(
     request: RevokeTokenRequest,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
     """Revoke an access or refresh token.
 
@@ -473,8 +475,8 @@ async def revoke_token(
 @router.post("/logout", response_model=LogoutResponse)
 async def logout(
     response: Response,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ) -> LogoutResponse:
     """Log out current user.
 
@@ -508,7 +510,7 @@ async def logout(
     # if token_jti:
     #     await add_to_token_blocklist(db, token_jti, claims.get("exp"))
 
-    logger.info(f"User {user_id} logged out successfully")
+    logger.info("User %s logged out successfully", user_id)
 
     return LogoutResponse(success=True, message=None)
 

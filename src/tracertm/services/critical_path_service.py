@@ -23,7 +23,7 @@ class CriticalPathResult:
 class CriticalPathService:
     """Service for calculating critical path in project networks."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)
@@ -33,8 +33,7 @@ class CriticalPathService:
         project_id: str,
         link_types: list[str] | None = None,
     ) -> CriticalPathResult:
-        """
-        Calculate critical path using topological sort and dynamic programming.
+        """Calculate critical path using topological sort and dynamic programming.
 
         Args:
             project_id: Project ID
@@ -137,8 +136,7 @@ class CriticalPathService:
         critical_items: set[str],
         topo_order: list[str],
     ) -> list[str]:
-        """
-        Find the critical path from start to end nodes.
+        """Find the critical path from start to end nodes.
 
         Complexity: O(V + E)
         """

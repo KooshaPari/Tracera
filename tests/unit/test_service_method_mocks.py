@@ -1,4 +1,4 @@
-"""Phase 6: Service Method Coverage
+"""Phase 6: Service Method Coverage.
 
 Direct testing of actual service methods:
 - Impact analysis service methods
@@ -14,7 +14,7 @@ class TestImpactAnalysisServiceMethods:
     """Test impact analysis service actual methods."""
 
     @patch("tracertm.services.impact_analysis_service.ImpactAnalysisService")
-    def test_service_get_impacted_items(self, mock_service_class):
+    def test_service_get_impacted_items(self, mock_service_class) -> None:
         """Test get_impacted_items method."""
         mock_service = Mock()
         mock_service.get_impacted_items = Mock(return_value=[2, 3])
@@ -24,7 +24,7 @@ class TestImpactAnalysisServiceMethods:
         assert all(isinstance(x, int) for x in result)
 
     @patch("tracertm.services.impact_analysis_service.ImpactAnalysisService")
-    def test_service_calculate_impact_score(self, mock_service_class):
+    def test_service_calculate_impact_score(self, mock_service_class) -> None:
         """Test calculate_impact_score method."""
         mock_service = Mock()
         mock_service.calculate_impact_score = Mock(return_value=0.75)
@@ -33,7 +33,7 @@ class TestImpactAnalysisServiceMethods:
         assert 0 <= result <= 1
 
     @patch("tracertm.services.impact_analysis_service.ImpactAnalysisService")
-    def test_service_analyze_impact(self, mock_service_class):
+    def test_service_analyze_impact(self, mock_service_class) -> None:
         """Test analyze_impact method."""
         mock_service = Mock()
         mock_service.analyze_impact = Mock(return_value={"item_id": 1, "impacted_items": [2, 3], "score": 0.75})
@@ -43,7 +43,7 @@ class TestImpactAnalysisServiceMethods:
         assert "impacted_items" in result
 
     @patch("tracertm.services.impact_analysis_service.ImpactAnalysisService")
-    def test_service_get_upstream_impacts(self, mock_service_class):
+    def test_service_get_upstream_impacts(self, mock_service_class) -> None:
         """Test get_upstream_impacts method."""
         mock_service = Mock()
         mock_service.get_upstream_impacts = Mock(return_value=[0, -1])
@@ -52,7 +52,7 @@ class TestImpactAnalysisServiceMethods:
         assert isinstance(result, list)
 
     @patch("tracertm.services.impact_analysis_service.ImpactAnalysisService")
-    def test_service_get_downstream_impacts(self, mock_service_class):
+    def test_service_get_downstream_impacts(self, mock_service_class) -> None:
         """Test get_downstream_impacts method."""
         mock_service = Mock()
         mock_service.get_downstream_impacts = Mock(return_value=[2, 3, 4])
@@ -65,7 +65,7 @@ class TestShortestPathServiceMethods:
     """Test shortest path service actual methods."""
 
     @patch("tracertm.services.shortest_path_service.ShortestPathService")
-    def test_service_find_shortest_path(self, mock_service_class):
+    def test_service_find_shortest_path(self, mock_service_class) -> None:
         """Test find_shortest_path method."""
         mock_service = Mock()
         mock_service.find_shortest_path = Mock(return_value=[1, 2, 3])
@@ -75,7 +75,7 @@ class TestShortestPathServiceMethods:
         assert result[0] == 1 or result is None
 
     @patch("tracertm.services.shortest_path_service.ShortestPathService")
-    def test_service_find_all_paths(self, mock_service_class):
+    def test_service_find_all_paths(self, mock_service_class) -> None:
         """Test find_all_paths method."""
         mock_service = Mock()
         mock_service.find_all_paths = Mock(return_value=[[1, 2, 4], [1, 3, 4]])
@@ -84,7 +84,7 @@ class TestShortestPathServiceMethods:
         assert isinstance(result, list)
 
     @patch("tracertm.services.shortest_path_service.ShortestPathService")
-    def test_service_has_path(self, mock_service_class):
+    def test_service_has_path(self, mock_service_class) -> None:
         """Test has_path method."""
         mock_service = Mock()
         mock_service.has_path = Mock(return_value=True)
@@ -93,7 +93,7 @@ class TestShortestPathServiceMethods:
         assert isinstance(result, bool)
 
     @patch("tracertm.services.shortest_path_service.ShortestPathService")
-    def test_service_get_path_weight(self, mock_service_class):
+    def test_service_get_path_weight(self, mock_service_class) -> None:
         """Test get_path_weight method."""
         mock_service = Mock()
         mock_service.get_path_weight = Mock(return_value=5)
@@ -102,7 +102,7 @@ class TestShortestPathServiceMethods:
         assert isinstance(result, (int, float))
 
     @patch("tracertm.services.shortest_path_service.ShortestPathService")
-    def test_service_find_k_shortest_paths(self, mock_service_class):
+    def test_service_find_k_shortest_paths(self, mock_service_class) -> None:
         """Test find_k_shortest_paths method."""
         mock_service = Mock()
         mock_service.find_k_shortest_paths = Mock(return_value=[[1, 2], [1, 3]])
@@ -115,7 +115,7 @@ class TestCacheServiceMethods:
     """Test cache service actual methods."""
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_set_and_get(self, mock_service_class):
+    def test_cache_set_and_get(self, mock_service_class) -> None:
         """Test cache set and get."""
         mock_cache = Mock()
         mock_cache.set = Mock()
@@ -127,7 +127,7 @@ class TestCacheServiceMethods:
         assert result == "value"
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_delete(self, mock_service_class):
+    def test_cache_delete(self, mock_service_class) -> None:
         """Test cache delete."""
         mock_cache = Mock()
         mock_cache.delete = Mock(return_value=True)
@@ -136,7 +136,7 @@ class TestCacheServiceMethods:
         assert result
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_clear(self, mock_service_class):
+    def test_cache_clear(self, mock_service_class) -> None:
         """Test cache clear."""
         mock_cache = Mock()
         mock_cache.clear = Mock()
@@ -145,7 +145,7 @@ class TestCacheServiceMethods:
         mock_cache.clear.assert_called_once()
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_exists(self, mock_service_class):
+    def test_cache_exists(self, mock_service_class) -> None:
         """Test cache key exists."""
         mock_cache = Mock()
         mock_cache.exists = Mock(return_value=True)
@@ -154,7 +154,7 @@ class TestCacheServiceMethods:
         assert isinstance(result, bool)
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_expire(self, mock_service_class):
+    def test_cache_expire(self, mock_service_class) -> None:
         """Test cache expiration."""
         mock_cache = Mock()
         mock_cache.expire = Mock(return_value=True)
@@ -163,7 +163,7 @@ class TestCacheServiceMethods:
         assert isinstance(result, bool)
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_increment(self, mock_service_class):
+    def test_cache_increment(self, mock_service_class) -> None:
         """Test cache increment."""
         mock_cache = Mock()
         mock_cache.increment = Mock(return_value=2)
@@ -172,7 +172,7 @@ class TestCacheServiceMethods:
         assert isinstance(result, int)
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_decrement(self, mock_service_class):
+    def test_cache_decrement(self, mock_service_class) -> None:
         """Test cache decrement."""
         mock_cache = Mock()
         mock_cache.decrement = Mock(return_value=0)
@@ -181,7 +181,7 @@ class TestCacheServiceMethods:
         assert isinstance(result, int)
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_mget(self, mock_service_class):
+    def test_cache_mget(self, mock_service_class) -> None:
         """Test cache mget (get multiple)."""
         mock_cache = Mock()
         mock_cache.mget = Mock(return_value=["v1", "v2"])
@@ -190,7 +190,7 @@ class TestCacheServiceMethods:
         assert isinstance(result, list)
 
     @patch("tracertm.services.cache_service.CacheService")
-    def test_cache_mset(self, mock_service_class):
+    def test_cache_mset(self, mock_service_class) -> None:
         """Test cache mset (set multiple)."""
         mock_cache = Mock()
         mock_cache.mset = Mock()
@@ -203,7 +203,7 @@ class TestItemServiceMethods:
     """Test item service methods with DB."""
 
     @patch("tracertm.services.item_service.ItemService")
-    def test_item_service_create(self, mock_service_class):
+    def test_item_service_create(self, mock_service_class) -> None:
         """Test create item."""
         mock_service = Mock()
         mock_service.create = Mock(return_value={"id": 1, "name": "Item"})
@@ -212,7 +212,7 @@ class TestItemServiceMethods:
         assert result["id"] == 1
 
     @patch("tracertm.services.item_service.ItemService")
-    def test_item_service_get(self, mock_service_class):
+    def test_item_service_get(self, mock_service_class) -> None:
         """Test get item."""
         mock_service = Mock()
         mock_service.get = Mock(return_value={"id": 1, "name": "Item"})
@@ -221,7 +221,7 @@ class TestItemServiceMethods:
         assert result["id"] == 1
 
     @patch("tracertm.services.item_service.ItemService")
-    def test_item_service_update(self, mock_service_class):
+    def test_item_service_update(self, mock_service_class) -> None:
         """Test update item."""
         mock_service = Mock()
         mock_service.update = Mock(return_value={"id": 1, "name": "Updated"})
@@ -230,7 +230,7 @@ class TestItemServiceMethods:
         assert result["name"] == "Updated"
 
     @patch("tracertm.services.item_service.ItemService")
-    def test_item_service_delete(self, mock_service_class):
+    def test_item_service_delete(self, mock_service_class) -> None:
         """Test delete item."""
         mock_service = Mock()
         mock_service.delete = Mock(return_value=True)
@@ -239,7 +239,7 @@ class TestItemServiceMethods:
         assert result
 
     @patch("tracertm.services.item_service.ItemService")
-    def test_item_service_list(self, mock_service_class):
+    def test_item_service_list(self, mock_service_class) -> None:
         """Test list items."""
         mock_service = Mock()
         mock_service.list = Mock(return_value=[{"id": 1}, {"id": 2}])
@@ -251,7 +251,7 @@ class TestItemServiceMethods:
 class TestLinkServiceMethods:
     """Test link service methods."""
 
-    def test_link_service_create(self):
+    def test_link_service_create(self) -> None:
         """Test create link."""
         mock_service = Mock()
         mock_service.create = Mock(return_value={"id": 1, "source_id": 1, "target_id": 2})
@@ -260,7 +260,7 @@ class TestLinkServiceMethods:
         assert result is not None
         assert "source_id" in result
 
-    def test_link_service_get_by_items(self):
+    def test_link_service_get_by_items(self) -> None:
         """Test get links between items."""
         mock_service = Mock()
         mock_service.get_by_items = Mock(return_value=[{"id": 1}])
@@ -268,7 +268,7 @@ class TestLinkServiceMethods:
         result = mock_service.get_by_items(source_id=1, target_id=2)
         assert isinstance(result, list)
 
-    def test_link_service_delete(self):
+    def test_link_service_delete(self) -> None:
         """Test delete link."""
         mock_service = Mock()
         mock_service.delete = Mock(return_value=True)
@@ -280,7 +280,7 @@ class TestLinkServiceMethods:
 class TestProjectServiceMethods:
     """Test project service methods."""
 
-    def test_project_service_create(self):
+    def test_project_service_create(self) -> None:
         """Test create project."""
         mock_service = Mock()
         mock_service.create = Mock(return_value={"id": "p1", "name": "Project"})
@@ -288,7 +288,7 @@ class TestProjectServiceMethods:
         result = mock_service.create(name="Project")
         assert "id" in result
 
-    def test_project_service_switch(self):
+    def test_project_service_switch(self) -> None:
         """Test switch project."""
         mock_service = Mock()
         mock_service.switch = Mock(return_value=True)
@@ -296,7 +296,7 @@ class TestProjectServiceMethods:
         result = mock_service.switch(project_id="p1")
         assert result is True or result is not None
 
-    def test_project_service_get_current(self):
+    def test_project_service_get_current(self) -> None:
         """Test get current project."""
         mock_service = Mock()
         mock_service.get_current = Mock(return_value={"id": "p1"})
@@ -309,7 +309,7 @@ class TestApiWebhooksServiceMethods:
     """Test API webhooks service methods."""
 
     @patch("tracertm.services.api_webhooks_service.APIWebhooksService")
-    def test_register_webhook(self, mock_service_class):
+    def test_register_webhook(self, mock_service_class) -> None:
         """Test webhook registration."""
         mock_service = Mock()
         mock_service.register = Mock(return_value={"id": "123", "url": "http://example.com"})
@@ -318,7 +318,7 @@ class TestApiWebhooksServiceMethods:
         assert "id" in result
 
     @patch("tracertm.services.api_webhooks_service.APIWebhooksService")
-    def test_trigger_webhook(self, mock_service_class):
+    def test_trigger_webhook(self, mock_service_class) -> None:
         """Test trigger webhook."""
         mock_service = Mock()
         mock_service.trigger = Mock(return_value=True)
@@ -327,7 +327,7 @@ class TestApiWebhooksServiceMethods:
         assert isinstance(result, bool)
 
     @patch("tracertm.services.api_webhooks_service.APIWebhooksService")
-    def test_delete_webhook(self, mock_service_class):
+    def test_delete_webhook(self, mock_service_class) -> None:
         """Test delete webhook."""
         mock_service = Mock()
         mock_service.delete = Mock(return_value=True)
@@ -339,7 +339,7 @@ class TestApiWebhooksServiceMethods:
 class TestServiceErrorHandling:
     """Test service error handling."""
 
-    def test_handle_item_not_found(self):
+    def test_handle_item_not_found(self) -> None:
         """Test handling item not found."""
         mock_service = Mock()
         mock_service.get = Mock(return_value=None)
@@ -347,7 +347,7 @@ class TestServiceErrorHandling:
         result = mock_service.get(999)
         assert result is None
 
-    def test_handle_invalid_link(self):
+    def test_handle_invalid_link(self) -> None:
         """Test handling invalid link."""
         mock_service = Mock()
         # Test that invalid links return None or False instead
@@ -356,7 +356,7 @@ class TestServiceErrorHandling:
         result = mock_service.create(source_id=1, target_id=1)
         assert result is None or not result
 
-    def test_handle_cache_miss(self):
+    def test_handle_cache_miss(self) -> None:
         """Test cache miss handling."""
         mock_cache = Mock()
         mock_cache.get = Mock(return_value=None)
@@ -368,7 +368,7 @@ class TestServiceErrorHandling:
 class TestServiceIntegration:
     """Test service integration scenarios."""
 
-    def test_create_item_and_link(self):
+    def test_create_item_and_link(self) -> None:
         """Test creating item and linking."""
         mock_item = Mock()
         mock_item.create = Mock(side_effect=[{"id": 1}, {"id": 2}])
@@ -383,7 +383,7 @@ class TestServiceIntegration:
         assert link is not None
         assert "source_id" in link
 
-    def test_cache_with_service(self):
+    def test_cache_with_service(self) -> None:
         """Test caching with service."""
         mock_cache = Mock()
         mock_cache.get = Mock(return_value={"id": 1})

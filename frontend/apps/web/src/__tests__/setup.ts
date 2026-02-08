@@ -330,29 +330,29 @@ import { waitFor } from '@testing-library/react';
 // See: CRITICAL_BLOCKER_MSW_GRAPHQL.md
 // TODO: Re-enable after fixing graphql import or replacing MSW
 // Start MSW server before all tests
-// beforeAll(() => {
-//   try {
-//     const server = getServer();
-//     server.listen();
+// BeforeAll(() => {
+//   Try {
+//     Const server = getServer();
+//     Server.listen();
 //   } catch (error) {
-//     console.warn('MSW server initialization failed:', error);
+//     Console.warn('MSW server initialization failed:', error);
 //     // Continue anyway - tests that don't need HTTP mocking will still work
 //   }
 // });
 // Stop MSW server after all tests
-// afterAll(() => {
-//   try {
-//     const server = getServer();
-//     server.close();
+// AfterAll(() => {
+//   Try {
+//     Const server = getServer();
+//     Server.close();
 //   } catch (error) {
 //     // Ignore cleanup errors
 //   }
 // });
 // Reset handlers after each test
-// afterEach(() => {
-//   try {
-//     const server = getServer();
-//     server.resetHandlers();
+// AfterEach(() => {
+//   Try {
+//     Const server = getServer();
+//     Server.resetHandlers();
 //   } catch (error) {
 //     // Ignore reset errors
 //   }
@@ -404,9 +404,9 @@ export const waitForElementWithText = async (
   let element: HTMLElement | null = null;
   await waitFor(
     () => {
-      element = Array.from(container.querySelectorAll('*')).find((el) =>
-        el.textContent?.includes(text),
-      ) as HTMLElement | undefined;
+      element = [...container.querySelectorAll('*')].find((el) => el.textContent?.includes(text)) as
+        | HTMLElement
+        | undefined;
       if (!element) {
         throw new Error(`Element with text "${text}" not found`);
       }

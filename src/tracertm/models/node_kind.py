@@ -1,6 +1,4 @@
-"""
-NodeKind model for TraceRTM.
-"""
+"""NodeKind model for TraceRTM."""
 
 import uuid
 
@@ -18,8 +16,7 @@ def generate_node_kind_uuid() -> str:
 
 
 class NodeKind(Base, TimestampMixin):
-    """
-    Node kind catalog for items.
+    """Node kind catalog for items.
 
     Kinds describe the semantic type (feature, screen, api_endpoint, etc.).
     """

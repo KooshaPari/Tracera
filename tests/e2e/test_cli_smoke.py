@@ -17,7 +17,7 @@ class TestCliSmoke:
     @patch("tracertm.cli.commands.config.ConfigManager")
     @patch("tracertm.cli.commands.project.DatabaseConnection")
     @patch("tracertm.database.connection.DatabaseConnection")
-    def test_config_project_db_status(self, mock_db_class, mock_project_db, mock_config_class):
+    def test_config_project_db_status(self, mock_db_class, mock_project_db, mock_config_class) -> None:
         mock_config = MagicMock()
         mock_config.get.return_value = "sqlite:///smoke.db"
         mock_config.config_path = Path("/tmp/test_config.json")
@@ -31,7 +31,7 @@ class TestCliSmoke:
 
         result1 = runner.invoke(app, ["config", "init", "--database-url", "sqlite:///smoke.db"], catch_exceptions=False)
         result2 = runner.invoke(
-            app, ["project", "init", "Smoke Project", "--description", "Smoke"], catch_exceptions=False
+            app, ["project", "init", "Smoke Project", "--description", "Smoke"], catch_exceptions=False,
         )
         result3 = runner.invoke(app, ["db", "status"], catch_exceptions=False)
 

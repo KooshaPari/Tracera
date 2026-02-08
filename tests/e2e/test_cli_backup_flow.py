@@ -11,7 +11,7 @@ runner = CliRunner()
 
 
 @pytest.mark.e2e
-def test_backup_restore_success(tmp_path):
+def test_backup_restore_success(tmp_path) -> None:
     backup_path = tmp_path / "backup.json"
     with (
         patch("tracertm.cli.commands.backup.ConfigManager") as cfg,
@@ -37,7 +37,7 @@ def test_backup_restore_success(tmp_path):
 
 
 @pytest.mark.e2e
-def test_backup_missing_project_fails(tmp_path):
+def test_backup_missing_project_fails(tmp_path) -> None:
     with (
         patch("tracertm.cli.commands.backup.ConfigManager") as cfg,
         patch("tracertm.cli.commands.backup.DatabaseConnection") as db,
@@ -58,7 +58,7 @@ def test_backup_missing_project_fails(tmp_path):
 
 
 @pytest.mark.e2e
-def test_backup_restore_corrupt_file(tmp_path):
+def test_backup_restore_corrupt_file(tmp_path) -> None:
     corrupt = tmp_path / "corrupt.json"
     corrupt.write_text("{not-json")
 

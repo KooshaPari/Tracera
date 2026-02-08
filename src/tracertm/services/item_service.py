@@ -58,7 +58,7 @@ VALID_STATUSES = ["todo", "in_progress", "blocked", "done"]
 class ItemService:
     """Service for item business logic."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)
@@ -133,7 +133,8 @@ class ItemService:
         async def do_update() -> Item:
             item = await self.items.get_by_id(item_id)
             if not item:
-                raise ValueError(f"Item {item_id} not found")
+                msg = f"Item {item_id} not found"
+                raise ValueError(msg)
 
             # Update with optimistic locking
             updated_item = await self.items.update(
@@ -242,7 +243,8 @@ class ItemService:
         async def do_update() -> Item:
             item = await self.items.get_by_id(item_id)
             if not item:
-                raise ValueError(f"Item {item_id} not found")
+                msg = f"Item {item_id} not found"
+                raise ValueError(msg)
 
             # Prepare new metadata
             if merge:
@@ -283,23 +285,29 @@ class ItemService:
         """Update item status with validation and event logging."""
         # Validate new status
         if new_status not in VALID_STATUSES:
-            raise ValueError(f"Invalid status: {new_status}. Valid statuses: {', '.join(VALID_STATUSES)}")
+            msg = f"Invalid status: {new_status}. Valid statuses: {', '.join(VALID_STATUSES)}"
+            raise ValueError(msg)
 
         async def do_update() -> Item:
             item = await self.items.get_by_id(item_id, project_id)
             if not item:
-                raise ValueError(f"Item {item_id} not found")
+                msg = f"Item {item_id} not found"
+                raise ValueError(msg)
 
             # Validate transition
             current_status = item.status
             if current_status not in STATUS_TRANSITIONS:
-                raise ValueError(f"Unknown current status: {current_status}")
+                msg = f"Unknown current status: {current_status}"
+                raise ValueError(msg)
 
             allowed_transitions = STATUS_TRANSITIONS[current_status]
             if new_status not in allowed_transitions:
-                raise ValueError(
+                msg = (
                     f"Cannot transition from {current_status} to {new_status}. "
                     f"Allowed transitions: {', '.join(allowed_transitions)}"
+                )
+                raise ValueError(
+                    msg,
                 )
 
             # Update status with optimistic locking
@@ -335,7 +343,8 @@ class ItemService:
         """Calculate progress for an item based on its children."""
         item = await self.items.get_by_id(item_id, project_id)
         if not item:
-            raise ValueError(f"Item {item_id} not found")
+            msg = f"Item {item_id} not found"
+            raise ValueError(msg)
 
         # Get all children
         children = await self.items.get_children(item_id)
@@ -551,8 +560,7 @@ class ItemService:
         link_type: str | None = None,
         direction: str = "both",
     ) -> list[Item]:
-        """
-        Query items by relationship to a given item.
+        """Query items by relationship to a given item.
 
         Args:
             project_id: Project ID
@@ -565,9 +573,9 @@ class ItemService:
         """
         try:
             related: list[Item] = []
-            if direction in ("outgoing", "both"):
+            if direction in {"outgoing", "both"}:
                 related.extend(await self._collect_related_outgoing(project_id, item_id, link_type))
-            if direction in ("incoming", "both"):
+            if direction in {"incoming", "both"}:
                 related.extend(await self._collect_related_incoming(project_id, item_id, link_type))
             return self._deduplicate_items(related)
         except Exception as e:

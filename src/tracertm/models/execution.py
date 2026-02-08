@@ -1,5 +1,4 @@
-"""
-Execution model for QA Integration system.
+"""Execution model for QA Integration system.
 
 Tracks test/recording execution runs with Docker containers.
 """
@@ -22,8 +21,7 @@ def generate_execution_uuid() -> str:
 
 
 class Execution(Base, TimestampMixin):
-    """
-    Execution model representing a test/recording run.
+    """Execution model representing a test/recording run.
 
     Tracks VHS recordings, Playwright tests, Codex agent interactions,
     and custom test executions in Docker containers.
@@ -99,8 +97,7 @@ class Execution(Base, TimestampMixin):
 
 
 class ExecutionArtifact(Base):
-    """
-    Execution artifact model for screenshots, videos, GIFs, logs, and traces.
+    """Execution artifact model for screenshots, videos, GIFs, logs, and traces.
 
     Links artifacts to executions and optionally to graph nodes (items).
     """
@@ -137,7 +134,7 @@ class ExecutionArtifact(Base):
     file_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
     mime_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
     artifact_metadata: Mapped[dict[str, Any] | None] = mapped_column(
-        JSONType, nullable=True
+        JSONType, nullable=True,
     )  # dimensions, duration, etc.
 
     # Timestamps

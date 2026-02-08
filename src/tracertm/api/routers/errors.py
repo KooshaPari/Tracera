@@ -8,7 +8,6 @@ Extracted as part of Phase 6 error aggregation implementation.
 """
 
 import logging
-from typing import Any
 
 from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
@@ -52,7 +51,7 @@ async def report_frontend_error(
     payload: FrontendErrorPayload,
     request: Request,
 ) -> dict[str, str]:
-    """Report an error from the frontend.
+    r"""Report an error from the frontend.
 
     This endpoint receives error reports from the frontend application,
     typically from React error boundaries, unhandled exceptions, or other

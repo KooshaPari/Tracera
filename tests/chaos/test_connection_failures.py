@@ -1,5 +1,4 @@
-"""
-Chaos Test: Connection Failures & Pod Kills
+"""Chaos Test: Connection Failures & Pod Kills.
 
 Simulates service crashes, container kills, and connection drops.
 Tests automatic reconnection, retry logic, and graceful degradation.
@@ -31,8 +30,7 @@ async def test_database_connection_drop(
     db_session,
     assert_recovery_within_target,
 ) -> None:
-    """
-    Test: Simulate database connection drop (pod kill).
+    """Test: Simulate database connection drop (pod kill).
 
     Scenario:
     1. Establish connection and execute query
@@ -94,8 +92,7 @@ async def test_redis_connection_drop(
     redis_client: redis.Redis,
     assert_recovery_within_target,
 ) -> None:
-    """
-    Test: Simulate Redis connection drop.
+    """Test: Simulate Redis connection drop.
 
     Scenario:
     1. Verify Redis connection
@@ -157,8 +154,7 @@ async def test_backend_service_restart(
     go_backend_proxy: str,
     assert_recovery_within_target,
 ) -> None:
-    """
-    Test: Simulate backend service restart (pod kill).
+    """Test: Simulate backend service restart (pod kill).
 
     Scenario:
     1. Verify backend is healthy
@@ -219,8 +215,7 @@ async def test_intermittent_connection_drops(
     postgres_proxy: str,
     db_session,
 ) -> None:
-    """
-    Test: Intermittent connection drops (flapping network).
+    """Test: Intermittent connection drops (flapping network).
 
     Scenario:
     1. Repeatedly toggle proxy on/off
@@ -262,7 +257,7 @@ async def test_intermittent_connection_drops(
     await toxiproxy_client.enable_proxy("postgres_chaos")
 
     logger.info(
-        f"Flapping test complete: {successful_queries} succeeded, {failed_queries} failed (as expected during outages)"
+        "Flapping test complete: %s succeeded, %s failed (as expected during outages)", successful_queries, failed_queries,
     )
 
     # At least some queries should have succeeded

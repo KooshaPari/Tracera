@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Daily Coverage Update Script
+"""Daily Coverage Update Script.
 
 Parses pytest --cov output and updates COVERAGE_PROGRESS_DASHBOARD.md
 Run after pytest completes to automatically track metrics.
@@ -23,22 +22,21 @@ from typing import Any
 
 
 class CoverageMetricsExtractor:
-    """Extract coverage metrics from pytest output and coverage.json"""
+    """Extract coverage metrics from pytest output and coverage.json."""
 
-    def __init__(self, project_dir: Path | None = None):
+    def __init__(self, project_dir: Path | None = None) -> None:
         self.project_dir = project_dir or Path.cwd()
         self.coverage_json = self.project_dir / "htmlcov" / "coverage.json"
         self.coverage_file = self.project_dir / ".coverage"
         self.metrics = {}
 
     def extract_from_json(self) -> dict[str, Any]:
-        """Extract metrics from coverage.json"""
+        """Extract metrics from coverage.json."""
         if not self.coverage_json.exists():
-            print(f"Warning: {self.coverage_json} not found")
             return {}
 
         try:
-            with Path(self.coverage_json).open() as f:
+            with Path(self.coverage_json).open(encoding="utf-8") as f:
                 data = json.load(f)
 
             totals = data.get("totals", {})
@@ -72,12 +70,11 @@ class CoverageMetricsExtractor:
 
             return metrics
 
-        except Exception as e:
-            print(f"Error parsing coverage.json: {e}")
+        except Exception:
             return {}
 
     def extract_from_pytest_output(self, log_file: Path | None = None) -> dict[str, Any]:
-        """Extract metrics from pytest output"""
+        """Extract metrics from pytest output."""
         metrics = {}
 
         try:
@@ -92,7 +89,6 @@ class CoverageMetricsExtractor:
                     timeout=10,
                 )
                 if result.returncode != 0:
-                    print("Warning: pytest not available")
                     return metrics
                 content = ""
 
@@ -115,12 +111,11 @@ class CoverageMetricsExtractor:
 
             return metrics
 
-        except Exception as e:
-            print(f"Warning: Could not extract pytest metrics: {e}")
+        except Exception:
             return {}
 
     def get_previous_metrics(self) -> dict[str, Any] | None:
-        """Load previous day's metrics for comparison"""
+        """Load previous day's metrics for comparison."""
         tracking_dir = self.project_dir / ".coverage_tracking"
         if not tracking_dir.exists():
             return None
@@ -131,27 +126,26 @@ class CoverageMetricsExtractor:
             return None
 
         try:
-            with Path(metrics_files[-1]).open() as f:
+            with Path(metrics_files[-1]).open(encoding="utf-8") as f:
                 return json.load(f)
-        except Exception as e:
-            print(f"Warning: Could not load previous metrics: {e}")
+        except Exception:
             return None
 
     def save_metrics(self, metrics: dict[str, Any]) -> Path:
-        """Save metrics to JSON file"""
+        """Save metrics to JSON file."""
         tracking_dir = self.project_dir / ".coverage_tracking"
         tracking_dir.mkdir(exist_ok=True)
 
         date_str = datetime.now(UTC).strftime("%Y%m%d")
         output_file = tracking_dir / f"metrics_{date_str}.json"
 
-        with Path(output_file).open("w") as f:
+        with Path(output_file).open("w", encoding="utf-8") as f:
             json.dump(metrics, f, indent=2)
 
         return output_file
 
     def calculate_metrics(self) -> dict[str, Any]:
-        """Calculate all metrics and return combined dict"""
+        """Calculate all metrics and return combined dict."""
         metrics = {}
 
         # Extract from coverage.json
@@ -169,16 +163,15 @@ class CoverageMetricsExtractor:
 
 
 class DashboardUpdater:
-    """Update COVERAGE_PROGRESS_DASHBOARD.md with latest metrics"""
+    """Update COVERAGE_PROGRESS_DASHBOARD.md with latest metrics."""
 
-    def __init__(self, project_dir: Path | None = None):
+    def __init__(self, project_dir: Path | None = None) -> None:
         self.project_dir = project_dir or Path.cwd()
         self.dashboard_path = self.project_dir / "COVERAGE_PROGRESS_DASHBOARD.md"
 
     def update_dashboard(self, metrics: dict[str, Any]) -> bool:
-        """Update dashboard with new metrics"""
+        """Update dashboard with new metrics."""
         if not self.dashboard_path.exists():
-            print(f"Warning: {self.dashboard_path} not found")
             return False
 
         try:
@@ -215,15 +208,13 @@ class DashboardUpdater:
             )
 
             self.dashboard_path.write_text(content)
-            print(f"✓ Dashboard updated with metrics from {today}")
             return True
 
-        except Exception as e:
-            print(f"Error updating dashboard: {e}")
+        except Exception:
             return False
 
     def _build_metrics_section(self, metrics: dict[str, Any], today: str) -> str:
-        """Build markdown section with metrics"""
+        """Build markdown section with metrics."""
         coverage = metrics.get("line_coverage", 0)
         lines_covered = metrics.get("lines_covered", 0)
         lines_total = metrics.get("lines_total", 0)
@@ -253,10 +244,9 @@ class DashboardUpdater:
         return section
 
 
-def main():
-    """Main execution"""
+def main() -> int | None:
+    """Main execution."""
     try:
-        print("Starting coverage metrics extraction...")
 
         # Create extractor
         extractor = CoverageMetricsExtractor()
@@ -265,38 +255,21 @@ def main():
         metrics = extractor.calculate_metrics()
 
         if not metrics:
-            print("Warning: No metrics extracted, checking requirements...")
-            print("  - Ensure pytest has been run with --cov flag")
-            print("  - Ensure htmlcov/coverage.json exists")
-            print("  - Ensure coverage.py is installed")
             return 1
 
-        print("✓ Extracted metrics:")
-        print(f"  - Line Coverage: {metrics.get('line_coverage', 'N/A')}%")
-        print(f"  - Lines Covered: {metrics.get('lines_covered', 'N/A')}/{metrics.get('lines_total', 'N/A')}")
-        print(f"  - Tests: {metrics.get('tests_total', 'N/A')}")
-        print(f"  - Modules: {len(metrics.get('by_module', {}))} tracked")
-
         # Save metrics
-        output_file = extractor.save_metrics(metrics)
-        print(f"✓ Saved metrics to {output_file}")
+        extractor.save_metrics(metrics)
 
         # Update dashboard
         updater = DashboardUpdater()
         if updater.update_dashboard(metrics):
-            print("✓ Successfully updated COVERAGE_PROGRESS_DASHBOARD.md")
-        else:
-            print("⚠ Dashboard update skipped or failed")
+            pass
 
         # Print JSON for CI/CD integration
-        print("\n[METRICS_JSON]")
-        print(json.dumps(metrics, indent=2))
-        print("[/METRICS_JSON]")
 
         return 0
 
-    except Exception as e:
-        print(f"Error: {e}")
+    except Exception:
         import traceback
 
         traceback.print_exc()

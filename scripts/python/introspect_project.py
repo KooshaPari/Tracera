@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Introspect a TraceRTM project: items, links, graphs counts and optional JSON dump.
+"""Introspect a TraceRTM project: items, links, graphs counts and optional JSON dump.
 
 Usage:
   DATABASE_URL=postgresql://... python scripts/introspect_project.py cd6d847c-0f2e-4ccc-bf1a-c96b08c97d4e
@@ -40,13 +39,11 @@ def main() -> int:
 
     database_url = os.environ.get("DATABASE_URL")
     if not database_url:
-        print("Error: DATABASE_URL not set", file=sys.stderr)
         return 1
 
     try:
         import psycopg
     except ImportError:
-        print("Error: psycopg not installed. Run: pip install psycopg[binary]", file=sys.stderr)
         return 1
 
     project_id = args.project_id.strip()
@@ -59,7 +56,6 @@ def main() -> int:
         )
         row = cur.fetchone()
         if not row:
-            print(f"Project {project_id} not found.", file=sys.stderr)
             return 1
         project = {
             "id": str(row[0]),
@@ -104,14 +100,6 @@ def main() -> int:
             (project_id,),
         )
         graph_nodes_count = cur.fetchone()[0]
-
-    print("Project:", project["name"])
-    print("  ID:", project["id"])
-    print("  Account:", project["account_id"] or "(none)")
-    print("  Items:", items_count)
-    print("  Links:", links_count)
-    print("  Graphs:", graphs_count)
-    print("  Graph nodes:", graph_nodes_count)
 
     if args.output:
         limit = args.limit or None
@@ -169,7 +157,6 @@ def main() -> int:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         with args.output.open("w") as f:
             json.dump(snapshot, f, indent=2)
-        print(f"Snapshot written to {args.output}")
 
     return 0
 

@@ -34,7 +34,7 @@ class ImpactAnalysis:
 class AdvancedTraceabilityService:
     """Service for advanced traceability analysis."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)
@@ -62,7 +62,7 @@ class AdvancedTraceabilityService:
                         target_id=target_id,
                         path=path,
                         distance=len(path) - 1,
-                    )
+                    ),
                 )
                 return
 

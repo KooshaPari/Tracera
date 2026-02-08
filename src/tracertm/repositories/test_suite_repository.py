@@ -1,6 +1,4 @@
-"""
-Repository for Test Suite operations.
-"""
+"""Repository for Test Suite operations."""
 
 import uuid
 from typing import Any
@@ -21,7 +19,7 @@ from tracertm.models.test_suite import (
 class TestSuiteRepository:
     """Repository for test suite CRUD and business operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -89,7 +87,7 @@ class TestSuiteRepository:
     async def get_by_id(self, suite_id: str) -> TestSuite | None:
         """Get a test suite by ID."""
         result = await self.session.execute(
-            select(TestSuite).options(selectinload(TestSuite.test_case_associations)).where(TestSuite.id == suite_id)
+            select(TestSuite).options(selectinload(TestSuite.test_case_associations)).where(TestSuite.id == suite_id),
         )
         return result.scalar_one_or_none()
 
@@ -182,7 +180,8 @@ class TestSuiteRepository:
 
         new_status_enum = TestSuiteStatus(new_status)
         if new_status_enum not in valid_transitions.get(old_status, []):
-            raise ValueError(f"Invalid transition from {old_status.value} to {new_status}")
+            msg = f"Invalid transition from {old_status.value} to {new_status}"
+            raise ValueError(msg)
 
         suite.status = new_status_enum
         suite.version += 1
@@ -231,7 +230,7 @@ class TestSuiteRepository:
 
             # Check if test case is automated
             tc_result = await self.session.execute(
-                select(TestCase.automation_status).where(TestCase.id == test_case_id)
+                select(TestCase.automation_status).where(TestCase.id == test_case_id),
             )
             tc = tc_result.scalar_one_or_none()
             if tc == "automated":
@@ -262,8 +261,8 @@ class TestSuiteRepository:
                 and_(
                     TestSuiteTestCase.suite_id == suite_id,
                     TestSuiteTestCase.test_case_id == test_case_id,
-                )
-            )
+                ),
+            ),
         )
         association = result.scalar_one_or_none()
         if not association:
@@ -297,7 +296,7 @@ class TestSuiteRepository:
         result = await self.session.execute(
             select(TestSuiteTestCase)
             .where(TestSuiteTestCase.suite_id == suite_id)
-            .order_by(TestSuiteTestCase.order_index)
+            .order_by(TestSuiteTestCase.order_index),
         )
         return list(result.scalars().all())
 
@@ -314,8 +313,8 @@ class TestSuiteRepository:
                     and_(
                         TestSuiteTestCase.suite_id == suite_id,
                         TestSuiteTestCase.test_case_id == tc_id,
-                    )
-                )
+                    ),
+                ),
             )
             assoc = result.scalar_one_or_none()
             if assoc:
@@ -334,7 +333,7 @@ class TestSuiteRepository:
             select(TestSuiteActivity)
             .where(TestSuiteActivity.suite_id == suite_id)
             .order_by(TestSuiteActivity.created_at.desc())
-            .limit(limit)
+            .limit(limit),
         )
         return list(result.scalars().all())
 
@@ -355,7 +354,7 @@ class TestSuiteRepository:
 
         # By status
         status_result = await self.session.execute(
-            select(TestSuite.status, func.count()).where(TestSuite.project_id == project_id).group_by(TestSuite.status)
+            select(TestSuite.status, func.count()).where(TestSuite.project_id == project_id).group_by(TestSuite.status),
         )
         by_status = {str(row[0].value): row[1] for row in status_result}
 
@@ -366,21 +365,21 @@ class TestSuiteRepository:
                 and_(
                     TestSuite.project_id == project_id,
                     TestSuite.category.isnot(None),
-                )
+                ),
             )
-            .group_by(TestSuite.category)
+            .group_by(TestSuite.category),
         )
         by_category = {row[0]: row[1] for row in category_result}
 
         # Total test cases in all suites
         tc_result = await self.session.execute(
-            select(func.sum(TestSuite.total_test_cases)).where(TestSuite.project_id == project_id)
+            select(func.sum(TestSuite.total_test_cases)).where(TestSuite.project_id == project_id),
         )
         total_test_cases = tc_result.scalar() or 0
 
         # Total automated
         auto_result = await self.session.execute(
-            select(func.sum(TestSuite.automated_count)).where(TestSuite.project_id == project_id)
+            select(func.sum(TestSuite.automated_count)).where(TestSuite.project_id == project_id),
         )
         automated_test_cases = auto_result.scalar() or 0
 

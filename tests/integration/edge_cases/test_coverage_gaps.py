@@ -1,5 +1,4 @@
-"""
-Comprehensive Edge Case Tests for Coverage Gap Closure.
+"""Comprehensive Edge Case Tests for Coverage Gap Closure.
 
 This test suite targets uncovered lines in:
 - api/sync_client.py (70.52% -> 85%+)
@@ -58,9 +57,8 @@ class TestSyncClientEdgeCases:
     """Edge case tests for sync_client.py to reach 85%+ coverage."""
 
     @pytest.mark.asyncio
-    async def test_config_from_manager_with_none_manager(self):
-        """
-        TC-SC-E1: ApiConfig creation with None ConfigManager.
+    async def test_config_from_manager_with_none_manager(self) -> None:
+        """TC-SC-E1: ApiConfig creation with None ConfigManager.
 
         Given: ConfigManager is None
         When: Creating ApiConfig from ConfigManager
@@ -73,9 +71,8 @@ class TestSyncClientEdgeCases:
         assert config.max_retries == 3
 
     @pytest.mark.asyncio
-    async def test_config_from_manager_with_string_timeout(self):
-        """
-        TC-SC-E2: ApiConfig handles string timeout value.
+    async def test_config_from_manager_with_string_timeout(self) -> None:
+        """TC-SC-E2: ApiConfig handles string timeout value.
 
         Given: ConfigManager returns string timeout
         When: Creating ApiConfig
@@ -95,9 +92,8 @@ class TestSyncClientEdgeCases:
         assert config.max_retries == 5
 
     @pytest.mark.asyncio
-    async def test_config_trailing_slash_stripped(self):
-        """
-        TC-SC-E3: Base URL trailing slash is stripped.
+    async def test_config_trailing_slash_stripped(self) -> None:
+        """TC-SC-E3: Base URL trailing slash is stripped.
 
         Given: Base URL ends with slash
         When: Creating ApiConfig
@@ -108,9 +104,8 @@ class TestSyncClientEdgeCases:
         assert config.base_url == "https://api.example.com"
 
     @pytest.mark.asyncio
-    async def test_client_property_without_token(self):
-        """
-        TC-SC-E4: Client creation without authentication token.
+    async def test_client_property_without_token(self) -> None:
+        """TC-SC-E4: Client creation without authentication token.
 
         Given: ApiConfig has no token
         When: Accessing client property
@@ -124,9 +119,8 @@ class TestSyncClientEdgeCases:
         assert "Authorization" not in http_client.headers
 
     @pytest.mark.asyncio
-    async def test_client_close_when_none(self):
-        """
-        TC-SC-E5: Closing client when already None.
+    async def test_client_close_when_none(self) -> None:
+        """TC-SC-E5: Closing client when already None.
 
         Given: Client is None
         When: close() is called
@@ -142,9 +136,8 @@ class TestSyncClientEdgeCases:
         assert client._client is None
 
     @pytest.mark.asyncio
-    async def test_retry_request_http_status_error_all_retries(self):
-        """
-        TC-SC-E6: HTTP status error exhausts all retries.
+    async def test_retry_request_http_status_error_all_retries(self) -> None:
+        """TC-SC-E6: HTTP status error exhausts all retries.
 
         Given: Request always returns 500 error
         When: Retry request is attempted
@@ -169,9 +162,8 @@ class TestSyncClientEdgeCases:
             assert mock_request.call_count == 3
 
     @pytest.mark.asyncio
-    async def test_retry_request_rate_limit_with_retry_after(self):
-        """
-        TC-SC-E7: Rate limit error respects Retry-After header.
+    async def test_retry_request_rate_limit_with_retry_after(self) -> None:
+        """TC-SC-E7: Rate limit error respects Retry-After header.
 
         Given: Request returns 429 with Retry-After header
         When: Retry is attempted
@@ -199,9 +191,8 @@ class TestSyncClientEdgeCases:
                 mock_sleep.assert_called_once_with(2)
 
     @pytest.mark.asyncio
-    async def test_retry_request_rate_limit_no_retry_after_on_last_attempt(self):
-        """
-        TC-SC-E8: Rate limit on final retry raises error.
+    async def test_retry_request_rate_limit_no_retry_after_on_last_attempt(self) -> None:
+        """TC-SC-E8: Rate limit on final retry raises error.
 
         Given: Rate limit error on last retry attempt
         When: No more retries available
@@ -226,9 +217,8 @@ class TestSyncClientEdgeCases:
             assert err.retry_after == 60
 
     @pytest.mark.asyncio
-    async def test_health_check_unhealthy_status(self):
-        """
-        TC-SC-E9: Health check returns unhealthy status.
+    async def test_health_check_unhealthy_status(self) -> None:
+        """TC-SC-E9: Health check returns unhealthy status.
 
         Given: API returns non-healthy status
         When: Health check is performed
@@ -248,9 +238,8 @@ class TestSyncClientEdgeCases:
             assert result is False
 
     @pytest.mark.asyncio
-    async def test_upload_changes_with_last_sync_none(self):
-        """
-        TC-SC-E10: Upload changes without last_sync timestamp.
+    async def test_upload_changes_with_last_sync_none(self) -> None:
+        """TC-SC-E10: Upload changes without last_sync timestamp.
 
         Given: last_sync is None
         When: Uploading changes
@@ -266,7 +255,7 @@ class TestSyncClientEdgeCases:
                 operation=SyncOperation.CREATE,
                 data={"title": "Test"},
                 version=1,
-            )
+            ),
         ]
 
         mock_response = Mock()
@@ -287,9 +276,8 @@ class TestSyncClientEdgeCases:
             assert call_args[1]["json"]["last_sync"] is None
 
     @pytest.mark.asyncio
-    async def test_download_changes_without_project_id(self):
-        """
-        TC-SC-E11: Download changes without project filter.
+    async def test_download_changes_without_project_id(self) -> None:
+        """TC-SC-E11: Download changes without project filter.
 
         Given: project_id is None
         When: Downloading changes
@@ -314,9 +302,8 @@ class TestSyncClientEdgeCases:
             assert "project_id" not in params
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_without_merged_data(self):
-        """
-        TC-SC-E12: Resolve conflict without providing merged data.
+    async def test_resolve_conflict_without_merged_data(self) -> None:
+        """TC-SC-E12: Resolve conflict without providing merged data.
 
         Given: merged_data is None
         When: Resolving conflict
@@ -337,9 +324,8 @@ class TestSyncClientEdgeCases:
             assert "merged_data" not in call_args[1]["json"]
 
     @pytest.mark.asyncio
-    async def test_sync_status_with_null_timestamps(self):
-        """
-        TC-SC-E13: SyncStatus handles null timestamps.
+    async def test_sync_status_with_null_timestamps(self) -> None:
+        """TC-SC-E13: SyncStatus handles null timestamps.
 
         Given: API returns null for last_sync and server_time
         When: Creating SyncStatus from dict
@@ -353,9 +339,8 @@ class TestSyncClientEdgeCases:
         assert status.server_time is None
 
     @pytest.mark.asyncio
-    async def test_full_sync_with_manual_conflict_strategy(self):
-        """
-        TC-SC-E14: Full sync with MANUAL conflict strategy raises error.
+    async def test_full_sync_with_manual_conflict_strategy(self) -> None:
+        """TC-SC-E14: Full sync with MANUAL conflict strategy raises error.
 
         Given: Conflict occurs and strategy is MANUAL
         When: Full sync is performed
@@ -371,7 +356,7 @@ class TestSyncClientEdgeCases:
                 operation=SyncOperation.UPDATE,
                 data={"title": "Local"},
                 version=2,
-            )
+            ),
         ]
 
         conflict = Conflict(
@@ -391,9 +376,8 @@ class TestSyncClientEdgeCases:
                 await client.full_sync(changes, conflict_strategy=ConflictStrategy.MANUAL)
 
     @pytest.mark.asyncio
-    async def test_full_sync_local_wins_conflict_resolution(self):
-        """
-        TC-SC-E15: Full sync with LOCAL_WINS resolves conflicts.
+    async def test_full_sync_local_wins_conflict_resolution(self) -> None:
+        """TC-SC-E15: Full sync with LOCAL_WINS resolves conflicts.
 
         Given: Conflict occurs and strategy is LOCAL_WINS
         When: Full sync is performed
@@ -409,7 +393,7 @@ class TestSyncClientEdgeCases:
                 operation=SyncOperation.UPDATE,
                 data={"title": "Local"},
                 version=2,
-            )
+            ),
         ]
 
         conflict = Conflict(
@@ -444,9 +428,8 @@ class TestSyncClientEdgeCases:
                     assert args[0][2] == {"title": "Local"}
 
     @pytest.mark.asyncio
-    async def test_full_sync_remote_wins_conflict_resolution(self):
-        """
-        TC-SC-E16: Full sync with REMOTE_WINS resolves conflicts.
+    async def test_full_sync_remote_wins_conflict_resolution(self) -> None:
+        """TC-SC-E16: Full sync with REMOTE_WINS resolves conflicts.
 
         Given: Conflict occurs and strategy is REMOTE_WINS
         When: Full sync is performed
@@ -462,7 +445,7 @@ class TestSyncClientEdgeCases:
                 operation=SyncOperation.UPDATE,
                 data={"title": "Local"},
                 version=2,
-            )
+            ),
         ]
 
         conflict = Conflict(
@@ -494,9 +477,8 @@ class TestSyncClientEdgeCases:
                     assert args[0][2] == {"title": "Remote"}
 
     @pytest.mark.asyncio
-    async def test_full_sync_last_write_wins_higher_remote_version(self):
-        """
-        TC-SC-E17: LAST_WRITE_WINS uses remote when remote version higher.
+    async def test_full_sync_last_write_wins_higher_remote_version(self) -> None:
+        """TC-SC-E17: LAST_WRITE_WINS uses remote when remote version higher.
 
         Given: Conflict with remote_version > local_version
         When: Full sync with LAST_WRITE_WINS
@@ -512,7 +494,7 @@ class TestSyncClientEdgeCases:
                 operation=SyncOperation.UPDATE,
                 data={"title": "Local"},
                 version=2,
-            )
+            ),
         ]
 
         conflict = Conflict(
@@ -573,9 +555,8 @@ class TestBulkOperationServiceEdgeCases:
         """Create service instance."""
         return BulkOperationService(mock_session)
 
-    def test_bulk_update_preview_with_all_filters(self, mock_session):
-        """
-        TC-BOS-E1: Preview with all filter types.
+    def test_bulk_update_preview_with_all_filters(self, mock_session) -> None:
+        """TC-BOS-E1: Preview with all filter types.
 
         Given: Filters for view, status, type, priority, owner
         When: Bulk update preview is requested
@@ -599,9 +580,8 @@ class TestBulkOperationServiceEdgeCases:
         assert len(result["sample_items"]) == 1
         assert result["sample_items"][0]["id"] == "item-001"  # Truncated to 8 chars
 
-    def test_bulk_update_preview_large_operation_warning(self, service, mock_session):
-        """
-        TC-BOS-E2: Preview generates warning for large operations.
+    def test_bulk_update_preview_large_operation_warning(self, service, mock_session) -> None:
+        """TC-BOS-E2: Preview generates warning for large operations.
 
         Given: More than 100 items will be updated
         When: Preview is generated
@@ -614,9 +594,8 @@ class TestBulkOperationServiceEdgeCases:
 
         assert any("150 items" in w for w in result["warnings"])
 
-    def test_bulk_update_preview_mixed_statuses_warning(self, service, mock_session):
-        """
-        TC-BOS-E3: Preview warns about mixed statuses.
+    def test_bulk_update_preview_mixed_statuses_warning(self, service, mock_session) -> None:
+        """TC-BOS-E3: Preview warns about mixed statuses.
 
         Given: Sample items have different statuses
         When: Status update preview is generated
@@ -633,16 +612,15 @@ class TestBulkOperationServiceEdgeCases:
 
         assert any("Mixed statuses" in w for w in result["warnings"])
 
-    def test_bulk_update_items_with_all_update_fields(self, service, mock_session):
-        """
-        TC-BOS-E4: Update items with all possible fields.
+    def test_bulk_update_items_with_all_update_fields(self, service, mock_session) -> None:
+        """TC-BOS-E4: Update items with all possible fields.
 
         Given: Updates include status, priority, owner, title, description
         When: Bulk update is executed
         Then: All fields are updated for each item
         """
         mock_items = [
-            Mock(id="item-1", title="Old Title", status="todo", priority="low", owner=None, description="Old")
+            Mock(id="item-1", title="Old Title", status="todo", priority="low", owner=None, description="Old"),
         ]
         mock_session.all.return_value = mock_items
 
@@ -661,9 +639,8 @@ class TestBulkOperationServiceEdgeCases:
         assert mock_items[0].description == "New Description"
         assert mock_items[0].status == "done"
 
-    def test_bulk_update_items_rollback_on_error(self, service, mock_session):
-        """
-        TC-BOS-E5: Rollback on update failure.
+    def test_bulk_update_items_rollback_on_error(self, service, mock_session) -> None:
+        """TC-BOS-E5: Rollback on update failure.
 
         Given: Database commit fails
         When: Bulk update is attempted
@@ -677,9 +654,8 @@ class TestBulkOperationServiceEdgeCases:
 
         mock_session.rollback.assert_called_once()
 
-    def test_bulk_delete_items_with_filters(self, service, mock_session):
-        """
-        TC-BOS-E6: Delete items with multiple filters.
+    def test_bulk_delete_items_with_filters(self, service, mock_session) -> None:
+        """TC-BOS-E6: Delete items with multiple filters.
 
         Given: Filters for view, status, item_type
         When: Bulk delete is executed
@@ -696,9 +672,8 @@ class TestBulkOperationServiceEdgeCases:
         for item in mock_items:
             assert item.deleted_at is not None
 
-    def test_bulk_delete_rollback_on_error(self, service, mock_session):
-        """
-        TC-BOS-E7: Rollback on delete failure.
+    def test_bulk_delete_rollback_on_error(self, service, mock_session) -> None:
+        """TC-BOS-E7: Rollback on delete failure.
 
         Given: Database commit fails during delete
         When: Bulk delete is attempted
@@ -712,9 +687,8 @@ class TestBulkOperationServiceEdgeCases:
 
         mock_session.rollback.assert_called_once()
 
-    def test_bulk_create_preview_empty_csv(self, service):
-        """
-        TC-BOS-E8: Preview with empty CSV file.
+    def test_bulk_create_preview_empty_csv(self, service) -> None:
+        """TC-BOS-E8: Preview with empty CSV file.
 
         Given: CSV file is empty (no data rows)
         When: Preview is generated
@@ -727,9 +701,8 @@ class TestBulkOperationServiceEdgeCases:
         assert result["total_count"] == 0
         assert "empty" in result["validation_errors"][0].lower()
 
-    def test_bulk_create_preview_missing_required_headers(self, service):
-        """
-        TC-BOS-E9: Preview with missing required CSV headers.
+    def test_bulk_create_preview_missing_required_headers(self, service) -> None:
+        """TC-BOS-E9: Preview with missing required CSV headers.
 
         Given: CSV missing required columns (Title, View, Type)
         When: Preview is generated
@@ -743,9 +716,8 @@ class TestBulkOperationServiceEdgeCases:
         assert "missing required" in result["validation_errors"][0].lower()
         assert "view" in result["validation_errors"][0].lower()
 
-    def test_bulk_create_preview_case_insensitive_headers(self, service):
-        """
-        TC-BOS-E10: Preview handles case-insensitive headers.
+    def test_bulk_create_preview_case_insensitive_headers(self, service) -> None:
+        """TC-BOS-E10: Preview handles case-insensitive headers.
 
         Given: CSV headers in lowercase/mixed case
         When: Preview is generated
@@ -758,9 +730,8 @@ class TestBulkOperationServiceEdgeCases:
         # Should not have missing header errors
         assert result["total_count"] == 1
 
-    def test_bulk_create_preview_invalid_json_metadata(self, service):
-        """
-        TC-BOS-E11: Preview handles invalid JSON in metadata column.
+    def test_bulk_create_preview_invalid_json_metadata(self, service) -> None:
+        """TC-BOS-E11: Preview handles invalid JSON in metadata column.
 
         Given: CSV row has malformed JSON in Metadata column
         When: Preview is generated
@@ -775,9 +746,8 @@ Test Item,EPIC,feature,"{invalid json"
         assert result["invalid_rows_count"] == 1
         assert any("JSON" in err for err in result["validation_errors"])
 
-    def test_bulk_create_preview_pydantic_validation_error(self, service):
-        """
-        TC-BOS-E12: Preview handles Pydantic validation errors.
+    def test_bulk_create_preview_pydantic_validation_error(self, service) -> None:
+        """TC-BOS-E12: Preview handles Pydantic validation errors.
 
         Given: CSV row has invalid data for ItemCreate schema
         When: Preview is generated
@@ -791,9 +761,8 @@ Test Item,EPIC,feature,"{invalid json"
 
         assert result["invalid_rows_count"] >= 1
 
-    def test_bulk_create_preview_duplicate_title_warning(self, service):
-        """
-        TC-BOS-E13: Preview warns about duplicate titles in same view.
+    def test_bulk_create_preview_duplicate_title_warning(self, service) -> None:
+        """TC-BOS-E13: Preview warns about duplicate titles in same view.
 
         Given: CSV has duplicate title/view combinations
         When: Preview is generated
@@ -808,9 +777,8 @@ Duplicate Item,EPIC,feature
 
         assert any("Duplicate title" in w for w in result["warnings"])
 
-    def test_bulk_create_preview_large_operation_warning(self, service):
-        """
-        TC-BOS-E14: Preview warns about large create operations.
+    def test_bulk_create_preview_large_operation_warning(self, service) -> None:
+        """TC-BOS-E14: Preview warns about large create operations.
 
         Given: CSV has more than 100 valid rows
         When: Preview is generated
@@ -826,9 +794,8 @@ Duplicate Item,EPIC,feature
         assert result["total_count"] == 101
         assert any("101 items" in w for w in result["warnings"])
 
-    def test_bulk_create_preview_with_all_optional_fields(self, service):
-        """
-        TC-BOS-E15: Preview with all optional CSV columns.
+    def test_bulk_create_preview_with_all_optional_fields(self, service) -> None:
+        """TC-BOS-E15: Preview with all optional CSV columns.
 
         Given: CSV includes Description, Status, Priority, Owner, Parent Id, Metadata
         When: Preview is generated
@@ -845,9 +812,8 @@ Test Item,EPIC,feature,Description here,in_progress,high,user@example.com,PARENT
         assert sample["priority"] == "high"
         assert sample["owner"] == "user@example.com"
 
-    def test_bulk_create_items_skip_invalid_rows(self, service, mock_session):
-        """
-        TC-BOS-E16: Create skips invalid rows and continues.
+    def test_bulk_create_items_skip_invalid_rows(self, service, mock_session) -> None:
+        """TC-BOS-E16: Create skips invalid rows and continues.
 
         Given: CSV has mix of valid and invalid rows
         When: Bulk create is executed
@@ -864,9 +830,8 @@ Another Valid,STORY,task
         # Should create valid items only
         assert result["items_created"] >= 1
 
-    def test_bulk_create_items_skip_json_decode_error(self, service, mock_session):
-        """
-        TC-BOS-E17: Create skips rows with JSON decode errors.
+    def test_bulk_create_items_skip_json_decode_error(self, service, mock_session) -> None:
+        """TC-BOS-E17: Create skips rows with JSON decode errors.
 
         Given: CSV row has invalid JSON metadata
         When: Bulk create is executed
@@ -882,9 +847,8 @@ Bad JSON,EPIC,feature,"{invalid"
         # Should create at least one valid item
         assert result["items_created"] >= 1
 
-    def test_bulk_create_items_rollback_on_commit_error(self, service, mock_session):
-        """
-        TC-BOS-E18: Rollback on create commit failure.
+    def test_bulk_create_items_rollback_on_commit_error(self, service, mock_session) -> None:
+        """TC-BOS-E18: Rollback on create commit failure.
 
         Given: Database commit fails
         When: Bulk create is attempted
@@ -898,9 +862,8 @@ Bad JSON,EPIC,feature,"{invalid"
 
         mock_session.rollback.assert_called_once()
 
-    def test_bulk_create_items_skip_row_on_exception(self, service, mock_session):
-        """
-        TC-BOS-E19: Create skips row that raises exception during processing.
+    def test_bulk_create_items_skip_row_on_exception(self, service, mock_session) -> None:
+        """TC-BOS-E19: Create skips row that raises exception during processing.
 
         Given: One row causes exception during item creation
         When: Bulk create is executed
@@ -914,10 +877,11 @@ Item 2,EPIC,feature
         # Mock flush to succeed for some, fail for others
         call_count = [0]
 
-        def flush_side_effect():
+        def flush_side_effect() -> None:
             call_count[0] += 1
             if call_count[0] == 1:
-                raise Exception("First item fails")
+                msg = "First item fails"
+                raise Exception(msg)
 
         mock_session.flush.side_effect = flush_side_effect
 
@@ -941,9 +905,8 @@ class TestMarkdownParserEdgeCases:
         """Create temporary directory."""
         return tmp_path
 
-    def test_parse_item_markdown_file_not_found(self, temp_dir):
-        """
-        TC-MP-E1: Parse raises FileNotFoundError for missing file.
+    def test_parse_item_markdown_file_not_found(self, temp_dir) -> None:
+        """TC-MP-E1: Parse raises FileNotFoundError for missing file.
 
         Given: File does not exist
         When: parse_item_markdown is called
@@ -954,9 +917,8 @@ class TestMarkdownParserEdgeCases:
         with pytest.raises(FileNotFoundError):
             parse_item_markdown(path)
 
-    def test_parse_item_markdown_no_frontmatter(self, temp_dir):
-        """
-        TC-MP-E2: Parse raises ValueError when no frontmatter.
+    def test_parse_item_markdown_no_frontmatter(self, temp_dir) -> None:
+        """TC-MP-E2: Parse raises ValueError when no frontmatter.
 
         Given: File has no YAML frontmatter
         When: parse_item_markdown is called
@@ -968,9 +930,8 @@ class TestMarkdownParserEdgeCases:
         with pytest.raises(ValueError, match="No YAML frontmatter"):
             parse_item_markdown(path)
 
-    def test_parse_item_markdown_missing_required_fields(self, temp_dir):
-        """
-        TC-MP-E3: Parse raises ValueError for missing required fields.
+    def test_parse_item_markdown_missing_required_fields(self, temp_dir) -> None:
+        """TC-MP-E3: Parse raises ValueError for missing required fields.
 
         Given: Frontmatter missing required fields (id, external_id, type, status)
         When: parse_item_markdown is called
@@ -989,9 +950,8 @@ type: epic
         with pytest.raises(ValueError, match="Missing required frontmatter"):
             parse_item_markdown(path)
 
-    def test_write_item_markdown_missing_required_fields(self, temp_dir):
-        """
-        TC-MP-E4: Write raises ValueError for missing required fields.
+    def test_write_item_markdown_missing_required_fields(self, temp_dir) -> None:
+        """TC-MP-E4: Write raises ValueError for missing required fields.
 
         Given: ItemData missing required fields
         When: write_item_markdown is called
@@ -1007,9 +967,8 @@ type: epic
         with pytest.raises(ValueError, match="missing required fields"):
             write_item_markdown(item, temp_dir / "test.md")
 
-    def test_parse_links_yaml_file_not_found(self, temp_dir):
-        """
-        TC-MP-E5: Parse links raises FileNotFoundError.
+    def test_parse_links_yaml_file_not_found(self, temp_dir) -> None:
+        """TC-MP-E5: Parse links raises FileNotFoundError.
 
         Given: links.yaml does not exist
         When: parse_links_yaml is called
@@ -1018,9 +977,8 @@ type: epic
         with pytest.raises(FileNotFoundError):
             parse_links_yaml(temp_dir / "links.yaml")
 
-    def test_parse_links_yaml_empty_file(self, temp_dir):
-        """
-        TC-MP-E6: Parse links handles empty file.
+    def test_parse_links_yaml_empty_file(self, temp_dir) -> None:
+        """TC-MP-E6: Parse links handles empty file.
 
         Given: links.yaml is empty
         When: parse_links_yaml is called
@@ -1033,9 +991,8 @@ type: epic
 
         assert result == []
 
-    def test_parse_links_yaml_no_links_key(self, temp_dir):
-        """
-        TC-MP-E7: Parse links handles YAML without 'links' key.
+    def test_parse_links_yaml_no_links_key(self, temp_dir) -> None:
+        """TC-MP-E7: Parse links handles YAML without 'links' key.
 
         Given: YAML file has other keys but not 'links'
         When: parse_links_yaml is called
@@ -1048,9 +1005,8 @@ type: epic
 
         assert result == []
 
-    def test_parse_links_yaml_invalid_link_format(self, temp_dir):
-        """
-        TC-MP-E8: Parse links raises ValueError for invalid format.
+    def test_parse_links_yaml_invalid_link_format(self, temp_dir) -> None:
+        """TC-MP-E8: Parse links raises ValueError for invalid format.
 
         Given: Link dict missing required fields
         When: parse_links_yaml is called
@@ -1068,9 +1024,8 @@ links:
         with pytest.raises(ValueError, match="Invalid link format"):
             parse_links_yaml(path)
 
-    def test_parse_config_yaml_file_not_found(self, temp_dir):
-        """
-        TC-MP-E9: Parse config raises FileNotFoundError.
+    def test_parse_config_yaml_file_not_found(self, temp_dir) -> None:
+        """TC-MP-E9: Parse config raises FileNotFoundError.
 
         Given: config.yaml does not exist
         When: parse_config_yaml is called
@@ -1079,9 +1034,8 @@ links:
         with pytest.raises(FileNotFoundError):
             parse_config_yaml(temp_dir / "config.yaml")
 
-    def test_parse_config_yaml_empty_file(self, temp_dir):
-        """
-        TC-MP-E10: Parse config handles empty file.
+    def test_parse_config_yaml_empty_file(self, temp_dir) -> None:
+        """TC-MP-E10: Parse config handles empty file.
 
         Given: config.yaml is empty
         When: parse_config_yaml is called
@@ -1094,9 +1048,8 @@ links:
 
         assert result == {}
 
-    def test_item_data_frontmatter_with_figma_fields(self, temp_dir):
-        """
-        TC-MP-E11: ItemData includes Figma fields in frontmatter.
+    def test_item_data_frontmatter_with_figma_fields(self, temp_dir) -> None:
+        """TC-MP-E11: ItemData includes Figma fields in frontmatter.
 
         Given: ItemData has Figma-specific fields
         When: to_frontmatter_dict is called
@@ -1124,9 +1077,8 @@ links:
         assert fm["screens"] == ["Login", "Dashboard"]
         assert fm["implements"] == ["STORY-001"]
 
-    def test_item_data_markdown_body_wireframe_type(self, temp_dir):
-        """
-        TC-MP-E12: Wireframe type generates Figma sections.
+    def test_item_data_markdown_body_wireframe_type(self, temp_dir) -> None:
+        """TC-MP-E12: Wireframe type generates Figma sections.
 
         Given: ItemData type is wireframe with Figma data
         When: to_markdown_body is called
@@ -1154,9 +1106,8 @@ links:
         assert "## Screens" in body
         assert "- Login Page" in body
 
-    def test_item_data_markdown_body_wireframe_no_node_id(self, temp_dir):
-        """
-        TC-MP-E13: Wireframe without node_id shows link only.
+    def test_item_data_markdown_body_wireframe_no_node_id(self, temp_dir) -> None:
+        """TC-MP-E13: Wireframe without node_id shows link only.
 
         Given: Wireframe has figma_url but no file_key/node_id
         When: to_markdown_body is called
@@ -1176,9 +1127,8 @@ links:
         assert "[View in Figma]" in body
         assert "![Figma Preview]" not in body
 
-    def test_link_data_datetime_string_conversion(self):
-        """
-        TC-MP-E14: LinkData handles ISO string with Z suffix.
+    def test_link_data_datetime_string_conversion(self) -> None:
+        """TC-MP-E14: LinkData handles ISO string with Z suffix.
 
         Given: Link dict has timestamp with 'Z' suffix
         When: from_dict is called
@@ -1196,9 +1146,8 @@ links:
 
         assert isinstance(link.created, datetime)
 
-    def test_link_data_to_dict_with_metadata(self):
-        """
-        TC-MP-E15: LinkData includes metadata in to_dict.
+    def test_link_data_to_dict_with_metadata(self) -> None:
+        """TC-MP-E15: LinkData includes metadata in to_dict.
 
         Given: LinkData has metadata
         When: to_dict is called
@@ -1218,9 +1167,8 @@ links:
         assert "metadata" in result
         assert result["metadata"]["confidence"] == 0.95
 
-    def test_link_data_to_dict_without_metadata(self):
-        """
-        TC-MP-E16: LinkData excludes empty metadata from to_dict.
+    def test_link_data_to_dict_without_metadata(self) -> None:
+        """TC-MP-E16: LinkData excludes empty metadata from to_dict.
 
         Given: LinkData has empty metadata
         When: to_dict is called
@@ -1239,9 +1187,8 @@ links:
 
         assert "metadata" not in result
 
-    def test_parse_history_table_insufficient_rows(self):
-        """
-        TC-MP-E17: History table parser handles insufficient rows.
+    def test_parse_history_table_insufficient_rows(self) -> None:
+        """TC-MP-E17: History table parser handles insufficient rows.
 
         Given: Table has less than 3 lines (header + separator)
         When: _parse_history_table is called
@@ -1255,9 +1202,8 @@ links:
 
         assert result == []
 
-    def test_parse_history_table_non_table_line(self):
-        """
-        TC-MP-E18: History parser skips non-table lines.
+    def test_parse_history_table_non_table_line(self) -> None:
+        """TC-MP-E18: History parser skips non-table lines.
 
         Given: Table content has lines not starting with |
         When: _parse_history_table is called
@@ -1275,9 +1221,8 @@ Some non-table text
 
         assert len(result) == 1
 
-    def test_parse_history_table_insufficient_columns(self):
-        """
-        TC-MP-E19: History parser handles rows with too few columns.
+    def test_parse_history_table_insufficient_columns(self) -> None:
+        """TC-MP-E19: History parser handles rows with too few columns.
 
         Given: Row has less than 4 columns
         When: _parse_history_table is called
@@ -1296,9 +1241,8 @@ Some non-table text
         # Only the complete row should be parsed
         assert len(result) == 1
 
-    def test_list_items_nonexistent_project(self, temp_dir):
-        """
-        TC-MP-E20: List items returns empty for nonexistent project.
+    def test_list_items_nonexistent_project(self, temp_dir) -> None:
+        """TC-MP-E20: List items returns empty for nonexistent project.
 
         Given: Project directory does not exist
         When: list_items is called
@@ -1308,9 +1252,8 @@ Some non-table text
 
         assert result == []
 
-    def test_list_items_nonexistent_type(self, temp_dir):
-        """
-        TC-MP-E21: List items returns empty for nonexistent type.
+    def test_list_items_nonexistent_type(self, temp_dir) -> None:
+        """TC-MP-E21: List items returns empty for nonexistent type.
 
         Given: Item type directory does not exist
         When: list_items is called with item_type
@@ -1323,9 +1266,8 @@ Some non-table text
 
         assert result == []
 
-    def test_list_items_all_types(self, temp_dir):
-        """
-        TC-MP-E22: List items finds all types when no filter.
+    def test_list_items_all_types(self, temp_dir) -> None:
+        """TC-MP-E22: List items finds all types when no filter.
 
         Given: Project has multiple item type directories
         When: list_items is called without item_type
@@ -1344,9 +1286,8 @@ Some non-table text
 
         assert len(result) == 2
 
-    def test_get_item_path_story_pluralization(self, temp_dir):
-        """
-        TC-MP-E23: get_item_path correctly pluralizes 'story'.
+    def test_get_item_path_story_pluralization(self, temp_dir) -> None:
+        """TC-MP-E23: get_item_path correctly pluralizes 'story'.
 
         Given: item_type is 'story'
         When: get_item_path is called
@@ -1357,9 +1298,8 @@ Some non-table text
         assert "stories" in str(path)
         assert path.name == "STORY-001.md"
 
-    def test_parse_markdown_body_no_sections(self):
-        """
-        TC-MP-E24: Parse body handles content with no H2 sections.
+    def test_parse_markdown_body_no_sections(self) -> None:
+        """TC-MP-E24: Parse body handles content with no H2 sections.
 
         Given: Markdown body has no ## sections
         When: _parse_markdown_body is called
@@ -1375,9 +1315,8 @@ Some non-table text
         assert desc == ""
         assert criteria == []
 
-    def test_parse_markdown_body_empty_sections(self):
-        """
-        TC-MP-E25: Parse body handles empty sections.
+    def test_parse_markdown_body_empty_sections(self) -> None:
+        """TC-MP-E25: Parse body handles empty sections.
 
         Given: Body has ## section headers but no content
         When: _parse_markdown_body is called
@@ -1398,9 +1337,8 @@ Some non-table text
         assert desc == ""
         assert notes == ""
 
-    def test_parse_frontmatter_invalid_yaml_raises(self):
-        """
-        TC-MP-E26: Parse frontmatter raises ValueError for invalid YAML.
+    def test_parse_frontmatter_invalid_yaml_raises(self) -> None:
+        """TC-MP-E26: Parse frontmatter raises ValueError for invalid YAML.
 
         Given: Frontmatter contains invalid YAML syntax
         When: _parse_frontmatter is called
@@ -1419,9 +1357,8 @@ Body
         with pytest.raises(ValueError, match="Invalid YAML frontmatter"):
             _parse_frontmatter(content)
 
-    def test_write_links_yaml_creates_parent_directory(self, temp_dir):
-        """
-        TC-MP-E27: write_links_yaml creates parent directory.
+    def test_write_links_yaml_creates_parent_directory(self, temp_dir) -> None:
+        """TC-MP-E27: write_links_yaml creates parent directory.
 
         Given: Parent directory does not exist
         When: write_links_yaml is called
@@ -1435,9 +1372,8 @@ Body
         assert path.parent.exists()
         assert path.exists()
 
-    def test_write_config_yaml_creates_parent_directory(self, temp_dir):
-        """
-        TC-MP-E28: write_config_yaml creates parent directory.
+    def test_write_config_yaml_creates_parent_directory(self, temp_dir) -> None:
+        """TC-MP-E28: write_config_yaml creates parent directory.
 
         Given: Parent directory does not exist
         When: write_config_yaml is called
@@ -1451,9 +1387,8 @@ Body
         assert path.parent.exists()
         assert path.exists()
 
-    def test_write_item_markdown_creates_parent_directory(self, temp_dir):
-        """
-        TC-MP-E29: write_item_markdown creates parent directory.
+    def test_write_item_markdown_creates_parent_directory(self, temp_dir) -> None:
+        """TC-MP-E29: write_item_markdown creates parent directory.
 
         Given: Parent directory does not exist
         When: write_item_markdown is called
@@ -1467,9 +1402,8 @@ Body
         assert path.parent.exists()
         assert path.exists()
 
-    def test_item_data_custom_fields_excluded_from_known_fields(self):
-        """
-        TC-MP-E30: ItemData separates custom fields from known fields.
+    def test_item_data_custom_fields_excluded_from_known_fields(self) -> None:
+        """TC-MP-E30: ItemData separates custom fields from known fields.
 
         Given: Frontmatter has custom fields not in known_fields
         When: from_frontmatter_and_body is called
@@ -1490,9 +1424,8 @@ Body
         assert item.custom_fields["custom_field_1"] == "value1"
         assert item.custom_fields["custom_field_2"] == "value2"
 
-    def test_item_data_to_frontmatter_includes_custom_fields(self):
-        """
-        TC-MP-E31: to_frontmatter_dict includes custom fields.
+    def test_item_data_to_frontmatter_includes_custom_fields(self) -> None:
+        """TC-MP-E31: to_frontmatter_dict includes custom fields.
 
         Given: ItemData has custom_fields
         When: to_frontmatter_dict is called
@@ -1510,9 +1443,8 @@ Body
 
         assert fm["custom_key"] == "custom_value"
 
-    def test_conflict_from_dict_missing_timestamp(self):
-        """
-        TC-MP-E32: Conflict.from_dict uses default timestamp when missing.
+    def test_conflict_from_dict_missing_timestamp(self) -> None:
+        """TC-MP-E32: Conflict.from_dict uses default timestamp when missing.
 
         Given: Conflict dict has no timestamp
         When: from_dict is called
@@ -1532,9 +1464,8 @@ Body
 
         assert isinstance(conflict.timestamp, datetime)
 
-    def test_upload_result_from_dict_minimal_data(self):
-        """
-        TC-MP-E33: UploadResult.from_dict handles minimal data.
+    def test_upload_result_from_dict_minimal_data(self) -> None:
+        """TC-MP-E33: UploadResult.from_dict handles minimal data.
 
         Given: Response dict has only server_time
         When: from_dict is called
@@ -1548,9 +1479,8 @@ Body
         assert result.conflicts == []
         assert result.errors == []
 
-    def test_sync_status_from_dict_minimal_data(self):
-        """
-        TC-MP-E34: SyncStatus.from_dict handles minimal data.
+    def test_sync_status_from_dict_minimal_data(self) -> None:
+        """TC-MP-E34: SyncStatus.from_dict handles minimal data.
 
         Given: Response dict has minimal fields
         When: from_dict is called
@@ -1564,9 +1494,8 @@ Body
         assert status.online is False
         assert status.conflicts_pending == 0
 
-    def test_api_error_without_response_data(self):
-        """
-        TC-MP-E35: ApiError initializes with None response_data.
+    def test_api_error_without_response_data(self) -> None:
+        """TC-MP-E35: ApiError initializes with None response_data.
 
         Given: response_data is None
         When: ApiError is created
@@ -1576,9 +1505,8 @@ Body
 
         assert error.response_data == {}
 
-    def test_rate_limit_error_initialization(self):
-        """
-        TC-MP-E36: RateLimitError stores retry_after value.
+    def test_rate_limit_error_initialization(self) -> None:
+        """TC-MP-E36: RateLimitError stores retry_after value.
 
         Given: retry_after is provided
         When: RateLimitError is created
@@ -1589,9 +1517,8 @@ Body
         assert error.retry_after == 120
         assert error.status_code == 429
 
-    def test_conflict_error_stores_conflicts(self):
-        """
-        TC-MP-E37: ConflictError stores conflict list.
+    def test_conflict_error_stores_conflicts(self) -> None:
+        """TC-MP-E37: ConflictError stores conflict list.
 
         Given: Conflicts list is provided
         When: ConflictError is created
@@ -1606,7 +1533,7 @@ Body
                 remote_version=2,
                 local_data={},
                 remote_data={},
-            )
+            ),
         ]
 
         error = ConflictError("Conflicts detected", conflicts=conflicts)

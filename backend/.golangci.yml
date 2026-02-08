@@ -53,8 +53,21 @@ linters:
     - depguard          # Dependency boundaries
     - varnamelen        # Variable name length constraints
     - tagliatelle       # Struct tag naming rules
+    # Maximum strictness - Phase 5 (Critical bug prevention)
+    - forbidigo         # P0: Debug statement prevention (fmt.Println, log.Print)
+    - copyloopvar       # P0: Loop variable capture in goroutines (Go 1.22+ syntax)
+    - errorlint         # P0: Error wrapping integrity (Go 1.13+ %w patterns)
+    - forcetypeassert   # P0: Type assertion panic prevention (require ,ok pattern)
+    - sqlclosecheck     # P0: SQL resource leak detection (unclosed rows/statements)
+    - contextcheck      # P0: context.Context propagation validation
+    # Maximum strictness - Phase 5 (High-value quality)
+    - nilerr            # P1: Nil error returns detection
+    - nilnesserr        # P1: Nil error check patterns
+    - errchkjson        # P1: JSON marshal/unmarshal error handling
+    - wastedassign      # P1: Dead assignment detection
+    - musttag           # P1: JSON/XML/YAML struct tag validation
   disable:
-    - exhaustruct      # optional; enable if you want all struct fields init
+    - exhaustruct      # Skipped: 25-35% FP rate per audit
 
 
   settings:
@@ -75,10 +88,23 @@ linters:
         - name: line-length-limit
           arguments: [120]
         # No unused-parameter rule - we use blank identifiers (_) intentionally in mocks
+
+    # Maximum strictness settings - Phase 5
+    forbidigo:
+      forbid:
+        #- p: '^print$'
+        #  msg: 'Use proper logging instead of print'
+        #- p: '^println$'
+        #  msg: 'Use proper logging instead of println'
+        - p: '^fmt\.Print.*$'
+          msg: 'Use loguru/structlog/zerolog instead of fmt.Print*'
+        - p: '^log\.Print.*$'
+          msg: 'Use structured logging instead of log.Print*'
+
     gocyclo:
-      min-complexity: 10  # Down from 15
+      min-complexity: 10  # Strict cognitive complexity threshold
     gocognit:
-      min-complexity: 12  # Down from 20
+      min-complexity: 11  # Down from 12 (data-driven optimization)
     funlen:
       lines: 80
       statements: 50
@@ -240,13 +266,14 @@ formatters:
 
 issues:
   exclude-rules:
-    # Skip revive, gocognit, gocyclo, funlen for test files
+    # Skip revive, gocognit, gocyclo, funlen, varnamelen for test files
     - path: _test\.go
       linters:
         - gocognit
         - gocyclo
         - funlen
         - revive
+        - varnamelen  # Optimization: Exclude tests (50% FP reduction)
     # Skip all linters for generated protobuf files
     - path: \.pb\.go$
       linters: [all]

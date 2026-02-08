@@ -1,5 +1,4 @@
-"""
-Comprehensive API error path tests covering all exception types, error propagation, and client error handling.
+"""Comprehensive API error path tests covering all exception types, error propagation, and client error handling.
 
 Tests error handling for:
 - API sync client (sync_client.py): ApiError, AuthenticationError, NetworkError, RateLimitError, ConflictError
@@ -118,30 +117,30 @@ def sample_change():
 class TestApiErrorBaseClass:
     """Test ApiError base exception class."""
 
-    def test_api_error_initialization(self):
+    def test_api_error_initialization(self) -> None:
         """Test ApiError can be instantiated with message."""
         msg = "API request failed"
         error = ApiError(msg, status_code=500)
         assert "API request failed" in str(error)
         assert isinstance(error, Exception)
 
-    def test_api_error_inheritance(self):
+    def test_api_error_inheritance(self) -> None:
         """Test ApiError inherits from Exception."""
         error = ApiError("test")
         assert isinstance(error, Exception)
 
-    def test_api_error_with_status_code(self):
+    def test_api_error_with_status_code(self) -> None:
         """Test ApiError with status code."""
         error = ApiError("Request failed", status_code=500)
         assert error.status_code == 500
 
-    def test_api_error_with_response_data(self):
+    def test_api_error_with_response_data(self) -> None:
         """Test ApiError with response data."""
         data = {"error": "details"}
         error = ApiError("Failed", response_data=data)
         assert error.response_data == data
 
-    def test_api_error_initialization_minimal(self):
+    def test_api_error_initialization_minimal(self) -> None:
         """Test ApiError with minimal args."""
         error = ApiError("message")
         assert error.status_code is None
@@ -152,23 +151,23 @@ class TestApiErrorBaseClass:
 class TestAuthenticationErrorHandling:
     """Test AuthenticationError exception handling."""
 
-    def test_authentication_error_instantiation(self):
+    def test_authentication_error_instantiation(self) -> None:
         """Test AuthenticationError creation."""
         error = AuthenticationError("Invalid token")
         assert "Invalid token" in str(error)
         assert isinstance(error, ApiError)
 
-    def test_authentication_error_with_message_and_status(self):
+    def test_authentication_error_with_message_and_status(self) -> None:
         """Test AuthenticationError with status code."""
         error = AuthenticationError("Unauthorized", status_code=401)
         assert error.status_code == 401
 
-    def test_authentication_error_is_api_error(self):
+    def test_authentication_error_is_api_error(self) -> None:
         """Test AuthenticationError is ApiError."""
         error = AuthenticationError("Auth failed")
         assert isinstance(error, ApiError)
 
-    def test_authentication_error_no_retry_flag(self):
+    def test_authentication_error_no_retry_flag(self) -> None:
         """Test auth error is final (no retry)."""
         error = AuthenticationError("No retry needed")
         # Auth errors should not be retried in sync client
@@ -178,24 +177,24 @@ class TestAuthenticationErrorHandling:
 class TestNetworkErrorHandling:
     """Test NetworkError exception handling."""
 
-    def test_network_error_instantiation(self):
+    def test_network_error_instantiation(self) -> None:
         """Test NetworkError creation."""
         error = NetworkError("Connection refused")
         assert "Connection refused" in str(error)
         assert isinstance(error, ApiError)
 
-    def test_network_error_with_status_code(self):
+    def test_network_error_with_status_code(self) -> None:
         """Test NetworkError with status code."""
         error = NetworkError("Connection failed", status_code=0)
         assert error.status_code == 0
 
-    def test_network_error_is_retryable(self):
+    def test_network_error_is_retryable(self) -> None:
         """Test network error should be retried."""
         error = NetworkError("Network timeout")
         # Network errors should trigger retries
         assert isinstance(error, ApiError)
 
-    def test_multiple_network_errors(self):
+    def test_multiple_network_errors(self) -> None:
         """Test tracking multiple network errors."""
         errors = [
             NetworkError("Timeout"),
@@ -209,25 +208,25 @@ class TestNetworkErrorHandling:
 class TestRateLimitErrorHandling:
     """Test RateLimitError exception handling."""
 
-    def test_rate_limit_error_instantiation(self):
+    def test_rate_limit_error_instantiation(self) -> None:
         """Test RateLimitError creation."""
         error = RateLimitError("Rate limit exceeded", retry_after=10)
         assert "Rate limit exceeded" in str(error)
         assert error.retry_after == 10
         assert isinstance(error, ApiError)
 
-    def test_rate_limit_error_with_different_retry_times(self):
+    def test_rate_limit_error_with_different_retry_times(self) -> None:
         """Test RateLimitError with various retry-after values."""
         for retry_after in [0, 1, 30, 60, 300, 3600]:
             error = RateLimitError("Limited", retry_after=retry_after)
             assert error.retry_after == retry_after
 
-    def test_rate_limit_error_default_retry_after(self):
+    def test_rate_limit_error_default_retry_after(self) -> None:
         """Test RateLimitError default retry_after."""
         error = RateLimitError("Limited")
         assert error.retry_after is None
 
-    def test_rate_limit_error_with_status_429(self):
+    def test_rate_limit_error_with_status_429(self) -> None:
         """Test RateLimitError represents 429 status."""
         error = RateLimitError("Too many requests", status_code=429)
         assert error.status_code == 429
@@ -236,7 +235,7 @@ class TestRateLimitErrorHandling:
 class TestConflictErrorHandling:
     """Test ConflictError exception handling."""
 
-    def test_conflict_error_instantiation(self):
+    def test_conflict_error_instantiation(self) -> None:
         """Test ConflictError creation."""
         conflicts = [
             Conflict(
@@ -247,14 +246,14 @@ class TestConflictErrorHandling:
                 remote_version=3,
                 local_data={"title": "Local"},
                 remote_data={"title": "Remote"},
-            )
+            ),
         ]
         error = ConflictError("Sync conflicts detected", conflicts)
         assert "Sync conflicts detected" in str(error)
         assert error.conflicts == conflicts
         assert isinstance(error, ApiError)
 
-    def test_conflict_error_with_multiple_conflicts(self):
+    def test_conflict_error_with_multiple_conflicts(self) -> None:
         """Test ConflictError with multiple conflicts."""
         conflicts = [
             Conflict(
@@ -272,12 +271,12 @@ class TestConflictErrorHandling:
         assert len(error.conflicts) == 5
         assert all(c.entity_type == "item" for c in error.conflicts)
 
-    def test_conflict_error_empty_conflicts_list(self):
+    def test_conflict_error_empty_conflicts_list(self) -> None:
         """Test ConflictError with empty conflicts."""
         error = ConflictError("No conflicts", [])
         assert len(error.conflicts) == 0
 
-    def test_conflict_error_conflict_details_preserved(self):
+    def test_conflict_error_conflict_details_preserved(self) -> None:
         """Test ConflictError preserves conflict details."""
         local_data = {"title": "Local", "status": "draft"}
         remote_data = {"title": "Remote", "status": "published"}
@@ -303,7 +302,7 @@ class TestConflictErrorHandling:
 class TestApiConfigurationErrors:
     """Test ApiConfig initialization and validation."""
 
-    def test_api_config_minimal(self):
+    def test_api_config_minimal(self) -> None:
         """Test ApiConfig with minimal configuration."""
         config = ApiConfig(base_url="https://api.test.local")
         assert config.base_url == "https://api.test.local"
@@ -311,7 +310,7 @@ class TestApiConfigurationErrors:
         assert config.timeout == 30.0
         assert config.max_retries == 3
 
-    def test_api_config_with_all_options(self):
+    def test_api_config_with_all_options(self) -> None:
         """Test ApiConfig with all options."""
         config = ApiConfig(
             base_url="https://api.example.com",
@@ -328,7 +327,7 @@ class TestApiConfigurationErrors:
         assert config.max_retries == 5
         assert config.verify_ssl is False
 
-    def test_api_config_from_config_manager_complete(self):
+    def test_api_config_from_config_manager_complete(self) -> None:
         """Test ApiConfig from ConfigManager with complete config."""
         with patch.object(ConfigManager, "get") as mock_get:
 
@@ -348,7 +347,7 @@ class TestApiConfigurationErrors:
             assert config.timeout == 45.0
             assert config.max_retries == 5
 
-    def test_api_config_from_config_manager_defaults(self):
+    def test_api_config_from_config_manager_defaults(self) -> None:
         """Test ApiConfig from ConfigManager uses defaults."""
         with patch.object(ConfigManager, "get") as mock_get:
             mock_get.return_value = None
@@ -357,12 +356,12 @@ class TestApiConfigurationErrors:
             assert config.timeout == 30.0
             assert config.max_retries == 3
 
-    def test_api_config_url_normalization(self):
+    def test_api_config_url_normalization(self) -> None:
         """Test API config handles URLs."""
         config = ApiConfig(base_url="https://api.example.com/")
         # base_url is stripped of trailing slash when used in from_config_manager
         # but direct assignment preserves it
-        assert config.base_url == "https://api.example.com/" or config.base_url == "https://api.example.com"
+        assert config.base_url in {"https://api.example.com/", "https://api.example.com"}
 
 
 # ============================================================================
@@ -373,7 +372,7 @@ class TestApiConfigurationErrors:
 class TestTraceRTMClientConfigurationErrors:
     """Test TraceRTMClient configuration error handling."""
 
-    def test_client_without_database_configured(self):
+    def test_client_without_database_configured(self) -> None:
         """Test error when database is not configured."""
         with patch.object(ConfigManager, "get") as mock_get:
             mock_get.return_value = None
@@ -382,11 +381,11 @@ class TestTraceRTMClientConfigurationErrors:
             with pytest.raises(ValueError, match="Database not configured"):
                 client._get_session()
 
-    def test_client_without_project_selected(self):
+    def test_client_without_project_selected(self) -> None:
         """Test error when no project is selected."""
         with patch.object(ConfigManager, "get") as mock_get:
 
-            def get_side_effect(key):
+            def get_side_effect(key) -> str | None:
                 if key == "database_url":
                     return "sqlite:///test.db"
                 return None
@@ -398,17 +397,17 @@ class TestTraceRTMClientConfigurationErrors:
                 with pytest.raises(ValueError, match="No project selected"):
                     client._get_project_id()
 
-    def test_client_initialization_with_agent_id(self):
+    def test_client_initialization_with_agent_id(self) -> None:
         """Test client initialization with agent ID."""
         client = TraceRTMClient(agent_id="agent-123")
         assert client.agent_id == "agent-123"
 
-    def test_client_initialization_with_agent_name(self):
+    def test_client_initialization_with_agent_name(self) -> None:
         """Test client initialization with agent name."""
         client = TraceRTMClient(agent_name="TestAgent")
         assert client.agent_name == "TestAgent"
 
-    def test_client_initialization_without_params(self):
+    def test_client_initialization_without_params(self) -> None:
         """Test client initialization without parameters."""
         client = TraceRTMClient()
         assert client.agent_id is None
@@ -418,11 +417,11 @@ class TestTraceRTMClientConfigurationErrors:
 class TestTraceRTMClientDatabaseErrors:
     """Test TraceRTMClient database error handling."""
 
-    def test_register_agent_database_error(self):
+    def test_register_agent_database_error(self) -> None:
         """Test register_agent handles database errors."""
         with patch.object(ConfigManager, "get") as mock_get:
 
-            def get_side_effect(key):
+            def get_side_effect(key) -> str | None:
                 if key == "database_url":
                     return "sqlite:///test.db"
                 if key == "current_project_id":
@@ -434,17 +433,17 @@ class TestTraceRTMClientDatabaseErrors:
 
             with patch.object(client, "_get_session") as mock_session_getter:
                 mock_session_getter.side_effect = OperationalError(
-                    "Connection lost", None, Exception("Connection lost")
+                    "Connection lost", None, Exception("Connection lost"),
                 )
 
                 with pytest.raises(OperationalError):
                     client.register_agent("TestAgent")
 
-    def test_session_reuse(self):
+    def test_session_reuse(self) -> None:
         """Test that database session is reused."""
         with patch.object(ConfigManager, "get") as mock_get:
 
-            def get_side_effect(key):
+            def get_side_effect(key) -> str | None:
                 if key == "database_url":
                     return "sqlite:///test.db"
                 return None
@@ -469,11 +468,11 @@ class TestTraceRTMClientDatabaseErrors:
 class TestTraceRTMClientLogOperationErrors:
     """Test _log_operation error handling."""
 
-    def test_log_operation_graceful_failure_without_agent(self):
+    def test_log_operation_graceful_failure_without_agent(self) -> None:
         """Test log operation gracefully fails without agent ID."""
         with patch.object(ConfigManager, "get") as mock_get:
 
-            def get_side_effect(key):
+            def get_side_effect(key) -> str | None:
                 if key == "database_url":
                     return "sqlite:///test.db"
                 return None
@@ -492,12 +491,12 @@ class TestTraceRTMClientLogOperationErrors:
                 # Should not be called when agent_id is None
                 mock_session.assert_not_called()
 
-    def test_log_operation_with_agent_id_exists(self):
+    def test_log_operation_with_agent_id_exists(self) -> None:
         """Test log operation with valid agent ID."""
         client = TraceRTMClient(agent_id="agent-123")
         assert client.agent_id == "agent-123"
 
-    def test_log_operation_event_type_options(self):
+    def test_log_operation_event_type_options(self) -> None:
         """Test log operation accepts various event types."""
         client = TraceRTMClient(agent_id="agent-1")
         event_types = [
@@ -519,7 +518,7 @@ class TestTraceRTMClientLogOperationErrors:
 class TestChangeObjectHandling:
     """Test Change object creation and handling."""
 
-    def test_change_creation(self):
+    def test_change_creation(self) -> None:
         """Test Change object creation."""
         change = Change(
             entity_type="item",
@@ -531,7 +530,7 @@ class TestChangeObjectHandling:
         assert change.entity_id == "item-123"
         assert change.operation == SyncOperation.CREATE
 
-    def test_change_to_dict(self):
+    def test_change_to_dict(self) -> None:
         """Test Change serialization to dict."""
         change = Change(
             entity_type="item",
@@ -544,7 +543,7 @@ class TestChangeObjectHandling:
         assert change_dict["operation"] == "update"
         assert change_dict["data"] == {"title": "Updated"}
 
-    def test_change_with_client_id(self):
+    def test_change_with_client_id(self) -> None:
         """Test Change with client_id."""
         change = Change(
             entity_type="item",
@@ -555,7 +554,7 @@ class TestChangeObjectHandling:
         )
         assert change.client_id == "client-abc"
 
-    def test_change_timestamp_handling(self):
+    def test_change_timestamp_handling(self) -> None:
         """Test Change timestamp handling."""
         now = datetime.now(UTC)
         change = Change(
@@ -571,7 +570,7 @@ class TestChangeObjectHandling:
 class TestConflictObjectHandling:
     """Test Conflict object creation and handling."""
 
-    def test_conflict_from_dict(self):
+    def test_conflict_from_dict(self) -> None:
         """Test creating Conflict from dict."""
         data = {
             "conflict_id": "c1",
@@ -588,7 +587,7 @@ class TestConflictObjectHandling:
         assert conflict.local_version == 1
         assert conflict.remote_version == 2
 
-    def test_conflict_version_comparison(self):
+    def test_conflict_version_comparison(self) -> None:
         """Test conflict version fields."""
         conflict = Conflict(
             conflict_id="c1",
@@ -611,25 +610,25 @@ class TestConflictObjectHandling:
 class TestErrorMessages:
     """Test error messages and context preservation."""
 
-    def test_api_error_message_preservation(self):
+    def test_api_error_message_preservation(self) -> None:
         """Test API error messages are preserved."""
         msg = "Connection to database failed"
         error = ApiError(msg)
         assert msg in str(error)
 
-    def test_network_error_message_details(self):
+    def test_network_error_message_details(self) -> None:
         """Test network error preserves detailed messages."""
         msg = "Connection refused at 192.168.1.1:5432"
         error = NetworkError(msg)
         assert msg in str(error)
 
-    def test_rate_limit_error_message_with_retry_time(self):
+    def test_rate_limit_error_message_with_retry_time(self) -> None:
         """Test rate limit error message with retry info."""
         error = RateLimitError("Rate limit exceeded", retry_after=60)
         assert error.retry_after == 60
         assert "Rate limit" in str(error)
 
-    def test_conflict_error_with_detailed_info(self):
+    def test_conflict_error_with_detailed_info(self) -> None:
         """Test conflict error includes detailed information."""
         conflict = Conflict(
             conflict_id="conflict-123",
@@ -652,19 +651,19 @@ class TestErrorMessages:
 class TestErrorPropagation:
     """Test error propagation through the stack."""
 
-    def test_auth_error_propagates(self):
+    def test_auth_error_propagates(self) -> None:
         """Test authentication error propagates correctly."""
         error = AuthenticationError("Invalid credentials")
         assert isinstance(error, ApiError)
         assert isinstance(error, Exception)
 
-    def test_network_error_propagates(self):
+    def test_network_error_propagates(self) -> None:
         """Test network error propagates correctly."""
         error = NetworkError("Connection failed")
         assert isinstance(error, ApiError)
         assert isinstance(error, Exception)
 
-    def test_conflict_error_propagates_with_data(self):
+    def test_conflict_error_propagates_with_data(self) -> None:
         """Test conflict error propagates with embedded data."""
         conflicts = [
             Conflict(
@@ -675,7 +674,7 @@ class TestErrorPropagation:
                 remote_version=2,
                 local_data={},
                 remote_data={},
-            )
+            ),
         ]
         error = ConflictError("Conflict occurred", conflicts)
         assert isinstance(error, ApiError)
@@ -691,24 +690,24 @@ class TestErrorPropagation:
 class TestApiClientInitialization:
     """Test ApiClient initialization and setup."""
 
-    def test_api_client_with_config(self, api_config):
+    def test_api_client_with_config(self, api_config) -> None:
         """Test ApiClient initialization with config."""
         client = ApiClient(api_config)
         assert client.config == api_config
 
-    def test_api_client_with_default_config(self):
+    def test_api_client_with_default_config(self) -> None:
         """Test ApiClient with None config."""
         client = ApiClient(None)
         # Should use default ConfigManager
         assert client.config is not None
 
-    def test_api_client_generates_client_id(self):
+    def test_api_client_generates_client_id(self) -> None:
         """Test ApiClient generates unique client ID."""
         client = ApiClient(None)
         # Client ID should be generated
         assert hasattr(client, "_client_id")
 
-    def test_api_client_context_manager(self, api_config):
+    def test_api_client_context_manager(self, api_config) -> None:
         """Test ApiClient as context manager."""
         client = ApiClient(api_config)
         assert hasattr(client, "__aenter__")
@@ -723,7 +722,7 @@ class TestApiClientInitialization:
 class TestHTTPStatusCodeHandling:
     """Test handling of various HTTP status codes."""
 
-    def test_error_status_codes(self):
+    def test_error_status_codes(self) -> None:
         """Test error status codes trigger correct exceptions."""
         status_codes_to_errors = {
             401: AuthenticationError,
@@ -735,12 +734,12 @@ class TestHTTPStatusCodeHandling:
         # Verify error types exist
         assert len(status_codes_to_errors) == 5
 
-    def test_rate_limit_429_status(self):
+    def test_rate_limit_429_status(self) -> None:
         """Test 429 status is recognized as rate limit."""
         error = RateLimitError("Too many requests", status_code=429)
         assert error.status_code == 429
 
-    def test_conflict_409_status(self):
+    def test_conflict_409_status(self) -> None:
         """Test 409 status is recognized as conflict."""
         error = ConflictError(
             "Merge conflict",
@@ -749,7 +748,7 @@ class TestHTTPStatusCodeHandling:
         # ConflictError represents 409 status
         assert isinstance(error, ApiError)
 
-    def test_auth_401_status(self):
+    def test_auth_401_status(self) -> None:
         """Test 401 status is recognized as auth error."""
         error = AuthenticationError("Unauthorized", status_code=401)
         assert error.status_code == 401
@@ -763,45 +762,45 @@ class TestHTTPStatusCodeHandling:
 class TestErrorEdgeCases:
     """Test edge cases in error handling."""
 
-    def test_empty_error_message(self):
+    def test_empty_error_message(self) -> None:
         """Test error with empty message."""
         error = ApiError("")
         assert str(error) == ""
 
-    def test_very_long_error_message(self):
+    def test_very_long_error_message(self) -> None:
         """Test error with very long message."""
         long_msg = "x" * 10000
         error = ApiError(long_msg)
         assert len(str(error)) == 10000
 
-    def test_unicode_in_error_message(self):
+    def test_unicode_in_error_message(self) -> None:
         """Test unicode characters in error message."""
         msg = "Error: 中文 العربية 🔥"
         error = ApiError(msg)
         assert str(error) == msg
 
-    def test_special_characters_in_error(self):
+    def test_special_characters_in_error(self) -> None:
         """Test special characters in error message."""
         msg = "Error: <html>alert('xss')</html>"
         error = ApiError(msg)
         assert str(error) == msg
 
-    def test_zero_retry_after(self):
+    def test_zero_retry_after(self) -> None:
         """Test rate limit with zero retry-after."""
         error = RateLimitError("Rate limit", retry_after=0)
         assert error.retry_after == 0
 
-    def test_very_large_retry_after(self):
+    def test_very_large_retry_after(self) -> None:
         """Test rate limit with very large retry-after."""
         error = RateLimitError("Rate limit", retry_after=86400)  # 24 hours
         assert error.retry_after == 86400
 
-    def test_negative_retry_after(self):
+    def test_negative_retry_after(self) -> None:
         """Test rate limit with negative retry-after."""
         error = RateLimitError("Rate limit", retry_after=-1)
         assert error.retry_after == -1
 
-    def test_none_retry_after(self):
+    def test_none_retry_after(self) -> None:
         """Test rate limit with None retry-after."""
         error = RateLimitError("Rate limit", retry_after=None)
         assert error.retry_after is None
@@ -815,19 +814,19 @@ class TestErrorEdgeCases:
 class TestSyncOperationTypes:
     """Test sync operation type handling."""
 
-    def test_create_operation(self):
+    def test_create_operation(self) -> None:
         """Test CREATE operation type."""
         assert SyncOperation.CREATE == "create"
 
-    def test_update_operation(self):
+    def test_update_operation(self) -> None:
         """Test UPDATE operation type."""
         assert SyncOperation.UPDATE == "update"
 
-    def test_delete_operation(self):
+    def test_delete_operation(self) -> None:
         """Test DELETE operation type."""
         assert SyncOperation.DELETE == "delete"
 
-    def test_operation_in_change(self):
+    def test_operation_in_change(self) -> None:
         """Test operation in Change object."""
         change = Change(
             entity_type="item",
@@ -847,19 +846,19 @@ class TestSyncOperationTypes:
 class TestConflictStrategyTypes:
     """Test conflict resolution strategy types."""
 
-    def test_last_write_wins_strategy(self):
+    def test_last_write_wins_strategy(self) -> None:
         """Test LAST_WRITE_WINS strategy."""
         assert ConflictStrategy.LAST_WRITE_WINS == "last_write_wins"
 
-    def test_local_wins_strategy(self):
+    def test_local_wins_strategy(self) -> None:
         """Test LOCAL_WINS strategy."""
         assert ConflictStrategy.LOCAL_WINS == "local_wins"
 
-    def test_remote_wins_strategy(self):
+    def test_remote_wins_strategy(self) -> None:
         """Test REMOTE_WINS strategy."""
         assert ConflictStrategy.REMOTE_WINS == "remote_wins"
 
-    def test_manual_strategy(self):
+    def test_manual_strategy(self) -> None:
         """Test MANUAL strategy."""
         assert ConflictStrategy.MANUAL == "manual"
 
@@ -872,7 +871,7 @@ class TestConflictStrategyTypes:
 class TestErrorHandlingIntegrationScenarios:
     """Test complete error scenarios."""
 
-    def test_multiple_error_types_sequence(self):
+    def test_multiple_error_types_sequence(self) -> None:
         """Test handling sequence of different error types."""
         errors = [
             NetworkError("Network timeout"),
@@ -884,7 +883,7 @@ class TestErrorHandlingIntegrationScenarios:
         assert isinstance(errors[1], RateLimitError)
         assert isinstance(errors[2], AuthenticationError)
 
-    def test_error_recovery_requirements(self):
+    def test_error_recovery_requirements(self) -> None:
         """Test error recovery requirements."""
         # Network errors should retry
         network_error = NetworkError("Connection lost")
@@ -898,7 +897,7 @@ class TestErrorHandlingIntegrationScenarios:
         rate_limit_error = RateLimitError("Limited", retry_after=30)
         assert rate_limit_error.retry_after == 30
 
-    def test_cascading_error_scenario(self):
+    def test_cascading_error_scenario(self) -> None:
         """Test cascading error scenario."""
         # First request times out
         error1 = NetworkError("Timeout")
@@ -920,7 +919,7 @@ class TestErrorHandlingIntegrationScenarios:
 class TestErrorDataIntegrity:
     """Test that error data is preserved correctly."""
 
-    def test_conflict_data_immutability(self):
+    def test_conflict_data_immutability(self) -> None:
         """Test conflict data cannot be corrupted."""
         local_data = {"title": "Local", "version": 1}
         remote_data = {"title": "Remote", "version": 2}
@@ -941,7 +940,7 @@ class TestErrorDataIntegrity:
         assert error.conflicts[0].local_data["title"] == "Local"
         assert error.conflicts[0].remote_data["title"] == "Remote"
 
-    def test_change_data_serialization(self):
+    def test_change_data_serialization(self) -> None:
         """Test Change data can be serialized."""
         change = Change(
             entity_type="item",

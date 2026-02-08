@@ -1,5 +1,4 @@
-"""
-Integration tests for Epic 4: Query items by relationship (FR21).
+"""Integration tests for Epic 4: Query items by relationship (FR21).
 
 Tests querying items by their relationships to other items.
 """
@@ -19,7 +18,7 @@ def runner():
 
 
 @pytest.fixture
-def temp_project(runner, tmp_path, monkeypatch):
+def temp_project(runner, tmp_path, monkeypatch) -> str:
     """Create a temporary project for testing."""
     config_dir = tmp_path / ".config" / "tracertm"
     config_dir.mkdir(parents=True)
@@ -40,7 +39,7 @@ def temp_project(runner, tmp_path, monkeypatch):
     return "test-project"
 
 
-def test_query_by_relationship(runner, temp_project):
+def test_query_by_relationship(runner, temp_project) -> None:
     """Test querying items by relationship (FR21)."""
     # Create items
     result1 = runner.invoke(
@@ -100,7 +99,7 @@ def test_query_by_relationship(runner, temp_project):
     # assert "Test Case 1" in result4.stdout
 
 
-def test_query_by_relationship_no_results(runner, temp_project):
+def test_query_by_relationship_no_results(runner, temp_project) -> None:
     """Test query by relationship with no results."""
     # Create an item with no links
     result1 = runner.invoke(
@@ -131,7 +130,7 @@ def test_query_by_relationship_no_results(runner, temp_project):
     # assert "No related items" in result2.stdout or "No items found" in result2.stdout
 
 
-def test_query_by_relationship_with_link_type_filter(runner, temp_project):
+def test_query_by_relationship_with_link_type_filter(runner, temp_project) -> None:
     """Test query by relationship with link type filter."""
     # This would test filtering by specific link types
     # e.g., show only items linked via "tests" relationship

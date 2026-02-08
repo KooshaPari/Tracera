@@ -22,7 +22,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Create code_entities table with AST references."""
-
     op.create_table(
         "code_entities",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
@@ -115,10 +114,10 @@ def upgrade() -> None:
 
     # Self-referential foreign key
     op.create_foreign_key(
-        "fk_code_entities_parent", "code_entities", "code_entities", ["parent_id"], ["id"], ondelete="CASCADE"
+        "fk_code_entities_parent", "code_entities", "code_entities", ["parent_id"], ["id"], ondelete="CASCADE",
     )
     op.create_foreign_key(
-        "fk_code_entities_item", "code_entities", "items", ["linked_item_id"], ["id"], ondelete="SET NULL"
+        "fk_code_entities_item", "code_entities", "items", ["linked_item_id"], ["id"], ondelete="SET NULL",
     )
     op.create_foreign_key(
         "fk_code_entities_canonical",

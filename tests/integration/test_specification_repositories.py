@@ -1,5 +1,4 @@
-"""
-Specification Repository Integration Tests.
+"""Specification Repository Integration Tests.
 
 These tests validate:
 - ADR, Contract, Feature, and Scenario CRUD operations
@@ -42,7 +41,7 @@ async def test_project(db_session: AsyncSession) -> Project:
     """Create a test project."""
     repo = ProjectRepository(db_session)
     project = await repo.create(
-        name="Specification Test Project", description="Test project for specification repositories"
+        name="Specification Test Project", description="Test project for specification repositories",
     )
     await db_session.commit()
     return project
@@ -69,7 +68,7 @@ async def test_item(db_session: AsyncSession, test_project: Project) -> Item:
 
 
 @pytest.mark.asyncio
-async def test_adr_create_basic(db_session: AsyncSession, test_project: Project):
+async def test_adr_create_basic(db_session: AsyncSession, test_project: Project) -> None:
     """Test basic ADR creation."""
     repo = ADRRepository(db_session)
 
@@ -91,7 +90,7 @@ async def test_adr_create_basic(db_session: AsyncSession, test_project: Project)
 
 
 @pytest.mark.asyncio
-async def test_adr_create_with_full_metadata(db_session: AsyncSession, test_project: Project):
+async def test_adr_create_with_full_metadata(db_session: AsyncSession, test_project: Project) -> None:
     """Test ADR creation with all metadata."""
     repo = ADRRepository(db_session)
 
@@ -123,7 +122,7 @@ async def test_adr_create_with_full_metadata(db_session: AsyncSession, test_proj
 
 
 @pytest.mark.asyncio
-async def test_adr_get_by_id(db_session: AsyncSession, test_project: Project):
+async def test_adr_get_by_id(db_session: AsyncSession, test_project: Project) -> None:
     """Test retrieving ADR by ID."""
     repo = ADRRepository(db_session)
 
@@ -143,7 +142,7 @@ async def test_adr_get_by_id(db_session: AsyncSession, test_project: Project):
 
 
 @pytest.mark.asyncio
-async def test_adr_get_by_number(db_session: AsyncSession, test_project: Project):
+async def test_adr_get_by_number(db_session: AsyncSession, test_project: Project) -> None:
     """Test retrieving ADR by number."""
     repo = ADRRepository(db_session)
 
@@ -162,7 +161,7 @@ async def test_adr_get_by_number(db_session: AsyncSession, test_project: Project
 
 
 @pytest.mark.asyncio
-async def test_adr_list_by_project(db_session: AsyncSession, test_project: Project):
+async def test_adr_list_by_project(db_session: AsyncSession, test_project: Project) -> None:
     """Test listing ADRs by project."""
     repo = ADRRepository(db_session)
 
@@ -183,7 +182,7 @@ async def test_adr_list_by_project(db_session: AsyncSession, test_project: Proje
 
 
 @pytest.mark.asyncio
-async def test_adr_list_by_status(db_session: AsyncSession, test_project: Project):
+async def test_adr_list_by_status(db_session: AsyncSession, test_project: Project) -> None:
     """Test listing ADRs filtered by status."""
     repo = ADRRepository(db_session)
 
@@ -211,12 +210,12 @@ async def test_adr_list_by_status(db_session: AsyncSession, test_project: Projec
 
 
 @pytest.mark.asyncio
-async def test_adr_update_with_locking(db_session: AsyncSession, test_project: Project):
+async def test_adr_update_with_locking(db_session: AsyncSession, test_project: Project) -> None:
     """Test ADR update with optimistic locking."""
     repo = ADRRepository(db_session)
 
     adr = await repo.create(
-        project_id=str(test_project.id), title="Original", context="C", decision="D", consequences="C"
+        project_id=str(test_project.id), title="Original", context="C", decision="D", consequences="C",
     )
     await db_session.commit()
 
@@ -227,12 +226,12 @@ async def test_adr_update_with_locking(db_session: AsyncSession, test_project: P
 
 
 @pytest.mark.asyncio
-async def test_adr_update_version_conflict(db_session: AsyncSession, test_project: Project):
+async def test_adr_update_version_conflict(db_session: AsyncSession, test_project: Project) -> None:
     """Test ADR update fails with version conflict."""
     repo = ADRRepository(db_session)
 
     adr = await repo.create(
-        project_id=str(test_project.id), title="Original", context="C", decision="D", consequences="C"
+        project_id=str(test_project.id), title="Original", context="C", decision="D", consequences="C",
     )
     await db_session.commit()
 
@@ -242,12 +241,12 @@ async def test_adr_update_version_conflict(db_session: AsyncSession, test_projec
 
 
 @pytest.mark.asyncio
-async def test_adr_transition_status(db_session: AsyncSession, test_project: Project):
+async def test_adr_transition_status(db_session: AsyncSession, test_project: Project) -> None:
     """Test ADR status transitions."""
     repo = ADRRepository(db_session)
 
     adr = await repo.create(
-        project_id=str(test_project.id), title="Test", context="C", decision="D", consequences="C", status="proposed"
+        project_id=str(test_project.id), title="Test", context="C", decision="D", consequences="C", status="proposed",
     )
     await db_session.commit()
 
@@ -257,12 +256,12 @@ async def test_adr_transition_status(db_session: AsyncSession, test_project: Pro
 
 
 @pytest.mark.asyncio
-async def test_adr_invalid_status_transition(db_session: AsyncSession, test_project: Project):
+async def test_adr_invalid_status_transition(db_session: AsyncSession, test_project: Project) -> None:
     """Test invalid ADR status transitions are rejected."""
     repo = ADRRepository(db_session)
 
     adr = await repo.create(
-        project_id=str(test_project.id), title="Test", context="C", decision="D", consequences="C", status="deprecated"
+        project_id=str(test_project.id), title="Test", context="C", decision="D", consequences="C", status="deprecated",
     )
     await db_session.commit()
 
@@ -272,7 +271,7 @@ async def test_adr_invalid_status_transition(db_session: AsyncSession, test_proj
 
 
 @pytest.mark.asyncio
-async def test_adr_verify_compliance(db_session: AsyncSession, test_project: Project):
+async def test_adr_verify_compliance(db_session: AsyncSession, test_project: Project) -> None:
     """Test ADR compliance verification."""
     repo = ADRRepository(db_session)
 
@@ -285,7 +284,7 @@ async def test_adr_verify_compliance(db_session: AsyncSession, test_project: Pro
 
 
 @pytest.mark.asyncio
-async def test_adr_count_by_status(db_session: AsyncSession, test_project: Project):
+async def test_adr_count_by_status(db_session: AsyncSession, test_project: Project) -> None:
     """Test counting ADRs by status."""
     repo = ADRRepository(db_session)
 
@@ -320,7 +319,7 @@ async def test_adr_count_by_status(db_session: AsyncSession, test_project: Proje
 
 
 @pytest.mark.asyncio
-async def test_contract_create_basic(db_session: AsyncSession, test_project: Project, test_item: Item):
+async def test_contract_create_basic(db_session: AsyncSession, test_project: Project, test_item: Item) -> None:
     """Test basic contract creation."""
     repo = ContractRepository(db_session)
 
@@ -339,7 +338,7 @@ async def test_contract_create_basic(db_session: AsyncSession, test_project: Pro
 
 
 @pytest.mark.asyncio
-async def test_contract_create_with_specification(db_session: AsyncSession, test_project: Project, test_item: Item):
+async def test_contract_create_with_specification(db_session: AsyncSession, test_project: Project, test_item: Item) -> None:
     """Test contract creation with full specification."""
     repo = ContractRepository(db_session)
 
@@ -376,13 +375,13 @@ async def test_contract_create_with_specification(db_session: AsyncSession, test
 
 
 @pytest.mark.asyncio
-async def test_contract_list_by_item(db_session: AsyncSession, test_project: Project, test_item: Item):
+async def test_contract_list_by_item(db_session: AsyncSession, test_project: Project, test_item: Item) -> None:
     """Test listing contracts for an item."""
     repo = ContractRepository(db_session)
 
     for i in range(3):
         await repo.create(
-            project_id=str(test_project.id), item_id=str(test_item.id), title=f"Contract {i}", contract_type="api"
+            project_id=str(test_project.id), item_id=str(test_item.id), title=f"Contract {i}", contract_type="api",
         )
     await db_session.commit()
 
@@ -391,12 +390,12 @@ async def test_contract_list_by_item(db_session: AsyncSession, test_project: Pro
 
 
 @pytest.mark.asyncio
-async def test_contract_verify(db_session: AsyncSession, test_project: Project, test_item: Item):
+async def test_contract_verify(db_session: AsyncSession, test_project: Project, test_item: Item) -> None:
     """Test contract verification recording."""
     repo = ContractRepository(db_session)
 
     contract = await repo.create(
-        project_id=str(test_project.id), item_id=str(test_item.id), title="API Contract", contract_type="api"
+        project_id=str(test_project.id), item_id=str(test_item.id), title="API Contract", contract_type="api",
     )
     await db_session.commit()
 
@@ -409,7 +408,7 @@ async def test_contract_verify(db_session: AsyncSession, test_project: Project, 
 
 
 @pytest.mark.asyncio
-async def test_contract_status_transitions(db_session: AsyncSession, test_project: Project, test_item: Item):
+async def test_contract_status_transitions(db_session: AsyncSession, test_project: Project, test_item: Item) -> None:
     """Test contract status transitions."""
     repo = ContractRepository(db_session)
 
@@ -437,7 +436,7 @@ async def test_contract_status_transitions(db_session: AsyncSession, test_projec
 
 
 @pytest.mark.asyncio
-async def test_feature_create_basic(db_session: AsyncSession, test_project: Project):
+async def test_feature_create_basic(db_session: AsyncSession, test_project: Project) -> None:
     """Test basic feature creation."""
     repo = FeatureRepository(db_session)
 
@@ -455,7 +454,7 @@ async def test_feature_create_basic(db_session: AsyncSession, test_project: Proj
 
 
 @pytest.mark.asyncio
-async def test_feature_create_with_user_story(db_session: AsyncSession, test_project: Project):
+async def test_feature_create_with_user_story(db_session: AsyncSession, test_project: Project) -> None:
     """Test feature creation with user story format."""
     repo = FeatureRepository(db_session)
 
@@ -478,7 +477,7 @@ async def test_feature_create_with_user_story(db_session: AsyncSession, test_pro
 
 
 @pytest.mark.asyncio
-async def test_feature_list_by_project(db_session: AsyncSession, test_project: Project):
+async def test_feature_list_by_project(db_session: AsyncSession, test_project: Project) -> None:
     """Test listing features by project."""
     repo = FeatureRepository(db_session)
 
@@ -491,7 +490,7 @@ async def test_feature_list_by_project(db_session: AsyncSession, test_project: P
 
 
 @pytest.mark.asyncio
-async def test_feature_status_transitions(db_session: AsyncSession, test_project: Project):
+async def test_feature_status_transitions(db_session: AsyncSession, test_project: Project) -> None:
     """Test feature status transitions."""
     repo = FeatureRepository(db_session)
 
@@ -517,7 +516,7 @@ async def test_feature_status_transitions(db_session: AsyncSession, test_project
 
 
 @pytest.mark.asyncio
-async def test_scenario_create_basic(db_session: AsyncSession, test_project: Project):
+async def test_scenario_create_basic(db_session: AsyncSession, test_project: Project) -> None:
     """Test basic scenario creation."""
     repo_feature = FeatureRepository(db_session)
     repo_scenario = ScenarioRepository(db_session)
@@ -539,7 +538,7 @@ async def test_scenario_create_basic(db_session: AsyncSession, test_project: Pro
 
 
 @pytest.mark.asyncio
-async def test_scenario_create_with_steps(db_session: AsyncSession, test_project: Project):
+async def test_scenario_create_with_steps(db_session: AsyncSession, test_project: Project) -> None:
     """Test scenario creation with detailed steps."""
     repo_feature = FeatureRepository(db_session)
     repo_scenario = ScenarioRepository(db_session)
@@ -570,7 +569,7 @@ async def test_scenario_create_with_steps(db_session: AsyncSession, test_project
 
 
 @pytest.mark.asyncio
-async def test_scenario_create_outline(db_session: AsyncSession, test_project: Project):
+async def test_scenario_create_outline(db_session: AsyncSession, test_project: Project) -> None:
     """Test scenario outline creation."""
     repo_feature = FeatureRepository(db_session)
     repo_scenario = ScenarioRepository(db_session)
@@ -596,7 +595,7 @@ async def test_scenario_create_outline(db_session: AsyncSession, test_project: P
 
 
 @pytest.mark.asyncio
-async def test_scenario_list_by_feature(db_session: AsyncSession, test_project: Project):
+async def test_scenario_list_by_feature(db_session: AsyncSession, test_project: Project) -> None:
     """Test listing scenarios for a feature."""
     repo_feature = FeatureRepository(db_session)
     repo_scenario = ScenarioRepository(db_session)
@@ -613,7 +612,7 @@ async def test_scenario_list_by_feature(db_session: AsyncSession, test_project: 
 
 
 @pytest.mark.asyncio
-async def test_scenario_update_pass_rate(db_session: AsyncSession, test_project: Project):
+async def test_scenario_update_pass_rate(db_session: AsyncSession, test_project: Project) -> None:
     """Test updating scenario pass rate."""
     repo_feature = FeatureRepository(db_session)
     repo_scenario = ScenarioRepository(db_session)
@@ -628,14 +627,14 @@ async def test_scenario_update_pass_rate(db_session: AsyncSession, test_project:
 
 
 @pytest.mark.asyncio
-async def test_scenario_status_transitions(db_session: AsyncSession, test_project: Project):
+async def test_scenario_status_transitions(db_session: AsyncSession, test_project: Project) -> None:
     """Test scenario status transitions."""
     repo_feature = FeatureRepository(db_session)
     repo_scenario = ScenarioRepository(db_session)
 
     feature = await repo_feature.create(project_id=str(test_project.id), name="Test Feature")
     scenario = await repo_scenario.create(
-        feature_id=feature.id, title="Test Scenario", gherkin_text="...", status="draft"
+        feature_id=feature.id, title="Test Scenario", gherkin_text="...", status="draft",
     )
     await db_session.commit()
 
@@ -649,7 +648,7 @@ async def test_scenario_status_transitions(db_session: AsyncSession, test_projec
 
 
 @pytest.mark.asyncio
-async def test_scenario_count_by_status(db_session: AsyncSession, test_project: Project):
+async def test_scenario_count_by_status(db_session: AsyncSession, test_project: Project) -> None:
     """Test counting scenarios by status."""
     repo_feature = FeatureRepository(db_session)
     repo_scenario = ScenarioRepository(db_session)
@@ -669,7 +668,7 @@ async def test_scenario_count_by_status(db_session: AsyncSession, test_project: 
 
 
 @pytest.mark.asyncio
-async def test_scenario_average_pass_rate(db_session: AsyncSession, test_project: Project):
+async def test_scenario_average_pass_rate(db_session: AsyncSession, test_project: Project) -> None:
     """Test calculating average pass rate for feature."""
     repo_feature = FeatureRepository(db_session)
     repo_scenario = ScenarioRepository(db_session)
@@ -680,7 +679,7 @@ async def test_scenario_average_pass_rate(db_session: AsyncSession, test_project
     scenarios = []
     for pass_rate in [0.8, 0.9, 1.0]:
         scenario = await repo_scenario.create(
-            feature_id=feature.id, title="Test", gherkin_text="...", pass_rate=pass_rate
+            feature_id=feature.id, title="Test", gherkin_text="...", pass_rate=pass_rate,
         )
         scenarios.append(scenario)
     await db_session.commit()
@@ -690,7 +689,7 @@ async def test_scenario_average_pass_rate(db_session: AsyncSession, test_project
 
 
 @pytest.mark.asyncio
-async def test_scenario_version_locking(db_session: AsyncSession, test_project: Project):
+async def test_scenario_version_locking(db_session: AsyncSession, test_project: Project) -> None:
     """Test scenario optimistic locking."""
     repo_feature = FeatureRepository(db_session)
     repo_scenario = ScenarioRepository(db_session)

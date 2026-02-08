@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Populate incomplete projects with rich, authentic mock data.
+"""Populate incomplete projects with rich, authentic mock data.
 Simulates how a real user would create requirements and traceability items.
 """
 
@@ -23,7 +22,7 @@ def run_cmd(cmd_list, cwd=None):
 
 
 def create_item(
-    project_path, title, view, item_type, description=None, status="todo", priority="medium", owner=None, parent_id=None
+    project_path, title, view, item_type, description=None, status="todo", priority="medium", owner=None, parent_id=None,
 ):
     """Create an item using rtm CLI."""
     cmd = [
@@ -60,12 +59,9 @@ def create_item(
     return None
 
 
-def populate_demo_project():
+def populate_demo_project() -> None:
     """Populate DEMO_PROJECT with rich e-commerce data."""
     project_path = "./samples/DEMO_PROJECT"
-    print(f"\n{'=' * 60}")
-    print("Populating DEMO_PROJECT: E-Commerce Platform")
-    print(f"{'=' * 60}\n")
 
     # Epic 1: User Authentication (already exists, expand it)
     epic1_id = "EPIC-001"
@@ -95,7 +91,6 @@ def populate_demo_project():
         story_id = create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic1_id)
         if story_id:
             story_ids.append(story_id)
-            print(f"  ✓ Created {story_id}: {title}")
 
     # Epic 2: Product Catalog
     epic2_id = create_item(
@@ -108,7 +103,6 @@ def populate_demo_project():
         "high",
     )
     if epic2_id:
-        print(f"  ✓ Created {epic2_id}: Product Catalog & Search")
 
         catalog_stories = [
             (
@@ -141,7 +135,7 @@ def populate_demo_project():
         for title, desc, priority in catalog_stories:
             story_id = create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic2_id)
             if story_id:
-                print(f"    ✓ Created {story_id}: {title}")
+                pass
 
     # Epic 3: Shopping Cart & Checkout
     epic3_id = create_item(
@@ -154,7 +148,6 @@ def populate_demo_project():
         "critical",
     )
     if epic3_id:
-        print(f"  ✓ Created {epic3_id}: Shopping Cart & Checkout")
 
         checkout_stories = [
             (
@@ -192,7 +185,7 @@ def populate_demo_project():
         for title, desc, priority in checkout_stories:
             story_id = create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic3_id)
             if story_id:
-                print(f"    ✓ Created {story_id}: {title}")
+                pass
 
     # API Endpoints
     api_endpoints = [
@@ -209,11 +202,10 @@ def populate_demo_project():
         ("GET /api/orders/:id", "Get order details with tracking", "high"),
     ]
 
-    print("\n  Creating API Endpoints...")
     for title, desc, priority in api_endpoints:
         endpoint_id = create_item(project_path, title, "API", "endpoint", desc, "todo", priority)
         if endpoint_id:
-            print(f"    ✓ Created {endpoint_id}: {title}")
+            pass
 
     # Database Tables
     db_tables = [
@@ -227,11 +219,10 @@ def populate_demo_project():
         ("wishlists", "User wishlists for saved products", "low"),
     ]
 
-    print("\n  Creating Database Tables...")
     for title, desc, priority in db_tables:
         table_id = create_item(project_path, title, "DATABASE", "table", desc, "todo", priority)
         if table_id:
-            print(f"    ✓ Created {table_id}: {title}")
+            pass
 
     # Test Cases
     test_cases = [
@@ -243,11 +234,10 @@ def populate_demo_project():
         ("Filter products", "Verify filters correctly narrow results", "medium"),
     ]
 
-    print("\n  Creating Test Cases...")
     for title, desc, priority in test_cases:
         test_id = create_item(project_path, title, "TEST", "test_case", desc, "todo", priority)
         if test_id:
-            print(f"    ✓ Created {test_id}: {title}")
+            pass
 
     # Wireframes/Screens
     screens = [
@@ -259,20 +249,18 @@ def populate_demo_project():
         ("Order Confirmation", "Success page with order details and tracking number", "high"),
     ]
 
-    print("\n  Creating Wireframes/Screens...")
     for title, desc, priority in screens:
         screen_id = create_item(project_path, title, "WIREFRAME", "screen", desc, "todo", priority)
         if screen_id:
-            print(f"    ✓ Created {screen_id}: {title}")
+            pass
 
 
-def populate_frontend_project():
+def populate_frontend_project() -> None:
     """Populate frontend project with React/UI components."""
     project_path = "./frontend"
 
     # Initialize if needed
     if not (Path(project_path) / ".trace" / "project.yaml").exists():
-        print("\n  Initializing frontend project...")
         run_cmd([
             "rtm",
             "init",
@@ -283,10 +271,6 @@ def populate_frontend_project():
             "--path",
             project_path,
         ])
-
-    print(f"\n{'=' * 60}")
-    print("Populating frontend: Frontend Application")
-    print(f"{'=' * 60}\n")
 
     # Epic: Component Library
     epic1_id = create_item(
@@ -299,7 +283,6 @@ def populate_frontend_project():
         "high",
     )
     if epic1_id:
-        print(f"  ✓ Created {epic1_id}: Design System & Component Library")
 
         component_stories = [
             (
@@ -321,7 +304,7 @@ def populate_frontend_project():
         for title, desc, priority in component_stories:
             story_id = create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic1_id)
             if story_id:
-                print(f"    ✓ Created {story_id}: {title}")
+                pass
 
     # Epic: Authentication UI
     epic2_id = create_item(
@@ -334,7 +317,6 @@ def populate_frontend_project():
         "high",
     )
     if epic2_id:
-        print(f"  ✓ Created {epic2_id}: Authentication UI")
 
         auth_stories = [
             ("Login Page", "Build login page with email/password form, validation, and error handling", "high"),
@@ -350,7 +332,7 @@ def populate_frontend_project():
         for title, desc, priority in auth_stories:
             story_id = create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic2_id)
             if story_id:
-                print(f"    ✓ Created {story_id}: {title}")
+                pass
 
     # Code Components (React)
     react_components = [
@@ -364,11 +346,10 @@ def populate_frontend_project():
         ("AuthProvider.tsx", "Context provider for authentication", "high"),
     ]
 
-    print("\n  Creating React Components...")
     for title, desc, priority in react_components:
         comp_id = create_item(project_path, title, "CODE", "file", desc, "todo", priority)
         if comp_id:
-            print(f"    ✓ Created {comp_id}: {title}")
+            pass
 
     # Wireframes
     wireframes = [
@@ -378,20 +359,18 @@ def populate_frontend_project():
         ("Settings Page", "Settings page with tabbed navigation", "low"),
     ]
 
-    print("\n  Creating Wireframes...")
     for title, desc, priority in wireframes:
         wireframe_id = create_item(project_path, title, "WIREFRAME", "screen", desc, "todo", priority)
         if wireframe_id:
-            print(f"    ✓ Created {wireframe_id}: {title}")
+            pass
 
 
-def populate_backend_project():
+def populate_backend_project() -> None:
     """Populate backend project with API and service data."""
     project_path = "./backend"
 
     # Initialize if needed
     if not (Path(project_path) / ".trace" / "project.yaml").exists():
-        print("\n  Initializing backend project...")
         run_cmd([
             "rtm",
             "init",
@@ -402,10 +381,6 @@ def populate_backend_project():
             "--path",
             project_path,
         ])
-
-    print(f"\n{'=' * 60}")
-    print("Populating backend: Backend API")
-    print(f"{'=' * 60}\n")
 
     # Epic: Authentication Service
     epic1_id = create_item(
@@ -418,7 +393,6 @@ def populate_backend_project():
         "critical",
     )
     if epic1_id:
-        print(f"  ✓ Created {epic1_id}: Authentication & Authorization Service")
 
         auth_stories = [
             ("JWT Token Generation", "Implement JWT token generation with access and refresh tokens", "critical"),
@@ -431,7 +405,7 @@ def populate_backend_project():
         for title, desc, priority in auth_stories:
             story_id = create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic1_id)
             if story_id:
-                print(f"    ✓ Created {story_id}: {title}")
+                pass
 
     # Epic: Product Service
     epic2_id = create_item(
@@ -444,7 +418,6 @@ def populate_backend_project():
         "high",
     )
     if epic2_id:
-        print(f"  ✓ Created {epic2_id}: Product Management Service")
 
         product_stories = [
             ("Product CRUD Operations", "Implement create, read, update, delete operations for products", "high"),
@@ -457,7 +430,7 @@ def populate_backend_project():
         for title, desc, priority in product_stories:
             story_id = create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic2_id)
             if story_id:
-                print(f"    ✓ Created {story_id}: {title}")
+                pass
 
     # API Endpoints
     api_endpoints = [
@@ -477,11 +450,10 @@ def populate_backend_project():
         ("GET /api/v1/orders/:id", "Get order details", "high"),
     ]
 
-    print("\n  Creating API Endpoints...")
     for title, desc, priority in api_endpoints:
         endpoint_id = create_item(project_path, title, "API", "endpoint", desc, "todo", priority)
         if endpoint_id:
-            print(f"    ✓ Created {endpoint_id}: {title}")
+            pass
 
     # Database Tables
     db_tables = [
@@ -498,11 +470,10 @@ def populate_backend_project():
         ("sessions", "User session tracking", "medium"),
     ]
 
-    print("\n  Creating Database Tables...")
     for title, desc, priority in db_tables:
         table_id = create_item(project_path, title, "DATABASE", "table", desc, "todo", priority)
         if table_id:
-            print(f"    ✓ Created {table_id}: {title}")
+            pass
 
     # Code Files (Services)
     service_files = [
@@ -514,11 +485,10 @@ def populate_backend_project():
         ("search_service.py", "Full-text search implementation", "high"),
     ]
 
-    print("\n  Creating Service Files...")
     for title, desc, priority in service_files:
         file_id = create_item(project_path, title, "CODE", "file", desc, "todo", priority)
         if file_id:
-            print(f"    ✓ Created {file_id}: {title}")
+            pass
 
     # Test Suites
     test_suites = [
@@ -528,27 +498,18 @@ def populate_backend_project():
         ("Order API Tests", "Test suite for order creation and processing", "critical"),
     ]
 
-    print("\n  Creating Test Suites...")
     for title, desc, priority in test_suites:
         suite_id = create_item(project_path, title, "TEST", "test_suite", desc, "todo", priority)
         if suite_id:
-            print(f"    ✓ Created {suite_id}: {title}")
+            pass
 
 
-def main():
+def main() -> None:
     """Main function to populate all projects."""
-    print("\n" + "=" * 60)
-    print("Populating Projects with Rich Mock Data")
-    print("=" * 60)
-
     # Populate each project
     populate_demo_project()
     populate_frontend_project()
     populate_backend_project()
-
-    print(f"\n{'=' * 60}")
-    print("✓ Project population complete!")
-    print(f"{'=' * 60}\n")
 
 
 if __name__ == "__main__":

@@ -91,7 +91,7 @@ def get_canary_metrics() -> CanaryMetrics:
     )
 
 
-@router.get("/canary", response_model=CanaryHealthResponse)
+@router.get("/canary")
 async def get_canary_health(
     # Uncomment and adjust based on your setup
     # db: AsyncSession = Depends(get_db),

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Seed one project in tracertm schema with rich, varied data: 50+ items per type,
+"""Seed one project in tracertm schema with rich, varied data: 50+ items per type,
 50+ links per link type, agents, events, milestones, sprints. Uses tracertm schema
 and existing columns only (links: source_id, target_id, link_type; no project_id/graph_id).
 """
@@ -143,7 +142,7 @@ def generate_metadata(view: str, item_type: str) -> dict:
     return m
 
 
-def run():
+def run() -> None:
     engine = get_engine()
     project_id = uuid.uuid4()
     project_name = "Platform In-Progress — Trace & Requirements"
@@ -163,7 +162,6 @@ def run():
             """),
             {"id": project_id, "name": project_name, "description": project_desc, "account_id": ACCOUNT_ID},
         )
-        print(f"Created project {project_id}")
 
     item_ids: list[uuid.UUID] = []
     with engine.begin() as conn:
@@ -195,7 +193,6 @@ def run():
                         },
                     )
                     item_ids.append(item_id)
-        print(f"Created {len(item_ids)} items")
 
     link_count = 0
     with engine.begin() as conn:
@@ -219,7 +216,6 @@ def run():
                     },
                 )
                 link_count += 1
-    print(f"Created {link_count} links")
 
     with engine.begin() as conn:
         conn.execute(text("SET search_path TO tracertm"))
@@ -239,7 +235,6 @@ def run():
                 },
             )
             agent_ids.append(agent_id)
-        print(f"Created {len(agent_ids)} agents")
 
     with engine.begin() as conn:
         conn.execute(text("SET search_path TO tracertm"))
@@ -261,7 +256,6 @@ def run():
                     }),
                 },
             )
-        print(f"Created {NUM_EVENTS} events")
 
     # Milestones and sprints (no owner_id / profile required)
     with engine.begin() as conn:
@@ -307,11 +301,6 @@ def run():
                     "rem": 0 if i < 4 else 30 if i == 4 else 50,
                 },
             )
-    print("Created 5 milestones, 5 sprints")
-
-    print("Done.")
-    print(f"  Project id: {project_id}")
-    print(f"  Items: {len(item_ids)}, Links: {link_count}, Agents: {len(agent_ids)}, Events: {NUM_EVENTS}")
 
 
 if __name__ == "__main__":

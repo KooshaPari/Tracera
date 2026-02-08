@@ -13,54 +13,54 @@ from unittest.mock import Mock
 class TestAPIEndpointValidation:
     """Test API endpoint request/response patterns."""
 
-    def test_item_create_payload_validation(self):
+    def test_item_create_payload_validation(self) -> None:
         """Test item creation payload."""
         payload = {"name": "Test Item", "description": "Test Description", "status": "active"}
         assert "name" in payload
         assert payload["name"] == "Test Item"
 
-    def test_item_list_query_parameters(self):
+    def test_item_list_query_parameters(self) -> None:
         """Test item list query parameters."""
         params: dict[str, int | str] = {"skip": 0, "limit": 10, "status": "active"}
         assert params["skip"] >= 0
         assert params["limit"] > 0
 
-    def test_item_update_partial_payload(self):
+    def test_item_update_partial_payload(self) -> None:
         """Test partial update payload."""
         payload = {"description": "Updated Description"}
         # Partial update should work
         assert "description" in payload
         assert "id" not in payload  # ID not in payload
 
-    def test_item_delete_success_response(self):
+    def test_item_delete_success_response(self) -> None:
         """Test delete success response."""
         response = {"success": True, "message": "Item deleted"}
         assert response["success"]
 
-    def test_link_create_validation(self):
+    def test_link_create_validation(self) -> None:
         """Test link creation payload."""
         payload: dict[str, int | str] = {"source_id": 1, "target_id": 2, "link_type": "depends_on"}
         assert payload["source_id"] > 0
         assert payload["target_id"] > 0
 
-    def test_link_invalid_self_reference(self):
+    def test_link_invalid_self_reference(self) -> None:
         """Test invalid self-referencing link."""
         payload = {"source_id": 1, "target_id": 1, "link_type": "depends_on"}
         # Should detect self-reference
         assert payload["source_id"] == payload["target_id"]
 
-    def test_project_init_payload(self):
+    def test_project_init_payload(self) -> None:
         """Test project initialization."""
         payload = {"name": "Test Project", "description": "Test"}
         assert len(payload["name"]) > 0
 
-    def test_project_switch_validation(self):
+    def test_project_switch_validation(self) -> None:
         """Test project switch."""
         project_id = "project-123"
         assert len(project_id) > 0
         assert "project" in project_id.lower()
 
-    def test_backup_create_response(self):
+    def test_backup_create_response(self) -> None:
         """Test backup creation response."""
         response: dict[str, str | int] = {
             "backup_id": "backup-123",
@@ -70,24 +70,24 @@ class TestAPIEndpointValidation:
         assert "backup_id" in response
         assert response["items_count"] >= 0
 
-    def test_restore_from_backup_payload(self):
+    def test_restore_from_backup_payload(self) -> None:
         """Test restore payload."""
         payload = {"backup_id": "backup-123", "force": False}
         assert isinstance(payload["force"], bool)
 
-    def test_config_set_validation(self):
+    def test_config_set_validation(self) -> None:
         """Test config set."""
         payload = {"key": "api_key", "value": "secret-value"}
         assert len(payload["key"]) > 0
         assert len(payload["value"]) > 0
 
-    def test_config_get_response(self):
+    def test_config_get_response(self) -> None:
         """Test config get response."""
         response = {"key": "api_key", "value": "secret-value"}
         assert "key" in response
         assert "value" in response
 
-    def test_error_response_structure(self):
+    def test_error_response_structure(self) -> None:
         """Test error response structure."""
         error_response: dict[str, str | int] = {
             "error": "Invalid request",
@@ -97,7 +97,7 @@ class TestAPIEndpointValidation:
         assert "error" in error_response
         assert error_response["code"] >= 400
 
-    def test_validation_error_array(self):
+    def test_validation_error_array(self) -> None:
         """Test validation error array."""
         errors = [{"field": "name", "message": "Required"}, {"field": "email", "message": "Invalid format"}]
         assert len(errors) > 0
@@ -107,7 +107,7 @@ class TestAPIEndpointValidation:
 class TestServiceMethodCoverage:
     """Test service method coverage and patterns."""
 
-    def test_item_service_get_method(self):
+    def test_item_service_get_method(self) -> None:
         """Test item service get method."""
         mock_service = Mock()
         mock_service.get = Mock(return_value={"id": 1, "name": "Test"})
@@ -115,7 +115,7 @@ class TestServiceMethodCoverage:
         result = mock_service.get(1)
         assert result["id"] == 1
 
-    def test_item_service_list_method(self):
+    def test_item_service_list_method(self) -> None:
         """Test item service list method."""
         mock_service = Mock()
         mock_service.list = Mock(return_value=[{"id": 1}, {"id": 2}])
@@ -123,7 +123,7 @@ class TestServiceMethodCoverage:
         result = mock_service.list()
         assert len(result) == 2
 
-    def test_item_service_create_method(self):
+    def test_item_service_create_method(self) -> None:
         """Test item service create method."""
         mock_service = Mock()
         mock_service.create = Mock(return_value={"id": 1, "name": "New Item"})
@@ -131,7 +131,7 @@ class TestServiceMethodCoverage:
         result = mock_service.create(name="New Item")
         assert "id" in result
 
-    def test_item_service_update_method(self):
+    def test_item_service_update_method(self) -> None:
         """Test item service update method."""
         mock_service = Mock()
         mock_service.update = Mock(return_value={"id": 1, "name": "Updated"})
@@ -139,7 +139,7 @@ class TestServiceMethodCoverage:
         result = mock_service.update(1, name="Updated")
         assert result["name"] == "Updated"
 
-    def test_item_service_delete_method(self):
+    def test_item_service_delete_method(self) -> None:
         """Test item service delete method."""
         mock_service = Mock()
         mock_service.delete = Mock(return_value=True)
@@ -147,7 +147,7 @@ class TestServiceMethodCoverage:
         result = mock_service.delete(1)
         assert result is True
 
-    def test_link_service_create_method(self):
+    def test_link_service_create_method(self) -> None:
         """Test link service create method."""
         mock_service = Mock()
         mock_service.create = Mock(return_value={"id": 1, "source_id": 1, "target_id": 2})
@@ -155,7 +155,7 @@ class TestServiceMethodCoverage:
         result = mock_service.create(source_id=1, target_id=2)
         assert result["source_id"] == 1
 
-    def test_link_service_get_by_items(self):
+    def test_link_service_get_by_items(self) -> None:
         """Test get links between items."""
         mock_service = Mock()
         mock_service.get_by_items = Mock(return_value=[{"id": 1}])
@@ -163,7 +163,7 @@ class TestServiceMethodCoverage:
         result = mock_service.get_by_items(source_id=1, target_id=2)
         assert isinstance(result, list)
 
-    def test_project_service_create_method(self):
+    def test_project_service_create_method(self) -> None:
         """Test project service create method."""
         mock_service = Mock()
         mock_service.create = Mock(return_value={"id": "proj-1", "name": "Test"})
@@ -171,7 +171,7 @@ class TestServiceMethodCoverage:
         result = mock_service.create(name="Test")
         assert "id" in result
 
-    def test_project_service_switch_method(self):
+    def test_project_service_switch_method(self) -> None:
         """Test project service switch method."""
         mock_service = Mock()
         mock_service.switch = Mock(return_value=True)
@@ -179,7 +179,7 @@ class TestServiceMethodCoverage:
         result = mock_service.switch(project_id="proj-1")
         assert result is True
 
-    def test_cache_service_operations(self):
+    def test_cache_service_operations(self) -> None:
         """Test cache service basic operations."""
         mock_cache = Mock()
         mock_cache.set = Mock()
@@ -189,11 +189,11 @@ class TestServiceMethodCoverage:
         result = mock_cache.get("key")
         assert result == "value"
 
-    def test_query_builder_pattern(self):
+    def test_query_builder_pattern(self) -> None:
         """Test query builder pattern."""
 
         class QueryBuilder:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.filters = []
 
             def filter(self, field, op, value):
@@ -207,7 +207,7 @@ class TestServiceMethodCoverage:
         result = qb.build()
         assert len(result) == 2
 
-    def test_pagination_pattern(self):
+    def test_pagination_pattern(self) -> None:
         """Test pagination pattern."""
         data = list(range(100))
         page = 2
@@ -222,7 +222,7 @@ class TestServiceMethodCoverage:
 class TestWorkflowIntegration:
     """Test complete workflow scenarios."""
 
-    def test_create_and_list_items(self):
+    def test_create_and_list_items(self) -> None:
         """Test create item then list."""
         mock_service = Mock()
         mock_service.create = Mock(return_value={"id": 1, "name": "Item"})
@@ -233,7 +233,7 @@ class TestWorkflowIntegration:
 
         assert items[0]["id"] == created["id"]
 
-    def test_create_items_and_link(self):
+    def test_create_items_and_link(self) -> None:
         """Test create items and create link."""
         item_service = Mock()
         link_service = Mock()
@@ -247,7 +247,7 @@ class TestWorkflowIntegration:
 
         assert link["source_id"] == item1["id"]
 
-    def test_update_item_and_verify(self):
+    def test_update_item_and_verify(self) -> None:
         """Test update and verify."""
         mock_service = Mock()
         mock_service.update = Mock(return_value={"id": 1, "name": "Updated"})
@@ -258,7 +258,7 @@ class TestWorkflowIntegration:
 
         assert updated["name"] == verified["name"]
 
-    def test_backup_and_restore_workflow(self):
+    def test_backup_and_restore_workflow(self) -> None:
         """Test backup and restore workflow."""
         backup_service = Mock()
         backup_service.create = Mock(return_value={"backup_id": "b1", "items": 10})
@@ -269,7 +269,7 @@ class TestWorkflowIntegration:
 
         assert result["items_restored"] == backup["items"]
 
-    def test_project_workflow(self):
+    def test_project_workflow(self) -> None:
         """Test project workflow."""
         project_service = Mock()
         project_service.create = Mock(return_value={"id": "p1", "name": "Project"})
@@ -282,7 +282,7 @@ class TestWorkflowIntegration:
 
         assert current["id"] == proj["id"]
 
-    def test_config_workflow(self):
+    def test_config_workflow(self) -> None:
         """Test configuration workflow."""
         config_service = Mock()
         config_service.set = Mock()
@@ -297,7 +297,7 @@ class TestWorkflowIntegration:
 class TestDataValidationPatterns:
     """Test common data validation patterns."""
 
-    def test_required_field_validation(self):
+    def test_required_field_validation(self) -> None:
         """Test required field validation."""
 
         def validate_required(data, required_fields):
@@ -308,10 +308,10 @@ class TestDataValidationPatterns:
         assert validate_required(data, ["name", "email"])
         assert not validate_required(data, ["name", "email", "phone"])
 
-    def test_type_validation(self):
+    def test_type_validation(self) -> None:
         """Test type validation."""
 
-        def validate_types(data, schema):
+        def validate_types(data, schema) -> bool:
             for field, expected_type in schema.items():
                 if field not in data:
                     return False
@@ -323,7 +323,7 @@ class TestDataValidationPatterns:
         schema = {"id": int, "name": str, "active": bool}
         assert validate_types(data, schema)
 
-    def test_range_validation(self):
+    def test_range_validation(self) -> None:
         """Test range validation."""
 
         def validate_range(value, min_val=0, max_val=100):
@@ -333,7 +333,7 @@ class TestDataValidationPatterns:
         assert not validate_range(-1)
         assert not validate_range(101)
 
-    def test_string_length_validation(self):
+    def test_string_length_validation(self) -> None:
         """Test string length validation."""
 
         def validate_length(string, min_len=1, max_len=255):
@@ -343,7 +343,7 @@ class TestDataValidationPatterns:
         assert not validate_length("")
         assert not validate_length("x" * 256)
 
-    def test_enum_validation(self):
+    def test_enum_validation(self) -> None:
         """Test enum validation."""
 
         def validate_enum(value, allowed):
@@ -353,7 +353,7 @@ class TestDataValidationPatterns:
         assert validate_enum("active", statuses)
         assert not validate_enum("invalid", statuses)
 
-    def test_regex_validation(self):
+    def test_regex_validation(self) -> None:
         """Test regex pattern validation."""
         import re
 
@@ -364,10 +364,10 @@ class TestDataValidationPatterns:
         assert validate_pattern("user@example.com", email_pattern)
         assert not validate_pattern("invalid-email", email_pattern)
 
-    def test_nested_object_validation(self):
+    def test_nested_object_validation(self) -> None:
         """Test nested object validation."""
 
-        def has_nested_field(data, path):
+        def has_nested_field(data, path) -> bool:
             parts = path.split(".")
             current = data
             for part in parts:
@@ -381,10 +381,10 @@ class TestDataValidationPatterns:
         assert has_nested_field(data, "user.profile.email")
         assert not has_nested_field(data, "user.settings.theme")
 
-    def test_array_validation(self):
+    def test_array_validation(self) -> None:
         """Test array validation."""
 
-        def validate_array(arr, min_items=0, max_items=None):
+        def validate_array(arr, min_items=0, max_items=None) -> bool:
             if not isinstance(arr, list):
                 return False
             if len(arr) < min_items:
@@ -399,7 +399,7 @@ class TestDataValidationPatterns:
 class TestErrorHandlingPatterns:
     """Test error handling patterns."""
 
-    def test_graceful_degradation(self):
+    def test_graceful_degradation(self) -> None:
         """Test graceful degradation."""
 
         def get_value_with_fallback(data, key, fallback=None):
@@ -411,7 +411,7 @@ class TestErrorHandlingPatterns:
         assert get_value_with_fallback({"key": "value"}, "key") == "value"
         assert get_value_with_fallback({"key": "value"}, "missing", "fallback") == "fallback"
 
-    def test_retry_pattern(self):
+    def test_retry_pattern(self) -> None:
         """Test retry pattern."""
 
         def retry(func, max_attempts=3, delay=0):
@@ -425,16 +425,17 @@ class TestErrorHandlingPatterns:
 
         counter = {"count": 0}
 
-        def failing_func():
+        def failing_func() -> str:
             counter["count"] += 1
             if counter["count"] < 3:
-                raise Exception("Fail")
+                msg = "Fail"
+                raise Exception(msg)
             return "success"
 
         result = retry(failing_func)
         assert result == "success"
 
-    def test_timeout_pattern(self):
+    def test_timeout_pattern(self) -> None:
         """Test timeout pattern."""
 
         def with_timeout(func, timeout=1):
@@ -444,24 +445,25 @@ class TestErrorHandlingPatterns:
             except Exception:
                 return None
 
-        def quick_func():
+        def quick_func() -> str:
             return "done"
 
         result = with_timeout(quick_func)
         assert result == "done"
 
-    def test_circuit_breaker_pattern(self):
+    def test_circuit_breaker_pattern(self) -> None:
         """Test circuit breaker pattern."""
 
         class CircuitBreaker:
-            def __init__(self, failure_threshold=3):
+            def __init__(self, failure_threshold=3) -> None:
                 self.failures = 0
                 self.threshold = failure_threshold
                 self.is_open = False
 
             def call(self, func):
                 if self.is_open:
-                    raise Exception("Circuit open")
+                    msg = "Circuit open"
+                    raise Exception(msg)
                 try:
                     result = func()
                     self.failures = 0

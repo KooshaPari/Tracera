@@ -12,7 +12,7 @@ from tracertm.models.project import Project
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_problem_model_crud(async_db_session):
+async def test_problem_model_crud(async_db_session) -> None:
     """Test Problem model CRUD operations."""
     # Create a project first
     project = Project(
@@ -66,7 +66,7 @@ async def test_problem_model_crud(async_db_session):
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_process_model_crud(async_db_session):
+async def test_process_model_crud(async_db_session) -> None:
     """Test Process model CRUD operations."""
     # Create a project first
     project = Project(
@@ -132,7 +132,7 @@ async def test_process_model_crud(async_db_session):
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_problem_status_transitions(async_db_session):
+async def test_problem_status_transitions(async_db_session) -> None:
     """Test Problem status transitions follow ITIL flow."""
     project = Project(id=str(uuid4()), name="Test Project")
     async_db_session.add(project)
@@ -162,7 +162,7 @@ async def test_problem_status_transitions(async_db_session):
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_process_versioning(async_db_session):
+async def test_process_versioning(async_db_session) -> None:
     """Test Process versioning functionality."""
     project = Project(id=str(uuid4()), name="Test Project")
     async_db_session.add(project)

@@ -1,4 +1,4 @@
-"""Feature flag management using Redis"""
+"""Feature flag management using Redis."""
 
 import logging
 
@@ -18,10 +18,10 @@ FLAG_DISTRIBUTED_TRACING = "distributed_tracing"
 
 
 class FeatureFlagStore:
-    """Manages feature flags in Redis"""
+    """Manages feature flags in Redis."""
 
-    def __init__(self, redis: Redis):
-        """Initialize feature flag store
+    def __init__(self, redis: Redis) -> None:
+        """Initialize feature flag store.
 
         Args:
             redis: Async Redis client
@@ -30,7 +30,7 @@ class FeatureFlagStore:
         self.prefix = "feature:flag:"
 
     async def is_enabled(self, flag_name: str) -> bool:
-        """Check if flag is enabled, default to False
+        """Check if flag is enabled, default to False.
 
         Args:
             flag_name: Name of the feature flag
@@ -46,7 +46,7 @@ class FeatureFlagStore:
             return False
 
     async def set_flag(self, flag_name: str, enabled: bool) -> None:
-        """Set flag value
+        """Set flag value.
 
         Args:
             flag_name: Name of the feature flag
@@ -56,7 +56,7 @@ class FeatureFlagStore:
         await self.redis.set(f"{self.prefix}{flag_name}", value)
 
     async def enable_flag(self, flag_name: str) -> None:
-        """Enable a feature flag
+        """Enable a feature flag.
 
         Args:
             flag_name: Name of the feature flag
@@ -64,7 +64,7 @@ class FeatureFlagStore:
         await self.set_flag(flag_name, True)
 
     async def disable_flag(self, flag_name: str) -> None:
-        """Disable a feature flag
+        """Disable a feature flag.
 
         Args:
             flag_name: Name of the feature flag
@@ -72,7 +72,7 @@ class FeatureFlagStore:
         await self.set_flag(flag_name, False)
 
     async def get_flag(self, flag_name: str) -> tuple[bool, bool]:
-        """Get flag value and existence status
+        """Get flag value and existence status.
 
         Args:
             flag_name: Name of the feature flag
@@ -90,7 +90,7 @@ class FeatureFlagStore:
             return False, False
 
     async def delete_flag(self, flag_name: str) -> None:
-        """Remove a feature flag
+        """Remove a feature flag.
 
         Args:
             flag_name: Name of the feature flag
@@ -98,7 +98,7 @@ class FeatureFlagStore:
         await self.redis.delete(f"{self.prefix}{flag_name}")
 
     async def list_flags(self) -> dict[str, bool]:
-        """List all feature flags and their values
+        """List all feature flags and their values.
 
         Returns:
             Dictionary mapping flag names to their enabled state
@@ -127,7 +127,7 @@ class FeatureFlagStore:
         return flags
 
     async def set_flag_with_ttl(self, flag_name: str, enabled: bool, ttl_seconds: int) -> None:
-        """Set flag with expiration time
+        """Set flag with expiration time.
 
         Args:
             flag_name: Name of the feature flag
@@ -138,7 +138,7 @@ class FeatureFlagStore:
         await self.redis.setex(f"{self.prefix}{flag_name}", ttl_seconds, value)
 
     async def initialize_default_flags(self) -> None:
-        """Initialize default feature flags if they don't exist"""
+        """Initialize default feature flags if they don't exist."""
         defaults = {
             FLAG_NATS_EVENTS: True,
             FLAG_CROSS_BACKEND_CALLS: True,

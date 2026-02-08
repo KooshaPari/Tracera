@@ -1,55 +1,66 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import type { Item, ItemStatus, Priority, TypedItem, ViewType } from '@tracertm/types';
+import type { Item, TypedItem, ViewType, ItemStatus } from '@tracertm/types';
 
+import itemsUtils, {
+  type CreateItemData,
+  type CreateItemWithSpecData,
+} from '@/hooks/use-items/items-utils';
 import { QUERY_CONFIGS, queryKeys } from '@/lib/queryConfig';
 import { useAuthStore } from '@/stores/authStore';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
-function authHeaders(token: string | null): Record<string, string> {
+interface ItemFilters {
+  projectId?: string;
+  view?: ViewType;
+  status?: ItemStatus;
+  parentId?: string;
+  limit?: number;
+}
+
+interface ItemsResponse {
+  items: TypedItem[];
+  total: number;
+}
+
+function authHeaders(token: string | undefined): Record<string, string> {
   const headers: Record<string, string> = {};
-  if (token?.trim()) {
-    headers['Authorization'] = `Bearer ${token.trim()}`;
+  const trimmedToken = itemsUtils.readNonEmptyString(token);
+  if (trimmedToken !== undefined) {
+    headers['Authorization'] = `Bearer ${trimmedToken.trim()}`;
   }
   return headers;
 }
 
-interface ItemFilters {
-  projectId?: string | undefined;
-  view?: ViewType | undefined;
-  status?: ItemStatus | undefined;
-  parentId?: string | undefined;
-  limit?: number | undefined;
-}
-
-async function fetchItems(
-  filters: ItemFilters = {},
-  token: string | null = null,
-): Promise<{ items: TypedItem[]; total: number }> {
+function buildQueryParams(filters: ItemFilters): URLSearchParams {
   const params = new URLSearchParams();
 
-  if (filters.projectId) {
-    params.set('project_id', filters.projectId);
+  if (itemsUtils.readNonEmptyString(filters.projectId) !== undefined) {
+    params.set('project_id', filters.projectId ?? itemsUtils.EMPTY_STRING);
   }
-  // Note: When projectId is undefined, API will return all items
 
-  if (filters.view) {
+  if (filters.view !== undefined) {
     params.set('view', filters.view);
   }
-  if (filters.status) {
+  if (filters.status !== undefined) {
     params.set('status', filters.status);
   }
-  if (filters.parentId) {
-    params.set('parent_id', filters.parentId);
+  if (itemsUtils.readNonEmptyString(filters.parentId) !== undefined) {
+    params.set('parent_id', filters.parentId ?? itemsUtils.EMPTY_STRING);
   }
-  if (filters.limit) {
+  if (filters.limit !== undefined) {
     params.set('limit', String(filters.limit));
   }
 
-  // Phase 6.2: Include specs in the response
   params.set('include_specs', 'true');
+
+  return params;
+}
+
+async function fetchItems(filters: ItemFilters = {}, token?: string): Promise<ItemsResponse> {
+  const params = buildQueryParams(filters);
 
   const res = await fetch(`${API_URL}/api/v1/items?${params}`, {
     credentials: 'include',
@@ -58,124 +69,35 @@ async function fetchItems(
       ...authHeaders(token),
     },
   });
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Failed to fetch items: ${res.status} ${errorText}`);
-  }
-  const data = await res.json();
-  // API returns { total: number, items: Item[] }
-  const itemsArray = Array.isArray(data) ? data : data['items'] || [];
-  // Transform snake_case to camelCase for frontend compatibility
-  const transformedItems = itemsArray.map((item: Record<string, unknown>) => {
-    const baseItem = {
-      ...item,
-      createdAt: item['created_at'] || item['createdAt'],
-      updatedAt: item['updated_at'] || item['updatedAt'],
-      projectId: item['project_id'] || item['projectId'],
+  if (res.ok) {
+    const data = (await res.json()) as unknown;
+    const itemsArray = itemsUtils.extractItemsArray(data);
+    const transformedItems = itemsArray.map((entry) => itemsUtils.normalizeItem(entry));
+    return {
+      items: transformedItems,
+      total: itemsUtils.extractTotalCount(data, itemsArray),
     };
-
-    // Handle spec fields (both snake_case and camelCase)
-    if (item['type'] === 'requirement') {
-      return {
-        ...baseItem,
-        adrId: item['adr_id'] || item['adrId'],
-        contractId: item['contract_id'] || item['contractId'],
-        qualityMetrics: item['quality_metrics'] || item['qualityMetrics'],
-      };
-    }
-
-    if (item['type'] === 'test' || item['type'] === 'test_case' || item['type'] === 'test_suite') {
-      return {
-        ...baseItem,
-        testType: item['test_type'] || item['testType'],
-        automationStatus: item['automation_status'] || item['automationStatus'],
-        testSteps: item['test_steps'] || item['testSteps'],
-        expectedResult: item['expected_result'] || item['expectedResult'],
-        lastExecutionResult: item['last_execution_result'] || item['lastExecutionResult'],
-      };
-    }
-
-    if (item['type'] === 'epic') {
-      return {
-        ...baseItem,
-        acceptanceCriteria: item['acceptance_criteria'] || item['acceptanceCriteria'],
-        businessValue: item['business_value'] || item['businessValue'],
-        targetRelease: item['target_release'] || item['targetRelease'],
-      };
-    }
-
-    if (item['type'] === 'user_story' || item['type'] === 'story') {
-      return {
-        ...baseItem,
-        asA: item['as_a'] || item['asA'],
-        iWant: item['i_want'] || item['iWant'],
-        soThat: item['so_that'] || item['soThat'],
-        acceptanceCriteria: item['acceptance_criteria'] || item['acceptanceCriteria'],
-        storyPoints: item['story_points'] || item['storyPoints'],
-      };
-    }
-
-    if (item['type'] === 'task') {
-      return {
-        ...baseItem,
-        estimatedHours: item['estimated_hours'] || item['estimatedHours'],
-        actualHours: item['actual_hours'] || item['actualHours'],
-        assignee: item['assignee'],
-        dueDate: item['due_date'] || item['dueDate'],
-      };
-    }
-
-    if (item['type'] === 'bug' || item['type'] === 'defect') {
-      return {
-        ...baseItem,
-        severity: item['severity'],
-        reproducible: item['reproducible'],
-        stepsToReproduce: item['steps_to_reproduce'] || item['stepsToReproduce'],
-        environment: item['environment'],
-        foundInVersion: item['found_in_version'] || item['foundInVersion'],
-        fixedInVersion: item['fixed_in_version'] || item['fixedInVersion'],
-      };
-    }
-
-    return baseItem;
-  }) as TypedItem[];
-  return {
-    items: transformedItems,
-    total: data['total'] || (Array.isArray(data) ? data.length : itemsArray.length),
-  };
+  }
+  const errorText = await res.text();
+  throw new Error(`Failed to fetch items: ${res.status} ${errorText}`);
 }
 
-async function fetchItem(id: string, token: string | null): Promise<Item> {
+async function fetchItem(id: string, token: string | undefined): Promise<Item> {
   const res = await fetch(`${API_URL}/api/v1/items/${id}`, {
     credentials: 'include',
     headers: authHeaders(token),
   });
-  if (!res.ok) {
-    throw new Error('Failed to fetch item');
+  if (res.ok) {
+    const data = (await res.json()) as unknown;
+    if (itemsUtils.isRecord(data)) {
+      return itemsUtils.normalizeBaseItem(data);
+    }
+    throw new Error('Invalid item payload');
   }
-  const data = await res.json();
-  // Transform snake_case to camelCase for frontend compatibility
-  return {
-    ...data,
-    createdAt: data['created_at'] || data['createdAt'],
-    updatedAt: data['updated_at'] || data['updatedAt'],
-    projectId: data['project_id'] || data['projectId'],
-  } as Item;
+  throw new Error('Failed to fetch item');
 }
 
-interface CreateItemData {
-  projectId: string;
-  view: ViewType;
-  type: string;
-  title: string;
-  description?: string;
-  status: ItemStatus;
-  priority: Priority;
-  parentId?: string;
-  owner?: string;
-}
-
-async function createItem(data: CreateItemData, token: string | null): Promise<Item> {
+async function createItem(data: CreateItemData, token: string | undefined): Promise<Item> {
   const res = await fetch(`${API_URL}/api/v1/items`, {
     body: JSON.stringify({
       description: data['description'],
@@ -192,26 +114,22 @@ async function createItem(data: CreateItemData, token: string | null): Promise<I
     headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
     method: 'POST',
   });
-  if (!res.ok) {
-    throw new Error('Failed to create item');
+  if (res.ok) {
+    const responseData = (await res.json()) as unknown;
+    if (itemsUtils.isRecord(responseData)) {
+      return itemsUtils.normalizeBaseItem(responseData);
+    }
+    throw new Error('Invalid item payload');
   }
-  return res.json() as Promise<Item>;
-}
-
-// Phase 6.1: New mutation for creating items with specifications
-interface CreateItemWithSpecData {
-  projectId: string;
-  item: Partial<Item>;
-  spec: Record<string, unknown>;
+  throw new Error('Failed to create item');
 }
 
 async function createItemWithSpec(
   data: CreateItemWithSpecData,
-  token: string | null,
+  token: string | undefined,
 ): Promise<TypedItem> {
   const res = await fetch(`${API_URL}/api/v1/items`, {
     body: JSON.stringify({
-      // Convert camelCase to snake_case for API
       project_id: data['projectId'],
       view: data['item'].view,
       type: data['item'].type,
@@ -222,219 +140,175 @@ async function createItemWithSpec(
       parent_id: data['item'].parentId,
       owner: data['item'].owner,
       metadata: data['item'].metadata,
-      // Include spec fields
       ...data['spec'],
     }),
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
     method: 'POST',
   });
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Failed to create item with spec: ${res.status} ${errorText}`);
+  if (res.ok) {
+    const responseData = (await res.json()) as unknown;
+    if (itemsUtils.isRecord(responseData)) {
+      return itemsUtils.normalizeItem(responseData);
+    }
+    throw new Error('Invalid item payload');
   }
-  const responseData = await res.json();
-  // Transform snake_case to camelCase for frontend compatibility
-  const baseItem = {
-    ...responseData,
-    createdAt: responseData['created_at'] || responseData['createdAt'],
-    updatedAt: responseData['updated_at'] || responseData['updatedAt'],
-    projectId: responseData['project_id'] || responseData['projectId'],
-    parentId: responseData['parent_id'] || responseData['parentId'],
-  };
-
-  // Handle type-specific fields
-  if (responseData['type'] === 'requirement') {
-    return {
-      ...baseItem,
-      adrId: responseData['adr_id'] || responseData['adrId'],
-      contractId: responseData['contract_id'] || responseData['contractId'],
-      qualityMetrics: responseData['quality_metrics'] || responseData['qualityMetrics'],
-    } as TypedItem;
-  }
-
-  if (
-    responseData['type'] === 'test' ||
-    responseData['type'] === 'test_case' ||
-    responseData['type'] === 'test_suite'
-  ) {
-    return {
-      ...baseItem,
-      testType: responseData['test_type'] || responseData['testType'],
-      automationStatus: responseData['automation_status'] || responseData['automationStatus'],
-      testSteps: responseData['test_steps'] || responseData['testSteps'],
-      expectedResult: responseData['expected_result'] || responseData['expectedResult'],
-      lastExecutionResult:
-        responseData['last_execution_result'] || responseData['lastExecutionResult'],
-    } as TypedItem;
-  }
-
-  if (responseData['type'] === 'epic') {
-    return {
-      ...baseItem,
-      acceptanceCriteria: responseData['acceptance_criteria'] || responseData['acceptanceCriteria'],
-      businessValue: responseData['business_value'] || responseData['businessValue'],
-      targetRelease: responseData['target_release'] || responseData['targetRelease'],
-    } as TypedItem;
-  }
-
-  if (responseData['type'] === 'user_story' || responseData['type'] === 'story') {
-    return {
-      ...baseItem,
-      asA: responseData['as_a'] || responseData['asA'],
-      iWant: responseData['i_want'] || responseData['iWant'],
-      soThat: responseData['so_that'] || responseData['soThat'],
-      acceptanceCriteria: responseData['acceptance_criteria'] || responseData['acceptanceCriteria'],
-      storyPoints: responseData['story_points'] || responseData['storyPoints'],
-    } as TypedItem;
-  }
-
-  if (responseData['type'] === 'task') {
-    return {
-      ...baseItem,
-      estimatedHours: responseData['estimated_hours'] || responseData['estimatedHours'],
-      actualHours: responseData['actual_hours'] || responseData['actualHours'],
-      assignee: responseData['assignee'],
-      dueDate: responseData['due_date'] || responseData['dueDate'],
-    } as TypedItem;
-  }
-
-  if (responseData['type'] === 'bug' || responseData['type'] === 'defect') {
-    return {
-      ...baseItem,
-      severity: responseData['severity'],
-      reproducible: responseData['reproducible'],
-      stepsToRepoduce: responseData['steps_to_reproduce'] || responseData['stepsToReproduce'],
-      environment: responseData['environment'],
-      foundInVersion: responseData['found_in_version'] || responseData['foundInVersion'],
-      fixedInVersion: responseData['fixed_in_version'] || responseData['fixedInVersion'],
-    } as TypedItem;
-  }
-
-  return baseItem as TypedItem;
+  const errorText = await res.text();
+  throw new Error(`Failed to create item with spec: ${res.status} ${errorText}`);
 }
 
-async function updateItem(id: string, data: Partial<Item>, token: string | null): Promise<Item> {
+async function updateItem(
+  id: string,
+  data: Partial<Item>,
+  token: string | undefined,
+): Promise<Item> {
   const res = await fetch(`${API_URL}/api/v1/items/${id}`, {
     body: JSON.stringify(data),
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
     method: 'PATCH',
   });
-  if (!res.ok) {
-    throw new Error('Failed to update item');
+  if (res.ok) {
+    const responseData = (await res.json()) as unknown;
+    if (itemsUtils.isRecord(responseData)) {
+      return itemsUtils.normalizeBaseItem(responseData);
+    }
+    throw new Error('Invalid item payload');
   }
-  return res.json() as Promise<Item>;
+  throw new Error('Failed to update item');
 }
 
-async function deleteItem(id: string, token: string | null): Promise<void> {
+async function deleteItem(id: string, token: string | undefined): Promise<void> {
   const res = await fetch(`${API_URL}/api/v1/items/${id}`, {
     credentials: 'include',
     headers: authHeaders(token),
     method: 'DELETE',
   });
-  if (!res.ok) {
-    throw new Error('Failed to delete item');
+  if (res.ok) {
+    return;
   }
+  throw new Error('Failed to delete item');
 }
 
-/** Token for API calls: store first, then localStorage (before store rehydration / AuthKitSync). */
-function useAuthToken(): string | null {
-  const storeToken = useAuthStore((s) => s.token);
-  if (storeToken?.trim()) {
-    return storeToken.trim();
+function useAuthToken(): string | undefined {
+  const storeToken = useAuthStore((state) => state.token);
+  const trimmedStoreToken = itemsUtils.readNonEmptyString(storeToken);
+  if (trimmedStoreToken !== undefined) {
+    return trimmedStoreToken.trim();
   }
-  if (typeof globalThis.window !== 'undefined') {
+  if (globalThis.window !== undefined) {
     const fromStorage = globalThis.localStorage?.getItem('auth_token');
-    if (fromStorage?.trim()) {
-      return fromStorage.trim();
+    const trimmedStorageToken = itemsUtils.readNonEmptyString(fromStorage);
+    if (trimmedStorageToken !== undefined) {
+      return trimmedStorageToken.trim();
     }
   }
-  return null;
+  return undefined;
 }
 
-export function useItems(filters?: ItemFilters) {
+function buildItemsQueryKey(
+  filters: ItemFilters | undefined,
+  token: string | undefined,
+): unknown[] {
+  const key: unknown[] = [];
+  const projectId = itemsUtils.readNonEmptyString(filters?.projectId);
+  if (projectId === undefined) {
+    key.push('items');
+  } else {
+    key.push(...queryKeys.items.list(projectId));
+  }
+  key.push(filters?.view);
+  key.push(filters?.status);
+  key.push(filters?.parentId);
+  key.push(filters?.limit);
+  if (token === undefined) {
+    key.push(itemsUtils.EMPTY_STRING);
+  } else {
+    key.push(token);
+  }
+  return key;
+}
+
+function useItems(filters?: ItemFilters): ReturnType<typeof useQuery<ItemsResponse>> {
   const token = useAuthToken();
-  const key = filters?.projectId
-    ? [
-        ...queryKeys.items.list(filters.projectId),
-        filters?.view ?? null,
-        filters?.status ?? null,
-        filters?.parentId ?? null,
-        filters?.limit ?? null,
-      ]
-    : [
-        'items',
-        filters?.view ?? null,
-        filters?.status ?? null,
-        filters?.parentId ?? null,
-        filters?.limit ?? null,
-      ];
+  const key = buildItemsQueryKey(filters, token);
   return useQuery({
-    queryKey: [...key, token ?? ''],
-    queryFn: () => fetchItems(filters || {}, token),
-    select: (data) => data,
+    queryKey: key,
+    queryFn: async (): Promise<ItemsResponse> => {
+      const result = await fetchItems(filters ?? {}, token);
+      return result;
+    },
     ...QUERY_CONFIGS.dynamic,
   });
 }
 
-export function useItem(id: string) {
+function useItem(id: string): ReturnType<typeof useQuery<Item>> {
   const token = useAuthToken();
+  const enabled = id.trim() !== itemsUtils.EMPTY_STRING;
   return useQuery({
-    queryKey: [...queryKeys.items.detail(id), token ?? ''],
-    queryFn: () => fetchItem(id, token),
-    enabled: Boolean(id),
+    queryKey: [...queryKeys.items.detail(id), token ?? itemsUtils.EMPTY_STRING],
+    queryFn: async (): Promise<Item> => {
+      const result = await fetchItem(id, token);
+      return result;
+    },
+    enabled,
     ...QUERY_CONFIGS.dynamic,
   });
 }
 
-export function useCreateItem() {
-  const _queryClient = useQueryClient();
+function useCreateItem(): ReturnType<typeof useMutation<Item, Error, CreateItemData>> {
   const token = useAuthToken();
   return useMutation({
-    mutationFn: (data: CreateItemData) => createItem(data, token),
-    onSuccess: () => {},
+    mutationFn: async (data: CreateItemData): Promise<Item> => {
+      const result = await createItem(itemsUtils.normalizeCreateItemData(data), token);
+      return result;
+    },
   });
 }
 
-export function useUpdateItem() {
-  const _queryClient = useQueryClient();
+function useUpdateItem(): ReturnType<
+  typeof useMutation<Item, Error, { id: string; data: Partial<Item> }>
+> {
   const token = useAuthToken();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Item> }) => updateItem(id, data, token),
-    onSuccess: (_data, _variables) => {},
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Item> }): Promise<Item> => {
+      const result = await updateItem(id, data, token);
+      return result;
+    },
   });
 }
 
-export function useDeleteItem() {
-  const _queryClient = useQueryClient();
+function useDeleteItem(): ReturnType<typeof useMutation<void, Error, string>> {
   const token = useAuthToken();
   return useMutation({
-    mutationFn: (id: string) => deleteItem(id, token),
-    onSuccess: () => {},
+    mutationFn: async (id: string): Promise<void> => {
+      await deleteItem(id, token);
+    },
   });
 }
 
-// Phase 6.1: New hook for creating items with specifications
-export function useCreateItemWithSpec() {
-  const _queryClient = useQueryClient();
+function useCreateItemWithSpec(): ReturnType<
+  typeof useMutation<TypedItem, Error, CreateItemWithSpecData>
+> {
+  const queryClient = useQueryClient();
   const token = useAuthToken();
   return useMutation({
-    mutationFn: (data: CreateItemWithSpecData) => createItemWithSpec(data, token),
-    onError: (error: Error) => {
-      // Show error toast notification
+    mutationFn: async (data: CreateItemWithSpecData): Promise<TypedItem> => {
+      const result = await createItemWithSpec(itemsUtils.normalizeCreateItemWithSpecData(data), token);
+      return result;
+    },
+    onError: (error: Error): void => {
       toast.error('Failed to create item', {
         description: error.message,
       });
     },
-    onSuccess: (data) => {
-      // Invalidate all items queries to refresh the list
-      void void _queryClient.invalidateQueries({ queryKey: ['items'] });
-
-      // Show success toast notification
+    onSuccess: async (data: TypedItem): Promise<void> => {
+      await queryClient.invalidateQueries({ queryKey: ['items'] });
       toast.success('Item created successfully', {
         description: `Created ${data.type}: ${data['title']}`,
       });
     },
   });
 }
+
+export { useItems, useItem, useCreateItem, useUpdateItem, useDeleteItem, useCreateItemWithSpec };

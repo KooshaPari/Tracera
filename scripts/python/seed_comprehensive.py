@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Comprehensive seed script for TraceRTM with rich, authentic mock data.
+"""Comprehensive seed script for TraceRTM with rich, authentic mock data.
 
 Creates 50+ projects, items, links, and other entities with realistic data.
 """
@@ -290,7 +289,7 @@ def generate_metadata(view: str, item_type: str) -> dict:
                 f"Criterion {i}: Must meet standard {random.randint(1, 10)}" for i in range(1, random.randint(3, 6))
             ],
             "stakeholders": random.sample(
-                ["product_manager", "tech_lead", "qa_lead", "security_team"], random.randint(2, 4)
+                ["product_manager", "tech_lead", "qa_lead", "security_team"], random.randint(2, 4),
             ),
             "compliance": random.choice(["GDPR", "HIPAA", "SOC2", "PCI-DSS", "ISO27001", None]),
         })
@@ -351,7 +350,6 @@ def generate_metadata(view: str, item_type: str) -> dict:
 def create_projects(session: Session, count: int = 50) -> list[str]:
     """Create multiple projects."""
     project_ids = []
-    print(f"Creating {count} projects...")
 
     for i in range(count):
         domain = random.choice(PROJECT_DOMAINS)
@@ -363,7 +361,7 @@ def create_projects(session: Session, count: int = 50) -> list[str]:
                 "team_size": random.randint(3, 20),
                 "methodology": random.choice(["Agile", "Scrum", "Kanban", "Waterfall", "DevOps"]),
                 "tech_stack": random.sample(
-                    ["Python", "TypeScript", "React", "PostgreSQL", "Docker", "Kubernetes"], random.randint(3, 6)
+                    ["Python", "TypeScript", "React", "PostgreSQL", "Docker", "Kubernetes"], random.randint(3, 6),
                 ),
                 "start_date": (datetime.now(UTC) - timedelta(days=random.randint(30, 365))).isoformat(),
                 "status": random.choice(["active", "planning", "maintenance", "archived"]),
@@ -374,7 +372,6 @@ def create_projects(session: Session, count: int = 50) -> list[str]:
 
         if (i + 1) % 10 == 0:
             session.flush()
-            print(f"  Created {i + 1}/{count} projects...")
 
     session.flush()
     return project_ids
@@ -383,7 +380,6 @@ def create_projects(session: Session, count: int = 50) -> list[str]:
 def create_graphs(session: Session, project_ids: list[str]) -> dict[str, str]:
     """Create default graph for each project."""
     graph_map = {}
-    print(f"Creating graphs for {len(project_ids)} projects...")
 
     for project_id in project_ids:
         graph = Graph(
@@ -406,8 +402,7 @@ def create_graphs(session: Session, project_ids: list[str]) -> dict[str, str]:
 def create_items(session: Session, project_ids: list[str], items_per_project: int = 50) -> dict[str, list[Item]]:
     """Create items for each project."""
     project_items = {pid: [] for pid in project_ids}
-    total_items = len(project_ids) * items_per_project
-    print(f"Creating {total_items} items ({items_per_project} per project)...")
+    len(project_ids) * items_per_project
 
     item_count = 0
     for project_id in project_ids:
@@ -436,12 +431,10 @@ def create_items(session: Session, project_ids: list[str], items_per_project: in
 
                 if item_count % 100 == 0:
                     session.flush()
-                    print(f"  Created {item_count}/{total_items} items...")
 
         session.flush()
         project_items[project_id] = items
 
-    print(f"Created {item_count} items total")
     return project_items
 
 
@@ -453,8 +446,7 @@ def create_links(
     links_per_project: int = 50,
 ) -> None:
     """Create links between items."""
-    total_links = len(project_ids) * links_per_project
-    print(f"Creating {total_links} links ({links_per_project} per project)...")
+    len(project_ids) * links_per_project
 
     link_count = 0
     for project_id in project_ids:
@@ -489,18 +481,14 @@ def create_links(
 
             if link_count % 100 == 0:
                 session.flush()
-                print(f"  Created {link_count}/{total_links} links...")
 
         session.flush()
-
-    print(f"Created {link_count} links total")
 
 
 def create_agents(session: Session, project_ids: list[str], agents_per_project: int = 3) -> dict[str, list[Agent]]:
     """Create agents for each project."""
     project_agents = {pid: [] for pid in project_ids}
-    total_agents = len(project_ids) * agents_per_project
-    print(f"Creating {total_agents} agents ({agents_per_project} per project)...")
+    len(project_ids) * agents_per_project
 
     agent_count = 0
     for project_id in project_ids:
@@ -531,7 +519,6 @@ def create_agents(session: Session, project_ids: list[str], agents_per_project: 
         session.flush()
         project_agents[project_id] = agents
 
-    print(f"Created {agent_count} agents total")
     return project_agents
 
 
@@ -543,8 +530,7 @@ def create_events(
     events_per_project: int = 20,
 ) -> None:
     """Create agent events."""
-    total_events = len(project_ids) * events_per_project
-    print(f"Creating {total_events} events ({events_per_project} per project)...")
+    len(project_ids) * events_per_project
 
     event_count = 0
     event_types = ["item_created", "link_created", "item_updated", "coordination", "analysis_complete"]
@@ -579,18 +565,13 @@ def create_events(
 
             if event_count % 100 == 0:
                 session.flush()
-                print(f"  Created {event_count}/{total_events} events...")
 
         session.flush()
 
-    print(f"Created {event_count} events total")
 
-
-def seed_database():
+def seed_database() -> None:
     """Main seeding function."""
     database_url = get_database_url()
-    print(f"Seeding database: {database_url}")
-    print("=" * 60)
 
     engine = create_engine(database_url)
 
@@ -604,9 +585,7 @@ def seed_database():
             if existing_count > 0:
                 response = input(f"Found {existing_count} existing projects. Clear and reseed? (yes/no): ")
                 if response.lower() != "yes":
-                    print("Seeding cancelled.")
                     return
-                print("Clearing existing data...")
                 session.query(AgentEvent).delete()
                 session.query(Agent).delete()
                 session.query(Link).delete()
@@ -614,44 +593,26 @@ def seed_database():
                 session.query(Graph).delete()
                 session.query(Project).delete()
                 session.commit()
-                print("Existing data cleared.\n")
 
             # Create data
             project_ids = create_projects(session, count=50)
-            print()
 
             graph_map = create_graphs(session, project_ids)
-            print()
 
             project_items = create_items(session, project_ids, items_per_project=50)
-            print()
 
             create_links(session, project_ids, graph_map, project_items, links_per_project=50)
-            print()
 
             project_agents = create_agents(session, project_ids, agents_per_project=3)
-            print()
 
             create_events(session, project_ids, project_agents, project_items, events_per_project=20)
-            print()
 
             session.commit()
 
             # Summary
-            print("=" * 60)
-            print("Seed completed successfully!")
-            print("Created:")
-            print(f"  - {len(project_ids)} projects")
-            print(f"  - {len(graph_map)} graphs")
-            print(f"  - {sum(len(items) for items in project_items.values())} items")
-            print(f"  - {session.query(Link).count()} links")
-            print(f"  - {sum(len(agents) for agents in project_agents.values())} agents")
-            print(f"  - {session.query(AgentEvent).count()} agent events")
-            print("=" * 60)
 
-        except Exception as e:
+        except Exception:
             session.rollback()
-            print(f"\nError seeding database: {e}")
             import traceback
 
             traceback.print_exc()

@@ -1,6 +1,4 @@
-"""
-Integration tests for search operations
-"""
+"""Integration tests for search operations."""
 
 import pytest
 from services import DatabaseService, SearchService
@@ -9,11 +7,11 @@ from services.database import DatabaseConfig
 
 @pytest.mark.asyncio
 class TestSearchIntegration:
-    """Test search integration"""
+    """Test search integration."""
 
     @pytest_asyncio.fixture
     async def search_service(self):
-        """Create search service"""
+        """Create search service."""
         config = DatabaseConfig(
             postgres_url="postgresql://mcp_user:mcp_password@localhost/mcp_db",
             memgraph_url="bolt://localhost:7687",
@@ -29,8 +27,8 @@ class TestSearchIntegration:
         finally:
             await db_service.disconnect()
 
-    async def test_semantic_search(self, search_service):
-        """Test semantic search"""
+    async def test_semantic_search(self, search_service) -> None:
+        """Test semantic search."""
         # Create sample embedding (1536 dimensions)
         query_embedding = [0.1] * 1536
 
@@ -47,8 +45,8 @@ class TestSearchIntegration:
             # May fail if no data in database
             pytest.skip(f"Semantic search not available: {e}")
 
-    async def test_full_text_search(self, search_service):
-        """Test full-text search"""
+    async def test_full_text_search(self, search_service) -> None:
+        """Test full-text search."""
         try:
             results = await search_service.full_text_search(
                 query="data processing",
@@ -62,8 +60,8 @@ class TestSearchIntegration:
             # May fail if no data in database
             pytest.skip(f"Full-text search not available: {e}")
 
-    async def test_cache_operations(self, search_service):
-        """Test cache operations"""
+    async def test_cache_operations(self, search_service) -> None:
+        """Test cache operations."""
         # Set cache
         success = await search_service.cache_set("test_key", "test_value", ttl=60)
         assert success is True

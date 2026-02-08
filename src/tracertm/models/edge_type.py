@@ -1,6 +1,4 @@
-"""
-EdgeType model for TraceRTM.
-"""
+"""EdgeType model for TraceRTM."""
 
 import uuid
 
@@ -18,9 +16,7 @@ def generate_edge_type_uuid() -> str:
 
 
 class EdgeType(Base, TimestampMixin):
-    """
-    Edge type registry with validation metadata.
-    """
+    """Edge type registry with validation metadata."""
 
     __tablename__ = "edge_types"
     __table_args__ = (

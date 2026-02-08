@@ -671,7 +671,7 @@ describe('Projects List Page', () => {
       await userEvent.type(searchInput, 'test');
 
       // Search should not trigger immediately
-      expect(fetchProjects).toHaveBeenCalledOnce(); // Initial load only
+      expect(fetchProjects).toHaveBeenCalledTimes(1); // Initial load only
 
       vi.advanceTimersByTime(300); // Debounce delay
 

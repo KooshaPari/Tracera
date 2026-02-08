@@ -1,6 +1,4 @@
-"""
-Integration tests for Epic 5: Batch Operations (Story 5.5, FR44).
-"""
+"""Integration tests for Epic 5: Batch Operations (Story 5.5, FR44)."""
 
 import pytest
 
@@ -49,7 +47,7 @@ def temp_project_setup(tmp_path, monkeypatch):
         db_path.unlink()
 
 
-def test_batch_create_items(temp_project_setup):
+def test_batch_create_items(temp_project_setup) -> None:
     """Test batch item creation (Story 5.5, FR44)."""
     client = TraceRTMClient()
     client.register_agent("test-agent", agent_type="ai_agent")
@@ -67,7 +65,7 @@ def test_batch_create_items(temp_project_setup):
     client.close()
 
 
-def test_batch_update_items(temp_project_setup):
+def test_batch_update_items(temp_project_setup) -> None:
     """Test batch item updates (Story 5.5, FR44)."""
     client = TraceRTMClient()
     client.register_agent("test-agent", agent_type="ai_agent")
@@ -98,7 +96,7 @@ def test_batch_update_items(temp_project_setup):
     client.close()
 
 
-def test_batch_delete_items(temp_project_setup):
+def test_batch_delete_items(temp_project_setup) -> None:
     """Test batch item deletion (Story 5.5, FR44)."""
     client = TraceRTMClient()
     client.register_agent("test-agent", agent_type="ai_agent")
@@ -121,7 +119,7 @@ def test_batch_delete_items(temp_project_setup):
     client.close()
 
 
-def test_batch_operations_atomicity(temp_project_setup):
+def test_batch_operations_atomicity(temp_project_setup) -> None:
     """Test that batch operations are atomic (Story 5.5, FR44)."""
     client = TraceRTMClient()
     client.register_agent("test-agent", agent_type="ai_agent")

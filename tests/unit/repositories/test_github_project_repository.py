@@ -1,5 +1,4 @@
-"""
-Tests for GitHubProjectRepository.
+"""Tests for GitHubProjectRepository.
 
 Comprehensive tests covering GitHub Project link CRUD operations.
 """
@@ -57,7 +56,7 @@ class TestCreate:
     """Tests for GitHubProjectRepository.create."""
 
     @pytest.mark.asyncio
-    async def test_create_happy_path(self, github_project_repo: GitHubProjectRepository, project):
+    async def test_create_happy_path(self, github_project_repo: GitHubProjectRepository, project) -> None:
         """Test creating a GitHub Project link with all required fields."""
         github_project = await github_project_repo.create(
             project_id=project.id,
@@ -80,7 +79,7 @@ class TestCreate:
         assert github_project.sync_config == {}  # Default empty dict
 
     @pytest.mark.asyncio
-    async def test_create_with_sync_config(self, github_project_repo: GitHubProjectRepository, project):
+    async def test_create_with_sync_config(self, github_project_repo: GitHubProjectRepository, project) -> None:
         """Test creating a GitHub Project link with sync configuration."""
         sync_config = {
             "sync_issues": True,
@@ -106,7 +105,7 @@ class TestCreate:
         assert github_project.sync_config["label_mapping"]["bug"] == "defect"
 
     @pytest.mark.asyncio
-    async def test_create_minimal_fields(self, github_project_repo: GitHubProjectRepository, project):
+    async def test_create_minimal_fields(self, github_project_repo: GitHubProjectRepository, project) -> None:
         """Test creating a GitHub Project link with minimal required fields only."""
         github_project = await github_project_repo.create(
             project_id=project.id,
@@ -124,7 +123,7 @@ class TestCreate:
         assert github_project.sync_config == {}  # Default empty dict
 
     @pytest.mark.asyncio
-    async def test_create_generates_uuid(self, github_project_repo: GitHubProjectRepository, project):
+    async def test_create_generates_uuid(self, github_project_repo: GitHubProjectRepository, project) -> None:
         """Test that create generates a valid UUID for the ID."""
         github_project = await github_project_repo.create(
             project_id=project.id,
@@ -147,7 +146,7 @@ class TestGetById:
     """Tests for GitHubProjectRepository.get_by_id."""
 
     @pytest.mark.asyncio
-    async def test_get_by_id_found(self, github_project_setup):
+    async def test_get_by_id_found(self, github_project_setup) -> None:
         """Test getting a GitHub Project by ID when it exists."""
         repo = github_project_setup["repo"]
         github_project = github_project_setup["github_project"]
@@ -162,7 +161,7 @@ class TestGetById:
         assert result.github_project_id == github_project.github_project_id
 
     @pytest.mark.asyncio
-    async def test_get_by_id_not_found(self, github_project_repo: GitHubProjectRepository):
+    async def test_get_by_id_not_found(self, github_project_repo: GitHubProjectRepository) -> None:
         """Test getting a non-existent GitHub Project returns None."""
         result = await github_project_repo.get_by_id(str(uuid4()))
 
@@ -176,7 +175,7 @@ class TestGetByProjectId:
     """Tests for GitHubProjectRepository.get_by_project_id."""
 
     @pytest.mark.asyncio
-    async def test_get_by_project_id_returns_list(self, github_project_setup):
+    async def test_get_by_project_id_returns_list(self, github_project_setup) -> None:
         """Test getting GitHub Projects by TraceRTM project ID returns a list."""
         repo = github_project_setup["repo"]
         project = github_project_setup["project"]
@@ -188,14 +187,14 @@ class TestGetByProjectId:
         assert result[0].project_id == project.id
 
     @pytest.mark.asyncio
-    async def test_get_by_project_id_empty_when_none(self, github_project_repo: GitHubProjectRepository):
+    async def test_get_by_project_id_empty_when_none(self, github_project_repo: GitHubProjectRepository) -> None:
         """Test getting GitHub Projects for a project with none returns empty list."""
         result = await github_project_repo.get_by_project_id(str(uuid4()))
 
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_get_by_project_id_multiple_results(self, github_project_repo: GitHubProjectRepository, project):
+    async def test_get_by_project_id_multiple_results(self, github_project_repo: GitHubProjectRepository, project) -> None:
         """Test getting multiple GitHub Projects for a single TraceRTM project."""
         # Create multiple GitHub project links for the same project
         for i in range(3):
@@ -222,7 +221,7 @@ class TestGetByRepo:
     """Tests for GitHubProjectRepository.get_by_repo."""
 
     @pytest.mark.asyncio
-    async def test_get_by_repo_found(self, github_project_setup):
+    async def test_get_by_repo_found(self, github_project_setup) -> None:
         """Test getting GitHub Projects by repository ID."""
         repo = github_project_setup["repo"]
         github_project = github_project_setup["github_project"]
@@ -236,7 +235,7 @@ class TestGetByRepo:
         assert result[0].github_repo_name == "test-repo"
 
     @pytest.mark.asyncio
-    async def test_get_by_repo_empty_when_none(self, github_project_repo: GitHubProjectRepository):
+    async def test_get_by_repo_empty_when_none(self, github_project_repo: GitHubProjectRepository) -> None:
         """Test getting GitHub Projects for a non-existent repo returns empty list."""
         result = await github_project_repo.get_by_repo(999999999)
 
@@ -244,8 +243,8 @@ class TestGetByRepo:
 
     @pytest.mark.asyncio
     async def test_get_by_repo_multiple_projects(
-        self, github_project_repo: GitHubProjectRepository, project, db_session: AsyncSession
-    ):
+        self, github_project_repo: GitHubProjectRepository, project, db_session: AsyncSession,
+    ) -> None:
         """Test getting multiple GitHub Projects linked to same repository."""
         # Create a second project
         project_repo = ProjectRepository(db_session)
@@ -288,7 +287,7 @@ class TestUpdate:
     """Tests for GitHubProjectRepository.update."""
 
     @pytest.mark.asyncio
-    async def test_update_auto_sync(self, github_project_setup):
+    async def test_update_auto_sync(self, github_project_setup) -> None:
         """Test updating auto_sync field."""
         repo = github_project_setup["repo"]
         github_project = github_project_setup["github_project"]
@@ -304,7 +303,7 @@ class TestUpdate:
         assert result.sync_config == github_project.sync_config
 
     @pytest.mark.asyncio
-    async def test_update_sync_config(self, github_project_setup):
+    async def test_update_sync_config(self, github_project_setup) -> None:
         """Test updating sync_config field."""
         repo = github_project_setup["repo"]
         github_project = github_project_setup["github_project"]
@@ -324,7 +323,7 @@ class TestUpdate:
         assert result.auto_sync == github_project.auto_sync
 
     @pytest.mark.asyncio
-    async def test_update_both_fields(self, github_project_setup):
+    async def test_update_both_fields(self, github_project_setup) -> None:
         """Test updating both auto_sync and sync_config together."""
         repo = github_project_setup["repo"]
         github_project = github_project_setup["github_project"]
@@ -342,7 +341,7 @@ class TestUpdate:
         assert result.sync_config == new_sync_config
 
     @pytest.mark.asyncio
-    async def test_update_not_found(self, github_project_repo: GitHubProjectRepository):
+    async def test_update_not_found(self, github_project_repo: GitHubProjectRepository) -> None:
         """Test updating a non-existent GitHub Project returns None."""
         result = await github_project_repo.update(
             str(uuid4()),
@@ -359,7 +358,7 @@ class TestDelete:
     """Tests for GitHubProjectRepository.delete."""
 
     @pytest.mark.asyncio
-    async def test_delete_success(self, github_project_setup):
+    async def test_delete_success(self, github_project_setup) -> None:
         """Test deleting a GitHub Project link."""
         repo = github_project_setup["repo"]
         github_project = github_project_setup["github_project"]
@@ -369,7 +368,7 @@ class TestDelete:
         assert result is True
 
     @pytest.mark.asyncio
-    async def test_delete_returns_true(self, github_project_repo: GitHubProjectRepository, project):
+    async def test_delete_returns_true(self, github_project_repo: GitHubProjectRepository, project) -> None:
         """Test that delete returns True on success."""
         # Create a GitHub project to delete
         github_project = await github_project_repo.create(
@@ -386,7 +385,7 @@ class TestDelete:
         assert result is True
 
     @pytest.mark.asyncio
-    async def test_delete_verify_deleted(self, github_project_setup):
+    async def test_delete_verify_deleted(self, github_project_setup) -> None:
         """Test that deleted GitHub Project cannot be retrieved."""
         repo = github_project_setup["repo"]
         github_project = github_project_setup["github_project"]
@@ -400,7 +399,7 @@ class TestDelete:
         assert fetched is None
 
     @pytest.mark.asyncio
-    async def test_delete_not_found(self, github_project_repo: GitHubProjectRepository):
+    async def test_delete_not_found(self, github_project_repo: GitHubProjectRepository) -> None:
         """Test deleting a non-existent GitHub Project returns False."""
         result = await github_project_repo.delete(str(uuid4()))
 

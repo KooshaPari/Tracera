@@ -1,5 +1,4 @@
-"""
-Integration tests for Epic 7: History and Temporal Queries (FR54-FR59).
+"""Integration tests for Epic 7: History and Temporal Queries (FR54-FR59).
 
 Tests history tracking, temporal queries, and rollback.
 """
@@ -19,7 +18,7 @@ def runner():
 
 
 @pytest.fixture
-def temp_project(runner, tmp_path, monkeypatch):
+def temp_project(runner, tmp_path, monkeypatch) -> str:
     """Create a temporary project for testing."""
     config_dir = tmp_path / ".config" / "tracertm"
     config_dir.mkdir(parents=True)
@@ -40,7 +39,7 @@ def temp_project(runner, tmp_path, monkeypatch):
     return "test-project"
 
 
-def test_view_history(temp_project, runner):
+def test_view_history(temp_project, runner) -> None:
     """Test viewing item history (FR55)."""
     # Create item
     result1 = runner.invoke(
@@ -67,7 +66,7 @@ def test_view_history(temp_project, runner):
     # assert "item_created" in result3.stdout or "History Test Item" in result3.stdout
 
 
-def test_temporal_query(temp_project, runner):
+def test_temporal_query(temp_project, runner) -> None:
     """Test temporal queries with --at flag (FR56, FR59)."""
     # Create item
     result1 = runner.invoke(
@@ -90,7 +89,7 @@ def test_temporal_query(temp_project, runner):
     # assert result2.exit_code == 0
 
 
-def test_rollback_item(temp_project, runner):
+def test_rollback_item(temp_project, runner) -> None:
     """Test rolling back item to previous version (FR57)."""
     # Create and update item
     # Then rollback

@@ -93,17 +93,17 @@ describe('State Management Integration', () => {
 
       expect(useItemsStore.getState().getItem(tempId)).toBeDefined();
       expect(useItemsStore.getState().getItem(tempId)?.title).toBe('New Item');
-      expect(useItemsStore.getState().pendingCreates.has(tempId)).toBe(true);
+      expect(useItemsStore.getState().pendingCreates.has(tempId)).toBeTruthy();
 
       useItemsStore.getState().confirmCreate(tempId, realItem);
 
       expect(useItemsStore.getState().getItem(tempId)).toBeUndefined();
       expect(useItemsStore.getState().getItem('item-real')).toEqual(realItem);
-      expect(useItemsStore.getState().pendingCreates.has(tempId)).toBe(false);
+      expect(useItemsStore.getState().pendingCreates.has(tempId)).toBeFalsy();
 
       // Sync store workflow
       useSyncStore.getState().startSync();
-      expect(useSyncStore.getState().isSyncing).toBe(true);
+      expect(useSyncStore.getState().isSyncing).toBeTruthy();
 
       useSyncStore.getState().addPendingMutation({
         id: 'mut-1',
@@ -113,7 +113,7 @@ describe('State Management Integration', () => {
       expect(useSyncStore.getState().pendingMutations).toHaveLength(1);
 
       useSyncStore.getState().finishSync();
-      expect(useSyncStore.getState().isSyncing).toBe(false);
+      expect(useSyncStore.getState().isSyncing).toBeFalsy();
       expect(useSyncStore.getState().lastSyncedAt).toBeInstanceOf(Date);
       expect(useSyncStore.getState().syncError).toBeNull();
     });

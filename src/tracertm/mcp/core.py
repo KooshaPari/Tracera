@@ -1,5 +1,4 @@
-"""
-Core MCP server instance for TraceRTM.
+"""Core MCP server instance for TraceRTM.
 
 This module defines the single FastMCP server instance used across all tools.
 All tool modules should import `mcp` from here and register via decorators.
@@ -48,26 +47,30 @@ def _parse_csv(value: str | None) -> list[str]:
 def _require_env(name: str) -> str:
     value = os.getenv(name)
     if value is None or not value.strip():
-        raise RuntimeError(f"{name} is required for MCP startup")
+        msg = f"{name} is required for MCP startup"
+        raise RuntimeError(msg)
     return value.strip()
 
 
 def _require_truthy_env(name: str) -> str:
     value = _require_env(name).lower()
     if value in {"0", "false", "no", "off"}:
-        raise RuntimeError(f"{name} must be enabled for MCP startup")
+        msg = f"{name} must be enabled for MCP startup"
+        raise RuntimeError(msg)
     return value
 
 
 def _ensure_paths_exist(label: str, paths: list[str]) -> None:
     expanded = [Path(p).expanduser() for p in paths]
     if not any(p.exists() for p in expanded):
-        raise RuntimeError(f"{label} has no existing paths: {', '.join(paths)}")
+        msg = f"{label} has no existing paths: {', '.join(paths)}"
+        raise RuntimeError(msg)
 
 
 def _validate_required_mcp_env() -> None:
     if not MONITORING_AVAILABLE:
-        raise RuntimeError("MCP monitoring dependencies are required but not installed")
+        msg = "MCP monitoring dependencies are required but not installed"
+        raise RuntimeError(msg)
     _require_env("TRACERTM_MCP_FILESYSTEM_ROOT")
     _require_env("TRACERTM_MCP_SKILLS_ROOTS")
     _require_env("TRACERTM_MCP_OPENAPI_SPEC")
@@ -89,33 +92,39 @@ def _validate_required_mcp_env() -> None:
 
     filesystem_root = Path(_require_env("TRACERTM_MCP_FILESYSTEM_ROOT")).expanduser()
     if not filesystem_root.exists():
-        raise RuntimeError("TRACERTM_MCP_FILESYSTEM_ROOT does not exist")
+        msg = "TRACERTM_MCP_FILESYSTEM_ROOT does not exist"
+        raise RuntimeError(msg)
 
     skills_roots = _parse_csv(_require_env("TRACERTM_MCP_SKILLS_ROOTS"))
     if not skills_roots:
-        raise RuntimeError("TRACERTM_MCP_SKILLS_ROOTS must include at least one path")
+        msg = "TRACERTM_MCP_SKILLS_ROOTS must include at least one path"
+        raise RuntimeError(msg)
     _ensure_paths_exist("TRACERTM_MCP_SKILLS_ROOTS", skills_roots)
 
     _parse_csv(_require_env("TRACERTM_MCP_PROXY_TARGETS"))
 
     openapi_spec = Path(_require_env("TRACERTM_MCP_OPENAPI_SPEC")).expanduser()
     if not openapi_spec.exists():
-        raise RuntimeError("TRACERTM_MCP_OPENAPI_SPEC does not exist")
+        msg = "TRACERTM_MCP_OPENAPI_SPEC does not exist"
+        raise RuntimeError(msg)
 
 
 def _load_tool_transforms(require: bool = True) -> dict[str, ToolTransformConfig]:
     raw = os.getenv("TRACERTM_MCP_TOOL_TRANSFORMS")
     if not raw:
         if require:
-            raise RuntimeError("TRACERTM_MCP_TOOL_TRANSFORMS is required for MCP startup")
+            msg = "TRACERTM_MCP_TOOL_TRANSFORMS is required for MCP startup"
+            raise RuntimeError(msg)
         return {}
     data = json.loads(raw)
     if not isinstance(data, dict):
-        raise ValueError("TRACERTM_MCP_TOOL_TRANSFORMS must be a JSON object")
+        msg = "TRACERTM_MCP_TOOL_TRANSFORMS must be a JSON object"
+        raise ValueError(msg)
     transforms: dict[str, ToolTransformConfig] = {}
     for name, config in data.items():
         if not isinstance(config, dict):
-            raise ValueError(f"Tool transform for {name} must be a JSON object")
+            msg = f"Tool transform for {name} must be a JSON object"
+            raise ValueError(msg)
         transforms[name] = ToolTransformConfig(**config)
     return transforms
 
@@ -142,7 +151,7 @@ def _add_providers(mcp: FastMCP) -> None:  # noqa: C901
                 SkillsDirectoryProvider(
                     roots=[Path(p).expanduser() for p in roots],
                     reload=reload_flag,
-                )
+                ),
             )
 
     openapi_spec = os.getenv("TRACERTM_MCP_OPENAPI_SPEC")
@@ -210,9 +219,12 @@ def build_mcp_server(transport: str = "http") -> FastMCP:  # noqa: C901
     from tracertm.preflight import build_mcp_checks, check_cli_available, run_preflight
 
     if transport == "stdio":
-        raise RuntimeError(
+        msg = (
             "MCP stdio transport is not supported. Use HTTP only "
             "(e.g. API /api/v1/mcp/... or rtm mcp --transport http)."
+        )
+        raise RuntimeError(
+            msg,
         )
 
     _validate_required_mcp_env()
@@ -310,7 +322,8 @@ def get_mcp(transport: str = "http") -> FastMCP:
     """Return cached MCP server (HTTP only). Builds on first call."""
     global _http_instance
     if transport != "http":
-        raise RuntimeError("MCP stdio is not supported. Use transport='http' only.")
+        msg = "MCP stdio is not supported. Use transport='http' only."
+        raise RuntimeError(msg)
     if _http_instance is None:
         _http_instance = build_mcp_server(transport="http")
     return _http_instance
@@ -320,7 +333,8 @@ def get_mcp(transport: str = "http") -> FastMCP:
 def __getattr__(name: str) -> FastMCP:
     if name == "mcp":
         return get_mcp("http")
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    msg = f"module {__name__!r} has no attribute {name!r}"
+    raise AttributeError(msg)
 
 
 def create_mcp_server(transport: str = "http") -> FastMCP:

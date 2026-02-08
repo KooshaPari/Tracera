@@ -1,5 +1,6 @@
 import asyncio
 from datetime import UTC, datetime, timezone
+from typing import Never
 
 import httpx
 import pytest
@@ -10,7 +11,7 @@ pytestmark = pytest.mark.integration
 
 
 class _DummyTransport(httpx.AsyncBaseTransport):
-    def __init__(self, handler):
+    def __init__(self, handler) -> None:
         self.handler = handler
 
     async def handle_async_request(self, request):
@@ -25,11 +26,11 @@ def _client_with(handler):
 
 
 @pytest.mark.asyncio
-async def test_upload_changes_success():
+async def test_upload_changes_success() -> None:
     async def handler(request):
         assert request.url.path == "/api/sync/upload"
         return httpx.Response(
-            200, json={"applied": ["1"], "conflicts": [], "server_time": datetime.now(UTC).isoformat(), "errors": []}
+            200, json={"applied": ["1"], "conflicts": [], "server_time": datetime.now(UTC).isoformat(), "errors": []},
         )
 
     client = _client_with(handler)
@@ -39,7 +40,7 @@ async def test_upload_changes_success():
 
 
 @pytest.mark.asyncio
-async def test_upload_changes_rate_limit_retry_then_fail(monkeypatch):
+async def test_upload_changes_rate_limit_retry_then_fail(monkeypatch) -> None:
     calls = {"count": 0}
 
     async def handler(request):
@@ -47,7 +48,7 @@ async def test_upload_changes_rate_limit_retry_then_fail(monkeypatch):
         return httpx.Response(429, json={"error": "rate limit"})
 
     # Avoid real sleeping
-    async def _noop(*args, **kwargs):
+    async def _noop(*args, **kwargs) -> None:
         return None
 
     monkeypatch.setattr(asyncio, "sleep", _noop)
@@ -62,7 +63,7 @@ async def test_upload_changes_rate_limit_retry_then_fail(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_upload_changes_auth_error():
+async def test_upload_changes_auth_error() -> None:
     async def handler(request):
         return httpx.Response(401, json={"error": "unauthorized"})
 
@@ -72,7 +73,7 @@ async def test_upload_changes_auth_error():
 
 
 @pytest.mark.asyncio
-async def test_get_status_success():
+async def test_get_status_success() -> None:
     now = datetime.now(UTC)
 
     async def handler(request):
@@ -95,13 +96,14 @@ async def test_get_status_success():
 
 
 @pytest.mark.asyncio
-async def test_get_status_network_error(monkeypatch):
+async def test_get_status_network_error(monkeypatch) -> None:
     from tracertm.api.sync_client import NetworkError
 
-    async def handler(request):
-        raise httpx.ConnectTimeout("timeout")
+    async def handler(request) -> Never:
+        msg = "timeout"
+        raise httpx.ConnectTimeout(msg)
 
-    async def _noop(*args, **kwargs):
+    async def _noop(*args, **kwargs) -> None:
         return None
 
     monkeypatch.setattr(asyncio, "sleep", _noop)

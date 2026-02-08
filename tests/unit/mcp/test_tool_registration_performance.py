@@ -13,9 +13,8 @@ if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
 
-def test_split_modules_import_faster_than_monolith():
+def test_split_modules_import_faster_than_monolith() -> None:
     """Verify that split modules import faster than the monolithic param.py."""
-
     # Remove any cached imports
     modules_to_remove = [k for k in sys.modules if "tracertm.mcp" in k]
     for mod in modules_to_remove:
@@ -55,15 +54,11 @@ def test_split_modules_import_faster_than_monolith():
     except Exception as e:
         pytest.skip(f"Could not import split modules: {e}")
 
-    print(f"\nMonolithic param.py: {monolith_time * 1000:.2f}ms")
-    print(f"Split modules: {split_time * 1000:.2f}ms")
-    print(f"Improvement: {((monolith_time - split_time) / monolith_time * 100):.1f}%")
-
     # We expect at least some improvement, though exact % may vary
     assert split_time < monolith_time, "Split modules should be faster to import"
 
 
-def test_registry_tracks_tools():
+def test_registry_tracks_tools() -> None:
     """Verify the registry correctly tracks registered tools."""
     from tracertm.mcp.registry import get_registry, register_all_tools
 
@@ -97,7 +92,7 @@ def test_registry_tracks_tools():
         assert tool in tools, f"Tool {tool} should be registered"
 
 
-def test_individual_module_imports():
+def test_individual_module_imports() -> None:
     """Test that each domain module can be imported independently."""
     modules = [
         "tracertm.mcp.tools.params.project",
@@ -120,7 +115,7 @@ def test_individual_module_imports():
             pytest.fail(f"Failed to import {module_name}: {e}")
 
 
-def test_tool_functions_exist():
+def test_tool_functions_exist() -> None:
     """Verify that tool functions are properly exported from modules."""
     from tracertm.mcp.tools.params import item, link, project
 
@@ -135,10 +130,10 @@ def test_tool_functions_exist():
 
 
 @pytest.mark.benchmark
-def test_server_import_performance(benchmark):
+def test_server_import_performance(benchmark) -> None:
     """Benchmark server import time."""
 
-    def import_server():
+    def import_server() -> None:
         # Remove cached imports
         modules_to_remove = [k for k in sys.modules if "tracertm.mcp.server" in k]
         for mod in modules_to_remove:
@@ -150,7 +145,6 @@ def test_server_import_performance(benchmark):
     result = benchmark(import_server)
 
     # Report timing
-    print(f"\nServer import time: {result.stats.mean * 1000:.2f}ms")
 
     # Target: <100ms (was ~500ms with monolithic param.py)
     assert result.stats.mean < 0.2, "Server import should be under 200ms"

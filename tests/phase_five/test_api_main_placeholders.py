@@ -1,11 +1,11 @@
-"""
-Lightweight coverage tests for placeholder helpers in tracertm.api.main.
+"""Lightweight coverage tests for placeholder helpers in tracertm.api.main.
 These exercises the security/rate-limit stubs and simple utilities that
 otherwise remain unexecuted in integration flows.
 """
 
 import asyncio
 from datetime import datetime
+from typing import Never
 
 import pytest
 from fastapi import HTTPException
@@ -31,7 +31,7 @@ def _req(headers=None, method="GET", path="/resource"):
     return Request(scope)
 
 
-def test_placeholder_managers_and_helpers():
+def test_placeholder_managers_and_helpers() -> None:
     km = main.APIKeyManager()
     assert km.generate()
     assert km.validate() == {"valid": True}
@@ -81,7 +81,7 @@ def test_placeholder_managers_and_helpers():
     assert main.is_whitelisted() is False
 
 
-def test_ensure_write_and_project_access_branches(monkeypatch):
+def test_ensure_write_and_project_access_branches(monkeypatch) -> None:
     with pytest.raises(ValueError):
         main.ensure_write_permission({"role": "guest"}, "update")
 
@@ -95,15 +95,15 @@ def test_ensure_write_and_project_access_branches(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_maybe_await():
-    async def coro():
+async def test_maybe_await() -> None:
+    async def coro() -> str:
         return "ok"
 
     assert await main._maybe_await(coro()) == "ok"
     assert await main._maybe_await("plain") == "plain"
 
 
-def test_auth_guard_paths(monkeypatch):
+def test_auth_guard_paths(monkeypatch) -> None:
     # Public path when auth disabled and no Authorization header
     req = _req()
     assert main.auth_guard(req)["role"] == "public"
@@ -126,7 +126,7 @@ def test_auth_guard_paths(monkeypatch):
         main.auth_guard(req)
 
 
-def test_enforce_rate_limit(monkeypatch):
+def test_enforce_rate_limit(monkeypatch) -> None:
     # Force small limit to trigger rejection on second call
     monkeypatch.setattr(main, "get_endpoint_limit", lambda *args, **kwargs: {"limit": 1})
     getattr(main.enforce_rate_limit, "_counts", {}).clear()
@@ -137,28 +137,28 @@ def test_enforce_rate_limit(monkeypatch):
     assert isinstance(exc.value, HTTPException) and exc.value.status_code == 429
 
 
-def test_enforce_rate_limit_whitelist(monkeypatch):
+def test_enforce_rate_limit_whitelist(monkeypatch) -> None:
     getattr(main.enforce_rate_limit, "_counts", {}).clear()
     monkeypatch.setattr(main, "is_whitelisted", lambda *_: True)
     req = _req()
     main.enforce_rate_limit(req, {"sub": "user1"})
 
 
-def test_enforce_rate_limit_bypass(monkeypatch):
+def test_enforce_rate_limit_bypass(monkeypatch) -> None:
     getattr(main.enforce_rate_limit, "_counts", {}).clear()
     req = _req()
     main.enforce_rate_limit(req, {"bypass_rate_limit": True})
     # Reaching this line means rate limit was bypassed successfully
 
 
-def test_auth_guard_invalid_api_key(monkeypatch):
+def test_auth_guard_invalid_api_key(monkeypatch) -> None:
     monkeypatch.setattr(main, "verify_api_key", lambda *_: False)
     req = _req(headers={"X-API-Key": "abc"})
     with pytest.raises(ValueError, match="Invalid API key"):
         main.auth_guard(req)
 
 
-def test_auth_guard_requires_bearer(monkeypatch):
+def test_auth_guard_requires_bearer(monkeypatch) -> None:
     # Force auth enabled and malformed bearer token (main may expose ConfigManager for tests)
     cm = getattr(main, "ConfigManager", None)
     if cm is not None:
@@ -169,7 +169,7 @@ def test_auth_guard_requires_bearer(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_get_db_errors(monkeypatch):
+async def test_get_db_errors(monkeypatch) -> None:
     # Missing database_url - get_db uses get_mcp_session from mcp.database_adapter which uses ConfigManager
     from tracertm.mcp import database_adapter as db_adapter
 
@@ -184,8 +184,9 @@ async def test_get_db_errors(monkeypatch):
         lambda self, k, default=None: "sqlite:///:memory:" if k == "database_url" else default,
     )
 
-    def fail_connect(*args, **kwargs):
-        raise RuntimeError("no connect")
+    def fail_connect(*args, **kwargs) -> Never:
+        msg = "no connect"
+        raise RuntimeError(msg)
 
     monkeypatch.setattr(db_adapter, "get_mcp_session", fail_connect)
     with pytest.raises(HTTPException, match="no connect"):
@@ -193,13 +194,14 @@ async def test_get_db_errors(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_list_items_repo_error(monkeypatch):
+async def test_list_items_repo_error(monkeypatch) -> None:
     class BoomRepo:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             pass
 
-        async def get_by_project(self, *_args, **_kwargs):
-            raise RuntimeError("boom")
+        async def get_by_project(self, *_args, **_kwargs) -> Never:
+            msg = "boom"
+            raise RuntimeError(msg)
 
     monkeypatch.setattr(main.item_repository, "ItemRepository", BoomRepo)
     req = _req()
@@ -207,7 +209,7 @@ async def test_list_items_repo_error(monkeypatch):
         await main.list_items(project_id="p1", claims={}, db=None, request=req)
 
 
-def test_export_import_error_branches(monkeypatch):
+def test_export_import_error_branches(monkeypatch) -> None:
     class FakeSvc:
         async def export_to_json(self, *_):
             return {"error": "missing"}
@@ -225,12 +227,12 @@ def test_export_import_error_branches(monkeypatch):
         asyncio.get_event_loop().run_until_complete(main.export_project("p1", format="json", db=None))
     with pytest.raises(HTTPException):
         asyncio.get_event_loop().run_until_complete(
-            main.import_project("p1", request=main.ImportRequest(format="json", data="{}"), db=None)
+            main.import_project("p1", request=main.ImportRequest(format="json", data="{}"), db=None),
         )
 
 
 @pytest.mark.asyncio
-async def test_export_import_success(monkeypatch):
+async def test_export_import_success(monkeypatch) -> None:
     class FakeSvc:
         async def export_to_json(self, *_):
             return {"ok": True}
@@ -238,10 +240,10 @@ async def test_export_import_success(monkeypatch):
         async def import_from_json(self, *_):
             return {"items": 0}
 
-        async def export_to_csv(self, *_):
+        async def export_to_csv(self, *_) -> str:
             return "id,title\n1,a"
 
-        async def export_to_markdown(self, *_):
+        async def export_to_markdown(self, *_) -> str:
             return "# md"
 
         async def import_from_csv(self, *_):
@@ -259,55 +261,55 @@ async def test_export_import_success(monkeypatch):
     assert result3["items"] == 1
 
 
-def test_refresh_access_token_branches(monkeypatch):
+def test_refresh_access_token_branches(monkeypatch) -> None:
     with pytest.raises(HTTPException):
         asyncio.get_event_loop().run_until_complete(main.refresh_access_token_endpoint(payload={}))
 
     monkeypatch.setattr(main, "verify_refresh_token", lambda *_: False)
     with pytest.raises(HTTPException):
         asyncio.get_event_loop().run_until_complete(
-            main.refresh_access_token_endpoint(payload={"refresh_token": "bad"})
+            main.refresh_access_token_endpoint(payload={"refresh_token": "bad"}),
         )
 
 
 @pytest.mark.asyncio
-async def test_get_db_success_closes(monkeypatch):
+async def test_get_db_success_closes(monkeypatch) -> None:
     class FakeSession:
-        def __init__(self):
+        def __init__(self) -> None:
             self.closed = False
 
-        async def close(self):
+        async def close(self) -> None:
             self.closed = True
 
     class FakeDB:
-        def __init__(self, *_):
+        def __init__(self, *_) -> None:
             self.session = FakeSession()
 
-        def connect(self):
+        def connect(self) -> bool:
             return True
 
     from tracertm.config.manager import ConfigManager
 
     monkeypatch.setattr(
-        ConfigManager, "get", lambda self, key, default=None: "sqlite:///:memory:" if key == "database_url" else default
+        ConfigManager, "get", lambda self, key, default=None: "sqlite:///:memory:" if key == "database_url" else default,
     )
     monkeypatch.setattr(main, "DatabaseConnection", FakeDB)  # type: ignore[attr-defined]
     agen = main.get_db()
     session = await anext(agen)
     assert isinstance(session, FakeSession)
     with pytest.raises(StopAsyncIteration):
-        await agen.__anext__()
+        await anext(agen)
 
 
 @pytest.mark.asyncio
-async def test_list_items_slicing(monkeypatch):
+async def test_list_items_slicing(monkeypatch) -> None:
     class Repo:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             pass
 
         async def get_by_project(self, *_args, **_kwargs):
             class Item:
-                def __init__(self, i):
+                def __init__(self, i) -> None:
                     self.id = f"id-{i}"
                     self.title = f"t{i}"
                     self.view = "FEATURE"
@@ -324,16 +326,16 @@ async def test_list_items_slicing(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_list_links_success(monkeypatch):
+async def test_list_links_success(monkeypatch) -> None:
     class Link:
-        def __init__(self, lid):
+        def __init__(self, lid) -> None:
             self.id = lid
             self.source_item_id = "s"
             self.target_item_id = "t"
             self.link_type = "trace"
 
     class Repo:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             pass
 
         async def get_by_project(self, *_args, **_kwargs):
@@ -345,18 +347,18 @@ async def test_list_links_success(monkeypatch):
     assert len(resp["links"]) == 2
 
 
-def test_ensure_project_access_no_project():
+def test_ensure_project_access_no_project() -> None:
     # Should return silently when no project_id provided
     main.ensure_project_access(None, {"sub": "abc"})
 
 
 @pytest.mark.asyncio
-async def test_update_link_not_found_branch(monkeypatch):
+async def test_update_link_not_found_branch(monkeypatch) -> None:
     class Repo:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             pass
 
-        async def get_by_id(self, *_args, **_kwargs):
+        async def get_by_id(self, *_args, **_kwargs) -> None:
             return None
 
     monkeypatch.setattr(main.link_repository, "LinkRepository", Repo)
@@ -365,13 +367,14 @@ async def test_update_link_not_found_branch(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_impact_analysis_error_branch(monkeypatch):
+async def test_impact_analysis_error_branch(monkeypatch) -> None:
     class Service:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             pass
 
-        async def analyze_impact(self, *_args, **_kwargs):
-            raise RuntimeError("no impact")
+        async def analyze_impact(self, *_args, **_kwargs) -> Never:
+            msg = "no impact"
+            raise RuntimeError(msg)
 
     monkeypatch.setattr(main.impact_analysis_service, "ImpactAnalysisService", lambda *_: Service())
     with pytest.raises(HTTPException):
@@ -379,9 +382,9 @@ async def test_impact_analysis_error_branch(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_shortest_path_branch(monkeypatch):
+async def test_shortest_path_branch(monkeypatch) -> None:
     class Service:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             pass
 
         async def find_shortest_path(self, *_args, **_kwargs):
@@ -398,11 +401,11 @@ async def test_shortest_path_branch(monkeypatch):
     assert resp["exists"] is False
 
 
-def test_auth_guard_success(monkeypatch):
+def test_auth_guard_success(monkeypatch) -> None:
     from tracertm.config.manager import ConfigManager
 
     monkeypatch.setattr(
-        ConfigManager, "get", lambda self, key, default=None: True if key == "auth_enabled" else default
+        ConfigManager, "get", lambda self, key, default=None: True if key == "auth_enabled" else default,
     )
     monkeypatch.setattr(main, "verify_token", lambda token: {"sub": "user123", "role": "member"})
     req = _req(headers={"Authorization": "Bearer goodtoken"})
@@ -410,11 +413,11 @@ def test_auth_guard_success(monkeypatch):
     assert claims["sub"] == "user123"
 
 
-def test_enforce_rate_limit_limit_branch(monkeypatch):
+def test_enforce_rate_limit_limit_branch(monkeypatch) -> None:
     getattr(main.enforce_rate_limit, "_counts", {}).clear()  # type: ignore[attr-defined]
 
     class AlwaysAllow(main.RateLimiter):
-        def check_limit(self, *args, **kwargs):
+        def check_limit(self, *args, **kwargs) -> bool:
             return True
 
     monkeypatch.setattr(main, "RateLimiter", AlwaysAllow)
@@ -423,11 +426,11 @@ def test_enforce_rate_limit_limit_branch(monkeypatch):
         main.enforce_rate_limit(_req(), claims={"sub": "u1"})
 
 
-def test_enforce_rate_limit_denied(monkeypatch):
+def test_enforce_rate_limit_denied(monkeypatch) -> None:
     getattr(main.enforce_rate_limit, "_counts", {}).clear()  # type: ignore[attr-defined]
 
     class AlwaysDeny(main.RateLimiter):
-        def check_limit(self, *args, **kwargs):
+        def check_limit(self, *args, **kwargs) -> bool:
             return False
 
     monkeypatch.setattr(main, "RateLimiter", AlwaysDeny)
@@ -436,25 +439,25 @@ def test_enforce_rate_limit_denied(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_get_db_sync_close(monkeypatch):
+async def test_get_db_sync_close(monkeypatch) -> None:
     class FakeSession:
-        def __init__(self):
+        def __init__(self) -> None:
             self.closed = False
 
-        def close(self):
+        def close(self) -> None:
             self.closed = True
 
     class FakeDB:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             self.session = FakeSession()
 
-        def connect(self):
+        def connect(self) -> bool:
             return True
 
     from tracertm.config.manager import ConfigManager
 
     monkeypatch.setattr(
-        ConfigManager, "get", lambda self, key, default=None: "sqlite:///:memory:" if key == "database_url" else default
+        ConfigManager, "get", lambda self, key, default=None: "sqlite:///:memory:" if key == "database_url" else default,
     )
     monkeypatch.setattr(main, "DatabaseConnection", FakeDB)  # type: ignore[attr-defined]
     agen = main.get_db()
@@ -465,21 +468,21 @@ async def test_get_db_sync_close(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_get_db_no_close(monkeypatch):
+async def test_get_db_no_close(monkeypatch) -> None:
     class FakeSession:
         pass
 
     class FakeDB:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             self.session = FakeSession()
 
-        def connect(self):
+        def connect(self) -> bool:
             return True
 
     from tracertm.config.manager import ConfigManager
 
     monkeypatch.setattr(
-        ConfigManager, "get", lambda self, key, default=None: "sqlite:///:memory:" if key == "database_url" else default
+        ConfigManager, "get", lambda self, key, default=None: "sqlite:///:memory:" if key == "database_url" else default,
     )
     monkeypatch.setattr(main, "DatabaseConnection", FakeDB)  # type: ignore[attr-defined]
     agen = main.get_db()
@@ -488,7 +491,7 @@ async def test_get_db_no_close(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_get_item_success(monkeypatch):
+async def test_get_item_success(monkeypatch) -> None:
     class Repo:
         async def get_by_id(self, item_id):
             class Item:
@@ -509,9 +512,9 @@ async def test_get_item_success(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_get_item_not_found(monkeypatch):
+async def test_get_item_not_found(monkeypatch) -> None:
     class Repo:
-        async def get_by_id(self, *_args, **_kwargs):
+        async def get_by_id(self, *_args, **_kwargs) -> None:
             return None
 
     monkeypatch.setattr(main.item_repository, "ItemRepository", lambda *_: Repo())
@@ -520,7 +523,7 @@ async def test_get_item_not_found(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_impact_analysis_success(monkeypatch):
+async def test_impact_analysis_success(monkeypatch) -> None:
     class Service:
         async def analyze_impact(self, *_args, **_kwargs):
             class Result:
@@ -538,9 +541,9 @@ async def test_impact_analysis_success(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_update_link_success(monkeypatch):
+async def test_update_link_success(monkeypatch) -> None:
     class Link:
-        def __init__(self):
+        def __init__(self) -> None:
             self.id = "l1"
             self.source_item_id = "s1"
             self.target_item_id = "t1"
@@ -548,27 +551,27 @@ async def test_update_link_success(monkeypatch):
             self.metadata = {"k": "v"}
 
     class Repo:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             self.link = Link()
 
         async def get_by_id(self, *_args, **_kwargs):
             return self.link
 
     class FakeDB:
-        def __init__(self):
+        def __init__(self) -> None:
             self.flushed = False
             self.refreshed = False
 
-        async def flush(self):
+        async def flush(self) -> None:
             self.flushed = True
 
-        async def refresh(self, link):
+        async def refresh(self, link) -> None:
             self.refreshed = True
 
     monkeypatch.setattr(main.link_repository, "LinkRepository", Repo)
     db = FakeDB()
     resp = await main.update_link(
-        "l1", main.LinkUpdate(link_type="req", metadata={"m": 1}), claims={"role": "user"}, db=db, request=_req()
+        "l1", main.LinkUpdate(link_type="req", metadata={"m": 1}), claims={"role": "user"}, db=db, request=_req(),
     )
     assert resp["type"] == "req"
     assert db.flushed is True
@@ -576,9 +579,9 @@ async def test_update_link_success(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_update_link_no_changes(monkeypatch):
+async def test_update_link_no_changes(monkeypatch) -> None:
     class Link:
-        def __init__(self):
+        def __init__(self) -> None:
             self.id = "l2"
             self.source_item_id = "s"
             self.target_item_id = "t"
@@ -586,7 +589,7 @@ async def test_update_link_no_changes(monkeypatch):
             self.metadata = {"foo": "bar"}
 
     class Repo:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             pass
 
         async def get_by_id(self, *_args, **_kwargs):
@@ -603,7 +606,7 @@ async def test_update_link_no_changes(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_create_and_delete_item_endpoints(monkeypatch):
+async def test_create_and_delete_item_endpoints(monkeypatch) -> None:
     getattr(main.enforce_rate_limit, "_counts", {}).clear()  # type: ignore[attr-defined]
     payload = main.ItemCreate(title="Thing", view="view", project_id="p1", type="feature")
     create_resp = await main.create_item_endpoint(payload, claims={"role": "editor"}, db=None, request=_req())
@@ -613,7 +616,7 @@ async def test_create_and_delete_item_endpoints(monkeypatch):
     assert delete_resp["status"] == "deleted"
 
 
-def test_refresh_access_token_success(monkeypatch):
+def test_refresh_access_token_success(monkeypatch) -> None:
     monkeypatch.setattr(main, "verify_refresh_token", lambda token: {"sub": "user"})
     monkeypatch.setattr(
         main,
@@ -621,43 +624,43 @@ def test_refresh_access_token_success(monkeypatch):
         lambda user_id=None: {"access_token": f"token-for-{user_id}", "token_type": "bearer"},
     )
     resp = asyncio.get_event_loop().run_until_complete(
-        main.refresh_access_token_endpoint(payload={"refresh_token": "good"})
+        main.refresh_access_token_endpoint(payload={"refresh_token": "good"}),
     )
     assert resp["access_token"].startswith("token-for-")
 
 
-def test_refresh_access_token_string_token(monkeypatch):
+def test_refresh_access_token_string_token(monkeypatch) -> None:
     monkeypatch.setattr(main, "verify_refresh_token", lambda token: True)
     monkeypatch.setattr(main, "generate_access_token", lambda user_id=None: "abc123")
     resp = asyncio.get_event_loop().run_until_complete(
-        main.refresh_access_token_endpoint(payload={"refresh_token": "ok"})
+        main.refresh_access_token_endpoint(payload={"refresh_token": "ok"}),
     )
     assert resp["token_type"] == "bearer"
 
 
 @pytest.mark.asyncio
-async def test_project_endpoints_success_and_errors(monkeypatch):
+async def test_project_endpoints_success_and_errors(monkeypatch) -> None:
     class Project:
-        def __init__(self, pid):
+        def __init__(self, pid) -> None:
             self.id = pid
             self.name = f"name-{pid}"
             self.description = "desc"
             self.metadata = {"x": 1}
 
     class Repo:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             pass
 
         async def get_all(self):
             return [Project("p1"), Project("p2")]
 
-        async def get_by_id(self, pid):
+        async def get_by_id(self, pid) -> None:
             return None
 
         async def create(self, name, description=None, metadata=None):
             return Project("new")
 
-        async def update(self, project_id, **_kwargs):
+        async def update(self, project_id, **_kwargs) -> None:
             return None
 
     monkeypatch.setattr("tracertm.repositories.project_repository.ProjectRepository", Repo)
@@ -676,16 +679,16 @@ async def test_project_endpoints_success_and_errors(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_project_success_paths(monkeypatch):
+async def test_project_success_paths(monkeypatch) -> None:
     class Project:
-        def __init__(self, pid):
+        def __init__(self, pid) -> None:
             self.id = pid
             self.name = f"name-{pid}"
             self.description = "d"
             self.metadata = {"m": 1}
 
     class Repo:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             pass
 
         async def get_by_id(self, pid):
@@ -702,33 +705,33 @@ async def test_project_success_paths(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_delete_project_paths(monkeypatch):
+async def test_delete_project_paths(monkeypatch) -> None:
     class Link:
-        def __init__(self, lid):
+        def __init__(self, lid) -> None:
             self.id = lid
             self.source_item_id = "s"
             self.target_item_id = "t"
             self.link_type = "trace"
 
     class LinkRepo:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             pass
 
         async def get_by_project(self, *_args, **_kwargs):
             return [Link("l1"), Link("l2")]
 
-        async def delete(self, _id):
+        async def delete(self, _id) -> bool:
             return True
 
     class ItemRepo:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             pass
 
         async def list_all(self, *_args, **_kwargs):
             return []
 
     class ProjectRepo:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             pass
 
         async def get_by_id(self, pid):
@@ -737,15 +740,15 @@ async def test_delete_project_paths(monkeypatch):
             return type("Proj", (), {"id": pid})
 
     class FakeDB:
-        def __init__(self):
+        def __init__(self) -> None:
             self.executed = []
             self.committed = False
 
-        async def execute(self, stmt):
+        async def execute(self, stmt) -> bool:
             self.executed.append(stmt)
             return True
 
-        async def commit(self):
+        async def commit(self) -> None:
             self.committed = True
 
     monkeypatch.setattr(main.link_repository, "LinkRepository", LinkRepo)
@@ -762,16 +765,16 @@ async def test_delete_project_paths(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_get_graph_neighbors_success(monkeypatch):
+async def test_get_graph_neighbors_success(monkeypatch) -> None:
     class Link:
-        def __init__(self, lid, source, target, link_type):
+        def __init__(self, lid, source, target, link_type) -> None:
             self.id = lid
             self.source_item_id = source
             self.target_item_id = target
             self.link_type = link_type
 
     class Repo:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             pass
 
         async def get_by_source(self, _item_id):
@@ -786,16 +789,16 @@ async def test_get_graph_neighbors_success(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_get_graph_neighbors_out_only(monkeypatch):
+async def test_get_graph_neighbors_out_only(monkeypatch) -> None:
     class Link:
-        def __init__(self, lid, source, target, link_type):
+        def __init__(self, lid, source, target, link_type) -> None:
             self.id = lid
             self.source_item_id = source
             self.target_item_id = target
             self.link_type = link_type
 
     class Repo:
-        def __init__(self, *_args, **_kwargs):
+        def __init__(self, *_args, **_kwargs) -> None:
             pass
 
         async def get_by_source(self, _item_id):

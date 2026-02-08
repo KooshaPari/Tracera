@@ -1,6 +1,4 @@
-"""
-Integration tests for Epic 6: Project Enhancements (Stories 6.3-6.6).
-"""
+"""Integration tests for Epic 6: Project Enhancements (Stories 6.3-6.6)."""
 
 import json
 
@@ -47,7 +45,7 @@ def temp_project_setup(tmp_path, monkeypatch):
     return project_id, database_url
 
 
-def test_project_isolation(temp_project_setup):
+def test_project_isolation(temp_project_setup) -> None:
     """Test project data isolation (Story 6.4)."""
     _project_id, _database_url = temp_project_setup
 
@@ -67,7 +65,7 @@ def test_project_isolation(temp_project_setup):
     client1.close()
 
 
-def test_project_export_import(temp_project_setup):
+def test_project_export_import(temp_project_setup) -> None:
     """Test project export/import (Story 6.6)."""
     _project_id, _database_url = temp_project_setup
 

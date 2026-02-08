@@ -1,6 +1,4 @@
-"""
-Repository for Linear App Installation operations.
-"""
+"""Repository for Linear App Installation operations."""
 
 from datetime import UTC, datetime
 
@@ -13,7 +11,7 @@ from tracertm.models.linear_app import LinearAppInstallation
 class LinearAppInstallationRepository:
     """Repository for Linear App installation operations."""
 
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
     async def create(
@@ -44,7 +42,7 @@ class LinearAppInstallationRepository:
     async def get_by_workspace_id(self, workspace_id: str) -> LinearAppInstallation | None:
         """Get installation by Linear workspace ID."""
         result = await self.db.execute(
-            select(LinearAppInstallation).where(LinearAppInstallation.workspace_id == workspace_id)
+            select(LinearAppInstallation).where(LinearAppInstallation.workspace_id == workspace_id),
         )
         return result.scalar_one_or_none()
 
@@ -54,7 +52,7 @@ class LinearAppInstallationRepository:
             select(LinearAppInstallation)
             .where(LinearAppInstallation.account_id == account_id)
             .where(LinearAppInstallation.suspended_at.is_(None))
-            .order_by(LinearAppInstallation.created_at.desc())
+            .order_by(LinearAppInstallation.created_at.desc()),
         )
         return list(result.scalars().all())
 

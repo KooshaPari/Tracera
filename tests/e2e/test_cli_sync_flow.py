@@ -12,7 +12,7 @@ runner = CliRunner()
 
 
 class _FakeSyncEngine:
-    def __init__(self):
+    def __init__(self) -> None:
         self.state = SyncState(status=SyncStatus.SUCCESS, pending_changes=2, conflicts_count=1)
 
     async def sync(self, force: bool = False):
@@ -29,7 +29,7 @@ class _FakeSyncEngine:
 
 
 @pytest.mark.e2e
-def test_sync_dry_run_shows_conflicts():
+def test_sync_dry_run_shows_conflicts() -> None:
     fake_engine = _FakeSyncEngine()
     with patch("tracertm.cli.commands.sync._get_sync_engine", return_value=fake_engine):
         result = runner.invoke(app, ["sync", "sync", "--dry-run"], catch_exceptions=False)
@@ -40,7 +40,7 @@ def test_sync_dry_run_shows_conflicts():
 
 
 @pytest.mark.e2e
-def test_sync_status_online():
+def test_sync_status_online() -> None:
     fake_engine = _FakeSyncEngine()
     with (
         patch("tracertm.cli.commands.sync._get_sync_engine", return_value=fake_engine),
@@ -54,7 +54,7 @@ def test_sync_status_online():
 
 
 @pytest.mark.e2e
-def test_sync_force_success():
+def test_sync_force_success() -> None:
     fake_engine = _FakeSyncEngine()
     with patch("tracertm.cli.commands.sync._get_sync_engine", return_value=fake_engine):
         result = runner.invoke(app, ["sync", "sync", "--force"], catch_exceptions=False)
@@ -63,7 +63,7 @@ def test_sync_force_success():
 
 
 @pytest.mark.e2e
-def test_sync_failure_path():
+def test_sync_failure_path() -> None:
     class _FailEngine(_FakeSyncEngine):
         async def sync(self, force: bool = False):
             return SyncResult(success=False, entities_synced=0, conflicts=[], errors=["boom"], duration_seconds=0.1)
@@ -76,12 +76,12 @@ def test_sync_failure_path():
 
 
 @pytest.mark.e2e
-def test_sync_status_offline_shows_message():
+def test_sync_status_offline_shows_message() -> None:
     fake_engine = _FakeSyncEngine()
     with (
         patch("tracertm.cli.commands.sync._get_sync_engine", return_value=fake_engine),
         patch(
-            "tracertm.cli.commands.sync._check_online_status", return_value=(False, "[red]Offline[/red] (timeout...)")
+            "tracertm.cli.commands.sync._check_online_status", return_value=(False, "[red]Offline[/red] (timeout...)"),
         ),
     ):
         result = runner.invoke(app, ["sync", "status"], catch_exceptions=False)

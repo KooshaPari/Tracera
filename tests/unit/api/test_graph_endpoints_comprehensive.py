@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for Graph API endpoints.
+"""Comprehensive tests for Graph API endpoints.
 
 Tests:
 - GET /api/v1/projects/{project_id}/graph/neighbors
@@ -46,7 +45,7 @@ class TestGraphNeighborsEndpoint:
     """Test GET /api/v1/projects/{project_id}/graph/neighbors endpoint."""
 
     @pytest.mark.asyncio
-    async def test_get_neighbors_both_directions(self, client):
+    async def test_get_neighbors_both_directions(self, client) -> None:
         """Test getting neighbors in both directions."""
         out_links = [
             MagicMock(
@@ -96,7 +95,7 @@ class TestGraphNeighborsEndpoint:
             assert len(in_neighbors) == 1
 
     @pytest.mark.asyncio
-    async def test_get_neighbors_out_direction(self, client):
+    async def test_get_neighbors_out_direction(self, client) -> None:
         """Test getting neighbors in out direction only."""
         out_links = [
             MagicMock(
@@ -121,7 +120,7 @@ class TestGraphNeighborsEndpoint:
             assert all(n["direction"] == "out" for n in data["neighbors"])
 
     @pytest.mark.asyncio
-    async def test_get_neighbors_in_direction(self, client):
+    async def test_get_neighbors_in_direction(self, client) -> None:
         """Test getting neighbors in in direction only."""
         in_links = [
             MagicMock(
@@ -146,7 +145,7 @@ class TestGraphNeighborsEndpoint:
             assert all(n["direction"] == "in" for n in data["neighbors"])
 
     @pytest.mark.asyncio
-    async def test_get_neighbors_default_direction(self, client):
+    async def test_get_neighbors_default_direction(self, client) -> None:
         """Test getting neighbors with default direction (both)."""
         out_links = [
             MagicMock(
@@ -170,7 +169,7 @@ class TestGraphNeighborsEndpoint:
             assert data["direction"] == "both"  # Default
 
     @pytest.mark.asyncio
-    async def test_get_neighbors_empty(self, client):
+    async def test_get_neighbors_empty(self, client) -> None:
         """Test getting neighbors for item with no links."""
         with patch("tracertm.repositories.link_repository.LinkRepository") as mock_repo:
             repo_instance = MagicMock()
@@ -186,7 +185,7 @@ class TestGraphNeighborsEndpoint:
             assert len(data["neighbors"]) == 0
 
     @pytest.mark.asyncio
-    async def test_get_neighbors_response_structure(self, client):
+    async def test_get_neighbors_response_structure(self, client) -> None:
         """Test neighbors response has expected structure."""
         out_links = [
             MagicMock(
@@ -223,7 +222,7 @@ class TestGraphNeighborsEndpoint:
                 assert "direction" in neighbor
 
     @pytest.mark.asyncio
-    async def test_get_neighbors_invalid_direction(self, client):
+    async def test_get_neighbors_invalid_direction(self, client) -> None:
         """Test getting neighbors with invalid direction defaults to both."""
         out_links = [
             MagicMock(

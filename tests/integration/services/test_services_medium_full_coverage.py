@@ -1,5 +1,4 @@
-"""
-WP-2.2: Integration tests for Services Medium Files.
+"""WP-2.2: Integration tests for Services Medium Files.
 
 Comprehensive test coverage for 8 service files:
 1. item_service.py - Item CRUD and queries (async)
@@ -280,7 +279,7 @@ async def async_items_with_links(async_db_session, async_project):
 class TestItemServiceCreate:
     """Test ItemService create operations."""
 
-    async def test_create_item_basic(self, async_db_session, async_project):
+    async def test_create_item_basic(self, async_db_session, async_project) -> None:
         """Test creating a basic item."""
         service = ItemService(async_db_session)
 
@@ -299,7 +298,7 @@ class TestItemServiceCreate:
         assert item.item_type == "feature"
         assert item.status == "todo"
 
-    async def test_create_item_with_metadata(self, async_db_session, async_project):
+    async def test_create_item_with_metadata(self, async_db_session, async_project) -> None:
         """Test creating an item with metadata."""
         service = ItemService(async_db_session)
         metadata = {"priority": "high", "complexity": "medium"}
@@ -315,7 +314,7 @@ class TestItemServiceCreate:
 
         assert item.item_metadata == metadata
 
-    async def test_create_item_with_links(self, async_db_session, async_project, async_items_with_links):
+    async def test_create_item_with_links(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test creating an item with linked targets."""
         service = ItemService(async_db_session)
         items, _ = async_items_with_links
@@ -332,7 +331,7 @@ class TestItemServiceCreate:
 
         assert new_item.id is not None
 
-    async def test_create_item_with_parent(self, async_db_session, async_project):
+    async def test_create_item_with_parent(self, async_db_session, async_project) -> None:
         """Test creating a child item."""
         service = ItemService(async_db_session)
 
@@ -357,7 +356,7 @@ class TestItemServiceCreate:
 
         assert child.parent_id == parent.id
 
-    async def test_create_item_event_logging(self, async_db_session, async_project):
+    async def test_create_item_event_logging(self, async_db_session, async_project) -> None:
         """Test that item creation logs events."""
         service = ItemService(async_db_session)
 
@@ -382,7 +381,7 @@ class TestItemServiceCreate:
         assert event is not None
         assert event.agent_id == "test-agent"
 
-    async def test_create_item_all_statuses(self, async_db_session, async_project):
+    async def test_create_item_all_statuses(self, async_db_session, async_project) -> None:
         """Test creating items with all valid statuses."""
         service = ItemService(async_db_session)
 
@@ -397,7 +396,7 @@ class TestItemServiceCreate:
             )
             assert item.status == status
 
-    async def test_create_item_with_priority(self, async_db_session, async_project):
+    async def test_create_item_with_priority(self, async_db_session, async_project) -> None:
         """Test creating item with custom priority."""
         service = ItemService(async_db_session)
 
@@ -412,7 +411,7 @@ class TestItemServiceCreate:
 
         assert item.priority == "high"
 
-    async def test_create_item_with_owner(self, async_db_session, async_project):
+    async def test_create_item_with_owner(self, async_db_session, async_project) -> None:
         """Test creating item with owner."""
         service = ItemService(async_db_session)
 
@@ -427,7 +426,7 @@ class TestItemServiceCreate:
 
         assert item.owner == "alice@example.com"
 
-    async def test_create_item_with_description(self, async_db_session, async_project):
+    async def test_create_item_with_description(self, async_db_session, async_project) -> None:
         """Test creating item with description."""
         service = ItemService(async_db_session)
         description = "This is a detailed description of the item"
@@ -443,7 +442,7 @@ class TestItemServiceCreate:
 
         assert item.description == description
 
-    async def test_create_item_with_empty_metadata(self, async_db_session, async_project):
+    async def test_create_item_with_empty_metadata(self, async_db_session, async_project) -> None:
         """Test creating item with empty metadata dict."""
         service = ItemService(async_db_session)
 
@@ -458,7 +457,7 @@ class TestItemServiceCreate:
 
         assert item.item_metadata == {}
 
-    async def test_create_item_with_complex_metadata(self, async_db_session, async_project):
+    async def test_create_item_with_complex_metadata(self, async_db_session, async_project) -> None:
         """Test creating item with complex nested metadata."""
         service = ItemService(async_db_session)
         metadata = {
@@ -478,7 +477,7 @@ class TestItemServiceCreate:
 
         assert item.item_metadata == metadata
 
-    async def test_create_item_with_multiple_links(self, async_db_session, async_project, async_items_with_links):
+    async def test_create_item_with_multiple_links(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test creating item with links to multiple targets."""
         service = ItemService(async_db_session)
         items, _ = async_items_with_links
@@ -499,7 +498,7 @@ class TestItemServiceCreate:
         links = await service.links.get_by_item(new_item.id)
         assert len(links) == 3
 
-    async def test_create_item_with_different_link_types(self, async_db_session, async_project, async_items_with_links):
+    async def test_create_item_with_different_link_types(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test creating items with different link types."""
         service = ItemService(async_db_session)
         items, _ = async_items_with_links
@@ -516,7 +515,7 @@ class TestItemServiceCreate:
             )
             assert item.id is not None
 
-    async def test_create_item_no_links(self, async_db_session, async_project):
+    async def test_create_item_no_links(self, async_db_session, async_project) -> None:
         """Test creating item without links."""
         service = ItemService(async_db_session)
 
@@ -533,7 +532,7 @@ class TestItemServiceCreate:
         links = await service.links.get_by_item(item.id)
         assert len(links) == 0
 
-    async def test_create_item_empty_links_list(self, async_db_session, async_project):
+    async def test_create_item_empty_links_list(self, async_db_session, async_project) -> None:
         """Test creating item with empty links list."""
         service = ItemService(async_db_session)
 
@@ -549,7 +548,7 @@ class TestItemServiceCreate:
         links = await service.links.get_by_item(item.id)
         assert len(links) == 0
 
-    async def test_create_item_all_fields(self, async_db_session, async_project):
+    async def test_create_item_all_fields(self, async_db_session, async_project) -> None:
         """Test creating item with all fields specified."""
         service = ItemService(async_db_session)
 
@@ -591,7 +590,7 @@ class TestItemServiceCreate:
 class TestItemServiceRead:
     """Test ItemService read operations."""
 
-    async def test_get_item_by_id(self, async_db_session, async_project, async_items_with_links):
+    async def test_get_item_by_id(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test retrieving an item by ID."""
         service = ItemService(async_db_session)
         items, _ = async_items_with_links
@@ -601,14 +600,14 @@ class TestItemServiceRead:
         assert retrieved.id == items[0].id
         assert retrieved.title == items[0].title
 
-    async def test_get_item_not_found(self, async_db_session, async_project):
+    async def test_get_item_not_found(self, async_db_session, async_project) -> None:
         """Test retrieving a non-existent item."""
         service = ItemService(async_db_session)
 
         item = await service.get_item(async_project.id, "non-existent")
         assert item is None
 
-    async def test_get_item_wrong_project(self, async_db_session):
+    async def test_get_item_wrong_project(self, async_db_session) -> None:
         """Test retrieving an item from wrong project."""
         service = ItemService(async_db_session)
 
@@ -630,14 +629,14 @@ class TestItemServiceRead:
         retrieved = await service.get_item("project-2", "item-1")
         assert retrieved is None
 
-    async def test_list_items_by_project(self, async_db_session, async_project, async_items_with_links):
+    async def test_list_items_by_project(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test listing items in a project."""
         service = ItemService(async_db_session)
 
         items = await service.list_items(async_project.id)
         assert len(items) == 4
 
-    async def test_list_items_with_view_filter(self, async_db_session, async_project, async_items_with_links):
+    async def test_list_items_with_view_filter(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test listing items filtered by view."""
         service = ItemService(async_db_session)
 
@@ -645,7 +644,7 @@ class TestItemServiceRead:
         assert all(item.view == "FEATURE" for item in items)
         assert len(items) == 2
 
-    async def test_list_items_with_status_filter(self, async_db_session, async_project, async_items_with_links):
+    async def test_list_items_with_status_filter(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test listing items filtered by status."""
         service = ItemService(async_db_session)
 
@@ -654,15 +653,15 @@ class TestItemServiceRead:
         assert len(items) >= 1
 
     async def test_list_items_with_view_and_status_filter(
-        self, async_db_session, async_project, async_items_with_links
-    ):
+        self, async_db_session, async_project, async_items_with_links,
+    ) -> None:
         """Test listing items with both view and status filters."""
         service = ItemService(async_db_session)
 
         items = await service.list_items(async_project.id, view="FEATURE", status="todo")
         assert all(item.view == "FEATURE" and item.status == "todo" for item in items)
 
-    async def test_list_items_with_pagination(self, async_db_session, async_project):
+    async def test_list_items_with_pagination(self, async_db_session, async_project) -> None:
         """Test listing items with pagination."""
         service = ItemService(async_db_session)
 
@@ -691,14 +690,14 @@ class TestItemServiceRead:
         ids_page2 = {item.id for item in items_page2}
         assert ids_page1.isdisjoint(ids_page2)
 
-    async def test_list_items_empty_project(self, async_db_session, async_project):
+    async def test_list_items_empty_project(self, async_db_session, async_project) -> None:
         """Test listing items from empty project."""
         service = ItemService(async_db_session)
 
         items = await service.list_items(async_project.id)
         assert len(items) == 0
 
-    async def test_get_item_with_links(self, async_db_session, async_project, async_items_with_links):
+    async def test_get_item_with_links(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test retrieving item with all its links."""
         service = ItemService(async_db_session)
         items, links = async_items_with_links
@@ -710,7 +709,7 @@ class TestItemServiceRead:
         assert "links" in result
         assert len(result["links"]) > 0
 
-    async def test_get_item_with_links_no_links(self, async_db_session, async_project):
+    async def test_get_item_with_links_no_links(self, async_db_session, async_project) -> None:
         """Test retrieving item with no links."""
         service = ItemService(async_db_session)
 
@@ -730,14 +729,14 @@ class TestItemServiceRead:
         assert result["item"].id == "no-links-item"
         assert len(result["links"]) == 0
 
-    async def test_get_item_with_links_not_found(self, async_db_session):
+    async def test_get_item_with_links_not_found(self, async_db_session) -> None:
         """Test retrieving non-existent item with links."""
         service = ItemService(async_db_session)
 
         result = await service.get_item_with_links("non-existent")
         assert result is None
 
-    async def test_get_children(self, async_db_session, async_project):
+    async def test_get_children(self, async_db_session, async_project) -> None:
         """Test retrieving direct children of an item."""
         service = ItemService(async_db_session)
 
@@ -767,7 +766,7 @@ class TestItemServiceRead:
         children = await service.get_children(str(parent.id))
         assert len(children) == 3
 
-    async def test_get_children_no_children(self, async_db_session, async_project):
+    async def test_get_children_no_children(self, async_db_session, async_project) -> None:
         """Test getting children for item with none."""
         service = ItemService(async_db_session)
 
@@ -784,7 +783,7 @@ class TestItemServiceRead:
         children = await service.get_children("childless-item")
         assert len(children) == 0
 
-    async def test_get_ancestors(self, async_db_session, async_project):
+    async def test_get_ancestors(self, async_db_session, async_project) -> None:
         """Test retrieving ancestors (path to root)."""
         service = ItemService(async_db_session)
 
@@ -818,7 +817,7 @@ class TestItemServiceRead:
         ancestors = await service.get_ancestors("child-ancestor")
         assert len(ancestors) >= 1
 
-    async def test_get_descendants(self, async_db_session, async_project):
+    async def test_get_descendants(self, async_db_session, async_project) -> None:
         """Test retrieving all descendants."""
         service = ItemService(async_db_session)
 
@@ -868,7 +867,7 @@ class TestItemServiceRead:
 class TestItemServiceUpdate:
     """Test ItemService update operations."""
 
-    async def test_update_item_status(self, async_db_session, async_project):
+    async def test_update_item_status(self, async_db_session, async_project) -> None:
         """Test updating item status."""
         service = ItemService(async_db_session)
 
@@ -887,7 +886,7 @@ class TestItemServiceUpdate:
 
         assert updated.status == "in_progress"
 
-    async def test_update_item_multiple_fields(self, async_db_session, async_project):
+    async def test_update_item_multiple_fields(self, async_db_session, async_project) -> None:
         """Test updating multiple item fields."""
         service = ItemService(async_db_session)
 
@@ -915,7 +914,7 @@ class TestItemServiceUpdate:
         assert updated.priority == "high"
         assert updated.status == "in_progress"
 
-    async def test_update_item_title(self, async_db_session, async_project):
+    async def test_update_item_title(self, async_db_session, async_project) -> None:
         """Test updating just the title."""
         service = ItemService(async_db_session)
 
@@ -937,7 +936,7 @@ class TestItemServiceUpdate:
 
         assert updated.title == "Updated Title"
 
-    async def test_update_item_priority(self, async_db_session, async_project):
+    async def test_update_item_priority(self, async_db_session, async_project) -> None:
         """Test updating just the priority."""
         service = ItemService(async_db_session)
 
@@ -960,7 +959,7 @@ class TestItemServiceUpdate:
 
         assert updated.priority == "critical"
 
-    async def test_update_item_owner(self, async_db_session, async_project):
+    async def test_update_item_owner(self, async_db_session, async_project) -> None:
         """Test updating just the owner."""
         service = ItemService(async_db_session)
 
@@ -983,7 +982,7 @@ class TestItemServiceUpdate:
 
         assert updated.owner == "new@example.com"
 
-    async def test_update_item_description(self, async_db_session, async_project):
+    async def test_update_item_description(self, async_db_session, async_project) -> None:
         """Test updating the description."""
         service = ItemService(async_db_session)
 
@@ -1006,7 +1005,7 @@ class TestItemServiceUpdate:
 
         assert updated.description == "New description"
 
-    async def test_update_item_not_found(self, async_db_session):
+    async def test_update_item_not_found(self, async_db_session) -> None:
         """Test updating non-existent item."""
         service = ItemService(async_db_session)
 
@@ -1017,7 +1016,7 @@ class TestItemServiceUpdate:
                 title="New Title",
             )
 
-    async def test_update_item_status_all_transitions(self, async_db_session, async_project):
+    async def test_update_item_status_all_transitions(self, async_db_session, async_project) -> None:
         """Test all valid status transitions."""
         service = ItemService(async_db_session)
 
@@ -1052,7 +1051,7 @@ class TestItemServiceUpdate:
                     status=current_status,
                 )
 
-    async def test_update_item_status_invalid_transition(self, async_db_session, async_project):
+    async def test_update_item_status_invalid_transition(self, async_db_session, async_project) -> None:
         """Test invalid status transition."""
         service = ItemService(async_db_session)
 
@@ -1076,7 +1075,7 @@ class TestItemServiceUpdate:
                 async_project.id,
             )
 
-    async def test_update_item_status_invalid_status(self, async_db_session, async_project):
+    async def test_update_item_status_invalid_status(self, async_db_session, async_project) -> None:
         """Test setting an invalid status."""
         service = ItemService(async_db_session)
 
@@ -1099,7 +1098,7 @@ class TestItemServiceUpdate:
                 async_project.id,
             )
 
-    async def test_update_metadata_merge(self, async_db_session, async_project):
+    async def test_update_metadata_merge(self, async_db_session, async_project) -> None:
         """Test metadata update with merge."""
         service = ItemService(async_db_session)
 
@@ -1125,7 +1124,7 @@ class TestItemServiceUpdate:
         assert updated.item_metadata["new"] == "field"
         assert updated.item_metadata["count"] == 2
 
-    async def test_update_metadata_replace(self, async_db_session, async_project):
+    async def test_update_metadata_replace(self, async_db_session, async_project) -> None:
         """Test metadata update with replace."""
         service = ItemService(async_db_session)
 
@@ -1150,7 +1149,7 @@ class TestItemServiceUpdate:
         assert "old" not in updated.item_metadata
         assert updated.item_metadata["new"] == "data"
 
-    async def test_update_metadata_empty_to_full(self, async_db_session, async_project):
+    async def test_update_metadata_empty_to_full(self, async_db_session, async_project) -> None:
         """Test updating metadata from empty to full."""
         service = ItemService(async_db_session)
 
@@ -1177,7 +1176,7 @@ class TestItemServiceUpdate:
 class TestItemServiceDelete:
     """Test ItemService delete operations."""
 
-    async def test_delete_item(self, async_db_session, async_project):
+    async def test_delete_item(self, async_db_session, async_project) -> None:
         """Test soft deleting an item."""
         service = ItemService(async_db_session)
 
@@ -1194,7 +1193,7 @@ class TestItemServiceDelete:
         deleted = await service.delete_item("delete-test", "test-agent", soft=True)
         assert deleted
 
-    async def test_delete_item_hard_delete(self, async_db_session, async_project):
+    async def test_delete_item_hard_delete(self, async_db_session, async_project) -> None:
         """Test hard deleting an item."""
         service = ItemService(async_db_session)
 
@@ -1211,14 +1210,14 @@ class TestItemServiceDelete:
         deleted = await service.delete_item("hard-delete-test", "test-agent", soft=False)
         assert deleted
 
-    async def test_delete_item_not_found(self, async_db_session):
+    async def test_delete_item_not_found(self, async_db_session) -> None:
         """Test deleting non-existent item."""
         service = ItemService(async_db_session)
 
         deleted = await service.delete_item("non-existent", "test-agent")
         assert not deleted
 
-    async def test_undelete_item(self, async_db_session, async_project):
+    async def test_undelete_item(self, async_db_session, async_project) -> None:
         """Test restoring a soft-deleted item."""
         service = ItemService(async_db_session)
 
@@ -1239,14 +1238,14 @@ class TestItemServiceDelete:
         restored = await service.undelete_item("undelete-test", "test-agent")
         assert restored is not None
 
-    async def test_undelete_nonexistent_item(self, async_db_session):
+    async def test_undelete_nonexistent_item(self, async_db_session) -> None:
         """Test restoring non-existent item."""
         service = ItemService(async_db_session)
 
         restored = await service.undelete_item("non-existent", "test-agent")
         assert restored is None
 
-    async def test_delete_item_with_children(self, async_db_session, async_project):
+    async def test_delete_item_with_children(self, async_db_session, async_project) -> None:
         """Test deleting item with children."""
         service = ItemService(async_db_session)
 
@@ -1278,22 +1277,22 @@ class TestItemServiceProgress:
     """Test ItemService progress calculation."""
 
     @pytest.mark.skip(reason="Service calls get_children with wrong signature")
-    async def test_get_item_progress_no_children(self, async_db_session, async_project):
+    async def test_get_item_progress_no_children(self, async_db_session, async_project) -> None:
         """Test progress calculation for item with no children."""
 
     @pytest.mark.skip(reason="Service calls get_children with wrong signature")
-    async def test_get_item_progress_with_children(self, async_db_session, async_project):
+    async def test_get_item_progress_with_children(self, async_db_session, async_project) -> None:
         """Test progress calculation with children."""
 
     @pytest.mark.skip(reason="Service calls get_children with wrong signature")
-    async def test_get_item_progress_all_done(self, async_db_session, async_project):
+    async def test_get_item_progress_all_done(self, async_db_session, async_project) -> None:
         """Test progress when all children are done."""
 
     @pytest.mark.skip(reason="Service calls get_children with wrong signature")
-    async def test_get_item_progress_none_done(self, async_db_session, async_project):
+    async def test_get_item_progress_none_done(self, async_db_session, async_project) -> None:
         """Test progress when no children are done."""
 
-    async def test_get_item_progress_not_found(self, async_db_session, async_project):
+    async def test_get_item_progress_not_found(self, async_db_session, async_project) -> None:
         """Test progress for non-existent item."""
         service = ItemService(async_db_session)
 
@@ -1310,7 +1309,7 @@ class TestItemServiceProgress:
 class TestItemServiceRelationships:
     """Test ItemService relationship querying."""
 
-    async def test_query_by_relationship_stub(self, async_db_session, async_project, async_items_with_links):
+    async def test_query_by_relationship_stub(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test query by relationship (stub implementation)."""
         service = ItemService(async_db_session)
         items, _ = async_items_with_links
@@ -1334,7 +1333,7 @@ class TestItemServiceRelationships:
 class TestBulkOperationService:
     """Test BulkOperationService."""
 
-    def test_bulk_update_preview_basic(self, sync_db_session, sync_project, sync_items_with_links):
+    def test_bulk_update_preview_basic(self, sync_db_session, sync_project, sync_items_with_links) -> None:
         """Test bulk update preview generation."""
         service = BulkOperationService(sync_db_session)
 
@@ -1348,7 +1347,7 @@ class TestBulkOperationService:
         assert len(preview.get("sample_items", preview.get("samples", []))) > 0
         assert preview["estimated_duration_ms"] > 0
 
-    def test_bulk_update_preview_with_status_filter(self, sync_db_session, sync_project, sync_items_with_links):
+    def test_bulk_update_preview_with_status_filter(self, sync_db_session, sync_project, sync_items_with_links) -> None:
         """Test bulk update preview with status filter."""
         service = BulkOperationService(sync_db_session)
 
@@ -1362,7 +1361,7 @@ class TestBulkOperationService:
         assert "sample_items" in preview or "samples" in preview
         assert "warnings" in preview
 
-    def test_bulk_update_preview_large_operation_warning(self, sync_db_session, sync_project):
+    def test_bulk_update_preview_large_operation_warning(self, sync_db_session, sync_project) -> None:
         """Test that large operations generate warnings."""
         # Create many items
         for i in range(150):
@@ -1386,7 +1385,7 @@ class TestBulkOperationService:
 
         assert any("Large operation" in w for w in preview.get("warnings", []))
 
-    def test_bulk_update_preview_multiple_filters(self, sync_db_session, sync_project, sync_items_with_links):
+    def test_bulk_update_preview_multiple_filters(self, sync_db_session, sync_project, sync_items_with_links) -> None:
         """Test bulk update preview with multiple filters."""
         service = BulkOperationService(sync_db_session)
 
@@ -1399,7 +1398,7 @@ class TestBulkOperationService:
         assert "total_count" in preview
         assert preview["total_count"] >= 0
 
-    def test_bulk_update_preview_no_matches(self, sync_db_session, sync_project):
+    def test_bulk_update_preview_no_matches(self, sync_db_session, sync_project) -> None:
         """Test bulk update preview when no items match."""
         service = BulkOperationService(sync_db_session)
 
@@ -1413,7 +1412,7 @@ class TestBulkOperationService:
         samples = preview.get("sample_items", preview.get("samples", []))
         assert len(samples) == 0
 
-    def test_bulk_update_preview_priority_filter(self, sync_db_session, sync_project, sync_items_with_links):
+    def test_bulk_update_preview_priority_filter(self, sync_db_session, sync_project, sync_items_with_links) -> None:
         """Test bulk update preview with priority filter."""
         service = BulkOperationService(sync_db_session)
 
@@ -1426,7 +1425,7 @@ class TestBulkOperationService:
         assert "total_count" in preview
         assert preview["total_count"] >= 0
 
-    def test_bulk_update_preview_owner_filter(self, sync_db_session, sync_project, sync_items_with_links):
+    def test_bulk_update_preview_owner_filter(self, sync_db_session, sync_project, sync_items_with_links) -> None:
         """Test bulk update preview with owner filter."""
         service = BulkOperationService(sync_db_session)
 
@@ -1447,7 +1446,7 @@ class TestBulkOperationService:
 class TestCycleDetectionService:
     """Test CycleDetectionService."""
 
-    def test_no_cycle_in_simple_graph(self, sync_db_session, sync_project, sync_items_with_links):
+    def test_no_cycle_in_simple_graph(self, sync_db_session, sync_project, sync_items_with_links) -> None:
         """Test that simple acyclic graph has no cycles."""
         service = CycleDetectionService(sync_db_session)
 
@@ -1460,7 +1459,7 @@ class TestCycleDetectionService:
 
         assert not has_cycle
 
-    def test_cycle_detection_creates_cycle(self, sync_db_session, sync_project, sync_items_with_links):
+    def test_cycle_detection_creates_cycle(self, sync_db_session, sync_project, sync_items_with_links) -> None:
         """Test cycle detection when adding link would create cycle."""
         items, links = sync_items_with_links
         service = CycleDetectionService(sync_db_session)
@@ -1496,7 +1495,7 @@ class TestCycleDetectionService:
 
         assert has_cycle
 
-    def test_cycle_detection_non_depends_on_links(self, sync_db_session, sync_project):
+    def test_cycle_detection_non_depends_on_links(self, sync_db_session, sync_project) -> None:
         """Test that cycle detection only applies to depends_on links."""
         service = CycleDetectionService(sync_db_session)
 
@@ -1510,7 +1509,7 @@ class TestCycleDetectionService:
 
         assert not has_cycle
 
-    def test_detect_cycles_returns_namespace(self, sync_db_session, sync_project):
+    def test_detect_cycles_returns_namespace(self, sync_db_session, sync_project) -> None:
         """Test that detect_cycles returns proper namespace."""
         service = CycleDetectionService(sync_db_session)
 
@@ -1520,7 +1519,7 @@ class TestCycleDetectionService:
         assert hasattr(result, "cycle_count")
         assert hasattr(result, "cycles")
 
-    def test_detect_cycles_with_multiple_types(self, sync_db_session, sync_project):
+    def test_detect_cycles_with_multiple_types(self, sync_db_session, sync_project) -> None:
         """Test cycle detection with multiple link types."""
         service = CycleDetectionService(sync_db_session)
 
@@ -1531,7 +1530,7 @@ class TestCycleDetectionService:
 
         assert hasattr(result, "cycle_count")
 
-    def test_detect_cycles_complex_graph(self, sync_db_session, sync_project):
+    def test_detect_cycles_complex_graph(self, sync_db_session, sync_project) -> None:
         """Test cycle detection in complex graph."""
         # Create items
         for i in range(5):
@@ -1568,7 +1567,7 @@ class TestCycleDetectionService:
 class TestCycleDetectionServiceAsync:
     """Test async cycle detection."""
 
-    async def test_detect_cycles_async(self, async_db_session, async_project, async_items_with_links):
+    async def test_detect_cycles_async(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test async cycle detection."""
         service = CycleDetectionService(async_db_session)
 
@@ -1587,7 +1586,7 @@ class TestCycleDetectionServiceAsync:
 class TestChaosModeService:
     """Test ChaosModeService."""
 
-    async def test_detect_zombies(self, async_db_session, async_project, async_items_with_links):
+    async def test_detect_zombies(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test zombie detection."""
         service = ChaosModeService(async_db_session)
 
@@ -1598,7 +1597,7 @@ class TestChaosModeService:
         assert "total_items" in result
         assert "zombie_percentage" in result
 
-    async def test_analyze_impact(self, async_db_session, async_project, async_items_with_links):
+    async def test_analyze_impact(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test impact analysis."""
         service = ChaosModeService(async_db_session)
 
@@ -1609,7 +1608,7 @@ class TestChaosModeService:
         assert "dependencies" in result
         assert "total_impact" in result
 
-    async def test_create_temporal_snapshot(self, async_db_session, async_project, async_items_with_links):
+    async def test_create_temporal_snapshot(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test temporal snapshot creation."""
         service = ChaosModeService(async_db_session)
 
@@ -1624,7 +1623,7 @@ class TestChaosModeService:
         assert "link_count" in snapshot
         assert "timestamp" in snapshot
 
-    async def test_mass_update_items(self, async_db_session, async_project, async_items_with_links):
+    async def test_mass_update_items(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test mass item updates."""
         service = ChaosModeService(async_db_session)
 
@@ -1639,7 +1638,7 @@ class TestChaosModeService:
         assert "error_count" in result
         assert result["updated_count"] >= 0
 
-    async def test_get_project_health(self, async_db_session, async_project, async_items_with_links):
+    async def test_get_project_health(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test project health metrics."""
         service = ChaosModeService(async_db_session)
 
@@ -1651,7 +1650,7 @@ class TestChaosModeService:
         assert "in_progress" in health
         assert "todo" in health
 
-    async def test_explode_file_markdown(self, async_db_session, async_project):
+    async def test_explode_file_markdown(self, async_db_session, async_project) -> None:
         """Test file explosion with markdown."""
         service = ChaosModeService(async_db_session)
 
@@ -1668,7 +1667,7 @@ class TestChaosModeService:
 
         assert count > 0
 
-    async def test_track_scope_crash(self, async_db_session, async_project, async_items_with_links):
+    async def test_track_scope_crash(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test scope crash tracking."""
         service = ChaosModeService(async_db_session)
 
@@ -1682,7 +1681,7 @@ class TestChaosModeService:
         assert "event_id" in result
         assert "items_affected" in result
 
-    async def test_cleanup_zombies(self, async_db_session, async_project, async_items_with_links):
+    async def test_cleanup_zombies(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test zombie cleanup."""
         service = ChaosModeService(async_db_session)
 
@@ -1691,7 +1690,7 @@ class TestChaosModeService:
         assert isinstance(deleted_count, int)
         assert deleted_count >= 0
 
-    async def test_create_snapshot_wrapper(self, async_db_session, async_project):
+    async def test_create_snapshot_wrapper(self, async_db_session, async_project) -> None:
         """Test snapshot creation wrapper."""
         service = ChaosModeService(async_db_session)
 
@@ -1714,18 +1713,18 @@ class TestChaosModeService:
 class TestViewService:
     """Test ViewService."""
 
-    def test_view_service_initialization(self):
+    def test_view_service_initialization(self) -> None:
         """Test ViewService can be initialized."""
         service = ViewService()
         assert service is not None
 
-    def test_view_service_with_session(self, sync_db_session):
+    def test_view_service_with_session(self, sync_db_session) -> None:
         """Test ViewService with database session."""
         service = ViewService(sync_db_session)
         assert service.db_session is sync_db_session
 
     @pytest.mark.asyncio
-    async def test_list_views(self):
+    async def test_list_views(self) -> None:
         """Test listing views."""
         service = ViewService()
         views = await service.list_views()
@@ -1740,7 +1739,7 @@ class TestViewService:
 class TestProjectBackupService:
     """Test ProjectBackupService."""
 
-    def test_backup_project_basic(self, sync_db_session, sync_project, sync_items_with_links):
+    def test_backup_project_basic(self, sync_db_session, sync_project, sync_items_with_links) -> None:
         """Test basic project backup."""
         service = ProjectBackupService(sync_db_session)
 
@@ -1751,7 +1750,7 @@ class TestProjectBackupService:
         assert len(backup["items"]) > 0
         assert len(backup["links"]) > 0
 
-    def test_backup_project_with_history(self, sync_db_session, sync_project, sync_items_with_links):
+    def test_backup_project_with_history(self, sync_db_session, sync_project, sync_items_with_links) -> None:
         """Test backup with history included."""
         # Create an event
         event = Event(
@@ -1774,7 +1773,7 @@ class TestProjectBackupService:
         assert "events" in backup
         assert len(backup["events"]) > 0
 
-    def test_backup_project_with_agents(self, sync_db_session, sync_project):
+    def test_backup_project_with_agents(self, sync_db_session, sync_project) -> None:
         """Test backup with agent data."""
         from tracertm.models.agent import Agent
 
@@ -1796,7 +1795,7 @@ class TestProjectBackupService:
         assert "agents" in backup
         assert len(backup["agents"]) > 0
 
-    def test_restore_project_basic(self, sync_db_session):
+    def test_restore_project_basic(self, sync_db_session) -> None:
         """Test basic project restore."""
         service = ProjectBackupService(sync_db_session)
 
@@ -1821,7 +1820,7 @@ class TestProjectBackupService:
                     "owner": None,
                     "parent_id": None,
                     "metadata": {},
-                }
+                },
             ],
             "links": [],
         }
@@ -1835,7 +1834,7 @@ class TestProjectBackupService:
         assert project is not None
         assert project.name == "Restored Project"
 
-    def test_clone_project(self, sync_db_session, sync_project, sync_items_with_links):
+    def test_clone_project(self, sync_db_session, sync_project, sync_items_with_links) -> None:
         """Test project cloning."""
         service = ProjectBackupService(sync_db_session)
 
@@ -1853,7 +1852,7 @@ class TestProjectBackupService:
         assert cloned is not None
         assert cloned.name == "Cloned Project"
 
-    def test_create_template(self, sync_db_session, sync_project):
+    def test_create_template(self, sync_db_session, sync_project) -> None:
         """Test template creation."""
         service = ProjectBackupService(sync_db_session)
 
@@ -1870,7 +1869,7 @@ class TestProjectBackupService:
         if template.project_metadata:
             assert template.project_metadata.get("is_template") == True
 
-    def test_list_templates(self, sync_db_session):
+    def test_list_templates(self, sync_db_session) -> None:
         """Test template listing."""
         service = ProjectBackupService(sync_db_session)
 
@@ -1889,7 +1888,7 @@ class TestProjectBackupService:
         template_names = [t["name"] for t in templates]
         assert "Template Project" in template_names
 
-    def test_backup_project_without_items(self, sync_db_session):
+    def test_backup_project_without_items(self, sync_db_session) -> None:
         """Test backup of project with no items."""
         project = Project(id="empty-proj", name="Empty Project")
         sync_db_session.add(project)
@@ -1901,7 +1900,7 @@ class TestProjectBackupService:
         assert backup["project"]["id"] == "empty-proj"
         assert backup["items"] == []
 
-    def test_clone_project_without_items(self, sync_db_session):
+    def test_clone_project_without_items(self, sync_db_session) -> None:
         """Test cloning without items."""
         project = Project(id="clone-source", name="Source")
         sync_db_session.add(project)
@@ -1928,7 +1927,7 @@ class TestProjectBackupService:
 class TestImpactAnalysisService:
     """Test ImpactAnalysisService."""
 
-    async def test_analyze_impact_single_item(self, async_db_session, async_project, async_items_with_links):
+    async def test_analyze_impact_single_item(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test impact analysis for single item."""
         service = ImpactAnalysisService(async_db_session)
 
@@ -1939,7 +1938,7 @@ class TestImpactAnalysisService:
         assert hasattr(result, "affected_by_depth")
         assert hasattr(result, "affected_by_view")
 
-    async def test_analyze_impact_with_depth_limit(self, async_db_session, async_project):
+    async def test_analyze_impact_with_depth_limit(self, async_db_session, async_project) -> None:
         """Test impact analysis with depth limit."""
         # Create a chain of dependencies
         items = []
@@ -1974,7 +1973,7 @@ class TestImpactAnalysisService:
 
         assert result.max_depth_reached <= 2
 
-    async def test_analyze_reverse_impact(self, async_db_session, async_project, async_items_with_links):
+    async def test_analyze_reverse_impact(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test reverse impact analysis."""
         service = ImpactAnalysisService(async_db_session)
 
@@ -1983,7 +1982,7 @@ class TestImpactAnalysisService:
         assert result.root_item_id == "async-item-3"
         assert hasattr(result, "total_affected")
 
-    async def test_analyze_impact_no_dependencies(self, async_db_session, async_project):
+    async def test_analyze_impact_no_dependencies(self, async_db_session, async_project) -> None:
         """Test impact analysis for isolated item."""
         item = Item(
             id="isolated-item",
@@ -2010,7 +2009,7 @@ class TestImpactAnalysisService:
 class TestAdvancedTraceabilityService:
     """Test AdvancedTraceabilityService."""
 
-    async def test_find_all_paths_direct(self, async_db_session, async_project, async_items_with_links):
+    async def test_find_all_paths_direct(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test finding direct paths between items."""
         service = AdvancedTraceabilityService(async_db_session)
 
@@ -2018,7 +2017,7 @@ class TestAdvancedTraceabilityService:
 
         assert isinstance(paths, list)
 
-    async def test_find_all_paths_no_path(self, async_db_session, async_project):
+    async def test_find_all_paths_no_path(self, async_db_session, async_project) -> None:
         """Test path finding when no path exists."""
         item1 = Item(
             id="item-a",
@@ -2042,7 +2041,7 @@ class TestAdvancedTraceabilityService:
 
         assert len(paths) == 0
 
-    async def test_find_all_paths_max_depth(self, async_db_session, async_project, async_items_with_links):
+    async def test_find_all_paths_max_depth(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test path finding with max depth limit."""
         service = AdvancedTraceabilityService(async_db_session)
 
@@ -2063,7 +2062,7 @@ class TestAdvancedTraceabilityService:
 class TestEdgeCasesAndErrorHandling:
     """Test edge cases and error handling."""
 
-    def test_bulk_operation_empty_project(self, sync_db_session):
+    def test_bulk_operation_empty_project(self, sync_db_session) -> None:
         """Test bulk operations on empty project."""
         project = Project(id="empty-project", name="Empty")
         sync_db_session.add(project)
@@ -2078,7 +2077,7 @@ class TestEdgeCasesAndErrorHandling:
 
         assert preview["total_count"] == 0
 
-    def test_cycle_detection_invalid_project(self, sync_db_session):
+    def test_cycle_detection_invalid_project(self, sync_db_session) -> None:
         """Test cycle detection on non-existent project."""
         service = CycleDetectionService(sync_db_session)
 
@@ -2087,7 +2086,7 @@ class TestEdgeCasesAndErrorHandling:
         assert result.has_cycles == False
         assert result.cycle_count == 0
 
-    def test_backup_nonexistent_project(self, sync_db_session):
+    def test_backup_nonexistent_project(self, sync_db_session) -> None:
         """Test backup of non-existent project."""
         service = ProjectBackupService(sync_db_session)
 
@@ -2103,7 +2102,7 @@ class TestEdgeCasesAndErrorHandling:
 class TestCrossServiceIntegration:
     """Test interactions between multiple services."""
 
-    def test_item_service_with_bulk_operations(self, sync_db_session, sync_project):
+    def test_item_service_with_bulk_operations(self, sync_db_session, sync_project) -> None:
         """Test ItemService integration with bulk operations."""
         bulk_service = BulkOperationService(sync_db_session)
 
@@ -2129,7 +2128,7 @@ class TestCrossServiceIntegration:
 
         assert preview["total_count"] == 3
 
-    def test_backup_restore_roundtrip(self, sync_db_session, sync_project, sync_items_with_links):
+    def test_backup_restore_roundtrip(self, sync_db_session, sync_project, sync_items_with_links) -> None:
         """Test backup and restore roundtrip."""
         service = ProjectBackupService(sync_db_session)
 
@@ -2154,7 +2153,7 @@ class TestCrossServiceIntegration:
         assert restored is not None
 
     @pytest.mark.asyncio
-    async def test_chaos_mode_with_impact_analysis(self, async_db_session, async_project, async_items_with_links):
+    async def test_chaos_mode_with_impact_analysis(self, async_db_session, async_project, async_items_with_links) -> None:
         """Test ChaosModeService with ImpactAnalysisService."""
         chaos_service = ChaosModeService(async_db_session)
         impact_service = ImpactAnalysisService(async_db_session)
@@ -2176,7 +2175,7 @@ class TestCrossServiceIntegration:
 class TestPerformance:
     """Test performance characteristics."""
 
-    def test_bulk_preview_performance(self, sync_db_session, sync_project):
+    def test_bulk_preview_performance(self, sync_db_session, sync_project) -> None:
         """Test bulk preview performance with many items."""
         # Create 500 items
         for i in range(500):

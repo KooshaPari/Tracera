@@ -1,4 +1,4 @@
-"""Add API keys and usage tracking tables
+"""Add API keys and usage tracking tables.
 
 Revision ID: 058_add_api_keys
 Revises: 054_add_spatial_gist_index
@@ -34,11 +34,11 @@ def upgrade() -> None:
         sa.Column("is_active", sa.Boolean, nullable=False, server_default="true"),
         sa.Column("created_at", TIMESTAMP(timezone=True), nullable=False, server_default=sa.text("CURRENT_TIMESTAMP")),
         sa.Column(
-            "created_by_id", sa.String(36), sa.ForeignKey("accounts.id", ondelete="SET NULL"), nullable=True
+            "created_by_id", sa.String(36), sa.ForeignKey("accounts.id", ondelete="SET NULL"), nullable=True,
         ),
         sa.Column("revoked_at", TIMESTAMP(timezone=True), nullable=True),
         sa.Column(
-            "revoked_by_id", sa.String(36), sa.ForeignKey("accounts.id", ondelete="SET NULL"), nullable=True
+            "revoked_by_id", sa.String(36), sa.ForeignKey("accounts.id", ondelete="SET NULL"), nullable=True,
         ),
         sa.Column("revoked_reason", sa.Text, nullable=True),
         sa.CheckConstraint("role IN ('read-only', 'read-write', 'admin')", name="api_keys_role_check"),

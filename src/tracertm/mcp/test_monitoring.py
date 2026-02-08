@@ -10,16 +10,16 @@ This script demonstrates and tests:
 """
 
 import asyncio
+import contextlib
 import time
-from typing import ClassVar, cast
+from typing import TYPE_CHECKING, ClassVar, Never, cast
 
-from fastmcp.server.middleware import MiddlewareContext
+if TYPE_CHECKING:
+    from fastmcp.server.middleware import MiddlewareContext
 
 
-async def test_metrics():
+async def test_metrics() -> None:
     """Test Prometheus metrics collection."""
-    print("\n=== Testing Metrics Collection ===")
-
     from tracertm.mcp.metrics import (
         MetricsExporter,
         MetricsMiddleware,
@@ -30,40 +30,36 @@ async def test_metrics():
 
     # Simulate tool call context
     class MockContext:
-        async def next(self):
+        async def next(self) -> None:
             await asyncio.sleep(0.1)  # Simulate work
 
     ctx = MockContext()
 
     # Test successful call (cast: mock context satisfies MiddlewareContext protocol)
-    await middleware.on_tool_call(cast(MiddlewareContext, ctx), "test_tool", {"arg1": "value1"})
+    await middleware.on_tool_call(cast("MiddlewareContext", ctx), "test_tool", {"arg1": "value1"})
 
     # Test failed call
     class FailContext:
-        async def next(self):
-            raise ValueError("Test error")
+        async def next(self) -> Never:
+            msg = "Test error"
+            raise ValueError(msg)
 
     fail_ctx = FailContext()
 
     try:
-        await middleware.on_tool_call(cast(MiddlewareContext, fail_ctx), "test_tool", {"arg1": "value1"})
+        await middleware.on_tool_call(cast("MiddlewareContext", fail_ctx), "test_tool", {"arg1": "value1"})
     except ValueError:
         pass  # Expected
 
     # Export metrics
     metrics = MetricsExporter.export_metrics_text()
-    print("\nSample metrics:")
     for line in metrics.split("\n")[:20]:
         if line and not line.startswith("#"):
-            print(f"  {line}")
-
-    print("\n✓ Metrics collection working")
+            pass
 
 
-async def test_telemetry():
+async def test_telemetry() -> None:
     """Test OpenTelemetry tracing."""
-    print("\n=== Testing Telemetry/Tracing ===")
-
     from tracertm.mcp.telemetry import TelemetryMiddleware
 
     # Create middleware
@@ -73,34 +69,30 @@ async def test_telemetry():
     class MockContext:
         auth: ClassVar[dict] = {"claims": {"sub": "test-user", "client_id": "test-client"}}
 
-        async def next(self):
+        async def next(self) -> None:
             await asyncio.sleep(0.05)
 
     ctx = MockContext()
 
     # Test successful trace (cast: mock context satisfies MiddlewareContext protocol)
-    await middleware.on_tool_call(cast(MiddlewareContext, ctx), "create_project", {"name": "TestProject"})
+    await middleware.on_tool_call(cast("MiddlewareContext", ctx), "create_project", {"name": "TestProject"})
 
     # Test failed trace
     class FailContext(MockContext):
-        async def next(self):
-            raise RuntimeError("Test trace error")
+        async def next(self) -> Never:
+            msg = "Test trace error"
+            raise RuntimeError(msg)
 
     fail_ctx = FailContext()
 
     try:
-        await middleware.on_tool_call(cast(MiddlewareContext, fail_ctx), "query_items", {"query": "test"})
+        await middleware.on_tool_call(cast("MiddlewareContext", fail_ctx), "query_items", {"query": "test"})
     except RuntimeError:
         pass  # Expected
 
-    print("\n✓ Telemetry/tracing working")
-    print("  Note: Check console output for span details")
 
-
-async def test_performance_monitoring():
+async def test_performance_monitoring() -> None:
     """Test performance monitoring middleware."""
-    print("\n=== Testing Performance Monitoring ===")
-
     from tracertm.mcp.telemetry import PerformanceMonitoringMiddleware
 
     # Create middleware with low thresholds for testing
@@ -111,40 +103,31 @@ async def test_performance_monitoring():
 
     # Test fast call
     class FastContext:
-        async def next(self):
+        async def next(self) -> None:
             await asyncio.sleep(0.01)
 
-    await middleware.on_tool_call(cast(MiddlewareContext, FastContext()), "fast_tool", {})
+    await middleware.on_tool_call(cast("MiddlewareContext", FastContext()), "fast_tool", {})
 
     # Test slow call
     class SlowContext:
-        async def next(self):
+        async def next(self) -> None:
             await asyncio.sleep(0.08)
 
-    await middleware.on_tool_call(cast(MiddlewareContext, SlowContext()), "slow_tool", {})
+    await middleware.on_tool_call(cast("MiddlewareContext", SlowContext()), "slow_tool", {})
 
     # Test very slow call
     class VerySlowContext:
-        async def next(self):
+        async def next(self) -> None:
             await asyncio.sleep(0.2)
 
-    await middleware.on_tool_call(cast(MiddlewareContext, VerySlowContext()), "very_slow_tool", {})
+    await middleware.on_tool_call(cast("MiddlewareContext", VerySlowContext()), "very_slow_tool", {})
 
     # Get statistics
-    stats = middleware.get_statistics()
-    print("\nPerformance statistics:")
-    print(f"  Total calls: {stats['total_calls']}")
-    print(f"  Avg duration: {stats['avg_duration_seconds']:.3f}s")
-    print(f"  Slow calls: {stats['slow_calls']}")
-    print(f"  Very slow calls: {stats['very_slow_calls']}")
-
-    print("\n✓ Performance monitoring working")
+    middleware.get_statistics()
 
 
-def test_error_enhancement():
+def test_error_enhancement() -> None:
     """Test error enhancement and LLM-friendly messages."""
-    print("\n=== Testing Error Enhancement ===")
-
     from tracertm.mcp.error_handlers import (
         DatabaseError,
         ItemNotFoundError,
@@ -162,19 +145,12 @@ def test_error_enhancement():
 
     for error in errors:
         error_dict = error.to_dict()
-        print(f"\n{error.__class__.__name__}:")
-        print(f"  Message: {error_dict['error']}")
-        print(f"  Hint: {error_dict.get('recovery_hint', 'N/A')}")
         if error_dict.get("context"):
-            print(f"  Context: {error_dict['context']}")
-
-    print("\n✓ Error enhancement working")
+            pass
 
 
-def test_structured_logging():
+def test_structured_logging() -> None:
     """Test structured logging configuration."""
-    print("\n=== Testing Structured Logging ===")
-
     from tracertm.mcp.logging_config import configure_structured_logging, get_structured_logger
 
     # Configure for testing
@@ -210,14 +186,9 @@ def test_structured_logging():
         limit=60,
     )
 
-    print("\n✓ Structured logging working")
-    print("  Note: Check log output above for structured log entries")
 
-
-def test_metrics_endpoint():
+def test_metrics_endpoint() -> None:
     """Test metrics HTTP endpoint."""
-    print("\n=== Testing Metrics Endpoint ===")
-
     import requests
 
     from tracertm.mcp.metrics_endpoint import MetricsServer
@@ -230,35 +201,24 @@ def test_metrics_endpoint():
 
         # Test health endpoint
         response = requests.get("http://127.0.0.1:19090/health", timeout=2)
-        print(f"\nHealth check: {response.status_code} - {response.text}")
 
         # Test metrics endpoint
         response = requests.get("http://127.0.0.1:19090/metrics", timeout=2)
-        print(f"Metrics endpoint: {response.status_code}")
-        print(f"Content-Type: {response.headers.get('Content-Type')}")
 
         lines = response.text.split("\n")[:10]
-        print("\nFirst 10 lines of metrics:")
         for line in lines:
             if line:
-                print(f"  {line}")
+                pass
 
-        print("\n✓ Metrics endpoint working")
-
-    except Exception as e:
-        print(f"\n✗ Metrics endpoint failed: {e}")
-        print("  Note: requests library may not be installed")
+    except Exception:
+        pass
 
     finally:
         server.stop()
 
 
-async def main():
+async def main() -> None:
     """Run all monitoring tests."""
-    print("=" * 60)
-    print("TraceRTM MCP Monitoring Test Suite")
-    print("=" * 60)
-
     # Run tests
     await test_metrics()
     await test_telemetry()
@@ -267,15 +227,8 @@ async def main():
     test_structured_logging()
 
     # Test metrics endpoint (requires requests)
-    try:
+    with contextlib.suppress(ImportError):
         test_metrics_endpoint()
-    except ImportError:
-        print("\n=== Skipping Metrics Endpoint Test ===")
-        print("  Install requests package to test HTTP endpoint")
-
-    print("\n" + "=" * 60)
-    print("All monitoring tests completed!")
-    print("=" * 60)
 
 
 if __name__ == "__main__":

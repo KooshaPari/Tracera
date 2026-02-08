@@ -1,5 +1,4 @@
-"""
-Caching layer for MCP tools with TTL and invalidation support.
+"""Caching layer for MCP tools with TTL and invalidation support.
 
 Provides a simple in-memory cache with:
 - TTL-based expiration (default 5 minutes)
@@ -15,14 +14,16 @@ import hashlib
 import json
 import time
 from collections import OrderedDict
-from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class CacheEntry:
     """Cache entry with TTL support."""
 
-    def __init__(self, value: Any, ttl: int):
+    def __init__(self, value: Any, ttl: int) -> None:
         self.value = value
         self.expires_at = time.time() + ttl
         self.created_at = time.time()
@@ -33,8 +34,7 @@ class CacheEntry:
 
 
 class QueryCache:
-    """
-    Thread-safe query cache with TTL and LRU eviction.
+    """Thread-safe query cache with TTL and LRU eviction.
 
     Features:
     - Automatic TTL expiration
@@ -43,7 +43,7 @@ class QueryCache:
     - Cache hit/miss statistics
     """
 
-    def __init__(self, max_size: int = 1000, default_ttl: int = 300):
+    def __init__(self, max_size: int = 1000, default_ttl: int = 300) -> None:
         """Initialize cache.
 
         Args:
@@ -98,7 +98,7 @@ class QueryCache:
             self._hits += 1
             return entry.value
 
-    async def set(self, prefix: str, value: Any, ttl: int | None = None, *args, **kwargs):
+    async def set(self, prefix: str, value: Any, ttl: int | None = None, *args, **kwargs) -> None:
         """Set value in cache.
 
         Args:
@@ -119,7 +119,7 @@ class QueryCache:
             self._cache[key] = CacheEntry(value, ttl)
             self._cache.move_to_end(key)
 
-    async def invalidate(self, prefix: str | None = None):
+    async def invalidate(self, prefix: str | None = None) -> None:
         """Invalidate cache entries.
 
         Args:
@@ -136,7 +136,7 @@ class QueryCache:
                     del self._cache[key]
 
     async def get_or_compute(
-        self, prefix: str, compute_fn: Callable[..., Any], ttl: int | None = None, *args, **kwargs
+        self, prefix: str, compute_fn: Callable[..., Any], ttl: int | None = None, *args, **kwargs,
     ) -> Any:
         """Get from cache or compute and cache the result.
 
@@ -165,7 +165,7 @@ class QueryCache:
         await self.set(prefix, value, ttl, *args, **kwargs)
         return value
 
-    async def cleanup_expired(self):
+    async def cleanup_expired(self) -> None:
         """Remove all expired entries."""
         async with self._lock:
             to_remove = [key for key, entry in self._cache.items() if entry.is_expired()]
@@ -186,7 +186,7 @@ class QueryCache:
             "total_requests": total_requests,
         }
 
-    async def clear(self):
+    async def clear(self) -> None:
         """Clear all cache entries and reset statistics."""
         async with self._lock:
             self._cache.clear()
@@ -206,7 +206,7 @@ def get_query_cache() -> QueryCache:
     return _query_cache
 
 
-def invalidate_cache(prefix: str | None = None):
+def invalidate_cache(prefix: str | None = None) -> None:
     """Invalidate cache entries (sync wrapper)."""
     cache = get_query_cache()
     # Run in event loop

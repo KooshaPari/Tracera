@@ -1,5 +1,4 @@
-"""
-Simple MinIO Snapshot Test - No Infrastructure Dependencies
+"""Simple MinIO Snapshot Test - No Infrastructure Dependencies.
 
 This test validates the snapshot workflow without requiring
 Neo4j, PostgreSQL, or Temporal infrastructure to be running.
@@ -14,9 +13,8 @@ from uuid import uuid4
 import pytest
 
 
-def test_snapshot_workflow_components():
-    """
-    Test the core snapshot workflow components work correctly.
+def test_snapshot_workflow_components() -> None:
+    """Test the core snapshot workflow components work correctly.
 
     This simulates what the Temporal workflow does:
     1. QuerySnapshot - gather data (simulated with dict)
@@ -44,8 +42,8 @@ def test_snapshot_workflow_components():
         temp_path = Path(temp_dir)
 
         # Create snapshot tarball (simulating what CreateSnapshot activity does)
-        import json
         import gzip
+        import json
 
         snapshot_file = temp_path / f"snapshot-{session_id}.json"
         snapshot_file.write_text(json.dumps(snapshot_payload, indent=2))
@@ -59,7 +57,7 @@ def test_snapshot_workflow_components():
         assert tarball_path.stat().st_size > 0
 
         # Verify it's a valid gzip file (magic bytes)
-        with open(tarball_path, "rb") as f:
+        with Path(tarball_path).open("rb") as f:
             magic = f.read(2)
             assert magic == b'\x1f\x8b'  # gzip magic bytes
 
@@ -81,9 +79,8 @@ def test_snapshot_workflow_components():
         assert extracted_data["projects"][0]["name"] == "Project 1"
 
 
-def test_snapshot_metadata_structure():
-    """
-    Test that snapshot metadata has the correct structure.
+def test_snapshot_metadata_structure() -> None:
+    """Test that snapshot metadata has the correct structure.
 
     Verifies the metadata format that would be stored in PostgreSQL
     after a successful snapshot upload.
@@ -111,9 +108,8 @@ def test_snapshot_metadata_structure():
     assert checkpoint_metadata["sandbox_snapshot_s3_key"].endswith(".tar.gz")
 
 
-def test_snapshot_s3_key_format():
-    """
-    Test that S3 keys follow the expected format.
+def test_snapshot_s3_key_format() -> None:
+    """Test that S3 keys follow the expected format.
 
     The workflow creates keys in the format:
     snapshots/{session_id}/{timestamp}.tar.gz
@@ -137,9 +133,8 @@ def test_snapshot_s3_key_format():
     assert s3_uri.startswith("s3://tracertm/snapshots/")
 
 
-def test_snapshot_compression_ratio():
-    """
-    Test that snapshot compression achieves reasonable compression.
+def test_snapshot_compression_ratio() -> None:
+    """Test that snapshot compression achieves reasonable compression.
 
     Text data should compress well (ratio < 0.5 for repetitive data).
     """
@@ -168,9 +163,8 @@ def test_snapshot_compression_ratio():
         assert compressed_size < original_size
 
 
-def test_workflow_integration_mock():
-    """
-    Test simulated workflow execution without Temporal.
+def test_workflow_integration_mock() -> None:
+    """Test simulated workflow execution without Temporal.
 
     This validates that the three activities would work together
     correctly when orchestrated by the Temporal workflow.

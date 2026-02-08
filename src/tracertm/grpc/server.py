@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 import os
 
-import grpc
 from grpc import aio
 
 from tracertm.grpc.spec_analytics_service import SpecAnalyticsService
@@ -36,7 +35,7 @@ async def start_grpc_server() -> aio.Server | None:
             ("grpc.max_send_message_length", 10 * 1024 * 1024),
             ("grpc.keepalive_time_ms", 30000),
             ("grpc.keepalive_timeout_ms", 10000),
-        ]
+        ],
     )
     tracertm_pb2_grpc.add_SpecAnalyticsServiceServicer_to_server(SpecAnalyticsService(), server)
 

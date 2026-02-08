@@ -58,7 +58,7 @@ def test_data():
 class TestItemServiceInitialization:
     """Test ItemService initialization."""
 
-    def test_item_service_creates_with_session(self, mock_session):
+    def test_item_service_creates_with_session(self, mock_session) -> None:
         """ItemService initializes with async session."""
         service = ItemService(mock_session)
         assert service.session == mock_session
@@ -66,7 +66,7 @@ class TestItemServiceInitialization:
         assert service.links is not None
         assert service.events is not None
 
-    def test_item_service_has_repositories(self, mock_session):
+    def test_item_service_has_repositories(self, mock_session) -> None:
         """ItemService creates repository instances."""
         service = ItemService(mock_session)
         assert hasattr(service, "items")
@@ -78,7 +78,7 @@ class TestItemServiceCreateItem:
     """Test ItemService.create_item method."""
 
     @pytest.mark.asyncio
-    async def test_create_item_with_required_fields(self, item_service, test_data):
+    async def test_create_item_with_required_fields(self, item_service, test_data) -> None:
         """create_item creates item with required fields."""
         created_item = Item(
             id=str(uuid4()),
@@ -104,7 +104,7 @@ class TestItemServiceCreateItem:
         item_service.events.log.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_create_item_with_optional_fields(self, item_service, test_data):
+    async def test_create_item_with_optional_fields(self, item_service, test_data) -> None:
         """create_item creates item with optional fields."""
         created_item = Item(
             id=str(uuid4()),
@@ -137,7 +137,7 @@ class TestItemServiceCreateItem:
         assert result.status == "in_progress"
 
     @pytest.mark.asyncio
-    async def test_create_item_with_links(self, item_service, test_data):
+    async def test_create_item_with_links(self, item_service, test_data) -> None:
         """create_item creates item and links it to other items."""
         target_id = str(uuid4())
         created_item = Item(
@@ -168,7 +168,7 @@ class TestItemServiceGetItem:
     """Test ItemService.get_item method."""
 
     @pytest.mark.asyncio
-    async def test_get_item_returns_item(self, item_service, test_data):
+    async def test_get_item_returns_item(self, item_service, test_data) -> None:
         """get_item returns an item."""
         mock_item = Item(
             id=test_data["item_id"],
@@ -186,7 +186,7 @@ class TestItemServiceGetItem:
         item_service.items.get_by_id.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_get_item_returns_none(self, item_service, test_data):
+    async def test_get_item_returns_none(self, item_service, test_data) -> None:
         """get_item returns None when item not found."""
         item_service.items.get_by_id = AsyncMock(return_value=None)
 
@@ -199,7 +199,7 @@ class TestItemServiceListItems:
     """Test ItemService.list_items method."""
 
     @pytest.mark.asyncio
-    async def test_list_items_without_filters(self, item_service, test_data):
+    async def test_list_items_without_filters(self, item_service, test_data) -> None:
         """list_items returns items without filters."""
         mock_items = [
             Item(
@@ -220,7 +220,7 @@ class TestItemServiceListItems:
         item_service.items.get_by_project.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_list_items_with_view_filter(self, item_service, test_data):
+    async def test_list_items_with_view_filter(self, item_service, test_data) -> None:
         """list_items returns items filtered by view."""
         mock_items = [
             Item(
@@ -229,7 +229,7 @@ class TestItemServiceListItems:
                 title="Component Item",
                 view="Component",
                 item_type="code",
-            )
+            ),
         ]
         item_service.items.get_by_view = AsyncMock(return_value=mock_items)
 
@@ -243,7 +243,7 @@ class TestItemServiceUpdateItem:
     """Test ItemService.update_item method."""
 
     @pytest.mark.asyncio
-    async def test_update_item_basic(self, item_service, test_data):
+    async def test_update_item_basic(self, item_service, test_data) -> None:
         """update_item updates item fields."""
         mock_item = Item(
             id=test_data["item_id"],
@@ -274,7 +274,7 @@ class TestItemServiceItemHierarchy:
     """Test ItemService hierarchy methods."""
 
     @pytest.mark.asyncio
-    async def test_get_children(self, item_service, test_data):
+    async def test_get_children(self, item_service, test_data) -> None:
         """get_children returns direct children."""
         child_items = [
             Item(
@@ -284,7 +284,7 @@ class TestItemServiceItemHierarchy:
                 view="Feature",
                 item_type="requirement",
                 parent_id=test_data["item_id"],
-            )
+            ),
         ]
         item_service.items.get_children = AsyncMock(return_value=child_items)
 
@@ -295,7 +295,7 @@ class TestItemServiceItemHierarchy:
         item_service.items.get_children.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_get_ancestors(self, item_service, test_data):
+    async def test_get_ancestors(self, item_service, test_data) -> None:
         """get_ancestors returns path to root."""
         ancestor_items = [
             Item(
@@ -304,7 +304,7 @@ class TestItemServiceItemHierarchy:
                 title="Ancestor",
                 view="Feature",
                 item_type="requirement",
-            )
+            ),
         ]
         item_service.items.get_ancestors = AsyncMock(return_value=ancestor_items)
 
@@ -314,7 +314,7 @@ class TestItemServiceItemHierarchy:
         item_service.items.get_ancestors.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_get_descendants(self, item_service, test_data):
+    async def test_get_descendants(self, item_service, test_data) -> None:
         """get_descendants returns all descendants."""
         descendant_items = [
             Item(
@@ -323,7 +323,7 @@ class TestItemServiceItemHierarchy:
                 title="Descendant",
                 view="Feature",
                 item_type="requirement",
-            )
+            ),
         ]
         item_service.items.get_descendants = AsyncMock(return_value=descendant_items)
 
@@ -337,7 +337,7 @@ class TestItemServiceStatusTransitions:
     """Test ItemService status transition validation."""
 
     @pytest.mark.asyncio
-    async def test_valid_status_transition(self, item_service, test_data):
+    async def test_valid_status_transition(self, item_service, test_data) -> None:
         """update_item_status validates valid transitions."""
         mock_item = Item(
             id=test_data["item_id"],
@@ -360,17 +360,17 @@ class TestItemServiceStatusTransitions:
         item_service.events.log = AsyncMock()
 
         result = await item_service.update_item_status(
-            test_data["item_id"], "in_progress", test_data["agent_id"], test_data["project_id"]
+            test_data["item_id"], "in_progress", test_data["agent_id"], test_data["project_id"],
         )
 
         assert result is not None
         item_service.items.update.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_invalid_status_raises_error(self, item_service, test_data):
+    async def test_invalid_status_raises_error(self, item_service, test_data) -> None:
         """update_item_status raises error for invalid status."""
         with pytest.raises(ValueError, match="Invalid status") as exc_info:
             await item_service.update_item_status(
-                test_data["item_id"], "invalid_status", test_data["agent_id"], test_data["project_id"]
+                test_data["item_id"], "invalid_status", test_data["agent_id"], test_data["project_id"],
             )
         assert "Invalid status" in str(exc_info.value)

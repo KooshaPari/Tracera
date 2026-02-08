@@ -23,7 +23,7 @@ class TraceabilityMatrix:
 class TraceabilityMatrixService:
     """Service for generating traceability matrices."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)
@@ -35,8 +35,7 @@ class TraceabilityMatrixService:
         target_view: str | None = None,
         link_types: list[str] | None = None,
     ) -> TraceabilityMatrix:
-        """
-        Generate traceability matrix for items.
+        """Generate traceability matrix for items.
 
         Args:
             project_id: Project ID
@@ -120,8 +119,7 @@ class TraceabilityMatrixService:
         self,
         matrix: TraceabilityMatrix,
     ) -> str:
-        """
-        Export traceability matrix as CSV.
+        """Export traceability matrix as CSV.
 
         Args:
             matrix: TraceabilityMatrix to export
@@ -143,9 +141,7 @@ class TraceabilityMatrixService:
             lines.append(",".join(row))
 
         # Summary
-        lines.append("")
-        lines.append(f"Total Links,{matrix.total_links}")
-        lines.append(f"Coverage,{matrix.coverage:.1f}%")
+        lines.extend(("", f"Total Links,{matrix.total_links}", f"Coverage,{matrix.coverage:.1f}%"))
 
         return "\n".join(lines)
 
@@ -153,8 +149,7 @@ class TraceabilityMatrixService:
         self,
         matrix: TraceabilityMatrix,
     ) -> str:
-        """
-        Export traceability matrix as HTML table.
+        """Export traceability matrix as HTML table.
 
         Args:
             matrix: TraceabilityMatrix to export
@@ -165,15 +160,13 @@ class TraceabilityMatrixService:
         html = ['<table border="1" cellpadding="5">']
 
         # Header row
-        html.append("<tr>")
-        html.append("<th>Source</th>")
+        html.extend(("<tr>", "<th>Source</th>"))
         html.extend(f"<th>{col['title']}</th>" for col in matrix.columns)
         html.append("</tr>")
 
         # Data rows
         for i, row_item in enumerate(matrix.rows):
-            html.append("<tr>")
-            html.append(f"<td><strong>{row_item['title']}</strong></td>")
+            html.extend(("<tr>", f"<td><strong>{row_item['title']}</strong></td>"))
             for _j, cell in enumerate(matrix.matrix[i]):
                 if cell:
                     html.append(f'<td style="background-color: #90EE90;">{cell}</td>')
@@ -193,8 +186,7 @@ class TraceabilityMatrixService:
         self,
         matrix: TraceabilityMatrix,
     ) -> dict[str, list[str]]:
-        """
-        Get items that are not traced in the matrix.
+        """Get items that are not traced in the matrix.
 
         Args:
             matrix: TraceabilityMatrix

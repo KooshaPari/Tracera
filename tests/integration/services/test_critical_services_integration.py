@@ -1,5 +1,4 @@
-"""
-Integration tests for critical high-priority services at 0% coverage.
+"""Integration tests for critical high-priority services at 0% coverage.
 
 Tests stateless_ingestion, cycle_detection, chaos_mode, shortest_path services
 with real database interactions to achieve 80%+ coverage.
@@ -122,8 +121,7 @@ async def dependency_graph(db_session: AsyncSession, test_project: Project, samp
 
 @pytest.fixture
 def sync_db_session(test_db_engine):
-    """
-    Create a synchronous database session for services that require sync Session.
+    """Create a synchronous database session for services that require sync Session.
 
     This fixture uses the same database as test_db_engine (which should be file-based
     for compatibility between async and sync access).
@@ -160,14 +158,13 @@ class TestStatelessIngestionService:
     # ========== Markdown Ingestion Tests ==========
 
     @pytest.mark.asyncio
-    async def test_ingest_markdown_simple_file(self, test_project: Project, sync_db_session: Session):
-        """
-        Given: Simple markdown file with headers
+    async def test_ingest_markdown_simple_file(self, test_project: Project, sync_db_session: Session) -> None:
+        """Given: Simple markdown file with headers
         When: Ingest markdown file
-        Then: Creates items for each header with hierarchy
+        Then: Creates items for each header with hierarchy.
         """
         # Create temporary markdown file
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write("# Epic Feature\n\n")
             f.write("## Story 1\n\nDescription of story 1\n\n")
             f.write("### Task 1.1\n\nTask details\n\n")
@@ -188,14 +185,13 @@ class TestStatelessIngestionService:
             await asyncio.to_thread(Path(file_path).unlink)
 
     def test_ingest_markdown_with_frontmatter(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session
-    ):
-        """
-        Given: Markdown with YAML frontmatter
+        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,
+    ) -> None:
+        """Given: Markdown with YAML frontmatter
         When: Ingest file
-        Then: Parses frontmatter metadata and creates items
+        Then: Parses frontmatter metadata and creates items.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write("---\n")
             f.write("project: Test Project\n")
             f.write("status: in_progress\n")
@@ -211,13 +207,12 @@ class TestStatelessIngestionService:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_markdown_dry_run(self, sync_db_session: Session):
-        """
-        Given: Markdown file
+    def test_ingest_markdown_dry_run(self, sync_db_session: Session) -> None:
+        """Given: Markdown file
         When: Ingest with dry_run=True
-        Then: Returns counts without creating items
+        Then: Returns counts without creating items.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write("# Header 1\n## Header 2\n### Header 3\n")
             f.write("[Link](http://example.com)\n")
             file_path = f.name
@@ -233,13 +228,12 @@ class TestStatelessIngestionService:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_markdown_invalid_file_extension(self, sync_db_session: Session):
-        """
-        Given: File with invalid extension
+    def test_ingest_markdown_invalid_file_extension(self, sync_db_session: Session) -> None:
+        """Given: File with invalid extension
         When: Ingest with validate=True
-        Then: Raises ValueError
+        Then: Raises ValueError.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".txt", delete=False) as f:
             f.write("# Header\n")
             file_path = f.name
 
@@ -250,23 +244,21 @@ class TestStatelessIngestionService:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_markdown_file_not_found(self, sync_db_session: Session):
-        """
-        Given: Nonexistent file path
+    def test_ingest_markdown_file_not_found(self, sync_db_session: Session) -> None:
+        """Given: Nonexistent file path
         When: Ingest markdown
-        Then: Raises FileNotFoundError
+        Then: Raises FileNotFoundError.
         """
         service = StatelessIngestionService(sync_db_session)
         with pytest.raises(FileNotFoundError):
             service.ingest_markdown("/nonexistent/file.md")
 
-    def test_ingest_markdown_creates_project_if_missing(self, sync_db_session: Session):
-        """
-        Given: No project_id provided
+    def test_ingest_markdown_creates_project_if_missing(self, sync_db_session: Session) -> None:
+        """Given: No project_id provided
         When: Ingest markdown
-        Then: Creates new project from metadata or filename
+        Then: Creates new project from metadata or filename.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write("# Header\n")
             file_path = f.name
 
@@ -280,14 +272,13 @@ class TestStatelessIngestionService:
             Path(file_path).unlink()
 
     def test_ingest_markdown_internal_links(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session
-    ):
-        """
-        Given: Markdown with internal anchor links
+        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,
+    ) -> None:
+        """Given: Markdown with internal anchor links
         When: Ingest file
-        Then: Creates links between items
+        Then: Creates links between items.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write("# First Header\n\n")
             f.write("See [Second Header](#second-header)\n\n")
             f.write("# Second Header\n")
@@ -304,13 +295,12 @@ class TestStatelessIngestionService:
 
     # ========== MDX Ingestion Tests ==========
 
-    def test_ingest_mdx_simple_file(self, db_session: AsyncSession, test_project: Project, sync_db_session: Session):
-        """
-        Given: MDX file with JSX components
+    def test_ingest_mdx_simple_file(self, db_session: AsyncSession, test_project: Project, sync_db_session: Session) -> None:
+        """Given: MDX file with JSX components
         When: Ingest MDX
-        Then: Creates items for headers and JSX components
+        Then: Creates items for headers and JSX components.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".mdx", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".mdx", delete=False) as f:
             f.write("# Feature\n\n")
             f.write("<Alert>Important message</Alert>\n")
             file_path = f.name
@@ -324,13 +314,12 @@ class TestStatelessIngestionService:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_mdx_dry_run(self, sync_db_session: Session):
-        """
-        Given: MDX file
+    def test_ingest_mdx_dry_run(self, sync_db_session: Session) -> None:
+        """Given: MDX file
         When: Dry run ingestion
-        Then: Returns counts without creating items
+        Then: Returns counts without creating items.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".mdx", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".mdx", delete=False) as f:
             f.write("# Header\n<Component prop='value'>Content</Component>\n")
             file_path = f.name
 
@@ -344,13 +333,12 @@ class TestStatelessIngestionService:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_mdx_invalid_extension(self, sync_db_session: Session):
-        """
-        Given: File with wrong extension
+    def test_ingest_mdx_invalid_extension(self, sync_db_session: Session) -> None:
+        """Given: File with wrong extension
         When: Ingest MDX with validate=True
-        Then: Raises ValueError
+        Then: Raises ValueError.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write("# Header\n")
             file_path = f.name
 
@@ -364,14 +352,13 @@ class TestStatelessIngestionService:
     # ========== YAML/OpenAPI Ingestion Tests ==========
 
     def test_ingest_yaml_generic_structure(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session
-    ):
-        """
-        Given: Generic YAML file with nested structure
+        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,
+    ) -> None:
+        """Given: Generic YAML file with nested structure
         When: Ingest YAML
-        Then: Creates items from YAML structure
+        Then: Creates items from YAML structure.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             yaml_data = {
                 "name": "Test YAML",
                 "description": "Test description",
@@ -392,13 +379,12 @@ class TestStatelessIngestionService:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_openapi_spec(self, db_session: AsyncSession, test_project: Project, sync_db_session: Session):
-        """
-        Given: OpenAPI spec YAML file
+    def test_ingest_yaml_openapi_spec(self, db_session: AsyncSession, test_project: Project, sync_db_session: Session) -> None:
+        """Given: OpenAPI spec YAML file
         When: Ingest YAML
-        Then: Creates items for endpoints and schemas
+        Then: Creates items for endpoints and schemas.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             openapi_spec = {
                 "openapi": "3.0.0",
                 "info": {"title": "Test API", "version": "1.0.0"},
@@ -408,16 +394,16 @@ class TestStatelessIngestionService:
                             "operationId": "getUsers",
                             "summary": "Get all users",
                             "responses": {"200": {"description": "Success"}},
-                        }
-                    }
+                        },
+                    },
                 },
                 "components": {
                     "schemas": {
                         "User": {
                             "type": "object",
                             "properties": {"id": {"type": "string"}},
-                        }
-                    }
+                        },
+                    },
                 },
             }
             yaml.dump(openapi_spec, f)
@@ -434,13 +420,12 @@ class TestStatelessIngestionService:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_bmad_format(self, db_session: AsyncSession, test_project: Project, sync_db_session: Session):
-        """
-        Given: BMad format YAML with requirements
+    def test_ingest_yaml_bmad_format(self, db_session: AsyncSession, test_project: Project, sync_db_session: Session) -> None:
+        """Given: BMad format YAML with requirements
         When: Ingest YAML
-        Then: Creates requirement items with traceability links
+        Then: Creates requirement items with traceability links.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             bmad_data = {
                 "project": {"name": "BMad Project", "description": "Test"},
                 "requirements": [
@@ -474,13 +459,12 @@ class TestStatelessIngestionService:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_dry_run(self, sync_db_session: Session):
-        """
-        Given: YAML file
+    def test_ingest_yaml_dry_run(self, sync_db_session: Session) -> None:
+        """Given: YAML file
         When: Dry run ingestion
-        Then: Returns estimated counts
+        Then: Returns estimated counts.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             yaml.dump({"items": [{"name": "Item 1"}, {"name": "Item 2"}]}, f)
             file_path = f.name
 
@@ -493,13 +477,12 @@ class TestStatelessIngestionService:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_invalid_extension(self, sync_db_session: Session):
-        """
-        Given: File with wrong extension
+    def test_ingest_yaml_invalid_extension(self, sync_db_session: Session) -> None:
+        """Given: File with wrong extension
         When: Ingest YAML with validate=True
-        Then: Raises ValueError
+        Then: Raises ValueError.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".json", delete=False) as f:
             f.write("{}")
             file_path = f.name
 
@@ -510,13 +493,12 @@ class TestStatelessIngestionService:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_invalid_yaml_syntax(self, sync_db_session: Session):
-        """
-        Given: YAML file with syntax errors
+    def test_ingest_yaml_invalid_yaml_syntax(self, sync_db_session: Session) -> None:
+        """Given: YAML file with syntax errors
         When: Ingest YAML
-        Then: Raises ValueError with YAML error
+        Then: Raises ValueError with YAML error.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             f.write("invalid: yaml: syntax: [[[")
             file_path = f.name
 
@@ -527,13 +509,12 @@ class TestStatelessIngestionService:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_non_dict_root(self, sync_db_session: Session):
-        """
-        Given: YAML file with list at root
+    def test_ingest_yaml_non_dict_root(self, sync_db_session: Session) -> None:
+        """Given: YAML file with list at root
         When: Ingest YAML
-        Then: Raises ValueError
+        Then: Raises ValueError.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             yaml.dump([1, 2, 3], f)
             file_path = f.name
 
@@ -545,14 +526,13 @@ class TestStatelessIngestionService:
             Path(file_path).unlink()
 
     def test_ingest_openapi_with_schema_refs(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session
-    ):
-        """
-        Given: OpenAPI spec with $ref links to schemas
+        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,
+    ) -> None:
+        """Given: OpenAPI spec with $ref links to schemas
         When: Ingest YAML
-        Then: Creates links between endpoints and schemas
+        Then: Creates links between endpoints and schemas.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             spec = {
                 "openapi": "3.0.0",
                 "info": {"title": "API", "version": "1.0"},
@@ -560,15 +540,15 @@ class TestStatelessIngestionService:
                     "/users": {
                         "post": {
                             "requestBody": {
-                                "content": {"application/json": {"schema": {"$ref": "#/components/schemas/User"}}}
+                                "content": {"application/json": {"schema": {"$ref": "#/components/schemas/User"}}},
                             },
                             "responses": {
                                 "200": {
-                                    "content": {"application/json": {"schema": {"$ref": "#/components/schemas/User"}}}
-                                }
+                                    "content": {"application/json": {"schema": {"$ref": "#/components/schemas/User"}}},
+                                },
                             },
-                        }
-                    }
+                        },
+                    },
                 },
                 "components": {"schemas": {"User": {"type": "object"}}},
             }
@@ -584,14 +564,13 @@ class TestStatelessIngestionService:
             Path(file_path).unlink()
 
     def test_ingest_bmad_with_dependencies(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session
-    ):
-        """
-        Given: BMad YAML with depends_on relationships
+        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,
+    ) -> None:
+        """Given: BMad YAML with depends_on relationships
         When: Ingest YAML
-        Then: Creates dependency links
+        Then: Creates dependency links.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".yaml", delete=False) as f:
             bmad = {
                 "requirements": [
                     {"id": "R1", "title": "Requirement 1"},
@@ -605,7 +584,7 @@ class TestStatelessIngestionService:
                         "title": "Requirement 3",
                         "depends_on": ["R1", "R2"],
                     },
-                ]
+                ],
             }
             yaml.dump(bmad, f)
             file_path = f.name
@@ -637,11 +616,10 @@ class TestCycleDetectionService:
         sample_items: list[Item],
         dependency_graph: list[Link],
         sync_db_session: Session,
-    ):
-        """
-        Given: Dependency graph without cycles
+    ) -> None:
+        """Given: Dependency graph without cycles
         When: Check if adding link creates cycle
-        Then: Returns False
+        Then: Returns False.
         """
         service = CycleDetectionService(sync_db_session)
 
@@ -663,11 +641,10 @@ class TestCycleDetectionService:
         sample_items: list[Item],
         dependency_graph: list[Link],
         sync_db_session: Session,
-    ):
-        """
-        Given: Linear dependency A -> B -> C
+    ) -> None:
+        """Given: Linear dependency A -> B -> C
         When: Try to add C -> A
-        Then: Returns True (would create cycle)
+        Then: Returns True (would create cycle).
         """
         service = CycleDetectionService(sync_db_session)
 
@@ -689,11 +666,10 @@ class TestCycleDetectionService:
         sample_items: list[Item],
         dependency_graph: list[Link],
         sync_db_session: Session,
-    ):
-        """
-        Given: Dependency graph
+    ) -> None:
+        """Given: Dependency graph
         When: Check cycle for non-depends_on link type
-        Then: Returns False (only checks depends_on)
+        Then: Returns False (only checks depends_on).
         """
         service = CycleDetectionService(sync_db_session)
 
@@ -716,11 +692,10 @@ class TestCycleDetectionService:
         sample_items: list[Item],
         dependency_graph: list[Link],
         sync_db_session: Session,
-    ):
-        """
-        Given: Acyclic dependency graph
+    ) -> None:
+        """Given: Acyclic dependency graph
         When: Detect all cycles
-        Then: Returns no cycles found
+        Then: Returns no cycles found.
         """
         service = CycleDetectionService(sync_db_session)
 
@@ -737,11 +712,10 @@ class TestCycleDetectionService:
         test_project: Project,
         sample_items: list[Item],
         sync_db_session: Session,
-    ):
-        """
-        Given: Graph with cycle A -> B -> C -> A
+    ) -> None:
+        """Given: Graph with cycle A -> B -> C -> A
         When: Detect cycles
-        Then: Finds and returns the cycle
+        Then: Finds and returns the cycle.
         """
         # Create circular dependency
         links_repo = LinkRepository(db_session)
@@ -779,11 +753,10 @@ class TestCycleDetectionService:
         test_project: Project,
         sample_items: list[Item],
         sync_db_session: Session,
-    ):
-        """
-        Given: Graph with multiple independent cycles
+    ) -> None:
+        """Given: Graph with multiple independent cycles
         When: Detect cycles
-        Then: Finds all cycles
+        Then: Finds all cycles.
         """
         links_repo = LinkRepository(db_session)
 
@@ -825,11 +798,10 @@ class TestCycleDetectionService:
     # ========== detect_cycles_async Tests ==========
 
     @pytest.mark.asyncio
-    async def test_detect_cycles_async(self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]):
-        """
-        Given: AsyncSession and dependency graph
+    async def test_detect_cycles_async(self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]) -> None:
+        """Given: AsyncSession and dependency graph
         When: Call detect_cycles_async
-        Then: Returns cycle detection results asynchronously
+        Then: Returns cycle detection results asynchronously.
         """
         # Create cycle
         links_repo = LinkRepository(db_session)
@@ -858,12 +830,11 @@ class TestCycleDetectionService:
 
     @pytest.mark.asyncio
     async def test_detect_cycles_async_multiple_link_types(
-        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]
-    ):
-        """
-        Given: Links of different types
+        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item],
+    ) -> None:
+        """Given: Links of different types
         When: Detect cycles for multiple link types
-        Then: Checks all specified link types
+        Then: Checks all specified link types.
         """
         links_repo = LinkRepository(db_session)
 
@@ -900,11 +871,10 @@ class TestCycleDetectionService:
         sample_items: list[Item],
         dependency_graph: list[Link],
         sync_db_session: Session,
-    ):
-        """
-        Given: All links reference valid items
+    ) -> None:
+        """Given: All links reference valid items
         When: Detect missing dependencies
-        Then: Returns no missing dependencies
+        Then: Returns no missing dependencies.
         """
         service = CycleDetectionService(sync_db_session)
 
@@ -920,11 +890,10 @@ class TestCycleDetectionService:
         test_project: Project,
         sample_items: list[Item],
         sync_db_session: Session,
-    ):
-        """
-        Given: Link with nonexistent source item
+    ) -> None:
+        """Given: Link with nonexistent source item
         When: Detect missing dependencies
-        Then: Identifies missing source
+        Then: Identifies missing source.
         """
         # Create link with bad source
         link = Link(
@@ -950,11 +919,10 @@ class TestCycleDetectionService:
         test_project: Project,
         sample_items: list[Item],
         sync_db_session: Session,
-    ):
-        """
-        Given: Link with nonexistent target item
+    ) -> None:
+        """Given: Link with nonexistent target item
         When: Detect missing dependencies
-        Then: Identifies missing target
+        Then: Identifies missing target.
         """
         link = Link(
             project_id=test_project.id,
@@ -981,11 +949,10 @@ class TestCycleDetectionService:
         sample_items: list[Item],
         dependency_graph: list[Link],
         sync_db_session: Session,
-    ):
-        """
-        Given: All items have at least one link
+    ) -> None:
+        """Given: All items have at least one link
         When: Detect orphans
-        Then: Returns no orphans (or only unlinked items)
+        Then: Returns no orphans (or only unlinked items).
         """
         service = CycleDetectionService(sync_db_session)
 
@@ -997,12 +964,11 @@ class TestCycleDetectionService:
 
     @pytest.mark.asyncio
     async def test_detect_orphans_finds_orphan(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session
-    ):
-        """
-        Given: Item with no incoming or outgoing links
+        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,
+    ) -> None:
+        """Given: Item with no incoming or outgoing links
         When: Detect orphans
-        Then: Identifies the orphan item
+        Then: Identifies the orphan item.
         """
         # Create orphan item
         items_repo = ItemRepository(db_session)
@@ -1030,11 +996,10 @@ class TestCycleDetectionService:
         test_project: Project,
         sample_items: list[Item],
         sync_db_session: Session,
-    ):
-        """
-        Given: Item with no dependents
+    ) -> None:
+        """Given: Item with no dependents
         When: Analyze impact
-        Then: Returns zero affected items
+        Then: Returns zero affected items.
         """
         # Create isolated item
         items_repo = ItemRepository(db_session)
@@ -1059,11 +1024,10 @@ class TestCycleDetectionService:
         sample_items: list[Item],
         dependency_graph: list[Link],
         sync_db_session: Session,
-    ):
-        """
-        Given: Item with dependents (A -> B -> C)
+    ) -> None:
+        """Given: Item with dependents (A -> B -> C)
         When: Analyze impact on A
-        Then: Shows B and C as affected
+        Then: Shows B and C as affected.
         """
         service = CycleDetectionService(sync_db_session)
 
@@ -1081,11 +1045,10 @@ class TestCycleDetectionService:
         sample_items: list[Item],
         dependency_graph: list[Link],
         sync_db_session: Session,
-    ):
-        """
-        Given: Deep dependency chain
+    ) -> None:
+        """Given: Deep dependency chain
         When: Analyze with max_depth=1
-        Then: Returns only direct dependents
+        Then: Returns only direct dependents.
         """
         service = CycleDetectionService(sync_db_session)
 
@@ -1107,12 +1070,11 @@ class TestChaosModeService:
 
     @pytest.mark.asyncio
     async def test_detect_zombies_no_zombies(
-        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]
-    ):
-        """
-        Given: Active items with links
+        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item],
+    ) -> None:
+        """Given: Active items with links
         When: Detect zombies
-        Then: Returns no zombies
+        Then: Returns no zombies.
         """
         # Add links to prevent orphan detection
         links_repo = LinkRepository(db_session)
@@ -1133,11 +1095,10 @@ class TestChaosModeService:
         assert "total_items" in result
 
     @pytest.mark.asyncio
-    async def test_detect_zombies_finds_stale_orphans(self, db_session: AsyncSession, test_project: Project):
-        """
-        Given: Orphaned items not updated in 30+ days
+    async def test_detect_zombies_finds_stale_orphans(self, db_session: AsyncSession, test_project: Project) -> None:
+        """Given: Orphaned items not updated in 30+ days
         When: Detect zombies
-        Then: Identifies them as zombies
+        Then: Identifies them as zombies.
         """
         items_repo = ItemRepository(db_session)
 
@@ -1167,11 +1128,10 @@ class TestChaosModeService:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        Given: Item with dependencies and dependents
+    ) -> None:
+        """Given: Item with dependencies and dependents
         When: Analyze impact
-        Then: Returns impact metrics
+        Then: Returns impact metrics.
         """
         service = ChaosModeService(db_session)
 
@@ -1183,11 +1143,10 @@ class TestChaosModeService:
         assert "transitive_impact" in result
 
     @pytest.mark.asyncio
-    async def test_analyze_impact_item_not_found(self, db_session: AsyncSession, test_project: Project):
-        """
-        Given: Nonexistent item ID
+    async def test_analyze_impact_item_not_found(self, db_session: AsyncSession, test_project: Project) -> None:
+        """Given: Nonexistent item ID
         When: Analyze impact
-        Then: Returns error
+        Then: Returns error.
         """
         service = ChaosModeService(db_session)
 
@@ -1204,11 +1163,10 @@ class TestChaosModeService:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        Given: Project with items and links
+    ) -> None:
+        """Given: Project with items and links
         When: Create temporal snapshot
-        Then: Captures current state and logs event
+        Then: Captures current state and logs event.
         """
         service = ChaosModeService(db_session)
 
@@ -1229,11 +1187,10 @@ class TestChaosModeService:
     # ========== mass_update_items Tests ==========
 
     @pytest.mark.asyncio
-    async def test_mass_update_items(self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]):
-        """
-        Given: Multiple item IDs
+    async def test_mass_update_items(self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]) -> None:
+        """Given: Multiple item IDs
         When: Mass update with new values
-        Then: Updates all items and logs events
+        Then: Updates all items and logs events.
         """
         service = ChaosModeService(db_session)
 
@@ -1253,12 +1210,11 @@ class TestChaosModeService:
 
     @pytest.mark.asyncio
     async def test_mass_update_items_with_errors(
-        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]
-    ):
-        """
-        Given: Mix of valid and invalid item IDs
+        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item],
+    ) -> None:
+        """Given: Mix of valid and invalid item IDs
         When: Mass update
-        Then: Updates valid items, reports errors for invalid
+        Then: Updates valid items, reports errors for invalid.
         """
         service = ChaosModeService(db_session)
 
@@ -1280,11 +1236,10 @@ class TestChaosModeService:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        Given: Project with items in various states
+    ) -> None:
+        """Given: Project with items in various states
         When: Get project health
-        Then: Returns health metrics and score
+        Then: Returns health metrics and score.
         """
         service = ChaosModeService(db_session)
 
@@ -1303,11 +1258,10 @@ class TestChaosModeService:
     # ========== explode_file Tests ==========
 
     @pytest.mark.asyncio
-    async def test_explode_file_markdown_headers(self, db_session: AsyncSession, test_project: Project):
-        """
-        Given: File content with markdown headers
+    async def test_explode_file_markdown_headers(self, db_session: AsyncSession, test_project: Project) -> None:
+        """Given: File content with markdown headers
         When: Explode file
-        Then: Creates items for each header
+        Then: Creates items for each header.
         """
         content = """# Epic Feature
 
@@ -1324,11 +1278,10 @@ class TestChaosModeService:
         assert items_created >= 4
 
     @pytest.mark.asyncio
-    async def test_explode_file_yaml_list(self, db_session: AsyncSession, test_project: Project):
-        """
-        Given: YAML-style list items
+    async def test_explode_file_yaml_list(self, db_session: AsyncSession, test_project: Project) -> None:
+        """Given: YAML-style list items
         When: Explode file
-        Then: Creates items for each list entry
+        Then: Creates items for each list entry.
         """
         content = """- Task 1
 - Task 2
@@ -1342,11 +1295,10 @@ class TestChaosModeService:
     # ========== track_scope_crash Tests ==========
 
     @pytest.mark.asyncio
-    async def test_track_scope_crash(self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]):
-        """
-        Given: Multiple item IDs to cancel
+    async def test_track_scope_crash(self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]) -> None:
+        """Given: Multiple item IDs to cancel
         When: Track scope crash
-        Then: Updates items to cancelled and logs event
+        Then: Updates items to cancelled and logs event.
         """
         service = ChaosModeService(db_session)
 
@@ -1364,11 +1316,10 @@ class TestChaosModeService:
     # ========== cleanup_zombies Tests ==========
 
     @pytest.mark.asyncio
-    async def test_cleanup_zombies(self, db_session: AsyncSession, test_project: Project):
-        """
-        Given: Zombie items exist
+    async def test_cleanup_zombies(self, db_session: AsyncSession, test_project: Project) -> None:
+        """Given: Zombie items exist
         When: Cleanup zombies
-        Then: Soft deletes zombie items
+        Then: Soft deletes zombie items.
         """
         # Create zombie (old orphan)
         items_repo = ItemRepository(db_session)
@@ -1390,12 +1341,11 @@ class TestChaosModeService:
 
     @pytest.mark.asyncio
     async def test_create_snapshot_with_description(
-        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]
-    ):
-        """
-        Given: Project with items
+        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item],
+    ) -> None:
+        """Given: Project with items
         When: Create snapshot with description
-        Then: Creates snapshot with metadata
+        Then: Creates snapshot with metadata.
         """
         service = ChaosModeService(db_session)
 
@@ -1426,11 +1376,10 @@ class TestShortestPathService:
         db_session: AsyncSession,
         test_project: Project,
         sample_items: list[Item],
-    ):
-        """
-        Given: Direct link A -> B
+    ) -> None:
+        """Given: Direct link A -> B
         When: Find shortest path from A to B
-        Then: Returns path with distance 1
+        Then: Returns path with distance 1.
         """
         links_repo = LinkRepository(db_session)
         await links_repo.create(
@@ -1458,11 +1407,10 @@ class TestShortestPathService:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        Given: Path A -> B -> C -> D
+    ) -> None:
+        """Given: Path A -> B -> C -> D
         When: Find shortest path from A to D
-        Then: Returns path with distance 3
+        Then: Returns path with distance 3.
         """
         service = ShortestPathService(db_session)
 
@@ -1483,11 +1431,10 @@ class TestShortestPathService:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        Given: No path exists between items
+    ) -> None:
+        """Given: No path exists between items
         When: Find shortest path
-        Then: Returns path_exists=False
+        Then: Returns path_exists=False.
         """
         service = ShortestPathService(db_session)
 
@@ -1504,11 +1451,10 @@ class TestShortestPathService:
         db_session: AsyncSession,
         test_project: Project,
         sample_items: list[Item],
-    ):
-        """
-        Given: Links of different types
+    ) -> None:
+        """Given: Links of different types
         When: Find path filtering by link type
-        Then: Only uses specified link types
+        Then: Only uses specified link types.
         """
         links_repo = LinkRepository(db_session)
 
@@ -1554,11 +1500,10 @@ class TestShortestPathService:
         db_session: AsyncSession,
         test_project: Project,
         sample_items: list[Item],
-    ):
-        """
-        Given: Multiple paths of different lengths
+    ) -> None:
+        """Given: Multiple paths of different lengths
         When: Find shortest path
-        Then: Returns the shortest one
+        Then: Returns the shortest one.
         """
         links_repo = LinkRepository(db_session)
 
@@ -1604,11 +1549,10 @@ class TestShortestPathService:
         db_session: AsyncSession,
         test_project: Project,
         sample_items: list[Item],
-    ):
-        """
-        Given: Source and target are the same
+    ) -> None:
+        """Given: Source and target are the same
         When: Find shortest path
-        Then: Returns distance 0 with single-item path
+        Then: Returns distance 0 with single-item path.
         """
         service = ShortestPathService(db_session)
 
@@ -1627,11 +1571,10 @@ class TestShortestPathService:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        Given: Dependency graph with multiple reachable items
+    ) -> None:
+        """Given: Dependency graph with multiple reachable items
         When: Find all shortest paths from source
-        Then: Returns paths to all reachable items
+        Then: Returns paths to all reachable items.
         """
         service = ShortestPathService(db_session)
 
@@ -1651,11 +1594,10 @@ class TestShortestPathService:
         db_session: AsyncSession,
         test_project: Project,
         sample_items: list[Item],
-    ):
-        """
-        Given: Some items not reachable from source
+    ) -> None:
+        """Given: Some items not reachable from source
         When: Find all shortest paths
-        Then: Returns exists=False for unreachable items
+        Then: Returns exists=False for unreachable items.
         """
         # Create simple graph: A -> B
         links_repo = LinkRepository(db_session)
@@ -1681,11 +1623,10 @@ class TestShortestPathService:
         db_session: AsyncSession,
         test_project: Project,
         sample_items: list[Item],
-    ):
-        """
-        Given: Multiple link types in graph
+    ) -> None:
+        """Given: Multiple link types in graph
         When: Find all paths filtering by link type
-        Then: Only follows specified link types
+        Then: Only follows specified link types.
         """
         links_repo = LinkRepository(db_session)
 
@@ -1714,12 +1655,11 @@ class TestShortestPathService:
 
     @pytest.mark.asyncio
     async def test_find_all_shortest_paths_empty_graph(
-        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]
-    ):
-        """
-        Given: No links in graph
+        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item],
+    ) -> None:
+        """Given: No links in graph
         When: Find all shortest paths
-        Then: Returns all items as unreachable except source
+        Then: Returns all items as unreachable except source.
         """
         service = ShortestPathService(db_session)
 
@@ -1735,11 +1675,10 @@ class TestShortestPathService:
         db_session: AsyncSession,
         test_project: Project,
         sample_items: list[Item],
-    ):
-        """
-        Given: Path with different link types
+    ) -> None:
+        """Given: Path with different link types
         When: Find shortest path
-        Then: Returns link_types list showing types used
+        Then: Returns link_types list showing types used.
         """
         links_repo = LinkRepository(db_session)
 
@@ -1776,12 +1715,11 @@ class TestEdgeCasesAndErrorHandling:
 
     @pytest.mark.asyncio
     async def test_stateless_ingestion_with_special_characters(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session
-    ):
-        """
-        Given: Markdown with special characters and unicode
+        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session,
+    ) -> None:
+        """Given: Markdown with special characters and unicode
         When: Ingest file
-        Then: Handles special characters gracefully
+        Then: Handles special characters gracefully.
         """
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False, encoding="utf-8") as f:
             f.write("# Feature with émojis 🚀\n\n")
@@ -1797,11 +1735,10 @@ class TestEdgeCasesAndErrorHandling:
             await asyncio.to_thread(Path(file_path).unlink)
 
     @pytest.mark.asyncio
-    async def test_cycle_detection_empty_project(self, db_session: AsyncSession, sync_db_session: Session):
-        """
-        Given: Project with no items or links
+    async def test_cycle_detection_empty_project(self, db_session: AsyncSession, sync_db_session: Session) -> None:
+        """Given: Project with no items or links
         When: Detect cycles
-        Then: Returns no cycles without error
+        Then: Returns no cycles without error.
         """
         project = Project(name="Empty Project")
         db_session.add(project)
@@ -1814,11 +1751,10 @@ class TestEdgeCasesAndErrorHandling:
         assert result.cycle_count == 0
 
     @pytest.mark.asyncio
-    async def test_shortest_path_large_graph_performance(self, db_session: AsyncSession, test_project: Project):
-        """
-        Given: Large graph with many items
+    async def test_shortest_path_large_graph_performance(self, db_session: AsyncSession, test_project: Project) -> None:
+        """Given: Large graph with many items
         When: Find shortest path
-        Then: Completes in reasonable time using Dijkstra's algorithm
+        Then: Completes in reasonable time using Dijkstra's algorithm.
         """
         items_repo = ItemRepository(db_session)
         links_repo = LinkRepository(db_session)

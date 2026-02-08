@@ -1,5 +1,4 @@
-"""
-Advanced Integration Scenarios - Complex multi-step workflows.
+"""Advanced Integration Scenarios - Complex multi-step workflows.
 
 Advanced scenarios for comprehensive coverage:
 
@@ -50,9 +49,8 @@ pytestmark = pytest.mark.integration
 class TestComplexDependencyWorkflows:
     """Test complex dependency management scenarios."""
 
-    def test_detect_circular_dependency(self, sync_db_session: Session):
-        """
-        Scenario: Create items A → B → C, then try A → C → A cycle
+    def test_detect_circular_dependency(self, sync_db_session: Session) -> None:
+        """Scenario: Create items A → B → C, then try A → C → A cycle.
 
         Validates:
         - Cycle detection
@@ -75,17 +73,17 @@ class TestComplexDependencyWorkflows:
 
         # Create chain A → B → C
         link_ab = Link(
-            id=str(uuid4()), source_id=item_a.id, target_id=item_b.id, link_type="depends_on", project_id=project.id
+            id=str(uuid4()), source_id=item_a.id, target_id=item_b.id, link_type="depends_on", project_id=project.id,
         )
         link_bc = Link(
-            id=str(uuid4()), source_id=item_b.id, target_id=item_c.id, link_type="depends_on", project_id=project.id
+            id=str(uuid4()), source_id=item_b.id, target_id=item_c.id, link_type="depends_on", project_id=project.id,
         )
         sync_db_session.add_all([link_ab, link_bc])
         sync_db_session.commit()
 
         # Try to create cycle C → A
         link_ca = Link(
-            id=str(uuid4()), source_id=item_c.id, target_id=item_a.id, link_type="depends_on", project_id=project.id
+            id=str(uuid4()), source_id=item_c.id, target_id=item_a.id, link_type="depends_on", project_id=project.id,
         )
         sync_db_session.add(link_ca)
 
@@ -97,9 +95,8 @@ class TestComplexDependencyWorkflows:
         all_links = sync_db_session.execute(select(Link).where(Link.project_id == str(project.id))).scalars().all()
         assert len(all_links) == 3
 
-    def test_transitive_dependency_updates(self, sync_db_session: Session):
-        """
-        Scenario: A depends on B, B depends on C. Update C → propagate to A
+    def test_transitive_dependency_updates(self, sync_db_session: Session) -> None:
+        """Scenario: A depends on B, B depends on C. Update C → propagate to A.
 
         Validates:
         - Transitive updates
@@ -115,23 +112,23 @@ class TestComplexDependencyWorkflows:
 
         # Create dependency chain
         item_a = Item(
-            id="TRANS-A", project_id=project.id, title="Item A", view="FEATURE", item_type="feature", status="todo"
+            id="TRANS-A", project_id=project.id, title="Item A", view="FEATURE", item_type="feature", status="todo",
         )
         item_b = Item(
-            id="TRANS-B", project_id=project.id, title="Item B", view="FEATURE", item_type="feature", status="todo"
+            id="TRANS-B", project_id=project.id, title="Item B", view="FEATURE", item_type="feature", status="todo",
         )
         item_c = Item(
-            id="TRANS-C", project_id=project.id, title="Item C", view="FEATURE", item_type="feature", status="todo"
+            id="TRANS-C", project_id=project.id, title="Item C", view="FEATURE", item_type="feature", status="todo",
         )
         sync_db_session.add_all([item_a, item_b, item_c])
         sync_db_session.commit()
 
         # Create chain A → B → C
         link_ab = Link(
-            id=str(uuid4()), source_id=item_a.id, target_id=item_b.id, link_type="depends_on", project_id=project.id
+            id=str(uuid4()), source_id=item_a.id, target_id=item_b.id, link_type="depends_on", project_id=project.id,
         )
         link_bc = Link(
-            id=str(uuid4()), source_id=item_b.id, target_id=item_c.id, link_type="depends_on", project_id=project.id
+            id=str(uuid4()), source_id=item_b.id, target_id=item_c.id, link_type="depends_on", project_id=project.id,
         )
         sync_db_session.add_all([link_ab, link_bc])
         sync_db_session.commit()
@@ -150,9 +147,8 @@ class TestComplexDependencyWorkflows:
         final_a = sync_db_session.get(Item, item_a.id)
         assert final_a is not None and final_a.status == "todo"  # Direct status unchanged, but dependency updated
 
-    def test_deep_hierarchy_navigation(self, sync_db_session: Session):
-        """
-        Scenario: Create 10-level deep dependency chain. Query each level.
+    def test_deep_hierarchy_navigation(self, sync_db_session: Session) -> None:
+        """Scenario: Create 10-level deep dependency chain. Query each level.
 
         Validates:
         - Deep hierarchy support
@@ -212,9 +208,8 @@ class TestComplexDependencyWorkflows:
         assert depth == 9
         assert current_item.id == items[9].id
 
-    def test_multiple_dependency_paths(self, sync_db_session: Session):
-        """
-        Scenario: Create diamond dependency graph (A→B,A→C, B→D, C→D)
+    def test_multiple_dependency_paths(self, sync_db_session: Session) -> None:
+        """Scenario: Create diamond dependency graph (A→B,A→C, B→D, C→D).
 
         Validates:
         - Multiple path handling
@@ -273,9 +268,8 @@ class TestComplexDependencyWorkflows:
 class TestConcurrentAccessAndLocking:
     """Test concurrent access and locking scenarios."""
 
-    def test_concurrent_item_modification_with_versions(self, sync_db_session: Session):
-        """
-        Scenario: Two users modify same item. Track versions. Merge updates.
+    def test_concurrent_item_modification_with_versions(self, sync_db_session: Session) -> None:
+        """Scenario: Two users modify same item. Track versions. Merge updates.
 
         Validates:
         - Version tracking
@@ -321,9 +315,8 @@ class TestConcurrentAccessAndLocking:
         assert final_item.item_metadata["description"] == "Added by User B"
         assert final_item.title == "Modified by User A"
 
-    def test_lock_on_critical_operations(self, sync_db_session: Session):
-        """
-        Scenario: Lock item during state transition. Attempt concurrent modification.
+    def test_lock_on_critical_operations(self, sync_db_session: Session) -> None:
+        """Scenario: Lock item during state transition. Attempt concurrent modification.
 
         Validates:
         - Lock acquisition
@@ -370,9 +363,8 @@ class TestConcurrentAccessAndLocking:
         unlocked_item = sync_db_session.get(Item, item.id)
         assert unlocked_item is not None and unlocked_item.item_metadata["locked"] == False
 
-    def test_deadlock_prevention(self, sync_db_session: Session):
-        """
-        Scenario: Two items with circular lock dependencies. Detect deadlock.
+    def test_deadlock_prevention(self, sync_db_session: Session) -> None:
+        """Scenario: Two items with circular lock dependencies. Detect deadlock.
 
         Validates:
         - Deadlock detection
@@ -436,9 +428,8 @@ class TestConcurrentAccessAndLocking:
 class TestDataMigrationAndTransformation:
     """Test data migration and transformation scenarios."""
 
-    def test_bulk_import_with_validation(self, sync_db_session: Session):
-        """
-        Scenario: Import 30 items with various formats. Validate each. Apply transformations.
+    def test_bulk_import_with_validation(self, sync_db_session: Session) -> None:
+        """Scenario: Import 30 items with various formats. Validate each. Apply transformations.
 
         Validates:
         - Schema validation
@@ -497,9 +488,8 @@ class TestDataMigrationAndTransformation:
         assert valid_count == 24  # 30 - 6 invalid
         assert invalid_count == 6
 
-    def test_format_conversion_during_import(self, sync_db_session: Session):
-        """
-        Scenario: Import items in legacy format. Convert to new schema.
+    def test_format_conversion_during_import(self, sync_db_session: Session) -> None:
+        """Scenario: Import items in legacy format. Convert to new schema.
 
         Validates:
         - Format conversion
@@ -556,9 +546,8 @@ class TestDataMigrationAndTransformation:
         assert item1.status == "todo"
         assert item1.item_metadata["priority"] == "P1"
 
-    def test_data_reconciliation_after_migration(self, sync_db_session: Session):
-        """
-        Scenario: Migrate data. Compare source vs target. Identify mismatches.
+    def test_data_reconciliation_after_migration(self, sync_db_session: Session) -> None:
+        """Scenario: Migrate data. Compare source vs target. Identify mismatches.
 
         Validates:
         - Data comparison
@@ -606,9 +595,8 @@ class TestDataMigrationAndTransformation:
 class TestExportImportCycles:
     """Test round-trip export/import cycles."""
 
-    def test_export_then_reimport_preserves_data(self, sync_db_session: Session):
-        """
-        Scenario: Create items → Export → Delete → Import → Verify identical
+    def test_export_then_reimport_preserves_data(self, sync_db_session: Session) -> None:
+        """Scenario: Create items → Export → Delete → Import → Verify identical.
 
         Validates:
         - Export completeness
@@ -668,9 +656,8 @@ class TestExportImportCycles:
         )
         assert len(reimported_links) == exported_links_count
 
-    def test_metadata_preservation_through_export(self, sync_db_session: Session):
-        """
-        Scenario: Create items with rich metadata. Export. Verify metadata intact.
+    def test_metadata_preservation_through_export(self, sync_db_session: Session) -> None:
+        """Scenario: Create items with rich metadata. Export. Verify metadata intact.
 
         Validates:
         - Metadata serialization
@@ -711,9 +698,8 @@ class TestExportImportCycles:
         assert exported_item.item_metadata["special_chars"] == "Test with 中文 and emojis"
         assert exported_item.item_metadata["nested"]["level1"]["level2"]["value"] == "deep"
 
-    def test_link_preservation_in_export_cycle(self, sync_db_session: Session):
-        """
-        Scenario: Export items with complex link relationships. Reimport. Verify links.
+    def test_link_preservation_in_export_cycle(self, sync_db_session: Session) -> None:
+        """Scenario: Export items with complex link relationships. Reimport. Verify links.
 
         Validates:
         - Link metadata preservation
@@ -729,20 +715,20 @@ class TestExportImportCycles:
 
         # Create items
         item_a = Item(
-            id="LINKPRES-A", project_id=project.id, title="Item A", view="FEATURE", item_type="feature", status="todo"
+            id="LINKPRES-A", project_id=project.id, title="Item A", view="FEATURE", item_type="feature", status="todo",
         )
         item_b = Item(
-            id="LINKPRES-B", project_id=project.id, title="Item B", view="FEATURE", item_type="feature", status="todo"
+            id="LINKPRES-B", project_id=project.id, title="Item B", view="FEATURE", item_type="feature", status="todo",
         )
         sync_db_session.add_all([item_a, item_b])
         sync_db_session.commit()
 
         # Create links with metadata
         link1 = Link(
-            id=str(uuid4()), source_id=item_a.id, target_id=item_b.id, link_type="depends_on", project_id=project.id
+            id=str(uuid4()), source_id=item_a.id, target_id=item_b.id, link_type="depends_on", project_id=project.id,
         )
         link2 = Link(
-            id=str(uuid4()), source_id=item_b.id, target_id=item_a.id, link_type="relates_to", project_id=project.id
+            id=str(uuid4()), source_id=item_b.id, target_id=item_a.id, link_type="relates_to", project_id=project.id,
         )
         sync_db_session.add_all([link1, link2])
         sync_db_session.commit()
@@ -766,9 +752,8 @@ class TestExportImportCycles:
 class TestErrorRecoveryAndResilience:
     """Test error handling and recovery scenarios."""
 
-    def test_recovery_from_partial_import_failure(self, sync_db_session: Session):
-        """
-        Scenario: Import 10 items. Item 7 fails. Rollback and retry strategy.
+    def test_recovery_from_partial_import_failure(self, sync_db_session: Session) -> None:
+        """Scenario: Import 10 items. Item 7 fails. Rollback and retry strategy.
 
         Validates:
         - Partial import handling
@@ -789,7 +774,8 @@ class TestErrorRecoveryAndResilience:
         try:
             for i in range(items_to_import):
                 if i == failure_at:
-                    raise ValueError(f"Simulated failure at item {i}")
+                    msg = f"Simulated failure at item {i}"
+                    raise ValueError(msg)
 
                 item = Item(
                     id=f"RECOVERY-{i:02d}",
@@ -830,9 +816,8 @@ class TestErrorRecoveryAndResilience:
         final_items = sync_db_session.execute(select(Item).where(Item.project_id == str(project.id))).scalars().all()
         assert len(final_items) == items_to_import - 1
 
-    def test_handling_corrupted_metadata(self, sync_db_session: Session):
-        """
-        Scenario: Item with invalid metadata. Sanitize and recover.
+    def test_handling_corrupted_metadata(self, sync_db_session: Session) -> None:
+        """Scenario: Item with invalid metadata. Sanitize and recover.
 
         Validates:
         - Metadata validation

@@ -1,5 +1,4 @@
-"""
-Item management MCP tools.
+"""Item management MCP tools.
 
 Provides tools for creating, reading, updating, deleting, and querying items.
 Items represent traceable artifacts: requirements, features, tests, etc.
@@ -7,6 +6,7 @@ Items represent traceable artifacts: requirements, features, tests, etc.
 
 from __future__ import annotations
 
+import contextlib
 import uuid
 from datetime import UTC, datetime
 from typing import Any, TypedDict
@@ -98,7 +98,8 @@ async def create_item(
     project_id = await require_project()
 
     if not title or not view or not item_type:
-        raise ToolError("title, view, and item_type are required.")
+        msg = "title, view, and item_type are required."
+        raise ToolError(msg)
 
     view = view.upper()
     opts = options or {}
@@ -111,7 +112,7 @@ async def create_item(
 
     async with get_mcp_session() as session:
         count_result = await session.execute(
-            select(func.count(Item.id)).filter(Item.project_id == project_id, Item.view == view)
+            select(func.count(Item.id)).filter(Item.project_id == project_id, Item.view == view),
         )
         count = count_result.scalar() or 0
         external_id = f"{view[:3].upper()}-{count + 1}"
@@ -152,7 +153,8 @@ async def get_item(
         Item details
     """
     if not item_id:
-        raise ToolError("item_id is required.")
+        msg = "item_id is required."
+        raise ToolError(msg)
 
     project_id = await require_project()
 
@@ -163,7 +165,7 @@ async def get_item(
                 Item.project_id == project_id,
                 Item.id == item_id,
                 Item.deleted_at.is_(None),
-            )
+            ),
         )
         item = result.scalar_one_or_none()
 
@@ -174,12 +176,13 @@ async def get_item(
                     Item.project_id == project_id,
                     Item.external_id.ilike(f"{item_id}%"),
                     Item.deleted_at.is_(None),
-                )
+                ),
             )
             item = result.scalar_one_or_none()
 
         if not item:
-            raise ToolError(f"Item not found: {item_id}")
+            msg = f"Item not found: {item_id}"
+            raise ToolError(msg)
 
         return wrap_success(_item_to_dict(item), "get", ctx)
 
@@ -189,7 +192,7 @@ def _apply_item_updates(item: Item, opts: UpdateItemOptions) -> None:
     for key, attr, transform in (
         ("title", "title", lambda value: value),
         ("description", "description", lambda value: value),
-        ("status", "status", lambda value: str(value)),
+        ("status", "status", str),
     ):
         value = opts.get(key)
         if value is not None:
@@ -197,10 +200,8 @@ def _apply_item_updates(item: Item, opts: UpdateItemOptions) -> None:
 
     priority = opts.get("priority")
     if priority is not None:
-        try:
+        with contextlib.suppress(ValueError, TypeError):
             item.priority = int(priority)
-        except (ValueError, TypeError):
-            pass
 
     # item.owner is read-only
     metadata = opts.get("metadata")
@@ -229,7 +230,8 @@ async def update_item(
         Updated item details
     """
     if not item_id:
-        raise ToolError("item_id is required.")
+        msg = "item_id is required."
+        raise ToolError(msg)
 
     project_id = await require_project()
     opts = options or {}
@@ -247,7 +249,8 @@ async def update_item(
         )
 
         if not item:
-            raise ToolError(f"Item not found: {item_id}")
+            msg = f"Item not found: {item_id}"
+            raise ToolError(msg)
 
         _apply_item_updates(item, opts)
 
@@ -255,7 +258,8 @@ async def update_item(
             session.commit()
         except StaleDataError as err:
             session.rollback()
-            raise ToolError("Item was modified by another process. Please retry.") from err
+            msg = "Item was modified by another process. Please retry."
+            raise ToolError(msg) from err
 
         return wrap_success(_item_to_dict(item), "update", ctx)
 
@@ -274,7 +278,8 @@ async def delete_item(
         Confirmation of deletion
     """
     if not item_id:
-        raise ToolError("item_id is required.")
+        msg = "item_id is required."
+        raise ToolError(msg)
 
     project_id = await require_project()
 
@@ -291,7 +296,8 @@ async def delete_item(
         )
 
         if not item:
-            raise ToolError(f"Item not found: {item_id}")
+            msg = f"Item not found: {item_id}"
+            raise ToolError(msg)
 
         item.deleted_at = datetime.now(UTC)
         item.updated_at = datetime.now(UTC)
@@ -367,7 +373,8 @@ async def summarize_view(
         Summary with counts by status and sample items
     """
     if not view:
-        raise ToolError("view is required.")
+        msg = "view is required."
+        raise ToolError(msg)
 
     project_id = await require_project()
     view = view.upper()
@@ -430,7 +437,8 @@ async def bulk_update_items(
         Count of updated items
     """
     if not new_status:
-        raise ToolError("new_status is required.")
+        msg = "new_status is required."
+        raise ToolError(msg)
 
     project_id = await require_project()
 

@@ -96,14 +96,16 @@ def parse_figma_url(url: str) -> FigmaMetadata:
 
     # Validate domain
     if not parsed.netloc.endswith("figma.com"):
-        raise ValueError(f"Not a Figma URL: {url}")
+        msg = f"Not a Figma URL: {url}"
+        raise ValueError(msg)
 
     # Extract path components
     path_parts = [p for p in parsed.path.split("/") if p]
 
     # Check for valid path
-    if len(path_parts) < _FIGMA_PATH_MIN_PARTS or path_parts[0] not in ("file", "design"):
-        raise ValueError(f"Invalid Figma URL format: {url}")
+    if len(path_parts) < _FIGMA_PATH_MIN_PARTS or path_parts[0] not in {"file", "design"}:
+        msg = f"Invalid Figma URL format: {url}"
+        raise ValueError(msg)
 
     file_key = path_parts[1]
     file_name = path_parts[_FIGMA_PATH_FULL_PARTS - 1] if len(path_parts) > _FIGMA_PATH_FULL_PARTS - 1 else None

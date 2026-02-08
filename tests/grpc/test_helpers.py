@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-gRPC Testing Utilities for Python
+"""gRPC Testing Utilities for Python.
 
 Provides helper functions for testing gRPC services:
 - Request/response logging
@@ -25,7 +24,7 @@ logger = logging.getLogger(__name__)
 class GRPCTestLogger:
     """Logger for gRPC requests and responses."""
 
-    def __init__(self, service_name: str, verbose: bool = True):
+    def __init__(self, service_name: str, verbose: bool = True) -> None:
         self.service_name = service_name
         self.verbose = verbose
         self.requests: list[dict[str, Any]] = []
@@ -42,7 +41,7 @@ class GRPCTestLogger:
 
         if self.verbose:
             logger.info(f"📤 {self.service_name}.{method}")
-            logger.debug(f"   Request: {request}")
+            logger.debug("   Request: %s", request)
 
     def log_response(self, method: str, response: Any, duration: float) -> None:
         """Log a gRPC response."""
@@ -56,7 +55,7 @@ class GRPCTestLogger:
 
         if self.verbose:
             logger.info(f"📥 {self.service_name}.{method} ({duration * 1000:.2f}ms)")
-            logger.debug(f"   Response: {response}")
+            logger.debug("   Response: %s", response)
 
     def log_error(self, method: str, error: Exception, duration: float) -> None:
         """Log a gRPC error."""
@@ -71,7 +70,7 @@ class GRPCTestLogger:
 
         if self.verbose:
             logger.error(f"❌ {self.service_name}.{method} failed ({duration * 1000:.2f}ms)")
-            logger.error(f"   Error: {error}")
+            logger.error("   Error: %s", error)
 
     def clear(self) -> None:
         """Clear logged requests and responses."""
@@ -108,7 +107,7 @@ class GRPCTestClient:
         channel: aio.Channel,
         service_name: str,
         logger: GRPCTestLogger | None = None,
-    ):
+    ) -> None:
         self.channel = channel
         self.service_name = service_name
         self.logger = logger or GRPCTestLogger(service_name)
@@ -120,8 +119,7 @@ class GRPCTestClient:
         request: Any,
         timeout_sec: float | None = None,
     ) -> Any:
-        """
-        Call a unary RPC method with logging and error handling.
+        """Call a unary RPC method with logging and error handling.
 
         Args:
             method_name: Name of the method being called
@@ -155,8 +153,7 @@ class GRPCTestClient:
         request: Any,
         timeout_sec: float | None = None,
     ) -> list[Any]:
-        """
-        Call a server-streaming RPC method with logging.
+        """Call a server-streaming RPC method with logging.
 
         Args:
             method_name: Name of the method being called
@@ -193,8 +190,7 @@ async def grpc_test_channel(
     insecure: bool = True,
     options: list | None = None,
 ):
-    """
-    Create a test gRPC channel with proper cleanup.
+    """Create a test gRPC channel with proper cleanup.
 
     Args:
         host: Server host
@@ -226,8 +222,7 @@ async def wait_for_server(
     timeout_sec: float = 10.0,
     interval: float = 0.5,
 ) -> bool:
-    """
-    Wait for gRPC server to be ready.
+    """Wait for gRPC server to be ready.
 
     Args:
         host: Server host
@@ -252,12 +247,12 @@ async def wait_for_server(
             async with aio.insecure_channel(target) as channel:
                 # Try to check channel state
                 await channel.channel_ready()
-                logger.info(f"✅ gRPC server ready at {target}")
+                logger.info("✅ gRPC server ready at %s", target)
                 return True
         except Exception:
             await asyncio.sleep(interval)
 
-    logger.error(f"❌ gRPC server at {target} not ready after {timeout_sec}s")
+    logger.error("❌ gRPC server at %s not ready after %ss", target, timeout_sec)
     return False
 
 
@@ -266,8 +261,7 @@ def assert_grpc_error(
     expected_code: grpc.StatusCode,
     expected_message: str | None = None,
 ) -> None:
-    """
-    Assert that a gRPC error has the expected status code and message.
+    """Assert that a gRPC error has the expected status code and message.
 
     Args:
         error: The gRPC error
@@ -298,7 +292,7 @@ def assert_grpc_error(
 class MockGRPCServicer:
     """Base class for mock gRPC servicers in tests."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.calls: list[dict[str, Any]] = []
 
     def record_call(self, method: str, request: Any) -> None:

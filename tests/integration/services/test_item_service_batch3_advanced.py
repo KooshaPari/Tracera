@@ -1,5 +1,4 @@
-"""
-Advanced ItemService Integration Tests - Phase 3 Batch 1A
+"""Advanced ItemService Integration Tests - Phase 3 Batch 1A.
 
 Target: +6-8% coverage expansion with 75+ new comprehensive tests
 Focus areas:
@@ -74,7 +73,7 @@ class TestConcurrentOperations:
 
     @pytest.mark.asyncio
     @pytest.mark.asyncio
-    async def test_concurrent_create_same_project(self, item_service):
+    async def test_concurrent_create_same_project(self, item_service) -> None:
         """Test creating items concurrently in same project."""
         item1 = create_item("item-1")
         item2 = create_item("item-2")
@@ -93,7 +92,7 @@ class TestConcurrentOperations:
         assert item_service.items.create.call_count == 2
 
     @pytest.mark.asyncio
-    async def test_concurrent_update_same_item_versioning(self, item_service):
+    async def test_concurrent_update_same_item_versioning(self, item_service) -> None:
         """Test concurrent updates with version conflict."""
         item = create_item("item-1", version=1)
         item_service.items.update.side_effect = [item, Exception("Version conflict")]
@@ -107,7 +106,7 @@ class TestConcurrentOperations:
         assert isinstance(results[1], Exception)
 
     @pytest.mark.asyncio
-    async def test_concurrent_delete_and_read(self, item_service):
+    async def test_concurrent_delete_and_read(self, item_service) -> None:
         """Test concurrent delete and read operations."""
         item = create_item("item-1")
 
@@ -126,7 +125,7 @@ class TestConcurrentOperations:
         assert delete_result is None
 
     @pytest.mark.asyncio
-    async def test_concurrent_bulk_operations(self, item_service):
+    async def test_concurrent_bulk_operations(self, item_service) -> None:
         """Test concurrent bulk operations."""
         items = [create_item(f"item-{i}") for i in range(5)]
         item_service.items.bulk_update.return_value = items
@@ -139,7 +138,7 @@ class TestConcurrentOperations:
         assert results[0] is not None
 
     @pytest.mark.asyncio
-    async def test_concurrent_link_creation_same_targets(self, item_service):
+    async def test_concurrent_link_creation_same_targets(self, item_service) -> None:
         """Test concurrent link creation to same targets."""
         item = create_item("item-1")
         item_service.items.create.side_effect = [item, item]
@@ -150,10 +149,10 @@ class TestConcurrentOperations:
 
         tasks = [
             item_service.create_item(
-                "proj-1", "Item", "REQUIREMENTS", "requirement", "agent-1", link_to=["item-2", "item-3"]
+                "proj-1", "Item", "REQUIREMENTS", "requirement", "agent-1", link_to=["item-2", "item-3"],
             ),
             item_service.create_item(
-                "proj-1", "Item", "REQUIREMENTS", "requirement", "agent-1", link_to=["item-2", "item-3"]
+                "proj-1", "Item", "REQUIREMENTS", "requirement", "agent-1", link_to=["item-2", "item-3"],
             ),
         ]
 
@@ -161,7 +160,7 @@ class TestConcurrentOperations:
         assert len(results) == 2
 
     @pytest.mark.asyncio
-    async def test_concurrent_status_transitions(self, item_service):
+    async def test_concurrent_status_transitions(self, item_service) -> None:
         """Test concurrent status transitions."""
         item_in_progress = create_item("item-1", status="in_progress")
         item_done = create_item("item-1", status="done")
@@ -178,7 +177,7 @@ class TestConcurrentOperations:
         assert results[1].status == "done"
 
     @pytest.mark.asyncio
-    async def test_concurrent_metadata_updates(self, item_service):
+    async def test_concurrent_metadata_updates(self, item_service) -> None:
         """Test concurrent metadata updates on same item."""
         item1 = create_item("item-1", item_metadata={"key1": "value1"})
         item2 = create_item("item-1", item_metadata={"key1": "value1", "key2": "value2"})
@@ -203,7 +202,7 @@ class TestAdvancedFiltering:
     """Tests for complex filtering scenarios."""
 
     @pytest.mark.asyncio
-    async def test_filter_by_multiple_statuses(self, item_service):
+    async def test_filter_by_multiple_statuses(self, item_service) -> None:
         """Test filtering items by multiple statuses."""
         items = [
             create_item("item-1", status="todo"),
@@ -218,7 +217,7 @@ class TestAdvancedFiltering:
         assert len(result) == 3
 
     @pytest.mark.asyncio
-    async def test_filter_by_owner_and_priority(self, item_service):
+    async def test_filter_by_owner_and_priority(self, item_service) -> None:
         """Test filtering by multiple fields."""
         items = [create_item("item-1", owner="user-1", priority="high")]
         item_service.items.list.return_value = items
@@ -228,7 +227,7 @@ class TestAdvancedFiltering:
         assert len(result) == 1
 
     @pytest.mark.asyncio
-    async def test_filter_by_date_range(self, item_service):
+    async def test_filter_by_date_range(self, item_service) -> None:
         """Test filtering by creation date range."""
         now = datetime.now(UTC)
         items = [create_item("item-1")]
@@ -239,7 +238,7 @@ class TestAdvancedFiltering:
         assert len(result) == 1
 
     @pytest.mark.asyncio
-    async def test_filter_by_metadata_field(self, item_service):
+    async def test_filter_by_metadata_field(self, item_service) -> None:
         """Test filtering by metadata fields."""
         items = [create_item("item-1", item_metadata={"team": "backend"})]
         item_service.items.list.return_value = items
@@ -249,7 +248,7 @@ class TestAdvancedFiltering:
         assert len(result) == 1
 
     @pytest.mark.asyncio
-    async def test_filter_by_view_type(self, item_service):
+    async def test_filter_by_view_type(self, item_service) -> None:
         """Test filtering by view (artifact type)."""
         items = [
             create_item("item-1", view="REQUIREMENTS"),
@@ -263,7 +262,7 @@ class TestAdvancedFiltering:
         assert result[0].view == "REQUIREMENTS"
 
     @pytest.mark.asyncio
-    async def test_filter_with_pagination_and_sorting(self, item_service):
+    async def test_filter_with_pagination_and_sorting(self, item_service) -> None:
         """Test filtering with pagination and sorting."""
         items = [create_item(f"item-{i}") for i in range(5)]
         item_service.items.list.return_value = items[:2]
@@ -273,7 +272,7 @@ class TestAdvancedFiltering:
         assert len(result) <= 2
 
     @pytest.mark.asyncio
-    async def test_filter_deleted_items_exclusion(self, item_service):
+    async def test_filter_deleted_items_exclusion(self, item_service) -> None:
         """Test that deleted items are excluded by default."""
         deleted = datetime.now(UTC)
         items = [create_item("item-1", deleted_at=deleted)]
@@ -284,7 +283,7 @@ class TestAdvancedFiltering:
         assert len(result) == 0
 
     @pytest.mark.asyncio
-    async def test_filter_deleted_items_inclusion(self, item_service):
+    async def test_filter_deleted_items_inclusion(self, item_service) -> None:
         """Test including deleted items."""
         deleted = datetime.now(UTC)
         items = [create_item("item-1", deleted_at=deleted)]
@@ -295,7 +294,7 @@ class TestAdvancedFiltering:
         assert len(result) == 1
 
     @pytest.mark.asyncio
-    async def test_search_by_title_substring(self, item_service):
+    async def test_search_by_title_substring(self, item_service) -> None:
         """Test searching by title substring."""
         items = [
             create_item("item-1", title="Create new feature"),
@@ -309,7 +308,7 @@ class TestAdvancedFiltering:
         assert "feature" in result[0].title.lower()
 
     @pytest.mark.asyncio
-    async def test_search_by_description(self, item_service):
+    async def test_search_by_description(self, item_service) -> None:
         """Test searching by description field."""
         item = create_item("item-1", description="Complex requirement with details")
         item_service.items.search.return_value = [item]
@@ -319,7 +318,7 @@ class TestAdvancedFiltering:
         assert len(result) == 1
 
     @pytest.mark.asyncio
-    async def test_complex_filter_chain(self, item_service):
+    async def test_complex_filter_chain(self, item_service) -> None:
         """Test chaining multiple filters together."""
         items = [create_item("item-1", status="todo", priority="high", owner="user-1")]
         item_service.items.list.return_value = items
@@ -346,7 +345,7 @@ class TestRelationshipManagement:
     """Tests for managing item relationships and dependencies."""
 
     @pytest.mark.asyncio
-    async def test_create_item_with_transitive_links(self, item_service):
+    async def test_create_item_with_transitive_links(self, item_service) -> None:
         """Test creating item with chain of transitive links."""
         item = create_item("item-1")
         item_service.items.create.return_value = item
@@ -357,14 +356,14 @@ class TestRelationshipManagement:
         ]
 
         result = await item_service.create_item(
-            "proj-1", "Item", "REQUIREMENTS", "requirement", "agent-1", link_to=["item-2", "item-3", "item-4"]
+            "proj-1", "Item", "REQUIREMENTS", "requirement", "agent-1", link_to=["item-2", "item-3", "item-4"],
         )
 
         assert result is not None
         assert item_service.links.create.call_count == 3
 
     @pytest.mark.asyncio
-    async def test_detect_circular_dependency(self, item_service):
+    async def test_detect_circular_dependency(self, item_service) -> None:
         """Test detecting circular dependency."""
         item_service.items.has_circular_dependency.return_value = True
 
@@ -373,7 +372,7 @@ class TestRelationshipManagement:
         assert has_cycle is True
 
     @pytest.mark.asyncio
-    async def test_get_impact_chain(self, item_service):
+    async def test_get_impact_chain(self, item_service) -> None:
         """Test getting all downstream items (impact chain)."""
         items = [
             create_item("item-1"),
@@ -387,7 +386,7 @@ class TestRelationshipManagement:
         assert len(result) == 3
 
     @pytest.mark.asyncio
-    async def test_get_dependency_chain(self, item_service):
+    async def test_get_dependency_chain(self, item_service) -> None:
         """Test getting all upstream items (dependencies)."""
         items = [
             create_item("item-2"),
@@ -400,7 +399,7 @@ class TestRelationshipManagement:
         assert len(result) == 2
 
     @pytest.mark.asyncio
-    async def test_update_link_type(self, item_service):
+    async def test_update_link_type(self, item_service) -> None:
         """Test updating relationship type between items."""
         link = Mock(spec=Link)
         link.id = "link-1"
@@ -411,7 +410,7 @@ class TestRelationshipManagement:
         assert result.id == "link-1"
 
     @pytest.mark.asyncio
-    async def test_remove_bidirectional_link(self, item_service):
+    async def test_remove_bidirectional_link(self, item_service) -> None:
         """Test removing link removes both directions."""
         item_service.links.delete.return_value = None
 
@@ -420,7 +419,7 @@ class TestRelationshipManagement:
         item_service.links.delete.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_query_relationship_properties(self, item_service):
+    async def test_query_relationship_properties(self, item_service) -> None:
         """Test querying link properties and metadata."""
         link = Mock(spec=Link)
         link.link_type = "implements"
@@ -443,7 +442,7 @@ class TestConflictResolution:
     """Tests for version conflicts and resolution strategies."""
 
     @pytest.mark.asyncio
-    async def test_optimistic_locking_conflict(self, item_service):
+    async def test_optimistic_locking_conflict(self, item_service) -> None:
         """Test optimistic locking conflict detection."""
         item = create_item("item-1", version=2)
         item_service.items.update.side_effect = Exception("Version mismatch")
@@ -452,31 +451,31 @@ class TestConflictResolution:
             await item_service.update_item("proj-1", "item-1", {"title": "Updated"}, expected_version=1)
 
     @pytest.mark.asyncio
-    async def test_last_write_wins_resolution(self, item_service):
+    async def test_last_write_wins_resolution(self, item_service) -> None:
         """Test last-write-wins conflict resolution."""
         item = create_item("item-1", version=3, title="Final version")
         item_service.items.update.return_value = item
 
         result = await item_service.update_item(
-            "proj-1", "item-1", {"title": "Final version"}, conflict_strategy="last_write_wins"
+            "proj-1", "item-1", {"title": "Final version"}, conflict_strategy="last_write_wins",
         )
 
         assert result.version == 3
 
     @pytest.mark.asyncio
-    async def test_merge_conflict_resolution(self, item_service):
+    async def test_merge_conflict_resolution(self, item_service) -> None:
         """Test merging conflicting changes."""
         item = create_item("item-1", title="Base", description="Original", version=1)
         item_service.items.merge.return_value = item
 
         result = await item_service.merge_changes(
-            "proj-1", "item-1", local_changes={"title": "Local"}, remote_changes={"description": "Remote"}
+            "proj-1", "item-1", local_changes={"title": "Local"}, remote_changes={"description": "Remote"},
         )
 
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_version_history_retrieval(self, item_service):
+    async def test_version_history_retrieval(self, item_service) -> None:
         """Test retrieving version history."""
         versions = [
             create_item("item-1", version=1),
@@ -490,7 +489,7 @@ class TestConflictResolution:
         assert len(result) == 3
 
     @pytest.mark.asyncio
-    async def test_revert_to_previous_version(self, item_service):
+    async def test_revert_to_previous_version(self, item_service) -> None:
         """Test reverting to a previous version."""
         previous = create_item("item-1", title="Old", version=1)
         item_service.items.revert_to_version.return_value = previous
@@ -500,7 +499,7 @@ class TestConflictResolution:
         assert result.title == "Old"
 
     @pytest.mark.asyncio
-    async def test_concurrent_modification_handling(self, item_service):
+    async def test_concurrent_modification_handling(self, item_service) -> None:
         """Test handling concurrent modifications to same item."""
         item = create_item("item-1", version=2)
         item_service.items.get.return_value = item
@@ -519,7 +518,7 @@ class TestPerformanceOptimization:
     """Tests for performance-critical operations."""
 
     @pytest.mark.asyncio
-    async def test_bulk_create_large_batch(self, item_service):
+    async def test_bulk_create_large_batch(self, item_service) -> None:
         """Test creating large batch of items efficiently."""
         items = [create_item(f"item-{i}") for i in range(100)]
         item_service.items.bulk_create.return_value = items
@@ -529,19 +528,19 @@ class TestPerformanceOptimization:
         assert len(result) == 100
 
     @pytest.mark.asyncio
-    async def test_bulk_update_with_filter(self, item_service):
+    async def test_bulk_update_with_filter(self, item_service) -> None:
         """Test bulk update with complex filtering."""
         items = [create_item(f"item-{i}", status="todo") for i in range(50)]
         item_service.items.bulk_update.return_value = items
 
         result = await item_service.bulk_update_items(
-            "proj-1", {"status": "in_progress"}, filters={"status": "todo", "priority": "high"}
+            "proj-1", {"status": "in_progress"}, filters={"status": "todo", "priority": "high"},
         )
 
         assert len(result) == 50
 
     @pytest.mark.asyncio
-    async def test_batch_delete_with_cascade(self, item_service):
+    async def test_batch_delete_with_cascade(self, item_service) -> None:
         """Test deleting items with cascading deletes."""
         item_service.items.bulk_delete.return_value = {"deleted": 50, "cascaded": 120}
 
@@ -550,7 +549,7 @@ class TestPerformanceOptimization:
         assert result["deleted"] == 50
 
     @pytest.mark.asyncio
-    async def test_export_large_dataset(self, item_service):
+    async def test_export_large_dataset(self, item_service) -> None:
         """Test exporting items in batches."""
         items = [create_item(f"item-{i}") for i in range(1000)]
         item_service.items.export.return_value = items
@@ -560,7 +559,7 @@ class TestPerformanceOptimization:
         assert len(result) == 1000
 
     @pytest.mark.asyncio
-    async def test_index_rebuild_performance(self, item_service):
+    async def test_index_rebuild_performance(self, item_service) -> None:
         """Test rebuilding search indices."""
         item_service.items.rebuild_index.return_value = {"indexed": 500}
 
@@ -578,7 +577,7 @@ class TestValidationAndConstraints:
     """Tests for data validation and business rule constraints."""
 
     @pytest.mark.asyncio
-    async def test_validate_status_transition(self, item_service):
+    async def test_validate_status_transition(self, item_service) -> None:
         """Test validating allowed status transitions."""
         item = create_item("item-1", status="todo")
         item_service.items.get.return_value = item
@@ -588,7 +587,7 @@ class TestValidationAndConstraints:
         assert valid is True
 
     @pytest.mark.asyncio
-    async def test_reject_invalid_status(self, item_service):
+    async def test_reject_invalid_status(self, item_service) -> None:
         """Test rejecting invalid status values."""
         item_service.items.update.side_effect = ValueError("Invalid status")
 
@@ -596,7 +595,7 @@ class TestValidationAndConstraints:
             await item_service.update_item("proj-1", "item-1", {"status": "invalid_status"})
 
     @pytest.mark.asyncio
-    async def test_validate_required_fields(self, item_service):
+    async def test_validate_required_fields(self, item_service) -> None:
         """Test validating required fields on creation."""
         item_service.items.create.side_effect = ValueError("Missing required field")
 
@@ -604,7 +603,7 @@ class TestValidationAndConstraints:
             await item_service.create_item("proj-1", "", "REQUIREMENTS", "requirement", "agent-1")
 
     @pytest.mark.asyncio
-    async def test_validate_metadata_schema(self, item_service):
+    async def test_validate_metadata_schema(self, item_service) -> None:
         """Test validating metadata against schema."""
         item_service.items.validate_metadata.return_value = {"valid": False, "errors": ["Invalid field type"]}
 
@@ -613,7 +612,7 @@ class TestValidationAndConstraints:
         assert result["valid"] is False
 
     @pytest.mark.asyncio
-    async def test_enforce_unique_constraints(self, item_service):
+    async def test_enforce_unique_constraints(self, item_service) -> None:
         """Test enforcing unique constraints."""
         item_service.items.create.side_effect = ValueError("Duplicate ID")
 
@@ -621,7 +620,7 @@ class TestValidationAndConstraints:
             await item_service.create_item("proj-1", "Item", "REQUIREMENTS", "requirement", "agent-1")
 
     @pytest.mark.asyncio
-    async def test_validate_link_types(self, item_service):
+    async def test_validate_link_types(self, item_service) -> None:
         """Test validating link type values."""
         valid_types = ["relates_to", "implements", "tested_by"]
 
@@ -631,7 +630,7 @@ class TestValidationAndConstraints:
             item_service.links.create.return_value = Mock(spec=Link)
 
             result = await item_service.create_item(
-                "proj-1", "Item", "REQUIREMENTS", "requirement", "agent-1", link_to=["item-2"], link_type=link_type
+                "proj-1", "Item", "REQUIREMENTS", "requirement", "agent-1", link_to=["item-2"], link_type=link_type,
             )
 
             assert result is not None
@@ -646,7 +645,7 @@ class TestComplexIntegrationScenarios:
     """Tests for complex multi-step workflows."""
 
     @pytest.mark.asyncio
-    async def test_requirement_to_test_mapping(self, item_service):
+    async def test_requirement_to_test_mapping(self, item_service) -> None:
         """Test workflow: requirement -> design -> test case."""
         req = create_item("req-1", view="REQUIREMENTS")
         design = create_item("design-1", view="DESIGN")
@@ -660,18 +659,18 @@ class TestComplexIntegrationScenarios:
 
         # Create design linked to requirement
         design_result = await item_service.create_item(
-            "proj-1", "Design", "DESIGN", "design", "agent-1", link_to=[req_result.id]
+            "proj-1", "Design", "DESIGN", "design", "agent-1", link_to=[req_result.id],
         )
 
         # Create test linked to design
         test_result = await item_service.create_item(
-            "proj-1", "Test", "TEST_CASES", "test", "agent-1", link_to=[design_result.id]
+            "proj-1", "Test", "TEST_CASES", "test", "agent-1", link_to=[design_result.id],
         )
 
         assert test_result is not None
 
     @pytest.mark.asyncio
-    async def test_status_workflow_progression(self, item_service):
+    async def test_status_workflow_progression(self, item_service) -> None:
         """Test complete status workflow."""
         statuses = ["todo", "in_progress", "done"]
         items = [create_item("item-1", status=status) for status in statuses]
@@ -685,7 +684,7 @@ class TestComplexIntegrationScenarios:
         assert current_item.status == "done"
 
     @pytest.mark.asyncio
-    async def test_hierarchical_task_decomposition(self, item_service):
+    async def test_hierarchical_task_decomposition(self, item_service) -> None:
         """Test breaking down task into subtasks."""
         parent = create_item("task-1", parent_id=None)
         child1 = create_item("task-1-1", parent_id="task-1")
@@ -694,22 +693,22 @@ class TestComplexIntegrationScenarios:
         item_service.items.create.side_effect = [parent, child1, child2]
 
         parent_result = await item_service.create_item(
-            "proj-1", "Parent Task", "REQUIREMENTS", "requirement", "agent-1"
+            "proj-1", "Parent Task", "REQUIREMENTS", "requirement", "agent-1",
         )
 
         child1_result = await item_service.create_item(
-            "proj-1", "Subtask 1", "REQUIREMENTS", "requirement", "agent-1", parent_id=parent_result.id
+            "proj-1", "Subtask 1", "REQUIREMENTS", "requirement", "agent-1", parent_id=parent_result.id,
         )
 
         child2_result = await item_service.create_item(
-            "proj-1", "Subtask 2", "REQUIREMENTS", "requirement", "agent-1", parent_id=parent_result.id
+            "proj-1", "Subtask 2", "REQUIREMENTS", "requirement", "agent-1", parent_id=parent_result.id,
         )
 
         assert child1_result.parent_id == parent_result.id
         assert child2_result.parent_id == parent_result.id
 
     @pytest.mark.asyncio
-    async def test_bulk_status_update_with_event_logging(self, item_service):
+    async def test_bulk_status_update_with_event_logging(self, item_service) -> None:
         """Test bulk status update with proper event logging."""
         items = [create_item(f"item-{i}", status="todo") for i in range(10)]
         item_service.items.bulk_update.return_value = items
@@ -721,7 +720,7 @@ class TestComplexIntegrationScenarios:
         assert item_service.events.log.called
 
     @pytest.mark.asyncio
-    async def test_item_recovery_after_soft_delete(self, item_service):
+    async def test_item_recovery_after_soft_delete(self, item_service) -> None:
         """Test recovering soft-deleted item."""
         deleted_item = create_item("item-1", deleted_at=datetime.now(UTC))
         recovered_item = create_item("item-1", deleted_at=None)

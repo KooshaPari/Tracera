@@ -52,7 +52,8 @@ def _start_device_flow(
     with httpx.Client(timeout=30.0) as client:
         resp = client.post(device_endpoint, data=payload)
         if resp.status_code >= _STATUS_BAD_REQUEST:
-            raise RuntimeError(f"Device auth start failed: {resp.status_code} {resp.text}")
+            msg = f"Device auth start failed: {resp.status_code} {resp.text}"
+            raise RuntimeError(msg)
 
         data = resp.json()
         device_code = data.get("device_code")
@@ -62,7 +63,8 @@ def _start_device_flow(
         expires_in = int(data.get("expires_in", _DEFAULT_EXPIRES_IN))
 
         if not device_code or not user_code or not verification_uri:
-            raise RuntimeError("Device auth response missing required fields")
+            msg = "Device auth response missing required fields"
+            raise RuntimeError(msg)
 
         return device_code, user_code, verification_uri, interval, expires_in
 
@@ -98,7 +100,8 @@ def _poll_for_token(
                 token_data = token_resp.json()
                 access_token = token_data.get("access_token")
                 if not access_token:
-                    raise RuntimeError("Token response missing access_token")
+                    msg = "Token response missing access_token"
+                    raise RuntimeError(msg)
 
                 return {
                     "access_token": access_token,
@@ -118,13 +121,17 @@ def _poll_for_token(
                 interval += _SLOW_DOWN_INCREMENT
                 continue
             if error == "expired_token":
-                raise RuntimeError("Device code expired. Please try login again.")
+                msg = "Device code expired. Please try login again."
+                raise RuntimeError(msg)
             if error == "access_denied":
-                raise RuntimeError("Access denied. Please approve device login.")
+                msg = "Access denied. Please approve device login."
+                raise RuntimeError(msg)
 
-            raise RuntimeError(f"Token request failed: {token_resp.status_code} {token_resp.text}")
+            msg = f"Token request failed: {token_resp.status_code} {token_resp.text}"
+            raise RuntimeError(msg)
 
-    raise RuntimeError("Device code expired. Please try login again.")
+    msg = "Device code expired. Please try login again."
+    raise RuntimeError(msg)
 
 
 def _actor_from_context(ctx: Any | None) -> dict[str, Any] | None:
@@ -197,7 +204,7 @@ def auth_login(  # noqa: PLR0913
     try:
         # Start device flow
         device_code, user_code, verification_uri, interval, expires_in = _start_device_flow(
-            authkit_domain, client_id, scopes, connect_endpoint
+            authkit_domain, client_id, scopes, connect_endpoint,
         )
 
         # Poll for token
@@ -439,7 +446,7 @@ async def config_list(ctx: Any) -> dict[str, Any]:
             raw = config_manager.get_all()
         else:
             raw = config_manager.load().model_dump()
-        config_dict: dict[str, Any] = cast(dict[str, Any], raw) if isinstance(raw, dict[str, Any]) else {}
+        config_dict: dict[str, Any] = cast("dict[str, Any]", raw) if isinstance(raw, dict[str, Any]) else {}
 
         # Mask sensitive values
         display_config: dict[str, Any] = {}

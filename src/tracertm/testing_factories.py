@@ -1,5 +1,4 @@
-"""
-Manual factories for test data generation.
+"""Manual factories for test data generation.
 
 Provides factory functions for creating test instances of Pydantic models.
 Compatible with Pydantic v2 (no pydantic-factories dependency).

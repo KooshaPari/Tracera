@@ -37,7 +37,7 @@ class ReplayResult:
 class EventSourcingService:
     """Service for event sourcing and replay."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.events = EventRepository(session)
         self.items = ItemRepository(session)
@@ -91,9 +91,8 @@ class EventSourcingService:
             try:
                 state = await self._apply_event(state, event)
                 replayed += 1
-            except Exception as e:
+            except Exception:
                 failed += 1
-                print(f"Failed to replay event {event.id}: {e}")
 
         return ReplayResult(
             total_events=len(events),

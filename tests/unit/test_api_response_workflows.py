@@ -1,4 +1,4 @@
-"""Phase 8: Comprehensive Coverage Push to 90%+
+"""Phase 8: Comprehensive Coverage Push to 90%+.
 
 Complete coverage of:
 - All API response paths
@@ -10,12 +10,13 @@ Complete coverage of:
 
 import json
 from datetime import datetime, timedelta
+from typing import Never
 
 
 class TestAPIResponsePaths:
     """Test all API response paths."""
 
-    def test_item_create_response(self):
+    def test_item_create_response(self) -> None:
         """Test item create response."""
         response: dict[str, int | str] = {
             "id": 1,
@@ -26,7 +27,7 @@ class TestAPIResponsePaths:
         assert response["id"] > 0
         assert "created_at" in response
 
-    def test_item_list_response(self):
+    def test_item_list_response(self) -> None:
         """Test item list response structure."""
         response: dict[str, int | list[dict[str, int]]] = {
             "items": [{"id": 1}, {"id": 2}],
@@ -37,42 +38,42 @@ class TestAPIResponsePaths:
         assert len(response["items"]) == 2
         assert response["total"] == 2
 
-    def test_item_update_response(self):
+    def test_item_update_response(self) -> None:
         """Test item update response."""
         response = {"id": 1, "modified": True, "updated_at": "2025-11-22T11:00:00Z"}
         assert response["modified"] is True
 
-    def test_item_delete_response(self):
+    def test_item_delete_response(self) -> None:
         """Test item delete response."""
         response = {"success": True, "deleted_id": 1}
         assert response["success"] is True
 
-    def test_link_create_response(self):
+    def test_link_create_response(self) -> None:
         """Test link create response."""
         response = {"id": 1, "source_id": 1, "target_id": 2, "link_type": "depends_on"}
         assert response["source_id"] == 1
 
-    def test_project_create_response(self):
+    def test_project_create_response(self) -> None:
         """Test project create response."""
         response = {"id": "p1", "name": "Test Project"}
         assert "id" in response
 
-    def test_backup_create_response(self):
+    def test_backup_create_response(self) -> None:
         """Test backup create response."""
         response: dict[str, str | int] = {"backup_id": "b1", "timestamp": "2025-11-22T10:00:00Z", "items_count": 42}
         assert response["items_count"] >= 0
 
-    def test_error_response_400(self):
+    def test_error_response_400(self) -> None:
         """Test 400 error response."""
         response: dict[str, str | int] = {"error": "Bad Request", "code": 400, "details": "Invalid field"}
         assert response["code"] == 400
 
-    def test_error_response_404(self):
+    def test_error_response_404(self) -> None:
         """Test 404 error response."""
         response: dict[str, str | int] = {"error": "Not Found", "code": 404}
         assert response["code"] == 404
 
-    def test_error_response_500(self):
+    def test_error_response_500(self) -> None:
         """Test 500 error response."""
         response: dict[str, str | int] = {"error": "Server Error", "code": 500}
         assert response["code"] >= 500
@@ -81,7 +82,7 @@ class TestAPIResponsePaths:
 class TestComplexServiceImplementations:
     """Test complex service implementations."""
 
-    def test_impact_analysis_full_flow(self):
+    def test_impact_analysis_full_flow(self) -> None:
         """Test impact analysis full flow."""
 
         def analyze_impact(item_id, graph):
@@ -98,7 +99,7 @@ class TestComplexServiceImplementations:
         result = analyze_impact(1, graph)
         assert len(result) == 4
 
-    def test_shortest_path_full_flow(self):
+    def test_shortest_path_full_flow(self) -> None:
         """Test shortest path full flow."""
 
         def shortest_path(start, end, graph):
@@ -122,11 +123,11 @@ class TestComplexServiceImplementations:
         result = shortest_path(1, 4, graph)
         assert result is not None
 
-    def test_cache_service_full_flow(self):
+    def test_cache_service_full_flow(self) -> None:
         """Test cache service full flow."""
         cache = {}
 
-        def set_cache(key, value, ttl=3600):
+        def set_cache(key, value, ttl=3600) -> None:
             cache[key] = {"value": value, "expires": datetime.now() + timedelta(seconds=ttl)}
 
         def get_cache(key):
@@ -141,7 +142,7 @@ class TestComplexServiceImplementations:
         set_cache("test", "data")
         assert get_cache("test") == "data"
 
-    def test_query_optimization_full_flow(self):
+    def test_query_optimization_full_flow(self) -> None:
         """Test query optimization full flow."""
 
         def optimize_query(query):
@@ -159,7 +160,7 @@ class TestComplexServiceImplementations:
 class TestAdvancedWorkflows:
     """Test advanced workflow scenarios."""
 
-    def test_create_item_with_links_workflow(self):
+    def test_create_item_with_links_workflow(self) -> None:
         """Test create item with links."""
         items = []
         links = []
@@ -181,7 +182,7 @@ class TestAdvancedWorkflows:
         assert len(items) == 2
         assert len(links) == 1
 
-    def test_backup_and_restore_workflow(self):
+    def test_backup_and_restore_workflow(self) -> None:
         """Test backup and restore workflow."""
         data = {"items": [1, 2, 3]}
         backup_storage = {}
@@ -199,12 +200,12 @@ class TestAdvancedWorkflows:
         restored = restore("b1")
         assert restored == data
 
-    def test_project_switch_workflow(self):
+    def test_project_switch_workflow(self) -> None:
         """Test project switch workflow."""
         projects = {"p1": {"name": "Project 1"}, "p2": {"name": "Project 2"}}
         current_project = "p1"
 
-        def switch_project(project_id):
+        def switch_project(project_id) -> bool:
             nonlocal current_project
             if project_id in projects:
                 current_project = project_id
@@ -217,11 +218,11 @@ class TestAdvancedWorkflows:
         switch_project("p2")
         assert get_current() == "p2"
 
-    def test_configuration_management_workflow(self):
+    def test_configuration_management_workflow(self) -> None:
         """Test configuration management workflow."""
         config = {}
 
-        def set_config(key, value):
+        def set_config(key, value) -> None:
             config[key] = value
 
         def get_config(key):
@@ -239,7 +240,7 @@ class TestAdvancedWorkflows:
 class TestSpecialConfigurations:
     """Test special configurations."""
 
-    def test_multi_tenant_configuration(self):
+    def test_multi_tenant_configuration(self) -> None:
         """Test multi-tenant setup."""
         tenants = {
             "tenant1": {"name": "Tenant 1", "database": "db1"},
@@ -252,7 +253,7 @@ class TestSpecialConfigurations:
         config = get_tenant_config("tenant1")
         assert config["database"] == "db1"
 
-    def test_feature_flags_configuration(self):
+    def test_feature_flags_configuration(self) -> None:
         """Test feature flags."""
         features = {"new_ui": True, "beta_api": False, "advanced_analytics": True}
 
@@ -262,14 +263,14 @@ class TestSpecialConfigurations:
         assert is_feature_enabled("new_ui")
         assert not is_feature_enabled("beta_api")
 
-    def test_performance_tuning_configuration(self):
+    def test_performance_tuning_configuration(self) -> None:
         """Test performance tuning config."""
         config = {"cache_ttl": 3600, "max_connections": 100, "batch_size": 1000}
 
         assert config["cache_ttl"] > 0
         assert config["max_connections"] > 0
 
-    def test_security_configuration(self):
+    def test_security_configuration(self) -> None:
         """Test security configuration."""
         config: dict[str, bool | list[str] | int] = {
             "ssl_enabled": True,
@@ -284,7 +285,7 @@ class TestSpecialConfigurations:
 class TestPerformanceCharacteristics:
     """Test performance characteristics."""
 
-    def test_query_performance(self):
+    def test_query_performance(self) -> None:
         """Test query performance."""
 
         def measure_query(query_size):
@@ -293,7 +294,7 @@ class TestPerformanceCharacteristics:
         result = measure_query(1000)
         assert result > 0
 
-    def test_cache_performance(self):
+    def test_cache_performance(self) -> None:
         """Test cache performance."""
         cache_hits = 900
         cache_misses = 100
@@ -302,12 +303,12 @@ class TestPerformanceCharacteristics:
         hit_rate = cache_hits / total
         assert hit_rate == 0.9
 
-    def test_throughput_performance(self):
+    def test_throughput_performance(self) -> None:
         """Test throughput."""
         operations_per_second = 1000
         assert operations_per_second > 0
 
-    def test_latency_characteristics(self):
+    def test_latency_characteristics(self) -> None:
         """Test latency."""
         latencies = [10, 12, 15, 11, 13]  # milliseconds
         average_latency = sum(latencies) / len(latencies)
@@ -317,16 +318,17 @@ class TestPerformanceCharacteristics:
 class TestErrorRecovery:
     """Test error recovery scenarios."""
 
-    def test_retry_on_failure(self):
+    def test_retry_on_failure(self) -> None:
         """Test retry logic."""
         attempts = 0
         max_retries = 3
 
-        def operation():
+        def operation() -> str:
             nonlocal attempts
             attempts += 1
             if attempts < 3:
-                raise Exception("Temporary failure")
+                msg = "Temporary failure"
+                raise Exception(msg)
             return "success"
 
         for _ in range(max_retries):
@@ -338,13 +340,14 @@ class TestErrorRecovery:
 
         assert result == "success"
 
-    def test_fallback_behavior(self):
+    def test_fallback_behavior(self) -> None:
         """Test fallback behavior."""
 
-        def primary_operation():
-            raise Exception("Primary failed")
+        def primary_operation() -> Never:
+            msg = "Primary failed"
+            raise Exception(msg)
 
-        def fallback_operation():
+        def fallback_operation() -> str:
             return "fallback_result"
 
         try:
@@ -354,18 +357,19 @@ class TestErrorRecovery:
 
         assert result == "fallback_result"
 
-    def test_circuit_breaker_pattern(self):
+    def test_circuit_breaker_pattern(self) -> None:
         """Test circuit breaker."""
 
         class CircuitBreaker:
-            def __init__(self, failure_threshold=3):
+            def __init__(self, failure_threshold=3) -> None:
                 self.failures = 0
                 self.threshold = failure_threshold
                 self.is_open = False
 
             def call(self, func):
                 if self.is_open:
-                    raise Exception("Circuit open")
+                    msg = "Circuit open"
+                    raise Exception(msg)
                 try:
                     result = func()
                     self.failures = 0
@@ -379,7 +383,7 @@ class TestErrorRecovery:
         cb = CircuitBreaker()
         assert not cb.is_open
 
-    def test_timeout_handling(self):
+    def test_timeout_handling(self) -> None:
         """Test timeout handling."""
 
         def timeout_operation(timeout_ms):
@@ -392,11 +396,11 @@ class TestErrorRecovery:
 class TestDataConsistency:
     """Test data consistency."""
 
-    def test_transaction_rollback(self):
+    def test_transaction_rollback(self) -> None:
         """Test transaction rollback."""
         data = {"balance": 1000}
 
-        def transfer(amount):
+        def transfer(amount) -> bool:
             # Simulate transaction
             data["balance"] -= amount
             if amount > 500:  # Rollback condition
@@ -408,7 +412,7 @@ class TestDataConsistency:
         assert not success
         assert data["balance"] == 1000
 
-    def test_data_validation(self):
+    def test_data_validation(self) -> None:
         """Test data validation."""
 
         def validate_email(email):
@@ -417,7 +421,7 @@ class TestDataConsistency:
         assert validate_email("test@example.com")
         assert not validate_email("invalid")
 
-    def test_referential_integrity(self):
+    def test_referential_integrity(self) -> None:
         """Test referential integrity."""
         items = {1: "Item1", 2: "Item2"}
         links = {1: 2}  # Link from item 1 to item 2
@@ -427,7 +431,7 @@ class TestDataConsistency:
 
         assert validate_integrity(items, links)
 
-    def test_duplicate_detection(self):
+    def test_duplicate_detection(self) -> None:
         """Test duplicate detection."""
         items = [{"id": 1, "name": "Item"}, {"id": 2, "name": "Item"}, {"id": 3, "name": "Other"}]
 
@@ -449,18 +453,18 @@ class TestDataConsistency:
 class TestMonitoring:
     """Test monitoring and observability."""
 
-    def test_metrics_collection(self):
+    def test_metrics_collection(self) -> None:
         """Test metrics collection."""
         metrics = {"requests": 1000, "errors": 5, "latency_ms": 50}
 
         error_rate = metrics["errors"] / metrics["requests"]
         assert error_rate == 0.005
 
-    def test_logging(self):
+    def test_logging(self) -> None:
         """Test logging."""
         logs = []
 
-        def log(level, message):
+        def log(level, message) -> None:
             logs.append({"level": level, "message": message})
 
         log("INFO", "Application started")
@@ -469,7 +473,7 @@ class TestMonitoring:
         assert len(logs) == 2
         assert logs[1]["level"] == "ERROR"
 
-    def test_health_check(self):
+    def test_health_check(self) -> None:
         """Test health check."""
 
         def health_check():
@@ -483,11 +487,11 @@ class TestMonitoring:
         assert result["status"] == "healthy"
         assert result["checks"]["database"] is True
 
-    def test_alerting(self):
+    def test_alerting(self) -> None:
         """Test alerting."""
         alerts = []
 
-        def trigger_alert(severity, message):
+        def trigger_alert(severity, message) -> None:
             alerts.append({"severity": severity, "message": message})
 
         trigger_alert("CRITICAL", "High error rate detected")

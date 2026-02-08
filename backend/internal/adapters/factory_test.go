@@ -104,7 +104,7 @@ func authProviderCreationCases(t *testing.T) []authProviderCreationCase {
 				RealtimeProvider: "nats",
 			},
 			expectError:   true,
-			errorContains: "GORM DB required",
+			errorContains: "gorm DB required",
 		},
 		{
 			name: "Supabase auth removed",
@@ -224,7 +224,7 @@ func TestAdapterFactory_AuthProvider_InvalidConfig(t *testing.T) {
 				AuthKitSecret:  "secret",
 				GormDB:         nil,
 			},
-			errorContains: "GORM DB required",
+			errorContains: "gorm DB required",
 		},
 		{
 			name: "Invalid provider name",
@@ -325,7 +325,7 @@ func TestAdapterFactory_RealtimeProvider_Switching(t *testing.T) {
 	factory2 := &AdapterFactory{config: cfg2}
 	err = factory2.initRealtimeBroadcaster()
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "Realtime provider is required")
+	assert.Contains(t, err.Error(), "realtime provider is required")
 
 	_ = factory2.Close()
 }
@@ -796,7 +796,7 @@ func adapterConfigValidationCases(t *testing.T) []adapterConfigValidationCase {
 				NATSConn:         &nats.Conn{},
 			},
 			expectError:   true,
-			errorContains: "GORM DB required",
+			errorContains: "gorm DB required",
 		},
 		{
 			name: "Missing NATS connection",
@@ -918,7 +918,7 @@ func TestInitRealtimeBroadcaster_EdgeCases(t *testing.T) {
 			name:             "Empty provider (required)",
 			realtimeProvider: "",
 			expectError:      true,
-			errorContains:    "Realtime provider is required",
+			errorContains:    "realtime provider is required",
 		},
 		{
 			name:             "Invalid provider",

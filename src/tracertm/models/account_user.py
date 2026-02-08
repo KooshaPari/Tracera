@@ -1,10 +1,8 @@
-"""
-AccountUser model for many-to-many relationship between accounts and users.
-"""
+"""AccountUser model for many-to-many relationship between accounts and users."""
 
 from __future__ import annotations
 
-from datetime import datetime
+from collections import UserString
 from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, String, UniqueConstraint, func
@@ -13,10 +11,12 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from tracertm.models.base import Base, TimestampMixin, generate_uuid
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from tracertm.models.account import Account
 
 
-class AccountRole(str):
+class AccountRole(UserString):
     """Account user role enumeration."""
 
     OWNER = "owner"
@@ -25,8 +25,7 @@ class AccountRole(str):
 
 
 class AccountUser(Base, TimestampMixin):
-    """
-    Join table for account-user relationships.
+    """Join table for account-user relationships.
 
     Represents a user's membership in an account with a specific role.
     """

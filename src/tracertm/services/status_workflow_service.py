@@ -1,5 +1,4 @@
-"""
-Status workflow service for Epic 2 (Story 2.7, FR13).
+"""Status workflow service for Epic 2 (Story 2.7, FR13).
 
 Handles status transitions, validation, and progress auto-update.
 """
@@ -34,17 +33,14 @@ STATUS_PROGRESS: dict[str, int] = {
 
 
 class StatusWorkflowService:
-    """
-    Service for managing item status workflows (Story 2.7, FR13).
-    """
+    """Service for managing item status workflows (Story 2.7, FR13)."""
 
-    def __init__(self, session: Session):
+    def __init__(self, session: Session) -> None:
         """Initialize status workflow service."""
         self.session = session
 
     def validate_transition(self, current_status: str, new_status: str) -> bool:
-        """
-        Validate status transition (Story 2.7, FR13).
+        """Validate status transition (Story 2.7, FR13).
 
         Args:
             current_status: Current item status
@@ -68,8 +64,7 @@ class StatusWorkflowService:
         new_status: str,
         agent_id: str | None = None,
     ) -> dict[str, Any]:
-        """
-        Update item status with validation and progress auto-update (Story 2.7, FR13).
+        """Update item status with validation and progress auto-update (Story 2.7, FR13).
 
         Args:
             item_id: Item ID
@@ -84,15 +79,19 @@ class StatusWorkflowService:
         """
         item = self.session.query(Item).filter(Item.id == item_id).first()
         if not item:
-            raise ValueError(f"Item not found: {item_id}")
+            msg = f"Item not found: {item_id}"
+            raise ValueError(msg)
 
         current_status = item.status or "todo"
 
         # Validate transition
         if not self.validate_transition(current_status, new_status):
-            raise ValueError(
+            msg = (
                 f"Invalid status transition: {current_status} → {new_status}. "
                 f"Allowed transitions from {current_status}: {STATUS_TRANSITIONS.get(current_status, [])}"
+            )
+            raise ValueError(
+                msg,
             )
 
         # Update status
@@ -131,8 +130,7 @@ class StatusWorkflowService:
         }
 
     def get_status_history(self, item_id: str) -> list[dict[str, Any]]:
-        """
-        Get status change history for an item (Story 2.7, FR13).
+        """Get status change history for an item (Story 2.7, FR13).
 
         Args:
             item_id: Item ID

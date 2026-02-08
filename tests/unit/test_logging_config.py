@@ -12,11 +12,11 @@ from tracertm.logging_config import get_logger, setup_logging
 class TestLoggingConfiguration:
     """Test suite for logging configuration."""
 
-    def test_setup_logging_callable(self):
+    def test_setup_logging_callable(self) -> None:
         """Test that setup_logging is callable."""
         assert callable(setup_logging)
 
-    def test_setup_logging_doesnt_fail(self):
+    def test_setup_logging_doesnt_fail(self) -> None:
         """Test that setup_logging can be called without error."""
         try:
             setup_logging()
@@ -24,7 +24,7 @@ class TestLoggingConfiguration:
         except Exception as e:
             pytest.fail(f"setup_logging failed: {e}")
 
-    def test_setup_logging_idempotent(self):
+    def test_setup_logging_idempotent(self) -> None:
         """Test that calling setup_logging multiple times is safe."""
         try:
             setup_logging()
@@ -34,12 +34,12 @@ class TestLoggingConfiguration:
         except Exception as e:
             pytest.fail(f"Multiple setup_logging calls failed: {e}")
 
-    def test_get_logger_returns_logger(self):
+    def test_get_logger_returns_logger(self) -> None:
         """Test that get_logger returns a logger."""
         test_logger = get_logger(__name__)
         assert test_logger is not None
 
-    def test_get_logger_with_different_names(self):
+    def test_get_logger_with_different_names(self) -> None:
         """Test getting loggers with different names."""
         logger1 = get_logger("module1")
         logger2 = get_logger("module2")
@@ -48,7 +48,7 @@ class TestLoggingConfiguration:
         assert logger1 is not None
         assert logger2 is not None
 
-    def test_logger_can_log_message(self):
+    def test_logger_can_log_message(self) -> None:
         """Test that logger can log messages."""
         test_logger = get_logger("test.messages")
 
@@ -61,7 +61,7 @@ class TestLoggingConfiguration:
         except Exception as e:
             pytest.fail(f"Logging message failed: {e}")
 
-    def test_logger_can_log_with_context(self):
+    def test_logger_can_log_with_context(self) -> None:
         """Test that logger can log with context."""
         test_logger = get_logger("test.context")
 
@@ -72,7 +72,7 @@ class TestLoggingConfiguration:
             # Extra context might not be supported
             assert True
 
-    def test_logging_module_imported(self):
+    def test_logging_module_imported(self) -> None:
         """Test that logging module is properly imported."""
         from tracertm import logging_config
 
@@ -80,13 +80,13 @@ class TestLoggingConfiguration:
         assert hasattr(logging_config, "setup_logging")
         assert hasattr(logging_config, "get_logger")
 
-    def test_logging_module_has_docstring(self):
+    def test_logging_module_has_docstring(self) -> None:
         """Test that logging module has documentation."""
         from tracertm import logging_config
 
         assert logging_config.__doc__ is not None
 
-    def test_setup_logging_creates_logger_instances(self):
+    def test_setup_logging_creates_logger_instances(self) -> None:
         """Test that setup_logging allows logger creation."""
         setup_logging()
 
@@ -101,7 +101,7 @@ class TestLoggingConfiguration:
 class TestLoggingIntegration:
     """Integration tests for logging system."""
 
-    def test_logging_in_application_context(self):
+    def test_logging_in_application_context(self) -> None:
         """Test logging works in application context."""
         logger = get_logger("tracertm.application")
         setup_logging()
@@ -116,7 +116,7 @@ class TestLoggingIntegration:
         except Exception as e:
             pytest.fail(f"Logging failed: {e}")
 
-    def test_logging_with_exceptions(self):
+    def test_logging_with_exceptions(self) -> None:
         """Test logging with exception information."""
         logger = get_logger("tracertm.exceptions")
 
@@ -131,7 +131,7 @@ class TestLoggingIntegration:
             except Exception as e:
                 pytest.fail(f"Exception logging failed: {e}")
 
-    def test_logging_performance(self):
+    def test_logging_performance(self) -> None:
         """Test that logging doesn't significantly impact performance."""
         logger = get_logger("tracertm.performance")
 
@@ -140,13 +140,13 @@ class TestLoggingIntegration:
 
         start = time.time()
         for i in range(100):  # Reduced from 1000
-            logger.debug(f"Message {i}")
+            logger.debug("Message %s", i)
         elapsed = time.time() - start
 
         # Should complete in reasonable time
         assert elapsed < 5.0
 
-    def test_logging_with_contextual_info(self):
+    def test_logging_with_contextual_info(self) -> None:
         """Test logging with contextual information."""
         logger = get_logger("tracertm.context")
 

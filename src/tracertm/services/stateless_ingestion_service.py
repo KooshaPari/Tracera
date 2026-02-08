@@ -14,14 +14,14 @@ from sqlalchemy.orm import Session
 try:
     import frontmatter
 except ImportError:
-    frontmatter = cast(Any, None)
+    frontmatter = cast("Any", None)
 
 try:
     from markdown import Markdown
     from markdown_it import MarkdownIt
 except ImportError:
-    Markdown = cast(Any, None)
-    MarkdownIt = cast(Any, None)
+    Markdown = cast("Any", None)
+    MarkdownIt = cast("Any", None)
 
 from tracertm.models.item import Item
 from tracertm.models.link import Link
@@ -44,11 +44,13 @@ class StatelessIngestionService:
 
     def _validate_file_extension(self, path: Path, allowed: tuple[str, ...], label: str) -> None:
         if path.suffix.lower() not in allowed:
-            raise ValueError(f"Invalid file extension: {path.suffix}. Expected {label}")
+            msg = f"Invalid file extension: {path.suffix}. Expected {label}"
+            raise ValueError(msg)
 
     def _ensure_file_exists(self, path: Path, file_path: str) -> None:
         if not path.exists():
-            raise FileNotFoundError(f"File not found: {file_path}")
+            msg = f"File not found: {file_path}"
+            raise FileNotFoundError(msg)
 
     def _read_text(self, path: Path) -> str:
         return path.read_text(encoding="utf-8")
@@ -109,7 +111,8 @@ class StatelessIngestionService:
             if validate_existing:
                 project = self.session.query(Project).filter(Project.id == project_id).first()
                 if not project:
-                    raise ValueError(f"Project not found: {project_id}")
+                    msg = f"Project not found: {project_id}"
+                    raise ValueError(msg)
             return project_id
 
         project = self.session.query(Project).filter(Project.name == name).first()
@@ -253,7 +256,7 @@ class StatelessIngestionService:
         return "yaml"
 
     def _schema_name_from_ref(self, schema_ref: str) -> str | None:
-        return schema_ref.split("/")[-1] if schema_ref else None
+        return schema_ref.rsplit("/", maxsplit=1)[-1] if schema_ref else None
 
     def _iter_schema_names_from_content(
         self,
@@ -462,11 +465,11 @@ class StatelessIngestionService:
         return data.get("spec", {}).get("requirements", [])
 
     def _resolve_bmad_view(self, req_type: str) -> str:
-        if req_type in ["test", "test_case", "test_spec"]:
+        if req_type in {"test", "test_case", "test_spec"}:
             return "TEST"
-        if req_type in ["code", "implementation", "component"]:
+        if req_type in {"code", "implementation", "component"}:
             return "CODE"
-        if req_type in ["api", "endpoint", "service"]:
+        if req_type in {"api", "endpoint", "service"}:
             return "API"
         return "FEATURE"
 
@@ -694,8 +697,7 @@ class StatelessIngestionService:
         dry_run: bool = False,
         validate: bool = True,
     ) -> dict[str, Any]:
-        """
-        Ingest a Markdown file (with optional frontmatter).
+        """Ingest a Markdown file (with optional frontmatter).
 
         Supports:
         - Frontmatter metadata (YAML)
@@ -758,8 +760,7 @@ class StatelessIngestionService:
         dry_run: bool = False,
         validate: bool = True,
     ) -> dict[str, Any]:
-        """
-        Ingest an MDX file (Markdown with JSX components).
+        """Ingest an MDX file (Markdown with JSX components).
 
         Similar to markdown but handles JSX components in code blocks.
 
@@ -775,7 +776,8 @@ class StatelessIngestionService:
         """
         path = Path(file_path)
         if not path.exists():
-            raise FileNotFoundError(f"File not found: {file_path}")
+            msg = f"File not found: {file_path}"
+            raise FileNotFoundError(msg)
 
         if validate:
             self._validate_file_extension(path, (".mdx",), ".mdx")
@@ -841,8 +843,7 @@ class StatelessIngestionService:
         dry_run: bool = False,
         validate: bool = True,
     ) -> dict[str, Any]:
-        """
-        Ingest a YAML file.
+        """Ingest a YAML file.
 
         Supports:
         - OpenAPI/Swagger specs
@@ -862,7 +863,8 @@ class StatelessIngestionService:
         pid: str | None = str(project_id) if project_id is not None else None
         path = Path(file_path)
         if not path.exists():
-            raise FileNotFoundError(f"File not found: {file_path}")
+            msg = f"File not found: {file_path}"
+            raise FileNotFoundError(msg)
 
         if validate:
             self._validate_file_extension(path, (".yaml", ".yml"), ".yaml or .yml")
@@ -872,10 +874,12 @@ class StatelessIngestionService:
         try:
             data = yaml.safe_load(content)
         except yaml.YAMLError as e:
-            raise ValueError(f"Invalid YAML: {e}") from e
+            msg = f"Invalid YAML: {e}"
+            raise ValueError(msg) from e
 
         if not isinstance(data, dict):
-            raise ValueError("YAML root must be a dictionary")
+            msg = "YAML root must be a dictionary"
+            raise ValueError(msg)
 
         format_type = self._detect_yaml_format(data, path)
 

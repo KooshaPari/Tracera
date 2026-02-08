@@ -1,5 +1,7 @@
 .PHONY: help dev dev-tui dev-down dev-logs dev-restart dev-status install-native \
-	quality quality-backend quality-frontend quality-pc quality-report quality-report-watch quality-watch quality-last quality-rerun check lint type-check format test \
+	quality quality-backend quality-frontend quality-pc quality-report quality-report-watch quality-watch quality-last quality-rerun \
+	quality-external quality-go-external quality-python-external quality-frontend-external \
+	check lint type-check format test \
 	type-check-ty test-python-parallel test-python-uv \
 	test-setup validate test-validate-frontend test-validate-backend test-validate-backend-go test-validate-backend-python test-validate-report test-pyramid \
 	load-test load-test-smoke load-test-load load-test-stress load-test-spike load-test-soak load-test-report \
@@ -175,6 +177,54 @@ quality: ## Per-step parallel quality (lint/type/build/test)
 
 quality-report: ## Parse .quality/logs and print action plan
 	@bash scripts/shell/quality-report.sh
+
+#############################################################################
+# Quality - External Tools (Phase 5 Maximum Strictness)
+#############################################################################
+
+quality-external: quality-go-external quality-python-external quality-frontend-external ## Run all external quality tools (CVE, race, security, dead code)
+
+quality-go-external: ## Go: CVE scanning, race detection, and advanced static analysis
+	@echo '$(CYAN)[Go] Running external quality tools...$(NC)'
+	@echo '$(YELLOW)  → govulncheck (CVE scanning)$(NC)'
+	@cd backend && govulncheck ./... || { echo '$(YELLOW)⚠️  govulncheck not installed: go install golang.org/x/vuln/cmd/govulncheck@latest$(NC)'; }
+	@echo '$(YELLOW)  → go build -race (race detection)$(NC)'
+	@cd backend && go build -race ./... || { echo '$(YELLOW)⚠️  Race detection failed$(NC)'; exit 1; }
+	@echo '$(YELLOW)  → go mod tidy (dependency validation)$(NC)'
+	@cd backend && go mod tidy && git diff --exit-code go.mod go.sum || { echo '$(YELLOW)⚠️  go.mod/go.sum out of sync$(NC)'; exit 1; }
+	@echo '$(GREEN)✅ Go external tools complete$(NC)'
+
+quality-python-external: ## Python: Security scanning (bandit, semgrep, pip-audit), metrics (radon), architecture (import-linter, tach)
+	@echo '$(CYAN)[Python] Running external quality tools...$(NC)'
+	@echo '$(YELLOW)  → bandit (security linter)$(NC)'
+	@bandit -r src/ --severity medium -f json -o .quality/baselines/python-bandit-latest.json || { echo '$(YELLOW)⚠️  bandit found security issues (review .quality/baselines/python-bandit-latest.json)$(NC)'; }
+	@echo '$(YELLOW)  → pip-audit (CVE scanning)$(NC)'
+	@pip-audit --strict || { echo '$(YELLOW)⚠️  pip-audit found vulnerabilities$(NC)'; }
+	@echo '$(YELLOW)  → semgrep (security patterns)$(NC)'
+	@semgrep --config=p/python --config=p/security-audit src/ || { echo '$(YELLOW)⚠️  semgrep not installed: brew install semgrep$(NC)'; }
+	@echo '$(YELLOW)  → interrogate (docstring coverage)$(NC)'
+	@interrogate --fail-under 85 src/ || { echo '$(YELLOW)⚠️  Docstring coverage below 85%$(NC)'; }
+	@echo '$(YELLOW)  → radon (complexity metrics)$(NC)'
+	@radon cc src/ -a -s --min=B || { echo '$(YELLOW)⚠️  High complexity detected$(NC)'; }
+	@echo '$(YELLOW)  → import-linter (architecture validation)$(NC)'
+	@lint-imports || { echo '$(YELLOW)⚠️  Architecture violations detected$(NC)'; }
+	@echo '$(YELLOW)  → tach (module boundaries)$(NC)'
+	@tach check || { echo '$(YELLOW)⚠️  Module boundary violations detected$(NC)'; }
+	@echo '$(GREEN)✅ Python external tools complete$(NC)'
+
+quality-frontend-external: ## TypeScript: Dead code detection (knip), circular deps (madge), type checking (tsc)
+	@echo '$(CYAN)[TypeScript] Running external quality tools...$(NC)'
+	@echo '$(YELLOW)  → tsc --noEmit (standalone type checking)$(NC)'
+	@cd frontend && bun run tsc --noEmit || { echo '$(YELLOW)⚠️  TypeScript errors detected$(NC)'; exit 1; }
+	@echo '$(YELLOW)  → knip (dead code detection)$(NC)'
+	@cd frontend && knip --include files,exports,dependencies || { echo '$(YELLOW)⚠️  knip not installed: bun add -d knip$(NC)'; }
+	@echo '$(YELLOW)  → madge (circular dependency detection)$(NC)'
+	@cd frontend && madge --circular apps/web/src/ || { echo '$(YELLOW)⚠️  madge not installed: bun add -d madge$(NC)'; }
+	@echo '$(GREEN)✅ TypeScript external tools complete$(NC)'
+
+#############################################################################
+# Quality - Validation
+#############################################################################
 
 validate: ## Comprehensive route & health validation (frontend + backend)
 	@$(SMART_CMD) validate "$(MAKE) test-validate-frontend test-validate-backend"

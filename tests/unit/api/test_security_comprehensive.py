@@ -1,5 +1,4 @@
-"""
-Comprehensive API security and authentication tests.
+"""Comprehensive API security and authentication tests.
 
 Tests for authentication mechanisms, authorization, security headers,
 token validation, webhook signatures, CORS, and rate limiting scenarios.
@@ -30,31 +29,31 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
-def mock_valid_jwt():
+def mock_valid_jwt() -> str:
     """Generate mock valid JWT token."""
     return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMTIzIiwiZXhwIjo5OTk5OTk5OTk5fQ.valid_signature"
 
 
 @pytest.fixture
-def mock_expired_jwt():
+def mock_expired_jwt() -> str:
     """Generate mock expired JWT token."""
     return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMTIzIiwiZXhwIjoxNjAwMDAwMDAwfQ.expired_sig"
 
 
 @pytest.fixture
-def mock_invalid_jwt():
+def mock_invalid_jwt() -> str:
     """Generate mock invalid JWT token."""
     return "invalid.jwt.format"
 
 
 @pytest.fixture
-def mock_api_key():
+def mock_api_key() -> str:
     """Generate mock API key."""
     return "sk_test_1234567890abcdefghijklmnop"
 
 
 @pytest.fixture
-def mock_webhook_secret():
+def mock_webhook_secret() -> str:
     """Generate mock webhook secret."""
     return "whsec_test_1234567890abcdefghijklmnop"
 
@@ -62,7 +61,7 @@ def mock_webhook_secret():
 class TestAuthenticationFlows:
     """Test various authentication flow scenarios."""
 
-    def test_jwt_authentication_success(self, mock_valid_jwt):
+    def test_jwt_authentication_success(self, mock_valid_jwt) -> None:
         """Test successful JWT authentication."""
         from tracertm.api.main import app
 
@@ -78,7 +77,7 @@ class TestAuthenticationFlows:
             response = client.get("/health")
             assert response.status_code == 200
 
-    def test_jwt_authentication_missing_token(self):
+    def test_jwt_authentication_missing_token(self) -> None:
         """Test authentication failure when token is missing."""
         from tracertm.api.main import app
 
@@ -96,11 +95,11 @@ class TestAuthenticationFlows:
             try:
                 resp = client.get("/api/v1/items", params={"project_id": "test"})
                 # Should not have successful response when auth is required
-                assert resp.status_code in [401, 403] or "auth" in str(resp)
+                assert resp.status_code in {401, 403} or "auth" in str(resp)
             except Exception as e:
                 logger.debug("Expected in test: %s", e)
 
-    def test_jwt_authentication_invalid_format(self):
+    def test_jwt_authentication_invalid_format(self) -> None:
         """Test authentication failure with invalid token format."""
         from tracertm.api.main import app
 
@@ -115,13 +114,13 @@ class TestAuthenticationFlows:
             except Exception as e:
                 logger.debug("Expected in test: %s", e)
 
-    def test_jwt_authentication_wrong_secret(self):
+    def test_jwt_authentication_wrong_secret(self) -> None:
         """Test authentication failure when token was signed with wrong secret."""
         from tracertm.api.main import app
 
         client = TestClient(app)
         headers = {
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMTIzIn0.wrong_signature"
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMTIzIn0.wrong_signature",
         }
 
         with patch("tracertm.api.main.verify_token") as mock_verify:
@@ -132,7 +131,7 @@ class TestAuthenticationFlows:
             except Exception:
                 pass  # Expected behavior
 
-    def test_api_key_authentication_success(self, mock_api_key):
+    def test_api_key_authentication_success(self, mock_api_key) -> None:
         """Test successful API key authentication."""
         from tracertm.api.main import app
 
@@ -145,7 +144,7 @@ class TestAuthenticationFlows:
             response = client.get("/health")
             assert response.status_code == 200
 
-    def test_api_key_authentication_invalid(self):
+    def test_api_key_authentication_invalid(self) -> None:
         """Test API key authentication failure with invalid key."""
         from tracertm.api.main import app
 
@@ -160,7 +159,7 @@ class TestAuthenticationFlows:
             except Exception:
                 pass  # Expected behavior
 
-    def test_api_key_authentication_missing(self):
+    def test_api_key_authentication_missing(self) -> None:
         """Test API key authentication failure when key is missing."""
         from tracertm.api.main import app
 
@@ -177,7 +176,7 @@ class TestAuthenticationFlows:
             # No API key header
             try:
                 response = client.get("/api/v1/items", params={"project_id": "test"})
-                assert response.status_code in [401, 403] or "auth" in str(response)
+                assert response.status_code in {401, 403} or "auth" in str(response)
             except Exception:
                 pass  # Expected behavior
 
@@ -185,7 +184,7 @@ class TestAuthenticationFlows:
 class TestTokenValidation:
     """Test token validation and expiration."""
 
-    def test_token_expiration_check(self, mock_expired_jwt):
+    def test_token_expiration_check(self, mock_expired_jwt) -> None:
         """Test that expired tokens are rejected."""
         from tracertm.api.main import app
 
@@ -200,7 +199,7 @@ class TestTokenValidation:
             except Exception:
                 pass  # Expected behavior
 
-    def test_token_expiration_time_boundary(self):
+    def test_token_expiration_time_boundary(self) -> None:
         """Test token expiration at exact boundary time."""
         from tracertm.api.main import app
 
@@ -216,7 +215,7 @@ class TestTokenValidation:
             except Exception:
                 pass  # Expected behavior
 
-    def test_token_not_yet_valid(self):
+    def test_token_not_yet_valid(self) -> None:
         """Test tokens that are not yet valid (future nbf claim)."""
         from tracertm.api.main import app
 
@@ -231,7 +230,7 @@ class TestTokenValidation:
             except Exception:
                 pass  # Expected behavior
 
-    def test_token_malformed_claims(self):
+    def test_token_malformed_claims(self) -> None:
         """Test token with malformed claims."""
         from tracertm.api.main import app
 
@@ -246,7 +245,7 @@ class TestTokenValidation:
             except Exception:
                 pass  # Expected behavior
 
-    def test_token_subject_claim_validation(self):
+    def test_token_subject_claim_validation(self) -> None:
         """Test validation of subject claim in token."""
         from tracertm.api.main import app
 
@@ -266,7 +265,7 @@ class TestTokenValidation:
 class TestAuthorizationControl:
     """Test authorization and access control."""
 
-    def test_admin_role_full_access(self):
+    def test_admin_role_full_access(self) -> None:
         """Test that admin role has full access."""
         from tracertm.api.main import app
 
@@ -285,7 +284,7 @@ class TestAuthorizationControl:
                 except Exception:
                     pass  # May fail for other reasons
 
-    def test_user_role_limited_access(self):
+    def test_user_role_limited_access(self) -> None:
         """Test that user role has limited access."""
         from tracertm.api.main import app
 
@@ -304,7 +303,7 @@ class TestAuthorizationControl:
                 except Exception as e:
                     logger.debug("Expected in test: %s", e)
 
-    def test_guest_role_read_only_access(self):
+    def test_guest_role_read_only_access(self) -> None:
         """Test that guest role has read-only access."""
         from tracertm.api.main import app
 
@@ -331,7 +330,7 @@ class TestAuthorizationControl:
                 except Exception as e:
                     logger.debug("Expected in test: %s", e)
 
-    def test_resource_ownership_check(self):
+    def test_resource_ownership_check(self) -> None:
         """Test that users can only access their own resources."""
         from tracertm.api.main import app
 
@@ -349,7 +348,7 @@ class TestAuthorizationControl:
                 except Exception as e:
                     logger.debug("Expected in test: %s", e)
 
-    def test_permission_based_access_control(self):
+    def test_permission_based_access_control(self) -> None:
         """Test permission-based access control."""
         from tracertm.api.main import app
 
@@ -372,7 +371,7 @@ class TestAuthorizationControl:
 class TestRateLimiting:
     """Test rate limiting functionality."""
 
-    def test_rate_limit_per_user(self):
+    def test_rate_limit_per_user(self) -> None:
         """Test rate limiting applied per user."""
         from tracertm.api.main import app
 
@@ -405,7 +404,7 @@ class TestRateLimiting:
                             assert _i >= 10  # Should block after 10 requests
                             break
 
-    def test_rate_limit_per_ip_anonymous(self):
+    def test_rate_limit_per_ip_anonymous(self) -> None:
         """Test rate limiting per IP for anonymous users."""
         from tracertm.api.main import app
 
@@ -426,7 +425,7 @@ class TestRateLimiting:
             except Exception as e:
                 logger.debug("Expected in test: %s", e)
 
-    def test_rate_limit_headers(self):
+    def test_rate_limit_headers(self) -> None:
         """Test rate limit headers in response."""
         from tracertm.api.main import app
 
@@ -448,7 +447,7 @@ class TestRateLimiting:
                 # Should include rate limit headers
                 assert response.status_code == 200
 
-    def test_rate_limit_reset_after_window(self):
+    def test_rate_limit_reset_after_window(self) -> None:
         """Test that rate limit resets after time window."""
         from tracertm.api.main import app
 
@@ -481,7 +480,7 @@ class TestRateLimiting:
                     except Exception as e:
                         logger.debug("Expected in test: %s", e)
 
-    def test_rate_limit_premium_tier(self):
+    def test_rate_limit_premium_tier(self) -> None:
         """Test higher rate limits for premium tier users."""
         from tracertm.api.main import app
 
@@ -507,7 +506,7 @@ class TestRateLimiting:
 class TestWebhookSecurity:
     """Test webhook signature verification and security."""
 
-    def test_webhook_signature_verification_success(self, mock_webhook_secret):
+    def test_webhook_signature_verification_success(self, mock_webhook_secret) -> None:
         """Test successful webhook signature verification."""
         from tracertm.api.main import app
 
@@ -529,7 +528,7 @@ class TestWebhookSecurity:
             except Exception as e:
                 logger.debug("Endpoint may not exist: %s", e)
 
-    def test_webhook_signature_verification_failure(self, mock_webhook_secret):
+    def test_webhook_signature_verification_failure(self, mock_webhook_secret) -> None:
         """Test webhook signature verification failure."""
         from tracertm.api.main import app
 
@@ -551,7 +550,7 @@ class TestWebhookSecurity:
             except Exception as e:
                 logger.debug("Expected in test: %s", e)
 
-    def test_webhook_timestamp_validation(self, mock_webhook_secret):
+    def test_webhook_timestamp_validation(self, mock_webhook_secret) -> None:
         """Test webhook timestamp validation to prevent replay attacks."""
         from tracertm.api.main import app
 
@@ -576,7 +575,7 @@ class TestWebhookSecurity:
             except Exception as e:
                 logger.debug("Expected in test: %s", e)
 
-    def test_webhook_missing_signature(self):
+    def test_webhook_missing_signature(self) -> None:
         """Test webhook request without signature."""
         from tracertm.api.main import app
 
@@ -600,7 +599,7 @@ class TestWebhookSecurity:
 class TestCORSAndSecurityHeaders:
     """Test CORS and security headers."""
 
-    def test_cors_headers_present(self):
+    def test_cors_headers_present(self) -> None:
         """Test that CORS headers are present in response."""
         from tracertm.api.main import app
 
@@ -609,9 +608,9 @@ class TestCORSAndSecurityHeaders:
         response = client.options("/api/v1/projects")
 
         # Should have CORS headers
-        assert response.status_code in [200, 405]  # 405 if OPTIONS not implemented
+        assert response.status_code in {200, 405}  # 405 if OPTIONS not implemented
 
-    def test_content_type_security_header(self):
+    def test_content_type_security_header(self) -> None:
         """Test Content-Type security header."""
         from tracertm.api.main import app
 
@@ -622,7 +621,7 @@ class TestCORSAndSecurityHeaders:
         # Should have proper Content-Type
         assert "application/json" in response.headers.get("content-type", "")
 
-    def test_x_content_type_options_header(self):
+    def test_x_content_type_options_header(self) -> None:
         """Test X-Content-Type-Options header (nosniff)."""
         from tracertm.api.main import app
 
@@ -640,7 +639,7 @@ class TestCORSAndSecurityHeaders:
             # Should include security headers
             assert response.status_code == 200
 
-    def test_x_frame_options_header(self):
+    def test_x_frame_options_header(self) -> None:
         """Test X-Frame-Options header (clickjacking protection)."""
         from tracertm.api.main import app
 
@@ -649,7 +648,7 @@ class TestCORSAndSecurityHeaders:
         response = client.get("/health")
         assert response.status_code == 200
 
-    def test_strict_transport_security_header(self):
+    def test_strict_transport_security_header(self) -> None:
         """Test Strict-Transport-Security header (HTTPS enforcement)."""
         from tracertm.api.main import app
 
@@ -670,7 +669,7 @@ class TestCORSAndSecurityHeaders:
 class TestSessionManagement:
     """Test session management and security."""
 
-    def test_session_creation(self):
+    def test_session_creation(self) -> None:
         """Test secure session creation."""
         from tracertm.api.main import app
 
@@ -686,7 +685,7 @@ class TestSessionManagement:
 
             client.post("/api/auth/login", json={"username": "user", "password": "pass"})
 
-    def test_session_expiration(self):
+    def test_session_expiration(self) -> None:
         """Test session expiration."""
         from tracertm.api.main import app
 
@@ -702,7 +701,7 @@ class TestSessionManagement:
             except Exception as e:
                 logger.debug("Expected in test: %s", e)
 
-    def test_session_invalidation_on_logout(self):
+    def test_session_invalidation_on_logout(self) -> None:
         """Test session invalidation on logout."""
         from tracertm.api.main import app
 
@@ -718,7 +717,7 @@ class TestSessionManagement:
             except Exception as e:
                 logger.debug("May fail if endpoint not implemented: %s", e)
 
-    def test_session_fixation_protection(self):
+    def test_session_fixation_protection(self) -> None:
         """Test protection against session fixation attacks."""
         from tracertm.api.main import app
 
@@ -734,7 +733,7 @@ class TestSessionManagement:
 class TestInputValidationSecurity:
     """Test input validation for security."""
 
-    def test_sql_injection_prevention(self):
+    def test_sql_injection_prevention(self) -> None:
         """Test prevention of SQL injection attacks."""
         from tracertm.api.main import app
 
@@ -750,11 +749,11 @@ class TestInputValidationSecurity:
             try:
                 resp = client.get("/api/v1/projects", params={"search": malicious_input}, headers=headers)
                 # Should not execute SQL injection
-                assert resp.status_code in [200, 400]
+                assert resp.status_code in {200, 400}
             except Exception as e:
                 logger.debug("Expected in test: %s", e)
 
-    def test_xss_prevention(self):
+    def test_xss_prevention(self) -> None:
         """Test prevention of Cross-Site Scripting attacks."""
         from tracertm.api.main import app
 
@@ -774,7 +773,7 @@ class TestInputValidationSecurity:
             except Exception as e:
                 logger.debug("Expected in test: %s", e)
 
-    def test_csrf_token_validation(self):
+    def test_csrf_token_validation(self) -> None:
         """Test CSRF token validation."""
         from tracertm.api.main import app
 
@@ -792,7 +791,7 @@ class TestInputValidationSecurity:
 class TestDataEncryption:
     """Test data encryption and secure transmission."""
 
-    def test_password_encryption(self):
+    def test_password_encryption(self) -> None:
         """Test that passwords are encrypted."""
         from tracertm.api.main import app
 
@@ -808,7 +807,7 @@ class TestDataEncryption:
             except Exception as e:
                 logger.debug("Expected in test: %s", e)
 
-    def test_sensitive_data_not_logged(self):
+    def test_sensitive_data_not_logged(self) -> None:
         """Test that sensitive data is not logged."""
         from tracertm.api.main import app
 
@@ -829,7 +828,7 @@ class TestDataEncryption:
 class TestMultiFactorAuthentication:
     """Test multi-factor authentication scenarios."""
 
-    def test_mfa_required_for_sensitive_operations(self):
+    def test_mfa_required_for_sensitive_operations(self) -> None:
         """Test that MFA is required for sensitive operations."""
         from tracertm.api.main import app
 
@@ -851,7 +850,7 @@ class TestMultiFactorAuthentication:
                 except Exception as e:
                     logger.debug("Expected in test: %s", e)
 
-    def test_mfa_verification_code_validation(self):
+    def test_mfa_verification_code_validation(self) -> None:
         """Test MFA verification code validation."""
         from tracertm.api.main import app
 
@@ -865,7 +864,7 @@ class TestMultiFactorAuthentication:
             except Exception as e:
                 logger.debug("Expected in test: %s", e)
 
-    def test_mfa_code_expiration(self):
+    def test_mfa_code_expiration(self) -> None:
         """Test MFA code expiration."""
         from tracertm.api.main import app
 
@@ -883,7 +882,7 @@ class TestMultiFactorAuthentication:
 class TestErrorHandlingSecurity:
     """Test secure error handling."""
 
-    def test_no_sensitive_info_in_error_messages(self):
+    def test_no_sensitive_info_in_error_messages(self) -> None:
         """Test that error messages don't leak sensitive information."""
         from tracertm.api.main import app
 
@@ -897,7 +896,7 @@ class TestErrorHandlingSecurity:
         except Exception as e:
             logger.debug("Expected in test: %s", e)
 
-    def test_auth_failure_generic_message(self):
+    def test_auth_failure_generic_message(self) -> None:
         """Test that auth failures return generic messages."""
         from tracertm.api.main import app
 
@@ -919,7 +918,7 @@ class TestErrorHandlingSecurity:
 class TestLoggingAndAuditing:
     """Test logging and audit trail for security events."""
 
-    def test_failed_authentication_logged(self):
+    def test_failed_authentication_logged(self) -> None:
         """Test that failed authentication attempts are logged."""
         from tracertm.api.main import app
 
@@ -933,7 +932,7 @@ class TestLoggingAndAuditing:
             except Exception as e:
                 logger.debug("Expected in test: %s", e)
 
-    def test_unauthorized_access_logged(self):
+    def test_unauthorized_access_logged(self) -> None:
         """Test that unauthorized access attempts are logged."""
         from tracertm.api.main import app
 
@@ -952,7 +951,7 @@ class TestLoggingAndAuditing:
             except Exception as e:
                 logger.debug("Expected in test: %s", e)
 
-    def test_sensitive_operations_logged(self):
+    def test_sensitive_operations_logged(self) -> None:
         """Test that sensitive operations are logged."""
         from tracertm.api.main import app
 

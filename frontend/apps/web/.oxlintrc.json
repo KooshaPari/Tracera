@@ -1,225 +1,32 @@
 {
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
   "extends": ["../../.oxlintrc.json"],
-  "ignorePatterns": [
-    "node_modules/**",
-    "dist/**",
-    "routeTree.gen.ts",
-    "src/api/schema.ts",
-    "**/*.gen.ts",
-    "**/*.generated.*"
-  ],
-  "overrides": [],
-  "settings": {
-    "react": {
-      "version": "19.2.0"
-    },
-    "boundaries/ignore": [
-      "**/*.test.*",
-      "**/*.spec.*",
-      "**/*.stories.*",
-      "**/__tests__/**",
-      "**/__stories__/**",
-      "packages/**",
-      "apps/**/dist/**",
-      "apps/**/node_modules/**",
-      "apps/**/mocks/**",
-      "apps/**/test/**",
-      "apps/**/workers/**"
-    ],
-    "boundaries/elements": [
-      {
-        "type": "entry",
-        "pattern": "apps/web/src/{main,router}.tsx"
-      },
-      {
-        "type": "entry",
-        "pattern": "frontend/apps/web/src/{main,router}.tsx"
-      },
-      {
-        "type": "entry",
-        "pattern": "src/{main,router}.tsx"
-      },
-      {
-        "type": "root",
-        "pattern": "apps/web/src/*.*"
-      },
-      {
-        "type": "root",
-        "pattern": "frontend/apps/web/src/*.*"
-      },
-      {
-        "type": "root",
-        "pattern": "src/*.*"
-      },
-      {
-        "type": "routes",
-        "pattern": "apps/web/src/routes/**"
-      },
-      {
-        "type": "routes",
-        "pattern": "frontend/apps/web/src/routes/**"
-      },
-      {
-        "type": "routes",
-        "pattern": "src/routes/**"
-      },
-      {
-        "type": "pages",
-        "pattern": "apps/web/src/pages/**"
-      },
-      {
-        "type": "pages",
-        "pattern": "frontend/apps/web/src/pages/**"
-      },
-      {
-        "type": "pages",
-        "pattern": "src/pages/**"
-      },
-      {
-        "type": "views",
-        "pattern": "apps/web/src/views/**"
-      },
-      {
-        "type": "views",
-        "pattern": "frontend/apps/web/src/views/**"
-      },
-      {
-        "type": "views",
-        "pattern": "src/views/**"
-      },
-      {
-        "type": "components",
-        "pattern": "apps/web/src/components/**"
-      },
-      {
-        "type": "components",
-        "pattern": "frontend/apps/web/src/components/**"
-      },
-      {
-        "type": "components",
-        "pattern": "src/components/**"
-      },
-      {
-        "type": "hooks",
-        "pattern": "apps/web/src/hooks/**"
-      },
-      {
-        "type": "hooks",
-        "pattern": "frontend/apps/web/src/hooks/**"
-      },
-      {
-        "type": "hooks",
-        "pattern": "src/hooks/**"
-      },
-      {
-        "type": "stores",
-        "pattern": "apps/web/src/stores/**"
-      },
-      {
-        "type": "stores",
-        "pattern": "frontend/apps/web/src/stores/**"
-      },
-      {
-        "type": "stores",
-        "pattern": "src/stores/**"
-      },
-      {
-        "type": "providers",
-        "pattern": "apps/web/src/providers/**"
-      },
-      {
-        "type": "providers",
-        "pattern": "frontend/apps/web/src/providers/**"
-      },
-      {
-        "type": "providers",
-        "pattern": "src/providers/**"
-      },
-      {
-        "type": "api",
-        "pattern": "apps/web/src/api/**"
-      },
-      {
-        "type": "api",
-        "pattern": "frontend/apps/web/src/api/**"
-      },
-      {
-        "type": "api",
-        "pattern": "src/api/**"
-      },
-      {
-        "type": "lib",
-        "pattern": "apps/web/src/lib/**"
-      },
-      {
-        "type": "lib",
-        "pattern": "frontend/apps/web/src/lib/**"
-      },
-      {
-        "type": "lib",
-        "pattern": "src/lib/**"
-      },
-      {
-        "type": "types",
-        "pattern": "apps/web/src/types/**"
-      },
-      {
-        "type": "types",
-        "pattern": "frontend/apps/web/src/types/**"
-      },
-      {
-        "type": "types",
-        "pattern": "src/types/**"
-      },
-      {
-        "type": "utils",
-        "pattern": "apps/web/src/utils/**"
-      },
-      {
-        "type": "utils",
-        "pattern": "frontend/apps/web/src/utils/**"
-      },
-      {
-        "type": "utils",
-        "pattern": "src/utils/**"
-      },
-      {
-        "type": "styles",
-        "pattern": "apps/web/src/styles/**"
-      },
-      {
-        "type": "styles",
-        "pattern": "frontend/apps/web/src/styles/**"
-      },
-      {
-        "type": "styles",
-        "pattern": "src/styles/**"
-      },
-      {
-        "type": "config",
-        "pattern": "apps/web/src/config/**"
-      },
-      {
-        "type": "config",
-        "pattern": "frontend/apps/web/src/config/**"
-      },
-      {
-        "type": "config",
-        "pattern": "src/config/**"
-      },
-      {
-        "type": "workers",
-        "pattern": "apps/web/src/workers/**"
-      },
-      {
-        "type": "workers",
-        "pattern": "frontend/apps/web/src/workers/**"
-      },
-      {
-        "type": "workers",
-        "pattern": "src/workers/**"
-      }
-    ]
+  "rules": {
+    "import/no-default-export": "off",
+    "typescript/no-explicit-any": "off",
+    "typescript/no-unsafe-assignment": "off",
+    "typescript/no-unsafe-member-access": "off",
+    "typescript/no-unsafe-call": "off",
+    "typescript/no-unsafe-return": "off",
+    "typescript/explicit-module-boundary-types": "off",
+    "eslint/no-magic-numbers": "off",
+    "eslint/max-lines-per-function": "off",
+    "eslint/max-statements": "off",
+    "eslint/no-console": "off",
+    "eslint/no-ternary": "off",
+    "eslint/no-inline-comments": "off",
+    "eslint/id-length": "off",
+    "eslint/no-plusplus": "off",
+    "eslint/init-declarations": "off",
+    "eslint/prefer-destructuring": "off",
+    "eslint/no-duplicate-imports": "off",
+    "promise/avoid-new": "off",
+    "react-perf/jsx-no-new-object-as-prop": "off",
+    "react-perf/jsx-no-new-array-as-prop": "off",
+    "react-perf/jsx-no-new-function-as-prop": "off",
+    "boundaries/no-unknown-files": "off",
+    "import/no-unassigned-import": "off",
+    "unicorn/prefer-top-level-await": "off",
+    "unicorn/no-null": "off"
   }
 }

@@ -1,5 +1,4 @@
-"""
-Test data factories for TraceRTM.
+"""Test data factories for TraceRTM.
 
 Factories use faker for realistic test data generation and provide
 automatic cleanup to ensure test isolation.

@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for GraphApp TUI application.
+"""Comprehensive tests for GraphApp TUI application.
 
 Tests app initialization, widget composition, database operations,
 graph data loading, visualization rendering, zoom controls, and error handling.
@@ -24,13 +23,13 @@ class TestGraphAppInitialization:
     """Test GraphApp initialization and setup."""
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_init(self, mock_config_manager):
+    def test_graph_app_init(self, mock_config_manager) -> None:
         """Test GraphApp can be initialized with proper attributes."""
         mock_config = MagicMock()
         mock_config.get.return_value = "sqlite:///test.db"
         mock_config_manager.return_value = mock_config
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
 
         assert app is not None
         assert app.project_id is None
@@ -41,13 +40,13 @@ class TestGraphAppInitialization:
         assert app.config_manager is not None
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_compose(self, mock_config_manager):
+    def test_graph_app_compose(self, mock_config_manager) -> None:
         """Test GraphApp compose method creates proper widget structure."""
         mock_config = MagicMock()
         mock_config.get.return_value = "sqlite:///test.db"
         mock_config_manager.return_value = mock_config
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
 
         # Compose returns a generator that needs app context
         # Just verify it can be called without error
@@ -55,13 +54,13 @@ class TestGraphAppInitialization:
         assert callable(app.compose)
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_bindings(self, mock_config_manager):
+    def test_graph_app_bindings(self, mock_config_manager) -> None:
         """Test GraphApp has proper key bindings configured."""
         mock_config = MagicMock()
         mock_config.get.return_value = "sqlite:///test.db"
         mock_config_manager.return_value = mock_config
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
 
         assert len(app.BINDINGS) > 0
         binding_keys = [b.key for b in app.BINDINGS]
@@ -78,7 +77,7 @@ class TestGraphAppDatabaseSetup:
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
     @patch("tracertm.tui.apps.graph.DatabaseConnection")
-    def test_setup_database_success(self, mock_db_class, mock_config_manager):
+    def test_setup_database_success(self, mock_db_class, mock_config_manager) -> None:
         """Test successful database setup."""
         mock_config = MagicMock()
         mock_config.get.return_value = "sqlite:///test.db"
@@ -87,20 +86,20 @@ class TestGraphAppDatabaseSetup:
         mock_db = MagicMock()
         mock_db_class.return_value = mock_db
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.setup_database()
 
         assert app.db is not None
         mock_db.connect.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_setup_database_no_config(self, mock_config_manager):
+    def test_setup_database_no_config(self, mock_config_manager) -> None:
         """Test database setup fails gracefully when no database configured."""
         mock_config = MagicMock()
         mock_config.get.return_value = None
         mock_config_manager.return_value = mock_config
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.exit = MagicMock()
         app.setup_database()
 
@@ -108,31 +107,29 @@ class TestGraphAppDatabaseSetup:
         assert "No database configured" in str(app.exit.call_args)
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_load_project_success(self, mock_config_manager):
+    def test_load_project_success(self, mock_config_manager) -> None:
         """Test successful project loading."""
         project_id = str(uuid4())
         mock_config = MagicMock()
-        mock_config.get.side_effect = lambda key: {
+        mock_config.get.side_effect = {
             "database_url": "sqlite:///test.db",
             "current_project_id": project_id,
-        }.get(key)
+        }.get
         mock_config_manager.return_value = mock_config
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.load_project()
 
         assert app.project_id == project_id
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_load_project_no_project(self, mock_config_manager):
+    def test_load_project_no_project(self, mock_config_manager) -> None:
         """Test project loading fails when no current project."""
         mock_config = MagicMock()
-        mock_config.get.side_effect = lambda key: {"database_url": "sqlite:///test.db", "current_project_id": None}.get(
-            key
-        )
+        mock_config.get.side_effect = {"database_url": "sqlite:///test.db", "current_project_id": None}.get
         mock_config_manager.return_value = mock_config
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.exit = MagicMock()
         app.load_project()
 
@@ -147,7 +144,7 @@ class TestGraphAppDataLoading:
     @patch("tracertm.tui.apps.graph.ConfigManager")
     @patch("tracertm.tui.apps.graph.DatabaseConnection")
     @patch("tracertm.tui.apps.graph.Session")
-    def test_load_graph_data_with_items_and_links(self, mock_session_class, mock_db_class, mock_config_manager):
+    def test_load_graph_data_with_items_and_links(self, mock_session_class, mock_db_class, mock_config_manager) -> None:
         """Test load_graph_data loads items and links."""
         project_id = str(uuid4())
         mock_config = MagicMock()
@@ -196,7 +193,7 @@ class TestGraphAppDataLoading:
         mock_session_class.return_value.__enter__.return_value = mock_session
         mock_session_class.return_value.__exit__.return_value = None
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.db = mock_db
         app.project_id = project_id
 
@@ -216,7 +213,7 @@ class TestGraphAppDataLoading:
     @patch("tracertm.tui.apps.graph.ConfigManager")
     @patch("tracertm.tui.apps.graph.DatabaseConnection")
     @patch("tracertm.tui.apps.graph.Session")
-    def test_load_graph_data_filters_invalid_links(self, mock_session_class, mock_db_class, mock_config_manager):
+    def test_load_graph_data_filters_invalid_links(self, mock_session_class, mock_db_class, mock_config_manager) -> None:
         """Test load_graph_data filters out links with missing nodes."""
         project_id = str(uuid4())
         mock_config = MagicMock()
@@ -248,7 +245,7 @@ class TestGraphAppDataLoading:
         mock_session_class.return_value.__enter__.return_value = mock_session
         mock_session_class.return_value.__exit__.return_value = None
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.db = mock_db
         app.project_id = project_id
 
@@ -258,12 +255,12 @@ class TestGraphAppDataLoading:
         assert len(app.links) == 0
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_load_graph_data_no_database(self, mock_config_manager):
+    def test_load_graph_data_no_database(self, mock_config_manager) -> None:
         """Test load_graph_data does nothing when no database."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.db = None
         app.project_id = None
 
@@ -280,7 +277,7 @@ class TestGraphAppRendering:
     @patch("tracertm.tui.apps.graph.ConfigManager")
     @patch("tracertm.tui.apps.graph.DatabaseConnection")
     @patch("tracertm.tui.apps.graph.Session")
-    def test_render_graph_displays_stats(self, mock_session_class, mock_db_class, mock_config_manager):
+    def test_render_graph_displays_stats(self, mock_session_class, mock_db_class, mock_config_manager) -> None:
         """Test render_graph displays graph statistics."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
@@ -292,7 +289,7 @@ class TestGraphAppRendering:
         item1_id = str(uuid4())
         item2_id = str(uuid4())
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.db = mock_db
         app.nodes = {item1_id: (0, 0), item2_id: (20, 5)}
         app.links = [(item1_id, item2_id)]
@@ -342,12 +339,12 @@ class TestGraphAppRendering:
         mock_link_table.clear.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_render_graph_empty(self, mock_config_manager):
+    def test_render_graph_empty(self, mock_config_manager) -> None:
         """Test render_graph handles empty graph."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.nodes = {}
         app.links = []
 
@@ -376,12 +373,12 @@ class TestGraphAppZoomControls:
     """Test zoom controls."""
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_action_zoom_in(self, mock_config_manager):
+    def test_action_zoom_in(self, mock_config_manager) -> None:
         """Test zoom in action increases zoom level."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.zoom = 1.0
         app.render_graph = MagicMock()
 
@@ -391,12 +388,12 @@ class TestGraphAppZoomControls:
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_action_zoom_in_max(self, mock_config_manager):
+    def test_action_zoom_in_max(self, mock_config_manager) -> None:
         """Test zoom in caps at maximum level."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.zoom = 5.0  # Already at max
         app.render_graph = MagicMock()
 
@@ -406,12 +403,12 @@ class TestGraphAppZoomControls:
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_action_zoom_out(self, mock_config_manager):
+    def test_action_zoom_out(self, mock_config_manager) -> None:
         """Test zoom out action decreases zoom level."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.zoom = 1.2
         app.render_graph = MagicMock()
 
@@ -421,12 +418,12 @@ class TestGraphAppZoomControls:
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_action_zoom_out_min(self, mock_config_manager):
+    def test_action_zoom_out_min(self, mock_config_manager) -> None:
         """Test zoom out caps at minimum level."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.zoom = 0.5  # Already at min
         app.render_graph = MagicMock()
 
@@ -441,12 +438,12 @@ class TestGraphAppActions:
     """Test action handlers."""
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_action_refresh(self, mock_config_manager):
+    def test_action_refresh(self, mock_config_manager) -> None:
         """Test refresh action reloads graph data."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.load_graph_data = MagicMock()
         app.render_graph = MagicMock()
 
@@ -456,12 +453,12 @@ class TestGraphAppActions:
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_action_help(self, mock_config_manager):
+    def test_action_help(self, mock_config_manager) -> None:
         """Test help action shows notification."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.notify = MagicMock()
 
         app.action_help()
@@ -476,7 +473,7 @@ class TestGraphAppCleanup:
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
     @patch("tracertm.tui.apps.graph.DatabaseConnection")
-    def test_on_unmount_closes_database(self, mock_db_class, mock_config_manager):
+    def test_on_unmount_closes_database(self, mock_db_class, mock_config_manager) -> None:
         """Test on_unmount closes database connection."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
@@ -484,7 +481,7 @@ class TestGraphAppCleanup:
         mock_db = MagicMock()
         mock_db_class.return_value = mock_db
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.db = mock_db
 
         app.on_unmount()
@@ -492,12 +489,12 @@ class TestGraphAppCleanup:
         mock_db.close.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_on_unmount_no_database(self, mock_config_manager):
+    def test_on_unmount_no_database(self, mock_config_manager) -> None:
         """Test on_unmount handles no database gracefully."""
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
         app.db = None
 
         # Should not raise error
@@ -510,14 +507,14 @@ class TestGraphAppErrorHandling:
     """Test error handling scenarios."""
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_handles_missing_textual(self, mock_config_manager):
+    def test_handles_missing_textual(self, mock_config_manager) -> None:
         """Test graph app handles missing Textual dependency."""
         # This test validates the import guard works
         assert TEXTUAL_AVAILABLE is True  # In test environment
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
     @patch("tracertm.tui.apps.graph.DatabaseConnection")
-    def test_handles_database_connection_error(self, mock_db_class, mock_config_manager):
+    def test_handles_database_connection_error(self, mock_db_class, mock_config_manager) -> None:
         """Test handling database connection errors."""
         mock_config = MagicMock()
         mock_config.get.return_value = "invalid://url"
@@ -527,7 +524,7 @@ class TestGraphAppErrorHandling:
         mock_db.connect.side_effect = Exception("Connection failed")
         mock_db_class.return_value = mock_db
 
-        app = cast(Any, GraphApp())
+        app = cast("Any", GraphApp())
 
         with pytest.raises(Exception, match=r"Connection failed"):
             app.setup_database()

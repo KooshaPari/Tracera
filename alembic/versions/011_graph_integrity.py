@@ -154,7 +154,7 @@ def upgrade() -> None:
         CREATE UNIQUE INDEX IF NOT EXISTS idx_item_views_primary
         ON item_views (item_id)
         WHERE is_primary = true;
-        """
+        """,
     )
 
     # Backfill node_kind_id if missing
@@ -173,7 +173,7 @@ def upgrade() -> None:
         LEFT JOIN node_kinds nk
           ON nk.project_id = i.project_id AND nk.name = COALESCE(NULLIF(i.item_type, ''), 'unknown')
         WHERE nk.id IS NULL;
-        """
+        """,
     )
     op.execute(
         """
@@ -183,7 +183,7 @@ def upgrade() -> None:
         WHERE i.node_kind_id IS NULL
           AND nk.project_id = i.project_id
           AND nk.name = COALESCE(NULLIF(i.item_type, ''), 'unknown');
-        """
+        """,
     )
 
     # Backfill links.graph_id for any remaining NULLs
@@ -197,7 +197,7 @@ def upgrade() -> None:
         JOIN graphs g ON g.project_id = i.project_id AND g.graph_type = v.name
         WHERE l.graph_id IS NULL
           AND l.source_item_id = i.id;
-        """
+        """,
     )
 
     # Ensure all links have graph_id, create fallback graph per project if needed
@@ -219,7 +219,7 @@ def upgrade() -> None:
         FROM projects p
         LEFT JOIN graphs g ON g.project_id = p.id AND g.graph_type = 'default'
         WHERE g.id IS NULL;
-        """
+        """,
     )
     op.execute(
         """
@@ -229,7 +229,7 @@ def upgrade() -> None:
         WHERE l.graph_id IS NULL
           AND g.project_id = l.project_id
           AND g.graph_type = 'default';
-        """
+        """,
     )
 
     # Enforce NOT NULL on links.graph_id and items.node_kind_id
@@ -255,7 +255,7 @@ def upgrade() -> None:
             now(),
             now()
         FROM distinct_graph_types d;
-        """
+        """,
     )
 
     # Seed edge_types registry from existing links
@@ -277,7 +277,7 @@ def upgrade() -> None:
             now(),
             now()
         FROM distinct_edge_types d;
-        """
+        """,
     )
 
     # Seed node_kind_rules default allow-all
@@ -296,7 +296,7 @@ def upgrade() -> None:
         FROM node_kinds nk
         LEFT JOIN node_kind_rules nkr ON nkr.node_kind_id = nk.id
         WHERE nkr.id IS NULL;
-        """
+        """,
     )
 
     # Create graph_edges view for fast projection reads
@@ -314,7 +314,7 @@ def upgrade() -> None:
             l.created_at,
             l.updated_at
         FROM links l;
-        """
+        """,
     )
 
     # Denormalization triggers to keep items.view and items.item_type in sync
@@ -338,7 +338,7 @@ def upgrade() -> None:
             RETURN NEW;
         END;
         $$ LANGUAGE plpgsql;
-        """
+        """,
     )
 
     op.execute(
@@ -347,7 +347,7 @@ def upgrade() -> None:
         CREATE TRIGGER trg_items_sync_denorm
         BEFORE INSERT OR UPDATE ON items
         FOR EACH ROW EXECUTE FUNCTION sync_item_denorm_fields();
-        """
+        """,
     )
 
     op.execute(
@@ -362,7 +362,7 @@ def upgrade() -> None:
             RETURN NEW;
         END;
         $$ LANGUAGE plpgsql;
-        """
+        """,
     )
 
     op.execute(
@@ -371,7 +371,7 @@ def upgrade() -> None:
         CREATE TRIGGER trg_item_views_sync
         AFTER INSERT OR UPDATE ON item_views
         FOR EACH ROW EXECUTE FUNCTION sync_item_view_from_item_views();
-        """
+        """,
     )
 
 

@@ -3,15 +3,24 @@
 Tests that models survive JSON roundtrips and that serialization is deterministic.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from typing import Any
 
 import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from tracertm.schemas.account import AccountCreate
+from tracertm.schemas.event import EventCreate
 from tracertm.schemas.item import ItemCreate, ItemResponse, ItemUpdate
 from tracertm.schemas.link import LinkCreate, LinkResponse
+from tracertm.schemas.problem import (
+    ImpactLevel,
+    ProblemCreate,
+    ProblemStatus,
+    ProblemStatusTransition,
+)
+from tracertm.schemas.process import ProcessCreate
 from tracertm.schemas.specification import (
     ADRCreate,
     ADROption,
@@ -22,22 +31,18 @@ from tracertm.schemas.specification import (
     FeatureStatus,
     StateTransition,
 )
-from tracertm.schemas.event import EventCreate
-from tracertm.schemas.problem import (
-    ImpactLevel,
-    ProblemCreate,
-    ProblemStatusTransition,
-    ProblemStatus,
-)
 from tracertm.schemas.test_case import (
     TestCaseCreate as TCCreate,
+)
+from tracertm.schemas.test_case import (
     TestCasePriority as TCPriority,
+)
+from tracertm.schemas.test_case import (
     TestCaseType as TCType,
+)
+from tracertm.schemas.test_case import (
     TestStep as TStep,
 )
-from tracertm.schemas.account import AccountCreate
-from tracertm.schemas.process import ProcessCreate
-
 
 # ---------------------------------------------------------------------------
 # Strategies
@@ -68,7 +73,7 @@ uuid_st = st.uuids().map(str)
 item_status_st = st.sampled_from(["todo", "in_progress", "done", "blocked"])
 view_st = st.sampled_from(["FEATURE", "CODE", "TEST", "API", "DESIGN", "REQUIREMENT"])
 
-now = datetime.now(tz=timezone.utc)
+now = datetime.now(tz=UTC)
 
 
 # ---------------------------------------------------------------------------
@@ -89,7 +94,7 @@ class TestItemRoundtrip:
     )
     @settings(max_examples=100)
     def test_item_create_roundtrip(
-        self, title: str, description: str | None, view: str, status: str, metadata: dict[str, Any]
+        self, title: str, description: str | None, view: str, status: str, metadata: dict[str, Any],
     ) -> None:
         """ItemCreate survives JSON serialization roundtrip."""
         original = ItemCreate(
@@ -114,7 +119,7 @@ class TestItemRoundtrip:
     )
     @settings(max_examples=100)
     def test_item_update_roundtrip(
-        self, title: str | None, status: str | None, metadata: dict[str, Any] | None
+        self, title: str | None, status: str | None, metadata: dict[str, Any] | None,
     ) -> None:
         """ItemUpdate roundtrip preserves all optional fields."""
         original = ItemUpdate(title=title, status=status, metadata=metadata)
@@ -150,7 +155,7 @@ class TestLinkRoundtrip:
     )
     @settings(max_examples=100)
     def test_link_create_roundtrip(
-        self, source_item_id: str, target_item_id: str, link_type: str, metadata: dict[str, Any]
+        self, source_item_id: str, target_item_id: str, link_type: str, metadata: dict[str, Any],
     ) -> None:
         """LinkCreate survives JSON roundtrip."""
         original = LinkCreate(

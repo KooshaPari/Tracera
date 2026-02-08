@@ -1,5 +1,4 @@
-"""
-Tests for ExecutionRepository, ExecutionArtifactRepository, and ExecutionEnvironmentConfigRepository.
+"""Tests for ExecutionRepository, ExecutionArtifactRepository, and ExecutionEnvironmentConfigRepository.
 
 Comprehensive tests covering execution tracking, artifacts, and environment configuration.
 """
@@ -60,7 +59,7 @@ class TestExecutionCreate:
     """Tests for ExecutionRepository.create."""
 
     @pytest.mark.asyncio
-    async def test_create_minimal(self, project_setup):
+    async def test_create_minimal(self, project_setup) -> None:
         """Test creating an execution with minimal fields."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -80,7 +79,7 @@ class TestExecutionCreate:
         assert execution.status == "pending"
 
     @pytest.mark.asyncio
-    async def test_create_with_all_fields(self, project_setup):
+    async def test_create_with_all_fields(self, project_setup) -> None:
         """Test creating an execution with all optional fields."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -102,7 +101,7 @@ class TestExecutionCreate:
         assert execution.config == {"browser": "chromium", "headless": True}
 
     @pytest.mark.asyncio
-    async def test_create_different_types(self, project_setup):
+    async def test_create_different_types(self, project_setup) -> None:
         """Test creating executions with different types."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -118,7 +117,7 @@ class TestExecutionCreate:
             assert execution.execution_type == exec_type
 
     @pytest.mark.asyncio
-    async def test_create_different_trigger_sources(self, project_setup):
+    async def test_create_different_trigger_sources(self, project_setup) -> None:
         """Test creating executions with different trigger sources."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -138,7 +137,7 @@ class TestExecutionGetById:
     """Tests for ExecutionRepository.get_by_id."""
 
     @pytest.mark.asyncio
-    async def test_get_by_id_found(self, execution_setup):
+    async def test_get_by_id_found(self, execution_setup) -> None:
         """Test getting an execution by ID."""
         repo = execution_setup["repo"]
         execution = execution_setup["execution"]
@@ -150,7 +149,7 @@ class TestExecutionGetById:
         assert result.execution_type == execution.execution_type
 
     @pytest.mark.asyncio
-    async def test_get_by_id_not_found(self, execution_setup):
+    async def test_get_by_id_not_found(self, execution_setup) -> None:
         """Test getting a non-existent execution."""
         repo = execution_setup["repo"]
 
@@ -163,7 +162,7 @@ class TestExecutionListByProject:
     """Tests for ExecutionRepository.list_by_project."""
 
     @pytest.mark.asyncio
-    async def test_list_by_project_empty(self, project_setup):
+    async def test_list_by_project_empty(self, project_setup) -> None:
         """Test listing executions for project with no executions."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -174,7 +173,7 @@ class TestExecutionListByProject:
         assert executions == []
 
     @pytest.mark.asyncio
-    async def test_list_by_project_multiple(self, project_setup):
+    async def test_list_by_project_multiple(self, project_setup) -> None:
         """Test listing multiple executions."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -193,7 +192,7 @@ class TestExecutionListByProject:
         assert len(executions) == 5
 
     @pytest.mark.asyncio
-    async def test_list_by_project_filter_status(self, project_setup):
+    async def test_list_by_project_filter_status(self, project_setup) -> None:
         """Test filtering executions by status."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -212,7 +211,7 @@ class TestExecutionListByProject:
         assert executions[0].id == exec1.id
 
     @pytest.mark.asyncio
-    async def test_list_by_project_filter_type(self, project_setup):
+    async def test_list_by_project_filter_type(self, project_setup) -> None:
         """Test filtering executions by type."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -227,7 +226,7 @@ class TestExecutionListByProject:
         assert len(executions) == 2
 
     @pytest.mark.asyncio
-    async def test_list_by_project_pagination(self, project_setup):
+    async def test_list_by_project_pagination(self, project_setup) -> None:
         """Test pagination of execution list."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -255,7 +254,7 @@ class TestExecutionUpdateStatus:
     """Tests for ExecutionRepository.update_status."""
 
     @pytest.mark.asyncio
-    async def test_update_status_simple(self, execution_setup):
+    async def test_update_status_simple(self, execution_setup) -> None:
         """Test updating execution status."""
         repo = execution_setup["repo"]
         execution = execution_setup["execution"]
@@ -266,7 +265,7 @@ class TestExecutionUpdateStatus:
         assert result.status == "running"
 
     @pytest.mark.asyncio
-    async def test_update_status_with_container_info(self, execution_setup):
+    async def test_update_status_with_container_info(self, execution_setup) -> None:
         """Test updating status with container information."""
         repo = execution_setup["repo"]
         execution = execution_setup["execution"]
@@ -283,7 +282,7 @@ class TestExecutionUpdateStatus:
         assert result.container_image == "node:20-alpine"
 
     @pytest.mark.asyncio
-    async def test_update_status_with_timing(self, execution_setup):
+    async def test_update_status_with_timing(self, execution_setup) -> None:
         """Test updating status with timing information."""
         repo = execution_setup["repo"]
         execution = execution_setup["execution"]
@@ -300,7 +299,7 @@ class TestExecutionUpdateStatus:
         assert result.started_at is not None
 
     @pytest.mark.asyncio
-    async def test_update_status_completed(self, execution_setup):
+    async def test_update_status_completed(self, execution_setup) -> None:
         """Test updating to completed status with all fields."""
         repo = execution_setup["repo"]
         execution = execution_setup["execution"]
@@ -322,7 +321,7 @@ class TestExecutionUpdateStatus:
         assert result.output_summary == "All tests passed successfully"
 
     @pytest.mark.asyncio
-    async def test_update_status_failed(self, execution_setup):
+    async def test_update_status_failed(self, execution_setup) -> None:
         """Test updating to failed status with error message."""
         repo = execution_setup["repo"]
         execution = execution_setup["execution"]
@@ -339,7 +338,7 @@ class TestExecutionUpdateStatus:
         assert "Test assertion failed" in result.error_message
 
     @pytest.mark.asyncio
-    async def test_update_status_not_found(self, execution_setup):
+    async def test_update_status_not_found(self, execution_setup) -> None:
         """Test updating status for non-existent execution."""
         repo = execution_setup["repo"]
 
@@ -355,7 +354,7 @@ class TestArtifactCreate:
     """Tests for ExecutionArtifactRepository.create."""
 
     @pytest.mark.asyncio
-    async def test_create_minimal(self, execution_setup):
+    async def test_create_minimal(self, execution_setup) -> None:
         """Test creating an artifact with minimal fields."""
         session = execution_setup["session"]
         execution = execution_setup["execution"]
@@ -376,7 +375,7 @@ class TestArtifactCreate:
         assert artifact.file_path == "/artifacts/screenshot.png"
 
     @pytest.mark.asyncio
-    async def test_create_with_all_fields(self, execution_setup):
+    async def test_create_with_all_fields(self, execution_setup) -> None:
         """Test creating an artifact with all fields."""
         session = execution_setup["session"]
         execution = execution_setup["execution"]
@@ -402,7 +401,7 @@ class TestArtifactCreate:
         assert artifact.artifact_metadata == {"duration": 30.5, "resolution": "1920x1080"}
 
     @pytest.mark.asyncio
-    async def test_create_different_types(self, execution_setup):
+    async def test_create_different_types(self, execution_setup) -> None:
         """Test creating artifacts with different types."""
         session = execution_setup["session"]
         execution = execution_setup["execution"]
@@ -424,7 +423,7 @@ class TestArtifactGetById:
     """Tests for ExecutionArtifactRepository.get_by_id."""
 
     @pytest.mark.asyncio
-    async def test_get_by_id_found(self, execution_setup):
+    async def test_get_by_id_found(self, execution_setup) -> None:
         """Test getting an artifact by ID."""
         session = execution_setup["session"]
         execution = execution_setup["execution"]
@@ -444,7 +443,7 @@ class TestArtifactGetById:
         assert result.id == artifact.id
 
     @pytest.mark.asyncio
-    async def test_get_by_id_not_found(self, execution_setup):
+    async def test_get_by_id_not_found(self, execution_setup) -> None:
         """Test getting a non-existent artifact."""
         session = execution_setup["session"]
         repo = ExecutionArtifactRepository(session)
@@ -458,7 +457,7 @@ class TestArtifactListByExecution:
     """Tests for ExecutionArtifactRepository.list_by_execution."""
 
     @pytest.mark.asyncio
-    async def test_list_by_execution_empty(self, execution_setup):
+    async def test_list_by_execution_empty(self, execution_setup) -> None:
         """Test listing artifacts when none exist."""
         session = execution_setup["session"]
         execution = execution_setup["execution"]
@@ -469,7 +468,7 @@ class TestArtifactListByExecution:
         assert artifacts == []
 
     @pytest.mark.asyncio
-    async def test_list_by_execution_multiple(self, execution_setup):
+    async def test_list_by_execution_multiple(self, execution_setup) -> None:
         """Test listing multiple artifacts."""
         session = execution_setup["session"]
         execution = execution_setup["execution"]
@@ -489,7 +488,7 @@ class TestArtifactListByExecution:
         assert len(artifacts) == 5
 
     @pytest.mark.asyncio
-    async def test_list_by_execution_filter_type(self, execution_setup):
+    async def test_list_by_execution_filter_type(self, execution_setup) -> None:
         """Test filtering artifacts by type."""
         session = execution_setup["session"]
         execution = execution_setup["execution"]
@@ -527,7 +526,7 @@ class TestConfigGetByProject:
     """Tests for ExecutionEnvironmentConfigRepository.get_by_project."""
 
     @pytest.mark.asyncio
-    async def test_get_by_project_not_found(self, project_setup):
+    async def test_get_by_project_not_found(self, project_setup) -> None:
         """Test getting config when none exists."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -538,7 +537,7 @@ class TestConfigGetByProject:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_get_by_project_found(self, project_setup):
+    async def test_get_by_project_found(self, project_setup) -> None:
         """Test getting existing config."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -557,7 +556,7 @@ class TestConfigCreateOrUpdate:
     """Tests for ExecutionEnvironmentConfigRepository.create_or_update."""
 
     @pytest.mark.asyncio
-    async def test_create_new_config(self, project_setup):
+    async def test_create_new_config(self, project_setup) -> None:
         """Test creating a new config."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -575,7 +574,7 @@ class TestConfigCreateOrUpdate:
         assert config.codex_enabled is True
 
     @pytest.mark.asyncio
-    async def test_create_with_custom_values(self, project_setup):
+    async def test_create_with_custom_values(self, project_setup) -> None:
         """Test creating config with custom values."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -595,7 +594,7 @@ class TestConfigCreateOrUpdate:
         assert config.max_concurrent_executions == 5
 
     @pytest.mark.asyncio
-    async def test_update_existing_config(self, project_setup):
+    async def test_update_existing_config(self, project_setup) -> None:
         """Test updating an existing config."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -621,7 +620,7 @@ class TestConfigCreateOrUpdate:
         assert config2.vhs_enabled is False
 
     @pytest.mark.asyncio
-    async def test_update_preserves_unmodified_fields(self, project_setup):
+    async def test_update_preserves_unmodified_fields(self, project_setup) -> None:
         """Test that update preserves fields not specified."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -645,7 +644,7 @@ class TestConfigCreateOrUpdate:
         assert config.playwright_browser == "firefox"
 
     @pytest.mark.asyncio
-    async def test_update_all_settings_categories(self, project_setup):
+    async def test_update_all_settings_categories(self, project_setup) -> None:
         """Test updating settings from all categories."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -685,7 +684,7 @@ class TestConfigCreateOrUpdate:
         assert config.max_concurrent_executions == 10
 
     @pytest.mark.asyncio
-    async def test_create_with_invalid_kwargs_ignored(self, project_setup):
+    async def test_create_with_invalid_kwargs_ignored(self, project_setup) -> None:
         """Test that invalid kwargs are silently ignored during create."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -708,7 +707,7 @@ class TestConfigCreateOrUpdate:
         assert not hasattr(config, "nonexistent_field") or getattr(config, "nonexistent_field", None) is None
 
     @pytest.mark.asyncio
-    async def test_update_with_invalid_kwargs_ignored(self, project_setup):
+    async def test_update_with_invalid_kwargs_ignored(self, project_setup) -> None:
         """Test that invalid kwargs are silently ignored during update."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -736,7 +735,7 @@ class TestConfigCreateOrUpdate:
         # Invalid fields should not cause errors
 
     @pytest.mark.asyncio
-    async def test_create_with_only_invalid_kwargs(self, project_setup):
+    async def test_create_with_only_invalid_kwargs(self, project_setup) -> None:
         """Test creating config with only invalid kwargs still creates a valid config."""
         session = project_setup["session"]
         project = project_setup["project"]
@@ -755,7 +754,7 @@ class TestConfigCreateOrUpdate:
         assert config.docker_image == "node:20-alpine"  # Default value
 
     @pytest.mark.asyncio
-    async def test_update_with_only_invalid_kwargs(self, project_setup):
+    async def test_update_with_only_invalid_kwargs(self, project_setup) -> None:
         """Test updating config with only invalid kwargs doesn't change valid fields."""
         session = project_setup["session"]
         project = project_setup["project"]

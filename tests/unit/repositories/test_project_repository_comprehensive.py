@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for ProjectRepository to achieve 85%+ coverage.
+"""Comprehensive unit tests for ProjectRepository to achieve 85%+ coverage.
 
 This file covers all missing functionality identified in coverage analysis:
 - create() with metadata handling
@@ -29,12 +28,12 @@ def unique_project_name() -> str:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_with_metadata(db_session: AsyncSession):
+async def test_create_with_metadata(db_session: AsyncSession) -> None:
     """Test creating project with metadata."""
     repo = ProjectRepository(db_session)
 
     project = await repo.create(
-        name=unique_project_name(), description="Test description", metadata={"env": "test", "version": "1.0"}
+        name=unique_project_name(), description="Test description", metadata={"env": "test", "version": "1.0"},
     )
 
     assert project.id is not None
@@ -45,7 +44,7 @@ async def test_create_with_metadata(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_without_metadata(db_session: AsyncSession):
+async def test_create_without_metadata(db_session: AsyncSession) -> None:
     """Test creating project without metadata uses empty dict."""
     repo = ProjectRepository(db_session)
 
@@ -56,7 +55,7 @@ async def test_create_without_metadata(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_with_none_metadata(db_session: AsyncSession):
+async def test_create_with_none_metadata(db_session: AsyncSession) -> None:
     """Test creating project with None metadata uses empty dict."""
     repo = ProjectRepository(db_session)
 
@@ -67,7 +66,7 @@ async def test_create_with_none_metadata(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_without_description(db_session: AsyncSession):
+async def test_create_without_description(db_session: AsyncSession) -> None:
     """Test creating project without description."""
     repo = ProjectRepository(db_session)
 
@@ -84,7 +83,7 @@ async def test_create_without_description(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_existing_project(db_session: AsyncSession):
+async def test_get_by_id_existing_project(db_session: AsyncSession) -> None:
     """Test get_by_id returns project when it exists."""
     repo = ProjectRepository(db_session)
 
@@ -99,7 +98,7 @@ async def test_get_by_id_existing_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_nonexistent_project(db_session: AsyncSession):
+async def test_get_by_id_nonexistent_project(db_session: AsyncSession) -> None:
     """Test get_by_id returns None when project doesn't exist."""
     repo = ProjectRepository(db_session)
 
@@ -114,7 +113,7 @@ async def test_get_by_id_nonexistent_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_name_existing_project(db_session: AsyncSession):
+async def test_get_by_name_existing_project(db_session: AsyncSession) -> None:
     """Test get_by_name returns project when it exists."""
     repo = ProjectRepository(db_session)
 
@@ -130,7 +129,7 @@ async def test_get_by_name_existing_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_name_nonexistent_project(db_session: AsyncSession):
+async def test_get_by_name_nonexistent_project(db_session: AsyncSession) -> None:
     """Test get_by_name returns None when project doesn't exist."""
     repo = ProjectRepository(db_session)
 
@@ -140,7 +139,7 @@ async def test_get_by_name_nonexistent_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_name_case_sensitive(db_session: AsyncSession):
+async def test_get_by_name_case_sensitive(db_session: AsyncSession) -> None:
     """Test get_by_name is case sensitive."""
     repo = ProjectRepository(db_session)
 
@@ -160,7 +159,7 @@ async def test_get_by_name_case_sensitive(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_all_returns_all_projects(db_session: AsyncSession):
+async def test_get_all_returns_all_projects(db_session: AsyncSession) -> None:
     """Test get_all returns all projects."""
     repo = ProjectRepository(db_session)
 
@@ -181,7 +180,7 @@ async def test_get_all_returns_all_projects(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_all_empty_when_no_projects(db_session: AsyncSession):
+async def test_get_all_empty_when_no_projects(db_session: AsyncSession) -> None:
     """Test get_all returns empty list when no projects exist."""
     repo = ProjectRepository(db_session)
 
@@ -197,12 +196,12 @@ async def test_get_all_empty_when_no_projects(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_name_only(db_session: AsyncSession):
+async def test_update_name_only(db_session: AsyncSession) -> None:
     """Test update with name only."""
     repo = ProjectRepository(db_session)
 
     project = await repo.create(
-        name=unique_project_name(), description="Original description", metadata={"key": "value"}
+        name=unique_project_name(), description="Original description", metadata={"key": "value"},
     )
     await db_session.commit()
 
@@ -216,12 +215,12 @@ async def test_update_name_only(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_description_only(db_session: AsyncSession):
+async def test_update_description_only(db_session: AsyncSession) -> None:
     """Test update with description only."""
     repo = ProjectRepository(db_session)
 
     project = await repo.create(
-        name=unique_project_name(), description="Original description", metadata={"key": "value"}
+        name=unique_project_name(), description="Original description", metadata={"key": "value"},
     )
     await db_session.commit()
 
@@ -235,12 +234,12 @@ async def test_update_description_only(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_metadata_only(db_session: AsyncSession):
+async def test_update_metadata_only(db_session: AsyncSession) -> None:
     """Test update with metadata only."""
     repo = ProjectRepository(db_session)
 
     project = await repo.create(
-        name=unique_project_name(), description="Original description", metadata={"key": "value"}
+        name=unique_project_name(), description="Original description", metadata={"key": "value"},
     )
     await db_session.commit()
 
@@ -254,17 +253,17 @@ async def test_update_metadata_only(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_all_fields(db_session: AsyncSession):
+async def test_update_all_fields(db_session: AsyncSession) -> None:
     """Test update with all fields."""
     repo = ProjectRepository(db_session)
 
     project = await repo.create(
-        name=unique_project_name(), description="Original description", metadata={"key": "value"}
+        name=unique_project_name(), description="Original description", metadata={"key": "value"},
     )
     await db_session.commit()
 
     updated = await repo.update(
-        project.id, name="Updated Name", description="Updated description", metadata={"new_key": "new_value"}
+        project.id, name="Updated Name", description="Updated description", metadata={"new_key": "new_value"},
     )
 
     assert updated is not None
@@ -275,7 +274,7 @@ async def test_update_all_fields(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_nonexistent_project_returns_none(db_session: AsyncSession):
+async def test_update_nonexistent_project_returns_none(db_session: AsyncSession) -> None:
     """Test update returns None when project doesn't exist."""
     repo = ProjectRepository(db_session)
 
@@ -286,12 +285,12 @@ async def test_update_nonexistent_project_returns_none(db_session: AsyncSession)
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_with_none_values_preserves_existing(db_session: AsyncSession):
+async def test_update_with_none_values_preserves_existing(db_session: AsyncSession) -> None:
     """Test update with None values preserves existing fields."""
     repo = ProjectRepository(db_session)
 
     project = await repo.create(
-        name=unique_project_name(), description="Original description", metadata={"key": "value"}
+        name=unique_project_name(), description="Original description", metadata={"key": "value"},
     )
     await db_session.commit()
 
@@ -311,7 +310,7 @@ async def test_update_with_none_values_preserves_existing(db_session: AsyncSessi
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_metadata_replaces_entire_dict(db_session: AsyncSession):
+async def test_update_metadata_replaces_entire_dict(db_session: AsyncSession) -> None:
     """Test update metadata replaces entire dict, not merges."""
     repo = ProjectRepository(db_session)
 
@@ -330,7 +329,7 @@ async def test_update_metadata_replaces_entire_dict(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_empty_metadata(db_session: AsyncSession):
+async def test_update_empty_metadata(db_session: AsyncSession) -> None:
     """Test update with empty metadata dict."""
     repo = ProjectRepository(db_session)
 
@@ -346,7 +345,7 @@ async def test_update_empty_metadata(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_description_to_none(db_session: AsyncSession):
+async def test_update_description_to_none(db_session: AsyncSession) -> None:
     """Test update can set description to None."""
     repo = ProjectRepository(db_session)
 

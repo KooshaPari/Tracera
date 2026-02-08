@@ -41,7 +41,7 @@ class MetricsHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(metrics)
         except Exception as e:
-            logger.error(f"Error exporting metrics: {e}")
+            logger.exception("Error exporting metrics: %s", e)
             self.send_response(500)
             self.end_headers()
             self.wfile.write(f"Error: {e}".encode())
@@ -61,7 +61,7 @@ class MetricsHandler(BaseHTTPRequestHandler):
 class MetricsServer:
     """HTTP server for exposing Prometheus metrics."""
 
-    def __init__(self, host: str = "0.0.0.0", port: int = 9090):  # noqa: S104 listen all by default
+    def __init__(self, host: str = "0.0.0.0", port: int = 9090) -> None:  # noqa: S104 listen all by default
         """Initialize metrics server.
 
         Args:
@@ -93,10 +93,10 @@ class MetricsServer:
             ):
                 logger.warning("Metrics server port already in use during tests; continuing without metrics")
                 return
-            logger.error(f"Failed to start metrics server: {e}")
+            logger.exception("Failed to start metrics server: %s", e)
             raise
         except Exception as e:
-            logger.error(f"Failed to start metrics server: {e}")
+            logger.exception("Failed to start metrics server: %s", e)
             raise
 
     def _clear_port(self) -> None:
@@ -110,7 +110,7 @@ class MetricsServer:
                         logger.warning(f"Clearing existing metrics server process (PID {pid}) on port {self.port}")
                         subprocess.run(["kill", "-9", pid], check=False)
         except Exception as e:
-            logger.debug(f"Port clearing skipped: {e}")
+            logger.debug("Port clearing skipped: %s", e)
 
     def stop(self) -> None:
         """Stop the metrics server."""
@@ -124,7 +124,7 @@ class MetricsServer:
             self.thread = None
             logger.info("Metrics server stopped")
         except Exception as e:
-            logger.error(f"Error stopping metrics server: {e}")
+            logger.exception("Error stopping metrics server: %s", e)
             raise
 
     def is_running(self) -> bool:

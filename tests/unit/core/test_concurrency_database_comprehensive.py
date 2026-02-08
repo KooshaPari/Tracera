@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for concurrency and database connection modules.
+"""Comprehensive tests for concurrency and database connection modules.
 
 Focuses on:
 - Advanced concurrency patterns (thread safety, race conditions)
@@ -13,6 +12,7 @@ Focuses on:
 
 import asyncio
 import threading
+from typing import Never
 
 import pytest
 from sqlalchemy import text
@@ -30,7 +30,7 @@ class TestConcurrencyThreadSafety:
     """Test thread safety of concurrency utilities."""
 
     @pytest.mark.asyncio
-    async def test_concurrent_retry_operations(self):
+    async def test_concurrent_retry_operations(self) -> None:
         """Test multiple concurrent retry operations don't interfere."""
         success_count = 0
         lock = asyncio.Lock()
@@ -50,18 +50,19 @@ class TestConcurrencyThreadSafety:
         assert sorted(results) == list(range(1, 21))
 
     @pytest.mark.asyncio
-    async def test_concurrent_failures_and_retries(self):
+    async def test_concurrent_failures_and_retries(self) -> None:
         """Test concurrent operations with mixed failures and retries."""
         call_counts = {}
         lock = asyncio.Lock()
 
-        async def operation_with_id(op_id: int):
+        async def operation_with_id(op_id: int) -> str:
             async with lock:
                 call_counts[op_id] = call_counts.get(op_id, 0) + 1
                 count = call_counts[op_id]
 
             if count < 2:
-                raise ConcurrencyError(f"Operation {op_id} retry {count}")
+                msg = f"Operation {op_id} retry {count}"
+                raise ConcurrencyError(msg)
             return f"success_{op_id}"
 
         # Run 10 concurrent operations, each requiring 2 attempts
@@ -75,7 +76,7 @@ class TestConcurrencyThreadSafety:
         assert all(count >= 2 for count in call_counts.values())
 
     @pytest.mark.asyncio
-    async def test_race_condition_with_shared_state(self):
+    async def test_race_condition_with_shared_state(self) -> None:
         """Test handling race conditions with shared state."""
         shared_counter = {"value": 0, "version": 0}
         lock = asyncio.Lock()
@@ -94,7 +95,8 @@ class TestConcurrencyThreadSafety:
             async with lock:
                 if shared_counter["version"] != current_version:
                     conflicts["count"] += 1
-                    raise ConcurrencyError("Version mismatch")
+                    msg = "Version mismatch"
+                    raise ConcurrencyError(msg)
 
                 shared_counter["value"] = current_value + 1
                 shared_counter["version"] += 1
@@ -118,10 +120,10 @@ class TestConcurrencyTimeouts:
     """Test timeout handling in concurrent operations."""
 
     @pytest.mark.asyncio
-    async def test_operation_timeout(self):
+    async def test_operation_timeout(self) -> None:
         """Test operation that times out."""
 
-        async def slow_operation():
+        async def slow_operation() -> str:
             await asyncio.sleep(10)
             return "never_completes"
 
@@ -129,33 +131,34 @@ class TestConcurrencyTimeouts:
             await asyncio.wait_for(update_with_retry(slow_operation), timeout=0.1)
 
     @pytest.mark.asyncio
-    async def test_retry_with_timeout(self):
+    async def test_retry_with_timeout(self) -> None:
         """Test retry operations respect timeout."""
         call_count = 0
 
-        async def operation_with_delays():
+        async def operation_with_delays() -> Never:
             nonlocal call_count
             call_count += 1
             await asyncio.sleep(0.05)
-            raise ConcurrencyError("Still failing")
+            msg = "Still failing"
+            raise ConcurrencyError(msg)
 
         with pytest.raises(asyncio.TimeoutError):
             await asyncio.wait_for(
-                update_with_retry(operation_with_delays, max_retries=10, base_delay=0.05), timeout=0.2
+                update_with_retry(operation_with_delays, max_retries=10, base_delay=0.05), timeout=0.2,
             )
 
         # Should have attempted at least once
         assert call_count >= 1
 
     @pytest.mark.asyncio
-    async def test_concurrent_operations_with_timeout(self):
+    async def test_concurrent_operations_with_timeout(self) -> None:
         """Test multiple concurrent operations with timeout."""
 
-        async def fast_operation(op_id: int):
+        async def fast_operation(op_id: int) -> str:
             await asyncio.sleep(0.01)
             return f"result_{op_id}"
 
-        async def slow_operation(op_id: int):
+        async def slow_operation(op_id: int) -> str:
             await asyncio.sleep(1)
             return f"slow_{op_id}"
 
@@ -176,15 +179,16 @@ class TestConcurrencyCancellation:
     """Test cancellation of concurrent operations."""
 
     @pytest.mark.asyncio
-    async def test_cancel_during_retry(self):
+    async def test_cancel_during_retry(self) -> None:
         """Test cancelling operation during retry backoff."""
         call_count = 0
 
-        async def failing_operation():
+        async def failing_operation() -> Never:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
-            raise ConcurrencyError("Always fails")
+            msg = "Always fails"
+            raise ConcurrencyError(msg)
 
         task = asyncio.create_task(update_with_retry(failing_operation, max_retries=10, base_delay=0.1))
 
@@ -199,10 +203,10 @@ class TestConcurrencyCancellation:
         assert call_count <= 3
 
     @pytest.mark.asyncio
-    async def test_cancel_multiple_operations(self):
+    async def test_cancel_multiple_operations(self) -> None:
         """Test cancelling multiple concurrent operations."""
 
-        async def long_running_operation(op_id: int):
+        async def long_running_operation(op_id: int) -> str:
             await asyncio.sleep(10)
             return f"completed_{op_id}"
 
@@ -228,7 +232,7 @@ class TestConcurrencyCancellation:
 class TestDatabaseConnectionPool:
     """Test database connection pooling."""
 
-    def test_pool_configuration(self, tmp_path):
+    def test_pool_configuration(self, tmp_path) -> None:
         """Test pool is configured with correct parameters."""
         db_path = tmp_path / "pool_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -239,7 +243,7 @@ class TestDatabaseConnectionPool:
         # Pool should have connections available
         assert engine.pool.size() >= 0
 
-    def test_pool_checkout_and_return(self, tmp_path):
+    def test_pool_checkout_and_return(self, tmp_path) -> None:
         """Test checking out and returning connections."""
         db_path = tmp_path / "pool_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -262,7 +266,7 @@ class TestDatabaseConnectionPool:
         conn2.close()
         assert engine.pool.checkedout() == initial_checked_out
 
-    def test_pool_reuses_connections(self, tmp_path):
+    def test_pool_reuses_connections(self, tmp_path) -> None:
         """Test pool reuses connections efficiently."""
         db_path = tmp_path / "pool_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -279,7 +283,7 @@ class TestDatabaseConnectionPool:
         # This is implementation-dependent, so we just verify connections work
         assert len(connection_ids) == 5
 
-    def test_pool_concurrent_access(self, tmp_path):
+    def test_pool_concurrent_access(self, tmp_path) -> None:
         """Test concurrent access to connection pool."""
         db_path = tmp_path / "pool_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -288,7 +292,7 @@ class TestDatabaseConnectionPool:
         results = []
         errors = []
 
-        def use_connection(thread_id: int):
+        def use_connection(thread_id: int) -> None:
             try:
                 conn = engine.connect()
                 result = conn.execute(text("SELECT :id"), {"id": thread_id})
@@ -316,7 +320,7 @@ class TestDatabaseConnectionPool:
 class TestDatabaseConnectionPoolExhaustion:
     """Test connection pool exhaustion scenarios."""
 
-    def test_pool_with_many_concurrent_sessions(self, tmp_path):
+    def test_pool_with_many_concurrent_sessions(self, tmp_path) -> None:
         """Test pool handles many concurrent sessions."""
         db_path = tmp_path / "pool_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -337,7 +341,7 @@ class TestDatabaseConnectionPoolExhaustion:
             for session in sessions:
                 session.close()
 
-    def test_pool_recovery_after_connection_close(self, tmp_path):
+    def test_pool_recovery_after_connection_close(self, tmp_path) -> None:
         """Test pool recovers after connections are closed."""
         db_path = tmp_path / "pool_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -360,7 +364,7 @@ class TestDatabaseConnectionPoolExhaustion:
 class TestDatabaseConnectionLifecycle:
     """Test database connection lifecycle management."""
 
-    def test_connection_state_transitions(self, tmp_path):
+    def test_connection_state_transitions(self, tmp_path) -> None:
         """Test connection state transitions."""
         db_path = tmp_path / "lifecycle_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -379,7 +383,7 @@ class TestDatabaseConnectionLifecycle:
         assert db._engine is None
         assert db._session_factory is None
 
-    def test_reconnect_after_close(self, tmp_path):
+    def test_reconnect_after_close(self, tmp_path) -> None:
         """Test reconnecting after close."""
         db_path = tmp_path / "lifecycle_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -397,7 +401,7 @@ class TestDatabaseConnectionLifecycle:
         assert session is not None
         session.close()
 
-    def test_multiple_disconnect_reconnect_cycles(self, tmp_path):
+    def test_multiple_disconnect_reconnect_cycles(self, tmp_path) -> None:
         """Test multiple connect/disconnect cycles."""
         db_path = tmp_path / "lifecycle_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -410,7 +414,7 @@ class TestDatabaseConnectionLifecycle:
             session.close()
             db.close()
 
-    def test_operations_fail_after_close(self, tmp_path):
+    def test_operations_fail_after_close(self, tmp_path) -> None:
         """Test that operations fail after close."""
         db_path = tmp_path / "lifecycle_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -430,7 +434,7 @@ class TestDatabaseConnectionLifecycle:
 class TestDatabaseConnectionErrorHandling:
     """Test error handling in database operations."""
 
-    def test_session_error_handling(self, tmp_path):
+    def test_session_error_handling(self, tmp_path) -> None:
         """Test error handling in session operations."""
         db_path = tmp_path / "error_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -444,7 +448,7 @@ class TestDatabaseConnectionErrorHandling:
 
         session.close()
 
-    def test_connection_error_recovery(self, tmp_path):
+    def test_connection_error_recovery(self, tmp_path) -> None:
         """Test recovery from connection errors."""
         db_path = tmp_path / "error_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -460,7 +464,7 @@ class TestDatabaseConnectionErrorHandling:
         assert result.scalar() == 1
         session.close()
 
-    def test_pool_error_with_invalid_operations(self, tmp_path):
+    def test_pool_error_with_invalid_operations(self, tmp_path) -> None:
         """Test pool handles invalid operations gracefully."""
         db_path = tmp_path / "error_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -485,7 +489,7 @@ class TestDatabaseConnectionErrorHandling:
 class TestDatabaseContextManagers:
     """Test context manager patterns for database operations."""
 
-    def test_session_context_manager(self, tmp_path):
+    def test_session_context_manager(self, tmp_path) -> None:
         """Test session as context manager."""
         db_path = tmp_path / "context_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -499,7 +503,7 @@ class TestDatabaseContextManagers:
         finally:
             session.close()
 
-    def test_get_session_generator_pattern(self, tmp_path):
+    def test_get_session_generator_pattern(self, tmp_path) -> None:
         """Test get_session generator pattern."""
         db_path = tmp_path / "context_test.db"
         url = f"sqlite:///{db_path}"
@@ -512,7 +516,7 @@ class TestDatabaseContextManagers:
 
         # Session should be closed after generator exits
 
-    def test_nested_context_managers(self, tmp_path):
+    def test_nested_context_managers(self, tmp_path) -> None:
         """Test nested context manager usage."""
         db_path = tmp_path / "context_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -531,7 +535,7 @@ class TestDatabaseContextManagers:
 class TestDatabaseConcurrentAccess:
     """Test concurrent database access patterns."""
 
-    def test_concurrent_read_operations(self, tmp_path):
+    def test_concurrent_read_operations(self, tmp_path) -> None:
         """Test concurrent read operations."""
         db_path = tmp_path / "concurrent_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -541,7 +545,7 @@ class TestDatabaseConcurrentAccess:
         results = []
         errors = []
 
-        def read_operation(thread_id: int):
+        def read_operation(thread_id: int) -> None:
             try:
                 session = db.get_session()
                 result = session.execute(text("SELECT :id"), {"id": thread_id})
@@ -562,7 +566,7 @@ class TestDatabaseConcurrentAccess:
         assert len(errors) == 0
         assert len(results) == 20
 
-    def test_concurrent_session_creation(self, tmp_path):
+    def test_concurrent_session_creation(self, tmp_path) -> None:
         """Test concurrent session creation."""
         db_path = tmp_path / "concurrent_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -571,7 +575,7 @@ class TestDatabaseConcurrentAccess:
         sessions = []
         lock = threading.Lock()
 
-        def create_session_thread():
+        def create_session_thread() -> None:
             session = db.get_session()
             with lock:
                 sessions.append(session)
@@ -610,16 +614,17 @@ class TestConcurrencyParametric:
         ],
     )
     @pytest.mark.asyncio
-    async def test_retry_with_various_parameters(self, max_retries, base_delay):
+    async def test_retry_with_various_parameters(self, max_retries, base_delay) -> None:
         """Test retry works with various parameter combinations."""
         call_count = 0
 
-        async def operation():
+        async def operation() -> str:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             if call_count < max_retries:
-                raise ConcurrencyError("Retry needed")
+                msg = "Retry needed"
+                raise ConcurrencyError(msg)
             return "success"
 
         result = await update_with_retry(operation, max_retries=max_retries, base_delay=base_delay)
@@ -628,16 +633,17 @@ class TestConcurrencyParametric:
 
     @pytest.mark.parametrize("error_count", [0, 1, 2, 3, 5])
     @pytest.mark.asyncio
-    async def test_retry_with_varying_error_counts(self, error_count):
+    async def test_retry_with_varying_error_counts(self, error_count) -> None:
         """Test retry with varying numbers of errors."""
         call_count = 0
 
-        async def operation():
+        async def operation() -> str:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             if call_count <= error_count:
-                raise ConcurrencyError(f"Error {call_count}")
+                msg = f"Error {call_count}"
+                raise ConcurrencyError(msg)
             return f"success_after_{error_count}"
 
         result = await update_with_retry(operation, max_retries=error_count + 2, base_delay=0.001)
@@ -646,7 +652,7 @@ class TestConcurrencyParametric:
 
     @pytest.mark.parametrize("operation_count", [1, 5, 10, 15, 20])
     @pytest.mark.asyncio
-    async def test_concurrent_operations_count(self, operation_count):
+    async def test_concurrent_operations_count(self, operation_count) -> None:
         """Test varying numbers of concurrent operations."""
 
         async def simple_operation(op_id: int):
@@ -665,7 +671,7 @@ class TestDatabaseParametric:
     """Parametric tests for database operations."""
 
     @pytest.mark.parametrize("url_suffix", ["test1", "test2", "mydb", "database123", "db_2024"])
-    def test_database_url_validation(self, url_suffix):
+    def test_database_url_validation(self, url_suffix) -> None:
         """Test database URL validation with various inputs."""
         # Valid URLs should work
         valid_url = f"sqlite:///{url_suffix}.db"
@@ -678,7 +684,7 @@ class TestDatabaseParametric:
             DatabaseConnection(invalid_url)
 
     @pytest.mark.parametrize("session_count", [1, 5, 10, 15, 20])
-    def test_multiple_session_creation(self, session_count, tmp_path):
+    def test_multiple_session_creation(self, session_count, tmp_path) -> None:
         """Test creating varying numbers of sessions."""
         db_path = tmp_path / "property_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -708,7 +714,7 @@ class TestConcurrentDatabaseOperations:
     """Test concurrent database operations with retry logic."""
 
     @pytest.mark.asyncio
-    async def test_concurrent_database_access_with_retry(self, tmp_path):
+    async def test_concurrent_database_access_with_retry(self, tmp_path) -> None:
         """Test concurrent database operations with retry logic."""
         db_path = tmp_path / "concurrent_retry.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -723,7 +729,8 @@ class TestConcurrentDatabaseOperations:
                 count = call_counts[op_id]
 
             if count == 1:
-                raise ConcurrencyError(f"First attempt for {op_id}")
+                msg = f"First attempt for {op_id}"
+                raise ConcurrencyError(msg)
 
             # Use database
             session = db.get_session()
@@ -741,7 +748,7 @@ class TestConcurrentDatabaseOperations:
         assert sorted(results) == list(range(10))
 
     @pytest.mark.asyncio
-    async def test_database_pool_under_concurrent_load(self, tmp_path):
+    async def test_database_pool_under_concurrent_load(self, tmp_path) -> None:
         """Test database connection pool under concurrent load."""
         db_path = tmp_path / "pool_load.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -753,7 +760,7 @@ class TestConcurrentDatabaseOperations:
             try:
                 # Run in thread pool to avoid blocking
                 return await loop.run_in_executor(
-                    None, lambda: session.execute(text("SELECT :id"), {"id": query_id}).scalar()
+                    None, lambda: session.execute(text("SELECT :id"), {"id": query_id}).scalar(),
                 )
             finally:
                 session.close()
@@ -767,7 +774,7 @@ class TestConcurrentDatabaseOperations:
 class TestResourceCleanup:
     """Test resource cleanup in error scenarios."""
 
-    def test_session_cleanup_on_error(self, tmp_path):
+    def test_session_cleanup_on_error(self, tmp_path) -> None:
         """Test sessions are cleaned up even when errors occur."""
         db_path = tmp_path / "cleanup_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -787,7 +794,7 @@ class TestResourceCleanup:
         # Pool should return to initial state
         assert db._engine.pool.checkedout() == initial_checked_out
 
-    def test_connection_cleanup_on_pool_exhaustion(self, tmp_path):
+    def test_connection_cleanup_on_pool_exhaustion(self, tmp_path) -> None:
         """Test connections are cleaned up properly."""
         db_path = tmp_path / "cleanup_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -813,15 +820,16 @@ class TestEdgeCases:
     """Test edge cases and unusual scenarios."""
 
     @pytest.mark.asyncio
-    async def test_zero_max_retries_edge_case(self):
+    async def test_zero_max_retries_edge_case(self) -> None:
         """Test behavior with zero retries (should fail immediately)."""
         call_count = 0
 
-        async def always_fails():
+        async def always_fails() -> Never:
             await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
-            raise ConcurrencyError("Immediate failure")
+            msg = "Immediate failure"
+            raise ConcurrencyError(msg)
 
         # Note: max_retries=0 would mean no attempts at all, which doesn't make sense
         # Test with max_retries=1 (one attempt, no retries)
@@ -830,12 +838,12 @@ class TestEdgeCases:
 
         assert call_count == 1
 
-    def test_empty_database_url_edge_case(self):
+    def test_empty_database_url_edge_case(self) -> None:
         """Test handling of empty database URL."""
         with pytest.raises(ValueError, match=r"empty|url|database"):
             DatabaseConnection("")
 
-    def test_very_long_database_url(self, tmp_path):
+    def test_very_long_database_url(self, tmp_path) -> None:
         """Test handling of very long but valid database URL."""
         long_path = tmp_path / ("a" * 100 + ".db")
         db = DatabaseConnection(f"sqlite:///{long_path}")
@@ -843,7 +851,7 @@ class TestEdgeCases:
         assert engine is not None
 
     @pytest.mark.asyncio
-    async def test_extremely_high_concurrency(self):
+    async def test_extremely_high_concurrency(self) -> None:
         """Test system with extremely high concurrency."""
 
         async def quick_operation(op_id: int):
@@ -856,7 +864,7 @@ class TestEdgeCases:
         assert len(results) == 100
         assert sorted(results) == list(range(100))
 
-    def test_database_url_with_special_characters(self, tmp_path):
+    def test_database_url_with_special_characters(self, tmp_path) -> None:
         """Test database URL handling with special characters."""
         db_path = tmp_path / "test-db_2024.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
@@ -868,12 +876,12 @@ class TestConcurrencyStressTests:
     """Stress tests for concurrency utilities."""
 
     @pytest.mark.asyncio
-    async def test_stress_concurrent_retries(self):
+    async def test_stress_concurrent_retries(self) -> None:
         """Stress test with many concurrent operations requiring retries."""
         success_count = 0
         lock = asyncio.Lock()
 
-        async def operation_requiring_retry(op_id: int):
+        async def operation_requiring_retry(op_id: int) -> str:
             nonlocal success_count
 
             # Fail first attempt
@@ -883,7 +891,8 @@ class TestConcurrencyStressTests:
             if current < 50:
                 async with lock:
                     success_count += 1
-                raise ConcurrencyError(f"Retry {op_id}")
+                msg = f"Retry {op_id}"
+                raise ConcurrencyError(msg)
 
             return f"success_{op_id}"
 
@@ -897,7 +906,7 @@ class TestConcurrencyStressTests:
         successful = [r for r in results if isinstance(r, str) and r.startswith("success_")]
         assert len(successful) > 0
 
-    def test_stress_database_connections(self, tmp_path):
+    def test_stress_database_connections(self, tmp_path) -> None:
         """Stress test database with many rapid connections."""
         db_path = tmp_path / "stress_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")

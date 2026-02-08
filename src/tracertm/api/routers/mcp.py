@@ -15,7 +15,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, Field
@@ -93,13 +93,13 @@ def _set_user_context(claims: dict[str, Any]) -> None:
     user_id = claims.get("sub")
     if user_id:
         current_user_id.set(user_id)
-        logger.debug(f"Set user context: {user_id}")
+        logger.debug("Set user context: %s", user_id)
 
     # Extract account ID if present (WorkOS specific)
     account_id = claims.get("org_id") or claims.get("account_id")
     if account_id:
         current_account_id.set(account_id)
-        logger.debug(f"Set account context: {account_id}")
+        logger.debug("Set account context: %s", account_id)
 
 
 async def _handle_mcp_call(method: str, params: dict[str, Any] | None, claims: dict[str, Any]) -> Any:
@@ -137,7 +137,7 @@ async def _handle_mcp_call(method: str, params: dict[str, Any] | None, claims: d
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception(f"Error handling MCP call {method}: {e}")
+        logger.exception("Error handling MCP call %s: %s", method, e)
         raise HTTPException(status_code=500, detail=f"Internal error: {e!s}") from e
 
 
@@ -160,7 +160,7 @@ def _list_tools() -> dict[str, Any]:
                 else {},
             }
             for tool in tools_list
-        ]
+        ],
     }
 
 
@@ -187,7 +187,7 @@ async def _call_tool(params: dict[str, Any]) -> dict[str, Any]:
         result = await _mcp().call_tool(tool_name, arguments)
         return {"content": result}
     except Exception as e:
-        logger.exception(f"Error calling tool {tool_name}: {e}")
+        logger.exception("Error calling tool %s: %s", tool_name, e)
         raise HTTPException(status_code=500, detail=f"Tool execution failed: {e!s}") from e
 
 
@@ -208,7 +208,7 @@ def _list_resources() -> dict[str, Any]:
                 "mimeType": resource.mimeType,
             }
             for resource in resources_list
-        ]
+        ],
     }
 
 
@@ -232,7 +232,7 @@ async def _read_resource(params: dict[str, Any]) -> dict[str, Any]:
         result = await _mcp().read_resource(uri)
         return {"contents": result}
     except Exception as e:
-        logger.exception(f"Error reading resource {uri}: {e}")
+        logger.exception("Error reading resource %s: %s", uri, e)
         raise HTTPException(status_code=404, detail=f"Resource not found: {e!s}") from e
 
 
@@ -252,7 +252,7 @@ def _list_prompts() -> dict[str, Any]:
                 "arguments": prompt.arguments,
             }
             for prompt in prompts_list
-        ]
+        ],
     }
 
 
@@ -278,7 +278,7 @@ async def _get_prompt(params: dict[str, Any]) -> dict[str, Any]:
         result = await _mcp().get_prompt(name, arguments)
         return {"messages": result}
     except Exception as e:
-        logger.exception(f"Error getting prompt {name}: {e}")
+        logger.exception("Error getting prompt %s: %s", name, e)
         raise HTTPException(status_code=404, detail=f"Prompt not found: {e!s}") from e
 
 
@@ -308,7 +308,7 @@ async def mcp_messages_options() -> Response:
 @router.post("/messages", response_model=JSONRPCResponse)
 async def mcp_messages(
     request: JSONRPCRequest,
-    claims: dict[str, Any] = Depends(auth_guard),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
 ) -> JSONRPCResponse:
     """Handle JSON-RPC 2.0 MCP messages.
 
@@ -345,7 +345,7 @@ async def mcp_messages(
             id=request.id,
         )
     except Exception as e:
-        logger.exception(f"Unexpected error in MCP message handler: {e}")
+        logger.exception("Unexpected error in MCP message handler: %s", e)
         return JSONRPCResponse(
             jsonrpc="2.0",
             result=None,
@@ -360,7 +360,7 @@ async def mcp_messages(
 @router.get("/sse")
 async def mcp_sse(
     request: Request,
-    claims: dict[str, Any] = Depends(auth_guard),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
 ) -> EventSourceResponse:
     """Server-Sent Events endpoint for streaming MCP responses.
 
@@ -417,9 +417,9 @@ async def mcp_sse(
                     }),
                 }
         except asyncio.CancelledError:
-            logger.debug(f"SSE connection cancelled (task_id: {task_id})")
+            logger.debug("SSE connection cancelled (task_id: %s)", task_id)
         except Exception as e:
-            logger.exception(f"Error in SSE generator (task_id: {task_id}): {e}")
+            logger.exception("Error in SSE generator (task_id: %s): %s", task_id, e)
             yield {"event": "error", "data": json.dumps({"error": str(e)})}
 
     return EventSourceResponse(event_generator())
@@ -427,7 +427,7 @@ async def mcp_sse(
 
 @router.get("/tools", response_model=ToolsListResponse)
 async def mcp_tools(
-    claims: dict[str, Any] = Depends(auth_guard),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
 ) -> ToolsListResponse:
     """List available MCP tools.
 

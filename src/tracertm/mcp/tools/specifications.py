@@ -1,6 +1,4 @@
-"""
-Specification tools for MCP.
-"""
+"""Specification tools for MCP."""
 
 from typing import Any
 

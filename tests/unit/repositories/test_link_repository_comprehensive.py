@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for LinkRepository to achieve 85%+ coverage.
+"""Comprehensive unit tests for LinkRepository to achieve 85%+ coverage.
 
 This file covers all missing functionality identified in coverage analysis:
 - create() link creation
@@ -38,7 +37,7 @@ pytestmark = pytest.mark.usefixtures("link_test_setup")
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_link_basic(db_session: AsyncSession):
+async def test_create_link_basic(db_session: AsyncSession) -> None:
     """Test creating link with basic fields."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -51,7 +50,7 @@ async def test_create_link_basic(db_session: AsyncSession):
 
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
-        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
+        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on",
     )
 
     assert link.id is not None
@@ -64,7 +63,7 @@ async def test_create_link_basic(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_link_with_metadata(db_session: AsyncSession):
+async def test_create_link_with_metadata(db_session: AsyncSession) -> None:
     """Test creating link with metadata."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -89,7 +88,7 @@ async def test_create_link_with_metadata(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_link_with_none_metadata(db_session: AsyncSession):
+async def test_create_link_with_none_metadata(db_session: AsyncSession) -> None:
     """Test creating link with None metadata uses empty dict."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -102,7 +101,7 @@ async def test_create_link_with_none_metadata(db_session: AsyncSession):
 
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
-        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on", metadata=None
+        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on", metadata=None,
     )
 
     assert link.metadata == {}
@@ -115,7 +114,7 @@ async def test_create_link_with_none_metadata(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_existing_link(db_session: AsyncSession):
+async def test_get_by_id_existing_link(db_session: AsyncSession) -> None:
     """Test get_by_id returns link when it exists."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -128,7 +127,7 @@ async def test_get_by_id_existing_link(db_session: AsyncSession):
 
     link_repo = LinkRepository(db_session)
     created = await link_repo.create(
-        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
+        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on",
     )
     await db_session.commit()
 
@@ -141,7 +140,7 @@ async def test_get_by_id_existing_link(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_nonexistent_link(db_session: AsyncSession):
+async def test_get_by_id_nonexistent_link(db_session: AsyncSession) -> None:
     """Test get_by_id returns None when link doesn't exist."""
     link_repo = LinkRepository(db_session)
 
@@ -156,7 +155,7 @@ async def test_get_by_id_nonexistent_link(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_returns_all_links(db_session: AsyncSession):
+async def test_get_by_project_returns_all_links(db_session: AsyncSession) -> None:
     """Test get_by_project returns all links in project."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -171,10 +170,10 @@ async def test_get_by_project_returns_all_links(db_session: AsyncSession):
     link_repo = LinkRepository(db_session)
 
     link1 = await link_repo.create(
-        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
+        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on",
     )
     link2 = await link_repo.create(
-        project_id=project.id, source_item_id=item2.id, target_item_id=item3.id, link_type="blocks"
+        project_id=project.id, source_item_id=item2.id, target_item_id=item3.id, link_type="blocks",
     )
     await db_session.commit()
 
@@ -188,7 +187,7 @@ async def test_get_by_project_returns_all_links(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_filters_by_project(db_session: AsyncSession):
+async def test_get_by_project_filters_by_project(db_session: AsyncSession) -> None:
     """Test get_by_project only returns links for specified project."""
     project_repo = ProjectRepository(db_session)
     project1 = await project_repo.create(name=unique_project_name())
@@ -205,10 +204,10 @@ async def test_get_by_project_filters_by_project(db_session: AsyncSession):
     link_repo = LinkRepository(db_session)
 
     link1 = await link_repo.create(
-        project_id=project1.id, source_item_id=item1_p1.id, target_item_id=item2_p1.id, link_type="depends_on"
+        project_id=project1.id, source_item_id=item1_p1.id, target_item_id=item2_p1.id, link_type="depends_on",
     )
     link2 = await link_repo.create(
-        project_id=project2.id, source_item_id=item1_p2.id, target_item_id=item2_p2.id, link_type="depends_on"
+        project_id=project2.id, source_item_id=item1_p2.id, target_item_id=item2_p2.id, link_type="depends_on",
     )
     await db_session.commit()
 
@@ -225,7 +224,7 @@ async def test_get_by_project_filters_by_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_empty_when_no_links(db_session: AsyncSession):
+async def test_get_by_project_empty_when_no_links(db_session: AsyncSession) -> None:
     """Test get_by_project returns empty list when no links exist."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -244,7 +243,7 @@ async def test_get_by_project_empty_when_no_links(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_source_returns_outgoing_links(db_session: AsyncSession):
+async def test_get_by_source_returns_outgoing_links(db_session: AsyncSession) -> None:
     """Test get_by_source returns all links from source item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -259,10 +258,10 @@ async def test_get_by_source_returns_outgoing_links(db_session: AsyncSession):
     link_repo = LinkRepository(db_session)
 
     link1 = await link_repo.create(
-        project_id=project.id, source_item_id=source.id, target_item_id=target1.id, link_type="depends_on"
+        project_id=project.id, source_item_id=source.id, target_item_id=target1.id, link_type="depends_on",
     )
     link2 = await link_repo.create(
-        project_id=project.id, source_item_id=source.id, target_item_id=target2.id, link_type="blocks"
+        project_id=project.id, source_item_id=source.id, target_item_id=target2.id, link_type="blocks",
     )
     await db_session.commit()
 
@@ -276,7 +275,7 @@ async def test_get_by_source_returns_outgoing_links(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_source_excludes_incoming_links(db_session: AsyncSession):
+async def test_get_by_source_excludes_incoming_links(db_session: AsyncSession) -> None:
     """Test get_by_source excludes links where item is target."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -291,11 +290,11 @@ async def test_get_by_source_excludes_incoming_links(db_session: AsyncSession):
 
     # Link from item1 to item2
     outgoing = await link_repo.create(
-        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
+        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on",
     )
     # Link from item2 to item1 (item1 is target, not source)
     incoming = await link_repo.create(
-        project_id=project.id, source_item_id=item2.id, target_item_id=item1.id, link_type="blocks"
+        project_id=project.id, source_item_id=item2.id, target_item_id=item1.id, link_type="blocks",
     )
     await db_session.commit()
 
@@ -308,7 +307,7 @@ async def test_get_by_source_excludes_incoming_links(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_source_empty_when_no_outgoing_links(db_session: AsyncSession):
+async def test_get_by_source_empty_when_no_outgoing_links(db_session: AsyncSession) -> None:
     """Test get_by_source returns empty list when item has no outgoing links."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -331,7 +330,7 @@ async def test_get_by_source_empty_when_no_outgoing_links(db_session: AsyncSessi
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_target_returns_incoming_links(db_session: AsyncSession):
+async def test_get_by_target_returns_incoming_links(db_session: AsyncSession) -> None:
     """Test get_by_target returns all links to target item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -346,10 +345,10 @@ async def test_get_by_target_returns_incoming_links(db_session: AsyncSession):
     link_repo = LinkRepository(db_session)
 
     link1 = await link_repo.create(
-        project_id=project.id, source_item_id=source1.id, target_item_id=target.id, link_type="depends_on"
+        project_id=project.id, source_item_id=source1.id, target_item_id=target.id, link_type="depends_on",
     )
     link2 = await link_repo.create(
-        project_id=project.id, source_item_id=source2.id, target_item_id=target.id, link_type="blocks"
+        project_id=project.id, source_item_id=source2.id, target_item_id=target.id, link_type="blocks",
     )
     await db_session.commit()
 
@@ -363,7 +362,7 @@ async def test_get_by_target_returns_incoming_links(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_target_excludes_outgoing_links(db_session: AsyncSession):
+async def test_get_by_target_excludes_outgoing_links(db_session: AsyncSession) -> None:
     """Test get_by_target excludes links where item is source."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -378,11 +377,11 @@ async def test_get_by_target_excludes_outgoing_links(db_session: AsyncSession):
 
     # Link from item1 to item2 (item2 is target)
     incoming = await link_repo.create(
-        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
+        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on",
     )
     # Link from item2 to item1 (item2 is source, not target)
     outgoing = await link_repo.create(
-        project_id=project.id, source_item_id=item2.id, target_item_id=item1.id, link_type="blocks"
+        project_id=project.id, source_item_id=item2.id, target_item_id=item1.id, link_type="blocks",
     )
     await db_session.commit()
 
@@ -395,7 +394,7 @@ async def test_get_by_target_excludes_outgoing_links(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_target_empty_when_no_incoming_links(db_session: AsyncSession):
+async def test_get_by_target_empty_when_no_incoming_links(db_session: AsyncSession) -> None:
     """Test get_by_target returns empty list when item has no incoming links."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -418,7 +417,7 @@ async def test_get_by_target_empty_when_no_incoming_links(db_session: AsyncSessi
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_item_returns_all_links(db_session: AsyncSession):
+async def test_get_by_item_returns_all_links(db_session: AsyncSession) -> None:
     """Test get_by_item returns all links connected to item (source or target)."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -434,11 +433,11 @@ async def test_get_by_item_returns_all_links(db_session: AsyncSession):
 
     # Link from item1 to item2 (item1 is source)
     link1 = await link_repo.create(
-        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
+        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on",
     )
     # Link from item3 to item1 (item1 is target)
     link2 = await link_repo.create(
-        project_id=project.id, source_item_id=item3.id, target_item_id=item1.id, link_type="blocks"
+        project_id=project.id, source_item_id=item3.id, target_item_id=item1.id, link_type="blocks",
     )
     await db_session.commit()
 
@@ -452,7 +451,7 @@ async def test_get_by_item_returns_all_links(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_item_empty_when_no_links(db_session: AsyncSession):
+async def test_get_by_item_empty_when_no_links(db_session: AsyncSession) -> None:
     """Test get_by_item returns empty list when item has no links."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -475,7 +474,7 @@ async def test_get_by_item_empty_when_no_links(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_link_success(db_session: AsyncSession):
+async def test_delete_link_success(db_session: AsyncSession) -> None:
     """Test delete removes link."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -488,7 +487,7 @@ async def test_delete_link_success(db_session: AsyncSession):
 
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
-        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
+        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on",
     )
     await db_session.commit()
 
@@ -504,7 +503,7 @@ async def test_delete_link_success(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_nonexistent_link_returns_false(db_session: AsyncSession):
+async def test_delete_nonexistent_link_returns_false(db_session: AsyncSession) -> None:
     """Test delete returns False when link doesn't exist."""
     link_repo = LinkRepository(db_session)
 
@@ -519,7 +518,7 @@ async def test_delete_nonexistent_link_returns_false(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_by_item_removes_all_links(db_session: AsyncSession):
+async def test_delete_by_item_removes_all_links(db_session: AsyncSession) -> None:
     """Test delete_by_item removes all links connected to item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -535,14 +534,14 @@ async def test_delete_by_item_removes_all_links(db_session: AsyncSession):
 
     # Create links involving item1
     link1 = await link_repo.create(
-        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
+        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on",
     )
     link2 = await link_repo.create(
-        project_id=project.id, source_item_id=item3.id, target_item_id=item1.id, link_type="blocks"
+        project_id=project.id, source_item_id=item3.id, target_item_id=item1.id, link_type="blocks",
     )
     # Link not involving item1
     link3 = await link_repo.create(
-        project_id=project.id, source_item_id=item2.id, target_item_id=item3.id, link_type="depends_on"
+        project_id=project.id, source_item_id=item2.id, target_item_id=item3.id, link_type="depends_on",
     )
     await db_session.commit()
 
@@ -561,7 +560,7 @@ async def test_delete_by_item_removes_all_links(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_by_item_returns_zero_when_no_links(db_session: AsyncSession):
+async def test_delete_by_item_returns_zero_when_no_links(db_session: AsyncSession) -> None:
     """Test delete_by_item returns 0 when item has no links."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -579,7 +578,7 @@ async def test_delete_by_item_returns_zero_when_no_links(db_session: AsyncSessio
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_by_item_handles_both_source_and_target(db_session: AsyncSession):
+async def test_delete_by_item_handles_both_source_and_target(db_session: AsyncSession) -> None:
     """Test delete_by_item removes links where item is source or target."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -595,11 +594,11 @@ async def test_delete_by_item_handles_both_source_and_target(db_session: AsyncSe
 
     # Link where item1 is source
     link_as_source = await link_repo.create(
-        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
+        project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on",
     )
     # Link where item1 is target
     link_as_target = await link_repo.create(
-        project_id=project.id, source_item_id=item3.id, target_item_id=item1.id, link_type="blocks"
+        project_id=project.id, source_item_id=item3.id, target_item_id=item1.id, link_type="blocks",
     )
     await db_session.commit()
 

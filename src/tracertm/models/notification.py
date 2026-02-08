@@ -1,6 +1,4 @@
-"""
-Notification model for user alerts.
-"""
+"""Notification model for user alerts."""
 
 from datetime import datetime
 
@@ -12,9 +10,7 @@ from tracertm.models.base import Base, TimestampMixin, generate_uuid
 
 
 class Notification(Base, TimestampMixin):
-    """
-    User notification model.
-    """
+    """User notification model."""
 
     __tablename__ = "notifications"
 
@@ -22,7 +18,7 @@ class Notification(Base, TimestampMixin):
     user_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     # Optional: Link to a specific project if relevant
     project_id: Mapped[str | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=True, index=True
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=True, index=True,
     )
 
     type: Mapped[str] = mapped_column(String(50), nullable=False, default="info")  # info, success, warning, error

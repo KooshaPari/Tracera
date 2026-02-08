@@ -1,5 +1,4 @@
-"""
-Sync Engine for TraceRTM's offline-first architecture.
+"""Sync Engine for TraceRTM's offline-first architecture.
 
 This module handles bidirectional synchronization between local storage (SQLite + Markdown)
 and the remote API, implementing the sync flow defined in UNIFIED_LOCAL_STORAGE_ARCHITECTURE.md.
@@ -26,12 +25,12 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import text
 
-from tracertm.database.connection import DatabaseConnection
 from tracertm.storage.conflict_resolver import ConflictStrategy, VectorClock
-from tracertm.storage.local_storage import LocalStorageManager
 
 if TYPE_CHECKING:
     from tracertm.api.client import TraceRTMClient
+    from tracertm.database.connection import DatabaseConnection
+    from tracertm.storage.local_storage import LocalStorageManager
 
 
 @dataclass
@@ -125,8 +124,7 @@ class ChangeDetector:
 
     @staticmethod
     def compute_hash(content: str) -> str:
-        """
-        Compute SHA-256 hash of content.
+        """Compute SHA-256 hash of content.
 
         Args:
             content: Content to hash (markdown, JSON, etc.)
@@ -138,8 +136,7 @@ class ChangeDetector:
 
     @staticmethod
     def has_changed(current_content: str, stored_hash: str | None) -> bool:
-        """
-        Check if content has changed by comparing hashes.
+        """Check if content has changed by comparing hashes.
 
         Args:
             current_content: Current content
@@ -156,8 +153,7 @@ class ChangeDetector:
 
     @staticmethod
     def detect_changes_in_directory(directory: Path, stored_hashes: dict[str, str]) -> list[tuple[Path, str]]:
-        """
-        Detect changed files in a directory.
+        """Detect changed files in a directory.
 
         Args:
             directory: Directory to scan
@@ -194,8 +190,7 @@ class SyncQueue:
     """Manages the sync queue table in SQLite."""
 
     def __init__(self, db_connection: DatabaseConnection) -> None:
-        """
-        Initialize sync queue manager.
+        """Initialize sync queue manager.
 
         Args:
             db_connection: DatabaseConnection instance
@@ -207,7 +202,8 @@ class SyncQueue:
     def engine(self):
         """Get database engine, ensuring it's not None."""
         if self.db.engine is None:
-            raise RuntimeError("Database engine not initialized")
+            msg = "Database engine not initialized"
+            raise RuntimeError(msg)
         return self.db.engine
 
     def _ensure_tables(self) -> None:
@@ -227,7 +223,7 @@ class SyncQueue:
                     last_error TEXT,
                     UNIQUE(entity_type, entity_id, operation)
                 )
-            """)
+            """),
             )
 
             # Create sync_state table
@@ -238,16 +234,15 @@ class SyncQueue:
                     value TEXT NOT NULL,
                     updated_at TEXT NOT NULL
                 )
-            """)
+            """),
             )
 
             conn.commit()
 
     def enqueue(
-        self, entity_type: EntityType, entity_id: str, operation: OperationType, payload: dict[str, Any]
+        self, entity_type: EntityType, entity_id: str, operation: OperationType, payload: dict[str, Any],
     ) -> int:
-        """
-        Add or update a change in the sync queue.
+        """Add or update a change in the sync queue.
 
         Args:
             entity_type: Type of entity
@@ -284,12 +279,12 @@ class SyncQueue:
             conn.commit()
             lastrowid = result.lastrowid
             if lastrowid is None:
-                raise RuntimeError("Failed to insert sync queue entry")
+                msg = "Failed to insert sync queue entry"
+                raise RuntimeError(msg)
             return int(lastrowid)
 
     def get_pending(self, limit: int = 100) -> list[QueuedChange]:
-        """
-        Get pending changes from queue.
+        """Get pending changes from queue.
 
         Args:
             limit: Maximum number of changes to retrieve
@@ -324,8 +319,7 @@ class SyncQueue:
             ]
 
     def remove(self, queue_id: int) -> None:
-        """
-        Remove a change from the queue.
+        """Remove a change from the queue.
 
         Args:
             queue_id: Queue entry ID
@@ -335,8 +329,7 @@ class SyncQueue:
             conn.commit()
 
     def update_retry(self, queue_id: int, error: str) -> None:
-        """
-        Increment retry count and record error.
+        """Increment retry count and record error.
 
         Args:
             queue_id: Queue entry ID
@@ -361,8 +354,7 @@ class SyncQueue:
             conn.commit()
 
     def get_count(self) -> int:
-        """
-        Get count of pending changes.
+        """Get count of pending changes.
 
         Returns:
             Number of pending changes
@@ -382,8 +374,7 @@ class SyncStateManager:
     """Manages sync state metadata."""
 
     def __init__(self, db_connection: DatabaseConnection) -> None:
-        """
-        Initialize sync state manager.
+        """Initialize sync state manager.
 
         Args:
             db_connection: DatabaseConnection instance
@@ -395,7 +386,8 @@ class SyncStateManager:
     def engine(self):
         """Get database engine, ensuring it's not None."""
         if self.db.engine is None:
-            raise RuntimeError("Database engine not initialized")
+            msg = "Database engine not initialized"
+            raise RuntimeError(msg)
         return self.db.engine
 
     def _ensure_tables(self) -> None:
@@ -414,7 +406,7 @@ class SyncStateManager:
                     last_error TEXT,
                     UNIQUE(entity_type, entity_id, operation)
                 )
-            """)
+            """),
             )
             conn.execute(
                 text("""
@@ -423,13 +415,12 @@ class SyncStateManager:
                     value TEXT NOT NULL,
                     updated_at TEXT NOT NULL
                 )
-            """)
+            """),
             )
             conn.commit()
 
     def get_state(self) -> SyncState:
-        """
-        Get current sync state.
+        """Get current sync state.
 
         Returns:
             SyncState object
@@ -458,8 +449,7 @@ class SyncStateManager:
             return SyncState(last_sync=last_sync, pending_changes=pending_changes, status=status, last_error=last_error)
 
     def update_last_sync(self, timestamp: datetime | None = None) -> None:
-        """
-        Update last sync timestamp.
+        """Update last sync timestamp.
 
         Args:
             timestamp: Sync timestamp (defaults to now)
@@ -478,8 +468,7 @@ class SyncStateManager:
             conn.commit()
 
     def update_status(self, status: SyncStatus) -> None:
-        """
-        Update sync status.
+        """Update sync status.
 
         Args:
             status: New status
@@ -495,8 +484,7 @@ class SyncStateManager:
             conn.commit()
 
     def update_error(self, error: str | None) -> None:
-        """
-        Update last error.
+        """Update last error.
 
         Args:
             error: Error message (None to clear)
@@ -521,8 +509,7 @@ class SyncStateManager:
 
 
 class SyncEngine:
-    """
-    Main sync orchestrator for TraceRTM.
+    """Main sync orchestrator for TraceRTM.
 
     Implements the sync flow:
     1. Detect local changes
@@ -539,8 +526,7 @@ class SyncEngine:
         storage_manager: LocalStorageManager,
         config: SyncConfig | None = None,
     ) -> None:
-        """
-        Initialize sync engine.
+        """Initialize sync engine.
 
         Args:
             db_connection: DatabaseConnection instance
@@ -567,7 +553,8 @@ class SyncEngine:
     def engine(self):
         """Get database engine, ensuring it's not None."""
         if self.db.engine is None:
-            raise RuntimeError("Database engine not initialized")
+            msg = "Database engine not initialized"
+            raise RuntimeError(msg)
         return self.db.engine
 
     # ========================================================================
@@ -575,8 +562,7 @@ class SyncEngine:
     # ========================================================================
 
     async def sync(self, force: bool = False) -> SyncResult:
-        """
-        Perform full sync cycle.
+        """Perform full sync cycle.
 
         Args:
             force: Force sync even if recently synced
@@ -625,26 +611,25 @@ class SyncEngine:
 
                 logger.info(
                     f"Sync completed: {result.entities_synced} entities, "
-                    f"{len(result.conflicts)} conflicts, {duration:.2f}s"
+                    f"{len(result.conflicts)} conflicts, {duration:.2f}s",
                 )
 
                 return result
 
             except Exception as e:
-                logger.error(f"Sync failed: {e}", exc_info=True)
+                logger.error("Sync failed: %s", e, exc_info=True)
                 self.state_manager.update_status(SyncStatus.ERROR)
                 self.state_manager.update_error(str(e))
 
                 return SyncResult(
-                    success=False, errors=[str(e)], duration_seconds=(datetime.now(UTC) - start_time).total_seconds()
+                    success=False, errors=[str(e)], duration_seconds=(datetime.now(UTC) - start_time).total_seconds(),
                 )
 
             finally:
                 self._syncing = False
 
     async def detect_and_queue_changes(self) -> int:
-        """
-        Detect local changes and queue them for sync.
+        """Detect local changes and queue them for sync.
 
         Returns:
             Number of changes queued
@@ -676,20 +661,19 @@ class SyncEngine:
                             {"content": content, "updated_at": item_data.get("updated_at")},
                         )
                         changes_queued += 1
-                        logger.debug(f"Queued change for item {item_id}")
+                        logger.debug("Queued change for item %s", item_id)
 
-            logger.info(f"Change detection complete: {changes_queued} changes queued")
+            logger.info("Change detection complete: %s changes queued", changes_queued)
 
         except Exception as e:
-            logger.error(f"Error detecting changes: {e}", exc_info=True)
+            logger.error("Error detecting changes: %s", e, exc_info=True)
 
         return changes_queued
 
     def queue_change(
-        self, entity_type: EntityType, entity_id: str, operation: OperationType, payload: dict[str, Any]
+        self, entity_type: EntityType, entity_id: str, operation: OperationType, payload: dict[str, Any],
     ) -> int:
-        """
-        Queue a change for sync.
+        """Queue a change for sync.
 
         Args:
             entity_type: Type of entity
@@ -703,8 +687,7 @@ class SyncEngine:
         return self.queue.enqueue(entity_type, entity_id, operation, payload)
 
     async def process_queue(self) -> SyncResult:
-        """
-        Process sync queue (upload phase).
+        """Process sync queue (upload phase).
 
         Returns:
             SyncResult with upload statistics
@@ -741,8 +724,7 @@ class SyncEngine:
         return result
 
     async def pull_changes(self, since: datetime | None = None) -> SyncResult:
-        """
-        Pull changes from remote API (download phase).
+        """Pull changes from remote API (download phase).
 
         Args:
             since: Only fetch changes after this timestamp
@@ -753,7 +735,7 @@ class SyncEngine:
         result = SyncResult(success=True)
 
         try:
-            logger.info(f"Pulling changes since {since}")
+            logger.info("Pulling changes since %s", since)
 
             # Try to fetch remote changes via API client
             remote_changes = []
@@ -764,7 +746,7 @@ class SyncEngine:
                     params = {"since": since.isoformat()} if since else {}
                     remote_changes = await get_changes(**params)
                 except Exception as e:
-                    logger.warning(f"Failed to fetch remote changes: {e}")
+                    logger.warning("Failed to fetch remote changes: %s", e)
                     # Continue with empty list - not a hard failure
                     remote_changes = []
 
@@ -776,22 +758,21 @@ class SyncEngine:
                     await self._apply_remote_change(change)
                     result.entities_synced += 1
                 except Exception as e:
-                    logger.error(f"Error applying remote change: {e}", exc_info=True)
+                    logger.error("Error applying remote change: %s", e, exc_info=True)
                     result.errors.append(str(e))
 
             if remote_changes:
                 logger.info(f"Applied {result.entities_synced} remote changes")
 
         except Exception as e:
-            logger.error(f"Failed to pull changes: {e}", exc_info=True)
+            logger.error("Failed to pull changes: %s", e, exc_info=True)
             result.errors.append(str(e))
             result.success = False
 
         return result
 
     def get_status(self) -> SyncState:
-        """
-        Get current sync status.
+        """Get current sync status.
 
         Returns:
             SyncState object
@@ -803,8 +784,7 @@ class SyncEngine:
     # ========================================================================
 
     async def _upload_change(self, change: QueuedChange) -> bool:
-        """
-        Upload a single change to the API.
+        """Upload a single change to the API.
 
         Args:
             change: Queued change to upload
@@ -834,12 +814,11 @@ class SyncEngine:
             return True
 
         except Exception as e:
-            logger.error(f"Upload failed: {e}", exc_info=True)
+            logger.error("Upload failed: %s", e, exc_info=True)
             return False
 
     async def _apply_remote_change(self, change: dict[str, Any]) -> None:
-        """
-        Apply a remote change to local storage.
+        """Apply a remote change to local storage.
 
         Args:
             change: Remote change data (must contain entity_type, entity_id, operation, payload)
@@ -852,7 +831,7 @@ class SyncEngine:
 
             # Validate required fields
             if not all([entity_type_str, entity_id, operation_str]):
-                logger.warning(f"Incomplete remote change data: {change}")
+                logger.warning("Incomplete remote change data: %s", change)
                 return
 
             # Convert strings to enums
@@ -860,7 +839,7 @@ class SyncEngine:
                 entity_type = EntityType(entity_type_str)
                 operation = OperationType(operation_str)
             except ValueError as e:
-                logger.error(f"Invalid entity or operation type in remote change: {e}")
+                logger.exception("Invalid entity or operation type in remote change: %s", e)
                 return
 
             logger.debug(f"Applying remote change: {entity_type.value} {entity_id} {operation.value}")
@@ -908,12 +887,11 @@ class SyncEngine:
             logger.debug(f"Successfully applied remote change for {entity_type.value} {entity_id}")
 
         except Exception as e:
-            logger.error(f"Error applying remote change: {e}", exc_info=True)
+            logger.error("Error applying remote change: %s", e, exc_info=True)
             raise
 
     def _resolve_conflict(self, local_data: dict[str, Any], remote_data: dict[str, Any]) -> dict[str, Any]:
-        """
-        Resolve conflict between local and remote data.
+        """Resolve conflict between local and remote data.
 
         Args:
             local_data: Local version
@@ -938,16 +916,15 @@ class SyncEngine:
             # Create conflict file for manual resolution
             try:
                 conflict_file = self._create_conflict_file(local_data, remote_data)
-                logger.warning(f"Manual conflict resolution required, created {conflict_file}")
+                logger.warning("Manual conflict resolution required, created %s", conflict_file)
             except Exception as e:
-                logger.error(f"Failed to create conflict file: {e}", exc_info=True)
+                logger.error("Failed to create conflict file: %s", e, exc_info=True)
             return local_data
 
         return local_data
 
     def create_vector_clock(self, client_id: str, version: int, parent_version: int) -> VectorClock:
-        """
-        Create a vector clock for ordering.
+        """Create a vector clock for ordering.
 
         Args:
             client_id: Client identifier
@@ -958,7 +935,7 @@ class SyncEngine:
             VectorClock instance
         """
         return VectorClock(
-            client_id=client_id, version=version, timestamp=datetime.now(UTC), parent_version=parent_version
+            client_id=client_id, version=version, timestamp=datetime.now(UTC), parent_version=parent_version,
         )
 
     # ========================================================================
@@ -966,8 +943,7 @@ class SyncEngine:
     # ========================================================================
 
     def _create_conflict_file(self, local_data: dict[str, Any], remote_data: dict[str, Any]) -> str:
-        """
-        Create a conflict file for manual resolution.
+        """Create a conflict file for manual resolution.
 
         Args:
             local_data: Local version
@@ -1021,8 +997,7 @@ Strategy: MANUAL RESOLUTION REQUIRED
         logger.info("Sync state reset")
 
     def is_syncing(self) -> bool:
-        """
-        Check if sync is currently in progress.
+        """Check if sync is currently in progress.
 
         Returns:
             True if syncing
@@ -1036,8 +1011,7 @@ Strategy: MANUAL RESOLUTION REQUIRED
 
 
 async def exponential_backoff(attempt: int, initial_delay: float = 1.0, max_delay: float = 60.0) -> None:
-    """
-    Sleep with exponential backoff.
+    """Sleep with exponential backoff.
 
     Args:
         attempt: Attempt number (0-indexed)
@@ -1054,8 +1028,7 @@ def create_sync_engine(
     storage_manager: LocalStorageManager,
     **kwargs: Any,
 ) -> SyncEngine:
-    """
-    Factory function to create a configured sync engine.
+    """Factory function to create a configured sync engine.
 
     Args:
         db_connection: DatabaseConnection instance

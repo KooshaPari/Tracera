@@ -1,6 +1,4 @@
-"""
-Integration tests for Epic 4: Dependency Detection (Story 4.6, FR22, NFR-R2).
-"""
+"""Integration tests for Epic 4: Dependency Detection (Story 4.6, FR22, NFR-R2)."""
 
 import pytest
 
@@ -75,7 +73,7 @@ def temp_project_with_items(tmp_path, monkeypatch):
     return project_id, database_url, items
 
 
-def test_detect_missing_dependencies(temp_project_with_items):
+def test_detect_missing_dependencies(temp_project_with_items) -> None:
     """Test missing dependency detection (Story 4.6, FR22)."""
     project_id, database_url, items = temp_project_with_items
 
@@ -101,7 +99,7 @@ def test_detect_missing_dependencies(temp_project_with_items):
         assert any(dep["issue"] == "target_item_missing" for dep in result["missing_dependencies"])
 
 
-def test_detect_orphans(temp_project_with_items):
+def test_detect_orphans(temp_project_with_items) -> None:
     """Test orphaned item detection (Story 4.6, FR22)."""
     project_id, database_url, items = temp_project_with_items
 
@@ -121,7 +119,7 @@ def test_detect_orphans(temp_project_with_items):
         assert items["item_4"] in orphan_ids
 
 
-def test_analyze_impact(temp_project_with_items):
+def test_analyze_impact(temp_project_with_items) -> None:
     """Test impact analysis (Story 4.6, FR22, NFR-R2)."""
     project_id, database_url, items = temp_project_with_items
 
@@ -150,7 +148,7 @@ def test_analyze_impact(temp_project_with_items):
         assert len(result["affected_items"]) >= 1
 
 
-def test_cycle_detection_integration(temp_project_with_items):
+def test_cycle_detection_integration(temp_project_with_items) -> None:
     """Test cycle detection integration (Story 4.6, FR22)."""
     project_id, database_url, items = temp_project_with_items
 

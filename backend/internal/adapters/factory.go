@@ -62,7 +62,7 @@ func (factory *AdapterFactory) initAuthProvider() error {
 	switch factory.config.AuthProvider {
 	case "", "authkit":
 		if factory.config.GormDB == nil {
-			return errors.New("GORM DB required for AuthKit adapter (for public.profiles management)")
+			return errors.New("gorm DB required for AuthKit adapter (for public.profiles management)")
 		}
 		if factory.config.WorkOSClientID == "" {
 			return errors.New("WorkOS Client ID required for AuthKit adapter (for JWKS validation)")
@@ -92,7 +92,7 @@ func (factory *AdapterFactory) initRealtimeBroadcaster() error {
 		return nil
 
 	case "":
-		return errors.New("Realtime provider is required (set REALTIME_PROVIDER=nats)")
+		return errors.New("realtime provider is required (set REALTIME_PROVIDER=nats)")
 
 	default:
 		return fmt.Errorf(

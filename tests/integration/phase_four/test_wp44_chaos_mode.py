@@ -1,5 +1,4 @@
-"""
-WP-4.4: Chaos Mode and Failure Scenario Tests (50+ tests)
+"""WP-4.4: Chaos Mode and Failure Scenario Tests (50+ tests).
 
 Tests failure injection, recovery, data consistency, and resilience patterns.
 Simulates real-world failure scenarios and verifies correct behavior under failures.
@@ -29,10 +28,10 @@ pytestmark = [pytest.mark.integration]
 
 
 class TestDatabaseConnectionFailures:
-    """Test database connection failure scenarios (10 tests)"""
+    """Test database connection failure scenarios (10 tests)."""
 
     def test_connection_timeout(self, db_session: Session) -> None:
-        """Test handling connection timeout"""
+        """Test handling connection timeout."""
         project = Project(id="timeout-proj", name="Timeout Test")
         db_session.add(project)
         db_session.commit()
@@ -46,7 +45,7 @@ class TestDatabaseConnectionFailures:
             pass
 
     def test_connection_refused(self, db_session: Session) -> None:
-        """Test handling connection refused"""
+        """Test handling connection refused."""
         project = Project(id="refused-proj", name="Refused Test")
         db_session.add(project)
         db_session.commit()
@@ -56,7 +55,7 @@ class TestDatabaseConnectionFailures:
         assert retrieved is not None
 
     def test_connection_pool_exhaustion(self, db_session: Session) -> None:
-        """Test connection pool exhaustion"""
+        """Test connection pool exhaustion."""
         project = Project(id="pool-exhaust-proj", name="Pool Test")
         db_session.add(project)
         db_session.commit()
@@ -67,7 +66,7 @@ class TestDatabaseConnectionFailures:
             assert result is not None
 
     def test_database_unavailable(self, db_session: Session) -> None:
-        """Test behavior when database becomes unavailable"""
+        """Test behavior when database becomes unavailable."""
         project = Project(id="unavailable-proj", name="Unavailable Test")
         db_session.add(project)
         db_session.commit()
@@ -77,7 +76,7 @@ class TestDatabaseConnectionFailures:
         assert retrieved is not None
 
     def test_connection_reset(self, db_session: Session) -> None:
-        """Test handling connection reset"""
+        """Test handling connection reset."""
         project = Project(id="reset-proj", name="Reset Test")
         db_session.add(project)
         db_session.commit()
@@ -87,7 +86,7 @@ class TestDatabaseConnectionFailures:
         assert retrieved is not None
 
     def test_network_partition_detection(self, db_session: Session) -> None:
-        """Test detecting network partition"""
+        """Test detecting network partition."""
         project = Project(id="partition-proj", name="Partition Test")
         db_session.add(project)
         db_session.commit()
@@ -101,7 +100,7 @@ class TestDatabaseConnectionFailures:
             pass
 
     def test_ssl_certificate_error(self, db_session: Session) -> None:
-        """Test SSL/TLS certificate error handling"""
+        """Test SSL/TLS certificate error handling."""
         project = Project(id="ssl-proj", name="SSL Test")
         db_session.add(project)
         db_session.commit()
@@ -111,7 +110,7 @@ class TestDatabaseConnectionFailures:
         assert retrieved is not None
 
     def test_dns_resolution_failure(self, db_session: Session) -> None:
-        """Test DNS resolution failure"""
+        """Test DNS resolution failure."""
         project = Project(id="dns-proj", name="DNS Test")
         db_session.add(project)
         db_session.commit()
@@ -121,7 +120,7 @@ class TestDatabaseConnectionFailures:
         assert retrieved is not None
 
     def test_connection_leak_prevention(self, db_session: Session) -> None:
-        """Test preventing connection leaks"""
+        """Test preventing connection leaks."""
         project = Project(id="leak-proj", name="Leak Test")
         db_session.add(project)
         db_session.commit()
@@ -133,10 +132,10 @@ class TestDatabaseConnectionFailures:
 
 
 class TestTransactionFailures:
-    """Test transaction failure scenarios (10 tests)"""
+    """Test transaction failure scenarios (10 tests)."""
 
     def test_transaction_commit_failure(self, db_session: Session) -> None:
-        """Test handling transaction commit failure"""
+        """Test handling transaction commit failure."""
         project = Project(id="commit-fail-proj", name="Commit Fail Test")
         db_session.add(project)
         db_session.commit()
@@ -151,7 +150,7 @@ class TestTransactionFailures:
             db_session.rollback()
 
     def test_transaction_rollback_on_error(self, db_session: Session) -> None:
-        """Test automatic rollback on error"""
+        """Test automatic rollback on error."""
         project = Project(id="rollback-proj", name="Rollback Test")
         db_session.add(project)
         db_session.commit()
@@ -161,7 +160,8 @@ class TestTransactionFailures:
         try:
             project.name = "Modified"
             # Simulate error
-            raise IntegrityError("UNIQUE constraint failed", None, Exception("unique"))
+            msg = "UNIQUE constraint failed"
+            raise IntegrityError(msg, None, Exception("unique"))
         except IntegrityError:
             db_session.rollback()
 
@@ -171,7 +171,7 @@ class TestTransactionFailures:
         assert retrieved is not None
 
     def test_nested_transaction_failure(self, db_session: Session) -> None:
-        """Test nested transaction handling"""
+        """Test nested transaction handling."""
         project = Project(id="nested-proj", name="Nested Test")
         db_session.add(project)
         db_session.commit()
@@ -184,10 +184,10 @@ class TestTransactionFailures:
 
         retrieved = db_session.query(Project).filter_by(id="nested-proj").first()
         assert retrieved is not None
-        assert cast(Project, retrieved).name == "Level 2"
+        assert cast("Project", retrieved).name == "Level 2"
 
     def test_savepoint_rollback(self, db_session: Session) -> None:
-        """Test savepoint and partial rollback"""
+        """Test savepoint and partial rollback."""
         project = Project(id="savepoint-proj", name="Savepoint Test")
         db_session.add(project)
         db_session.commit()
@@ -202,10 +202,10 @@ class TestTransactionFailures:
 
         retrieved = db_session.query(Project).filter_by(id="savepoint-proj").first()
         assert retrieved is not None
-        assert cast(Project, retrieved).name == "Update 2"
+        assert cast("Project", retrieved).name == "Update 2"
 
     def test_deadlock_detection_and_retry(self, db_session: Session) -> None:
-        """Test detecting deadlock and retry"""
+        """Test detecting deadlock and retry."""
         project1 = Project(id="deadlock-1", name="Deadlock Test 1")
         project2 = Project(id="deadlock-2", name="Deadlock Test 2")
         db_session.add_all([project1, project2])
@@ -221,7 +221,7 @@ class TestTransactionFailures:
         assert True  # No deadlock occurred
 
     def test_isolation_level_conflict(self, db_session: Session) -> None:
-        """Test isolation level conflict handling"""
+        """Test isolation level conflict handling."""
         project = Project(id="isolation-proj", name="Isolation Test")
         db_session.add(project)
         db_session.commit()
@@ -237,7 +237,7 @@ class TestTransactionFailures:
         assert project.name == "Updated"
 
     def test_constraint_violation_detection(self, db_session: Session) -> None:
-        """Test constraint violation detection"""
+        """Test constraint violation detection."""
         project = Project(id="constraint-proj", name="Constraint Test")
         db_session.add(project)
         db_session.commit()
@@ -254,10 +254,10 @@ class TestTransactionFailures:
 
 
 class TestPartialFailureScenarios:
-    """Test partial failure in bulk operations (10 tests)"""
+    """Test partial failure in bulk operations (10 tests)."""
 
     def test_bulk_create_50_percent_failure(self, db_session: Session) -> None:
-        """Test bulk create with 50% item failure"""
+        """Test bulk create with 50% item failure."""
         project = Project(id="bulk-fail-proj", name="Bulk Fail Test")
         db_session.add(project)
         db_session.flush()
@@ -282,7 +282,7 @@ class TestPartialFailureScenarios:
         assert count == 20
 
     def test_bulk_update_partial_success(self, db_session: Session) -> None:
-        """Test bulk update with some items failing"""
+        """Test bulk update with some items failing."""
         project = Project(id="bulk-update-fail-proj", name="Update Fail Test")
         db_session.add(project)
         db_session.flush()
@@ -310,7 +310,7 @@ class TestPartialFailureScenarios:
         assert updated == 20
 
     def test_bulk_delete_partial_failure(self, db_session: Session) -> None:
-        """Test bulk delete with partial failure"""
+        """Test bulk delete with partial failure."""
         project = Project(id="bulk-delete-fail-proj", name="Delete Fail Test")
         db_session.add(project)
         db_session.flush()
@@ -339,7 +339,7 @@ class TestPartialFailureScenarios:
         assert remaining == 10
 
     def test_broken_links_detection(self, db_session: Session) -> None:
-        """Test detection of broken links after item deletion"""
+        """Test detection of broken links after item deletion."""
         project = Project(id="broken-link-proj", name="Broken Link Test")
         db_session.add(project)
         db_session.flush()
@@ -382,13 +382,13 @@ class TestPartialFailureScenarios:
         assert broken_link is not None
 
     def test_orphaned_items_recovery(self, db_session: Session) -> None:
-        """Test recovery of orphaned items"""
+        """Test recovery of orphaned items."""
         project = Project(id="orphan-proj", name="Orphan Test")
         db_session.add(project)
         db_session.flush()
 
         item = Item(
-            id="orphan-item", project_id="orphan-proj", title="Orphan", view="DEFAULT", item_type="task", status="todo"
+            id="orphan-item", project_id="orphan-proj", title="Orphan", view="DEFAULT", item_type="task", status="todo",
         )
         db_session.add(item)
         db_session.commit()
@@ -406,10 +406,10 @@ class TestPartialFailureScenarios:
 
 
 class TestNetworkTimeouts:
-    """Test network timeout scenarios (8 tests)"""
+    """Test network timeout scenarios (8 tests)."""
 
     def test_http_request_timeout(self, db_session: Session) -> None:
-        """Test HTTP request timeout handling"""
+        """Test HTTP request timeout handling."""
         project = Project(id="http-timeout-proj", name="HTTP Timeout Test")
         db_session.add(project)
         db_session.commit()
@@ -419,7 +419,7 @@ class TestNetworkTimeouts:
         assert retrieved is not None
 
     def test_query_timeout(self, db_session: Session) -> None:
-        """Test query execution timeout"""
+        """Test query execution timeout."""
         project = Project(id="query-timeout-proj", name="Query Timeout Test")
         db_session.add(project)
         db_session.commit()
@@ -429,7 +429,7 @@ class TestNetworkTimeouts:
         assert result is not None
 
     def test_slow_network_recovery(self, db_session: Session) -> None:
-        """Test recovery from slow network"""
+        """Test recovery from slow network."""
         project = Project(id="slow-net-proj", name="Slow Network Test")
         db_session.add(project)
         db_session.commit()
@@ -440,7 +440,7 @@ class TestNetworkTimeouts:
             assert result is not None
 
     def test_partial_response_handling(self, db_session: Session) -> None:
-        """Test handling partial network responses"""
+        """Test handling partial network responses."""
         project = Project(id="partial-resp-proj", name="Partial Response Test")
         db_session.add(project)
         db_session.flush()
@@ -465,10 +465,10 @@ class TestNetworkTimeouts:
 
 
 class TestRecoveryAndRetry:
-    """Test recovery and retry mechanisms (8 tests)"""
+    """Test recovery and retry mechanisms (8 tests)."""
 
     def test_automatic_retry_on_failure(self, db_session: Session) -> None:
-        """Test automatic retry on transient failure"""
+        """Test automatic retry on transient failure."""
         project = Project(id="retry-proj", name="Retry Test")
         db_session.add(project)
         db_session.commit()
@@ -486,7 +486,7 @@ class TestRecoveryAndRetry:
         assert result is not None
 
     def test_exponential_backoff(self, db_session: Session) -> None:
-        """Test exponential backoff on retry"""
+        """Test exponential backoff on retry."""
         project = Project(id="backoff-proj", name="Backoff Test")
         db_session.add(project)
         db_session.commit()
@@ -501,19 +501,19 @@ class TestRecoveryAndRetry:
         assert result is not None
 
     def test_circuit_breaker_pattern(self, db_session: Session) -> None:
-        """Test circuit breaker pattern"""
+        """Test circuit breaker pattern."""
         project = Project(
-            id="circuit-proj", name="Circuit Breaker Test", project_metadata={"circuit_breaker": "closed"}
+            id="circuit-proj", name="Circuit Breaker Test", project_metadata={"circuit_breaker": "closed"},
         )
         db_session.add(project)
         db_session.commit()
 
         retrieved = db_session.query(Project).filter_by(id="circuit-proj").first()
         assert retrieved is not None
-        assert cast(Project, retrieved).project_metadata["circuit_breaker"] == "closed"
+        assert cast("Project", retrieved).project_metadata["circuit_breaker"] == "closed"
 
     def test_graceful_degradation(self, db_session: Session) -> None:
-        """Test graceful degradation on failure"""
+        """Test graceful degradation on failure."""
         project = Project(id="degrade-proj", name="Degradation Test")
         db_session.add(project)
         db_session.commit()
@@ -528,7 +528,7 @@ class TestRecoveryAndRetry:
             assert True
 
     def test_fallback_mechanism(self, db_session: Session) -> None:
-        """Test fallback to secondary resource"""
+        """Test fallback to secondary resource."""
         primary = Project(id="primary-proj", name="Primary")
         secondary = Project(id="secondary-proj", name="Secondary")
         db_session.add_all([primary, secondary])
@@ -542,7 +542,7 @@ class TestRecoveryAndRetry:
         assert result is not None
 
     def test_idempotent_retry(self, db_session: Session) -> None:
-        """Test idempotent operations for safe retry"""
+        """Test idempotent operations for safe retry."""
         project = Project(id="idempotent-proj", name="Idempotent Test")
         db_session.add(project)
         db_session.commit()
@@ -554,32 +554,32 @@ class TestRecoveryAndRetry:
 
         retrieved = db_session.query(Project).filter_by(id="idempotent-proj").first()
         assert retrieved is not None
-        assert cast(Project, retrieved).name == "Idempotent Update"
+        assert cast("Project", retrieved).name == "Idempotent Update"
 
     def test_heartbeat_monitoring(self, db_session: Session) -> None:
-        """Test heartbeat monitoring for health checks"""
+        """Test heartbeat monitoring for health checks."""
         project = Project(
-            id="heartbeat-proj", name="Heartbeat Test", project_metadata={"last_heartbeat": "2025-01-01T00:00:00"}
+            id="heartbeat-proj", name="Heartbeat Test", project_metadata={"last_heartbeat": "2025-01-01T00:00:00"},
         )
         db_session.add(project)
         db_session.commit()
 
         retrieved = db_session.query(Project).filter_by(id="heartbeat-proj").first()
         assert retrieved is not None
-        assert cast(Project, retrieved).project_metadata["last_heartbeat"] is not None
+        assert cast("Project", retrieved).project_metadata["last_heartbeat"] is not None
 
 
 class TestDataConsistencyUnderFailure:
-    """Test data consistency guarantees under failure (6+ tests)"""
+    """Test data consistency guarantees under failure (6+ tests)."""
 
     def test_no_partial_writes(self, db_session: Session) -> None:
-        """Test that writes are atomic - no partial state"""
+        """Test that writes are atomic - no partial state."""
         project = Project(id="atomic-proj", name="Atomic Test")
         db_session.add(project)
         db_session.flush()
 
         item = Item(
-            id="atomic-item", project_id="atomic-proj", title="Test", view="DEFAULT", item_type="task", status="todo"
+            id="atomic-item", project_id="atomic-proj", title="Test", view="DEFAULT", item_type="task", status="todo",
         )
         db_session.add(item)
         db_session.commit()
@@ -591,23 +591,23 @@ class TestDataConsistencyUnderFailure:
 
         retrieved = db_session.query(Item).filter_by(id="atomic-item").first()
         assert retrieved is not None
-        row = cast(Item, retrieved)
+        row = cast("Item", retrieved)
         # Both updates applied or none
         assert (row.title == "Updated" and row.status == "in_progress") or (
             row.title == "Test" and row.status == "todo"
         )
 
     def test_cascade_consistency(self, db_session: Session) -> None:
-        """Test cascade operations maintain consistency"""
+        """Test cascade operations maintain consistency."""
         project = Project(id="cascade-proj", name="Cascade Test")
         db_session.add(project)
         db_session.flush()
 
         item1 = Item(
-            id="cascade-src", project_id="cascade-proj", title="Source", view="DEFAULT", item_type="task", status="todo"
+            id="cascade-src", project_id="cascade-proj", title="Source", view="DEFAULT", item_type="task", status="todo",
         )
         item2 = Item(
-            id="cascade-tgt", project_id="cascade-proj", title="Target", view="DEFAULT", item_type="task", status="todo"
+            id="cascade-tgt", project_id="cascade-proj", title="Target", view="DEFAULT", item_type="task", status="todo",
         )
         db_session.add_all([item1, item2])
         db_session.flush()
@@ -634,7 +634,7 @@ class TestDataConsistencyUnderFailure:
             db_session.rollback()
 
     def test_referential_integrity(self, db_session: Session) -> None:
-        """Test referential integrity under failures"""
+        """Test referential integrity under failures."""
         project = Project(id="ref-integrity-proj", name="Ref Integrity Test")
         db_session.add(project)
         db_session.flush()
@@ -652,7 +652,7 @@ class TestDataConsistencyUnderFailure:
 
         # Cannot create item referencing deleted project
         orphan_item = Item(
-            id="orphan-ref", project_id="deleted-proj", title="Orphan", view="DEFAULT", item_type="task", status="todo"
+            id="orphan-ref", project_id="deleted-proj", title="Orphan", view="DEFAULT", item_type="task", status="todo",
         )
         db_session.add(orphan_item)
         try:
@@ -664,7 +664,7 @@ class TestDataConsistencyUnderFailure:
             # Expected behavior
 
     def test_version_conflict_detection(self, db_session: Session) -> None:
-        """Test detecting version conflicts"""
+        """Test detecting version conflicts."""
         project = Project(id="version-proj", name="Version Test")
         db_session.add(project)
         db_session.flush()
@@ -691,17 +691,17 @@ class TestDataConsistencyUnderFailure:
         assert (getattr(retrieved, "item_metadata", None) or {}).get("version", 0) > original_version
 
     def test_checkpoint_recovery(self, db_session: Session) -> None:
-        """Test recovery from checkpoints"""
+        """Test recovery from checkpoints."""
         project = Project(id="checkpoint-proj", name="Checkpoint Test", project_metadata={"checkpoint_id": "cp-001"})
         db_session.add(project)
         db_session.commit()
 
         retrieved = db_session.query(Project).filter_by(id="checkpoint-proj").first()
         assert retrieved is not None
-        assert cast(Project, retrieved).project_metadata["checkpoint_id"] == "cp-001"
+        assert cast("Project", retrieved).project_metadata["checkpoint_id"] == "cp-001"
 
     def test_wal_recovery(self, db_session: Session) -> None:
-        """Test Write-Ahead Logging recovery"""
+        """Test Write-Ahead Logging recovery."""
         project = Project(id="wal-proj", name="WAL Test", project_metadata={"wal_enabled": True})
         db_session.add(project)
         db_session.commit()

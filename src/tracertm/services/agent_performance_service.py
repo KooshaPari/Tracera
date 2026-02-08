@@ -18,7 +18,7 @@ WORKLOAD_MODERATE_THRESHOLD = 5
 class AgentPerformanceService:
     """Service for analyzing agent performance."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.agents = AgentRepository(session)
         self.events = EventRepository(session)

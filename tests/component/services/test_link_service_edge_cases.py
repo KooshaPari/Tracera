@@ -1,5 +1,4 @@
-"""
-Comprehensive edge case tests for link_service.
+"""Comprehensive edge case tests for link_service.
 
 This module tests:
 - Circular dependency detection
@@ -38,14 +37,14 @@ class TestLinkServiceErrors:
         """Create service instance."""
         return LinkService(mock_session)
 
-    async def test_circular_dependency_detection(self, service):
+    async def test_circular_dependency_detection(self, service) -> None:
         """Test detection of circular dependencies."""
         # In a real implementation, would create A→B→C→A
         # Stub implementation returns empty list
         result = await service.list_links(source="item_a", target="item_c", check_circular=True)
         assert isinstance(result, list)
 
-    async def test_concurrent_link_creation(self, service):
+    async def test_concurrent_link_creation(self, service) -> None:
         """Test concurrent link creation to same item."""
         # Create 20 concurrent links
         tasks = [service.list_links(source=f"item_{i}", target="target_item") for i in range(20)]
@@ -55,24 +54,24 @@ class TestLinkServiceErrors:
         assert len(results) == 20
         assert all(isinstance(r, list) for r in results)
 
-    async def test_orphaned_link_cleanup(self, service):
+    async def test_orphaned_link_cleanup(self, service) -> None:
         """Test cleanup of orphaned links."""
         # Simulate orphaned link scenario
         result = await service.list_links(cleanup_orphaned=True)
         assert isinstance(result, list)
 
-    async def test_link_validation_with_missing_targets(self, service):
+    async def test_link_validation_with_missing_targets(self, service) -> None:
         """Test link validation with missing target items."""
         result = await service.list_links(target="nonexistent_item", validate=True)
         assert isinstance(result, list)
 
-    async def test_bidirectional_link_consistency(self, service):
+    async def test_bidirectional_link_consistency(self, service) -> None:
         """Test bidirectional link consistency."""
         # In real implementation, would verify A→B also creates B→A
         result = await service.list_links(bidirectional=True)
         assert isinstance(result, list)
 
-    async def test_link_with_invalid_type(self, service):
+    async def test_link_with_invalid_type(self, service) -> None:
         """Test link creation with invalid type."""
         result = await service.list_links(link_type="invalid_type")
         assert isinstance(result, list)
@@ -87,7 +86,7 @@ class TestLinkServiceConcurrency:
         """Create service instance."""
         return LinkService(AsyncMock())
 
-    async def test_concurrent_link_queries(self, service):
+    async def test_concurrent_link_queries(self, service) -> None:
         """Test concurrent link queries."""
         tasks = [service.list_links(source=f"item_{i}") for i in range(50)]
         results = await asyncio.gather(*tasks)
@@ -95,19 +94,17 @@ class TestLinkServiceConcurrency:
         assert len(results) == 50
         assert all(isinstance(r, list) for r in results)
 
-    async def test_concurrent_link_operations_different_items(self, service):
+    async def test_concurrent_link_operations_different_items(self, service) -> None:
         """Test concurrent operations on different items."""
         # Mix of different link operations
         tasks = []
         for i in range(10):
-            tasks.append(service.list_links(source=f"source_{i}"))
-            tasks.append(service.list_links(target=f"target_{i}"))
-            tasks.append(service.list_links(link_type=f"type_{i}"))
+            tasks.extend((service.list_links(source=f"source_{i}"), service.list_links(target=f"target_{i}"), service.list_links(link_type=f"type_{i}")))
 
         results = await asyncio.gather(*tasks)
         assert len(results) == 30
 
-    async def test_high_frequency_link_operations(self, service):
+    async def test_high_frequency_link_operations(self, service) -> None:
         """Test rapid successive link operations."""
         import time
 
@@ -119,7 +116,7 @@ class TestLinkServiceConcurrency:
         # Should complete quickly
         assert duration < 2.0, f"100 operations took {duration}s, expected < 2s"
 
-    async def test_link_operation_timeout(self, service):
+    async def test_link_operation_timeout(self, service) -> None:
         """Test link operations with timeout."""
         try:
             result = await asyncio.wait_for(service.list_links(), timeout=1.0)
@@ -137,7 +134,7 @@ class TestLinkServiceValidation:
         """Create service instance."""
         return LinkService(AsyncMock())
 
-    async def test_link_with_none_parameters(self, service):
+    async def test_link_with_none_parameters(self, service) -> None:
         """Test link operations with None parameters."""
         test_cases = [
             {"source": None},
@@ -150,7 +147,7 @@ class TestLinkServiceValidation:
             result = await service.list_links(**kwargs)
             assert isinstance(result, list)
 
-    async def test_link_with_empty_strings(self, service):
+    async def test_link_with_empty_strings(self, service) -> None:
         """Test link operations with empty strings."""
         test_cases = [
             {"source": ""},
@@ -162,7 +159,7 @@ class TestLinkServiceValidation:
             result = await service.list_links(**kwargs)
             assert isinstance(result, list)
 
-    async def test_link_with_special_characters(self, service):
+    async def test_link_with_special_characters(self, service) -> None:
         """Test links with special characters in IDs."""
         special_ids = [
             "item-with-dashes",
@@ -176,7 +173,7 @@ class TestLinkServiceValidation:
             result = await service.list_links(source=item_id)
             assert isinstance(result, list)
 
-    async def test_link_with_unicode_identifiers(self, service):
+    async def test_link_with_unicode_identifiers(self, service) -> None:
         """Test links with unicode in identifiers."""
         unicode_ids = [
             "item_测试",
@@ -188,7 +185,7 @@ class TestLinkServiceValidation:
             result = await service.list_links(source=item_id)
             assert isinstance(result, list)
 
-    async def test_link_type_variations(self, service):
+    async def test_link_type_variations(self, service) -> None:
         """Test various link types."""
         link_types = [
             "depends_on",
@@ -214,7 +211,7 @@ class TestLinkServiceDataIntegrity:
         """Create service instance."""
         return LinkService(AsyncMock())
 
-    async def test_link_query_consistency(self, service):
+    async def test_link_query_consistency(self, service) -> None:
         """Test link queries return consistent results."""
         source_id = "test_item"
 
@@ -226,7 +223,7 @@ class TestLinkServiceDataIntegrity:
         # All results should be identical
         assert all(r == results[0] for r in results)
 
-    async def test_multiple_service_instances(self):
+    async def test_multiple_service_instances(self) -> None:
         """Test multiple service instances don't interfere."""
         services = [LinkService(AsyncMock()) for _ in range(10)]
 
@@ -236,7 +233,7 @@ class TestLinkServiceDataIntegrity:
         assert len(results) == 10
         assert all(isinstance(r, list) for r in results)
 
-    async def test_service_reuse_stability(self):
+    async def test_service_reuse_stability(self) -> None:
         """Test service remains stable with repeated use."""
         service = LinkService(AsyncMock())
 
@@ -244,13 +241,13 @@ class TestLinkServiceDataIntegrity:
             result = await service.list_links(source=f"item_{i}")
             assert isinstance(result, list)
 
-    async def test_link_service_initialization_without_session(self):
+    async def test_link_service_initialization_without_session(self) -> None:
         """Test service initialization without session."""
         service = LinkService(None)
         assert service is not None
         assert service.db_session is None
 
-    async def test_link_with_database_error(self):
+    async def test_link_with_database_error(self) -> None:
         """Test link operations with database error."""
         mock_session = AsyncMock()
         mock_session.execute.side_effect = Exception("Database error")
@@ -271,13 +268,13 @@ class TestLinkServiceComplexScenarios:
         """Create service instance."""
         return LinkService(AsyncMock())
 
-    async def test_deep_link_traversal(self, service):
+    async def test_deep_link_traversal(self, service) -> None:
         """Test traversing deep link chains."""
         # In real implementation, would test A→B→C→D→E
         result = await service.list_links(source="item_a", depth=5)
         assert isinstance(result, list)
 
-    async def test_multiple_link_types_same_items(self, service):
+    async def test_multiple_link_types_same_items(self, service) -> None:
         """Test multiple link types between same items."""
         # Item A can have multiple link types to Item B
         link_types = ["depends_on", "related_to", "implements"]
@@ -286,7 +283,7 @@ class TestLinkServiceComplexScenarios:
             result = await service.list_links(source="item_a", target="item_b", link_type=link_type)
             assert isinstance(result, list)
 
-    async def test_link_filtering_combinations(self, service):
+    async def test_link_filtering_combinations(self, service) -> None:
         """Test various combinations of link filters."""
         filter_combinations = [
             {"source": "item_a"},
@@ -302,7 +299,7 @@ class TestLinkServiceComplexScenarios:
             result = await service.list_links(**filters)
             assert isinstance(result, list)
 
-    async def test_link_performance_large_graph(self, service):
+    async def test_link_performance_large_graph(self, service) -> None:
         """Test link performance with large relationship graph."""
         import time
 

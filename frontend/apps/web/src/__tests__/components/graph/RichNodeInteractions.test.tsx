@@ -47,7 +47,7 @@ describe(NodeActions, () => {
     await user.click(expandButton);
 
     expect(onExpand).toHaveBeenCalledWith('test-node');
-    expect(onExpand).toHaveBeenCalledTimes(1);
+    expect(onExpand).toHaveBeenCalledOnce();
   });
 
   it('calls onNavigate when navigate button is clicked', async () => {
@@ -71,7 +71,7 @@ describe(NodeActions, () => {
     await user.click(navigateButton);
 
     expect(onNavigate).toHaveBeenCalledWith('test-node');
-    expect(onNavigate).toHaveBeenCalledTimes(1);
+    expect(onNavigate).toHaveBeenCalledOnce();
   });
 
   it('shows collapse icon when expanded', () => {

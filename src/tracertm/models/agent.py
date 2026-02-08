@@ -1,6 +1,4 @@
-"""
-Agent model for TraceRTM.
-"""
+"""Agent model for TraceRTM."""
 
 import uuid
 
@@ -18,8 +16,7 @@ def generate_agent_uuid() -> uuid.UUID:
 
 
 class Agent(Base, TimestampMixin):
-    """
-    Agent model for tracking AI agent activity.
+    """Agent model for tracking AI agent activity.
 
     Agents register themselves and log their activities.
     """
@@ -48,9 +45,7 @@ class Agent(Base, TimestampMixin):
     __table_args__ = (Index("idx_agents_project_status", "project_id", "status"),)
 
     def __init__(self, **kwargs: object) -> None:
-        """
-        Accept flexible kwargs used by tests (config, capabilities, agent_type).
-        """
+        """Accept flexible kwargs used by tests (config, capabilities, agent_type)."""
         if "agent_type" not in kwargs:
             kwargs["agent_type"] = "generic"
         if "config" not in kwargs:

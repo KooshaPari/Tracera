@@ -1,5 +1,4 @@
-"""
-Comprehensive error path and exception handling tests.
+"""Comprehensive error path and exception handling tests.
 
 Targets +3% coverage by testing error scenarios and exception flows:
 - Database connection failures
@@ -16,6 +15,7 @@ import json
 import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -37,17 +37,17 @@ from tracertm.repositories.item_repository import ItemRepository
 class TestDatabaseConnectionErrors:
     """Test database connection failures and error handling."""
 
-    def test_invalid_database_url(self):
+    def test_invalid_database_url(self) -> None:
         """Test connection with invalid database URL."""
 
-        def connect_invalid():
+        def connect_invalid() -> None:
             db = DatabaseConnection("invalid://malformed:url")
             db.connect()
 
         with pytest.raises((ValueError, OSError), match=r"invalid|malformed|url"):
             connect_invalid()
 
-    def test_database_not_configured_error(self):
+    def test_database_not_configured_error(self) -> None:
         """Test client behavior when database is not configured."""
         with patch.dict("os.environ", {"DATABASE_URL": ""}):
             client = TraceRTMClient()
@@ -57,7 +57,7 @@ class TestDatabaseConnectionErrors:
             ):
                 client._get_session()
 
-    def test_database_connection_timeout(self):
+    def test_database_connection_timeout(self) -> None:
         """Test handling of connection timeout."""
         with patch(
             "tracertm.database.connection.DatabaseConnection.connect",
@@ -67,7 +67,7 @@ class TestDatabaseConnectionErrors:
             with pytest.raises(TimeoutError, match="Connection timeout"):
                 db.connect()
 
-    def test_database_unavailable_error(self):
+    def test_database_unavailable_error(self) -> None:
         """Test handling of unavailable database."""
         with patch(
             "tracertm.database.connection.DatabaseConnection.connect",
@@ -77,7 +77,7 @@ class TestDatabaseConnectionErrors:
             with pytest.raises(OperationalError):
                 db.connect()
 
-    def test_session_recovery_after_error(self):
+    def test_session_recovery_after_error(self) -> None:
         """Test that session can recover after connection error."""
         client = TraceRTMClient()
         client._session = None
@@ -114,7 +114,7 @@ class TestDatabaseConnectionErrors:
 class TestRepositoryErrorPaths:
     """Test error handling in repository layer."""
 
-    async def test_create_item_with_invalid_parent(self, db_session: AsyncSession):
+    async def test_create_item_with_invalid_parent(self, db_session: AsyncSession) -> None:
         """Test item creation fails with invalid parent ID."""
         repo = ItemRepository(db_session)
 
@@ -127,7 +127,7 @@ class TestRepositoryErrorPaths:
                 parent_id="non-existent-parent",
             )
 
-    async def test_create_item_parent_cross_project(self, db_session: AsyncSession):
+    async def test_create_item_parent_cross_project(self, db_session: AsyncSession) -> None:
         """Test item creation fails when parent is in different project."""
         repo = ItemRepository(db_session)
 
@@ -151,13 +151,13 @@ class TestRepositoryErrorPaths:
                 parent_id="parent-1",
             )
 
-    async def test_get_item_not_found(self, db_session: AsyncSession):
+    async def test_get_item_not_found(self, db_session: AsyncSession) -> None:
         """Test getting non-existent item returns None."""
         repo = ItemRepository(db_session)
         result = await repo.get_by_id("non-existent")
         assert result is None
 
-    async def test_update_item_not_found(self, db_session: AsyncSession):
+    async def test_update_item_not_found(self, db_session: AsyncSession) -> None:
         """Test updating non-existent item fails gracefully."""
         repo = ItemRepository(db_session)
 
@@ -165,14 +165,14 @@ class TestRepositoryErrorPaths:
         result = await repo.get_by_id("non-existent")
         assert result is None
 
-    async def test_delete_item_not_found(self, db_session: AsyncSession):
+    async def test_delete_item_not_found(self, db_session: AsyncSession) -> None:
         """Test deleting non-existent item."""
         repo = ItemRepository(db_session)
         # Should not raise, just return False or None
         result = await repo.delete("non-existent")
         assert result is None or result is False
 
-    async def test_create_item_with_none_metadata(self, db_session: AsyncSession):
+    async def test_create_item_with_none_metadata(self, db_session: AsyncSession) -> None:
         """Test item creation handles None metadata gracefully."""
         repo = ItemRepository(db_session)
 
@@ -187,13 +187,13 @@ class TestRepositoryErrorPaths:
         assert item is not None
         assert item.item_metadata == {} or item.item_metadata is None
 
-    async def test_list_items_empty_result(self, db_session: AsyncSession):
+    async def test_list_items_empty_result(self, db_session: AsyncSession) -> None:
         """Test listing items from empty project."""
         repo = ItemRepository(db_session)
         items = await repo.list_by_view("non-existent-project", "board")
         assert items == []
 
-    async def test_concurrency_error_on_update(self, db_session: AsyncSession):
+    async def test_concurrency_error_on_update(self, db_session: AsyncSession) -> None:
         """Test handling of concurrent modification errors."""
         repo = ItemRepository(db_session)
 
@@ -206,7 +206,7 @@ class TestRepositoryErrorPaths:
         )
 
         # Simulate concurrency error by mocking session
-        async def do_flush():
+        async def do_flush() -> None:
             item.title = "Updated"
             await db_session.flush()
 
@@ -220,7 +220,7 @@ class TestRepositoryErrorPaths:
         ):
             await do_flush()
 
-    async def test_large_metadata_handling(self, db_session: AsyncSession):
+    async def test_large_metadata_handling(self, db_session: AsyncSession) -> None:
         """Test handling of large metadata objects."""
         repo = ItemRepository(db_session)
 
@@ -247,7 +247,7 @@ class TestRepositoryErrorPaths:
 class TestPermissionErrors:
     """Test permission denied and authorization scenarios."""
 
-    def test_project_not_selected_error(self):
+    def test_project_not_selected_error(self) -> None:
         """Test error when no project is selected."""
         client = TraceRTMClient()
 
@@ -257,7 +257,7 @@ class TestPermissionErrors:
         ):
             client._get_project_id()
 
-    def test_log_operation_without_agent_id(self):
+    def test_log_operation_without_agent_id(self) -> None:
         """Test operation logging skips gracefully without agent."""
         client = TraceRTMClient(agent_id=None)
 
@@ -269,7 +269,7 @@ class TestPermissionErrors:
             data={"title": "test"},
         )
 
-    def test_log_operation_database_error(self):
+    def test_log_operation_database_error(self) -> None:
         """Test logging fails gracefully on database error."""
         client = TraceRTMClient(agent_id="agent-1")
 
@@ -282,7 +282,7 @@ class TestPermissionErrors:
                 data={"title": "test"},
             )
 
-    def test_log_operation_rollback_on_error(self):
+    def test_log_operation_rollback_on_error(self) -> None:
         """Test that session is rolled back on logging error."""
         client = TraceRTMClient(agent_id="agent-1")
         mock_session = MagicMock(spec=Session)
@@ -312,7 +312,7 @@ class TestPermissionErrors:
 class TestInvalidInputHandling:
     """Test handling of invalid and malformed input."""
 
-    def test_invalid_item_type(self):
+    def test_invalid_item_type(self) -> None:
         """Test rejection of invalid item type."""
         # Create item with invalid type - model may accept any type
         item = Item(
@@ -325,7 +325,7 @@ class TestInvalidInputHandling:
         # Item should be created but validation might occur elsewhere
         assert item is not None
 
-    def test_invalid_item_status(self):
+    def test_invalid_item_status(self) -> None:
         """Test handling of invalid status."""
         item = Item(
             id="item-1",
@@ -337,7 +337,7 @@ class TestInvalidInputHandling:
         # Status might have validation in update
         item.status = "invalid"  # This may or may not raise
 
-    def test_empty_title_handling(self):
+    def test_empty_title_handling(self) -> None:
         """Test handling of empty titles."""
         # Create with empty title - behavior depends on validation
         item = Item(
@@ -349,7 +349,7 @@ class TestInvalidInputHandling:
         )
         assert item.title == ""
 
-    def test_null_required_fields(self):
+    def test_null_required_fields(self) -> None:
         """Test handling of null required fields."""
         # Model may accept None, test behavior
         try:
@@ -366,7 +366,7 @@ class TestInvalidInputHandling:
             # If it fails, that's also valid
             pass
 
-    def test_malformed_json_metadata(self):
+    def test_malformed_json_metadata(self) -> None:
         """Test handling of malformed JSON in metadata."""
         # Should use valid JSON structure
         Item(
@@ -384,7 +384,7 @@ class TestInvalidInputHandling:
 class TestInputValidationInRepositories:
     """Test input validation at repository layer."""
 
-    async def test_create_with_empty_title(self, db_session: AsyncSession):
+    async def test_create_with_empty_title(self, db_session: AsyncSession) -> None:
         """Test creation with empty title."""
         repo = ItemRepository(db_session)
 
@@ -396,7 +396,7 @@ class TestInputValidationInRepositories:
         )
         assert item.title == ""
 
-    async def test_create_with_special_characters(self, db_session: AsyncSession):
+    async def test_create_with_special_characters(self, db_session: AsyncSession) -> None:
         """Test creation with special characters in title."""
         repo = ItemRepository(db_session)
 
@@ -409,7 +409,7 @@ class TestInputValidationInRepositories:
         )
         assert item.title == special_title
 
-    async def test_create_with_very_long_title(self, db_session: AsyncSession):
+    async def test_create_with_very_long_title(self, db_session: AsyncSession) -> None:
         """Test creation with very long title."""
         repo = ItemRepository(db_session)
 
@@ -433,25 +433,26 @@ class TestInputValidationInRepositories:
 class TestTimeoutAndRetry:
     """Test timeout and retry logic."""
 
-    async def test_operation_timeout(self):
+    async def test_operation_timeout(self) -> None:
         """Test handling of operation timeout."""
 
-        async def slow_operation():
+        async def slow_operation() -> None:
             await asyncio.sleep(10)
 
         with pytest.raises(asyncio.TimeoutError):
             await asyncio.wait_for(slow_operation(), timeout=0.1)
 
-    async def test_retry_exhaustion(self):
+    async def test_retry_exhaustion(self) -> None:
         """Test exhaustion of retries."""
         max_retries = 3
         attempt_count = 0
 
-        async def failing_operation():
+        async def failing_operation() -> Never:
             await asyncio.sleep(0)
             nonlocal attempt_count
             attempt_count += 1
-            raise RuntimeError("Operation failed")
+            msg = "Operation failed"
+            raise RuntimeError(msg)
 
         # Simulate retry logic
         for attempt in range(max_retries):
@@ -462,11 +463,11 @@ class TestTimeoutAndRetry:
                     # Last attempt
                     assert attempt_count == max_retries
 
-    async def test_exponential_backoff(self):
+    async def test_exponential_backoff(self) -> None:
         """Test exponential backoff timing."""
         start_times = []
 
-        async def operation_with_backoff():
+        async def operation_with_backoff() -> None:
             for attempt in range(3):
                 start_times.append(datetime.now(UTC))
                 if attempt < 2:
@@ -477,11 +478,11 @@ class TestTimeoutAndRetry:
         await operation_with_backoff()
         assert len(start_times) == 3
 
-    async def test_timeout_with_cleanup(self):
+    async def test_timeout_with_cleanup(self) -> None:
         """Test that resources are cleaned up on timeout."""
         cleanup_called = False
 
-        async def operation_with_cleanup():
+        async def operation_with_cleanup() -> None:
             nonlocal cleanup_called
             try:
                 await asyncio.sleep(10)
@@ -503,7 +504,7 @@ class TestTimeoutAndRetry:
 class TestResourceCleanup:
     """Test proper resource cleanup on errors."""
 
-    def test_database_connection_cleanup(self):
+    def test_database_connection_cleanup(self) -> None:
         """Test database connection cleanup on error."""
         mock_engine = MagicMock()
         mock_connection = MagicMock()
@@ -521,11 +522,11 @@ class TestResourceCleanup:
         assert cleanup_called
         mock_connection.close.assert_called_once()
 
-    def test_file_handle_cleanup_on_error(self):
+    def test_file_handle_cleanup_on_error(self) -> None:
         """Test file handle cleanup on error."""
         cleanup_called = False
 
-        with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", delete=False) as f:
             temp_path = f.name
             try:
                 # Simulate error handling
@@ -538,7 +539,7 @@ class TestResourceCleanup:
         assert not Path(temp_path).exists()
 
     @pytest.mark.asyncio
-    async def test_session_cleanup_on_error(self):
+    async def test_session_cleanup_on_error(self) -> None:
         """Test async session cleanup on error."""
         from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -555,12 +556,12 @@ class TestResourceCleanup:
 
         assert cleanup_called
 
-    def test_multiple_context_managers_cleanup(self):
+    def test_multiple_context_managers_cleanup(self) -> None:
         """Test cleanup with nested context managers."""
         cleanup_order = []
 
         class Resource:
-            def __init__(self, name):
+            def __init__(self, name) -> None:
                 self.name = name
 
             def __enter__(self):
@@ -571,7 +572,8 @@ class TestResourceCleanup:
 
         try:
             with Resource("first"), Resource("second"), Resource("third"):
-                raise Exception("Error")
+                msg = "Error"
+                raise Exception(msg)
         except Exception:
             pass
 
@@ -588,7 +590,7 @@ class TestResourceCleanup:
 class TestConflictResolutionErrors:
     """Test error handling in conflict resolution."""
 
-    async def test_conflict_with_missing_version(self, db_session: AsyncSession):
+    async def test_conflict_with_missing_version(self, db_session: AsyncSession) -> None:
         """Test conflict resolution with missing version info."""
         # Test handling of missing version
         item1 = {"title": "version 1"}  # Missing version
@@ -600,7 +602,7 @@ class TestConflictResolutionErrors:
             with pytest.raises((ValueError, KeyError, AttributeError)):
                 _ = item1["version"]  # KeyError: missing "version"
 
-    async def test_conflicting_deletes(self, db_session: AsyncSession):
+    async def test_conflicting_deletes(self, db_session: AsyncSession) -> None:
         """Test handling of conflicting deletes."""
         # Both deleted should not conflict
         conflict_item1 = {"title": "item", "version": 1, "deleted": True}
@@ -609,7 +611,7 @@ class TestConflictResolutionErrors:
         # If both are deleted, they should match
         assert conflict_item1["deleted"] == conflict_item2["deleted"]
 
-    async def test_unresolvable_conflict(self, db_session: AsyncSession):
+    async def test_unresolvable_conflict(self, db_session: AsyncSession) -> None:
         """Test handling of unresolvable conflicts."""
         # Test unresolvable conflict scenario
         item1 = {"title": "v1", "version": 1, "data": "data1"}
@@ -629,35 +631,38 @@ class TestConflictResolutionErrors:
 class TestSyncEngineErrors:
     """Test error handling in sync engine."""
 
-    async def test_sync_with_unavailable_remote(self):
+    async def test_sync_with_unavailable_remote(self) -> Never:
         """Test sync when remote is unavailable."""
         # Test handling of connection error
         with pytest.raises(ConnectionError):
-            raise ConnectionError("Remote unavailable")
+            msg = "Remote unavailable"
+            raise ConnectionError(msg)
 
-    async def test_sync_partial_failure(self):
+    async def test_sync_partial_failure(self) -> None:
         """Test sync with partial failure."""
         # Simulate partial failure
         attempts = []
 
-        async def failing_sync():
+        async def failing_sync() -> None:
             await asyncio.sleep(0)
             attempts.append("attempt")
             if len(attempts) < 2:
-                raise RuntimeError("Partial failure")
+                msg = "Partial failure"
+                raise RuntimeError(msg)
 
         with pytest.raises(RuntimeError, match="Partial failure"):
             await failing_sync()
 
-    async def test_sync_cleanup_on_error(self):
+    async def test_sync_cleanup_on_error(self) -> None:
         """Test cleanup after sync error."""
         cleanup_called = False
 
-        async def operation_with_cleanup():
+        async def operation_with_cleanup() -> None:
             await asyncio.sleep(0)
             nonlocal cleanup_called
             try:
-                raise RuntimeError("Operation failed")
+                msg = "Operation failed"
+                raise RuntimeError(msg)
             finally:
                 cleanup_called = True
 
@@ -676,7 +681,7 @@ class TestSyncEngineErrors:
 class TestLocalStorageErrors:
     """Test error handling in local storage."""
 
-    async def test_read_nonexistent_file(self):
+    async def test_read_nonexistent_file(self) -> None:
         """Test reading non-existent file."""
         with tempfile.TemporaryDirectory() as tmpdir:
             file_path = Path(tmpdir) / "nonexistent.json"
@@ -684,7 +689,7 @@ class TestLocalStorageErrors:
             with pytest.raises(FileNotFoundError):
                 file_path.read_text()
 
-    async def test_write_to_read_only_directory(self):
+    async def test_write_to_read_only_directory(self) -> None:
         """Test writing to read-only directory."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_path = Path(tmpdir)
@@ -699,7 +704,7 @@ class TestLocalStorageErrors:
                 # Restore permissions for cleanup
                 tmp_path.chmod(0o755)
 
-    async def test_corrupted_item_file(self):
+    async def test_corrupted_item_file(self) -> None:
         """Test reading corrupted item file."""
         with tempfile.TemporaryDirectory() as tmpdir:
             storage_path = Path(tmpdir)
@@ -711,7 +716,7 @@ class TestLocalStorageErrors:
             with pytest.raises((json.JSONDecodeError, ValueError)):
                 json.loads(item_file.read_text())
 
-    async def test_disk_full_on_write(self):
+    async def test_disk_full_on_write(self) -> None:
         """Test handling of disk full error."""
         with (
             tempfile.TemporaryDirectory() as tmpdir,
@@ -734,7 +739,7 @@ class TestLocalStorageErrors:
 class TestIntegrationErrorScenarios:
     """Test error handling across multiple components."""
 
-    async def test_cascading_failures(self, db_session: AsyncSession):
+    async def test_cascading_failures(self, db_session: AsyncSession) -> None:
         """Test cascading failures through system."""
         repo = ItemRepository(db_session)
 
@@ -754,7 +759,7 @@ class TestIntegrationErrorScenarios:
         repo2 = ItemRepository(db_session)
         assert repo2 is not None
 
-    async def test_error_propagation(self, db_session: AsyncSession):
+    async def test_error_propagation(self, db_session: AsyncSession) -> None:
         """Test that errors propagate correctly up the stack."""
         repo = ItemRepository(db_session)
 
@@ -768,7 +773,7 @@ class TestIntegrationErrorScenarios:
         ):
             await repo.get_by_id("item-1")
 
-    async def test_partial_state_on_error(self, db_session: AsyncSession):
+    async def test_partial_state_on_error(self, db_session: AsyncSession) -> None:
         """Test handling of partial state after error."""
         repo = ItemRepository(db_session)
 
@@ -795,43 +800,45 @@ class TestIntegrationErrorScenarios:
 class TestEdgeCaseErrors:
     """Test error handling for edge cases."""
 
-    def test_unicode_in_error_messages(self):
+    def test_unicode_in_error_messages(self) -> Never:
         """Test Unicode characters in error messages."""
         error_message = "Error: 🚨 ñoño ñáéíóú"
         with pytest.raises(ValueError, match="Error:"):
             raise ValueError(error_message)
 
-    def test_very_long_error_message(self):
+    def test_very_long_error_message(self) -> Never:
         """Test handling of very long error messages."""
         long_message = "error: " + "x" * 10000
         with pytest.raises(ValueError, match=r"^error:"):
             raise ValueError(long_message)
 
-    def test_error_with_null_bytes(self):
+    def test_error_with_null_bytes(self) -> Never:
         """Test handling of error with null bytes."""
         error_msg = "Error\x00with\x00nulls"
         with pytest.raises(ValueError, match="Error"):
             raise ValueError(error_msg)
 
-    def test_circular_exception_reference(self):
+    def test_circular_exception_reference(self) -> Never:
         """Test handling of circular exception references."""
 
         class CustomError(Exception):
-            def __init__(self):
+            def __init__(self) -> None:
                 super().__init__("Custom error")
                 self.context = self  # Circular reference
 
         with pytest.raises(CustomError):
             raise CustomError
 
-    def test_nested_exception_chains(self):
+    def test_nested_exception_chains(self) -> None:
         """Test handling of nested exception chains."""
 
-        def raise_wrapped():
+        def raise_wrapped() -> None:
             try:
-                raise ValueError("Original error")
+                msg = "Original error"
+                raise ValueError(msg)
             except ValueError as e:
-                raise RuntimeError("Wrapped error") from e
+                msg = "Wrapped error"
+                raise RuntimeError(msg) from e
 
         with pytest.raises(RuntimeError, match="Wrapped error") as exc_info:
             raise_wrapped()
@@ -846,7 +853,7 @@ class TestEdgeCaseErrors:
 class TestMockAndStubErrors:
     """Test error handling with mocks and stubs."""
 
-    def test_mock_method_raises_error(self):
+    def test_mock_method_raises_error(self) -> None:
         """Test mock method that raises error."""
         mock_obj = MagicMock()
         mock_obj.method.side_effect = ValueError("Mock error")
@@ -854,7 +861,7 @@ class TestMockAndStubErrors:
         with pytest.raises(ValueError, match="Mock error"):
             mock_obj.method()
 
-    def test_async_mock_raises_error(self):
+    def test_async_mock_raises_error(self) -> None:
         """Test async mock that raises error."""
         mock_obj = AsyncMock()
         mock_obj.async_method.side_effect = RuntimeError("Async error")
@@ -862,13 +869,14 @@ class TestMockAndStubErrors:
         with pytest.raises(RuntimeError, match="Async error"):
             asyncio.run(mock_obj.async_method())
 
-    def test_mock_property_raises_error(self):
+    def test_mock_property_raises_error(self) -> None:
         """Test mock property that raises error."""
         mock_obj = MagicMock()
 
         # Configure mock to raise when called
-        def raise_error():
-            raise AttributeError("Property error")
+        def raise_error() -> Never:
+            msg = "Property error"
+            raise AttributeError(msg)
 
         mock_obj.property.side_effect = raise_error
 
@@ -885,7 +893,7 @@ class TestMockAndStubErrors:
 class TestErrorMessageValidation:
     """Test that error messages are clear and helpful."""
 
-    def test_error_message_contains_context(self):
+    def test_error_message_contains_context(self) -> None:
         """Test that error messages include context."""
         try:
             ItemRepository(None)  # type: ignore[arg-type]
@@ -894,7 +902,7 @@ class TestErrorMessageValidation:
             # Error message should be informative
             assert len(str(e)) > 0
 
-    def test_error_includes_field_name(self):
+    def test_error_includes_field_name(self) -> None:
         """Test that validation errors include field names."""
         try:
             Item(
@@ -908,7 +916,7 @@ class TestErrorMessageValidation:
             # Should mention the field
             assert len(str(e)) > 0
 
-    def test_error_includes_actual_vs_expected(self):
+    def test_error_includes_actual_vs_expected(self) -> None:
         """Test that errors include actual vs expected values."""
         try:
             Item(

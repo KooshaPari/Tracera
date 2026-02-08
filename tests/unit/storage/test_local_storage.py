@@ -1,5 +1,4 @@
-"""
-Unit tests for LocalStorageManager.
+"""Unit tests for LocalStorageManager.
 
 Tests CRUD operations and SQLite ↔ Markdown synchronization
 for the hybrid local storage architecture.
@@ -19,8 +18,7 @@ import yaml
 
 @pytest.fixture
 def storage_dir(tmp_path):
-    """
-    Fixture: Temporary Storage Directory
+    """Fixture: Temporary Storage Directory.
 
     Provides: Clean storage directory for tests
     Cleanup: Automatic via tmp_path
@@ -32,8 +30,7 @@ def storage_dir(tmp_path):
 
 @pytest.fixture
 def db_path(storage_dir):
-    """
-    Fixture: Database Path
+    """Fixture: Database Path.
 
     Provides: Path to SQLite database file
     """
@@ -42,8 +39,7 @@ def db_path(storage_dir):
 
 @pytest.fixture
 def markdown_dir(storage_dir):
-    """
-    Fixture: Markdown Directory
+    """Fixture: Markdown Directory.
 
     Provides: Path to markdown files directory
     """
@@ -54,8 +50,7 @@ def markdown_dir(storage_dir):
 
 @pytest.fixture
 def init_db(db_path):
-    """
-    Fixture: Initialize Database Schema
+    """Fixture: Initialize Database Schema.
 
     Creates the SQLite database with all required tables
     """
@@ -154,7 +149,7 @@ def init_db(db_path):
 
 @pytest.fixture
 def sample_project_data():
-    """Sample project data for testing"""
+    """Sample project data for testing."""
     return {
         "id": "proj-001",
         "name": "test-project",
@@ -168,7 +163,7 @@ def sample_project_data():
 
 @pytest.fixture
 def sample_item_data():
-    """Sample item data for testing"""
+    """Sample item data for testing."""
     return {
         "id": "item-001",
         "project_id": "proj-001",
@@ -193,16 +188,14 @@ def sample_item_data():
 
 
 class TestLocalStorageProjectOperations:
-    """
-    Test Suite: Local Storage - Project Operations
+    """Test Suite: Local Storage - Project Operations.
 
     Tests CRUD operations for projects in SQLite database
     """
 
     @pytest.mark.unit
-    def test_create_project(self, init_db, sample_project_data):
-        """
-        TC-LS.1.1: Create Project - Success
+    def test_create_project(self, init_db, sample_project_data) -> None:
+        """TC-LS.1.1: Create Project - Success.
 
         Given: Empty database
         When: Project is created
@@ -242,9 +235,8 @@ class TestLocalStorageProjectOperations:
         assert result[2] == sample_project_data["description"]
 
     @pytest.mark.unit
-    def test_read_project(self, init_db, sample_project_data):
-        """
-        TC-LS.1.2: Read Project - Success
+    def test_read_project(self, init_db, sample_project_data) -> None:
+        """TC-LS.1.2: Read Project - Success.
 
         Given: Project exists in database
         When: Project is queried by ID
@@ -280,9 +272,8 @@ class TestLocalStorageProjectOperations:
         assert result[1] == sample_project_data["name"]
 
     @pytest.mark.unit
-    def test_update_project(self, init_db, sample_project_data):
-        """
-        TC-LS.1.3: Update Project - Success
+    def test_update_project(self, init_db, sample_project_data) -> None:
+        """TC-LS.1.3: Update Project - Success.
 
         Given: Project exists in database
         When: Project is updated
@@ -331,9 +322,8 @@ class TestLocalStorageProjectOperations:
         assert result[1] == new_version
 
     @pytest.mark.unit
-    def test_soft_delete_project(self, init_db, sample_project_data):
-        """
-        TC-LS.1.4: Soft Delete Project - Success
+    def test_soft_delete_project(self, init_db, sample_project_data) -> None:
+        """TC-LS.1.4: Soft Delete Project - Success.
 
         Given: Project exists in database
         When: Project is soft deleted
@@ -378,16 +368,14 @@ class TestLocalStorageProjectOperations:
 
 
 class TestLocalStorageItemOperations:
-    """
-    Test Suite: Local Storage - Item Operations
+    """Test Suite: Local Storage - Item Operations.
 
     Tests CRUD operations for items in SQLite database
     """
 
     @pytest.mark.unit
-    def test_create_item(self, init_db, sample_project_data, sample_item_data):
-        """
-        TC-LS.2.1: Create Item - Success
+    def test_create_item(self, init_db, sample_project_data, sample_item_data) -> None:
+        """TC-LS.2.1: Create Item - Success.
 
         Given: Project exists in database
         When: Item is created
@@ -454,9 +442,8 @@ class TestLocalStorageItemOperations:
         assert result[3] == sample_item_data["external_id"]
 
     @pytest.mark.unit
-    def test_query_items_by_project(self, init_db, sample_project_data, sample_item_data):
-        """
-        TC-LS.2.2: Query Items by Project - Success
+    def test_query_items_by_project(self, init_db, sample_project_data, sample_item_data) -> None:
+        """TC-LS.2.2: Query Items by Project - Success.
 
         Given: Multiple items exist in project
         When: Items are queried by project_id
@@ -524,9 +511,8 @@ class TestLocalStorageItemOperations:
         assert len(results) == 3
 
     @pytest.mark.unit
-    def test_filter_items_by_status(self, init_db, sample_project_data):
-        """
-        TC-LS.2.3: Filter Items by Status - Success
+    def test_filter_items_by_status(self, init_db, sample_project_data) -> None:
+        """TC-LS.2.3: Filter Items by Status - Success.
 
         Given: Items with different statuses exist
         When: Items are filtered by status
@@ -600,16 +586,14 @@ class TestLocalStorageItemOperations:
 
 
 class TestLocalStorageContentHashing:
-    """
-    Test Suite: Local Storage - Content Hashing
+    """Test Suite: Local Storage - Content Hashing.
 
     Tests content hash generation and change detection
     """
 
     @pytest.mark.unit
-    def test_generate_content_hash(self):
-        """
-        TC-LS.3.1: Generate Content Hash - Success
+    def test_generate_content_hash(self) -> None:
+        """TC-LS.3.1: Generate Content Hash - Success.
 
         Given: Markdown content
         When: Hash is generated
@@ -629,9 +613,8 @@ class TestLocalStorageContentHashing:
         assert len(hash1) == 64  # SHA256 produces 64-char hex
 
     @pytest.mark.unit
-    def test_detect_content_change(self):
-        """
-        TC-LS.3.2: Detect Content Change - Success
+    def test_detect_content_change(self) -> None:
+        """TC-LS.3.2: Detect Content Change - Success.
 
         Given: Two different content strings
         When: Hashes are compared
@@ -651,9 +634,8 @@ class TestLocalStorageContentHashing:
         assert hash1 != hash2
 
     @pytest.mark.unit
-    def test_no_change_detection(self):
-        """
-        TC-LS.3.3: No Change Detection - Success
+    def test_no_change_detection(self) -> None:
+        """TC-LS.3.3: No Change Detection - Success.
 
         Given: Same content with whitespace differences
         When: Hashes are compared after normalization
@@ -679,16 +661,14 @@ class TestLocalStorageContentHashing:
 
 
 class TestLocalStorageSyncQueue:
-    """
-    Test Suite: Local Storage - Sync Queue
+    """Test Suite: Local Storage - Sync Queue.
 
     Tests sync queue operations for change tracking
     """
 
     @pytest.mark.unit
-    def test_add_to_sync_queue(self, init_db):
-        """
-        TC-LS.4.1: Add to Sync Queue - Success
+    def test_add_to_sync_queue(self, init_db) -> None:
+        """TC-LS.4.1: Add to Sync Queue - Success.
 
         Given: Change occurred locally
         When: Change is added to sync queue
@@ -718,9 +698,8 @@ class TestLocalStorageSyncQueue:
         assert result[3] == "create"
 
     @pytest.mark.unit
-    def test_unique_sync_queue_constraint(self, init_db):
-        """
-        TC-LS.4.2: Sync Queue Unique Constraint - Duplicate Prevention
+    def test_unique_sync_queue_constraint(self, init_db) -> None:
+        """TC-LS.4.2: Sync Queue Unique Constraint - Duplicate Prevention.
 
         Given: Queue entry already exists
         When: Same change is added again
@@ -740,7 +719,7 @@ class TestLocalStorageSyncQueue:
         conn.commit()
 
         # Act & Assert
-        def insert_duplicate():
+        def insert_duplicate() -> None:
             cursor.execute(
                 """
                 INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at)
@@ -756,9 +735,8 @@ class TestLocalStorageSyncQueue:
         conn.close()
 
     @pytest.mark.unit
-    def test_process_sync_queue(self, init_db):
-        """
-        TC-LS.4.3: Process Sync Queue - Success
+    def test_process_sync_queue(self, init_db) -> None:
+        """TC-LS.4.3: Process Sync Queue - Success.
 
         Given: Multiple entries in sync queue
         When: Queue is processed in order
@@ -796,16 +774,14 @@ class TestLocalStorageSyncQueue:
 
 
 class TestLocalStorageMarkdownStructure:
-    """
-    Test Suite: Local Storage - Markdown Directory Structure
+    """Test Suite: Local Storage - Markdown Directory Structure.
 
     Tests markdown file organization and structure
     """
 
     @pytest.mark.unit
-    def test_create_project_directory(self, markdown_dir):
-        """
-        TC-LS.5.1: Create Project Directory - Success
+    def test_create_project_directory(self, markdown_dir) -> None:
+        """TC-LS.5.1: Create Project Directory - Success.
 
         Given: Projects directory exists
         When: New project directory is created
@@ -830,9 +806,8 @@ class TestLocalStorageMarkdownStructure:
         assert (project_dir / ".meta").exists()
 
     @pytest.mark.unit
-    def test_create_readme(self, markdown_dir):
-        """
-        TC-LS.5.2: Create Project README - Success
+    def test_create_readme(self, markdown_dir) -> None:
+        """TC-LS.5.2: Create Project README - Success.
 
         Given: Project directory exists
         When: README.md is created
@@ -853,9 +828,8 @@ class TestLocalStorageMarkdownStructure:
         assert readme_path.read_text() == readme_content
 
     @pytest.mark.unit
-    def test_create_links_yaml(self, markdown_dir):
-        """
-        TC-LS.5.3: Create Links YAML - Success
+    def test_create_links_yaml(self, markdown_dir) -> None:
+        """TC-LS.5.3: Create Links YAML - Success.
 
         Given: Project .meta directory exists
         When: links.yaml is created
@@ -877,8 +851,8 @@ class TestLocalStorageMarkdownStructure:
                     "target": "STORY-001",
                     "type": "implements",
                     "created": datetime.now(UTC).isoformat(),
-                }
-            ]
+                },
+            ],
         }
         links_path = meta_dir / "links.yaml"
         links_path.write_text(yaml.dump(links_data, default_flow_style=False))

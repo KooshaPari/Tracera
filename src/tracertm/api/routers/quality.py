@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,8 +13,8 @@ router = APIRouter(prefix="/quality", tags=["Quality"])
 @router.post("/items/{item_id}/analyze", response_model=RequirementQualityRead)
 async def analyze_quality(
     item_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     service = RequirementQualityService(db)
     try:
@@ -26,8 +26,8 @@ async def analyze_quality(
 @router.get("/items/{item_id}", response_model=RequirementQualityRead)
 async def get_quality(
     item_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     service = RequirementQualityService(db)
     quality = await service.get_quality(item_id)

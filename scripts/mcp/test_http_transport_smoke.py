@@ -14,23 +14,19 @@ src_path = Path(__file__).parent.parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
 
-async def test_imports():
+async def test_imports() -> bool | None:
     """Test that all HTTP transport modules can be imported."""
     await asyncio.sleep(0)  # RUF029: async fn uses async
-    print("Testing imports...")
 
     try:
-        print("✅ All HTTP transport imports successful")
         return True
-    except Exception as e:
-        print(f"❌ Import failed: {e}")
+    except Exception:
         return False
 
 
-async def test_transport_selection():
+async def test_transport_selection() -> bool:
     """Test transport selection logic."""
     await asyncio.sleep(0)  # RUF029: async fn uses async
-    print("\nTesting transport selection...")
 
     import os
 
@@ -41,25 +37,21 @@ async def test_transport_selection():
         del os.environ["TRACERTM_MCP_TRANSPORT"]
     transport = get_transport_type()
     assert transport == "stdio", f"Expected 'stdio', got '{transport}'"
-    print("✅ Default transport: stdio")
 
     # Test HTTP
     os.environ["TRACERTM_MCP_TRANSPORT"] = "http"
     transport = get_transport_type()
     assert transport == "http", f"Expected 'http', got '{transport}'"
-    print("✅ HTTP transport selection works")
 
     # Test streamable-http
     os.environ["TRACERTM_MCP_TRANSPORT"] = "streamable-http"
     transport = get_transport_type()
     assert transport == "streamable-http", f"Expected 'streamable-http', got '{transport}'"
-    print("✅ Streamable HTTP transport selection works")
 
     # Test invalid fallback
     os.environ["TRACERTM_MCP_TRANSPORT"] = "invalid"
     transport = get_transport_type()
     assert transport == "stdio", f"Expected fallback to 'stdio', got '{transport}'"
-    print("✅ Invalid transport fallback works")
 
     # Cleanup
     if "TRACERTM_MCP_TRANSPORT" in os.environ:
@@ -68,10 +60,8 @@ async def test_transport_selection():
     return True
 
 
-async def test_progress_stream():
+async def test_progress_stream() -> bool:
     """Test progress stream generator."""
-    print("\nTesting progress stream...")
-
     from tracertm.mcp.http_transport import create_progress_stream
 
     async def mock_generator():
@@ -87,14 +77,12 @@ async def test_progress_stream():
     assert events[-1]["event"] == "stream_complete"
     assert sum(1 for e in events if e["event"] == "progress") == 3
 
-    print("✅ Progress stream works correctly")
     return True
 
 
-async def test_standalone_app_creation():
+async def test_standalone_app_creation() -> bool | None:
     """Test creating standalone HTTP app."""
     await asyncio.sleep(0)  # RUF029: async fn uses async
-    print("\nTesting standalone app creation...")
 
     try:
         from tracertm.mcp.http_transport import create_standalone_http_app
@@ -107,27 +95,24 @@ async def test_standalone_app_creation():
 
         assert app is not None
         assert hasattr(app, "routes")
-        print("✅ Standalone HTTP app creation works")
         return True
-    except Exception as e:
-        print(f"❌ Standalone app creation failed: {e}")
+    except Exception:
         import traceback
 
         traceback.print_exc()
         return False
 
 
-async def test_main_module():
+async def test_main_module() -> bool | None:
     """Test that __main__.py can be imported."""
     await asyncio.sleep(0)  # RUF029: async fn uses async
-    print("\nTesting __main__ module...")
 
     try:
         # Try importing the main module
         import importlib.util
 
         spec = importlib.util.spec_from_file_location(
-            "tracertm.mcp.__main__", src_path / "tracertm" / "mcp" / "__main__.py"
+            "tracertm.mcp.__main__", src_path / "tracertm" / "mcp" / "__main__.py",
         )
         if spec and spec.loader:
             module = importlib.util.module_from_spec(spec)
@@ -137,20 +122,17 @@ async def test_main_module():
             assert hasattr(module, "parse_args")
             assert hasattr(module, "main")
 
-            print("✅ __main__ module loads correctly")
             return True
-    except Exception as e:
-        print(f"❌ __main__ module test failed: {e}")
+    except Exception:
         import traceback
 
         traceback.print_exc()
         return False
 
 
-async def test_streaming_tools():
+async def test_streaming_tools() -> bool | None:
     """Test that streaming tools module is updated."""
     await asyncio.sleep(0)  # RUF029: async fn uses async
-    print("\nTesting streaming tools...")
 
     try:
         from tracertm.mcp.tools import streaming
@@ -165,22 +147,16 @@ async def test_streaming_tools():
         # Check for logger
         assert hasattr(streaming, "logger")
 
-        print("✅ Streaming tools module is properly configured")
         return True
-    except Exception as e:
-        print(f"❌ Streaming tools test failed: {e}")
+    except Exception:
         import traceback
 
         traceback.print_exc()
         return False
 
 
-async def main():
+async def main() -> int:
     """Run all smoke tests."""
-    print("=" * 60)
-    print("MCP HTTP Transport Smoke Tests")
-    print("=" * 60)
-
     tests = [
         ("Imports", test_imports),
         ("Transport Selection", test_transport_selection),
@@ -195,31 +171,20 @@ async def main():
         try:
             result = await test_func()
             results.append((name, result))
-        except Exception as e:
-            print(f"❌ {name} failed with exception: {e}")
+        except Exception:
             import traceback
 
             traceback.print_exc()
             results.append((name, False))
 
-    print("\n" + "=" * 60)
-    print("Test Results Summary")
-    print("=" * 60)
-
     passed = sum(1 for _, result in results if result)
     total = len(results)
 
     for name, result in results:
-        status = "✅ PASS" if result else "❌ FAIL"
-        print(f"{status}: {name}")
-
-    print("-" * 60)
-    print(f"Total: {passed}/{total} tests passed")
+        pass
 
     if passed == total:
-        print("\n🎉 All smoke tests passed!")
         return 0
-    print(f"\n❌ {total - passed} test(s) failed")
     return 1
 
 

@@ -1,5 +1,4 @@
-"""
-Chaos Engineering Framework for TraceRTM
+"""Chaos Engineering Framework for TraceRTM.
 
 This module provides chaos engineering utilities for testing system resilience
 by injecting various failure scenarios into infrastructure dependencies.

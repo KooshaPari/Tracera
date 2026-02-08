@@ -25,7 +25,7 @@ test.describe('Traceability Links', () => {
 
       // Check for edges (links) in the graph
       const edges = page.locator('.react-flow__edges > g');
-      await expect(edges.first()).toBeVisible({ timeout: 10000 });
+      await expect(edges.first()).toBeVisible({ timeout: 10_000 });
     });
 
     test('should navigate to links view', async ({ page }) => {
@@ -161,7 +161,7 @@ test.describe('Traceability Links', () => {
 
       // Try to click on an edge
       const edges = page.locator('.react-flow__edges > g');
-      await expect(edges.first()).toBeVisible({ timeout: 10000 });
+      await expect(edges.first()).toBeVisible({ timeout: 10_000 });
 
       // Click first edge
       await edges.first().click();
@@ -184,7 +184,7 @@ test.describe('Traceability Links', () => {
 
       // Look for edge labels showing link types
       const edgeLabels = page.locator('.react-flow__edge-label');
-      await expect(edgeLabels.first()).toBeVisible({ timeout: 10000 });
+      await expect(edgeLabels.first()).toBeVisible({ timeout: 10_000 });
     });
 
     test('should display link types on item detail page', async ({ page }) => {
@@ -207,7 +207,7 @@ test.describe('Traceability Links', () => {
 
       // Check for badge elements that display link types
       const linkTypeText = page.getByText(/implements|tests|depends_on|related_to/i);
-      await expect(linkTypeText.first()).toBeVisible({ timeout: 10000 });
+      await expect(linkTypeText.first()).toBeVisible({ timeout: 10_000 });
     });
   });
 
@@ -282,10 +282,10 @@ test.describe('Traceability Links', () => {
 
       // Check for nodes and edges
       const nodes = page.locator('.react-flow__nodes > div[data-id]');
-      await expect(nodes.first()).toBeVisible({ timeout: 10000 });
+      await expect(nodes.first()).toBeVisible({ timeout: 10_000 });
 
       const edges = page.locator('.react-flow__edges > g');
-      await expect(edges.first()).toBeVisible({ timeout: 10000 });
+      await expect(edges.first()).toBeVisible({ timeout: 10_000 });
     });
 
     test('should show edge labels on hover', async ({ page }) => {

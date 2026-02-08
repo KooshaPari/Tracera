@@ -1,5 +1,4 @@
-"""
-User model for caching WorkOS user data.
+"""User model for caching WorkOS user data.
 
 This model provides a local cache of WorkOS user information to reduce
 API latency. WorkOS remains the source of truth, and this cache is

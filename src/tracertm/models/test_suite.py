@@ -1,6 +1,4 @@
-"""
-Test Suite model for organizing test cases into hierarchical collections.
-"""
+"""Test Suite model for organizing test cases into hierarchical collections."""
 
 import uuid
 from datetime import UTC, datetime
@@ -41,8 +39,7 @@ class TestSuiteStatus(StrEnum):
 
 
 class TestSuite(Base, TimestampMixin):
-    """
-    Organized collection of test cases.
+    """Organized collection of test cases.
     Supports hierarchical structure (parent/child suites).
     """
 
@@ -51,7 +48,7 @@ class TestSuite(Base, TimestampMixin):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     suite_number: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     project_id: Mapped[str] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False,
     )
 
     # Basic info
@@ -61,12 +58,12 @@ class TestSuite(Base, TimestampMixin):
 
     # Status
     status: Mapped[TestSuiteStatus] = mapped_column(
-        SQLEnum(TestSuiteStatus), nullable=False, default=TestSuiteStatus.DRAFT
+        SQLEnum(TestSuiteStatus), nullable=False, default=TestSuiteStatus.DRAFT,
     )
 
     # Hierarchy
     parent_id: Mapped[str | None] = mapped_column(
-        String(36), ForeignKey("test_suites.id", ondelete="SET NULL"), nullable=True
+        String(36), ForeignKey("test_suites.id", ondelete="SET NULL"), nullable=True,
     )
     order_index: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
@@ -117,8 +114,7 @@ class TestSuite(Base, TimestampMixin):
 
 
 class TestSuiteTestCase(Base, TimestampMixin):
-    """
-    Association table linking test suites to test cases.
+    """Association table linking test suites to test cases.
     Supports ordering and optional overrides.
     """
 
@@ -127,7 +123,7 @@ class TestSuiteTestCase(Base, TimestampMixin):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     suite_id: Mapped[str] = mapped_column(String(36), ForeignKey("test_suites.id", ondelete="CASCADE"), nullable=False)
     test_case_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("test_cases.id", ondelete="CASCADE"), nullable=False
+        String(36), ForeignKey("test_cases.id", ondelete="CASCADE"), nullable=False,
     )
 
     # Ordering within suite
@@ -163,7 +159,7 @@ class TestSuiteActivity(Base):
     performed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
     activity_metadata: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC),
     )
 
     __table_args__ = (
@@ -175,7 +171,7 @@ class TestSuiteActivity(Base):
 
 # Auto-generate suite number
 @event.listens_for(TestSuite, "before_insert")
-def generate_suite_number(mapper, connection, target):
+def generate_suite_number(mapper, connection, target) -> None:
     """Generate a sequential suite number before insert."""
     if not target.suite_number:
         import uuid

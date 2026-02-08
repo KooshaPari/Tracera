@@ -1,5 +1,4 @@
-"""
-Lazy tool registration system for TraceRTM MCP.
+"""Lazy tool registration system for TraceRTM MCP.
 
 This module implements lazy loading to reduce initial startup time from 500ms to <100ms
 by only loading tool definitions when they're actually called.
@@ -9,8 +8,10 @@ from __future__ import annotations
 
 import importlib
 import logging
-from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 class ToolRegistry:
     """Registry for lazy tool loading."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._tool_loaders: dict[str, Callable] = {}
         self._loaded_modules: set[str] = set()
         self._tool_metadata: dict[str, dict] = {}
@@ -29,8 +30,7 @@ class ToolRegistry:
         module_path: str,
         metadata: dict[str, Any] | None = None,
     ) -> None:
-        """
-        Register a tool loader without importing the module.
+        """Register a tool loader without importing the module.
 
         Args:
             tool_name: Name of the tool function
@@ -38,9 +38,9 @@ class ToolRegistry:
             metadata: Optional metadata about the tool (description, etc.)
         """
 
-        def loader():
+        def loader() -> None:
             if module_path not in self._loaded_modules:
-                logger.debug(f"Lazy loading module: {module_path}")
+                logger.debug("Lazy loading module: %s", module_path)
                 importlib.import_module(module_path)
                 self._loaded_modules.add(module_path)
 
@@ -53,7 +53,7 @@ class ToolRegistry:
         if tool_name in self._tool_loaders:
             self._tool_loaders[tool_name]()
         else:
-            logger.warning(f"Unknown tool: {tool_name}")
+            logger.warning("Unknown tool: %s", tool_name)
 
     def load_all_tools(self) -> None:
         """Load all registered tools (used for testing/validation)."""
@@ -83,8 +83,7 @@ def get_registry() -> ToolRegistry:
 
 
 def register_all_tools() -> None:
-    """
-    Register all MCP tools with their module paths.
+    """Register all MCP tools with their module paths.
 
     This is called at server startup to register loaders WITHOUT loading the modules.
     Actual modules are loaded on-demand when tools are called.
@@ -110,12 +109,12 @@ def register_all_tools() -> None:
 
     # Item tools
     registry.register_tool_loader(
-        "item_manage", "tracertm.mcp.tools.params.item", {"description": "Unified item operations", "domain": "item"}
+        "item_manage", "tracertm.mcp.tools.params.item", {"description": "Unified item operations", "domain": "item"},
     )
 
     # Link tools
     registry.register_tool_loader(
-        "link_manage", "tracertm.mcp.tools.params.link", {"description": "Unified link operations", "domain": "link"}
+        "link_manage", "tracertm.mcp.tools.params.link", {"description": "Unified link operations", "domain": "link"},
     )
 
     # Traceability & Analysis tools
@@ -132,7 +131,7 @@ def register_all_tools() -> None:
 
     # Graph tools
     registry.register_tool_loader(
-        "graph_analyze", "tracertm.mcp.tools.params.graph", {"description": "Unified graph analysis", "domain": "graph"}
+        "graph_analyze", "tracertm.mcp.tools.params.graph", {"description": "Unified graph analysis", "domain": "graph"},
     )
 
     # Specification tools
@@ -216,7 +215,7 @@ def register_all_tools() -> None:
 
     # UI & Design tools
     registry.register_tool_loader(
-        "tui_manage", "tracertm.mcp.tools.params.ui", {"description": "Unified TUI operations", "domain": "ui"}
+        "tui_manage", "tracertm.mcp.tools.params.ui", {"description": "Unified TUI operations", "domain": "ui"},
     )
     registry.register_tool_loader(
         "design_manage",

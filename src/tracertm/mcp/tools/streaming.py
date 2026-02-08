@@ -34,7 +34,8 @@ def _get_project_id(project_id: str | None = None) -> str:
     config = ConfigManager()
     current = config.get("current_project_id")
     if not current:
-        raise ToolError("project_id is required or select a project first.")
+        msg = "project_id is required or select a project first."
+        raise ToolError(msg)
     return current
 
 
@@ -75,7 +76,8 @@ async def stream_impact_analysis(  # noqa: C901, PLR0912
         )
 
         if not item:
-            raise ToolError(f"Item not found: {item_id}")
+            msg = f"Item not found: {item_id}"
+            raise ToolError(msg)
 
         project_id = item.project_id
 
@@ -121,11 +123,11 @@ async def stream_impact_analysis(  # noqa: C901, PLR0912
                     await progress.increment(increment)
                     current_progress = depth
                 await progress.set_message(
-                    f"Analyzing depth {depth}: found {len(current_level)} items, total visited: {len(visited)}"
+                    f"Analyzing depth {depth}: found {len(current_level)} items, total visited: {len(visited)}",
                 )
             except Exception as e:
                 # Progress reporting is optional, but log failures
-                logger.debug(f"Progress reporting failed: {e}")
+                logger.debug("Progress reporting failed: %s", e)
 
             # Record items at this depth
             level_items = []
@@ -284,7 +286,8 @@ def get_impact_by_depth(  # noqa: C901, PLR0912
         )
 
         if not item:
-            raise ToolError(f"Item not found: {item_id}")
+            msg = f"Item not found: {item_id}"
+            raise ToolError(msg)
 
         project_id = item.project_id
 
@@ -343,8 +346,7 @@ def get_impact_by_depth(  # noqa: C901, PLR0912
                 }
 
             # Mark as visited and move to next level
-            for item_id_str in current_level:
-                visited.add(item_id_str)
+            visited.update(current_level)
 
             next_level: set[str] = set()
             for item_id_str in current_level:

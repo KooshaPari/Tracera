@@ -1,5 +1,4 @@
-"""
-Dashboard TUI application with LocalStorageManager integration.
+"""Dashboard TUI application with LocalStorageManager integration.
 
 Provides interactive dashboard with:
 - Local storage integration (SQLite + Markdown)
@@ -23,7 +22,7 @@ except ImportError:
     if TYPE_CHECKING:
         from textual.app import App, ComposeResult
         from textual.binding import Binding
-        from textual.containers import Container, Horizontal, Vertical
+        from textual.containers import Container
         from textual.widgets import Button, DataTable, Footer, Header, Input, Static, Tree
     else:
         # Create dummy classes for runtime when textual unavailable
@@ -64,6 +63,8 @@ except ImportError:
 import logging
 from pathlib import Path
 
+from textual.containers import Horizontal, Vertical
+
 from tracertm.config.manager import ConfigManager
 from tracertm.storage.sync_engine import SyncStatus
 from tracertm.tui.adapters.storage_adapter import StorageAdapter
@@ -73,8 +74,7 @@ from tracertm.tui.widgets.sync_status import SyncStatusWidget
 if TEXTUAL_AVAILABLE:
 
     class DashboardApp(App):
-        """
-        Dashboard with LocalStorageManager integration.
+        """Dashboard with LocalStorageManager integration.
 
         Features:
         - Offline-first local storage
@@ -135,8 +135,7 @@ if TEXTUAL_AVAILABLE:
         ]
 
         def __init__(self, base_dir: Path | None = None) -> None:
-            """
-            Initialize dashboard.
+            """Initialize dashboard.
 
             Args:
                 base_dir: Base directory for local storage
@@ -395,8 +394,7 @@ if TEXTUAL_AVAILABLE:
                 self.notify("Search UI not available", severity="warning")
 
         def perform_search(self, query: str) -> None:
-            """
-            Perform search on items.
+            """Perform search on items.
 
             Args:
                 query: Search query string (searches name, type, status)
@@ -504,4 +502,5 @@ if not TEXTUAL_AVAILABLE:
         """Placeholder when Textual is not installed."""
 
         def __init__(self, *args, **kwargs) -> None:
-            raise ImportError("Textual is required for TUI. Install with: pip install textual")
+            msg = "Textual is required for TUI. Install with: pip install textual"
+            raise ImportError(msg)

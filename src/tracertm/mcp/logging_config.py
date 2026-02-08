@@ -13,10 +13,12 @@ from __future__ import annotations
 import logging
 import sys
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import structlog
-from structlog.typing import EventDict, Processor
+
+if TYPE_CHECKING:
+    from structlog.typing import EventDict, Processor
 
 
 def add_timestamp(logger: logging.Logger, method_name: str, event_dict: EventDict) -> EventDict:
@@ -167,7 +169,7 @@ def configure_structured_logging(
 class StructuredLogger:
     """Structured logger wrapper for MCP operations."""
 
-    def __init__(self, name: str = "tracertm.mcp"):
+    def __init__(self, name: str = "tracertm.mcp") -> None:
         """Initialize structured logger.
 
         Args:

@@ -1,6 +1,5 @@
-"""
-Gap coverage tests for import services.
-Targets: services/github_import_service.py (22.73%), services/jira_import_service.py (18.26%)
+"""Gap coverage tests for import services.
+Targets: services/github_import_service.py (22.73%), services/jira_import_service.py (18.26%).
 """
 
 import json
@@ -12,13 +11,13 @@ import pytest
 class TestGitHubImportService:
     """Tests for GitHubImportService."""
 
-    def test_github_import_service_import(self):
+    def test_github_import_service_import(self) -> None:
         """Test GitHubImportService can be imported."""
         from tracertm.services.github_import_service import GitHubImportService
 
         assert GitHubImportService is not None
 
-    def test_github_import_service_init(self):
+    def test_github_import_service_init(self) -> None:
         """Test GitHubImportService initialization."""
         from tracertm.services.github_import_service import GitHubImportService
 
@@ -31,7 +30,7 @@ class TestGitHubImportService:
         assert service.links is not None
         assert service.events is not None
 
-    def test_github_status_map(self):
+    def test_github_status_map(self) -> None:
         """Test STATUS_MAP contains expected mappings."""
         from tracertm.services.github_import_service import GitHubImportService
 
@@ -40,7 +39,7 @@ class TestGitHubImportService:
         assert GitHubImportService.STATUS_MAP["closed"] == "complete"
         assert GitHubImportService.STATUS_MAP["done"] == "complete"
 
-    def test_github_type_map(self):
+    def test_github_type_map(self) -> None:
         """Test TYPE_MAP contains expected mappings."""
         from tracertm.services.github_import_service import GitHubImportService
 
@@ -49,7 +48,7 @@ class TestGitHubImportService:
         assert GitHubImportService.TYPE_MAP["discussion"] == "task"
 
     @pytest.mark.asyncio
-    async def test_validate_github_export_invalid_json(self):
+    async def test_validate_github_export_invalid_json(self) -> None:
         """Test validation with invalid JSON."""
         from tracertm.services.github_import_service import GitHubImportService
 
@@ -62,7 +61,7 @@ class TestGitHubImportService:
         assert "Invalid JSON" in errors[0]
 
     @pytest.mark.asyncio
-    async def test_validate_github_export_missing_items(self):
+    async def test_validate_github_export_missing_items(self) -> None:
         """Test validation with missing items field."""
         from tracertm.services.github_import_service import GitHubImportService
 
@@ -75,7 +74,7 @@ class TestGitHubImportService:
         assert "Missing 'items' or 'issues' field" in errors[0]
 
     @pytest.mark.asyncio
-    async def test_validate_github_export_valid(self):
+    async def test_validate_github_export_valid(self) -> None:
         """Test validation with valid data."""
         from tracertm.services.github_import_service import GitHubImportService
 
@@ -88,7 +87,7 @@ class TestGitHubImportService:
         assert len(errors) == 0
 
     @pytest.mark.asyncio
-    async def test_import_github_project_validation_fails(self):
+    async def test_import_github_project_validation_fails(self) -> None:
         """Test import with validation failures."""
         from tracertm.services.github_import_service import GitHubImportService
 
@@ -101,7 +100,7 @@ class TestGitHubImportService:
         assert len(result["errors"]) > 0
 
     @pytest.mark.asyncio
-    async def test_import_github_project_success(self):
+    async def test_import_github_project_success(self) -> None:
         """Test successful GitHub project import."""
         from tracertm.services.github_import_service import GitHubImportService
 
@@ -128,7 +127,7 @@ class TestGitHubImportService:
             "items": [
                 {"id": 1, "title": "Test Item", "body": "Description", "state": "open"},
                 {"id": 2, "title": "Test Item 2", "body": "Description 2", "state": "closed"},
-            ]
+            ],
         })
 
         result = await service.import_github_project("test-project", valid_data)
@@ -138,7 +137,7 @@ class TestGitHubImportService:
         assert result["items_imported"] == 2
 
     @pytest.mark.asyncio
-    async def test_import_github_project_with_issues_field(self):
+    async def test_import_github_project_with_issues_field(self) -> None:
         """Test import with 'issues' field instead of 'items'."""
         from tracertm.services.github_import_service import GitHubImportService
 
@@ -163,7 +162,7 @@ class TestGitHubImportService:
         assert result["items_imported"] == 1
 
     @pytest.mark.asyncio
-    async def test_import_github_project_with_pull_requests(self):
+    async def test_import_github_project_with_pull_requests(self) -> None:
         """Test import with pull requests and links."""
         from tracertm.services.github_import_service import GitHubImportService
 
@@ -186,7 +185,7 @@ class TestGitHubImportService:
             "items": [
                 {"id": 1, "title": "Issue 1", "type": "issue", "state": "open"},
                 {"id": 2, "title": "PR 1", "type": "pull_request", "state": "closed", "related_issues": [1]},
-            ]
+            ],
         })
 
         result = await service.import_github_project("test-project", valid_data)
@@ -194,7 +193,7 @@ class TestGitHubImportService:
         assert result["success"] is True
 
     @pytest.mark.asyncio
-    async def test_import_github_project_exception(self):
+    async def test_import_github_project_exception(self) -> None:
         """Test import with exception during processing."""
         from tracertm.services.github_import_service import GitHubImportService
 
@@ -214,13 +213,13 @@ class TestGitHubImportService:
 class TestJiraImportService:
     """Tests for JiraImportService."""
 
-    def test_jira_import_service_import(self):
+    def test_jira_import_service_import(self) -> None:
         """Test JiraImportService can be imported."""
         from tracertm.services.jira_import_service import JiraImportService
 
         assert JiraImportService is not None
 
-    def test_jira_import_service_init(self):
+    def test_jira_import_service_init(self) -> None:
         """Test JiraImportService initialization."""
         from tracertm.services.jira_import_service import JiraImportService
 
@@ -233,7 +232,7 @@ class TestJiraImportService:
         assert service.links is not None
         assert service.events is not None
 
-    def test_jira_status_map(self):
+    def test_jira_status_map(self) -> None:
         """Test STATUS_MAP contains expected mappings."""
         from tracertm.services.jira_import_service import JiraImportService
 
@@ -242,7 +241,7 @@ class TestJiraImportService:
         assert JiraImportService.STATUS_MAP["Done"] == "complete"
         assert JiraImportService.STATUS_MAP["Closed"] == "complete"
 
-    def test_jira_type_map(self):
+    def test_jira_type_map(self) -> None:
         """Test TYPE_MAP contains expected mappings."""
         from tracertm.services.jira_import_service import JiraImportService
 
@@ -252,7 +251,7 @@ class TestJiraImportService:
         assert JiraImportService.TYPE_MAP["Bug"] == "bug"
         assert JiraImportService.TYPE_MAP["Sub-task"] == "subtask"
 
-    def test_jira_link_type_map(self):
+    def test_jira_link_type_map(self) -> None:
         """Test LINK_TYPE_MAP contains expected mappings."""
         from tracertm.services.jira_import_service import JiraImportService
 
@@ -261,7 +260,7 @@ class TestJiraImportService:
         assert JiraImportService.LINK_TYPE_MAP["implements"] == "implements"
 
     @pytest.mark.asyncio
-    async def test_validate_jira_export_invalid_json(self):
+    async def test_validate_jira_export_invalid_json(self) -> None:
         """Test validation with invalid JSON."""
         from tracertm.services.jira_import_service import JiraImportService
 
@@ -274,7 +273,7 @@ class TestJiraImportService:
         assert "Invalid JSON" in errors[0]
 
     @pytest.mark.asyncio
-    async def test_validate_jira_export_missing_issues(self):
+    async def test_validate_jira_export_missing_issues(self) -> None:
         """Test validation with missing issues field."""
         from tracertm.services.jira_import_service import JiraImportService
 
@@ -287,7 +286,7 @@ class TestJiraImportService:
         assert any("Missing 'issues'" in e for e in errors)
 
     @pytest.mark.asyncio
-    async def test_validate_jira_export_issues_not_list(self):
+    async def test_validate_jira_export_issues_not_list(self) -> None:
         """Test validation with issues not a list."""
         from tracertm.services.jira_import_service import JiraImportService
 
@@ -300,7 +299,7 @@ class TestJiraImportService:
         assert any("must be a list" in e for e in errors)
 
     @pytest.mark.asyncio
-    async def test_validate_jira_export_issue_missing_key(self):
+    async def test_validate_jira_export_issue_missing_key(self) -> None:
         """Test validation with issue missing key field."""
         from tracertm.services.jira_import_service import JiraImportService
 
@@ -313,7 +312,7 @@ class TestJiraImportService:
         assert any("missing 'key'" in e for e in errors)
 
     @pytest.mark.asyncio
-    async def test_validate_jira_export_valid(self):
+    async def test_validate_jira_export_valid(self) -> None:
         """Test validation with valid data."""
         from tracertm.services.jira_import_service import JiraImportService
 
@@ -326,7 +325,7 @@ class TestJiraImportService:
         assert len(errors) == 0
 
     @pytest.mark.asyncio
-    async def test_import_jira_project_validation_fails(self):
+    async def test_import_jira_project_validation_fails(self) -> None:
         """Test import with validation failures."""
         from tracertm.services.jira_import_service import JiraImportService
 
@@ -339,7 +338,7 @@ class TestJiraImportService:
         assert len(result["errors"]) > 0
 
     @pytest.mark.asyncio
-    async def test_import_jira_project_success(self):
+    async def test_import_jira_project_success(self) -> None:
         """Test successful Jira project import."""
         from tracertm.services.jira_import_service import JiraImportService
 
@@ -367,8 +366,8 @@ class TestJiraImportService:
                         "status": {"name": "To Do"},
                         "issuetype": {"name": "Story"},
                     },
-                }
-            ]
+                },
+            ],
         })
 
         result = await service.import_jira_project("test-project", valid_data)
@@ -378,7 +377,7 @@ class TestJiraImportService:
         assert result["items_imported"] == 1
 
     @pytest.mark.asyncio
-    async def test_import_jira_project_with_links(self):
+    async def test_import_jira_project_with_links(self) -> None:
         """Test import with issue links."""
         from tracertm.services.jira_import_service import JiraImportService
 
@@ -408,7 +407,7 @@ class TestJiraImportService:
                         "issuelinks": [{"type": {"name": "blocks"}, "outwardIssue": {"key": "TEST-1"}}],
                     },
                 },
-            ]
+            ],
         })
 
         result = await service.import_jira_project("test-project", valid_data)
@@ -417,7 +416,7 @@ class TestJiraImportService:
         assert result["items_imported"] == 2
 
     @pytest.mark.asyncio
-    async def test_import_jira_project_with_inward_links(self):
+    async def test_import_jira_project_with_inward_links(self) -> None:
         """Test import with inward issue links."""
         from tracertm.services.jira_import_service import JiraImportService
 
@@ -447,7 +446,7 @@ class TestJiraImportService:
                     },
                 },
                 {"key": "TEST-2", "id": "10002", "fields": {"summary": "Test Issue 2", "issuelinks": []}},
-            ]
+            ],
         })
 
         result = await service.import_jira_project("test-project", valid_data)
@@ -455,7 +454,7 @@ class TestJiraImportService:
         assert result["success"] is True
 
     @pytest.mark.asyncio
-    async def test_import_jira_project_exception(self):
+    async def test_import_jira_project_exception(self) -> None:
         """Test import with exception during processing."""
         from tracertm.services.jira_import_service import JiraImportService
 

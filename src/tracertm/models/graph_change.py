@@ -1,6 +1,4 @@
-"""
-GraphChange model for TraceRTM.
-"""
+"""GraphChange model for TraceRTM."""
 
 import uuid
 
@@ -18,9 +16,7 @@ def generate_graph_change_uuid() -> str:
 
 
 class GraphChange(Base, TimestampMixin):
-    """
-    Graph change log for LLM-friendly patches and audits.
-    """
+    """Graph change log for LLM-friendly patches and audits."""
 
     __tablename__ = "graph_changes"
     __table_args__ = (

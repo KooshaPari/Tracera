@@ -1,5 +1,4 @@
-"""
-CLI Startup Performance Tests.
+"""CLI Startup Performance Tests.
 
 Tests startup time, memory usage, and initialization performance
 to ensure CLI meets performance targets:
@@ -28,7 +27,7 @@ LAZY_LOAD_THRESHOLD_MS = 50
 class MemoryTracker:
     """Track memory usage during CLI operations."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.process = psutil.Process()
         self.baseline_mb = 0.0
         self.peak_mb = 0.0
@@ -97,7 +96,7 @@ def memory_tracker():
 # ============================================================
 
 
-def test_cli_startup_time_cold(cli_path, perf_tracker):
+def test_cli_startup_time_cold(cli_path, perf_tracker) -> None:
     """Test cold startup time (no cache).
 
     Requirement: Startup time < 500ms
@@ -128,10 +127,8 @@ def test_cli_startup_time_cold(cli_path, perf_tracker):
         f"Cold startup too slow: {elapsed_ms:.2f}ms > {STARTUP_TIME_THRESHOLD_MS}ms"
     )
 
-    print(f"✓ Cold startup: {elapsed_ms:.2f}ms")
 
-
-def test_cli_startup_time_warm(cli_path, perf_tracker):
+def test_cli_startup_time_warm(cli_path, perf_tracker) -> None:
     """Test warm startup time (with cache).
 
     Should be faster than cold start due to lazy loading cache.
@@ -161,10 +158,8 @@ def test_cli_startup_time_warm(cli_path, perf_tracker):
         f"Warm startup too slow: {elapsed_ms:.2f}ms > {STARTUP_TIME_THRESHOLD_MS}ms"
     )
 
-    print(f"✓ Warm startup: {elapsed_ms:.2f}ms")
 
-
-def test_cli_help_performance(cli_path, perf_tracker):
+def test_cli_help_performance(cli_path, perf_tracker) -> None:
     """Test help command performance.
 
     Help should be fast as it's a common operation.
@@ -186,15 +181,13 @@ def test_cli_help_performance(cli_path, perf_tracker):
         f"Help command too slow: {elapsed_ms:.2f}ms > {COMMAND_TIME_THRESHOLD_MS}ms"
     )
 
-    print(f"✓ Help command: {elapsed_ms:.2f}ms")
-
 
 # ============================================================
 # Memory Usage Tests
 # ============================================================
 
 
-def test_cli_memory_usage(cli_path, memory_tracker, perf_tracker):
+def test_cli_memory_usage(cli_path, memory_tracker, perf_tracker) -> None:
     """Test CLI memory usage during startup.
 
     Requirement: Memory usage < 50MB
@@ -220,10 +213,9 @@ def test_cli_memory_usage(cli_path, memory_tracker, perf_tracker):
     assert result.returncode == 0
     # Note: This measures parent process memory, not subprocess
     # For accurate subprocess memory measurement, we'd need to parse /proc
-    print(f"✓ Memory usage: baseline={baseline_mb:.2f}MB, peak={peak_mb:.2f}MB")
 
 
-def test_cli_memory_no_leaks(cli_path):
+def test_cli_memory_no_leaks(cli_path) -> None:
     """Test that repeated CLI invocations don't leak memory.
 
     Run CLI multiple times and ensure memory stays stable.
@@ -252,8 +244,6 @@ def test_cli_memory_no_leaks(cli_path):
     # Memory should not grow significantly across runs
     assert max_growth < 10, f"Memory leak detected: {max_growth:.2f}MB growth"
 
-    print(f"✓ No memory leaks: avg={avg_growth:.2f}MB, max={max_growth:.2f}MB")
-
 
 # ============================================================
 # Command Performance Tests
@@ -269,7 +259,7 @@ def test_cli_memory_no_leaks(cli_path):
         ("link", ["--help"]),
     ],
 )
-def test_command_group_help_performance(cli_path, command, args, perf_tracker):
+def test_command_group_help_performance(cli_path, command, args, perf_tracker) -> None:
     """Test command group help performance.
 
     All command groups should load quickly with --help.
@@ -293,15 +283,13 @@ def test_command_group_help_performance(cli_path, command, args, perf_tracker):
         f"{command} help too slow: {elapsed_ms:.2f}ms > {COMMAND_TIME_THRESHOLD_MS}ms"
     )
 
-    print(f"✓ {command} --help: {elapsed_ms:.2f}ms")
-
 
 # ============================================================
 # Lazy Loading Tests
 # ============================================================
 
 
-def test_lazy_loading_performance():
+def test_lazy_loading_performance() -> None:
     """Test that lazy loading mechanism works efficiently.
 
     Importing LazyLoader and using it should be fast.
@@ -328,10 +316,8 @@ def test_lazy_loading_performance():
     assert cached_elapsed < 1, f"Cache lookup too slow: {cached_elapsed:.2f}ms"
     assert elapsed < LAZY_LOAD_THRESHOLD_MS, f"Lazy loading too slow: {elapsed:.2f}ms > {LAZY_LOAD_THRESHOLD_MS}ms"
 
-    print(f"✓ Lazy loading: {elapsed:.2f}ms (cache: {cached_elapsed:.3f}ms)")
 
-
-def test_performance_monitor():
+def test_performance_monitor() -> None:
     """Test that performance monitor works correctly."""
     from tracertm.cli.performance import PerformanceMonitor
 
@@ -353,10 +339,8 @@ def test_performance_monitor():
     elapsed = monitor.get_elapsed()
     assert elapsed >= 0.02  # At least 20ms elapsed
 
-    print(f"✓ Performance monitor: {len(timings)} marks, {elapsed:.3f}s elapsed")
 
-
-def test_command_cache():
+def test_command_cache() -> None:
     """Test that command cache works correctly."""
     from tracertm.cli.performance import CommandCache
 
@@ -381,15 +365,13 @@ def test_command_cache():
     assert cache.get("key1") is None
     assert cache.get("key2") is None
 
-    print("✓ Command cache: set/get/expire/clear working")
-
 
 # ============================================================
 # Integration Tests
 # ============================================================
 
 
-def test_cli_e2e_startup_sequence(cli_path, perf_tracker):
+def test_cli_e2e_startup_sequence(cli_path, perf_tracker) -> None:
     """Test end-to-end startup sequence performance.
 
     Simulates real user workflow: help -> command help -> version
@@ -421,22 +403,20 @@ def test_cli_e2e_startup_sequence(cli_path, perf_tracker):
     # Total should still be reasonable
     assert total_elapsed < STARTUP_TIME_THRESHOLD_MS * 3, f"E2E sequence too slow: {total_elapsed:.2f}ms"
 
-    print(f"✓ E2E startup sequence: {total_elapsed:.2f}ms")
-
 
 # ============================================================
 # Regression Tests
 # ============================================================
 
 
-def test_performance_baselines_exist():
+def test_performance_baselines_exist() -> None:
     """Verify performance baseline file exists and is valid."""
     baselines_file = Path(__file__).parent / "performance_baselines.json"
 
     if baselines_file.exists():
         import json
 
-        with Path(baselines_file).open() as f:
+        with Path(baselines_file).open(encoding="utf-8") as f:
             baselines = json.load(f)
 
         assert isinstance(baselines, dict)
@@ -444,7 +424,6 @@ def test_performance_baselines_exist():
 
         # Check for CLI-specific baselines
         cli_baselines = {k: v for k, v in baselines.items() if "cli" in k.lower()}
-        print(f"✓ Found {len(cli_baselines)} CLI baselines in {len(baselines)} total")
     else:
         pytest.skip("Performance baselines file not found")
 
@@ -463,7 +442,7 @@ def generate_performance_report(request):
     if hasattr(request.session, "testscollector"):
         report_path = Path(__file__).parent / "cli_performance_report.txt"
 
-        with Path(report_path).open("w") as f:
+        with Path(report_path).open("w", encoding="utf-8") as f:
             f.write("=" * 70 + "\n")
             f.write("CLI Performance Test Report\n")
             f.write("=" * 70 + "\n\n")

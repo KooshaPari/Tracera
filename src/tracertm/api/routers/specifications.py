@@ -5,7 +5,7 @@ endpoints with proper authentication, validation, and error handling.
 """
 
 from datetime import UTC, datetime
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from fastapi.encoders import jsonable_encoder
@@ -100,9 +100,9 @@ router = APIRouter(prefix="/specifications", tags=["Specifications"])
 @router.post("/adrs", response_model=ADRResponse, status_code=201)
 async def create_adr_spec(
     adr: ADRCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    event_bus: EventBus = Depends(get_event_bus),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    event_bus: Annotated[EventBus, Depends(get_event_bus)],
 ):
     """Create a new Architecture Decision Record.
 
@@ -159,9 +159,9 @@ async def create_adr_spec(
 
 @router.get("/adrs/{adr_id}", response_model=ADRResponse)
 async def get_adr_spec(
-    adr_id: str = Path(..., description="ADR ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    adr_id: Annotated[str, Path(description="ADR ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Retrieve a specific ADR by ID.
 
@@ -185,8 +185,8 @@ async def get_adr_spec(
 
 @router.put("/adrs/{adr_id}", response_model=ADRResponse)
 async def update_adr_spec(
-    adr_id: str = Path(..., description="ADR ID"),
-    updates: ADRUpdate | None = Body(None),
+    adr_id: Annotated[str, Path(description="ADR ID")],
+    updates: Annotated[ADRUpdate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     event_bus: EventBus = Depends(get_event_bus),
@@ -236,11 +236,11 @@ async def update_adr_spec(
 
 @router.delete("/adrs/{adr_id}", status_code=204)
 async def delete_adr_spec(
-    adr_id: str = Path(..., description="ADR ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    event_bus: EventBus = Depends(get_event_bus),
-):
+    adr_id: Annotated[str, Path(description="ADR ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    event_bus: Annotated[EventBus, Depends(get_event_bus)],
+) -> None:
     """Delete an ADR.
 
     Args:
@@ -275,9 +275,9 @@ async def delete_adr_spec(
 
 @router.get("/projects/{project_id}/adrs", response_model=ADRListResponse)
 async def list_adrs_for_project(
-    project_id: str = Path(..., description="Project ID"),
-    status: str | None = Query(None, description="Filter by ADR status"),
-    tags: list[str] | None = Query(None, description="Filter by tags"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    status: Annotated[str | None, Query(description="Filter by ADR status")] = None,
+    tags: Annotated[list[str] | None, Query(description="Filter by tags")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -304,9 +304,9 @@ async def list_adrs_for_project(
 
 @router.post("/adrs/{adr_id}/verify", response_model=VerificationResult)
 async def verify_adr_compliance(
-    adr_id: str = Path(..., description="ADR ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    adr_id: Annotated[str, Path(description="ADR ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Verify ADR compliance with decision patterns and traceability.
 
@@ -394,9 +394,9 @@ async def verify_adr_compliance(
 @router.post("/contracts", response_model=ContractResponse, status_code=201)
 async def create_contract_spec(
     contract: ContractCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    event_bus: EventBus = Depends(get_event_bus),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    event_bus: Annotated[EventBus, Depends(get_event_bus)],
 ):
     """Create a new contract specification.
 
@@ -452,9 +452,9 @@ async def create_contract_spec(
 
 @router.get("/contracts/{contract_id}", response_model=ContractResponse)
 async def get_contract_spec(
-    contract_id: str = Path(..., description="Contract ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    contract_id: Annotated[str, Path(description="Contract ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Retrieve a specific contract by ID.
 
@@ -478,8 +478,8 @@ async def get_contract_spec(
 
 @router.put("/contracts/{contract_id}", response_model=ContractResponse)
 async def update_contract_spec(
-    contract_id: str = Path(..., description="Contract ID"),
-    updates: ContractUpdate | None = Body(None),
+    contract_id: Annotated[str, Path(description="Contract ID")],
+    updates: Annotated[ContractUpdate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -515,10 +515,10 @@ async def update_contract_spec(
 
 @router.delete("/contracts/{contract_id}", status_code=204)
 async def delete_contract_spec(
-    contract_id: str = Path(..., description="Contract ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    contract_id: Annotated[str, Path(description="Contract ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Delete a contract.
 
     Args:
@@ -537,10 +537,10 @@ async def delete_contract_spec(
 
 @router.get("/projects/{project_id}/contracts", response_model=ContractListResponse)
 async def list_contracts_for_project(
-    project_id: str = Path(..., description="Project ID"),
-    item_id: str | None = Query(None, description="Filter by item ID"),
-    contract_type: str | None = Query(None, description="Filter by contract type"),
-    status: str | None = Query(None, description="Filter by status"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    item_id: Annotated[str | None, Query(description="Filter by item ID")] = None,
+    contract_type: Annotated[str | None, Query(description="Filter by contract type")] = None,
+    status: Annotated[str | None, Query(description="Filter by status")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -562,7 +562,7 @@ async def list_contracts_for_project(
     try:
         contracts = await service.list_contracts(project_id, item_id)
         return ContractListResponse(
-            total=len(contracts), contracts=[ContractResponse.model_validate(c) for c in contracts]
+            total=len(contracts), contracts=[ContractResponse.model_validate(c) for c in contracts],
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to list contracts: {e!s}") from e
@@ -570,9 +570,9 @@ async def list_contracts_for_project(
 
 @router.post("/contracts/{contract_id}/verify", response_model=VerificationResult)
 async def verify_contract_compliance(
-    contract_id: str = Path(..., description="Contract ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    contract_id: Annotated[str, Path(description="Contract ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Verify contract compliance and specification completeness.
 
@@ -656,9 +656,9 @@ async def verify_contract_compliance(
 @router.post("/features", response_model=FeatureResponse, status_code=201)
 async def create_feature_spec(
     feature: FeatureCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    event_bus: EventBus = Depends(get_event_bus),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    event_bus: Annotated[EventBus, Depends(get_event_bus)],
 ):
     """Create a new BDD feature.
 
@@ -716,8 +716,8 @@ async def create_feature_spec(
 
 @router.get("/features/{feature_id}", response_model=FeatureResponse)
 async def get_feature_spec(
-    feature_id: str = Path(..., description="Feature ID"),
-    include_scenarios: bool = Query(False, description="Include associated scenarios"),
+    feature_id: Annotated[str, Path(description="Feature ID")],
+    include_scenarios: Annotated[bool, Query(description="Include associated scenarios")] = False,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -752,8 +752,8 @@ async def get_feature_spec(
 
 @router.put("/features/{feature_id}", response_model=FeatureResponse)
 async def update_feature_spec(
-    feature_id: str = Path(..., description="Feature ID"),
-    updates: FeatureUpdate | None = Body(None),
+    feature_id: Annotated[str, Path(description="Feature ID")],
+    updates: Annotated[FeatureUpdate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -792,10 +792,10 @@ async def update_feature_spec(
 
 @router.delete("/features/{feature_id}", status_code=204)
 async def delete_feature_spec(
-    feature_id: str = Path(..., description="Feature ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    feature_id: Annotated[str, Path(description="Feature ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Delete a feature.
 
     Args:
@@ -814,9 +814,9 @@ async def delete_feature_spec(
 
 @router.get("/projects/{project_id}/features", response_model=FeatureListResponse)
 async def list_features_for_project(
-    project_id: str = Path(..., description="Project ID"),
-    status: str | None = Query(None, description="Filter by status"),
-    tags: list[str] | None = Query(None, description="Filter by tags"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    status: Annotated[str | None, Query(description="Filter by status")] = None,
+    tags: Annotated[list[str] | None, Query(description="Filter by tags")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -848,8 +848,8 @@ async def list_features_for_project(
 
 @router.post("/features/{feature_id}/scenarios", response_model=ScenarioResponse, status_code=201)
 async def create_scenario_spec(
-    feature_id: str = Path(..., description="Feature ID"),
-    scenario: ScenarioCreate | None = Body(None),
+    feature_id: Annotated[str, Path(description="Feature ID")],
+    scenario: Annotated[ScenarioCreate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     event_bus: EventBus = Depends(get_event_bus),
@@ -917,8 +917,8 @@ async def create_scenario_spec(
 
 @router.get("/features/{feature_id}/scenarios", response_model=ScenarioListResponse)
 async def list_scenarios_for_feature(
-    feature_id: str = Path(..., description="Feature ID"),
-    status: str | None = Query(None, description="Filter by status"),
+    feature_id: Annotated[str, Path(description="Feature ID")],
+    status: Annotated[str | None, Query(description="Filter by status")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -945,7 +945,7 @@ async def list_scenarios_for_feature(
     try:
         scenarios = await service.list_scenarios(feature_id)
         return ScenarioListResponse(
-            total=len(scenarios), scenarios=[ScenarioResponse.model_validate(s) for s in scenarios]
+            total=len(scenarios), scenarios=[ScenarioResponse.model_validate(s) for s in scenarios],
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to list scenarios: {e!s}") from e
@@ -953,8 +953,8 @@ async def list_scenarios_for_feature(
 
 @router.get("/projects/{project_id}/scenarios", response_model=ScenarioListResponse)
 async def list_scenarios_for_project(
-    project_id: str = Path(..., description="Project ID"),
-    status: str | None = Query(None, description="Filter by status"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    status: Annotated[str | None, Query(description="Filter by status")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -978,12 +978,12 @@ async def list_scenarios_for_project(
 
 @router.get("/projects/{project_id}/scenarios/activities", response_model=ScenarioActivityListResponse)
 async def list_scenario_activities_for_project(
-    project_id: str = Path(..., description="Project ID"),
-    limit: int = Query(200, description="Max activities to return"),
-    offset: int = Query(0, description="Offset for pagination"),
-    event_type: str | None = Query(None, description="Filter by event type"),
-    since: datetime | None = Query(None, description="Return events since this time"),
-    until: datetime | None = Query(None, description="Return events until this time"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    limit: Annotated[int, Query(description="Max activities to return")] = 200,
+    offset: Annotated[int, Query(description="Offset for pagination")] = 0,
+    event_type: Annotated[str | None, Query(description="Filter by event type")] = None,
+    since: Annotated[datetime | None, Query(description="Return events since this time")] = None,
+    until: Annotated[datetime | None, Query(description="Return events until this time")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -1020,9 +1020,9 @@ async def list_scenario_activities_for_project(
 
 @router.get("/scenarios/{scenario_id}", response_model=ScenarioResponse)
 async def get_scenario_spec(
-    scenario_id: str = Path(..., description="Scenario ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    scenario_id: Annotated[str, Path(description="Scenario ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Retrieve a specific scenario by ID.
 
@@ -1046,9 +1046,9 @@ async def get_scenario_spec(
 
 @router.get("/scenarios/{scenario_id}/activities", response_model=ScenarioActivityListResponse)
 async def get_scenario_activities(
-    scenario_id: str = Path(..., description="Scenario ID"),
-    limit: int = Query(100, description="Max activities to return"),
-    offset: int = Query(0, description="Offset for pagination"),
+    scenario_id: Annotated[str, Path(description="Scenario ID")],
+    limit: Annotated[int, Query(description="Max activities to return")] = 100,
+    offset: Annotated[int, Query(description="Offset for pagination")] = 0,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -1078,8 +1078,8 @@ async def get_scenario_activities(
 
 @router.put("/scenarios/{scenario_id}", response_model=ScenarioResponse)
 async def update_scenario_spec(
-    scenario_id: str = Path(..., description="Scenario ID"),
-    updates: ScenarioUpdate | None = Body(None),
+    scenario_id: Annotated[str, Path(description="Scenario ID")],
+    updates: Annotated[ScenarioUpdate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     event_bus: EventBus = Depends(get_event_bus),
@@ -1132,11 +1132,11 @@ async def update_scenario_spec(
 
 @router.delete("/scenarios/{scenario_id}", status_code=204)
 async def delete_scenario_spec(
-    scenario_id: str = Path(..., description="Scenario ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-    event_bus: EventBus = Depends(get_event_bus),
-):
+    scenario_id: Annotated[str, Path(description="Scenario ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    event_bus: Annotated[EventBus, Depends(get_event_bus)],
+) -> None:
     """Delete a scenario.
 
     Args:
@@ -1178,9 +1178,9 @@ async def delete_scenario_spec(
 
 @router.post("/scenarios/{scenario_id}/run", response_model=ScenarioRunResult)
 async def run_scenario(
-    scenario_id: str = Path(..., description="Scenario ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    scenario_id: Annotated[str, Path(description="Scenario ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Run a scenario and capture results.
 
@@ -1258,9 +1258,9 @@ async def run_scenario(
 
 @router.get("/projects/{project_id}/summary", response_model=SpecificationsSummary)
 async def get_specifications_summary(
-    project_id: str = Path(..., description="Project ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    project_id: Annotated[str, Path(description="Project ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get a summary of all specifications in a project.
 

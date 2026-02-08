@@ -1,5 +1,4 @@
-"""
-Chaos Test: External API (Go Backend Client) Resilience
+"""Chaos Test: External API (Go Backend Client) Resilience.
 
 Tests that the GoBackendClient handles network timeouts, connection errors,
 and HTTP failures correctly -- retrying with exponential backoff on transient
@@ -8,6 +7,7 @@ errors and raising GoBackendError on permanent failures.
 Uses unittest.mock to simulate httpx failures without a live Go backend.
 """
 
+from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
@@ -29,7 +29,7 @@ class TestNetworkTimeoutResilience:
     """GoBackendClient must retry on TimeoutException and ultimately raise if all retries fail."""
 
     @pytest.mark.asyncio
-    async def test_timeout_triggers_retry_and_raises(self, go_client):
+    async def test_timeout_triggers_retry_and_raises(self, go_client) -> None:
         """Three consecutive timeouts must exhaust retries and raise TimeoutException."""
         go_client.client.request = AsyncMock(side_effect=httpx.TimeoutException("read timed out"))
 
@@ -41,7 +41,7 @@ class TestNetworkTimeoutResilience:
         assert go_client.client.request.await_count == 3
 
     @pytest.mark.asyncio
-    async def test_timeout_recovery_on_second_attempt(self, go_client):
+    async def test_timeout_recovery_on_second_attempt(self, go_client) -> None:
         """If the second attempt succeeds after a timeout, the result is returned."""
         success_response = MagicMock()
         success_response.status_code = 200
@@ -52,7 +52,7 @@ class TestNetworkTimeoutResilience:
             side_effect=[
                 httpx.TimeoutException("timed out"),
                 success_response,
-            ]
+            ],
         )
 
         result = await go_client.get_item("item-1")
@@ -65,7 +65,7 @@ class TestNetworkErrorResilience:
     """GoBackendClient must retry on NetworkError (connection refused, reset, etc.)."""
 
     @pytest.mark.asyncio
-    async def test_connection_refused_retries_and_raises(self, go_client):
+    async def test_connection_refused_retries_and_raises(self, go_client) -> None:
         """ConnectionRefused (NetworkError subclass) must trigger retries."""
         go_client.client.request = AsyncMock(side_effect=httpx.NetworkError("Connection refused"))
 
@@ -76,7 +76,7 @@ class TestNetworkErrorResilience:
         assert go_client.client.request.await_count == 3
 
     @pytest.mark.asyncio
-    async def test_network_recovery_on_third_attempt(self, go_client):
+    async def test_network_recovery_on_third_attempt(self, go_client) -> None:
         """Network error resolves on third attempt -- client must return success."""
         success_response = MagicMock()
         success_response.status_code = 200
@@ -88,7 +88,7 @@ class TestNetworkErrorResilience:
                 httpx.NetworkError("Connection reset"),
                 httpx.NetworkError("Connection reset"),
                 success_response,
-            ]
+            ],
         )
 
         result = await go_client.search_items("query")
@@ -101,7 +101,7 @@ class TestHTTPErrorHandling:
     """Non-retryable HTTP errors (4xx, 5xx) must raise GoBackendError immediately."""
 
     @pytest.mark.asyncio
-    async def test_http_500_raises_go_backend_error(self, go_client):
+    async def test_http_500_raises_go_backend_error(self, go_client) -> None:
         """500 Internal Server Error must raise GoBackendError (not retried as an HTTP status error)."""
         mock_response = MagicMock()
         mock_response.status_code = 500
@@ -112,7 +112,7 @@ class TestHTTPErrorHandling:
                 "Server Error",
                 request=MagicMock(),
                 response=mock_response,
-            )
+            ),
         )
 
         with pytest.raises(GoBackendError, match="Request failed with status 500"):
@@ -122,7 +122,7 @@ class TestHTTPErrorHandling:
         assert go_client.client.request.await_count == 1
 
     @pytest.mark.asyncio
-    async def test_http_404_raises_go_backend_error(self, go_client):
+    async def test_http_404_raises_go_backend_error(self, go_client) -> None:
         """404 Not Found must raise GoBackendError (not retried)."""
         mock_response = MagicMock()
         mock_response.status_code = 404
@@ -133,7 +133,7 @@ class TestHTTPErrorHandling:
                 "Not Found",
                 request=MagicMock(),
                 response=mock_response,
-            )
+            ),
         )
 
         with pytest.raises(GoBackendError, match="Request failed with status 404"):
@@ -142,7 +142,7 @@ class TestHTTPErrorHandling:
         assert go_client.client.request.await_count == 1
 
     @pytest.mark.asyncio
-    async def test_unexpected_exception_raises_go_backend_error(self, go_client):
+    async def test_unexpected_exception_raises_go_backend_error(self, go_client) -> None:
         """Completely unexpected exceptions must raise GoBackendError."""
         go_client.client.request = AsyncMock(side_effect=RuntimeError("something bizarre happened"))
 
@@ -157,27 +157,28 @@ class TestClientLifecycle:
     """Verify client close/context-manager behaviour under failure conditions."""
 
     @pytest.mark.asyncio
-    async def test_close_disposes_client(self, go_client):
+    async def test_close_disposes_client(self, go_client) -> None:
         """close() must call aclose() on the underlying httpx client."""
         go_client.client.aclose = AsyncMock()
         await go_client.close()
         go_client.client.aclose.assert_awaited_once()
 
     @pytest.mark.asyncio
-    async def test_context_manager_closes_on_exception(self):
-        """async with GoBackendClient must close even if body raises."""
+    async def test_context_manager_closes_on_exception(self) -> Never:
+        """Async with GoBackendClient must close even if body raises."""
         client = GoBackendClient(base_url="http://fake:8080")
         client.client = AsyncMock(spec=httpx.AsyncClient)
         client.client.aclose = AsyncMock()
 
         with pytest.raises(ValueError, match="boom"):
             async with client:
-                raise ValueError("boom")
+                msg = "boom"
+                raise ValueError(msg)
 
         client.client.aclose.assert_awaited_once()
 
     @pytest.mark.asyncio
-    async def test_auth_header_set_when_token_provided(self, go_client):
+    async def test_auth_header_set_when_token_provided(self, go_client) -> None:
         """Requests must include Authorization header when service_token is set."""
         success_response = MagicMock()
         success_response.status_code = 200

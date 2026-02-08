@@ -10,8 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class EventBus:
-    """
-    High-level event bus interface for publishing and subscribing to cross-backend events.
+    """High-level event bus interface for publishing and subscribing to cross-backend events.
 
     This class provides a simplified API on top of NATSClient for common event patterns.
     """
@@ -38,8 +37,7 @@ class EventBus:
     EVENT_AGENT_SESSION_CREATED = "agent.session.created"
 
     def __init__(self, nats_client: NATSClient) -> None:
-        """
-        Initialize event bus with NATS client.
+        """Initialize event bus with NATS client.
 
         Args:
             nats_client: Connected NATSClient instance
@@ -54,8 +52,7 @@ class EventBus:
         entity_type: str,
         data: dict[str, Any],
     ) -> None:
-        """
-        Publish event to NATS with standard format.
+        """Publish event to NATS with standard format.
 
         Args:
             event_type: Type of event (use EVENT_* constants)
@@ -72,15 +69,14 @@ class EventBus:
             data=data,
             source="python",
         )
-        logger.debug(f"Published {event_type} for {entity_type} {entity_id}")
+        logger.debug("Published %s for %s %s", event_type, entity_type, entity_id)
 
     async def subscribe(
         self,
         event_type: str,
         handler: Callable[[dict[str, Any]], Coroutine[Any, Any, None] | None],
     ) -> None:
-        """
-        Subscribe to specific event type across all projects.
+        """Subscribe to specific event type across all projects.
 
         Args:
             event_type: Event type to subscribe to (e.g., "item.created")
@@ -95,7 +91,7 @@ class EventBus:
             durable_name=durable_name,
             callback=handler,
         )
-        logger.info(f"Subscribed to {event_type} events from Go backend")
+        logger.info("Subscribed to %s events from Go backend", event_type)
 
     async def subscribe_to_project(
         self,
@@ -103,8 +99,7 @@ class EventBus:
         event_type: str,
         handler: Callable[[dict[str, Any]], None],
     ) -> None:
-        """
-        Subscribe to specific event type for a specific project.
+        """Subscribe to specific event type for a specific project.
 
         Args:
             project_id: Project UUID to filter events
@@ -120,11 +115,10 @@ class EventBus:
             durable_name=durable_name,
             callback=handler,
         )
-        logger.info(f"Subscribed to {event_type} events for project {project_id}")
+        logger.info("Subscribed to %s events for project %s", event_type, project_id)
 
     async def subscribe_all_go_events(self, handler: Callable[[dict[str, Any]], None]) -> None:
-        """
-        Subscribe to all events from Go backend (useful for monitoring/logging).
+        """Subscribe to all events from Go backend (useful for monitoring/logging).
 
         Args:
             handler: Async callback function to handle all events
@@ -141,8 +135,7 @@ class EventBus:
         logger.info("Subscribed to all Go backend events")
 
     async def health_check(self) -> dict[str, Any]:
-        """
-        Check event bus health.
+        """Check event bus health.
 
         Returns:
             dict with connection status and statistics

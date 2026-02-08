@@ -1,6 +1,4 @@
-"""
-BDD Scenario model.
-"""
+"""BDD Scenario model."""
 
 from typing import Any, ClassVar
 

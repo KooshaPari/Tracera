@@ -1,4 +1,4 @@
-"""Error scenario and edge case tests for sync_engine.py
+"""Error scenario and edge case tests for sync_engine.py.
 
 Tests cover:
 - Network timeout with retry logic
@@ -35,7 +35,7 @@ from tracertm.storage.sync_engine import (
 class MockDBConnection:
     """Mock database connection for testing."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.engine = Mock()
         self.engine.connect = Mock(return_value=MockConnection())
 
@@ -52,7 +52,7 @@ class MockConnection:
     def execute(self, *args, **kwargs):
         return Mock(fetchone=Mock(return_value=None), scalar=Mock(return_value=0))
 
-    def commit(self):
+    def commit(self) -> None:
         pass
 
 
@@ -60,7 +60,7 @@ class MockConnection:
 class TestSyncEngineErrorScenarios:
     """Test error handling in sync engine."""
 
-    async def test_sync_network_timeout_with_retry(self):
+    async def test_sync_network_timeout_with_retry(self) -> None:
         """Test network timeout and automatic retry."""
         db = MockDBConnection()
         api = AsyncMock()
@@ -95,7 +95,7 @@ class TestSyncEngineErrorScenarios:
                         # May or may not sync depending on retries
                         assert result.entities_synced >= 0
 
-    async def test_sync_database_lock_handling(self):
+    async def test_sync_database_lock_handling(self) -> None:
         """Test handling of database locks during sync."""
         db = MockDBConnection()
         api = AsyncMock()
@@ -115,7 +115,7 @@ class TestSyncEngineErrorScenarios:
             assert not result.success
             assert len(result.errors) > 0
 
-    async def test_sync_conflict_resolution_last_write_wins(self):
+    async def test_sync_conflict_resolution_last_write_wins(self) -> None:
         """Test conflict resolution with last-write-wins strategy."""
         from tracertm.storage.conflict_resolver import ConflictStrategy
 
@@ -141,7 +141,7 @@ class TestSyncEngineErrorScenarios:
         resolved = engine._resolve_conflict(local_data, remote_data)
         assert resolved["title"] == "Remote Title"
 
-    async def test_sync_conflict_resolution_local_wins(self):
+    async def test_sync_conflict_resolution_local_wins(self) -> None:
         """Test conflict resolution with local-wins strategy."""
         from tracertm.storage.conflict_resolver import ConflictStrategy
 
@@ -157,7 +157,7 @@ class TestSyncEngineErrorScenarios:
         resolved = engine._resolve_conflict(local_data, remote_data)
         assert resolved["title"] == "Local Title"
 
-    async def test_sync_conflict_resolution_remote_wins(self):
+    async def test_sync_conflict_resolution_remote_wins(self) -> None:
         """Test conflict resolution with remote-wins strategy."""
         from tracertm.storage.conflict_resolver import ConflictStrategy
 
@@ -173,7 +173,7 @@ class TestSyncEngineErrorScenarios:
         resolved = engine._resolve_conflict(local_data, remote_data)
         assert resolved["title"] == "Remote Title"
 
-    async def test_sync_conflict_resolution_manual(self):
+    async def test_sync_conflict_resolution_manual(self) -> None:
         """Test conflict resolution with manual strategy."""
         from tracertm.storage.conflict_resolver import ConflictStrategy
 
@@ -190,7 +190,7 @@ class TestSyncEngineErrorScenarios:
         resolved = engine._resolve_conflict(local_data, remote_data)
         assert resolved["title"] == "Local Title"
 
-    async def test_sync_rollback_on_partial_failure(self):
+    async def test_sync_rollback_on_partial_failure(self) -> None:
         """Test rollback when sync partially fails."""
         db = MockDBConnection()
         api = AsyncMock()
@@ -227,7 +227,7 @@ class TestSyncEngineErrorScenarios:
                 # Should report errors
                 assert len(result.errors) > 0
 
-    async def test_sync_handles_corrupt_remote_data(self):
+    async def test_sync_handles_corrupt_remote_data(self) -> None:
         """Test handling of corrupt data from remote."""
         db = MockDBConnection()
         api = AsyncMock()
@@ -245,7 +245,7 @@ class TestSyncEngineErrorScenarios:
             # Should report error
             assert len(result.errors) > 0 or not result.success
 
-    async def test_sync_max_retries_exceeded(self):
+    async def test_sync_max_retries_exceeded(self) -> None:
         """Test behavior when max retries are exceeded."""
         db = MockDBConnection()
         api = AsyncMock()
@@ -271,7 +271,7 @@ class TestSyncEngineErrorScenarios:
             assert len(result.errors) > 0
             assert result.entities_synced == 0
 
-    async def test_sync_exponential_backoff(self):
+    async def test_sync_exponential_backoff(self) -> None:
         """Test exponential backoff delays."""
         # Test backoff calculation
         for attempt in range(5):
@@ -283,7 +283,7 @@ class TestSyncEngineErrorScenarios:
             # Allow 50% tolerance for timing
             assert elapsed >= expected * 0.5
 
-    async def test_sync_already_in_progress(self):
+    async def test_sync_already_in_progress(self) -> None:
         """Test that concurrent sync attempts are rejected."""
         db = MockDBConnection()
         api = AsyncMock()
@@ -300,7 +300,7 @@ class TestSyncEngineErrorScenarios:
         assert not result.success
         assert "already in progress" in result.errors[0].lower()
 
-    async def test_sync_clear_queue(self):
+    async def test_sync_clear_queue(self) -> None:
         """Test clearing the sync queue."""
         db = MockDBConnection()
         api = AsyncMock()
@@ -312,7 +312,7 @@ class TestSyncEngineErrorScenarios:
             await engine.clear_queue()
             mock_clear.assert_called_once()
 
-    async def test_sync_reset_state(self):
+    async def test_sync_reset_state(self) -> None:
         """Test resetting sync state."""
         db = MockDBConnection()
         api = AsyncMock()
@@ -329,7 +329,7 @@ class TestSyncEngineErrorScenarios:
                     mock_status.assert_called_once()
                     mock_error.assert_called_once_with(None)
 
-    async def test_sync_is_syncing_flag(self):
+    async def test_sync_is_syncing_flag(self) -> None:
         """Test is_syncing flag management."""
         db = MockDBConnection()
         api = AsyncMock()
@@ -345,7 +345,7 @@ class TestSyncEngineErrorScenarios:
         engine._syncing = False
         assert not engine.is_syncing()
 
-    async def test_change_detector_compute_hash(self):
+    async def test_change_detector_compute_hash(self) -> None:
         """Test content hash computation."""
         content1 = "Hello World"
         content2 = "Hello World"
@@ -360,7 +360,7 @@ class TestSyncEngineErrorScenarios:
         # Different content should have different hash
         assert hash1 != hash3
 
-    async def test_change_detector_has_changed(self):
+    async def test_change_detector_has_changed(self) -> None:
         """Test change detection logic."""
         content = "Some content"
         stored_hash = ChangeDetector.compute_hash(content)
@@ -374,7 +374,7 @@ class TestSyncEngineErrorScenarios:
         # No stored hash (new file)
         assert ChangeDetector.has_changed(content, None)
 
-    async def test_change_detector_directory_scan(self, tmp_path):
+    async def test_change_detector_directory_scan(self, tmp_path) -> None:
         """Test detecting changes in a directory."""
         # Create test files
         dir_path = tmp_path / "test_dir"
@@ -408,7 +408,7 @@ class TestSyncEngineErrorScenarios:
         assert len(changes) == 1
         assert changes[0][0] == file1
 
-    async def test_sync_queue_enqueue_update_existing(self):
+    async def test_sync_queue_enqueue_update_existing(self) -> None:
         """Test that enqueuing updates existing entries."""
         db = MockDBConnection()
         queue = SyncQueue(db)
@@ -429,7 +429,7 @@ class TestSyncEngineErrorScenarios:
 
             assert queue_id == 1
 
-    async def test_sync_queue_remove(self):
+    async def test_sync_queue_remove(self) -> None:
         """Test removing entries from queue."""
         db = MockDBConnection()
         queue = SyncQueue(db)
@@ -445,7 +445,7 @@ class TestSyncEngineErrorScenarios:
             queue.remove(1)
             mock_conn.execute.assert_called_once()
 
-    async def test_sync_queue_update_retry(self):
+    async def test_sync_queue_update_retry(self) -> None:
         """Test updating retry count."""
         db = MockDBConnection()
         queue = SyncQueue(db)
@@ -461,7 +461,7 @@ class TestSyncEngineErrorScenarios:
             queue.update_retry(1, "Network timeout")
             mock_conn.execute.assert_called_once()
 
-    async def test_sync_queue_clear(self):
+    async def test_sync_queue_clear(self) -> None:
         """Test clearing entire queue."""
         db = MockDBConnection()
         queue = SyncQueue(db)
@@ -477,7 +477,7 @@ class TestSyncEngineErrorScenarios:
             queue.clear()
             mock_conn.execute.assert_called_once()
 
-    async def test_sync_state_manager_get_state(self):
+    async def test_sync_state_manager_get_state(self) -> None:
         """Test retrieving sync state."""
         db = MockDBConnection()
         manager = SyncStateManager(db)
@@ -497,7 +497,7 @@ class TestSyncEngineErrorScenarios:
             state = manager.get_state()
             assert isinstance(state, SyncState)
 
-    async def test_sync_state_manager_update_last_sync(self):
+    async def test_sync_state_manager_update_last_sync(self) -> None:
         """Test updating last sync timestamp."""
         db = MockDBConnection()
         manager = SyncStateManager(db)
@@ -513,7 +513,7 @@ class TestSyncEngineErrorScenarios:
             manager.update_last_sync()
             mock_conn.execute.assert_called_once()
 
-    async def test_sync_state_manager_update_status(self):
+    async def test_sync_state_manager_update_status(self) -> None:
         """Test updating sync status."""
         db = MockDBConnection()
         manager = SyncStateManager(db)
@@ -529,7 +529,7 @@ class TestSyncEngineErrorScenarios:
             manager.update_status(SyncStatus.SYNCING)
             mock_conn.execute.assert_called_once()
 
-    async def test_sync_state_manager_update_error(self):
+    async def test_sync_state_manager_update_error(self) -> None:
         """Test updating error state."""
         db = MockDBConnection()
         manager = SyncStateManager(db)
@@ -550,7 +550,7 @@ class TestSyncEngineErrorScenarios:
             manager.update_error(None)
             assert mock_conn.execute.call_count >= 2
 
-    async def test_upload_change_operations(self):
+    async def test_upload_change_operations(self) -> None:
         """Test upload operations for different operation types."""
         db = MockDBConnection()
         api = AsyncMock()
@@ -580,7 +580,7 @@ class TestSyncEngineErrorScenarios:
         result = await engine._upload_change(change)
         assert result is True
 
-    async def test_vector_clock_creation(self):
+    async def test_vector_clock_creation(self) -> None:
         """Test vector clock creation for conflict resolution."""
         db = MockDBConnection()
         api = AsyncMock()

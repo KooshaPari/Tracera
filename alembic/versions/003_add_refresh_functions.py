@@ -1,4 +1,4 @@
-"""Add materialized view refresh functions
+"""Add materialized view refresh functions.
 
 Revision ID: 003
 Revises: 002
@@ -19,7 +19,6 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     """Create refresh functions for materialized views."""
-
     # Create incremental refresh function
     op.execute("""
         CREATE OR REPLACE FUNCTION refresh_materialized_views_incremental()
@@ -132,7 +131,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop refresh functions."""
-
     op.execute("DROP FUNCTION IF EXISTS cleanup_change_log(INTEGER);")
     op.execute("DROP FUNCTION IF EXISTS get_view_staleness();")
     op.execute("DROP FUNCTION IF EXISTS refresh_materialized_views_full();")

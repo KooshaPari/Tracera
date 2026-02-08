@@ -1,5 +1,4 @@
-"""
-HashiCorp Vault client for TracerTM.
+"""HashiCorp Vault client for TracerTM.
 
 Provides type-safe access to secrets stored in Vault KV v2 engine.
 """
@@ -62,8 +61,7 @@ class WorkOSCredentials(BaseModel):
 
 
 class VaultClient:
-    """
-    HashiCorp Vault client for TracerTM secrets management.
+    """HashiCorp Vault client for TracerTM secrets management.
 
     Usage:
         client = VaultClient()
@@ -77,9 +75,8 @@ class VaultClient:
         vault_token: str | None = None,
         mount_point: str = "secret",
         namespace: str = "tracertm",
-    ):
-        """
-        Initialize Vault client.
+    ) -> None:
+        """Initialize Vault client.
 
         Args:
             vault_addr: Vault server address (default: VAULT_ADDR env or http://127.0.0.1:8200)
@@ -96,20 +93,22 @@ class VaultClient:
         self.namespace = namespace
 
         if not self.vault_token:
-            raise VaultError("VAULT_TOKEN environment variable not set")
+            msg = "VAULT_TOKEN environment variable not set"
+            raise VaultError(msg)
 
         try:
             self.client = hvac.Client(url=self.vault_addr, token=self.vault_token)
 
             if not self.client.is_authenticated():
-                raise VaultError("Vault authentication failed")
+                msg = "Vault authentication failed"
+                raise VaultError(msg)
 
         except Exception as e:
-            raise VaultError(f"Failed to initialize Vault client: {e}") from e
+            msg = f"Failed to initialize Vault client: {e}"
+            raise VaultError(msg) from e
 
     def get_secret(self, path: str) -> dict[str, Any]:
-        """
-        Retrieve a secret from Vault KV v2.
+        """Retrieve a secret from Vault KV v2.
 
         Args:
             path: Secret path relative to namespace (e.g., "jwt", "database")
@@ -126,18 +125,20 @@ class VaultClient:
             response = self.client.secrets.kv.v2.read_secret_version(path=full_path, mount_point=self.mount_point)
 
             if not response or "data" not in response or "data" not in response["data"]:
-                raise VaultError(f"Secret not found or invalid format: {full_path}")
+                msg = f"Secret not found or invalid format: {full_path}"
+                raise VaultError(msg)
 
             return response["data"]["data"]
 
         except hvac.exceptions.InvalidPath as e:
-            raise VaultError(f"Secret not found: {full_path}") from e
+            msg = f"Secret not found: {full_path}"
+            raise VaultError(msg) from e
         except Exception as e:
-            raise VaultError(f"Failed to read secret {full_path}: {e}") from e
+            msg = f"Failed to read secret {full_path}: {e}"
+            raise VaultError(msg) from e
 
     def get_secret_field(self, path: str, field: str) -> str:
-        """
-        Retrieve a specific field from a Vault secret.
+        """Retrieve a specific field from a Vault secret.
 
         Args:
             path: Secret path
@@ -152,11 +153,13 @@ class VaultClient:
         data = self.get_secret(path)
 
         if field not in data:
-            raise VaultError(f"Field '{field}' not found in secret '{path}'")
+            msg = f"Field '{field}' not found in secret '{path}'"
+            raise VaultError(msg)
 
         value = data[field]
         if not isinstance(value, str):
-            raise VaultError(f"Field '{field}' in secret '{path}' is not a string (got {type(value).__name__})")
+            msg = f"Field '{field}' in secret '{path}' is not a string (got {type(value).__name__})"
+            raise VaultError(msg)
 
         return value
 
@@ -193,8 +196,7 @@ class VaultClient:
         return S3Credentials(**data)
 
     def get_workos_credentials(self) -> WorkOSCredentials:
-        """
-        Retrieve WorkOS authentication credentials.
+        """Retrieve WorkOS authentication credentials.
 
         Returns empty credentials if not found (WorkOS is optional).
         """
@@ -205,8 +207,7 @@ class VaultClient:
             return WorkOSCredentials()
 
     def health_check(self) -> bool:
-        """
-        Check Vault connectivity and authentication.
+        """Check Vault connectivity and authentication.
 
         Returns:
             True if Vault is healthy and authenticated
@@ -216,19 +217,20 @@ class VaultClient:
         """
         try:
             if not self.client.is_authenticated():
-                raise VaultError("Not authenticated")
+                msg = "Not authenticated"
+                raise VaultError(msg)
 
             # Try to read seal status as a health check
             self.client.sys.read_health_status()
             return True
 
         except Exception as e:
-            raise VaultError(f"Health check failed: {e}") from e
+            msg = f"Health check failed: {e}"
+            raise VaultError(msg) from e
 
 
 def load_config_from_vault() -> dict[str, Any]:
-    """
-    Load configuration from Vault (convenience function).
+    """Load configuration from Vault (convenience function).
 
     Returns:
         Dictionary with all credentials

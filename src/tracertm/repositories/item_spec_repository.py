@@ -1,5 +1,4 @@
-"""
-Repositories for enhanced Item specifications.
+"""Repositories for enhanced Item specifications.
 
 Provides data access layer for RequirementSpec, TestSpec, EpicSpec,
 UserStorySpec, TaskSpec, and DefectSpec entities with:
@@ -126,7 +125,7 @@ class DefectStatus(StrEnum):
 class BaseSpecRepository:
     """Base repository with common CRUD operations for all spec types."""
 
-    def __init__(self, session: AsyncSession, model_class):
+    def __init__(self, session: AsyncSession, model_class) -> None:
         self.session = session
         self.model_class = model_class
 
@@ -146,7 +145,8 @@ class BaseSpecRepository:
         """Update specification fields."""
         spec = await self.get_by_id(spec_id)
         if not spec:
-            raise ValueError(f"{self.model_class.__name__} {spec_id} not found")
+            msg = f"{self.model_class.__name__} {spec_id} not found"
+            raise ValueError(msg)
 
         for key, value in updates.items():
             if hasattr(spec, key):
@@ -172,7 +172,8 @@ class BaseSpecRepository:
         result = await self.session.execute(query)
         spec = result.scalar_one_or_none()
         if not spec:
-            raise ValueError(f"{self.model_class.__name__} {spec_id} not found")
+            msg = f"{self.model_class.__name__} {spec_id} not found"
+            raise ValueError(msg)
         spec.deleted_at = None
         await self.session.flush()
         await self.session.refresh(spec)
@@ -240,7 +241,7 @@ class BaseSpecRepository:
 class RequirementSpecRepository(BaseSpecRepository):
     """Repository for RequirementSpec CRUD and query operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         from tracertm.models.item_spec import RequirementSpec
 
         super().__init__(session, RequirementSpec)
@@ -326,7 +327,8 @@ class RequirementSpecRepository(BaseSpecRepository):
         """Update volatility metrics for a requirement spec."""
         spec = await self.get_by_id(spec_id)
         if not spec:
-            raise ValueError(f"RequirementSpec {spec_id} not found")
+            msg = f"RequirementSpec {spec_id} not found"
+            raise ValueError(msg)
 
         spec.volatility_index = volatility_index
         spec.change_count = change_count
@@ -447,7 +449,7 @@ class RequirementSpecRepository(BaseSpecRepository):
 class TestSpecRepository(BaseSpecRepository):
     """Repository for TestSpec CRUD and query operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         from tracertm.models.item_spec import TestSpec
 
         super().__init__(session, TestSpec)
@@ -514,7 +516,8 @@ class TestSpecRepository(BaseSpecRepository):
         """Record a test run and update statistics."""
         spec = await self.get_by_id(spec_id)
         if not spec:
-            raise ValueError(f"TestSpec {spec_id} not found")
+            msg = f"TestSpec {spec_id} not found"
+            raise ValueError(msg)
 
         # Update counts
         spec.total_runs = (spec.total_runs or 0) + 1
@@ -702,7 +705,7 @@ class TestSpecRepository(BaseSpecRepository):
 class EpicSpecRepository(BaseSpecRepository):
     """Repository for EpicSpec CRUD and query operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         from tracertm.models.item_spec import EpicSpec
 
         super().__init__(session, EpicSpec)
@@ -825,7 +828,7 @@ class EpicSpecRepository(BaseSpecRepository):
 class UserStorySpecRepository(BaseSpecRepository):
     """Repository for UserStorySpec CRUD and query operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         from tracertm.models.item_spec import UserStorySpec
 
         super().__init__(session, UserStorySpec)
@@ -941,7 +944,7 @@ class UserStorySpecRepository(BaseSpecRepository):
 class TaskSpecRepository(BaseSpecRepository):
     """Repository for TaskSpec CRUD and query operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         from tracertm.models.item_spec import TaskSpec
 
         super().__init__(session, TaskSpec)
@@ -1084,7 +1087,7 @@ class TaskSpecRepository(BaseSpecRepository):
 class DefectSpecRepository(BaseSpecRepository):
     """Repository for DefectSpec CRUD and query operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         from tracertm.models.item_spec import DefectSpec
 
         super().__init__(session, DefectSpec)
@@ -1281,7 +1284,7 @@ class DefectSpecRepository(BaseSpecRepository):
 class ItemSpecBatchRepository:
     """Repository for batch operations across all spec types."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.requirements = RequirementSpecRepository(session)
         self.tests = TestSpecRepository(session)

@@ -11,7 +11,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import sys
 from fnmatch import fnmatch
 from pathlib import Path
 
@@ -131,8 +130,6 @@ def main() -> int:
     exclude_patterns = list(config.get("exclude_patterns", []))
     extensions = set(config.get("extensions", []))
 
-    print(f"📏 Checking file length (max {max_loc} LOC)...")
-
     violations: list[str] = []
     for path in iter_files(roots, extensions, exclude_dirs, exclude_paths, exclude_patterns):
         try:
@@ -148,19 +145,10 @@ def main() -> int:
             violations.append(f"{lines}:{rel_path}")
 
     if violations:
-        print(f"{RED}❌ FILE LENGTH LIMIT EXCEEDED{NC}")
-        print("")
-        print(f"{YELLOW}Files over {max_loc} lines:{NC}")
         for entry in sorted(violations, key=lambda v: int(v.split(":", 1)[0]), reverse=True):
-            count, rest = entry.split(":", 1)
-            print(f"  {count} lines  {rest}")
-        print("")
-        print(f"{YELLOW}Required action:{NC}")
-        print(f"  • Refactor files into smaller, cohesive modules")
-        print(f"  • Target: < {max_loc} lines per file")
+            _count, _rest = entry.split(":", 1)
         return 1
 
-    print(f"{GREEN}✅ All files under {max_loc} lines{NC}")
     return 0
 
 

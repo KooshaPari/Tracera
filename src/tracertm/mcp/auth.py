@@ -9,11 +9,14 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import TYPE_CHECKING
 
-from fastmcp.server.auth import AuthProvider
 from fastmcp.server.auth.providers.jwt import JWTVerifier
 from fastmcp.server.auth.providers.workos import AuthKitProvider
 from fastmcp.utilities.auth import parse_scopes
+
+if TYPE_CHECKING:
+    from fastmcp.server.auth import AuthProvider
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +57,8 @@ def build_auth_provider(transport: str = "stdio") -> AuthProvider | None:
     mode_env = os.getenv("TRACERTM_MCP_AUTH_MODE") or "oauth"
     mode = mode_env.lower().strip()
     if mode != "oauth":
-        raise RuntimeError("MCP auth must be enabled with TRACERTM_MCP_AUTH_MODE=oauth")
+        msg = "MCP auth must be enabled with TRACERTM_MCP_AUTH_MODE=oauth"
+        raise RuntimeError(msg)
 
     authkit_domain = (
         os.getenv("TRACERTM_MCP_AUTHKIT_DOMAIN")
@@ -70,7 +74,7 @@ def build_auth_provider(transport: str = "stdio") -> AuthProvider | None:
     if base_url and not base_url.rstrip("/").endswith("/api/v1/mcp"):
         base_url = f"{base_url.rstrip('/')}/api/v1/mcp"
     required_scopes = parse_scopes(
-        os.getenv("TRACERTM_MCP_REQUIRED_SCOPES") or os.getenv("FASTMCP_SERVER_AUTH_AUTHKITPROVIDER_REQUIRED_SCOPES")
+        os.getenv("TRACERTM_MCP_REQUIRED_SCOPES") or os.getenv("FASTMCP_SERVER_AUTH_AUTHKITPROVIDER_REQUIRED_SCOPES"),
     )
 
     logger.debug(f"Building auth provider. Mode: {mode or 'default'}, Scopes: {required_scopes}")
@@ -79,12 +83,14 @@ def build_auth_provider(transport: str = "stdio") -> AuthProvider | None:
         authkit_domain = f"https://{authkit_domain}"
 
     if not authkit_domain:
-        raise RuntimeError("TRACERTM_MCP_AUTHKIT_DOMAIN (or WORKOS_AUTHKIT_DOMAIN) is required")
+        msg = "TRACERTM_MCP_AUTHKIT_DOMAIN (or WORKOS_AUTHKIT_DOMAIN) is required"
+        raise RuntimeError(msg)
 
     if not base_url:
-        raise RuntimeError("TRACERTM_MCP_BASE_URL (or PYTHON_BACKEND_URL) is required")
+        msg = "TRACERTM_MCP_BASE_URL (or PYTHON_BACKEND_URL) is required"
+        raise RuntimeError(msg)
 
-    logger.info(f"Configuring WorkOS AuthKit: {authkit_domain}")
+    logger.info("Configuring WorkOS AuthKit: %s", authkit_domain)
     jwt_verifier = JWTVerifier(
         jwks_uri=f"{authkit_domain.rstrip('/')}/oauth2/jwks",
         issuer=authkit_domain.rstrip("/"),

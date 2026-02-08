@@ -1,5 +1,4 @@
-"""
-DataFrame schema validation tests using Pandera.
+"""DataFrame schema validation tests using Pandera.
 
 Tests for:
 - RequirementSchema
@@ -38,7 +37,7 @@ except (ImportError, ModuleNotFoundError):
 class TestRequirementSchemaValidation:
     """Test RequirementSchema validation."""
 
-    def test_valid_requirement_dataframe(self):
+    def test_valid_requirement_dataframe(self) -> None:
         """Test that valid requirement data passes validation."""
         df = pd.DataFrame({
             "id": [1, 2, 3],
@@ -52,7 +51,7 @@ class TestRequirementSchemaValidation:
         result = validate_requirements(df)
         assert len(result) == 3
 
-    def test_requirement_id_positive_constraint(self):
+    def test_requirement_id_positive_constraint(self) -> None:
         """Test that requirement IDs must be positive (gt=0)."""
         df = pd.DataFrame({
             "id": [0, 1, 2],  # 0 violates gt=0
@@ -66,7 +65,7 @@ class TestRequirementSchemaValidation:
         with pytest.raises(ValidationError):
             validate_requirements(df)
 
-    def test_requirement_id_negative_invalid(self):
+    def test_requirement_id_negative_invalid(self) -> None:
         """Test that negative IDs are invalid."""
         df = pd.DataFrame({
             "id": [-1, 1, 2],
@@ -80,7 +79,7 @@ class TestRequirementSchemaValidation:
         with pytest.raises(ValidationError):
             validate_requirements(df)
 
-    def test_requirement_name_min_length(self):
+    def test_requirement_name_min_length(self) -> None:
         """Test that requirement names cannot be empty (min_length=1)."""
         df = pd.DataFrame({
             "id": [1, 2, 3],
@@ -94,7 +93,7 @@ class TestRequirementSchemaValidation:
         with pytest.raises(ValidationError):
             validate_requirements(df)
 
-    def test_requirement_status_enum_constraint(self):
+    def test_requirement_status_enum_constraint(self) -> None:
         """Test that status must be one of the allowed values."""
         df = pd.DataFrame({
             "id": [1, 2, 3],
@@ -108,7 +107,7 @@ class TestRequirementSchemaValidation:
         with pytest.raises(ValidationError):
             validate_requirements(df)
 
-    def test_requirement_status_all_valid_values(self):
+    def test_requirement_status_all_valid_values(self) -> None:
         """Test all valid status values."""
         statuses = ["draft", "active", "deprecated", "archived"]
         df = pd.DataFrame({
@@ -123,7 +122,7 @@ class TestRequirementSchemaValidation:
         result = validate_requirements(df)
         assert len(result) == len(statuses)
 
-    def test_requirement_priority_range_1_to_5(self):
+    def test_requirement_priority_range_1_to_5(self) -> None:
         """Test that priority must be in range 1-5 (ge=1, le=5)."""
         df = pd.DataFrame({
             "id": [1, 2, 3],
@@ -137,7 +136,7 @@ class TestRequirementSchemaValidation:
         with pytest.raises(ValidationError):
             validate_requirements(df)
 
-    def test_requirement_priority_below_minimum(self):
+    def test_requirement_priority_below_minimum(self) -> None:
         """Test that priority below 1 is invalid."""
         df = pd.DataFrame({
             "id": [1, 2, 3],
@@ -151,7 +150,7 @@ class TestRequirementSchemaValidation:
         with pytest.raises(ValidationError):
             validate_requirements(df)
 
-    def test_requirement_priority_boundaries(self):
+    def test_requirement_priority_boundaries(self) -> None:
         """Test priority boundary values."""
         df = pd.DataFrame({
             "id": [1, 2],
@@ -175,7 +174,7 @@ class TestRequirementSchemaValidation:
 class TestTraceabilityLinkSchemaValidation:
     """Test TraceabilityLinkSchema validation."""
 
-    def test_valid_traceability_link_dataframe(self):
+    def test_valid_traceability_link_dataframe(self) -> None:
         """Test that valid link data passes validation."""
         df = pd.DataFrame({
             "id": [1, 2, 3],
@@ -187,7 +186,7 @@ class TestTraceabilityLinkSchemaValidation:
         result = validate_traceability_links(df)
         assert len(result) == 3
 
-    def test_link_id_positive_constraint(self):
+    def test_link_id_positive_constraint(self) -> None:
         """Test that link IDs must be positive."""
         df = pd.DataFrame({
             "id": [0, 1, 2],  # 0 violates gt=0
@@ -199,7 +198,7 @@ class TestTraceabilityLinkSchemaValidation:
         with pytest.raises(ValidationError):
             validate_traceability_links(df)
 
-    def test_link_source_id_positive_constraint(self):
+    def test_link_source_id_positive_constraint(self) -> None:
         """Test that source_id must be positive."""
         df = pd.DataFrame({
             "id": [1, 2, 3],
@@ -211,7 +210,7 @@ class TestTraceabilityLinkSchemaValidation:
         with pytest.raises(ValidationError):
             validate_traceability_links(df)
 
-    def test_link_target_id_positive_constraint(self):
+    def test_link_target_id_positive_constraint(self) -> None:
         """Test that target_id must be positive."""
         df = pd.DataFrame({
             "id": [1, 2, 3],
@@ -223,7 +222,7 @@ class TestTraceabilityLinkSchemaValidation:
         with pytest.raises(ValidationError):
             validate_traceability_links(df)
 
-    def test_link_type_enum_constraint(self):
+    def test_link_type_enum_constraint(self) -> None:
         """Test that link_type must be one of allowed values."""
         df = pd.DataFrame({
             "id": [1, 2, 3],
@@ -235,7 +234,7 @@ class TestTraceabilityLinkSchemaValidation:
         with pytest.raises(ValidationError):
             validate_traceability_links(df)
 
-    def test_link_type_all_valid_values(self):
+    def test_link_type_all_valid_values(self) -> None:
         """Test all valid link types."""
         types = ["implements", "tests", "depends_on", "related_to"]
         df = pd.DataFrame({
@@ -248,7 +247,7 @@ class TestTraceabilityLinkSchemaValidation:
         result = validate_traceability_links(df)
         assert len(result) == len(types)
 
-    def test_link_strength_range_0_to_1(self):
+    def test_link_strength_range_0_to_1(self) -> None:
         """Test that strength must be in range 0.0-1.0."""
         df = pd.DataFrame({
             "id": [1, 2, 3],
@@ -260,7 +259,7 @@ class TestTraceabilityLinkSchemaValidation:
         with pytest.raises(ValidationError):
             validate_traceability_links(df)
 
-    def test_link_strength_negative_invalid(self):
+    def test_link_strength_negative_invalid(self) -> None:
         """Test that negative strength is invalid."""
         df = pd.DataFrame({
             "id": [1, 2, 3],
@@ -272,7 +271,7 @@ class TestTraceabilityLinkSchemaValidation:
         with pytest.raises(ValidationError):
             validate_traceability_links(df)
 
-    def test_link_strength_boundaries(self):
+    def test_link_strength_boundaries(self) -> None:
         """Test strength boundary values."""
         df = pd.DataFrame({
             "id": [1, 2],
@@ -294,7 +293,7 @@ class TestTraceabilityLinkSchemaValidation:
 class TestProjectMetricsSchemaValidation:
     """Test ProjectMetricsSchema validation."""
 
-    def test_valid_project_metrics_dataframe(self):
+    def test_valid_project_metrics_dataframe(self) -> None:
         """Test that valid metrics data passes validation."""
         df = pd.DataFrame({
             "project_id": [1, 2, 3],
@@ -307,7 +306,7 @@ class TestProjectMetricsSchemaValidation:
         result = validate_project_metrics(df)
         assert len(result) == 3
 
-    def test_metrics_project_id_positive_constraint(self):
+    def test_metrics_project_id_positive_constraint(self) -> None:
         """Test that project_id must be positive."""
         df = pd.DataFrame({
             "project_id": [0, 1, 2],  # 0 violates gt=0
@@ -320,7 +319,7 @@ class TestProjectMetricsSchemaValidation:
         with pytest.raises(ValidationError):
             validate_project_metrics(df)
 
-    def test_metrics_total_requirements_non_negative(self):
+    def test_metrics_total_requirements_non_negative(self) -> None:
         """Test that total_requirements must be non-negative."""
         df = pd.DataFrame({
             "project_id": [1, 2, 3],
@@ -333,7 +332,7 @@ class TestProjectMetricsSchemaValidation:
         with pytest.raises(ValidationError):
             validate_project_metrics(df)
 
-    def test_metrics_implemented_non_negative(self):
+    def test_metrics_implemented_non_negative(self) -> None:
         """Test that implemented must be non-negative."""
         df = pd.DataFrame({
             "project_id": [1, 2, 3],
@@ -346,7 +345,7 @@ class TestProjectMetricsSchemaValidation:
         with pytest.raises(ValidationError):
             validate_project_metrics(df)
 
-    def test_metrics_tested_non_negative(self):
+    def test_metrics_tested_non_negative(self) -> None:
         """Test that tested must be non-negative."""
         df = pd.DataFrame({
             "project_id": [1, 2, 3],
@@ -359,7 +358,7 @@ class TestProjectMetricsSchemaValidation:
         with pytest.raises(ValidationError):
             validate_project_metrics(df)
 
-    def test_metrics_coverage_range_0_to_100(self):
+    def test_metrics_coverage_range_0_to_100(self) -> None:
         """Test that coverage must be in range 0.0-100.0."""
         df = pd.DataFrame({
             "project_id": [1, 2, 3],
@@ -372,7 +371,7 @@ class TestProjectMetricsSchemaValidation:
         with pytest.raises(ValidationError):
             validate_project_metrics(df)
 
-    def test_metrics_coverage_negative_invalid(self):
+    def test_metrics_coverage_negative_invalid(self) -> None:
         """Test that negative coverage is invalid."""
         df = pd.DataFrame({
             "project_id": [1, 2, 3],
@@ -385,7 +384,7 @@ class TestProjectMetricsSchemaValidation:
         with pytest.raises(ValidationError):
             validate_project_metrics(df)
 
-    def test_metrics_coverage_boundaries(self):
+    def test_metrics_coverage_boundaries(self) -> None:
         """Test coverage boundary values."""
         df = pd.DataFrame({
             "project_id": [1, 2],
@@ -398,7 +397,7 @@ class TestProjectMetricsSchemaValidation:
         result = validate_project_metrics(df)
         assert len(result) == 2
 
-    def test_metrics_coverage_zero_percent(self):
+    def test_metrics_coverage_zero_percent(self) -> None:
         """Test coverage at zero percent."""
         df = pd.DataFrame({
             "project_id": [1],
@@ -411,7 +410,7 @@ class TestProjectMetricsSchemaValidation:
         assert len(result) == 1
         assert result["coverage"].iloc[0] == 0.0
 
-    def test_metrics_coverage_100_percent(self):
+    def test_metrics_coverage_100_percent(self) -> None:
         """Test coverage at 100 percent."""
         df = pd.DataFrame({
             "project_id": [1],
@@ -434,7 +433,7 @@ class TestProjectMetricsSchemaValidation:
 class TestSchemaCoercion:
     """Test schema coercion with strict=True and coerce=True."""
 
-    def test_requirement_coerces_to_correct_types(self):
+    def test_requirement_coerces_to_correct_types(self) -> None:
         """Test that schema coerces data to correct types."""
         df = pd.DataFrame({
             "id": ["1", "2", "3"],  # String IDs
@@ -447,9 +446,9 @@ class TestSchemaCoercion:
         })
         result = validate_requirements(df)
         # Coercion should convert string IDs to int
-        assert result["id"].dtype in [int, "int64"]
+        assert result["id"].dtype in {int, "int64"}
 
-    def test_link_strength_type_coercion(self):
+    def test_link_strength_type_coercion(self) -> None:
         """Test strength is numeric type."""
         df = pd.DataFrame({
             "id": [1, 2],
@@ -459,7 +458,7 @@ class TestSchemaCoercion:
             "strength": [0.8, 0.9],  # Float
         })
         result = validate_traceability_links(df)
-        assert result["strength"].dtype in [float, "float64"]
+        assert result["strength"].dtype in {float, "float64"}
 
 
 # ============================================================================
@@ -471,7 +470,7 @@ class TestSchemaCoercion:
 class TestMissingDataHandling:
     """Test handling of missing/null data."""
 
-    def test_requirement_missing_required_column(self):
+    def test_requirement_missing_required_column(self) -> None:
         """Test that missing required columns fails validation."""
         df = pd.DataFrame({
             # Missing 'id' column
@@ -485,7 +484,7 @@ class TestMissingDataHandling:
         with pytest.raises(ValidationError):
             validate_requirements(df)
 
-    def test_requirement_null_in_required_field(self):
+    def test_requirement_null_in_required_field(self) -> None:
         """Test that nulls in required fields cause validation failure."""
         df = pd.DataFrame({
             "id": [1, None, 3],  # None violates NOT NULL
@@ -509,7 +508,7 @@ class TestMissingDataHandling:
 class TestDataFrameScale:
     """Test schema validation at scale."""
 
-    def test_requirement_large_dataframe(self):
+    def test_requirement_large_dataframe(self) -> None:
         """Test validation of large requirement dataset."""
         df = pd.DataFrame({
             "id": range(1, 1001),  # 1000 rows
@@ -523,7 +522,7 @@ class TestDataFrameScale:
         result = validate_requirements(df)
         assert len(result) == 1000
 
-    def test_link_large_dataframe(self):
+    def test_link_large_dataframe(self) -> None:
         """Test validation of large link dataset."""
         df = pd.DataFrame({
             "id": range(1, 501),
@@ -535,7 +534,7 @@ class TestDataFrameScale:
         result = validate_traceability_links(df)
         assert len(result) == 500
 
-    def test_metrics_large_dataframe(self):
+    def test_metrics_large_dataframe(self) -> None:
         """Test validation of large metrics dataset."""
         df = pd.DataFrame({
             "project_id": range(1, 101),
@@ -558,7 +557,7 @@ class TestDataFrameScale:
 class TestEmptyDataFrames:
     """Test schema validation with empty data."""
 
-    def test_empty_requirement_dataframe(self):
+    def test_empty_requirement_dataframe(self) -> None:
         """Test validation of empty requirement dataframe."""
         df = pd.DataFrame({
             "id": pd.Series([], dtype="int64"),
@@ -572,7 +571,7 @@ class TestEmptyDataFrames:
         result = validate_requirements(df)
         assert len(result) == 0
 
-    def test_empty_link_dataframe(self):
+    def test_empty_link_dataframe(self) -> None:
         """Test validation of empty link dataframe."""
         df = pd.DataFrame({
             "id": pd.Series([], dtype="int64"),
@@ -584,7 +583,7 @@ class TestEmptyDataFrames:
         result = validate_traceability_links(df)
         assert len(result) == 0
 
-    def test_empty_metrics_dataframe(self):
+    def test_empty_metrics_dataframe(self) -> None:
         """Test validation of empty metrics dataframe."""
         df = pd.DataFrame({
             "project_id": pd.Series([], dtype="int64"),

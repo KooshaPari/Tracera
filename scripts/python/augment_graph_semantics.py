@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import operator
 import os
 import re
 import uuid
@@ -185,7 +186,7 @@ def ensure_node_kind(conn, project_id: str, name: str):
     return kind_id
 
 
-def ensure_item_view(conn, item_id: str, project_id: str, view_id: str):
+def ensure_item_view(conn, item_id: str, project_id: str, view_id: str) -> None:
     conn.cursor().execute(
         """
         insert into item_views (item_id, view_id, project_id, is_primary)
@@ -196,7 +197,7 @@ def ensure_item_view(conn, item_id: str, project_id: str, view_id: str):
     )
 
 
-def ensure_graph_node(conn, graph_id: str | None, item_id: str, project_id: str):
+def ensure_graph_node(conn, graph_id: str | None, item_id: str, project_id: str) -> None:
     if not graph_id:
         return
     conn.cursor().execute(
@@ -217,7 +218,7 @@ def insert_link(
     target_id: str,
     link_type: str,
     ensure_nodes: bool = False,
-):
+) -> None:
     if not graph_id or source_id == target_id:
         return
     if ensure_nodes:
@@ -233,7 +234,7 @@ def insert_link(
     )
 
 
-def main():
+def main() -> None:
     conn = psycopg2.connect(POSTGRES_URL)
     conn.autocommit = False
     try:
@@ -273,7 +274,7 @@ def main():
 
             # Journey primitives per domain
             for domain in sorted(
-                set(by_view_domain.get("features", {}).keys()) | set(by_view_domain.get("ui_components", {}).keys())
+                set(by_view_domain.get("features", {}).keys()) | set(by_view_domain.get("ui_components", {}).keys()),
             ):
                 meta_filter = json.dumps({"generated_by": GEN_TAG, "domain": domain})
                 existing = fetch_all(
@@ -428,25 +429,25 @@ def main():
                     insert_link(conn, project_id, default_graph_id, ui["id"], interaction_node_id, "implements", True)
                     if mapping_graph_id:
                         insert_link(
-                            conn, project_id, mapping_graph_id, ui["id"], interaction_node_id, "implements", True
+                            conn, project_id, mapping_graph_id, ui["id"], interaction_node_id, "implements", True,
                         )
 
                     scored = []
                     for api in apis:
                         score = score_api_for_ui(ui["title"], api["title"])
                         scored.append((score, api))
-                    scored.sort(key=lambda x: x[0], reverse=True)
+                    scored.sort(key=operator.itemgetter(0), reverse=True)
                     candidates = [api for score, api in scored if score > 0] or apis[:1]
                     for api in candidates[:2]:
                         insert_link(
-                            conn, project_id, journey_graph_id, interaction_node_id, api["id"], "depends_on", True
+                            conn, project_id, journey_graph_id, interaction_node_id, api["id"], "depends_on", True,
                         )
                         insert_link(
-                            conn, project_id, default_graph_id, interaction_node_id, api["id"], "depends_on", True
+                            conn, project_id, default_graph_id, interaction_node_id, api["id"], "depends_on", True,
                         )
                         if mapping_graph_id:
                             insert_link(
-                                conn, project_id, mapping_graph_id, interaction_node_id, api["id"], "depends_on", True
+                                conn, project_id, mapping_graph_id, interaction_node_id, api["id"], "depends_on", True,
                             )
 
             # Feature WBS atomic tasks + state machines

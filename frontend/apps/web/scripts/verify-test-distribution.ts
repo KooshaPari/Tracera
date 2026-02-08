@@ -17,7 +17,7 @@ const SRC = join(import.meta.dir, '..', 'src');
 const TARGET = { unit: 70, integration: 15, e2e: 5, other: 10 };
 
 function countTestsInFile(filePath: string): number {
-  const content = readFileSync(filePath, 'utf-8');
+  const content = readFileSync(filePath, 'utf8');
   const itMatches = content.match(/\bit\s*\(\s*['"]/g);
   const testMatches = content.match(/\btest\s*\(\s*['"]/g);
   const its = itMatches?.length ?? 0;
@@ -37,15 +37,19 @@ function walk(dir: string, ext: string[]): string[] {
       }
     }
   } catch {
-    // ignore
+    // Ignore
   }
   return out;
 }
 
 function categorize(path: string): 'unit' | 'integration' | 'e2e' | 'other' {
-  const normalized = path.replace(/\\/g, '/');
-  if (normalized.includes('/__tests__/integration/')) return 'integration';
-  if (normalized.includes('/__tests__/e2e/')) return 'e2e';
+  const normalized = path.replaceAll('\\', '/');
+  if (normalized.includes('/__tests__/integration/')) {
+    return 'integration';
+  }
+  if (normalized.includes('/__tests__/e2e/')) {
+    return 'e2e';
+  }
   if (
     normalized.includes('/__tests__/a11y/') ||
     normalized.includes('/__tests__/accessibility/') ||

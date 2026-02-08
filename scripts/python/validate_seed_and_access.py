@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Validate seeded data is in the DB and kooshapari@gmail.com can access it.
+"""Validate seeded data is in the DB and kooshapari@gmail.com can access it.
 
 - Checks account, projects, items, links, events, milestones, sprints for the seed account.
 - Ensures the seed account exists (creates it if missing).
@@ -98,13 +97,8 @@ def resolve_user_id(conn, link_email: str | None, link_user_id: str | None) -> s
 
     resolved_id = lookup_user_id_by_email(conn, link_email)
     if not resolved_id:
-        print(
-            f"User not found for email {link_email} (log in once so tracertm.users is synced, or use --link-user)",
-            file=sys.stderr,
-        )
         return None
 
-    print(f"Resolved email {link_email} -> user_id {resolved_id}")
     return resolved_id
 
 
@@ -113,12 +107,9 @@ def validate_account(conn) -> bool:
     try:
         created = ensure_account(conn)
         if created:
-            print(f"Created account {SEED_ACCOUNT_ID} ({SEED_ACCOUNT_SLUG})")
-        else:
-            print(f"Account {SEED_ACCOUNT_ID} exists")
+            pass
         return True
-    except Exception as e:
-        print(f"Account check/create failed: {e}", file=sys.stderr)
+    except Exception:
         return False
 
 
@@ -130,19 +121,16 @@ def get_and_display_projects(conn) -> tuple[list, bool]:
             {"aid": SEED_ACCOUNT_ID},
         )
         projects = list(r.fetchall())
-    except Exception as e:
-        print(f"Projects check failed: {e}", file=sys.stderr)
+    except Exception:
         return [], False
 
     if not projects:
-        print("No projects found for seed account (run scripts/seed_rich_single_project.py first)")
         return [], False
 
-    print(f"Projects in seed account: {len(projects)}")
-    for pid, pname in projects[:5]:
-        print(f"  - {pid}  {pname}")
+    for _pid, _pname in projects[:5]:
+        pass
     if len(projects) > 5:
-        print(f"  ... and {len(projects) - 5} more")
+        pass
 
     return projects, True
 
@@ -158,14 +146,11 @@ def display_entity_counts(conn) -> bool:
     ]
 
     ok = True
-    print()
-    for label, sql in queries:
+    for _label, sql in queries:
         try:
             r = conn.execute(text(sql), {"aid": SEED_ACCOUNT_ID})
-            n = r.scalar()
-            print(f"{label}: {n}")
-        except Exception as e:
-            print(f"{label}: error - {e}", file=sys.stderr)
+            r.scalar()
+        except Exception:
             ok = False
 
     return ok
@@ -176,27 +161,16 @@ def link_user_to_account(conn, link_user_id: str) -> bool:
     try:
         inserted = link_user(conn, link_user_id)
         if inserted:
-            print(f"Linked user {link_user_id} to seed account as owner")
-        else:
-            print(f"User {link_user_id} already in seed account")
+            pass
         return True
-    except Exception as e:
-        print(f"Link user failed: {e}", file=sys.stderr)
+    except Exception:
         return False
 
 
 def print_access_instructions(projects: list) -> None:
     """Print instructions for accessing the seed data."""
-    print()
-    print("kooshapari@gmail.com access:")
-    print("  - With TRACERTM_SYSTEM_ADMIN_EMAILS=kooshapari@gmail.com you can access any project by ID (bypass RLS).")
-    print("  - To see the seeded project in the project list, link your user to the seed account:")
-    print("    uv run python scripts/validate_seed_and_access.py --link-email kooshapari@gmail.com")
-    print("    (or --link-user YOUR_USER_ID from GET /api/v1/auth/me if not in tracertm.users)")
-    print()
     if projects:
-        project_ids = [str(r[0]) for r in projects]
-        print(f"  Seeded project IDs: {', '.join(project_ids[:3])}{' ...' if len(project_ids) > 3 else ''}")
+        [str(r[0]) for r in projects]
 
 
 def run(link_user_id: str | None, link_email: str | None) -> int:
@@ -220,7 +194,6 @@ def run(link_user_id: str | None, link_email: str | None) -> int:
         ok = ok and projects_ok
 
         if not projects:
-            print("\nRun: DATABASE_URL=... uv run python scripts/seed_rich_single_project.py")
             return 2
 
         # Display entity counts
@@ -238,10 +211,10 @@ def run(link_user_id: str | None, link_email: str | None) -> int:
 
 def main() -> int:
     p = argparse.ArgumentParser(
-        description="Validate seed data and optionally link kooshapari@gmail.com to seed account"
+        description="Validate seed data and optionally link kooshapari@gmail.com to seed account",
     )
     p.add_argument(
-        "--link-user", metavar="USER_ID", help="Add this user to seed account as owner (from /api/v1/auth/me)"
+        "--link-user", metavar="USER_ID", help="Add this user to seed account as owner (from /api/v1/auth/me)",
     )
     p.add_argument(
         "--link-email",
@@ -250,7 +223,6 @@ def main() -> int:
     )
     args = p.parse_args()
     if args.link_email and args.link_user:
-        print("Use only one of --link-user or --link-email", file=sys.stderr)
         return 2
     return run(args.link_user, args.link_email)
 

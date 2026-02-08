@@ -1,5 +1,4 @@
-"""
-Specification models for TraceRTM.
+"""Specification models for TraceRTM.
 
 Provides comprehensive models for:
 - Architecture Decision Records (ADR) - design decisions with rationale
@@ -43,8 +42,7 @@ class ADRStatus(StrEnum):
 
 
 class ADR(Base, TimestampMixin):
-    """
-    Architecture Decision Record model.
+    """Architecture Decision Record model.
 
     ADRs document significant architecture decisions with context, rationale,
     and consequences. They serve as architecture documentation and decision
@@ -80,7 +78,7 @@ class ADR(Base, TimestampMixin):
     consequences: Mapped[str | None] = mapped_column(Text, nullable=True)
     decision_drivers: Mapped[list[str] | None] = mapped_column(JSONType, nullable=True)
     considered_options: Mapped[list[dict[str, str]] | None] = mapped_column(
-        JSONType, nullable=True
+        JSONType, nullable=True,
     )  # [{"option": "...", "pros": "...", "cons": "..."}]
 
     # Traceability
@@ -169,8 +167,7 @@ class ContractStatus(StrEnum):
 
 
 class Contract(Base, TimestampMixin):
-    """
-    Contract/Formal Specification model.
+    """Contract/Formal Specification model.
 
     Contracts specify behavior through preconditions, postconditions, invariants,
     and state machines. Supports executable specifications and verification.
@@ -204,7 +201,7 @@ class Contract(Base, TimestampMixin):
     # Basic Information
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     contract_type: Mapped[str] = mapped_column(
-        String(50), nullable=False, default=ContractType.INTERFACE.value, index=True
+        String(50), nullable=False, default=ContractType.INTERFACE.value, index=True,
     )
     status: Mapped[str] = mapped_column(String(50), nullable=False, default=ContractStatus.DRAFT.value, index=True)
 
@@ -216,7 +213,7 @@ class Contract(Base, TimestampMixin):
     # State Machine
     states: Mapped[list[str] | None] = mapped_column(JSONType, nullable=True)
     transitions: Mapped[list[dict[str, str]] | None] = mapped_column(
-        JSONType, nullable=True
+        JSONType, nullable=True,
     )  # [{"from": "state1", "to": "state2", "condition": "...", "action": "..."}]
 
     # Executable Specification
@@ -291,8 +288,7 @@ class FeatureStatus(StrEnum):
 
 
 class Feature(Base, TimestampMixin):
-    """
-    BDD Feature model.
+    """BDD Feature model.
 
     Features represent user stories in Gherkin format with background steps
     and traceability to requirements and ADRs.
@@ -415,8 +411,7 @@ scenario_test_case_association = Table(
 
 
 class Scenario(Base, TimestampMixin):
-    """
-    BDD Scenario model.
+    """BDD Scenario model.
 
     Scenarios represent concrete examples in Gherkin format (Given-When-Then).
     Can be outline scenarios with multiple examples and link to test cases.
@@ -455,7 +450,7 @@ class Scenario(Base, TimestampMixin):
     # Scenario Outline
     is_outline: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     examples: Mapped[list[dict[str, object]] | None] = mapped_column(
-        JSONType, nullable=True
+        JSONType, nullable=True,
     )  # [{columns: [...], rows: [...]}]
 
     # Classification
@@ -545,8 +540,7 @@ class StepType(StrEnum):
 
 
 class StepDefinition(Base, TimestampMixin):
-    """
-    Step Definition model.
+    """Step Definition model.
 
     Step definitions map Gherkin step text to implementation code.
     Supports regex patterns, parameter extraction, and usage tracking.

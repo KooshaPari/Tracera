@@ -1,5 +1,4 @@
-"""
-Tests for LinearAppInstallationRepository.
+"""Tests for LinearAppInstallationRepository.
 
 Comprehensive tests covering Linear App installation CRUD operations.
 """
@@ -58,7 +57,7 @@ class TestCreate:
     """Tests for LinearAppInstallationRepository.create."""
 
     @pytest.mark.asyncio
-    async def test_create_happy_path(self, linear_repo: LinearAppInstallationRepository, account_for_linear):
+    async def test_create_happy_path(self, linear_repo: LinearAppInstallationRepository, account_for_linear) -> None:
         """Test creating a Linear app installation with all fields."""
         installation = await linear_repo.create(
             account_id=account_for_linear.id,
@@ -78,7 +77,7 @@ class TestCreate:
         assert installation.suspended_at is None
 
     @pytest.mark.asyncio
-    async def test_create_with_scopes_list(self, linear_repo: LinearAppInstallationRepository, account_for_linear):
+    async def test_create_with_scopes_list(self, linear_repo: LinearAppInstallationRepository, account_for_linear) -> None:
         """Test creating an installation with specific scopes."""
         scopes = ["read", "write", "issues:create", "comments:write"]
         installation = await linear_repo.create(
@@ -92,7 +91,7 @@ class TestCreate:
         assert len(installation.scopes) == 4
 
     @pytest.mark.asyncio
-    async def test_create_minimal_fields(self, linear_repo: LinearAppInstallationRepository, account_for_linear):
+    async def test_create_minimal_fields(self, linear_repo: LinearAppInstallationRepository, account_for_linear) -> None:
         """Test creating an installation with minimal required fields."""
         installation = await linear_repo.create(
             account_id=account_for_linear.id,
@@ -108,7 +107,7 @@ class TestCreate:
         assert installation.suspended_at is None
 
     @pytest.mark.asyncio
-    async def test_create_generates_uuid(self, linear_repo: LinearAppInstallationRepository, account_for_linear):
+    async def test_create_generates_uuid(self, linear_repo: LinearAppInstallationRepository, account_for_linear) -> None:
         """Test that create generates a valid UUID for the installation."""
         installation = await linear_repo.create(
             account_id=account_for_linear.id,
@@ -128,7 +127,7 @@ class TestGetById:
     """Tests for LinearAppInstallationRepository.get_by_id."""
 
     @pytest.mark.asyncio
-    async def test_get_by_id_found(self, linear_setup):
+    async def test_get_by_id_found(self, linear_setup) -> None:
         """Test getting an installation by ID."""
         repo = linear_setup["repo"]
         installation = linear_setup["installation"]
@@ -142,7 +141,7 @@ class TestGetById:
         assert result.account_id == installation.account_id
 
     @pytest.mark.asyncio
-    async def test_get_by_id_not_found(self, linear_repo: LinearAppInstallationRepository):
+    async def test_get_by_id_not_found(self, linear_repo: LinearAppInstallationRepository) -> None:
         """Test getting a non-existent installation returns None."""
         result = await linear_repo.get_by_id(str(uuid4()))
 
@@ -156,7 +155,7 @@ class TestGetByWorkspaceId:
     """Tests for LinearAppInstallationRepository.get_by_workspace_id."""
 
     @pytest.mark.asyncio
-    async def test_get_by_workspace_id_found(self, linear_setup):
+    async def test_get_by_workspace_id_found(self, linear_setup) -> None:
         """Test getting an installation by Linear workspace ID."""
         repo = linear_setup["repo"]
         installation = linear_setup["installation"]
@@ -168,7 +167,7 @@ class TestGetByWorkspaceId:
         assert result.workspace_id == installation.workspace_id
 
     @pytest.mark.asyncio
-    async def test_get_by_workspace_id_not_found(self, linear_repo: LinearAppInstallationRepository):
+    async def test_get_by_workspace_id_not_found(self, linear_repo: LinearAppInstallationRepository) -> None:
         """Test getting by non-existent workspace ID returns None."""
         result = await linear_repo.get_by_workspace_id("non-existent-workspace-id")
 
@@ -182,7 +181,7 @@ class TestListByAccount:
     """Tests for LinearAppInstallationRepository.list_by_account."""
 
     @pytest.mark.asyncio
-    async def test_list_by_account_returns_list(self, linear_setup):
+    async def test_list_by_account_returns_list(self, linear_setup) -> None:
         """Test listing installations for an account returns a list."""
         repo = linear_setup["repo"]
         account = linear_setup["account"]
@@ -203,7 +202,7 @@ class TestListByAccount:
         assert all(item.account_id == account.id for item in result)
 
     @pytest.mark.asyncio
-    async def test_list_by_account_excludes_suspended(self, linear_setup):
+    async def test_list_by_account_excludes_suspended(self, linear_setup) -> None:
         """Test that list_by_account excludes suspended installations."""
         repo = linear_setup["repo"]
         account = linear_setup["account"]
@@ -227,7 +226,7 @@ class TestListByAccount:
         assert result[0].suspended_at is None
 
     @pytest.mark.asyncio
-    async def test_list_by_account_empty_when_none(self, linear_repo: LinearAppInstallationRepository):
+    async def test_list_by_account_empty_when_none(self, linear_repo: LinearAppInstallationRepository) -> None:
         """Test listing installations for account with none returns empty list."""
         result = await linear_repo.list_by_account(str(uuid4()))
 
@@ -241,7 +240,7 @@ class TestUpdate:
     """Tests for LinearAppInstallationRepository.update."""
 
     @pytest.mark.asyncio
-    async def test_update_scopes(self, linear_setup):
+    async def test_update_scopes(self, linear_setup) -> None:
         """Test updating installation scopes."""
         repo = linear_setup["repo"]
         installation = linear_setup["installation"]
@@ -253,7 +252,7 @@ class TestUpdate:
         assert result.scopes == new_scopes
 
     @pytest.mark.asyncio
-    async def test_update_suspend(self, linear_setup):
+    async def test_update_suspend(self, linear_setup) -> None:
         """Test suspending an installation."""
         repo = linear_setup["repo"]
         installation = linear_setup["installation"]
@@ -266,7 +265,7 @@ class TestUpdate:
         assert isinstance(result.suspended_at, datetime)
 
     @pytest.mark.asyncio
-    async def test_update_unsuspend(self, linear_setup):
+    async def test_update_unsuspend(self, linear_setup) -> None:
         """Test unsuspending an installation."""
         repo = linear_setup["repo"]
         installation = linear_setup["installation"]
@@ -281,7 +280,7 @@ class TestUpdate:
         assert result.suspended_at is None
 
     @pytest.mark.asyncio
-    async def test_update_credential_id(self, linear_setup):
+    async def test_update_credential_id(self, linear_setup) -> None:
         """Test updating integration credential ID."""
         repo = linear_setup["repo"]
         installation = linear_setup["installation"]
@@ -293,7 +292,7 @@ class TestUpdate:
         assert result.integration_credential_id == new_credential_id
 
     @pytest.mark.asyncio
-    async def test_update_not_found(self, linear_repo: LinearAppInstallationRepository):
+    async def test_update_not_found(self, linear_repo: LinearAppInstallationRepository) -> None:
         """Test updating a non-existent installation returns None."""
         result = await linear_repo.update(str(uuid4()), scopes=["read"])
 
@@ -307,7 +306,7 @@ class TestDelete:
     """Tests for LinearAppInstallationRepository.delete."""
 
     @pytest.mark.asyncio
-    async def test_delete_success(self, linear_setup):
+    async def test_delete_success(self, linear_setup) -> None:
         """Test deleting an installation."""
         repo = linear_setup["repo"]
         installation = linear_setup["installation"]
@@ -317,7 +316,7 @@ class TestDelete:
         assert result is True
 
     @pytest.mark.asyncio
-    async def test_delete_verify_deleted(self, linear_setup):
+    async def test_delete_verify_deleted(self, linear_setup) -> None:
         """Test that deleted installation is no longer retrievable."""
         repo = linear_setup["repo"]
         installation = linear_setup["installation"]
@@ -329,7 +328,7 @@ class TestDelete:
         assert fetched is None
 
     @pytest.mark.asyncio
-    async def test_delete_not_found(self, linear_repo: LinearAppInstallationRepository):
+    async def test_delete_not_found(self, linear_repo: LinearAppInstallationRepository) -> None:
         """Test deleting a non-existent installation returns False."""
         result = await linear_repo.delete(str(uuid4()))
 

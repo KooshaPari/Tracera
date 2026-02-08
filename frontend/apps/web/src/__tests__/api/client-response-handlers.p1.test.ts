@@ -311,8 +311,8 @@ describe('Client Response Handlers - P1 Coverage', () => {
       await responseHandlers.handleResponse(response, mockLogout);
 
       const { toast } = await import('sonner');
-      const calls = (toast.error as any).mock.calls;
-      const description = calls[calls.length - 1]?.[1]?.description;
+      const { calls } = (toast.error as any).mock;
+      const description = calls.at(-1)?.[1]?.description;
 
       expect(description).toContain('2');
       expect(description).toContain('minute');
@@ -324,8 +324,8 @@ describe('Client Response Handlers - P1 Coverage', () => {
       await responseHandlers.handleResponse(response, mockLogout);
 
       const { toast } = await import('sonner');
-      const calls = (toast.error as any).mock.calls;
-      const description = calls[calls.length - 1]?.[1]?.description;
+      const { calls } = (toast.error as any).mock;
+      const description = calls.at(-1)?.[1]?.description;
 
       expect(description).toContain('45');
       expect(description).toContain('second');
@@ -340,8 +340,8 @@ describe('Client Response Handlers - P1 Coverage', () => {
       await responseHandlers.handleResponse(response, mockLogout);
 
       const { toast } = await import('sonner');
-      const calls = (toast.error as any).mock.calls;
-      const description = calls[calls.length - 1]?.[1]?.description;
+      const { calls } = (toast.error as any).mock;
+      const description = calls.at(-1)?.[1]?.description;
 
       expect(description).toContain('Custom rate limit message');
     });
@@ -562,7 +562,7 @@ describe('Client Response Handlers - P1 Coverage', () => {
     });
 
     it('should handle very large response body', async () => {
-      const largeData = { data: 'x'.repeat(1000000) };
+      const largeData = { data: 'x'.repeat(1_000_000) };
       const response = createMockResponse(200, largeData);
 
       const result = await responseHandlers.handleResponse(response, mockLogout);

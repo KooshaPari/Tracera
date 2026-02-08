@@ -24,7 +24,7 @@ _TOKEN_EXPIRING_SOON_SEC = 300
 class AuthMiddleware(Middleware):
     """Validates token claims and enforces scope-based access control."""
 
-    def __init__(self, required_scopes: list[str] | None = None):
+    def __init__(self, required_scopes: list[str] | None = None) -> None:
         """Initialize auth middleware.
 
         Args:
@@ -61,7 +61,7 @@ class AuthMiddleware(Middleware):
         try:
             # Check if context has auth info
             if not hasattr(ctx, "auth"):
-                logger.warning(f"No auth context for tool: {tool_name}")
+                logger.warning("No auth context for tool: %s", tool_name)
                 next_fn = getattr(ctx, "next", None)
                 if next_fn is not None and callable(next_fn):
                     await next_fn()
@@ -69,13 +69,13 @@ class AuthMiddleware(Middleware):
 
             auth = getattr(ctx, "auth", None)
             if not isinstance(auth, dict):
-                logger.warning(f"Auth context invalid for tool: {tool_name}")
+                logger.warning("Auth context invalid for tool: %s", tool_name)
                 next_fn = getattr(ctx, "next", None)
                 if next_fn is not None and callable(next_fn):
                     await next_fn()
                 return
 
-            auth_dict: dict[str, Any] = cast(dict, auth)
+            auth_dict: dict[str, Any] = cast("dict", auth)
             # Validate token freshness
             await self._validate_token(auth_dict)
 
@@ -84,13 +84,13 @@ class AuthMiddleware(Middleware):
             if required_scopes:
                 self._validate_scopes(auth_dict, required_scopes, tool_name)
 
-            logger.debug(f"Auth validated for tool: {tool_name}")
+            logger.debug("Auth validated for tool: %s", tool_name)
 
         except PermissionError as e:
-            logger.error(f"Auth error for {tool_name}: {e}")
+            logger.exception("Auth error for %s: %s", tool_name, e)
             raise
         except Exception as e:
-            logger.error(f"Unexpected auth error for {tool_name}: {e}")
+            logger.exception("Unexpected auth error for %s: %s", tool_name, e)
             raise
 
         # Continue to next middleware
@@ -127,7 +127,8 @@ class AuthMiddleware(Middleware):
             except ImportError:
                 pass
 
-            raise PermissionError(f"Token expired {abs(expires_in):.0f}s ago")
+            msg = f"Token expired {abs(expires_in):.0f}s ago"
+            raise PermissionError(msg)
 
         # Warn if expiring soon (within 5 minutes)
         if expires_in < _TOKEN_EXPIRING_SOON_SEC:
@@ -177,15 +178,16 @@ class AuthMiddleware(Middleware):
             except ImportError:
                 pass
 
+            msg = f"Tool '{tool_name}' requires scopes {missing_scopes}, but token has {set(token_scopes)}"
             raise PermissionError(
-                f"Tool '{tool_name}' requires scopes {missing_scopes}, but token has {set(token_scopes)}"
+                msg,
             )
 
 
 class LoggingMiddleware(Middleware):
     """Log all tool calls for debugging and tracing."""
 
-    def __init__(self, verbose: bool = False):
+    def __init__(self, verbose: bool = False) -> None:
         """Initialize logging middleware.
 
         Args:
@@ -222,7 +224,7 @@ class LoggingMiddleware(Middleware):
             logger.debug(f"[MCP_TOOL] {tool_name} completed in {elapsed:.2f}s")
         except Exception as e:
             elapsed = time.time() - start_time
-            logger.error(f"[MCP_TOOL] {tool_name} failed after {elapsed:.2f}s: {e}")
+            logger.exception(f"[MCP_TOOL] {tool_name} failed after {elapsed:.2f}s: {e}")
             raise
 
 
@@ -234,7 +236,7 @@ class RateLimitMiddleware(Middleware):
         calls_per_minute: int = 60,
         calls_per_hour: int = 1000,
         per_user: bool = True,
-    ):
+    ) -> None:
         """Initialize rate limiter.
 
         Args:
@@ -261,7 +263,7 @@ class RateLimitMiddleware(Middleware):
 
         auth = getattr(ctx, "auth", None)
         if isinstance(auth, dict):
-            auth_d = cast(dict, auth)
+            auth_d = cast("dict", auth)
             claims = auth_d.get("claims", {})
             return str(claims.get("sub", "anonymous"))
 
@@ -309,7 +311,8 @@ class RateLimitMiddleware(Middleware):
             except ImportError:
                 pass
 
-            raise PermissionError(f"Rate limit exceeded: {self.calls_per_minute} calls/minute for {key}")
+            msg = f"Rate limit exceeded: {self.calls_per_minute} calls/minute for {key}"
+            raise PermissionError(msg)
 
         if len(call_times) >= self.calls_per_hour:
             # Track rate limit hit in metrics if available
@@ -320,7 +323,8 @@ class RateLimitMiddleware(Middleware):
             except ImportError:
                 pass
 
-            raise PermissionError(f"Rate limit exceeded: {self.calls_per_hour} calls/hour for {key}")
+            msg = f"Rate limit exceeded: {self.calls_per_hour} calls/hour for {key}"
+            raise PermissionError(msg)
 
         # Record call
         call_times.append(now)

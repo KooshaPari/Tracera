@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for Link API endpoints.
+"""Comprehensive tests for Link API endpoints.
 
 Tests:
 - GET /api/v1/links
@@ -47,7 +46,7 @@ class TestListLinksEndpoint:
     """Test GET /api/v1/links endpoint (expanded tests)."""
 
     @pytest.mark.asyncio
-    async def test_list_links_empty_project(self, client):
+    async def test_list_links_empty_project(self, client) -> None:
         """Test listing links for project with no links."""
         with patch("tracertm.repositories.link_repository.LinkRepository") as mock_repo:
             repo_instance = MagicMock()
@@ -62,7 +61,7 @@ class TestListLinksEndpoint:
             assert len(data["links"]) == 0
 
     @pytest.mark.asyncio
-    async def test_list_links_pagination_edge_cases(self, client):
+    async def test_list_links_pagination_edge_cases(self, client) -> None:
         """Test link list pagination with edge cases."""
         mock_links = [
             MagicMock(
@@ -98,7 +97,7 @@ class TestUpdateLinkEndpoint:
     """Test PUT /api/v1/links/{link_id} endpoint."""
 
     @pytest.mark.asyncio
-    async def test_update_link_type_success(self, client):
+    async def test_update_link_type_success(self, client) -> None:
         """Test updating link type successfully."""
         mock_link = MagicMock()
         mock_link.id = "link-123"
@@ -133,7 +132,7 @@ class TestUpdateLinkEndpoint:
                 assert mock_link.link_type == "tests"
 
     @pytest.mark.asyncio
-    async def test_update_link_metadata_success(self, client):
+    async def test_update_link_metadata_success(self, client) -> None:
         """Test updating link metadata successfully."""
         mock_link = MagicMock()
         mock_link.id = "link-123"
@@ -167,7 +166,7 @@ class TestUpdateLinkEndpoint:
                 assert mock_link.metadata == {"key": "value"}
 
     @pytest.mark.asyncio
-    async def test_update_link_both_fields(self, client):
+    async def test_update_link_both_fields(self, client) -> None:
         """Test updating both link_type and metadata."""
         mock_link = MagicMock()
         mock_link.id = "link-123"
@@ -200,7 +199,7 @@ class TestUpdateLinkEndpoint:
                 assert data["metadata"] == {"key": "value"}
 
     @pytest.mark.asyncio
-    async def test_update_link_not_found(self, client):
+    async def test_update_link_not_found(self, client) -> None:
         """Test updating non-existent link returns 404."""
         with patch("tracertm.repositories.link_repository.LinkRepository") as mock_repo:
             repo_instance = MagicMock()
@@ -216,7 +215,7 @@ class TestUpdateLinkEndpoint:
             assert "Link not found" in response.json()["detail"]
 
     @pytest.mark.asyncio
-    async def test_update_link_no_changes(self, client):
+    async def test_update_link_no_changes(self, client) -> None:
         """Test updating link with no changes."""
         mock_link = MagicMock(
             id="link-123",

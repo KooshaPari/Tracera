@@ -13,7 +13,7 @@ from tracertm.clients.go_client import GoBackendClient, GoBackendError
 class MockGoBackend:
     """Mock Go backend server for testing."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.request_count = 0
         self.fail_count = 0
         self.should_fail = False
@@ -91,7 +91,7 @@ async def go_client(mock_backend: MockGoBackend) -> AsyncGenerator[GoBackendClie
 
 
 @pytest.mark.asyncio
-async def test_go_client_basic_call(go_client: GoBackendClient):
+async def test_go_client_basic_call(go_client: GoBackendClient) -> None:
     """Test basic GET request to Go backend."""
     item = await go_client.get_item("550e8400-e29b-41d4-a716-446655440000")
 
@@ -102,7 +102,7 @@ async def test_go_client_basic_call(go_client: GoBackendClient):
 
 
 @pytest.mark.asyncio
-async def test_go_client_health_check(go_client: GoBackendClient):
+async def test_go_client_health_check(go_client: GoBackendClient) -> None:
     """Test health check endpoint."""
     health = await go_client.health_check()
 
@@ -111,7 +111,7 @@ async def test_go_client_health_check(go_client: GoBackendClient):
 
 
 @pytest.mark.asyncio
-async def test_go_client_create_link(go_client: GoBackendClient):
+async def test_go_client_create_link(go_client: GoBackendClient) -> None:
     """Test creating a link between items."""
     link = await go_client.create_link(
         source_id="item-1",
@@ -127,7 +127,7 @@ async def test_go_client_create_link(go_client: GoBackendClient):
 
 
 @pytest.mark.asyncio
-async def test_go_client_retry(go_client: GoBackendClient, mock_backend: MockGoBackend):
+async def test_go_client_retry(go_client: GoBackendClient, mock_backend: MockGoBackend) -> None:
     """Test retry logic on network errors."""
     # Configure mock to fail twice, then succeed
     mock_backend.should_fail = True
@@ -141,7 +141,7 @@ async def test_go_client_retry(go_client: GoBackendClient, mock_backend: MockGoB
 
 
 @pytest.mark.asyncio
-async def test_go_client_timeout(mock_backend: MockGoBackend):
+async def test_go_client_timeout(mock_backend: MockGoBackend) -> None:
     """Test request timeout handling."""
     # Configure mock to delay response
     mock_backend.delay = 35.0  # Longer than client timeout
@@ -159,7 +159,7 @@ async def test_go_client_timeout(mock_backend: MockGoBackend):
 
 
 @pytest.mark.asyncio
-async def test_go_client_error_response(mock_backend: MockGoBackend):
+async def test_go_client_error_response(mock_backend: MockGoBackend) -> None:
     """Test handling of error responses."""
     client = GoBackendClient("http://mock-backend:8080")
     mock_transport = httpx.MockTransport(mock_backend.handle_request)
@@ -175,7 +175,7 @@ async def test_go_client_error_response(mock_backend: MockGoBackend):
 
 
 @pytest.mark.asyncio
-async def test_go_client_retry_exhausted(mock_backend: MockGoBackend):
+async def test_go_client_retry_exhausted(mock_backend: MockGoBackend) -> None:
     """Test behavior when retries are exhausted."""
     # Configure mock to always fail
     mock_backend.should_fail = True
@@ -196,7 +196,7 @@ async def test_go_client_retry_exhausted(mock_backend: MockGoBackend):
 
 
 @pytest.mark.asyncio
-async def test_go_client_search_items(go_client: GoBackendClient, mock_backend: MockGoBackend):
+async def test_go_client_search_items(go_client: GoBackendClient, mock_backend: MockGoBackend) -> None:
     """Test search items endpoint."""
 
     async def search_handler(request: httpx.Request) -> httpx.Response:
@@ -225,7 +225,7 @@ async def test_go_client_search_items(go_client: GoBackendClient, mock_backend: 
 
 
 @pytest.mark.asyncio
-async def test_go_client_update_item(go_client: GoBackendClient, mock_backend: MockGoBackend):
+async def test_go_client_update_item(go_client: GoBackendClient, mock_backend: MockGoBackend) -> None:
     """Test update item endpoint."""
 
     async def update_handler(request: httpx.Request) -> httpx.Response:
@@ -254,7 +254,7 @@ async def test_go_client_update_item(go_client: GoBackendClient, mock_backend: M
 
 
 @pytest.mark.asyncio
-async def test_go_client_delete_item(go_client: GoBackendClient, mock_backend: MockGoBackend):
+async def test_go_client_delete_item(go_client: GoBackendClient, mock_backend: MockGoBackend) -> None:
     """Test delete item endpoint."""
 
     async def delete_handler(request: httpx.Request) -> httpx.Response:
@@ -274,7 +274,7 @@ async def test_go_client_delete_item(go_client: GoBackendClient, mock_backend: M
 
 
 @pytest.mark.asyncio
-async def test_go_client_context_manager():
+async def test_go_client_context_manager() -> None:
     """Test async context manager usage."""
     async with GoBackendClient("http://test:8080") as client:
         assert client.client is not None
@@ -285,7 +285,7 @@ async def test_go_client_context_manager():
 
 
 @pytest.mark.asyncio
-async def test_generate_cache_key():
+async def test_generate_cache_key() -> None:
     """Test cache key generation utility."""
     from tracertm.clients.go_client import generate_cache_key
 

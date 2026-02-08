@@ -32,7 +32,7 @@ def _path_glob(path: Path, pattern: str) -> list[Path]:
 
 def _read_text_sync(path: Path) -> str:
     """Sync helper to read file text (run via asyncio.to_thread)."""
-    return path.read_text()
+    return path.read_text(encoding="utf-8")
 
 
 def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
@@ -399,7 +399,7 @@ async def ingest_markdown(
         if not await asyncio.to_thread(_path_exists, md_path):
             return _error(f"File not found: {file_path}", "ingest_markdown")
 
-        if md_path.suffix not in [".md", ".markdown"]:
+        if md_path.suffix not in {".md", ".markdown"}:
             return _error(f"Not a Markdown file: {file_path}", "ingest_markdown")
 
         # Count headings (read file in thread to avoid blocking)

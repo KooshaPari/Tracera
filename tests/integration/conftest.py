@@ -1,5 +1,4 @@
-"""
-Integration test fixtures.
+"""Integration test fixtures.
 
 Provides database session fixtures with all tables created.
 """
@@ -71,7 +70,6 @@ def sync_db_session(test_db):
 @pytest.fixture(scope="function")
 def initialized_db(sync_db_session):
     """Database session with sample project data."""
-
     # Create test project
     project = Project(id="test-project", name="Test Project")
     sync_db_session.add(project)
@@ -79,7 +77,7 @@ def initialized_db(sync_db_session):
 
     # Create test items
     item1 = Item(
-        id="STORY-123", project_id="test-project", title="Test Story", view="STORY", item_type="story", status="todo"
+        id="STORY-123", project_id="test-project", title="Test Story", view="STORY", item_type="story", status="todo",
     )
     item2 = Item(
         id="FEATURE-456",
@@ -99,7 +97,6 @@ def initialized_db(sync_db_session):
 @pytest.fixture(scope="function")
 def db_with_sample_data(sync_db_session):
     """Database with comprehensive sample projects, items, links, and events for testing."""
-
     # Create sample project
     project = Project(id="test-project", name="Test Project", description="Comprehensive test project with full data")
     sync_db_session.add(project)
@@ -166,7 +163,7 @@ def db_with_sample_data(sync_db_session):
             link_type="depends_on",
         ),
         Link(
-            id="link-3", project_id="test-project", source_item_id="item-4", target_item_id="item-2", link_type="tests"
+            id="link-3", project_id="test-project", source_item_id="item-4", target_item_id="item-2", link_type="tests",
         ),
     ]
 
@@ -240,8 +237,7 @@ async def async_test_db_engine():
 
 @pytest_asyncio.fixture(scope="function")
 async def db_session(async_test_db_engine):
-    """
-    Create an async test database session for async tests.
+    """Create an async test database session for async tests.
 
     This fixture provides a clean async session for each test.
     Scope is function-level to ensure complete isolation between tests.
@@ -263,8 +259,7 @@ async def db_session(async_test_db_engine):
 
 @pytest.fixture(scope="function", autouse=True)
 def isolated_cli_environment(tmp_path, monkeypatch):
-    """
-    Isolate CLI tests from the repository's .trace/ directory.
+    """Isolate CLI tests from the repository's .trace/ directory.
 
     Changes the working directory to a temporary directory so that
     CLI commands don't find the repository's .trace/ directory.

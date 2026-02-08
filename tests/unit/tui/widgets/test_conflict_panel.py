@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for tracertm.tui.widgets.conflict_panel module.
+"""Comprehensive tests for tracertm.tui.widgets.conflict_panel module.
 
 Tests ConflictPanel widget including rendering, conflict display,
 resolution actions, and event handling.
@@ -20,7 +19,7 @@ from tracertm.tui.widgets.conflict_panel import ConflictPanel  # type: ignore[po
 
 def _panel(*args: Any, **kwargs: Any) -> Any:
     """Return ConflictPanel as Any so tests can assign mocks and access attributes without type errors."""
-    return cast(Any, ConflictPanel(*args, **kwargs))
+    return cast("Any", ConflictPanel(*args, **kwargs))
 
 
 @pytest.fixture
@@ -59,21 +58,21 @@ def mock_conflicts():
 class TestConflictPanelInitialization:
     """Test ConflictPanel initialization."""
 
-    def test_init_with_conflicts(self, mock_conflicts):
+    def test_init_with_conflicts(self, mock_conflicts) -> None:
         """Test panel initializes with conflicts list."""
         panel = _panel(conflicts=mock_conflicts)
 
         assert getattr(panel, "conflicts", None) == mock_conflicts
         assert getattr(panel, "selected_conflict", None) is None
 
-    def test_init_empty_conflicts(self):
+    def test_init_empty_conflicts(self) -> None:
         """Test panel initializes with empty conflicts list."""
         panel = _panel(conflicts=[])
 
         assert getattr(panel, "conflicts", None) == []
         assert getattr(panel, "selected_conflict", None) is None
 
-    def test_init_default_conflicts(self):
+    def test_init_default_conflicts(self) -> None:
         """Test panel initializes with None defaults to empty list."""
         panel = _panel()
 
@@ -84,7 +83,7 @@ class TestConflictPanelComposition:
     """Test widget composition."""
 
     @pytest.mark.asyncio
-    async def test_compose_creates_widgets(self, mock_conflicts, textual_app_context):
+    async def test_compose_creates_widgets(self, mock_conflicts, textual_app_context) -> None:
         """Test compose method creates all required widgets."""
         async with textual_app_context() as (app, pilot):
             panel = _panel(conflicts=mock_conflicts)
@@ -99,7 +98,7 @@ class TestConflictPanelComposition:
             assert panel.query("DataTable")
             assert panel.query("Static")
 
-    def test_bindings_configured(self):
+    def test_bindings_configured(self) -> None:
         """Test keyboard bindings are properly configured."""
         bindings = getattr(ConflictPanel, "BINDINGS", [])
 
@@ -113,7 +112,7 @@ class TestConflictPanelComposition:
 class TestConflictListDisplay:
     """Test conflict list display functionality."""
 
-    def test_refresh_conflict_list(self, mock_conflicts):
+    def test_refresh_conflict_list(self, mock_conflicts) -> None:
         """Test refreshing conflict list populates table."""
         panel = _panel(conflicts=mock_conflicts)
 
@@ -125,7 +124,7 @@ class TestConflictListDisplay:
         mock_table.clear.assert_called_once()
         assert mock_table.add_row.call_count == 3  # 3 conflicts
 
-    def test_refresh_conflict_list_empty(self):
+    def test_refresh_conflict_list_empty(self) -> None:
         """Test refreshing empty conflict list."""
         panel = _panel(conflicts=[])
 
@@ -137,7 +136,7 @@ class TestConflictListDisplay:
         mock_table.clear.assert_called_once()
         mock_table.add_row.assert_not_called()
 
-    def test_on_mount_refreshes_list(self, mock_conflicts):
+    def test_on_mount_refreshes_list(self, mock_conflicts) -> None:
         """Test on_mount calls refresh_conflict_list."""
         panel = _panel(conflicts=mock_conflicts)
         panel.refresh_conflict_list = Mock()
@@ -150,7 +149,7 @@ class TestConflictListDisplay:
 class TestConflictSelection:
     """Test conflict selection handling."""
 
-    def test_on_data_table_row_selected(self, mock_conflicts):
+    def test_on_data_table_row_selected(self, mock_conflicts) -> None:
         """Test selecting a conflict row."""
         panel = _panel(conflicts=mock_conflicts)
         panel.show_conflict_detail = Mock()
@@ -164,7 +163,7 @@ class TestConflictSelection:
         assert panel.selected_conflict == mock_conflicts[1]
         panel.show_conflict_detail.assert_called_once_with(mock_conflicts[1])
 
-    def test_on_data_table_row_selected_invalid_index(self, mock_conflicts):
+    def test_on_data_table_row_selected_invalid_index(self, mock_conflicts) -> None:
         """Test selecting invalid row index does nothing."""
         panel = _panel(conflicts=mock_conflicts)
         panel.show_conflict_detail = Mock()
@@ -182,7 +181,7 @@ class TestConflictSelection:
 class TestConflictDetailDisplay:
     """Test conflict detail display."""
 
-    def test_show_conflict_detail(self, mock_conflicts):
+    def test_show_conflict_detail(self, mock_conflicts) -> None:
         """Test showing detailed conflict information."""
         panel = _panel(conflicts=mock_conflicts)
 
@@ -205,7 +204,7 @@ class TestConflictDetailDisplay:
 class TestResolutionActions:
     """Test conflict resolution actions."""
 
-    def test_action_resolve_local(self, mock_conflicts):
+    def test_action_resolve_local(self, mock_conflicts) -> None:
         """Test resolving conflict with local version."""
         panel = _panel(conflicts=mock_conflicts)
         panel.selected_conflict = mock_conflicts[0]
@@ -218,7 +217,7 @@ class TestResolutionActions:
         assert message.strategy == "local"
         assert message.conflict == mock_conflicts[0]
 
-    def test_action_resolve_local_no_selection(self):
+    def test_action_resolve_local_no_selection(self) -> None:
         """Test resolve local with no conflict selected does nothing."""
         panel = _panel(conflicts=[])
         panel.selected_conflict = None
@@ -228,7 +227,7 @@ class TestResolutionActions:
 
         panel.post_message.assert_not_called()
 
-    def test_action_resolve_remote(self, mock_conflicts):
+    def test_action_resolve_remote(self, mock_conflicts) -> None:
         """Test resolving conflict with remote version."""
         panel = _panel(conflicts=mock_conflicts)
         panel.selected_conflict = mock_conflicts[0]
@@ -240,7 +239,7 @@ class TestResolutionActions:
         message = panel.post_message.call_args[0][0]
         assert message.strategy == "remote"
 
-    def test_action_resolve_manual(self, mock_conflicts):
+    def test_action_resolve_manual(self, mock_conflicts) -> None:
         """Test resolving conflict manually."""
         panel = _panel(conflicts=mock_conflicts)
         panel.selected_conflict = mock_conflicts[0]
@@ -252,7 +251,7 @@ class TestResolutionActions:
         message = panel.post_message.call_args[0][0]
         assert message.strategy == "manual"
 
-    def test_action_close(self):
+    def test_action_close(self) -> None:
         """Test closing conflict panel."""
         panel = _panel(conflicts=[])
         panel.post_message = Mock()
@@ -265,7 +264,7 @@ class TestResolutionActions:
 class TestButtonHandling:
     """Test button press handling."""
 
-    def test_on_button_pressed_local(self, mock_conflicts):
+    def test_on_button_pressed_local(self, mock_conflicts) -> None:
         """Test pressing 'Use Local' button."""
         panel = _panel(conflicts=mock_conflicts)
         panel.action_resolve_local = Mock()
@@ -277,7 +276,7 @@ class TestButtonHandling:
 
         panel.action_resolve_local.assert_called_once()
 
-    def test_on_button_pressed_remote(self, mock_conflicts):
+    def test_on_button_pressed_remote(self, mock_conflicts) -> None:
         """Test pressing 'Use Remote' button."""
         panel = _panel(conflicts=mock_conflicts)
         panel.action_resolve_remote = Mock()
@@ -289,7 +288,7 @@ class TestButtonHandling:
 
         panel.action_resolve_remote.assert_called_once()
 
-    def test_on_button_pressed_manual(self, mock_conflicts):
+    def test_on_button_pressed_manual(self, mock_conflicts) -> None:
         """Test pressing 'Merge Manually' button."""
         panel = _panel(conflicts=mock_conflicts)
         panel.action_resolve_manual = Mock()
@@ -301,7 +300,7 @@ class TestButtonHandling:
 
         panel.action_resolve_manual.assert_called_once()
 
-    def test_on_button_pressed_close(self):
+    def test_on_button_pressed_close(self) -> None:
         """Test pressing 'Close' button."""
         panel = _panel(conflicts=[])
         panel.action_close = Mock()

@@ -1,23 +1,25 @@
 """NATS client for bidirectional Go-Python communication."""
 
 import asyncio
+import contextlib
 import json
 import logging
 import os
 from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import nats
-from nats.aio.client import Client as NATS  # noqa: N814
-from nats.js import JetStreamContext
+
+if TYPE_CHECKING:
+    from nats.aio.client import Client as NATS
+    from nats.js import JetStreamContext
 
 logger = logging.getLogger(__name__)
 
 
 class NATSClient:
-    """
-    NATS client for event-driven communication between Go and Python backends.
+    """NATS client for event-driven communication between Go and Python backends.
 
     Implements JetStream-based messaging with durable subscriptions for reliable
     event delivery across the TraceRTM system.
@@ -28,8 +30,7 @@ class NATSClient:
     STREAM_NAME = "TRACERTM_BRIDGE"
 
     def __init__(self, url: str | None = None, creds_path: str | None = None) -> None:
-        """
-        Initialize NATS client.
+        """Initialize NATS client.
 
         Args:
             url: NATS server URL (defaults to NATS_URL env var or nats://localhost:4222)
@@ -44,8 +45,7 @@ class NATSClient:
         self._message_tasks: list[asyncio.Task[None]] = []
 
     async def connect(self) -> None:
-        """
-        Connect to NATS server and initialize JetStream.
+        """Connect to NATS server and initialize JetStream.
 
         Uses file-based credentials if NATS_CREDS_PATH is provided, otherwise
         connects without authentication (for local development).
@@ -75,13 +75,14 @@ class NATSClient:
             await self._ensure_stream()
 
         except Exception as e:
-            logger.error(f"Failed to connect to NATS: {e}")
+            logger.exception("Failed to connect to NATS: %s", e)
             raise
 
     async def _ensure_stream(self) -> None:
         """Create or update the JetStream stream for bridge events."""
         if not self._js:
-            raise RuntimeError("JetStream not initialized")
+            msg = "JetStream not initialized"
+            raise RuntimeError(msg)
 
         try:
             stream_config = {
@@ -105,7 +106,7 @@ class NATSClient:
                     raise
 
         except Exception as e:
-            logger.error(f"Failed to ensure stream: {e}")
+            logger.exception("Failed to ensure stream: %s", e)
             raise
 
     async def publish(  # noqa: PLR0913
@@ -117,8 +118,7 @@ class NATSClient:
         data: dict[str, Any],
         source: str = "python",
     ) -> None:
-        """
-        Publish an event to NATS with standard format.
+        """Publish an event to NATS with standard format.
 
         Args:
             event_type: Type of event (e.g., "spec.created", "ai.analysis.complete")
@@ -129,7 +129,8 @@ class NATSClient:
             source: Event source ("python" or "go")
         """
         if not self._js:
-            raise RuntimeError("Not connected to NATS")
+            msg = "Not connected to NATS"
+            raise RuntimeError(msg)
 
         # Build subject: tracertm.bridge.{source}.{project_id}.{event_type}
         subject = f"{self.SUBJECT_PREFIX}.{source}.{project_id}.{event_type}"
@@ -150,7 +151,7 @@ class NATSClient:
             ack = await self._js.publish(subject, payload)
             logger.debug(f"Published event {event_type} to {subject} (stream={ack.stream}, seq={ack.seq})")
         except Exception as e:
-            logger.error(f"Failed to publish event to {subject}: {e}")
+            logger.exception("Failed to publish event to %s: %s", subject, e)
             raise
 
     async def subscribe(  # noqa: C901
@@ -159,8 +160,7 @@ class NATSClient:
         durable_name: str,
         callback: Callable[[dict[str, Any]], Awaitable[None] | None],
     ) -> None:
-        """
-        Subscribe to events with a durable JetStream consumer.
+        """Subscribe to events with a durable JetStream consumer.
 
         Args:
             subject_pattern: Subject pattern to subscribe to (e.g., "tracertm.bridge.go.*.item.created")
@@ -168,7 +168,8 @@ class NATSClient:
             callback: Sync or async callback function to handle events
         """
         if not self._js:
-            raise RuntimeError("Not connected to NATS")
+            msg = "Not connected to NATS"
+            raise RuntimeError(msg)
 
         try:
             # Create durable consumer
@@ -181,7 +182,7 @@ class NATSClient:
             # Store subscription
             self._subscriptions[durable_name] = psub
 
-            logger.info(f"Subscribed to {subject_pattern} with durable consumer {durable_name}")
+            logger.info("Subscribed to %s with durable consumer %s", subject_pattern, durable_name)
 
             # Run message loop in background so subscribe() returns and startup can complete
             async def message_loop() -> None:
@@ -194,26 +195,25 @@ class NATSClient:
                                 await result
                             await msg.ack()
                         except json.JSONDecodeError as e:
-                            logger.error(f"Failed to decode event: {e}")
+                            logger.exception("Failed to decode event: %s", e)
                             await msg.nak()
                         except Exception as e:
-                            logger.error(f"Error processing event: {e}")
+                            logger.exception("Error processing event: %s", e)
                             await msg.nak()
                 except asyncio.CancelledError:
                     pass
                 except Exception as e:
-                    logger.error(f"Message loop error for {subject_pattern}: {e}")
+                    logger.exception("Message loop error for %s: %s", subject_pattern, e)
 
             task = asyncio.create_task(message_loop())
             self._message_tasks.append(task)
 
         except Exception as e:
-            logger.error(f"Failed to subscribe to {subject_pattern}: {e}")
+            logger.exception("Failed to subscribe to %s: %s", subject_pattern, e)
             raise
 
     async def unsubscribe(self, durable_name: str) -> None:
-        """
-        Unsubscribe from a durable consumer.
+        """Unsubscribe from a durable consumer.
 
         Args:
             durable_name: Name of the durable consumer to unsubscribe from
@@ -222,9 +222,9 @@ class NATSClient:
             try:
                 await self._subscriptions[durable_name].unsubscribe()
                 del self._subscriptions[durable_name]
-                logger.info(f"Unsubscribed from {durable_name}")
+                logger.info("Unsubscribed from %s", durable_name)
             except Exception as e:
-                logger.error(f"Failed to unsubscribe from {durable_name}: {e}")
+                logger.exception("Failed to unsubscribe from %s: %s", durable_name, e)
                 raise
 
     async def close(self) -> None:
@@ -232,10 +232,8 @@ class NATSClient:
         # Cancel message loop tasks first
         for task in self._message_tasks:
             task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await task
-            except asyncio.CancelledError:
-                pass
         self._message_tasks.clear()
 
         # Unsubscribe from all
@@ -243,7 +241,7 @@ class NATSClient:
             try:
                 await self.unsubscribe(durable_name)
             except Exception as e:
-                logger.error(f"Error unsubscribing from {durable_name}: {e}")
+                logger.exception("Error unsubscribing from %s: %s", durable_name, e)
 
         # Close connection
         if self._nc:
@@ -256,8 +254,7 @@ class NATSClient:
         return self._nc is not None and self._nc.is_connected
 
     async def health_check(self) -> dict[str, Any]:
-        """
-        Perform health check on NATS connection.
+        """Perform health check on NATS connection.
 
         Returns:
             dict with connection status and statistics

@@ -27,7 +27,7 @@ describe(CreateProjectForm, () => {
 
     await user.click(screen.getByRole('button', { name: /cancel/i }));
 
-    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(onCancel).toHaveBeenCalledOnce();
   });
 
   it('should show validation errors for empty required fields', async () => {

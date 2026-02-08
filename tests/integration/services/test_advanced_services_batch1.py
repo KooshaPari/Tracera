@@ -1,5 +1,4 @@
-"""
-Integration tests for advanced services batch 1 at 0% coverage.
+"""Integration tests for advanced services batch 1 at 0% coverage.
 
 Tests advanced analytics, traceability, agent coordination, and agent performance
 services with real database interactions to achieve 100% coverage.
@@ -209,12 +208,11 @@ class TestAdvancedAnalyticsServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_project_metrics_with_populated_project(
-        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]
-    ):
-        """
-        GIVEN: A project with items in various statuses and views
+        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item],
+    ) -> None:
+        """GIVEN: A project with items in various statuses and views
         WHEN: project_metrics is called
-        THEN: Returns accurate counts by status and view with completion rate
+        THEN: Returns accurate counts by status and view with completion rate.
         """
         service = AdvancedAnalyticsService(db_session)
 
@@ -231,11 +229,10 @@ class TestAdvancedAnalyticsServiceIntegration:
         assert result["by_status"]["in_progress"] == 2
 
     @pytest.mark.asyncio
-    async def test_project_metrics_empty_project(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: A project with no items
+    async def test_project_metrics_empty_project(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: A project with no items
         WHEN: project_metrics is called
-        THEN: Returns zero counts with 0% completion rate
+        THEN: Returns zero counts with 0% completion rate.
         """
         service = AdvancedAnalyticsService(db_session)
 
@@ -248,11 +245,10 @@ class TestAdvancedAnalyticsServiceIntegration:
         assert result["completion_rate"] == 0.0
 
     @pytest.mark.asyncio
-    async def test_calculate_completion_rate_mixed_statuses(self, db_session: AsyncSession):
-        """
-        GIVEN: Status counts with mixed done/complete and other statuses
+    async def test_calculate_completion_rate_mixed_statuses(self, db_session: AsyncSession) -> None:
+        """GIVEN: Status counts with mixed done/complete and other statuses
         WHEN: _calculate_completion_rate is called
-        THEN: Returns correct percentage
+        THEN: Returns correct percentage.
         """
         service = AdvancedAnalyticsService(db_session)
 
@@ -262,11 +258,10 @@ class TestAdvancedAnalyticsServiceIntegration:
         assert result == 50.0  # (4 done + 1 complete) / 10 total * 100
 
     @pytest.mark.asyncio
-    async def test_calculate_completion_rate_all_done(self, db_session: AsyncSession):
-        """
-        GIVEN: All items are done
+    async def test_calculate_completion_rate_all_done(self, db_session: AsyncSession) -> None:
+        """GIVEN: All items are done
         WHEN: _calculate_completion_rate is called
-        THEN: Returns 100%
+        THEN: Returns 100%.
         """
         service = AdvancedAnalyticsService(db_session)
 
@@ -276,11 +271,10 @@ class TestAdvancedAnalyticsServiceIntegration:
         assert result == 100.0
 
     @pytest.mark.asyncio
-    async def test_calculate_completion_rate_none_done(self, db_session: AsyncSession):
-        """
-        GIVEN: No items are done
+    async def test_calculate_completion_rate_none_done(self, db_session: AsyncSession) -> None:
+        """GIVEN: No items are done
         WHEN: _calculate_completion_rate is called
-        THEN: Returns 0%
+        THEN: Returns 0%.
         """
         service = AdvancedAnalyticsService(db_session)
 
@@ -295,11 +289,10 @@ class TestAdvancedAnalyticsServiceIntegration:
         db_session: AsyncSession,
         test_project: Project,
         sample_events: list[Event],
-    ):
-        """
-        GIVEN: Project with events from multiple agents
+    ) -> None:
+        """GIVEN: Project with events from multiple agents
         WHEN: team_analytics is called
-        THEN: Returns agent activity counts and totals
+        THEN: Returns agent activity counts and totals.
         """
         service = AdvancedAnalyticsService(db_session)
 
@@ -312,11 +305,10 @@ class TestAdvancedAnalyticsServiceIntegration:
         assert len(result["agent_activity"]) == 4
 
     @pytest.mark.asyncio
-    async def test_team_analytics_no_events(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Project with no events
+    async def test_team_analytics_no_events(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Project with no events
         WHEN: team_analytics is called
-        THEN: Returns zero counts
+        THEN: Returns zero counts.
         """
         service = AdvancedAnalyticsService(db_session)
 
@@ -332,11 +324,10 @@ class TestAdvancedAnalyticsServiceIntegration:
         db_session: AsyncSession,
         test_project: Project,
         sample_events: list[Event],
-    ):
-        """
-        GIVEN: Events spread over 15 days
+    ) -> None:
+        """GIVEN: Events spread over 15 days
         WHEN: trend_analysis is called with default 30-day window
-        THEN: Returns daily event distribution
+        THEN: Returns daily event distribution.
         """
         service = AdvancedAnalyticsService(db_session)
 
@@ -355,11 +346,10 @@ class TestAdvancedAnalyticsServiceIntegration:
         db_session: AsyncSession,
         test_project: Project,
         sample_events: list[Event],
-    ):
-        """
-        GIVEN: Events with custom time window
+    ) -> None:
+        """GIVEN: Events with custom time window
         WHEN: trend_analysis is called with days=7
-        THEN: Returns events within the 7-day window
+        THEN: Returns events within the 7-day window.
         """
         service = AdvancedAnalyticsService(db_session)
 
@@ -376,11 +366,10 @@ class TestAdvancedAnalyticsServiceIntegration:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        GIVEN: Items with various outgoing links
+    ) -> None:
+        """GIVEN: Items with various outgoing links
         WHEN: dependency_metrics is called
-        THEN: Returns link counts and types
+        THEN: Returns link counts and types.
         """
         service = AdvancedAnalyticsService(db_session)
 
@@ -397,12 +386,11 @@ class TestAdvancedAnalyticsServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_dependency_metrics_no_links(
-        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]
-    ):
-        """
-        GIVEN: Items without any links
+        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item],
+    ) -> None:
+        """GIVEN: Items without any links
         WHEN: dependency_metrics is called
-        THEN: Returns zero link counts
+        THEN: Returns zero link counts.
         """
         service = AdvancedAnalyticsService(db_session)
 
@@ -414,12 +402,11 @@ class TestAdvancedAnalyticsServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_quality_metrics_with_descriptions(
-        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]
-    ):
-        """
-        GIVEN: Items with varying description quality
+        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item],
+    ) -> None:
+        """GIVEN: Items with varying description quality
         WHEN: quality_metrics is called
-        THEN: Returns description and link coverage percentages
+        THEN: Returns description and link coverage percentages.
         """
         service = AdvancedAnalyticsService(db_session)
 
@@ -440,11 +427,10 @@ class TestAdvancedAnalyticsServiceIntegration:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        GIVEN: Items with outgoing links
+    ) -> None:
+        """GIVEN: Items with outgoing links
         WHEN: quality_metrics is called
-        THEN: Returns link coverage percentage
+        THEN: Returns link coverage percentage.
         """
         service = AdvancedAnalyticsService(db_session)
 
@@ -461,11 +447,10 @@ class TestAdvancedAnalyticsServiceIntegration:
         sample_items: list[Item],
         dependency_graph: list[Link],
         sample_events: list[Event],
-    ):
-        """
-        GIVEN: Fully populated project with items, links, and events
+    ) -> None:
+        """GIVEN: Fully populated project with items, links, and events
         WHEN: generate_report is called
-        THEN: Returns comprehensive report with all sections
+        THEN: Returns comprehensive report with all sections.
         """
         service = AdvancedAnalyticsService(db_session)
 
@@ -499,11 +484,10 @@ class TestAdvancedTraceabilityServiceIntegration:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        GIVEN: Two items with direct link
+    ) -> None:
+        """GIVEN: Two items with direct link
         WHEN: find_all_paths is called
-        THEN: Returns single path of distance 1
+        THEN: Returns single path of distance 1.
         """
         service = AdvancedTraceabilityService(db_session)
 
@@ -521,11 +505,10 @@ class TestAdvancedTraceabilityServiceIntegration:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        GIVEN: Items connected through intermediate nodes
+    ) -> None:
+        """GIVEN: Items connected through intermediate nodes
         WHEN: find_all_paths is called
-        THEN: Returns multi-hop paths with correct distances
+        THEN: Returns multi-hop paths with correct distances.
         """
         service = AdvancedTraceabilityService(db_session)
 
@@ -544,11 +527,10 @@ class TestAdvancedTraceabilityServiceIntegration:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        GIVEN: Two unconnected items
+    ) -> None:
+        """GIVEN: Two unconnected items
         WHEN: find_all_paths is called
-        THEN: Returns empty list
+        THEN: Returns empty list.
         """
         service = AdvancedTraceabilityService(db_session)
 
@@ -564,11 +546,10 @@ class TestAdvancedTraceabilityServiceIntegration:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        GIVEN: Items with deep connection chain
+    ) -> None:
+        """GIVEN: Items with deep connection chain
         WHEN: find_all_paths is called with max_depth=1
-        THEN: Only returns paths within depth limit
+        THEN: Only returns paths within depth limit.
         """
         service = AdvancedTraceabilityService(db_session)
 
@@ -584,11 +565,10 @@ class TestAdvancedTraceabilityServiceIntegration:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        GIVEN: Project with dependency graph
+    ) -> None:
+        """GIVEN: Project with dependency graph
         WHEN: transitive_closure is computed
-        THEN: Returns reachable items for each node
+        THEN: Returns reachable items for each node.
         """
         service = AdvancedTraceabilityService(db_session)
 
@@ -599,11 +579,10 @@ class TestAdvancedTraceabilityServiceIntegration:
         assert str(sample_items[3].id) in closure[str(sample_items[0].id)]
 
     @pytest.mark.asyncio
-    async def test_transitive_closure_isolated_nodes(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Project with isolated items (no links)
+    async def test_transitive_closure_isolated_nodes(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Project with isolated items (no links)
         WHEN: transitive_closure is computed
-        THEN: Returns empty sets for all items
+        THEN: Returns empty sets for all items.
         """
         # Create project with items but no links
         items_repo = ItemRepository(db_session)
@@ -632,11 +611,10 @@ class TestAdvancedTraceabilityServiceIntegration:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        GIVEN: Item with both incoming and outgoing links
+    ) -> None:
+        """GIVEN: Item with both incoming and outgoing links
         WHEN: bidirectional_impact is called
-        THEN: Returns forward and backward impacts
+        THEN: Returns forward and backward impacts.
         """
         service = AdvancedTraceabilityService(db_session)
 
@@ -649,11 +627,10 @@ class TestAdvancedTraceabilityServiceIntegration:
         assert result["total_impact"] == len(result["forward_impact"]) + len(result["backward_impact"])
 
     @pytest.mark.asyncio
-    async def test_bidirectional_impact_no_links(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Item with no links
+    async def test_bidirectional_impact_no_links(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Item with no links
         WHEN: bidirectional_impact is called
-        THEN: Returns empty impacts
+        THEN: Returns empty impacts.
         """
         items_repo = ItemRepository(db_session)
         item = await items_repo.create(
@@ -679,11 +656,10 @@ class TestAdvancedTraceabilityServiceIntegration:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        GIVEN: Items in source view with some missing links to target view
+    ) -> None:
+        """GIVEN: Items in source view with some missing links to target view
         WHEN: coverage_gaps is called
-        THEN: Returns items without target view links
+        THEN: Returns items without target view links.
         """
         service = AdvancedTraceabilityService(db_session)
 
@@ -693,11 +669,10 @@ class TestAdvancedTraceabilityServiceIntegration:
         # Should have at least one gap since not all features link to stories
 
     @pytest.mark.asyncio
-    async def test_coverage_gaps_full_coverage(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: All source items link to target view
+    async def test_coverage_gaps_full_coverage(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: All source items link to target view
         WHEN: coverage_gaps is called
-        THEN: Returns empty list
+        THEN: Returns empty list.
         """
         # Create complete coverage scenario
         items_repo = ItemRepository(db_session)
@@ -738,11 +713,10 @@ class TestAdvancedTraceabilityServiceIntegration:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        GIVEN: Acyclic dependency graph
+    ) -> None:
+        """GIVEN: Acyclic dependency graph
         WHEN: circular_dependency_check is called
-        THEN: Returns empty list
+        THEN: Returns empty list.
         """
         service = AdvancedTraceabilityService(db_session)
 
@@ -752,11 +726,10 @@ class TestAdvancedTraceabilityServiceIntegration:
         assert len(cycles) == 0
 
     @pytest.mark.asyncio
-    async def test_circular_dependency_check_with_cycle(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Dependency graph with circular dependency
+    async def test_circular_dependency_check_with_cycle(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Dependency graph with circular dependency
         WHEN: circular_dependency_check is called
-        THEN: Detects and returns the cycle
+        THEN: Detects and returns the cycle.
         """
         # Create cycle: A -> B -> C -> A
         items_repo = ItemRepository(db_session)
@@ -827,11 +800,10 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        GIVEN: Project with acyclic dependencies
+    ) -> None:
+        """GIVEN: Project with acyclic dependencies
         WHEN: detect_circular_dependencies is called
-        THEN: Returns has_cycles=False
+        THEN: Returns has_cycles=False.
         """
         service = AdvancedTraceabilityEnhancementsService(db_session)
 
@@ -843,11 +815,10 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         assert result["items_in_cycles"] == []
 
     @pytest.mark.asyncio
-    async def test_detect_circular_dependencies_with_cycles(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Project with circular dependencies
+    async def test_detect_circular_dependencies_with_cycles(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Project with circular dependencies
         WHEN: detect_circular_dependencies is called
-        THEN: Detects and reports cycles
+        THEN: Detects and reports cycles.
         """
         # Create circular dependency
         items_repo = ItemRepository(db_session)
@@ -889,11 +860,10 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         assert result["cycle_count"] > 0
 
     @pytest.mark.asyncio
-    async def test_coverage_gap_analysis_full_coverage(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: All source items linked to target view
+    async def test_coverage_gap_analysis_full_coverage(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: All source items linked to target view
         WHEN: coverage_gap_analysis is called
-        THEN: Returns 100% coverage
+        THEN: Returns 100% coverage.
         """
         items_repo = ItemRepository(db_session)
         links_repo = LinkRepository(db_session)
@@ -929,11 +899,10 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         assert result["uncovered_items"] == 0
 
     @pytest.mark.asyncio
-    async def test_coverage_gap_analysis_partial_coverage(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Some source items without target view links
+    async def test_coverage_gap_analysis_partial_coverage(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Some source items without target view links
         WHEN: coverage_gap_analysis is called
-        THEN: Returns partial coverage percentage
+        THEN: Returns partial coverage percentage.
         """
         items_repo = ItemRepository(db_session)
         links_repo = LinkRepository(db_session)
@@ -977,11 +946,10 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         assert feature2.id in result["uncovered_item_ids"]
 
     @pytest.mark.asyncio
-    async def test_coverage_gap_analysis_no_source_items(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: No items in source view
+    async def test_coverage_gap_analysis_no_source_items(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: No items in source view
         WHEN: coverage_gap_analysis is called
-        THEN: Returns 0% coverage with empty uncovered list
+        THEN: Returns 0% coverage with empty uncovered list.
         """
         service = AdvancedTraceabilityEnhancementsService(db_session)
 
@@ -997,11 +965,10 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        GIVEN: Item with incoming and outgoing links
+    ) -> None:
+        """GIVEN: Item with incoming and outgoing links
         WHEN: bidirectional_link_analysis is called
-        THEN: Returns both link directions with details
+        THEN: Returns both link directions with details.
         """
         service = AdvancedTraceabilityEnhancementsService(db_session)
 
@@ -1015,11 +982,10 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         assert result["total_connections"] > 0
 
     @pytest.mark.asyncio
-    async def test_bidirectional_link_analysis_item_not_found(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Non-existent item ID
+    async def test_bidirectional_link_analysis_item_not_found(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Non-existent item ID
         WHEN: bidirectional_link_analysis is called
-        THEN: Returns error
+        THEN: Returns error.
         """
         service = AdvancedTraceabilityEnhancementsService(db_session)
 
@@ -1034,11 +1000,10 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        GIVEN: Items with links between two views
+    ) -> None:
+        """GIVEN: Items with links between two views
         WHEN: traceability_matrix_generation is called
-        THEN: Returns matrix with source-target mappings
+        THEN: Returns matrix with source-target mappings.
         """
         service = AdvancedTraceabilityEnhancementsService(db_session)
 
@@ -1053,11 +1018,10 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         assert len(result["matrix"]) > 0
 
     @pytest.mark.asyncio
-    async def test_traceability_matrix_generation_no_links(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Views with no links between them
+    async def test_traceability_matrix_generation_no_links(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Views with no links between them
         WHEN: traceability_matrix_generation is called
-        THEN: Returns empty matrix
+        THEN: Returns empty matrix.
         """
         items_repo = ItemRepository(db_session)
 
@@ -1091,11 +1055,10 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         test_project: Project,
         sample_items: list[Item],
         dependency_graph: list[Link],
-    ):
-        """
-        GIVEN: Multi-level dependency chain
+    ) -> None:
+        """GIVEN: Multi-level dependency chain
         WHEN: impact_propagation_analysis is called with max_depth
-        THEN: Returns impacts within depth limit
+        THEN: Returns impacts within depth limit.
         """
         service = AdvancedTraceabilityEnhancementsService(db_session)
 
@@ -1107,11 +1070,10 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         assert result["max_depth_reached"] <= 2
 
     @pytest.mark.asyncio
-    async def test_impact_propagation_analysis_item_not_found(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Non-existent item ID
+    async def test_impact_propagation_analysis_item_not_found(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Non-existent item ID
         WHEN: impact_propagation_analysis is called
-        THEN: Returns error
+        THEN: Returns error.
         """
         service = AdvancedTraceabilityEnhancementsService(db_session)
 
@@ -1129,11 +1091,10 @@ class TestAgentCoordinationServiceIntegration:
     """Integration tests for AgentCoordinationService."""
 
     @pytest.mark.asyncio
-    async def test_register_agent_success(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Valid agent registration data
+    async def test_register_agent_success(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Valid agent registration data
         WHEN: register_agent is called
-        THEN: Creates agent and logs registration event
+        THEN: Creates agent and logs registration event.
         """
         service = AgentCoordinationService(db_session)
 
@@ -1155,11 +1116,10 @@ class TestAgentCoordinationServiceIntegration:
         assert any(e.event_type == "agent_registered" for e in events)
 
     @pytest.mark.asyncio
-    async def test_register_agent_with_metadata(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Agent with custom metadata
+    async def test_register_agent_with_metadata(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Agent with custom metadata
         WHEN: register_agent is called
-        THEN: Stores metadata correctly
+        THEN: Stores metadata correctly.
         """
         service = AgentCoordinationService(db_session)
 
@@ -1179,11 +1139,10 @@ class TestAgentCoordinationServiceIntegration:
         db_session: AsyncSession,
         test_project: Project,
         sample_agents: list[Agent],
-    ):
-        """
-        GIVEN: Agents with non-overlapping activity
+    ) -> None:
+        """GIVEN: Agents with non-overlapping activity
         WHEN: detect_conflicts is called
-        THEN: Returns empty conflict list
+        THEN: Returns empty conflict list.
         """
         service = AgentCoordinationService(db_session)
 
@@ -1193,11 +1152,10 @@ class TestAgentCoordinationServiceIntegration:
         assert len(conflicts) == 0
 
     @pytest.mark.asyncio
-    async def test_detect_conflicts_concurrent_activity(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Multiple agents with concurrent activity
+    async def test_detect_conflicts_concurrent_activity(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Multiple agents with concurrent activity
         WHEN: detect_conflicts is called
-        THEN: Detects and returns conflicts
+        THEN: Detects and returns conflicts.
         """
         agents_repo = AgentRepository(db_session)
 
@@ -1229,11 +1187,10 @@ class TestAgentCoordinationServiceIntegration:
         assert any(c.conflict_type == "concurrent_activity" for c in conflicts)
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_last_write_wins(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Conflict between two agents
+    async def test_resolve_conflict_last_write_wins(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Conflict between two agents
         WHEN: resolve_conflict is called with last_write_wins strategy
-        THEN: Agent with latest activity wins
+        THEN: Agent with latest activity wins.
         """
         agents_repo = AgentRepository(db_session)
 
@@ -1271,11 +1228,10 @@ class TestAgentCoordinationServiceIntegration:
         assert resolution.resolution_strategy == "last_write_wins"
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_priority_based(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Conflict between two agents
+    async def test_resolve_conflict_priority_based(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Conflict between two agents
         WHEN: resolve_conflict is called with priority_based strategy
-        THEN: Resolves using priority logic
+        THEN: Resolves using priority logic.
         """
         agents_repo = AgentRepository(db_session)
 
@@ -1306,11 +1262,10 @@ class TestAgentCoordinationServiceIntegration:
         assert resolution.resolution_strategy == "priority_based"
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_agent_not_found(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Conflict with non-existent agent
+    async def test_resolve_conflict_agent_not_found(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Conflict with non-existent agent
         WHEN: resolve_conflict is called
-        THEN: Raises ValueError
+        THEN: Raises ValueError.
         """
         conflict = AgentConflict(
             agent1_id="bad-id-1",
@@ -1326,11 +1281,10 @@ class TestAgentCoordinationServiceIntegration:
             await service.resolve_conflict(str(test_project.id), conflict)
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_unknown_strategy(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Invalid resolution strategy
+    async def test_resolve_conflict_unknown_strategy(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Invalid resolution strategy
         WHEN: resolve_conflict is called
-        THEN: Raises ValueError
+        THEN: Raises ValueError.
         """
         agents_repo = AgentRepository(db_session)
 
@@ -1358,11 +1312,10 @@ class TestAgentCoordinationServiceIntegration:
         test_project: Project,
         sample_agents: list[Agent],
         sample_events: list[Event],
-    ):
-        """
-        GIVEN: Agent with activity events
+    ) -> None:
+        """GIVEN: Agent with activity events
         WHEN: get_agent_activity is called
-        THEN: Returns agent's event history
+        THEN: Returns agent's event history.
         """
         service = AgentCoordinationService(db_session)
 
@@ -1376,11 +1329,10 @@ class TestAgentCoordinationServiceIntegration:
         assert all("timestamp" in e for e in activity)
 
     @pytest.mark.asyncio
-    async def test_get_agent_activity_with_limit(self, db_session: AsyncSession, sample_events: list[Event]):
-        """
-        GIVEN: Agent with many events
+    async def test_get_agent_activity_with_limit(self, db_session: AsyncSession, sample_events: list[Event]) -> None:
+        """GIVEN: Agent with many events
         WHEN: get_agent_activity is called with limit
-        THEN: Returns only limited number of events
+        THEN: Returns only limited number of events.
         """
         service = AgentCoordinationService(db_session)
 
@@ -1404,11 +1356,10 @@ class TestAgentPerformanceServiceIntegration:
         test_project: Project,
         sample_agents: list[Agent],
         sample_events: list[Event],
-    ):
-        """
-        GIVEN: Agent with recent activity events
+    ) -> None:
+        """GIVEN: Agent with recent activity events
         WHEN: get_agent_stats is called
-        THEN: Returns comprehensive statistics
+        THEN: Returns comprehensive statistics.
         """
         service = AgentPerformanceService(db_session)
 
@@ -1422,12 +1373,11 @@ class TestAgentPerformanceServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_get_agent_stats_custom_time_window(
-        self, db_session: AsyncSession, sample_agents: list[Agent], sample_events: list[Event]
-    ):
-        """
-        GIVEN: Agent activity over extended period
+        self, db_session: AsyncSession, sample_agents: list[Agent], sample_events: list[Event],
+    ) -> None:
+        """GIVEN: Agent activity over extended period
         WHEN: get_agent_stats is called with custom window
-        THEN: Returns stats for that window only
+        THEN: Returns stats for that window only.
         """
         service = AgentPerformanceService(db_session)
 
@@ -1438,11 +1388,10 @@ class TestAgentPerformanceServiceIntegration:
         assert stats_48h["total_events"] >= stats_24h["total_events"]
 
     @pytest.mark.asyncio
-    async def test_get_agent_stats_agent_not_found(self, db_session: AsyncSession):
-        """
-        GIVEN: Non-existent agent ID
+    async def test_get_agent_stats_agent_not_found(self, db_session: AsyncSession) -> None:
+        """GIVEN: Non-existent agent ID
         WHEN: get_agent_stats is called
-        THEN: Returns error
+        THEN: Returns error.
         """
         service = AgentPerformanceService(db_session)
 
@@ -1457,11 +1406,10 @@ class TestAgentPerformanceServiceIntegration:
         test_project: Project,
         sample_agents: list[Agent],
         sample_events: list[Event],
-    ):
-        """
-        GIVEN: Project with multiple agents
+    ) -> None:
+        """GIVEN: Project with multiple agents
         WHEN: get_team_performance is called
-        THEN: Returns aggregated team statistics
+        THEN: Returns aggregated team statistics.
         """
         service = AgentPerformanceService(db_session)
 
@@ -1474,11 +1422,10 @@ class TestAgentPerformanceServiceIntegration:
         assert len(result["agents"]) > 0
 
     @pytest.mark.asyncio
-    async def test_get_team_performance_no_agents(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Project with no agents
+    async def test_get_team_performance_no_agents(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Project with no agents
         WHEN: get_team_performance is called
-        THEN: Returns empty statistics
+        THEN: Returns empty statistics.
         """
         service = AgentPerformanceService(db_session)
 
@@ -1489,12 +1436,11 @@ class TestAgentPerformanceServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_get_agent_efficiency_high_activity(
-        self, db_session: AsyncSession, sample_agents: list[Agent], sample_events: list[Event]
-    ):
-        """
-        GIVEN: Agent with high event count and diversity
+        self, db_session: AsyncSession, sample_agents: list[Agent], sample_events: list[Event],
+    ) -> None:
+        """GIVEN: Agent with high event count and diversity
         WHEN: get_agent_efficiency is called
-        THEN: Returns high efficiency score
+        THEN: Returns high efficiency score.
         """
         service = AgentPerformanceService(db_session)
 
@@ -1505,11 +1451,10 @@ class TestAgentPerformanceServiceIntegration:
         assert 0 <= result["efficiency_score"] <= 100
 
     @pytest.mark.asyncio
-    async def test_get_agent_efficiency_low_activity(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Agent with minimal activity
+    async def test_get_agent_efficiency_low_activity(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Agent with minimal activity
         WHEN: get_agent_efficiency is called
-        THEN: Returns low efficiency score
+        THEN: Returns low efficiency score.
         """
         agents_repo = AgentRepository(db_session)
         agent = await agents_repo.create(
@@ -1523,14 +1468,13 @@ class TestAgentPerformanceServiceIntegration:
         result = await service.get_agent_efficiency(str(agent.id))
 
         assert result["efficiency_score"] < 50
-        assert result["rating"] in ["Poor", "Fair"]
+        assert result["rating"] in {"Poor", "Fair"}
 
     @pytest.mark.asyncio
-    async def test_get_efficiency_rating_boundaries(self, db_session: AsyncSession):
-        """
-        GIVEN: Various efficiency scores
+    async def test_get_efficiency_rating_boundaries(self, db_session: AsyncSession) -> None:
+        """GIVEN: Various efficiency scores
         WHEN: _get_efficiency_rating is called
-        THEN: Returns correct rating categories
+        THEN: Returns correct rating categories.
         """
         service = AgentPerformanceService(db_session)
 
@@ -1541,12 +1485,11 @@ class TestAgentPerformanceServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_get_agent_workload_heavy(
-        self, db_session: AsyncSession, sample_agents: list[Agent], sample_events: list[Event]
-    ):
-        """
-        GIVEN: Agent with high event rate
+        self, db_session: AsyncSession, sample_agents: list[Agent], sample_events: list[Event],
+    ) -> None:
+        """GIVEN: Agent with high event rate
         WHEN: get_agent_workload is called
-        THEN: Classifies as Heavy workload
+        THEN: Classifies as Heavy workload.
         """
         service = AgentPerformanceService(db_session)
 
@@ -1565,15 +1508,14 @@ class TestAgentPerformanceServiceIntegration:
 
         result = await service.get_agent_workload("agent-alpha")
 
-        assert result["workload"] in ["Heavy", "Moderate"]
+        assert result["workload"] in {"Heavy", "Moderate"}
         assert result["events_per_hour"] > 0
 
     @pytest.mark.asyncio
-    async def test_get_agent_workload_idle(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Agent with no recent activity
+    async def test_get_agent_workload_idle(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Agent with no recent activity
         WHEN: get_agent_workload is called
-        THEN: Classifies as Idle
+        THEN: Classifies as Idle.
         """
         agents_repo = AgentRepository(db_session)
         agent = await agents_repo.create(
@@ -1595,11 +1537,10 @@ class TestAgentPerformanceServiceIntegration:
         db_session: AsyncSession,
         test_project: Project,
         sample_agents: list[Agent],
-    ):
-        """
-        GIVEN: Multiple agents with varying workloads
+    ) -> None:
+        """GIVEN: Multiple agents with varying workloads
         WHEN: recommend_agent_assignment is called
-        THEN: Recommends agent with lowest workload
+        THEN: Recommends agent with lowest workload.
         """
         service = AgentPerformanceService(db_session)
 
@@ -1611,11 +1552,10 @@ class TestAgentPerformanceServiceIntegration:
         assert "reason" in result
 
     @pytest.mark.asyncio
-    async def test_recommend_agent_assignment_no_agents(self, db_session: AsyncSession, test_project: Project):
-        """
-        GIVEN: Project with no agents
+    async def test_recommend_agent_assignment_no_agents(self, db_session: AsyncSession, test_project: Project) -> None:
+        """GIVEN: Project with no agents
         WHEN: recommend_agent_assignment is called
-        THEN: Returns error
+        THEN: Returns error.
         """
         service = AgentPerformanceService(db_session)
 
@@ -1629,11 +1569,10 @@ class TestAgentPerformanceServiceIntegration:
         db_session: AsyncSession,
         test_project: Project,
         sample_agents: list[Agent],
-    ):
-        """
-        GIVEN: Task with specific complexity
+    ) -> None:
+        """GIVEN: Task with specific complexity
         WHEN: recommend_agent_assignment is called
-        THEN: Includes complexity in recommendation
+        THEN: Includes complexity in recommendation.
         """
         service = AgentPerformanceService(db_session)
 

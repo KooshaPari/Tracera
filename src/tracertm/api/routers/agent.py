@@ -83,9 +83,9 @@ async def get_agent_session(
 async def list_agent_sessions(
     claims: Annotated[dict, Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-    project_id: str | None = Query(None, description="Filter by project ID"),
-    limit: int = Query(50, ge=1, le=200),
-    offset: int = Query(0, ge=0),
+    project_id: Annotated[str | None, Query(description="Filter by project ID")] = None,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ):
     """List agent sessions, optionally filtered by project_id."""
     q = select(AgentSession).order_by(AgentSession.created_at.desc())
@@ -115,7 +115,7 @@ async def delete_agent_session(
     request: Request,
     claims: Annotated[dict, Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> None:
     """Delete an agent session from DB and cache; sandbox directory may remain on disk unless cleanup is enabled."""
     result = await db.execute(select(AgentSession).where(AgentSession.session_id == session_id))
     row = result.scalar_one_or_none()
@@ -131,7 +131,7 @@ async def delete_agent_session(
                 await store._cache.delete(_agent_session_cache_key(session_id))
             except Exception as e:
                 logging.getLogger(__name__).debug(
-                    "Cache delete for session %s failed: %s", session_id, e, exc_info=True
+                    "Cache delete for session %s failed: %s", session_id, e, exc_info=True,
                 )
         if hasattr(store, "_store"):
             store._store.pop(session_id, None)

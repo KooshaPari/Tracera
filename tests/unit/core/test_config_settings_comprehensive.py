@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for core config, database, settings, and manager modules.
+"""Comprehensive unit tests for core config, database, settings, and manager modules.
 
 Target: Expand coverage from 40-50% to 60-70%
 
@@ -64,15 +63,15 @@ except ImportError:
 
     class st:
         @staticmethod
-        def text(*args, **kwargs):
+        def text(*args, **kwargs) -> None:
             return None
 
         @staticmethod
-        def integers(*args, **kwargs):
+        def integers(*args, **kwargs) -> None:
             return None
 
         @staticmethod
-        def booleans(*args, **kwargs):
+        def booleans(*args, **kwargs) -> None:
             return None
 
 
@@ -85,7 +84,7 @@ class TestDatabaseConfigInitialization:
     """Test DatabaseConfig initialization with various parameter combinations."""
 
     @pytest.mark.unit
-    def test_database_config_all_defaults(self):
+    def test_database_config_all_defaults(self) -> None:
         """Test DatabaseConfig with all default values."""
         config = DatabaseConfig()
         assert config.host == "localhost"
@@ -97,41 +96,41 @@ class TestDatabaseConfigInitialization:
         assert config.max_overflow == 10
 
     @pytest.mark.unit
-    def test_database_config_custom_host(self):
+    def test_database_config_custom_host(self) -> None:
         """Test DatabaseConfig with custom host."""
         config = DatabaseConfig(host="db.example.com")
         assert config.host == "db.example.com"
         assert config.port == 5432  # default
 
     @pytest.mark.unit
-    def test_database_config_custom_port(self):
+    def test_database_config_custom_port(self) -> None:
         """Test DatabaseConfig with custom port."""
         config = DatabaseConfig(port=5433)
         assert config.port == 5433
         assert config.host == "localhost"  # default
 
     @pytest.mark.unit
-    def test_database_config_custom_database_name(self):
+    def test_database_config_custom_database_name(self) -> None:
         """Test DatabaseConfig with custom database name."""
         config = DatabaseConfig(database="my_custom_db")
         assert config.database == "my_custom_db"
 
     @pytest.mark.unit
-    def test_database_config_custom_credentials(self):
+    def test_database_config_custom_credentials(self) -> None:
         """Test DatabaseConfig with custom username and password."""
         config = DatabaseConfig(username="admin", password="secret123")
         assert config.username == "admin"
         assert config.password == "secret123"
 
     @pytest.mark.unit
-    def test_database_config_custom_pool_settings(self):
+    def test_database_config_custom_pool_settings(self) -> None:
         """Test DatabaseConfig with custom pool settings."""
         config = DatabaseConfig(pool_size=50, max_overflow=20)
         assert config.pool_size == 50
         assert config.max_overflow == 20
 
     @pytest.mark.unit
-    def test_database_config_all_custom(self):
+    def test_database_config_all_custom(self) -> None:
         """Test DatabaseConfig with all custom parameters."""
         config = DatabaseConfig(
             host="prod-db.example.com",
@@ -151,14 +150,14 @@ class TestDatabaseConfigInitialization:
         assert config.max_overflow == 50
 
     @pytest.mark.unit
-    def test_database_config_url_property_default(self):
+    def test_database_config_url_property_default(self) -> None:
         """Test DatabaseConfig URL property with defaults."""
         config = DatabaseConfig()
         expected_url = "postgresql://tracertm:tracertm@localhost:5432/tracertm"
         assert config.url == expected_url
 
     @pytest.mark.unit
-    def test_database_config_url_property_custom(self):
+    def test_database_config_url_property_custom(self) -> None:
         """Test DatabaseConfig URL property with custom values."""
         config = DatabaseConfig(
             host="db.example.com",
@@ -171,14 +170,14 @@ class TestDatabaseConfigInitialization:
         assert config.url == expected_url
 
     @pytest.mark.unit
-    def test_database_config_url_special_characters(self):
+    def test_database_config_url_special_characters(self) -> None:
         """Test DatabaseConfig URL with special characters in password."""
         config = DatabaseConfig(username="user", password="p@ss:w0rd!")
         # URL should contain the password as-is
         assert "p@ss:w0rd!" in config.url
 
     @pytest.mark.unit
-    def test_database_config_immutability(self):
+    def test_database_config_immutability(self) -> None:
         """Test that DatabaseConfig is immutable (Pydantic frozen)."""
         config = DatabaseConfig(host="original")
         # Pydantic models are not frozen by default, but we can test field assignment
@@ -195,7 +194,7 @@ class TestUIConfigInitialization:
     """Test UIConfig initialization with various parameter combinations."""
 
     @pytest.mark.unit
-    def test_ui_config_all_defaults(self):
+    def test_ui_config_all_defaults(self) -> None:
         """Test UIConfig with all default values."""
         config = UIConfig()
         assert config.theme == "developer-focus"
@@ -203,7 +202,7 @@ class TestUIConfigInitialization:
         assert config.use_symbols is True
 
     @pytest.mark.unit
-    def test_ui_config_custom_theme(self):
+    def test_ui_config_custom_theme(self) -> None:
         """Test UIConfig with custom theme."""
         config = UIConfig(theme="high-contrast")
         assert config.theme == "high-contrast"
@@ -211,20 +210,20 @@ class TestUIConfigInitialization:
         assert config.use_symbols is True
 
     @pytest.mark.unit
-    def test_ui_config_force_bold_enabled(self):
+    def test_ui_config_force_bold_enabled(self) -> None:
         """Test UIConfig with force_bold enabled."""
         config = UIConfig(force_bold=True)
         assert config.force_bold is True
         assert config.theme == "developer-focus"
 
     @pytest.mark.unit
-    def test_ui_config_use_symbols_disabled(self):
+    def test_ui_config_use_symbols_disabled(self) -> None:
         """Test UIConfig with use_symbols disabled."""
         config = UIConfig(use_symbols=False)
         assert config.use_symbols is False
 
     @pytest.mark.unit
-    def test_ui_config_all_custom(self):
+    def test_ui_config_all_custom(self) -> None:
         """Test UIConfig with all custom parameters."""
         config = UIConfig(theme="custom-theme", force_bold=True, use_symbols=False)
         assert config.theme == "custom-theme"
@@ -232,7 +231,7 @@ class TestUIConfigInitialization:
         assert config.use_symbols is False
 
     @pytest.mark.unit
-    def test_ui_config_arbitrary_theme_names(self):
+    def test_ui_config_arbitrary_theme_names(self) -> None:
         """Test UIConfig accepts arbitrary theme names."""
         themes = ["dark", "light", "solarized", "monokai", "nord"]
         for theme in themes:
@@ -249,7 +248,7 @@ class TestConfigInitialization:
     """Test Config initialization with various parameter combinations."""
 
     @pytest.mark.unit
-    def test_config_all_defaults(self):
+    def test_config_all_defaults(self) -> None:
         """Test Config with all default values."""
         config = Config()
         assert isinstance(config.database, DatabaseConfig)
@@ -258,7 +257,7 @@ class TestConfigInitialization:
         assert config.current_project is None
 
     @pytest.mark.unit
-    def test_config_custom_database(self):
+    def test_config_custom_database(self) -> None:
         """Test Config with custom database configuration."""
         db_config = DatabaseConfig(host="custom.db", port=5433)
         config = Config(database=db_config)
@@ -266,7 +265,7 @@ class TestConfigInitialization:
         assert config.database.port == 5433
 
     @pytest.mark.unit
-    def test_config_custom_ui(self):
+    def test_config_custom_ui(self) -> None:
         """Test Config with custom UI configuration."""
         ui_config = UIConfig(theme="high-contrast", force_bold=True)
         config = Config(ui=ui_config)
@@ -274,20 +273,20 @@ class TestConfigInitialization:
         assert config.ui.force_bold is True
 
     @pytest.mark.unit
-    def test_config_custom_data_dir(self, tmp_path):
+    def test_config_custom_data_dir(self, tmp_path) -> None:
         """Test Config with custom data directory."""
         custom_dir = tmp_path / "custom_tracertm"
         config = Config(data_dir=custom_dir)
         assert config.data_dir == custom_dir
 
     @pytest.mark.unit
-    def test_config_current_project(self):
+    def test_config_current_project(self) -> None:
         """Test Config with current project set."""
         config = Config(current_project="my-project")
         assert config.current_project == "my-project"
 
     @pytest.mark.unit
-    def test_config_all_custom(self, tmp_path):
+    def test_config_all_custom(self, tmp_path) -> None:
         """Test Config with all custom parameters."""
         db_config = DatabaseConfig(host="prod.db", database="prod")
         ui_config = UIConfig(theme="custom", force_bold=True)
@@ -310,7 +309,7 @@ class TestConfigLoadSave:
     """Test Config load and save operations."""
 
     @pytest.mark.unit
-    def test_config_save_creates_file(self, tmp_path):
+    def test_config_save_creates_file(self, tmp_path) -> None:
         """Test that save creates a config file."""
         config_path = tmp_path / "config.yaml"
         config = Config()
@@ -319,7 +318,7 @@ class TestConfigLoadSave:
         assert config_path.exists()
 
     @pytest.mark.unit
-    def test_config_save_creates_directory(self, tmp_path):
+    def test_config_save_creates_directory(self, tmp_path) -> None:
         """Test that save creates parent directories."""
         config_path = tmp_path / "nested" / "dir" / "config.yaml"
         config = Config()
@@ -329,7 +328,7 @@ class TestConfigLoadSave:
         assert config_path.parent.exists()
 
     @pytest.mark.unit
-    def test_config_save_valid_yaml(self, tmp_path):
+    def test_config_save_valid_yaml(self, tmp_path) -> None:
         """Test that save creates valid YAML."""
         config_path = tmp_path / "config.yaml"
 
@@ -349,7 +348,7 @@ class TestConfigLoadSave:
             "current_project": "test-project",
         }
 
-        with Path(config_path).open("w") as f:
+        with Path(config_path).open("w", encoding="utf-8") as f:
             yaml.dump(config_data, f)
 
         # Verify file exists
@@ -360,7 +359,7 @@ class TestConfigLoadSave:
         assert loaded.current_project == "test-project"
 
     @pytest.mark.unit
-    def test_config_load_nonexistent_creates_default(self, tmp_path):
+    def test_config_load_nonexistent_creates_default(self, tmp_path) -> None:
         """Test that load creates default config if file doesn't exist."""
         config_path = tmp_path / "config.yaml"
         assert not config_path.exists()
@@ -371,7 +370,7 @@ class TestConfigLoadSave:
         assert isinstance(config, Config)
 
     @pytest.mark.unit
-    def test_config_load_existing_file(self, tmp_path):
+    def test_config_load_existing_file(self, tmp_path) -> None:
         """Test loading existing config file."""
         config_path = tmp_path / "config.yaml"
 
@@ -391,14 +390,14 @@ class TestConfigLoadSave:
             "current_project": "my-project",
         }
 
-        with Path(config_path).open("w") as f:
+        with Path(config_path).open("w", encoding="utf-8") as f:
             yaml.dump(config_data, f)
 
         loaded = Config.load(config_path)
         assert loaded.current_project == "my-project"
 
     @pytest.mark.unit
-    def test_config_roundtrip(self, tmp_path):
+    def test_config_roundtrip(self, tmp_path) -> None:
         """Test save and load roundtrip."""
         config_path = tmp_path / "config.yaml"
 
@@ -418,7 +417,7 @@ class TestConfigLoadSave:
             "current_project": "test-proj",
         }
 
-        with Path(config_path).open("w") as f:
+        with Path(config_path).open("w", encoding="utf-8") as f:
             yaml.dump(config_data, f)
 
         loaded = Config.load(config_path)
@@ -432,7 +431,7 @@ class TestConfigLoadSave:
         assert loaded.current_project == "test-proj"
 
     @pytest.mark.unit
-    def test_config_load_default_path(self, tmp_path, monkeypatch):
+    def test_config_load_default_path(self, tmp_path, monkeypatch) -> None:
         """Test loading from default path."""
         default_path = tmp_path / ".tracertm" / "config.yaml"
         default_path.parent.mkdir(parents=True, exist_ok=True)
@@ -456,14 +455,14 @@ class TestConfigLoadSave:
             "current_project": None,
         }
 
-        with Path(default_path).open("w") as f:
+        with Path(default_path).open("w", encoding="utf-8") as f:
             yaml.dump(config_data, f)
 
         loaded = Config.load()
         assert isinstance(loaded, Config)
 
     @pytest.mark.unit
-    def test_config_save_default_path(self, tmp_path, monkeypatch):
+    def test_config_save_default_path(self, tmp_path, monkeypatch) -> None:
         """Test saving to default path."""
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
@@ -478,7 +477,7 @@ class TestConfigGlobalState:
     """Test global config state management."""
 
     @pytest.mark.unit
-    def test_get_config_returns_config(self):
+    def test_get_config_returns_config(self) -> None:
         """Test get_config returns Config instance."""
         from tracertm.core import config as config_module
 
@@ -491,7 +490,7 @@ class TestConfigGlobalState:
             assert isinstance(config, Config)
 
     @pytest.mark.unit
-    def test_get_config_singleton(self):
+    def test_get_config_singleton(self) -> None:
         """Test get_config returns same instance."""
         from tracertm.core import config as config_module
 
@@ -504,7 +503,7 @@ class TestConfigGlobalState:
             assert config1 is config2
 
     @pytest.mark.unit
-    def test_set_config_updates_global(self):
+    def test_set_config_updates_global(self) -> None:
         """Test set_config updates global config."""
         from tracertm.core import config as config_module
 
@@ -517,7 +516,7 @@ class TestConfigGlobalState:
         assert retrieved.current_project == "new-project"
 
     @pytest.mark.unit
-    def test_get_config_loads_only_once(self):
+    def test_get_config_loads_only_once(self) -> None:
         """Test get_config only loads from disk once."""
         from tracertm.core import config as config_module
 
@@ -543,7 +542,7 @@ class TestDatabaseURLConversion:
 
     @pytest.mark.unit
     @patch("tracertm.core.database.get_config")
-    def test_postgresql_url_conversion(self, mock_get_config, tmp_path):
+    def test_postgresql_url_conversion(self, mock_get_config, tmp_path) -> None:
         """Test PostgreSQL URL is converted to asyncpg."""
         config = Config(
             database=DatabaseConfig(host="localhost", database="test"),
@@ -561,12 +560,12 @@ class TestDatabaseURLConversion:
 
     @pytest.mark.unit
     @patch("tracertm.core.database.get_config")
-    def test_sqlite_url_no_pool_params(self, mock_get_config, tmp_path):
+    def test_sqlite_url_no_pool_params(self, mock_get_config, tmp_path) -> None:
         """Test SQLite URL doesn't use pool parameters."""
 
         class SQLiteConfig(DatabaseConfig):
             @property
-            def url(self):
+            def url(self) -> str:
                 # Use aiosqlite for async support
                 return "sqlite+aiosqlite:///test.db"
 
@@ -588,7 +587,7 @@ class TestDatabasePoolConfiguration:
 
     @pytest.mark.unit
     @patch("tracertm.core.database.get_config")
-    def test_pool_pre_ping_enabled(self, mock_get_config, tmp_path):
+    def test_pool_pre_ping_enabled(self, mock_get_config, tmp_path) -> None:
         """Test that pool_pre_ping is enabled."""
         config = Config(data_dir=tmp_path)
         mock_get_config.return_value = config
@@ -602,7 +601,7 @@ class TestDatabasePoolConfiguration:
 
     @pytest.mark.unit
     @patch("tracertm.core.database.get_config")
-    def test_custom_pool_size(self, mock_get_config, tmp_path):
+    def test_custom_pool_size(self, mock_get_config, tmp_path) -> None:
         """Test custom pool size configuration."""
         db_config = DatabaseConfig(pool_size=50, max_overflow=25)
         config = Config(database=db_config, data_dir=tmp_path)
@@ -624,7 +623,7 @@ class TestDatabaseSettingsExtended:
     """Extended tests for DatabaseSettings."""
 
     @pytest.mark.unit
-    def test_database_settings_field_types(self):
+    def test_database_settings_field_types(self) -> None:
         """Test DatabaseSettings field types."""
         settings = DatabaseSettings()
         assert isinstance(settings.url, str)
@@ -633,19 +632,19 @@ class TestDatabaseSettingsExtended:
         assert isinstance(settings.max_overflow, int)
 
     @pytest.mark.unit
-    def test_database_settings_url_with_port(self):
+    def test_database_settings_url_with_port(self) -> None:
         """Test database URL with explicit port."""
         settings = DatabaseSettings(url="postgresql://localhost:5433/db")
         assert ":5433" in settings.url
 
     @pytest.mark.unit
-    def test_database_settings_sqlite_memory(self):
+    def test_database_settings_sqlite_memory(self) -> None:
         """Test SQLite in-memory database URL."""
         settings = DatabaseSettings(url="sqlite:///")
         assert settings.url == "sqlite:///"
 
     @pytest.mark.unit
-    def test_database_settings_pool_boundaries(self):
+    def test_database_settings_pool_boundaries(self) -> None:
         """Test pool size at boundaries."""
         # Minimum
         s1 = DatabaseSettings(pool_size=1)
@@ -656,7 +655,7 @@ class TestDatabaseSettingsExtended:
         assert s2.pool_size == 100
 
     @pytest.mark.unit
-    def test_database_settings_overflow_boundaries(self):
+    def test_database_settings_overflow_boundaries(self) -> None:
         """Test max overflow at boundaries."""
         # Minimum
         s1 = DatabaseSettings(max_overflow=0)
@@ -671,7 +670,7 @@ class TestTraceSettingsExtended:
     """Extended tests for TraceSettings."""
 
     @pytest.mark.unit
-    def test_settings_model_config(self):
+    def test_settings_model_config(self) -> None:
         """Test settings model configuration."""
         reset_settings()
         settings = TraceSettings()
@@ -681,7 +680,7 @@ class TestTraceSettingsExtended:
         assert settings.model_config["case_sensitive"] is False
 
     @pytest.mark.unit
-    def test_settings_nested_delimiter(self, monkeypatch):
+    def test_settings_nested_delimiter(self, monkeypatch) -> None:
         """Test nested delimiter for environment variables."""
         reset_settings()
         # Test nested environment variable with valid URL
@@ -695,7 +694,7 @@ class TestTraceSettingsExtended:
         assert isinstance(settings.database, DatabaseSettings)
 
     @pytest.mark.unit
-    def test_settings_extra_fields_ignored(self):
+    def test_settings_extra_fields_ignored(self) -> None:
         """Test that extra fields are ignored."""
         reset_settings()
         # This should not raise an error
@@ -703,7 +702,7 @@ class TestTraceSettingsExtended:
         # Extra="ignore" means unknown env vars won't cause errors
 
     @pytest.mark.unit
-    def test_settings_project_fields_optional(self):
+    def test_settings_project_fields_optional(self) -> None:
         """Test project fields are optional."""
         reset_settings()
         settings = TraceSettings()
@@ -711,7 +710,7 @@ class TestTraceSettingsExtended:
         assert settings.current_project_name is None
 
     @pytest.mark.unit
-    def test_settings_with_project_fields(self):
+    def test_settings_with_project_fields(self) -> None:
         """Test settings with project fields set."""
         reset_settings()
         settings = TraceSettings(current_project_id="proj-123", current_project_name="My Project")
@@ -728,7 +727,7 @@ class TestConfigManagerInitialization:
     """Test ConfigManager initialization."""
 
     @pytest.mark.unit
-    def test_manager_default_paths(self):
+    def test_manager_default_paths(self) -> None:
         """Test default config paths."""
         manager = ConfigManager()
         assert manager.config_dir == Path.home() / ".config" / "tracertm"
@@ -736,7 +735,7 @@ class TestConfigManagerInitialization:
         assert manager.projects_dir == manager.config_dir / "projects"
 
     @pytest.mark.unit
-    def test_manager_custom_config_dir(self, tmp_path):
+    def test_manager_custom_config_dir(self, tmp_path) -> None:
         """Test custom config directory."""
         custom_dir = tmp_path / "custom_config"
         manager = ConfigManager(config_dir=custom_dir)
@@ -747,7 +746,7 @@ class TestConfigManagerInit:
     """Test ConfigManager.init() method."""
 
     @pytest.mark.unit
-    def test_init_creates_config_dir(self, tmp_path):
+    def test_init_creates_config_dir(self, tmp_path) -> None:
         """Test init creates config directory."""
         config_dir = tmp_path / "config"
         manager = ConfigManager(config_dir=config_dir)
@@ -757,7 +756,7 @@ class TestConfigManagerInit:
         assert config_dir.exists()
 
     @pytest.mark.unit
-    def test_init_creates_projects_dir(self, tmp_path):
+    def test_init_creates_projects_dir(self, tmp_path) -> None:
         """Test init creates projects directory."""
         config_dir = tmp_path / "config"
         manager = ConfigManager(config_dir=config_dir)
@@ -768,7 +767,7 @@ class TestConfigManagerInit:
         assert projects_dir.exists()
 
     @pytest.mark.unit
-    def test_init_creates_config_file(self, tmp_path):
+    def test_init_creates_config_file(self, tmp_path) -> None:
         """Test init creates config file."""
         config_dir = tmp_path / "config"
         manager = ConfigManager(config_dir=config_dir)
@@ -780,7 +779,7 @@ class TestConfigManagerInit:
         assert isinstance(config, SchemaConfig)
 
     @pytest.mark.unit
-    def test_init_sets_database_url(self, tmp_path):
+    def test_init_sets_database_url(self, tmp_path) -> None:
         """Test init sets database URL."""
         manager = ConfigManager(config_dir=tmp_path)
         config = manager.init(database_url="postgresql://prod.db/myapp")
@@ -788,7 +787,7 @@ class TestConfigManagerInit:
         assert config.database_url == "postgresql://prod.db/myapp"
 
     @pytest.mark.unit
-    def test_init_sets_defaults(self, tmp_path):
+    def test_init_sets_defaults(self, tmp_path) -> None:
         """Test init sets default values."""
         manager = ConfigManager(config_dir=tmp_path)
         config = manager.init(database_url="postgresql://localhost/test")
@@ -804,7 +803,7 @@ class TestConfigManagerLoad:
     """Test ConfigManager.load() method."""
 
     @pytest.mark.unit
-    def test_load_raises_if_not_initialized(self, tmp_path):
+    def test_load_raises_if_not_initialized(self, tmp_path) -> None:
         """Test load raises error if config doesn't exist."""
         manager = ConfigManager(config_dir=tmp_path)
 
@@ -812,7 +811,7 @@ class TestConfigManagerLoad:
             manager.load()
 
     @pytest.mark.unit
-    def test_load_returns_config(self, tmp_path):
+    def test_load_returns_config(self, tmp_path) -> None:
         """Test load returns Config object."""
         manager = ConfigManager(config_dir=tmp_path)
         manager.init(database_url="postgresql://localhost/test")
@@ -821,7 +820,7 @@ class TestConfigManagerLoad:
         assert isinstance(config, SchemaConfig)
 
     @pytest.mark.unit
-    def test_load_with_project_id(self, tmp_path):
+    def test_load_with_project_id(self, tmp_path) -> None:
         """Test load with project-specific config."""
         manager = ConfigManager(config_dir=tmp_path)
         manager.init(database_url="postgresql://localhost/test")
@@ -835,7 +834,7 @@ class TestConfigManagerLoad:
         assert config.default_view == "CODE"
 
     @pytest.mark.unit
-    def test_load_environment_override(self, tmp_path, monkeypatch):
+    def test_load_environment_override(self, tmp_path, monkeypatch) -> None:
         """Test environment variables override config file."""
         manager = ConfigManager(config_dir=tmp_path)
         manager.init(database_url="postgresql://localhost/test")
@@ -852,7 +851,7 @@ class TestConfigManagerSetGet:
     """Test ConfigManager.set() and get() methods."""
 
     @pytest.mark.unit
-    def test_set_creates_config_if_not_exists(self, tmp_path):
+    def test_set_creates_config_if_not_exists(self, tmp_path) -> None:
         """Test set creates config file if it doesn't exist."""
         manager = ConfigManager(config_dir=tmp_path)
         manager.init(database_url="postgresql://localhost/test")
@@ -863,7 +862,7 @@ class TestConfigManagerSetGet:
         assert config_path.exists()
 
     @pytest.mark.unit
-    def test_set_updates_existing_config(self, tmp_path):
+    def test_set_updates_existing_config(self, tmp_path) -> None:
         """Test set updates existing config."""
         manager = ConfigManager(config_dir=tmp_path)
         manager.init(database_url="postgresql://localhost/test")
@@ -876,7 +875,7 @@ class TestConfigManagerSetGet:
         assert config.output_format == "json"
 
     @pytest.mark.unit
-    def test_set_validates_value(self, tmp_path):
+    def test_set_validates_value(self, tmp_path) -> None:
         """Test set validates value against schema."""
         manager = ConfigManager(config_dir=tmp_path)
         manager.init(database_url="postgresql://localhost/test")
@@ -885,7 +884,7 @@ class TestConfigManagerSetGet:
             manager.set("output_format", "invalid_format")
 
     @pytest.mark.unit
-    def test_set_project_specific(self, tmp_path):
+    def test_set_project_specific(self, tmp_path) -> None:
         """Test set with project-specific config."""
         manager = ConfigManager(config_dir=tmp_path)
         manager.init(database_url="postgresql://localhost/test")
@@ -897,7 +896,7 @@ class TestConfigManagerSetGet:
         assert project_config_path.exists()
 
     @pytest.mark.unit
-    def test_get_returns_value(self, tmp_path):
+    def test_get_returns_value(self, tmp_path) -> None:
         """Test get returns config value."""
         manager = ConfigManager(config_dir=tmp_path)
         manager.init(database_url="postgresql://localhost/test")
@@ -907,7 +906,7 @@ class TestConfigManagerSetGet:
         assert value == "CODE"
 
     @pytest.mark.unit
-    def test_get_returns_none_if_not_found(self, tmp_path):
+    def test_get_returns_none_if_not_found(self, tmp_path) -> None:
         """Test get returns None if key not found."""
         manager = ConfigManager(config_dir=tmp_path)
         manager.init(database_url="postgresql://localhost/test")
@@ -916,7 +915,7 @@ class TestConfigManagerSetGet:
         assert value is None
 
     @pytest.mark.unit
-    def test_get_project_specific(self, tmp_path):
+    def test_get_project_specific(self, tmp_path) -> None:
         """Test get with project-specific config."""
         manager = ConfigManager(config_dir=tmp_path)
         manager.init(database_url="postgresql://localhost/test")
@@ -932,7 +931,7 @@ class TestConfigManagerEnvironmentVariables:
     """Test ConfigManager environment variable handling."""
 
     @pytest.mark.unit
-    def test_env_var_database_url(self, tmp_path, monkeypatch):
+    def test_env_var_database_url(self, tmp_path, monkeypatch) -> None:
         """Test TRACERTM_DATABASE_URL environment variable."""
         manager = ConfigManager(config_dir=tmp_path)
         manager.init(database_url="postgresql://localhost/test")
@@ -943,7 +942,7 @@ class TestConfigManagerEnvironmentVariables:
         assert config.database_url == "postgresql://prod.db/app"
 
     @pytest.mark.unit
-    def test_env_var_current_project_id(self, tmp_path, monkeypatch):
+    def test_env_var_current_project_id(self, tmp_path, monkeypatch) -> None:
         """Test TRACERTM_CURRENT_PROJECT_ID environment variable."""
         manager = ConfigManager(config_dir=tmp_path)
         manager.init(database_url="postgresql://localhost/test")
@@ -954,7 +953,7 @@ class TestConfigManagerEnvironmentVariables:
         assert config.current_project_id == "env-project"
 
     @pytest.mark.unit
-    def test_env_var_max_agents(self, tmp_path, monkeypatch):
+    def test_env_var_max_agents(self, tmp_path, monkeypatch) -> None:
         """Test TRACERTM_MAX_AGENTS environment variable."""
         manager = ConfigManager(config_dir=tmp_path)
         manager.init(database_url="postgresql://localhost/test")
@@ -965,7 +964,7 @@ class TestConfigManagerEnvironmentVariables:
         assert config.max_agents == 100
 
     @pytest.mark.unit
-    def test_multiple_env_vars(self, tmp_path, monkeypatch):
+    def test_multiple_env_vars(self, tmp_path, monkeypatch) -> None:
         """Test multiple environment variables."""
         manager = ConfigManager(config_dir=tmp_path)
         manager.init(database_url="postgresql://localhost/test")
@@ -989,27 +988,27 @@ class TestEdgeCases:
     """Test edge cases and error scenarios."""
 
     @pytest.mark.unit
-    def test_config_with_empty_string_project(self):
+    def test_config_with_empty_string_project(self) -> None:
         """Test Config with empty string as project name."""
         config = Config(current_project="")
         assert config.current_project == ""
 
     @pytest.mark.unit
-    def test_database_config_port_zero(self):
+    def test_database_config_port_zero(self) -> None:
         """Test DatabaseConfig with port 0."""
         config = DatabaseConfig(port=0)
         assert config.port == 0
         assert ":0/" in config.url
 
     @pytest.mark.unit
-    def test_database_config_empty_database_name(self):
+    def test_database_config_empty_database_name(self) -> None:
         """Test DatabaseConfig with empty database name."""
         config = DatabaseConfig(database="")
         assert config.database == ""
         assert config.url.endswith("/")
 
     @pytest.mark.unit
-    def test_config_save_to_readonly_location(self, tmp_path):
+    def test_config_save_to_readonly_location(self, tmp_path) -> None:
         """Test saving config to read-only location raises error."""
         readonly_dir = tmp_path / "readonly"
         readonly_dir.mkdir()
@@ -1027,23 +1026,22 @@ class TestEdgeCases:
             readonly_dir.chmod(0o755)
 
     @pytest.mark.unit
-    def test_config_load_invalid_yaml(self, tmp_path):
+    def test_config_load_invalid_yaml(self, tmp_path) -> None:
         """Test loading config with invalid YAML."""
         config_path = tmp_path / "config.yaml"
-        with Path(config_path).open("w") as f:
-            f.write("invalid: yaml: content: {}")
+        Path(config_path).write_text("invalid: yaml: content: {}", encoding="utf-8")
 
         with pytest.raises(yaml.YAMLError):
             Config.load(config_path)
 
     @pytest.mark.unit
-    def test_settings_invalid_pool_size_type(self):
+    def test_settings_invalid_pool_size_type(self) -> None:
         """Test DatabaseSettings with invalid pool_size type."""
         with pytest.raises(ValidationError):
             DatabaseSettings(pool_size="not_a_number")
 
     @pytest.mark.unit
-    def test_config_manager_set_invalid_project_id(self, tmp_path):
+    def test_config_manager_set_invalid_project_id(self, tmp_path) -> None:
         """Test ConfigManager.set with special characters in project ID."""
         manager = ConfigManager(config_dir=tmp_path)
         manager.init(database_url="postgresql://localhost/test")
@@ -1065,7 +1063,7 @@ class TestIntegrationScenarios:
     """Test integration scenarios across modules."""
 
     @pytest.mark.unit
-    def test_config_to_database_integration(self, tmp_path):
+    def test_config_to_database_integration(self, tmp_path) -> None:
         """Test Config integrates with database module."""
         config = Config(
             database=DatabaseConfig(host="integration.db", database="testdb"),
@@ -1078,7 +1076,7 @@ class TestIntegrationScenarios:
         assert "testdb" in url
 
     @pytest.mark.unit
-    def test_settings_to_config_manager_integration(self, tmp_path):
+    def test_settings_to_config_manager_integration(self, tmp_path) -> None:
         """Test TraceSettings integrates with ConfigManager."""
         # Create settings
         reset_settings()
@@ -1097,7 +1095,7 @@ class TestIntegrationScenarios:
         assert manager.config_dir == settings.config_dir
 
     @pytest.mark.unit
-    def test_full_config_workflow(self, tmp_path):
+    def test_full_config_workflow(self, tmp_path) -> None:
         """Test complete configuration workflow."""
         # 1. Initialize config manager
         manager = ConfigManager(config_dir=tmp_path)
@@ -1126,7 +1124,7 @@ class TestIntegrationScenarios:
 
     @pytest.mark.unit
     @patch("tracertm.core.database.get_config")
-    def test_database_uses_config(self, mock_get_config, tmp_path):
+    def test_database_uses_config(self, mock_get_config, tmp_path) -> None:
         """Test database module uses Config correctly."""
         # Create custom config
         db_config = DatabaseConfig(
@@ -1169,7 +1167,7 @@ class TestPropertyBasedConfig:
         database=st.text(min_size=1, max_size=50).filter(lambda x: "/" not in x) if HAS_HYPOTHESIS else st.text(),
     )
     @hypothesis_settings(max_examples=20, deadline=1000)
-    def test_database_url_format(self, host, port, database):
+    def test_database_url_format(self, host, port, database) -> None:
         """Test DatabaseConfig URL format with random values."""
         config = DatabaseConfig(host=host, port=port, database=database)
         url = config.url
@@ -1184,7 +1182,7 @@ class TestPropertyBasedConfig:
         max_overflow=st.integers(min_value=0, max_value=50) if HAS_HYPOTHESIS else st.integers(),
     )
     @hypothesis_settings(max_examples=20)
-    def test_database_pool_settings(self, pool_size, max_overflow):
+    def test_database_pool_settings(self, pool_size, max_overflow) -> None:
         """Test DatabaseConfig pool settings with random values."""
         config = DatabaseConfig(pool_size=pool_size, max_overflow=max_overflow)
         assert config.pool_size == pool_size
@@ -1197,7 +1195,7 @@ class TestPropertyBasedConfig:
         use_symbols=st.booleans() if HAS_HYPOTHESIS else st.booleans(),
     )
     @hypothesis_settings(max_examples=20)
-    def test_ui_config_combinations(self, theme, force_bold, use_symbols):
+    def test_ui_config_combinations(self, theme, force_bold, use_symbols) -> None:
         """Test UIConfig with random parameter combinations."""
         config = UIConfig(theme=theme, force_bold=force_bold, use_symbols=use_symbols)
         assert config.theme == theme
@@ -1211,7 +1209,7 @@ class TestPropertyBasedConfig:
         batch_size=st.integers(min_value=1, max_value=1000) if HAS_HYPOTHESIS else st.integers(),
     )
     @hypothesis_settings(max_examples=20)
-    def test_trace_settings_numeric_constraints(self, max_agents, cache_ttl, batch_size):
+    def test_trace_settings_numeric_constraints(self, max_agents, cache_ttl, batch_size) -> None:
         """Test TraceSettings numeric constraints."""
         reset_settings()
         settings = TraceSettings(max_agents=max_agents, cache_ttl=cache_ttl, batch_size=batch_size)
@@ -1222,7 +1220,7 @@ class TestPropertyBasedConfig:
     @pytest.mark.unit
     @given(project_name=st.text(min_size=0, max_size=100) if HAS_HYPOTHESIS else st.text())
     @hypothesis_settings(max_examples=20)
-    def test_config_project_name(self, project_name):
+    def test_config_project_name(self, project_name) -> None:
         """Test Config with random project names."""
         config = Config(current_project=project_name)
         assert config.current_project == project_name
@@ -1237,21 +1235,21 @@ class TestAdditionalCoverage:
     """Additional tests to maximize coverage."""
 
     @pytest.mark.unit
-    def test_database_config_repr(self):
+    def test_database_config_repr(self) -> None:
         """Test DatabaseConfig string representation."""
         config = DatabaseConfig(host="example.com", database="mydb")
         repr_str = repr(config)
         assert "DatabaseConfig" in repr_str
 
     @pytest.mark.unit
-    def test_ui_config_repr(self):
+    def test_ui_config_repr(self) -> None:
         """Test UIConfig string representation."""
         config = UIConfig(theme="custom")
         repr_str = repr(config)
         assert "UIConfig" in repr_str
 
     @pytest.mark.unit
-    def test_config_model_dump(self):
+    def test_config_model_dump(self) -> None:
         """Test Config model_dump method."""
         config = Config(current_project="test")
         data = config.model_dump()
@@ -1259,7 +1257,7 @@ class TestAdditionalCoverage:
         assert data["current_project"] == "test"
 
     @pytest.mark.unit
-    def test_database_config_equality(self):
+    def test_database_config_equality(self) -> None:
         """Test DatabaseConfig equality comparison."""
         config1 = DatabaseConfig(host="localhost", database="db1")
         config2 = DatabaseConfig(host="localhost", database="db1")
@@ -1269,7 +1267,7 @@ class TestAdditionalCoverage:
         assert config1 != config3
 
     @pytest.mark.unit
-    def test_ui_config_equality(self):
+    def test_ui_config_equality(self) -> None:
         """Test UIConfig equality comparison."""
         ui1 = UIConfig(theme="theme1")
         ui2 = UIConfig(theme="theme1")
@@ -1279,7 +1277,7 @@ class TestAdditionalCoverage:
         assert ui1 != ui3
 
     @pytest.mark.unit
-    def test_settings_env_file_loading(self, tmp_path):
+    def test_settings_env_file_loading(self, tmp_path) -> None:
         """Test TraceSettings loads from .env file."""
         reset_settings()
         env_file = tmp_path / ".env"
@@ -1295,7 +1293,7 @@ class TestAdditionalCoverage:
             os.chdir(original_cwd)
 
     @pytest.mark.unit
-    def test_config_manager_save_config(self, tmp_path):
+    def test_config_manager_save_config(self, tmp_path) -> None:
         """Test ConfigManager._save_config private method."""
         manager = ConfigManager(config_dir=tmp_path)
         config = SchemaConfig(
@@ -1309,12 +1307,12 @@ class TestAdditionalCoverage:
 
         assert config_path.exists()
 
-        with Path(config_path).open() as f:
+        with Path(config_path).open(encoding="utf-8") as f:
             data = yaml.safe_load(f)
         assert data["default_view"] == "CODE"
 
     @pytest.mark.unit
-    def test_config_manager_load_from_env_empty(self, tmp_path):
+    def test_config_manager_load_from_env_empty(self, tmp_path) -> None:
         """Test ConfigManager._load_from_env with no env vars."""
         manager = ConfigManager(config_dir=tmp_path)
         env_config = manager._load_from_env()
@@ -1323,7 +1321,7 @@ class TestAdditionalCoverage:
         assert isinstance(env_config, dict)
 
     @pytest.mark.unit
-    def test_database_settings_model_validation(self):
+    def test_database_settings_model_validation(self) -> None:
         """Test DatabaseSettings pydantic model validation."""
         # Valid
         db = DatabaseSettings(url="sqlite:///test.db", pool_size=5)
@@ -1334,7 +1332,7 @@ class TestAdditionalCoverage:
             DatabaseSettings(url="invalid_url")
 
     @pytest.mark.unit
-    def test_trace_settings_field_validators(self):
+    def test_trace_settings_field_validators(self) -> None:
         """Test TraceSettings field validators."""
         reset_settings()
         # All valid
@@ -1346,7 +1344,7 @@ class TestAdditionalCoverage:
         assert settings.database.url == "postgresql://localhost/db"
 
     @pytest.mark.unit
-    def test_config_copy_with_modifications(self):
+    def test_config_copy_with_modifications(self) -> None:
         """Test creating modified copy of Config."""
         original = Config(current_project="original")
         # Pydantic provides copy method
@@ -1356,7 +1354,7 @@ class TestAdditionalCoverage:
         assert modified.current_project == "modified"
 
     @pytest.mark.unit
-    def test_database_config_json_serialization(self):
+    def test_database_config_json_serialization(self) -> None:
         """Test DatabaseConfig JSON serialization."""
         config = DatabaseConfig(host="example.com", port=5433)
         json_str = config.model_dump_json()
@@ -1364,7 +1362,7 @@ class TestAdditionalCoverage:
         assert "5433" in json_str
 
     @pytest.mark.unit
-    def test_schema_config_validation(self):
+    def test_schema_config_validation(self) -> None:
         """Test SchemaConfig validation."""
         # Valid
         config = SchemaConfig(
@@ -1379,7 +1377,7 @@ class TestAdditionalCoverage:
             SchemaConfig(database_url="invalid://url")
 
     @pytest.mark.unit
-    def test_schema_config_api_url_validation(self):
+    def test_schema_config_api_url_validation(self) -> None:
         """Test SchemaConfig API URL validation."""
         # Valid HTTP
         config = SchemaConfig(database_url="postgresql://localhost/db", api_url="http://localhost:8000")

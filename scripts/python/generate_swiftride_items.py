@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""
-Generate comprehensive Product Layer items for SwiftRide
-Targets: 50+ items per type with deep hierarchies and extensive linking
+"""Generate comprehensive Product Layer items for SwiftRide
+Targets: 50+ items per type with deep hierarchies and extensive linking.
 """
 
 import asyncio
@@ -301,7 +300,7 @@ async def create_item(
     status: str = "draft",
     **kwargs,
 ) -> str:
-    """Create an item and return its ID
+    """Create an item and return its ID.
 
     Args:
         priority: Integer 0-10 (0=lowest, 10=highest)
@@ -333,8 +332,8 @@ async def create_item(
     return item_id
 
 
-async def create_link(session: AsyncSession, source_id: str, target_id: str, link_type: str = "implements"):
-    """Create a link between items"""
+async def create_link(session: AsyncSession, source_id: str, target_id: str, link_type: str = "implements") -> None:
+    """Create a link between items."""
     link_id = str(uuid.uuid4())
 
     query = text("""
@@ -346,34 +345,29 @@ async def create_link(session: AsyncSession, source_id: str, target_id: str, lin
     """)
 
     await session.execute(
-        query, {"id": link_id, "source_id": source_id, "target_id": target_id, "link_type": link_type}
+        query, {"id": link_id, "source_id": source_id, "target_id": target_id, "link_type": link_type},
     )
 
 
-async def generate_items():
-    """Generate all items with deep hierarchies"""
-
+async def generate_items() -> None:
+    """Generate all items with deep hierarchies."""
     engine = create_async_engine(DATABASE_URL, echo=False)
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     async with async_session() as session:
-        print("🚀 Generating SwiftRide Product Layer Items...")
 
         # 1. Create Initiatives (50 items)
-        print("\n📊 Creating 50 Initiatives...")
         for idx, init in enumerate(INITIATIVES[:50]):
             await create_item(session, "initiative", str(init["title"]), str(init["description"]), priority=int(init["priority"]) if isinstance(init.get("priority"), (int, float)) else 5)
             if (idx + 1) % 10 == 0:
-                print(f"   ✓ Created {idx + 1} initiatives")
+                pass
 
         await session.commit()
-        print(f"✅ Created {len(items_db['initiative'])} initiatives")
 
         # 2. Create Epics (60 items)
-        print("\n🎯 Creating 60 Epics...")
         for idx, epic in enumerate(EPICS[:60]):
             epic_id = await create_item(
-                session, "epic", str(epic["title"]), str(epic["description"]), priority=8 if idx < 20 else 5
+                session, "epic", str(epic["title"]), str(epic["description"]), priority=8 if idx < 20 else 5,
             )
 
             # Link to initiative
@@ -382,13 +376,11 @@ async def generate_items():
             await create_link(session, epic_id, initiative_id, "implements")
 
             if (idx + 1) % 10 == 0:
-                print(f"   ✓ Created {idx + 1} epics")
+                pass
 
         await session.commit()
-        print(f"✅ Created {len(items_db['epic'])} epics")
 
         # 3. Create Capabilities (50 items)
-        print("\n⚙️  Creating 50 Capabilities...")
         capabilities = [
             "Real-time GPS Tracking",
             "Payment Processing",
@@ -444,7 +436,7 @@ async def generate_items():
 
         for idx, cap in enumerate(capabilities[:50]):
             cap_id = await create_item(
-                session, "capability", cap, f"System capability for {cap.lower()}", priority=8 if idx < 15 else 5
+                session, "capability", cap, f"System capability for {cap.lower()}", priority=8 if idx < 15 else 5,
             )
 
             # Link to 2-3 epics
@@ -453,13 +445,11 @@ async def generate_items():
                 await create_link(session, cap_id, epic_id, "supports")
 
             if (idx + 1) % 10 == 0:
-                print(f"   ✓ Created {idx + 1} capabilities")
+                pass
 
         await session.commit()
-        print(f"✅ Created {len(items_db['capability'])} capabilities")
 
         # 4. Create Features (100 items)
-        print("\n✨ Creating 100 Features...")
         feature_counter = 0
 
         for epic_idx, epic_id in enumerate(items_db["epic"][:30]):  # First 30 epics
@@ -500,16 +490,14 @@ async def generate_items():
                 feature_counter += 1
 
                 if feature_counter % 20 == 0:
-                    print(f"   ✓ Created {feature_counter} features")
+                    pass
 
             if feature_counter >= 100:
                 break
 
         await session.commit()
-        print(f"✅ Created {len(items_db['feature'])} features")
 
         # 5. Create User Stories (200 items)
-        print("\n📝 Creating 200 User Stories...")
 
         user_story_templates = [
             ("rider", "book a ride quickly", "I can get transportation when I need it"),
@@ -552,16 +540,14 @@ async def generate_items():
                 story_counter += 1
 
                 if story_counter % 40 == 0:
-                    print(f"   ✓ Created {story_counter} user stories")
+                    pass
 
             if story_counter >= 200:
                 break
 
         await session.commit()
-        print(f"✅ Created {len(items_db['user_story'])} user stories")
 
         # 6. Create Use Cases (80 items)
-        print("\n🎬 Creating 80 Use Cases...")
 
         use_case_templates = [
             ("Successful Ride Booking", "Rider books, driver accepts, ride completes successfully"),
@@ -580,7 +566,7 @@ async def generate_items():
             title, desc = use_case_templates[idx % len(use_case_templates)]
 
             use_case_id = await create_item(
-                session, "use_case", f"{title} - Scenario {idx + 1}", desc, priority=8 if idx < 20 else 5
+                session, "use_case", f"{title} - Scenario {idx + 1}", desc, priority=8 if idx < 20 else 5,
             )
 
             # Link to 1-2 features
@@ -589,13 +575,11 @@ async def generate_items():
                 await create_link(session, use_case_id, feature_id, "validates")
 
             if (idx + 1) % 20 == 0:
-                print(f"   ✓ Created {idx + 1} use cases")
+                pass
 
         await session.commit()
-        print(f"✅ Created {len(items_db['use_case'])} use cases")
 
         # 7. Create Acceptance Criteria (150 items)
-        print("\n✓ Creating 150 Acceptance Criteria...")
 
         criteria_templates = [
             "System responds within 2 seconds",
@@ -630,13 +614,11 @@ async def generate_items():
             await create_link(session, ac_id, story_id, "validates")
 
             if (idx + 1) % 30 == 0:
-                print(f"   ✓ Created {idx + 1} acceptance criteria")
+                pass
 
         await session.commit()
-        print(f"✅ Created {len(items_db['acceptance_criteria'])} acceptance criteria")
 
         # 8. Create Tasks (300+ items) - 2-3 tasks per user story
-        print("\n📋 Creating 300+ Tasks...")
 
         task_templates = [
             "Design database schema",
@@ -679,33 +661,17 @@ async def generate_items():
                 task_counter += 1
 
                 if task_counter % 50 == 0:
-                    print(f"   ✓ Created {task_counter} tasks")
+                    pass
 
         await session.commit()
-        print(f"✅ Created {len(items_db['task'])} tasks")
 
         # Final summary
-        print("\n" + "=" * 60)
-        print("🎉 SwiftRide Product Layer Generation Complete!")
-        print("=" * 60)
-        print(f"📊 Initiatives:          {len(items_db['initiative'])}")
-        print(f"🎯 Epics:                {len(items_db['epic'])}")
-        print(f"⚙️  Capabilities:         {len(items_db['capability'])}")
-        print(f"✨ Features:             {len(items_db['feature'])}")
-        print(f"📝 User Stories:         {len(items_db['user_story'])}")
-        print(f"🎬 Use Cases:            {len(items_db['use_case'])}")
-        print(f"✓ Acceptance Criteria:  {len(items_db['acceptance_criteria'])}")
-        print(f"📋 Tasks:                {len(items_db['task'])}")
-        print("=" * 60)
-        print(f"📦 Total Items:          {sum(len(v) for v in items_db.values())}")
-        print("=" * 60)
 
         # Verify project
         result = await session.execute(
-            text("SELECT COUNT(*) FROM items WHERE project_id = :project_id"), {"project_id": PROJECT_ID}
+            text("SELECT COUNT(*) FROM items WHERE project_id = :project_id"), {"project_id": PROJECT_ID},
         )
-        total_count = result.scalar()
-        print(f"\n✅ Database verification: {total_count} total items in project")
+        result.scalar()
 
         await engine.dispose()
 

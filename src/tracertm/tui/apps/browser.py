@@ -1,5 +1,4 @@
-"""
-Item browser TUI application.
+"""Item browser TUI application.
 
 Interactive browser for viewing and navigating items.
 """
@@ -19,7 +18,6 @@ except ImportError:
     if TYPE_CHECKING:
         from textual.app import App, ComposeResult
         from textual.binding import Binding
-        from textual.containers import Horizontal, Vertical
         from textual.widgets import Footer, Header, Input, Static, Tree
     else:
 
@@ -49,6 +47,7 @@ except ImportError:
 
 
 from sqlalchemy.orm import Session
+from textual.containers import Horizontal, Vertical
 
 from tracertm.config.manager import ConfigManager
 from tracertm.database.connection import DatabaseConnection
@@ -250,4 +249,5 @@ if not TEXTUAL_AVAILABLE:
         BINDINGS: ClassVar[list]
 
         def __init__(self) -> None:
-            raise ImportError("Textual is required for TUI. Install with: pip install textual")
+            msg = "Textual is required for TUI. Install with: pip install textual"
+            raise ImportError(msg)

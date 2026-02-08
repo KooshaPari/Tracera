@@ -1,6 +1,4 @@
-"""
-Tests for project-local .trace/ storage functionality.
-"""
+"""Tests for project-local .trace/ storage functionality."""
 
 import tempfile
 from pathlib import Path
@@ -25,7 +23,7 @@ class TestProjectLocalStorage:
         """Create a LocalStorageManager with temporary base directory."""
         return LocalStorageManager(base_dir=temp_dir / ".tracertm")
 
-    def test_is_trace_project_exists(self, temp_dir, storage):
+    def test_is_trace_project_exists(self, temp_dir, storage) -> None:
         """Test is_trace_project returns True when .trace/ exists."""
         project_dir = temp_dir / "my-project"
         project_dir.mkdir()
@@ -34,14 +32,14 @@ class TestProjectLocalStorage:
 
         assert storage.is_trace_project(project_dir) is True
 
-    def test_is_trace_project_not_exists(self, temp_dir, storage):
+    def test_is_trace_project_not_exists(self, temp_dir, storage) -> None:
         """Test is_trace_project returns False when .trace/ doesn't exist."""
         project_dir = temp_dir / "my-project"
         project_dir.mkdir()
 
         assert storage.is_trace_project(project_dir) is False
 
-    def test_get_project_trace_dir_exists(self, temp_dir, storage):
+    def test_get_project_trace_dir_exists(self, temp_dir, storage) -> None:
         """Test get_project_trace_dir returns path when .trace/ exists."""
         project_dir = temp_dir / "my-project"
         project_dir.mkdir()
@@ -51,7 +49,7 @@ class TestProjectLocalStorage:
         result = storage.get_project_trace_dir(project_dir)
         assert result.resolve() == trace_dir.resolve()
 
-    def test_get_project_trace_dir_not_exists(self, temp_dir, storage):
+    def test_get_project_trace_dir_not_exists(self, temp_dir, storage) -> None:
         """Test get_project_trace_dir returns None when .trace/ doesn't exist."""
         project_dir = temp_dir / "my-project"
         project_dir.mkdir()
@@ -59,7 +57,7 @@ class TestProjectLocalStorage:
         result = storage.get_project_trace_dir(project_dir)
         assert result is None
 
-    def test_init_project_creates_structure(self, temp_dir, storage):
+    def test_init_project_creates_structure(self, temp_dir, storage) -> None:
         """Test init_project creates complete .trace/ structure."""
         project_dir = temp_dir / "my-project"
         project_dir.mkdir()
@@ -93,7 +91,7 @@ class TestProjectLocalStorage:
         assert gitignore.exists()
         assert ".trace/.meta/sync.yaml" in gitignore.read_text()
 
-    def test_init_project_already_exists(self, temp_dir, storage):
+    def test_init_project_already_exists(self, temp_dir, storage) -> None:
         """Test init_project raises error when .trace/ already exists."""
         project_dir = temp_dir / "my-project"
         project_dir.mkdir()
@@ -102,7 +100,7 @@ class TestProjectLocalStorage:
         with pytest.raises(ValueError, match="already initialized"):
             storage.init_project(project_dir)
 
-    def test_register_project(self, temp_dir, storage):
+    def test_register_project(self, temp_dir, storage) -> None:
         """Test register_project registers an existing .trace/ directory."""
         project_dir = temp_dir / "my-project"
         project_dir.mkdir()
@@ -141,7 +139,7 @@ class TestProjectLocalStorage:
         finally:
             session.close()
 
-    def test_get_project_counters(self, temp_dir, storage):
+    def test_get_project_counters(self, temp_dir, storage) -> None:
         """Test get_project_counters reads counters from project.yaml."""
         project_dir = temp_dir / "my-project"
         storage.init_project(project_dir)
@@ -149,7 +147,7 @@ class TestProjectLocalStorage:
         counters = storage.get_project_counters(project_dir)
         assert counters == {"epic": 0, "story": 0, "test": 0, "task": 0}
 
-    def test_increment_project_counter(self, temp_dir, storage):
+    def test_increment_project_counter(self, temp_dir, storage) -> None:
         """Test increment_project_counter updates counters in project.yaml."""
         project_dir = temp_dir / "my-project"
         storage.init_project(project_dir)
@@ -170,7 +168,7 @@ class TestProjectLocalStorage:
         assert counter_value2 == 2
         assert external_id2 == "EPIC-002"
 
-    def test_get_current_project_path(self, temp_dir, storage, monkeypatch):
+    def test_get_current_project_path(self, temp_dir, storage, monkeypatch) -> None:
         """Test get_current_project_path finds .trace/ in parent directories."""
         project_dir = temp_dir / "my-project"
         storage.init_project(project_dir)
@@ -184,7 +182,7 @@ class TestProjectLocalStorage:
         result = storage.get_current_project_path()
         assert result.resolve() == project_dir.resolve()
 
-    def test_get_current_project_path_not_found(self, temp_dir, storage, monkeypatch):
+    def test_get_current_project_path_not_found(self, temp_dir, storage, monkeypatch) -> None:
         """Test get_current_project_path returns None when no .trace/ found."""
         project_dir = temp_dir / "my-project"
         project_dir.mkdir()
@@ -194,7 +192,7 @@ class TestProjectLocalStorage:
         result = storage.get_current_project_path()
         assert result is None
 
-    def test_index_project(self, temp_dir, storage):
+    def test_index_project(self, temp_dir, storage) -> None:
         """Test index_project indexes all markdown files into SQLite."""
         project_dir = temp_dir / "my-project"
         trace_dir, project_id = storage.init_project(project_dir)
@@ -272,7 +270,7 @@ Create login page with email and password fields.
 
         session.close()
 
-    def test_get_project_storage_for_path(self, temp_dir, storage):
+    def test_get_project_storage_for_path(self, temp_dir, storage) -> None:
         """Test get_project_storage_for_path returns ProjectStorage for .trace/ directory."""
         project_dir = temp_dir / "my-project"
         storage.init_project(project_dir, project_name="My Project")
@@ -284,7 +282,7 @@ Create login page with email and password fields.
         assert project_storage.is_project_local is True
         assert project_storage.epics_dir.exists()
 
-    def test_project_storage_local_mode(self, temp_dir, storage):
+    def test_project_storage_local_mode(self, temp_dir, storage) -> None:
         """Test ProjectStorage works in project-local mode."""
         project_dir = temp_dir / "my-project"
         trace_dir, project_id = storage.init_project(project_dir, project_name="My Project")
@@ -296,7 +294,7 @@ Create login page with email and password fields.
         assert project_storage.docs_dir.exists()
         assert project_storage.changes_dir.exists()
 
-    def test_project_storage_global_projects_dir(self, temp_dir, storage):
+    def test_project_storage_global_projects_dir(self, temp_dir, storage) -> None:
         """Test ProjectStorage works with global projects dir (~/.tracertm/projects/)."""
         project_storage = storage.get_project_storage("global-project")
 

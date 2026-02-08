@@ -1,5 +1,4 @@
-"""
-Comprehensive integration test suite for Repository Advanced Queries.
+"""Comprehensive integration test suite for Repository Advanced Queries.
 
 Tests complex repository operations including:
 - Complex SQLAlchemy queries and joins
@@ -134,7 +133,7 @@ def project_repository(db_session):
 class TestSimpleQueryOperations:
     """Tests for basic query operations."""
 
-    def test_get_item_by_id(self, db_session, sample_items):
+    def test_get_item_by_id(self, db_session, sample_items) -> None:
         """Test retrieving item by ID."""
         repo = ItemRepository(db_session)
 
@@ -144,45 +143,45 @@ class TestSimpleQueryOperations:
         assert item.id == sample_items[0].id
         assert item.title == "Item 1"
 
-    def test_get_all_items_in_project(self, db_session, sample_project, sample_items):
+    def test_get_all_items_in_project(self, db_session, sample_project, sample_items) -> None:
         """Test retrieving all items in project."""
         items = db_session.query(Item).filter_by(project_id=sample_project.id).all()
 
         assert len(items) == 10
 
-    def test_get_items_by_status(self, db_session, sample_project):
+    def test_get_items_by_status(self, db_session, sample_project) -> None:
         """Test filtering items by status."""
         items = db_session.query(Item).filter_by(project_id=sample_project.id, status="todo").all()
 
         assert len(items) == 5
         assert all(item.status == "todo" for item in items)
 
-    def test_get_items_by_view(self, db_session, sample_project):
+    def test_get_items_by_view(self, db_session, sample_project) -> None:
         """Test filtering items by view."""
         items = db_session.query(Item).filter_by(project_id=sample_project.id, view="FEATURE").all()
 
         assert len(items) == 5
         assert all(item.view == "FEATURE" for item in items)
 
-    def test_get_links_by_project(self, db_session, sample_project, sample_links):
+    def test_get_links_by_project(self, db_session, sample_project, sample_links) -> None:
         """Test retrieving all links in project."""
         links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
 
         assert len(links) == 5
 
-    def test_get_links_by_source(self, db_session, sample_items):
+    def test_get_links_by_source(self, db_session, sample_items) -> None:
         """Test retrieving links by source item."""
         links = db_session.query(Link).filter_by(source_item_id=sample_items[0].id).all()
 
         assert len(links) >= 1
 
-    def test_get_links_by_target(self, db_session, sample_items):
+    def test_get_links_by_target(self, db_session, sample_items) -> None:
         """Test retrieving links by target item."""
         links = db_session.query(Link).filter_by(target_item_id=sample_items[1].id).all()
 
         assert len(links) >= 1
 
-    def test_get_links_by_type(self, db_session, sample_project):
+    def test_get_links_by_type(self, db_session, sample_project) -> None:
         """Test retrieving links by type."""
         links = db_session.query(Link).filter_by(project_id=sample_project.id, link_type="depends_on").all()
 
@@ -197,7 +196,7 @@ class TestSimpleQueryOperations:
 class TestComplexJoinOperations:
     """Tests for complex join operations."""
 
-    def test_items_with_outgoing_links(self, db_session, sample_project):
+    def test_items_with_outgoing_links(self, db_session, sample_project) -> None:
         """Test querying items with their outgoing links."""
         query = (
             db_session
@@ -210,7 +209,7 @@ class TestComplexJoinOperations:
 
         assert len(results) > 0
 
-    def test_items_with_incoming_links(self, db_session, sample_project):
+    def test_items_with_incoming_links(self, db_session, sample_project) -> None:
         """Test querying items with their incoming links."""
         query = (
             db_session
@@ -223,7 +222,7 @@ class TestComplexJoinOperations:
 
         assert len(results) > 0
 
-    def test_linked_items_source_target(self, db_session, sample_project):
+    def test_linked_items_source_target(self, db_session, sample_project) -> None:
         """Test querying source and target items of links."""
         query = (
             db_session
@@ -236,7 +235,7 @@ class TestComplexJoinOperations:
 
         assert len(results) > 0
 
-    def test_three_way_join(self, db_session, sample_project):
+    def test_three_way_join(self, db_session, sample_project) -> None:
         """Test three-way join with project, items, and links."""
         query = (
             db_session
@@ -250,7 +249,7 @@ class TestComplexJoinOperations:
 
         assert len(results) > 0
 
-    def test_self_join_items(self, db_session, sample_project):
+    def test_self_join_items(self, db_session, sample_project) -> None:
         """Test self-join for transitive dependencies."""
         # Create items with dependencies
         link = Link(
@@ -279,7 +278,7 @@ class TestComplexJoinOperations:
 class TestAggregationAndGrouping:
     """Tests for aggregation and grouping operations."""
 
-    def test_count_items_by_status(self, db_session, sample_project):
+    def test_count_items_by_status(self, db_session, sample_project) -> None:
         """Test counting items grouped by status."""
         query = (
             db_session
@@ -295,7 +294,7 @@ class TestAggregationAndGrouping:
         assert status_map.get("todo") == 5
         assert status_map.get("done") == 5
 
-    def test_count_items_by_view(self, db_session, sample_project):
+    def test_count_items_by_view(self, db_session, sample_project) -> None:
         """Test counting items grouped by view."""
         query = (
             db_session
@@ -308,7 +307,7 @@ class TestAggregationAndGrouping:
 
         assert len(results) == 2  # "FEATURE" and "REQUIREMENT"
 
-    def test_count_links_by_type(self, db_session, sample_project):
+    def test_count_links_by_type(self, db_session, sample_project) -> None:
         """Test counting links grouped by type."""
         query = (
             db_session
@@ -321,7 +320,7 @@ class TestAggregationAndGrouping:
 
         assert len(results) >= 1
 
-    def test_count_links_per_item(self, db_session, sample_project):
+    def test_count_links_per_item(self, db_session, sample_project) -> None:
         """Test counting outgoing links per item."""
         query = (
             db_session
@@ -334,7 +333,7 @@ class TestAggregationAndGrouping:
 
         assert len(results) > 0
 
-    def test_items_with_link_count(self, db_session, sample_project):
+    def test_items_with_link_count(self, db_session, sample_project) -> None:
         """Test items with their link counts."""
         query = (
             db_session
@@ -348,7 +347,7 @@ class TestAggregationAndGrouping:
 
         assert len(results) == 10
 
-    def test_max_min_aggregations(self, db_session, sample_project):
+    def test_max_min_aggregations(self, db_session, sample_project) -> None:
         """Test max and min aggregations."""
         query = (
             db_session
@@ -370,7 +369,7 @@ class TestAggregationAndGrouping:
 class TestFilteringAndSorting:
     """Tests for filtering and sorting operations."""
 
-    def test_filter_with_multiple_conditions(self, db_session, sample_project):
+    def test_filter_with_multiple_conditions(self, db_session, sample_project) -> None:
         """Test filtering with multiple AND conditions."""
         items = (
             db_session
@@ -381,7 +380,7 @@ class TestFilteringAndSorting:
 
         assert all(item.status == "todo" and item.view == "FEATURE" for item in items)
 
-    def test_filter_with_or_conditions(self, db_session, sample_project):
+    def test_filter_with_or_conditions(self, db_session, sample_project) -> None:
         """Test filtering with OR conditions."""
         items = (
             db_session
@@ -393,21 +392,21 @@ class TestFilteringAndSorting:
 
         assert len(items) > 0
 
-    def test_sort_items_by_title(self, db_session, sample_project):
+    def test_sort_items_by_title(self, db_session, sample_project) -> None:
         """Test sorting items by title."""
         items = db_session.query(Item).filter(Item.project_id == sample_project.id).order_by(Item.title).all()
 
         titles = [item.title for item in items]
         assert titles == sorted(titles)
 
-    def test_sort_items_descending(self, db_session, sample_project):
+    def test_sort_items_descending(self, db_session, sample_project) -> None:
         """Test descending sort order."""
         items = db_session.query(Item).filter(Item.project_id == sample_project.id).order_by(Item.title.desc()).all()
 
         titles = [item.title for item in items]
         assert titles == sorted(titles, reverse=True)
 
-    def test_limit_and_offset(self, db_session, sample_project):
+    def test_limit_and_offset(self, db_session, sample_project) -> None:
         """Test limit and offset pagination."""
         # Get first 3 items
         page1 = db_session.query(Item).filter(Item.project_id == sample_project.id).order_by(Item.id).limit(3).all()
@@ -430,7 +429,7 @@ class TestFilteringAndSorting:
         ids2 = {item.id for item in page2}
         assert len(ids1.intersection(ids2)) == 0
 
-    def test_filter_with_like_pattern(self, db_session, sample_project):
+    def test_filter_with_like_pattern(self, db_session, sample_project) -> None:
         """Test filtering with LIKE patterns."""
         # Create item with specific title
         item = Item(
@@ -448,14 +447,14 @@ class TestFilteringAndSorting:
 
         assert len(items) >= 1
 
-    def test_filter_with_in_operator(self, db_session, sample_project):
+    def test_filter_with_in_operator(self, db_session, sample_project) -> None:
         """Test filtering with IN operator."""
         statuses = ["todo", "done"]
         items = db_session.query(Item).filter(Item.status.in_(statuses), Item.project_id == sample_project.id).all()
 
         assert len(items) == 10
 
-    def test_filter_null_values(self, db_session, sample_project):
+    def test_filter_null_values(self, db_session, sample_project) -> None:
         """Test filtering for null values."""
         items = db_session.query(Item).filter(Item.description.isnot(None), Item.project_id == sample_project.id).all()
 
@@ -470,7 +469,7 @@ class TestFilteringAndSorting:
 class TestTransactionHandling:
     """Tests for transaction handling."""
 
-    def test_transaction_commit(self, db_session, sample_project):
+    def test_transaction_commit(self, db_session, sample_project) -> None:
         """Test transaction commit."""
         item = Item(
             id="tx-item-1",
@@ -487,7 +486,7 @@ class TestTransactionHandling:
         result = db_session.query(Item).filter_by(id="tx-item-1").first()
         assert result is not None
 
-    def test_transaction_rollback(self, db_session, sample_project):
+    def test_transaction_rollback(self, db_session, sample_project) -> None:
         """Test transaction rollback."""
         item = Item(
             id="tx-item-2",
@@ -507,7 +506,7 @@ class TestTransactionHandling:
         result = db_session.query(Item).filter_by(id="tx-item-2").first()
         assert result is None
 
-    def test_nested_transaction_savepoint(self, db_session, sample_project):
+    def test_nested_transaction_savepoint(self, db_session, sample_project) -> None:
         """Test savepoint in transaction."""
         try:
             item1 = Item(
@@ -551,7 +550,7 @@ class TestTransactionHandling:
             db_session.rollback()
             raise
 
-    def test_transaction_isolation(self, db_session, sample_project):
+    def test_transaction_isolation(self, db_session, sample_project) -> None:
         """Test transaction isolation."""
         from sqlalchemy.orm import sessionmaker
 
@@ -592,7 +591,7 @@ class TestTransactionHandling:
 class TestBulkOperations:
     """Tests for bulk operations."""
 
-    def test_bulk_insert(self, db_session, sample_project):
+    def test_bulk_insert(self, db_session, sample_project) -> None:
         """Test bulk insert operation."""
         bulk_items = [
             Item(
@@ -613,7 +612,7 @@ class TestBulkOperations:
 
         assert count == 10
 
-    def test_bulk_update(self, db_session, sample_project):
+    def test_bulk_update(self, db_session, sample_project) -> None:
         """Test bulk update operation."""
         # Insert items
         items = []
@@ -639,7 +638,7 @@ class TestBulkOperations:
 
         assert updated == 5
 
-    def test_bulk_delete(self, db_session, sample_project):
+    def test_bulk_delete(self, db_session, sample_project) -> None:
         """Test bulk delete operation."""
         # Insert items
         for i in range(1, 6):
@@ -672,9 +671,8 @@ class TestBulkOperations:
 class TestQueryOptimization:
     """Tests for query optimization scenarios."""
 
-    def test_eager_loading_with_contains_eager(self, db_session, sample_project):
+    def test_eager_loading_with_contains_eager(self, db_session, sample_project) -> None:
         """Test eager loading to prevent N+1 queries."""
-
         # Query with eager loading
         query = (
             db_session
@@ -689,7 +687,7 @@ class TestQueryOptimization:
 
         assert len(items) == 10
 
-    def test_query_with_distinct(self, db_session, sample_project):
+    def test_query_with_distinct(self, db_session, sample_project) -> None:
         """Test querying with DISTINCT."""
         query = db_session.query(Item.view.distinct()).filter(Item.project_id == sample_project.id)
 
@@ -697,7 +695,7 @@ class TestQueryOptimization:
 
         assert len(results) == 2  # "FEATURE" and "REQUIREMENT"
 
-    def test_subquery_in_filter(self, db_session, sample_project):
+    def test_subquery_in_filter(self, db_session, sample_project) -> None:
         """Test filtering with subquery."""
         subquery = db_session.query(Link.source_item_id).filter(Link.project_id == sample_project.id).subquery()
 
@@ -705,7 +703,7 @@ class TestQueryOptimization:
 
         assert len(items) > 0
 
-    def test_select_specific_columns(self, db_session, sample_project):
+    def test_select_specific_columns(self, db_session, sample_project) -> None:
         """Test selecting specific columns for performance."""
         query = db_session.query(Item.id, Item.title).filter(Item.project_id == sample_project.id)
 
@@ -724,19 +722,19 @@ class TestQueryOptimization:
 class TestErrorHandling:
     """Tests for error handling in queries."""
 
-    def test_query_nonexistent_item(self, db_session):
+    def test_query_nonexistent_item(self, db_session) -> None:
         """Test querying for non-existent item."""
         result = db_session.query(Item).filter_by(id="nonexistent").first()
 
         assert result is None
 
-    def test_query_nonexistent_project(self, db_session):
+    def test_query_nonexistent_project(self, db_session) -> None:
         """Test querying items in non-existent project."""
         items = db_session.query(Item).filter_by(project_id="nonexistent").all()
 
         assert len(items) == 0
 
-    def test_empty_filter_result(self, db_session, sample_project):
+    def test_empty_filter_result(self, db_session, sample_project) -> None:
         """Test empty result from filter."""
         items = (
             db_session.query(Item).filter(Item.project_id == sample_project.id, Item.status == "invalid_status").all()
@@ -744,20 +742,20 @@ class TestErrorHandling:
 
         assert len(items) == 0
 
-    def test_query_with_none_value(self, db_session, sample_project):
+    def test_query_with_none_value(self, db_session, sample_project) -> None:
         """Test query with None value in filter."""
         items = db_session.query(Item).filter(Item.project_id == sample_project.id, Item.description.is_(None)).all()
 
         assert len(items) == 0  # All items have content
 
-    def test_query_with_invalid_comparison(self, db_session, sample_project):
+    def test_query_with_invalid_comparison(self, db_session, sample_project) -> None:
         """Test query with unusual comparison."""
         # Should not crash even with unusual filters
         items = db_session.query(Item).filter(Item.project_id == sample_project.id).order_by(Item.id.desc()).all()
 
         assert len(items) > 0
 
-    def test_concurrent_query_operations(self, db_session, sample_project):
+    def test_concurrent_query_operations(self, db_session, sample_project) -> None:
         """Test concurrent query operations."""
         # Multiple queries in sequence
         for _ in range(5):
@@ -773,7 +771,7 @@ class TestErrorHandling:
 class TestComplexQueryScenarios:
     """Tests for complex real-world query scenarios."""
 
-    def test_find_items_by_dependency_chain(self, db_session, sample_project, sample_links):
+    def test_find_items_by_dependency_chain(self, db_session, sample_project, sample_links) -> None:
         """Test finding items in dependency chain."""
         # Start with item-1 and follow dependencies
         start_id = "item-1"
@@ -788,7 +786,7 @@ class TestComplexQueryScenarios:
 
         assert len(direct_deps) > 0
 
-    def test_find_items_with_bidirectional_links(self, db_session, sample_project):
+    def test_find_items_with_bidirectional_links(self, db_session, sample_project) -> None:
         """Test finding items with bidirectional relationships."""
         # Create bidirectional links
         link1 = Link(
@@ -810,14 +808,14 @@ class TestComplexQueryScenarios:
 
         # Find items with bidirectional links
         query = db_session.query(Link.source_item_id.label("item1"), Link.target_item_id.label("item2")).filter(
-            Link.project_id == sample_project.id
+            Link.project_id == sample_project.id,
         )
 
         results = query.all()
 
         assert len(results) >= 2
 
-    def test_find_orphan_items(self, db_session, sample_project):
+    def test_find_orphan_items(self, db_session, sample_project) -> None:
         """Test finding orphan items (no links)."""
         # Create item with no links
         orphan = Item(

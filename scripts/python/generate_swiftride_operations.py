@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Generate comprehensive Operations Layer for SwiftRide project.
+"""Generate comprehensive Operations Layer for SwiftRide project.
 Creates 900+ operational items across 10 categories.
 """
 
@@ -469,7 +468,7 @@ def generate_monitoring_metrics() -> list[dict[str, Any]]:
     return items[:120]
 
 
-def save_items_as_markdown(items: list[dict[str, Any]], item_type: str):
+def save_items_as_markdown(items: list[dict[str, Any]], item_type: str) -> None:
     """Save items as individual markdown files."""
     type_dir = TRACE_DIR / f"{item_type}s"
     type_dir.mkdir(exist_ok=True)
@@ -501,33 +500,22 @@ created_at: {datetime.now(UTC).isoformat()}
 - Related Features: (to be linked)
 """
 
-        with Path(file_path).open("w") as f:
-            f.write(content)
-
-    print(f"✓ Created {len(items)} {item_type} items in {type_dir}")
+        Path(file_path).write_text(content, encoding="utf-8")
 
 
-def main():
-    print("Generating SwiftRide Operations Layer...")
-    print(f"Target: {sum(ITEM_TYPES.values())} total items\n")
+def main() -> None:
 
     # Generate deployment environments
-    print("Generating deployment environments...")
     envs = generate_deployment_environments()
     save_items_as_markdown(envs, "deployment_environment")
 
     # Generate infrastructure resources
-    print("Generating infrastructure resources...")
     infra = generate_infrastructure_resources()
     save_items_as_markdown(infra, "infrastructure_resource")
 
     # Generate monitoring metrics
-    print("Generating monitoring metrics...")
     metrics = generate_monitoring_metrics()
     save_items_as_markdown(metrics, "monitoring_metric")
-
-    print(f"\n✓ Phase 1 Complete: {len(envs) + len(infra) + len(metrics)} items created")
-    print("\nNext: Run part 2 for alert rules, runbooks, and CI/CD pipelines")
 
 
 if __name__ == "__main__":

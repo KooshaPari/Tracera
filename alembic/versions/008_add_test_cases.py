@@ -1,4 +1,4 @@
-"""Add test_cases and test_case_activities tables for Quality Engineering
+"""Add test_cases and test_case_activities tables for Quality Engineering.
 
 Revision ID: 008_add_test_cases
 Revises: 007_add_problems_and_processes

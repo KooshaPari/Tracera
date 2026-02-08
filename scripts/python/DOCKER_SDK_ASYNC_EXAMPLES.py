@@ -1,9 +1,9 @@
-"""
-Docker SDK for Python - Comprehensive Async Examples
-Complete production-ready patterns for container orchestration
+"""Docker SDK for Python - Comprehensive Async Examples
+Complete production-ready patterns for container orchestration.
 """
 
 import asyncio
+import contextlib
 import logging
 import signal
 from collections.abc import AsyncGenerator
@@ -15,7 +15,6 @@ from typing import Any
 try:
     import aiodocker
 except ImportError:
-    print("Install aiodocker: pip install aiodocker")
     aiodocker = None
 
 # Configure logging
@@ -82,8 +81,7 @@ class ExecutionResult:
 
 
 class SecureAsyncContainerManager:
-    """
-    Secure async container management with hardened defaults.
+    """Secure async container management with hardened defaults.
 
     Features:
     - Non-root execution (UID 1000)
@@ -94,9 +92,8 @@ class SecureAsyncContainerManager:
     - Graceful shutdown
     """
 
-    def __init__(self, max_concurrent: int = 5):
-        """
-        Initialize container manager.
+    def __init__(self, max_concurrent: int = 5) -> None:
+        """Initialize container manager.
 
         Args:
             max_concurrent: Maximum concurrent operations
@@ -107,14 +104,14 @@ class SecureAsyncContainerManager:
         self._shutdown = asyncio.Event()
         self._register_signals()
 
-    def _register_signals(self):
+    def _register_signals(self) -> None:
         """Register signal handlers for graceful shutdown."""
         signal.signal(signal.SIGTERM, self._signal_handler)
         signal.signal(signal.SIGINT, self._signal_handler)
 
-    def _signal_handler(self, signum, frame):
+    def _signal_handler(self, signum, frame) -> None:
         """Handle shutdown signal."""
-        logger.info(f"Received signal {signum}, initiating shutdown...")
+        logger.info("Received signal %s, initiating shutdown...", signum)
         self._shutdown.set()
 
     async def __aenter__(self):
@@ -126,7 +123,7 @@ class SecureAsyncContainerManager:
         """Context manager exit."""
         await self.cleanup()
 
-    async def cleanup(self):
+    async def cleanup(self) -> None:
         """Cleanup all resources."""
         logger.info("Cleaning up container manager...")
 
@@ -135,15 +132,14 @@ class SecureAsyncContainerManager:
             try:
                 await self._stop_container(container, timeout=5)
             except Exception as e:
-                logger.error(f"Error stopping container {container_id}: {e}")
+                logger.exception("Error stopping container %s: %s", container_id, e)
 
         # Close Docker client
         if self.docker:
             await self.docker.close()
 
     async def create_container(self, config: ContainerConfig) -> aiodocker.containers.DockerContainer:
-        """
-        Create container with secure defaults.
+        """Create container with secure defaults.
 
         Args:
             config: Container configuration
@@ -155,7 +151,8 @@ class SecureAsyncContainerManager:
             RuntimeError: If Docker client not initialized
         """
         if not self.docker:
-            raise RuntimeError("Docker client not initialized")
+            msg = "Docker client not initialized"
+            raise RuntimeError(msg)
 
         # Build container configuration
         docker_config = {
@@ -184,8 +181,7 @@ class SecureAsyncContainerManager:
         return container
 
     async def run_container(self, config: ContainerConfig) -> ExecutionResult:
-        """
-        Create and run container with timeout and cleanup.
+        """Create and run container with timeout and cleanup.
 
         Args:
             config: Container configuration
@@ -224,14 +220,14 @@ class SecureAsyncContainerManager:
                 )
 
                 logger.info(
-                    f"Container {container.id[:12]} completed (exit={result.exit_code}, duration={duration:.2f}s)"
+                    f"Container {container.id[:12]} completed (exit={result.exit_code}, duration={duration:.2f}s)",
                 )
 
                 return result
 
             except TimeoutError:
                 logger.warning(
-                    f"Container {container.id[:12] if container else 'unknown'} timed out after {config.timeout}s"
+                    f"Container {container.id[:12] if container else 'unknown'} timed out after {config.timeout}s",
                 )
 
                 if container:
@@ -253,13 +249,11 @@ class SecureAsyncContainerManager:
                 )
 
             except Exception as e:
-                logger.error(f"Error running container: {e}")
+                logger.exception("Error running container: %s", e)
 
                 if container:
-                    try:
+                    with contextlib.suppress(Exception):
                         await self._stop_container(container, timeout=5, force=True)
-                    except Exception:
-                        pass
 
                 duration = (datetime.now() - start_time).total_seconds()
 
@@ -281,13 +275,12 @@ class SecureAsyncContainerManager:
                         if container.id in self.running_containers:
                             del self.running_containers[container.id]
                     except Exception as e:
-                        logger.error(f"Error cleaning up container: {e}")
+                        logger.exception("Error cleaning up container: %s", e)
 
     async def _stop_container(
-        self, container: aiodocker.containers.DockerContainer, timeout: int = 10, force: bool = False
+        self, container: aiodocker.containers.DockerContainer, timeout: int = 10, force: bool = False,
     ) -> None:
-        """
-        Stop container gracefully or forcefully.
+        """Stop container gracefully or forcefully.
 
         Args:
             container: Container to stop
@@ -308,8 +301,7 @@ class SecureAsyncContainerManager:
                 raise
 
     async def _get_logs(self, container: aiodocker.containers.DockerContainer) -> str:
-        """
-        Get container logs.
+        """Get container logs.
 
         Args:
             container: Target container
@@ -322,14 +314,13 @@ class SecureAsyncContainerManager:
                 output = [line.decode("utf-8") async for line in logs]
                 return "".join(output)
         except Exception as e:
-            logger.error(f"Error getting logs: {e}")
+            logger.exception("Error getting logs: %s", e)
             return ""
 
     async def stream_logs(
-        self, container: aiodocker.containers.DockerContainer, follow: bool = True
+        self, container: aiodocker.containers.DockerContainer, follow: bool = True,
     ) -> AsyncGenerator[str, None]:
-        """
-        Stream logs from container in real-time.
+        """Stream logs from container in real-time.
 
         Args:
             container: Target container
@@ -343,7 +334,7 @@ class SecureAsyncContainerManager:
                 async for line in logs:
                     yield line.decode("utf-8").rstrip()
         except Exception as e:
-            logger.error(f"Error streaming logs: {e}")
+            logger.exception("Error streaming logs: %s", e)
 
     @staticmethod
     def _format_env(env: dict[str, str]) -> list[str]:
@@ -352,8 +343,7 @@ class SecureAsyncContainerManager:
 
     @staticmethod
     def _parse_memory(memory_str: str) -> int:
-        """
-        Parse memory string to bytes.
+        """Parse memory string to bytes.
 
         Examples:
             "512m" -> 536870912
@@ -375,15 +365,12 @@ class SecureAsyncContainerManager:
 
 
 class AsyncBatchOperationManager(SecureAsyncContainerManager):
-    """
-    Manage multiple containers with concurrent execution and aggregated results.
-    """
+    """Manage multiple containers with concurrent execution and aggregated results."""
 
     async def run_batch(
-        self, configs: list[ContainerConfig], max_concurrent: int | None = None
+        self, configs: list[ContainerConfig], max_concurrent: int | None = None,
     ) -> list[ExecutionResult]:
-        """
-        Run multiple containers concurrently.
+        """Run multiple containers concurrently.
 
         Args:
             configs: List of container configurations
@@ -413,16 +400,15 @@ class AsyncBatchOperationManager(SecureAsyncContainerManager):
 
         logger.info(
             f"Batch completed: {successful} succeeded, {failed} failed, "
-            f"{timed_out} timed out (duration={duration:.2f}s)"
+            f"{timed_out} timed out (duration={duration:.2f}s)",
         )
 
         return results
 
     async def run_with_retry(
-        self, config: ContainerConfig, max_retries: int = 3, backoff_factor: float = 2.0
+        self, config: ContainerConfig, max_retries: int = 3, backoff_factor: float = 2.0,
     ) -> ExecutionResult:
-        """
-        Run container with automatic retry on failure.
+        """Run container with automatic retry on failure.
 
         Args:
             config: Container configuration
@@ -454,10 +440,9 @@ class AsyncBatchOperationManager(SecureAsyncContainerManager):
         return last_result
 
     async def run_until_success(
-        self, config: ContainerConfig, max_duration: int = 600, check_interval: float = 1.0
+        self, config: ContainerConfig, max_duration: int = 600, check_interval: float = 1.0,
     ) -> ExecutionResult:
-        """
-        Run container repeatedly until success.
+        """Run container repeatedly until success.
 
         Args:
             config: Container configuration
@@ -476,7 +461,7 @@ class AsyncBatchOperationManager(SecureAsyncContainerManager):
 
         while datetime.now() < deadline:
             attempt += 1
-            logger.info(f"Attempt {attempt}...")
+            logger.info("Attempt %s...", attempt)
 
             result = await self.run_container(config)
 
@@ -488,12 +473,14 @@ class AsyncBatchOperationManager(SecureAsyncContainerManager):
             # Check timeout
             remaining = (deadline - datetime.now()).total_seconds()
             if remaining <= 0:
-                raise TimeoutError(f"Max duration {max_duration}s exceeded")
+                msg = f"Max duration {max_duration}s exceeded"
+                raise TimeoutError(msg)
 
             # Wait before retry
             await asyncio.sleep(min(check_interval, remaining))
 
-        raise TimeoutError(f"Max duration {max_duration}s exceeded")
+        msg = f"Max duration {max_duration}s exceeded"
+        raise TimeoutError(msg)
 
 
 # ============================================================================
@@ -502,15 +489,13 @@ class AsyncBatchOperationManager(SecureAsyncContainerManager):
 
 
 class GracefulShutdownManager:
-    """
-    Manage graceful shutdown of async operations.
+    """Manage graceful shutdown of async operations.
 
     Handles SIGTERM/SIGINT and ensures proper cleanup.
     """
 
-    def __init__(self, timeout: int = 30):
-        """
-        Initialize shutdown manager.
+    def __init__(self, timeout: int = 30) -> None:
+        """Initialize shutdown manager.
 
         Args:
             timeout: Graceful shutdown timeout
@@ -520,14 +505,14 @@ class GracefulShutdownManager:
         self._tasks: list[asyncio.Task] = []
         self._register_signals()
 
-    def _register_signals(self):
+    def _register_signals(self) -> None:
         """Register signal handlers."""
         signal.signal(signal.SIGTERM, self._signal_handler)
         signal.signal(signal.SIGINT, self._signal_handler)
 
-    def _signal_handler(self, signum, frame):
+    def _signal_handler(self, signum, frame) -> None:
         """Signal handler callback."""
-        logger.info(f"Received signal {signum}, initiating graceful shutdown...")
+        logger.info("Received signal %s, initiating graceful shutdown...", signum)
         self._shutdown_event.set()
 
     async def wait_for_shutdown(self) -> None:
@@ -535,8 +520,7 @@ class GracefulShutdownManager:
         await self._shutdown_event.wait()
 
     async def run_until_shutdown(self, coroutine) -> Any:
-        """
-        Run coroutine until shutdown signal.
+        """Run coroutine until shutdown signal.
 
         Args:
             coroutine: Async coroutine to run
@@ -552,7 +536,7 @@ class GracefulShutdownManager:
 
         try:
             done, pending = await asyncio.wait(
-                [task, asyncio.create_task(self.wait_for_shutdown())], return_when=asyncio.FIRST_COMPLETED
+                [task, asyncio.create_task(self.wait_for_shutdown())], return_when=asyncio.FIRST_COMPLETED,
             )
 
             # Cancel pending
@@ -560,14 +544,13 @@ class GracefulShutdownManager:
                 t.cancel()
 
             # Get result
-            result = done.pop().result()
-            return result
+            return done.pop().result()
 
         except asyncio.CancelledError:
             logger.info("Operation cancelled")
             raise
         except Exception as e:
-            logger.error(f"Error in operation: {e}")
+            logger.exception("Error in operation: %s", e)
             raise
 
     async def shutdown(self) -> None:
@@ -590,12 +573,12 @@ class GracefulShutdownManager:
 # ============================================================================
 
 
-async def example_simple():
+async def example_simple() -> None:
     """Simple example: run single container."""
     logger.info("=== Simple Example ===")
 
     config = ContainerConfig(
-        image="python:3.11-slim", command='python -c "print(\\"Hello from Docker\\")"', name="simple-example"
+        image="python:3.11-slim", command='python -c "print(\\"Hello from Docker\\")"', name="simple-example",
     )
 
     async with SecureAsyncContainerManager() as manager:
@@ -604,13 +587,13 @@ async def example_simple():
         logger.info(f"Output:\n{result.logs}")
 
 
-async def example_batch():
+async def example_batch() -> None:
     """Batch example: run multiple containers."""
     logger.info("=== Batch Example ===")
 
     configs = [
         ContainerConfig(
-            image="python:3.11-slim", command=f'python -c "print(\\"Task {i}\\")"', name=f"batch-task-{i}", timeout=60
+            image="python:3.11-slim", command=f'python -c "print(\\"Task {i}\\")"', name=f"batch-task-{i}", timeout=60,
         )
         for i in range(5)
     ]
@@ -622,12 +605,12 @@ async def example_batch():
             logger.info(f"Task {i}: exit={result.exit_code}, success={result.success}, duration={result.duration:.2f}s")
 
 
-async def example_retry():
+async def example_retry() -> None:
     """Retry example: run with automatic retry."""
     logger.info("=== Retry Example ===")
 
     config = ContainerConfig(
-        image="python:3.11-slim", command='python -c "import sys; sys.exit(0)"', name="retry-example", timeout=30
+        image="python:3.11-slim", command='python -c "import sys; sys.exit(0)"', name="retry-example", timeout=30,
     )
 
     async with SecureAsyncContainerManager() as manager:
@@ -635,7 +618,7 @@ async def example_retry():
         logger.info(f"Final result: exit={result.exit_code}, success={result.success}")
 
 
-async def example_streaming():
+async def example_streaming() -> None:
     """Streaming example: stream logs in real-time."""
     logger.info("=== Streaming Example ===")
 
@@ -651,13 +634,13 @@ async def example_streaming():
 
         logger.info("Streaming logs:")
         async for line in manager.stream_logs(container):
-            logger.info(f"  {line}")
+            logger.info("  %s", line)
 
         await container.wait()
         await container.delete(force=True)
 
 
-async def example_timeout():
+async def example_timeout() -> None:
     """Timeout example: handle container timeout."""
     logger.info("=== Timeout Example ===")
 
@@ -675,7 +658,7 @@ async def example_timeout():
         logger.info(f"Error: {result.error}")
 
 
-async def main():
+async def main() -> None:
     """Run all examples."""
     examples = [example_simple, example_batch, example_retry, example_streaming, example_timeout]
 
@@ -683,7 +666,7 @@ async def main():
         try:
             await example()
         except Exception as e:
-            logger.error(f"Example failed: {e}")
+            logger.exception("Example failed: %s", e)
 
         logger.info("")
 

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,8 +26,8 @@ router = APIRouter(prefix="/features", tags=["BDD Features"])
 @router.post("/", response_model=FeatureRead, status_code=201)
 async def create_feature(
     feature: FeatureCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     service = FeatureService(db)
     options = CreateFeatureInput(
@@ -49,8 +49,8 @@ async def create_feature(
 @router.get("/{feature_id}", response_model=FeatureRead)
 async def get_feature(
     feature_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     service = FeatureService(db)
     feature = await service.get_feature(feature_id)
@@ -75,7 +75,7 @@ async def get_feature(
 @router.get("/{feature_id}/activities", response_model=FeatureActivityListResponse)
 async def get_feature_activities(
     feature_id: str,
-    limit: int = Query(100, description="Max activities to return"),
+    limit: Annotated[int, Query(description="Max activities to return")] = 100,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -102,9 +102,9 @@ async def get_feature_activities(
 @router.delete("/{feature_id}", status_code=204)
 async def delete_feature(
     feature_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     service = FeatureService(db)
     success = await service.delete_feature(feature_id)
     if not success:
@@ -113,8 +113,8 @@ async def delete_feature(
 
 @router.get("/", response_model=list[FeatureRead])
 async def list_features(
-    project_id: str = Query(..., description="Project ID"),
-    status: str | None = Query(None, description="Filter by status"),
+    project_id: Annotated[str, Query(description="Project ID")],
+    status: Annotated[str | None, Query(description="Filter by status")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -131,8 +131,8 @@ async def list_features(
 async def create_scenario(
     feature_id: str,
     scenario: ScenarioCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     service = ScenarioService(db)
     # Validate feature exists
@@ -158,8 +158,8 @@ async def create_scenario(
 @router.get("/scenarios/{scenario_id}", response_model=ScenarioRead)
 async def get_scenario(
     scenario_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     service = ScenarioService(db)
     scenario = await service.get_scenario(scenario_id)
@@ -171,7 +171,7 @@ async def get_scenario(
 @router.get("/scenarios/{scenario_id}/activities", response_model=ScenarioActivityListResponse)
 async def get_scenario_activities(
     scenario_id: str,
-    limit: int = Query(100, description="Max activities to return"),
+    limit: Annotated[int, Query(description="Max activities to return")] = 100,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -198,9 +198,9 @@ async def get_scenario_activities(
 @router.delete("/scenarios/{scenario_id}", status_code=204)
 async def delete_scenario(
     scenario_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     service = ScenarioService(db)
     success = await service.delete_scenario(scenario_id)
     if not success:

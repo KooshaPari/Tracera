@@ -1,5 +1,4 @@
-"""
-Synchronous Repository Integration Tests for TraceRTM.
+"""Synchronous Repository Integration Tests for TraceRTM.
 
 These tests validate:
 - Repository CRUD operations with real database
@@ -27,10 +26,10 @@ pytestmark = pytest.mark.integration
 # ============================================================================
 
 
-def test_project_create_and_retrieve(db_session: Session):
+def test_project_create_and_retrieve(db_session: Session) -> None:
     """Test creating and retrieving a project."""
     project = Project(
-        name="Test Project", description="Test description", project_metadata={"env": "test", "version": "1.0"}
+        name="Test Project", description="Test description", project_metadata={"env": "test", "version": "1.0"},
     )
     db_session.add(project)
     db_session.commit()
@@ -42,7 +41,7 @@ def test_project_create_and_retrieve(db_session: Session):
     assert found.description == "Test description"
 
 
-def test_project_create_multiple(db_session: Session):
+def test_project_create_multiple(db_session: Session) -> None:
     """Test creating multiple projects."""
     projects = [
         Project(name="Project A"),
@@ -57,7 +56,7 @@ def test_project_create_multiple(db_session: Session):
     assert len(all_projects) >= 3
 
 
-def test_project_update(db_session: Session):
+def test_project_update(db_session: Session) -> None:
     """Test updating a project."""
     project = Project(name="Original", description="Original desc")
     db_session.add(project)
@@ -75,7 +74,7 @@ def test_project_update(db_session: Session):
     assert found.description == "Updated desc"
 
 
-def test_project_update_metadata(db_session: Session):
+def test_project_update_metadata(db_session: Session) -> None:
     """Test updating project metadata."""
     metadata = {"version": 1, "env": "dev"}
     project = Project(name="Project", project_metadata=metadata)
@@ -92,7 +91,7 @@ def test_project_update_metadata(db_session: Session):
     assert found.project_metadata == {"version": 2, "env": "prod"}
 
 
-def test_project_delete(db_session: Session):
+def test_project_delete(db_session: Session) -> None:
     """Test deleting a project."""
     project = Project(name="To Delete")
     db_session.add(project)
@@ -114,7 +113,7 @@ def test_project_delete(db_session: Session):
 # ============================================================================
 
 
-def test_item_create_and_retrieve(db_session: Session):
+def test_item_create_and_retrieve(db_session: Session) -> None:
     """Test creating and retrieving an item."""
     project = Project(name="Test Project")
     db_session.add(project)
@@ -139,7 +138,7 @@ def test_item_create_and_retrieve(db_session: Session):
     assert found.status == "todo"
 
 
-def test_item_create_multiple_in_project(db_session: Session):
+def test_item_create_multiple_in_project(db_session: Session) -> None:
     """Test creating multiple items in a project."""
     project = Project(name="Project")
     db_session.add(project)
@@ -158,7 +157,7 @@ def test_item_create_multiple_in_project(db_session: Session):
     assert len(found_items) == 5
 
 
-def test_item_update_status(db_session: Session):
+def test_item_update_status(db_session: Session) -> None:
     """Test updating item status."""
     project = Project(name="Project")
     item = Item(project_id=project.id, title="Item", view="FEATURE", item_type="feature", status="todo")
@@ -175,7 +174,7 @@ def test_item_update_status(db_session: Session):
     assert found.status == "in_progress"
 
 
-def test_item_update_priority(db_session: Session):
+def test_item_update_priority(db_session: Session) -> None:
     """Test updating item priority."""
     project = Project(name="Project")
     item = Item(project_id=project.id, title="Item", view="FEATURE", item_type="feature", priority="medium")
@@ -192,7 +191,7 @@ def test_item_update_priority(db_session: Session):
     assert found.priority == "high"
 
 
-def test_item_with_metadata(db_session: Session):
+def test_item_with_metadata(db_session: Session) -> None:
     """Test item with metadata."""
     project = Project(name="Project")
     metadata = {"assigned_to": "dev@example.com", "epic": "auth"}
@@ -206,7 +205,7 @@ def test_item_with_metadata(db_session: Session):
     assert found.item_metadata == metadata
 
 
-def test_item_delete(db_session: Session):
+def test_item_delete(db_session: Session) -> None:
     """Test deleting an item."""
     project = Project(name="Project")
     item = Item(project_id=project.id, title="Item", view="FEATURE", item_type="feature")
@@ -229,7 +228,7 @@ def test_item_delete(db_session: Session):
 # ============================================================================
 
 
-def test_link_create_and_retrieve(db_session: Session):
+def test_link_create_and_retrieve(db_session: Session) -> None:
     """Test creating and retrieving a link."""
     project = Project(name="Project")
     db_session.add(project)
@@ -241,7 +240,7 @@ def test_link_create_and_retrieve(db_session: Session):
     db_session.commit()
 
     link = Link(
-        source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on", link_metadata={"priority": "high"}
+        source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on", link_metadata={"priority": "high"},
     )
     db_session.add(link)
     db_session.commit()
@@ -254,7 +253,7 @@ def test_link_create_and_retrieve(db_session: Session):
     assert found.link_type == "depends_on"
 
 
-def test_link_create_multiple(db_session: Session):
+def test_link_create_multiple(db_session: Session) -> None:
     """Test creating multiple links."""
     project = Project(name="Project")
     db_session.add(project)
@@ -282,7 +281,7 @@ def test_link_create_multiple(db_session: Session):
     assert len(all_links) >= 3
 
 
-def test_link_query_by_source(db_session: Session):
+def test_link_query_by_source(db_session: Session) -> None:
     """Test querying links by source item."""
     project = Project(name="Project")
     db_session.add(project)
@@ -303,7 +302,7 @@ def test_link_query_by_source(db_session: Session):
     assert found_links[0].source_item_id == item1.id
 
 
-def test_link_query_by_target(db_session: Session):
+def test_link_query_by_target(db_session: Session) -> None:
     """Test querying links by target item."""
     project = Project(name="Project")
     db_session.add(project)
@@ -324,7 +323,7 @@ def test_link_query_by_target(db_session: Session):
     assert found_links[0].target_item_id == item2.id
 
 
-def test_link_delete(db_session: Session):
+def test_link_delete(db_session: Session) -> None:
     """Test deleting a link."""
     project = Project(name="Project")
     db_session.add(project)
@@ -355,7 +354,7 @@ def test_link_delete(db_session: Session):
 # ============================================================================
 
 
-def test_item_parent_child_relationship(db_session: Session):
+def test_item_parent_child_relationship(db_session: Session) -> None:
     """Test parent-child relationship between items."""
     project = Project(name="Project")
     db_session.add(project)
@@ -375,7 +374,7 @@ def test_item_parent_child_relationship(db_session: Session):
     assert found_child.parent_id == parent.id
 
 
-def test_item_project_isolation(db_session: Session):
+def test_item_project_isolation(db_session: Session) -> None:
     """Test that items are isolated by project."""
     proj1 = Project(name="Project 1")
     proj2 = Project(name="Project 2")
@@ -402,7 +401,7 @@ def test_item_project_isolation(db_session: Session):
 # ============================================================================
 
 
-def test_transaction_commit(db_session: Session):
+def test_transaction_commit(db_session: Session) -> None:
     """Test that commits persist data."""
     project = Project(name="Test Project")
     db_session.add(project)
@@ -415,7 +414,7 @@ def test_transaction_commit(db_session: Session):
     assert found is not None
 
 
-def test_transaction_rollback(db_session: Session):
+def test_transaction_rollback(db_session: Session) -> None:
     """Test that rollback reverts changes."""
     project = Project(name="Original Name")
     db_session.add(project)
@@ -438,7 +437,7 @@ def test_transaction_rollback(db_session: Session):
 # ============================================================================
 
 
-def test_query_items_by_status(db_session: Session):
+def test_query_items_by_status(db_session: Session) -> None:
     """Test querying items by status."""
     project = Project(name="Project")
     db_session.add(project)
@@ -447,7 +446,7 @@ def test_query_items_by_status(db_session: Session):
     for status in ["todo", "in_progress", "done"]:
         for i in range(2):
             item = Item(
-                project_id=project.id, title=f"{status} Item {i}", view="FEATURE", item_type="feature", status=status
+                project_id=project.id, title=f"{status} Item {i}", view="FEATURE", item_type="feature", status=status,
             )
             db_session.add(item)
 
@@ -463,7 +462,7 @@ def test_query_items_by_status(db_session: Session):
     assert len(done) >= 2
 
 
-def test_query_items_by_priority(db_session: Session):
+def test_query_items_by_priority(db_session: Session) -> None:
     """Test querying items by priority."""
     project = Project(name="Project")
     db_session.add(project)
@@ -471,7 +470,7 @@ def test_query_items_by_priority(db_session: Session):
 
     for priority in ["high", "medium", "low"]:
         item = Item(
-            project_id=project.id, title=f"{priority} Item", view="FEATURE", item_type="feature", priority=priority
+            project_id=project.id, title=f"{priority} Item", view="FEATURE", item_type="feature", priority=priority,
         )
         db_session.add(item)
 
@@ -487,7 +486,7 @@ def test_query_items_by_priority(db_session: Session):
     assert len(low) >= 1
 
 
-def test_query_items_by_view(db_session: Session):
+def test_query_items_by_view(db_session: Session) -> None:
     """Test querying items by view type."""
     project = Project(name="Project")
     db_session.add(project)
@@ -510,7 +509,7 @@ def test_query_items_by_view(db_session: Session):
     assert len(bugs) >= 1
 
 
-def test_query_items_with_multiple_filters(db_session: Session):
+def test_query_items_with_multiple_filters(db_session: Session) -> None:
     """Test querying items with multiple filters."""
     project = Project(name="Project")
     db_session.add(project)
@@ -540,7 +539,7 @@ def test_query_items_with_multiple_filters(db_session: Session):
 # ============================================================================
 
 
-def test_count_items_by_project(db_session: Session):
+def test_count_items_by_project(db_session: Session) -> None:
     """Test counting items in a project."""
     project = Project(name="Project")
     db_session.add(project)
@@ -557,7 +556,7 @@ def test_count_items_by_project(db_session: Session):
     assert count == 5
 
 
-def test_count_links_by_source(db_session: Session):
+def test_count_links_by_source(db_session: Session) -> None:
     """Test counting links by source item."""
     project = Project(name="Project")
     db_session.add(project)

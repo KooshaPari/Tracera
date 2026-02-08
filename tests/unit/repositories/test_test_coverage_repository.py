@@ -1,5 +1,4 @@
-"""
-Tests for TestCoverageRepository.
+"""Tests for TestCoverageRepository.
 
 Comprehensive test coverage for test coverage traceability operations.
 """
@@ -68,7 +67,7 @@ class TestCoverageRepositoryCreate:
         }
 
     @pytest.mark.asyncio
-    async def test_create_coverage_success(self, db_session: AsyncSession, setup_entities):
+    async def test_create_coverage_success(self, db_session: AsyncSession, setup_entities) -> None:
         """Test creating a coverage mapping successfully."""
         repo = CoverageRepository(db_session)
         entities = setup_entities
@@ -98,7 +97,7 @@ class TestCoverageRepositoryCreate:
         assert coverage.version == 1
 
     @pytest.mark.asyncio
-    async def test_create_coverage_with_partial_type(self, db_session: AsyncSession, setup_entities):
+    async def test_create_coverage_with_partial_type(self, db_session: AsyncSession, setup_entities) -> None:
         """Test creating coverage with partial coverage type."""
         repo = CoverageRepository(db_session)
         entities = setup_entities
@@ -115,7 +114,7 @@ class TestCoverageRepositoryCreate:
         assert coverage.coverage_percentage == 50
 
     @pytest.mark.asyncio
-    async def test_create_coverage_with_indirect_type(self, db_session: AsyncSession, setup_entities):
+    async def test_create_coverage_with_indirect_type(self, db_session: AsyncSession, setup_entities) -> None:
         """Test creating coverage with indirect coverage type."""
         repo = CoverageRepository(db_session)
         entities = setup_entities
@@ -130,7 +129,7 @@ class TestCoverageRepositoryCreate:
         assert coverage.coverage_type == CoverageType.INDIRECT
 
     @pytest.mark.asyncio
-    async def test_create_coverage_with_regression_type(self, db_session: AsyncSession, setup_entities):
+    async def test_create_coverage_with_regression_type(self, db_session: AsyncSession, setup_entities) -> None:
         """Test creating coverage with regression coverage type."""
         repo = CoverageRepository(db_session)
         entities = setup_entities
@@ -145,7 +144,7 @@ class TestCoverageRepositoryCreate:
         assert coverage.coverage_type == CoverageType.REGRESSION
 
     @pytest.mark.asyncio
-    async def test_create_coverage_with_metadata(self, db_session: AsyncSession, setup_entities):
+    async def test_create_coverage_with_metadata(self, db_session: AsyncSession, setup_entities) -> None:
         """Test creating coverage with metadata."""
         repo = CoverageRepository(db_session)
         entities = setup_entities
@@ -162,7 +161,7 @@ class TestCoverageRepositoryCreate:
         assert coverage.coverage_metadata == metadata
 
     @pytest.mark.asyncio
-    async def test_create_coverage_logs_activity(self, db_session: AsyncSession, setup_entities):
+    async def test_create_coverage_logs_activity(self, db_session: AsyncSession, setup_entities) -> None:
         """Test that creating coverage logs an activity."""
         repo = CoverageRepository(db_session)
         entities = setup_entities
@@ -229,7 +228,7 @@ class TestCoverageRepositoryGet:
         }
 
     @pytest.mark.asyncio
-    async def test_get_by_id_success(self, db_session: AsyncSession, coverage_with_entities):
+    async def test_get_by_id_success(self, db_session: AsyncSession, coverage_with_entities) -> None:
         """Test getting coverage by ID."""
         repo = CoverageRepository(db_session)
         entities = coverage_with_entities
@@ -239,14 +238,14 @@ class TestCoverageRepositoryGet:
         assert coverage.id == entities["coverage"].id
 
     @pytest.mark.asyncio
-    async def test_get_by_id_not_found(self, db_session: AsyncSession):
+    async def test_get_by_id_not_found(self, db_session: AsyncSession) -> None:
         """Test getting coverage by non-existent ID."""
         repo = CoverageRepository(db_session)
         coverage = await repo.get_by_id(str(uuid4()))
         assert coverage is None
 
     @pytest.mark.asyncio
-    async def test_get_by_test_case_and_requirement(self, db_session: AsyncSession, coverage_with_entities):
+    async def test_get_by_test_case_and_requirement(self, db_session: AsyncSession, coverage_with_entities) -> None:
         """Test getting coverage by test case and requirement IDs."""
         repo = CoverageRepository(db_session)
         entities = coverage_with_entities
@@ -259,7 +258,7 @@ class TestCoverageRepositoryGet:
         assert coverage.id == entities["coverage"].id
 
     @pytest.mark.asyncio
-    async def test_get_by_test_case_and_requirement_not_found(self, db_session: AsyncSession):
+    async def test_get_by_test_case_and_requirement_not_found(self, db_session: AsyncSession) -> None:
         """Test getting coverage by non-existent combination."""
         repo = CoverageRepository(db_session)
         coverage = await repo.get_by_test_case_and_requirement(
@@ -325,7 +324,7 @@ class TestCoverageRepositoryList:
         }
 
     @pytest.mark.asyncio
-    async def test_list_by_project(self, db_session: AsyncSession, multiple_coverages):
+    async def test_list_by_project(self, db_session: AsyncSession, multiple_coverages) -> None:
         """Test listing coverages by project."""
         repo = CoverageRepository(db_session)
         entities = multiple_coverages
@@ -335,7 +334,7 @@ class TestCoverageRepositoryList:
         assert total == 3
 
     @pytest.mark.asyncio
-    async def test_list_by_project_with_pagination(self, db_session: AsyncSession, multiple_coverages):
+    async def test_list_by_project_with_pagination(self, db_session: AsyncSession, multiple_coverages) -> None:
         """Test listing coverages with pagination."""
         repo = CoverageRepository(db_session)
         entities = multiple_coverages
@@ -349,7 +348,7 @@ class TestCoverageRepositoryList:
         assert total == 3
 
     @pytest.mark.asyncio
-    async def test_list_by_project_filter_by_type(self, db_session: AsyncSession, multiple_coverages):
+    async def test_list_by_project_filter_by_type(self, db_session: AsyncSession, multiple_coverages) -> None:
         """Test filtering coverages by type."""
         repo = CoverageRepository(db_session)
         entities = multiple_coverages
@@ -362,7 +361,7 @@ class TestCoverageRepositoryList:
         assert coverages[0].coverage_type == CoverageType.DIRECT
 
     @pytest.mark.asyncio
-    async def test_list_by_project_filter_by_test_case(self, db_session: AsyncSession, multiple_coverages):
+    async def test_list_by_project_filter_by_test_case(self, db_session: AsyncSession, multiple_coverages) -> None:
         """Test filtering coverages by test case."""
         repo = CoverageRepository(db_session)
         entities = multiple_coverages
@@ -374,7 +373,7 @@ class TestCoverageRepositoryList:
         assert len(coverages) == 1
 
     @pytest.mark.asyncio
-    async def test_list_by_project_filter_by_requirement(self, db_session: AsyncSession, multiple_coverages):
+    async def test_list_by_project_filter_by_requirement(self, db_session: AsyncSession, multiple_coverages) -> None:
         """Test filtering coverages by requirement."""
         repo = CoverageRepository(db_session)
         entities = multiple_coverages
@@ -386,7 +385,7 @@ class TestCoverageRepositoryList:
         assert len(coverages) == 1
 
     @pytest.mark.asyncio
-    async def test_list_by_test_case(self, db_session: AsyncSession, multiple_coverages):
+    async def test_list_by_test_case(self, db_session: AsyncSession, multiple_coverages) -> None:
         """Test listing coverages by test case."""
         repo = CoverageRepository(db_session)
         entities = multiple_coverages
@@ -395,7 +394,7 @@ class TestCoverageRepositoryList:
         assert len(coverages) == 1
 
     @pytest.mark.asyncio
-    async def test_list_by_requirement(self, db_session: AsyncSession, multiple_coverages):
+    async def test_list_by_requirement(self, db_session: AsyncSession, multiple_coverages) -> None:
         """Test listing coverages by requirement."""
         repo = CoverageRepository(db_session)
         entities = multiple_coverages
@@ -442,7 +441,7 @@ class TestCoverageRepositoryUpdate:
         )
 
     @pytest.mark.asyncio
-    async def test_update_coverage_success(self, db_session: AsyncSession, coverage_for_update):
+    async def test_update_coverage_success(self, db_session: AsyncSession, coverage_for_update) -> None:
         """Test updating coverage."""
         repo = CoverageRepository(db_session)
         coverage = coverage_for_update
@@ -459,14 +458,14 @@ class TestCoverageRepositoryUpdate:
         assert updated.version == 2
 
     @pytest.mark.asyncio
-    async def test_update_coverage_not_found(self, db_session: AsyncSession):
+    async def test_update_coverage_not_found(self, db_session: AsyncSession) -> None:
         """Test updating non-existent coverage."""
         repo = CoverageRepository(db_session)
         updated = await repo.update(str(uuid4()), coverage_percentage=75)
         assert updated is None
 
     @pytest.mark.asyncio
-    async def test_verify_coverage(self, db_session: AsyncSession, coverage_for_update):
+    async def test_verify_coverage(self, db_session: AsyncSession, coverage_for_update) -> None:
         """Test verifying coverage."""
         repo = CoverageRepository(db_session)
         coverage = coverage_for_update
@@ -484,7 +483,7 @@ class TestCoverageRepositoryUpdate:
         assert verified.version == 2
 
     @pytest.mark.asyncio
-    async def test_verify_coverage_logs_activity(self, db_session: AsyncSession, coverage_for_update):
+    async def test_verify_coverage_logs_activity(self, db_session: AsyncSession, coverage_for_update) -> None:
         """Test that verifying coverage logs an activity."""
         repo = CoverageRepository(db_session)
         coverage = coverage_for_update
@@ -498,14 +497,14 @@ class TestCoverageRepositoryUpdate:
         assert verify_activity.performed_by == "verifier"
 
     @pytest.mark.asyncio
-    async def test_verify_coverage_not_found(self, db_session: AsyncSession):
+    async def test_verify_coverage_not_found(self, db_session: AsyncSession) -> None:
         """Test verifying non-existent coverage."""
         repo = CoverageRepository(db_session)
         verified = await repo.verify_coverage(str(uuid4()), verified_by="user")
         assert verified is None
 
     @pytest.mark.asyncio
-    async def test_update_test_result(self, db_session: AsyncSession, coverage_for_update):
+    async def test_update_test_result(self, db_session: AsyncSession, coverage_for_update) -> None:
         """Test updating test result."""
         repo = CoverageRepository(db_session)
         coverage = coverage_for_update
@@ -521,7 +520,7 @@ class TestCoverageRepositoryUpdate:
         assert updated.version == 2
 
     @pytest.mark.asyncio
-    async def test_update_test_result_with_timestamp(self, db_session: AsyncSession, coverage_for_update):
+    async def test_update_test_result_with_timestamp(self, db_session: AsyncSession, coverage_for_update) -> None:
         """Test updating test result with specific timestamp."""
         repo = CoverageRepository(db_session)
         coverage = coverage_for_update
@@ -544,7 +543,7 @@ class TestCoverageRepositoryUpdate:
         assert dt.day == 15
 
     @pytest.mark.asyncio
-    async def test_update_test_result_not_found(self, db_session: AsyncSession):
+    async def test_update_test_result_not_found(self, db_session: AsyncSession) -> None:
         """Test updating test result for non-existent coverage."""
         repo = CoverageRepository(db_session)
         updated = await repo.update_test_result(str(uuid4()), test_result="passed")
@@ -588,7 +587,7 @@ class TestCoverageRepositoryDelete:
         )
 
     @pytest.mark.asyncio
-    async def test_delete_coverage_success(self, db_session: AsyncSession, coverage_for_delete):
+    async def test_delete_coverage_success(self, db_session: AsyncSession, coverage_for_delete) -> None:
         """Test deleting coverage."""
         repo = CoverageRepository(db_session)
         coverage = coverage_for_delete
@@ -601,7 +600,7 @@ class TestCoverageRepositoryDelete:
         assert deleted is None
 
     @pytest.mark.asyncio
-    async def test_delete_coverage_not_found(self, db_session: AsyncSession):
+    async def test_delete_coverage_not_found(self, db_session: AsyncSession) -> None:
         """Test deleting non-existent coverage."""
         repo = CoverageRepository(db_session)
         result = await repo.delete(str(uuid4()))
@@ -664,7 +663,7 @@ class TestCoverageRepositoryTraceability:
         }
 
     @pytest.mark.asyncio
-    async def test_get_traceability_matrix(self, db_session: AsyncSession, traceability_setup):
+    async def test_get_traceability_matrix(self, db_session: AsyncSession, traceability_setup) -> None:
         """Test getting traceability matrix."""
         repo = CoverageRepository(db_session)
         entities = traceability_setup
@@ -679,7 +678,7 @@ class TestCoverageRepositoryTraceability:
         assert len(matrix["matrix"]) == 5
 
     @pytest.mark.asyncio
-    async def test_get_traceability_matrix_with_test_results(self, db_session: AsyncSession, traceability_setup):
+    async def test_get_traceability_matrix_with_test_results(self, db_session: AsyncSession, traceability_setup) -> None:
         """Test traceability matrix with test results."""
         repo = CoverageRepository(db_session)
         entities = traceability_setup
@@ -700,7 +699,7 @@ class TestCoverageRepositoryTraceability:
         assert len(failed) == 1
 
     @pytest.mark.asyncio
-    async def test_get_coverage_gaps(self, db_session: AsyncSession, traceability_setup):
+    async def test_get_coverage_gaps(self, db_session: AsyncSession, traceability_setup) -> None:
         """Test getting coverage gaps."""
         repo = CoverageRepository(db_session)
         entities = traceability_setup
@@ -714,7 +713,7 @@ class TestCoverageRepositoryTraceability:
         assert len(gaps["gaps"]) == 2
 
     @pytest.mark.asyncio
-    async def test_get_coverage_gaps_sorted_by_priority(self, db_session: AsyncSession, traceability_setup):
+    async def test_get_coverage_gaps_sorted_by_priority(self, db_session: AsyncSession, traceability_setup) -> None:
         """Test that gaps are sorted by priority."""
         repo = CoverageRepository(db_session)
         entities = traceability_setup
@@ -727,7 +726,7 @@ class TestCoverageRepositoryTraceability:
             assert gap["priority"] == "low"
 
     @pytest.mark.asyncio
-    async def test_get_test_case_coverage_summary(self, db_session: AsyncSession, traceability_setup):
+    async def test_get_test_case_coverage_summary(self, db_session: AsyncSession, traceability_setup) -> None:
         """Test getting test case coverage summary."""
         repo = CoverageRepository(db_session)
         entities = traceability_setup
@@ -796,7 +795,7 @@ class TestCoverageRepositoryStats:
         }
 
     @pytest.mark.asyncio
-    async def test_get_stats(self, db_session: AsyncSession, stats_setup):
+    async def test_get_stats(self, db_session: AsyncSession, stats_setup) -> None:
         """Test getting coverage statistics."""
         repo = CoverageRepository(db_session)
         entities = stats_setup
@@ -814,7 +813,7 @@ class TestCoverageRepositoryStats:
         assert stats["unique_requirements"] == 5
 
     @pytest.mark.asyncio
-    async def test_get_stats_empty_project(self, db_session: AsyncSession):
+    async def test_get_stats_empty_project(self, db_session: AsyncSession) -> None:
         """Test getting stats for empty project."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Empty Stats Project")
@@ -871,7 +870,7 @@ class TestCoverageRepositoryActivities:
         return coverage
 
     @pytest.mark.asyncio
-    async def test_get_activities(self, db_session: AsyncSession, coverage_with_activities):
+    async def test_get_activities(self, db_session: AsyncSession, coverage_with_activities) -> None:
         """Test getting activities for coverage."""
         repo = CoverageRepository(db_session)
         coverage = coverage_with_activities
@@ -885,7 +884,7 @@ class TestCoverageRepositoryActivities:
         assert activity_types.count("verified") == 2
 
     @pytest.mark.asyncio
-    async def test_get_activities_with_limit(self, db_session: AsyncSession, coverage_with_activities):
+    async def test_get_activities_with_limit(self, db_session: AsyncSession, coverage_with_activities) -> None:
         """Test getting limited activities."""
         repo = CoverageRepository(db_session)
         coverage = coverage_with_activities
@@ -894,7 +893,7 @@ class TestCoverageRepositoryActivities:
         assert len(activities) == 2
 
     @pytest.mark.asyncio
-    async def test_get_activities_empty(self, db_session: AsyncSession):
+    async def test_get_activities_empty(self, db_session: AsyncSession) -> None:
         """Test getting activities for non-existent coverage."""
         repo = CoverageRepository(db_session)
         activities = await repo.get_activities(str(uuid4()))
@@ -936,7 +935,7 @@ class TestCoverageRepositoryEdgeCases:
         }
 
     @pytest.mark.asyncio
-    async def test_create_coverage_minimal_fields(self, db_session: AsyncSession, edge_case_setup):
+    async def test_create_coverage_minimal_fields(self, db_session: AsyncSession, edge_case_setup) -> None:
         """Test creating coverage with minimal fields."""
         repo = CoverageRepository(db_session)
         entities = edge_case_setup
@@ -952,7 +951,7 @@ class TestCoverageRepositoryEdgeCases:
         assert coverage.status == CoverageStatus.ACTIVE
 
     @pytest.mark.asyncio
-    async def test_list_by_project_empty(self, db_session: AsyncSession):
+    async def test_list_by_project_empty(self, db_session: AsyncSession) -> None:
         """Test listing coverages for project with none."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="Empty Coverage Project")
@@ -964,7 +963,7 @@ class TestCoverageRepositoryEdgeCases:
         assert total == 0
 
     @pytest.mark.asyncio
-    async def test_traceability_matrix_no_requirements(self, db_session: AsyncSession):
+    async def test_traceability_matrix_no_requirements(self, db_session: AsyncSession) -> None:
         """Test traceability matrix for project with no requirements."""
         project_repo = ProjectRepository(db_session)
         project = await project_repo.create(name="No Requirements Project")
@@ -977,7 +976,7 @@ class TestCoverageRepositoryEdgeCases:
         assert matrix["coverage_percentage"] == 0
 
     @pytest.mark.asyncio
-    async def test_coverage_gaps_all_covered(self, db_session: AsyncSession, edge_case_setup):
+    async def test_coverage_gaps_all_covered(self, db_session: AsyncSession, edge_case_setup) -> None:
         """Test coverage gaps when all requirements are covered."""
         repo = CoverageRepository(db_session)
         entities = edge_case_setup
@@ -996,7 +995,7 @@ class TestCoverageRepositoryEdgeCases:
         assert len(gaps["gaps"]) == 0
 
     @pytest.mark.asyncio
-    async def test_update_with_no_changes(self, db_session: AsyncSession, edge_case_setup):
+    async def test_update_with_no_changes(self, db_session: AsyncSession, edge_case_setup) -> None:
         """Test update with no actual changes."""
         repo = CoverageRepository(db_session)
         entities = edge_case_setup

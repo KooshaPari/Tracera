@@ -19,7 +19,7 @@ class EncryptionService:
     # IV size recommended for GCM mode
     IV_SIZE = 12  # 96 bits
 
-    def __init__(self, master_key: str | None = None):
+    def __init__(self, master_key: str | None = None) -> None:
         """Initialize encryption service.
 
         Args:
@@ -28,20 +28,25 @@ class EncryptionService:
         """
         key_source = master_key or os.getenv("ENCRYPTION_MASTER_KEY")
         if not key_source:
-            raise ValueError(
+            msg = (
                 "Encryption master key not set. "
                 "Set ENCRYPTION_MASTER_KEY environment variable or pass key to constructor."
+            )
+            raise ValueError(
+                msg,
             )
 
         # Decode the base64 key
         try:
             self._key = base64.b64decode(key_source)
         except Exception as e:
-            raise ValueError(f"Invalid master key format (must be base64): {e}") from e
+            msg = f"Invalid master key format (must be base64): {e}"
+            raise ValueError(msg) from e
 
         # Validate key size (must be 256 bits = 32 bytes)
         if len(self._key) != AES256_KEY_BYTES:
-            raise ValueError(f"Master key must be 256 bits ({AES256_KEY_BYTES} bytes), got {len(self._key)} bytes")
+            msg = f"Master key must be 256 bits ({AES256_KEY_BYTES} bytes), got {len(self._key)} bytes"
+            raise ValueError(msg)
 
         self._cipher = AESGCM(self._key)
 
@@ -69,7 +74,8 @@ class EncryptionService:
             Base64-encoded string containing IV + ciphertext + auth tag.
         """
         if not plaintext:
-            raise ValueError("Cannot encrypt empty plaintext")
+            msg = "Cannot encrypt empty plaintext"
+            raise ValueError(msg)
 
         # Generate random IV for each encryption
         iv = os.urandom(self.IV_SIZE)
@@ -101,7 +107,8 @@ class EncryptionService:
             ValueError: If decryption fails (invalid data or tampered).
         """
         if not encrypted:
-            raise ValueError("Cannot decrypt empty data")
+            msg = "Cannot decrypt empty data"
+            raise ValueError(msg)
 
         try:
             # Decode base64
@@ -121,7 +128,8 @@ class EncryptionService:
             return plaintext.decode("utf-8")
 
         except Exception as e:
-            raise ValueError(f"Decryption failed: {e}") from e
+            msg = f"Decryption failed: {e}"
+            raise ValueError(msg) from e
 
     def rotate_encryption(self, encrypted: str, new_service: "EncryptionService") -> str:
         """Re-encrypt data with a new key.

@@ -40,7 +40,7 @@ def format_sse(event_type: str, data: Any) -> str:
 class AIService:
     """Service for interacting with AI providers with tool use support."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize AI service with API clients."""
         self._anthropic_client = None
 
@@ -50,13 +50,15 @@ class AIService:
         if self._anthropic_client is None:
             api_key = os.getenv("ANTHROPIC_API_KEY")
             if not api_key:
-                raise AIServiceError("ANTHROPIC_API_KEY environment variable is not set")
+                msg = "ANTHROPIC_API_KEY environment variable is not set"
+                raise AIServiceError(msg)
             try:
                 import anthropic
 
                 self._anthropic_client = anthropic.AsyncAnthropic(api_key=api_key)
             except ImportError as e:
-                raise AIServiceError("anthropic package is not installed. Run: pip install anthropic") from e
+                msg = "anthropic package is not installed. Run: pip install anthropic"
+                raise AIServiceError(msg) from e
         return self._anthropic_client
 
     async def stream_chat_with_tools(
@@ -91,7 +93,7 @@ class AIService:
         """
         # Convert messages to Anthropic format
         anthropic_messages = [
-            {"role": msg["role"], "content": msg["content"]} for msg in messages if msg["role"] in ("user", "assistant")
+            {"role": msg["role"], "content": msg["content"]} for msg in messages if msg["role"] in {"user", "assistant"}
         ]
 
         iteration = 0
@@ -198,7 +200,7 @@ class AIService:
                 break
 
             except Exception as e:
-                logger.error(f"Claude API error: {e}", exc_info=True)
+                logger.error("Claude API error: %s", e, exc_info=True)
                 yield format_sse(SSEEvent.ERROR, {"error": str(e)})
                 break
 
@@ -220,7 +222,7 @@ class AIService:
         Used by Temporal run_agent_turn for checkpointed agent runs.
         """
         anthropic_messages = [
-            {"role": msg["role"], "content": msg["content"]} for msg in messages if msg["role"] in ("user", "assistant")
+            {"role": msg["role"], "content": msg["content"]} for msg in messages if msg["role"] in {"user", "assistant"}
         ]
 
         iteration = 0
@@ -301,7 +303,7 @@ class AIService:
         """
         # Convert messages to Anthropic format
         anthropic_messages = [
-            {"role": msg["role"], "content": msg["content"]} for msg in messages if msg["role"] in ("user", "assistant")
+            {"role": msg["role"], "content": msg["content"]} for msg in messages if msg["role"] in {"user", "assistant"}
         ]
 
         iteration = 0
@@ -428,7 +430,7 @@ class AIService:
                 break
 
             except Exception as e:
-                logger.error(f"Streaming error: {e}", exc_info=True)
+                logger.error("Streaming error: %s", e, exc_info=True)
                 yield format_sse(SSEEvent.ERROR, {"error": str(e)})
                 break
 
@@ -485,7 +487,7 @@ class AIService:
                     messages=[
                         {"role": m["role"], "content": m["content"]}
                         for m in messages
-                        if m["role"] in ("user", "assistant")
+                        if m["role"] in {"user", "assistant"}
                     ],
                 ) as stream:
                     async for text in stream.text_stream:
@@ -494,11 +496,14 @@ class AIService:
                 yield format_sse(SSEEvent.DONE, {})
 
         elif provider == "codex":
-            raise AIServiceError("Codex provider not yet implemented")
+            msg = "Codex provider not yet implemented"
+            raise AIServiceError(msg)
         elif provider == "gemini":
-            raise AIServiceError("Gemini provider not yet implemented")
+            msg = "Gemini provider not yet implemented"
+            raise AIServiceError(msg)
         else:
-            raise AIServiceError(f"Unknown provider: {provider}")
+            msg = f"Unknown provider: {provider}"
+            raise AIServiceError(msg)
 
     async def simple_chat(
         self,

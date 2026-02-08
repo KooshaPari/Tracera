@@ -17,7 +17,7 @@ def mock_db_connection(temp_dir):
 
     # Create a proper mock with engine attribute
     class MockConnection:
-        def __init__(self, engine):
+        def __init__(self, engine) -> None:
             self.engine = engine
 
         def execute(self, *args, **kwargs):

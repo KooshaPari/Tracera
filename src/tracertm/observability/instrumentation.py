@@ -35,9 +35,9 @@ def instrument_app(app: "FastAPI") -> None:
         FastAPIInstrumentor.instrument_app(app)
         logger.info("✅ FastAPI instrumentation enabled")
     except ImportError as e:
-        logger.warning(f"FastAPI instrumentation not available: {e}")
+        logger.warning("FastAPI instrumentation not available: %s", e)
     except Exception as e:
-        logger.error(f"Failed to instrument FastAPI: {e}")
+        logger.exception("Failed to instrument FastAPI: %s", e)
 
 
 def instrument_database(engine: "AsyncEngine") -> None:
@@ -66,9 +66,9 @@ def instrument_database(engine: "AsyncEngine") -> None:
         )
         logger.info("✅ SQLAlchemy instrumentation enabled")
     except ImportError as e:
-        logger.warning(f"SQLAlchemy instrumentation not available: {e}")
+        logger.warning("SQLAlchemy instrumentation not available: %s", e)
     except Exception as e:
-        logger.error(f"Failed to instrument SQLAlchemy: {e}")
+        logger.exception("Failed to instrument SQLAlchemy: %s", e)
 
 
 def instrument_http_client() -> None:
@@ -111,9 +111,9 @@ def instrument_redis() -> None:
         RedisInstrumentor().instrument()
         logger.info("✅ Redis instrumentation enabled")
     except ImportError as e:
-        logger.debug(f"Redis instrumentation not available: {e}")
+        logger.debug("Redis instrumentation not available: %s", e)
     except Exception as e:
-        logger.error(f"Failed to instrument Redis: {e}")
+        logger.exception("Failed to instrument Redis: %s", e)
 
 
 def instrument_all() -> None:

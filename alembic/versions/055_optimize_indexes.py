@@ -19,7 +19,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Add optimized indexes for performance."""
-
     # =========================================================================
     # ITEMS TABLE - Advanced Composite Indexes
     # =========================================================================
@@ -217,7 +216,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop optimized indexes."""
-
     # Items indexes
     op.execute("DROP INDEX IF EXISTS ix_items_project_type_status")
     op.execute("DROP INDEX IF EXISTS ix_items_project_created_id")

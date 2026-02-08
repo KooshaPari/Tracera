@@ -22,7 +22,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Create equivalence_links table for cross-perspective equivalences."""
-
     op.create_table(
         "equivalence_links",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),

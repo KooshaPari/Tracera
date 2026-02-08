@@ -5,7 +5,6 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "baseUrl": "./",
     "paths": {
       "@/*": ["./src/*"],
       "@atoms/types": ["../../packages/types/src/types.ts"],

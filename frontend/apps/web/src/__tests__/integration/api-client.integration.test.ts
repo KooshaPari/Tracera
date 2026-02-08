@@ -46,25 +46,22 @@ describe('API Client Integration', () => {
 
       vi.stubGlobal(
         'fetch',
-        vi.fn((url: string | URL | Request, init?: RequestInit) => {
-          const path =
-            typeof url === 'string' ? url : url instanceof Request ? url.url : (url as URL).href;
+        vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
+          const path = typeof url === 'string' ? url : url instanceof Request ? url.url : url.href;
           if (path.includes('/api/v1/auth/login') && init?.method === 'POST') {
-            return Promise.resolve(
-              createJsonResponse({
-                access_token: mockToken,
-                user: mockUser,
-              }),
-            );
+            return createJsonResponse({
+              access_token: mockToken,
+              user: mockUser,
+            });
           }
-          return Promise.resolve(createJsonResponse({}, 404));
+          return createJsonResponse({}, 404);
         }),
       );
 
       await useAuthStore.getState().login('test@example.com', 'password');
 
       const state = useAuthStore.getState();
-      expect(state.isAuthenticated).toBe(true);
+      expect(state.isAuthenticated).toBeTruthy();
       expect(state.user?.id).toBe('user-1');
       expect(state.user?.email).toBe('test@example.com');
       expect(state.token).toBe(mockToken);
@@ -171,10 +168,10 @@ describe('API Client Integration', () => {
       });
       try {
         await handleApiResponse(promise2);
-      } catch (err) {
-        expect(err).toBeInstanceOf(ApiError);
-        expect((err as ApiError).status).toBe(404);
-        expect((err as ApiError).statusText).toBe('Not Found');
+      } catch (error) {
+        expect(error).toBeInstanceOf(ApiError);
+        expect((error as ApiError).status).toBe(404);
+        expect((error as ApiError).statusText).toBe('Not Found');
       }
     });
   });

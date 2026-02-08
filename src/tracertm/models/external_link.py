@@ -1,6 +1,4 @@
-"""
-ExternalLink model for TraceRTM.
-"""
+"""ExternalLink model for TraceRTM."""
 
 import uuid
 
@@ -18,9 +16,7 @@ def generate_external_link_uuid() -> str:
 
 
 class ExternalLink(Base, TimestampMixin):
-    """
-    External link attached to an item (Figma, repo, doc, etc.).
-    """
+    """External link attached to an item (Figma, repo, doc, etc.)."""
 
     __tablename__ = "external_links"
     __table_args__ = (

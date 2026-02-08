@@ -35,13 +35,11 @@ const mockGraphData = {
   links: [mockLink],
 };
 
-function createMockResponse(data: unknown, status = 200) {
-  return Promise.resolve(
-    new Response(JSON.stringify(data), {
-      headers: { 'Content-Type': 'application/json' },
-      status,
-    }),
-  );
+async function createMockResponse(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    headers: { 'Content-Type': 'application/json' },
+    status,
+  });
 }
 
 describe('API Endpoints - P1 Coverage', () => {
@@ -56,11 +54,11 @@ describe('API Endpoints - P1 Coverage', () => {
   describe('projectsApi', () => {
     describe('list', () => {
       it('should return array of projects', async () => {
-        const mockFetch = vi.fn(() => createMockResponse({ projects: [mockProject] }));
+        const mockFetch = vi.fn(async () => createMockResponse({ projects: [mockProject] }));
         global.fetch = mockFetch as unknown as typeof fetch;
 
         const result = await api.projects.list();
-        expect(Array.isArray(result)).toBe(true);
+        expect(Array.isArray(result)).toBeTruthy();
       });
 
       it('should handle response with projects array', async () => {
@@ -76,7 +74,7 @@ describe('API Endpoints - P1 Coverage', () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse([mockProject]));
 
         const result = await api.projects.list();
-        expect(Array.isArray(result)).toBe(true);
+        expect(Array.isArray(result)).toBeTruthy();
       });
 
       it('should accept pagination parameters', async () => {
@@ -85,14 +83,14 @@ describe('API Endpoints - P1 Coverage', () => {
         );
 
         const result = await api.projects.list({ limit: 10, offset: 0 });
-        expect(Array.isArray(result)).toBe(true);
+        expect(Array.isArray(result)).toBeTruthy();
       });
 
       it('should return empty array on empty response', async () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse({ projects: [] }));
 
         const result = await api.projects.list();
-        expect(Array.isArray(result)).toBe(true);
+        expect(Array.isArray(result)).toBeTruthy();
       });
     });
 
@@ -452,7 +450,7 @@ describe('API Endpoints - P1 Coverage', () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse([]));
 
         const result = await api.graph.findPath('item-1', 'item-2');
-        expect(Array.isArray(result)).toBe(true);
+        expect(Array.isArray(result)).toBeTruthy();
       });
     });
 
@@ -461,7 +459,7 @@ describe('API Endpoints - P1 Coverage', () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse([[mockItem]]));
 
         const result = await api.graph.findAllPaths('item-1', 'item-2');
-        expect(Array.isArray(result)).toBe(true);
+        expect(Array.isArray(result)).toBeTruthy();
       });
     });
 
@@ -495,14 +493,14 @@ describe('API Endpoints - P1 Coverage', () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse([['item-1', 'item-2']]));
 
         const result = await api.graph.detectCycles();
-        expect(Array.isArray(result)).toBe(true);
+        expect(Array.isArray(result)).toBeTruthy();
       });
 
       it('should return empty array if no cycles', async () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse([]));
 
         const result = await api.graph.detectCycles();
-        expect(Array.isArray(result)).toBe(true);
+        expect(Array.isArray(result)).toBeTruthy();
       });
     });
 
@@ -511,7 +509,7 @@ describe('API Endpoints - P1 Coverage', () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse([mockItem]));
 
         const result = await api.graph.topologicalSort();
-        expect(Array.isArray(result)).toBe(true);
+        expect(Array.isArray(result)).toBeTruthy();
       });
     });
 
@@ -556,7 +554,7 @@ describe('API Endpoints - P1 Coverage', () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse([mockItem]));
 
         const result = await api.graph.getOrphanItems();
-        expect(Array.isArray(result)).toBe(true);
+        expect(Array.isArray(result)).toBeTruthy();
       });
     });
 
@@ -795,14 +793,14 @@ describe('API Endpoints - P1 Coverage', () => {
         );
 
         const result = await api.search.suggest('test');
-        expect(Array.isArray(result)).toBe(true);
+        expect(Array.isArray(result)).toBeTruthy();
       });
 
       it('should support limit parameter', async () => {
         (global.fetch as any).mockResolvedValueOnce(createMockResponse(['suggestion1']));
 
         const result = await api.search.suggest('test', 5);
-        expect(Array.isArray(result)).toBe(true);
+        expect(Array.isArray(result)).toBeTruthy();
       });
     });
 

@@ -20,7 +20,7 @@ from tracertm.utils.figma import (
 class TestFigmaURLParsing:
     """Test Figma URL parsing utilities."""
 
-    def test_parse_basic_figma_url(self):
+    def test_parse_basic_figma_url(self) -> None:
         """Test parsing a basic Figma URL."""
         url = "https://www.figma.com/file/abc123/MyProject"
         meta = parse_figma_url(url)
@@ -29,7 +29,7 @@ class TestFigmaURLParsing:
         assert meta.file_name == "MyProject"
         assert meta.node_id is None
 
-    def test_parse_figma_url_with_node_id(self):
+    def test_parse_figma_url_with_node_id(self) -> None:
         """Test parsing a Figma URL with node-id."""
         url = "https://www.figma.com/file/abc123xyz/MyProject?node-id=1:42"
         meta = parse_figma_url(url)
@@ -38,7 +38,7 @@ class TestFigmaURLParsing:
         assert meta.file_name == "MyProject"
         assert meta.node_id == "1:42"
 
-    def test_parse_figma_design_url(self):
+    def test_parse_figma_design_url(self) -> None:
         """Test parsing a Figma design URL (newer format)."""
         url = "https://www.figma.com/design/abc123/MyProject"
         meta = parse_figma_url(url)
@@ -46,7 +46,7 @@ class TestFigmaURLParsing:
         assert meta.file_key == "abc123"
         assert meta.file_name == "MyProject"
 
-    def test_parse_figma_url_without_https(self):
+    def test_parse_figma_url_without_https(self) -> None:
         """Test parsing a Figma URL without https:// prefix."""
         url = "figma.com/file/abc123/MyProject"
         meta = parse_figma_url(url)
@@ -54,19 +54,19 @@ class TestFigmaURLParsing:
         assert meta.file_key == "abc123"
         assert meta.file_name == "MyProject"
 
-    def test_parse_invalid_url_raises_error(self):
+    def test_parse_invalid_url_raises_error(self) -> None:
         """Test that invalid URLs raise ValueError."""
         with pytest.raises(ValueError, match="Not a Figma URL"):
             parse_figma_url("https://example.com")
 
-    def test_is_figma_url(self):
+    def test_is_figma_url(self) -> None:
         """Test URL validation."""
         assert is_figma_url("https://www.figma.com/file/abc123/MyProject")
         assert is_figma_url("figma.com/file/abc123/MyProject")
         assert not is_figma_url("https://example.com")
         assert not is_figma_url("invalid")
 
-    def test_build_figma_url(self):
+    def test_build_figma_url(self) -> None:
         """Test building Figma URLs."""
         url = build_figma_url("abc123", "MyProject", "1:42")
         assert url == "https://www.figma.com/file/abc123/MyProject?node-id=1:42"
@@ -77,7 +77,7 @@ class TestFigmaURLParsing:
         url = build_figma_url("abc123")
         assert url == "https://www.figma.com/file/abc123"
 
-    def test_figma_metadata_properties(self):
+    def test_figma_metadata_properties(self) -> None:
         """Test FigmaMetadata computed properties."""
         meta = FigmaMetadata(file_key="abc123", node_id="1:42", file_name="MyProject", full_url="https://...")
 
@@ -90,7 +90,7 @@ class TestFigmaURLParsing:
 class TestFigmaProtocol:
     """Test Figma protocol conversion utilities."""
 
-    def test_extract_figma_protocol_url(self):
+    def test_extract_figma_protocol_url(self) -> None:
         """Test extracting figma:// URLs from markdown."""
         text = "![Preview](figma://abc123/1:42)"
         matches = extract_figma_protocol_url(text)
@@ -98,7 +98,7 @@ class TestFigmaProtocol:
         assert len(matches) == 1
         assert matches[0] == ("abc123", "1:42")
 
-    def test_extract_multiple_figma_urls(self):
+    def test_extract_multiple_figma_urls(self) -> None:
         """Test extracting multiple figma:// URLs."""
         text = """
         ![Screen 1](figma://abc123/1:42)
@@ -110,7 +110,7 @@ class TestFigmaProtocol:
         assert matches[0] == ("abc123", "1:42")
         assert matches[1] == ("abc123", "2:10")
 
-    def test_convert_figma_protocol_to_url(self):
+    def test_convert_figma_protocol_to_url(self) -> None:
         """Test converting figma:// to standard URLs."""
         text = "![Preview](figma://abc123/1:42)"
         converted = convert_figma_protocol_to_url(text)
@@ -122,7 +122,7 @@ class TestFigmaProtocol:
 class TestFigmaMetadataValidation:
     """Test Figma metadata validation."""
 
-    def test_validate_valid_metadata(self):
+    def test_validate_valid_metadata(self) -> None:
         """Test validation of valid metadata."""
         metadata = {
             "figma_url": "https://www.figma.com/file/abc123/MyProject?node-id=1:42",
@@ -132,14 +132,14 @@ class TestFigmaMetadataValidation:
         errors = validate_figma_metadata(metadata)
         assert len(errors) == 0
 
-    def test_validate_invalid_url(self):
+    def test_validate_invalid_url(self) -> None:
         """Test validation catches invalid URLs."""
         metadata = {"figma_url": "https://example.com"}
         errors = validate_figma_metadata(metadata)
         assert len(errors) > 0
         assert "Invalid Figma URL" in errors[0]
 
-    def test_validate_mismatched_file_key(self):
+    def test_validate_mismatched_file_key(self) -> None:
         """Test validation catches mismatched file keys."""
         metadata = {
             "figma_url": "https://www.figma.com/file/abc123/MyProject",
@@ -149,14 +149,14 @@ class TestFigmaMetadataValidation:
         assert len(errors) > 0
         assert "does not match URL file key" in errors[0]
 
-    def test_validate_invalid_node_id_format(self):
+    def test_validate_invalid_node_id_format(self) -> None:
         """Test validation catches invalid node ID format."""
         metadata = {"figma_node_id": "invalid"}
         errors = validate_figma_metadata(metadata)
         assert len(errors) > 0
         assert "Invalid figma_node_id format" in errors[0]
 
-    def test_validate_valid_node_id_format(self):
+    def test_validate_valid_node_id_format(self) -> None:
         """Test validation accepts valid node ID format."""
         metadata = {"figma_node_id": "1:42"}
         errors = validate_figma_metadata(metadata)
@@ -166,7 +166,7 @@ class TestFigmaMetadataValidation:
 class TestWireframeItemData:
     """Test wireframe ItemData creation and serialization."""
 
-    def test_create_wireframe_item(self):
+    def test_create_wireframe_item(self) -> None:
         """Test creating a wireframe ItemData object."""
         now = datetime.now()
 
@@ -196,7 +196,7 @@ class TestWireframeItemData:
         assert len(item.screens) == 2
         assert len(item.implements) == 2
 
-    def test_wireframe_to_frontmatter(self):
+    def test_wireframe_to_frontmatter(self) -> None:
         """Test converting wireframe to frontmatter dict."""
         item = ItemData(
             id="test-uuid",
@@ -221,7 +221,7 @@ class TestWireframeItemData:
         assert fm["screens"] == ["LoginScreen"]
         assert fm["implements"] == ["STORY-001"]
 
-    def test_wireframe_to_markdown_body(self):
+    def test_wireframe_to_markdown_body(self) -> None:
         """Test converting wireframe to markdown body."""
         item = ItemData(
             id="test-uuid",
@@ -254,7 +254,7 @@ class TestWireframeItemData:
 class TestWireframeMarkdownParsing:
     """Test parsing wireframe markdown files."""
 
-    def test_parse_wireframe_markdown(self, tmp_path: Path):
+    def test_parse_wireframe_markdown(self, tmp_path: Path) -> None:
         """Test parsing a wireframe markdown file."""
         wireframe_md = """---
 id: "test-uuid"
@@ -312,7 +312,7 @@ Wireframe for authentication flow.
         assert item.title == "Login Screen Wireframe"
         assert "authentication flow" in item.description
 
-    def test_write_and_read_wireframe(self, tmp_path: Path):
+    def test_write_and_read_wireframe(self, tmp_path: Path) -> None:
         """Test round-trip write and read of wireframe."""
         now = datetime.now()
 

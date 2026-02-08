@@ -1,5 +1,4 @@
-"""
-Performance and load testing infrastructure.
+"""Performance and load testing infrastructure.
 
 This module provides tools for measuring and monitoring performance characteristics
 of the trace management system, including:

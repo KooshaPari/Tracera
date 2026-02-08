@@ -1,6 +1,4 @@
-"""
-Configuration for API unit tests.
-"""
+"""Configuration for API unit tests."""
 
 import pytest
 
@@ -33,7 +31,7 @@ def test_user():
 
 
 @pytest.fixture
-def test_user_token():
+def test_user_token() -> str:
     """Provide test JWT token for authenticated requests.
 
     Returns:

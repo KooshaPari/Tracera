@@ -1,5 +1,4 @@
-"""
-Comprehensive test coverage for 50+ small service files (<250 LOC each).
+"""Comprehensive test coverage for 50+ small service files (<250 LOC each).
 
 Target: 350+ tests for all small service utilities including:
 - Helper functions
@@ -14,6 +13,8 @@ This test file uses batch testing pattern to cover multiple small service files
 in a single test module, organized by functional category.
 """
 
+from typing import TYPE_CHECKING
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -23,6 +24,9 @@ from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 pytestmark = pytest.mark.integration
 
@@ -52,7 +56,7 @@ def sample_items(db_session, sample_project):
     """Create sample items."""
     items = [
         Item(
-            id="item-1", project_id=sample_project.id, title="Story 1", view="STORY", item_type="story", status="todo"
+            id="item-1", project_id=sample_project.id, title="Story 1", view="STORY", item_type="story", status="todo",
         ),
         Item(
             id="item-2",
@@ -63,7 +67,7 @@ def sample_items(db_session, sample_project):
             status="in_progress",
         ),
         Item(
-            id="item-3", project_id=sample_project.id, title="Test Case 1", view="TEST", item_type="test", status="done"
+            id="item-3", project_id=sample_project.id, title="Test Case 1", view="TEST", item_type="test", status="done",
         ),
         Item(
             id="item-4",
@@ -117,7 +121,7 @@ def sample_links(db_session, sample_project, sample_items):
 class TestStatusWorkflowService:
     """Tests for status_workflow_service.py (161 lines)."""
 
-    def test_validate_transition_valid(self, db_session):
+    def test_validate_transition_valid(self, db_session) -> None:
         """Test valid status transitions."""
         from tracertm.services.status_workflow_service import StatusWorkflowService
 
@@ -128,7 +132,7 @@ class TestStatusWorkflowService:
         assert service.validate_transition("in_progress", "done") is True
         assert service.validate_transition("blocked", "todo") is True
 
-    def test_validate_transition_invalid(self, db_session):
+    def test_validate_transition_invalid(self, db_session) -> None:
         """Test invalid status transitions."""
         from tracertm.services.status_workflow_service import StatusWorkflowService
 
@@ -140,7 +144,7 @@ class TestStatusWorkflowService:
         assert service.validate_transition("invalid", "todo") is False
         assert service.validate_transition("todo", "invalid") is False
 
-    def test_update_item_status_valid(self, db_session, sample_items):
+    def test_update_item_status_valid(self, db_session, sample_items) -> None:
         """Test updating item status with valid transition."""
         from tracertm.services.status_workflow_service import StatusWorkflowService
 
@@ -152,7 +156,7 @@ class TestStatusWorkflowService:
         assert result["new_status"] == "in_progress"
         assert result["progress"] == 50
 
-    def test_update_item_status_invalid_transition(self, db_session, sample_items):
+    def test_update_item_status_invalid_transition(self, db_session, sample_items) -> None:
         """Test updating item status with invalid transition."""
         from tracertm.services.status_workflow_service import StatusWorkflowService
 
@@ -161,7 +165,7 @@ class TestStatusWorkflowService:
         with pytest.raises(ValueError):
             service.update_item_status(sample_items[2].id, "archived")
 
-    def test_update_item_status_not_found(self, db_session):
+    def test_update_item_status_not_found(self, db_session) -> None:
         """Test updating non-existent item."""
         from tracertm.services.status_workflow_service import StatusWorkflowService
 
@@ -170,7 +174,7 @@ class TestStatusWorkflowService:
         with pytest.raises(ValueError):
             service.update_item_status("nonexistent-id", "done")
 
-    def test_get_status_history(self, db_session, sample_items):
+    def test_get_status_history(self, db_session, sample_items) -> None:
         """Test getting status change history."""
         from tracertm.services.status_workflow_service import StatusWorkflowService
 
@@ -195,7 +199,7 @@ class TestStatusWorkflowService:
 class TestAutoLinkService:
     """Tests for auto_link_service.py (157 lines)."""
 
-    def test_parse_commit_message_story_id_pattern(self, db_session, sample_project, sample_items):
+    def test_parse_commit_message_story_id_pattern(self, db_session, sample_project, sample_items) -> None:
         """Test parsing various story ID patterns from commit messages."""
         from tracertm.services.auto_link_service import AutoLinkService
 
@@ -205,7 +209,7 @@ class TestAutoLinkService:
         result = service.parse_commit_message(sample_project.id, f"Fix bug in #{sample_items[0].id}")
         assert (sample_items[0].id, "implements") in result
 
-    def test_parse_commit_message_uuid_pattern(self, db_session, sample_project, sample_items):
+    def test_parse_commit_message_uuid_pattern(self, db_session, sample_project, sample_items) -> None:
         """Test parsing UUID patterns from commit messages."""
         from tracertm.services.auto_link_service import AutoLinkService
 
@@ -216,7 +220,7 @@ class TestAutoLinkService:
         # Should find item by ID or UUID match
         assert isinstance(result, list)
 
-    def test_parse_commit_message_bracket_pattern(self, db_session, sample_project, sample_items):
+    def test_parse_commit_message_bracket_pattern(self, db_session, sample_project, sample_items) -> None:
         """Test parsing bracket notation patterns."""
         from tracertm.services.auto_link_service import AutoLinkService
 
@@ -225,7 +229,7 @@ class TestAutoLinkService:
         result = service.parse_commit_message(sample_project.id, f"Fix [#{sample_items[0].id}] in authentication")
         assert isinstance(result, list)
 
-    def test_create_auto_links_no_duplicates(self, db_session, sample_project, sample_items):
+    def test_create_auto_links_no_duplicates(self, db_session, sample_project, sample_items) -> None:
         """Test that auto-linking doesn't create duplicate links."""
         from tracertm.services.auto_link_service import AutoLinkService
 
@@ -240,7 +244,7 @@ class TestAutoLinkService:
         # Second attempt should create no new links
         assert len(links2) == 0
 
-    def test_determine_link_type_tests(self, db_session):
+    def test_determine_link_type_tests(self, db_session) -> None:
         """Test determining link type for test-related commits."""
         from tracertm.services.auto_link_service import AutoLinkService
 
@@ -249,7 +253,7 @@ class TestAutoLinkService:
         link_type = service._determine_link_type("Add unit tests for login feature")
         assert link_type == "tests"
 
-    def test_determine_link_type_implements(self, db_session):
+    def test_determine_link_type_implements(self, db_session) -> None:
         """Test determining link type for implementation commits."""
         from tracertm.services.auto_link_service import AutoLinkService
 
@@ -258,7 +262,7 @@ class TestAutoLinkService:
         link_type = service._determine_link_type("Implement user authentication")
         assert link_type == "implements"
 
-    def test_determine_link_type_default(self, db_session):
+    def test_determine_link_type_default(self, db_session) -> None:
         """Test default link type determination."""
         from tracertm.services.auto_link_service import AutoLinkService
 
@@ -276,7 +280,7 @@ class TestAutoLinkService:
 class TestEventService:
     """Tests for event_service.py (47 lines)."""
 
-    def test_event_service_initialization(self, db_session):
+    def test_event_service_initialization(self, db_session) -> None:
         """Test event service initialization."""
         from tracertm.services.event_service import EventService
 
@@ -285,14 +289,14 @@ class TestEventService:
         assert service.session is not None
         assert service.events is not None
 
-    def test_log_event_basic(self, db_session, sample_project, sample_items):
+    def test_log_event_basic(self, db_session, sample_project, sample_items) -> None:
         """Test basic event logging capability."""
         from tracertm.services.event_service import EventService
 
         service = EventService(db_session)
         assert service is not None
 
-    def test_get_item_history_empty(self, db_session, sample_items):
+    def test_get_item_history_empty(self, db_session, sample_items) -> None:
         """Test retrieving history for item with no events."""
         from tracertm.services.event_service import EventService
 
@@ -301,7 +305,7 @@ class TestEventService:
         # Service should have get_by_entity method
         assert hasattr(service.events, "get_by_entity")
 
-    def test_event_service_attributes(self, db_session):
+    def test_event_service_attributes(self, db_session) -> None:
         """Test event service has required attributes."""
         from tracertm.services.event_service import EventService
 
@@ -318,7 +322,7 @@ class TestEventService:
 class TestCacheService:
     """Tests for cache_service.py (198 lines)."""
 
-    def test_cache_service_initialization(self):
+    def test_cache_service_initialization(self) -> None:
         """Test cache service initialization."""
         from tracertm.services.cache_service import CacheService
 
@@ -327,7 +331,7 @@ class TestCacheService:
         assert service.stats is not None
 
     @pytest.mark.asyncio
-    async def test_cache_get_set(self):
+    async def test_cache_get_set(self) -> None:
         """Test basic cache get/set operations."""
         from tracertm.services.cache_service import CacheService
 
@@ -339,7 +343,7 @@ class TestCacheService:
         assert isinstance(result, bool)
 
     @pytest.mark.asyncio
-    async def test_cache_get_miss(self):
+    async def test_cache_get_miss(self) -> None:
         """Test cache get on missing key."""
         from tracertm.services.cache_service import CacheService
 
@@ -349,7 +353,7 @@ class TestCacheService:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_cache_delete(self):
+    async def test_cache_delete(self) -> None:
         """Test cache delete operation."""
         from tracertm.services.cache_service import CacheService
 
@@ -359,7 +363,7 @@ class TestCacheService:
         assert isinstance(result, bool)
 
     @pytest.mark.asyncio
-    async def test_cache_clear(self):
+    async def test_cache_clear(self) -> None:
         """Test cache clear operation."""
         from tracertm.services.cache_service import CacheService
 
@@ -369,7 +373,7 @@ class TestCacheService:
         assert isinstance(result, bool)
 
     @pytest.mark.asyncio
-    async def test_cache_clear_prefix(self):
+    async def test_cache_clear_prefix(self) -> None:
         """Test cache clear by prefix."""
         from tracertm.services.cache_service import CacheService
 
@@ -380,7 +384,7 @@ class TestCacheService:
         assert deleted >= 0
 
     @pytest.mark.asyncio
-    async def test_cache_get_stats(self):
+    async def test_cache_get_stats(self) -> None:
         """Test getting cache statistics."""
         from tracertm.services.cache_service import CacheService
 
@@ -392,7 +396,7 @@ class TestCacheService:
         assert stats.hit_rate >= 0
         assert stats.total_size_bytes >= 0
 
-    def test_generate_cache_key(self):
+    def test_generate_cache_key(self) -> None:
         """Test cache key generation."""
         from tracertm.services.cache_service import CacheService
 
@@ -413,15 +417,15 @@ class TestCacheService:
 class TestHelperServices:
     """Tests for small utility and helper services."""
 
-    def test_query_service_stub(self):
+    def test_query_service_stub(self) -> None:
         """Test query service stub."""
         from tracertm.services.query_service import QueryService
 
         service = QueryService()
-        assert isinstance(service.db_session, type(None)) or service.db_session is not None
+        assert (service.db_session is None) or service.db_session is not None
 
     @pytest.mark.asyncio
-    async def test_query_service_search(self):
+    async def test_query_service_search(self) -> None:
         """Test query service search."""
         from tracertm.services.query_service import QueryService
 
@@ -430,7 +434,7 @@ class TestHelperServices:
         assert isinstance(result, list)
 
     @pytest.mark.asyncio
-    async def test_query_service_search_with_criteria(self):
+    async def test_query_service_search_with_criteria(self) -> None:
         """Test query service search with criteria."""
         from tracertm.services.query_service import QueryService
 
@@ -447,7 +451,7 @@ class TestHelperServices:
 class TestConflictResolutionService:
     """Tests for conflict_resolution_service.py (149 lines)."""
 
-    def test_detect_conflicts(self, db_session, sample_project):
+    def test_detect_conflicts(self, db_session, sample_project) -> None:
         """Test conflict detection."""
         from tracertm.services.conflict_resolution_service import ConflictResolutionService
 
@@ -457,7 +461,7 @@ class TestConflictResolutionService:
         conflicts = service.detect_conflicts(sample_project.id)
         assert isinstance(conflicts, list)
 
-    def test_resolve_conflict(self, db_session):
+    def test_resolve_conflict(self, db_session) -> None:
         """Test conflict resolution."""
         from tracertm.services.conflict_resolution_service import ConflictResolutionService
 
@@ -476,7 +480,7 @@ class TestConflictResolutionService:
 class TestSecurityComplianceService:
     """Tests for security_compliance_service.py (157 lines)."""
 
-    def test_enable_encryption(self, db_session):
+    def test_enable_encryption(self, db_session) -> None:
         """Test enabling encryption."""
         from tracertm.services.security_compliance_service import SecurityComplianceService
 
@@ -486,7 +490,7 @@ class TestSecurityComplianceService:
         assert isinstance(result, dict)
         assert result["encryption_enabled"] is True
 
-    def test_log_audit_event(self, db_session):
+    def test_log_audit_event(self, db_session) -> None:
         """Test audit event logging."""
         from tracertm.services.security_compliance_service import SecurityComplianceService
 
@@ -496,7 +500,7 @@ class TestSecurityComplianceService:
         assert isinstance(result, dict)
         assert result["logged"] is True
 
-    def test_validate_access_control(self, db_session):
+    def test_validate_access_control(self, db_session) -> None:
         """Test access control validation."""
         from tracertm.services.security_compliance_service import SecurityComplianceService
 
@@ -515,19 +519,19 @@ class TestSecurityComplianceService:
 class TestDocumentationService:
     """Tests for documentation_service.py (172 lines)."""
 
-    def test_register_endpoint(self):
+    def test_register_endpoint(self) -> None:
         """Test registering an API endpoint."""
         from tracertm.services.documentation_service import DocumentationService
 
         service = DocumentationService()
 
         endpoint = service.register_endpoint(
-            path="/api/items", method="GET", description="Get items", parameters=[], response_schema={"type": "array"}
+            path="/api/items", method="GET", description="Get items", parameters=[], response_schema={"type": "array"},
         )
         assert isinstance(endpoint, dict)
         assert endpoint["path"] == "/api/items"
 
-    def test_register_schema(self):
+    def test_register_schema(self) -> None:
         """Test registering a data schema."""
         from tracertm.services.documentation_service import DocumentationService
 
@@ -537,19 +541,19 @@ class TestDocumentationService:
         assert isinstance(schema, dict)
         assert schema["name"] == "Item"
 
-    def test_add_example(self):
+    def test_add_example(self) -> None:
         """Test adding examples."""
         from tracertm.services.documentation_service import DocumentationService
 
         service = DocumentationService()
 
         example = service.add_example(
-            endpoint_path="/api/items", method="GET", example_name="list-items", request={}, response={"items": []}
+            endpoint_path="/api/items", method="GET", example_name="list-items", request={}, response={"items": []},
         )
         assert isinstance(example, dict)
         assert example["name"] == "list-items"
 
-    def test_generate_openapi_spec(self):
+    def test_generate_openapi_spec(self) -> None:
         """Test generating OpenAPI specification."""
         from tracertm.services.documentation_service import DocumentationService
 
@@ -557,14 +561,14 @@ class TestDocumentationService:
 
         # Register an endpoint first
         service.register_endpoint(
-            path="/api/test", method="GET", description="Test endpoint", parameters=[], response_schema={}
+            path="/api/test", method="GET", description="Test endpoint", parameters=[], response_schema={},
         )
 
         spec = service.generate_openapi_spec()
         assert isinstance(spec, dict)
         assert spec["openapi"] == "3.0.0"
 
-    def test_generate_markdown_docs(self):
+    def test_generate_markdown_docs(self) -> None:
         """Test generating markdown documentation."""
         from tracertm.services.documentation_service import DocumentationService
 
@@ -591,14 +595,14 @@ class TestDocumentationService:
 class TestPerformanceServices:
     """Tests for performance-related services."""
 
-    def test_performance_service_basics(self, db_session):
+    def test_performance_service_basics(self, db_session) -> None:
         """Test performance service basic operations."""
         from tracertm.services.performance_service import PerformanceService
 
         service = PerformanceService(db_session)
         assert service is not None
 
-    def test_performance_tuning_service_metrics(self, db_session):
+    def test_performance_tuning_service_metrics(self, db_session) -> None:
         """Test performance tuning service metrics."""
         from tracertm.services.performance_tuning_service import PerformanceTuningService
 
@@ -620,7 +624,7 @@ class TestPerformanceServices:
 class TestPluginService:
     """Tests for plugin_service.py (172 lines)."""
 
-    def test_list_plugins(self):
+    def test_list_plugins(self) -> None:
         """Test listing plugins."""
         from tracertm.services.plugin_service import PluginService
 
@@ -629,7 +633,7 @@ class TestPluginService:
         plugins = service.list_plugins()
         assert isinstance(plugins, list)
 
-    def test_get_plugin(self):
+    def test_get_plugin(self) -> None:
         """Test getting a plugin."""
         from tracertm.services.plugin_service import PluginService
 
@@ -639,7 +643,7 @@ class TestPluginService:
         result = service.get_plugin("nonexistent-plugin")
         assert result is None
 
-    def test_enable_disable_plugin(self):
+    def test_enable_disable_plugin(self) -> None:
         """Test enabling and disabling plugins."""
         from tracertm.services.plugin_service import PluginService
 
@@ -658,7 +662,7 @@ class TestPluginService:
 class TestAdvancedAnalyticsService:
     """Tests for advanced_analytics_service.py (172 lines)."""
 
-    def test_advanced_analytics_service_init(self, db_session):
+    def test_advanced_analytics_service_init(self, db_session) -> None:
         """Test service initialization."""
         from tracertm.services.advanced_analytics_service import AdvancedAnalyticsService
 
@@ -674,28 +678,28 @@ class TestAdvancedAnalyticsService:
 class TestAgentServices:
     """Tests for agent-related services."""
 
-    def test_agent_performance_service_init(self, db_session):
+    def test_agent_performance_service_init(self, db_session) -> None:
         """Test agent performance service initialization."""
         from tracertm.services.agent_performance_service import AgentPerformanceService
 
         service = AgentPerformanceService(db_session)
         assert service is not None
 
-    def test_agent_monitoring_service_init(self, db_session):
+    def test_agent_monitoring_service_init(self, db_session) -> None:
         """Test agent monitoring service initialization."""
         from tracertm.services.agent_monitoring_service import AgentMonitoringService
 
         service = AgentMonitoringService(db_session)
         assert service is not None
 
-    def test_agent_metrics_service_init(self, db_session):
+    def test_agent_metrics_service_init(self, db_session) -> None:
         """Test agent metrics service initialization."""
         from tracertm.services.agent_metrics_service import AgentMetricsService
 
         service = AgentMetricsService(db_session)
         assert service is not None
 
-    def test_agent_coordination_service_init(self, db_session):
+    def test_agent_coordination_service_init(self, db_session) -> None:
         """Test agent coordination service initialization."""
         from tracertm.services.agent_coordination_service import AgentCoordinationService
 
@@ -711,14 +715,14 @@ class TestAgentServices:
 class TestCriticalPathServices:
     """Tests for critical path and dependency analysis services."""
 
-    def test_critical_path_service_init(self, db_session):
+    def test_critical_path_service_init(self, db_session) -> None:
         """Test critical path service initialization."""
         from tracertm.services.critical_path_service import CriticalPathService
 
         service = CriticalPathService(db_session)
         assert service is not None
 
-    def test_shortest_path_service_init(self, db_session):
+    def test_shortest_path_service_init(self, db_session) -> None:
         """Test shortest path service initialization."""
         from tracertm.services.shortest_path_service import ShortestPathService
 
@@ -734,21 +738,21 @@ class TestCriticalPathServices:
 class TestExportImportServices:
     """Tests for export and import services."""
 
-    def test_export_service_init(self, db_session):
+    def test_export_service_init(self, db_session) -> None:
         """Test export service initialization."""
         from tracertm.services.export_service import ExportService
 
         service = ExportService(db_session)
         assert service is not None
 
-    def test_import_service_init(self, db_session):
+    def test_import_service_init(self, db_session) -> None:
         """Test import service initialization."""
         from tracertm.services.import_service import ImportService
 
         service = ImportService(db_session)
         assert service is not None
 
-    def test_export_import_service_init(self, db_session):
+    def test_export_import_service_init(self, db_session) -> None:
         """Test combined export/import service initialization."""
         from tracertm.services.export_import_service import ExportImportService
 
@@ -764,21 +768,21 @@ class TestExportImportServices:
 class TestUIServices:
     """Tests for TUI and visualization services."""
 
-    def test_tui_service_init(self):
+    def test_tui_service_init(self) -> None:
         """Test TUI service initialization."""
         from tracertm.services.tui_service import TUIService
 
         service = TUIService()
         assert service is not None
 
-    def test_visualization_service_init(self):
+    def test_visualization_service_init(self) -> None:
         """Test visualization service initialization."""
         from tracertm.services.visualization_service import VisualizationService
 
         service = VisualizationService()
         assert service is not None
 
-    def test_view_registry_service_init(self):
+    def test_view_registry_service_init(self) -> None:
         """Test view registry service initialization."""
         from tracertm.services.view_registry_service import ViewRegistryService
 
@@ -794,7 +798,7 @@ class TestUIServices:
 class TestEventSourcingServices:
     """Tests for event sourcing and history services."""
 
-    def test_event_sourcing_service(self, db_session):
+    def test_event_sourcing_service(self, db_session) -> None:
         """Test event sourcing service."""
         from tracertm.services.event_sourcing_service import EventSourcingService
 
@@ -812,21 +816,21 @@ class TestEventSourcingServices:
 class TestTraceabilityServices:
     """Tests for traceability-related services."""
 
-    def test_traceability_service_init(self, db_session):
+    def test_traceability_service_init(self, db_session) -> None:
         """Test core traceability service initialization."""
         from tracertm.services.traceability_service import TraceabilityService
 
         service = TraceabilityService(db_session)
         assert service is not None
 
-    def test_traceability_matrix_service_init(self, db_session):
+    def test_traceability_matrix_service_init(self, db_session) -> None:
         """Test traceability matrix service initialization."""
         from tracertm.services.traceability_matrix_service import TraceabilityMatrixService
 
         service = TraceabilityMatrixService(db_session)
         assert service is not None
 
-    def test_advanced_traceability_service_init(self, db_session):
+    def test_advanced_traceability_service_init(self, db_session) -> None:
         """Test advanced traceability service initialization."""
         from tracertm.services.advanced_traceability_service import AdvancedTraceabilityService
 
@@ -842,7 +846,7 @@ class TestTraceabilityServices:
 class TestConcurrentOperationsService:
     """Tests for concurrent_operations_service.py (169 lines)."""
 
-    def test_concurrent_operations_init(self, db_session):
+    def test_concurrent_operations_init(self, db_session) -> None:
         """Test concurrent operations service initialization."""
         from tracertm.services.concurrent_operations_service import ConcurrentOperationsService
 
@@ -858,7 +862,7 @@ class TestConcurrentOperationsService:
 class TestQueryOptimizationServices:
     """Tests for query optimization services."""
 
-    def test_query_optimization_service_init(self, db_session):
+    def test_query_optimization_service_init(self, db_session) -> None:
         """Test query optimization service initialization."""
         from tracertm.services.query_optimization_service import QueryOptimizationService
 
@@ -874,14 +878,14 @@ class TestQueryOptimizationServices:
 class TestBulkOperationsServices:
     """Tests for bulk operations services."""
 
-    def test_bulk_service_init(self, db_session):
+    def test_bulk_service_init(self, db_session) -> None:
         """Test bulk service initialization."""
         from tracertm.services.bulk_operation_service import BulkOperationService
 
         service = BulkOperationService(db_session)
         assert service is not None
 
-    def test_bulk_operation_service_init(self, db_session):
+    def test_bulk_operation_service_init(self, db_session) -> None:
         """Test bulk operation service initialization."""
         from tracertm.services.bulk_operation_service import BulkOperationService
 
@@ -897,7 +901,7 @@ class TestBulkOperationsServices:
 class TestMaterializedViewServices:
     """Tests for materialized_view_service.py (188 lines)."""
 
-    def test_materialized_view_service_init(self, db_session):
+    def test_materialized_view_service_init(self, db_session) -> None:
         """Test materialized view service initialization."""
         from tracertm.services.materialized_view_service import MaterializedViewService
 
@@ -913,35 +917,35 @@ class TestMaterializedViewServices:
 class TestIntegrationServices:
     """Tests for external integration services."""
 
-    def test_external_integration_service_init(self):
+    def test_external_integration_service_init(self) -> None:
         """Test external integration service initialization."""
         from tracertm.services.external_integration_service import ExternalIntegrationService
 
         service = ExternalIntegrationService()
         assert service is not None
 
-    def test_api_webhooks_service_init(self):
+    def test_api_webhooks_service_init(self) -> None:
         """Test API webhooks service initialization."""
         from tracertm.services.api_webhooks_service import APIWebhooksService
 
         service = APIWebhooksService()
         assert service is not None
 
-    def test_github_import_service_init(self, db_session):
+    def test_github_import_service_init(self, db_session) -> None:
         """Test GitHub import service initialization."""
         from tracertm.services.github_import_service import GitHubImportService
 
         service = GitHubImportService(db_session)
         assert service is not None
 
-    def test_jira_import_service_init(self, db_session):
+    def test_jira_import_service_init(self, db_session) -> None:
         """Test Jira import service initialization."""
         from tracertm.services.jira_import_service import JiraImportService
 
         service = JiraImportService(db_session)
         assert service is not None
 
-    def test_commit_linking_service_init(self, db_session):
+    def test_commit_linking_service_init(self, db_session) -> None:
         """Test commit linking service initialization."""
         from tracertm.services.commit_linking_service import CommitLinkingService
 
@@ -957,14 +961,14 @@ class TestIntegrationServices:
 class TestMonitoringServices:
     """Tests for monitoring and metrics services."""
 
-    def test_progress_tracking_service_init(self, db_session):
+    def test_progress_tracking_service_init(self, db_session) -> None:
         """Test progress tracking service initialization."""
         from tracertm.services.progress_tracking_service import ProgressTrackingService
 
         service = ProgressTrackingService(db_session)
         assert service is not None
 
-    def test_progress_service_init(self, db_session):
+    def test_progress_service_init(self, db_session) -> None:
         """Test progress service initialization."""
         from tracertm.services.progress_service import ProgressService
 
@@ -980,14 +984,14 @@ class TestMonitoringServices:
 class TestRepairServices:
     """Tests for repair and maintenance services."""
 
-    def test_repair_service_init(self, db_session):
+    def test_repair_service_init(self, db_session) -> None:
         """Test repair service initialization."""
         from tracertm.services.repair_service import RepairService
 
         service = RepairService(db_session)
         assert service is not None
 
-    def test_verification_service_init(self, db_session):
+    def test_verification_service_init(self, db_session) -> None:
         """Test verification service initialization."""
         from tracertm.services.verification_service import VerificationService
 
@@ -1003,7 +1007,7 @@ class TestRepairServices:
 class TestCrossServiceInteractions:
     """Test interactions between multiple services."""
 
-    def test_status_change_triggers_event(self, db_session, sample_items):
+    def test_status_change_triggers_event(self, db_session, sample_items) -> None:
         """Test that status changes trigger events."""
         from tracertm.services.status_workflow_service import StatusWorkflowService
 
@@ -1022,7 +1026,7 @@ class TestCrossServiceInteractions:
 
         assert len(events) > 0
 
-    def test_auto_link_with_existing_link_detection(self, db_session, sample_project, sample_items, sample_links):
+    def test_auto_link_with_existing_link_detection(self, db_session, sample_project, sample_items, sample_links) -> None:
         """Test auto-linking with duplicate detection."""
         from tracertm.services.auto_link_service import AutoLinkService
 
@@ -1034,18 +1038,16 @@ class TestCrossServiceInteractions:
         # Should not create new links due to deduplication
         assert isinstance(links, list)
 
-    def test_cache_with_query_optimization(self):
+    def test_cache_with_query_optimization(self) -> None:
         """Test cache service with query optimization."""
         from typing import cast
         from unittest.mock import MagicMock
-
-        from sqlalchemy.ext.asyncio import AsyncSession
 
         from tracertm.services.cache_service import CacheService
         from tracertm.services.query_optimization_service import QueryOptimizationService
 
         cache = CacheService()
-        optimizer = QueryOptimizationService(cast(AsyncSession, MagicMock()))
+        optimizer = QueryOptimizationService(cast("AsyncSession", MagicMock()))
 
         # Cache optimized queries
         assert cache is not None
@@ -1060,7 +1062,7 @@ class TestCrossServiceInteractions:
 class TestEdgeCasesAndErrorHandling:
     """Test edge cases and error handling across services."""
 
-    def test_empty_project_operations(self, db_session):
+    def test_empty_project_operations(self, db_session) -> None:
         """Test operations on empty project."""
         from tracertm.services.traceability_service import TraceabilityService
 
@@ -1074,7 +1076,7 @@ class TestEdgeCasesAndErrorHandling:
         # Service should initialize successfully
         assert service is not None
 
-    def test_circular_dependencies(self, db_session, sample_project, sample_items):
+    def test_circular_dependencies(self, db_session, sample_project, sample_items) -> None:
         """Test handling of circular dependencies."""
         # Create circular link
         circular_link = Link(
@@ -1093,7 +1095,7 @@ class TestEdgeCasesAndErrorHandling:
         # Service should initialize even with circular references
         assert service is not None
 
-    def test_null_values_handling(self, db_session, sample_project):
+    def test_null_values_handling(self, db_session, sample_project) -> None:
         """Test handling of null/none values."""
         from tracertm.services.status_workflow_service import StatusWorkflowService
 
@@ -1115,7 +1117,7 @@ class TestEdgeCasesAndErrorHandling:
         result = service.validate_transition(None, "in_progress")  # type: ignore[arg-type]
         assert isinstance(result, bool)
 
-    def test_concurrent_status_updates(self, db_session, sample_items):
+    def test_concurrent_status_updates(self, db_session, sample_items) -> None:
         """Test handling of concurrent status updates."""
         from tracertm.services.status_workflow_service import StatusWorkflowService
 
@@ -1138,7 +1140,7 @@ class TestEdgeCasesAndErrorHandling:
 class TestPerformance:
     """Test performance characteristics of services."""
 
-    def test_bulk_status_updates_performance(self, db_session, sample_items):
+    def test_bulk_status_updates_performance(self, db_session, sample_items) -> None:
         """Test performance of bulk status updates."""
         from tracertm.services.status_workflow_service import StatusWorkflowService
 
@@ -1160,7 +1162,7 @@ class TestPerformance:
         # Should complete reasonably quickly (within 10 seconds)
         assert elapsed < 10.0
 
-    def test_cache_hit_rate(self):
+    def test_cache_hit_rate(self) -> None:
         """Test cache hit rate calculation."""
         from tracertm.services.cache_service import CacheService
 

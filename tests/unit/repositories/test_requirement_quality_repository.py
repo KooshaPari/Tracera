@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for RequirementQualityRepository to achieve 85%+ coverage.
+"""Comprehensive unit tests for RequirementQualityRepository to achieve 85%+ coverage.
 
 Tests for:
 - create() - requirement quality spec creation
@@ -56,7 +55,7 @@ async def create_test_item(db_session: AsyncSession, project_id: str, title: str
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_basic(db_session: AsyncSession):
+async def test_create_basic(db_session: AsyncSession) -> None:
     """Test creating requirement quality spec with basic fields."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -80,7 +79,7 @@ async def test_create_basic(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_with_quality_scores(db_session: AsyncSession):
+async def test_create_with_quality_scores(db_session: AsyncSession) -> None:
     """Test creating spec with quality scores."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -106,7 +105,7 @@ async def test_create_with_quality_scores(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_with_impact_metrics(db_session: AsyncSession):
+async def test_create_with_impact_metrics(db_session: AsyncSession) -> None:
     """Test creating spec with impact metrics."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -131,7 +130,7 @@ async def test_create_with_impact_metrics(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_with_wsjf(db_session: AsyncSession):
+async def test_create_with_wsjf(db_session: AsyncSession) -> None:
     """Test creating spec with WSJF score."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -158,7 +157,7 @@ async def test_create_with_wsjf(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_verified(db_session: AsyncSession):
+async def test_create_verified(db_session: AsyncSession) -> None:
     """Test creating verified spec."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -182,7 +181,7 @@ async def test_create_verified(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_existing(db_session: AsyncSession):
+async def test_get_by_id_existing(db_session: AsyncSession) -> None:
     """Test get_by_id returns spec when it exists."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -200,7 +199,7 @@ async def test_get_by_id_existing(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_nonexistent(db_session: AsyncSession):
+async def test_get_by_id_nonexistent(db_session: AsyncSession) -> None:
     """Test get_by_id returns None when spec doesn't exist."""
     repo = RequirementQualityRepository(db_session)
     found = await repo.get_by_id("nonexistent-id")
@@ -214,7 +213,7 @@ async def test_get_by_id_nonexistent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_item_id_existing(db_session: AsyncSession):
+async def test_get_by_item_id_existing(db_session: AsyncSession) -> None:
     """Test get_by_item_id returns spec when it exists."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -232,7 +231,7 @@ async def test_get_by_item_id_existing(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_item_id_nonexistent(db_session: AsyncSession):
+async def test_get_by_item_id_nonexistent(db_session: AsyncSession) -> None:
     """Test get_by_item_id returns None when spec doesn't exist."""
     repo = RequirementQualityRepository(db_session)
     found = await repo.get_by_item_id("nonexistent-id")
@@ -246,7 +245,7 @@ async def test_get_by_item_id_nonexistent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_by_project_basic(db_session: AsyncSession):
+async def test_list_by_project_basic(db_session: AsyncSession) -> None:
     """Test listing specs by project."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -264,7 +263,7 @@ async def test_list_by_project_basic(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_by_project_pagination(db_session: AsyncSession):
+async def test_list_by_project_pagination(db_session: AsyncSession) -> None:
     """Test listing specs with pagination."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -285,7 +284,7 @@ async def test_list_by_project_pagination(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_by_project_ascending_order(db_session: AsyncSession):
+async def test_list_by_project_ascending_order(db_session: AsyncSession) -> None:
     """Test listing specs with ascending order."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -308,7 +307,7 @@ async def test_list_by_project_ascending_order(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_by_quality_score(db_session: AsyncSession):
+async def test_list_by_quality_score(db_session: AsyncSession) -> None:
     """Test listing specs by quality score range."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -338,7 +337,7 @@ async def test_list_by_quality_score(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_high_volatility(db_session: AsyncSession):
+async def test_list_high_volatility(db_session: AsyncSession) -> None:
     """Test listing high volatility specs."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -368,7 +367,7 @@ async def test_list_high_volatility(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_high_impact(db_session: AsyncSession):
+async def test_list_high_impact(db_session: AsyncSession) -> None:
     """Test listing high impact specs."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -398,7 +397,7 @@ async def test_list_high_impact(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_unverified(db_session: AsyncSession):
+async def test_list_unverified(db_session: AsyncSession) -> None:
     """Test listing unverified specs."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -426,7 +425,7 @@ async def test_list_unverified(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_by_wsjf_priority(db_session: AsyncSession):
+async def test_list_by_wsjf_priority(db_session: AsyncSession) -> None:
     """Test listing specs by WSJF priority."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -458,7 +457,7 @@ async def test_list_by_wsjf_priority(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_quality_scores(db_session: AsyncSession):
+async def test_update_quality_scores(db_session: AsyncSession) -> None:
     """Test updating quality scores."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -483,7 +482,7 @@ async def test_update_quality_scores(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_verification(db_session: AsyncSession):
+async def test_update_verification(db_session: AsyncSession) -> None:
     """Test updating verification status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -510,7 +509,7 @@ async def test_update_verification(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_nonexistent_raises_error(db_session: AsyncSession):
+async def test_update_nonexistent_raises_error(db_session: AsyncSession) -> None:
     """Test updating nonexistent spec raises ValueError."""
     repo = RequirementQualityRepository(db_session)
 
@@ -520,7 +519,7 @@ async def test_update_nonexistent_raises_error(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_all_fields(db_session: AsyncSession):
+async def test_update_all_fields(db_session: AsyncSession) -> None:
     """Test updating all available fields."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -567,7 +566,7 @@ async def test_update_all_fields(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_success(db_session: AsyncSession):
+async def test_delete_success(db_session: AsyncSession) -> None:
     """Test deleting spec."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -588,7 +587,7 @@ async def test_delete_success(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_nonexistent(db_session: AsyncSession):
+async def test_delete_nonexistent(db_session: AsyncSession) -> None:
     """Test deleting nonexistent spec returns False."""
     repo = RequirementQualityRepository(db_session)
     result = await repo.delete("nonexistent-id")
@@ -597,7 +596,7 @@ async def test_delete_nonexistent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_by_item_id_success(db_session: AsyncSession):
+async def test_delete_by_item_id_success(db_session: AsyncSession) -> None:
     """Test deleting spec by item ID."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -618,7 +617,7 @@ async def test_delete_by_item_id_success(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_by_item_id_nonexistent(db_session: AsyncSession):
+async def test_delete_by_item_id_nonexistent(db_session: AsyncSession) -> None:
     """Test deleting by nonexistent item ID returns False."""
     repo = RequirementQualityRepository(db_session)
     result = await repo.delete_by_item_id("nonexistent-id")
@@ -632,7 +631,7 @@ async def test_delete_by_item_id_nonexistent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_stats(db_session: AsyncSession):
+async def test_get_stats(db_session: AsyncSession) -> None:
     """Test getting aggregate statistics."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -664,7 +663,7 @@ async def test_get_stats(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_stats_empty_project(db_session: AsyncSession):
+async def test_get_stats_empty_project(db_session: AsyncSession) -> None:
     """Test getting stats for empty project."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())

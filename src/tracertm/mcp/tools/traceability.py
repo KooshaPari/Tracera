@@ -1,5 +1,4 @@
-"""
-Traceability analysis MCP tools.
+"""Traceability analysis MCP tools.
 
 Provides tools for gap analysis, impact analysis, traceability matrix,
 and project health metrics.
@@ -42,7 +41,8 @@ async def find_gaps(
         List of unlinked items (gaps)
     """
     if not from_view or not to_view:
-        raise ToolError("from_view and to_view are required.")
+        msg = "from_view and to_view are required."
+        raise ToolError(msg)
 
     project_id = require_project()
     from_view = from_view.upper()
@@ -136,7 +136,8 @@ async def analyze_impact(
         Impact tree with affected items by depth
     """
     if not item_id:
-        raise ToolError("item_id is required.")
+        msg = "item_id is required."
+        raise ToolError(msg)
 
     require_project()  # enforce project context
 
@@ -182,7 +183,8 @@ async def analyze_reverse_impact(
         Dependency tree with upstream items by depth
     """
     if not item_id:
-        raise ToolError("item_id is required.")
+        msg = "item_id is required."
+        raise ToolError(msg)
 
     require_project()  # enforce project context
 

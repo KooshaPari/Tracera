@@ -31,7 +31,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|user.*flow|user.*path|scenario/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
     });
 
     test('should list available journeys', async ({ page }) => {
@@ -40,7 +40,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario|flow/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -57,7 +57,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario|flow/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -78,7 +78,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario|flow/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -103,7 +103,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario|flow/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -127,7 +127,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       // Select a journey
       await journeySelector.click();
       await page.waitForTimeout(300);
@@ -145,7 +145,7 @@ test.describe('Journey Overlay', () => {
       const highlightedNodes = page.locator(
         "[class*='journey'], [class*='highlighted'], [class*='active']",
       );
-      await expect(highlightedNodes.first()).toBeVisible({ timeout: 10000 });
+      await expect(highlightedNodes.first()).toBeVisible({ timeout: 10_000 });
     });
 
     test('should show journey path visualization', async ({ page }) => {
@@ -154,7 +154,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -169,7 +169,7 @@ test.describe('Journey Overlay', () => {
 
       // Look for journey path visualization
       const journeyEdges = page.locator(".react-flow__edges [class*='journey'], [class*='path']");
-      await expect(journeyEdges.first()).toBeVisible({ timeout: 10000 });
+      await expect(journeyEdges.first()).toBeVisible({ timeout: 10_000 });
     });
 
     test('should distinguish journey start and end nodes', async ({ page }) => {
@@ -178,7 +178,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -195,7 +195,7 @@ test.describe('Journey Overlay', () => {
       const startNode = page.locator("[class*='start'], [class*='begin']");
       const endNode = page.locator("[class*='end'], [class*='finish']");
 
-      await expect(startNode.or(endNode)).toBeVisible({ timeout: 10000 });
+      await expect(startNode.or(endNode)).toBeVisible({ timeout: 10_000 });
     });
 
     test('should highlight journey sequence steps', async ({ page }) => {
@@ -204,7 +204,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -219,7 +219,7 @@ test.describe('Journey Overlay', () => {
 
       // Look for step badge or marker
       const stepMarkers = page.locator("[class*='step'], [class*='sequence']");
-      await expect(stepMarkers.first()).toBeVisible({ timeout: 10000 });
+      await expect(stepMarkers.first()).toBeVisible({ timeout: 10_000 });
     });
   });
 
@@ -230,7 +230,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -245,7 +245,7 @@ test.describe('Journey Overlay', () => {
 
       // Look for statistics panel
       const statsPanel = page.locator("[class*='stats'], [class*='metrics'], [class*='summary']");
-      await expect(statsPanel).toBeVisible({ timeout: 10000 });
+      await expect(statsPanel).toBeVisible({ timeout: 10_000 });
     });
 
     test('should show journey step count', async ({ page }) => {
@@ -254,7 +254,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -269,7 +269,7 @@ test.describe('Journey Overlay', () => {
 
       // Look for step count
       const stepCount = page.getByText(/step|count|length|items?/i);
-      await expect(stepCount.first()).toBeVisible({ timeout: 10000 });
+      await expect(stepCount.first()).toBeVisible({ timeout: 10_000 });
     });
 
     test('should display journey coverage metrics', async ({ page }) => {
@@ -278,7 +278,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -293,7 +293,7 @@ test.describe('Journey Overlay', () => {
 
       // Look for coverage metric
       const coverage = page.getByText(/coverage|cover|percent|%/i);
-      await expect(coverage.first()).toBeVisible({ timeout: 10000 });
+      await expect(coverage.first()).toBeVisible({ timeout: 10_000 });
     });
 
     test('should show journey completion status', async ({ page }) => {
@@ -302,7 +302,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -317,7 +317,7 @@ test.describe('Journey Overlay', () => {
 
       // Look for completion status
       const status = page.getByText(/complete|done|pending|in.*progress|status/i);
-      await expect(status.first()).toBeVisible({ timeout: 10000 });
+      await expect(status.first()).toBeVisible({ timeout: 10_000 });
     });
   });
 
@@ -328,7 +328,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -347,7 +347,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /next|forward|right/i })
         .first();
 
-      await expect(nextBtn).toBeVisible({ timeout: 10000 });
+      await expect(nextBtn).toBeVisible({ timeout: 10_000 });
       await nextBtn.click();
       await page.waitForTimeout(500);
     });
@@ -358,7 +358,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -374,7 +374,7 @@ test.describe('Journey Overlay', () => {
       // Look for journey step list/explorer
       const stepList = page.locator("ul, [role='list']").filter({ hasText: /step|item|node/i });
 
-      await expect(stepList).toBeVisible({ timeout: 10000 });
+      await expect(stepList).toBeVisible({ timeout: 10_000 });
       const steps = stepList.locator("li, [role='listitem']");
       await expect(steps.nth(1)).toBeVisible({ timeout: 5000 });
       // Click second step
@@ -388,7 +388,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -404,7 +404,7 @@ test.describe('Journey Overlay', () => {
       // Look for journey step list
       const stepList = page.locator("ul, [role='list']").filter({ hasText: /step|item/i });
 
-      await expect(stepList).toBeVisible({ timeout: 10000 });
+      await expect(stepList).toBeVisible({ timeout: 10_000 });
       const steps = stepList.locator("li, [role='listitem']");
 
       await expect(steps.nth(1)).toBeVisible({ timeout: 5000 });
@@ -420,7 +420,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       // Get initial node count
       const initialCount = await page.locator('.react-flow__nodes > div[data-id]').count();
 
@@ -442,7 +442,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /filter|journey.*only|show.*only/i })
         .first();
 
-      await expect(filterToggle).toBeVisible({ timeout: 10000 });
+      await expect(filterToggle).toBeVisible({ timeout: 10_000 });
       await filterToggle.click();
       await page.waitForTimeout(500);
 
@@ -458,7 +458,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /maturity|status|type/i })
         .first();
 
-      await expect(maturityFilter).toBeVisible({ timeout: 10000 });
+      await expect(maturityFilter).toBeVisible({ timeout: 10_000 });
       await maturityFilter.click();
       await page.waitForTimeout(300);
 
@@ -499,7 +499,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -523,7 +523,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /clear|reset|none|remove/i })
         .first();
 
-      await expect(clearBtn).toBeVisible({ timeout: 10000 });
+      await expect(clearBtn).toBeVisible({ timeout: 10_000 });
       await clearBtn.click();
       await page.waitForTimeout(500);
 
@@ -541,7 +541,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /journey|scenario/i })
         .first();
 
-      await expect(journeySelector).toBeVisible({ timeout: 10000 });
+      await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       await journeySelector.click();
       await page.waitForTimeout(300);
 
@@ -562,7 +562,7 @@ test.describe('Journey Overlay', () => {
         .filter({ hasText: /clear|reset|none/i })
         .first();
 
-      await expect(clearBtn).toBeVisible({ timeout: 10000 });
+      await expect(clearBtn).toBeVisible({ timeout: 10_000 });
       await clearBtn.click();
       await page.waitForTimeout(500);
 

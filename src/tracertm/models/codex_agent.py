@@ -1,5 +1,4 @@
-"""
-Codex Agent Interaction model for QA Integration system.
+"""Codex Agent Interaction model for QA Integration system.
 
 Tracks AI agent tasks for code review, image/video analysis, and test generation.
 """
@@ -22,8 +21,7 @@ def generate_codex_uuid() -> str:
 
 
 class CodexAgentInteraction(Base):
-    """
-    Codex Agent Interaction model for tracking AI agent tasks.
+    """Codex Agent Interaction model for tracking AI agent tasks.
 
     Logs interactions with Codex CLI for reviewing images, videos,
     code, and generating tests.

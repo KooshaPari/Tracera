@@ -1,5 +1,4 @@
-"""
-Integration tests for Epic 3: YAML export format (FR30).
+"""Integration tests for Epic 3: YAML export format (FR30).
 
 Tests the rtm export --format yaml command.
 """
@@ -22,7 +21,7 @@ def runner():
 
 
 @pytest.fixture
-def temp_project(runner, tmp_path, monkeypatch):
+def temp_project(runner, tmp_path, monkeypatch) -> str:
     """Create a temporary project for testing."""
     # Set up temporary config directory
     config_dir = tmp_path / ".config" / "tracertm"
@@ -50,7 +49,7 @@ def temp_project(runner, tmp_path, monkeypatch):
     return "test-project"
 
 
-def test_export_yaml_format(runner, temp_project):
+def test_export_yaml_format(runner, temp_project) -> None:
     """Test export to YAML format (FR30)."""
     # Create test items
     runner.invoke(
@@ -81,7 +80,7 @@ def test_export_yaml_format(runner, temp_project):
     assert yaml_data["items"][0]["title"] == "Test Feature"
 
 
-def test_export_yaml_to_file(runner, temp_project, tmp_path):
+def test_export_yaml_to_file(runner, temp_project, tmp_path) -> None:
     """Test export YAML to file."""
     # Create test item
     runner.invoke(
@@ -104,13 +103,13 @@ def test_export_yaml_to_file(runner, temp_project, tmp_path):
     assert output_file.exists()
 
     # Verify file content
-    with pathlib.Path(output_file).open() as f:
+    with pathlib.Path(output_file).open(encoding="utf-8") as f:
         yaml_data = yaml.safe_load(f)
         assert "items" in yaml_data
         assert len(yaml_data["items"]) > 0
 
 
-def test_export_yaml_includes_all_data(runner, temp_project):
+def test_export_yaml_includes_all_data(runner, temp_project) -> None:
     """Test YAML export includes all required fields."""
     # Create item with metadata
     runner.invoke(

@@ -1,5 +1,4 @@
-"""
-Enhanced Item Specification Models for TraceRTM.
+"""Enhanced Item Specification Models for TraceRTM.
 
 Provides comprehensive models for:
 - RequirementSpec: Detailed requirement specifications with quality metrics
@@ -251,8 +250,7 @@ class DefectStatus(StrEnum):
 
 
 class RequirementSpec(Base, TimestampMixin):
-    """
-    Specification for a requirement item.
+    """Specification for a requirement item.
 
     Tracks detailed requirement information including type, constraints,
     quality metrics, verification status, and volatility.
@@ -315,7 +313,7 @@ class RequirementSpec(Base, TimestampMixin):
 
     # Verification and Traceability
     verification_status: Mapped[str] = mapped_column(
-        String(50), nullable=False, default=VerificationStatus.UNVERIFIED.value
+        String(50), nullable=False, default=VerificationStatus.UNVERIFIED.value,
     )
     verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     verified_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -332,7 +330,7 @@ class RequirementSpec(Base, TimestampMixin):
     # Content Addressing (IPFS-style)
     content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)  # SHA-256 hash of content
     content_cid: Mapped[str | None] = mapped_column(
-        String(100), nullable=True, index=True
+        String(100), nullable=True, index=True,
     )  # IPFS-style Content Identifier
     merkle_root: Mapped[str | None] = mapped_column(String(64), nullable=True)  # For baseline verification
     version_chain_head: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Latest version hash
@@ -346,7 +344,7 @@ class RequirementSpec(Base, TimestampMixin):
     # EARS (Easy Approach to Requirements Syntax) Classification
     # =========================================================================
     ears_pattern_type: Mapped[str | None] = mapped_column(
-        String(50), nullable=True
+        String(50), nullable=True,
     )  # ubiquitous, event_driven, state_driven, etc.
     ears_trigger: Mapped[str | None] = mapped_column(Text, nullable=True)
     ears_precondition: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -359,7 +357,7 @@ class RequirementSpec(Base, TimestampMixin):
     # ISO 29148 Quality Dimensions
     # =========================================================================
     quality_dimensions: Mapped[dict[str, float]] = mapped_column(
-        JSONType, nullable=False, default=dict
+        JSONType, nullable=False, default=dict,
     )  # {dimension: score 0-1}
     quality_grade: Mapped[str | None] = mapped_column(String(5), nullable=True)  # A, B, C, D, F
 
@@ -367,7 +365,7 @@ class RequirementSpec(Base, TimestampMixin):
     # Formal Verification
     # =========================================================================
     formal_constraints: Mapped[list[dict[str, Any]] | None] = mapped_column(
-        JSONType, nullable=True
+        JSONType, nullable=True,
     )  # Z3-style constraints
     invariants: Mapped[list[dict[str, Any]]] = mapped_column(JSONType, nullable=False, default=list)
 
@@ -404,8 +402,7 @@ class RequirementSpec(Base, TimestampMixin):
 
 
 class TestSpec(Base, TimestampMixin):
-    """
-    Specification for a test item.
+    """Specification for a test item.
 
     Tracks test information including type, execution history, flakiness,
     performance metrics, and quarantine status.
@@ -488,7 +485,7 @@ class TestSpec(Base, TimestampMixin):
     # Content Addressing (IPFS-style)
     content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)  # SHA-256 hash of content
     content_cid: Mapped[str | None] = mapped_column(
-        String(100), nullable=True, index=True
+        String(100), nullable=True, index=True,
     )  # IPFS-style Content Identifier
     merkle_root: Mapped[str | None] = mapped_column(String(64), nullable=True)  # For baseline verification
     version_chain_head: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Latest version hash
@@ -545,8 +542,7 @@ class TestSpec(Base, TimestampMixin):
 
 
 class EpicSpec(Base, TimestampMixin):
-    """
-    Specification for an epic item.
+    """Specification for an epic item.
 
     Tracks epic scope, team assignment, metrics, and progress.
     """
@@ -579,7 +575,7 @@ class EpicSpec(Base, TimestampMixin):
     # Epic Classification
     epic_type: Mapped[str] = mapped_column(String(50), nullable=False, default=EpicType.FEATURE.value)
     status: Mapped[str] = mapped_column(
-        String(50), nullable=False, default="planned"
+        String(50), nullable=False, default="planned",
     )  # planned, in_progress, completed, cancelled
 
     # Epic Scope
@@ -616,7 +612,7 @@ class EpicSpec(Base, TimestampMixin):
     # Content Addressing (IPFS-style)
     content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)  # SHA-256 hash of content
     content_cid: Mapped[str | None] = mapped_column(
-        String(100), nullable=True, index=True
+        String(100), nullable=True, index=True,
     )  # IPFS-style Content Identifier
     merkle_root: Mapped[str | None] = mapped_column(String(64), nullable=True)  # For baseline verification
     version_chain_head: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Latest version hash
@@ -667,8 +663,7 @@ class EpicSpec(Base, TimestampMixin):
 
 
 class UserStorySpec(Base, TimestampMixin):
-    """
-    Specification for a user story item.
+    """Specification for a user story item.
 
     Tracks user story details including personas, acceptance criteria,
     estimation, and epic relationships.
@@ -716,7 +711,7 @@ class UserStorySpec(Base, TimestampMixin):
 
     # Assignment and Status
     status: Mapped[str] = mapped_column(
-        String(50), nullable=False, default="backlog"
+        String(50), nullable=False, default="backlog",
     )  # backlog, ready, in_progress, review, done
     assignee_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     reviewer_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -745,7 +740,7 @@ class UserStorySpec(Base, TimestampMixin):
     # Content Addressing (IPFS-style)
     content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)  # SHA-256 hash of content
     content_cid: Mapped[str | None] = mapped_column(
-        String(100), nullable=True, index=True
+        String(100), nullable=True, index=True,
     )  # IPFS-style Content Identifier
     merkle_root: Mapped[str | None] = mapped_column(String(64), nullable=True)  # For baseline verification
     version_chain_head: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Latest version hash
@@ -795,8 +790,7 @@ class UserStorySpec(Base, TimestampMixin):
 
 
 class TaskSpec(Base, TimestampMixin):
-    """
-    Specification for a task item.
+    """Specification for a task item.
 
     Tracks task details including parent story, progress, blocking status,
     and checklist items.
@@ -840,7 +834,7 @@ class TaskSpec(Base, TimestampMixin):
     )
 
     # Status and Progress
-    status: Mapped[str] = mapped_column(String(50), nullable=False, default="todo")  # todo, in_progress, review, done
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="todo")  # TODO, in_progress, review, done
     progress_percentage: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
 
     # Checklist
@@ -872,7 +866,7 @@ class TaskSpec(Base, TimestampMixin):
     # Content Addressing (IPFS-style)
     content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)  # SHA-256 hash of content
     content_cid: Mapped[str | None] = mapped_column(
-        String(100), nullable=True, index=True
+        String(100), nullable=True, index=True,
     )  # IPFS-style Content Identifier
     merkle_root: Mapped[str | None] = mapped_column(String(64), nullable=True)  # For baseline verification
     version_chain_head: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Latest version hash
@@ -923,8 +917,7 @@ class TaskSpec(Base, TimestampMixin):
 
 
 class DefectSpec(Base, TimestampMixin):
-    """
-    Specification for a defect/bug item.
+    """Specification for a defect/bug item.
 
     Tracks defect details including severity, reproduction steps,
     resolution, and assignment.
@@ -979,7 +972,7 @@ class DefectSpec(Base, TimestampMixin):
 
     # Resolution
     resolution_type: Mapped[str | None] = mapped_column(
-        String(100), nullable=True
+        String(100), nullable=True,
     )  # fixed, duplicate, wontfix, invalid
     resolution_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     resolved_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -997,7 +990,7 @@ class DefectSpec(Base, TimestampMixin):
 
     # Attachments and Evidence
     attachments: Mapped[list[dict[str, str]]] = mapped_column(
-        JSONType, nullable=False, default=list
+        JSONType, nullable=False, default=list,
     )  # [{filename, url, type}]
     screenshots: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)
     logs: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)
@@ -1009,7 +1002,7 @@ class DefectSpec(Base, TimestampMixin):
     # Content Addressing (IPFS-style)
     content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)  # SHA-256 hash of content
     content_cid: Mapped[str | None] = mapped_column(
-        String(100), nullable=True, index=True
+        String(100), nullable=True, index=True,
     )  # IPFS-style Content Identifier
     merkle_root: Mapped[str | None] = mapped_column(String(64), nullable=True)  # For baseline verification
     version_chain_head: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Latest version hash
@@ -1024,7 +1017,7 @@ class DefectSpec(Base, TimestampMixin):
     # IBM ORTHOGONAL DEFECT CLASSIFICATION (ODC)
     # =========================================================================
     odc_defect_type: Mapped[str | None] = mapped_column(
-        String(50), nullable=True
+        String(50), nullable=True,
     )  # function, interface, checking, etc.
     odc_trigger: Mapped[str | None] = mapped_column(String(50), nullable=True)  # coverage, design_conformance, etc.
     odc_impact: Mapped[str | None] = mapped_column(String(50), nullable=True)  # capability, usability, etc.
@@ -1043,10 +1036,10 @@ class DefectSpec(Base, TimestampMixin):
     # =========================================================================
     root_cause_category: Mapped[str | None] = mapped_column(String(100), nullable=True)
     injection_phase: Mapped[str | None] = mapped_column(
-        String(50), nullable=True
+        String(50), nullable=True,
     )  # requirements, design, implementation, testing
     detection_phase: Mapped[str | None] = mapped_column(
-        String(50), nullable=True
+        String(50), nullable=True,
     )  # code_review, unit_test, integration_test, etc.
 
     # Flexible metadata

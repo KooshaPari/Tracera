@@ -1,6 +1,4 @@
-"""
-NodeKindRule model for TraceRTM.
-"""
+"""NodeKindRule model for TraceRTM."""
 
 import uuid
 
@@ -18,9 +16,7 @@ def generate_node_kind_rule_uuid() -> str:
 
 
 class NodeKindRule(Base, TimestampMixin):
-    """
-    Rule registry for allowed edge types per node kind.
-    """
+    """Rule registry for allowed edge types per node kind."""
 
     __tablename__ = "node_kind_rules"
     __table_args__ = (

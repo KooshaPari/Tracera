@@ -32,7 +32,7 @@ describe(EnhancedErrorState, () => {
     const retryButton = screen.getByText('Retry');
     fireEvent.click(retryButton);
 
-    expect(onRetry).toHaveBeenCalledTimes(1);
+    expect(onRetry).toHaveBeenCalledOnce();
   });
 
   it('copies error to clipboard', async () => {
@@ -163,7 +163,7 @@ describe(NetworkErrorState, () => {
     const retryButton = screen.getByText('Retry');
     fireEvent.click(retryButton);
 
-    expect(onRetry).toHaveBeenCalledTimes(1);
+    expect(onRetry).toHaveBeenCalledOnce();
   });
 });
 
@@ -180,7 +180,7 @@ describe(TimeoutErrorState, () => {
     const retryButton = screen.getByText('Retry');
     fireEvent.click(retryButton);
 
-    expect(onRetry).toHaveBeenCalledTimes(1);
+    expect(onRetry).toHaveBeenCalledOnce();
   });
 });
 
@@ -251,7 +251,7 @@ describe(useAutoRecovery, () => {
       vi.advanceTimersByTime(1000);
     });
 
-    expect(retry).toHaveBeenCalledTimes(1);
+    expect(retry).toHaveBeenCalledOnce();
   });
 
   it('uses exponential backoff', () => {
@@ -269,7 +269,7 @@ describe(useAutoRecovery, () => {
     act(() => {
       vi.advanceTimersByTime(1000);
     });
-    expect(retry).toHaveBeenCalledTimes(1);
+    expect(retry).toHaveBeenCalledOnce();
 
     // Second retry: 2000ms
     rerender();
@@ -312,7 +312,7 @@ describe(useAutoRecovery, () => {
     });
 
     expect(retry).toHaveBeenCalledTimes(2);
-    expect(onMaxRetriesReached).toHaveBeenCalledTimes(1);
+    expect(onMaxRetriesReached).toHaveBeenCalledOnce();
   });
 
   it('calls onRetry callback with attempt number', () => {

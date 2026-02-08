@@ -39,7 +39,7 @@ def upgrade() -> None:
             EXCEPTION
                 WHEN duplicate_object THEN NULL;
             END $$;
-            """
+            """,
         )
 
     # Create test_suites if not exist

@@ -1,5 +1,4 @@
-"""
-Enhanced Specification Analytics Service V2
+"""Enhanced Specification Analytics Service V2.
 
 A comprehensive, deeply-integrated analytics engine for specification objects
 inspired by smart contract/blockchain/NFT entity patterns.
@@ -41,6 +40,7 @@ import statistics
 from collections import Counter
 from datetime import UTC, datetime
 from enum import StrEnum
+from itertools import starmap
 from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
@@ -531,8 +531,7 @@ class MetamorphicRelation(BaseModel):
 
 
 class EARSPatternAnalyzer:
-    """
-    Advanced EARS pattern analyzer with formal structure extraction.
+    """Advanced EARS pattern analyzer with formal structure extraction.
 
     Implements the full EARS specification from INCOSE with extensions
     for complex patterns and formal verification readiness.
@@ -541,16 +540,16 @@ class EARSPatternAnalyzer:
     # Pattern regexes ordered by specificity
     PATTERNS: ClassVar[dict[EARSPatternType, re.Pattern[str]]] = {
         EARSPatternType.UNWANTED: re.compile(
-            r"^(?:if|when)\s+(.+?),?\s+(?:then\s+)?(?:the\s+)?(\w+)\s+shall\s+(?:not|never)\s+(.+)$", re.IGNORECASE
+            r"^(?:if|when)\s+(.+?),?\s+(?:then\s+)?(?:the\s+)?(\w+)\s+shall\s+(?:not|never)\s+(.+)$", re.IGNORECASE,
         ),
         EARSPatternType.COMPLEX: re.compile(
-            r"^(?:while\s+(.+?)\s+)?(?:when|if|upon)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE
+            r"^(?:while\s+(.+?)\s+)?(?:when|if|upon)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE,
         ),
         EARSPatternType.STATE_DRIVEN: re.compile(
-            r"^(?:while|during|as\s+long\s+as)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE
+            r"^(?:while|during|as\s+long\s+as)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE,
         ),
         EARSPatternType.EVENT_DRIVEN: re.compile(
-            r"^(?:when|upon|after|once|if)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE
+            r"^(?:when|upon|after|once|if)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE,
         ),
         EARSPatternType.OPTIONAL: re.compile(
             r"^(?:where|if|in\s+case)\s+(.+?)\s+(?:is\s+)?(?:enabled|configured|available|supported),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$",
@@ -769,7 +768,7 @@ class EARSPatternAnalyzer:
         return max(0.0, min(1.0, confidence))
 
     def _validate(
-        self, text: str, components: EARSComponents, ambiguous: list[str], incomplete: list[str]
+        self, text: str, components: EARSComponents, ambiguous: list[str], incomplete: list[str],
     ) -> list[str]:
         """Validate requirement for quality issues."""
         issues = []
@@ -838,7 +837,7 @@ class EARSPatternAnalyzer:
             if components.trigger:
                 parts.append(f"WHEN {components.trigger}")
             parts.append(
-                f"the {components.system_name or '<system>'} shall {components.system_response or '<response>'}"
+                f"the {components.system_name or '<system>'} shall {components.system_response or '<response>'}",
             )
             return ", ".join(parts) + "."
 
@@ -846,8 +845,7 @@ class EARSPatternAnalyzer:
 
 
 class RequirementQualityAnalyzer:
-    """
-    ISO 29148 compliant quality analyzer with 9 dimensions.
+    """ISO 29148 compliant quality analyzer with 9 dimensions.
 
     Implements weighted scoring based on IEEE/ISO standards with
     automated detection of common quality issues.
@@ -885,7 +883,7 @@ class RequirementQualityAnalyzer:
         issues.extend(completeness_issues)
 
         scores[QualityDimension.VERIFIABILITY.value], verifiability_issues = self._analyze_verifiability(
-            requirement_text
+            requirement_text,
         )
         issues.extend(verifiability_issues)
 
@@ -896,12 +894,12 @@ class RequirementQualityAnalyzer:
         issues.extend(necessity_issues)
 
         scores[QualityDimension.TRACEABILITY.value], traceability_issues = self._analyze_traceability(
-            linked_tests, linked_items
+            linked_tests, linked_items,
         )
         issues.extend(traceability_issues)
 
         scores[QualityDimension.CONSISTENCY.value], consistency_issues = self._analyze_consistency(
-            requirement_text, related_requirements
+            requirement_text, related_requirements,
         )
         issues.extend(consistency_issues)
 
@@ -965,7 +963,7 @@ class RequirementQualityAnalyzer:
                         suggestion=suggestion,
                         position=pos,
                         rule_id="ISO29148-AMB-001",
-                    )
+                    ),
                 )
 
         # Weak modals
@@ -980,7 +978,7 @@ class RequirementQualityAnalyzer:
                         message=f"Weak modal '{modal}' suggests uncertainty",
                         suggestion="Use 'shall' for mandatory, 'may' only for truly optional",
                         rule_id="ISO29148-AMB-002",
-                    )
+                    ),
                 )
 
         return max(0.0, score), issues
@@ -1014,7 +1012,7 @@ class RequirementQualityAnalyzer:
                         message=f"Incomplete marker found: {desc}",
                         suggestion="Complete all placeholder sections before baseline",
                         rule_id="ISO29148-COMP-001",
-                    )
+                    ),
                 )
 
         # Minimum length check
@@ -1027,7 +1025,7 @@ class RequirementQualityAnalyzer:
                     message="Requirement may be too brief to be complete",
                     suggestion="Ensure actor, action, and conditions are specified",
                     rule_id="ISO29148-COMP-002",
-                )
+                ),
             )
 
         # Check for missing actor
@@ -1042,7 +1040,7 @@ class RequirementQualityAnalyzer:
                     message="No clear actor/system identified",
                     suggestion="Specify who/what performs the action",
                     rule_id="ISO29148-COMP-003",
-                )
+                ),
             )
 
         return max(0.0, score), issues
@@ -1103,7 +1101,7 @@ class RequirementQualityAnalyzer:
                     message="Performance/quality requirement lacks metrics",
                     suggestion="Add specific targets (e.g., 'response time <200ms', 'uptime >99.9%')",
                     rule_id="ISO29148-VER-001",
-                )
+                ),
             )
 
         # Generic check
@@ -1116,7 +1114,7 @@ class RequirementQualityAnalyzer:
                     message="No quantifiable metrics found",
                     suggestion="Consider adding measurable acceptance criteria",
                     rule_id="ISO29148-VER-002",
-                )
+                ),
             )
 
         # Check for verification method hints
@@ -1145,7 +1143,7 @@ class RequirementQualityAnalyzer:
                     message=f"Multiple 'and' conjunctions ({and_count}) - possible compound requirement",
                     suggestion="Split into separate atomic requirements for better traceability",
                     rule_id="ISO29148-SING-001",
-                )
+                ),
             )
 
         if or_count > 0:
@@ -1157,7 +1155,7 @@ class RequirementQualityAnalyzer:
                     message="'Or' conjunction detected - ambiguous alternatives",
                     suggestion="Split into separate requirements or clarify as enumeration",
                     rule_id="ISO29148-SING-002",
-                )
+                ),
             )
 
         # Check for multiple "shall" statements
@@ -1171,7 +1169,7 @@ class RequirementQualityAnalyzer:
                     message=f"Multiple 'shall' statements ({shall_count}) in one requirement",
                     suggestion="Each requirement should contain exactly one 'shall'",
                     rule_id="ISO29148-SING-003",
-                )
+                ),
             )
 
         return max(0.0, score), issues
@@ -1193,7 +1191,7 @@ class RequirementQualityAnalyzer:
                     message="'Will' is weaker than 'shall' for requirements",
                     suggestion="Use 'shall' for mandatory requirements",
                     rule_id="ISO29148-NEC-001",
-                )
+                ),
             )
         elif "should" in text_lower:
             score = 0.65
@@ -1204,7 +1202,7 @@ class RequirementQualityAnalyzer:
                     message="'Should' indicates recommendation, not requirement",
                     suggestion="Use 'shall' for mandatory, 'should' for recommendations only",
                     rule_id="ISO29148-NEC-002",
-                )
+                ),
             )
         elif "must" in text_lower:
             score = 0.90
@@ -1215,7 +1213,7 @@ class RequirementQualityAnalyzer:
                     message="'Must' is acceptable but 'shall' is preferred per IEEE 830",
                     suggestion="Consider using 'shall' for consistency",
                     rule_id="ISO29148-NEC-003",
-                )
+                ),
             )
         else:
             score = 0.5
@@ -1226,13 +1224,13 @@ class RequirementQualityAnalyzer:
                     message="No requirement keyword found",
                     suggestion="Use 'The system shall...' format",
                     rule_id="ISO29148-NEC-004",
-                )
+                ),
             )
 
         return score, issues
 
     def _analyze_traceability(
-        self, linked_tests: list[str] | None, linked_items: dict[str, list[str]] | None
+        self, linked_tests: list[str] | None, linked_items: dict[str, list[str]] | None,
     ) -> tuple[float, list[QualityIssue]]:
         """Analyze traceability dimension."""
         issues = []
@@ -1248,7 +1246,7 @@ class RequirementQualityAnalyzer:
                     message="No linked test cases for verification",
                     suggestion="Link test cases to enable verification traceability",
                     rule_id="ISO29148-TRACE-001",
-                )
+                ),
             )
 
         # Check for upstream/downstream links
@@ -1261,13 +1259,13 @@ class RequirementQualityAnalyzer:
                     message="No upstream links (parent requirements/features)",
                     suggestion="Link to parent requirement or feature for derivation trace",
                     rule_id="ISO29148-TRACE-002",
-                )
+                ),
             )
 
         return max(0.0, score), issues
 
     def _analyze_consistency(
-        self, text: str, related_requirements: list[str] | None
+        self, text: str, related_requirements: list[str] | None,
     ) -> tuple[float, list[QualityIssue]]:
         """Analyze consistency dimension."""
         issues = []
@@ -1289,7 +1287,7 @@ class RequirementQualityAnalyzer:
                     message="Mixed mandatory ('must') and optional ('may') language",
                     suggestion="Clarify which parts are mandatory vs optional",
                     rule_id="ISO29148-CONS-001",
-                )
+                ),
             )
 
         return score, issues
@@ -1308,8 +1306,7 @@ class RequirementQualityAnalyzer:
 
 
 class VersionChain:
-    """
-    Blockchain-style cryptographic version chain.
+    """Blockchain-style cryptographic version chain.
 
     Provides immutable audit trail with:
     - SHA-256 content hashing
@@ -1320,7 +1317,7 @@ class VersionChain:
 
     @staticmethod
     def create_genesis_block(
-        content: dict[str, Any], author_id: str, change_summary: str = "Initial creation"
+        content: dict[str, Any], author_id: str, change_summary: str = "Initial creation",
     ) -> VersionBlock:
         """Create the first block in a version chain."""
         content_hash = VersionChain._hash_content(content)
@@ -1349,7 +1346,7 @@ class VersionChain:
 
     @staticmethod
     def add_block(
-        previous_block: VersionBlock, content: dict[str, Any], author_id: str, change_type: str, change_summary: str
+        previous_block: VersionBlock, content: dict[str, Any], author_id: str, change_type: str, change_summary: str,
     ) -> VersionBlock:
         """Add a new block linked to previous."""
         content_hash = VersionChain._hash_content(content)
@@ -1415,22 +1412,20 @@ class VersionChain:
 
 
 class MerkleTree:
-    """
-    Merkle tree for efficient baseline verification.
+    """Merkle tree for efficient baseline verification.
 
     Enables O(log n) proof that an item is in a baseline
     without revealing the entire baseline content.
     """
 
-    def __init__(self, items: list[tuple[str, str]]):
-        """
-        Initialize Merkle tree from items.
+    def __init__(self, items: list[tuple[str, str]]) -> None:
+        """Initialize Merkle tree from items.
 
         Args:
             items: List of (item_id, content_hash) tuples
         """
         self.items = items
-        self.leaves = [self._hash_leaf(item_id, content_hash) for item_id, content_hash in items]
+        self.leaves = list(starmap(self._hash_leaf, items))
         self.tree = self._build_tree(self.leaves.copy())
         self.root = self.tree[-1][0] if self.tree else ""
 
@@ -1517,8 +1512,7 @@ class MerkleTree:
 
 
 class FlakinessDetector:
-    """
-    Meta-style probabilistic flakiness detector.
+    """Meta-style probabilistic flakiness detector.
 
     Based on research from:
     - Meta: "Probabilistic flakiness: How we identify and prioritize flaky tests"
@@ -1553,7 +1547,7 @@ class FlakinessDetector:
 
         # Calculate metrics
         total = len(statuses)
-        failures = sum(1 for s in statuses if s in ("failed", "error", "flaky"))
+        failures = sum(1 for s in statuses if s in {"failed", "error", "flaky"})
         failure_rate = failures / total if total > 0 else 0
 
         # Entropy calculation
@@ -1577,7 +1571,7 @@ class FlakinessDetector:
 
         # Calculate flakiness score
         flakiness_score = self._calculate_flakiness_score(
-            failure_rate, entropy, max_failures, max_passes, duration_variance
+            failure_rate, entropy, max_failures, max_passes, duration_variance,
         )
 
         # Determine severity
@@ -1588,7 +1582,7 @@ class FlakinessDetector:
 
         # Quarantine recommendation
         quarantine_recommended = (
-            severity in (FlakinessSeverity.HIGH, FlakinessSeverity.CRITICAL)
+            severity in {FlakinessSeverity.HIGH, FlakinessSeverity.CRITICAL}
             or max_failures >= FLAKINESS_QUARANTINE_FAILURES
             or (flakiness_score > FLAKINESS_QUARANTINE_SCORE and failure_rate > FLAKINESS_QUARANTINE_RATE)
         )
@@ -1658,7 +1652,7 @@ class FlakinessDetector:
         return max_count
 
     def _detect_patterns(
-        self, runs: list[dict[str, Any]], durations: list[float], _timestamps: list[Any]
+        self, runs: list[dict[str, Any]], durations: list[float], _timestamps: list[Any],
     ) -> list[FlakinessPattern]:
         """Detect specific flakiness patterns."""
         patterns = []
@@ -1684,10 +1678,9 @@ class FlakinessDetector:
         return patterns
 
     def _calculate_flakiness_score(
-        self, failure_rate: float, entropy: float, max_failures: int, max_passes: int, duration_variance: float | None
+        self, failure_rate: float, entropy: float, max_failures: int, max_passes: int, duration_variance: float | None,
     ) -> float:
-        """
-        Calculate composite flakiness score.
+        """Calculate composite flakiness score.
 
         High entropy + moderate failure rate = flaky
         Low entropy + high failure rate = consistently failing (not flaky)
@@ -1720,7 +1713,7 @@ class FlakinessDetector:
     def _calculate_failure_clustering(self, runs: list[tuple[Any, str]]) -> float | None:
         """Calculate temporal clustering of failures."""
         # Simplified - would use proper time series analysis
-        failures = [i for i, (_, status) in enumerate(runs) if status in ("failed", "error", "flaky")]
+        failures = [i for i, (_, status) in enumerate(runs) if status in {"failed", "error", "flaky"}]
 
         if len(failures) < FLAKINESS_CLUSTER_MIN_FAILURES:
             return None
@@ -1770,8 +1763,7 @@ class FlakinessDetector:
 
 
 class ODCClassifier:
-    """
-    IBM Orthogonal Defect Classification system.
+    """IBM Orthogonal Defect Classification system.
 
     Classifies defects across 3 dimensions:
     - Defect Type (what was wrong)
@@ -1815,7 +1807,7 @@ class ODCClassifier:
     ]
 
     def classify(
-        self, defect_description: str, trigger_context: str | None = None, impact_description: str | None = None
+        self, defect_description: str, trigger_context: str | None = None, impact_description: str | None = None,
     ) -> ODCClassification:
         """Classify a defect using ODC taxonomy."""
         desc_lower = defect_description.lower()
@@ -1890,8 +1882,7 @@ class ODCClassifier:
 
 
 class PrioritizationCalculator:
-    """
-    Multi-framework prioritization calculator.
+    """Multi-framework prioritization calculator.
 
     Supports:
     - WSJF (SAFe Weighted Shortest Job First)
@@ -1902,10 +1893,9 @@ class PrioritizationCalculator:
 
     @staticmethod
     def calculate_wsjf(
-        business_value: int, time_criticality: int, risk_reduction: int, job_size: int, opportunity_enablement: int = 1
+        business_value: int, time_criticality: int, risk_reduction: int, job_size: int, opportunity_enablement: int = 1,
     ) -> WSJFScore:
-        """
-        Calculate WSJF score per SAFe framework.
+        """Calculate WSJF score per SAFe framework.
 
         WSJF = Cost of Delay / Job Size
         Cost of Delay = Business Value + Time Criticality + Risk Reduction + Opportunity Enablement
@@ -1935,8 +1925,7 @@ class PrioritizationCalculator:
 
     @staticmethod
     def calculate_rice(reach: int, impact: float, confidence: float, effort: int) -> RICEScore:
-        """
-        Calculate RICE score.
+        """Calculate RICE score.
 
         RICE = (Reach x Impact x Confidence) / Effort
 
@@ -1950,7 +1939,7 @@ class PrioritizationCalculator:
         rice_score = (reach * impact * confidence) / effort
 
         return RICEScore(
-            reach=reach, impact=impact, confidence=confidence, effort=effort, rice_score=round(rice_score, 2)
+            reach=reach, impact=impact, confidence=confidence, effort=effort, rice_score=round(rice_score, 2),
         )
 
     @staticmethod
@@ -1984,8 +1973,7 @@ class PrioritizationCalculator:
         should_threshold: float = 0.5,
         could_threshold: float = 0.2,
     ) -> dict[str, list[str]]:
-        """
-        Categorize items into MoSCoW buckets based on priority score.
+        """Categorize items into MoSCoW buckets based on priority score.
 
         Returns dict with keys: must, should, could, wont
         """
@@ -2008,8 +1996,7 @@ class PrioritizationCalculator:
 
 
 class ImpactAnalyzer:
-    """
-    Graph-based impact analysis engine.
+    """Graph-based impact analysis engine.
 
     Computes:
     - Direct impacts (immediate dependencies)
@@ -2028,8 +2015,7 @@ class ImpactAnalyzer:
         item_metadata: dict[str, dict[str, Any]] | None = None,
         max_depth: int = 5,
     ) -> ImpactAnalysisResult:
-        """
-        Analyze impact of changes to a source item.
+        """Analyze impact of changes to a source item.
 
         Args:
             source_item_id: The item being changed
@@ -2093,7 +2079,7 @@ class ImpactAnalyzer:
                         affected_tests=affected_tests,
                         affected_docs=affected_docs,
                         item_metadata=item_metadata,
-                    )
+                    ),
                 )
             current_level = next_level
             depth += 1
@@ -2161,12 +2147,12 @@ class ImpactAnalyzer:
         critical_path: list[str] = []
         for item_id in direct_impacts + transitive_impacts:
             meta = item_metadata.get(item_id, {})
-            if meta.get("criticality", "") in ("high", "critical"):
+            if meta.get("criticality", "") in {"high", "critical"}:
                 critical_path.append(item_id)
         return critical_path
 
     def _calculate_risk_score(
-        self, blast_radius: int, critical_count: int, depth: int, metadata: dict[str, dict[str, Any]] | None
+        self, blast_radius: int, critical_count: int, depth: int, metadata: dict[str, dict[str, Any]] | None,
     ) -> float:
         """Calculate composite risk score."""
         # Base risk from blast radius
@@ -2185,8 +2171,7 @@ class ImpactAnalyzer:
 
 
 class SuspectLinkDetector:
-    """
-    Detects suspect traceability links after changes.
+    """Detects suspect traceability links after changes.
 
     Based on Jama Connect and Polarion ALM patterns:
     - Upstream modification detection
@@ -2195,10 +2180,9 @@ class SuspectLinkDetector:
     """
 
     def detect_suspect_links(
-        self, links: list[dict[str, Any]], item_versions: dict[str, int], recent_changes: list[dict[str, Any]]
+        self, links: list[dict[str, Any]], item_versions: dict[str, int], recent_changes: list[dict[str, Any]],
     ) -> list[SuspectLink]:
-        """
-        Detect links that may be invalid after recent changes.
+        """Detect links that may be invalid after recent changes.
 
         Args:
             links: List of trace links with {id, source_id, target_id, source_version}
@@ -2234,7 +2218,7 @@ class SuspectLinkDetector:
                             change_summary=change.get("summary", "Source item modified"),
                             requires_verification=True,
                             auto_resolvable=False,
-                        )
+                        ),
                     )
 
                 # Status changed
@@ -2251,15 +2235,14 @@ class SuspectLinkDetector:
                             change_summary=f"Status changed: {change.get('old_status')} -> {change.get('new_status')}",
                             requires_verification=True,
                             auto_resolvable=change.get("new_status") == "approved",
-                        )
+                        ),
                     )
 
         return suspect_links
 
 
 class CoverageGapAnalyzer:
-    """
-    Analyzes traceability coverage gaps.
+    """Analyzes traceability coverage gaps.
 
     Detects:
     - Requirements without tests
@@ -2286,8 +2269,7 @@ class CoverageGapAnalyzer:
         trace_links: list[dict[str, Any]],
         safety_level: SafetyLevel | None = None,
     ) -> list[CoverageGap]:
-        """
-        Analyze coverage gaps in traceability matrix.
+        """Analyze coverage gaps in traceability matrix.
 
         Args:
             requirements: List of requirements with {id, type, safety_level, ...}
@@ -2335,7 +2317,7 @@ class CoverageGapAnalyzer:
                     required_coverage=100.0,
                     safety_level=req_safety,
                     suggestion=f"Add test cases to verify requirement {req_id}",
-                )
+                ),
             )
         return gaps
 
@@ -2354,7 +2336,7 @@ class CoverageGapAnalyzer:
                     current_coverage=0.0,
                     required_coverage=0.0,
                     suggestion=f"Link test {test_id} to its corresponding requirement",
-                )
+                ),
             )
         return gaps
 
@@ -2386,15 +2368,15 @@ class CoverageGapAnalyzer:
                         required_coverage=required,
                         safety_level=safety_level,
                         suggestion=f"Increase {coverage_type.value} coverage from {actual}% to {required}%",
-                    )
+                    ),
                 )
         return gaps
 
     def _gap_severity(self, safety_level: SafetyLevel | None, criticality: str | None) -> str:
         """Determine gap severity based on safety and criticality."""
-        if safety_level in (SafetyLevel.DAL_A, SafetyLevel.DAL_B, SafetyLevel.ASIL_D):
+        if safety_level in {SafetyLevel.DAL_A, SafetyLevel.DAL_B, SafetyLevel.ASIL_D}:
             return "critical"
-        if safety_level in (SafetyLevel.ASIL_C, SafetyLevel.CLASS_C) or criticality == "high":
+        if safety_level in {SafetyLevel.ASIL_C, SafetyLevel.CLASS_C} or criticality == "high":
             return "high"
         if criticality == "medium":
             return "medium"
@@ -2407,8 +2389,7 @@ class CoverageGapAnalyzer:
 
 
 class SpecAnalyticsService:
-    """
-    Comprehensive specification analytics service.
+    """Comprehensive specification analytics service.
 
     Provides unified access to all analytics capabilities:
     - EARS pattern analysis
@@ -2423,7 +2404,7 @@ class SpecAnalyticsService:
     - Coverage gap analysis
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.ears_analyzer = EARSPatternAnalyzer()
         self.quality_analyzer = RequirementQualityAnalyzer()
         self.flakiness_detector = FlakinessDetector()
@@ -2443,14 +2424,13 @@ class SpecAnalyticsService:
         linked_tests: list[str] | None = None,
         linked_items: dict[str, list[str]] | None = None,
     ) -> dict[str, Any]:
-        """
-        Comprehensive requirement analysis.
+        """Comprehensive requirement analysis.
 
         Returns EARS pattern analysis, quality scores, and recommendations.
         """
         ears_result = self.ears_analyzer.analyze(requirement_text)
         quality_result = self.quality_analyzer.analyze(
-            requirement_text, related_requirements, linked_tests, linked_items
+            requirement_text, related_requirements, linked_tests, linked_items,
         )
 
         return {
@@ -2462,7 +2442,7 @@ class SpecAnalyticsService:
                 "quality_grade": quality_result.grade,
                 "quality_score": quality_result.overall_score,
                 "total_issues": len(ears_result.validation_issues) + len(quality_result.issues),
-                "needs_attention": (not ears_result.is_valid or quality_result.grade in ("D", "F")),
+                "needs_attention": (not ears_result.is_valid or quality_result.grade in {"D", "F"}),
                 "improvement_priorities": quality_result.improvement_priority,
             },
             "formal_structure": ears_result.formal_structure,
@@ -2478,7 +2458,7 @@ class SpecAnalyticsService:
     # -------------------------------------------------------------------------
 
     def create_genesis_block(
-        self, content: dict[str, Any], author_id: str, change_summary: str = "Initial creation"
+        self, content: dict[str, Any], author_id: str, change_summary: str = "Initial creation",
     ) -> VersionBlock:
         """Create first block in version chain."""
         return VersionChain.create_genesis_block(content, author_id, change_summary)
@@ -2535,7 +2515,7 @@ class SpecAnalyticsService:
     # -------------------------------------------------------------------------
 
     def classify_defect(
-        self, description: str, trigger_context: str | None = None, impact_description: str | None = None
+        self, description: str, trigger_context: str | None = None, impact_description: str | None = None,
     ) -> ODCClassification:
         """Classify defect using IBM ODC taxonomy."""
         return self.odc_classifier.classify(description, trigger_context, impact_description)
@@ -2554,7 +2534,7 @@ class SpecAnalyticsService:
     ) -> WSJFScore:
         """Calculate WSJF prioritization score."""
         return PrioritizationCalculator.calculate_wsjf(
-            business_value, time_criticality, risk_reduction, job_size, opportunity_enablement
+            business_value, time_criticality, risk_reduction, job_size, opportunity_enablement,
         )
 
     def calculate_rice(self, reach: int, impact: float, confidence: float, effort: int) -> RICEScore:
@@ -2588,7 +2568,7 @@ class SpecAnalyticsService:
     # -------------------------------------------------------------------------
 
     def detect_suspect_links(
-        self, links: list[dict[str, Any]], item_versions: dict[str, int], recent_changes: list[dict[str, Any]]
+        self, links: list[dict[str, Any]], item_versions: dict[str, int], recent_changes: list[dict[str, Any]],
     ) -> list[SuspectLink]:
         """Detect suspect trace links after changes."""
         return self.suspect_link_detector.detect_suspect_links(links, item_versions, recent_changes)

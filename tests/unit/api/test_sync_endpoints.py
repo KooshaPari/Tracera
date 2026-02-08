@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for Sync API endpoints.
+"""Comprehensive tests for Sync API endpoints.
 
 Tests:
 - GET /api/v1/projects/{project_id}/sync/status
@@ -47,7 +46,7 @@ class TestSyncStatusEndpoint:
     """Test GET /api/v1/projects/{project_id}/sync/status endpoint."""
 
     @pytest.mark.asyncio
-    async def test_get_sync_status_success(self, client):
+    async def test_get_sync_status_success(self, client) -> None:
         """Test getting sync status returns correct data."""
         response = client.get("/api/v1/projects/proj-123/sync/status")
 
@@ -60,7 +59,7 @@ class TestSyncStatusEndpoint:
         assert isinstance(data["pending_changes"], int)
 
     @pytest.mark.asyncio
-    async def test_get_sync_status_response_structure(self, client):
+    async def test_get_sync_status_response_structure(self, client) -> None:
         """Test sync status response has expected structure."""
         response = client.get("/api/v1/projects/proj-123/sync/status")
 
@@ -77,7 +76,7 @@ class TestSyncExecuteEndpoint:
     """Test POST /api/v1/projects/{project_id}/sync endpoint."""
 
     @pytest.mark.asyncio
-    async def test_sync_execute_success(self, client):
+    async def test_sync_execute_success(self, client) -> None:
         """Test executing sync returns correct data."""
         mock_sync_result = {"synced": True, "items_synced": 5, "links_synced": 3}
 
@@ -96,7 +95,7 @@ class TestSyncExecuteEndpoint:
             assert data["result"]["synced"] is True
 
     @pytest.mark.asyncio
-    async def test_sync_execute_response_structure(self, client):
+    async def test_sync_execute_response_structure(self, client) -> None:
         """Test sync execute response has expected structure."""
         mock_sync_result = {"synced": True}
 
@@ -115,7 +114,7 @@ class TestSyncExecuteEndpoint:
             assert "result" in data
 
     @pytest.mark.asyncio
-    async def test_sync_execute_different_projects(self, client):
+    async def test_sync_execute_different_projects(self, client) -> None:
         """Test sync works for different project IDs."""
         mock_sync_result = {"synced": True}
 

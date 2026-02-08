@@ -1,6 +1,4 @@
-"""
-Pytest fixtures and configuration for chaos engineering tests.
-"""
+"""Pytest fixtures and configuration for chaos engineering tests."""
 
 import asyncio
 import logging
@@ -48,8 +46,7 @@ def toxiproxy_url() -> str:
 
 @pytest.fixture(scope="session")
 async def toxiproxy_client(toxiproxy_url: str) -> AsyncGenerator[ToxiproxyClient, None]:
-    """
-    Provides a Toxiproxy client for managing proxies and toxics.
+    """Provides a Toxiproxy client for managing proxies and toxics.
 
     Validates that Toxiproxy is running and accessible before tests.
     """
@@ -58,7 +55,7 @@ async def toxiproxy_client(toxiproxy_url: str) -> AsyncGenerator[ToxiproxyClient
     # Verify Toxiproxy is running
     try:
         await client.version()
-        logger.info(f"Connected to Toxiproxy at {toxiproxy_url}")
+        logger.info("Connected to Toxiproxy at %s", toxiproxy_url)
     except Exception as e:
         pytest.skip(f"Toxiproxy not available at {toxiproxy_url}: {e}")
 
@@ -70,8 +67,7 @@ async def toxiproxy_client(toxiproxy_url: str) -> AsyncGenerator[ToxiproxyClient
 
 @pytest.fixture
 async def postgres_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, None]:
-    """
-    Creates a Toxiproxy proxy for PostgreSQL.
+    """Creates a Toxiproxy proxy for PostgreSQL.
 
     Returns the connection string to use (through proxy).
     """
@@ -95,8 +91,7 @@ async def postgres_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[st
 
 @pytest.fixture
 async def redis_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, None]:
-    """
-    Creates a Toxiproxy proxy for Redis.
+    """Creates a Toxiproxy proxy for Redis.
 
     Returns the Redis URL to use (through proxy).
     """
@@ -118,8 +113,7 @@ async def redis_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, 
 
 @pytest.fixture
 async def nats_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, None]:
-    """
-    Creates a Toxiproxy proxy for NATS.
+    """Creates a Toxiproxy proxy for NATS.
 
     Returns the NATS URL to use (through proxy).
     """
@@ -141,8 +135,7 @@ async def nats_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, N
 
 @pytest.fixture
 async def go_backend_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, None]:
-    """
-    Creates a Toxiproxy proxy for Go backend.
+    """Creates a Toxiproxy proxy for Go backend.
 
     Returns the backend URL to use (through proxy).
     """
@@ -164,8 +157,7 @@ async def go_backend_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[
 
 @pytest.fixture
 async def python_backend_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, None]:
-    """
-    Creates a Toxiproxy proxy for Python backend.
+    """Creates a Toxiproxy proxy for Python backend.
 
     Returns the backend URL to use (through proxy).
     """
@@ -187,9 +179,7 @@ async def python_backend_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenera
 
 @pytest.fixture
 async def db_session(postgres_proxy: str) -> AsyncGenerator[AsyncSession, None]:
-    """
-    Provides a database session through the Toxiproxy proxy.
-    """
+    """Provides a database session through the Toxiproxy proxy."""
     engine = create_async_engine(postgres_proxy, echo=False)
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
@@ -201,17 +191,14 @@ async def db_session(postgres_proxy: str) -> AsyncGenerator[AsyncSession, None]:
 
 @pytest.fixture
 async def redis_client(redis_proxy: str) -> AsyncGenerator[redis.Redis, None]:
-    """
-    Provides a Redis client through the Toxiproxy proxy.
-    """
+    """Provides a Redis client through the Toxiproxy proxy."""
     client = redis.from_url(redis_proxy, decode_responses=True)
     yield client
     await client.aclose()
 
 
 def measure_recovery_time(func):
-    """
-    Decorator to measure service recovery time after chaos injection.
+    """Decorator to measure service recovery time after chaos injection.
 
     Fails the test if recovery takes longer than RECOVERY_TIME_TARGET.
     """
@@ -234,8 +221,7 @@ def measure_recovery_time(func):
 
 @pytest.fixture
 def assert_recovery_within_target():
-    """
-    Helper fixture to assert recovery time is within target.
+    """Helper fixture to assert recovery time is within target.
 
     Usage:
         start = time.time()

@@ -1,5 +1,4 @@
-"""
-Tests for the Sync Engine module.
+"""Tests for the Sync Engine module.
 
 Tests basic functionality of the sync engine including:
 - Change detection
@@ -28,7 +27,7 @@ from tracertm.storage import (
 class TestChangeDetector:
     """Test the ChangeDetector class."""
 
-    def test_compute_hash(self):
+    def test_compute_hash(self) -> None:
         """Test hash computation."""
         detector = ChangeDetector()
 
@@ -48,7 +47,7 @@ class TestChangeDetector:
         hash3 = detector.compute_hash(content2)
         assert hash1 != hash3
 
-    def test_has_changed(self):
+    def test_has_changed(self) -> None:
         """Test change detection."""
         detector = ChangeDetector()
 
@@ -65,7 +64,7 @@ class TestChangeDetector:
         # No stored hash = always changed
         assert detector.has_changed(content, None)
 
-    def test_detect_changes_in_directory(self, tmp_path):
+    def test_detect_changes_in_directory(self, tmp_path) -> None:
         """Test directory change detection."""
         detector = ChangeDetector()
 
@@ -108,7 +107,7 @@ class TestSyncQueue:
         db.engine = MagicMock()
         return db
 
-    def test_enqueue_change(self, mock_db):
+    def test_enqueue_change(self, mock_db) -> None:
         """Test enqueueing a change."""
         # Mock database connection
         mock_conn = MagicMock()
@@ -142,7 +141,7 @@ class TestSyncStateManager:
         db.engine = MagicMock()
         return db
 
-    def test_update_status(self, mock_db):
+    def test_update_status(self, mock_db) -> None:
         """Test updating sync status."""
         mock_conn = MagicMock()
         mock_db.engine.connect.return_value.__enter__ = MagicMock(return_value=mock_conn)
@@ -180,7 +179,7 @@ class TestSyncEngine:
         """Create a mock storage manager."""
         return MagicMock()
 
-    def test_sync_engine_initialization(self, mock_db, mock_api, mock_storage):
+    def test_sync_engine_initialization(self, mock_db, mock_api, mock_storage) -> None:
         """Test sync engine initialization."""
         engine = SyncEngine(db_connection=mock_db, api_client=mock_api, storage_manager=mock_storage)
 
@@ -190,7 +189,7 @@ class TestSyncEngine:
         assert not engine._syncing
         assert engine.max_retries == 3
 
-    def test_queue_change(self, mock_db, mock_api, mock_storage):
+    def test_queue_change(self, mock_db, mock_api, mock_storage) -> None:
         """Test queuing a change."""
         # Setup mock
         mock_conn = MagicMock()
@@ -211,7 +210,7 @@ class TestSyncEngine:
 
         assert queue_id == 1
 
-    def test_is_syncing(self, mock_db, mock_api, mock_storage):
+    def test_is_syncing(self, mock_db, mock_api, mock_storage) -> None:
         """Test syncing status check."""
         engine = SyncEngine(db_connection=mock_db, api_client=mock_api, storage_manager=mock_storage)
 
@@ -259,20 +258,20 @@ class TestSyncEngine:
 class TestEnums:
     """Test enum definitions."""
 
-    def test_operation_type(self):
+    def test_operation_type(self) -> None:
         """Test OperationType enum."""
         assert OperationType.CREATE.value == "create"
         assert OperationType.UPDATE.value == "update"
         assert OperationType.DELETE.value == "delete"
 
-    def test_entity_type(self):
+    def test_entity_type(self) -> None:
         """Test EntityType enum."""
         assert EntityType.PROJECT.value == "project"
         assert EntityType.ITEM.value == "item"
         assert EntityType.LINK.value == "link"
         assert EntityType.AGENT.value == "agent"
 
-    def test_sync_status(self):
+    def test_sync_status(self) -> None:
         """Test SyncStatus enum."""
         assert SyncStatus.IDLE.value == "idle"
         assert SyncStatus.SYNCING.value == "syncing"

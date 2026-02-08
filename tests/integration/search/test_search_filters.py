@@ -1,5 +1,4 @@
-"""
-Integration tests for Epic 7: Search and Filters (FR60-FR67).
+"""Integration tests for Epic 7: Search and Filters (FR60-FR67).
 
 Tests full-text search, filtering, and saved queries.
 """
@@ -19,7 +18,7 @@ def runner():
 
 
 @pytest.fixture
-def temp_project(runner, tmp_path, monkeypatch):
+def temp_project(runner, tmp_path, monkeypatch) -> str:
     """Create a temporary project for testing."""
     config_dir = tmp_path / ".config" / "tracertm"
     config_dir.mkdir(parents=True)
@@ -40,7 +39,7 @@ def temp_project(runner, tmp_path, monkeypatch):
     return "test-project"
 
 
-def test_full_text_search(temp_project, runner):
+def test_full_text_search(temp_project, runner) -> None:
     """Test full-text search (FR60)."""
     # Create items
     runner.invoke(
@@ -62,7 +61,7 @@ def test_full_text_search(temp_project, runner):
     assert "Authentication" in result.stdout or "No items found" in result.stdout
 
 
-def test_search_with_filters(temp_project, runner):
+def test_search_with_filters(temp_project, runner) -> None:
     """Test search with multiple filters (FR61-FR64, FR67)."""
     # Create item with specific attributes
     runner.invoke(
@@ -97,7 +96,7 @@ def test_search_with_filters(temp_project, runner):
     assert result.exit_code == 0
 
 
-def test_fuzzy_matching(temp_project, runner):
+def test_fuzzy_matching(temp_project, runner) -> None:
     """Test fuzzy matching (FR66)."""
     # Create item
     runner.invoke(
@@ -118,7 +117,7 @@ def test_fuzzy_matching(temp_project, runner):
     assert result.exit_code == 0
 
 
-def test_saved_queries(temp_project, runner):
+def test_saved_queries(temp_project, runner) -> None:
     """Test saved queries (FR65)."""
     # Save a query
     result1 = runner.invoke(

@@ -6,7 +6,7 @@ type RouterInstance = ReturnType<typeof createTanStackRouter>;
 
 let routerInstance: RouterInstance | undefined;
 
-export function createRouter(): RouterInstance {
+function createRouter(): RouterInstance {
   if (!routerInstance) {
     routerInstance = createTanStackRouter({
       defaultPreload: 'intent',
@@ -16,11 +16,13 @@ export function createRouter(): RouterInstance {
   return routerInstance;
 }
 
-export function getRouter(): RouterInstance {
+function getRouter(): RouterInstance {
   if (!routerInstance) {
     routerInstance = createRouter();
   }
   return routerInstance;
 }
 
-export type AppRouter = ReturnType<typeof createRouter>;
+type AppRouter = ReturnType<typeof createRouter>;
+
+export { createRouter, getRouter, type AppRouter };

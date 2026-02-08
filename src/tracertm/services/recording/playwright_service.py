@@ -9,10 +9,11 @@ import asyncio
 import subprocess  # noqa: S404
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from tracertm.models.execution_config import ExecutionEnvironmentConfig
-from tracertm.services.execution import ExecutionService
+if TYPE_CHECKING:
+    from tracertm.models.execution_config import ExecutionEnvironmentConfig
+    from tracertm.services.execution import ExecutionService
 
 
 class PlaywrightExecutionError(Exception):
@@ -22,7 +23,7 @@ class PlaywrightExecutionError(Exception):
 class PlaywrightExecutionService:
     """Service for executing Playwright browser tests."""
 
-    def __init__(self, execution_service: ExecutionService):
+    def __init__(self, execution_service: ExecutionService) -> None:
         """Initialize Playwright execution service.
 
         Args:
@@ -60,13 +61,16 @@ class PlaywrightExecutionService:
         """
         execution = await self._exec_service.get(execution_id)
         if not execution:
-            raise PlaywrightExecutionError(f"Execution {execution_id} not found")
+            msg = f"Execution {execution_id} not found"
+            raise PlaywrightExecutionError(msg)
         if execution.status != "pending":
-            raise PlaywrightExecutionError(f"Execution {execution_id} is {execution.status}, expected pending")
+            msg = f"Execution {execution_id} is {execution.status}, expected pending"
+            raise PlaywrightExecutionError(msg)
 
         config = await self._exec_service.get_config(execution.project_id)
         if config and not config.playwright_enabled:
-            raise PlaywrightExecutionError("Playwright is disabled for this project")
+            msg = "Playwright is disabled for this project"
+            raise PlaywrightExecutionError(msg)
 
         # Use config defaults if not specified
         if screenshot is None:
@@ -153,7 +157,8 @@ class PlaywrightExecutionService:
                     exit_code=1,
                     error_message=str(e),
                 )
-                raise PlaywrightExecutionError(f"Playwright execution failed: {e}") from e
+                msg = f"Playwright execution failed: {e}"
+                raise PlaywrightExecutionError(msg) from e
 
     async def _execute_subprocess(
         self,
@@ -214,7 +219,7 @@ class PlaywrightExecutionService:
         execution = await self._exec_service.get(execution_id)
         if not execution or not execution.container_id or not docker:
             return await self._execute_subprocess(
-                execution_id, url, script, workdir, screenshot=screenshot, video=video, trace=trace, config=config
+                execution_id, url, script, workdir, screenshot=screenshot, video=video, trace=trace, config=config,
             )
 
         script_path = workdir / "playwright_script.py"
@@ -223,7 +228,7 @@ class PlaywrightExecutionService:
         # Copy script into container (path inside container; noqa: S108)
         container_script = "/tmp/playwright_script.py"  # noqa: S108
         code, _, stderr = await docker._run(
-            "cp", str(script_path), f"{execution.container_id}:{container_script}", timeout=30
+            "cp", str(script_path), f"{execution.container_id}:{container_script}", timeout=30,
         )
         if code != 0:
             return {
@@ -309,7 +314,7 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 """
-        script_path.write_text(content)
+        script_path.write_text(content, encoding="utf-8")
         script_path.chmod(0o755)
 
     def _indent(self, text: str, spaces: int) -> str:

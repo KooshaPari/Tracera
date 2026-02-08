@@ -1,5 +1,4 @@
-"""
-Integration tests for advanced services batch 3.
+"""Integration tests for advanced services batch 3.
 
 Tests GitHub import, impact analysis, traceability matrix, query optimization,
 and security compliance services with real database interactions.
@@ -63,8 +62,7 @@ async def test_project(db_session: AsyncSession) -> Project:
 
 @pytest_asyncio.fixture
 async def complex_item_hierarchy(db_session: AsyncSession, test_project: Project) -> dict[str, Item]:
-    """
-    Create complex item hierarchy for impact analysis testing.
+    """Create complex item hierarchy for impact analysis testing.
 
     Structure:
         Root (FEATURE)
@@ -281,7 +279,7 @@ class TestGitHubImportService:
     # ========== Validation Tests ==========
 
     @pytest.mark.asyncio
-    async def test_validate_valid_github_export_with_items(self, db_session: AsyncSession):
+    async def test_validate_valid_github_export_with_items(self, db_session: AsyncSession) -> None:
         """Test validation of valid GitHub export with items field."""
         service = GitHubImportService(db_session)
 
@@ -293,8 +291,8 @@ class TestGitHubImportService:
                     "body": "Description",
                     "state": "open",
                     "type": "issue",
-                }
-            ]
+                },
+            ],
         })
 
         errors = await service.validate_github_export(valid_json)
@@ -302,7 +300,7 @@ class TestGitHubImportService:
         assert errors == []
 
     @pytest.mark.asyncio
-    async def test_validate_valid_github_export_with_issues(self, db_session: AsyncSession):
+    async def test_validate_valid_github_export_with_issues(self, db_session: AsyncSession) -> None:
         """Test validation of valid GitHub export with issues field."""
         service = GitHubImportService(db_session)
 
@@ -314,8 +312,8 @@ class TestGitHubImportService:
                     "title": "Bug Report",
                     "body": "Found a bug",
                     "state": "closed",
-                }
-            ]
+                },
+            ],
         })
 
         errors = await service.validate_github_export(valid_json)
@@ -323,7 +321,7 @@ class TestGitHubImportService:
         assert errors == []
 
     @pytest.mark.asyncio
-    async def test_validate_invalid_json(self, db_session: AsyncSession):
+    async def test_validate_invalid_json(self, db_session: AsyncSession) -> None:
         """Test validation of invalid JSON."""
         service = GitHubImportService(db_session)
 
@@ -335,7 +333,7 @@ class TestGitHubImportService:
         assert "Invalid JSON" in errors[0]
 
     @pytest.mark.asyncio
-    async def test_validate_missing_required_fields(self, db_session: AsyncSession):
+    async def test_validate_missing_required_fields(self, db_session: AsyncSession) -> None:
         """Test validation of JSON missing required fields."""
         service = GitHubImportService(db_session)
 
@@ -349,7 +347,7 @@ class TestGitHubImportService:
     # ========== Import Tests ==========
 
     @pytest.mark.asyncio
-    async def test_import_github_project_with_issues(self, db_session: AsyncSession):
+    async def test_import_github_project_with_issues(self, db_session: AsyncSession) -> None:
         """Test importing GitHub project with issues."""
         service = GitHubImportService(db_session)
 
@@ -373,7 +371,7 @@ class TestGitHubImportService:
                     "type": "issue",
                     "url": "https://github.com/test/repo/issues/2",
                 },
-            ]
+            ],
         }
 
         result = await service.import_github_project(
@@ -412,7 +410,7 @@ class TestGitHubImportService:
         assert item2.status == "complete"
 
     @pytest.mark.asyncio
-    async def test_import_github_project_with_items_field(self, db_session: AsyncSession):
+    async def test_import_github_project_with_items_field(self, db_session: AsyncSession) -> None:
         """Test importing GitHub project with items field."""
         service = GitHubImportService(db_session)
 
@@ -424,8 +422,8 @@ class TestGitHubImportService:
                     "title": "Feature Request",
                     "body": "Add dark mode",
                     "state": "in_progress",
-                }
-            ]
+                },
+            ],
         }
 
         result = await service.import_github_project(
@@ -437,7 +435,7 @@ class TestGitHubImportService:
         assert result["items_imported"] == 1
 
     @pytest.mark.asyncio
-    async def test_import_with_pull_requests(self, db_session: AsyncSession):
+    async def test_import_with_pull_requests(self, db_session: AsyncSession) -> None:
         """Test importing pull requests and related issues."""
         service = GitHubImportService(db_session)
 
@@ -460,7 +458,7 @@ class TestGitHubImportService:
                     "type": "pull_request",
                     "related_issues": [301],  # Links to issue 1
                 },
-            ]
+            ],
         }
 
         result = await service.import_github_project(
@@ -479,7 +477,7 @@ class TestGitHubImportService:
         assert links[0].link_type == "implements"
 
     @pytest.mark.asyncio
-    async def test_import_with_validation_error(self, db_session: AsyncSession):
+    async def test_import_with_validation_error(self, db_session: AsyncSession) -> None:
         """Test import fails with validation errors."""
         service = GitHubImportService(db_session)
 
@@ -495,7 +493,7 @@ class TestGitHubImportService:
         assert "Invalid JSON" in result["errors"][0]
 
     @pytest.mark.asyncio
-    async def test_import_status_mapping(self, db_session: AsyncSession):
+    async def test_import_status_mapping(self, db_session: AsyncSession) -> None:
         """Test GitHub status to TraceRTM status mapping."""
         service = GitHubImportService(db_session)
 
@@ -505,7 +503,7 @@ class TestGitHubImportService:
                 {"id": 2, "title": "In Progress", "state": "in_progress", "type": "issue"},
                 {"id": 3, "title": "Closed", "state": "closed", "type": "issue"},
                 {"id": 4, "title": "Done", "state": "done", "type": "issue"},
-            ]
+            ],
         }
 
         result = await service.import_github_project(
@@ -525,7 +523,7 @@ class TestGitHubImportService:
         assert statuses["Done"] == "complete"
 
     @pytest.mark.asyncio
-    async def test_import_type_mapping(self, db_session: AsyncSession):
+    async def test_import_type_mapping(self, db_session: AsyncSession) -> None:
         """Test GitHub type to TraceRTM type mapping."""
         service = GitHubImportService(db_session)
 
@@ -534,7 +532,7 @@ class TestGitHubImportService:
                 {"id": 1, "title": "Issue", "state": "open", "type": "issue"},
                 {"id": 2, "title": "PR", "state": "open", "type": "pull_request"},
                 {"id": 3, "title": "Discussion", "state": "open", "type": "discussion"},
-            ]
+            ],
         }
 
         result = await service.import_github_project(
@@ -551,7 +549,7 @@ class TestGitHubImportService:
             assert item.item_type == "task"
 
     @pytest.mark.asyncio
-    async def test_import_creates_events(self, db_session: AsyncSession):
+    async def test_import_creates_events(self, db_session: AsyncSession) -> None:
         """Test that import creates event log entries."""
         service = GitHubImportService(db_session)
 
@@ -563,8 +561,8 @@ class TestGitHubImportService:
                     "title": "Event Test Issue",
                     "state": "open",
                     "type": "issue",
-                }
-            ]
+                },
+            ],
         }
 
         result = await service.import_github_project(
@@ -585,7 +583,7 @@ class TestGitHubImportService:
         assert import_events[0].data["github_number"] == 100
 
     @pytest.mark.asyncio
-    async def test_import_with_missing_optional_fields(self, db_session: AsyncSession):
+    async def test_import_with_missing_optional_fields(self, db_session: AsyncSession) -> None:
         """Test import handles missing optional fields gracefully."""
         service = GitHubImportService(db_session)
 
@@ -595,8 +593,8 @@ class TestGitHubImportService:
                     # Missing id, number, url, body
                     "title": "Minimal Issue",
                     "state": "open",
-                }
-            ]
+                },
+            ],
         }
 
         result = await service.import_github_project(
@@ -614,7 +612,7 @@ class TestGitHubImportService:
         assert items[0].description == ""
 
     @pytest.mark.asyncio
-    async def test_import_with_partial_link_failures(self, db_session: AsyncSession):
+    async def test_import_with_partial_link_failures(self, db_session: AsyncSession) -> None:
         """Test import continues if some links fail to create."""
         service = GitHubImportService(db_session)
 
@@ -627,8 +625,8 @@ class TestGitHubImportService:
                     "state": "open",
                     "type": "pull_request",
                     "related_issues": [999],  # Non-existent issue
-                }
-            ]
+                },
+            ],
         }
 
         result = await service.import_github_project(
@@ -642,7 +640,7 @@ class TestGitHubImportService:
         assert result["links_imported"] == 0
 
     @pytest.mark.asyncio
-    async def test_import_default_agent_id(self, db_session: AsyncSession):
+    async def test_import_default_agent_id(self, db_session: AsyncSession) -> None:
         """Test import uses default agent_id when not specified."""
         service = GitHubImportService(db_session)
 
@@ -673,7 +671,7 @@ class TestImpactAnalysisService:
     # ========== Forward Impact Analysis Tests ==========
 
     @pytest.mark.asyncio
-    async def test_analyze_impact_simple_hierarchy(self, db_session: AsyncSession, complex_item_hierarchy: dict):
+    async def test_analyze_impact_simple_hierarchy(self, db_session: AsyncSession, complex_item_hierarchy: dict) -> None:
         """Test impact analysis on simple hierarchy."""
         service = ImpactAnalysisService(db_session)
 
@@ -688,7 +686,7 @@ class TestImpactAnalysisService:
         assert result.max_depth_reached == 2
 
     @pytest.mark.asyncio
-    async def test_analyze_impact_depth_distribution(self, db_session: AsyncSession, complex_item_hierarchy: dict):
+    async def test_analyze_impact_depth_distribution(self, db_session: AsyncSession, complex_item_hierarchy: dict) -> None:
         """Test impact analysis calculates correct depth distribution."""
         service = ImpactAnalysisService(db_session)
 
@@ -703,7 +701,7 @@ class TestImpactAnalysisService:
         assert result.affected_by_depth[2] == 4
 
     @pytest.mark.asyncio
-    async def test_analyze_impact_view_distribution(self, db_session: AsyncSession, complex_item_hierarchy: dict):
+    async def test_analyze_impact_view_distribution(self, db_session: AsyncSession, complex_item_hierarchy: dict) -> None:
         """Test impact analysis calculates correct view distribution."""
         service = ImpactAnalysisService(db_session)
 
@@ -717,7 +715,7 @@ class TestImpactAnalysisService:
         assert result.affected_by_view["DOC"] == 1  # grandchild4
 
     @pytest.mark.asyncio
-    async def test_analyze_impact_with_max_depth_limit(self, db_session: AsyncSession, complex_item_hierarchy: dict):
+    async def test_analyze_impact_with_max_depth_limit(self, db_session: AsyncSession, complex_item_hierarchy: dict) -> None:
         """Test impact analysis respects max_depth parameter."""
         service = ImpactAnalysisService(db_session)
 
@@ -731,7 +729,7 @@ class TestImpactAnalysisService:
         assert 2 not in result.affected_by_depth
 
     @pytest.mark.asyncio
-    async def test_analyze_impact_with_link_type_filter(self, db_session: AsyncSession, complex_item_hierarchy: dict):
+    async def test_analyze_impact_with_link_type_filter(self, db_session: AsyncSession, complex_item_hierarchy: dict) -> None:
         """Test impact analysis filters by link types."""
         service = ImpactAnalysisService(db_session)
 
@@ -748,7 +746,7 @@ class TestImpactAnalysisService:
         assert "Child3 API" not in affected_titles
 
     @pytest.mark.asyncio
-    async def test_analyze_impact_critical_paths(self, db_session: AsyncSession, complex_item_hierarchy: dict):
+    async def test_analyze_impact_critical_paths(self, db_session: AsyncSession, complex_item_hierarchy: dict) -> None:
         """Test impact analysis identifies critical paths to leaf nodes."""
         service = ImpactAnalysisService(db_session)
 
@@ -765,7 +763,7 @@ class TestImpactAnalysisService:
             assert path[0] == str(root.id)
 
     @pytest.mark.asyncio
-    async def test_analyze_impact_with_nonexistent_item(self, db_session: AsyncSession):
+    async def test_analyze_impact_with_nonexistent_item(self, db_session: AsyncSession) -> None:
         """Test impact analysis raises error for nonexistent item."""
         service = ImpactAnalysisService(db_session)
 
@@ -773,7 +771,7 @@ class TestImpactAnalysisService:
             await service.analyze_impact("nonexistent-id")
 
     @pytest.mark.asyncio
-    async def test_analyze_impact_leaf_node(self, db_session: AsyncSession, complex_item_hierarchy: dict):
+    async def test_analyze_impact_leaf_node(self, db_session: AsyncSession, complex_item_hierarchy: dict) -> None:
         """Test impact analysis on leaf node returns empty result."""
         service = ImpactAnalysisService(db_session)
 
@@ -789,7 +787,7 @@ class TestImpactAnalysisService:
     # ========== Reverse Impact Analysis Tests ==========
 
     @pytest.mark.asyncio
-    async def test_analyze_reverse_impact_simple(self, db_session: AsyncSession, complex_item_hierarchy: dict):
+    async def test_analyze_reverse_impact_simple(self, db_session: AsyncSession, complex_item_hierarchy: dict) -> None:
         """Test reverse impact analysis finds upstream dependencies."""
         service = ImpactAnalysisService(db_session)
 
@@ -806,7 +804,7 @@ class TestImpactAnalysisService:
         assert "Root Feature" in affected_titles
 
     @pytest.mark.asyncio
-    async def test_analyze_reverse_impact_root_node(self, db_session: AsyncSession, complex_item_hierarchy: dict):
+    async def test_analyze_reverse_impact_root_node(self, db_session: AsyncSession, complex_item_hierarchy: dict) -> None:
         """Test reverse impact on root node returns empty."""
         service = ImpactAnalysisService(db_session)
 
@@ -820,8 +818,8 @@ class TestImpactAnalysisService:
 
     @pytest.mark.asyncio
     async def test_analyze_reverse_impact_depth_distribution(
-        self, db_session: AsyncSession, complex_item_hierarchy: dict
-    ):
+        self, db_session: AsyncSession, complex_item_hierarchy: dict,
+    ) -> None:
         """Test reverse impact calculates correct depth distribution."""
         service = ImpactAnalysisService(db_session)
 
@@ -835,7 +833,7 @@ class TestImpactAnalysisService:
         assert result.affected_by_depth[2] == 1
 
     @pytest.mark.asyncio
-    async def test_analyze_reverse_impact_with_max_depth(self, db_session: AsyncSession, complex_item_hierarchy: dict):
+    async def test_analyze_reverse_impact_with_max_depth(self, db_session: AsyncSession, complex_item_hierarchy: dict) -> None:
         """Test reverse impact respects max_depth parameter."""
         service = ImpactAnalysisService(db_session)
 
@@ -852,7 +850,7 @@ class TestImpactAnalysisService:
         assert "Root Feature" not in affected_titles
 
     @pytest.mark.asyncio
-    async def test_analyze_reverse_impact_critical_paths(self, db_session: AsyncSession, complex_item_hierarchy: dict):
+    async def test_analyze_reverse_impact_critical_paths(self, db_session: AsyncSession, complex_item_hierarchy: dict) -> None:
         """Test reverse impact identifies critical upstream paths."""
         service = ImpactAnalysisService(db_session)
 
@@ -866,8 +864,8 @@ class TestImpactAnalysisService:
 
     @pytest.mark.asyncio
     async def test_analyze_impact_affected_items_structure(
-        self, db_session: AsyncSession, complex_item_hierarchy: dict
-    ):
+        self, db_session: AsyncSession, complex_item_hierarchy: dict,
+    ) -> None:
         """Test impact analysis returns properly structured affected items."""
         service = ImpactAnalysisService(db_session)
 
@@ -890,7 +888,7 @@ class TestImpactAnalysisService:
             assert len(item["path"]) > 0
 
     @pytest.mark.asyncio
-    async def test_find_critical_paths_empty_nodes(self, db_session: AsyncSession):
+    async def test_find_critical_paths_empty_nodes(self, db_session: AsyncSession) -> None:
         """Test _find_critical_paths with empty nodes list."""
         service = ImpactAnalysisService(db_session)
 
@@ -910,7 +908,7 @@ class TestTraceabilityMatrixService:
     # ========== Matrix Generation Tests ==========
 
     @pytest.mark.asyncio
-    async def test_generate_matrix_basic(self, db_session: AsyncSession, traceability_test_items: dict):
+    async def test_generate_matrix_basic(self, db_session: AsyncSession, traceability_test_items: dict) -> None:
         """Test basic matrix generation."""
         service = TraceabilityMatrixService(db_session)
 
@@ -927,8 +925,8 @@ class TestTraceabilityMatrixService:
 
     @pytest.mark.asyncio
     async def test_generate_matrix_with_source_view_filter(
-        self, db_session: AsyncSession, traceability_test_items: dict
-    ):
+        self, db_session: AsyncSession, traceability_test_items: dict,
+    ) -> None:
         """Test matrix generation with source view filter."""
         service = TraceabilityMatrixService(db_session)
 
@@ -943,8 +941,8 @@ class TestTraceabilityMatrixService:
 
     @pytest.mark.asyncio
     async def test_generate_matrix_with_target_view_filter(
-        self, db_session: AsyncSession, traceability_test_items: dict
-    ):
+        self, db_session: AsyncSession, traceability_test_items: dict,
+    ) -> None:
         """Test matrix generation with target view filter."""
         service = TraceabilityMatrixService(db_session)
 
@@ -959,8 +957,8 @@ class TestTraceabilityMatrixService:
 
     @pytest.mark.asyncio
     async def test_generate_matrix_with_both_view_filters(
-        self, db_session: AsyncSession, traceability_test_items: dict
-    ):
+        self, db_session: AsyncSession, traceability_test_items: dict,
+    ) -> None:
         """Test matrix generation with both source and target view filters."""
         service = TraceabilityMatrixService(db_session)
 
@@ -979,7 +977,7 @@ class TestTraceabilityMatrixService:
         assert len(matrix.matrix[0]) == 4
 
     @pytest.mark.asyncio
-    async def test_generate_matrix_with_link_type_filter(self, db_session: AsyncSession, traceability_test_items: dict):
+    async def test_generate_matrix_with_link_type_filter(self, db_session: AsyncSession, traceability_test_items: dict) -> None:
         """Test matrix generation filters by link types."""
         service = TraceabilityMatrixService(db_session)
 
@@ -1003,7 +1001,7 @@ class TestTraceabilityMatrixService:
                     assert cell == "implements"
 
     @pytest.mark.asyncio
-    async def test_generate_matrix_coverage_calculation(self, db_session: AsyncSession, traceability_test_items: dict):
+    async def test_generate_matrix_coverage_calculation(self, db_session: AsyncSession, traceability_test_items: dict) -> None:
         """Test matrix coverage percentage calculation."""
         service = TraceabilityMatrixService(db_session)
 
@@ -1022,7 +1020,7 @@ class TestTraceabilityMatrixService:
         assert matrix.coverage == pytest.approx(25.0, rel=0.01)
 
     @pytest.mark.asyncio
-    async def test_generate_matrix_empty_project(self, db_session: AsyncSession, test_project: Project):
+    async def test_generate_matrix_empty_project(self, db_session: AsyncSession, test_project: Project) -> None:
         """Test matrix generation for empty project."""
         service = TraceabilityMatrixService(db_session)
 
@@ -1037,7 +1035,7 @@ class TestTraceabilityMatrixService:
     # ========== CSV Export Tests ==========
 
     @pytest.mark.asyncio
-    async def test_export_matrix_csv(self, db_session: AsyncSession, traceability_test_items: dict):
+    async def test_export_matrix_csv(self, db_session: AsyncSession, traceability_test_items: dict) -> None:
         """Test CSV export of traceability matrix."""
         service = TraceabilityMatrixService(db_session)
 
@@ -1061,7 +1059,7 @@ class TestTraceabilityMatrixService:
         assert f"Coverage,{matrix.coverage:.1f}%" in csv_output
 
     @pytest.mark.asyncio
-    async def test_export_matrix_csv_structure(self, db_session: AsyncSession, traceability_test_items: dict):
+    async def test_export_matrix_csv_structure(self, db_session: AsyncSession, traceability_test_items: dict) -> None:
         """Test CSV export has correct structure."""
         service = TraceabilityMatrixService(db_session)
 
@@ -1090,7 +1088,7 @@ class TestTraceabilityMatrixService:
     # ========== HTML Export Tests ==========
 
     @pytest.mark.asyncio
-    async def test_export_matrix_html(self, db_session: AsyncSession, traceability_test_items: dict):
+    async def test_export_matrix_html(self, db_session: AsyncSession, traceability_test_items: dict) -> None:
         """Test HTML export of traceability matrix."""
         service = TraceabilityMatrixService(db_session)
 
@@ -1115,7 +1113,7 @@ class TestTraceabilityMatrixService:
         assert f"Coverage: {matrix.coverage:.1f}%" in html_output
 
     @pytest.mark.asyncio
-    async def test_export_matrix_html_structure(self, db_session: AsyncSession, traceability_test_items: dict):
+    async def test_export_matrix_html_structure(self, db_session: AsyncSession, traceability_test_items: dict) -> None:
         """Test HTML export has correct table structure."""
         service = TraceabilityMatrixService(db_session)
 
@@ -1140,7 +1138,7 @@ class TestTraceabilityMatrixService:
     # ========== Uncovered Items Tests ==========
 
     @pytest.mark.asyncio
-    async def test_get_uncovered_items(self, db_session: AsyncSession, traceability_test_items: dict):
+    async def test_get_uncovered_items(self, db_session: AsyncSession, traceability_test_items: dict) -> None:
         """Test identification of uncovered items."""
         service = TraceabilityMatrixService(db_session)
 
@@ -1166,7 +1164,7 @@ class TestTraceabilityMatrixService:
         assert str(targets[3].id) in uncovered["uncovered_targets"]
 
     @pytest.mark.asyncio
-    async def test_get_uncovered_items_empty_matrix(self, db_session: AsyncSession, test_project: Project):
+    async def test_get_uncovered_items_empty_matrix(self, db_session: AsyncSession, test_project: Project) -> None:
         """Test uncovered items for empty matrix."""
         service = TraceabilityMatrixService(db_session)
 
@@ -1178,7 +1176,7 @@ class TestTraceabilityMatrixService:
         assert len(uncovered["uncovered_targets"]) == 0
 
     @pytest.mark.asyncio
-    async def test_get_uncovered_items_fully_covered(self, db_session: AsyncSession, test_project: Project):
+    async def test_get_uncovered_items_fully_covered(self, db_session: AsyncSession, test_project: Project) -> None:
         """Test uncovered items when all items are covered."""
         # Create items with full coverage
         items_repo = ItemRepository(db_session)
@@ -1232,7 +1230,7 @@ class TestQueryOptimizationService:
     # ========== Query Performance Analysis Tests ==========
 
     @pytest.mark.asyncio
-    async def test_analyze_query_performance(self, db_session: AsyncSession, test_project: Project):
+    async def test_analyze_query_performance(self, db_session: AsyncSession, test_project: Project) -> None:
         """Test query performance analysis."""
         # Create test items
         items_repo = ItemRepository(db_session)
@@ -1260,10 +1258,10 @@ class TestQueryOptimizationService:
 
         assert result["items_returned"] == 10
         assert isinstance(result["execution_time_seconds"], float)
-        assert result["performance_rating"] in ["Excellent", "Good", "Fair", "Poor"]
+        assert result["performance_rating"] in {"Excellent", "Good", "Fair", "Poor"}
 
     @pytest.mark.asyncio
-    async def test_analyze_query_performance_tracks_stats(self, db_session: AsyncSession, test_project: Project):
+    async def test_analyze_query_performance_tracks_stats(self, db_session: AsyncSession, test_project: Project) -> None:
         """Test that query analysis tracks statistics."""
         service = QueryOptimizationService(db_session)
 
@@ -1284,7 +1282,7 @@ class TestQueryOptimizationService:
             assert "timestamp" in stat
 
     @pytest.mark.asyncio
-    async def test_performance_rating_excellent(self, db_session: AsyncSession, test_project: Project):
+    async def test_performance_rating_excellent(self, db_session: AsyncSession, test_project: Project) -> None:
         """Test excellent performance rating."""
         service = QueryOptimizationService(db_session)
 
@@ -1293,7 +1291,7 @@ class TestQueryOptimizationService:
         assert rating == "Excellent"
 
     @pytest.mark.asyncio
-    async def test_performance_rating_poor(self, db_session: AsyncSession):
+    async def test_performance_rating_poor(self, db_session: AsyncSession) -> None:
         """Test poor performance rating."""
         service = QueryOptimizationService(db_session)
 
@@ -1304,7 +1302,7 @@ class TestQueryOptimizationService:
     # ========== Cache Tests ==========
 
     @pytest.mark.asyncio
-    async def test_cache_query_and_retrieval(self, db_session: AsyncSession):
+    async def test_cache_query_and_retrieval(self, db_session: AsyncSession) -> None:
         """Test caching and retrieving query results."""
         service = QueryOptimizationService(db_session)
 
@@ -1317,7 +1315,7 @@ class TestQueryOptimizationService:
         assert cached == result
 
     @pytest.mark.asyncio
-    async def test_cache_expiration(self, db_session: AsyncSession):
+    async def test_cache_expiration(self, db_session: AsyncSession) -> None:
         """Test cache expiration."""
         service = QueryOptimizationService(db_session)
 
@@ -1334,7 +1332,7 @@ class TestQueryOptimizationService:
         assert "expiring-query" not in service.query_cache
 
     @pytest.mark.asyncio
-    async def test_cache_nonexistent_key(self, db_session: AsyncSession):
+    async def test_cache_nonexistent_key(self, db_session: AsyncSession) -> None:
         """Test retrieving nonexistent cache key."""
         service = QueryOptimizationService(db_session)
 
@@ -1343,7 +1341,7 @@ class TestQueryOptimizationService:
         assert cached is None
 
     @pytest.mark.asyncio
-    async def test_clear_cache(self, db_session: AsyncSession):
+    async def test_clear_cache(self, db_session: AsyncSession) -> None:
         """Test clearing all cached queries."""
         service = QueryOptimizationService(db_session)
 
@@ -1358,7 +1356,7 @@ class TestQueryOptimizationService:
         assert len(service.query_cache) == 0
 
     @pytest.mark.asyncio
-    async def test_get_cache_stats(self, db_session: AsyncSession, test_project: Project):
+    async def test_get_cache_stats(self, db_session: AsyncSession, test_project: Project) -> None:
         """Test getting cache statistics."""
         service = QueryOptimizationService(db_session)
 
@@ -1377,7 +1375,7 @@ class TestQueryOptimizationService:
         assert "query2" in stats["cache_keys"]
 
     @pytest.mark.asyncio
-    async def test_get_query_statistics_empty(self, db_session: AsyncSession):
+    async def test_get_query_statistics_empty(self, db_session: AsyncSession) -> None:
         """Test query statistics when no queries executed."""
         service = QueryOptimizationService(db_session)
 
@@ -1389,7 +1387,7 @@ class TestQueryOptimizationService:
         assert stats["max_execution_time"] == 0
 
     @pytest.mark.asyncio
-    async def test_get_query_statistics_with_data(self, db_session: AsyncSession, test_project: Project):
+    async def test_get_query_statistics_with_data(self, db_session: AsyncSession, test_project: Project) -> None:
         """Test query statistics calculation."""
         service = QueryOptimizationService(db_session)
 
@@ -1406,7 +1404,7 @@ class TestQueryOptimizationService:
         assert "total_items_returned" in stats
 
     @pytest.mark.asyncio
-    async def test_optimization_suggestions_slow_query(self, db_session: AsyncSession):
+    async def test_optimization_suggestions_slow_query(self, db_session: AsyncSession) -> None:
         """Test optimization suggestions for slow queries."""
         service = QueryOptimizationService(db_session)
 
@@ -1415,7 +1413,7 @@ class TestQueryOptimizationService:
         assert "Consider adding indexes" in suggestions[0]
 
     @pytest.mark.asyncio
-    async def test_optimization_suggestions_large_result(self, db_session: AsyncSession):
+    async def test_optimization_suggestions_large_result(self, db_session: AsyncSession) -> None:
         """Test optimization suggestions for large result sets."""
         service = QueryOptimizationService(db_session)
 
@@ -1424,7 +1422,7 @@ class TestQueryOptimizationService:
         assert any("pagination" in s for s in suggestions)
 
     @pytest.mark.asyncio
-    async def test_optimization_suggestions_cache_candidate(self, db_session: AsyncSession):
+    async def test_optimization_suggestions_cache_candidate(self, db_session: AsyncSession) -> None:
         """Test optimization suggestions for cache candidates."""
         service = QueryOptimizationService(db_session)
 
@@ -1433,7 +1431,7 @@ class TestQueryOptimizationService:
         assert any("caching" in s for s in suggestions)
 
     @pytest.mark.asyncio
-    async def test_recommend_indexes_insufficient_data(self, db_session: AsyncSession, test_project: Project):
+    async def test_recommend_indexes_insufficient_data(self, db_session: AsyncSession, test_project: Project) -> None:
         """Test index recommendations with insufficient query data."""
         service = QueryOptimizationService(db_session)
 
@@ -1446,7 +1444,7 @@ class TestQueryOptimizationService:
         assert recommendations == []
 
     @pytest.mark.asyncio
-    async def test_recommend_indexes_status_queries(self, db_session: AsyncSession, test_project: Project):
+    async def test_recommend_indexes_status_queries(self, db_session: AsyncSession, test_project: Project) -> None:
         """Test index recommendations for frequent status queries."""
         service = QueryOptimizationService(db_session)
 
@@ -1463,7 +1461,7 @@ class TestQueryOptimizationService:
         assert any("idx_item_status" in rec for rec in recommendations)
 
     @pytest.mark.asyncio
-    async def test_recommend_indexes_view_queries(self, db_session: AsyncSession, test_project: Project):
+    async def test_recommend_indexes_view_queries(self, db_session: AsyncSession, test_project: Project) -> None:
         """Test index recommendations for frequent view queries."""
         service = QueryOptimizationService(db_session)
 
@@ -1491,7 +1489,7 @@ class TestSecurityComplianceService:
     # ========== Encryption Tests ==========
 
     @pytest.mark.asyncio
-    async def test_enable_encryption(self, db_session: AsyncSession):
+    async def test_enable_encryption(self, db_session: AsyncSession) -> None:
         """Test enabling encryption."""
         service = SecurityComplianceService(db_session)
 
@@ -1503,7 +1501,7 @@ class TestSecurityComplianceService:
         assert service.is_encryption_enabled() is True
 
     @pytest.mark.asyncio
-    async def test_disable_encryption(self, db_session: AsyncSession):
+    async def test_disable_encryption(self, db_session: AsyncSession) -> None:
         """Test disabling encryption."""
         service = SecurityComplianceService(db_session)
 
@@ -1518,7 +1516,7 @@ class TestSecurityComplianceService:
         assert service.is_encryption_enabled() is False
 
     @pytest.mark.asyncio
-    async def test_is_encryption_enabled_default(self, db_session: AsyncSession):
+    async def test_is_encryption_enabled_default(self, db_session: AsyncSession) -> None:
         """Test encryption is disabled by default."""
         service = SecurityComplianceService(db_session)
 
@@ -1527,7 +1525,7 @@ class TestSecurityComplianceService:
     # ========== Audit Logging Tests ==========
 
     @pytest.mark.asyncio
-    async def test_log_audit_event(self, db_session: AsyncSession):
+    async def test_log_audit_event(self, db_session: AsyncSession) -> None:
         """Test logging audit events."""
         service = SecurityComplianceService(db_session)
 
@@ -1553,7 +1551,7 @@ class TestSecurityComplianceService:
         assert log[0]["details"]["ip"] == "192.168.1.1"
 
     @pytest.mark.asyncio
-    async def test_log_audit_event_without_details(self, db_session: AsyncSession):
+    async def test_log_audit_event_without_details(self, db_session: AsyncSession) -> None:
         """Test logging audit event without details."""
         service = SecurityComplianceService(db_session)
 
@@ -1570,7 +1568,7 @@ class TestSecurityComplianceService:
         assert log[0]["details"] == {}
 
     @pytest.mark.asyncio
-    async def test_get_audit_log_filter_by_user(self, db_session: AsyncSession):
+    async def test_get_audit_log_filter_by_user(self, db_session: AsyncSession) -> None:
         """Test filtering audit log by user."""
         service = SecurityComplianceService(db_session)
 
@@ -1586,7 +1584,7 @@ class TestSecurityComplianceService:
         assert all(e["user_id"] == "user1" for e in log)
 
     @pytest.mark.asyncio
-    async def test_get_audit_log_filter_by_event_type(self, db_session: AsyncSession):
+    async def test_get_audit_log_filter_by_event_type(self, db_session: AsyncSession) -> None:
         """Test filtering audit log by event type."""
         service = SecurityComplianceService(db_session)
 
@@ -1602,7 +1600,7 @@ class TestSecurityComplianceService:
         assert all(e["event_type"] == "login" for e in log)
 
     @pytest.mark.asyncio
-    async def test_get_audit_log_filter_by_both(self, db_session: AsyncSession):
+    async def test_get_audit_log_filter_by_both(self, db_session: AsyncSession) -> None:
         """Test filtering audit log by user and event type."""
         service = SecurityComplianceService(db_session)
 
@@ -1620,7 +1618,7 @@ class TestSecurityComplianceService:
         assert log[0]["event_type"] == "access"
 
     @pytest.mark.asyncio
-    async def test_get_audit_stats(self, db_session: AsyncSession):
+    async def test_get_audit_stats(self, db_session: AsyncSession) -> None:
         """Test getting audit log statistics."""
         service = SecurityComplianceService(db_session)
 
@@ -1640,7 +1638,7 @@ class TestSecurityComplianceService:
         assert stats["event_types"]["delete"] == 1
 
     @pytest.mark.asyncio
-    async def test_clear_audit_log(self, db_session: AsyncSession):
+    async def test_clear_audit_log(self, db_session: AsyncSession) -> None:
         """Test clearing audit log."""
         service = SecurityComplianceService(db_session)
 
@@ -1658,7 +1656,7 @@ class TestSecurityComplianceService:
     # ========== Data Hashing Tests ==========
 
     @pytest.mark.asyncio
-    async def test_hash_sensitive_data(self, db_session: AsyncSession):
+    async def test_hash_sensitive_data(self, db_session: AsyncSession) -> None:
         """Test hashing sensitive data."""
         service = SecurityComplianceService(db_session)
 
@@ -1671,7 +1669,7 @@ class TestSecurityComplianceService:
         assert hashed != data
 
     @pytest.mark.asyncio
-    async def test_hash_sensitive_data_deterministic(self, db_session: AsyncSession):
+    async def test_hash_sensitive_data_deterministic(self, db_session: AsyncSession) -> None:
         """Test hashing produces deterministic results."""
         service = SecurityComplianceService(db_session)
 
@@ -1683,7 +1681,7 @@ class TestSecurityComplianceService:
         assert hash1 == hash2
 
     @pytest.mark.asyncio
-    async def test_hash_sensitive_data_different_inputs(self, db_session: AsyncSession):
+    async def test_hash_sensitive_data_different_inputs(self, db_session: AsyncSession) -> None:
         """Test different inputs produce different hashes."""
         service = SecurityComplianceService(db_session)
 
@@ -1695,7 +1693,7 @@ class TestSecurityComplianceService:
     # ========== Access Control Tests ==========
 
     @pytest.mark.asyncio
-    async def test_validate_access_control_default_role(self, db_session: AsyncSession):
+    async def test_validate_access_control_default_role(self, db_session: AsyncSession) -> None:
         """Test access control validation with default viewer role."""
         service = SecurityComplianceService(db_session)
 
@@ -1712,7 +1710,7 @@ class TestSecurityComplianceService:
         assert result["role"] == "viewer"
 
     @pytest.mark.asyncio
-    async def test_validate_access_control_write_denied(self, db_session: AsyncSession):
+    async def test_validate_access_control_write_denied(self, db_session: AsyncSession) -> None:
         """Test access control denies write for viewer."""
         service = SecurityComplianceService(db_session)
 
@@ -1728,7 +1726,7 @@ class TestSecurityComplianceService:
     # ========== Compliance Report Tests ==========
 
     @pytest.mark.asyncio
-    async def test_generate_compliance_report_non_compliant(self, db_session: AsyncSession):
+    async def test_generate_compliance_report_non_compliant(self, db_session: AsyncSession) -> None:
         """Test compliance report when not compliant."""
         service = SecurityComplianceService(db_session)
 
@@ -1745,7 +1743,7 @@ class TestSecurityComplianceService:
         assert any("encryption" in r.lower() for r in report["recommendations"])
 
     @pytest.mark.asyncio
-    async def test_generate_compliance_report_compliant(self, db_session: AsyncSession):
+    async def test_generate_compliance_report_compliant(self, db_session: AsyncSession) -> None:
         """Test compliance report when compliant."""
         service = SecurityComplianceService(db_session)
 
@@ -1758,7 +1756,7 @@ class TestSecurityComplianceService:
         assert report["compliance_status"] == "COMPLIANT"
 
     @pytest.mark.asyncio
-    async def test_generate_compliance_report_includes_audit_stats(self, db_session: AsyncSession):
+    async def test_generate_compliance_report_includes_audit_stats(self, db_session: AsyncSession) -> None:
         """Test compliance report includes audit statistics."""
         service = SecurityComplianceService(db_session)
 

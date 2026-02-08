@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Add documentation links to code files.
+"""Add documentation links to code files.
 
 This script adds:
 1. Frontmatter to __init__.py (barrel entries)
@@ -116,7 +115,7 @@ def find_python_files(directory: str) -> list[str]:
     files = []
     for root, dirs, filenames in os.walk(directory):
         # Skip test directories and caches
-        dirs[:] = [d for d in dirs if d not in ["__pycache__", ".pytest_cache", ".mypy_cache"]]
+        dirs[:] = [d for d in dirs if d not in {"__pycache__", ".pytest_cache", ".mypy_cache"}]
 
         files.extend(
             os.path.join(root, filename) for filename in filenames if filename.endswith(".py")
@@ -157,8 +156,7 @@ def add_barrel_frontmatter(filepath: str, module_info: dict[str, str]) -> bool:
         return False
 
     try:
-        with Path(filepath).open() as f:
-            content = f.read()
+        content = Path(filepath).read_text(encoding="utf-8")
 
         # Skip if already has documentation comment
         if "Documentation:" in content or "Barrel Export" in content:
@@ -180,20 +178,17 @@ def add_barrel_frontmatter(filepath: str, module_info: dict[str, str]) -> bool:
         # Prepend frontmatter
         new_content = frontmatter + "\n" + content
 
-        with Path(filepath).open("w") as f:
-            f.write(new_content)
+        Path(filepath).write_text(new_content, encoding="utf-8")
 
         return True
-    except Exception as e:
-        print(f"Error processing {filepath}: {e}")
+    except Exception:
         return False
 
 
 def add_docstring_links(filepath: str, module_info: dict[str, str]) -> bool:
     """Add documentation links to function/class docstrings."""
     try:
-        with Path(filepath).open() as f:
-            content = f.read()
+        content = Path(filepath).read_text(encoding="utf-8")
 
         # Count how many docstrings we can enhance
         docstring_count = content.count('"""') // 2
@@ -201,15 +196,14 @@ def add_docstring_links(filepath: str, module_info: dict[str, str]) -> bool:
         # For now, just note that this file should have doc links
         # Full implementation would parse AST and modify each docstring
         return docstring_count != 0
-    except Exception as e:
-        print(f"Error processing {filepath}: {e}")
+    except Exception:
         return False
 
 
 def add_inline_comments(filepath: str, module_info: dict[str, str]) -> bool:
     """Add inline documentation comments."""
     try:
-        with Path(filepath).open() as f:
+        with Path(filepath).open(encoding="utf-8") as f:
             lines = f.readlines()
 
         # Add comment at top of file if not present
@@ -227,13 +221,12 @@ def add_inline_comments(filepath: str, module_info: dict[str, str]) -> bool:
 
             lines.insert(insert_pos, comment + "\n")
 
-            with Path(filepath).open("w") as f:
+            with Path(filepath).open("w", encoding="utf-8") as f:
                 f.writelines(lines)
 
             return True
         return False
-    except Exception as e:
-        print(f"Error processing {filepath}: {e}")
+    except Exception:
         return False
 
 
@@ -247,20 +240,14 @@ def generate_documentation_index() -> str:
     ]
 
     for module_path, doc_info in MODULE_TO_DOCS.items():
-        lines.append(f"## {module_path}")
-        lines.append(f"- **Documentation**: {doc_info['doc']}")
-        lines.append(f"- **State**: {doc_info['state']}")
-        lines.append(f"- **Description**: {doc_info['description']}")
-        lines.append("")
+        lines.extend((f"## {module_path}", f"- **Documentation**: {doc_info['doc']}", f"- **State**: {doc_info['state']}", f"- **Description**: {doc_info['description']}", ""))
 
     return "\n".join(lines)
 
 
-def main():
+def main() -> None:
     """Add documentation links to code files."""
     base_path = Path(__file__).parent.parent
-
-    print("🔗 Adding documentation links to code files...\n")
 
     total_processed = 0
     files_updated = 0
@@ -269,7 +256,6 @@ def main():
         full_module_path = base_path / module_path
 
         if not full_module_path.exists():
-            print(f"⚠️  {module_path} (directory not found)")
             continue
 
         # Find all Python files
@@ -280,27 +266,17 @@ def main():
 
             # Add barrel frontmatter to __init__.py
             if add_barrel_frontmatter(py_file, doc_info):
-                print(f"✅ {py_file} (barrel frontmatter added)")
                 files_updated += 1
 
             # Add inline comments
             if add_inline_comments(py_file, doc_info):
-                print(f"✅ {py_file} (inline comments added)")
                 files_updated += 1
 
     # Generate index
     index_content = generate_documentation_index()
     index_path = base_path / "docs" / "code-documentation-index.md"
 
-    with Path(index_path).open("w") as f:
-        f.write(index_content)
-
-    print(f"\n{'=' * 70}")
-    print("Code Documentation Linking Complete")
-    print(f"Files processed: {total_processed}")
-    print(f"Files updated: {files_updated}")
-    print("Index generated: docs/code-documentation-index.md")
-    print(f"{'=' * 70}")
+    Path(index_path).write_text(index_content, encoding="utf-8")
 
 
 if __name__ == "__main__":

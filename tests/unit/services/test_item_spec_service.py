@@ -17,7 +17,7 @@ class TestRequirementQualityAnalyzer:
     def analyzer(self):
         return RequirementQualityAnalyzer()
 
-    def test_analyze_high_quality_requirement(self, analyzer):
+    def test_analyze_high_quality_requirement(self, analyzer) -> None:
         """Test analysis of well-written requirement."""
         title = "User login functionality"
         text = "The system shall authenticate users with username and password within 2 seconds."
@@ -31,7 +31,7 @@ class TestRequirementQualityAnalyzer:
         assert len(result["issues"]) == 0
         assert result["has_quantifiable_criteria"] is True
 
-    def test_analyze_low_quality_requirement(self, analyzer):
+    def test_analyze_low_quality_requirement(self, analyzer) -> None:
         """Test analysis of poorly-written requirement."""
         title = "Better performance"
         text = "The system should be as efficient as possible with good performance TBD"
@@ -43,7 +43,7 @@ class TestRequirementQualityAnalyzer:
         assert any(issue["severity"] == "error" for issue in result["issues"])
         assert len(result["ambiguous_terms"]) > 0
 
-    def test_ambiguity_detection(self, analyzer):
+    def test_ambiguity_detection(self, analyzer) -> None:
         """Test detection of ambiguous language."""
         text = "The system should be efficient and flexible"
 
@@ -53,7 +53,7 @@ class TestRequirementQualityAnalyzer:
         ambiguity_issues = [i for i in result["issues"] if i["dimension"] == "unambiguity"]
         assert len(ambiguity_issues) >= 2
 
-    def test_completeness_detection(self, analyzer):
+    def test_completeness_detection(self, analyzer) -> None:
         """Test detection of incomplete requirements."""
         text = "Implement user authentication. TBD: Verification method"
 
@@ -63,7 +63,7 @@ class TestRequirementQualityAnalyzer:
         completeness_issues = [i for i in result["issues"] if i["dimension"] == "completeness"]
         assert len(completeness_issues) > 0
 
-    def test_verifiability_with_metrics(self, analyzer):
+    def test_verifiability_with_metrics(self, analyzer) -> None:
         """Test verifiability improves with quantifiable criteria."""
         text1 = "System should be fast"
         text2 = "System shall respond within 500ms to user input"
@@ -74,7 +74,7 @@ class TestRequirementQualityAnalyzer:
         assert result2["scores"]["verifiability"] > result1["scores"]["verifiability"]
         assert result2["has_quantifiable_criteria"] is True
 
-    def test_necessity_strong_verbs(self, analyzer):
+    def test_necessity_strong_verbs(self, analyzer) -> None:
         """Test necessity scoring with strong requirement verbs."""
         text_weak = "The system might provide user authentication"
         text_strong = "The system shall provide user authentication"
@@ -84,7 +84,7 @@ class TestRequirementQualityAnalyzer:
 
         assert result_strong["scores"]["necessity"] > result_weak["scores"]["necessity"]
 
-    def test_singularity_multiple_requirements(self, analyzer):
+    def test_singularity_multiple_requirements(self, analyzer) -> None:
         """Test detection of multiple requirements in one statement."""
         text = "The system shall authenticate users and encrypt passwords and audit access"
 
@@ -94,7 +94,7 @@ class TestRequirementQualityAnalyzer:
         singularity_issues = [i for i in result["issues"] if i["dimension"] == "singularity"]
         assert len(singularity_issues) > 0
 
-    def test_overall_score_weighting(self, analyzer):
+    def test_overall_score_weighting(self, analyzer) -> None:
         """Test that overall score uses correct weights."""
         text = "The system shall authenticate users within 2 seconds"
 
@@ -119,19 +119,19 @@ class TestVolatilityTracker:
     def tracker(self):
         return VolatilityTracker()
 
-    def test_stable_requirement(self, tracker):
+    def test_stable_requirement(self, tracker) -> None:
         """Test volatility of stable, unchanging requirement."""
         score = tracker.calculate_volatility(change_count=0, days_since_creation=30)
 
         assert score == 0.0
 
-    def test_volatile_requirement(self, tracker):
+    def test_volatile_requirement(self, tracker) -> None:
         """Test volatility of frequently-changing requirement."""
         score = tracker.calculate_volatility(change_count=10, days_since_creation=10)
 
         assert score > 0.5
 
-    def test_volatility_with_recent_changes(self, tracker):
+    def test_volatility_with_recent_changes(self, tracker) -> None:
         """Test that recent changes increase volatility."""
         history_old = [{"timestamp": "2024-01-01"} for _ in range(5)]
         history_recent = [{"timestamp": "2025-01-29"} for _ in range(5)]
@@ -142,7 +142,7 @@ class TestVolatilityTracker:
         # Recent history should have higher weight (in real implementation)
         assert score_recent >= score_old
 
-    def test_volatility_categorization(self, tracker):
+    def test_volatility_categorization(self, tracker) -> None:
         """Test volatility category assignment."""
         assert tracker.categorize_volatility(0.8) == "critical"
         assert tracker.categorize_volatility(0.5) == "high"
@@ -150,7 +150,7 @@ class TestVolatilityTracker:
         assert tracker.categorize_volatility(0.1) == "low"
         assert tracker.categorize_volatility(0.01) == "stable"
 
-    def test_volatility_normalization(self, tracker):
+    def test_volatility_normalization(self, tracker) -> None:
         """Test that volatility is normalized to 0-1."""
         score = tracker.calculate_volatility(change_count=100, days_since_creation=1)
 
@@ -164,7 +164,7 @@ class TestWSJFCalculator:
     def calculator(self):
         return WSJFCalculator()
 
-    def test_high_priority_wsjf(self, calculator):
+    def test_high_priority_wsjf(self, calculator) -> None:
         """Test WSJF calculation for high-priority item."""
         score = calculator.calculate_wsjf(
             business_value=0.9,
@@ -175,7 +175,7 @@ class TestWSJFCalculator:
 
         assert score > 0.7
 
-    def test_low_priority_wsjf(self, calculator):
+    def test_low_priority_wsjf(self, calculator) -> None:
         """Test WSJF calculation for low-priority item."""
         score = calculator.calculate_wsjf(
             business_value=0.2,
@@ -186,7 +186,7 @@ class TestWSJFCalculator:
 
         assert score < 0.3
 
-    def test_wsjf_zero_job_size(self, calculator):
+    def test_wsjf_zero_job_size(self, calculator) -> None:
         """Test WSJF with zero job size is handled."""
         score = calculator.calculate_wsjf(
             business_value=1.0,
@@ -198,7 +198,7 @@ class TestWSJFCalculator:
         # Should be capped at 1.0
         assert score == 1.0
 
-    def test_wsjf_boundary_values(self, calculator):
+    def test_wsjf_boundary_values(self, calculator) -> None:
         """Test WSJF with boundary values."""
         # All zeros
         score_zero = calculator.calculate_wsjf(0, 0, 0, 1)
@@ -208,7 +208,7 @@ class TestWSJFCalculator:
         score_one = calculator.calculate_wsjf(1, 1, 1, 1)
         assert score_one == 1.0
 
-    def test_wsjf_weighting(self, calculator):
+    def test_wsjf_weighting(self, calculator) -> None:
         """Test WSJF uses correct component weights."""
         # Business value should have 0.4 weight
         score1 = calculator.calculate_wsjf(1.0, 0, 0, 1)
@@ -229,7 +229,7 @@ class TestTestSpecFlakinessDector:
     def detector(self):
         return TestSpecFlakinessDector()
 
-    def test_stable_test(self, detector):
+    def test_stable_test(self, detector) -> None:
         """Test flakiness of stable test."""
         score = detector.calculate_flakiness_score(
             pass_count=100,
@@ -240,7 +240,7 @@ class TestTestSpecFlakinessDector:
 
         assert score == 0.0
 
-    def test_completely_failing_test(self, detector):
+    def test_completely_failing_test(self, detector) -> None:
         """Test flakiness of consistently failing test."""
         score = detector.calculate_flakiness_score(
             pass_count=0,
@@ -251,7 +251,7 @@ class TestTestSpecFlakinessDector:
 
         assert score == 1.0
 
-    def test_intermittent_failures(self, detector):
+    def test_intermittent_failures(self, detector) -> None:
         """Test flakiness detection with intermittent failures."""
         recent_failures = [
             {"status": "pass"},
@@ -270,7 +270,7 @@ class TestTestSpecFlakinessDector:
         # Alternating pattern should indicate high flakiness
         assert score > 0.4
 
-    def test_flakiness_categorization(self, detector):
+    def test_flakiness_categorization(self, detector) -> None:
         """Test flakiness category assignment."""
         assert detector.categorize_flakiness(0.8) == "critical"
         assert detector.categorize_flakiness(0.5) == "high"
@@ -278,7 +278,7 @@ class TestTestSpecFlakinessDector:
         assert detector.categorize_flakiness(0.1) == "low"
         assert detector.categorize_flakiness(0.01) == "stable"
 
-    def test_flakiness_with_different_errors(self, detector):
+    def test_flakiness_with_different_errors(self, detector) -> None:
         """Test flakiness increases with different error messages."""
         failures_same_error = [
             {"status": "fail", "error": "TimeoutError"},
@@ -302,7 +302,7 @@ class TestTestSpecFlakinessDector:
 class TestIntegrationWithModels:
     """Integration tests with actual models."""
 
-    def test_requirement_quality_model_creation(self):
+    def test_requirement_quality_model_creation(self) -> None:
         """Test RequirementQuality model creation with all fields."""
         from tracertm.models.requirement_quality import RequirementQuality
 
@@ -324,7 +324,7 @@ class TestIntegrationWithModels:
                     "severity": "warning",
                     "message": "Ambiguous term",
                     "suggestion": "Use specific metrics",
-                }
+                },
             ],
             change_propagation_index=0.25,
             downstream_impact_count=5,

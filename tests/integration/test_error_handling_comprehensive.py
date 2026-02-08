@@ -1,5 +1,4 @@
-"""
-Comprehensive error handling and exception path tests.
+"""Comprehensive error handling and exception path tests.
 
 Tests database failures, permission errors, invalid inputs, resource errors,
 conflict resolution failures, timeout scenarios, and transaction rollback paths.
@@ -22,7 +21,7 @@ class TestDatabaseConnectionFailures:
     """Test database connection and integrity errors."""
 
     @pytest.mark.integration
-    def test_project_creation_with_valid_data(self, sync_db_session):
+    def test_project_creation_with_valid_data(self, sync_db_session) -> None:
         """Test successful project creation."""
         project = Project(id="test", name="Test")
         sync_db_session.add(project)
@@ -33,7 +32,7 @@ class TestDatabaseConnectionFailures:
         assert result is not None
 
     @pytest.mark.integration
-    def test_item_creation_duplicate_key(self, initialized_db):
+    def test_item_creation_duplicate_key(self, initialized_db) -> None:
         """Test duplicate key violation handling."""
         repo = ItemRepository(initialized_db)
 
@@ -52,7 +51,7 @@ class TestDatabaseConnectionFailures:
             initialized_db.commit()
 
     @pytest.mark.integration
-    def test_link_creation_with_valid_items(self, initialized_db):
+    def test_link_creation_with_valid_items(self, initialized_db) -> None:
         """Test link creation with valid items."""
         link = Link(
             id="valid-link",
@@ -69,7 +68,7 @@ class TestDatabaseConnectionFailures:
         assert result is not None
 
     @pytest.mark.integration
-    def test_transaction_rollback_on_error(self, sync_db_session):
+    def test_transaction_rollback_on_error(self, sync_db_session) -> None:
         """Test transaction rollback when error occurs."""
         project = Project(id="rollback-test", name="Rollback Test")
         sync_db_session.add(project)
@@ -110,7 +109,7 @@ class TestPermissionAndAccessErrors:
     """Test permission denied and access control scenarios."""
 
     @pytest.mark.integration
-    def test_readonly_session_modification_attempt(self, initialized_db):
+    def test_readonly_session_modification_attempt(self, initialized_db) -> None:
         """Test modification attempt on readonly session."""
         # Create item normally
         item = Item(
@@ -129,7 +128,7 @@ class TestPermissionAndAccessErrors:
         assert result is not None
 
     @pytest.mark.integration
-    def test_unauthorized_project_access(self, initialized_db):
+    def test_unauthorized_project_access(self, initialized_db) -> None:
         """Test accessing project without permission."""
         other_project = Project(id="restricted-project", name="Restricted Project")
         initialized_db.add(other_project)
@@ -140,7 +139,7 @@ class TestPermissionAndAccessErrors:
         assert len(projects) >= 1
 
     @pytest.mark.integration
-    def test_concurrent_modification_conflict(self, sync_db_session):
+    def test_concurrent_modification_conflict(self, sync_db_session) -> None:
         """Test concurrent modification detection."""
         project = Project(id="concurrency-test", name="Test")
         sync_db_session.add(project)
@@ -176,7 +175,7 @@ class TestInvalidInputHandling:
     """Test invalid input validation and error handling."""
 
     @pytest.mark.integration
-    def test_item_creation_with_null_title(self, initialized_db):
+    def test_item_creation_with_null_title(self, initialized_db) -> None:
         """Test item creation with null required field."""
         item = Item(
             id="NULL-TITLE",
@@ -197,7 +196,7 @@ class TestInvalidInputHandling:
             initialized_db.rollback()
 
     @pytest.mark.integration
-    def test_item_creation_with_invalid_status(self, initialized_db):
+    def test_item_creation_with_invalid_status(self, initialized_db) -> None:
         """Test item creation with invalid status value."""
         item = Item(
             id="INVALID-STATUS",
@@ -217,7 +216,7 @@ class TestInvalidInputHandling:
         assert result.status == "invalid_status"
 
     @pytest.mark.integration
-    def test_link_creation_with_invalid_type(self, db_with_sample_data):
+    def test_link_creation_with_invalid_type(self, db_with_sample_data) -> None:
         """Test link creation with invalid link type."""
         link = Link(
             id="INVALID-LINK-TYPE",
@@ -234,7 +233,7 @@ class TestInvalidInputHandling:
         assert result is not None
 
     @pytest.mark.integration
-    def test_project_creation_with_empty_id(self, sync_db_session):
+    def test_project_creation_with_empty_id(self, sync_db_session) -> None:
         """Test project creation with empty ID."""
         project = Project(id="", name="Empty ID")
         sync_db_session.add(project)
@@ -248,7 +247,7 @@ class TestInvalidInputHandling:
             sync_db_session.rollback()
 
     @pytest.mark.integration
-    def test_metadata_with_invalid_json(self, initialized_db):
+    def test_metadata_with_invalid_json(self, initialized_db) -> None:
         """Test item with invalid metadata."""
         item = Item(
             id="INVALID-METADATA",
@@ -273,27 +272,27 @@ class TestResourceNotFoundErrors:
     """Test handling of missing resources."""
 
     @pytest.mark.integration
-    def test_item_fetch_nonexistent(self, initialized_db):
+    def test_item_fetch_nonexistent(self, initialized_db) -> None:
         """Test fetching nonexistent item."""
         repo = ItemRepository(initialized_db)
         item = initialized_db.query(Item).filter_by(id="NONEXISTENT").first()
         assert item is None
 
     @pytest.mark.integration
-    def test_project_fetch_nonexistent(self, sync_db_session):
+    def test_project_fetch_nonexistent(self, sync_db_session) -> None:
         """Test fetching nonexistent project."""
         repo = ProjectRepository(sync_db_session)
         project = sync_db_session.query(Project).filter_by(id="nonexistent").first()
         assert project is None
 
     @pytest.mark.integration
-    def test_link_fetch_nonexistent(self, initialized_db):
+    def test_link_fetch_nonexistent(self, initialized_db) -> None:
         """Test fetching nonexistent link."""
         link = initialized_db.query(Link).filter_by(id="NONEXISTENT-LINK").first()
         assert link is None
 
     @pytest.mark.integration
-    def test_delete_nonexistent_item(self, initialized_db):
+    def test_delete_nonexistent_item(self, initialized_db) -> None:
         """Test deleting nonexistent item."""
         item = initialized_db.query(Item).filter_by(id="NONEXISTENT").first()
         if item is None:
@@ -304,13 +303,13 @@ class TestResourceNotFoundErrors:
             initialized_db.commit()
 
     @pytest.mark.integration
-    def test_update_nonexistent_project(self, sync_db_session):
+    def test_update_nonexistent_project(self, sync_db_session) -> None:
         """Test updating nonexistent project."""
         project = sync_db_session.query(Project).filter_by(id="nonexistent").first()
         assert project is None  # No error, just returns None
 
     @pytest.mark.integration
-    def test_fetch_links_for_nonexistent_item(self, initialized_db):
+    def test_fetch_links_for_nonexistent_item(self, initialized_db) -> None:
         """Test fetching links for nonexistent item."""
         links = initialized_db.query(Link).filter_by(source_item_id="NONEXISTENT").all()
         assert len(links) == 0
@@ -320,7 +319,7 @@ class TestConflictResolutionFailures:
     """Test conflict resolution error scenarios."""
 
     @pytest.mark.integration
-    def test_conflicting_item_updates(self, db_with_sample_data):
+    def test_conflicting_item_updates(self, db_with_sample_data) -> None:
         """Test handling of conflicting item updates."""
         # Fetch and modify item
         item = db_with_sample_data.query(Item).filter_by(id="item-1").first()
@@ -335,7 +334,7 @@ class TestConflictResolutionFailures:
         assert refreshed.title == "Updated Title"
 
     @pytest.mark.integration
-    def test_circular_dependency_detection(self, db_with_sample_data):
+    def test_circular_dependency_detection(self, db_with_sample_data) -> None:
         """Test circular dependency handling."""
         # item-1 -> item-2 -> item-1 (circular)
         circular_link = Link(
@@ -354,7 +353,7 @@ class TestConflictResolutionFailures:
         assert result is not None
 
     @pytest.mark.integration
-    def test_conflicting_link_directions(self, db_with_sample_data):
+    def test_conflicting_link_directions(self, db_with_sample_data) -> None:
         """Test handling of conflicting link directions."""
         # Create link in both directions
         link1 = Link(
@@ -381,7 +380,7 @@ class TestConflictResolutionFailures:
         assert db_with_sample_data.query(Link).filter_by(id="bidirectional-2").first() is not None
 
     @pytest.mark.integration
-    def test_orphaned_link_cleanup(self, initialized_db):
+    def test_orphaned_link_cleanup(self, initialized_db) -> None:
         """Test orphaned link cleanup when item is deleted."""
         # Create item and link
         item = Item(
@@ -419,7 +418,7 @@ class TestTimeoutAndRetryExhaustion:
     """Test timeout and retry exhaustion scenarios."""
 
     @pytest.mark.integration
-    def test_slow_query_timeout(self, sync_db_session):
+    def test_slow_query_timeout(self, sync_db_session) -> None:
         """Test timeout handling for slow queries."""
         try:
             # Attempt a potentially slow operation
@@ -430,15 +429,16 @@ class TestTimeoutAndRetryExhaustion:
             assert "timeout" in str(e).lower() or items is not None
 
     @pytest.mark.integration
-    def test_retry_exhaustion(self, sync_db_session, monkeypatch):
+    def test_retry_exhaustion(self, sync_db_session, monkeypatch) -> None:
         """Test retry exhaustion handling."""
         retry_count = [0]
         max_retries = 3
 
-        def failing_operation():
+        def failing_operation() -> bool:
             retry_count[0] += 1
             if retry_count[0] <= max_retries:
-                raise OperationalError("Temporary failure", None, Exception("cause"))
+                msg = "Temporary failure"
+                raise OperationalError(msg, None, Exception("cause"))
             return True
 
         # Verify retry logic works
@@ -451,7 +451,7 @@ class TestTimeoutAndRetryExhaustion:
                     assert retry_count[0] > max_retries
 
     @pytest.mark.integration
-    def test_batch_operation_partial_failure(self, initialized_db):
+    def test_batch_operation_partial_failure(self, initialized_db) -> None:
         """Test partial failure in batch operations."""
         items_to_create = [
             Item(
@@ -479,7 +479,7 @@ class TestTransactionRollbackScenarios:
     """Test transaction rollback in various scenarios."""
 
     @pytest.mark.integration
-    def test_nested_transaction_rollback(self, sync_db_session):
+    def test_nested_transaction_rollback(self, sync_db_session) -> None:
         """Test nested transaction rollback."""
         project = Project(id="nested-test", name="Nested Test")
         sync_db_session.add(project)
@@ -505,7 +505,7 @@ class TestTransactionRollbackScenarios:
         assert result is None
 
     @pytest.mark.integration
-    def test_bulk_insert_rollback(self, sync_db_session):
+    def test_bulk_insert_rollback(self, sync_db_session) -> None:
         """Test rollback of bulk insert operation."""
         project = Project(id="bulk-rollback", name="Bulk Rollback")
         sync_db_session.add(project)
@@ -534,7 +534,7 @@ class TestTransactionRollbackScenarios:
         assert count == 0
 
     @pytest.mark.integration
-    def test_linked_item_cascade_rollback(self, db_with_sample_data):
+    def test_linked_item_cascade_rollback(self, db_with_sample_data) -> None:
         """Test rollback of linked items cascade."""
         savepoint = db_with_sample_data.begin_nested()
 
@@ -565,7 +565,7 @@ class TestTransactionRollbackScenarios:
         assert db_with_sample_data.query(Link).filter_by(id="cascade-link").first() is None
 
     @pytest.mark.integration
-    def test_event_logging_rollback(self, db_with_sample_data):
+    def test_event_logging_rollback(self, db_with_sample_data) -> None:
         """Test event logging during rollback."""
         savepoint = db_with_sample_data.begin_nested()
 
@@ -593,7 +593,7 @@ class TestCascadingErrorHandling:
     """Test cascading error handling across services."""
 
     @pytest.mark.integration
-    def test_item_deletion_with_linked_items(self, db_with_sample_data):
+    def test_item_deletion_with_linked_items(self, db_with_sample_data) -> None:
         """Test cascade behavior when deleting items with links."""
         # item-1 has links to item-2 and item-3
         # Try to delete item-1
@@ -613,7 +613,7 @@ class TestCascadingErrorHandling:
             assert item is not None
 
     @pytest.mark.integration
-    def test_project_deletion_cascade(self, sync_db_session):
+    def test_project_deletion_cascade(self, sync_db_session) -> None:
         """Test cascade behavior when deleting projects."""
         project = Project(id="cascade-delete", name="Cascade Delete")
         sync_db_session.add(project)
@@ -641,7 +641,7 @@ class TestCascadingErrorHandling:
         assert item_count == 3
 
     @pytest.mark.integration
-    def test_constraint_violation_cascade(self, initialized_db):
+    def test_constraint_violation_cascade(self, initialized_db) -> None:
         """Test error cascade from constraint violation."""
         # Create item with valid project
         item = Item(
@@ -670,7 +670,7 @@ class TestCascadingErrorHandling:
         assert result is not None
 
     @pytest.mark.integration
-    def test_validation_error_propagation(self, sync_db_session):
+    def test_validation_error_propagation(self, sync_db_session) -> None:
         """Test validation error propagation."""
         # Create project with valid ID (auto-generated if None allowed)
         project = Project(name="Valid Project")
@@ -686,7 +686,7 @@ class TestErrorRecoveryAndLogging:
     """Test error recovery and logging mechanisms."""
 
     @pytest.mark.integration
-    def test_error_state_recovery(self, sync_db_session):
+    def test_error_state_recovery(self, sync_db_session) -> None:
         """Test recovery after error state."""
         project = Project(id="recovery-test", name="Recovery")
         sync_db_session.add(project)
@@ -736,7 +736,7 @@ class TestErrorRecoveryAndLogging:
         assert result is not None
 
     @pytest.mark.integration
-    def test_error_context_preservation(self, sync_db_session):
+    def test_error_context_preservation(self, sync_db_session) -> None:
         """Test error context preservation."""
         try:
             project = Project(id="error-context", name="Context Test")
@@ -765,14 +765,14 @@ class TestErrorRecoveryAndLogging:
             assert str(e) is not None
 
     @pytest.mark.integration
-    def test_error_state_after_flush(self, sync_db_session):
+    def test_error_state_after_flush(self, sync_db_session) -> None:
         """Test error state after flush operation."""
         project = Project(id="flush-error", name="Flush Test")
         sync_db_session.add(project)
         sync_db_session.commit()
 
         item = Item(
-            id="FLUSH-001", project_id="flush-error", title="Item", view="FEATURE", item_type="feature", status="todo"
+            id="FLUSH-001", project_id="flush-error", title="Item", view="FEATURE", item_type="feature", status="todo",
         )
         sync_db_session.add(item)
         sync_db_session.flush()
@@ -782,7 +782,7 @@ class TestErrorRecoveryAndLogging:
         assert result is not None
 
     @pytest.mark.integration
-    def test_session_cleanup_after_error(self, sync_db_session):
+    def test_session_cleanup_after_error(self, sync_db_session) -> None:
         """Test session cleanup after error."""
         # Create valid project
         project = Project(id="cleanup-test", name="Cleanup")
@@ -792,7 +792,7 @@ class TestErrorRecoveryAndLogging:
         # Cause error
         try:
             invalid_item = Item(
-                id=None, project_id="cleanup-test", title="Invalid", view="FEATURE", item_type="feature", status="todo"
+                id=None, project_id="cleanup-test", title="Invalid", view="FEATURE", item_type="feature", status="todo",
             )
             sync_db_session.add(invalid_item)
             sync_db_session.flush()

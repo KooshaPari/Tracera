@@ -88,7 +88,7 @@ async def resolve_view_matches(
     if project_id:
         # Query database for actual view values
         result = await db.execute(
-            select(Item.view).where(Item.project_id == project_id, Item.deleted_at.is_(None)).distinct()
+            select(Item.view).where(Item.project_id == project_id, Item.deleted_at.is_(None)).distinct(),
         )
         candidates = [row[0] for row in result.all()]
 

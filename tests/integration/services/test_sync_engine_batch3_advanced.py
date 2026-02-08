@@ -1,5 +1,4 @@
-"""
-Advanced SyncEngine Integration Tests - Phase 3 Batch 1D
+"""Advanced SyncEngine Integration Tests - Phase 3 Batch 1D.
 
 Target: +7-9% coverage expansion with 70+ comprehensive tests
 Focus areas:
@@ -75,7 +74,7 @@ class TestSyncStateManagement:
     """Tests for sync state tracking and initialization."""
 
     @pytest.mark.asyncio
-    async def test_initialize_sync_state(self, sync_engine):
+    async def test_initialize_sync_state(self, sync_engine) -> None:
         """Test initializing sync state."""
         sync_engine.state = SyncState()
 
@@ -84,7 +83,7 @@ class TestSyncStateManagement:
         assert sync_engine.state.last_sync is None
 
     @pytest.mark.asyncio
-    async def test_update_sync_status_to_syncing(self, sync_engine):
+    async def test_update_sync_status_to_syncing(self, sync_engine) -> None:
         """Test updating sync status during operation."""
         sync_engine.state = SyncState()
 
@@ -92,7 +91,7 @@ class TestSyncStateManagement:
         assert sync_engine.state.status == SyncStatus.SYNCING
 
     @pytest.mark.asyncio
-    async def test_record_sync_success(self, sync_engine):
+    async def test_record_sync_success(self, sync_engine) -> None:
         """Test recording successful sync."""
         sync_engine.state = SyncState()
         now = datetime.now(UTC)
@@ -105,7 +104,7 @@ class TestSyncStateManagement:
         assert sync_engine.state.synced_entities == 10
 
     @pytest.mark.asyncio
-    async def test_record_sync_error(self, sync_engine):
+    async def test_record_sync_error(self, sync_engine) -> None:
         """Test recording sync error."""
         sync_engine.state = SyncState()
 
@@ -116,7 +115,7 @@ class TestSyncStateManagement:
         assert "Network timeout" in sync_engine.state.last_error
 
     @pytest.mark.asyncio
-    async def test_track_pending_changes_count(self, sync_engine):
+    async def test_track_pending_changes_count(self, sync_engine) -> None:
         """Test tracking count of pending changes."""
         sync_engine.state = SyncState()
 
@@ -127,7 +126,7 @@ class TestSyncStateManagement:
         assert sync_engine.state.pending_changes == 4
 
     @pytest.mark.asyncio
-    async def test_track_conflict_count(self, sync_engine):
+    async def test_track_conflict_count(self, sync_engine) -> None:
         """Test tracking number of conflicts."""
         sync_engine.state = SyncState()
 
@@ -135,7 +134,7 @@ class TestSyncStateManagement:
         assert sync_engine.state.conflicts_count == 3
 
     @pytest.mark.asyncio
-    async def test_reset_sync_state(self, sync_engine):
+    async def test_reset_sync_state(self, sync_engine) -> None:
         """Test resetting sync state."""
         sync_engine.state = SyncState(status=SyncStatus.ERROR, last_error="Previous error", conflicts_count=5)
 
@@ -154,7 +153,7 @@ class TestSyncStateManagement:
 class TestChangeDetection:
     """Tests for detecting changes via hashing."""
 
-    def test_compute_hash_consistency(self):
+    def test_compute_hash_consistency(self) -> None:
         """Test that hashing same content produces same hash."""
         content = "Test content"
         hash1 = ChangeDetector.compute_hash(content)
@@ -162,19 +161,19 @@ class TestChangeDetection:
 
         assert hash1 == hash2
 
-    def test_compute_hash_differs_for_different_content(self):
+    def test_compute_hash_differs_for_different_content(self) -> None:
         """Test that different content produces different hashes."""
         hash1 = ChangeDetector.compute_hash("Content A")
         hash2 = ChangeDetector.compute_hash("Content B")
 
         assert hash1 != hash2
 
-    def test_detect_change_new_content(self):
+    def test_detect_change_new_content(self) -> None:
         """Test detecting change when stored hash is None."""
         has_changed = ChangeDetector.has_changed("New content", None)
         assert has_changed is True
 
-    def test_detect_no_change_same_content(self):
+    def test_detect_no_change_same_content(self) -> None:
         """Test detecting no change when content matches hash."""
         content = "Unchanged content"
         stored_hash = ChangeDetector.compute_hash(content)
@@ -182,14 +181,14 @@ class TestChangeDetection:
         has_changed = ChangeDetector.has_changed(content, stored_hash)
         assert has_changed is False
 
-    def test_detect_change_modified_content(self):
+    def test_detect_change_modified_content(self) -> None:
         """Test detecting change when content differs from hash."""
         old_hash = ChangeDetector.compute_hash("Original")
         has_changed = ChangeDetector.has_changed("Modified", old_hash)
 
         assert has_changed is True
 
-    def test_detect_changes_in_directory(self, temp_dir):
+    def test_detect_changes_in_directory(self, temp_dir) -> None:
         """Test detecting changed files in directory."""
         # Create initial files
         (temp_dir / "file1.md").write_text("Content 1")
@@ -208,13 +207,13 @@ class TestChangeDetection:
 
         assert len(changes) >= 1
 
-    def test_hash_empty_string(self):
+    def test_hash_empty_string(self) -> None:
         """Test hashing empty string."""
         hash_result = ChangeDetector.compute_hash("")
         assert hash_result is not None
         assert len(hash_result) == 64  # SHA-256 hex digest
 
-    def test_hash_unicode_content(self):
+    def test_hash_unicode_content(self) -> None:
         """Test hashing unicode content."""
         content = "Unicode: 你好世界 🌍"
         hash_result = ChangeDetector.compute_hash(content)
@@ -230,7 +229,7 @@ class TestIncrementalSync:
     """Tests for incremental sync with delta detection."""
 
     @pytest.mark.asyncio
-    async def test_sync_only_changed_items(self, sync_engine):
+    async def test_sync_only_changed_items(self, sync_engine) -> None:
         """Test syncing only items that have changed."""
         sync_engine.change_queue.get_pending.return_value = [
             QueuedChange(
@@ -240,7 +239,7 @@ class TestIncrementalSync:
                 operation=OperationType.UPDATE,
                 payload={"title": "Updated"},
                 created_at=datetime.now(UTC),
-            )
+            ),
         ]
 
         changes = await sync_engine.change_queue.get_pending("proj-1")
@@ -249,7 +248,7 @@ class TestIncrementalSync:
         assert changes[0].entity_id == "item-1"
 
     @pytest.mark.asyncio
-    async def test_detect_delta_between_local_and_remote(self, sync_engine):
+    async def test_detect_delta_between_local_and_remote(self, sync_engine) -> None:
         """Test computing delta between local and remote state."""
         sync_engine.get_local_state.return_value = {
             "item-1": {"version": 2, "hash": "abc123"},
@@ -265,7 +264,7 @@ class TestIncrementalSync:
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_queue_single_change(self, sync_engine):
+    async def test_queue_single_change(self, sync_engine) -> None:
         """Test queueing a single change."""
         sync_engine.change_queue.enqueue.return_value = 1
 
@@ -277,13 +276,13 @@ class TestIncrementalSync:
                 operation=OperationType.CREATE,
                 payload={"title": "New Item"},
                 created_at=datetime.now(UTC),
-            )
+            ),
         )
 
         assert queue_id == 1
 
     @pytest.mark.asyncio
-    async def test_batch_queue_changes(self, sync_engine):
+    async def test_batch_queue_changes(self, sync_engine) -> None:
         """Test queueing multiple changes at once."""
         changes = [
             QueuedChange(
@@ -304,15 +303,15 @@ class TestIncrementalSync:
         assert result == 5
 
     @pytest.mark.asyncio
-    async def test_process_pending_changes_fifo(self, sync_engine):
+    async def test_process_pending_changes_fifo(self, sync_engine) -> None:
         """Test processing pending changes in FIFO order."""
         changes = [
             QueuedChange(1, EntityType.ITEM, "item-1", OperationType.CREATE, {}, datetime.now(UTC)),
             QueuedChange(
-                2, EntityType.ITEM, "item-2", OperationType.CREATE, {}, datetime.now(UTC) + timedelta(seconds=1)
+                2, EntityType.ITEM, "item-2", OperationType.CREATE, {}, datetime.now(UTC) + timedelta(seconds=1),
             ),
             QueuedChange(
-                3, EntityType.ITEM, "item-3", OperationType.UPDATE, {}, datetime.now(UTC) + timedelta(seconds=2)
+                3, EntityType.ITEM, "item-3", OperationType.UPDATE, {}, datetime.now(UTC) + timedelta(seconds=2),
             ),
         ]
 
@@ -325,7 +324,7 @@ class TestIncrementalSync:
         assert result[2].id == 3
 
     @pytest.mark.asyncio
-    async def test_skip_deleted_items_in_delta(self, sync_engine):
+    async def test_skip_deleted_items_in_delta(self, sync_engine) -> None:
         """Test that deleted items are tracked in delta."""
         sync_engine.get_remote_state.return_value = {
             "item-1": {"version": 1, "hash": "abc123", "deleted": False},
@@ -346,7 +345,7 @@ class TestConflictHandling:
     """Tests for detecting and resolving sync conflicts."""
 
     @pytest.mark.asyncio
-    async def test_detect_content_conflict(self, sync_engine):
+    async def test_detect_content_conflict(self, sync_engine) -> None:
         """Test detecting when local and remote differ."""
         local = {"title": "Local Version", "version": 2}
         remote = {"title": "Remote Version", "version": 2}
@@ -358,7 +357,7 @@ class TestConflictHandling:
         assert has_conflict is True
 
     @pytest.mark.asyncio
-    async def test_detect_no_conflict_identical(self, sync_engine):
+    async def test_detect_no_conflict_identical(self, sync_engine) -> None:
         """Test no conflict when local and remote identical."""
         state = {"title": "Same", "version": 2}
 
@@ -369,7 +368,7 @@ class TestConflictHandling:
         assert has_conflict is False
 
     @pytest.mark.asyncio
-    async def test_last_write_wins_strategy(self, sync_engine):
+    async def test_last_write_wins_strategy(self, sync_engine) -> None:
         """Test last-write-wins conflict resolution."""
         local = {"title": "Local", "timestamp": 100}
         remote = {"title": "Remote", "timestamp": 200}
@@ -381,7 +380,7 @@ class TestConflictHandling:
         assert result == remote
 
     @pytest.mark.asyncio
-    async def test_remote_wins_strategy(self, sync_engine):
+    async def test_remote_wins_strategy(self, sync_engine) -> None:
         """Test remote-wins conflict resolution."""
         local = {"title": "Local"}
         remote = {"title": "Remote"}
@@ -393,7 +392,7 @@ class TestConflictHandling:
         assert result == remote
 
     @pytest.mark.asyncio
-    async def test_local_wins_strategy(self, sync_engine):
+    async def test_local_wins_strategy(self, sync_engine) -> None:
         """Test local-wins conflict resolution."""
         local = {"title": "Local"}
         remote = {"title": "Remote"}
@@ -405,7 +404,7 @@ class TestConflictHandling:
         assert result == local
 
     @pytest.mark.asyncio
-    async def test_manual_merge_required(self, sync_engine):
+    async def test_manual_merge_required(self, sync_engine) -> None:
         """Test flagging conflict for manual resolution."""
         sync_engine.conflict_resolver.flag_for_manual_merge.return_value = True
 
@@ -414,7 +413,7 @@ class TestConflictHandling:
         assert flagged is True
 
     @pytest.mark.asyncio
-    async def test_vector_clock_ordering(self, sync_engine):
+    async def test_vector_clock_ordering(self, sync_engine) -> None:
         """Test using vector clocks to order events."""
         base_time = datetime.now(UTC)
         vc1 = VectorClock(client_id="agent-1", version=1, timestamp=base_time)
@@ -423,7 +422,7 @@ class TestConflictHandling:
         assert vc1.happens_before(vc2)
 
     @pytest.mark.asyncio
-    async def test_resolve_with_custom_strategy(self, sync_engine):
+    async def test_resolve_with_custom_strategy(self, sync_engine) -> None:
         """Test resolving with custom merge strategy."""
         local = {"a": 1, "b": 2}
         remote = {"a": 1, "c": 3}
@@ -446,7 +445,7 @@ class TestNetworkResilience:
     """Tests for handling network errors and retries."""
 
     @pytest.mark.asyncio
-    async def test_retry_on_timeout(self, sync_engine):
+    async def test_retry_on_timeout(self, sync_engine) -> None:
         """Test retrying failed operation on timeout."""
         sync_engine.sync_with_server.side_effect = [
             TimeoutError("Request timeout"),
@@ -459,7 +458,7 @@ class TestNetworkResilience:
         assert sync_engine.sync_with_server.call_count == 2
 
     @pytest.mark.asyncio
-    async def test_exponential_backoff(self, sync_engine):
+    async def test_exponential_backoff(self, sync_engine) -> None:
         """Test exponential backoff between retries."""
         sync_engine.sync_with_server.side_effect = TimeoutError()
 
@@ -467,7 +466,7 @@ class TestNetworkResilience:
             await sync_engine.sync_with_retry("proj-1", max_retries=3, backoff_factor=2.0, initial_delay=0.01)
 
     @pytest.mark.asyncio
-    async def test_abort_after_max_retries(self, sync_engine):
+    async def test_abort_after_max_retries(self, sync_engine) -> None:
         """Test aborting after max retries exceeded."""
         sync_engine.sync_with_server.side_effect = ConnectionError()
 
@@ -477,7 +476,7 @@ class TestNetworkResilience:
         assert sync_engine.sync_with_server.call_count <= 2
 
     @pytest.mark.asyncio
-    async def test_handle_network_disconnection(self, sync_engine):
+    async def test_handle_network_disconnection(self, sync_engine) -> None:
         """Test handling network disconnection gracefully."""
         sync_engine.is_connected.return_value = False
 
@@ -486,7 +485,7 @@ class TestNetworkResilience:
         assert is_online is False
 
     @pytest.mark.asyncio
-    async def test_queue_offline_changes(self, sync_engine):
+    async def test_queue_offline_changes(self, sync_engine) -> None:
         """Test queueing changes when offline."""
         sync_engine.is_connected.return_value = False
 
@@ -495,11 +494,11 @@ class TestNetworkResilience:
         assert sync_engine.change_queue is not None
 
     @pytest.mark.asyncio
-    async def test_sync_when_reconnected(self, sync_engine):
+    async def test_sync_when_reconnected(self, sync_engine) -> None:
         """Test syncing queued changes when reconnected."""
         sync_engine.is_connected.return_value = True
         sync_engine.change_queue.get_pending.return_value = [
-            QueuedChange(1, EntityType.ITEM, "item-1", OperationType.CREATE, {}, datetime.now(UTC))
+            QueuedChange(1, EntityType.ITEM, "item-1", OperationType.CREATE, {}, datetime.now(UTC)),
         ]
 
         result = await sync_engine.sync_queued_changes("proj-1")
@@ -516,7 +515,7 @@ class TestFullSyncWorkflow:
     """Tests for complete end-to-end sync workflows."""
 
     @pytest.mark.asyncio
-    async def test_full_sync_success(self, sync_engine):
+    async def test_full_sync_success(self, sync_engine) -> None:
         """Test complete successful sync from start to finish."""
         sync_engine.start_sync.return_value = None
         sync_engine.pull_changes.return_value = 5
@@ -530,7 +529,7 @@ class TestFullSyncWorkflow:
         assert result.entities_synced == 8
 
     @pytest.mark.asyncio
-    async def test_sync_with_local_changes_only(self, sync_engine):
+    async def test_sync_with_local_changes_only(self, sync_engine) -> None:
         """Test sync when only local changes exist."""
         sync_engine.full_sync.return_value = SyncResult(success=True, entities_synced=5)
 
@@ -539,7 +538,7 @@ class TestFullSyncWorkflow:
         assert result.entities_synced == 5
 
     @pytest.mark.asyncio
-    async def test_sync_with_remote_changes_only(self, sync_engine):
+    async def test_sync_with_remote_changes_only(self, sync_engine) -> None:
         """Test sync when only remote changes exist."""
         sync_engine.full_sync.return_value = SyncResult(success=True, entities_synced=10)
 
@@ -548,7 +547,7 @@ class TestFullSyncWorkflow:
         assert result.entities_synced == 10
 
     @pytest.mark.asyncio
-    async def test_sync_empty_project(self, sync_engine):
+    async def test_sync_empty_project(self, sync_engine) -> None:
         """Test syncing empty project."""
         sync_engine.full_sync.return_value = SyncResult(success=True, entities_synced=0)
 
@@ -558,10 +557,10 @@ class TestFullSyncWorkflow:
         assert result.entities_synced == 0
 
     @pytest.mark.asyncio
-    async def test_sync_with_conflicts(self, sync_engine):
+    async def test_sync_with_conflicts(self, sync_engine) -> None:
         """Test sync resolving conflicts."""
         sync_engine.full_sync.return_value = SyncResult(
-            success=True, entities_synced=8, conflicts=[{"entity": "item-1", "strategy": "merged"}]
+            success=True, entities_synced=8, conflicts=[{"entity": "item-1", "strategy": "merged"}],
         )
 
         result = await sync_engine.full_sync("proj-1")
@@ -569,10 +568,10 @@ class TestFullSyncWorkflow:
         assert len(result.conflicts) == 1
 
     @pytest.mark.asyncio
-    async def test_sync_partial_failure(self, sync_engine):
+    async def test_sync_partial_failure(self, sync_engine) -> None:
         """Test sync with partial failures."""
         sync_engine.full_sync.return_value = SyncResult(
-            success=False, entities_synced=5, errors=["Failed to sync item-3", "Network timeout"]
+            success=False, entities_synced=5, errors=["Failed to sync item-3", "Network timeout"],
         )
 
         result = await sync_engine.full_sync("proj-1")
@@ -590,7 +589,7 @@ class TestMultiProjectSync:
     """Tests for syncing multiple projects."""
 
     @pytest.mark.asyncio
-    async def test_sync_multiple_projects_sequentially(self, sync_engine):
+    async def test_sync_multiple_projects_sequentially(self, sync_engine) -> None:
         """Test syncing multiple projects in sequence."""
         sync_engine.full_sync.return_value = SyncResult(success=True)
 
@@ -603,7 +602,7 @@ class TestMultiProjectSync:
         assert all(r.success for r in results)
 
     @pytest.mark.asyncio
-    async def test_sync_multiple_projects_parallel(self, sync_engine):
+    async def test_sync_multiple_projects_parallel(self, sync_engine) -> None:
         """Test syncing multiple projects in parallel."""
         sync_engine.full_sync.return_value = SyncResult(success=True)
 
@@ -619,7 +618,7 @@ class TestMultiProjectSync:
         assert all(r.success for r in results)
 
     @pytest.mark.asyncio
-    async def test_preserve_project_isolation(self, sync_engine):
+    async def test_preserve_project_isolation(self, sync_engine) -> None:
         """Test that syncing one project doesn't affect others."""
         sync_engine.full_sync.return_value = SyncResult(success=True)
 
@@ -639,7 +638,7 @@ class TestPerformanceOptimization:
     """Tests for performance-critical sync operations."""
 
     @pytest.mark.asyncio
-    async def test_batch_sync_large_dataset(self, sync_engine):
+    async def test_batch_sync_large_dataset(self, sync_engine) -> None:
         """Test syncing large batch of items efficiently."""
         sync_engine.full_sync.return_value = SyncResult(success=True, entities_synced=1000)
 
@@ -648,7 +647,7 @@ class TestPerformanceOptimization:
         assert result.entities_synced == 1000
 
     @pytest.mark.asyncio
-    async def test_incremental_sync_efficiency(self, sync_engine):
+    async def test_incremental_sync_efficiency(self, sync_engine) -> None:
         """Test that incremental sync is more efficient than full sync."""
         sync_engine.full_sync.return_value = SyncResult(success=True, entities_synced=50, duration_seconds=0.5)
 
@@ -657,7 +656,7 @@ class TestPerformanceOptimization:
         assert result.duration_seconds < 1.0
 
     @pytest.mark.asyncio
-    async def test_parallel_chunk_processing(self, sync_engine):
+    async def test_parallel_chunk_processing(self, sync_engine) -> None:
         """Test processing changes in parallel chunks."""
         sync_engine.process_changes_parallel.return_value = SyncResult(success=True, entities_synced=500)
 
@@ -675,7 +674,7 @@ class TestRollbackAndRecovery:
     """Tests for rollback and recovery mechanisms."""
 
     @pytest.mark.asyncio
-    async def test_rollback_failed_sync(self, sync_engine):
+    async def test_rollback_failed_sync(self, sync_engine) -> None:
         """Test rolling back failed sync operation."""
         sync_engine.rollback_sync.return_value = True
 
@@ -684,7 +683,7 @@ class TestRollbackAndRecovery:
         assert success is True
 
     @pytest.mark.asyncio
-    async def test_recover_from_partial_sync(self, sync_engine):
+    async def test_recover_from_partial_sync(self, sync_engine) -> None:
         """Test recovering from partial sync."""
         sync_engine.recover_from_partial_sync.return_value = SyncResult(success=True, entities_synced=3)
 
@@ -693,7 +692,7 @@ class TestRollbackAndRecovery:
         assert result.success is True
 
     @pytest.mark.asyncio
-    async def test_restore_sync_checkpoint(self, sync_engine):
+    async def test_restore_sync_checkpoint(self, sync_engine) -> None:
         """Test restoring to sync checkpoint."""
         sync_engine.restore_checkpoint.return_value = True
 

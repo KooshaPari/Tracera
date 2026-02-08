@@ -1,6 +1,4 @@
-"""
-Utilities for BMM workflow status and configuration.
-"""
+"""Utilities for BMM workflow status and configuration."""
 
 from __future__ import annotations
 
@@ -90,7 +88,7 @@ def get_next_pending_workflow() -> dict[str, Any] | None:
         for wf_id, wf_config in phase_data.items():
             current_status = wf_config.get("status", "")
             if (not isinstance(current_status, str) or not current_status.startswith("docs/")) and wf_config.get(
-                "included", True
+                "included", True,
             ):
                 return {
                     "id": wf_id,

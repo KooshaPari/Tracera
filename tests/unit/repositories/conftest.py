@@ -1,5 +1,4 @@
-"""
-Pytest configuration for repository tests.
+"""Pytest configuration for repository tests.
 
 Provides async session fixtures with proper SQLite async support.
 """
@@ -104,8 +103,7 @@ from tracertm.models.workflow_run import WorkflowRun
 
 @pytest_asyncio.fixture(scope="function")
 async def async_session_factory():
-    """
-    Create an async session factory for tests.
+    """Create an async session factory for tests.
 
     Returns a factory function that creates new async sessions for each test.
     Manages the database lifecycle including schema creation and cleanup.
@@ -157,8 +155,7 @@ async def async_session_factory():
 
 @pytest_asyncio.fixture(scope="function")
 async def db_session(async_session_factory):
-    """
-    Create an async database session for a test.
+    """Create an async database session for a test.
 
     Provides a fresh session for each test with automatic rollback
     and cleanup.
@@ -172,8 +169,7 @@ async def db_session(async_session_factory):
 
 @pytest_asyncio.fixture(scope="function")
 async def project_with_graph(db_session: AsyncSession):
-    """
-    Create a project with a default graph for link tests.
+    """Create a project with a default graph for link tests.
 
     This fixture provides a project that has all the required entities
     for creating links (project + default graph).
@@ -201,16 +197,13 @@ async def project_with_graph(db_session: AsyncSession):
 
 @pytest_asyncio.fixture(scope="function")
 async def default_graph(db_session: AsyncSession, project_with_graph):
-    """
-    Get the default graph from a project_with_graph fixture.
-    """
+    """Get the default graph from a project_with_graph fixture."""
     await asyncio.sleep(0)
     return project_with_graph["graph"]
 
 
 async def create_default_graph_for_project(session: AsyncSession, project_id: str) -> Graph:
-    """
-    Helper function to create a default graph for a project.
+    """Helper function to create a default graph for a project.
 
     This should be called after creating a project to enable link creation.
     """
@@ -229,8 +222,7 @@ async def create_default_graph_for_project(session: AsyncSession, project_id: st
 
 @pytest_asyncio.fixture(scope="function", autouse=False)
 async def link_test_setup(db_session: AsyncSession):
-    """
-    Fixture that patches ProjectRepository.create to automatically create a default graph.
+    """Fixture that patches ProjectRepository.create to automatically create a default graph.
 
     Use this fixture in link tests to ensure graphs are created automatically.
     """

@@ -25,7 +25,7 @@ def _agent_session_cache_key(session_id: str) -> str:
 class SessionSandboxStore:
     """Maps session_id to sandbox path. Uses SandboxProvider to create sandboxes."""
 
-    def __init__(self, sandbox_provider: SandboxProvider | None = None):
+    def __init__(self, sandbox_provider: SandboxProvider | None = None) -> None:
         self._provider = sandbox_provider or LocalFilesystemSandboxProvider()
         self._store: dict[str, SandboxMetadata] = {}
 
@@ -44,7 +44,8 @@ class SessionSandboxStore:
         metadata = await self._provider.create_sandbox(cfg, session_id)
         self._store[session_id] = metadata
         if not metadata.sandbox_root:
-            raise RuntimeError(f"Provider did not set sandbox_root for {session_id}")
+            msg = f"Provider did not set sandbox_root for {session_id}"
+            raise RuntimeError(msg)
         return metadata.sandbox_root, True
 
     def get(self, session_id: str) -> SandboxMetadata | None:
@@ -89,7 +90,7 @@ class SessionSandboxStoreDB(SessionSandboxStore):
         self,
         sandbox_provider: SandboxProvider | None = None,
         cache_service: Any = None,
-    ):
+    ) -> None:
         super().__init__(sandbox_provider)
         self._cache = cache_service
 

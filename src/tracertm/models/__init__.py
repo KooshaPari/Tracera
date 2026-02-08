@@ -1,6 +1,4 @@
-"""
-SQLAlchemy models for TraceRTM.
-"""
+"""SQLAlchemy models for TraceRTM."""
 
 from __future__ import annotations
 

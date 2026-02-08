@@ -1,5 +1,4 @@
-"""
-Comprehensive unit tests for TestCaseRepository to achieve 85%+ coverage.
+"""Comprehensive unit tests for TestCaseRepository to achieve 85%+ coverage.
 
 Tests for:
 - create() - test case creation
@@ -47,7 +46,7 @@ def unique_project_name() -> str:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_basic(db_session: AsyncSession):
+async def test_create_basic(db_session: AsyncSession) -> None:
     """Test creating test case with basic fields."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -71,7 +70,7 @@ async def test_create_basic(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_with_details(db_session: AsyncSession):
+async def test_create_with_details(db_session: AsyncSession) -> None:
     """Test creating test case with full details."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -114,7 +113,7 @@ async def test_create_with_details(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_with_automation(db_session: AsyncSession):
+async def test_create_with_automation(db_session: AsyncSession) -> None:
     """Test creating test case with automation details."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -142,7 +141,7 @@ async def test_create_with_automation(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_existing(db_session: AsyncSession):
+async def test_get_by_id_existing(db_session: AsyncSession) -> None:
     """Test getting test case by ID."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -160,7 +159,7 @@ async def test_get_by_id_existing(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_with_project_scope(db_session: AsyncSession):
+async def test_get_by_id_with_project_scope(db_session: AsyncSession) -> None:
     """Test getting test case by ID with project scope."""
     project_repo = ProjectRepository(db_session)
     project1 = await project_repo.create(name=unique_project_name())
@@ -182,7 +181,7 @@ async def test_get_by_id_with_project_scope(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_nonexistent(db_session: AsyncSession):
+async def test_get_by_id_nonexistent(db_session: AsyncSession) -> None:
     """Test getting nonexistent test case by ID."""
     repo = CaseRepository(db_session)
     result = await repo.get_by_id(str(uuid4()))
@@ -191,7 +190,7 @@ async def test_get_by_id_nonexistent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_number_existing(db_session: AsyncSession):
+async def test_get_by_number_existing(db_session: AsyncSession) -> None:
     """Test getting test case by number."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -209,7 +208,7 @@ async def test_get_by_number_existing(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_number_nonexistent(db_session: AsyncSession):
+async def test_get_by_number_nonexistent(db_session: AsyncSession) -> None:
     """Test getting nonexistent test case by number."""
     repo = CaseRepository(db_session)
     result = await repo.get_by_number("TC-NONEXISTENT")
@@ -223,7 +222,7 @@ async def test_get_by_number_nonexistent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_basic(db_session: AsyncSession):
+async def test_list_all_basic(db_session: AsyncSession) -> None:
     """Test listing all test cases for a project."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -242,7 +241,7 @@ async def test_list_all_basic(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_filter_by_status(db_session: AsyncSession):
+async def test_list_all_filter_by_status(db_session: AsyncSession) -> None:
     """Test listing test cases filtered by status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -266,7 +265,7 @@ async def test_list_all_filter_by_status(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_filter_by_type(db_session: AsyncSession):
+async def test_list_all_filter_by_type(db_session: AsyncSession) -> None:
     """Test listing test cases filtered by type."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -286,7 +285,7 @@ async def test_list_all_filter_by_type(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_filter_by_priority(db_session: AsyncSession):
+async def test_list_all_filter_by_priority(db_session: AsyncSession) -> None:
     """Test listing test cases filtered by priority."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -304,7 +303,7 @@ async def test_list_all_filter_by_priority(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_filter_by_automation_status(db_session: AsyncSession):
+async def test_list_all_filter_by_automation_status(db_session: AsyncSession) -> None:
     """Test listing test cases filtered by automation status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -322,7 +321,7 @@ async def test_list_all_filter_by_automation_status(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_filter_by_category(db_session: AsyncSession):
+async def test_list_all_filter_by_category(db_session: AsyncSession) -> None:
     """Test listing test cases filtered by category."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -340,7 +339,7 @@ async def test_list_all_filter_by_category(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_filter_by_assigned_to(db_session: AsyncSession):
+async def test_list_all_filter_by_assigned_to(db_session: AsyncSession) -> None:
     """Test listing test cases filtered by assignee."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -358,7 +357,7 @@ async def test_list_all_filter_by_assigned_to(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_search(db_session: AsyncSession):
+async def test_list_all_search(db_session: AsyncSession) -> None:
     """Test listing test cases with search."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -377,7 +376,7 @@ async def test_list_all_search(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_all_pagination(db_session: AsyncSession):
+async def test_list_all_pagination(db_session: AsyncSession) -> None:
     """Test listing test cases with pagination."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -402,7 +401,7 @@ async def test_list_all_pagination(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_count_basic(db_session: AsyncSession):
+async def test_count_basic(db_session: AsyncSession) -> None:
     """Test counting test cases."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -420,7 +419,7 @@ async def test_count_basic(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_count_with_filters(db_session: AsyncSession):
+async def test_count_with_filters(db_session: AsyncSession) -> None:
     """Test counting test cases with filters."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -443,7 +442,7 @@ async def test_count_with_filters(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_basic(db_session: AsyncSession):
+async def test_update_basic(db_session: AsyncSession) -> None:
     """Test updating test case with optimistic locking."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -467,7 +466,7 @@ async def test_update_basic(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_version_mismatch(db_session: AsyncSession):
+async def test_update_version_mismatch(db_session: AsyncSession) -> None:
     """Test updating test case with wrong version raises error."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -483,7 +482,7 @@ async def test_update_version_mismatch(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_nonexistent(db_session: AsyncSession):
+async def test_update_nonexistent(db_session: AsyncSession) -> None:
     """Test updating nonexistent test case raises error."""
     repo = CaseRepository(db_session)
 
@@ -498,7 +497,7 @@ async def test_update_nonexistent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_transition_status_draft_to_review(db_session: AsyncSession):
+async def test_transition_status_draft_to_review(db_session: AsyncSession) -> None:
     """Test transitioning from draft to review."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -515,7 +514,7 @@ async def test_transition_status_draft_to_review(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_transition_status_review_to_approved(db_session: AsyncSession):
+async def test_transition_status_review_to_approved(db_session: AsyncSession) -> None:
     """Test transitioning from review to approved."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -534,7 +533,7 @@ async def test_transition_status_review_to_approved(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_transition_status_invalid(db_session: AsyncSession):
+async def test_transition_status_invalid(db_session: AsyncSession) -> None:
     """Test invalid status transition raises error."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -551,7 +550,7 @@ async def test_transition_status_invalid(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_transition_status_nonexistent(db_session: AsyncSession):
+async def test_transition_status_nonexistent(db_session: AsyncSession) -> None:
     """Test transitioning nonexistent test case raises error."""
     repo = CaseRepository(db_session)
 
@@ -566,7 +565,7 @@ async def test_transition_status_nonexistent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_submit_for_review(db_session: AsyncSession):
+async def test_submit_for_review(db_session: AsyncSession) -> None:
     """Test submitting test case for review."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -584,7 +583,7 @@ async def test_submit_for_review(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_approve(db_session: AsyncSession):
+async def test_approve(db_session: AsyncSession) -> None:
     """Test approving test case."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -604,7 +603,7 @@ async def test_approve(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_deprecate(db_session: AsyncSession):
+async def test_deprecate(db_session: AsyncSession) -> None:
     """Test deprecating test case."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -622,7 +621,7 @@ async def test_deprecate(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_deprecate_with_replacement(db_session: AsyncSession):
+async def test_deprecate_with_replacement(db_session: AsyncSession) -> None:
     """Test deprecating test case with replacement."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -649,7 +648,7 @@ async def test_deprecate_with_replacement(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_record_execution_passed(db_session: AsyncSession):
+async def test_record_execution_passed(db_session: AsyncSession) -> None:
     """Test recording passed execution."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -669,7 +668,7 @@ async def test_record_execution_passed(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_record_execution_failed(db_session: AsyncSession):
+async def test_record_execution_failed(db_session: AsyncSession) -> None:
     """Test recording failed execution."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -688,7 +687,7 @@ async def test_record_execution_failed(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_record_execution_nonexistent(db_session: AsyncSession):
+async def test_record_execution_nonexistent(db_session: AsyncSession) -> None:
     """Test recording execution for nonexistent test case."""
     repo = CaseRepository(db_session)
 
@@ -703,7 +702,7 @@ async def test_record_execution_nonexistent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_soft(db_session: AsyncSession):
+async def test_delete_soft(db_session: AsyncSession) -> None:
     """Test soft deleting test case."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -724,7 +723,7 @@ async def test_delete_soft(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_hard(db_session: AsyncSession):
+async def test_delete_hard(db_session: AsyncSession) -> None:
     """Test hard deleting test case."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -741,7 +740,7 @@ async def test_delete_hard(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_nonexistent(db_session: AsyncSession):
+async def test_delete_nonexistent(db_session: AsyncSession) -> None:
     """Test deleting nonexistent test case."""
     repo = CaseRepository(db_session)
     result = await repo.delete(str(uuid4()))
@@ -755,7 +754,7 @@ async def test_delete_nonexistent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_count_by_status(db_session: AsyncSession):
+async def test_count_by_status(db_session: AsyncSession) -> None:
     """Test counting test cases by status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -775,7 +774,7 @@ async def test_count_by_status(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_count_by_type(db_session: AsyncSession):
+async def test_count_by_type(db_session: AsyncSession) -> None:
     """Test counting test cases by type."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -793,7 +792,7 @@ async def test_count_by_type(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_count_by_priority(db_session: AsyncSession):
+async def test_count_by_priority(db_session: AsyncSession) -> None:
     """Test counting test cases by priority."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -811,7 +810,7 @@ async def test_count_by_priority(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_count_by_automation_status(db_session: AsyncSession):
+async def test_count_by_automation_status(db_session: AsyncSession) -> None:
     """Test counting test cases by automation status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -829,7 +828,7 @@ async def test_count_by_automation_status(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_execution_summary(db_session: AsyncSession):
+async def test_get_execution_summary(db_session: AsyncSession) -> None:
     """Test getting execution summary."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
@@ -857,7 +856,7 @@ async def test_get_execution_summary(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_activities(db_session: AsyncSession):
+async def test_get_activities(db_session: AsyncSession) -> None:
     """Test getting activity log."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())

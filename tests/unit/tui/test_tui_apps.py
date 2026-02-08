@@ -13,7 +13,7 @@ class TestDashboardApp:
 
     @patch("tracertm.tui.apps.dashboard.TEXTUAL_AVAILABLE", True)
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
-    def test_dashboard_app_initialization(self, mock_config_class):
+    def test_dashboard_app_initialization(self, mock_config_class) -> None:
         """Test dashboard app can be initialized."""
         try:
             from tracertm.tui.apps.dashboard import DashboardApp  # type: ignore[possibly-missing-import]
@@ -28,7 +28,7 @@ class TestDashboardApp:
         except ImportError:
             pytest.skip("Textual not available")
 
-    def test_dashboard_app_no_textual(self):
+    def test_dashboard_app_no_textual(self) -> None:
         """Test dashboard app raises when Textual not available."""
         # Import first, then patch the instance check
 
@@ -47,7 +47,7 @@ class TestBrowserApp:
 
     @patch("tracertm.tui.apps.browser.TEXTUAL_AVAILABLE", True)
     @patch("tracertm.tui.apps.browser.ConfigManager")
-    def test_browser_app_initialization(self, mock_config_class):
+    def test_browser_app_initialization(self, mock_config_class) -> None:
         """Test browser app can be initialized."""
         try:
             from tracertm.tui.apps.browser import BrowserApp  # type: ignore[possibly-missing-import]
@@ -61,7 +61,7 @@ class TestBrowserApp:
         except ImportError:
             pytest.skip("Textual not available")
 
-    def test_browser_app_no_textual(self):
+    def test_browser_app_no_textual(self) -> None:
         """Test browser app raises when Textual not available."""
         # Import first, then patch the instance check
 
@@ -80,7 +80,7 @@ class TestGraphApp:
 
     @patch("tracertm.tui.apps.graph.TEXTUAL_AVAILABLE", True)
     @patch("tracertm.tui.apps.graph.ConfigManager")
-    def test_graph_app_initialization(self, mock_config_class):
+    def test_graph_app_initialization(self, mock_config_class) -> None:
         """Test graph app can be initialized."""
         try:
             from tracertm.tui.apps.graph import GraphApp  # type: ignore[possibly-missing-import]
@@ -94,7 +94,7 @@ class TestGraphApp:
         except ImportError:
             pytest.skip("Textual not available")
 
-    def test_graph_app_no_textual(self):
+    def test_graph_app_no_textual(self) -> None:
         """Test graph app raises when Textual not available."""
         # Import first, then patch the instance check
 

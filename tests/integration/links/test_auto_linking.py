@@ -1,5 +1,4 @@
-"""
-Integration tests for Epic 4: Auto-linking from commit messages (FR18).
+"""Integration tests for Epic 4: Auto-linking from commit messages (FR18).
 
 Tests automatic linking of code commits to stories via commit message parsing.
 """
@@ -19,7 +18,7 @@ def runner():
 
 
 @pytest.fixture
-def temp_project(runner, tmp_path, monkeypatch):
+def temp_project(runner, tmp_path, monkeypatch) -> str:
     """Create a temporary project for testing."""
     config_dir = tmp_path / ".config" / "tracertm"
     config_dir.mkdir(parents=True, exist_ok=True)
@@ -40,7 +39,7 @@ def temp_project(runner, tmp_path, monkeypatch):
     return "test-project"
 
 
-def test_auto_link_from_commit_message(runner, temp_project):
+def test_auto_link_from_commit_message(runner, temp_project) -> None:
     """Test auto-linking from commit message (FR18)."""
     # Create a story item
     result1 = runner.invoke(
@@ -87,10 +86,10 @@ def test_auto_link_from_commit_message(runner, temp_project):
         ],
     )
     # Should either succeed or show no items found (depending on ID matching)
-    assert result3.exit_code in [0, 1]
+    assert result3.exit_code in {0, 1}
 
 
-def test_auto_link_service_parse_commit_message(initialized_db):
+def test_auto_link_service_parse_commit_message(initialized_db) -> None:
     """Test auto-link service commit message parsing."""
     from tracertm.services.auto_link_service import AutoLinkService
 
@@ -108,7 +107,7 @@ def test_auto_link_service_parse_commit_message(initialized_db):
         assert any("STORY-123" in str(item) for item in result)
 
 
-def test_auto_link_determines_link_type(db_session):
+def test_auto_link_determines_link_type(db_session) -> None:
     """Test that auto-link service determines correct link type."""
     from tracertm.services.auto_link_service import AutoLinkService
 

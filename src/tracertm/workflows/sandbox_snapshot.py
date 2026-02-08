@@ -55,7 +55,7 @@ class SandboxSnapshotWorkflow:
         """
         workflow.logger.info(
             f"Creating sandbox snapshot for session {session_id} "
-            f"(compression={compression}, retention={retention_days}d)"
+            f"(compression={compression}, retention={retention_days}d)",
         )
 
         # Generate snapshot name if not provided
@@ -153,7 +153,7 @@ class BulkSnapshotWorkflow:
         workflow.logger.info(
             f"Starting bulk snapshot workflow "
             f"(sessions={len(session_ids) if session_ids else 'all'}, "
-            f"max_concurrent={max_concurrent})"
+            f"max_concurrent={max_concurrent})",
         )
 
         # Get list of active sessions if not provided
@@ -263,7 +263,7 @@ class SnapshotCleanupWorkflow:
         deleted_count = cleanup_result.get("deleted_count", 0)
         workflow.logger.info(
             f"Cleanup {'completed' if not dry_run else 'simulated'}: "
-            f"{deleted_count} snapshots {'deleted' if not dry_run else 'would be deleted'}"
+            f"{deleted_count} snapshots {'deleted' if not dry_run else 'would be deleted'}",
         )
 
         return {

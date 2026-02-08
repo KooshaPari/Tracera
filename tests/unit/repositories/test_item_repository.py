@@ -10,7 +10,7 @@ from tracertm.repositories.project_repository import ProjectRepository
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_item(db_session: AsyncSession):
+async def test_create_item(db_session: AsyncSession) -> None:
     """Test creating an item."""
     # Create project first
     project_repo = ProjectRepository(db_session)
@@ -36,7 +36,7 @@ async def test_create_item(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id(db_session: AsyncSession):
+async def test_get_by_id(db_session: AsyncSession) -> None:
     """Test retrieving an item by ID."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -58,7 +58,7 @@ async def test_get_by_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id_not_found(db_session: AsyncSession):
+async def test_get_by_id_not_found(db_session: AsyncSession) -> None:
     """Test retrieving non-existent item returns None."""
     repo = ItemRepository(db_session)
     item = await repo.get_by_id("non-existent-id")
@@ -67,7 +67,7 @@ async def test_get_by_id_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_item(db_session: AsyncSession):
+async def test_update_item(db_session: AsyncSession) -> None:
     """Test updating an item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -95,7 +95,7 @@ async def test_update_item(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_optimistic_locking(db_session: AsyncSession):
+async def test_update_optimistic_locking(db_session: AsyncSession) -> None:
     """Test optimistic locking prevents concurrent updates."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -131,7 +131,7 @@ async def test_update_optimistic_locking(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_item(db_session: AsyncSession):
+async def test_delete_item(db_session: AsyncSession) -> None:
     """Test soft deleting an item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -154,7 +154,7 @@ async def test_delete_item(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_by_project(db_session: AsyncSession):
+async def test_list_by_project(db_session: AsyncSession) -> None:
     """Test listing items by project."""
     project_repo = ProjectRepository(db_session)
     project1 = await project_repo.create(name="Project 1", description="Test")
@@ -195,7 +195,7 @@ async def test_list_by_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_count_by_status(db_session: AsyncSession):
+async def test_count_by_status(db_session: AsyncSession) -> None:
     """Test counting items by status."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -229,7 +229,7 @@ async def test_count_by_status(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_query_items(db_session: AsyncSession):
+async def test_query_items(db_session: AsyncSession) -> None:
     """Test querying items with filters."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -257,7 +257,7 @@ async def test_query_items(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_multiple_fields(db_session: AsyncSession):
+async def test_update_multiple_fields(db_session: AsyncSession) -> None:
     """Test updating multiple fields at once."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -287,7 +287,7 @@ async def test_update_multiple_fields(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_view_empty(db_session: AsyncSession):
+async def test_get_by_view_empty(db_session: AsyncSession) -> None:
     """Test getting items by view when none exist."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -300,7 +300,7 @@ async def test_get_by_view_empty(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_delete_hard_delete(db_session: AsyncSession):
+async def test_delete_hard_delete(db_session: AsyncSession) -> None:
     """Test hard delete of item."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -325,7 +325,7 @@ async def test_delete_hard_delete(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_view_with_status_filter(db_session: AsyncSession):
+async def test_get_by_view_with_status_filter(db_session: AsyncSession) -> None:
     """Test getting items by view with status filter."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -357,7 +357,7 @@ async def test_get_by_view_with_status_filter(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_with_version_mismatch(db_session: AsyncSession):
+async def test_update_with_version_mismatch(db_session: AsyncSession) -> None:
     """Test update fails with version mismatch."""
     from tracertm.core.concurrency import ConcurrencyError
 
@@ -384,7 +384,7 @@ async def test_update_with_version_mismatch(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_view_with_limit_and_offset(db_session: AsyncSession):
+async def test_get_by_view_with_limit_and_offset(db_session: AsyncSession) -> None:
     """Test pagination with limit and offset."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")

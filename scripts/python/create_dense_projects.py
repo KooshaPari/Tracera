@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Script to create 5 dense, complete projects with comprehensive data.
+"""Script to create 5 dense, complete projects with comprehensive data.
 Works with both PostgreSQL and SQLite.
 
 Usage:
@@ -11,6 +10,7 @@ Usage:
 
 import logging
 import os
+import pathlib
 import sys
 import uuid
 from datetime import datetime, timedelta
@@ -19,7 +19,9 @@ from random import choice, randint
 logger = logging.getLogger(__name__)
 
 # Add parent directory to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, pathlib.Path(pathlib.Path(pathlib.Path(__file__).resolve()).parent).parent)
+
+import contextlib
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
@@ -133,12 +135,9 @@ def create_project(session: Session, config: dict) -> str:
             },
         )
     finally:
-        try:
+        with contextlib.suppress(Exception):
             session.execute(text("ALTER TABLE projects ENABLE TRIGGER ALL"))
-        except Exception:
-            pass
     session.commit()
-    print(f"✓ Created project: {config['name']} ({project_id[:8]}...)")
     return project_id
 
 
@@ -212,10 +211,8 @@ def create_items(session: Session, project_id: str, count: int):
 
         if i % 100 == 0:
             session.commit()
-            print(f"  Created {i}/{count} items...")
 
     session.commit()
-    print(f"✓ Created {count} items")
     return items
 
 
@@ -254,28 +251,21 @@ def create_links(session: Session, project_id: str, item_ids: list, count: int):
 
             if links_created % 100 == 0:
                 session.commit()
-                print(f"  Created {links_created}/{count} links...")
         except Exception as e:
             # Skip duplicate or invalid links
             logger.debug("Skip link: %s", e)
             continue
 
     session.commit()
-    print(f"✓ Created {links_created} links")
     return links_created
 
 
-def main():
+def main() -> None:
     """Main function to create 5 dense projects."""
-    print("🚀 Creating 5 dense, complete projects...")
-    print(f"Database: {database_url}")
-    print()
-
     session = SessionLocal()
 
     try:
         for config in PROJECTS:
-            print(f"\n📦 Creating project: {config['name']}")
 
             # Create project
             project_id = create_project(session, config)
@@ -289,9 +279,6 @@ def main():
             create_links(session, project_id, item_ids, link_count)
 
         # Summary
-        print("\n" + "=" * 60)
-        print("✅ Summary:")
-        print("=" * 60)
 
         result = session.execute(
             text("""
@@ -312,19 +299,13 @@ def main():
                 )
                 GROUP BY p.id, p.name
                 ORDER BY p.name
-            """)
+            """),
         )
 
-        for row in result:
-            print(f"  {row.project_name}:")
-            print(f"    - Items: {row.item_count}")
-            print(f"    - Links: {row.link_count}")
-            print(f"    - Completed: {row.completed_items}")
+        for _row in result:
+            pass
 
-        print("\n💾 Dense projects created successfully!")
-
-    except Exception as e:
-        print(f"\n❌ Error: {e}")
+    except Exception:
         session.rollback()
         raise
     finally:

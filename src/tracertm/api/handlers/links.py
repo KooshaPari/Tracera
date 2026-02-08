@@ -110,7 +110,7 @@ async def _fetch_links_schema_name(db: AsyncSession) -> str:
     schema_row = await db.execute(
         text(
             "SELECT table_schema FROM information_schema.tables "
-            "WHERE table_name = 'links' ORDER BY table_schema LIMIT 1"
+            "WHERE table_name = 'links' ORDER BY table_schema LIMIT 1",
         ),
     )
     return schema_row.scalar() or "public"
@@ -119,7 +119,7 @@ async def _fetch_links_schema_name(db: AsyncSession) -> str:
 async def _fetch_links_columns(db: AsyncSession, schema_name: str) -> set[str]:
     cols_result = await db.execute(
         text(
-            "SELECT column_name FROM information_schema.columns WHERE table_schema = :schema AND table_name = 'links'"
+            "SELECT column_name FROM information_schema.columns WHERE table_schema = :schema AND table_name = 'links'",
         ),
         {"schema": schema_name},
     )

@@ -18,7 +18,7 @@ pytestmark = pytest.mark.unit
 class TestSandboxStatus:
     """Test SandboxStatus enum."""
 
-    def test_status_values(self):
+    def test_status_values(self) -> None:
         assert SandboxStatus.CREATING == "creating"
         assert SandboxStatus.READY == "ready"
         assert SandboxStatus.EXECUTING == "executing"
@@ -31,7 +31,7 @@ class TestSandboxStatus:
 class TestSandboxConfig:
     """Test SandboxConfig dataclass."""
 
-    def test_defaults(self):
+    def test_defaults(self) -> None:
         cfg = SandboxConfig()
         assert cfg.vcpus == 4
         assert cfg.memory_mb == 8192
@@ -42,11 +42,11 @@ class TestSandboxConfig:
         assert cfg.sandbox_root is None
         assert cfg.project_id is None
 
-    def test_project_id_optional(self):
+    def test_project_id_optional(self) -> None:
         cfg = SandboxConfig(project_id="proj-123")
         assert cfg.project_id == "proj-123"
 
-    def test_environment_and_dependencies(self):
+    def test_environment_and_dependencies(self) -> None:
         cfg = SandboxConfig(
             environment={"FOO": "bar"},
             dependencies=["dep1"],
@@ -58,7 +58,7 @@ class TestSandboxConfig:
 class TestSandboxMetadata:
     """Test SandboxMetadata dataclass."""
 
-    def test_required_fields(self):
+    def test_required_fields(self) -> None:
         now = datetime.now(UTC)
         meta = SandboxMetadata(
             sandbox_id="s1",
@@ -74,7 +74,7 @@ class TestSandboxMetadata:
         assert meta.completed_at is None
         assert meta.error is None
 
-    def test_default_vcpus_memory(self):
+    def test_default_vcpus_memory(self) -> None:
         now = datetime.now(UTC)
         meta = SandboxMetadata(
             sandbox_id="s1",
@@ -89,14 +89,14 @@ class TestSandboxMetadata:
 class TestExecutionRequest:
     """Test ExecutionRequest dataclass."""
 
-    def test_minimal(self):
+    def test_minimal(self) -> None:
         req = ExecutionRequest(prompt="Hello")
         assert req.prompt == "Hello"
         assert req.tools == []
         assert req.max_retries == 3
         assert req.context == {}
 
-    def test_with_tools_and_config(self):
+    def test_with_tools_and_config(self) -> None:
         cfg = SandboxConfig(project_id="p1")
         req = ExecutionRequest(
             prompt="Run",
@@ -112,7 +112,7 @@ class TestExecutionRequest:
 class TestExecutionResult:
     """Test ExecutionResult dataclass."""
 
-    def test_minimal(self):
+    def test_minimal(self) -> None:
         res = ExecutionResult(
             sandbox_id="s1",
             status=SandboxStatus.COMPLETED,

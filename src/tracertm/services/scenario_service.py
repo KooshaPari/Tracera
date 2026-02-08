@@ -13,7 +13,7 @@ from tracertm.repositories.event_repository import EventRepository
 class ScenarioService:
     """Service for BDD Scenarios."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def _get_project_id(self, feature_id: str) -> str | None:
@@ -121,7 +121,8 @@ class ScenarioService:
         async def do_update() -> Scenario:
             scenario = await self.get_scenario(scenario_id)
             if not scenario:
-                raise ValueError(f"Scenario {scenario_id} not found")
+                msg = f"Scenario {scenario_id} not found"
+                raise ValueError(msg)
 
             before = {key: getattr(scenario, key, None) for key in updates}
             for key, value in updates.items():

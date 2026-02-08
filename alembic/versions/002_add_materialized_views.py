@@ -1,4 +1,4 @@
-"""Add materialized views for SSOT layers
+"""Add materialized views for SSOT layers.
 
 Revision ID: 002
 Revises: 001
@@ -19,7 +19,6 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     """Create materialized views for 8 attached layers."""
-
     # Layer 1: Traceability Matrix View
     op.execute("""
         CREATE MATERIALIZED VIEW traceability_matrix AS
@@ -157,7 +156,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop materialized views."""
-
     # Drop materialized views
     op.execute("DROP MATERIALIZED VIEW IF EXISTS coverage_analysis;")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS impact_analysis;")

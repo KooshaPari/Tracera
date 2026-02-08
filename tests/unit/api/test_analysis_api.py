@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for Analysis API endpoints.
+"""Comprehensive tests for Analysis API endpoints.
 
 Tests impact analysis, cycle detection, and shortest path finding.
 """
@@ -19,7 +18,7 @@ class TestImpactAnalysis:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_impact_analysis_simple(self, mock_auth, mock_db):
+    def test_impact_analysis_simple(self, mock_auth, mock_db) -> None:
         """Test impact analysis with simple dependency chain."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -47,7 +46,7 @@ class TestImpactAnalysis:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_impact_analysis_large_chain(self, mock_auth, mock_db):
+    def test_impact_analysis_large_chain(self, mock_auth, mock_db) -> None:
         """Test impact analysis with large dependency chain."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -74,7 +73,7 @@ class TestImpactAnalysis:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_impact_analysis_no_dependencies(self, mock_auth, mock_db):
+    def test_impact_analysis_no_dependencies(self, mock_auth, mock_db) -> None:
         """Test impact analysis for isolated item with no dependencies."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -100,29 +99,29 @@ class TestImpactAnalysis:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_impact_analysis_missing_item_id(self, mock_auth, mock_db):
+    def test_impact_analysis_missing_item_id(self, mock_auth, mock_db) -> None:
         """Test impact analysis requires item_id parameter."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
 
         response = client.get("/api/v1/analysis/impact/?project_id=proj1")
         # Should fail due to missing item_id in path
-        assert response.status_code == 404 or response.status_code == 422
+        assert response.status_code in {404, 422}
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_impact_analysis_missing_project_id(self, mock_auth, mock_db):
+    def test_impact_analysis_missing_project_id(self, mock_auth, mock_db) -> None:
         """Test impact analysis requires project_id parameter."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
 
         response = client.get("/api/v1/analysis/impact/item1")
         # Should fail due to missing project_id
-        assert response.status_code in [422, 500]
+        assert response.status_code in {422, 500}
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_impact_analysis_item_not_found(self, mock_auth, mock_db):
+    def test_impact_analysis_item_not_found(self, mock_auth, mock_db) -> None:
         """Test impact analysis returns 404 for non-existent item."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -135,11 +134,11 @@ class TestImpactAnalysis:
 
             response = client.get("/api/v1/analysis/impact/nonexistent?project_id=proj1")
             # The exception is caught and returns 404
-            assert response.status_code in [404, 500]
+            assert response.status_code in {404, 500}
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_impact_analysis_with_special_item_id(self, mock_auth, mock_db):
+    def test_impact_analysis_with_special_item_id(self, mock_auth, mock_db) -> None:
         """Test impact analysis with special characters in item ID."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -169,7 +168,7 @@ class TestCycleDetection:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_detect_cycles_found(self, mock_auth, mock_db):
+    def test_detect_cycles_found(self, mock_auth, mock_db) -> None:
         """Test cycle detection finds cycles."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -197,7 +196,7 @@ class TestCycleDetection:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_detect_cycles_not_found(self, mock_auth, mock_db):
+    def test_detect_cycles_not_found(self, mock_auth, mock_db) -> None:
         """Test cycle detection when no cycles exist."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -224,7 +223,7 @@ class TestCycleDetection:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_detect_cycles_multiple_cycles(self, mock_auth, mock_db):
+    def test_detect_cycles_multiple_cycles(self, mock_auth, mock_db) -> None:
         """Test cycle detection with multiple cycles."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -251,7 +250,7 @@ class TestCycleDetection:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_detect_cycles_severity_levels(self, mock_auth, mock_db):
+    def test_detect_cycles_severity_levels(self, mock_auth, mock_db) -> None:
         """Test cycle detection severity levels."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -279,14 +278,14 @@ class TestCycleDetection:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_detect_cycles_missing_project_id(self, mock_auth, mock_db):
+    def test_detect_cycles_missing_project_id(self, mock_auth, mock_db) -> None:
         """Test cycle detection requires project_id."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
 
         response = client.get("/api/v1/analysis/cycles/")
         # Should fail due to missing project_id in path
-        assert response.status_code == 404 or response.status_code == 422
+        assert response.status_code in {404, 422}
 
 
 class TestShortestPath:
@@ -294,7 +293,7 @@ class TestShortestPath:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_shortest_path_simple(self, mock_auth, mock_db):
+    def test_shortest_path_simple(self, mock_auth, mock_db) -> None:
         """Test shortest path with simple dependency chain."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -322,7 +321,7 @@ class TestShortestPath:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_shortest_path_long_chain(self, mock_auth, mock_db):
+    def test_shortest_path_long_chain(self, mock_auth, mock_db) -> None:
         """Test shortest path with long dependency chain."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -350,7 +349,7 @@ class TestShortestPath:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_shortest_path_not_found(self, mock_auth, mock_db):
+    def test_shortest_path_not_found(self, mock_auth, mock_db) -> None:
         """Test shortest path when no path exists."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -377,7 +376,7 @@ class TestShortestPath:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_shortest_path_direct_link(self, mock_auth, mock_db):
+    def test_shortest_path_direct_link(self, mock_auth, mock_db) -> None:
         """Test shortest path with direct link between items."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -404,40 +403,40 @@ class TestShortestPath:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_shortest_path_missing_source_id(self, mock_auth, mock_db):
+    def test_shortest_path_missing_source_id(self, mock_auth, mock_db) -> None:
         """Test shortest path requires source_id parameter."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
 
         response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&target_id=item2")
         # Missing source_id should cause an error
-        assert response.status_code in [422, 500]
+        assert response.status_code in {422, 500}
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_shortest_path_missing_target_id(self, mock_auth, mock_db):
+    def test_shortest_path_missing_target_id(self, mock_auth, mock_db) -> None:
         """Test shortest path requires target_id parameter."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
 
         response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1")
         # Missing target_id should cause an error
-        assert response.status_code in [422, 500]
+        assert response.status_code in {422, 500}
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_shortest_path_missing_project_id(self, mock_auth, mock_db):
+    def test_shortest_path_missing_project_id(self, mock_auth, mock_db) -> None:
         """Test shortest path requires project_id parameter."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
 
         response = client.get("/api/v1/analysis/shortest-path?source_id=item1&target_id=item2")
         # Missing project_id should cause an error
-        assert response.status_code in [422, 500]
+        assert response.status_code in {422, 500}
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_shortest_path_multiple_link_types(self, mock_auth, mock_db):
+    def test_shortest_path_multiple_link_types(self, mock_auth, mock_db) -> None:
         """Test shortest path with various link types."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -462,7 +461,7 @@ class TestShortestPath:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_shortest_path_self_reference(self, mock_auth, mock_db):
+    def test_shortest_path_self_reference(self, mock_auth, mock_db) -> None:
         """Test shortest path from item to itself."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()

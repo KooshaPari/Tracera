@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,8 +19,8 @@ router = APIRouter(prefix="/contracts", tags=["Contracts"])
 @router.post("/", response_model=ContractRead, status_code=201)
 async def create_contract(
     contract: ContractCreate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     service = ContractService(db)
     return await service.create_contract(
@@ -39,8 +39,8 @@ async def create_contract(
 @router.get("/{contract_id}", response_model=ContractRead)
 async def get_contract(
     contract_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     service = ContractService(db)
     contract = await service.get_contract(contract_id)
@@ -52,7 +52,7 @@ async def get_contract(
 @router.get("/{contract_id}/activities", response_model=ContractActivityListResponse)
 async def get_contract_activities(
     contract_id: str,
-    limit: int = Query(100, description="Max activities to return"),
+    limit: Annotated[int, Query(description="Max activities to return")] = 100,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -80,8 +80,8 @@ async def get_contract_activities(
 async def update_contract(
     contract_id: str,
     updates: ContractUpdate,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     service = ContractService(db)
     update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
@@ -94,9 +94,9 @@ async def update_contract(
 @router.delete("/{contract_id}", status_code=204)
 async def delete_contract(
     contract_id: str,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     service = ContractService(db)
     success = await service.delete_contract(contract_id)
     if not success:
@@ -105,8 +105,8 @@ async def delete_contract(
 
 @router.get("/", response_model=list[ContractRead])
 async def list_contracts(
-    project_id: str = Query(..., description="Project ID"),
-    item_id: str | None = Query(None, description="Filter by Item ID"),
+    project_id: Annotated[str, Query(description="Project ID")],
+    item_id: Annotated[str | None, Query(description="Filter by Item ID")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):

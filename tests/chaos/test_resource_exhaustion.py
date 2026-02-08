@@ -1,5 +1,4 @@
-"""
-Chaos Test: Resource Exhaustion
+"""Chaos Test: Resource Exhaustion.
 
 Simulates CPU spikes, memory pressure, and bandwidth saturation.
 Tests system behavior under resource constraints.
@@ -29,8 +28,7 @@ async def test_bandwidth_limitation(
     db_session,
     assert_recovery_within_target,
 ) -> None:
-    """
-    Test: Bandwidth limitation on database connection.
+    """Test: Bandwidth limitation on database connection.
 
     Scenario:
     1. Establish baseline query performance
@@ -93,8 +91,7 @@ async def test_slow_connection_close(
     redis_client: redis.Redis,
     assert_recovery_within_target,
 ) -> None:
-    """
-    Test: Slow connection close (simulates resource leak).
+    """Test: Slow connection close (simulates resource leak).
 
     Scenario:
     1. Inject slow_close toxic (delays connection close by 5s)
@@ -145,8 +142,7 @@ async def test_timeout_injection(
     toxiproxy_client: ToxiproxyClient,
     go_backend_proxy: str,
 ) -> None:
-    """
-    Test: Connection timeout injection.
+    """Test: Connection timeout injection.
 
     Scenario:
     1. Inject timeout toxic (connections hang for 10s)
@@ -197,8 +193,7 @@ async def test_combined_resource_pressure(
     db_session,
     assert_recovery_within_target,
 ) -> None:
-    """
-    Test: Combined resource pressure (latency + bandwidth limit).
+    """Test: Combined resource pressure (latency + bandwidth limit).
 
     Scenario:
     1. Inject both latency (200ms) and bandwidth limit (50 KB/s)

@@ -9,12 +9,12 @@ class TestAuthTools:
     """Tests for authentication-related MCP tools."""
 
     @pytest.mark.asyncio
-    async def test_auth_status_returns_mode(self):
+    async def test_auth_status_returns_mode(self) -> None:
         """Test that auth status returns the current auth mode."""
         # TODO: Implement when auth module is available
 
     @pytest.mark.asyncio
-    async def test_auth_validate_token(self):
+    async def test_auth_validate_token(self) -> None:
         """Test token validation."""
 
 
@@ -22,15 +22,15 @@ class TestConfigTools:
     """Tests for configuration MCP tools."""
 
     @pytest.mark.asyncio
-    async def test_config_get_key(self):
+    async def test_config_get_key(self) -> None:
         """Test getting a config value by key."""
 
     @pytest.mark.asyncio
-    async def test_config_set_key(self):
+    async def test_config_set_key(self) -> None:
         """Test setting a config value."""
 
     @pytest.mark.asyncio
-    async def test_config_list_all(self):
+    async def test_config_list_all(self) -> None:
         """Test listing all config values."""
 
 
@@ -38,13 +38,13 @@ class TestDatabaseTools:
     """Tests for database MCP tools."""
 
     @pytest.mark.asyncio
-    async def test_db_status(self):
+    async def test_db_status(self) -> None:
         """Test database status check."""
 
     @pytest.mark.asyncio
-    async def test_db_migrate(self):
+    async def test_db_migrate(self) -> None:
         """Test database migration."""
 
     @pytest.mark.asyncio
-    async def test_db_reset_requires_confirm(self):
+    async def test_db_reset_requires_confirm(self) -> None:
         """Test that db reset requires confirmation."""

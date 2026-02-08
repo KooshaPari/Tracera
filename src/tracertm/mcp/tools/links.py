@@ -1,5 +1,4 @@
-"""
-Link management MCP tools.
+"""Link management MCP tools.
 
 Provides tools for creating and querying traceability links between items.
 Links represent relationships: satisfies, implements, tests, depends_on, etc.
@@ -105,7 +104,8 @@ async def create_link(
     """
     await asyncio.sleep(0)
     if not source_id or not target_id or not link_type:
-        raise ToolError("source_id, target_id, and link_type are required.")
+        msg = "source_id, target_id, and link_type are required."
+        raise ToolError(msg)
 
     project_id = require_project()
 
@@ -115,9 +115,11 @@ async def create_link(
         resolved_target = _resolve_item_id(session, project_id, target_id)
 
         if not resolved_source:
-            raise ToolError(f"Source item not found: {source_id}")
+            msg = f"Source item not found: {source_id}"
+            raise ToolError(msg)
         if not resolved_target:
-            raise ToolError(f"Target item not found: {target_id}")
+            msg = f"Target item not found: {target_id}"
+            raise ToolError(msg)
 
         # Check for duplicate link
         existing = (
@@ -132,7 +134,8 @@ async def create_link(
             .first()
         )
         if existing:
-            raise ToolError(f"Link already exists: {source_id} -> {target_id} ({link_type})")
+            msg = f"Link already exists: {source_id} -> {target_id} ({link_type})"
+            raise ToolError(msg)
 
         link = Link(
             id=str(uuid.uuid4()),
@@ -214,19 +217,22 @@ async def show_links(
     """
     await asyncio.sleep(0)
     if not item_id:
-        raise ToolError("item_id is required.")
+        msg = "item_id is required."
+        raise ToolError(msg)
 
     project_id = require_project()
 
     with get_session() as session:
         resolved_id = _resolve_item_id(session, project_id, item_id)
         if not resolved_id:
-            raise ToolError(f"Item not found: {item_id}")
+            msg = f"Item not found: {item_id}"
+            raise ToolError(msg)
 
         # Get the item
         item = session.query(Item).filter(Item.id == resolved_id).first()
         if not item:
-            raise ToolError(f"Item not found: {item_id}")
+            msg = f"Item not found: {item_id}"
+            raise ToolError(msg)
 
         # Outgoing links (this item is source)
         outgoing_query = (

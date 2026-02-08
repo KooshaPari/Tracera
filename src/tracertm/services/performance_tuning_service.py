@@ -12,7 +12,7 @@ AVG_TIME_MS_THRESHOLD = 100
 class PerformanceTuningService:
     """Service for performance tuning and optimization."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.metrics: list[dict[str, Any]] = []
         self.recommendations: list[str] = []
@@ -130,9 +130,7 @@ class PerformanceTuningService:
             avg_time = sum(m["value"] for m in query_metrics) / len(query_metrics)
 
             if avg_time > AVG_TIME_MS_THRESHOLD:
-                recommendations.append("CREATE INDEX idx_item_status ON items(status)")
-                recommendations.append("CREATE INDEX idx_item_view ON items(view)")
-                recommendations.append("CREATE INDEX idx_link_source ON links(source_item_id)")
+                recommendations.extend(("CREATE INDEX idx_item_status ON items(status)", "CREATE INDEX idx_item_view ON items(view)", "CREATE INDEX idx_link_source ON links(source_item_id)"))
 
         return recommendations
 

@@ -41,7 +41,7 @@ class ImpactAnalysisResult:
 class ImpactAnalysisService:
     """Service for impact analysis operations using BFS algorithm."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)
@@ -82,7 +82,8 @@ class ImpactAnalysisService:
         """BFS from item_id along outgoing links; returns (impact_nodes, root_title)."""
         root_item = await self.items.get_by_id(item_id)
         if not root_item:
-            raise ValueError(f"Item {item_id} not found")
+            msg = f"Item {item_id} not found"
+            raise ValueError(msg)
 
         visited: set[str] = set()
         impact_nodes: list[ImpactNode] = []
@@ -106,7 +107,7 @@ class ImpactAnalysisService:
         return impact_nodes, root_item.title
 
     def _build_impact_result(
-        self, item_id: str, root_title: str, impact_nodes: list[ImpactNode]
+        self, item_id: str, root_title: str, impact_nodes: list[ImpactNode],
     ) -> ImpactAnalysisResult:
         """Build ImpactAnalysisResult from impact nodes."""
         affected_by_depth: dict[int, int] = {}
@@ -148,8 +149,7 @@ class ImpactAnalysisService:
         max_items: int = 1000,
         link_types: list[str] | None = None,
     ) -> ImpactAnalysisResult:
-        """
-        Analyze impact of changing an item using BFS.
+        """Analyze impact of changing an item using BFS.
 
         Args:
             item_id: ID of the item to analyze
@@ -178,7 +178,7 @@ class ImpactAnalysisService:
         return [node.path for node in nodes if node.item.id not in children]
 
     async def _reverse_bfs_step(
-        self, current_id: str, depth: int, path: list[str], link_type: str | None
+        self, current_id: str, depth: int, path: list[str], link_type: str | None,
     ) -> tuple[ImpactNode | None, list[tuple[str, int, list[str], str | None]]]:
         """Process one reverse BFS step: load item and links; return (node or None, next queue entries)."""
         item = await self.items.get_by_id(current_id)
@@ -191,11 +191,14 @@ class ImpactAnalysisService:
         ]
         return node, next_entries
 
-    async def _bfs_reverse_impact(self, item_id: str, max_depth: int, max_items: int = 1000) -> tuple[list[ImpactNode], str]:
+    async def _bfs_reverse_impact(
+        self, item_id: str, max_depth: int, max_items: int = 1000,
+    ) -> tuple[list[ImpactNode], str]:
         """BFS from item_id along incoming links; returns (impact_nodes, root_title)."""
         root_item = await self.items.get_by_id(item_id)
         if not root_item:
-            raise ValueError(f"Item {item_id} not found")
+            msg = f"Item {item_id} not found"
+            raise ValueError(msg)
 
         visited: set[str] = set()
         impact_nodes: list[ImpactNode] = []
@@ -219,7 +222,7 @@ class ImpactAnalysisService:
         return impact_nodes, root_item.title
 
     def _build_reverse_impact_result(
-        self, item_id: str, root_title: str, impact_nodes: list[ImpactNode]
+        self, item_id: str, root_title: str, impact_nodes: list[ImpactNode],
     ) -> ImpactAnalysisResult:
         """Build ImpactAnalysisResult from reverse-impact nodes."""
         affected_by_depth: dict[int, int] = {}
@@ -257,8 +260,7 @@ class ImpactAnalysisService:
         max_depth: int = 10,
         max_items: int = 1000,
     ) -> ImpactAnalysisResult:
-        """
-        Analyze reverse impact (what depends on this item).
+        """Analyze reverse impact (what depends on this item).
 
         This finds all items that link TO this item (upstream dependencies).
 

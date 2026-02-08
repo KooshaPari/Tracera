@@ -28,7 +28,7 @@ class GoBackendClient:
     - Service token authentication
     """
 
-    def __init__(self, base_url: str, service_token: str | None = None):
+    def __init__(self, base_url: str, service_token: str | None = None) -> None:
         """Initialize the Go backend client.
 
         Args:
@@ -101,12 +101,14 @@ class GoBackendClient:
             return response.json()
 
         except httpx.HTTPStatusError as e:
-            raise GoBackendError(f"Request failed with status {e.response.status_code}: {e.response.text}") from e
+            msg = f"Request failed with status {e.response.status_code}: {e.response.text}"
+            raise GoBackendError(msg) from e
         except (httpx.NetworkError, httpx.TimeoutException):
             # These will be retried by tenacity
             raise
         except Exception as e:
-            raise GoBackendError(f"Unexpected error during request: {e!s}") from e
+            msg = f"Unexpected error during request: {e!s}"
+            raise GoBackendError(msg) from e
 
     async def get_item(self, item_id: str) -> dict[str, Any]:
         """Get an item by ID from Go backend.
@@ -120,7 +122,7 @@ class GoBackendClient:
         return await self._request("GET", f"/api/v1/items/{item_id}")
 
     async def create_link(
-        self, source_id: str, target_id: str, link_type: str, metadata: dict[str, Any] | None = None
+        self, source_id: str, target_id: str, link_type: str, metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Create a link between two items.
 

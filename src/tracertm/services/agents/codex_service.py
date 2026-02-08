@@ -12,15 +12,17 @@ import subprocess  # noqa: S404
 import tempfile
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
-
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.codex_agent import CodexAgentInteraction
 from tracertm.repositories.execution_repository import ExecutionArtifactRepository
-from tracertm.services.execution import ExecutionService
 from tracertm.services.recording.ffmpeg_pipeline import FFmpegPipeline
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from tracertm.services.execution import ExecutionService
 
 
 class CodexExecutionError(Exception):
@@ -42,8 +44,7 @@ class CodexTask:
 
 
 class CodexAgentService:
-    """
-    Integration with OpenAI Codex CLI using OAuth authentication.
+    """Integration with OpenAI Codex CLI using OAuth authentication.
 
     Authentication Methods:
     1. OAuth (default): codex login - opens browser for ChatGPT login
@@ -58,7 +59,7 @@ class CodexAgentService:
         *,
         codex_command: str | None = None,
         ffmpeg_pipeline: FFmpegPipeline | None = None,
-    ):
+    ) -> None:
         """Initialize Codex agent service.
 
         Args:
@@ -125,7 +126,8 @@ class CodexAgentService:
         )
         stdout, stderr = await proc.communicate()
         if proc.returncode != 0:
-            raise CodexExecutionError(f"OAuth setup failed: {stderr.decode()}")
+            msg = f"OAuth setup failed: {stderr.decode()}"
+            raise CodexExecutionError(msg)
         return stdout.decode()
 
     async def run_task(
@@ -235,9 +237,11 @@ class CodexAgentService:
         """Have Codex review an image artifact (screenshot, diagram, etc.)."""
         artifact = await self._artifact_repo.get_by_id(artifact_id)
         if not artifact:
-            raise CodexExecutionError(f"Artifact {artifact_id} not found")
-        if artifact.artifact_type not in ["screenshot", "gif"]:
-            raise CodexExecutionError(f"Artifact type {artifact.artifact_type} not supported for image review")
+            msg = f"Artifact {artifact_id} not found"
+            raise CodexExecutionError(msg)
+        if artifact.artifact_type not in {"screenshot", "gif"}:
+            msg = f"Artifact type {artifact.artifact_type} not supported for image review"
+            raise CodexExecutionError(msg)
 
         task = CodexTask(
             task_type="review_image",
@@ -256,16 +260,17 @@ class CodexAgentService:
         execution_id: str | None = None,
         max_frames: int = 10,
     ) -> CodexAgentInteraction:
-        """
-        Have Codex review a video by analyzing key frames.
+        """Have Codex review a video by analyzing key frames.
 
         Extracts frames at regular intervals and sends to Codex.
         """
         artifact = await self._artifact_repo.get_by_id(artifact_id)
         if not artifact:
-            raise CodexExecutionError(f"Artifact {artifact_id} not found")
+            msg = f"Artifact {artifact_id} not found"
+            raise CodexExecutionError(msg)
         if artifact.artifact_type != "video":
-            raise CodexExecutionError(f"Artifact type {artifact.artifact_type} not supported for video review")
+            msg = f"Artifact type {artifact.artifact_type} not supported for video review"
+            raise CodexExecutionError(msg)
 
         frame_dir = tempfile.mkdtemp(prefix="codex_frames_")
         try:

@@ -1,5 +1,4 @@
-"""
-Services for enhanced Item specifications.
+"""Services for enhanced Item specifications.
 
 Provides business logic for calculating derived properties, quality scores,
 impact analysis, and other smart contract-like behaviors across different
@@ -68,8 +67,7 @@ from tracertm.repositories.requirement_quality_repository import (
 
 
 class RequirementQualityAnalyzer:
-    """
-    Analyzes requirement text for quality issues using ISO 29148
+    """Analyzes requirement text for quality issues using ISO 29148
     and INCOSE quality patterns.
 
     ISO 29148 quality dimensions:
@@ -163,8 +161,7 @@ class RequirementQualityAnalyzer:
     }
 
     def analyze(self, text: str, title: str = "") -> dict[str, Any]:
-        """
-        Analyze requirement text and return quality scores and issues.
+        """Analyze requirement text and return quality scores and issues.
 
         Args:
             text: Requirement description text
@@ -237,14 +234,14 @@ class RequirementQualityAnalyzer:
                 r"\d+\s*(ms|sec|min|minute|hour|day|week|month|second)",
                 text,
                 re.IGNORECASE,
-            )
+            ),
         )
         has_performance_metric = bool(
             re.search(
                 r"(latency|throughput|cpu|memory|bandwidth|percentage|threshold|limit)",
                 text,
                 re.IGNORECASE,
-            )
+            ),
         )
 
         if has_numbers or has_time_constraint or has_performance_metric:
@@ -318,8 +315,7 @@ class RequirementQualityAnalyzer:
 
 
 class ImpactAnalyzer:
-    """
-    Analyzes impact propagation and change effects across requirement
+    """Analyzes impact propagation and change effects across requirement
     and work item hierarchies.
 
     Calculates:
@@ -328,14 +324,13 @@ class ImpactAnalyzer:
     - Risk assessment based on affected items
     """
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.link_repo = LinkRepository(session)
         self.item_repo = ItemRepository(session)
 
     async def calculate_impact(self, item_id: str, project_id: str) -> dict[str, Any]:
-        """
-        Calculate comprehensive impact metrics including change propagation index.
+        """Calculate comprehensive impact metrics including change propagation index.
 
         Change Propagation Index (CPI):
             CPI = (direct_downstream + 0.5 * indirect_downstream) / total_items
@@ -351,7 +346,7 @@ class ImpactAnalyzer:
         """
         # Query direct downstream links (outgoing)
         downstream_result = await self.session.execute(
-            select(Link.target_item_id).where(Link.source_item_id == item_id, Link.project_id == project_id)
+            select(Link.target_item_id).where(Link.source_item_id == item_id, Link.project_id == project_id),
         )
         direct_downstream = [row[0] for row in downstream_result.fetchall()]
 
@@ -364,19 +359,19 @@ class ImpactAnalyzer:
                     Link.project_id == project_id,
                     Link.target_item_id.notin_(direct_downstream),
                     Link.target_item_id != item_id,
-                )
+                ),
             )
             indirect_downstream = {row[0] for row in indirect_result.fetchall()}
 
         # Query upstream links (incoming)
         upstream_result = await self.session.execute(
-            select(Link.source_item_id).where(Link.target_item_id == item_id, Link.project_id == project_id)
+            select(Link.source_item_id).where(Link.target_item_id == item_id, Link.project_id == project_id),
         )
         upstream = [row[0] for row in upstream_result.fetchall()]
 
         # Get total item count for CPI calculation
         total_count_result = await self.session.execute(
-            select(func.count(Item.id)).where(Item.project_id == project_id)
+            select(func.count(Item.id)).where(Item.project_id == project_id),
         )
         total_items = total_count_result.scalar() or 1
 
@@ -412,8 +407,7 @@ class ImpactAnalyzer:
 
 
 class VolatilityTracker:
-    """
-    Tracks requirement and work item volatility index (RVI).
+    """Tracks requirement and work item volatility index (RVI).
 
     Requirements Volatility Index (RVI):
         RVI = (change_frequency * recency_weight) / total_age_days
@@ -431,8 +425,7 @@ class VolatilityTracker:
         days_since_creation: int,
         change_history: list[dict] | None = None,
     ) -> float:
-        """
-        Calculate Requirements Volatility Index.
+        """Calculate Requirements Volatility Index.
 
         Args:
             change_count: Total number of changes/modifications
@@ -475,8 +468,7 @@ class VolatilityTracker:
 
 
 class WSJFCalculator:
-    """
-    Calculates WSJF (Weighted Shortest Job First) priority.
+    """Calculates WSJF (Weighted Shortest Job First) priority.
 
     WSJF = (Business Value + Time Sensitivity + Risk Reduction) / Job Size
 
@@ -493,8 +485,7 @@ class WSJFCalculator:
         risk_reduction: float = 0.5,
         job_size: float = 0.5,
     ) -> float:
-        """
-        Calculate WSJF priority score.
+        """Calculate WSJF priority score.
 
         Args:
             business_value: Business value score (0-1)
@@ -512,8 +503,7 @@ class WSJFCalculator:
         job_size = max(0, min(1, job_size))
 
         # Avoid division by zero
-        if job_size < WSJF_JOB_SIZE_FLOOR:
-            job_size = WSJF_JOB_SIZE_FLOOR
+        job_size = max(job_size, WSJF_JOB_SIZE_FLOOR)
 
         # Standard WSJF formula with weights
         numerator = (business_value * 0.4) + (time_sensitivity * 0.3) + (risk_reduction * 0.3)
@@ -536,8 +526,7 @@ class RecordChangeInput:
 
 
 class RequirementSpecService:
-    """
-    Service for RequirementSpec business logic and derived calculations.
+    """Service for RequirementSpec business logic and derived calculations.
 
     Handles:
     - Quality analysis and scoring
@@ -547,7 +536,7 @@ class RequirementSpecService:
     - Traceability updates
     """
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.item_repo = ItemRepository(session)
         self.quality_repo = RequirementQualityRepository(session)
@@ -565,8 +554,7 @@ class RequirementSpecService:
         job_size: float | None = None,
         **kwargs: Any,
     ) -> RequirementQuality:
-        """
-        Create a requirement specification and analyze quality.
+        """Create a requirement specification and analyze quality.
 
         Args:
             item_id: Item to create spec for
@@ -582,7 +570,8 @@ class RequirementSpecService:
         # Get the item for text analysis
         item = await self.item_repo.get_by_id(item_id)
         if not item:
-            raise ValueError(f"Item {item_id} not found")
+            msg = f"Item {item_id} not found"
+            raise ValueError(msg)
 
         # Analyze quality
         quality = self.quality_analyzer.analyze(item.description or "", item.title)
@@ -616,8 +605,7 @@ class RequirementSpecService:
         )
 
     async def refresh_quality_analysis(self, item_id: str) -> RequirementQuality:
-        """
-        Re-analyze quality metrics for a requirement.
+        """Re-analyze quality metrics for a requirement.
 
         Args:
             item_id: Item to re-analyze
@@ -628,7 +616,8 @@ class RequirementSpecService:
         # Get item and existing spec
         item = await self.item_repo.get_by_id(item_id)
         if not item:
-            raise ValueError(f"Item {item_id} not found")
+            msg = f"Item {item_id} not found"
+            raise ValueError(msg)
 
         # Analyze quality
         quality = self.quality_analyzer.analyze(item.description or "", item.title)
@@ -652,8 +641,7 @@ class RequirementSpecService:
         return spec
 
     async def refresh_impact_analysis(self, item_id: str) -> RequirementQuality:
-        """
-        Refresh impact analysis for a requirement.
+        """Refresh impact analysis for a requirement.
 
         Args:
             item_id: Item to analyze
@@ -664,7 +652,8 @@ class RequirementSpecService:
         # Get item
         item = await self.item_repo.get_by_id(item_id)
         if not item:
-            raise ValueError(f"Item {item_id} not found")
+            msg = f"Item {item_id} not found"
+            raise ValueError(msg)
 
         # Calculate impact
         impact = await self.impact_analyzer.calculate_impact(item_id, str(item.project_id))
@@ -686,8 +675,7 @@ class RequirementSpecService:
         return spec
 
     async def record_change(self, input: RecordChangeInput) -> RequirementQuality:
-        """
-        Record a change and update volatility metrics.
+        """Record a change and update volatility metrics.
 
         Args:
             input: Change record (item_id, changed_by, change_type, summary, previous_values, new_values).
@@ -700,7 +688,8 @@ class RequirementSpecService:
     async def _apply_record_change(self, input: RecordChangeInput) -> RequirementQuality:
         spec = await self.quality_repo.get_by_item_id(input.item_id)
         if not spec:
-            raise ValueError(f"RequirementQuality for item {input.item_id} not found")
+            msg = f"RequirementQuality for item {input.item_id} not found"
+            raise ValueError(msg)
 
         entry = {
             "timestamp": datetime.now(UTC).isoformat(),
@@ -739,8 +728,7 @@ class RequirementSpecService:
         risk_reduction: float,
         job_size: float,
     ) -> RequirementQuality:
-        """
-        Calculate and update WSJF priority for a requirement.
+        """Calculate and update WSJF priority for a requirement.
 
         Args:
             item_id: Item to calculate for
@@ -754,7 +742,8 @@ class RequirementSpecService:
         """
         spec = await self.quality_repo.get_by_item_id(item_id)
         if not spec:
-            raise ValueError(f"RequirementQuality for item {item_id} not found")
+            msg = f"RequirementQuality for item {item_id} not found"
+            raise ValueError(msg)
 
         wsjf_score = self.wsjf_calculator.calculate_wsjf(business_value, time_sensitivity, risk_reduction, job_size)
 
@@ -777,8 +766,7 @@ class RequirementSpecService:
         evidence_reference: str,
         description: str,
     ) -> RequirementQuality:
-        """
-        Mark a requirement as verified with evidence.
+        """Mark a requirement as verified with evidence.
 
         Args:
             item_id: Requirement item
@@ -792,7 +780,8 @@ class RequirementSpecService:
         """
         spec = await self.quality_repo.get_by_item_id(item_id)
         if not spec:
-            raise ValueError(f"RequirementQuality for item {item_id} not found")
+            msg = f"RequirementQuality for item {item_id} not found"
+            raise ValueError(msg)
 
         evidence = {
             "type": evidence_type,
@@ -815,8 +804,7 @@ class RequirementSpecService:
         )
 
     async def get_health_report(self, project_id: str) -> dict[str, Any]:
-        """
-        Generate requirement health report for a project.
+        """Generate requirement health report for a project.
 
         Args:
             project_id: Project to report on
@@ -882,8 +870,7 @@ class RequirementSpecService:
 
 
 class TestSpecFlakinessDector:
-    """
-    Detects and tracks test flakiness using statistical analysis.
+    """Detects and tracks test flakiness using statistical analysis.
 
     Flakiness indicators:
     - Pass rate < 95% with high run count
@@ -899,8 +886,7 @@ class TestSpecFlakinessDector:
         total_runs: int,
         recent_failures: list[dict],
     ) -> float:
-        """
-        Calculate test flakiness score (0-1).
+        """Calculate test flakiness score (0-1).
 
         Args:
             pass_count: Number of passes
@@ -951,8 +937,7 @@ class TestSpecFlakinessDector:
 
 
 class AIPropertyPlaceholder:
-    """
-    Placeholder for AI-derived properties.
+    """Placeholder for AI-derived properties.
 
     Future implementations for:
     - Embedding-based similarity to other items
@@ -962,12 +947,11 @@ class AIPropertyPlaceholder:
     - Cross-requirement consistency checking
     """
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def calculate_embeddings(self, item_id: str) -> list[float] | None:
-        """
-        Calculate semantic embeddings for requirement text.
+        """Calculate semantic embeddings for requirement text.
 
         Future: Use OpenAI embeddings or similar.
 
@@ -981,10 +965,9 @@ class AIPropertyPlaceholder:
         return None
 
     async def find_similar_requirements(
-        self, item_id: str, project_id: str, threshold: float = 0.85
+        self, item_id: str, project_id: str, threshold: float = 0.85,
     ) -> list[dict[str, Any]]:
-        """
-        Find semantically similar requirements.
+        """Find semantically similar requirements.
 
         Future: Use vector similarity search.
 
@@ -1000,8 +983,7 @@ class AIPropertyPlaceholder:
         return []
 
     async def detect_inconsistencies(self, item_id: str) -> list[dict[str, str]]:
-        """
-        Detect inconsistencies with related requirements.
+        """Detect inconsistencies with related requirements.
 
         Future: Use LLM-based analysis.
 
@@ -1015,8 +997,7 @@ class AIPropertyPlaceholder:
         return []
 
     async def suggest_acceptance_criteria(self, item_id: str) -> list[str]:
-        """
-        Generate suggested acceptance criteria for requirement.
+        """Generate suggested acceptance criteria for requirement.
 
         Future: Use generative AI.
 

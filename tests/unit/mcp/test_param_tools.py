@@ -8,7 +8,7 @@ from tracertm.mcp.tools import param as param_tools
 
 
 @pytest.mark.asyncio
-async def test_config_manage_set_get(tmp_path, monkeypatch):
+async def test_config_manage_set_get(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("TRACERTM_CONFIG_DIR", str(tmp_path))
 
     result = await param_tools._config_manage_impl(
@@ -28,7 +28,7 @@ async def test_config_manage_set_get(tmp_path, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_sync_manage_status(monkeypatch):
+async def test_sync_manage_status(monkeypatch) -> None:
     class FakeState:
         status = SimpleNamespace(value="idle")
         last_sync = None
@@ -58,7 +58,7 @@ async def test_sync_manage_status(monkeypatch):
                 duration_seconds=0.1,
             )
 
-    monkeypatch.setattr(param_tools, "_build_sync_engine", lambda: FakeSync())
+    monkeypatch.setattr(param_tools, "_build_sync_engine", FakeSync)
 
     result = await param_tools._sync_manage_impl(action="status", payload={}, ctx=None)
     assert result["data"]["status"] == "idle"
@@ -66,7 +66,7 @@ async def test_sync_manage_status(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_project_scope_enforced(monkeypatch):
+async def test_project_scope_enforced(monkeypatch) -> None:
     token = SimpleNamespace(claims={"project_ids": ["proj-1", "proj-2"]})
     monkeypatch.setattr(param_tools, "_get_access_token_from_ctx", lambda: token)
 
@@ -93,7 +93,7 @@ async def test_project_scope_enforced(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_saved_queries_manage(tmp_path, monkeypatch):
+async def test_saved_queries_manage(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("HOME", str(tmp_path))
 
     saved = await param_tools._saved_queries_manage_impl(
@@ -115,13 +115,13 @@ async def test_saved_queries_manage(tmp_path, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_test_manage_discover(monkeypatch):
+async def test_test_manage_discover(monkeypatch) -> None:
     dummy = [
         SimpleNamespace(
             path="tests/unit/test_example.py",
             language="python",
             package=None,
-        )
+        ),
     ]
     from tracertm.cli.commands.test.discovery import TestDiscovery
 

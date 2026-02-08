@@ -29,7 +29,8 @@ from .common import _wrap
 def _require_db(config: ConfigManager) -> DatabaseConnection:
     database_url = config.get("database_url")
     if not database_url:
-        raise ToolError("Database URL not configured.")
+        msg = "Database URL not configured."
+        raise ToolError(msg)
     db = DatabaseConnection(database_url)
     db.connect()
     return db
@@ -64,7 +65,8 @@ def _action_migrate(config: ConfigManager, ctx: Any | None, action: str) -> dict
 def _action_reset(config: ConfigManager, payload: dict[str, Any], ctx: Any | None, action: str) -> dict[str, Any]:
     confirm = bool(payload.get("confirm"))
     if not confirm:
-        raise ToolError("confirm=true is required for destructive operations.")
+        msg = "confirm=true is required for destructive operations."
+        raise ToolError(msg)
     db = _require_db(config)
     try:
         db.drop_tables()
@@ -77,7 +79,8 @@ def _action_reset(config: ConfigManager, payload: dict[str, Any], ctx: Any | Non
 def _action_rollback(config: ConfigManager, payload: dict[str, Any], ctx: Any | None, action: str) -> dict[str, Any]:
     confirm = bool(payload.get("confirm"))
     if not confirm:
-        raise ToolError("confirm=true is required for destructive operations.")
+        msg = "confirm=true is required for destructive operations."
+        raise ToolError(msg)
     db = _require_db(config)
     try:
         db.drop_tables()
@@ -92,8 +95,7 @@ async def database_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
-    """
-    Unified database management tool.
+    """Unified database management tool.
 
     Actions:
     - init: Initialize database (optional: database_url)
@@ -116,5 +118,6 @@ async def database_manage(
     }
     handler = handlers.get(action)
     if handler is None:
-        raise ToolError(f"Unknown db action: {action}")
+        msg = f"Unknown db action: {action}"
+        raise ToolError(msg)
     return handler()

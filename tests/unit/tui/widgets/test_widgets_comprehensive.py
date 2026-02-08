@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for all TUI widgets.
+"""Comprehensive tests for all TUI widgets.
 
 This test suite provides 100% coverage for:
 - ItemListWidget: initialization, column setup
@@ -58,11 +57,11 @@ if not TEXTUAL_AVAILABLE:
 class TestItemListWidget:
     """Tests for ItemListWidget."""
 
-    def test_item_list_inherits_datatable(self):
+    def test_item_list_inherits_datatable(self) -> None:
         """Test ItemListWidget inherits from DataTable."""
         assert issubclass(ItemListWidget, DataTable)
 
-    def test_item_list_class_exists(self):
+    def test_item_list_class_exists(self) -> None:
         """Test ItemListWidget class exists and can be imported."""
         assert ItemListWidget is not None
         assert hasattr(ItemListWidget, "__init__")
@@ -77,7 +76,7 @@ class TestItemListWidget:
 class TestConflictPanel:
     """Comprehensive tests for ConflictPanel."""
 
-    def test_conflict_panel_class_structure(self):
+    def test_conflict_panel_class_structure(self) -> None:
         """Test ConflictPanel has proper class structure."""
         assert hasattr(ConflictPanel, "BINDINGS")
         assert hasattr(ConflictPanel, "DEFAULT_CSS")
@@ -94,7 +93,7 @@ class TestConflictPanel:
         assert "m" in binding_keys  # Manual
         assert "escape" in binding_keys  # Close
 
-    def test_conflict_panel_methods_exist(self):
+    def test_conflict_panel_methods_exist(self) -> None:
         """Test ConflictPanel has all required methods."""
         assert hasattr(ConflictPanel, "on_mount")
         assert hasattr(ConflictPanel, "refresh_conflict_list")
@@ -108,7 +107,7 @@ class TestConflictPanel:
 
     @patch.object(ConflictPanel, "query_one")
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_refresh_conflict_list(self, mock_query_one):
+    def test_conflict_panel_refresh_conflict_list(self, mock_query_one) -> None:
         """Test refreshing conflict list display."""
         # Create mock conflicts
         conflict1 = MagicMock()
@@ -125,7 +124,7 @@ class TestConflictPanel:
         conflict2.remote_version.vector_clock.version = 4
         conflict2.detected_at = datetime(2024, 1, 2, 13, 0)
 
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.conflicts = [conflict1, conflict2]
 
         # Mock table widget
@@ -138,10 +137,10 @@ class TestConflictPanel:
         assert mock_table.add_row.call_count == 2
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_on_data_table_row_selected(self):
+    def test_conflict_panel_on_data_table_row_selected(self) -> None:
         """Test handling row selection."""
         conflict = MagicMock()
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.conflicts = [conflict]
         panel.selected_conflict = None
         panel.show_conflict_detail = MagicMock()
@@ -155,9 +154,9 @@ class TestConflictPanel:
         panel.show_conflict_detail.assert_called_once_with(conflict)
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_on_data_table_row_selected_out_of_range(self):
+    def test_conflict_panel_on_data_table_row_selected_out_of_range(self) -> None:
         """Test handling row selection out of range."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.conflicts = []
         panel.selected_conflict = None
         panel.show_conflict_detail = MagicMock()
@@ -173,7 +172,7 @@ class TestConflictPanel:
     @patch("tracertm.tui.widgets.conflict_panel.compare_versions")
     @patch.object(ConflictPanel, "query_one")
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_show_conflict_detail(self, mock_query_one, mock_compare):
+    def test_conflict_panel_show_conflict_detail(self, mock_query_one, mock_compare) -> None:
         """Test showing conflict details."""
         # Setup conflict with detailed version info
         local_version = MagicMock()
@@ -199,7 +198,7 @@ class TestConflictPanel:
             "removed": ["old_field"],
         }
 
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
 
         # Mock detail widget
         mock_detail = MagicMock()
@@ -215,7 +214,7 @@ class TestConflictPanel:
     @patch("tracertm.tui.widgets.conflict_panel.compare_versions")
     @patch.object(ConflictPanel, "query_one")
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_show_conflict_detail_no_differences(self, mock_query_one, mock_compare):
+    def test_conflict_panel_show_conflict_detail_no_differences(self, mock_query_one, mock_compare) -> None:
         """Test showing conflict details with no differences."""
         local_version = MagicMock()
         local_version.vector_clock.version = 1
@@ -236,7 +235,7 @@ class TestConflictPanel:
         # Mock compare_versions result with no differences
         mock_compare.return_value = {"modified": [], "added": [], "removed": []}
 
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
 
         mock_detail = MagicMock()
         mock_query_one.return_value = mock_detail
@@ -246,10 +245,10 @@ class TestConflictPanel:
         mock_detail.update.assert_called_once()
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_action_resolve_local(self):
+    def test_conflict_panel_action_resolve_local(self) -> None:
         """Test resolve local action."""
         conflict = MagicMock()
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.selected_conflict = conflict
         panel.post_message = MagicMock()
 
@@ -261,9 +260,9 @@ class TestConflictPanel:
         assert message.conflict == conflict
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_action_resolve_local_no_selection(self):
+    def test_conflict_panel_action_resolve_local_no_selection(self) -> None:
         """Test resolve local action with no selection."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.selected_conflict = None
         panel.post_message = MagicMock()
 
@@ -272,10 +271,10 @@ class TestConflictPanel:
         panel.post_message.assert_not_called()
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_action_resolve_remote(self):
+    def test_conflict_panel_action_resolve_remote(self) -> None:
         """Test resolve remote action."""
         conflict = MagicMock()
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.selected_conflict = conflict
         panel.post_message = MagicMock()
 
@@ -286,10 +285,10 @@ class TestConflictPanel:
         assert message.strategy == "remote"
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_action_resolve_manual(self):
+    def test_conflict_panel_action_resolve_manual(self) -> None:
         """Test resolve manual action."""
         conflict = MagicMock()
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.selected_conflict = conflict
         panel.post_message = MagicMock()
 
@@ -300,9 +299,9 @@ class TestConflictPanel:
         assert message.strategy == "manual"
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_action_close(self):
+    def test_conflict_panel_action_close(self) -> None:
         """Test close action."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.post_message = MagicMock()
 
         panel.action_close()
@@ -310,9 +309,9 @@ class TestConflictPanel:
         panel.post_message.assert_called_once()
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_on_button_pressed_local(self):
+    def test_conflict_panel_on_button_pressed_local(self) -> None:
         """Test button press handler for local button."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.action_resolve_local = MagicMock()
 
         event = MagicMock()
@@ -323,9 +322,9 @@ class TestConflictPanel:
         panel.action_resolve_local.assert_called_once()
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_on_button_pressed_remote(self):
+    def test_conflict_panel_on_button_pressed_remote(self) -> None:
         """Test button press handler for remote button."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.action_resolve_remote = MagicMock()
 
         event = MagicMock()
@@ -336,9 +335,9 @@ class TestConflictPanel:
         panel.action_resolve_remote.assert_called_once()
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_on_button_pressed_manual(self):
+    def test_conflict_panel_on_button_pressed_manual(self) -> None:
         """Test button press handler for manual button."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.action_resolve_manual = MagicMock()
 
         event = MagicMock()
@@ -349,9 +348,9 @@ class TestConflictPanel:
         panel.action_resolve_manual.assert_called_once()
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_on_button_pressed_close(self):
+    def test_conflict_panel_on_button_pressed_close(self) -> None:
         """Test button press handler for close button."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.action_close = MagicMock()
 
         event = MagicMock()
@@ -362,9 +361,9 @@ class TestConflictPanel:
         panel.action_close.assert_called_once()
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_on_button_pressed_unknown(self):
+    def test_conflict_panel_on_button_pressed_unknown(self) -> None:
         """Test button press handler for unknown button."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.action_close = MagicMock()
 
         event = MagicMock()
@@ -385,7 +384,7 @@ class TestConflictPanel:
 class TestSyncStatusWidget:
     """Comprehensive tests for SyncStatusWidget."""
 
-    def test_sync_status_class_structure(self):
+    def test_sync_status_class_structure(self) -> None:
         """Test SyncStatusWidget has proper class structure."""
         assert hasattr(SyncStatusWidget, "DEFAULT_CSS")
         assert isinstance(SyncStatusWidget.DEFAULT_CSS, str)
@@ -404,7 +403,7 @@ class TestSyncStatusWidget:
 
     @patch.object(SyncStatusWidget, "update_display")
     @patch.object(SyncStatusWidget, "__init__", lambda x: None)
-    def test_sync_status_watch_is_online(self, mock_update):
+    def test_sync_status_watch_is_online(self, mock_update) -> None:
         """Test watch_is_online triggers update."""
         widget = SyncStatusWidget()
         widget.watch_is_online(True)
@@ -413,7 +412,7 @@ class TestSyncStatusWidget:
 
     @patch.object(SyncStatusWidget, "update_display")
     @patch.object(SyncStatusWidget, "__init__", lambda x: None)
-    def test_sync_status_watch_is_syncing(self, mock_update):
+    def test_sync_status_watch_is_syncing(self, mock_update) -> None:
         """Test watch_is_syncing triggers update."""
         widget = SyncStatusWidget()
         widget.watch_is_syncing(True)
@@ -422,7 +421,7 @@ class TestSyncStatusWidget:
 
     @patch.object(SyncStatusWidget, "update_display")
     @patch.object(SyncStatusWidget, "__init__", lambda x: None)
-    def test_sync_status_watch_pending_changes(self, mock_update):
+    def test_sync_status_watch_pending_changes(self, mock_update) -> None:
         """Test watch_pending_changes triggers update."""
         widget = SyncStatusWidget()
         widget.watch_pending_changes(5)
@@ -431,7 +430,7 @@ class TestSyncStatusWidget:
 
     @patch.object(SyncStatusWidget, "update_display")
     @patch.object(SyncStatusWidget, "__init__", lambda x: None)
-    def test_sync_status_watch_last_sync(self, mock_update):
+    def test_sync_status_watch_last_sync(self, mock_update) -> None:
         """Test watch_last_sync triggers update."""
         widget = SyncStatusWidget()
         widget.watch_last_sync(datetime.now())
@@ -440,7 +439,7 @@ class TestSyncStatusWidget:
 
     @patch.object(SyncStatusWidget, "update_display")
     @patch.object(SyncStatusWidget, "__init__", lambda x: None)
-    def test_sync_status_watch_conflicts_count(self, mock_update):
+    def test_sync_status_watch_conflicts_count(self, mock_update) -> None:
         """Test watch_conflicts_count triggers update."""
         widget = SyncStatusWidget()
         widget.watch_conflicts_count(3)
@@ -449,7 +448,7 @@ class TestSyncStatusWidget:
 
     @patch.object(SyncStatusWidget, "update_display")
     @patch.object(SyncStatusWidget, "__init__", lambda x: None)
-    def test_sync_status_watch_last_error(self, mock_update):
+    def test_sync_status_watch_last_error(self, mock_update) -> None:
         """Test watch_last_error triggers update."""
         widget = SyncStatusWidget()
         widget.watch_last_error("Error message")
@@ -458,7 +457,7 @@ class TestSyncStatusWidget:
 
     @patch.object(SyncStatusWidget, "query_one")
     @patch.object(SyncStatusWidget, "__init__", lambda x: None)
-    def test_sync_status_update_display_syncing(self, mock_query_one):
+    def test_sync_status_update_display_syncing(self, mock_query_one) -> None:
         """Test update_display when syncing."""
         widget = SyncStatusWidget()
         widget.is_syncing = True
@@ -483,7 +482,7 @@ class TestSyncStatusWidget:
         mock_connection_status.update.assert_called()
         assert "Syncing" in mock_connection_status.update.call_args[0][0]
 
-    def test_sync_status_update_display_error(self):
+    def test_sync_status_update_display_error(self) -> None:
         """Test update_display when error."""
         widget = SyncStatusWidget()
         widget.last_error = "Connection failed"
@@ -508,7 +507,7 @@ class TestSyncStatusWidget:
         mock_connection_status.update.assert_called()
         assert "Error" in mock_connection_status.update.call_args[0][0]
 
-    def test_sync_status_update_display_online(self):
+    def test_sync_status_update_display_online(self) -> None:
         """Test update_display when online."""
         widget = SyncStatusWidget()
         widget.is_online = True
@@ -533,7 +532,7 @@ class TestSyncStatusWidget:
         mock_connection_status.update.assert_called()
         assert "Online" in mock_connection_status.update.call_args[0][0]
 
-    def test_sync_status_update_display_offline(self):
+    def test_sync_status_update_display_offline(self) -> None:
         """Test update_display when offline."""
         widget = SyncStatusWidget()
         widget.is_online = False
@@ -558,7 +557,7 @@ class TestSyncStatusWidget:
         mock_connection_status.update.assert_called()
         assert "Offline" in mock_connection_status.update.call_args[0][0]
 
-    def test_sync_status_update_display_pending_changes(self):
+    def test_sync_status_update_display_pending_changes(self) -> None:
         """Test update_display with pending changes."""
         widget = SyncStatusWidget()
         widget.pending_changes = 5
@@ -584,7 +583,7 @@ class TestSyncStatusWidget:
         assert "5" in mock_sync_info.update.call_args[0][0]
         assert "pending" in mock_sync_info.update.call_args[0][0]
 
-    def test_sync_status_update_display_last_sync(self):
+    def test_sync_status_update_display_last_sync(self) -> None:
         """Test update_display with last sync time."""
         widget = SyncStatusWidget()
         widget.last_sync = datetime.now() - timedelta(minutes=5)
@@ -609,7 +608,7 @@ class TestSyncStatusWidget:
         mock_sync_info.update.assert_called()
         assert "Last sync" in mock_sync_info.update.call_args[0][0]
 
-    def test_sync_status_update_display_conflicts(self):
+    def test_sync_status_update_display_conflicts(self) -> None:
         """Test update_display with conflicts."""
         widget = SyncStatusWidget()
         widget.conflicts_count = 3
@@ -635,7 +634,7 @@ class TestSyncStatusWidget:
         assert "3" in mock_conflict_info.update.call_args[0][0]
         assert "conflict" in mock_conflict_info.update.call_args[0][0]
 
-    def test_sync_status_format_time_ago_just_now(self):
+    def test_sync_status_format_time_ago_just_now(self) -> None:
         """Test time formatting for recent time."""
         widget = SyncStatusWidget()
         dt = datetime.now() - timedelta(seconds=30)
@@ -644,7 +643,7 @@ class TestSyncStatusWidget:
 
         assert result == "just now"
 
-    def test_sync_status_format_time_ago_minutes(self):
+    def test_sync_status_format_time_ago_minutes(self) -> None:
         """Test time formatting for minutes."""
         widget = SyncStatusWidget()
         dt = datetime.now() - timedelta(minutes=5)
@@ -654,7 +653,7 @@ class TestSyncStatusWidget:
         assert "5 minute" in result
         assert "ago" in result
 
-    def test_sync_status_format_time_ago_one_minute(self):
+    def test_sync_status_format_time_ago_one_minute(self) -> None:
         """Test time formatting for one minute."""
         widget = SyncStatusWidget()
         dt = datetime.now() - timedelta(minutes=1)
@@ -664,7 +663,7 @@ class TestSyncStatusWidget:
         assert "1 minute" in result
         assert "minutes" not in result  # Singular
 
-    def test_sync_status_format_time_ago_hours(self):
+    def test_sync_status_format_time_ago_hours(self) -> None:
         """Test time formatting for hours."""
         widget = SyncStatusWidget()
         dt = datetime.now() - timedelta(hours=3)
@@ -674,7 +673,7 @@ class TestSyncStatusWidget:
         assert "3 hour" in result
         assert "ago" in result
 
-    def test_sync_status_format_time_ago_days(self):
+    def test_sync_status_format_time_ago_days(self) -> None:
         """Test time formatting for days."""
         widget = SyncStatusWidget()
         dt = datetime.now() - timedelta(days=2)
@@ -684,7 +683,7 @@ class TestSyncStatusWidget:
         assert "2 day" in result
         assert "ago" in result
 
-    def test_sync_status_format_time_ago_with_timezone(self):
+    def test_sync_status_format_time_ago_with_timezone(self) -> None:
         """Test time formatting with timezone-aware datetime."""
         widget = SyncStatusWidget()
         dt = datetime.now(UTC) - timedelta(minutes=10)
@@ -693,7 +692,7 @@ class TestSyncStatusWidget:
 
         assert "10 minute" in result or "ago" in result
 
-    def test_sync_status_set_online(self):
+    def test_sync_status_set_online(self) -> None:
         """Test set_online method."""
         widget = SyncStatusWidget()
 
@@ -701,7 +700,7 @@ class TestSyncStatusWidget:
 
         assert widget.is_online
 
-    def test_sync_status_set_syncing(self):
+    def test_sync_status_set_syncing(self) -> None:
         """Test set_syncing method."""
         widget = SyncStatusWidget()
 
@@ -709,7 +708,7 @@ class TestSyncStatusWidget:
 
         assert widget.is_syncing
 
-    def test_sync_status_set_pending_changes(self):
+    def test_sync_status_set_pending_changes(self) -> None:
         """Test set_pending_changes method."""
         widget = SyncStatusWidget()
 
@@ -717,7 +716,7 @@ class TestSyncStatusWidget:
 
         assert widget.pending_changes == 10
 
-    def test_sync_status_set_last_sync(self):
+    def test_sync_status_set_last_sync(self) -> None:
         """Test set_last_sync method."""
         widget = SyncStatusWidget()
         dt = datetime.now()
@@ -726,7 +725,7 @@ class TestSyncStatusWidget:
 
         assert widget.last_sync == dt
 
-    def test_sync_status_set_conflicts(self):
+    def test_sync_status_set_conflicts(self) -> None:
         """Test set_conflicts method."""
         widget = SyncStatusWidget()
 
@@ -734,7 +733,7 @@ class TestSyncStatusWidget:
 
         assert widget.conflicts_count == 5
 
-    def test_sync_status_set_error(self):
+    def test_sync_status_set_error(self) -> None:
         """Test set_error method."""
         widget = SyncStatusWidget()
 
@@ -742,7 +741,7 @@ class TestSyncStatusWidget:
 
         assert widget.last_error == "Test error"
 
-    def test_sync_status_set_error_clear(self):
+    def test_sync_status_set_error_clear(self) -> None:
         """Test set_error can clear error."""
         widget = SyncStatusWidget()
         widget.last_error = "Old error"
@@ -761,7 +760,7 @@ class TestSyncStatusWidget:
 class TestCompactSyncStatus:
     """Tests for CompactSyncStatus widget."""
 
-    def test_compact_sync_status_init_defaults(self):
+    def test_compact_sync_status_init_defaults(self) -> None:
         """Test CompactSyncStatus initializes with defaults."""
         widget = CompactSyncStatus()
 
@@ -770,7 +769,7 @@ class TestCompactSyncStatus:
         assert widget.pending_changes == 0
         assert widget.conflicts_count == 0
 
-    def test_compact_sync_status_render_offline(self):
+    def test_compact_sync_status_render_offline(self) -> None:
         """Test render when offline."""
         widget = CompactSyncStatus()
         widget.is_online = False
@@ -779,7 +778,7 @@ class TestCompactSyncStatus:
 
         assert "Offline" in result or "●" in result
 
-    def test_compact_sync_status_render_online(self):
+    def test_compact_sync_status_render_online(self) -> None:
         """Test render when online."""
         widget = CompactSyncStatus()
         widget.is_online = True
@@ -788,7 +787,7 @@ class TestCompactSyncStatus:
 
         assert "●" in result
 
-    def test_compact_sync_status_render_syncing(self):
+    def test_compact_sync_status_render_syncing(self) -> None:
         """Test render when syncing."""
         widget = CompactSyncStatus()
         widget.is_syncing = True
@@ -797,7 +796,7 @@ class TestCompactSyncStatus:
 
         assert "⟳" in result
 
-    def test_compact_sync_status_render_pending_changes(self):
+    def test_compact_sync_status_render_pending_changes(self) -> None:
         """Test render with pending changes."""
         widget = CompactSyncStatus()
         widget.pending_changes = 5
@@ -807,7 +806,7 @@ class TestCompactSyncStatus:
         assert "5" in result
         assert "pending" in result
 
-    def test_compact_sync_status_render_conflicts(self):
+    def test_compact_sync_status_render_conflicts(self) -> None:
         """Test render with conflicts."""
         widget = CompactSyncStatus()
         widget.conflicts_count = 3
@@ -817,7 +816,7 @@ class TestCompactSyncStatus:
         assert "3" in result
         assert "⚠" in result
 
-    def test_compact_sync_status_render_combined(self):
+    def test_compact_sync_status_render_combined(self) -> None:
         """Test render with multiple statuses."""
         widget = CompactSyncStatus()
         widget.is_online = True
@@ -830,7 +829,7 @@ class TestCompactSyncStatus:
         assert "pending" in result
         assert "1" in result
 
-    def test_compact_sync_status_set_online(self):
+    def test_compact_sync_status_set_online(self) -> None:
         """Test set_online method."""
         widget = CompactSyncStatus()
 
@@ -838,7 +837,7 @@ class TestCompactSyncStatus:
 
         assert widget.is_online
 
-    def test_compact_sync_status_set_syncing(self):
+    def test_compact_sync_status_set_syncing(self) -> None:
         """Test set_syncing method."""
         widget = CompactSyncStatus()
 
@@ -846,7 +845,7 @@ class TestCompactSyncStatus:
 
         assert widget.is_syncing
 
-    def test_compact_sync_status_set_pending_changes(self):
+    def test_compact_sync_status_set_pending_changes(self) -> None:
         """Test set_pending_changes method."""
         widget = CompactSyncStatus()
 
@@ -854,7 +853,7 @@ class TestCompactSyncStatus:
 
         assert widget.pending_changes == 7
 
-    def test_compact_sync_status_set_conflicts(self):
+    def test_compact_sync_status_set_conflicts(self) -> None:
         """Test set_conflicts method."""
         widget = CompactSyncStatus()
 
@@ -872,11 +871,11 @@ class TestCompactSyncStatus:
 class TestGraphViewWidget:
     """Tests for GraphViewWidget."""
 
-    def test_graph_view_inherits_static(self):
+    def test_graph_view_inherits_static(self) -> None:
         """Test GraphViewWidget inherits from Static."""
         assert issubclass(GraphViewWidget, Static)
 
-    def test_graph_view_class_exists(self):
+    def test_graph_view_class_exists(self) -> None:
         """Test GraphViewWidget class exists and can be imported."""
         assert GraphViewWidget is not None
         assert hasattr(GraphViewWidget, "__init__")
@@ -891,11 +890,11 @@ class TestGraphViewWidget:
 class TestStateDisplayWidget:
     """Tests for StateDisplayWidget."""
 
-    def test_state_display_inherits_datatable(self):
+    def test_state_display_inherits_datatable(self) -> None:
         """Test StateDisplayWidget inherits from DataTable."""
         assert issubclass(StateDisplayWidget, DataTable)
 
-    def test_state_display_class_exists(self):
+    def test_state_display_class_exists(self) -> None:
         """Test StateDisplayWidget class exists and can be imported."""
         assert StateDisplayWidget is not None
         assert hasattr(StateDisplayWidget, "__init__")
@@ -910,11 +909,11 @@ class TestStateDisplayWidget:
 class TestViewSwitcherWidget:
     """Tests for ViewSwitcherWidget."""
 
-    def test_view_switcher_inherits_tree(self):
+    def test_view_switcher_inherits_tree(self) -> None:
         """Test ViewSwitcherWidget inherits from Tree."""
         assert issubclass(ViewSwitcherWidget, Tree)
 
-    def test_view_switcher_class_exists(self):
+    def test_view_switcher_class_exists(self) -> None:
         """Test ViewSwitcherWidget class exists and can be imported."""
         assert ViewSwitcherWidget is not None
         assert hasattr(ViewSwitcherWidget, "__init__")
@@ -926,7 +925,7 @@ class TestViewSwitcherWidget:
 # =============================================================================
 
 
-def test_item_list_widget_placeholder():
+def test_item_list_widget_placeholder() -> None:
     """Test ItemListWidget placeholder when Textual not available."""
     from tracertm.tui.widgets.item_list import TEXTUAL_AVAILABLE
 
@@ -937,7 +936,7 @@ def test_item_list_widget_placeholder():
         assert ItemListWidget is not None
 
 
-def test_conflict_panel_placeholder():
+def test_conflict_panel_placeholder() -> None:
     """Test ConflictPanel placeholder when Textual not available."""
     from tracertm.tui.widgets.conflict_panel import TEXTUAL_AVAILABLE
 
@@ -948,7 +947,7 @@ def test_conflict_panel_placeholder():
         assert ConflictPanel is not None
 
 
-def test_sync_status_widget_placeholder():
+def test_sync_status_widget_placeholder() -> None:
     """Test SyncStatusWidget placeholder when Textual not available."""
     from tracertm.tui.widgets.sync_status import TEXTUAL_AVAILABLE
 
@@ -959,7 +958,7 @@ def test_sync_status_widget_placeholder():
         assert SyncStatusWidget is not None
 
 
-def test_compact_sync_status_placeholder():
+def test_compact_sync_status_placeholder() -> None:
     """Test CompactSyncStatus placeholder when Textual not available."""
     from tracertm.tui.widgets.sync_status import TEXTUAL_AVAILABLE
 
@@ -970,7 +969,7 @@ def test_compact_sync_status_placeholder():
         assert CompactSyncStatus is not None
 
 
-def test_graph_view_widget_placeholder():
+def test_graph_view_widget_placeholder() -> None:
     """Test GraphViewWidget placeholder when Textual not available."""
     from tracertm.tui.widgets.graph_view import TEXTUAL_AVAILABLE
 
@@ -981,7 +980,7 @@ def test_graph_view_widget_placeholder():
         assert GraphViewWidget is not None
 
 
-def test_state_display_widget_placeholder():
+def test_state_display_widget_placeholder() -> None:
     """Test StateDisplayWidget placeholder when Textual not available."""
     from tracertm.tui.widgets.state_display import TEXTUAL_AVAILABLE
 
@@ -992,7 +991,7 @@ def test_state_display_widget_placeholder():
         assert StateDisplayWidget is not None
 
 
-def test_view_switcher_widget_placeholder():
+def test_view_switcher_widget_placeholder() -> None:
     """Test ViewSwitcherWidget placeholder when Textual not available."""
     from tracertm.tui.widgets.view_switcher import TEXTUAL_AVAILABLE
 
@@ -1013,7 +1012,7 @@ class TestItemListWidgetLifecycle:
     """Tests for ItemListWidget lifecycle and edge cases."""
 
     @patch.object(ItemListWidget, "add_columns")
-    def test_item_list_on_mount_adds_columns_once(self, mock_add_columns):
+    def test_item_list_on_mount_adds_columns_once(self, mock_add_columns) -> None:
         """Test on_mount only adds columns once."""
         widget = ItemListWidget()
         widget._columns_added = False
@@ -1024,7 +1023,7 @@ class TestItemListWidgetLifecycle:
         assert widget._columns_added is True
 
     @patch.object(ItemListWidget, "add_columns")
-    def test_item_list_on_mount_skips_if_already_added(self, mock_add_columns):
+    def test_item_list_on_mount_skips_if_already_added(self, mock_add_columns) -> None:
         """Test on_mount skips column setup if already done."""
         widget = ItemListWidget()
         widget._columns_added = True
@@ -1033,7 +1032,7 @@ class TestItemListWidgetLifecycle:
 
         mock_add_columns.assert_not_called()
 
-    def test_item_list_initial_state(self):
+    def test_item_list_initial_state(self) -> None:
         """Test ItemListWidget initializes with correct state."""
         widget = ItemListWidget()
 
@@ -1045,7 +1044,7 @@ class TestStateDisplayWidgetLifecycle:
     """Tests for StateDisplayWidget lifecycle and edge cases."""
 
     @patch.object(StateDisplayWidget, "add_columns")
-    def test_state_display_on_mount_adds_columns_once(self, mock_add_columns):
+    def test_state_display_on_mount_adds_columns_once(self, mock_add_columns) -> None:
         """Test on_mount only adds columns once."""
         widget = StateDisplayWidget()
         widget._columns_added = False
@@ -1056,7 +1055,7 @@ class TestStateDisplayWidgetLifecycle:
         assert widget._columns_added is True
 
     @patch.object(StateDisplayWidget, "add_columns")
-    def test_state_display_on_mount_skips_if_already_added(self, mock_add_columns):
+    def test_state_display_on_mount_skips_if_already_added(self, mock_add_columns) -> None:
         """Test on_mount skips column setup if already done."""
         widget = StateDisplayWidget()
         widget._columns_added = True
@@ -1065,7 +1064,7 @@ class TestStateDisplayWidgetLifecycle:
 
         mock_add_columns.assert_not_called()
 
-    def test_state_display_initial_state(self):
+    def test_state_display_initial_state(self) -> None:
         """Test StateDisplayWidget initializes with correct state."""
         widget = StateDisplayWidget()
 
@@ -1077,7 +1076,7 @@ class TestViewSwitcherWidgetLifecycle:
     """Tests for ViewSwitcherWidget lifecycle and setup."""
 
     @patch.object(ViewSwitcherWidget, "setup_views")
-    def test_view_switcher_on_mount_calls_setup(self, mock_setup):
+    def test_view_switcher_on_mount_calls_setup(self, mock_setup) -> None:
         """Test on_mount calls setup_views."""
         widget = ViewSwitcherWidget()
 
@@ -1085,7 +1084,7 @@ class TestViewSwitcherWidgetLifecycle:
 
         mock_setup.assert_called_once()
 
-    def test_view_switcher_setup_views_adds_all(self):
+    def test_view_switcher_setup_views_adds_all(self) -> None:
         """Test setup_views adds all expected views."""
         widget = ViewSwitcherWidget()
         widget.root = MagicMock()
@@ -1113,7 +1112,7 @@ class TestViewSwitcherWidgetLifecycle:
 class TestSyncStatusWidgetEdgeCases:
     """Edge case tests for SyncStatusWidget."""
 
-    def test_sync_status_update_display_not_mounted(self):
+    def test_sync_status_update_display_not_mounted(self) -> None:
         """Test update_display handles unmounted widget gracefully."""
         widget = SyncStatusWidget()
         # Mock is_mounted property
@@ -1123,7 +1122,7 @@ class TestSyncStatusWidgetEdgeCases:
             # Should not raise error
             widget.update_display()
 
-    def test_sync_status_update_display_widget_not_composed(self):
+    def test_sync_status_update_display_widget_not_composed(self) -> None:
         """Test update_display handles widget not yet composed."""
         widget = SyncStatusWidget()
         with patch.object(type(widget), "is_mounted", new_callable=PropertyMock) as mock_mounted:
@@ -1133,7 +1132,7 @@ class TestSyncStatusWidgetEdgeCases:
             # Should not raise error
             widget.update_display()
 
-    def test_sync_status_format_time_ago_edge_case_59_seconds(self):
+    def test_sync_status_format_time_ago_edge_case_59_seconds(self) -> None:
         """Test time formatting at 59 seconds boundary."""
         widget = SyncStatusWidget()
         dt = datetime.now() - timedelta(seconds=59)
@@ -1142,7 +1141,7 @@ class TestSyncStatusWidgetEdgeCases:
 
         assert result == "just now"
 
-    def test_sync_status_format_time_ago_edge_case_60_seconds(self):
+    def test_sync_status_format_time_ago_edge_case_60_seconds(self) -> None:
         """Test time formatting at 60 seconds boundary."""
         widget = SyncStatusWidget()
         dt = datetime.now() - timedelta(seconds=60)
@@ -1151,7 +1150,7 @@ class TestSyncStatusWidgetEdgeCases:
 
         assert "1 minute" in result
 
-    def test_sync_status_format_time_ago_edge_case_one_hour(self):
+    def test_sync_status_format_time_ago_edge_case_one_hour(self) -> None:
         """Test time formatting at one hour boundary."""
         widget = SyncStatusWidget()
         dt = datetime.now() - timedelta(hours=1)
@@ -1161,7 +1160,7 @@ class TestSyncStatusWidgetEdgeCases:
         assert "1 hour" in result
         assert "hours" not in result
 
-    def test_sync_status_update_display_one_pending_change(self):
+    def test_sync_status_update_display_one_pending_change(self) -> None:
         """Test display with exactly one pending change (singular)."""
         widget = SyncStatusWidget()
         widget.pending_changes = 1
@@ -1189,7 +1188,7 @@ class TestSyncStatusWidgetEdgeCases:
         assert "pending change" in call_text
         assert "changes" not in call_text
 
-    def test_sync_status_update_display_one_conflict(self):
+    def test_sync_status_update_display_one_conflict(self) -> None:
         """Test display with exactly one conflict (singular)."""
         widget = SyncStatusWidget()
         widget.conflicts_count = 1
@@ -1216,7 +1215,7 @@ class TestSyncStatusWidgetEdgeCases:
         assert "1" in call_text
         assert "conflict" in call_text
 
-    def test_sync_status_update_display_never_synced(self):
+    def test_sync_status_update_display_never_synced(self) -> None:
         """Test display when never synced."""
         widget = SyncStatusWidget()
         widget.last_sync = None
@@ -1254,9 +1253,9 @@ class TestConflictPanelEdgeCases:
     """Edge case tests for ConflictPanel. Use cast(Any, ...) so patched/mock attributes type-check."""
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_init_with_empty_conflicts(self):
+    def test_conflict_panel_init_with_empty_conflicts(self) -> None:
         """Test ConflictPanel initialization with empty conflict list."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.conflicts = []
         panel.selected_conflict = None
 
@@ -1265,7 +1264,7 @@ class TestConflictPanelEdgeCases:
 
     @patch.object(ConflictPanel, "query_one")
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_refresh_with_long_entity_id(self, mock_query_one):
+    def test_conflict_panel_refresh_with_long_entity_id(self, mock_query_one) -> None:
         """Test conflict list display truncates long entity IDs."""
         conflict = MagicMock()
         conflict.entity_type = "item"
@@ -1274,7 +1273,7 @@ class TestConflictPanelEdgeCases:
         conflict.remote_version.vector_clock.version = 2
         conflict.detected_at = datetime(2024, 1, 1, 12, 0)
 
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         panel.conflicts = [conflict]
 
         mock_table = MagicMock()
@@ -1290,7 +1289,7 @@ class TestConflictPanelEdgeCases:
     @patch("tracertm.tui.widgets.conflict_panel.compare_versions")
     @patch.object(ConflictPanel, "query_one")
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_show_conflict_detail_only_modified(self, mock_query_one, mock_compare):
+    def test_conflict_panel_show_conflict_detail_only_modified(self, mock_query_one, mock_compare) -> None:
         """Test showing conflict with only modified fields."""
         local_version = MagicMock()
         local_version.vector_clock.version = 1
@@ -1310,7 +1309,7 @@ class TestConflictPanelEdgeCases:
 
         mock_compare.return_value = {"modified": ["title"], "added": [], "removed": []}
 
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
         mock_detail = MagicMock()
         mock_query_one.return_value = mock_detail
 
@@ -1322,17 +1321,17 @@ class TestConflictPanelEdgeCases:
         assert "Modified fields" in update_text
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_messages_exist(self):
+    def test_conflict_panel_messages_exist(self) -> None:
         """Test ConflictPanel custom message classes exist."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
 
         assert hasattr(panel, "ConflictResolved")
         assert hasattr(panel, "ConflictPanelClosed")
 
     @patch.object(ConflictPanel, "__init__", lambda x, **kwargs: None)
-    def test_conflict_panel_compose_method_exists(self):
+    def test_conflict_panel_compose_method_exists(self) -> None:
         """Test ConflictPanel has compose method."""
-        panel = cast(Any, ConflictPanel())
+        panel = cast("Any", ConflictPanel())
 
         assert hasattr(panel, "compose")
         assert callable(panel.compose)

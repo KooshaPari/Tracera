@@ -52,7 +52,7 @@ test.describe('WebSocket CORS Validation', () => {
         (log) => log.text?.includes('[WebSocket]') && log.text?.includes('Connection established'),
       );
       expect(wsConnected).toBeTruthy();
-    }).toPass({ timeout: 10000 });
+    }).toPass({ timeout: 10_000 });
 
     // Verify CORS headers were present
     const corsHeaders = logs.network.find((n) => n.url?.includes('/ws'));
@@ -86,7 +86,7 @@ test.describe('WebSocket CORS Validation', () => {
     await expect(async () => {
       const authSuccess = wsMessages.some((msg) => msg.includes('Authentication successful'));
       expect(authSuccess).toBeTruthy();
-    }).toPass({ timeout: 10000 });
+    }).toPass({ timeout: 10_000 });
   });
 
   test('should handle WebSocket reconnection gracefully', async ({ page }) => {
@@ -116,7 +116,7 @@ test.describe('WebSocket CORS Validation', () => {
     await expect(async () => {
       expect(wsEvents.some((event) => event.includes('WebSocket created'))).toBeTruthy();
       expect(wsEvents.some((event) => event.includes('Frame received'))).toBeTruthy();
-    }).toPass({ timeout: 10000 });
+    }).toPass({ timeout: 10_000 });
 
     console.log('WebSocket Event Log:', wsEvents);
   });
@@ -147,7 +147,7 @@ test.describe('WebSocket CORS Validation', () => {
 
     await expect(async () => {
       expect(corsHeadersFound).toBeTruthy();
-    }).toPass({ timeout: 10000 });
+    }).toPass({ timeout: 10_000 });
     console.log('WebSocket Request Headers:', headers);
   });
 

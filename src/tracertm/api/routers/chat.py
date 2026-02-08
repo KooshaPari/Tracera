@@ -11,15 +11,18 @@ Implements:
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import StreamingResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.api.handlers.chat import simple_chat, stream_chat
-from tracertm.schemas.chat import ChatRequest
+
+if TYPE_CHECKING:
+    from fastapi.responses import StreamingResponse
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from tracertm.schemas.chat import ChatRequest
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +36,8 @@ router = APIRouter(prefix="/api/v1/chat", tags=["chat", "ai"])
 async def stream_chat_endpoint(
     request: Request,
     request_body: ChatRequest,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ) -> StreamingResponse:
     """Stream AI chat completion using Server-Sent Events.
 
@@ -92,8 +95,8 @@ async def stream_chat_endpoint(
 async def simple_chat_endpoint(
     request: Request,
     request_body: ChatRequest,
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
     """Non-streaming chat completion (for testing/simple use cases).
 

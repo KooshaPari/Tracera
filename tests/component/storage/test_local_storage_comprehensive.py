@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for LocalStorageManager.
+"""Comprehensive tests for LocalStorageManager.
 
 Tests cover:
 - Project initialization and registration
@@ -49,35 +48,35 @@ def temp_project_dir():
 class TestLocalStorageManagerInit:
     """Test LocalStorageManager initialization."""
 
-    def test_default_base_dir(self):
+    def test_default_base_dir(self) -> None:
         """Test default base directory creation."""
         manager = LocalStorageManager()
         assert manager.base_dir == Path.home() / ".tracertm"
         assert manager.base_dir.exists()
 
-    def test_custom_base_dir(self, temp_base_dir):
+    def test_custom_base_dir(self, temp_base_dir) -> None:
         """Test custom base directory."""
         manager = LocalStorageManager(base_dir=temp_base_dir)
         assert manager.base_dir == temp_base_dir
         assert manager.base_dir.exists()
 
-    def test_db_initialization(self, storage_manager):
+    def test_db_initialization(self, storage_manager) -> None:
         """Test database file creation."""
         assert storage_manager.db_path.exists()
         assert storage_manager.db_path.name == "tracertm.db"
 
-    def test_projects_dir_creation(self, storage_manager):
+    def test_projects_dir_creation(self, storage_manager) -> None:
         """Test projects directory creation (legacy)."""
         assert storage_manager.projects_dir.exists()
         assert storage_manager.projects_dir.name == "projects"
 
-    def test_schema_tables_created(self, storage_manager):
+    def test_schema_tables_created(self, storage_manager) -> None:
         """Test that all required tables are created."""
         session = storage_manager.get_session()
         try:
             # Check project_registry table
             result = session.execute(
-                text("SELECT name FROM sqlite_master WHERE type='table' AND name='project_registry'")
+                text("SELECT name FROM sqlite_master WHERE type='table' AND name='project_registry'"),
             )
             assert result.fetchone() is not None
 
@@ -99,7 +98,7 @@ class TestLocalStorageManagerInit:
 class TestProjectInitialization:
     """Test project initialization with .trace/ directory."""
 
-    def test_init_project_creates_trace_dir(self, storage_manager, temp_project_dir):
+    def test_init_project_creates_trace_dir(self, storage_manager, temp_project_dir) -> None:
         """Test .trace/ directory creation."""
         trace_dir, project_id = storage_manager.init_project(temp_project_dir)
 
@@ -108,7 +107,7 @@ class TestProjectInitialization:
         # Use resolve to handle /var vs /private/var symlinks on macOS
         assert trace_dir.parent.resolve() == temp_project_dir.resolve()
 
-    def test_init_project_creates_subdirectories(self, storage_manager, temp_project_dir):
+    def test_init_project_creates_subdirectories(self, storage_manager, temp_project_dir) -> None:
         """Test subdirectory creation."""
         trace_dir, _ = storage_manager.init_project(temp_project_dir)
 
@@ -117,10 +116,10 @@ class TestProjectInitialization:
             assert (trace_dir / subdir).exists()
             assert (trace_dir / subdir).is_dir()
 
-    def test_init_project_creates_project_yaml(self, storage_manager, temp_project_dir):
+    def test_init_project_creates_project_yaml(self, storage_manager, temp_project_dir) -> None:
         """Test project.yaml creation."""
         trace_dir, project_id = storage_manager.init_project(
-            temp_project_dir, project_name="TestProject", description="Test description"
+            temp_project_dir, project_name="TestProject", description="Test description",
         )
 
         project_yaml = trace_dir / "project.yaml"
@@ -133,7 +132,7 @@ class TestProjectInitialization:
         assert "counters" in config
         assert config["counters"] == {"epic": 0, "story": 0, "test": 0, "task": 0}
 
-    def test_init_project_default_name(self, storage_manager, temp_project_dir):
+    def test_init_project_default_name(self, storage_manager, temp_project_dir) -> None:
         """Test default project name from directory."""
         trace_dir, _ = storage_manager.init_project(temp_project_dir)
 
@@ -141,7 +140,7 @@ class TestProjectInitialization:
         config = yaml.safe_load(project_yaml.read_text())
         assert config["name"] == temp_project_dir.name
 
-    def test_init_project_creates_links_yaml(self, storage_manager, temp_project_dir):
+    def test_init_project_creates_links_yaml(self, storage_manager, temp_project_dir) -> None:
         """Test links.yaml creation."""
         trace_dir, _ = storage_manager.init_project(temp_project_dir)
 
@@ -150,7 +149,7 @@ class TestProjectInitialization:
         content = links_yaml.read_text()
         assert "links: []" in content
 
-    def test_init_project_creates_agents_yaml(self, storage_manager, temp_project_dir):
+    def test_init_project_creates_agents_yaml(self, storage_manager, temp_project_dir) -> None:
         """Test agents.yaml creation."""
         trace_dir, _ = storage_manager.init_project(temp_project_dir)
 
@@ -159,7 +158,7 @@ class TestProjectInitialization:
         content = agents_yaml.read_text()
         assert "agents: []" in content
 
-    def test_init_project_updates_gitignore(self, storage_manager, temp_project_dir):
+    def test_init_project_updates_gitignore(self, storage_manager, temp_project_dir) -> None:
         """Test .gitignore update."""
         trace_dir, _ = storage_manager.init_project(temp_project_dir)
 
@@ -168,7 +167,7 @@ class TestProjectInitialization:
         content = gitignore.read_text()
         assert ".trace/.meta/sync.yaml" in content
 
-    def test_init_project_appends_to_existing_gitignore(self, storage_manager, temp_project_dir):
+    def test_init_project_appends_to_existing_gitignore(self, storage_manager, temp_project_dir) -> None:
         """Test appending to existing .gitignore."""
         # Create existing .gitignore
         gitignore = temp_project_dir / ".gitignore"
@@ -180,14 +179,14 @@ class TestProjectInitialization:
         assert "*.pyc" in content
         assert ".trace/.meta/sync.yaml" in content
 
-    def test_init_project_raises_if_already_exists(self, storage_manager, temp_project_dir):
+    def test_init_project_raises_if_already_exists(self, storage_manager, temp_project_dir) -> None:
         """Test error when project already initialized."""
         storage_manager.init_project(temp_project_dir)
 
         with pytest.raises(ValueError, match="already initialized"):
             storage_manager.init_project(temp_project_dir)
 
-    def test_init_project_registers_in_db(self, storage_manager, temp_project_dir):
+    def test_init_project_registers_in_db(self, storage_manager, temp_project_dir) -> None:
         """Test project registration in database."""
         trace_dir, project_id = storage_manager.init_project(temp_project_dir)
 
@@ -201,7 +200,7 @@ class TestProjectInitialization:
         finally:
             session.close()
 
-    def test_init_project_with_metadata(self, storage_manager, temp_project_dir):
+    def test_init_project_with_metadata(self, storage_manager, temp_project_dir) -> None:
         """Test project initialization with custom metadata."""
         metadata = {"team": "Engineering", "tags": ["backend", "api"]}
         trace_dir, _ = storage_manager.init_project(temp_project_dir, metadata=metadata)
@@ -214,7 +213,7 @@ class TestProjectInitialization:
 class TestProjectRegistration:
     """Test project registration."""
 
-    def test_register_existing_project(self, storage_manager, temp_project_dir):
+    def test_register_existing_project(self, storage_manager, temp_project_dir) -> None:
         """Test registering existing .trace/ directory."""
         # Initialize project first
         trace_dir, original_id = storage_manager.init_project(temp_project_dir)
@@ -226,12 +225,12 @@ class TestProjectRegistration:
         project_id = new_manager.register_project(temp_project_dir)
         assert project_id == original_id
 
-    def test_register_project_without_trace_raises(self, storage_manager, temp_project_dir):
+    def test_register_project_without_trace_raises(self, storage_manager, temp_project_dir) -> None:
         """Test error when .trace/ doesn't exist."""
         with pytest.raises(ValueError, match="No .trace/ directory found"):
             storage_manager.register_project(temp_project_dir)
 
-    def test_register_project_without_yaml_raises(self, storage_manager, temp_project_dir):
+    def test_register_project_without_yaml_raises(self, storage_manager, temp_project_dir) -> None:
         """Test error when project.yaml missing."""
         trace_dir = temp_project_dir / ".trace"
         trace_dir.mkdir()
@@ -239,7 +238,7 @@ class TestProjectRegistration:
         with pytest.raises(ValueError, match="project.yaml not found"):
             storage_manager.register_project(temp_project_dir)
 
-    def test_register_project_generates_id_if_missing(self, storage_manager, temp_project_dir):
+    def test_register_project_generates_id_if_missing(self, storage_manager, temp_project_dir) -> None:
         """Test ID generation if missing from project.yaml."""
         trace_dir = temp_project_dir / ".trace"
         trace_dir.mkdir()
@@ -258,16 +257,16 @@ class TestProjectRegistration:
 class TestProjectDetection:
     """Test project detection methods."""
 
-    def test_is_trace_project_true(self, storage_manager, temp_project_dir):
+    def test_is_trace_project_true(self, storage_manager, temp_project_dir) -> None:
         """Test detection of .trace/ directory."""
         storage_manager.init_project(temp_project_dir)
         assert storage_manager.is_trace_project(temp_project_dir)
 
-    def test_is_trace_project_false(self, storage_manager, temp_project_dir):
+    def test_is_trace_project_false(self, storage_manager, temp_project_dir) -> None:
         """Test non-trace directory."""
         assert not storage_manager.is_trace_project(temp_project_dir)
 
-    def test_is_trace_project_with_file(self, storage_manager, temp_project_dir):
+    def test_is_trace_project_with_file(self, storage_manager, temp_project_dir) -> None:
         """Test with file path (should check parent)."""
         storage_manager.init_project(temp_project_dir)
         file_path = temp_project_dir / "test.txt"
@@ -275,7 +274,7 @@ class TestProjectDetection:
 
         assert storage_manager.is_trace_project(file_path)
 
-    def test_get_project_trace_dir_returns_path(self, storage_manager, temp_project_dir):
+    def test_get_project_trace_dir_returns_path(self, storage_manager, temp_project_dir) -> None:
         """Test getting .trace/ directory."""
         trace_dir, _ = storage_manager.init_project(temp_project_dir)
 
@@ -283,12 +282,12 @@ class TestProjectDetection:
         # Use resolve to handle /var vs /private/var symlinks on macOS
         assert result.resolve() == trace_dir.resolve()
 
-    def test_get_project_trace_dir_returns_none(self, storage_manager, temp_project_dir):
+    def test_get_project_trace_dir_returns_none(self, storage_manager, temp_project_dir) -> None:
         """Test None when .trace/ doesn't exist."""
         result = storage_manager.get_project_trace_dir(temp_project_dir)
         assert result is None
 
-    def test_get_current_project_path(self, storage_manager, temp_project_dir, monkeypatch):
+    def test_get_current_project_path(self, storage_manager, temp_project_dir, monkeypatch) -> None:
         """Test finding current project from working directory."""
         storage_manager.init_project(temp_project_dir)
 
@@ -299,7 +298,7 @@ class TestProjectDetection:
         # Use resolve to handle /var vs /private/var symlinks on macOS
         assert result.resolve() == temp_project_dir.resolve()
 
-    def test_get_current_project_path_from_subdirectory(self, storage_manager, temp_project_dir, monkeypatch):
+    def test_get_current_project_path_from_subdirectory(self, storage_manager, temp_project_dir, monkeypatch) -> None:
         """Test finding project from subdirectory."""
         storage_manager.init_project(temp_project_dir)
 
@@ -312,7 +311,7 @@ class TestProjectDetection:
         # Use resolve to handle /var vs /private/var symlinks on macOS
         assert result.resolve() == temp_project_dir.resolve()
 
-    def test_get_current_project_path_not_found(self, storage_manager, temp_project_dir, monkeypatch):
+    def test_get_current_project_path_not_found(self, storage_manager, temp_project_dir, monkeypatch) -> None:
         """Test None when not in a project."""
         monkeypatch.chdir(temp_project_dir)
 
@@ -323,14 +322,14 @@ class TestProjectDetection:
 class TestCounterManagement:
     """Test project counter operations."""
 
-    def test_get_project_counters(self, storage_manager, temp_project_dir):
+    def test_get_project_counters(self, storage_manager, temp_project_dir) -> None:
         """Test getting counters from project.yaml."""
         storage_manager.init_project(temp_project_dir)
 
         counters = storage_manager.get_project_counters(temp_project_dir)
         assert counters == {"epic": 0, "story": 0, "test": 0, "task": 0}
 
-    def test_get_project_counters_missing_yaml(self, storage_manager, temp_project_dir):
+    def test_get_project_counters_missing_yaml(self, storage_manager, temp_project_dir) -> None:
         """Test default counters when yaml missing."""
         trace_dir = temp_project_dir / ".trace"
         trace_dir.mkdir()
@@ -338,7 +337,7 @@ class TestCounterManagement:
         counters = storage_manager.get_project_counters(temp_project_dir)
         assert counters == {"epic": 0, "story": 0, "test": 0, "task": 0}
 
-    def test_increment_project_counter(self, storage_manager, temp_project_dir):
+    def test_increment_project_counter(self, storage_manager, temp_project_dir) -> None:
         """Test counter increment."""
         storage_manager.init_project(temp_project_dir)
 
@@ -350,7 +349,7 @@ class TestCounterManagement:
         counters = storage_manager.get_project_counters(temp_project_dir)
         assert counters["epic"] == 1
 
-    def test_increment_project_counter_multiple_times(self, storage_manager, temp_project_dir):
+    def test_increment_project_counter_multiple_times(self, storage_manager, temp_project_dir) -> None:
         """Test multiple increments."""
         storage_manager.init_project(temp_project_dir)
 
@@ -359,7 +358,7 @@ class TestCounterManagement:
             assert value == i
             assert external_id == f"STORY-{i:03d}"
 
-    def test_increment_different_counter_types(self, storage_manager, temp_project_dir):
+    def test_increment_different_counter_types(self, storage_manager, temp_project_dir) -> None:
         """Test different counter types independently."""
         storage_manager.init_project(temp_project_dir)
 
@@ -377,14 +376,14 @@ class TestCounterManagement:
 class TestIndexingOperations:
     """Test project indexing operations."""
 
-    def test_index_project_empty(self, storage_manager, temp_project_dir):
+    def test_index_project_empty(self, storage_manager, temp_project_dir) -> None:
         """Test indexing empty project."""
         storage_manager.init_project(temp_project_dir)
 
         counts = storage_manager.index_project(temp_project_dir)
         assert counts == {"epics": 0, "stories": 0, "tests": 0, "tasks": 0}
 
-    def test_index_project_with_items(self, storage_manager, temp_project_dir):
+    def test_index_project_with_items(self, storage_manager, temp_project_dir) -> None:
         """Test indexing project with markdown files."""
         trace_dir, project_id = storage_manager.init_project(temp_project_dir)
 
@@ -415,7 +414,7 @@ Implement user authentication system with OAuth2 support.
         counts = storage_manager.index_project(temp_project_dir)
         assert counts["epics"] == 1
 
-    def test_index_project_updates_last_indexed(self, storage_manager, temp_project_dir):
+    def test_index_project_updates_last_indexed(self, storage_manager, temp_project_dir) -> None:
         """Test last_indexed timestamp update."""
         trace_dir, project_id = storage_manager.init_project(temp_project_dir)
 
@@ -424,7 +423,7 @@ Implement user authentication system with OAuth2 support.
         session = storage_manager.get_session()
         try:
             result = session.execute(
-                text("SELECT last_indexed FROM project_registry WHERE id = :id"), {"id": project_id}
+                text("SELECT last_indexed FROM project_registry WHERE id = :id"), {"id": project_id},
             )
             row = result.fetchone()
             assert row is not None
@@ -436,12 +435,12 @@ Implement user authentication system with OAuth2 support.
 class TestFullTextSearch:
     """Test FTS operations."""
 
-    def test_search_items_empty(self, storage_manager):
+    def test_search_items_empty(self, storage_manager) -> None:
         """Test search with no items."""
         results = storage_manager.search_items("test query")
         assert results == []
 
-    def test_search_items_by_title(self, storage_manager, temp_project_dir):
+    def test_search_items_by_title(self, storage_manager, temp_project_dir) -> None:
         """Test searching by title."""
         trace_dir, project_id = storage_manager.init_project(temp_project_dir)
 
@@ -465,7 +464,7 @@ status: todo
         assert len(results) > 0
         assert any(item.id == item_id for item in results)
 
-    def test_search_items_project_filter(self, storage_manager, temp_project_dir):
+    def test_search_items_project_filter(self, storage_manager, temp_project_dir) -> None:
         """Test project_id filter."""
         trace_dir, project_id = storage_manager.init_project(temp_project_dir)
 
@@ -495,7 +494,7 @@ status: todo
 class TestSyncQueueOperations:
     """Test sync queue operations."""
 
-    def test_queue_sync(self, storage_manager):
+    def test_queue_sync(self, storage_manager) -> None:
         """Test queueing sync operation."""
         storage_manager.queue_sync("item", "item-123", "create", {"title": "Test Item"})
 
@@ -505,7 +504,7 @@ class TestSyncQueueOperations:
         assert queue[0]["entity_id"] == "item-123"
         assert queue[0]["operation"] == "create"
 
-    def test_get_sync_queue_limit(self, storage_manager):
+    def test_get_sync_queue_limit(self, storage_manager) -> None:
         """Test queue limit."""
         # Queue multiple items
         for i in range(10):
@@ -514,7 +513,7 @@ class TestSyncQueueOperations:
         queue = storage_manager.get_sync_queue(limit=5)
         assert len(queue) == 5
 
-    def test_clear_sync_queue_entry(self, storage_manager):
+    def test_clear_sync_queue_entry(self, storage_manager) -> None:
         """Test removing queue entry."""
         storage_manager.queue_sync("item", "item-123", "create", {})
 
@@ -530,19 +529,19 @@ class TestSyncQueueOperations:
 class TestSyncStateOperations:
     """Test sync state operations."""
 
-    def test_update_sync_state(self, storage_manager):
+    def test_update_sync_state(self, storage_manager) -> None:
         """Test updating sync state."""
         storage_manager.update_sync_state("last_sync_time", "2024-01-01T00:00:00Z")
 
         value = storage_manager.get_sync_state("last_sync_time")
         assert value == "2024-01-01T00:00:00Z"
 
-    def test_get_sync_state_not_found(self, storage_manager):
+    def test_get_sync_state_not_found(self, storage_manager) -> None:
         """Test getting non-existent state."""
         value = storage_manager.get_sync_state("nonexistent")
         assert value is None
 
-    def test_update_sync_state_overwrites(self, storage_manager):
+    def test_update_sync_state_overwrites(self, storage_manager) -> None:
         """Test state overwrite."""
         storage_manager.update_sync_state("key", "value1")
         storage_manager.update_sync_state("key", "value2")
@@ -554,13 +553,13 @@ class TestSyncStateOperations:
 class TestProjectStorageIntegration:
     """Test integration with ProjectStorage."""
 
-    def test_get_project_storage(self, storage_manager):
+    def test_get_project_storage(self, storage_manager) -> None:
         """Test getting project storage (global projects dir)."""
         project_storage = storage_manager.get_project_storage("TestProject")
         assert isinstance(project_storage, ProjectStorage)
         assert project_storage.project_name == "TestProject"
 
-    def test_get_project_storage_for_path(self, storage_manager, temp_project_dir):
+    def test_get_project_storage_for_path(self, storage_manager, temp_project_dir) -> None:
         """Test getting project storage for .trace/ path."""
         storage_manager.init_project(temp_project_dir, project_name="MyProject")
 
@@ -568,12 +567,12 @@ class TestProjectStorageIntegration:
         assert project_storage is not None
         assert project_storage.project_name == "MyProject"
 
-    def test_get_project_storage_for_path_not_found(self, storage_manager, temp_project_dir):
+    def test_get_project_storage_for_path_not_found(self, storage_manager, temp_project_dir) -> None:
         """Test None when .trace/ doesn't exist."""
         result = storage_manager.get_project_storage_for_path(temp_project_dir)
         assert result is None
 
-    def test_get_project_storage_by_id(self, storage_manager, temp_project_dir):
+    def test_get_project_storage_by_id(self, storage_manager, temp_project_dir) -> None:
         """Test getting storage by project ID."""
         trace_dir, project_id = storage_manager.init_project(temp_project_dir)
         storage_manager.index_project(temp_project_dir)

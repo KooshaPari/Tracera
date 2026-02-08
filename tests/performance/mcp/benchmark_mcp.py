@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-MCP Performance Benchmark Script
+"""MCP Performance Benchmark Script.
 
 Runs comprehensive benchmarks comparing:
 - Before/after optimization performance
@@ -56,19 +55,17 @@ class ComparisonReport:
 class MCPBenchmark:
     """MCP performance benchmark runner."""
 
-    def __init__(self, output_dir: Path | None = None):
+    def __init__(self, output_dir: Path | None = None) -> None:
         self.output_dir = output_dir or Path(__file__).parent / "benchmark_results"
         self.output_dir.mkdir(exist_ok=True)
         self.results: list[BenchmarkResult] = []
 
     def run_benchmark(
-        self, name: str, func, optimized: bool = False, iterations: int = 10, **kwargs
+        self, name: str, func, optimized: bool = False, iterations: int = 10, **kwargs,
     ) -> BenchmarkResult:
         """Run a single benchmark."""
         durations = []
         token_counts = []
-
-        print(f"\n{'Optimized' if optimized else 'Baseline'} - {name}:")
 
         for i in range(iterations):
             start = time.perf_counter()
@@ -84,8 +81,6 @@ class MCPBenchmark:
                 result_str = json.dumps(result)
                 tokens = len(result_str) // 4
                 token_counts.append(tokens)
-
-            print(f"  Iteration {i + 1}/{iterations}: {duration:.2f}ms")
 
         # Calculate statistics
         avg_duration = sum(durations) / len(durations)
@@ -151,29 +146,17 @@ class MCPBenchmark:
             "comparisons": [asdict(c) for c in self.generate_comparison_report()],
         }
 
-        with Path(output_file).open("w") as f:
+        with Path(output_file).open("w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
-        print(f"\n✓ Results saved to: {output_file}")
         return output_file
 
-    def print_summary(self):
+    def print_summary(self) -> None:
         """Print summary of benchmark results."""
         comparisons = self.generate_comparison_report()
 
-        print("\n" + "=" * 80)
-        print("MCP OPTIMIZATION BENCHMARK SUMMARY")
-        print("=" * 80)
-
         for comp in comparisons:
-            print(f"\n{comp.benchmark_name}:")
-            print(f"  Baseline:  {comp.baseline_ms:.2f}ms ({comp.baseline_tokens} tokens)")
-            print(f"  Optimized: {comp.optimized_ms:.2f}ms ({comp.optimized_tokens} tokens)")
-            print(
-                f"  Improvement: {comp.improvement_percent:+.1f}% (time), {comp.token_reduction_percent:+.1f}% (tokens)"
-            )
-
-        print("\n" + "=" * 80)
+            pass
 
 
 # ============================================================
@@ -190,7 +173,7 @@ def benchmark_tool_registration() -> dict[str, Any]:
     # Register 50 tools
     for i in range(50):
         registry.register_tool_loader(
-            f"benchmark_tool_{i}", "tracertm.mcp.tools.params.project", {"description": f"Benchmark tool {i}"}
+            f"benchmark_tool_{i}", "tracertm.mcp.tools.params.project", {"description": f"Benchmark tool {i}"},
         )
 
     return {"tools_registered": 50}
@@ -259,34 +242,25 @@ def run_benchmark_suite():
     """Run complete benchmark suite."""
     benchmark = MCPBenchmark()
 
-    print("=" * 80)
-    print("MCP OPTIMIZATION BENCHMARK SUITE")
-    print("=" * 80)
-
     # Benchmark 1: Tool Registration
-    print("\n[1/6] Tool Registration")
     benchmark.run_benchmark("tool_registration", benchmark_tool_registration, optimized=False, iterations=5)
 
     os.environ["TRACERTM_MCP_LAZY_LOADING"] = "true"
     benchmark.run_benchmark("tool_registration", benchmark_tool_registration, optimized=True, iterations=5)
 
     # Benchmark 2: Tool Lookup
-    print("\n[2/6] Tool Lookup")
     benchmark.run_benchmark("tool_lookup", benchmark_tool_lookup, optimized=False, iterations=10)
     benchmark.run_benchmark("tool_lookup", benchmark_tool_lookup, optimized=True, iterations=10)
 
     # Benchmark 3: Simple Tool Execution
-    print("\n[3/6] Simple Tool Execution")
     benchmark.run_benchmark("simple_tool", benchmark_simple_tool, optimized=False, iterations=10)
     benchmark.run_benchmark("simple_tool", benchmark_simple_tool, optimized=True, iterations=10)
 
     # Benchmark 4: Complex Tool Execution
-    print("\n[4/6] Complex Tool Execution")
     benchmark.run_benchmark("complex_tool", benchmark_complex_tool, optimized=False, iterations=10)
     benchmark.run_benchmark("complex_tool", benchmark_complex_tool, optimized=True, iterations=10)
 
     # Benchmark 5: Large Response
-    print("\n[5/6] Large Response Generation")
     benchmark.run_benchmark("large_response", benchmark_large_response, optimized=False, iterations=10)
 
     os.environ["TRACERTM_MCP_COMPRESSION"] = "true"
@@ -304,14 +278,14 @@ def run_benchmark_suite():
     return benchmark
 
 
-def generate_performance_report(results_file: Path):
+def generate_performance_report(results_file: Path) -> None:
     """Generate human-readable performance report."""
-    with Path(results_file).open() as f:
+    with Path(results_file).open(encoding="utf-8") as f:
         data = json.load(f)
 
     report_file = results_file.parent / "performance_report.md"
 
-    with Path(report_file).open("w") as f:
+    with Path(report_file).open("w", encoding="utf-8") as f:
         f.write("# MCP Optimization Performance Report\n\n")
         f.write(f"Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}\n\n")
 
@@ -332,10 +306,10 @@ def generate_performance_report(results_file: Path):
             f.write("| Metric | Baseline | Optimized | Improvement |\n")
             f.write("|--------|----------|-----------|-------------|\n")
             f.write(
-                f"| Duration | {comp['baseline_ms']:.2f}ms | {comp['optimized_ms']:.2f}ms | {comp['improvement_percent']:+.1f}% |\n"
+                f"| Duration | {comp['baseline_ms']:.2f}ms | {comp['optimized_ms']:.2f}ms | {comp['improvement_percent']:+.1f}% |\n",
             )
             f.write(
-                f"| Tokens | {comp['baseline_tokens']} | {comp['optimized_tokens']} | {comp['token_reduction_percent']:+.1f}% |\n\n"
+                f"| Tokens | {comp['baseline_tokens']} | {comp['optimized_tokens']} | {comp['token_reduction_percent']:+.1f}% |\n\n",
             )
 
         f.write("## Performance Targets\n\n")
@@ -351,23 +325,17 @@ def generate_performance_report(results_file: Path):
         f.write("2. **Monitor in production** - Track metrics in real deployment\n")
         f.write("3. **Feature flags ready** - Can rollback if needed\n\n")
 
-    print(f"✓ Performance report generated: {report_file}")
-
 
 # ============================================================
 # CLI Entry Point
 # ============================================================
 
 if __name__ == "__main__":
-    print("\nStarting MCP Optimization Benchmark Suite...")
-    print("This may take a few minutes to complete.\n")
 
     try:
         benchmark = run_benchmark_suite()
-        print("\n✓ Benchmark suite completed successfully!")
         sys.exit(0)
     except Exception as e:
-        print(f"\n✗ Benchmark suite failed: {e}")
         import traceback
 
         traceback.print_exc()

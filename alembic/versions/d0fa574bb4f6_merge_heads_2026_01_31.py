@@ -1,4 +1,4 @@
-"""merge_heads_2026_01_31
+"""merge_heads_2026_01_31.
 
 Revision ID: d0fa574bb4f6
 Revises: 006_add_uuid_constraints, 009_add_test_suites_runs, 047_add_workflow_schedules

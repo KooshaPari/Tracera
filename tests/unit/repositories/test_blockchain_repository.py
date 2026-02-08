@@ -29,7 +29,7 @@ class TestMerkleTreeOperations:
         """Create a BaselineRepository instance."""
         return BaselineRepository()
 
-    def test_compute_leaf_hash(self, baseline_repo):
+    def test_compute_leaf_hash(self, baseline_repo) -> None:
         """Test leaf hash computation is deterministic."""
         item_id = "REQ-001"
         content_hash = "abc123def456"
@@ -40,7 +40,7 @@ class TestMerkleTreeOperations:
         assert hash1 == hash2
         assert len(hash1) == 64  # SHA-256 hex digest
 
-    def test_compute_leaf_hash_different_inputs(self, baseline_repo):
+    def test_compute_leaf_hash_different_inputs(self, baseline_repo) -> None:
         """Test different inputs produce different hashes."""
         hash1 = baseline_repo.compute_leaf_hash("REQ-001", "abc123")
         hash2 = baseline_repo.compute_leaf_hash("REQ-002", "abc123")
@@ -50,7 +50,7 @@ class TestMerkleTreeOperations:
         assert hash1 != hash3
         assert hash2 != hash3
 
-    def test_compute_pair_hash_deterministic(self, baseline_repo):
+    def test_compute_pair_hash_deterministic(self, baseline_repo) -> None:
         """Test pair hash computation is deterministic."""
         left = "a" * 64
         right = "b" * 64
@@ -61,7 +61,7 @@ class TestMerkleTreeOperations:
         assert hash1 == hash2
         assert len(hash1) == 64
 
-    def test_compute_pair_hash_order_independent(self, baseline_repo):
+    def test_compute_pair_hash_order_independent(self, baseline_repo) -> None:
         """Test pair hash is consistent regardless of argument order."""
         left = "a" * 64
         right = "b" * 64
@@ -72,14 +72,14 @@ class TestMerkleTreeOperations:
 
         assert hash1 == hash2
 
-    def test_build_merkle_tree_empty(self, baseline_repo):
+    def test_build_merkle_tree_empty(self, baseline_repo) -> None:
         """Test building tree with no items."""
         root, structure = baseline_repo.build_merkle_tree([])
 
         assert root == ""
         assert structure == {}
 
-    def test_build_merkle_tree_single_item(self, baseline_repo):
+    def test_build_merkle_tree_single_item(self, baseline_repo) -> None:
         """Test building tree with single item."""
         items = [("item1", "hash1")]
 
@@ -91,7 +91,7 @@ class TestMerkleTreeOperations:
         assert len(structure["leaves"]) == 1
         assert structure["leaves"][0]["item_id"] == "item1"
 
-    def test_build_merkle_tree_two_items(self, baseline_repo):
+    def test_build_merkle_tree_two_items(self, baseline_repo) -> None:
         """Test building tree with two items."""
         items = [("item1", "hash1"), ("item2", "hash2")]
 
@@ -104,7 +104,7 @@ class TestMerkleTreeOperations:
         assert len(structure["levels"][0]) == 2  # 2 leaves
         assert len(structure["levels"][1]) == 1  # 1 root
 
-    def test_build_merkle_tree_multiple_items(self, baseline_repo):
+    def test_build_merkle_tree_multiple_items(self, baseline_repo) -> None:
         """Test building tree with multiple items."""
         items = [
             ("item1", "hash1"),
@@ -120,7 +120,7 @@ class TestMerkleTreeOperations:
         # For 4 items: level 0 = 4 leaves, level 1 = 2 nodes, level 2 = 1 root
         assert len(structure["levels"]) == 3
 
-    def test_build_merkle_tree_odd_items(self, baseline_repo):
+    def test_build_merkle_tree_odd_items(self, baseline_repo) -> None:
         """Test building tree with odd number of items."""
         items = [
             ("item1", "hash1"),
@@ -133,7 +133,7 @@ class TestMerkleTreeOperations:
         assert root != ""
         assert len(structure["leaves"]) == 3
 
-    def test_build_merkle_tree_sorting(self, baseline_repo):
+    def test_build_merkle_tree_sorting(self, baseline_repo) -> None:
         """Test that items are sorted by ID for consistency."""
         items1 = [("item1", "hash1"), ("item2", "hash2")]
         items2 = [("item2", "hash2"), ("item1", "hash1")]
@@ -144,7 +144,7 @@ class TestMerkleTreeOperations:
         # Same items in different order should produce same root
         assert root1 == root2
 
-    def test_generate_proof_single_item(self, baseline_repo):
+    def test_generate_proof_single_item(self, baseline_repo) -> None:
         """Test proof generation for single item tree."""
         items = [("item1", "hash1")]
         _root, structure = baseline_repo.build_merkle_tree(items)
@@ -156,7 +156,7 @@ class TestMerkleTreeOperations:
         # Single item has empty proof (it IS the root)
         assert len(proof) == 0
 
-    def test_generate_proof_two_items(self, baseline_repo):
+    def test_generate_proof_two_items(self, baseline_repo) -> None:
         """Test proof generation for two item tree."""
         items = [("item1", "hash1"), ("item2", "hash2")]
         _root, structure = baseline_repo.build_merkle_tree(items)
@@ -168,7 +168,7 @@ class TestMerkleTreeOperations:
         assert "hash" in proof[0]
         assert "direction" in proof[0]
 
-    def test_generate_proof_multiple_items(self, baseline_repo):
+    def test_generate_proof_multiple_items(self, baseline_repo) -> None:
         """Test proof generation for larger tree."""
         items = [
             ("item1", "hash1"),
@@ -183,7 +183,7 @@ class TestMerkleTreeOperations:
         assert proof is not None
         assert len(proof) == 2  # log2(4) = 2 levels
 
-    def test_generate_proof_nonexistent_item(self, baseline_repo):
+    def test_generate_proof_nonexistent_item(self, baseline_repo) -> None:
         """Test proof generation for item not in tree."""
         items = [("item1", "hash1"), ("item2", "hash2")]
         _root, structure = baseline_repo.build_merkle_tree(items)
@@ -192,13 +192,13 @@ class TestMerkleTreeOperations:
 
         assert proof is None
 
-    def test_generate_proof_empty_structure(self, baseline_repo):
+    def test_generate_proof_empty_structure(self, baseline_repo) -> None:
         """Test proof generation with empty structure."""
         proof = baseline_repo.generate_proof("item1", "hash1", {})
 
         assert proof is None
 
-    def test_verify_proof_valid(self, baseline_repo):
+    def test_verify_proof_valid(self, baseline_repo) -> None:
         """Test verification of valid proof."""
         items = [("item1", "hash1"), ("item2", "hash2")]
         root, structure = baseline_repo.build_merkle_tree(items)
@@ -210,7 +210,7 @@ class TestMerkleTreeOperations:
 
         assert is_valid is True
 
-    def test_verify_proof_all_items(self, baseline_repo):
+    def test_verify_proof_all_items(self, baseline_repo) -> None:
         """Test verification works for all items in tree."""
         items = [
             ("item1", "hash1"),
@@ -227,7 +227,7 @@ class TestMerkleTreeOperations:
             is_valid = baseline_repo.verify_proof(leaf_hash, proof, root)
             assert is_valid is True, f"Verification failed for {item_id}"
 
-    def test_verify_proof_invalid_leaf(self, baseline_repo):
+    def test_verify_proof_invalid_leaf(self, baseline_repo) -> None:
         """Test verification fails with wrong leaf hash."""
         items = [("item1", "hash1"), ("item2", "hash2")]
         root, structure = baseline_repo.build_merkle_tree(items)
@@ -239,7 +239,7 @@ class TestMerkleTreeOperations:
 
         assert is_valid is False
 
-    def test_verify_proof_invalid_root(self, baseline_repo):
+    def test_verify_proof_invalid_root(self, baseline_repo) -> None:
         """Test verification fails with wrong root."""
         items = [("item1", "hash1"), ("item2", "hash2")]
         _root, structure = baseline_repo.build_merkle_tree(items)
@@ -252,7 +252,7 @@ class TestMerkleTreeOperations:
 
         assert is_valid is False
 
-    def test_verify_proof_tampered_proof(self, baseline_repo):
+    def test_verify_proof_tampered_proof(self, baseline_repo) -> None:
         """Test verification fails with tampered proof."""
         items = [("item1", "hash1"), ("item2", "hash2")]
         root, structure = baseline_repo.build_merkle_tree(items)
@@ -282,7 +282,7 @@ class TestVersionBlockHashing:
         """Create a VersionBlockRepository instance."""
         return VersionBlockRepository()
 
-    def test_compute_content_hash_deterministic(self, version_repo):
+    def test_compute_content_hash_deterministic(self, version_repo) -> None:
         """Test content hash is deterministic."""
         content = {"name": "test", "value": 123}
 
@@ -292,7 +292,7 @@ class TestVersionBlockHashing:
         assert hash1 == hash2
         assert len(hash1) == 64
 
-    def test_compute_content_hash_different_content(self, version_repo):
+    def test_compute_content_hash_different_content(self, version_repo) -> None:
         """Test different content produces different hashes."""
         content1 = {"name": "test1"}
         content2 = {"name": "test2"}
@@ -302,7 +302,7 @@ class TestVersionBlockHashing:
 
         assert hash1 != hash2
 
-    def test_compute_content_hash_order_independent(self, version_repo):
+    def test_compute_content_hash_order_independent(self, version_repo) -> None:
         """Test dict key order doesn't affect hash."""
         content1 = {"a": 1, "b": 2}
         content2 = {"b": 2, "a": 1}
@@ -313,7 +313,7 @@ class TestVersionBlockHashing:
         # sorted keys should make these equal
         assert hash1 == hash2
 
-    def test_compute_content_hash_nested(self, version_repo):
+    def test_compute_content_hash_nested(self, version_repo) -> None:
         """Test hashing nested content."""
         content = {"name": "test", "nested": {"level1": {"level2": "value"}}, "list": [1, 2, 3]}
 
@@ -322,7 +322,7 @@ class TestVersionBlockHashing:
         assert hash_result is not None
         assert len(hash_result) == 64
 
-    def test_compute_content_hash_with_datetime(self, version_repo):
+    def test_compute_content_hash_with_datetime(self, version_repo) -> None:
         """Test hashing content with datetime values."""
         content = {"name": "test", "timestamp": datetime(2024, 1, 15, 12, 0, 0)}
 
@@ -332,7 +332,7 @@ class TestVersionBlockHashing:
         assert hash_result is not None
         assert len(hash_result) == 64
 
-    def test_compute_block_hash_deterministic(self, version_repo):
+    def test_compute_block_hash_deterministic(self, version_repo) -> None:
         """Test block hash is deterministic."""
         timestamp = datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC)
 
@@ -354,7 +354,7 @@ class TestVersionBlockHashing:
         assert hash1 == hash2
         assert len(hash1) == 64
 
-    def test_compute_block_hash_genesis(self, version_repo):
+    def test_compute_block_hash_genesis(self, version_repo) -> None:
         """Test block hash for genesis block (no previous)."""
         timestamp = datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC)
 
@@ -369,7 +369,7 @@ class TestVersionBlockHashing:
         assert hash_result is not None
         assert len(hash_result) == 64
 
-    def test_compute_block_hash_different_previous(self, version_repo):
+    def test_compute_block_hash_different_previous(self, version_repo) -> None:
         """Test different previous block produces different hash."""
         timestamp = datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC)
 
@@ -390,7 +390,7 @@ class TestVersionBlockHashing:
 
         assert hash1 != hash2
 
-    def test_compute_block_hash_different_content(self, version_repo):
+    def test_compute_block_hash_different_content(self, version_repo) -> None:
         """Test different content produces different hash."""
         timestamp = datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC)
 
@@ -411,7 +411,7 @@ class TestVersionBlockHashing:
 
         assert hash1 != hash2
 
-    def test_compute_block_hash_different_timestamp(self, version_repo):
+    def test_compute_block_hash_different_timestamp(self, version_repo) -> None:
         """Test different timestamp produces different hash."""
         hash1 = version_repo.compute_block_hash(
             previous_block_id="prev",
@@ -430,7 +430,7 @@ class TestVersionBlockHashing:
 
         assert hash1 != hash2
 
-    def test_compute_block_hash_different_author(self, version_repo):
+    def test_compute_block_hash_different_author(self, version_repo) -> None:
         """Test different author produces different hash."""
         timestamp = datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC)
 
@@ -451,7 +451,7 @@ class TestVersionBlockHashing:
 
         assert hash1 != hash2
 
-    def test_compute_block_hash_different_change_type(self, version_repo):
+    def test_compute_block_hash_different_change_type(self, version_repo) -> None:
         """Test different change type produces different hash."""
         timestamp = datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC)
 
@@ -472,7 +472,7 @@ class TestVersionBlockHashing:
 
         assert hash1 != hash2
 
-    def test_compute_block_hash_null_author(self, version_repo):
+    def test_compute_block_hash_null_author(self, version_repo) -> None:
         """Test block hash with null author."""
         timestamp = datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC)
 
@@ -500,7 +500,7 @@ class TestChainLogic:
     def version_repo(self):
         return VersionBlockRepository()
 
-    def test_chain_link_verification(self, version_repo):
+    def test_chain_link_verification(self, version_repo) -> None:
         """Test that consecutive blocks can be verified."""
         # Simulate genesis block
         genesis_content = {"id": "spec-1", "name": "Test Spec", "version": 1}
@@ -548,7 +548,7 @@ class TestChainLogic:
         assert genesis_block_id == recomputed_genesis
         assert second_block_id == recomputed_second
 
-    def test_tamper_detection(self, version_repo):
+    def test_tamper_detection(self, version_repo) -> None:
         """Test that tampering with a block breaks the chain."""
         # Create original block hash
         original_content = {"id": "spec-1", "value": "original"}
@@ -593,7 +593,7 @@ class TestLargeScaleMerkleTree:
         return BaselineRepository()
 
     @pytest.mark.parametrize("num_items", [10, 100, 1000])
-    def test_build_and_verify_large_tree(self, baseline_repo, num_items):
+    def test_build_and_verify_large_tree(self, baseline_repo, num_items) -> None:
         """Test building and verifying trees of various sizes."""
         items = [(f"item{i}", f"hash{i}") for i in range(num_items)]
 
@@ -615,7 +615,7 @@ class TestLargeScaleMerkleTree:
             is_valid = baseline_repo.verify_proof(leaf_hash, proof, root)
             assert is_valid is True
 
-    def test_proof_length_logarithmic(self, baseline_repo):
+    def test_proof_length_logarithmic(self, baseline_repo) -> None:
         """Test that proof length grows logarithmically."""
         import math
 
@@ -643,7 +643,7 @@ class TestVersionBlockRepositoryDB:
         return VersionBlockRepository()
 
     @pytest.mark.asyncio
-    async def test_create_genesis_block(self, db_session, version_repo):
+    async def test_create_genesis_block(self, db_session, version_repo) -> None:
         """Test creating a genesis block."""
         content = {"name": "Test Spec", "description": "Test description"}
 
@@ -669,7 +669,7 @@ class TestVersionBlockRepositoryDB:
         assert len(block.content_hash) == 64
 
     @pytest.mark.asyncio
-    async def test_create_genesis_block_creates_chain_index(self, db_session, version_repo):
+    async def test_create_genesis_block_creates_chain_index(self, db_session, version_repo) -> None:
         """Test that genesis block creation also creates chain index."""
         content = {"name": "Test Spec"}
 
@@ -690,7 +690,7 @@ class TestVersionBlockRepositoryDB:
         assert chain.chain_length == 1
 
     @pytest.mark.asyncio
-    async def test_add_block_to_existing_chain(self, db_session, version_repo):
+    async def test_add_block_to_existing_chain(self, db_session, version_repo) -> None:
         """Test adding a block to an existing chain."""
         # Create genesis
         content1 = {"name": "Spec V1"}
@@ -723,7 +723,7 @@ class TestVersionBlockRepositoryDB:
         assert block2.author_id == "user-002"
 
     @pytest.mark.asyncio
-    async def test_add_block_creates_genesis_if_no_chain(self, db_session, version_repo):
+    async def test_add_block_creates_genesis_if_no_chain(self, db_session, version_repo) -> None:
         """Test add_block creates genesis if chain doesn't exist."""
         content = {"name": "New Spec"}
 
@@ -743,7 +743,7 @@ class TestVersionBlockRepositoryDB:
         assert block.previous_block_id is None
 
     @pytest.mark.asyncio
-    async def test_add_multiple_blocks_chain(self, db_session, version_repo):
+    async def test_add_multiple_blocks_chain(self, db_session, version_repo) -> None:
         """Test adding multiple blocks builds proper chain."""
         # Create chain with 5 blocks
         spec_id = "spec-005"
@@ -772,7 +772,7 @@ class TestVersionBlockRepositoryDB:
             assert block.version_number == i + 1
 
     @pytest.mark.asyncio
-    async def test_get_chain_index(self, db_session, version_repo):
+    async def test_get_chain_index(self, db_session, version_repo) -> None:
         """Test retrieving chain index."""
         content = {"name": "Test"}
         await version_repo.create_genesis_block(
@@ -792,14 +792,14 @@ class TestVersionBlockRepositoryDB:
         assert chain.chain_length == 1
 
     @pytest.mark.asyncio
-    async def test_get_chain_index_nonexistent(self, db_session, version_repo):
+    async def test_get_chain_index_nonexistent(self, db_session, version_repo) -> None:
         """Test retrieving non-existent chain returns None."""
         chain = await version_repo.get_chain_index(db_session, "nonexistent", "requirement")
 
         assert chain is None
 
     @pytest.mark.asyncio
-    async def test_get_version_chain(self, db_session, version_repo):
+    async def test_get_version_chain(self, db_session, version_repo) -> None:
         """Test retrieving full version chain."""
         spec_id = "spec-007"
 
@@ -825,7 +825,7 @@ class TestVersionBlockRepositoryDB:
         assert chain[2].version_number == 1
 
     @pytest.mark.asyncio
-    async def test_get_version_chain_with_limit(self, db_session, version_repo):
+    async def test_get_version_chain_with_limit(self, db_session, version_repo) -> None:
         """Test retrieving version chain with limit."""
         spec_id = "spec-008"
 
@@ -849,14 +849,14 @@ class TestVersionBlockRepositoryDB:
         assert chain[1].version_number == 4
 
     @pytest.mark.asyncio
-    async def test_get_version_chain_empty(self, db_session, version_repo):
+    async def test_get_version_chain_empty(self, db_session, version_repo) -> None:
         """Test retrieving chain for non-existent spec."""
         chain = await version_repo.get_version_chain(db_session, "nonexistent", "requirement")
 
         assert chain == []
 
     @pytest.mark.asyncio
-    async def test_verify_chain_integrity_valid(self, db_session, version_repo):
+    async def test_verify_chain_integrity_valid(self, db_session, version_repo) -> None:
         """Test chain integrity verification for valid chain."""
         spec_id = "spec-009"
 
@@ -879,7 +879,7 @@ class TestVersionBlockRepositoryDB:
         assert broken_links == []
 
     @pytest.mark.asyncio
-    async def test_verify_chain_integrity_updates_chain_index(self, db_session, version_repo):
+    async def test_verify_chain_integrity_updates_chain_index(self, db_session, version_repo) -> None:
         """Test that verify_chain_integrity updates the chain index."""
         spec_id = "spec-010"
 
@@ -901,7 +901,7 @@ class TestVersionBlockRepositoryDB:
         assert chain.last_verified_at is not None
 
     @pytest.mark.asyncio
-    async def test_genesis_block_with_null_author(self, db_session, version_repo):
+    async def test_genesis_block_with_null_author(self, db_session, version_repo) -> None:
         """Test creating genesis block without author."""
         content = {"name": "Anonymous Spec"}
 
@@ -932,7 +932,7 @@ class TestBaselineRepositoryDB:
         return BaselineRepository()
 
     @pytest.mark.asyncio
-    async def test_create_baseline(self, db_session, baseline_repo):
+    async def test_create_baseline(self, db_session, baseline_repo) -> None:
         """Test creating a baseline."""
         items = [
             ("item-001", "requirement", "hash001"),
@@ -958,7 +958,7 @@ class TestBaselineRepositoryDB:
         assert len(baseline.merkle_root) == 64
 
     @pytest.mark.asyncio
-    async def test_create_baseline_generates_merkle_tree(self, db_session, baseline_repo):
+    async def test_create_baseline_generates_merkle_tree(self, db_session, baseline_repo) -> None:
         """Test that baseline creation generates proper Merkle tree."""
         items = [
             ("item-001", "requirement", "hash001"),
@@ -980,7 +980,7 @@ class TestBaselineRepositoryDB:
         assert len(baseline.merkle_tree_json["leaves"]) == 2
 
     @pytest.mark.asyncio
-    async def test_create_baseline_caches_proofs(self, db_session, baseline_repo):
+    async def test_create_baseline_caches_proofs(self, db_session, baseline_repo) -> None:
         """Test that baseline creation caches Merkle proofs."""
         items = [
             ("item-001", "requirement", "hash001"),
@@ -1003,7 +1003,7 @@ class TestBaselineRepositoryDB:
         assert proof.root_hash == baseline.merkle_root
 
     @pytest.mark.asyncio
-    async def test_get_baseline(self, db_session, baseline_repo):
+    async def test_get_baseline(self, db_session, baseline_repo) -> None:
         """Test retrieving baseline by ID."""
         items = [("item-001", "requirement", "hash001")]
 
@@ -1023,14 +1023,14 @@ class TestBaselineRepositoryDB:
         assert retrieved.baseline_id == created.baseline_id
 
     @pytest.mark.asyncio
-    async def test_get_baseline_nonexistent(self, db_session, baseline_repo):
+    async def test_get_baseline_nonexistent(self, db_session, baseline_repo) -> None:
         """Test retrieving non-existent baseline returns None."""
         retrieved = await baseline_repo.get_baseline(db_session, "nonexistent")
 
         assert retrieved is None
 
     @pytest.mark.asyncio
-    async def test_get_baseline_by_root(self, db_session, baseline_repo):
+    async def test_get_baseline_by_root(self, db_session, baseline_repo) -> None:
         """Test retrieving baseline by Merkle root."""
         items = [("item-001", "requirement", "hash001")]
 
@@ -1049,14 +1049,14 @@ class TestBaselineRepositoryDB:
         assert retrieved.id == created.id
 
     @pytest.mark.asyncio
-    async def test_get_baseline_by_root_nonexistent(self, db_session, baseline_repo):
+    async def test_get_baseline_by_root_nonexistent(self, db_session, baseline_repo) -> None:
         """Test retrieving baseline by non-existent root returns None."""
         retrieved = await baseline_repo.get_baseline_by_root(db_session, "f" * 64)
 
         assert retrieved is None
 
     @pytest.mark.asyncio
-    async def test_get_merkle_proof(self, db_session, baseline_repo):
+    async def test_get_merkle_proof(self, db_session, baseline_repo) -> None:
         """Test retrieving cached Merkle proof."""
         items = [
             ("item-001", "requirement", "hash001"),
@@ -1081,14 +1081,14 @@ class TestBaselineRepositoryDB:
         assert isinstance(proof.proof_path, list)
 
     @pytest.mark.asyncio
-    async def test_get_merkle_proof_nonexistent_baseline(self, db_session, baseline_repo):
+    async def test_get_merkle_proof_nonexistent_baseline(self, db_session, baseline_repo) -> None:
         """Test getting proof for non-existent baseline returns None."""
         proof = await baseline_repo.get_merkle_proof(db_session, "nonexistent", "item-001")
 
         assert proof is None
 
     @pytest.mark.asyncio
-    async def test_get_merkle_proof_nonexistent_item(self, db_session, baseline_repo):
+    async def test_get_merkle_proof_nonexistent_item(self, db_session, baseline_repo) -> None:
         """Test getting proof for non-existent item returns None."""
         items = [("item-001", "requirement", "hash001")]
 
@@ -1106,7 +1106,7 @@ class TestBaselineRepositoryDB:
         assert proof is None
 
     @pytest.mark.asyncio
-    async def test_verify_item_in_baseline_valid(self, db_session, baseline_repo):
+    async def test_verify_item_in_baseline_valid(self, db_session, baseline_repo) -> None:
         """Test verifying an item against its baseline."""
         items = [
             ("item-001", "requirement", "hash001"),
@@ -1133,7 +1133,7 @@ class TestBaselineRepositoryDB:
         assert proof is not None
 
     @pytest.mark.asyncio
-    async def test_verify_item_in_baseline_changed_content(self, db_session, baseline_repo):
+    async def test_verify_item_in_baseline_changed_content(self, db_session, baseline_repo) -> None:
         """Test verification fails when content hash changed."""
         items = [("item-001", "requirement", "hash001")]
 
@@ -1157,7 +1157,7 @@ class TestBaselineRepositoryDB:
         assert proof is None
 
     @pytest.mark.asyncio
-    async def test_verify_item_in_baseline_nonexistent_item(self, db_session, baseline_repo):
+    async def test_verify_item_in_baseline_nonexistent_item(self, db_session, baseline_repo) -> None:
         """Test verification fails for item not in baseline."""
         items = [("item-001", "requirement", "hash001")]
 
@@ -1181,7 +1181,7 @@ class TestBaselineRepositoryDB:
         assert proof is None
 
     @pytest.mark.asyncio
-    async def test_verify_item_in_baseline_wrong_root(self, db_session, baseline_repo):
+    async def test_verify_item_in_baseline_wrong_root(self, db_session, baseline_repo) -> None:
         """Test verification fails with wrong baseline root."""
         items = [("item-001", "requirement", "hash001")]
 
@@ -1205,7 +1205,7 @@ class TestBaselineRepositoryDB:
         assert proof is None
 
     @pytest.mark.asyncio
-    async def test_create_baseline_with_spec_type(self, db_session, baseline_repo):
+    async def test_create_baseline_with_spec_type(self, db_session, baseline_repo) -> None:
         """Test creating baseline with specific spec type."""
         items = [("item-001", "requirement", "hash001")]
 
@@ -1222,7 +1222,7 @@ class TestBaselineRepositoryDB:
         assert baseline.spec_type == "requirement"
 
     @pytest.mark.asyncio
-    async def test_create_baseline_empty_items(self, db_session, baseline_repo):
+    async def test_create_baseline_empty_items(self, db_session, baseline_repo) -> None:
         """Test creating baseline with empty items."""
         baseline = await baseline_repo.create_baseline(
             db=db_session,
@@ -1261,7 +1261,7 @@ class TestSpecEmbeddingRepositoryDB:
         return struct.pack("4f", *values)
 
     @pytest.mark.asyncio
-    async def test_store_embedding_new(self, db_session, embedding_repo, sample_embedding):
+    async def test_store_embedding_new(self, db_session, embedding_repo, sample_embedding) -> None:
         """Test storing a new embedding."""
         embedding = await embedding_repo.store_embedding(
             db=db_session,
@@ -1284,7 +1284,7 @@ class TestSpecEmbeddingRepositoryDB:
         assert embedding.content_hash == "abc123"
 
     @pytest.mark.asyncio
-    async def test_store_embedding_update_existing(self, db_session, embedding_repo, sample_embedding):
+    async def test_store_embedding_update_existing(self, db_session, embedding_repo, sample_embedding) -> None:
         """Test updating an existing embedding."""
         import struct
 
@@ -1317,7 +1317,7 @@ class TestSpecEmbeddingRepositoryDB:
         assert updated.embedding == new_embedding
 
     @pytest.mark.asyncio
-    async def test_get_embedding(self, db_session, embedding_repo, sample_embedding):
+    async def test_get_embedding(self, db_session, embedding_repo, sample_embedding) -> None:
         """Test retrieving an embedding."""
         await embedding_repo.store_embedding(
             db=db_session,
@@ -1337,14 +1337,14 @@ class TestSpecEmbeddingRepositoryDB:
         assert retrieved.embedding == sample_embedding
 
     @pytest.mark.asyncio
-    async def test_get_embedding_nonexistent(self, db_session, embedding_repo):
+    async def test_get_embedding_nonexistent(self, db_session, embedding_repo) -> None:
         """Test retrieving non-existent embedding returns None."""
         retrieved = await embedding_repo.get_embedding(db_session, "nonexistent", "requirement", "test-model")
 
         assert retrieved is None
 
     @pytest.mark.asyncio
-    async def test_get_embedding_wrong_model(self, db_session, embedding_repo, sample_embedding):
+    async def test_get_embedding_wrong_model(self, db_session, embedding_repo, sample_embedding) -> None:
         """Test retrieving embedding with wrong model returns None."""
         await embedding_repo.store_embedding(
             db=db_session,
@@ -1362,7 +1362,7 @@ class TestSpecEmbeddingRepositoryDB:
         assert retrieved is None
 
     @pytest.mark.asyncio
-    async def test_get_embeddings_for_project(self, db_session, embedding_repo, sample_embedding):
+    async def test_get_embeddings_for_project(self, db_session, embedding_repo, sample_embedding) -> None:
         """Test retrieving all embeddings for a project."""
         # Store multiple embeddings
         for i in range(3):
@@ -1394,7 +1394,7 @@ class TestSpecEmbeddingRepositoryDB:
         assert len(embeddings) == 3
 
     @pytest.mark.asyncio
-    async def test_get_embeddings_for_project_with_spec_type(self, db_session, embedding_repo, sample_embedding):
+    async def test_get_embeddings_for_project_with_spec_type(self, db_session, embedding_repo, sample_embedding) -> None:
         """Test retrieving embeddings filtered by spec type."""
         # Store different spec types
         await embedding_repo.store_embedding(
@@ -1420,21 +1420,21 @@ class TestSpecEmbeddingRepositoryDB:
         )
 
         embeddings = await embedding_repo.get_embeddings_for_project(
-            db_session, "project-001", "test-model", spec_type="requirement"
+            db_session, "project-001", "test-model", spec_type="requirement",
         )
 
         assert len(embeddings) == 1
         assert embeddings[0].spec_type == "requirement"
 
     @pytest.mark.asyncio
-    async def test_get_embeddings_for_project_empty(self, db_session, embedding_repo):
+    async def test_get_embeddings_for_project_empty(self, db_session, embedding_repo) -> None:
         """Test retrieving embeddings for project with none."""
         embeddings = await embedding_repo.get_embeddings_for_project(db_session, "empty-project", "test-model")
 
         assert embeddings == []
 
     @pytest.mark.asyncio
-    async def test_delete_stale_embeddings(self, db_session, embedding_repo, sample_embedding):
+    async def test_delete_stale_embeddings(self, db_session, embedding_repo, sample_embedding) -> None:
         """Test deleting stale embeddings."""
         # Store embedding with old hash
         await embedding_repo.store_embedding(
@@ -1471,7 +1471,7 @@ class TestSpecEmbeddingRepositoryDB:
         assert deleted_count == 2
 
     @pytest.mark.asyncio
-    async def test_delete_stale_embeddings_keeps_current(self, db_session, embedding_repo, sample_embedding):
+    async def test_delete_stale_embeddings_keeps_current(self, db_session, embedding_repo, sample_embedding) -> None:
         """Test that delete_stale_embeddings keeps current embeddings."""
         # Store embedding with current hash
         await embedding_repo.store_embedding(
@@ -1500,7 +1500,7 @@ class TestSpecEmbeddingRepositoryDB:
         assert embedding is not None
 
     @pytest.mark.asyncio
-    async def test_delete_stale_embeddings_none_exist(self, db_session, embedding_repo):
+    async def test_delete_stale_embeddings_none_exist(self, db_session, embedding_repo) -> None:
         """Test delete_stale_embeddings with no matching embeddings."""
         deleted_count = await embedding_repo.delete_stale_embeddings(
             db_session,
@@ -1529,7 +1529,7 @@ class TestBlockchainEdgeCases:
         return BaselineRepository()
 
     @pytest.mark.asyncio
-    async def test_different_spec_types_same_id(self, db_session, version_repo):
+    async def test_different_spec_types_same_id(self, db_session, version_repo) -> None:
         """Test that same spec_id with different spec_types create separate chains."""
         content = {"name": "Test"}
 
@@ -1562,7 +1562,7 @@ class TestBlockchainEdgeCases:
         assert req_chain.id != feat_chain.id
 
     @pytest.mark.asyncio
-    async def test_baseline_single_item(self, db_session, baseline_repo):
+    async def test_baseline_single_item(self, db_session, baseline_repo) -> None:
         """Test baseline with single item has valid proof."""
         items = [("only-item", "requirement", "hash123")]
 
@@ -1582,7 +1582,7 @@ class TestBlockchainEdgeCases:
         assert proof.proof_path == []  # Single item has no siblings
 
     @pytest.mark.asyncio
-    async def test_baseline_large_number_of_items(self, db_session, baseline_repo):
+    async def test_baseline_large_number_of_items(self, db_session, baseline_repo) -> None:
         """Test baseline with many items."""
         items = [(f"item-{i:04d}", "requirement", f"hash{i:04d}") for i in range(100)]
 
@@ -1609,7 +1609,7 @@ class TestBlockchainEdgeCases:
         assert proof is not None
 
     @pytest.mark.asyncio
-    async def test_chain_update_head_pointer(self, db_session, version_repo):
+    async def test_chain_update_head_pointer(self, db_session, version_repo) -> None:
         """Test that chain head pointer updates correctly."""
         spec_id = "spec-head-test"
 
@@ -1651,7 +1651,7 @@ class TestBlockchainEdgeCases:
 
 
 @pytest.mark.asyncio
-async def test_get_version_chain_with_missing_block(db_session):
+async def test_get_version_chain_with_missing_block(db_session) -> None:
     """Test get_version_chain when a block is missing to cover line 228."""
     from uuid import uuid4
 
@@ -1681,7 +1681,7 @@ async def test_get_version_chain_with_missing_block(db_session):
 
 
 @pytest.mark.asyncio
-async def test_verify_chain_integrity_with_broken_link(db_session):
+async def test_verify_chain_integrity_with_broken_link(db_session) -> None:
     """Test verify_chain_integrity with a corrupted block to cover line 253."""
     from tracertm.repositories.blockchain_repository import VersionBlockRepository
 
@@ -1713,7 +1713,7 @@ async def test_verify_chain_integrity_with_broken_link(db_session):
 
 
 @pytest.mark.asyncio
-async def test_verify_chain_integrity_updates_chain_index(db_session):
+async def test_verify_chain_integrity_updates_chain_index(db_session) -> None:
     """Test that verify_chain_integrity updates chain index to cover lines 257-260."""
     from tracertm.repositories.blockchain_repository import VersionBlockRepository
 
@@ -1752,7 +1752,7 @@ async def test_verify_chain_integrity_updates_chain_index(db_session):
 
 
 @pytest.mark.asyncio
-async def test_create_baseline_with_item_without_proof(db_session):
+async def test_create_baseline_with_item_without_proof(db_session) -> None:
     """Test create_baseline when generate_proof returns None to cover branch 428."""
     from tracertm.repositories.blockchain_repository import BaselineRepository
 
@@ -1781,7 +1781,7 @@ async def test_create_baseline_with_item_without_proof(db_session):
 
 
 @pytest.mark.asyncio
-async def test_verify_item_in_baseline_no_proof_found(db_session):
+async def test_verify_item_in_baseline_no_proof_found(db_session) -> None:
     """Test verify_item_in_baseline when proof doesn't exist to cover line 512."""
     from uuid import uuid4
 

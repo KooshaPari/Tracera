@@ -1,5 +1,4 @@
-"""
-Requirements Enhancement Implementation Starter Kit
+"""Requirements Enhancement Implementation Starter Kit.
 
 This file contains production-ready code templates for integrating
 enhancement libraries into TracerTM. Copy and adapt as needed.
@@ -22,22 +21,26 @@ from typing import Any, ClassVar
 try:
     from sentence_transformers import SentenceTransformer, util
 except ImportError as err:
-    raise ImportError("Install with: bun add sentence-transformers") from err
+    msg = "Install with: bun add sentence-transformers"
+    raise ImportError(msg) from err
 
 try:
     import spacy
 except ImportError as err:
-    raise ImportError("Install with: python -m spacy download en_core_web_sm") from err
+    msg = "Install with: python -m spacy download en_core_web_sm"
+    raise ImportError(msg) from err
 
 try:
     import networkx as nx
 except ImportError as err:
-    raise ImportError("Install with: bun add networkx") from err
+    msg = "Install with: bun add networkx"
+    raise ImportError(msg) from err
 
 try:
     from icontract import ensure, invariant, require
 except ImportError as err:
-    raise ImportError("Install with: bun add icontract") from err
+    msg = "Install with: bun add icontract"
+    raise ImportError(msg) from err
 
 logger = logging.getLogger(__name__)
 
@@ -128,8 +131,7 @@ class EnhancementResult:
 
 
 class SemanticAnalysisService:
-    """
-    Semantic analysis using sentence-transformers.
+    """Semantic analysis using sentence-transformers.
 
     Handles:
     - Duplicate detection
@@ -137,9 +139,8 @@ class SemanticAnalysisService:
     - Requirement clustering
     """
 
-    def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
-        """
-        Initialize semantic analyzer.
+    def __init__(self, model_name: str = "all-MiniLM-L6-v2") -> None:
+        """Initialize semantic analyzer.
 
         Args:
             model_name: HuggingFace model identifier
@@ -147,7 +148,7 @@ class SemanticAnalysisService:
                 - "all-mpnet-base-v2" (larger, more accurate)
                 - "all-distilroberta-v1"
         """
-        logger.info(f"Loading semantic model: {model_name}")
+        logger.info("Loading semantic model: %s", model_name)
         self.model = SentenceTransformer(model_name)
         self.model_name = model_name
         self.cached_embeddings = {}
@@ -158,8 +159,7 @@ class SemanticAnalysisService:
         threshold: float = 0.85,
         skip_ids: list[str] | None = None,
     ) -> list[DuplicateCandidate]:
-        """
-        Find potentially duplicate requirements.
+        """Find potentially duplicate requirements.
 
         Args:
             requirements: List of requirement dicts with 'id' and 'description'
@@ -182,7 +182,7 @@ class SemanticAnalysisService:
         embeddings = self.model.encode(descriptions, batch_size=32, show_progress_bar=False, convert_to_tensor=True)
 
         # Find duplicates
-        logger.info(f"Searching for duplicates (threshold={threshold})...")
+        logger.info("Searching for duplicates (threshold=%s)...", threshold)
         pairs = util.semantic_search(embeddings, embeddings, top_k=len(embeddings), score_function=util.cos_sim)
 
         duplicates = []
@@ -214,7 +214,7 @@ class SemanticAnalysisService:
                                 item_2_id=req2["id"],
                                 item_2_title=req2.get("title", "Unknown"),
                                 similarity_score=score,
-                            )
+                            ),
                         )
                         seen_pairs.add(pair_key)
 
@@ -222,8 +222,7 @@ class SemanticAnalysisService:
         return duplicates
 
     async def calculate_semantic_similarity(self, req1_description: str, req2_description: str) -> float:
-        """
-        Calculate similarity between two requirements (0-1).
+        """Calculate similarity between two requirements (0-1).
 
         Args:
             req1_description: First requirement description
@@ -233,14 +232,12 @@ class SemanticAnalysisService:
             Similarity score (0=completely different, 1=identical)
         """
         embeddings = self.model.encode([req1_description, req2_description])
-        similarity = float(util.pytorch_cos_sim(embeddings[0], embeddings[1]))
-        return similarity
+        return float(util.pytorch_cos_sim(embeddings[0], embeddings[1]))
 
     async def cluster_requirements(
-        self, requirements: list[dict[str, str]], num_clusters: int = 5
+        self, requirements: list[dict[str, str]], num_clusters: int = 5,
     ) -> dict[int, list[str]]:
-        """
-        Cluster requirements by semantic similarity.
+        """Cluster requirements by semantic similarity.
 
         Args:
             requirements: List of requirement dicts
@@ -270,8 +267,7 @@ class SemanticAnalysisService:
 
 
 class QualityAnalysisService:
-    """
-    Requirement quality analysis using spaCy and NLP.
+    """Requirement quality analysis using spaCy and NLP.
 
     Analyzes:
     - Ambiguous terms
@@ -329,13 +325,13 @@ class QualityAnalysisService:
         "process",
     }
 
-    def __init__(self, model: str = "en_core_web_sm"):
+    def __init__(self, model: str = "en_core_web_sm") -> None:
         """Initialize NLP analyzer."""
-        logger.info(f"Loading spaCy model: {model}")
+        logger.info("Loading spaCy model: %s", model)
         try:
             self.nlp = spacy.load(model)
         except OSError:
-            logger.warning(f"Model {model} not found. Installing...")
+            logger.warning("Model %s not found. Installing...", model)
             import shutil
             import subprocess
 
@@ -344,8 +340,7 @@ class QualityAnalysisService:
             self.nlp = spacy.load(model)
 
     async def analyze_requirement(self, requirement_text: str) -> QualityMetrics:
-        """
-        Comprehensive quality analysis of a requirement.
+        """Comprehensive quality analysis of a requirement.
 
         Args:
             requirement_text: Requirement description
@@ -373,12 +368,12 @@ class QualityAnalysisService:
 
         # Generate recommendations
         recommendations = self._generate_recommendations(
-            ambiguous_terms, passive_voice, has_action_verb, word_count, complexity_level
+            ambiguous_terms, passive_voice, has_action_verb, word_count, complexity_level,
         )
 
         # Calculate quality score
         score = self._calculate_quality_score(
-            ambiguous_terms, passive_voice, has_action_verb, word_count, complexity_level
+            ambiguous_terms, passive_voice, has_action_verb, word_count, complexity_level,
         )
 
         grade = self._score_to_grade(score)
@@ -397,9 +392,9 @@ class QualityAnalysisService:
     def _has_passive_voice(self, doc) -> bool:
         """Detect if requirement uses passive voice."""
         for token in doc:
-            if token.dep_ in ["auxpass", "aux"] and token.pos_ == "AUX":
+            if token.dep_ in {"auxpass", "aux"} and token.pos_ == "AUX":
                 return True
-            if token.lemma_ in ["be", "get"] and any(t.pos_ == "VERB" for t in doc):
+            if token.lemma_ in {"be", "get"} and any(t.pos_ == "VERB" for t in doc):
                 return True
         return False
 
@@ -499,8 +494,7 @@ class QualityAnalysisService:
 
 
 class ImpactAnalysisService:
-    """
-    Impact analysis using NetworkX for dependency graphs.
+    """Impact analysis using NetworkX for dependency graphs.
 
     Calculates:
     - Direct and transitive impact
@@ -508,13 +502,12 @@ class ImpactAnalysisService:
     - Risk scoring
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize impact analysis service."""
         self.graph: nx.DiGraph | None = None
 
     async def build_graph(self, items: list[dict[str, Any]], links: list[dict[str, Any]]) -> nx.DiGraph:
-        """
-        Build dependency graph from items and links.
+        """Build dependency graph from items and links.
 
         Args:
             items: List of item dicts with 'id', 'title', 'status'
@@ -544,8 +537,7 @@ class ImpactAnalysisService:
         return graph
 
     async def calculate_impact(self, item_id: str, direction: str = "downstream") -> ImpactAnalysis:
-        """
-        Calculate impact of changing a requirement.
+        """Calculate impact of changing a requirement.
 
         Args:
             item_id: Target item ID
@@ -555,7 +547,8 @@ class ImpactAnalysisService:
             ImpactAnalysis results
         """
         if not self.graph:
-            raise ValueError("Graph not built. Call build_graph() first.")
+            msg = "Graph not built. Call build_graph() first."
+            raise ValueError(msg)
 
         if direction == "downstream":
             # Items affected by this change
@@ -639,14 +632,14 @@ class ImpactAnalysisService:
         return "low"
 
     async def detect_circular_dependencies(self) -> list[list[str]]:
-        """
-        Find all circular dependency chains.
+        """Find all circular dependency chains.
 
         Returns:
             List of cycles, each cycle is a list of item IDs
         """
         if not self.graph:
-            raise ValueError("Graph not built. Call build_graph() first.")
+            msg = "Graph not built. Call build_graph() first."
+            raise ValueError(msg)
 
         cycles = list(nx.simple_cycles(self.graph))
         logger.warning(f"Found {len(cycles)} circular dependencies")
@@ -663,13 +656,12 @@ class ImpactAnalysisService:
 @invariant(lambda self: self.quality_service is not None)
 @invariant(lambda self: self.impact_service is not None)
 class RequirementEnhancementService:
-    """
-    Master service orchestrating all enhancement capabilities.
+    """Master service orchestrating all enhancement capabilities.
 
     Provides unified interface for requirement analysis and improvement.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize all enhancement services."""
         logger.info("Initializing Requirement Enhancement Service")
 
@@ -680,10 +672,9 @@ class RequirementEnhancementService:
     @require(lambda item_id: isinstance(item_id, str) and len(item_id) > 0)
     @ensure(lambda result: result is not None)
     async def enhance_requirement(
-        self, item_id: str, description: str, capabilities: list[EnhancementCapability] | None = None
+        self, item_id: str, description: str, capabilities: list[EnhancementCapability] | None = None,
     ) -> dict[str, Any]:
-        """
-        Apply requested enhancements to a requirement.
+        """Apply requested enhancements to a requirement.
 
         Args:
             item_id: Requirement ID
@@ -717,10 +708,9 @@ class RequirementEnhancementService:
 
     @require(lambda requirements: isinstance(requirements, list))
     async def find_duplicates(
-        self, requirements: list[dict[str, str]], threshold: float = 0.85
+        self, requirements: list[dict[str, str]], threshold: float = 0.85,
     ) -> list[DuplicateCandidate]:
-        """
-        Find duplicate requirements across a set.
+        """Find duplicate requirements across a set.
 
         Args:
             requirements: List of requirement dicts
@@ -734,10 +724,9 @@ class RequirementEnhancementService:
     @require(lambda items: isinstance(items, list))
     @require(lambda links: isinstance(links, list))
     async def analyze_impact(
-        self, item_id: str, items: list[dict[str, Any]], links: list[dict[str, Any]]
+        self, item_id: str, items: list[dict[str, Any]], links: list[dict[str, Any]],
     ) -> ImpactAnalysis:
-        """
-        Analyze impact of changing a requirement.
+        """Analyze impact of changing a requirement.
 
         Args:
             item_id: Target item ID
@@ -762,12 +751,7 @@ async def example_basic_quality_analysis():
 
     requirement = "The system should be fast and reliable"
 
-    result = await service.enhance_requirement(item_id="REQ-001", description=requirement)
-
-    print("Quality Analysis Result:")
-    print(result)
-
-    return result
+    return await service.enhance_requirement(item_id="REQ-001", description=requirement)
 
 
 async def example_duplicate_detection():
@@ -794,9 +778,8 @@ async def example_duplicate_detection():
 
     duplicates = await service.find_duplicates(requirements, threshold=0.80)
 
-    print(f"Found {len(duplicates)} potential duplicates:")
-    for dup in duplicates:
-        print(f"  {dup.item_1_title} vs {dup.item_2_title} ({dup.similarity_score:.2%})")
+    for _dup in duplicates:
+        pass
 
     return duplicates
 
@@ -818,15 +801,7 @@ async def example_impact_analysis():
         {"source_id": "REQ-001", "target_id": "REQ-004", "link_type": "depends_on"},
     ]
 
-    impact = await service.analyze_impact("REQ-001", items, links)
-
-    print("Impact of changing REQ-001:")
-    print(f"  Direct impact: {impact.direct_impact_count} items")
-    print(f"  Transitive impact: {impact.transitive_impact_count} items")
-    print(f"  Risk level: {impact.risk_level}")
-    print(f"  Affected items: {impact.impacted_item_ids}")
-
-    return impact
+    return await service.analyze_impact("REQ-001", items, links)
 
 
 # ============================================================================
@@ -836,22 +811,8 @@ async def example_impact_analysis():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
-    print("=" * 70)
-    print("REQUIREMENTS ENHANCEMENT SERVICE - EXAMPLES")
-    print("=" * 70)
-
-    print("\n[1/3] Quality Analysis Example")
-    print("-" * 70)
     asyncio.run(example_basic_quality_analysis())
 
-    print("\n[2/3] Duplicate Detection Example")
-    print("-" * 70)
     asyncio.run(example_duplicate_detection())
 
-    print("\n[3/3] Impact Analysis Example")
-    print("-" * 70)
     asyncio.run(example_impact_analysis())
-
-    print("\n" + "=" * 70)
-    print("Examples completed successfully!")
-    print("=" * 70)

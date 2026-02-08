@@ -37,7 +37,7 @@ class AgentService:
         session_store: SessionSandboxStore | None = None,
         event_bus: Any = None,
         nats_client: Any = None,
-    ):
+    ) -> None:
         self._store = session_store or SessionSandboxStore()
         self._event_bus = event_bus  # Legacy EventBus for backward compatibility
 
@@ -140,7 +140,7 @@ class AgentService:
         working_directory = None
         if session_id:
             working_directory, _ = await self.get_or_create_session_sandbox(
-                session_id, config=sandbox_config, db_session=db_session
+                session_id, config=sandbox_config, db_session=db_session,
             )
 
         from tracertm.services.ai_service import get_ai_service
@@ -180,7 +180,7 @@ class AgentService:
         opts = options or StreamChatOptions()
         if session_id:
             _working_directory, _ = await self.get_or_create_session_sandbox(
-                session_id, config=sandbox_config, db_session=db_session
+                session_id, config=sandbox_config, db_session=db_session,
             )
 
         from tracertm.services.ai_service import get_ai_service
@@ -215,7 +215,7 @@ class AgentService:
                     reason=reason,
                 )
             except Exception as e:
-                logger.warning(f"Failed to publish session.destroyed event: {e}")
+                logger.warning("Failed to publish session.destroyed event: %s", e)
 
     async def update_session_status(
         self,
@@ -236,7 +236,7 @@ class AgentService:
                     details=details,
                 )
             except Exception as e:
-                logger.warning(f"Failed to publish session status change event: {e}")
+                logger.warning("Failed to publish session status change event: %s", e)
 
 
 _agent_service: AgentService | None = None

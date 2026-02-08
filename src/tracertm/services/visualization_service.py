@@ -1,5 +1,4 @@
-"""
-Visualization service for TraceRTM.
+"""Visualization service for TraceRTM.
 
 Provides ASCII graph and tree visualization for items and links.
 """
@@ -147,8 +146,7 @@ class VisualizationService:
             return ""
 
         lines = []
-        lines.append("Item Dependency Graph")
-        lines.append("=" * 40)
+        lines.extend(("Item Dependency Graph", "=" * 40))
 
         # Calculate levels for items
         levels = _calculate_levels(items, links)
@@ -192,7 +190,7 @@ class VisualizationService:
         # Matrix
         for i, source_id in enumerate(item_ids):
             row = f"{i:3d} "
-            for _j, target_id in enumerate(item_ids):
+            for target_id in item_ids:
                 # Check if there's a link from source to target
                 has_link = any(link.get("source") == source_id and link.get("target") == target_id for link in links)
                 row += "  X " if has_link else "    "
@@ -224,8 +222,7 @@ class VisualizationService:
             title = title[: max_title_length - 3] + "..."
 
         lines = []
-        lines.append(f"  {title}")
-        lines.append(f"  ID: {item.get('id', 'N/A')}")
+        lines.extend((f"  {title}", f"  ID: {item.get('id', 'N/A')}"))
 
         item_type = item.get("type", item.get("item_type", "N/A"))
         lines.append(f"  Type: {item_type}")

@@ -1,6 +1,4 @@
-"""
-Tests for file watcher auto-indexing functionality.
-"""
+"""Tests for file watcher auto-indexing functionality."""
 
 import time
 from pathlib import Path
@@ -32,7 +30,7 @@ def temp_project():
             """name: test-project
 description: Test project for file watcher
 version: 1.0.0
-"""
+""",
         )
 
         (trace_path / ".meta" / "links.yaml").write_text("links: []\n")
@@ -48,7 +46,7 @@ def storage():
         yield storage
 
 
-def test_watcher_initialization(temp_project, storage):
+def test_watcher_initialization(temp_project, storage) -> None:
     """Test file watcher can be initialized."""
     watcher = TraceFileWatcher(
         project_path=temp_project,
@@ -61,7 +59,7 @@ def test_watcher_initialization(temp_project, storage):
     assert not watcher.is_running()
 
 
-def test_watcher_start_stop(temp_project, storage):
+def test_watcher_start_stop(temp_project, storage) -> None:
     """Test file watcher can start and stop."""
     watcher = TraceFileWatcher(
         project_path=temp_project,
@@ -78,7 +76,7 @@ def test_watcher_start_stop(temp_project, storage):
     assert not watcher.is_running()
 
 
-def test_watcher_stats(temp_project, storage):
+def test_watcher_stats(temp_project, storage) -> None:
     """Test file watcher statistics."""
     watcher = TraceFileWatcher(
         project_path=temp_project,
@@ -99,7 +97,7 @@ def test_watcher_stats(temp_project, storage):
     watcher.stop()
 
 
-def test_watcher_detects_new_item(temp_project, storage):
+def test_watcher_detects_new_item(temp_project, storage) -> None:
     """Test file watcher detects and indexes new items."""
     watcher = TraceFileWatcher(
         project_path=temp_project,
@@ -127,7 +125,7 @@ version: 1
 ## Description
 
 Implement user authentication system.
-"""
+""",
         )
 
         # Wait for debounce + processing
@@ -156,7 +154,7 @@ Implement user authentication system.
         watcher.stop()
 
 
-def test_watcher_detects_item_modification(temp_project, storage):
+def test_watcher_detects_item_modification(temp_project, storage) -> None:
     """Test file watcher detects and updates modified items."""
     # Create initial item
     epic_path = temp_project / ".trace" / "epics" / "EPIC-001.md"
@@ -175,7 +173,7 @@ version: 1
 ## Description
 
 Initial description.
-"""
+""",
     )
 
     watcher = TraceFileWatcher(
@@ -206,7 +204,7 @@ version: 2
 ## Description
 
 Updated description.
-"""
+""",
         )
 
         # Wait for debounce + processing
@@ -230,7 +228,7 @@ Updated description.
         watcher.stop()
 
 
-def test_watcher_ignores_sync_yaml(temp_project, storage):
+def test_watcher_ignores_sync_yaml(temp_project, storage) -> None:
     """Test file watcher ignores sync.yaml (local-only file)."""
     watcher = TraceFileWatcher(
         project_path=temp_project,
@@ -256,7 +254,7 @@ def test_watcher_ignores_sync_yaml(temp_project, storage):
         watcher.stop()
 
 
-def test_watcher_error_handling(temp_project, storage):
+def test_watcher_error_handling(temp_project, storage) -> None:
     """Test file watcher handles invalid files gracefully."""
     watcher = TraceFileWatcher(
         project_path=temp_project,
@@ -275,7 +273,7 @@ type: epic
 ---
 
 # Invalid Item
-"""
+""",
         )
 
         # Wait for processing
@@ -288,7 +286,7 @@ type: epic
         watcher.stop()
 
 
-def test_watcher_with_no_trace_directory():
+def test_watcher_with_no_trace_directory() -> None:
     """Test watcher raises error if no .trace/ directory exists."""
     with TemporaryDirectory() as tmpdir:
         project_path = Path(tmpdir)

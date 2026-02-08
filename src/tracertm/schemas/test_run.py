@@ -1,6 +1,4 @@
-"""
-Pydantic schemas for Test Run API.
-"""
+"""Pydantic schemas for Test Run API."""
 
 from datetime import datetime
 from typing import Any

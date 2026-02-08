@@ -1,5 +1,4 @@
-"""
-Comprehensive integration test suite for AdvancedTraceabilityService.
+"""Comprehensive integration test suite for AdvancedTraceabilityService.
 
 Tests complex traceability chains, multi-project tracking, and metric calculations.
 Provides 30+ tests with 90%+ coverage of all service methods.
@@ -85,7 +84,7 @@ def service(async_db_session):
 def populated_db(async_db_session, event_loop):
     """Populate database with test data."""
 
-    async def populate():
+    async def populate() -> None:
         # Create projects
         project1 = Project(id="proj-1", name="Project 1")
         project2 = Project(id="proj-2", name="Project 2")
@@ -224,7 +223,7 @@ class TestPathFinding:
     """Test path finding functionality."""
 
     @pytest.mark.asyncio
-    async def test_find_direct_path(self, service, populated_db):
+    async def test_find_direct_path(self, service, populated_db) -> None:
         """Test finding direct path between adjacent items."""
         paths = await service.find_all_paths("req-1", "design-1")
 
@@ -236,7 +235,7 @@ class TestPathFinding:
         assert "design-1" in paths[0].path
 
     @pytest.mark.asyncio
-    async def test_find_multi_hop_path(self, service, populated_db):
+    async def test_find_multi_hop_path(self, service, populated_db) -> None:
         """Test finding path through multiple hops."""
         paths = await service.find_all_paths("req-1", "test-1")
 
@@ -247,7 +246,7 @@ class TestPathFinding:
         assert paths[0].path[-1] == "test-1"
 
     @pytest.mark.asyncio
-    async def test_find_path_respects_max_depth(self, service, populated_db):
+    async def test_find_path_respects_max_depth(self, service, populated_db) -> None:
         """Test that max_depth parameter is respected."""
         # Set max_depth to 2, which should not reach test-1 (3 hops away)
         paths = await service.find_all_paths("req-1", "test-1", max_depth=2)
@@ -256,7 +255,7 @@ class TestPathFinding:
         assert len(paths) == 0
 
     @pytest.mark.asyncio
-    async def test_find_path_nonexistent(self, service, populated_db):
+    async def test_find_path_nonexistent(self, service, populated_db) -> None:
         """Test finding path when no path exists."""
         # req-2 is in different project, no path should exist
         paths = await service.find_all_paths("req-1", "req-2")
@@ -264,7 +263,7 @@ class TestPathFinding:
         assert len(paths) == 0
 
     @pytest.mark.asyncio
-    async def test_find_path_same_item(self, service, populated_db):
+    async def test_find_path_same_item(self, service, populated_db) -> None:
         """Test path from item to itself."""
         paths = await service.find_all_paths("req-1", "req-1")
 
@@ -273,7 +272,7 @@ class TestPathFinding:
         assert paths[0].distance == 0
 
     @pytest.mark.asyncio
-    async def test_find_multiple_alternative_paths(self, service, async_db_session, populated_db):
+    async def test_find_multiple_alternative_paths(self, service, async_db_session, populated_db) -> None:
         """Test finding multiple alternative paths."""
         # Add additional path
         link_alt = Link(
@@ -296,7 +295,7 @@ class TestTransitiveClosure:
     """Test transitive closure computation."""
 
     @pytest.mark.asyncio
-    async def test_transitive_closure_linear_chain(self, service, populated_db):
+    async def test_transitive_closure_linear_chain(self, service, populated_db) -> None:
         """Test transitive closure for linear dependency chain."""
         closure = await service.transitive_closure("proj-1")
 
@@ -307,7 +306,7 @@ class TestTransitiveClosure:
         assert "doc-1" in closure["req-1"]
 
     @pytest.mark.asyncio
-    async def test_transitive_closure_isolated_project(self, service, populated_db):
+    async def test_transitive_closure_isolated_project(self, service, populated_db) -> None:
         """Test transitive closure doesn't leak between projects."""
         closure_p1 = await service.transitive_closure("proj-1")
         closure_p2 = await service.transitive_closure("proj-2")
@@ -316,7 +315,7 @@ class TestTransitiveClosure:
         assert len(closure_p1["req-1"]) > len(closure_p2.get("req-2", set()))
 
     @pytest.mark.asyncio
-    async def test_transitive_closure_direct_links(self, service, populated_db):
+    async def test_transitive_closure_direct_links(self, service, populated_db) -> None:
         """Test direct links are in closure."""
         closure = await service.transitive_closure("proj-1")
 
@@ -324,7 +323,7 @@ class TestTransitiveClosure:
         assert "api-1" in closure["design-1"]
 
     @pytest.mark.asyncio
-    async def test_transitive_closure_indirect_links(self, service, populated_db):
+    async def test_transitive_closure_indirect_links(self, service, populated_db) -> None:
         """Test indirect links are computed correctly."""
         closure = await service.transitive_closure("proj-1")
 
@@ -332,7 +331,7 @@ class TestTransitiveClosure:
         assert "test-1" in closure["req-1"]
 
     @pytest.mark.asyncio
-    async def test_transitive_closure_multi_target(self, service, populated_db):
+    async def test_transitive_closure_multi_target(self, service, populated_db) -> None:
         """Test item with multiple target links."""
         closure = await service.transitive_closure("proj-1")
 
@@ -341,7 +340,7 @@ class TestTransitiveClosure:
         assert "doc-1" in closure["api-1"]
 
     @pytest.mark.asyncio
-    async def test_transitive_closure_empty_project(self, service, async_db_session):
+    async def test_transitive_closure_empty_project(self, service, async_db_session) -> None:
         """Test transitive closure on empty project."""
         # Create empty project
         empty_proj = Project(id="empty-proj", name="Empty")
@@ -357,7 +356,7 @@ class TestBidirectionalImpact:
     """Test bidirectional impact analysis."""
 
     @pytest.mark.asyncio
-    async def test_forward_impact(self, service, populated_db):
+    async def test_forward_impact(self, service, populated_db) -> None:
         """Test forward impact (what does this item affect)."""
         impact = await service.bidirectional_impact("api-1")
 
@@ -366,7 +365,7 @@ class TestBidirectionalImpact:
         assert "doc-1" in impact["forward_impact"]
 
     @pytest.mark.asyncio
-    async def test_backward_impact(self, service, populated_db):
+    async def test_backward_impact(self, service, populated_db) -> None:
         """Test backward impact (what affects this item)."""
         impact = await service.bidirectional_impact("api-1")
 
@@ -374,7 +373,7 @@ class TestBidirectionalImpact:
         assert "design-1" in impact["backward_impact"]
 
     @pytest.mark.asyncio
-    async def test_bidirectional_impact_total(self, service, populated_db):
+    async def test_bidirectional_impact_total(self, service, populated_db) -> None:
         """Test total impact count."""
         impact = await service.bidirectional_impact("api-1")
 
@@ -382,7 +381,7 @@ class TestBidirectionalImpact:
         assert impact["total_impact"] == 3
 
     @pytest.mark.asyncio
-    async def test_bidirectional_impact_leaf_node(self, service, populated_db):
+    async def test_bidirectional_impact_leaf_node(self, service, populated_db) -> None:
         """Test impact on leaf node (no outgoing links)."""
         impact = await service.bidirectional_impact("test-1")
 
@@ -392,7 +391,7 @@ class TestBidirectionalImpact:
         assert "api-1" in impact["backward_impact"]
 
     @pytest.mark.asyncio
-    async def test_bidirectional_impact_source_node(self, service, populated_db):
+    async def test_bidirectional_impact_source_node(self, service, populated_db) -> None:
         """Test impact on source node (no incoming links)."""
         impact = await service.bidirectional_impact("req-1")
 
@@ -402,7 +401,7 @@ class TestBidirectionalImpact:
         assert "design-1" in impact["forward_impact"]
 
     @pytest.mark.asyncio
-    async def test_bidirectional_impact_isolated_item(self, service, populated_db):
+    async def test_bidirectional_impact_isolated_item(self, service, populated_db) -> None:
         """Test impact on isolated item."""
         # doc-1 only has incoming links
         impact = await service.bidirectional_impact("doc-1")
@@ -415,7 +414,7 @@ class TestCircularDependencies:
     """Test circular dependency detection."""
 
     @pytest.mark.asyncio
-    async def test_no_cycles_in_dag(self, service, populated_db):
+    async def test_no_cycles_in_dag(self, service, populated_db) -> None:
         """Test that no cycles are found in DAG."""
         cycles = await service.circular_dependency_check("proj-1")
 
@@ -423,7 +422,7 @@ class TestCircularDependencies:
         assert len(cycles) == 0
 
     @pytest.mark.asyncio
-    async def test_detect_simple_cycle(self, service, async_db_session, event_loop):
+    async def test_detect_simple_cycle(self, service, async_db_session, event_loop) -> None:
         """Test detection of simple 2-item cycle."""
         # Create project with cycle: A -> B -> A
         project = Project(id="cycle-proj", name="Cycle Project")
@@ -474,7 +473,7 @@ class TestCircularDependencies:
         assert len(cycles) > 0
 
     @pytest.mark.asyncio
-    async def test_detect_self_cycle(self, service, async_db_session):
+    async def test_detect_self_cycle(self, service, async_db_session) -> None:
         """Test detection of self-referencing cycle."""
         # Create project with self-loop
         project = Project(id="self-proj", name="Self Project")
@@ -509,7 +508,7 @@ class TestCircularDependencies:
         assert len(cycles) > 0
 
     @pytest.mark.asyncio
-    async def test_no_false_positive_cycles(self, service, populated_db):
+    async def test_no_false_positive_cycles(self, service, populated_db) -> None:
         """Test no false positive cycles in clean DAG."""
         cycles = await service.circular_dependency_check("proj-1")
 
@@ -521,7 +520,7 @@ class TestCoverageGaps:
     """Test coverage gap identification."""
 
     @pytest.mark.asyncio
-    async def test_find_coverage_gaps(self, service, populated_db):
+    async def test_find_coverage_gaps(self, service, populated_db) -> None:
         """Test finding items with coverage gaps."""
         gaps = await service.coverage_gaps("proj-1", "REQUIREMENT", "TEST")
 
@@ -530,7 +529,7 @@ class TestCoverageGaps:
         assert "req-1" in gaps
 
     @pytest.mark.asyncio
-    async def test_no_coverage_gaps_direct_link(self, service, populated_db):
+    async def test_no_coverage_gaps_direct_link(self, service, populated_db) -> None:
         """Test when there are direct coverage links."""
         gaps = await service.coverage_gaps("proj-1", "REQUIREMENT", "DESIGN")
 
@@ -538,7 +537,7 @@ class TestCoverageGaps:
         assert "req-1" not in gaps
 
     @pytest.mark.asyncio
-    async def test_coverage_gaps_isolated_items(self, service, async_db_session):
+    async def test_coverage_gaps_isolated_items(self, service, async_db_session) -> None:
         """Test coverage gaps with isolated items."""
         # Create project with unlinked items
         project = Project(id="gap-proj", name="Gap Project")
@@ -571,7 +570,7 @@ class TestCoverageGaps:
         assert "gap-req" in gaps
 
     @pytest.mark.asyncio
-    async def test_coverage_gaps_multiple_sources(self, service, async_db_session):
+    async def test_coverage_gaps_multiple_sources(self, service, async_db_session) -> None:
         """Test coverage gaps with multiple source items."""
         # Create project with multiple requirements
         project = Project(id="multi-proj", name="Multi Project")
@@ -631,7 +630,7 @@ class TestMultiProjectIsolation:
     """Test multi-project data isolation."""
 
     @pytest.mark.asyncio
-    async def test_closure_isolated_by_project(self, service, populated_db):
+    async def test_closure_isolated_by_project(self, service, populated_db) -> None:
         """Test that closure computation is isolated by project."""
         closure_p1 = await service.transitive_closure("proj-1")
         closure_p2 = await service.transitive_closure("proj-2")
@@ -644,7 +643,7 @@ class TestMultiProjectIsolation:
         assert len(p1_items & p2_items) == 0
 
     @pytest.mark.asyncio
-    async def test_cycles_isolated_by_project(self, service, populated_db):
+    async def test_cycles_isolated_by_project(self, service, populated_db) -> None:
         """Test that cycle detection is isolated by project."""
         cycles_p1 = await service.circular_dependency_check("proj-1")
         cycles_p2 = await service.circular_dependency_check("proj-2")
@@ -658,7 +657,7 @@ class TestComplexScenarios:
     """Test complex real-world scenarios."""
 
     @pytest.mark.asyncio
-    async def test_diamond_dependency(self, service, async_db_session):
+    async def test_diamond_dependency(self, service, async_db_session) -> None:
         """Test diamond-shaped dependency graph."""
         #     A
         #    / \
@@ -728,7 +727,7 @@ class TestComplexScenarios:
         assert "node-D" in closure["node-A"]
 
     @pytest.mark.asyncio
-    async def test_wide_graph(self, service, async_db_session):
+    async def test_wide_graph(self, service, async_db_session) -> None:
         """Test graph with many parallel paths."""
         # Create a hub with multiple connections
         project = Project(id="wide-proj", name="Wide")
@@ -800,7 +799,7 @@ class TestComplexScenarios:
         assert len(impact["backward_impact"]) == 5
 
     @pytest.mark.asyncio
-    async def test_deep_chain(self, service, async_db_session):
+    async def test_deep_chain(self, service, async_db_session) -> None:
         """Test deeply nested dependency chain."""
         # Create chain: I0 -> I1 -> I2 -> ... -> I10
         project = Project(id="deep-proj", name="Deep")
@@ -844,7 +843,7 @@ class TestEdgeCases:
     """Test edge cases and boundary conditions."""
 
     @pytest.mark.asyncio
-    async def test_empty_project(self, service, async_db_session):
+    async def test_empty_project(self, service, async_db_session) -> None:
         """Test operations on project with no items."""
         project = Project(id="empty", name="Empty")
         async_db_session.add(project)
@@ -861,7 +860,7 @@ class TestEdgeCases:
         assert len(cycles) == 0
 
     @pytest.mark.asyncio
-    async def test_single_item_project(self, service, async_db_session):
+    async def test_single_item_project(self, service, async_db_session) -> None:
         """Test operations on project with single item."""
         project = Project(id="single", name="Single")
         async_db_session.add(project)
@@ -888,7 +887,7 @@ class TestEdgeCases:
         assert len(closure["lonely"]) == 0
 
     @pytest.mark.asyncio
-    async def test_impact_nonexistent_item(self, service, populated_db):
+    async def test_impact_nonexistent_item(self, service, populated_db) -> None:
         """Test impact analysis on nonexistent item."""
         impact = await service.bidirectional_impact("nonexistent")
 
@@ -901,7 +900,7 @@ class TestMetricsCalculation:
     """Test metric calculations for traceability."""
 
     @pytest.mark.asyncio
-    async def test_path_distance_metric(self, service, populated_db):
+    async def test_path_distance_metric(self, service, populated_db) -> None:
         """Test path distance metric calculation."""
         paths = await service.find_all_paths("req-1", "test-1")
 
@@ -912,7 +911,7 @@ class TestMetricsCalculation:
         assert path.distance == expected_distance
 
     @pytest.mark.asyncio
-    async def test_impact_count_metric(self, service, populated_db):
+    async def test_impact_count_metric(self, service, populated_db) -> None:
         """Test impact count metrics."""
         impact = await service.bidirectional_impact("api-1")
 
@@ -921,7 +920,7 @@ class TestMetricsCalculation:
         assert impact["total_impact"] == expected_total
 
     @pytest.mark.asyncio
-    async def test_coverage_percentage(self, service, async_db_session):
+    async def test_coverage_percentage(self, service, async_db_session) -> None:
         """Test coverage percentage calculation."""
         project = Project(id="coverage", name="Coverage")
         async_db_session.add(project)

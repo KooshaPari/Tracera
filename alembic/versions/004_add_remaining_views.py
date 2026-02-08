@@ -1,4 +1,4 @@
-"""Add remaining materialized views (Dependency, Timeline, Dashboard, Search, Agent)
+"""Add remaining materialized views (Dependency, Timeline, Dashboard, Search, Agent).
 
 Revision ID: 004
 Revises: 003
@@ -19,7 +19,6 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     """Create remaining 5 materialized views."""
-
     # Layer 4: Dependency Graph View
     op.execute("""
         CREATE MATERIALIZED VIEW dependency_graph AS
@@ -178,7 +177,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop remaining materialized views."""
-
     op.execute("DROP MATERIALIZED VIEW IF EXISTS agent_interface;")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS search_index;")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS status_dashboard;")

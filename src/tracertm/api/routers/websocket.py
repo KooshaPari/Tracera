@@ -13,7 +13,7 @@ router = APIRouter(tags=["websocket"])
 
 
 @router.websocket("/ws")
-async def ws_endpoint(websocket: WebSocket):
+async def ws_endpoint(websocket: WebSocket) -> None:
     """WebSocket endpoint for real-time updates.
 
     Supports two authentication flows:

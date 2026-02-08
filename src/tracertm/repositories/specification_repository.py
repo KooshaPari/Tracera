@@ -1,21 +1,23 @@
 """Specification repositories for TraceRTM - ADR, Contract, Feature, Scenario, Step Definition."""
 
 from datetime import UTC, datetime
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 from uuid import uuid4
 
 from sqlalchemy import func, select
-from sqlalchemy.engine import CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.models.specification import ADR, Contract, Feature, Scenario
 
+if TYPE_CHECKING:
+    from sqlalchemy.engine import CursorResult
+
 
 class ADRRepository:
     """Repository for ADR (Architecture Decision Record) CRUD operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     def _generate_adr_number(self) -> str:
@@ -145,12 +147,16 @@ class ADRRepository:
         adr = result.scalar_one_or_none()
 
         if not adr:
-            raise ValueError(f"ADR {adr_id} not found")
+            msg = f"ADR {adr_id} not found"
+            raise ValueError(msg)
 
         if adr.version != expected_version:
-            raise ConcurrencyError(
+            msg = (
                 f"ADR {adr_id} was modified by another process "
                 f"(expected version {expected_version}, current version {adr.version})"
+            )
+            raise ConcurrencyError(
+                msg,
             )
 
         for key, value in updates.items():
@@ -174,7 +180,8 @@ class ADRRepository:
         adr = result.scalar_one_or_none()
 
         if not adr:
-            raise ValueError(f"ADR {adr_id} not found")
+            msg = f"ADR {adr_id} not found"
+            raise ValueError(msg)
 
         from_status = adr.status
 
@@ -186,7 +193,8 @@ class ADRRepository:
         }
 
         if to_status not in valid_transitions.get(from_status, []):
-            raise ValueError(f"Invalid status transition from {from_status} to {to_status}")
+            msg = f"Invalid status transition from {from_status} to {to_status}"
+            raise ValueError(msg)
 
         adr.status = to_status
         adr.version += 1
@@ -207,7 +215,8 @@ class ADRRepository:
         adr = result.scalar_one_or_none()
 
         if not adr:
-            raise ValueError(f"ADR {adr_id} not found")
+            msg = f"ADR {adr_id} not found"
+            raise ValueError(msg)
 
         adr.compliance_score = compliance_score
         adr.last_verified_at = verified_at or datetime.now(UTC)
@@ -222,7 +231,7 @@ class ADRRepository:
         from sqlalchemy import delete
 
         result = await self.session.execute(delete(ADR).where(ADR.id == adr_id))
-        cursor_result = cast(CursorResult, result)
+        cursor_result = cast("CursorResult", result)
         return cursor_result.rowcount > 0
 
     async def count_by_status(self, project_id: str) -> dict[str, int]:
@@ -236,7 +245,7 @@ class ADRRepository:
 class ContractRepository:
     """Repository for Contract CRUD operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     def _generate_contract_number(self) -> str:
@@ -346,12 +355,16 @@ class ContractRepository:
         contract = result.scalar_one_or_none()
 
         if not contract:
-            raise ValueError(f"Contract {contract_id} not found")
+            msg = f"Contract {contract_id} not found"
+            raise ValueError(msg)
 
         if contract.version != expected_version:
-            raise ConcurrencyError(
+            msg = (
                 f"Contract {contract_id} was modified by another process "
                 f"(expected version {expected_version}, current version {contract.version})"
+            )
+            raise ConcurrencyError(
+                msg,
             )
 
         for key, value in updates.items():
@@ -375,7 +388,8 @@ class ContractRepository:
         contract = result.scalar_one_or_none()
 
         if not contract:
-            raise ValueError(f"Contract {contract_id} not found")
+            msg = f"Contract {contract_id} not found"
+            raise ValueError(msg)
 
         contract.last_verified_at = datetime.now(UTC)
         contract.verification_result = verification_result
@@ -396,7 +410,8 @@ class ContractRepository:
         contract = result.scalar_one_or_none()
 
         if not contract:
-            raise ValueError(f"Contract {contract_id} not found")
+            msg = f"Contract {contract_id} not found"
+            raise ValueError(msg)
 
         from_status = contract.status
 
@@ -409,7 +424,8 @@ class ContractRepository:
         }
 
         if to_status not in valid_transitions.get(from_status, []):
-            raise ValueError(f"Invalid status transition from {from_status} to {to_status}")
+            msg = f"Invalid status transition from {from_status} to {to_status}"
+            raise ValueError(msg)
 
         contract.status = to_status
         contract.version += 1
@@ -423,7 +439,7 @@ class ContractRepository:
         from sqlalchemy import delete
 
         result = await self.session.execute(delete(Contract).where(Contract.id == contract_id))
-        cursor_result = cast(CursorResult, result)
+        cursor_result = cast("CursorResult", result)
         return cursor_result.rowcount > 0
 
     async def count_by_type(self, project_id: str) -> dict[str, int]:
@@ -441,7 +457,7 @@ class ContractRepository:
 class FeatureRepository:
     """Repository for Feature CRUD operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     def _generate_feature_number(self) -> str:
@@ -527,10 +543,9 @@ class FeatureRepository:
         return list(result.scalars().all())
 
     async def list_with_scenarios(
-        self, project_id: str, limit: int = 100, offset: int = 0
+        self, project_id: str, limit: int = 100, offset: int = 0,
     ) -> list[tuple[Feature, list[Scenario]]]:
-        """
-        List features with their scenarios using eager loading to avoid N+1 queries.
+        """List features with their scenarios using eager loading to avoid N+1 queries.
 
         This method uses SQLAlchemy's selectinload to fetch all scenarios for the selected
         features in a single additional query instead of one query per feature. This provides
@@ -578,12 +593,16 @@ class FeatureRepository:
         feature = result.scalar_one_or_none()
 
         if not feature:
-            raise ValueError(f"Feature {feature_id} not found")
+            msg = f"Feature {feature_id} not found"
+            raise ValueError(msg)
 
         if feature.version != expected_version:
-            raise ConcurrencyError(
+            msg = (
                 f"Feature {feature_id} was modified by another process "
                 f"(expected version {expected_version}, current version {feature.version})"
+            )
+            raise ConcurrencyError(
+                msg,
             )
 
         for key, value in updates.items():
@@ -607,7 +626,8 @@ class FeatureRepository:
         feature = result.scalar_one_or_none()
 
         if not feature:
-            raise ValueError(f"Feature {feature_id} not found")
+            msg = f"Feature {feature_id} not found"
+            raise ValueError(msg)
 
         from_status = feature.status
 
@@ -620,7 +640,8 @@ class FeatureRepository:
         }
 
         if to_status not in valid_transitions.get(from_status, []):
-            raise ValueError(f"Invalid status transition from {from_status} to {to_status}")
+            msg = f"Invalid status transition from {from_status} to {to_status}"
+            raise ValueError(msg)
 
         feature.status = to_status
         feature.version += 1
@@ -638,14 +659,14 @@ class FeatureRepository:
 
         # Delete feature
         result = await self.session.execute(delete(Feature).where(Feature.id == feature_id))
-        cursor_result = cast(CursorResult, result)
+        cursor_result = cast("CursorResult", result)
         return cursor_result.rowcount > 0
 
 
 class ScenarioRepository:
     """Repository for Scenario CRUD operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     def _generate_scenario_number(self) -> str:
@@ -754,12 +775,16 @@ class ScenarioRepository:
         scenario = result.scalar_one_or_none()
 
         if not scenario:
-            raise ValueError(f"Scenario {scenario_id} not found")
+            msg = f"Scenario {scenario_id} not found"
+            raise ValueError(msg)
 
         if scenario.version != expected_version:
-            raise ConcurrencyError(
+            msg = (
                 f"Scenario {scenario_id} was modified by another process "
                 f"(expected version {expected_version}, current version {scenario.version})"
+            )
+            raise ConcurrencyError(
+                msg,
             )
 
         for key, value in updates.items():
@@ -779,7 +804,8 @@ class ScenarioRepository:
         scenario = result.scalar_one_or_none()
 
         if not scenario:
-            raise ValueError(f"Scenario {scenario_id} not found")
+            msg = f"Scenario {scenario_id} not found"
+            raise ValueError(msg)
 
         scenario.pass_rate = pass_rate
         scenario.version += 1
@@ -799,7 +825,8 @@ class ScenarioRepository:
         scenario = result.scalar_one_or_none()
 
         if not scenario:
-            raise ValueError(f"Scenario {scenario_id} not found")
+            msg = f"Scenario {scenario_id} not found"
+            raise ValueError(msg)
 
         from_status = scenario.status
 
@@ -814,7 +841,8 @@ class ScenarioRepository:
         }
 
         if to_status not in valid_transitions.get(from_status, []):
-            raise ValueError(f"Invalid status transition from {from_status} to {to_status}")
+            msg = f"Invalid status transition from {from_status} to {to_status}"
+            raise ValueError(msg)
 
         scenario.status = to_status
         scenario.version += 1
@@ -828,7 +856,7 @@ class ScenarioRepository:
         from sqlalchemy import delete
 
         result = await self.session.execute(delete(Scenario).where(Scenario.id == scenario_id))
-        cursor_result = cast(CursorResult, result)
+        cursor_result = cast("CursorResult", result)
         return cursor_result.rowcount > 0
 
     async def count_by_status(self, feature_id: str) -> dict[str, int]:
@@ -847,4 +875,4 @@ class ScenarioRepository:
         query = select(func.avg(Scenario.pass_rate)).where(Scenario.feature_id == feature_id)
         result = await self.session.execute(query)
         avg_pass_rate = result.scalar()
-        return avg_pass_rate if avg_pass_rate else 0.0
+        return avg_pass_rate or 0.0

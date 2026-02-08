@@ -4,7 +4,7 @@ from pathlib import Path
 from tracertm.storage.markdown_parser import ItemData, LinkData
 
 
-def test_itemdata_round_trip(tmp_path: Path):
+def test_itemdata_round_trip(tmp_path: Path) -> None:
     item = ItemData(
         id="id1",
         external_id="EXT-1",
@@ -24,7 +24,7 @@ def test_itemdata_round_trip(tmp_path: Path):
     assert "Acceptance Criteria" in body
 
 
-def test_linkdata_to_from_dict():
+def test_linkdata_to_from_dict() -> None:
     now = datetime.now(UTC)
     link = LinkData(id="l1", source="s", target="t", link_type="implements", created=now, metadata={"k": "v"})
     data = link.to_dict()

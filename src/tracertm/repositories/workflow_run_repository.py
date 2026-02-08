@@ -3,17 +3,19 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.workflow_run import WorkflowRun
 
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
 
 class WorkflowRunRepository:
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create_run(
@@ -80,5 +82,5 @@ class WorkflowRunRepository:
             update_data["completed_at"] = completed_at
 
         await self.session.execute(
-            update(WorkflowRun).where(WorkflowRun.external_run_id == external_run_id).values(**update_data)
+            update(WorkflowRun).where(WorkflowRun.external_run_id == external_run_id).values(**update_data),
         )

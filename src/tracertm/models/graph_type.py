@@ -1,6 +1,4 @@
-"""
-GraphType model for TraceRTM.
-"""
+"""GraphType model for TraceRTM."""
 
 import uuid
 
@@ -18,9 +16,7 @@ def generate_graph_type_uuid() -> str:
 
 
 class GraphType(Base, TimestampMixin):
-    """
-    Graph type registry with constraints and defaults.
-    """
+    """Graph type registry with constraints and defaults."""
 
     __tablename__ = "graph_types"
     __table_args__ = (

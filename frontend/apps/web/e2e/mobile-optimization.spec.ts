@@ -16,7 +16,7 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
 
     // On mobile, should show card grid, not table
     const cardGrid = page.locator('.grid-cols-1');
-    await expect(cardGrid.first()).toBeVisible({ timeout: 10000 });
+    await expect(cardGrid.first()).toBeVisible({ timeout: 10_000 });
 
     // Table should be hidden
     const table = page.locator('table');
@@ -139,7 +139,7 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
 
     // Check for dialog/modal
     const dialog = page.locator('[role="dialog"]');
-    await expect(dialog).toBeVisible({ timeout: 10000 });
+    await expect(dialog).toBeVisible({ timeout: 10_000 });
 
     // Get input fields
     const inputs = dialog.locator('input');
@@ -255,7 +255,7 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
 
     // Should still show cards
     const cardGrid = page.locator('.grid');
-    await expect(cardGrid).toBeVisible({ timeout: 10000 });
+    await expect(cardGrid).toBeVisible({ timeout: 10_000 });
 
     // At 640px (sm breakpoint), should show 2 columns
     const hasSmClass = await cardGrid.evaluate(

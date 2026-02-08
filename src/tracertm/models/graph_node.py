@@ -1,6 +1,4 @@
-"""
-GraphNode model for TraceRTM.
-"""
+"""GraphNode model for TraceRTM."""
 
 from sqlalchemy import Boolean, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import UUID
@@ -10,9 +8,7 @@ from tracertm.models.base import Base, TimestampMixin
 
 
 class GraphNode(Base, TimestampMixin):
-    """
-    Join table mapping nodes (items) into graphs.
-    """
+    """Join table mapping nodes (items) into graphs."""
 
     __tablename__ = "graph_nodes"
     __table_args__ = (

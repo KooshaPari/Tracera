@@ -1,5 +1,4 @@
-"""
-FastAPI Router for Requirements Enhancement Endpoints
+"""FastAPI Router for Requirements Enhancement Endpoints.
 
 Add this to src/tracertm/api/routers/enhancements.py
 
@@ -14,10 +13,13 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
+from typing import TYPE_CHECKING, Annotated
 
 # Import for type hints and Depends(); avoid circular import by deferring in get_enhancement_service
-from ENHANCEMENT_IMPLEMENTATION_STARTER import RequirementEnhancementService
 from fastapi import APIRouter, Depends, HTTPException, Query
+
+if TYPE_CHECKING:
+    from ENHANCEMENT_IMPLEMENTATION_STARTER import RequirementEnhancementService
 
 # These would be imported from your actual modules
 # from tracertm.services.requirement_enhancement_service import (
@@ -54,11 +56,10 @@ def get_enhancement_service() -> RequirementEnhancementService:
 @router.post("/duplicates/search")
 async def find_duplicate_requirements(
     project_id: str,
-    threshold: float = Query(0.85, ge=0.0, le=1.0),
+    threshold: Annotated[float, Query(ge=0.0, le=1.0)] = 0.85,
     service: RequirementEnhancementService = Depends(get_enhancement_service),
 ):
-    """
-    Search for duplicate requirements in a project.
+    """Search for duplicate requirements in a project.
 
     Query Parameters:
     - threshold: Similarity threshold (0.0-1.0), default 0.85
@@ -98,7 +99,7 @@ async def find_duplicate_requirements(
                 "id": "REQ-001",
                 "title": "User authentication",
                 "description": "The system shall authenticate users using OAuth 2.0",
-            }
+            },
         ]
 
         if not items:
@@ -132,7 +133,7 @@ async def find_duplicate_requirements(
         }
 
     except Exception as e:
-        logger.error(f"Error finding duplicates: {e}", exc_info=True)
+        logger.error("Error finding duplicates: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error finding duplicates: {e!s}") from e
 
 
@@ -140,12 +141,11 @@ async def find_duplicate_requirements(
 async def find_similar_requirements(
     project_id: str,
     item_id: str,
-    top_k: int = Query(5, ge=1, le=50),
-    threshold: float = Query(0.75, ge=0.0, le=1.0),
+    top_k: Annotated[int, Query(ge=1, le=50)] = 5,
+    threshold: Annotated[float, Query(ge=0.0, le=1.0)] = 0.75,
     service: RequirementEnhancementService = Depends(get_enhancement_service),
 ):
-    """
-    Find requirements similar to a specific item.
+    """Find requirements similar to a specific item.
 
     Path Parameters:
     - item_id: Target requirement ID
@@ -199,7 +199,7 @@ async def find_similar_requirements(
         duplicates = await service.find_duplicates(requirements, threshold)
 
         # Filter to top_k and exclude self
-        similar = [dup for dup in duplicates if (dup.item_1_id == item_id or dup.item_2_id == item_id)][:top_k]
+        similar = [dup for dup in duplicates if (item_id in {dup.item_1_id, dup.item_2_id})][:top_k]
 
         return {
             "item_id": item_id,
@@ -217,7 +217,7 @@ async def find_similar_requirements(
         }
 
     except Exception as e:
-        logger.error(f"Error finding similar requirements: {e}", exc_info=True)
+        logger.error("Error finding similar requirements: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
@@ -230,10 +230,9 @@ async def find_similar_requirements(
 async def analyze_requirement_quality(
     project_id: str,
     item_id: str,
-    service: RequirementEnhancementService = Depends(get_enhancement_service),
+    service: Annotated[RequirementEnhancementService, Depends(get_enhancement_service)],
 ):
-    """
-    Analyze quality of a specific requirement.
+    """Analyze quality of a specific requirement.
 
     Returns:
     - Quality score (0-100)
@@ -286,7 +285,7 @@ async def analyze_requirement_quality(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error analyzing quality: {e}", exc_info=True)
+        logger.error("Error analyzing quality: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
@@ -294,10 +293,9 @@ async def analyze_requirement_quality(
 async def analyze_multiple_requirements(
     project_id: str,
     item_ids: list[str],
-    service: RequirementEnhancementService = Depends(get_enhancement_service),
+    service: Annotated[RequirementEnhancementService, Depends(get_enhancement_service)],
 ):
-    """
-    Analyze quality of multiple requirements.
+    """Analyze quality of multiple requirements.
 
     Request Body:
     ```json
@@ -372,7 +370,7 @@ async def analyze_multiple_requirements(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in batch analysis: {e}", exc_info=True)
+        logger.error("Error in batch analysis: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
@@ -385,11 +383,10 @@ async def analyze_multiple_requirements(
 async def get_impact_analysis(
     project_id: str,
     item_id: str,
-    direction: str = Query("downstream", regex="^(downstream|upstream)$"),
+    direction: Annotated[str, Query(regex="^(downstream|upstream)$")] = "downstream",
     service: RequirementEnhancementService = Depends(get_enhancement_service),
 ):
-    """
-    Analyze impact of changing a requirement.
+    """Analyze impact of changing a requirement.
 
     Path Parameters:
     - item_id: Target requirement ID
@@ -463,17 +460,16 @@ async def get_impact_analysis(
         }
 
     except Exception as e:
-        logger.error(f"Error analyzing impact: {e}", exc_info=True)
+        logger.error("Error analyzing impact: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/circular-dependencies")
 async def detect_circular_dependencies(
     project_id: str,
-    service: RequirementEnhancementService = Depends(get_enhancement_service),
+    service: Annotated[RequirementEnhancementService, Depends(get_enhancement_service)],
 ):
-    """
-    Detect circular dependencies in project.
+    """Detect circular dependencies in project.
 
     Returns:
     - List of all circular dependency cycles
@@ -529,7 +525,7 @@ async def detect_circular_dependencies(
         }
 
     except Exception as e:
-        logger.error(f"Error detecting cycles: {e}", exc_info=True)
+        logger.error("Error detecting cycles: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
@@ -540,10 +536,9 @@ async def detect_circular_dependencies(
 
 @router.get("/health")
 async def enhancement_service_health(
-    service: RequirementEnhancementService = Depends(get_enhancement_service),
+    service: Annotated[RequirementEnhancementService, Depends(get_enhancement_service)],
 ):
-    """
-    Check enhancement service health.
+    """Check enhancement service health.
 
     Returns:
     - Service status

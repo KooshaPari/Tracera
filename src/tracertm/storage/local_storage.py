@@ -1,5 +1,4 @@
-"""
-Local storage manager for TraceRTM.
+"""Local storage manager for TraceRTM.
 
 Manages hybrid SQLite + Markdown storage for offline-first operation.
 Two-tier storage model:
@@ -42,8 +41,7 @@ class LegacyFriendlySession(Session):
 
 
 class LocalStorageManager:
-    """
-    Main entry point for local storage operations.
+    """Main entry point for local storage operations.
 
     Manages:
     - Global SQLite index (~/.tracertm/tracertm.db)
@@ -51,9 +49,8 @@ class LocalStorageManager:
     - Synchronization between markdown files and SQLite
     """
 
-    def __init__(self, base_dir: Path | None = None):
-        """
-        Initialize local storage manager.
+    def __init__(self, base_dir: Path | None = None) -> None:
+        """Initialize local storage manager.
 
         Args:
             base_dir: Base directory for global index (defaults to ~/.tracertm)
@@ -105,8 +102,8 @@ class LocalStorageManager:
                     updated_at TEXT NOT NULL,
                     metadata TEXT
                 )
-            """
-                )
+            """,
+                ),
             )
 
             # Sync queue table
@@ -124,8 +121,8 @@ class LocalStorageManager:
                     last_error TEXT,
                     UNIQUE(entity_type, entity_id, operation)
                 )
-            """
-                )
+            """,
+                ),
             )
 
             # Sync state table
@@ -137,8 +134,8 @@ class LocalStorageManager:
                     value TEXT NOT NULL,
                     updated_at TEXT NOT NULL
                 )
-            """
-                )
+            """,
+                ),
             )
 
             # Full-text search (FTS5) for items
@@ -152,8 +149,8 @@ class LocalStorageManager:
                     description,
                     item_type
                 )
-            """
-                )
+            """,
+                ),
             )
 
             conn.commit()
@@ -167,8 +164,7 @@ class LocalStorageManager:
     # ========================================
 
     def is_trace_project(self, path: Path) -> bool:
-        """
-        Check if a path contains a .trace/ directory.
+        """Check if a path contains a .trace/ directory.
 
         Args:
             path: Path to check (file or directory)
@@ -183,8 +179,7 @@ class LocalStorageManager:
         return trace_dir.exists() and trace_dir.is_dir()
 
     def get_project_trace_dir(self, project_path: Path) -> Path | None:
-        """
-        Get the .trace/ directory for a project.
+        """Get the .trace/ directory for a project.
 
         Args:
             project_path: Path to project directory
@@ -208,8 +203,7 @@ class LocalStorageManager:
         description: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> tuple[Path, str]:
-        """
-        Initialize a new .trace/ directory in a project.
+        """Initialize a new .trace/ directory in a project.
 
         Creates:
         - .trace/ directory structure
@@ -233,7 +227,8 @@ class LocalStorageManager:
         trace_dir = project_path / ".trace"
 
         if trace_dir.exists():
-            raise ValueError(f"Project already initialized at {project_path}")
+            msg = f"Project already initialized at {project_path}"
+            raise ValueError(msg)
 
         # Create directory structure
         trace_dir.mkdir(parents=True, exist_ok=True)
@@ -307,8 +302,7 @@ class LocalStorageManager:
         return trace_dir, project_id
 
     def register_project(self, project_path: Path) -> str:
-        """
-        Register an existing .trace/ directory in the global index.
+        """Register an existing .trace/ directory in the global index.
 
         Args:
             project_path: Path to project directory containing .trace/
@@ -326,12 +320,14 @@ class LocalStorageManager:
         trace_dir = self.get_project_trace_dir(project_path)
 
         if not trace_dir:
-            raise ValueError(f"No .trace/ directory found at {project_path}")
+            msg = f"No .trace/ directory found at {project_path}"
+            raise ValueError(msg)
 
         # Load project.yaml
         project_yaml_path = trace_dir / "project.yaml"
         if not project_yaml_path.exists():
-            raise ValueError(f"project.yaml not found in {trace_dir}")
+            msg = f"project.yaml not found in {trace_dir}"
+            raise ValueError(msg)
 
         project_config = yaml.safe_load(project_yaml_path.read_text(encoding="utf-8"))
         project_id_raw: Any = project_config.get("id") if project_config else None
@@ -357,8 +353,7 @@ class LocalStorageManager:
         return project_id
 
     def _register_project_in_db(self, project_id: str, project_name: str, project_path: Path) -> None:
-        """
-        Register project in the global SQLite index.
+        """Register project in the global SQLite index.
 
         Args:
             project_id: Project UUID
@@ -375,7 +370,7 @@ class LocalStorageManager:
                 INSERT OR REPLACE INTO project_registry
                 (id, name, path, created_at, updated_at)
                 VALUES (:id, :name, :path, :created_at, :updated_at)
-            """
+            """,
                 ),
                 {
                     "id": project_id,
@@ -390,8 +385,7 @@ class LocalStorageManager:
             session.close()
 
     def index_project(self, project_path: Path) -> dict[str, int]:
-        """
-        Index all items from .trace/ into SQLite.
+        """Index all items from .trace/ into SQLite.
 
         Parses all markdown files in .trace/{epics,stories,tests,tasks}/
         and indexes them into the global SQLite database.
@@ -409,18 +403,21 @@ class LocalStorageManager:
         trace_dir = self.get_project_trace_dir(project_path)
 
         if not trace_dir:
-            raise ValueError(f"No .trace/ directory found at {project_path}")
+            msg = f"No .trace/ directory found at {project_path}"
+            raise ValueError(msg)
 
         # Load project.yaml
         project_yaml_path = trace_dir / "project.yaml"
         if not project_yaml_path.exists():
-            raise ValueError(f"project.yaml not found in {trace_dir}")
+            msg = f"project.yaml not found in {trace_dir}"
+            raise ValueError(msg)
 
         project_config = yaml.safe_load(project_yaml_path.read_text(encoding="utf-8"))
         project_id = project_config.get("id")
 
         if not project_id:
-            raise ValueError("Project ID not found in project.yaml")
+            msg = "Project ID not found in project.yaml"
+            raise ValueError(msg)
 
         # Ensure project exists in database
         project_storage = self.get_project_storage_by_id(project_id, trace_dir)
@@ -456,8 +453,8 @@ class LocalStorageManager:
                 try:
                     self._index_markdown_file(md_file, project_id, item_type)
                     counts[subdir] += 1
-                except Exception as e:
-                    print(f"Error indexing {md_file}: {e}")
+                except Exception:
+                    pass
 
         # Update last_indexed timestamp
         session = self.get_session()
@@ -468,7 +465,7 @@ class LocalStorageManager:
                 UPDATE project_registry
                 SET last_indexed = :last_indexed, updated_at = :updated_at
                 WHERE id = :id
-            """
+            """,
                 ),
                 {
                     "id": project_id,
@@ -483,8 +480,7 @@ class LocalStorageManager:
         return counts
 
     def _index_markdown_file(self, md_file: Path, project_id: str, item_type: str) -> None:
-        """
-        Parse and index a markdown file.
+        """Parse and index a markdown file.
 
         Args:
             md_file: Path to markdown file
@@ -609,7 +605,7 @@ class LocalStorageManager:
                     """
                 INSERT INTO items_fts (item_id, title, description, item_type)
                 VALUES (:id, :title, :description, :item_type)
-            """
+            """,
                 ),
                 {
                     "id": item.id,
@@ -623,8 +619,7 @@ class LocalStorageManager:
             session.close()
 
     def get_project_storage_by_id(self, project_id: str, trace_dir: Path) -> "ProjectStorage | None":
-        """
-        Get ProjectStorage for a project by ID.
+        """Get ProjectStorage for a project by ID.
 
         Args:
             project_id: Project UUID
@@ -643,8 +638,7 @@ class LocalStorageManager:
             session.close()
 
     def get_project_counters(self, project_path: Path) -> dict[str, int]:
-        """
-        Get current counters from project.yaml.
+        """Get current counters from project.yaml.
 
         Args:
             project_path: Path to project directory
@@ -654,7 +648,8 @@ class LocalStorageManager:
         """
         trace_dir = self.get_project_trace_dir(project_path)
         if not trace_dir:
-            raise ValueError(f"No .trace/ directory found at {project_path}")
+            msg = f"No .trace/ directory found at {project_path}"
+            raise ValueError(msg)
 
         project_yaml_path = trace_dir / "project.yaml"
         if not project_yaml_path.exists():
@@ -670,8 +665,7 @@ class LocalStorageManager:
         return default_counters
 
     def increment_project_counter(self, project_path: Path, item_type: str) -> tuple[int, str]:
-        """
-        Increment a counter in project.yaml and return the next ID.
+        """Increment a counter in project.yaml and return the next ID.
 
         Args:
             project_path: Path to project directory
@@ -682,11 +676,13 @@ class LocalStorageManager:
         """
         trace_dir = self.get_project_trace_dir(project_path)
         if not trace_dir:
-            raise ValueError(f"No .trace/ directory found at {project_path}")
+            msg = f"No .trace/ directory found at {project_path}"
+            raise ValueError(msg)
 
         project_yaml_path = trace_dir / "project.yaml"
         if not project_yaml_path.exists():
-            raise ValueError(f"project.yaml not found in {trace_dir}")
+            msg = f"project.yaml not found in {trace_dir}"
+            raise ValueError(msg)
 
         project_config = yaml.safe_load(project_yaml_path.read_text(encoding="utf-8"))
         counters = project_config.get("counters", {})
@@ -709,8 +705,7 @@ class LocalStorageManager:
         return next_value, external_id
 
     def get_current_project_path(self) -> Path | None:
-        """
-        Get the current project path by searching for .trace/ in current directory or parents.
+        """Get the current project path by searching for .trace/ in current directory or parents.
 
         Returns:
             Path to project directory containing .trace/, or None if not found
@@ -729,8 +724,7 @@ class LocalStorageManager:
         return None
 
     def get_project_storage(self, project_name: str) -> "ProjectStorage":
-        """
-        Get storage interface for a specific project (global projects dir).
+        """Get storage interface for a specific project (global projects dir).
 
         Args:
             project_name: Name of the project
@@ -741,8 +735,7 @@ class LocalStorageManager:
         return ProjectStorage(self, project_name)
 
     def get_project_storage_for_path(self, project_path: Path) -> "ProjectStorage | None":
-        """
-        Get storage interface for a project-local .trace/ directory.
+        """Get storage interface for a project-local .trace/ directory.
 
         Args:
             project_path: Path to project directory containing .trace/
@@ -766,8 +759,7 @@ class LocalStorageManager:
         return ProjectStorage(self, project_name, trace_dir=trace_dir, project_id=project_id)
 
     def search_items(self, query: str, project_id: str | None = None) -> list[Item]:
-        """
-        Full-text search across items.
+        """Full-text search across items.
 
         Args:
             query: Search query
@@ -805,8 +797,7 @@ class LocalStorageManager:
             session.close()
 
     def queue_sync(self, entity_type: str, entity_id: str, operation: str, payload: dict[str, Any]) -> None:
-        """
-        Queue a change for sync to remote server.
+        """Queue a change for sync to remote server.
 
         Args:
             entity_type: Type of entity (project, item, link)
@@ -822,7 +813,7 @@ class LocalStorageManager:
                 INSERT OR REPLACE INTO sync_queue
                 (entity_type, entity_id, operation, payload, created_at, retry_count)
                 VALUES (:entity_type, :entity_id, :operation, :payload, :created_at, 0)
-            """
+            """,
                 ),
                 {
                     "entity_type": entity_type,
@@ -837,8 +828,7 @@ class LocalStorageManager:
             session.close()
 
     def get_sync_queue(self, limit: int = 100) -> list[dict[str, Any]]:
-        """
-        Get pending sync operations.
+        """Get pending sync operations.
 
         Args:
             limit: Maximum number of operations to return
@@ -855,7 +845,7 @@ class LocalStorageManager:
                 FROM sync_queue
                 ORDER BY created_at ASC
                 LIMIT :limit
-            """
+            """,
                 ),
                 {"limit": limit},
             )
@@ -877,8 +867,7 @@ class LocalStorageManager:
             session.close()
 
     def clear_sync_queue_entry(self, queue_id: int) -> None:
-        """
-        Remove a successfully synced entry from queue.
+        """Remove a successfully synced entry from queue.
 
         Args:
             queue_id: Sync queue entry ID
@@ -891,8 +880,7 @@ class LocalStorageManager:
             session.close()
 
     def update_sync_state(self, key: str, value: str) -> None:
-        """
-        Update sync state metadata.
+        """Update sync state metadata.
 
         Args:
             key: State key (e.g., 'last_sync_time')
@@ -905,7 +893,7 @@ class LocalStorageManager:
                     """
                 INSERT OR REPLACE INTO sync_state (key, value, updated_at)
                 VALUES (:key, :value, :updated_at)
-            """
+            """,
                 ),
                 {"key": key, "value": value, "updated_at": datetime.now(UTC).isoformat()},
             )
@@ -914,8 +902,7 @@ class LocalStorageManager:
             session.close()
 
     def get_sync_state(self, key: str) -> str | None:
-        """
-        Get sync state metadata.
+        """Get sync state metadata.
 
         Args:
             key: State key
@@ -933,8 +920,7 @@ class LocalStorageManager:
 
 
 class ProjectStorage:
-    """
-    Storage operations for a specific project.
+    """Storage operations for a specific project.
 
     Handles both SQLite and Markdown operations.
     Supports two modes:
@@ -948,9 +934,8 @@ class ProjectStorage:
         project_name: str,
         trace_dir: Path | None = None,
         project_id: str | None = None,
-    ):
-        """
-        Initialize project storage.
+    ) -> None:
+        """Initialize project storage.
 
         Args:
             manager: LocalStorageManager instance
@@ -999,10 +984,9 @@ class ProjectStorage:
             self.links_file.write_text("# Traceability links\nlinks: []\n", encoding="utf-8")
 
     def create_or_update_project(
-        self, name: str, description: str | None = None, metadata: dict[str, Any] | None = None
+        self, name: str, description: str | None = None, metadata: dict[str, Any] | None = None,
     ) -> Project:
-        """
-        Create or update a project.
+        """Create or update a project.
 
         Args:
             name: Project name
@@ -1059,8 +1043,7 @@ class ProjectStorage:
             session.close()
 
     def _generate_project_readme(self, project: Project) -> None:
-        """
-        Generate README.md for project.
+        """Generate README.md for project.
 
         Args:
             project: Project instance
@@ -1090,8 +1073,7 @@ Project ID: `{project.id}`
         readme_path.write_text(content, encoding="utf-8")
 
     def get_project(self) -> Project | None:
-        """
-        Get project by name.
+        """Get project by name.
 
         Returns:
             Project instance or None
@@ -1103,8 +1085,7 @@ Project ID: `{project.id}`
             session.close()
 
     def get_item_storage(self, project: Project) -> "ItemStorage":
-        """
-        Get item storage for this project.
+        """Get item storage for this project.
 
         Args:
             project: Project instance
@@ -1116,18 +1097,15 @@ Project ID: `{project.id}`
 
 
 class ItemStorage:
-    """
-    Storage operations for items with dual SQLite + Markdown storage.
-    """
+    """Storage operations for items with dual SQLite + Markdown storage."""
 
     def __init__(
         self,
         manager: LocalStorageManager,
         project_storage: ProjectStorage,
         project: Project,
-    ):
-        """
-        Initialize item storage.
+    ) -> None:
+        """Initialize item storage.
 
         Args:
             manager: LocalStorageManager instance
@@ -1152,8 +1130,7 @@ class ItemStorage:
         parent_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> Item:
-        """
-        Create a new item.
+        """Create a new item.
 
         Args:
             title: Item title
@@ -1238,8 +1215,7 @@ class ItemStorage:
         owner: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> Item:
-        """
-        Update an existing item.
+        """Update an existing item.
 
         Args:
             item_id: Item ID
@@ -1257,7 +1233,8 @@ class ItemStorage:
         try:
             item = session.get(Item, item_id)
             if not item:
-                raise ValueError(f"Item not found: {item_id}")
+                msg = f"Item not found: {item_id}"
+                raise ValueError(msg)
 
             # Update fields
             if title is not None:
@@ -1312,8 +1289,7 @@ class ItemStorage:
             session.close()
 
     def delete_item(self, item_id: str) -> None:
-        """
-        Delete an item (soft delete).
+        """Delete an item (soft delete).
 
         Args:
             item_id: Item ID
@@ -1322,7 +1298,8 @@ class ItemStorage:
         try:
             item = session.get(Item, item_id)
             if not item:
-                raise ValueError(f"Item not found: {item_id}")
+                msg = f"Item not found: {item_id}"
+                raise ValueError(msg)
 
             # Soft delete
             item.deleted_at = datetime.now(UTC)
@@ -1347,8 +1324,7 @@ class ItemStorage:
             session.close()
 
     def get_item(self, item_id: str) -> Item | None:
-        """
-        Get item by ID.
+        """Get item by ID.
 
         Args:
             item_id: Item ID
@@ -1368,8 +1344,7 @@ class ItemStorage:
         status: str | None = None,
         parent_id: str | None = None,
     ) -> list[Item]:
-        """
-        List items with optional filters.
+        """List items with optional filters.
 
         Args:
             item_type: Filter by item type
@@ -1401,8 +1376,7 @@ class ItemStorage:
         link_type: str,
         metadata: dict[str, Any] | None = None,
     ) -> Link:
-        """
-        Create a traceability link.
+        """Create a traceability link.
 
         Args:
             source_id: Source item ID
@@ -1456,8 +1430,7 @@ class ItemStorage:
             session.close()
 
     def delete_link(self, link_id: str) -> None:
-        """
-        Delete a link.
+        """Delete a link.
 
         Args:
             link_id: Link ID
@@ -1466,7 +1439,8 @@ class ItemStorage:
         try:
             link = session.get(Link, link_id)
             if not link:
-                raise ValueError(f"Link not found: {link_id}")
+                msg = f"Link not found: {link_id}"
+                raise ValueError(msg)
 
             session.delete(link)
             session.commit()
@@ -1485,8 +1459,7 @@ class ItemStorage:
         target_id: str | None = None,
         link_type: str | None = None,
     ) -> list[Link]:
-        """
-        List links with optional filters.
+        """List links with optional filters.
 
         Args:
             source_id: Filter by source item ID
@@ -1512,8 +1485,7 @@ class ItemStorage:
             session.close()
 
     def _generate_item_markdown(self, item: Item, external_id: str | None) -> str:
-        """
-        Generate markdown content for an item.
+        """Generate markdown content for an item.
 
         Args:
             item: Item instance
@@ -1555,20 +1527,15 @@ class ItemStorage:
 
         # Build markdown
         md_lines = ["---", yaml.dump(frontmatter, default_flow_style=False).strip(), "---", ""]
-        md_lines.append(f"# {item.title}")
-        md_lines.append("")
+        md_lines.extend((f"# {item.title}", ""))
 
         if item.description:
-            md_lines.append("## Description")
-            md_lines.append("")
-            md_lines.append(item.description)
-            md_lines.append("")
+            md_lines.extend(("## Description", "", item.description, ""))
 
         return "\n".join(md_lines)
 
     def _write_item_markdown(self, item: Item, external_id: str | None, content: str) -> None:
-        """
-        Write item markdown file to project-local .trace/ directory.
+        """Write item markdown file to project-local .trace/ directory.
 
         Args:
             item: Item instance
@@ -1583,8 +1550,7 @@ class ItemStorage:
         file_path.write_text(content, encoding="utf-8")
 
     def _get_item_path(self, item_type: str, external_id: str) -> Path:
-        """
-        Get file path for an item in .trace/ directory.
+        """Get file path for an item in .trace/ directory.
 
         Args:
             item_type: Item type
@@ -1604,8 +1570,7 @@ class ItemStorage:
         return dir_path / f"{external_id}.md"
 
     def _hash_content(self, content: str) -> str:
-        """
-        Calculate SHA256 hash of content.
+        """Calculate SHA256 hash of content.
 
         Args:
             content: Content string
@@ -1616,8 +1581,7 @@ class ItemStorage:
         return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
     def _update_fts_index(self, item: Item) -> None:
-        """
-        Update full-text search index for item.
+        """Update full-text search index for item.
 
         Args:
             item: Item instance
@@ -1636,7 +1600,7 @@ class ItemStorage:
                     """
                 INSERT INTO items_fts (item_id, title, description, item_type)
                 VALUES (:id, :title, :description, :item_type)
-            """
+            """,
                 ),
                 {
                     "id": item.id,
@@ -1684,8 +1648,7 @@ class ItemStorage:
             session.close()
 
     def _item_to_dict(self, item: Item, external_id: str | None) -> dict[str, Any]:
-        """
-        Convert item to dict for sync.
+        """Convert item to dict for sync.
 
         Args:
             item: Item instance

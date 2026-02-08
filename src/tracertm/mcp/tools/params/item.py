@@ -28,8 +28,7 @@ async def item_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
-    """
-    Unified item management tool.
+    """Unified item management tool.
 
     Actions:
     - create: Create new item (requires: title, item_type; optional: view, description, status, priority, owner, parent_id, metadata)
@@ -139,6 +138,7 @@ async def _item_manage_impl(  # noqa: C901
         "bulk_update": _bulk_update,
     }
     if action not in handlers:
-        raise ToolError(f"Unknown item action: {action}")
+        msg = f"Unknown item action: {action}"
+        raise ToolError(msg)
     result = await handlers[action]()
     return _wrap(result, ctx, action)

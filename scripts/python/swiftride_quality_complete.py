@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Complete SwiftRide Quality & Compliance Item Generator
+"""Complete SwiftRide Quality & Compliance Item Generator
 Generates 570+ items across 7 types with proper metadata and relationships.
 """
 
@@ -748,7 +747,3 @@ class QualityData:
 
 # Continue with get_code_standards, get_performance_benchmarks, get_slas, get_bugs, get_technical_debt, get_refactoring_opportunities...
 # Due to length, showing structure with first complete section
-
-
-print(f"✓ Data structure created for {len(QualityData.get_quality_gates())} quality gates")
-print("  (Script continues with remaining 510+ items...)")

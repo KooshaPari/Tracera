@@ -1,5 +1,4 @@
-"""
-Comprehensive error handling tests for API endpoints.
+"""Comprehensive error handling tests for API endpoints.
 
 Tests error responses, exception handling, and error recovery.
 """
@@ -13,7 +12,7 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 class TestHTTPErrorResponses:
     """Test HTTP error response formats."""
 
-    def test_404_not_found_format(self):
+    def test_404_not_found_format(self) -> None:
         """Test 404 error response format."""
         from tracertm.api.main import app
 
@@ -40,7 +39,7 @@ class TestHTTPErrorResponses:
                 except Exception:
                     pass
 
-    def test_400_bad_request_format(self):
+    def test_400_bad_request_format(self) -> None:
         """Test 400 error response format."""
         from tracertm.api.main import app
 
@@ -49,13 +48,13 @@ class TestHTTPErrorResponses:
         # Missing required parameter
         try:
             response = client.get("/api/v1/items")  # Missing project_id
-            if response.status_code == 400 or response.status_code == 422:
+            if response.status_code in {400, 422}:
                 data = response.json()
                 assert "detail" in data or "error" in data
         except Exception:
             pass
 
-    def test_500_internal_error_format(self):
+    def test_500_internal_error_format(self) -> None:
         """Test 500 error response format."""
         from tracertm.api.main import app
 
@@ -72,7 +71,7 @@ class TestHTTPErrorResponses:
             except Exception:
                 pass
 
-    def test_422_validation_error_format(self):
+    def test_422_validation_error_format(self) -> None:
         """Test 422 validation error format."""
         from tracertm.api.main import app
 
@@ -95,7 +94,7 @@ class TestHTTPErrorResponses:
 class TestDatabaseErrors:
     """Test database error handling."""
 
-    def test_database_connection_error(self):
+    def test_database_connection_error(self) -> None:
         """Test handling of database connection errors."""
         from tracertm.api.main import app
 
@@ -114,7 +113,7 @@ class TestDatabaseErrors:
             except Exception:
                 pass
 
-    def test_database_timeout_error(self):
+    def test_database_timeout_error(self) -> None:
         """Test handling of database timeout errors."""
         from tracertm.api.main import app
 
@@ -134,11 +133,11 @@ class TestDatabaseErrors:
 
                 try:
                     response = client.get("/api/v1/items", params={"project_id": "test"})
-                    assert response.status_code in [500, 503, 504]
+                    assert response.status_code in {500, 503, 504}
                 except Exception:
                     pass
 
-    def test_integrity_constraint_error(self):
+    def test_integrity_constraint_error(self) -> None:
         """Test handling of database integrity constraint errors."""
         from tracertm.api.main import app
 
@@ -158,7 +157,7 @@ class TestDatabaseErrors:
 
                 try:
                     response = client.post("/api/v1/items", json={"title": "Test", "view": "FEATURE"})
-                    assert response.status_code in [400, 409, 422]
+                    assert response.status_code in {400, 409, 422}
                 except Exception:
                     pass
 
@@ -166,7 +165,7 @@ class TestDatabaseErrors:
 class TestValidationErrors:
     """Test input validation error handling."""
 
-    def test_missing_required_fields(self):
+    def test_missing_required_fields(self) -> None:
         """Test validation of missing required fields."""
         from tracertm.api.main import app
 
@@ -179,7 +178,7 @@ class TestValidationErrors:
         except Exception:
             pass
 
-    def test_invalid_field_types(self):
+    def test_invalid_field_types(self) -> None:
         """Test validation of invalid field types."""
         from tracertm.api.main import app
 
@@ -196,11 +195,11 @@ class TestValidationErrors:
             try:
                 response = client.get("/api/v1/items", params=invalid_data)
                 # Should get validation error
-                assert response.status_code == 422 or response.status_code == 400
+                assert response.status_code in {422, 400}
             except Exception:
                 pass
 
-    def test_out_of_range_values(self):
+    def test_out_of_range_values(self) -> None:
         """Test validation of out of range values."""
         from tracertm.api.main import app
 
@@ -210,11 +209,11 @@ class TestValidationErrors:
         try:
             response = client.get("/api/v1/items", params={"project_id": "test", "skip": -1, "limit": -1})
             # Should handle gracefully or reject
-            assert response.status_code in [200, 400, 422]
+            assert response.status_code in {200, 400, 422}
         except Exception:
             pass
 
-    def test_invalid_enum_values(self):
+    def test_invalid_enum_values(self) -> None:
         """Test validation of invalid enum values."""
         from tracertm.api.main import app
 
@@ -224,7 +223,7 @@ class TestValidationErrors:
         try:
             response = client.post("/api/v1/items", json={"title": "Test", "view": "INVALID_VIEW"})
             # Should reject or convert
-            assert response.status_code in [200, 400, 422]
+            assert response.status_code in {200, 400, 422}
         except Exception:
             pass
 
@@ -232,7 +231,7 @@ class TestValidationErrors:
 class TestBusinessLogicErrors:
     """Test business logic error handling."""
 
-    def test_circular_dependency_error(self):
+    def test_circular_dependency_error(self) -> None:
         """Test handling of circular dependency errors."""
         from tracertm.api.main import app
 
@@ -264,7 +263,7 @@ class TestBusinessLogicErrors:
                 except Exception:
                     pass
 
-    def test_item_not_found_in_analysis(self):
+    def test_item_not_found_in_analysis(self) -> None:
         """Test handling when item not found during analysis."""
         from tracertm.api.main import app
 
@@ -284,11 +283,11 @@ class TestBusinessLogicErrors:
 
                 try:
                     response = client.get("/api/v1/analysis/impact/nonexistent_item", params={"project_id": "test"})
-                    assert response.status_code in [404, 500]
+                    assert response.status_code in {404, 500}
                 except Exception:
                     pass
 
-    def test_no_path_found_error(self):
+    def test_no_path_found_error(self) -> None:
         """Test handling when no path exists between items."""
         from tracertm.api.main import app
 
@@ -327,7 +326,7 @@ class TestBusinessLogicErrors:
 class TestConcurrencyErrors:
     """Test concurrency error handling."""
 
-    def test_optimistic_locking_conflict(self):
+    def test_optimistic_locking_conflict(self) -> None:
         """Test handling of optimistic locking conflicts."""
         from tracertm.api.main import app
 
@@ -350,11 +349,11 @@ class TestConcurrencyErrors:
                 try:
                     response = client.put("/api/v1/items/test_item", json={"title": "Updated"})
                     # Should return conflict error
-                    assert response.status_code in [409, 500]
+                    assert response.status_code in {409, 500}
                 except Exception:
                     pass
 
-    def test_deadlock_error(self):
+    def test_deadlock_error(self) -> None:
         """Test handling of database deadlock errors."""
         from tracertm.api.main import app
 
@@ -375,7 +374,7 @@ class TestConcurrencyErrors:
                 try:
                     response = client.post("/api/v1/items", json={"title": "Test", "view": "FEATURE"})
                     # Should retry or return error
-                    assert response.status_code in [409, 500, 503]
+                    assert response.status_code in {409, 500, 503}
                 except Exception:
                     pass
 
@@ -383,7 +382,7 @@ class TestConcurrencyErrors:
 class TestErrorRecovery:
     """Test error recovery mechanisms."""
 
-    def test_graceful_degradation_on_service_error(self):
+    def test_graceful_degradation_on_service_error(self) -> None:
         """Test graceful degradation when service fails."""
         from tracertm.api.main import app
 
@@ -408,7 +407,7 @@ class TestErrorRecovery:
                 except Exception:
                     pass
 
-    def test_partial_results_on_error(self):
+    def test_partial_results_on_error(self) -> None:
         """Test returning partial results when some operations fail."""
         from tracertm.api.main import app
 
@@ -438,7 +437,7 @@ class TestErrorRecovery:
                 except Exception:
                     pass
 
-    def test_retry_on_transient_error(self):
+    def test_retry_on_transient_error(self) -> None:
         """Test automatic retry on transient errors."""
         from tracertm.api.main import app
 
@@ -451,7 +450,8 @@ class TestErrorRecovery:
                 nonlocal call_count
                 call_count += 1
                 if call_count < 3:
-                    raise OperationalError("", "", Exception("Connection lost"))
+                    msg = ""
+                    raise OperationalError(msg, "", Exception("Connection lost"))
                 connection = MagicMock()
                 session = MagicMock()
                 session.close = AsyncMock()
@@ -471,7 +471,7 @@ class TestErrorRecovery:
 class TestErrorLogging:
     """Test error logging functionality."""
 
-    def test_errors_are_logged(self):
+    def test_errors_are_logged(self) -> None:
         """Test that errors are properly logged."""
         from tracertm.api.main import app
 
@@ -489,7 +489,7 @@ class TestErrorLogging:
                 # Logger should have been called
                 assert True
 
-    def test_error_context_logged(self):
+    def test_error_context_logged(self) -> None:
         """Test that error context is included in logs."""
         from tracertm.api.main import app
 
@@ -520,7 +520,7 @@ class TestErrorLogging:
 class TestCustomExceptions:
     """Test custom exception handling."""
 
-    def test_item_not_found_exception(self):
+    def test_item_not_found_exception(self) -> None:
         """Test ItemNotFoundException handling."""
         from tracertm.api.main import app
 
@@ -546,7 +546,7 @@ class TestCustomExceptions:
                 except Exception:
                     pass
 
-    def test_project_not_found_exception(self):
+    def test_project_not_found_exception(self) -> None:
         """Test ProjectNotFoundException handling."""
         from tracertm.api.main import app
 
@@ -566,7 +566,7 @@ class TestCustomExceptions:
 
                 try:
                     response = client.get("/api/v1/items", params={"project_id": "nonexistent"})
-                    assert response.status_code in [404, 500]
+                    assert response.status_code in {404, 500}
                 except Exception:
                     pass
 
@@ -574,7 +574,7 @@ class TestCustomExceptions:
 class TestErrorResponseHeaders:
     """Test error response headers."""
 
-    def test_error_correlation_id(self):
+    def test_error_correlation_id(self) -> None:
         """Test that errors include correlation ID for tracking."""
         from tracertm.api.main import app
 
@@ -592,7 +592,7 @@ class TestErrorResponseHeaders:
             except Exception:
                 pass
 
-    def test_error_timestamp_header(self):
+    def test_error_timestamp_header(self) -> None:
         """Test that errors include timestamp."""
         from tracertm.api.main import app
 

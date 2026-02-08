@@ -1,5 +1,4 @@
-"""
-Integration tests for advanced services batch 2 at 0% coverage.
+"""Integration tests for advanced services batch 2 at 0% coverage.
 
 This test suite provides comprehensive integration testing for:
 - api_webhooks_service.py (80 lines, 0%)
@@ -49,9 +48,8 @@ class TestAPIWebhooksServiceIntegration:
 
     # API Key Management Tests (Lines 30-83)
 
-    def test_create_api_key_with_all_fields(self, webhooks_service):
-        """
-        Test creating an API key with all fields populated.
+    def test_create_api_key_with_all_fields(self, webhooks_service) -> None:
+        """Test creating an API key with all fields populated.
 
         GIVEN: A webhooks service
         WHEN: Creating an API key with name, permissions, and expiration
@@ -67,9 +65,8 @@ class TestAPIWebhooksServiceIntegration:
         assert result["expires_at"] is not None
         assert result["key"] in webhooks_service.api_keys
 
-    def test_create_api_key_without_expiration(self, webhooks_service):
-        """
-        Test creating an API key without expiration date.
+    def test_create_api_key_without_expiration(self, webhooks_service) -> None:
+        """Test creating an API key without expiration date.
 
         GIVEN: A webhooks service
         WHEN: Creating an API key without expires_in_days
@@ -80,9 +77,8 @@ class TestAPIWebhooksServiceIntegration:
         assert result["expires_at"] is None
         assert result["active"] is True
 
-    def test_create_multiple_api_keys_unique_hashes(self, webhooks_service):
-        """
-        Test creating multiple API keys generates unique hashes.
+    def test_create_multiple_api_keys_unique_hashes(self, webhooks_service) -> None:
+        """Test creating multiple API keys generates unique hashes.
 
         GIVEN: A webhooks service
         WHEN: Creating multiple API keys with same name
@@ -94,9 +90,8 @@ class TestAPIWebhooksServiceIntegration:
         assert key1["key"] != key2["key"]
         assert len(webhooks_service.api_keys) == 2
 
-    def test_validate_api_key_valid_active_key(self, webhooks_service):
-        """
-        Test validating a valid and active API key.
+    def test_validate_api_key_valid_active_key(self, webhooks_service) -> None:
+        """Test validating a valid and active API key.
 
         GIVEN: A webhooks service with a valid API key
         WHEN: Validating the key
@@ -110,9 +105,8 @@ class TestAPIWebhooksServiceIntegration:
         assert result["key"] == api_key["key"]
         assert result["permissions"] == ["read", "write"]
 
-    def test_validate_api_key_invalid_key(self, webhooks_service):
-        """
-        Test validating an invalid API key.
+    def test_validate_api_key_invalid_key(self, webhooks_service) -> None:
+        """Test validating an invalid API key.
 
         GIVEN: A webhooks service
         WHEN: Validating a non-existent key
@@ -123,9 +117,8 @@ class TestAPIWebhooksServiceIntegration:
         assert result["valid"] is False
         assert result["error"] == "Invalid API key"
 
-    def test_validate_api_key_inactive_key(self, webhooks_service):
-        """
-        Test validating an inactive API key.
+    def test_validate_api_key_inactive_key(self, webhooks_service) -> None:
+        """Test validating an inactive API key.
 
         GIVEN: A webhooks service with a revoked key
         WHEN: Validating the inactive key
@@ -139,9 +132,8 @@ class TestAPIWebhooksServiceIntegration:
         assert result["valid"] is False
         assert result["error"] == "API key is inactive"
 
-    def test_validate_api_key_expired_key(self, webhooks_service):
-        """
-        Test validating an expired API key.
+    def test_validate_api_key_expired_key(self, webhooks_service) -> None:
+        """Test validating an expired API key.
 
         GIVEN: A webhooks service with an expired key
         WHEN: Validating the expired key
@@ -155,9 +147,8 @@ class TestAPIWebhooksServiceIntegration:
         assert result["valid"] is False
         assert result["error"] == "API key has expired"
 
-    def test_revoke_api_key_success(self, webhooks_service):
-        """
-        Test successfully revoking an API key.
+    def test_revoke_api_key_success(self, webhooks_service) -> None:
+        """Test successfully revoking an API key.
 
         GIVEN: A webhooks service with an active key
         WHEN: Revoking the key
@@ -171,9 +162,8 @@ class TestAPIWebhooksServiceIntegration:
         assert result["key"] == api_key["key"]
         assert webhooks_service.api_keys[api_key["key"]]["active"] is False
 
-    def test_revoke_api_key_not_found(self, webhooks_service):
-        """
-        Test revoking a non-existent API key.
+    def test_revoke_api_key_not_found(self, webhooks_service) -> None:
+        """Test revoking a non-existent API key.
 
         GIVEN: A webhooks service
         WHEN: Revoking a non-existent key
@@ -186,9 +176,8 @@ class TestAPIWebhooksServiceIntegration:
 
     # Webhook Management Tests (Lines 84-172)
 
-    def test_register_webhook_with_secret(self, webhooks_service):
-        """
-        Test registering a webhook with secret.
+    def test_register_webhook_with_secret(self, webhooks_service) -> None:
+        """Test registering a webhook with secret.
 
         GIVEN: A webhooks service
         WHEN: Registering a webhook with URL, events, and secret
@@ -208,9 +197,8 @@ class TestAPIWebhooksServiceIntegration:
         assert result["delivery_count"] == 0
         assert result["last_triggered"] is None
 
-    def test_register_webhook_without_secret(self, webhooks_service):
-        """
-        Test registering a webhook without secret.
+    def test_register_webhook_without_secret(self, webhooks_service) -> None:
+        """Test registering a webhook without secret.
 
         GIVEN: A webhooks service
         WHEN: Registering a webhook without secret
@@ -221,9 +209,8 @@ class TestAPIWebhooksServiceIntegration:
         assert result["secret"] is None
         assert result["active"] is True
 
-    def test_unregister_webhook_success(self, webhooks_service):
-        """
-        Test successfully unregistering a webhook.
+    def test_unregister_webhook_success(self, webhooks_service) -> None:
+        """Test successfully unregistering a webhook.
 
         GIVEN: A webhooks service with a registered webhook
         WHEN: Unregistering the webhook
@@ -237,9 +224,8 @@ class TestAPIWebhooksServiceIntegration:
         assert result["webhook_id"] == webhook["id"]
         assert webhook["id"] not in webhooks_service.webhooks
 
-    def test_unregister_webhook_not_found(self, webhooks_service):
-        """
-        Test unregistering a non-existent webhook.
+    def test_unregister_webhook_not_found(self, webhooks_service) -> None:
+        """Test unregistering a non-existent webhook.
 
         GIVEN: A webhooks service
         WHEN: Unregistering a non-existent webhook
@@ -250,9 +236,8 @@ class TestAPIWebhooksServiceIntegration:
         assert "error" in result
         assert result["error"] == "Webhook not found"
 
-    def test_trigger_webhook_event_matching_webhooks(self, webhooks_service):
-        """
-        Test triggering an event that matches multiple webhooks.
+    def test_trigger_webhook_event_matching_webhooks(self, webhooks_service) -> None:
+        """Test triggering an event that matches multiple webhooks.
 
         GIVEN: Multiple registered webhooks for the same event
         WHEN: Triggering the event
@@ -274,9 +259,8 @@ class TestAPIWebhooksServiceIntegration:
         assert result["webhooks_triggered"] == 2
         assert "event_id" in result
 
-    def test_trigger_webhook_event_no_matching_webhooks(self, webhooks_service):
-        """
-        Test triggering an event with no matching webhooks.
+    def test_trigger_webhook_event_no_matching_webhooks(self, webhooks_service) -> None:
+        """Test triggering an event with no matching webhooks.
 
         GIVEN: Registered webhooks for different events
         WHEN: Triggering an event that doesn't match
@@ -294,9 +278,8 @@ class TestAPIWebhooksServiceIntegration:
 
         assert result["webhooks_triggered"] == 0
 
-    def test_trigger_webhook_event_inactive_webhook(self, webhooks_service):
-        """
-        Test triggering an event with inactive webhooks.
+    def test_trigger_webhook_event_inactive_webhook(self, webhooks_service) -> None:
+        """Test triggering an event with inactive webhooks.
 
         GIVEN: An inactive webhook
         WHEN: Triggering a matching event
@@ -315,9 +298,8 @@ class TestAPIWebhooksServiceIntegration:
 
         assert result["webhooks_triggered"] == 0
 
-    def test_trigger_webhook_event_updates_delivery_stats(self, webhooks_service):
-        """
-        Test that triggering events updates webhook delivery stats.
+    def test_trigger_webhook_event_updates_delivery_stats(self, webhooks_service) -> None:
+        """Test that triggering events updates webhook delivery stats.
 
         GIVEN: A registered webhook
         WHEN: Triggering matching events multiple times
@@ -344,9 +326,8 @@ class TestAPIWebhooksServiceIntegration:
         assert webhook_data["delivery_count"] == 2
         assert webhook_data["last_triggered"] is not None
 
-    def test_get_webhook_events_all(self, webhooks_service):
-        """
-        Test getting all webhook events.
+    def test_get_webhook_events_all(self, webhooks_service) -> None:
+        """Test getting all webhook events.
 
         GIVEN: Multiple triggered webhook events
         WHEN: Getting events without filter
@@ -363,9 +344,8 @@ class TestAPIWebhooksServiceIntegration:
         assert events[1]["event_type"] == "item.updated"
         assert events[2]["event_type"] == "item.deleted"
 
-    def test_get_webhook_events_filtered_by_type(self, webhooks_service):
-        """
-        Test getting webhook events filtered by event type.
+    def test_get_webhook_events_filtered_by_type(self, webhooks_service) -> None:
+        """Test getting webhook events filtered by event type.
 
         GIVEN: Multiple triggered webhook events
         WHEN: Getting events filtered by type
@@ -380,9 +360,8 @@ class TestAPIWebhooksServiceIntegration:
         assert len(events) == 2
         assert all(e["event_type"] == "item.created" for e in events)
 
-    def test_get_webhook_events_with_limit(self, webhooks_service):
-        """
-        Test getting webhook events with limit.
+    def test_get_webhook_events_with_limit(self, webhooks_service) -> None:
+        """Test getting webhook events with limit.
 
         GIVEN: Many triggered webhook events
         WHEN: Getting events with a limit
@@ -401,9 +380,8 @@ class TestAPIWebhooksServiceIntegration:
 
     # Rate Limiting Tests (Lines 173-209)
 
-    def test_set_rate_limit(self, webhooks_service):
-        """
-        Test setting rate limit for an API key.
+    def test_set_rate_limit(self, webhooks_service) -> None:
+        """Test setting rate limit for an API key.
 
         GIVEN: A webhooks service
         WHEN: Setting a rate limit
@@ -416,9 +394,8 @@ class TestAPIWebhooksServiceIntegration:
         assert "test-key" in webhooks_service.rate_limits
         assert webhooks_service.rate_limits["test-key"]["requests_made"] == 0
 
-    def test_check_rate_limit_no_limit_set(self, webhooks_service):
-        """
-        Test checking rate limit when none is set.
+    def test_check_rate_limit_no_limit_set(self, webhooks_service) -> None:
+        """Test checking rate limit when none is set.
 
         GIVEN: A webhooks service with no rate limit
         WHEN: Checking rate limit
@@ -429,9 +406,8 @@ class TestAPIWebhooksServiceIntegration:
         assert result["allowed"] is True
         assert result["reason"] == "No rate limit set"
 
-    def test_check_rate_limit_within_limit(self, webhooks_service):
-        """
-        Test checking rate limit within allowed requests.
+    def test_check_rate_limit_within_limit(self, webhooks_service) -> None:
+        """Test checking rate limit within allowed requests.
 
         GIVEN: A rate limit with available capacity
         WHEN: Making a request within limit
@@ -445,9 +421,8 @@ class TestAPIWebhooksServiceIntegration:
         assert result["requests_remaining"] == 9
         assert webhooks_service.rate_limits["test-key"]["requests_made"] == 1
 
-    def test_check_rate_limit_exceeds_limit(self, webhooks_service):
-        """
-        Test checking rate limit when exceeded.
+    def test_check_rate_limit_exceeds_limit(self, webhooks_service) -> None:
+        """Test checking rate limit when exceeded.
 
         GIVEN: A rate limit that is exhausted
         WHEN: Making a request beyond limit
@@ -462,9 +437,8 @@ class TestAPIWebhooksServiceIntegration:
         assert result["allowed"] is False
         assert result["reason"] == "Rate limit exceeded"
 
-    def test_check_rate_limit_reset_after_minute(self, webhooks_service):
-        """
-        Test that rate limit resets after one minute.
+    def test_check_rate_limit_reset_after_minute(self, webhooks_service) -> None:
+        """Test that rate limit resets after one minute.
 
         GIVEN: A rate limit that was exhausted
         WHEN: Checking after reset time
@@ -487,9 +461,8 @@ class TestAPIWebhooksServiceIntegration:
 
     # Statistics Tests (Lines 210-219)
 
-    def test_get_api_stats_empty(self, webhooks_service):
-        """
-        Test getting API stats with no data.
+    def test_get_api_stats_empty(self, webhooks_service) -> None:
+        """Test getting API stats with no data.
 
         GIVEN: An empty webhooks service
         WHEN: Getting stats
@@ -503,9 +476,8 @@ class TestAPIWebhooksServiceIntegration:
         assert stats["active_webhooks"] == 0
         assert stats["total_webhook_events"] == 0
 
-    def test_get_api_stats_with_data(self, webhooks_service):
-        """
-        Test getting API stats with various data.
+    def test_get_api_stats_with_data(self, webhooks_service) -> None:
+        """Test getting API stats with various data.
 
         GIVEN: API keys, webhooks, and events
         WHEN: Getting stats
@@ -560,9 +532,8 @@ class TestCommitLinkingServiceIntegration:
     # Commit Message Parsing Tests (Lines 31-64)
 
     @pytest.mark.asyncio
-    async def test_parse_commit_message_hash_pattern(self, commit_service, test_project, test_item):
-        """
-        Test parsing commit message with hash pattern.
+    async def test_parse_commit_message_hash_pattern(self, commit_service, test_project, test_item) -> None:
+        """Test parsing commit message with hash pattern.
 
         GIVEN: A commit message with #123 format
         WHEN: Parsing the message
@@ -581,9 +552,8 @@ class TestCommitLinkingServiceIntegration:
         assert isinstance(result["errors"], list)
 
     @pytest.mark.asyncio
-    async def test_parse_commit_message_jira_pattern(self, commit_service, test_project):
-        """
-        Test parsing commit message with JIRA pattern.
+    async def test_parse_commit_message_jira_pattern(self, commit_service, test_project) -> None:
+        """Test parsing commit message with JIRA pattern.
 
         GIVEN: A commit message with FEAT-123 format
         WHEN: Parsing the message
@@ -604,9 +574,8 @@ class TestCommitLinkingServiceIntegration:
         assert "linked" in result
 
     @pytest.mark.asyncio
-    async def test_parse_commit_message_github_pattern(self, commit_service, test_project):
-        """
-        Test parsing commit message with GitHub pattern.
+    async def test_parse_commit_message_github_pattern(self, commit_service, test_project) -> None:
+        """Test parsing commit message with GitHub pattern.
 
         GIVEN: A commit message with GH-123 format
         WHEN: Parsing the message
@@ -625,9 +594,8 @@ class TestCommitLinkingServiceIntegration:
         assert "errors" in result
 
     @pytest.mark.asyncio
-    async def test_parse_commit_message_multiple_patterns(self, commit_service, test_project):
-        """
-        Test parsing commit message with multiple patterns.
+    async def test_parse_commit_message_multiple_patterns(self, commit_service, test_project) -> None:
+        """Test parsing commit message with multiple patterns.
 
         GIVEN: A commit message with multiple reference formats
         WHEN: Parsing the message
@@ -646,9 +614,8 @@ class TestCommitLinkingServiceIntegration:
         assert isinstance(result["errors"], list)
 
     @pytest.mark.asyncio
-    async def test_parse_commit_message_no_patterns(self, commit_service, test_project):
-        """
-        Test parsing commit message with no patterns.
+    async def test_parse_commit_message_no_patterns(self, commit_service, test_project) -> None:
+        """Test parsing commit message with no patterns.
 
         GIVEN: A commit message without any references
         WHEN: Parsing the message
@@ -669,9 +636,8 @@ class TestCommitLinkingServiceIntegration:
     # Auto-Linking Tests (Lines 66-116)
 
     @pytest.mark.asyncio
-    async def test_auto_link_commit_success(self, commit_service, test_project, test_item, db_session):
-        """
-        Test successfully auto-linking a commit to an item.
+    async def test_auto_link_commit_success(self, commit_service, test_project, test_item, db_session) -> None:
+        """Test successfully auto-linking a commit to an item.
 
         GIVEN: A commit message referencing an item
         WHEN: Auto-linking the commit
@@ -693,9 +659,8 @@ class TestCommitLinkingServiceIntegration:
         assert "errors" in result
 
     @pytest.mark.asyncio
-    async def test_auto_link_commit_no_references(self, commit_service, test_project, db_session):
-        """
-        Test auto-linking with no item references.
+    async def test_auto_link_commit_no_references(self, commit_service, test_project, db_session) -> None:
+        """Test auto-linking with no item references.
 
         GIVEN: A commit message without references
         WHEN: Auto-linking the commit
@@ -714,9 +679,8 @@ class TestCommitLinkingServiceIntegration:
         assert len(result["linked"]) == 0
 
     @pytest.mark.asyncio
-    async def test_auto_link_commit_with_errors(self, commit_service, test_project, db_session):
-        """
-        Test auto-linking when errors occur.
+    async def test_auto_link_commit_with_errors(self, commit_service, test_project, db_session) -> None:
+        """Test auto-linking when errors occur.
 
         GIVEN: A commit message with invalid references
         WHEN: Auto-linking the commit
@@ -736,9 +700,8 @@ class TestCommitLinkingServiceIntegration:
     # Item Lookup Tests (Lines 118-134)
 
     @pytest.mark.asyncio
-    async def test_find_item_by_reference_direct_id(self, commit_service, test_project, test_item):
-        """
-        Test finding item by direct ID.
+    async def test_find_item_by_reference_direct_id(self, commit_service, test_project, test_item) -> None:
+        """Test finding item by direct ID.
 
         GIVEN: An existing item
         WHEN: Looking up by exact ID
@@ -750,9 +713,8 @@ class TestCommitLinkingServiceIntegration:
         assert item.id == test_item.id
 
     @pytest.mark.asyncio
-    async def test_find_item_by_reference_not_found(self, commit_service, test_project):
-        """
-        Test finding item that doesn't exist.
+    async def test_find_item_by_reference_not_found(self, commit_service, test_project) -> None:
+        """Test finding item that doesn't exist.
 
         GIVEN: A non-existent item reference
         WHEN: Looking up by reference
@@ -764,10 +726,9 @@ class TestCommitLinkingServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_find_item_by_reference_wrong_project(
-        self, commit_service, test_project, test_item, db_session, project_factory
-    ):
-        """
-        Test finding item from different project.
+        self, commit_service, test_project, test_item, db_session, project_factory,
+    ) -> None:
+        """Test finding item from different project.
 
         GIVEN: An item in a different project
         WHEN: Looking up with wrong project_id
@@ -783,9 +744,8 @@ class TestCommitLinkingServiceIntegration:
     # Commit Hook Registration Tests (Lines 136-149)
 
     @pytest.mark.asyncio
-    async def test_register_commit_hook_git(self, commit_service, test_project):
-        """
-        Test registering a git commit hook.
+    async def test_register_commit_hook_git(self, commit_service, test_project) -> None:
+        """Test registering a git commit hook.
 
         GIVEN: A project
         WHEN: Registering a git hook
@@ -803,9 +763,8 @@ class TestCommitLinkingServiceIntegration:
         assert result["status"] == "registered"
 
     @pytest.mark.asyncio
-    async def test_register_commit_hook_github(self, commit_service, test_project):
-        """
-        Test registering a GitHub commit hook.
+    async def test_register_commit_hook_github(self, commit_service, test_project) -> None:
+        """Test registering a GitHub commit hook.
 
         GIVEN: A project
         WHEN: Registering a GitHub hook
@@ -821,9 +780,8 @@ class TestCommitLinkingServiceIntegration:
         assert result["status"] == "registered"
 
     @pytest.mark.asyncio
-    async def test_register_commit_hook_gitlab(self, commit_service, test_project):
-        """
-        Test registering a GitLab commit hook.
+    async def test_register_commit_hook_gitlab(self, commit_service, test_project) -> None:
+        """Test registering a GitLab commit hook.
 
         GIVEN: A project
         WHEN: Registering a GitLab hook
@@ -854,9 +812,8 @@ class TestDocumentationServiceIntegration:
 
     # Endpoint Registration Tests (Lines 15-42)
 
-    def test_register_endpoint_complete(self, doc_service):
-        """
-        Test registering an endpoint with all fields.
+    def test_register_endpoint_complete(self, doc_service) -> None:
+        """Test registering an endpoint with all fields.
 
         GIVEN: A documentation service
         WHEN: Registering an endpoint with full details
@@ -879,9 +836,8 @@ class TestDocumentationServiceIntegration:
         assert len(result["parameters"]) == 2
         assert "registered_at" in result
 
-    def test_get_endpoint_exists(self, doc_service):
-        """
-        Test getting an existing endpoint.
+    def test_get_endpoint_exists(self, doc_service) -> None:
+        """Test getting an existing endpoint.
 
         GIVEN: A registered endpoint
         WHEN: Getting the endpoint
@@ -901,9 +857,8 @@ class TestDocumentationServiceIntegration:
         assert result["path"] == "/api/items"
         assert result["method"] == "GET"
 
-    def test_get_endpoint_not_found(self, doc_service):
-        """
-        Test getting a non-existent endpoint.
+    def test_get_endpoint_not_found(self, doc_service) -> None:
+        """Test getting a non-existent endpoint.
 
         GIVEN: A documentation service
         WHEN: Getting an endpoint that doesn't exist
@@ -913,9 +868,8 @@ class TestDocumentationServiceIntegration:
 
         assert result is None
 
-    def test_list_endpoints_all(self, doc_service):
-        """
-        Test listing all endpoints.
+    def test_list_endpoints_all(self, doc_service) -> None:
+        """Test listing all endpoints.
 
         GIVEN: Multiple registered endpoints
         WHEN: Listing without filter
@@ -929,9 +883,8 @@ class TestDocumentationServiceIntegration:
 
         assert len(result) == 3
 
-    def test_list_endpoints_filtered_by_method(self, doc_service):
-        """
-        Test listing endpoints filtered by method.
+    def test_list_endpoints_filtered_by_method(self, doc_service) -> None:
+        """Test listing endpoints filtered by method.
 
         GIVEN: Multiple endpoints with different methods
         WHEN: Listing with method filter
@@ -948,9 +901,8 @@ class TestDocumentationServiceIntegration:
 
     # Schema Registration Tests (Lines 52-76)
 
-    def test_register_schema(self, doc_service):
-        """
-        Test registering a data schema.
+    def test_register_schema(self, doc_service) -> None:
+        """Test registering a data schema.
 
         GIVEN: A documentation service
         WHEN: Registering a schema
@@ -972,9 +924,8 @@ class TestDocumentationServiceIntegration:
         assert result["description"] == "Item schema"
         assert "registered_at" in result
 
-    def test_get_schema_exists(self, doc_service):
-        """
-        Test getting an existing schema.
+    def test_get_schema_exists(self, doc_service) -> None:
+        """Test getting an existing schema.
 
         GIVEN: A registered schema
         WHEN: Getting the schema
@@ -987,9 +938,8 @@ class TestDocumentationServiceIntegration:
         assert result is not None
         assert result["name"] == "Project"
 
-    def test_get_schema_not_found(self, doc_service):
-        """
-        Test getting a non-existent schema.
+    def test_get_schema_not_found(self, doc_service) -> None:
+        """Test getting a non-existent schema.
 
         GIVEN: A documentation service
         WHEN: Getting a schema that doesn't exist
@@ -999,9 +949,8 @@ class TestDocumentationServiceIntegration:
 
         assert result is None
 
-    def test_list_schemas(self, doc_service):
-        """
-        Test listing all schemas.
+    def test_list_schemas(self, doc_service) -> None:
+        """Test listing all schemas.
 
         GIVEN: Multiple registered schemas
         WHEN: Listing schemas
@@ -1017,9 +966,8 @@ class TestDocumentationServiceIntegration:
 
     # Example Management Tests (Lines 77-104)
 
-    def test_add_example(self, doc_service):
-        """
-        Test adding an example for an endpoint.
+    def test_add_example(self, doc_service) -> None:
+        """Test adding an example for an endpoint.
 
         GIVEN: A documentation service
         WHEN: Adding an example
@@ -1037,9 +985,8 @@ class TestDocumentationServiceIntegration:
         assert result["request"]["title"] == "New Feature"
         assert result["response"]["id"] == "item-123"
 
-    def test_add_multiple_examples_same_endpoint(self, doc_service):
-        """
-        Test adding multiple examples to the same endpoint.
+    def test_add_multiple_examples_same_endpoint(self, doc_service) -> None:
+        """Test adding multiple examples to the same endpoint.
 
         GIVEN: An endpoint
         WHEN: Adding multiple examples
@@ -1052,9 +999,8 @@ class TestDocumentationServiceIntegration:
 
         assert len(examples) == 2
 
-    def test_get_examples_for_endpoint(self, doc_service):
-        """
-        Test getting examples for a specific endpoint.
+    def test_get_examples_for_endpoint(self, doc_service) -> None:
+        """Test getting examples for a specific endpoint.
 
         GIVEN: Examples for multiple endpoints
         WHEN: Getting examples for one endpoint
@@ -1068,9 +1014,8 @@ class TestDocumentationServiceIntegration:
         assert len(examples) == 1
         assert examples[0]["name"] == "Example 1"
 
-    def test_get_examples_no_examples(self, doc_service):
-        """
-        Test getting examples when none exist.
+    def test_get_examples_no_examples(self, doc_service) -> None:
+        """Test getting examples when none exist.
 
         GIVEN: A documentation service with no examples
         WHEN: Getting examples for an endpoint
@@ -1082,9 +1027,8 @@ class TestDocumentationServiceIntegration:
 
     # OpenAPI Generation Tests (Lines 105-141)
 
-    def test_generate_openapi_spec_empty(self, doc_service):
-        """
-        Test generating OpenAPI spec with no endpoints.
+    def test_generate_openapi_spec_empty(self, doc_service) -> None:
+        """Test generating OpenAPI spec with no endpoints.
 
         GIVEN: A documentation service with no endpoints
         WHEN: Generating OpenAPI spec
@@ -1097,9 +1041,8 @@ class TestDocumentationServiceIntegration:
         assert spec["paths"] == {}
         assert spec["components"]["schemas"] == {}
 
-    def test_generate_openapi_spec_with_endpoints(self, doc_service):
-        """
-        Test generating OpenAPI spec with endpoints.
+    def test_generate_openapi_spec_with_endpoints(self, doc_service) -> None:
+        """Test generating OpenAPI spec with endpoints.
 
         GIVEN: Registered endpoints
         WHEN: Generating OpenAPI spec
@@ -1126,9 +1069,8 @@ class TestDocumentationServiceIntegration:
         assert "get" in spec["paths"]["/api/items"]
         assert "post" in spec["paths"]["/api/items"]
 
-    def test_generate_openapi_spec_with_schemas(self, doc_service):
-        """
-        Test generating OpenAPI spec with schemas.
+    def test_generate_openapi_spec_with_schemas(self, doc_service) -> None:
+        """Test generating OpenAPI spec with schemas.
 
         GIVEN: Registered schemas
         WHEN: Generating OpenAPI spec
@@ -1146,9 +1088,8 @@ class TestDocumentationServiceIntegration:
 
     # Markdown Generation Tests (Lines 142-164)
 
-    def test_generate_markdown_docs_empty(self, doc_service):
-        """
-        Test generating markdown docs with no endpoints.
+    def test_generate_markdown_docs_empty(self, doc_service) -> None:
+        """Test generating markdown docs with no endpoints.
 
         GIVEN: A documentation service with no endpoints
         WHEN: Generating markdown
@@ -1159,9 +1100,8 @@ class TestDocumentationServiceIntegration:
         assert "# TraceRTM API Documentation" in md
         assert "## Endpoints" in md
 
-    def test_generate_markdown_docs_with_endpoints(self, doc_service):
-        """
-        Test generating markdown docs with endpoints.
+    def test_generate_markdown_docs_with_endpoints(self, doc_service) -> None:
+        """Test generating markdown docs with endpoints.
 
         GIVEN: Registered endpoints
         WHEN: Generating markdown
@@ -1182,9 +1122,8 @@ class TestDocumentationServiceIntegration:
         assert "**Parameters:**" in md
         assert "`status` (string): Filter by status" in md
 
-    def test_generate_markdown_docs_no_parameters(self, doc_service):
-        """
-        Test generating markdown docs for endpoint without parameters.
+    def test_generate_markdown_docs_no_parameters(self, doc_service) -> None:
+        """Test generating markdown docs for endpoint without parameters.
 
         GIVEN: An endpoint with no parameters
         WHEN: Generating markdown
@@ -1205,9 +1144,8 @@ class TestDocumentationServiceIntegration:
 
     # Statistics Tests (Lines 165-173)
 
-    def test_get_documentation_stats_empty(self, doc_service):
-        """
-        Test getting documentation stats with no data.
+    def test_get_documentation_stats_empty(self, doc_service) -> None:
+        """Test getting documentation stats with no data.
 
         GIVEN: An empty documentation service
         WHEN: Getting stats
@@ -1220,9 +1158,8 @@ class TestDocumentationServiceIntegration:
         assert stats["total_examples"] == 0
         assert stats["methods"] == []
 
-    def test_get_documentation_stats_with_data(self, doc_service):
-        """
-        Test getting documentation stats with data.
+    def test_get_documentation_stats_with_data(self, doc_service) -> None:
+        """Test getting documentation stats with data.
 
         GIVEN: Endpoints, schemas, and examples
         WHEN: Getting stats
@@ -1295,9 +1232,8 @@ class TestEventSourcingServiceIntegration:
     # Audit Trail Tests (Lines 44-71)
 
     @pytest.mark.asyncio
-    async def test_get_audit_trail_by_project(self, event_service, test_project, create_test_events):
-        """
-        Test getting audit trail for entire project.
+    async def test_get_audit_trail_by_project(self, event_service, test_project, create_test_events) -> None:
+        """Test getting audit trail for entire project.
 
         GIVEN: Multiple events in a project
         WHEN: Getting audit trail by project
@@ -1307,12 +1243,11 @@ class TestEventSourcingServiceIntegration:
 
         assert len(trail) >= 3
         assert all(isinstance(entry, AuditTrailEntry) for entry in trail)
-        assert all(entry.entity_type in ["item", "project"] for entry in trail)
+        assert all(entry.entity_type in {"item", "project"} for entry in trail)
 
     @pytest.mark.asyncio
-    async def test_get_audit_trail_by_entity(self, event_service, test_project, test_item, create_test_events):
-        """
-        Test getting audit trail for specific entity.
+    async def test_get_audit_trail_by_entity(self, event_service, test_project, test_item, create_test_events) -> None:
+        """Test getting audit trail for specific entity.
 
         GIVEN: Multiple events for an entity
         WHEN: Getting audit trail by entity_id
@@ -1324,9 +1259,8 @@ class TestEventSourcingServiceIntegration:
         assert all(entry.entity_id == test_item.id for entry in trail)
 
     @pytest.mark.asyncio
-    async def test_get_audit_trail_with_limit(self, event_service, test_project, create_test_events):
-        """
-        Test getting audit trail with limit.
+    async def test_get_audit_trail_with_limit(self, event_service, test_project, create_test_events) -> None:
+        """Test getting audit trail with limit.
 
         GIVEN: Multiple events
         WHEN: Getting audit trail with limit
@@ -1337,9 +1271,8 @@ class TestEventSourcingServiceIntegration:
         assert len(trail) <= 2
 
     @pytest.mark.asyncio
-    async def test_audit_trail_entry_structure(self, event_service, test_project, create_test_events):
-        """
-        Test audit trail entry has correct structure.
+    async def test_audit_trail_entry_structure(self, event_service, test_project, create_test_events) -> None:
+        """Test audit trail entry has correct structure.
 
         GIVEN: Events in the system
         WHEN: Getting audit trail
@@ -1359,9 +1292,8 @@ class TestEventSourcingServiceIntegration:
     # Event Replay Tests (Lines 72-107)
 
     @pytest.mark.asyncio
-    async def test_replay_events_all(self, event_service, test_project, test_item, create_test_events):
-        """
-        Test replaying all events for an entity.
+    async def test_replay_events_all(self, event_service, test_project, test_item, create_test_events) -> None:
+        """Test replaying all events for an entity.
 
         GIVEN: Multiple events for an entity
         WHEN: Replaying all events
@@ -1375,9 +1307,8 @@ class TestEventSourcingServiceIntegration:
         assert isinstance(result.final_state, dict)
 
     @pytest.mark.asyncio
-    async def test_replay_events_up_to_timestamp(self, event_service, test_project, test_item, create_test_events):
-        """
-        Test replaying events up to specific timestamp.
+    async def test_replay_events_up_to_timestamp(self, event_service, test_project, test_item, create_test_events) -> None:
+        """Test replaying events up to specific timestamp.
 
         GIVEN: Multiple events at different times
         WHEN: Replaying events with timestamp cutoff
@@ -1395,9 +1326,8 @@ class TestEventSourcingServiceIntegration:
         assert result.total_events >= 0
 
     @pytest.mark.asyncio
-    async def test_apply_event_item_created(self, event_service):
-        """
-        Test applying item_created event.
+    async def test_apply_event_item_created(self, event_service) -> None:
+        """Test applying item_created event.
 
         GIVEN: An empty state
         WHEN: Applying item_created event
@@ -1424,9 +1354,8 @@ class TestEventSourcingServiceIntegration:
         assert new_state["version"] == 1
 
     @pytest.mark.asyncio
-    async def test_apply_event_item_updated(self, event_service):
-        """
-        Test applying item_updated event.
+    async def test_apply_event_item_updated(self, event_service) -> None:
+        """Test applying item_updated event.
 
         GIVEN: A state with existing item
         WHEN: Applying item_updated event
@@ -1452,9 +1381,8 @@ class TestEventSourcingServiceIntegration:
         assert new_state["version"] == 2
 
     @pytest.mark.asyncio
-    async def test_apply_event_item_deleted(self, event_service):
-        """
-        Test applying item_deleted event.
+    async def test_apply_event_item_deleted(self, event_service) -> None:
+        """Test applying item_deleted event.
 
         GIVEN: A state with existing item
         WHEN: Applying item_deleted event
@@ -1479,9 +1407,8 @@ class TestEventSourcingServiceIntegration:
         assert new_state["deleted_at"] == "2025-01-01T00:00:00"
 
     @pytest.mark.asyncio
-    async def test_apply_event_link_created(self, event_service):
-        """
-        Test applying link_created event.
+    async def test_apply_event_link_created(self, event_service) -> None:
+        """Test applying link_created event.
 
         GIVEN: A state
         WHEN: Applying link_created event
@@ -1510,9 +1437,8 @@ class TestEventSourcingServiceIntegration:
     # Event History Tests (Lines 145-157)
 
     @pytest.mark.asyncio
-    async def test_get_event_history_all(self, event_service, test_item, create_test_events):
-        """
-        Test getting complete event history.
+    async def test_get_event_history_all(self, event_service, test_item, create_test_events) -> None:
+        """Test getting complete event history.
 
         GIVEN: Multiple events for an entity
         WHEN: Getting event history
@@ -1524,9 +1450,8 @@ class TestEventSourcingServiceIntegration:
         assert all(e.entity_id == test_item.id for e in events)
 
     @pytest.mark.asyncio
-    async def test_get_event_history_filtered_by_type(self, event_service, test_item, create_test_events):
-        """
-        Test getting event history filtered by type.
+    async def test_get_event_history_filtered_by_type(self, event_service, test_item, create_test_events) -> None:
+        """Test getting event history filtered by type.
 
         GIVEN: Multiple events of different types
         WHEN: Getting event history with type filter
@@ -1537,9 +1462,8 @@ class TestEventSourcingServiceIntegration:
         assert all(e.event_type == "item_updated" for e in events)
 
     @pytest.mark.asyncio
-    async def test_get_event_history_empty(self, event_service):
-        """
-        Test getting event history for non-existent entity.
+    async def test_get_event_history_empty(self, event_service) -> None:
+        """Test getting event history for non-existent entity.
 
         GIVEN: A non-existent entity
         WHEN: Getting event history
@@ -1552,9 +1476,8 @@ class TestEventSourcingServiceIntegration:
     # Changes Between Timestamps Tests (Lines 158-187)
 
     @pytest.mark.asyncio
-    async def test_get_changes_between_timestamps(self, event_service, test_item, create_test_events, db_session):
-        """
-        Test getting changes between two timestamps.
+    async def test_get_changes_between_timestamps(self, event_service, test_item, create_test_events, db_session) -> None:
+        """Test getting changes between two timestamps.
 
         GIVEN: Events at different times
         WHEN: Getting changes between start and end
@@ -1565,16 +1488,15 @@ class TestEventSourcingServiceIntegration:
         end = (datetime.now(UTC) + timedelta(hours=1)).isoformat()
 
         changes = await event_service.get_changes_between(
-            entity_id=test_item.id, start_timestamp=start, end_timestamp=end
+            entity_id=test_item.id, start_timestamp=start, end_timestamp=end,
         )
 
         assert isinstance(changes, list)
         assert all(isinstance(c, AuditTrailEntry) for c in changes)
 
     @pytest.mark.asyncio
-    async def test_get_changes_between_narrow_window(self, event_service, test_item, create_test_events):
-        """
-        Test getting changes in a narrow time window.
+    async def test_get_changes_between_narrow_window(self, event_service, test_item, create_test_events) -> None:
+        """Test getting changes in a narrow time window.
 
         GIVEN: Events spread over time
         WHEN: Getting changes in narrow window
@@ -1585,7 +1507,7 @@ class TestEventSourcingServiceIntegration:
         end = (datetime.now(UTC) - timedelta(days=1)).isoformat()
 
         changes = await event_service.get_changes_between(
-            entity_id=test_item.id, start_timestamp=start, end_timestamp=end
+            entity_id=test_item.id, start_timestamp=start, end_timestamp=end,
         )
 
         # Should be empty or very few events
@@ -1607,9 +1529,8 @@ class TestExternalIntegrationServiceIntegration:
 
     # Integration Registration Tests (Lines 37-56)
 
-    def test_register_integration_with_config(self, integration_service):
-        """
-        Test registering integration with configuration.
+    def test_register_integration_with_config(self, integration_service) -> None:
+        """Test registering integration with configuration.
 
         GIVEN: An integration service
         WHEN: Registering an integration with config
@@ -1627,24 +1548,22 @@ class TestExternalIntegrationServiceIntegration:
         assert result.enabled is True
         assert result.config["token"] == "secret-token"
 
-    def test_register_integration_without_config(self, integration_service):
-        """
-        Test registering integration without configuration.
+    def test_register_integration_without_config(self, integration_service) -> None:
+        """Test registering integration without configuration.
 
         GIVEN: An integration service
         WHEN: Registering an integration without config
         THEN: Integration is created with empty config
         """
         result = integration_service.register_integration(
-            name="slack-notifications", integration_type=IntegrationType.SLACK
+            name="slack-notifications", integration_type=IntegrationType.SLACK,
         )
 
         assert result.config == {}
         assert result.enabled is True
 
-    def test_register_multiple_integrations(self, integration_service):
-        """
-        Test registering multiple integrations.
+    def test_register_multiple_integrations(self, integration_service) -> None:
+        """Test registering multiple integrations.
 
         GIVEN: An integration service
         WHEN: Registering multiple integrations
@@ -1657,9 +1576,8 @@ class TestExternalIntegrationServiceIntegration:
         assert "github-1" in integration_service.integrations
         assert "github-2" in integration_service.integrations
 
-    def test_get_integration_exists(self, integration_service):
-        """
-        Test getting an existing integration.
+    def test_get_integration_exists(self, integration_service) -> None:
+        """Test getting an existing integration.
 
         GIVEN: A registered integration
         WHEN: Getting the integration by name
@@ -1672,9 +1590,8 @@ class TestExternalIntegrationServiceIntegration:
         assert result is not None
         assert result.name == "test-integration"
 
-    def test_get_integration_not_found(self, integration_service):
-        """
-        Test getting a non-existent integration.
+    def test_get_integration_not_found(self, integration_service) -> None:
+        """Test getting a non-existent integration.
 
         GIVEN: An integration service
         WHEN: Getting a non-existent integration
@@ -1686,9 +1603,8 @@ class TestExternalIntegrationServiceIntegration:
 
     # Integration Listing Tests (Lines 57-69)
 
-    def test_list_integrations_all(self, integration_service):
-        """
-        Test listing all integrations.
+    def test_list_integrations_all(self, integration_service) -> None:
+        """Test listing all integrations.
 
         GIVEN: Multiple registered integrations
         WHEN: Listing without filter
@@ -1702,9 +1618,8 @@ class TestExternalIntegrationServiceIntegration:
 
         assert len(result) == 3
 
-    def test_list_integrations_filtered_by_type(self, integration_service):
-        """
-        Test listing integrations filtered by type.
+    def test_list_integrations_filtered_by_type(self, integration_service) -> None:
+        """Test listing integrations filtered by type.
 
         GIVEN: Multiple integrations of different types
         WHEN: Listing with type filter
@@ -1719,9 +1634,8 @@ class TestExternalIntegrationServiceIntegration:
         assert len(result) == 2
         assert all(i.integration_type == IntegrationType.GITHUB for i in result)
 
-    def test_list_integrations_empty(self, integration_service):
-        """
-        Test listing integrations when none exist.
+    def test_list_integrations_empty(self, integration_service) -> None:
+        """Test listing integrations when none exist.
 
         GIVEN: An empty integration service
         WHEN: Listing integrations
@@ -1733,9 +1647,8 @@ class TestExternalIntegrationServiceIntegration:
 
     # Enable/Disable Integration Tests (Lines 70-85)
 
-    def test_enable_integration_success(self, integration_service):
-        """
-        Test enabling an integration.
+    def test_enable_integration_success(self, integration_service) -> None:
+        """Test enabling an integration.
 
         GIVEN: A disabled integration
         WHEN: Enabling the integration
@@ -1749,9 +1662,8 @@ class TestExternalIntegrationServiceIntegration:
         assert result is True
         assert integration_service.integrations["test"].enabled is True
 
-    def test_enable_integration_not_found(self, integration_service):
-        """
-        Test enabling a non-existent integration.
+    def test_enable_integration_not_found(self, integration_service) -> None:
+        """Test enabling a non-existent integration.
 
         GIVEN: An integration service
         WHEN: Enabling a non-existent integration
@@ -1761,9 +1673,8 @@ class TestExternalIntegrationServiceIntegration:
 
         assert result is False
 
-    def test_disable_integration_success(self, integration_service):
-        """
-        Test disabling an integration.
+    def test_disable_integration_success(self, integration_service) -> None:
+        """Test disabling an integration.
 
         GIVEN: An enabled integration
         WHEN: Disabling the integration
@@ -1776,9 +1687,8 @@ class TestExternalIntegrationServiceIntegration:
         assert result is True
         assert integration_service.integrations["test"].enabled is False
 
-    def test_disable_integration_not_found(self, integration_service):
-        """
-        Test disabling a non-existent integration.
+    def test_disable_integration_not_found(self, integration_service) -> None:
+        """Test disabling a non-existent integration.
 
         GIVEN: An integration service
         WHEN: Disabling a non-existent integration
@@ -1790,16 +1700,15 @@ class TestExternalIntegrationServiceIntegration:
 
     # Configuration Update Tests (Lines 86-97)
 
-    def test_update_integration_config_success(self, integration_service):
-        """
-        Test updating integration configuration.
+    def test_update_integration_config_success(self, integration_service) -> None:
+        """Test updating integration configuration.
 
         GIVEN: An integration with config
         WHEN: Updating the config
         THEN: Config is merged
         """
         integration_service.register_integration(
-            "github", IntegrationType.GITHUB, {"token": "old-token", "repo": "repo"}
+            "github", IntegrationType.GITHUB, {"token": "old-token", "repo": "repo"},
         )
 
         result = integration_service.update_integration_config("github", {"token": "new-token", "branch": "main"})
@@ -1809,9 +1718,8 @@ class TestExternalIntegrationServiceIntegration:
         assert result.config["repo"] == "repo"
         assert result.config["branch"] == "main"
 
-    def test_update_integration_config_not_found(self, integration_service):
-        """
-        Test updating config for non-existent integration.
+    def test_update_integration_config_not_found(self, integration_service) -> None:
+        """Test updating config for non-existent integration.
 
         GIVEN: An integration service
         WHEN: Updating config for non-existent integration
@@ -1823,9 +1731,8 @@ class TestExternalIntegrationServiceIntegration:
 
     # Sync Integration Tests (Lines 98-125)
 
-    def test_sync_integration_success(self, integration_service):
-        """
-        Test syncing with an integration.
+    def test_sync_integration_success(self, integration_service) -> None:
+        """Test syncing with an integration.
 
         GIVEN: An enabled integration
         WHEN: Syncing the integration
@@ -1841,9 +1748,8 @@ class TestExternalIntegrationServiceIntegration:
         assert result["status"] == "success"
         assert len(integration_service.sync_history) == 1
 
-    def test_sync_integration_not_found(self, integration_service):
-        """
-        Test syncing a non-existent integration.
+    def test_sync_integration_not_found(self, integration_service) -> None:
+        """Test syncing a non-existent integration.
 
         GIVEN: An integration service
         WHEN: Syncing a non-existent integration
@@ -1854,9 +1760,8 @@ class TestExternalIntegrationServiceIntegration:
         assert "error" in result
         assert result["error"] == "Integration not found"
 
-    def test_sync_integration_disabled(self, integration_service):
-        """
-        Test syncing a disabled integration.
+    def test_sync_integration_disabled(self, integration_service) -> None:
+        """Test syncing a disabled integration.
 
         GIVEN: A disabled integration
         WHEN: Syncing the integration
@@ -1870,9 +1775,8 @@ class TestExternalIntegrationServiceIntegration:
         assert "error" in result
         assert result["error"] == "Integration is disabled"
 
-    def test_sync_integration_updates_last_sync(self, integration_service):
-        """
-        Test that syncing updates last_sync timestamp.
+    def test_sync_integration_updates_last_sync(self, integration_service) -> None:
+        """Test that syncing updates last_sync timestamp.
 
         GIVEN: An integration
         WHEN: Syncing the integration
@@ -1887,9 +1791,8 @@ class TestExternalIntegrationServiceIntegration:
 
     # Sync History Tests (Lines 126-134)
 
-    def test_get_sync_history_all(self, integration_service):
-        """
-        Test getting all sync history.
+    def test_get_sync_history_all(self, integration_service) -> None:
+        """Test getting all sync history.
 
         GIVEN: Multiple sync operations
         WHEN: Getting history without filter
@@ -1906,9 +1809,8 @@ class TestExternalIntegrationServiceIntegration:
 
         assert len(history) == 3
 
-    def test_get_sync_history_filtered(self, integration_service):
-        """
-        Test getting sync history filtered by integration.
+    def test_get_sync_history_filtered(self, integration_service) -> None:
+        """Test getting sync history filtered by integration.
 
         GIVEN: Multiple sync operations
         WHEN: Getting history for specific integration
@@ -1926,9 +1828,8 @@ class TestExternalIntegrationServiceIntegration:
         assert len(history) == 2
         assert all(h["integration"] == "github" for h in history)
 
-    def test_get_sync_history_empty(self, integration_service):
-        """
-        Test getting sync history when none exists.
+    def test_get_sync_history_empty(self, integration_service) -> None:
+        """Test getting sync history when none exists.
 
         GIVEN: No sync operations
         WHEN: Getting history
@@ -1940,9 +1841,8 @@ class TestExternalIntegrationServiceIntegration:
 
     # Validation Tests (Lines 135-157)
 
-    def test_validate_integration_config_github_valid(self, integration_service):
-        """
-        Test validating valid GitHub integration config.
+    def test_validate_integration_config_github_valid(self, integration_service) -> None:
+        """Test validating valid GitHub integration config.
 
         GIVEN: A GitHub integration with all required fields
         WHEN: Validating the config
@@ -1958,9 +1858,8 @@ class TestExternalIntegrationServiceIntegration:
 
         assert errors == []
 
-    def test_validate_integration_config_github_missing_token(self, integration_service):
-        """
-        Test validating GitHub integration without token.
+    def test_validate_integration_config_github_missing_token(self, integration_service) -> None:
+        """Test validating GitHub integration without token.
 
         GIVEN: A GitHub integration missing token
         WHEN: Validating the config
@@ -1976,9 +1875,8 @@ class TestExternalIntegrationServiceIntegration:
 
         assert "GitHub token is required" in errors
 
-    def test_validate_integration_config_github_missing_repo(self, integration_service):
-        """
-        Test validating GitHub integration without repo.
+    def test_validate_integration_config_github_missing_repo(self, integration_service) -> None:
+        """Test validating GitHub integration without repo.
 
         GIVEN: A GitHub integration missing repo
         WHEN: Validating the config
@@ -1994,9 +1892,8 @@ class TestExternalIntegrationServiceIntegration:
 
         assert "GitHub repository is required" in errors
 
-    def test_validate_integration_config_slack_valid(self, integration_service):
-        """
-        Test validating valid Slack integration config.
+    def test_validate_integration_config_slack_valid(self, integration_service) -> None:
+        """Test validating valid Slack integration config.
 
         GIVEN: A Slack integration with webhook_url
         WHEN: Validating the config
@@ -2012,9 +1909,8 @@ class TestExternalIntegrationServiceIntegration:
 
         assert errors == []
 
-    def test_validate_integration_config_slack_missing_webhook(self, integration_service):
-        """
-        Test validating Slack integration without webhook_url.
+    def test_validate_integration_config_slack_missing_webhook(self, integration_service) -> None:
+        """Test validating Slack integration without webhook_url.
 
         GIVEN: A Slack integration missing webhook_url
         WHEN: Validating the config
@@ -2026,9 +1922,8 @@ class TestExternalIntegrationServiceIntegration:
 
         assert "Slack webhook URL is required" in errors
 
-    def test_validate_integration_config_vscode_missing_extension_id(self, integration_service):
-        """
-        Test validating VS Code integration without extension_id.
+    def test_validate_integration_config_vscode_missing_extension_id(self, integration_service) -> None:
+        """Test validating VS Code integration without extension_id.
 
         GIVEN: A VS Code integration missing extension_id
         WHEN: Validating the config
@@ -2040,9 +1935,8 @@ class TestExternalIntegrationServiceIntegration:
 
         assert "VS Code extension ID is required" in errors
 
-    def test_validate_integration_config_missing_name(self, integration_service):
-        """
-        Test validating integration without name.
+    def test_validate_integration_config_missing_name(self, integration_service) -> None:
+        """Test validating integration without name.
 
         GIVEN: An integration with empty name
         WHEN: Validating the config
@@ -2056,9 +1950,8 @@ class TestExternalIntegrationServiceIntegration:
 
     # Statistics Tests (Lines 158-176)
 
-    def test_get_integration_stats_empty(self, integration_service):
-        """
-        Test getting stats with no integrations.
+    def test_get_integration_stats_empty(self, integration_service) -> None:
+        """Test getting stats with no integrations.
 
         GIVEN: An empty integration service
         WHEN: Getting stats
@@ -2072,9 +1965,8 @@ class TestExternalIntegrationServiceIntegration:
         assert stats["by_type"] == {}
         assert stats["total_syncs"] == 0
 
-    def test_get_integration_stats_with_data(self, integration_service):
-        """
-        Test getting stats with integrations and syncs.
+    def test_get_integration_stats_with_data(self, integration_service) -> None:
+        """Test getting stats with integrations and syncs.
 
         GIVEN: Multiple integrations and sync operations
         WHEN: Getting stats
@@ -2100,9 +1992,8 @@ class TestExternalIntegrationServiceIntegration:
 
     # Test Integration Connection Tests (Lines 177-191)
 
-    def test_test_integration_success(self, integration_service):
-        """
-        Test testing integration connection.
+    def test_test_integration_success(self, integration_service) -> None:
+        """Test testing integration connection.
 
         GIVEN: A registered integration
         WHEN: Testing the connection
@@ -2117,9 +2008,8 @@ class TestExternalIntegrationServiceIntegration:
         assert result["type"] == "github"
         assert "message" in result
 
-    def test_test_integration_not_found(self, integration_service):
-        """
-        Test testing non-existent integration.
+    def test_test_integration_not_found(self, integration_service) -> None:
+        """Test testing non-existent integration.
 
         GIVEN: An integration service
         WHEN: Testing a non-existent integration

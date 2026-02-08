@@ -16,13 +16,15 @@
 
 import json as _json
 
+
 class _Known:
-    def __init__(self):
+    def __init__(self) -> None:
         self.key = []
         self.value = []
 
+
 class _String:
-    def __init__(self, value):
+    def __init__(self, value) -> None:
         self.value = value
 
 
@@ -34,20 +36,25 @@ def _array_keys(value):
         i += 1
     return keys
 
+
 def _object_keys(value):
     keys = []
     for key in value:
         keys.append(key)
     return keys
 
+
 def _is_array(value):
     return isinstance(value, (list, tuple))
+
 
 def _is_object(value):
     return isinstance(value, dict)
 
+
 def _is_string(value):
     return isinstance(value, str)
+
 
 def _index(known, input, value):
     input.append(value)
@@ -55,6 +62,7 @@ def _index(known, input, value):
     known.key.append(value)
     known.value.append(index)
     return index
+
 
 def _loop(keys, input, known, output):
     for key in keys:
@@ -64,7 +72,8 @@ def _loop(keys, input, known, output):
 
     return output
 
-def _ref(key, value, input, known, output):
+
+def _ref(key, value, input, known, output) -> None:
     if _is_array(value) and value not in known:
         known.append(value)
         value = _loop(_array_keys(value), input, known, value)
@@ -73,6 +82,7 @@ def _ref(key, value, input, known, output):
         value = _loop(_object_keys(value), input, known, value)
 
     output[key] = value
+
 
 def _relate(known, input, value):
     if _is_string(value) or _is_array(value) or _is_object(value):
@@ -83,12 +93,10 @@ def _relate(known, input, value):
 
     return value
 
+
 def _transform(known, input, value):
     if _is_array(value):
-        output = []
-        for val in value:
-            output.append(_relate(known, input, val))
-        return output
+        return [_relate(known, input, val) for val in value]
 
     if _is_object(value):
         obj = {}
@@ -97,6 +105,7 @@ def _transform(known, input, value):
         return obj
 
     return value
+
 
 def _wrap(value):
     if _is_string(value):
@@ -114,11 +123,10 @@ def _wrap(value):
 
     return value
 
+
 def parse(value, *args, **kwargs):
     json = _json.loads(value, *args, **kwargs)
-    wrapped = []
-    for value in json:
-        wrapped.append(_wrap(value))
+    wrapped = [_wrap(value) for value in json]
 
     input = []
     for value in wrapped:

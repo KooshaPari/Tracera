@@ -1,5 +1,4 @@
-"""
-Python API for TraceRTM.
+"""Python API for TraceRTM.
 
 Provides:
 - TraceRTMClient: Local database access for AI agents (FR36)

@@ -1,5 +1,4 @@
-"""
-Comprehensive Edge Case & Boundary Condition Tests
+"""Comprehensive Edge Case & Boundary Condition Tests.
 
 Focus Areas:
 - Empty collections & None values
@@ -15,7 +14,7 @@ Target: +3% coverage (30-50 test cases)
 import asyncio
 import sys
 from datetime import UTC, datetime
-from typing import Any, cast
+from typing import Any, Never, cast
 from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
 
@@ -33,7 +32,7 @@ from tracertm.repositories.project_repository import ProjectRepository
 class TestStringBoundaryConditions:
     """Test boundary conditions for string handling."""
 
-    def test_empty_string_title(self):
+    def test_empty_string_title(self) -> None:
         """Test item creation with empty string title."""
         item = Item(
             id=str(uuid4()),
@@ -46,7 +45,7 @@ class TestStringBoundaryConditions:
         assert item.title == ""
         assert len(item.title) == 0
 
-    def test_whitespace_only_string(self):
+    def test_whitespace_only_string(self) -> None:
         """Test item with whitespace-only title."""
         whitespace_title = "   \t\n   "
         item = Item(
@@ -59,7 +58,7 @@ class TestStringBoundaryConditions:
         assert item.title == whitespace_title
         assert item.title.strip() == ""
 
-    def test_very_long_string_title(self):
+    def test_very_long_string_title(self) -> None:
         """Test item with maximum length string (500 chars limit)."""
         max_length_title = "x" * 500
         item = Item(
@@ -72,7 +71,7 @@ class TestStringBoundaryConditions:
         assert len(item.title) == 500
         assert item.title == max_length_title
 
-    def test_unicode_characters_in_title(self):
+    def test_unicode_characters_in_title(self) -> None:
         """Test unicode and special characters in title."""
         unicode_titles = [
             "测试项目 (Chinese)",
@@ -93,7 +92,7 @@ class TestStringBoundaryConditions:
             )
             assert item.title == title
 
-    def test_special_characters_in_title(self):
+    def test_special_characters_in_title(self) -> None:
         """Test special characters that might break SQL/JSON."""
         special_titles = [
             "Title with 'quotes'",
@@ -117,7 +116,7 @@ class TestStringBoundaryConditions:
             assert item.title == title
 
     @pytest.mark.asyncio
-    async def test_null_description_handling(self):
+    async def test_null_description_handling(self) -> None:
         """Test items with null descriptions."""
         item = Item(
             id=str(uuid4()),
@@ -130,7 +129,7 @@ class TestStringBoundaryConditions:
         assert item.description is None
 
     @pytest.mark.asyncio
-    async def test_empty_string_description(self):
+    async def test_empty_string_description(self) -> None:
         """Test items with empty string description."""
         item = Item(
             id=str(uuid4()),
@@ -146,7 +145,7 @@ class TestStringBoundaryConditions:
 class TestNumericBoundaryConditions:
     """Test boundary conditions for numeric fields."""
 
-    def test_item_version_zero(self):
+    def test_item_version_zero(self) -> None:
         """Test item with version 0 (edge case)."""
         item = Item(
             id=str(uuid4()),
@@ -158,7 +157,7 @@ class TestNumericBoundaryConditions:
         )
         assert item.version == 0
 
-    def test_item_version_negative(self):
+    def test_item_version_negative(self) -> None:
         """Test item with negative version."""
         item = Item(
             id=str(uuid4()),
@@ -171,7 +170,7 @@ class TestNumericBoundaryConditions:
         # Should allow setting, validation happens at repository level
         assert item.version == -1
 
-    def test_item_version_max_int(self):
+    def test_item_version_max_int(self) -> None:
         """Test item with maximum integer version."""
         max_version = sys.maxsize
         item = Item(
@@ -184,7 +183,7 @@ class TestNumericBoundaryConditions:
         )
         assert item.version == max_version
 
-    def test_item_metadata_empty_dict(self):
+    def test_item_metadata_empty_dict(self) -> None:
         """Test item with empty metadata dictionary."""
         item = Item(
             id=str(uuid4()),
@@ -201,7 +200,7 @@ class TestNumericBoundaryConditions:
 class TestCollectionBoundaryConditions:
     """Test boundary conditions for collections and arrays."""
 
-    def test_empty_metadata_dict(self):
+    def test_empty_metadata_dict(self) -> None:
         """Test empty metadata dictionary."""
         metadata = {}
         item = Item(
@@ -214,7 +213,7 @@ class TestCollectionBoundaryConditions:
         )
         assert item.item_metadata == {}
 
-    def test_very_large_metadata_dict(self):
+    def test_very_large_metadata_dict(self) -> None:
         """Test item with very large metadata."""
         large_metadata = {f"key_{i}": f"value_{i}" * 100 for i in range(1000)}
         item = Item(
@@ -227,7 +226,7 @@ class TestCollectionBoundaryConditions:
         )
         assert len(item.item_metadata) == 1000
 
-    def test_deeply_nested_metadata(self):
+    def test_deeply_nested_metadata(self) -> None:
         """Test deeply nested metadata structure."""
         nested = {"level1": {"level2": {"level3": {"level4": {"level5": "value"}}}}}
         item = Item(
@@ -244,18 +243,18 @@ class TestCollectionBoundaryConditions:
         # Nested dict access: type checker needs explicit narrowing
         level1 = meta_dict.get("level1")
         assert isinstance(level1, dict)
-        level1_dict = cast(dict[str, Any], level1)
+        level1_dict = cast("dict[str, Any]", level1)
         level2 = level1_dict.get("level2")
         assert isinstance(level2, dict)
         level3 = level2.get("level3")
         assert isinstance(level3, dict)
-        level3_dict = cast(dict[str, Any], level3)
+        level3_dict = cast("dict[str, Any]", level3)
         level4 = level3_dict.get("level4")
         assert isinstance(level4, dict)
-        level4_dict = cast(dict[str, Any], level4)
+        level4_dict = cast("dict[str, Any]", level4)
         assert level4_dict.get("level5") == "value"
 
-    def test_metadata_with_none_values(self):
+    def test_metadata_with_none_values(self) -> None:
         """Test metadata containing None values."""
         metadata = {"key1": None, "key2": "value", "key3": None}
         item = Item(
@@ -272,7 +271,7 @@ class TestCollectionBoundaryConditions:
 class TestDateTimeBoundaryConditions:
     """Test boundary conditions for datetime fields."""
 
-    def test_datetime_with_timezone_info(self):
+    def test_datetime_with_timezone_info(self) -> None:
         """Test datetime with timezone information."""
         now_utc = datetime.now(UTC)
         item = Item(
@@ -286,7 +285,7 @@ class TestDateTimeBoundaryConditions:
         assert item.created_at == now_utc
         assert item.created_at.tzinfo is not None
 
-    def test_datetime_without_timezone(self):
+    def test_datetime_without_timezone(self) -> None:
         """Test datetime without timezone (naive datetime)."""
         naive_dt = datetime.now()
         item = Item(
@@ -299,7 +298,7 @@ class TestDateTimeBoundaryConditions:
         )
         assert item.created_at == naive_dt
 
-    def test_null_deleted_at_timestamp(self):
+    def test_null_deleted_at_timestamp(self) -> None:
         """Test null deleted_at timestamp (not soft-deleted)."""
         item = Item(
             id=str(uuid4()),
@@ -311,7 +310,7 @@ class TestDateTimeBoundaryConditions:
         )
         assert item.deleted_at is None
 
-    def test_deleted_at_far_past(self):
+    def test_deleted_at_far_past(self) -> None:
         """Test deleted_at with far past date."""
         far_past = datetime(1970, 1, 1, tzinfo=UTC)
         item = Item(
@@ -324,7 +323,7 @@ class TestDateTimeBoundaryConditions:
         )
         assert item.deleted_at == far_past
 
-    def test_deleted_at_far_future(self):
+    def test_deleted_at_far_future(self) -> None:
         """Test deleted_at with far future date."""
         far_future = datetime(2099, 12, 31, 23, 59, 59, tzinfo=UTC)
         item = Item(
@@ -342,7 +341,7 @@ class TestRepositoryEdgeCases:
     """Test edge cases in repository operations."""
 
     @pytest.mark.asyncio
-    async def test_item_repository_create_with_empty_metadata(self):
+    async def test_item_repository_create_with_empty_metadata(self) -> None:
         """Test creating item with empty metadata."""
         session = AsyncMock(spec=AsyncSession)
         session.flush = AsyncMock()
@@ -363,7 +362,7 @@ class TestRepositoryEdgeCases:
         assert item.item_metadata == {}
 
     @pytest.mark.asyncio
-    async def test_item_repository_create_with_null_values(self):
+    async def test_item_repository_create_with_null_values(self) -> None:
         """Test creating item with all nullable fields as None."""
         session = AsyncMock(spec=AsyncSession)
         session.flush = AsyncMock()
@@ -388,7 +387,7 @@ class TestRepositoryEdgeCases:
         assert item.owner is None
 
     @pytest.mark.asyncio
-    async def test_item_repository_with_mock_session(self):
+    async def test_item_repository_with_mock_session(self) -> None:
         """Test repository operations with mocked session."""
         session = AsyncMock(spec=AsyncSession)
 
@@ -397,7 +396,7 @@ class TestRepositoryEdgeCases:
         assert repo.session == session
 
     @pytest.mark.asyncio
-    async def test_item_repository_list_all_items(self):
+    async def test_item_repository_list_all_items(self) -> None:
         """Test repository can list items."""
         session = AsyncMock(spec=AsyncSession)
 
@@ -410,7 +409,7 @@ class TestLinkRepositoryEdgeCases:
     """Test edge cases in link repository operations."""
 
     @pytest.mark.asyncio
-    async def test_create_self_referencing_link(self):
+    async def test_create_self_referencing_link(self) -> None:
         """Test creating a link from item to itself."""
         session = AsyncMock(spec=AsyncSession)
         session.flush = AsyncMock()
@@ -429,7 +428,7 @@ class TestLinkRepositoryEdgeCases:
         assert link.source_item_id == "item-1"
 
     @pytest.mark.asyncio
-    async def test_link_repository_initialized(self):
+    async def test_link_repository_initialized(self) -> None:
         """Test link repository initialization."""
         session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(session)
@@ -441,7 +440,7 @@ class TestProjectRepositoryEdgeCases:
     """Test edge cases in project repository operations."""
 
     @pytest.mark.asyncio
-    async def test_create_project_empty_name(self):
+    async def test_create_project_empty_name(self) -> None:
         """Test creating project with empty name."""
         session = AsyncMock(spec=AsyncSession)
         session.flush = AsyncMock()
@@ -454,7 +453,7 @@ class TestProjectRepositoryEdgeCases:
         assert project.name == ""
 
     @pytest.mark.asyncio
-    async def test_create_project_empty_description(self):
+    async def test_create_project_empty_description(self) -> None:
         """Test creating project with empty description."""
         session = AsyncMock(spec=AsyncSession)
         session.flush = AsyncMock()
@@ -467,7 +466,7 @@ class TestProjectRepositoryEdgeCases:
         assert project.description == ""
 
     @pytest.mark.asyncio
-    async def test_create_project_with_very_long_name(self):
+    async def test_create_project_with_very_long_name(self) -> None:
         """Test creating project with maximum length name."""
         session = AsyncMock(spec=AsyncSession)
         session.flush = AsyncMock()
@@ -485,7 +484,7 @@ class TestConcurrencyEdgeCases:
     """Test edge cases in concurrent operations."""
 
     @pytest.mark.asyncio
-    async def test_update_with_retry_immediate_success(self):
+    async def test_update_with_retry_immediate_success(self) -> None:
         """Test update_with_retry succeeds on first attempt."""
         mock_item = Mock(spec=Item)
         mock_item.version = 1
@@ -498,21 +497,22 @@ class TestConcurrencyEdgeCases:
         assert result == mock_item
 
     @pytest.mark.asyncio
-    async def test_update_with_retry_all_failures(self):
+    async def test_update_with_retry_all_failures(self) -> None:
         """Test update_with_retry fails after max retries."""
 
-        async def failing_update():
+        async def failing_update() -> Never:
             await asyncio.sleep(0)
-            raise ConcurrencyError("Version conflict")
+            msg = "Version conflict"
+            raise ConcurrencyError(msg)
 
         with pytest.raises(ConcurrencyError):
             await update_with_retry(failing_update, max_retries=2)
 
     @pytest.mark.asyncio
-    async def test_concurrent_item_updates(self):
+    async def test_concurrent_item_updates(self) -> None:
         """Test multiple concurrent updates to same item."""
 
-        async def simulate_update(item_id):
+        async def simulate_update(item_id) -> str:
             await asyncio.sleep(0.001)
             return f"updated_{item_id}"
 
@@ -523,7 +523,7 @@ class TestConcurrencyEdgeCases:
         assert all(r.startswith("updated_") for r in results)
 
     @pytest.mark.asyncio
-    async def test_concurrent_operations_empty_queue(self):
+    async def test_concurrent_operations_empty_queue(self) -> None:
         """Test concurrent operations with empty work queue."""
 
         async def process_item(item):
@@ -539,7 +539,7 @@ class TestConcurrencyEdgeCases:
 class TestUUIDEdgeCases:
     """Test boundary conditions for UUID handling."""
 
-    def test_uuid_string_format(self):
+    def test_uuid_string_format(self) -> None:
         """Test UUID as string format."""
         uuid_str = str(uuid4())
         item = Item(
@@ -552,7 +552,7 @@ class TestUUIDEdgeCases:
         assert item.id == uuid_str
         assert len(str(item.id)) == 36  # Standard UUID length
 
-    def test_uuid_all_zeros(self):
+    def test_uuid_all_zeros(self) -> None:
         """Test UUID with all zeros (invalid but structurally valid)."""
         zero_uuid = "00000000-0000-0000-0000-000000000000"
         item = Item(
@@ -564,7 +564,7 @@ class TestUUIDEdgeCases:
         )
         assert item.id == zero_uuid
 
-    def test_uuid_all_ones(self):
+    def test_uuid_all_ones(self) -> None:
         """Test UUID with all ones."""
         ones_uuid = "ffffffff-ffff-ffff-ffff-ffffffffffff"
         item = Item(
@@ -580,7 +580,7 @@ class TestUUIDEdgeCases:
 class TestStatusAndPriorityEdgeCases:
     """Test boundary conditions for status and priority fields."""
 
-    def test_all_valid_status_values(self):
+    def test_all_valid_status_values(self) -> None:
         """Test all valid status values."""
         valid_statuses = ["todo", "in_progress", "done", "blocked", "cancelled"]
         for status in valid_statuses:
@@ -594,7 +594,7 @@ class TestStatusAndPriorityEdgeCases:
             )
             assert item.status == status
 
-    def test_all_valid_priority_values(self):
+    def test_all_valid_priority_values(self) -> None:
         """Test all valid priority values."""
         valid_priorities = ["low", "medium", "high", "critical"]
         for priority in valid_priorities:
@@ -608,7 +608,7 @@ class TestStatusAndPriorityEdgeCases:
             )
             assert item.priority == priority
 
-    def test_custom_status_value(self):
+    def test_custom_status_value(self) -> None:
         """Test custom/unexpected status value."""
         item = Item(
             id=str(uuid4()),
@@ -620,7 +620,7 @@ class TestStatusAndPriorityEdgeCases:
         )
         assert item.status == "custom_status"
 
-    def test_empty_status_string(self):
+    def test_empty_status_string(self) -> None:
         """Test empty status string."""
         item = Item(
             id=str(uuid4()),
@@ -636,7 +636,7 @@ class TestStatusAndPriorityEdgeCases:
 class TestViewAndTypeEdgeCases:
     """Test boundary conditions for view and item_type fields."""
 
-    def test_all_valid_views(self):
+    def test_all_valid_views(self) -> None:
         """Test various valid view types."""
         valid_views = [
             "requirements",
@@ -655,7 +655,7 @@ class TestViewAndTypeEdgeCases:
             )
             assert item.view == view
 
-    def test_all_valid_item_types(self):
+    def test_all_valid_item_types(self) -> None:
         """Test various valid item types."""
         valid_types = ["requirement", "test_case", "code", "design", "api_endpoint"]
         for item_type in valid_types:
@@ -668,7 +668,7 @@ class TestViewAndTypeEdgeCases:
             )
             assert item.item_type == item_type
 
-    def test_empty_view_string(self):
+    def test_empty_view_string(self) -> None:
         """Test empty view string."""
         item = Item(
             id=str(uuid4()),
@@ -679,7 +679,7 @@ class TestViewAndTypeEdgeCases:
         )
         assert item.view == ""
 
-    def test_empty_item_type_string(self):
+    def test_empty_item_type_string(self) -> None:
         """Test empty item_type string."""
         item = Item(
             id=str(uuid4()),
@@ -694,7 +694,7 @@ class TestViewAndTypeEdgeCases:
 class TestOwnerFieldEdgeCases:
     """Test boundary conditions for owner field."""
 
-    def test_owner_null_value(self):
+    def test_owner_null_value(self) -> None:
         """Test owner as null."""
         item = Item(
             id=str(uuid4()),
@@ -706,7 +706,7 @@ class TestOwnerFieldEdgeCases:
         )
         assert item.owner is None
 
-    def test_owner_empty_string(self):
+    def test_owner_empty_string(self) -> None:
         """Test owner as empty string."""
         item = Item(
             id=str(uuid4()),
@@ -718,7 +718,7 @@ class TestOwnerFieldEdgeCases:
         )
         assert item.owner == ""
 
-    def test_owner_very_long_email(self):
+    def test_owner_very_long_email(self) -> None:
         """Test owner with very long email address."""
         long_email = "a" * 240 + "@test.com"  # 249 chars
         item = Item(
@@ -735,7 +735,7 @@ class TestOwnerFieldEdgeCases:
 class TestParentChildRelationships:
     """Test boundary conditions for parent-child relationships."""
 
-    def test_parent_id_null(self):
+    def test_parent_id_null(self) -> None:
         """Test item with null parent_id (root item)."""
         item = Item(
             id=str(uuid4()),
@@ -747,7 +747,7 @@ class TestParentChildRelationships:
         )
         assert item.parent_id is None
 
-    def test_parent_id_empty_string(self):
+    def test_parent_id_empty_string(self) -> None:
         """Test item with empty string parent_id."""
         item = Item(
             id=str(uuid4()),
@@ -759,7 +759,7 @@ class TestParentChildRelationships:
         )
         assert item.parent_id == ""
 
-    def test_circular_reference_self(self):
+    def test_circular_reference_self(self) -> None:
         """Test item referencing itself as parent."""
         item_id = str(uuid4())
         item = Item(
@@ -776,7 +776,7 @@ class TestParentChildRelationships:
 class TestStringEncodingEdgeCases:
     """Test boundary conditions for string encoding."""
 
-    def test_null_byte_in_string(self):
+    def test_null_byte_in_string(self) -> None:
         """Test string containing null bytes."""
         title_with_null = "Title\x00With\x00Null"
         item = Item(
@@ -788,7 +788,7 @@ class TestStringEncodingEdgeCases:
         )
         assert "\x00" in item.title
 
-    def test_line_feed_characters(self):
+    def test_line_feed_characters(self) -> None:
         """Test string with line feed characters."""
         title_with_lf = "Line1\nLine2\nLine3"
         item = Item(
@@ -800,7 +800,7 @@ class TestStringEncodingEdgeCases:
         )
         assert item.title.count("\n") == 2
 
-    def test_carriage_return_characters(self):
+    def test_carriage_return_characters(self) -> None:
         """Test string with carriage return characters."""
         title_with_cr = "Line1\rLine2\rLine3"
         item = Item(
@@ -812,7 +812,7 @@ class TestStringEncodingEdgeCases:
         )
         assert item.title.count("\r") == 2
 
-    def test_mixed_line_endings(self):
+    def test_mixed_line_endings(self) -> None:
         """Test string with mixed line endings."""
         title_mixed = "Unix\nWindows\r\nMac\r"
         item = Item(
@@ -829,7 +829,7 @@ class TestStringEncodingEdgeCases:
 class TestLinkEdgeCases:
     """Test boundary conditions for link relationships."""
 
-    def test_link_with_empty_link_type(self):
+    def test_link_with_empty_link_type(self) -> None:
         """Test link with empty link_type."""
         link = Link(
             id=str(uuid4()),
@@ -840,7 +840,7 @@ class TestLinkEdgeCases:
         )
         assert link.link_type == ""
 
-    def test_link_with_empty_metadata(self):
+    def test_link_with_empty_metadata(self) -> None:
         """Test link with empty metadata."""
         link = Link(
             id=str(uuid4()),
@@ -852,7 +852,7 @@ class TestLinkEdgeCases:
         )
         assert link.link_metadata == {}
 
-    def test_link_with_large_metadata(self):
+    def test_link_with_large_metadata(self) -> None:
         """Test link with large metadata."""
         large_metadata = {f"key_{i}": f"value_{i}" for i in range(100)}
         link = Link(
@@ -865,7 +865,7 @@ class TestLinkEdgeCases:
         )
         assert len(link.link_metadata) == 100
 
-    def test_link_same_source_target(self):
+    def test_link_same_source_target(self) -> None:
         """Test link where source and target are the same."""
         item_id = "item-1"
         link = Link(

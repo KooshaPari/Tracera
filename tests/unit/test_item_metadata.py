@@ -25,7 +25,7 @@ def item_service(mock_session):
 class TestItemMetadata:
     """Test suite for item metadata operations."""
 
-    async def test_add_metadata_merge(self, item_service, mock_session):
+    async def test_add_metadata_merge(self, item_service, mock_session) -> None:
         """Test adding metadata with merge."""
         # Setup
         item_id = str(uuid.uuid4())
@@ -48,7 +48,7 @@ class TestItemMetadata:
         call_args = item_service.items.update.call_args.kwargs
         assert call_args["item_metadata"] == {"existing": "value", "new": "data"}
 
-    async def test_replace_metadata(self, item_service, mock_session):
+    async def test_replace_metadata(self, item_service, mock_session) -> None:
         """Test replacing metadata (no merge)."""
         # Setup
         item_id = str(uuid.uuid4())

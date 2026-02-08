@@ -16,7 +16,7 @@ from tracertm.services.traceability_service import TraceabilityService
 
 @pytest.mark.e2e
 @pytest.mark.asyncio
-async def test_complete_project_workflow(db_session: AsyncSession):
+async def test_complete_project_workflow(db_session: AsyncSession) -> None:
     """Test complete project workflow from creation to traceability."""
     # 1. Create project
     project_repo = ProjectRepository(db_session)
@@ -92,7 +92,7 @@ async def test_complete_project_workflow(db_session: AsyncSession):
 
 @pytest.mark.e2e
 @pytest.mark.asyncio
-async def test_bulk_operation_workflow(db_session: AsyncSession):
+async def test_bulk_operation_workflow(db_session: AsyncSession) -> None:
     """Test bulk operation workflow."""
     # 1. Create project with items
     project_repo = ProjectRepository(db_session)
@@ -134,7 +134,7 @@ async def test_bulk_operation_workflow(db_session: AsyncSession):
 
 @pytest.mark.e2e
 @pytest.mark.asyncio
-async def test_agent_coordination_workflow(db_session: AsyncSession):
+async def test_agent_coordination_workflow(db_session: AsyncSession) -> None:
     """Test agent coordination workflow."""
     # 1. Create project
     project_repo = ProjectRepository(db_session)
@@ -164,7 +164,7 @@ async def test_agent_coordination_workflow(db_session: AsyncSession):
 
 @pytest.mark.e2e
 @pytest.mark.asyncio
-async def test_event_sourcing_workflow(db_session: AsyncSession):
+async def test_event_sourcing_workflow(db_session: AsyncSession) -> None:
     """Test event sourcing and audit trail workflow."""
     # 1. Create project and items
     project_repo = ProjectRepository(db_session)
@@ -202,7 +202,7 @@ async def test_event_sourcing_workflow(db_session: AsyncSession):
 
 @pytest.mark.e2e
 @pytest.mark.asyncio
-async def test_multi_agent_concurrent_workflow(db_session: AsyncSession):
+async def test_multi_agent_concurrent_workflow(db_session: AsyncSession) -> None:
     """Test multi-agent concurrent operations."""
     # 1. Create project
     project_repo = ProjectRepository(db_session)

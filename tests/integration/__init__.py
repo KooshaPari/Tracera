@@ -1,3 +1,1 @@
-"""
-Integration tests - Database, search, and ML integration tests
-"""
+"""Integration tests - Database, search, and ML integration tests."""

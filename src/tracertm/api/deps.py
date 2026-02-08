@@ -55,8 +55,7 @@ def get_token_bridge_instance() -> TokenBridge:
 
 
 async def get_event_bus() -> EventBus:
-    """
-    Get EventBus singleton for dependency injection.
+    """Get EventBus singleton for dependency injection.
 
     Returns:
         EventBus: Connected EventBus instance for cross-backend communication
@@ -74,14 +73,14 @@ async def get_event_bus() -> EventBus:
             _event_bus = EventBus(nats_client)
             logger.info("EventBus initialized successfully")
         except Exception as e:
-            raise RuntimeError(f"Failed to initialize EventBus: {e}") from e
+            msg = f"Failed to initialize EventBus: {e}"
+            raise RuntimeError(msg) from e
 
     return _event_bus
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """
-    Get database session with shared connection pool.
+    """Get database session with shared connection pool.
 
     This now uses the MCP database adapter to share the connection pool
     between FastAPI routes and MCP tools, reducing resource usage by 50%.
@@ -115,7 +114,7 @@ def verify_token(token: str) -> dict[str, Any]:
         bridge = get_token_bridge_instance()
         return bridge.validate_token(token)
     except Exception as exc:
-        logger.warning(f"Token validation failed: {exc}")
+        logger.warning("Token validation failed: %s", exc)
         raise ValueError(str(exc)) from exc
 
 

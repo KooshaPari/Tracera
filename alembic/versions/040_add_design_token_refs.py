@@ -22,7 +22,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Create design_token_refs table for design system tokens."""
-
     op.create_table(
         "design_token_refs",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),

@@ -1,5 +1,4 @@
-"""
-Tests for AccountRepository.
+"""Tests for AccountRepository.
 
 Comprehensive tests covering account CRUD and user management operations.
 """
@@ -42,7 +41,7 @@ class TestAccountCreate:
     """Tests for AccountRepository.create."""
 
     @pytest.mark.asyncio
-    async def test_create_minimal(self, account_repo: AccountRepository):
+    async def test_create_minimal(self, account_repo: AccountRepository) -> None:
         """Test creating an account with minimal fields."""
         account = await account_repo.create(
             name="Minimal Account",
@@ -56,7 +55,7 @@ class TestAccountCreate:
         assert account.account_type == "personal"
 
     @pytest.mark.asyncio
-    async def test_create_with_all_fields(self, account_repo: AccountRepository):
+    async def test_create_with_all_fields(self, account_repo: AccountRepository) -> None:
         """Test creating an account with all fields."""
         account = await account_repo.create(
             name="Full Account",
@@ -72,7 +71,7 @@ class TestAccountCreate:
         assert account.metadata == {"plan": "enterprise", "max_users": 100}
 
     @pytest.mark.asyncio
-    async def test_create_generates_uuid(self, account_repo: AccountRepository):
+    async def test_create_generates_uuid(self, account_repo: AccountRepository) -> None:
         """Test that create generates a valid UUID."""
         account = await account_repo.create(
             name="UUID Account",
@@ -84,7 +83,7 @@ class TestAccountCreate:
         assert account.id.count("-") == 4
 
     @pytest.mark.asyncio
-    async def test_create_different_types(self, account_repo: AccountRepository):
+    async def test_create_different_types(self, account_repo: AccountRepository) -> None:
         """Test creating accounts with different types."""
         types = ["personal", "organization"]
         for i, account_type in enumerate(types):
@@ -100,7 +99,7 @@ class TestAccountGetById:
     """Tests for AccountRepository.get_by_id."""
 
     @pytest.mark.asyncio
-    async def test_get_by_id_found(self, account_setup):
+    async def test_get_by_id_found(self, account_setup) -> None:
         """Test getting an account by ID."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -112,7 +111,7 @@ class TestAccountGetById:
         assert result.name == account.name
 
     @pytest.mark.asyncio
-    async def test_get_by_id_not_found(self, account_repo: AccountRepository):
+    async def test_get_by_id_not_found(self, account_repo: AccountRepository) -> None:
         """Test getting a non-existent account."""
         result = await account_repo.get_by_id(str(uuid4()))
 
@@ -123,7 +122,7 @@ class TestAccountGetBySlug:
     """Tests for AccountRepository.get_by_slug."""
 
     @pytest.mark.asyncio
-    async def test_get_by_slug_found(self, account_setup):
+    async def test_get_by_slug_found(self, account_setup) -> None:
         """Test getting an account by slug."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -135,7 +134,7 @@ class TestAccountGetBySlug:
         assert result.slug == account.slug
 
     @pytest.mark.asyncio
-    async def test_get_by_slug_not_found(self, account_repo: AccountRepository):
+    async def test_get_by_slug_not_found(self, account_repo: AccountRepository) -> None:
         """Test getting a non-existent account by slug."""
         result = await account_repo.get_by_slug("non-existent-slug")
 
@@ -146,7 +145,7 @@ class TestAccountUpdate:
     """Tests for AccountRepository.update."""
 
     @pytest.mark.asyncio
-    async def test_update_name(self, account_setup):
+    async def test_update_name(self, account_setup) -> None:
         """Test updating account name."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -158,7 +157,7 @@ class TestAccountUpdate:
         assert result.slug == account.slug  # Unchanged
 
     @pytest.mark.asyncio
-    async def test_update_slug(self, account_setup):
+    async def test_update_slug(self, account_setup) -> None:
         """Test updating account slug."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -170,7 +169,7 @@ class TestAccountUpdate:
         assert result.name == account.name  # Unchanged
 
     @pytest.mark.asyncio
-    async def test_update_metadata(self, account_setup):
+    async def test_update_metadata(self, account_setup) -> None:
         """Test updating account metadata."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -181,7 +180,7 @@ class TestAccountUpdate:
         assert result.metadata == {"updated": True, "new_key": "value"}
 
     @pytest.mark.asyncio
-    async def test_update_multiple_fields(self, account_setup):
+    async def test_update_multiple_fields(self, account_setup) -> None:
         """Test updating multiple fields at once."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -198,7 +197,7 @@ class TestAccountUpdate:
         assert result.metadata == {"key": "value"}
 
     @pytest.mark.asyncio
-    async def test_update_not_found(self, account_repo: AccountRepository):
+    async def test_update_not_found(self, account_repo: AccountRepository) -> None:
         """Test updating a non-existent account."""
         result = await account_repo.update(str(uuid4()), name="New Name")
 
@@ -209,7 +208,7 @@ class TestAccountDelete:
     """Tests for AccountRepository.delete."""
 
     @pytest.mark.asyncio
-    async def test_delete_success(self, account_setup):
+    async def test_delete_success(self, account_setup) -> None:
         """Test deleting an account."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -223,7 +222,7 @@ class TestAccountDelete:
         assert fetched is None
 
     @pytest.mark.asyncio
-    async def test_delete_not_found(self, account_repo: AccountRepository):
+    async def test_delete_not_found(self, account_repo: AccountRepository) -> None:
         """Test deleting a non-existent account."""
         result = await account_repo.delete(str(uuid4()))
 
@@ -239,7 +238,7 @@ class TestAccountAddUser:
     """Tests for AccountRepository.add_user."""
 
     @pytest.mark.asyncio
-    async def test_add_user_default_role(self, account_setup):
+    async def test_add_user_default_role(self, account_setup) -> None:
         """Test adding a user with default role."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -258,7 +257,7 @@ class TestAccountAddUser:
             raise
 
     @pytest.mark.asyncio
-    async def test_add_user_with_role(self, account_setup):
+    async def test_add_user_with_role(self, account_setup) -> None:
         """Test adding a user with specific role."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -274,7 +273,7 @@ class TestAccountAddUser:
             raise
 
     @pytest.mark.asyncio
-    async def test_add_user_as_owner(self, account_setup):
+    async def test_add_user_as_owner(self, account_setup) -> None:
         """Test adding a user as owner."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -294,7 +293,7 @@ class TestAccountRemoveUser:
     """Tests for AccountRepository.remove_user."""
 
     @pytest.mark.asyncio
-    async def test_remove_user_success(self, account_setup):
+    async def test_remove_user_success(self, account_setup) -> None:
         """Test removing a user from an account."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -318,7 +317,7 @@ class TestAccountRemoveUser:
             raise
 
     @pytest.mark.asyncio
-    async def test_remove_user_not_found(self, account_setup):
+    async def test_remove_user_not_found(self, account_setup) -> None:
         """Test removing a non-existent user."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -332,7 +331,7 @@ class TestAccountGetUserRole:
     """Tests for AccountRepository.get_user_role."""
 
     @pytest.mark.asyncio
-    async def test_get_user_role_found(self, account_setup):
+    async def test_get_user_role_found(self, account_setup) -> None:
         """Test getting a user's role."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -350,7 +349,7 @@ class TestAccountGetUserRole:
             raise
 
     @pytest.mark.asyncio
-    async def test_get_user_role_not_found(self, account_setup):
+    async def test_get_user_role_not_found(self, account_setup) -> None:
         """Test getting role for non-existent user."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -364,7 +363,7 @@ class TestAccountUpdateUserRole:
     """Tests for AccountRepository.update_user_role."""
 
     @pytest.mark.asyncio
-    async def test_update_user_role_success(self, account_setup):
+    async def test_update_user_role_success(self, account_setup) -> None:
         """Test updating a user's role."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -388,7 +387,7 @@ class TestAccountUpdateUserRole:
             raise
 
     @pytest.mark.asyncio
-    async def test_update_user_role_not_found(self, account_setup):
+    async def test_update_user_role_not_found(self, account_setup) -> None:
         """Test updating role for non-existent user."""
         repo = account_setup["repo"]
         account = account_setup["account"]
@@ -402,14 +401,14 @@ class TestAccountListByUser:
     """Tests for AccountRepository.list_by_user."""
 
     @pytest.mark.asyncio
-    async def test_list_by_user_empty(self, account_repo: AccountRepository):
+    async def test_list_by_user_empty(self, account_repo: AccountRepository) -> None:
         """Test listing accounts for user with no accounts."""
         accounts = await account_repo.list_by_user(str(uuid4()))
 
         assert accounts == []
 
     @pytest.mark.asyncio
-    async def test_list_by_user_multiple(self, account_repo: AccountRepository):
+    async def test_list_by_user_multiple(self, account_repo: AccountRepository) -> None:
         """Test listing multiple accounts for a user."""
         user_id = str(uuid4())
 

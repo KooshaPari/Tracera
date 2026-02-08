@@ -12,7 +12,7 @@ runner = CliRunner()
 
 
 class _DummySession:
-    def __init__(self):
+    def __init__(self) -> None:
         self._last_model = None
         self._filter_view = None
         self._items = [
@@ -69,7 +69,7 @@ def _storage_session_ctx():
 
 
 @pytest.mark.e2e
-def test_state_show_with_view():
+def test_state_show_with_view() -> None:
     with (
         patch("tracertm.cli.commands.state.ConfigManager") as cfg,
         patch("tracertm.cli.commands.state.DatabaseConnection") as db,
@@ -88,7 +88,7 @@ def test_state_show_with_view():
 
 
 @pytest.mark.e2e
-def test_progress_show_overall():
+def test_progress_show_overall() -> None:
     with (
         patch("tracertm.cli.commands.progress.ConfigManager") as cfg,
         patch("tracertm.cli.commands.progress._get_storage_manager") as sm,
@@ -115,7 +115,7 @@ def test_progress_show_overall():
 
 
 @pytest.mark.e2e
-def test_state_missing_project_exits():
+def test_state_missing_project_exits() -> None:
     with patch("tracertm.cli.commands.state.ConfigManager") as cfg:
         cfg_inst = MagicMock()
         cfg_inst.get.return_value = None  # no current project id
@@ -128,7 +128,7 @@ def test_state_missing_project_exits():
 
 
 @pytest.mark.e2e
-def test_progress_item_not_found():
+def test_progress_item_not_found() -> None:
     with (
         patch("tracertm.cli.commands.progress.ConfigManager") as cfg,
         patch("tracertm.cli.commands.progress._get_storage_manager") as sm,
@@ -151,7 +151,7 @@ def test_progress_item_not_found():
 
 
 @pytest.mark.e2e
-def test_progress_view_branch():
+def test_progress_view_branch() -> None:
     with (
         patch("tracertm.cli.commands.progress.ConfigManager") as cfg,
         patch("tracertm.cli.commands.progress._get_storage_manager") as sm,

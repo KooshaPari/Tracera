@@ -1,5 +1,4 @@
-"""
-Tests for logging initialization and configuration.
+"""Tests for logging initialization and configuration.
 
 Target: +1% coverage on logging initialization paths
 """
@@ -16,7 +15,7 @@ class TestGetLogger:
     """Test suite for get_logger function."""
 
     @pytest.mark.unit
-    def test_get_logger_returns_bound_logger(self):
+    def test_get_logger_returns_bound_logger(self) -> None:
         """Test get_logger returns bound logger."""
         result = get_logger("test_module")
 
@@ -24,7 +23,7 @@ class TestGetLogger:
         assert result is not None
 
     @pytest.mark.unit
-    def test_get_logger_with_different_names(self):
+    def test_get_logger_with_different_names(self) -> None:
         """Test get_logger with different module names."""
         logger1 = get_logger("module1")
         logger2 = get_logger("module2")
@@ -36,7 +35,7 @@ class TestGetLogger:
         assert logger3 is not None
 
     @pytest.mark.unit
-    def test_get_logger_module_name(self):
+    def test_get_logger_module_name(self) -> None:
         """Test get_logger preserves module name."""
         logger = get_logger("tracertm.api.client")
 
@@ -44,14 +43,14 @@ class TestGetLogger:
         assert logger is not None
 
     @pytest.mark.unit
-    def test_get_logger_nested_module(self):
+    def test_get_logger_nested_module(self) -> None:
         """Test get_logger with nested module names."""
         logger = get_logger("tracertm.core.database")
 
         assert logger is not None
 
     @pytest.mark.unit
-    def test_get_logger_simple_name(self):
+    def test_get_logger_simple_name(self) -> None:
         """Test get_logger with simple module name."""
         logger = get_logger("api")
 
@@ -64,7 +63,7 @@ class TestLoggingSetup:
     @pytest.mark.unit
     @patch("tracertm.logging_config.logger")
     @patch("tracertm.logging_config.get_settings")
-    def test_setup_logging_creates_log_directory(self, mock_get_settings, mock_logger):
+    def test_setup_logging_creates_log_directory(self, mock_get_settings, mock_logger) -> None:
         """Test setup_logging creates log directory."""
         from tracertm.config.settings import TraceSettings, reset_settings
 
@@ -93,7 +92,7 @@ class TestLoggingConfiguration:
     @pytest.mark.unit
     @patch("tracertm.logging_config.logger")
     @patch("tracertm.logging_config.get_settings")
-    def test_logging_respects_log_level(self, mock_get_settings, mock_logger):
+    def test_logging_respects_log_level(self, mock_get_settings, mock_logger) -> None:
         """Test logging respects configured log level."""
         from tracertm.config.settings import TraceSettings, reset_settings
 
@@ -115,9 +114,8 @@ class TestLoggingConfiguration:
     @pytest.mark.unit
     @patch("tracertm.logging_config.logger")
     @patch("tracertm.logging_config.get_settings")
-    def test_logging_file_handlers(self, mock_get_settings, mock_logger):
+    def test_logging_file_handlers(self, mock_get_settings, mock_logger) -> None:
         """Test logging file handlers are created."""
-
         from tracertm.config.settings import TraceSettings, reset_settings
 
         reset_settings()
@@ -140,7 +138,7 @@ class TestLoggingIntegration:
     """Integration tests for logging configuration."""
 
     @pytest.mark.unit
-    def test_get_logger_integration(self):
+    def test_get_logger_integration(self) -> None:
         """Test get_logger in actual use."""
         logger = get_logger("test.module")
 
@@ -151,7 +149,7 @@ class TestLoggingIntegration:
     @pytest.mark.unit
     @patch("tracertm.logging_config.logger")
     @patch("tracertm.logging_config.get_settings")
-    def test_setup_and_get_logger(self, mock_get_settings, mock_logger):
+    def test_setup_and_get_logger(self, mock_get_settings, mock_logger) -> None:
         """Test setup_logging and get_logger work together."""
         from tracertm.config.settings import TraceSettings, reset_settings
 
@@ -182,7 +180,7 @@ class TestLoggingErrorHandling:
     @pytest.mark.unit
     @patch("tracertm.logging_config.logger")
     @patch("tracertm.logging_config.get_settings")
-    def test_logging_with_invalid_directory(self, mock_get_settings, mock_logger):
+    def test_logging_with_invalid_directory(self, mock_get_settings, mock_logger) -> None:
         """Test logging handles invalid directory gracefully."""
         from pathlib import Path
 
@@ -211,7 +209,7 @@ class TestLoggingMultipleLevels:
     @pytest.mark.unit
     @patch("tracertm.logging_config.logger")
     @patch("tracertm.logging_config.get_settings")
-    def test_logging_debug_level(self, mock_get_settings, mock_logger):
+    def test_logging_debug_level(self, mock_get_settings, mock_logger) -> None:
         """Test logging with DEBUG level."""
         from tracertm.config.settings import TraceSettings, reset_settings
 
@@ -232,7 +230,7 @@ class TestLoggingMultipleLevels:
     @pytest.mark.unit
     @patch("tracertm.logging_config.logger")
     @patch("tracertm.logging_config.get_settings")
-    def test_logging_error_level(self, mock_get_settings, mock_logger):
+    def test_logging_error_level(self, mock_get_settings, mock_logger) -> None:
         """Test logging with ERROR level."""
         from tracertm.config.settings import TraceSettings, reset_settings
 
@@ -253,7 +251,7 @@ class TestLoggingMultipleLevels:
     @pytest.mark.unit
     @patch("tracertm.logging_config.logger")
     @patch("tracertm.logging_config.get_settings")
-    def test_logging_warning_level(self, mock_get_settings, mock_logger):
+    def test_logging_warning_level(self, mock_get_settings, mock_logger) -> None:
         """Test logging with WARNING level."""
         from tracertm.config.settings import TraceSettings, reset_settings
 

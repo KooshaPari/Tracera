@@ -1,4 +1,4 @@
-"""Phase 6: Complex Service Algorithm Tests
+"""Phase 6: Complex Service Algorithm Tests.
 
 Focus on high-impact coverage gains:
 - Impact analysis algorithms
@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 class TestImpactAnalysisAlgorithms:
     """Test impact analysis service algorithms."""
 
-    def test_propagate_changes_single_hop(self):
+    def test_propagate_changes_single_hop(self) -> None:
         """Test change propagation for single hop."""
         # Simulate: Item A → Item B
         graph = {1: [2], 2: [3], 3: []}
@@ -33,7 +33,7 @@ class TestImpactAnalysisAlgorithms:
         assert 2 in result
         assert 3 in result
 
-    def test_propagate_changes_multi_hop(self):
+    def test_propagate_changes_multi_hop(self) -> None:
         """Test multi-hop propagation."""
         # Diamond graph: A → B,C; B,C → D
         graph = {1: [2, 3], 2: [4], 3: [4], 4: []}
@@ -51,7 +51,7 @@ class TestImpactAnalysisAlgorithms:
         result = propagate(1, graph)
         assert result == {1, 2, 3, 4}
 
-    def test_propagate_changes_with_cycle(self):
+    def test_propagate_changes_with_cycle(self) -> None:
         """Test propagation with circular reference."""
         # Cycle: A → B → C → A
         graph = {1: [2], 2: [3], 3: [1]}
@@ -73,7 +73,7 @@ class TestImpactAnalysisAlgorithms:
         assert 2 in result
         assert 3 in result
 
-    def test_calculate_impact_depth(self):
+    def test_calculate_impact_depth(self) -> None:
         """Test impact calculation with depth."""
         graph = {1: [2], 2: [3], 3: []}
 
@@ -93,7 +93,7 @@ class TestImpactAnalysisAlgorithms:
         assert result[2] == 1
         assert result[3] == 2
 
-    def test_calculate_impact_score(self):
+    def test_calculate_impact_score(self) -> None:
         """Test impact score calculation."""
         # Deeper = higher impact
         depths = {1: 0, 2: 1, 3: 2, 4: 1}
@@ -108,7 +108,7 @@ class TestImpactAnalysisAlgorithms:
         result = score_impact(depths)
         assert 0 <= result <= 1
 
-    def test_find_critical_paths(self):
+    def test_find_critical_paths(self) -> None:
         """Test finding critical paths."""
         graph = {1: [2, 3], 2: [4], 3: [4], 4: []}
 
@@ -128,7 +128,7 @@ class TestImpactAnalysisAlgorithms:
         assert [1, 2, 4] in result
         assert [1, 3, 4] in result
 
-    def test_identify_bottlenecks(self):
+    def test_identify_bottlenecks(self) -> None:
         """Test bottleneck identification."""
         # Node 2 is bottleneck: 1,3 depend on 2 to reach 4
         graph = {1: [2], 3: [2], 2: [4], 4: []}
@@ -151,7 +151,7 @@ class TestImpactAnalysisAlgorithms:
 class TestShortestPathAlgorithms:
     """Test shortest path algorithms."""
 
-    def test_dijkstra_simple(self):
+    def test_dijkstra_simple(self) -> None:
         """Test Dijkstra's algorithm (simple)."""
         graph = {1: {2: 1, 3: 4}, 2: {3: 2}, 3: {}}
 
@@ -175,7 +175,7 @@ class TestShortestPathAlgorithms:
         result = dijkstra(1, 3, graph)
         assert result == 3  # 1→2→3 = 1+2
 
-    def test_bfs_shortest_path(self):
+    def test_bfs_shortest_path(self) -> None:
         """Test BFS shortest path (unweighted)."""
         graph = {1: [2, 3], 2: [4], 3: [4], 4: []}
 
@@ -196,10 +196,10 @@ class TestShortestPathAlgorithms:
             return None
 
         result = bfs_shortest(1, 4, graph)
-        assert result == [1, 2, 4] or result == [1, 3, 4]
+        assert result in ([1, 2, 4], [1, 3, 4])
         assert len(result) == 3
 
-    def test_all_pairs_shortest(self):
+    def test_all_pairs_shortest(self) -> None:
         """Test all-pairs shortest path."""
         graph = {1: {2: 1}, 2: {3: 1}, 3: {}}
 
@@ -222,7 +222,7 @@ class TestShortestPathAlgorithms:
         result = floyd_warshall(graph)
         assert result[1][3] == 2  # Path 1→2→3
 
-    def test_graph_connectivity(self):
+    def test_graph_connectivity(self) -> None:
         """Test graph connectivity check."""
         graph = {1: [2], 2: [3], 3: []}
 
@@ -243,7 +243,7 @@ class TestShortestPathAlgorithms:
 
         assert is_connected(graph)
 
-    def test_graph_diameter(self):
+    def test_graph_diameter(self) -> None:
         """Test graph diameter calculation."""
         graph = {1: [2], 2: [3], 3: []}
 
@@ -278,11 +278,11 @@ class TestShortestPathAlgorithms:
 class TestCacheServiceAdvanced:
     """Test cache service advanced features."""
 
-    def test_cache_ttl_expiration(self):
+    def test_cache_ttl_expiration(self) -> None:
         """Test TTL-based cache expiration."""
         cache = {}
 
-        def set_with_ttl(key, value, ttl_seconds):
+        def set_with_ttl(key, value, ttl_seconds) -> None:
             cache[key] = {"value": value, "expires": datetime.now() + timedelta(seconds=ttl_seconds)}
 
         def get_with_ttl(key):
@@ -297,12 +297,12 @@ class TestCacheServiceAdvanced:
         set_with_ttl("key", "value", 1)
         assert get_with_ttl("key") == "value"
 
-    def test_cache_lru_eviction(self):
+    def test_cache_lru_eviction(self) -> None:
         """Test LRU cache eviction."""
         from collections import OrderedDict
 
         class LRUCache:
-            def __init__(self, capacity):
+            def __init__(self, capacity) -> None:
                 self.cache = OrderedDict()
                 self.capacity = capacity
 
@@ -312,7 +312,7 @@ class TestCacheServiceAdvanced:
                 self.cache.move_to_end(key)
                 return self.cache[key]
 
-            def put(self, key, value):
+            def put(self, key, value) -> None:
                 if key in self.cache:
                     self.cache.move_to_end(key)
                 self.cache[key] = value
@@ -328,7 +328,7 @@ class TestCacheServiceAdvanced:
         assert lru.get("b") == 2
         assert lru.get("c") == 3
 
-    def test_cache_invalidation(self):
+    def test_cache_invalidation(self) -> None:
         """Test cache invalidation patterns."""
         cache = {"user:1": {"name": "John"}, "user:2": {"name": "Jane"}}
 
@@ -342,7 +342,7 @@ class TestCacheServiceAdvanced:
         assert count == 2
         assert len(cache) == 0
 
-    def test_cache_warming(self):
+    def test_cache_warming(self) -> None:
         """Test cache warming strategy."""
         cache = {}
 
@@ -355,7 +355,7 @@ class TestCacheServiceAdvanced:
         assert count == 3
         assert cache["a"] == 1
 
-    def test_cache_statistics(self):
+    def test_cache_statistics(self) -> None:
         """Test cache hit/miss statistics."""
         cache = {}
         stats = {"hits": 0, "misses": 0}
@@ -378,14 +378,14 @@ class TestCacheServiceAdvanced:
 class TestAPIEndpointCoverage:
     """Test API endpoint coverage."""
 
-    def test_item_create_endpoint(self):
+    def test_item_create_endpoint(self) -> None:
         """Test item create endpoint."""
         payload = {"name": "New Item", "description": "Test", "status": "active"}
         response: dict[str, int | str] = {"id": 1, "name": payload["name"], "created_at": "2025-11-22T10:00:00Z"}
         assert response["id"] > 0
         assert response["name"] == payload["name"]
 
-    def test_item_list_pagination(self):
+    def test_item_list_pagination(self) -> None:
         """Test item list with pagination."""
         items = [{"id": i, "name": f"Item {i}"} for i in range(1, 26)]
 
@@ -402,7 +402,7 @@ class TestAPIEndpointCoverage:
         assert page1[0]["id"] == 1
         assert page2[0]["id"] == 11
 
-    def test_item_update_partial(self):
+    def test_item_update_partial(self) -> None:
         """Test partial item update."""
         original = {"id": 1, "name": "Item", "status": "active"}
         update = {"status": "inactive"}
@@ -411,12 +411,12 @@ class TestAPIEndpointCoverage:
         assert result["name"] == "Item"
         assert result["status"] == "inactive"
 
-    def test_item_delete_cascade(self):
+    def test_item_delete_cascade(self) -> None:
         """Test delete with cascade."""
         items = {1: "Item 1", 2: "Item 2"}
         links = {1: [2], 2: [1]}
 
-        def delete_with_cascade(item_id, items, links):
+        def delete_with_cascade(item_id, items, links) -> bool:
             if item_id in items:
                 del items[item_id]
                 del links[item_id]
@@ -430,7 +430,7 @@ class TestAPIEndpointCoverage:
         assert success
         assert 1 not in items
 
-    def test_link_create_validation(self):
+    def test_link_create_validation(self) -> None:
         """Test link creation validation."""
 
         def validate_link(source, target):
@@ -446,7 +446,7 @@ class TestAPIEndpointCoverage:
         invalid, _msg = validate_link(1, 1)
         assert not invalid
 
-    def test_bulk_operation(self):
+    def test_bulk_operation(self) -> None:
         """Test bulk operations."""
         items = [{"id": 1, "status": "active"}, {"id": 2, "status": "active"}, {"id": 3, "status": "active"}]
 
@@ -463,7 +463,7 @@ class TestAPIEndpointCoverage:
         assert result[1]["status"] == "active"
         assert result[2]["status"] == "pending"
 
-    def test_response_transformation(self):
+    def test_response_transformation(self) -> None:
         """Test response transformation."""
         db_response = {"id": 1, "item_name": "Test", "item_description": "Desc"}
 
@@ -478,7 +478,7 @@ class TestAPIEndpointCoverage:
 class TestSchemaValidation:
     """Test schema validation."""
 
-    def test_validate_item_schema(self):
+    def test_validate_item_schema(self) -> None:
         """Test item schema validation."""
 
         def validate_item(data):
@@ -491,7 +491,7 @@ class TestSchemaValidation:
         assert validate_item(valid)
         assert not validate_item(invalid)
 
-    def test_validate_link_schema(self):
+    def test_validate_link_schema(self) -> None:
         """Test link schema validation."""
 
         def validate_link(data):
@@ -506,7 +506,7 @@ class TestSchemaValidation:
         assert validate_link(valid)
         assert not validate_link(invalid)
 
-    def test_validate_timestamps(self):
+    def test_validate_timestamps(self) -> None:
         """Test timestamp validation."""
         import re
 
@@ -517,7 +517,7 @@ class TestSchemaValidation:
         assert validate_iso_timestamp("2025-11-22T10:00:00Z")
         assert not validate_iso_timestamp("2025-11-22")
 
-    def test_validate_enums(self):
+    def test_validate_enums(self) -> None:
         """Test enum validation."""
         valid_statuses = {"active", "inactive", "pending"}
 
@@ -531,11 +531,11 @@ class TestSchemaValidation:
 class TestDataConsistency:
     """Test data consistency scenarios."""
 
-    def test_transactional_operations(self):
+    def test_transactional_operations(self) -> None:
         """Test transactional consistency."""
         data = {"items": {}, "links": {}}
 
-        def create_item_with_link(item_id, target_id):
+        def create_item_with_link(item_id, target_id) -> bool | None:
             try:
                 data["items"][item_id] = {"id": item_id}
                 data["links"][item_id] = target_id
@@ -550,7 +550,7 @@ class TestDataConsistency:
         assert 1 in data["items"]
         assert 1 in data["links"]
 
-    def test_orphaned_records(self):
+    def test_orphaned_records(self) -> None:
         """Test orphaned record detection."""
         items = {1: "Item 1", 2: "Item 2"}
         links = {1: [2], 2: [3]}
@@ -565,7 +565,7 @@ class TestDataConsistency:
         orphans = find_orphans(items, links)
         assert 3 in orphans
 
-    def test_duplicate_detection(self):
+    def test_duplicate_detection(self) -> None:
         """Test duplicate detection."""
         items = [{"id": 1, "name": "Item 1"}, {"id": 2, "name": "Item 1"}, {"id": 3, "name": "Item 2"}]
 
@@ -583,7 +583,7 @@ class TestDataConsistency:
         dups = find_duplicates(items)
         assert (1, 2) in dups
 
-    def test_consistency_checks(self):
+    def test_consistency_checks(self) -> None:
         """Test consistency check suite."""
         data = {"items": {1: "A", 2: "B"}, "links": {1: [2]}}
 

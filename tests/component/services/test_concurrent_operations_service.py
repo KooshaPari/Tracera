@@ -1,4 +1,5 @@
 import time
+from typing import Never
 
 import pytest
 from sqlalchemy.orm.exc import StaleDataError
@@ -10,10 +11,10 @@ from tracertm.services.concurrent_operations_service import (
 )
 
 
-def test_retry_with_backoff_retries_then_raises(monkeypatch):
+def test_retry_with_backoff_retries_then_raises(monkeypatch) -> None:
     calls = {"count": 0}
 
-    def op():
+    def op() -> Never:
         calls["count"] += 1
         raise StaleDataError
 
@@ -26,10 +27,10 @@ def test_retry_with_backoff_retries_then_raises(monkeypatch):
     assert calls["count"] == 3  # initial + 2 retries
 
 
-def test_execute_with_retry_success_after_conflict(monkeypatch):
+def test_execute_with_retry_success_after_conflict(monkeypatch) -> None:
     calls = {"count": 0}
 
-    def op():
+    def op() -> str:
         calls["count"] += 1
         if calls["count"] == 1:
             raise StaleDataError
@@ -43,7 +44,7 @@ def test_execute_with_retry_success_after_conflict(monkeypatch):
     assert calls["count"] == 2
 
 
-def test_execute_with_retry_exhausts_and_raises(monkeypatch):
+def test_execute_with_retry_exhausts_and_raises(monkeypatch) -> None:
     monkeypatch.setattr(time, "sleep", lambda x: None)
     svc = ConcurrentOperationsService(session=None)
 
@@ -51,26 +52,27 @@ def test_execute_with_retry_exhausts_and_raises(monkeypatch):
         svc.execute_with_retry(lambda: (_ for _ in ()).throw(StaleDataError()), max_retries=1, initial_delay=0.0)
 
 
-def test_execute_in_transaction_rolls_back_on_error(monkeypatch):
+def test_execute_in_transaction_rolls_back_on_error(monkeypatch) -> None:
     class DummySession:
-        def __init__(self):
+        def __init__(self) -> None:
             self.committed = False
             self.rolled = False
 
-        def commit(self):
+        def commit(self) -> None:
             self.committed = True
 
-        def rollback(self):
+        def rollback(self) -> None:
             self.rolled = True
 
     session = DummySession()
     svc = ConcurrentOperationsService(session)
 
-    def ok():
+    def ok() -> int:
         return 1
 
-    def boom():
-        raise RuntimeError("fail")
+    def boom() -> Never:
+        msg = "fail"
+        raise RuntimeError(msg)
 
     with pytest.raises(RuntimeError):
         svc.execute_in_transaction([ok, boom])

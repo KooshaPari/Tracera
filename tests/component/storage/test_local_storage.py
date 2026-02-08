@@ -5,7 +5,7 @@ from sqlalchemy import text
 from tracertm.storage.local_storage import LocalStorageManager
 
 
-def test_init_project_creates_trace_structure(tmp_path: Path):
+def test_init_project_creates_trace_structure(tmp_path: Path) -> None:
     mgr = LocalStorageManager(base_dir=tmp_path / "global")
     project_path = tmp_path / "repo"
     project_path.mkdir()
@@ -18,7 +18,7 @@ def test_init_project_creates_trace_structure(tmp_path: Path):
     assert project_id
 
 
-def test_register_project_and_index_roundtrip(tmp_path: Path):
+def test_register_project_and_index_roundtrip(tmp_path: Path) -> None:
     mgr = LocalStorageManager(base_dir=tmp_path / "global")
     project_path = tmp_path / "repo"
     project_path.mkdir()
@@ -31,7 +31,7 @@ def test_register_project_and_index_roundtrip(tmp_path: Path):
         assert rows.fetchall()
 
 
-def test_queue_sync_and_clear(tmp_path: Path):
+def test_queue_sync_and_clear(tmp_path: Path) -> None:
     mgr = LocalStorageManager(base_dir=tmp_path / "global")
     project_path = tmp_path / "repo"
     project_path.mkdir()

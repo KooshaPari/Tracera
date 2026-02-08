@@ -1,6 +1,4 @@
-"""
-Integration tests for Epic 7: Performance Optimizations (Stories 7.3-7.9).
-"""
+"""Integration tests for Epic 7: Performance Optimizations (Stories 7.3-7.9)."""
 
 import time
 
@@ -57,7 +55,7 @@ def large_project_setup(tmp_path, monkeypatch):
     return project_id, database_url
 
 
-def test_search_performance(large_project_setup):
+def test_search_performance(large_project_setup) -> None:
     """Test search performance (Story 7.3, FR60)."""
     project_id, database_url = large_project_setup
 
@@ -91,7 +89,7 @@ def test_search_performance(large_project_setup):
         assert len(items) > 0
 
 
-def test_progress_calculation_performance(large_project_setup):
+def test_progress_calculation_performance(large_project_setup) -> None:
     """Test progress calculation performance (Story 7.6, FR68)."""
     project_id, database_url = large_project_setup
 

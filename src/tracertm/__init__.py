@@ -1,5 +1,4 @@
-"""
-TraceRTM - Agent-native, multi-view requirements traceability system.
+"""TraceRTM - Agent-native, multi-view requirements traceability system.
 
 Version: 0.1.0
 """

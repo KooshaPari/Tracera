@@ -4,14 +4,16 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.graph import Graph
 from tracertm.models.graph_snapshot import GraphSnapshot
 from tracertm.services.graph_service import GraphService
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 def _stable_json(data: Any) -> str:
@@ -25,7 +27,7 @@ def _hash_payload(payload: Any) -> str:
 class GraphSnapshotService:
     """Create, fetch, and diff graph snapshots."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.graph_service = GraphService(session)
 
@@ -39,7 +41,8 @@ class GraphSnapshotService:
         graph = await self.session.execute(select(Graph).where(Graph.id == graph_id, Graph.project_id == project_id))
         graph_obj = graph.scalar_one_or_none()
         if not graph_obj:
-            raise ValueError("Graph not found")
+            msg = "Graph not found"
+            raise ValueError(msg)
 
         data = await self.graph_service.get_graph(
             project_id=project_id,
@@ -62,7 +65,7 @@ class GraphSnapshotService:
             select(func.max(GraphSnapshot.version)).where(
                 GraphSnapshot.project_id == project_id,
                 GraphSnapshot.graph_id == graph_id,
-            )
+            ),
         )
         next_version = (latest_version.scalar_one() or 0) + 1
 
@@ -106,21 +109,22 @@ class GraphSnapshotService:
         from_snapshot = await self.get_snapshot(project_id, graph_id, from_version)
         to_snapshot = await self.get_snapshot(project_id, graph_id, to_version)
         if not from_snapshot or not to_snapshot:
-            raise ValueError("Snapshots not found")
+            msg = "Snapshots not found"
+            raise ValueError(msg)
 
         from_nodes_raw = (from_snapshot.snapshot_json or {}).get("nodes")
         to_nodes_raw = (to_snapshot.snapshot_json or {}).get("nodes")
         from_nodes_list = from_nodes_raw if isinstance(from_nodes_raw, list[Any]) else []
         to_nodes_list = to_nodes_raw if isinstance(to_nodes_raw, list[Any]) else []
-        from_nodes = {cast(dict[str, Any], n).get("id", "") for n in from_nodes_list}
-        to_nodes = {cast(dict[str, Any], n).get("id", "") for n in to_nodes_list}
+        from_nodes = {cast("dict[str, Any]", n).get("id", "") for n in from_nodes_list}
+        to_nodes = {cast("dict[str, Any]", n).get("id", "") for n in to_nodes_list}
 
         from_links_raw = (from_snapshot.snapshot_json or {}).get("links")
         to_links_raw = (to_snapshot.snapshot_json or {}).get("links")
         from_links_list = from_links_raw if isinstance(from_links_raw, list[Any]) else []
         to_links_list = to_links_raw if isinstance(to_links_raw, list[Any]) else []
-        from_links = {cast(dict[str, Any], link).get("id", "") for link in from_links_list}
-        to_links = {cast(dict[str, Any], link).get("id", "") for link in to_links_list}
+        from_links = {cast("dict[str, Any]", link).get("id", "") for link in from_links_list}
+        to_links = {cast("dict[str, Any]", link).get("id", "") for link in to_links_list}
 
         return {
             "from_version": from_version,

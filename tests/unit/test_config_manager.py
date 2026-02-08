@@ -1,5 +1,4 @@
-"""
-Unit tests for configuration manager.
+"""Unit tests for configuration manager.
 
 Test Cases:
 - TC-1.4.1: Set Configuration Value
@@ -37,9 +36,8 @@ class TestConfigManager:
 
     # TC-1.4.1: Set Configuration Value
     @pytest.mark.unit
-    def test_set_configuration_value(self, config_manager: ConfigManager):
-        """
-        TC-1.4.1: Set Configuration Value
+    def test_set_configuration_value(self, config_manager: ConfigManager) -> None:
+        """TC-1.4.1: Set Configuration Value.
 
         Given: Project initialized
         When: User runs `rtm config set default_view FEATURE`
@@ -62,15 +60,14 @@ class TestConfigManager:
 
         import yaml
 
-        with Path(config_path).open() as f:
+        with Path(config_path).open(encoding="utf-8") as f:
             config_data = yaml.safe_load(f)
         assert config_data["default_view"] == "CODE"
 
     # TC-1.4.2: Configuration Hierarchy
     @pytest.mark.unit
-    def test_configuration_hierarchy(self, config_manager: ConfigManager, monkeypatch):
-        """
-        TC-1.4.2: Configuration Hierarchy
+    def test_configuration_hierarchy(self, config_manager: ConfigManager, monkeypatch) -> None:
+        """TC-1.4.2: Configuration Hierarchy.
 
         Given: Config values at multiple levels (CLI flag, env var, project config, global config)
         When: Config loaded
@@ -98,9 +95,8 @@ class TestConfigManager:
 
     # TC-1.4.3: Invalid Configuration Value
     @pytest.mark.unit
-    def test_invalid_configuration_value(self, config_manager: ConfigManager):
-        """
-        TC-1.4.3: Invalid Configuration Value
+    def test_invalid_configuration_value(self, config_manager: ConfigManager) -> None:
+        """TC-1.4.3: Invalid Configuration Value.
 
         Given: User sets invalid config value
         When: `rtm config set output_format invalid_format`
@@ -121,9 +117,8 @@ class TestConfigManager:
 
     # TC-1.4.4: Project-Specific Config
     @pytest.mark.unit
-    def test_project_specific_config(self, config_manager: ConfigManager):
-        """
-        TC-1.4.4: Project-Specific Config
+    def test_project_specific_config(self, config_manager: ConfigManager) -> None:
+        """TC-1.4.4: Project-Specific Config.
 
         Given: Global config has default_view=FEATURE
         When: Project config sets default_view=CODE
@@ -151,9 +146,8 @@ class TestConfigManager:
 
     # TC-1.4.5: Config Schema Validation
     @pytest.mark.unit
-    def test_config_schema_validation(self):
-        """
-        TC-1.4.5: Config Schema Validation
+    def test_config_schema_validation(self) -> None:
+        """TC-1.4.5: Config Schema Validation.
 
         Given: Config file with invalid schema
         When: Config loaded
@@ -183,7 +177,7 @@ class TestConfigManager:
 
         # Test 5: Valid config passes
         valid_config = Config(
-            database_url="postgresql://localhost/test", default_view="FEATURE", output_format="json", max_agents=100
+            database_url="postgresql://localhost/test", default_view="FEATURE", output_format="json", max_agents=100,
         )
         assert valid_config.database_url == "postgresql://localhost/test"
         assert valid_config.default_view == "FEATURE"

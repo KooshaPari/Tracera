@@ -1,5 +1,4 @@
-"""
-Unit tests for API Client.
+"""Unit tests for API Client.
 
 Tests HTTP request/response handling, retries, error handling,
 and mock HTTP interactions for sync operations.
@@ -18,8 +17,7 @@ from httpx import AsyncClient, ConnectError, Request, Response
 
 @pytest.fixture
 def mock_httpx_client():
-    """
-    Fixture: Mock HTTPX AsyncClient
+    """Fixture: Mock HTTPX AsyncClient.
 
     Provides: Mocked async HTTP client
     """
@@ -34,7 +32,7 @@ def mock_httpx_client():
 
 @pytest.fixture
 def api_config():
-    """Sample API configuration"""
+    """Sample API configuration."""
     return {
         "base_url": "https://api.tracertm.io",
         "api_key": "test-api-key-123",
@@ -46,7 +44,7 @@ def api_config():
 
 @pytest.fixture
 def sample_upload_payload():
-    """Sample upload sync payload"""
+    """Sample upload sync payload."""
     return {
         "client_id": "cli-abc123",
         "last_sync": datetime.now(UTC).isoformat(),
@@ -56,14 +54,14 @@ def sample_upload_payload():
                 "entity_id": "item-001",
                 "operation": "create",
                 "payload": {"title": "New Item", "status": "todo", "type": "story"},
-            }
+            },
         ],
     }
 
 
 @pytest.fixture
 def sample_download_response():
-    """Sample download sync response"""
+    """Sample download sync response."""
     return {
         "changes": [
             {
@@ -71,7 +69,7 @@ def sample_download_response():
                 "entity_id": "item-002",
                 "operation": "update",
                 "payload": {"title": "Updated Item", "status": "done"},
-            }
+            },
         ],
         "server_time": datetime.now(UTC).isoformat(),
     }
@@ -83,17 +81,15 @@ def sample_download_response():
 
 
 class TestApiClientRequestResponse:
-    """
-    Test Suite: API Client - Request/Response Handling
+    """Test Suite: API Client - Request/Response Handling.
 
     Tests basic HTTP operations with mocked responses
     """
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_request_success(self, mock_httpx_client, api_config):
-        """
-        TC-API.1.1: GET Request - Success
+    async def test_get_request_success(self, mock_httpx_client, api_config) -> None:
+        """TC-API.1.1: GET Request - Success.
 
         Given: Valid API endpoint
         When: GET request is made
@@ -109,7 +105,7 @@ class TestApiClientRequestResponse:
 
         # Act
         response = await mock_httpx_client.get(
-            f"{api_config['base_url']}/api/sync/status", headers={"Authorization": f"Bearer {api_config['api_key']}"}
+            f"{api_config['base_url']}/api/sync/status", headers={"Authorization": f"Bearer {api_config['api_key']}"},
         )
 
         # Assert
@@ -119,9 +115,8 @@ class TestApiClientRequestResponse:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_post_request_success(self, mock_httpx_client, api_config, sample_upload_payload):
-        """
-        TC-API.1.2: POST Request - Success
+    async def test_post_request_success(self, mock_httpx_client, api_config, sample_upload_payload) -> None:
+        """TC-API.1.2: POST Request - Success.
 
         Given: Valid upload payload
         When: POST request is made
@@ -150,9 +145,8 @@ class TestApiClientRequestResponse:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_download_changes_success(self, mock_httpx_client, api_config, sample_download_response):
-        """
-        TC-API.1.3: Download Changes - Success
+    async def test_download_changes_success(self, mock_httpx_client, api_config, sample_download_response) -> None:
+        """TC-API.1.3: Download Changes - Success.
 
         Given: Server has new changes
         When: Download request is made
@@ -180,9 +174,8 @@ class TestApiClientRequestResponse:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_authentication_header(self, mock_httpx_client, api_config):
-        """
-        TC-API.1.4: Authentication - Bearer Token
+    async def test_authentication_header(self, mock_httpx_client, api_config) -> None:
+        """TC-API.1.4: Authentication - Bearer Token.
 
         Given: API requires authentication
         When: Request is made with token
@@ -198,7 +191,7 @@ class TestApiClientRequestResponse:
 
         # Act
         await mock_httpx_client.get(
-            f"{api_config['base_url']}/api/sync/status", headers={"Authorization": f"Bearer {api_config['api_key']}"}
+            f"{api_config['base_url']}/api/sync/status", headers={"Authorization": f"Bearer {api_config['api_key']}"},
         )
 
         # Assert
@@ -213,17 +206,15 @@ class TestApiClientRequestResponse:
 
 
 class TestApiClientErrorHandling:
-    """
-    Test Suite: API Client - Error Handling
+    """Test Suite: API Client - Error Handling.
 
     Tests handling of HTTP errors and exceptions
     """
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_404_not_found_error(self, mock_httpx_client, api_config):
-        """
-        TC-API.2.1: HTTP 404 - Not Found Error
+    async def test_404_not_found_error(self, mock_httpx_client, api_config) -> None:
+        """TC-API.2.1: HTTP 404 - Not Found Error.
 
         Given: Invalid endpoint
         When: Request is made
@@ -246,9 +237,8 @@ class TestApiClientErrorHandling:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_401_unauthorized_error(self, mock_httpx_client, api_config):
-        """
-        TC-API.2.2: HTTP 401 - Unauthorized Error
+    async def test_401_unauthorized_error(self, mock_httpx_client, api_config) -> None:
+        """TC-API.2.2: HTTP 401 - Unauthorized Error.
 
         Given: Invalid or missing API key
         When: Request is made
@@ -271,9 +261,8 @@ class TestApiClientErrorHandling:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_500_server_error(self, mock_httpx_client, api_config):
-        """
-        TC-API.2.3: HTTP 500 - Internal Server Error
+    async def test_500_server_error(self, mock_httpx_client, api_config) -> None:
+        """TC-API.2.3: HTTP 500 - Internal Server Error.
 
         Given: Server error occurs
         When: Request is made
@@ -295,9 +284,8 @@ class TestApiClientErrorHandling:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_network_connection_error(self, mock_httpx_client, api_config):
-        """
-        TC-API.2.4: Network Error - Connection Failed
+    async def test_network_connection_error(self, mock_httpx_client, api_config) -> None:
+        """TC-API.2.4: Network Error - Connection Failed.
 
         Given: Network is unavailable
         When: Request is attempted
@@ -312,9 +300,8 @@ class TestApiClientErrorHandling:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_timeout_error(self, mock_httpx_client, api_config):
-        """
-        TC-API.2.5: Timeout Error - Request Timeout
+    async def test_timeout_error(self, mock_httpx_client, api_config) -> None:
+        """TC-API.2.5: Timeout Error - Request Timeout.
 
         Given: Request exceeds timeout
         When: Long-running request is made
@@ -336,17 +323,15 @@ class TestApiClientErrorHandling:
 
 
 class TestApiClientRetryLogic:
-    """
-    Test Suite: API Client - Retry Logic
+    """Test Suite: API Client - Retry Logic.
 
     Tests automatic retry on transient failures
     """
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_retry_on_network_error(self, mock_httpx_client, api_config):
-        """
-        TC-API.3.1: Retry on Network Error - Success After Retry
+    async def test_retry_on_network_error(self, mock_httpx_client, api_config) -> None:
+        """TC-API.3.1: Retry on Network Error - Success After Retry.
 
         Given: First request fails with network error
         When: Retry is attempted
@@ -354,7 +339,7 @@ class TestApiClientRetryLogic:
         """
         # Arrange
         mock_response = Response(
-            status_code=200, json={"status": "ok"}, request=Request("GET", f"{api_config['base_url']}/api/sync/status")
+            status_code=200, json={"status": "ok"}, request=Request("GET", f"{api_config['base_url']}/api/sync/status"),
         )
 
         # First call fails, second succeeds
@@ -377,9 +362,8 @@ class TestApiClientRetryLogic:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_retry_on_500_error(self, mock_httpx_client, api_config):
-        """
-        TC-API.3.2: Retry on 500 Error - Success After Retry
+    async def test_retry_on_500_error(self, mock_httpx_client, api_config) -> None:
+        """TC-API.3.2: Retry on 500 Error - Success After Retry.
 
         Given: First request returns 500
         When: Retry is attempted
@@ -392,7 +376,7 @@ class TestApiClientRetryLogic:
             request=Request("GET", f"{api_config['base_url']}/api/sync/status"),
         )
         success_response = Response(
-            status_code=200, json={"status": "ok"}, request=Request("GET", f"{api_config['base_url']}/api/sync/status")
+            status_code=200, json={"status": "ok"}, request=Request("GET", f"{api_config['base_url']}/api/sync/status"),
         )
 
         mock_httpx_client.get.side_effect = [error_response, success_response]
@@ -410,9 +394,8 @@ class TestApiClientRetryLogic:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_max_retries_exceeded(self, mock_httpx_client, api_config):
-        """
-        TC-API.3.3: Max Retries Exceeded - Give Up
+    async def test_max_retries_exceeded(self, mock_httpx_client, api_config) -> None:
+        """TC-API.3.3: Max Retries Exceeded - Give Up.
 
         Given: All retry attempts fail
         When: Max retries is reached
@@ -436,9 +419,8 @@ class TestApiClientRetryLogic:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_no_retry_on_400_error(self, mock_httpx_client, api_config):
-        """
-        TC-API.3.4: No Retry on 400 Error - Client Error
+    async def test_no_retry_on_400_error(self, mock_httpx_client, api_config) -> None:
+        """TC-API.3.4: No Retry on 400 Error - Client Error.
 
         Given: Request returns 400 (client error)
         When: Error is detected
@@ -460,9 +442,8 @@ class TestApiClientRetryLogic:
         assert mock_httpx_client.post.call_count == 1
 
     @pytest.mark.unit
-    def test_exponential_backoff_calculation(self):
-        """
-        TC-API.3.5: Exponential Backoff - Delay Calculation
+    def test_exponential_backoff_calculation(self) -> None:
+        """TC-API.3.5: Exponential Backoff - Delay Calculation.
 
         Given: Multiple retry attempts
         When: Backoff delay is calculated
@@ -492,17 +473,15 @@ class TestApiClientRetryLogic:
 
 
 class TestApiClientConflictHandling:
-    """
-    Test Suite: API Client - Conflict Handling
+    """Test Suite: API Client - Conflict Handling.
 
     Tests handling of sync conflicts returned by server
     """
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_upload_with_conflicts(self, mock_httpx_client, api_config):
-        """
-        TC-API.4.1: Upload with Conflicts - Conflict Detection
+    async def test_upload_with_conflicts(self, mock_httpx_client, api_config) -> None:
+        """TC-API.4.1: Upload with Conflicts - Conflict Detection.
 
         Given: Upload contains conflicting changes
         When: Server detects conflicts
@@ -515,7 +494,7 @@ class TestApiClientConflictHandling:
                 "success": False,
                 "applied": 0,
                 "conflicts": [
-                    {"entity_id": "item-001", "local_version": 2, "remote_version": 3, "reason": "version_mismatch"}
+                    {"entity_id": "item-001", "local_version": 2, "remote_version": 3, "reason": "version_mismatch"},
                 ],
                 "server_time": datetime.now(UTC).isoformat(),
             },
@@ -534,9 +513,8 @@ class TestApiClientConflictHandling:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_resolve_conflict_endpoint(self, mock_httpx_client, api_config):
-        """
-        TC-API.4.2: Resolve Conflict - Submit Resolution
+    async def test_resolve_conflict_endpoint(self, mock_httpx_client, api_config) -> None:
+        """TC-API.4.2: Resolve Conflict - Submit Resolution.
 
         Given: Conflict has been resolved locally
         When: Resolution is sent to server
@@ -566,17 +544,15 @@ class TestApiClientConflictHandling:
 
 
 class TestApiClientSyncStatus:
-    """
-    Test Suite: API Client - Sync Status
+    """Test Suite: API Client - Sync Status.
 
     Tests querying sync status and metadata
     """
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_sync_status(self, mock_httpx_client, api_config):
-        """
-        TC-API.5.1: Get Sync Status - Current State
+    async def test_get_sync_status(self, mock_httpx_client, api_config) -> None:
+        """TC-API.5.1: Get Sync Status - Current State.
 
         Given: Client wants to check sync status
         When: Status endpoint is queried
@@ -601,9 +577,8 @@ class TestApiClientSyncStatus:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_check_connectivity(self, mock_httpx_client, api_config):
-        """
-        TC-API.5.2: Check Connectivity - Is Online
+    async def test_check_connectivity(self, mock_httpx_client, api_config) -> None:
+        """TC-API.5.2: Check Connectivity - Is Online.
 
         Given: Client wants to verify connection
         When: Connectivity check is performed
@@ -611,7 +586,7 @@ class TestApiClientSyncStatus:
         """
         # Arrange
         mock_response = Response(
-            status_code=200, json={"online": True}, request=Request("GET", f"{api_config['base_url']}/api/ping")
+            status_code=200, json={"online": True}, request=Request("GET", f"{api_config['base_url']}/api/ping"),
         )
         mock_httpx_client.get.return_value = mock_response
 
@@ -632,17 +607,15 @@ class TestApiClientSyncStatus:
 
 
 class TestApiClientRequestValidation:
-    """
-    Test Suite: API Client - Request Validation
+    """Test Suite: API Client - Request Validation.
 
     Tests validation of request payloads
     """
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_validate_upload_payload(self, api_config):
-        """
-        TC-API.6.1: Validate Upload Payload - Required Fields
+    async def test_validate_upload_payload(self, api_config) -> None:
+        """TC-API.6.1: Validate Upload Payload - Required Fields.
 
         Given: Upload payload
         When: Payload is validated
@@ -658,9 +631,8 @@ class TestApiClientRequestValidation:
         assert isinstance(payload["changes"], list)
 
     @pytest.mark.unit
-    def test_validate_change_entry(self):
-        """
-        TC-API.6.2: Validate Change Entry - Required Fields
+    def test_validate_change_entry(self) -> None:
+        """TC-API.6.2: Validate Change Entry - Required Fields.
 
         Given: Change entry
         When: Entry is validated
@@ -679,12 +651,11 @@ class TestApiClientRequestValidation:
         assert "entity_id" in change
         assert "operation" in change
         assert "payload" in change
-        assert change["operation"] in ["create", "update", "delete"]
+        assert change["operation"] in {"create", "update", "delete"}
 
     @pytest.mark.unit
-    def test_validate_api_key_format(self, api_config):
-        """
-        TC-API.6.3: Validate API Key - Format Check
+    def test_validate_api_key_format(self, api_config) -> None:
+        """TC-API.6.3: Validate API Key - Format Check.
 
         Given: API key
         When: Key is validated

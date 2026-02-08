@@ -1,9 +1,9 @@
-"""
-Storage adapter for TUI integration.
+"""Storage adapter for TUI integration.
 
 Provides a reactive interface between LocalStorageManager and Textual TUI components.
 """
 
+import contextlib
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -41,8 +41,7 @@ class ItemUpdateConfig:
 
 
 class StorageAdapter:
-    """
-    Adapter layer between LocalStorageManager and TUI.
+    """Adapter layer between LocalStorageManager and TUI.
 
     Provides:
     - Reactive data access with callbacks
@@ -55,9 +54,8 @@ class StorageAdapter:
         self,
         base_dir: Path | None = None,
         sync_engine: SyncEngine | None = None,
-    ):
-        """
-        Initialize storage adapter.
+    ) -> None:
+        """Initialize storage adapter.
 
         Args:
             base_dir: Base directory for local storage
@@ -76,8 +74,7 @@ class StorageAdapter:
     # ========================================================================
 
     def get_project(self, project_name: str) -> Project | None:
-        """
-        Get project by name.
+        """Get project by name.
 
         Args:
             project_name: Project name
@@ -89,10 +86,9 @@ class StorageAdapter:
         return project_storage.get_project()
 
     def create_project(
-        self, name: str, description: str | None = None, metadata: dict[str, Any] | None = None
+        self, name: str, description: str | None = None, metadata: dict[str, Any] | None = None,
     ) -> Project:
-        """
-        Create or update project.
+        """Create or update project.
 
         Args:
             name: Project name
@@ -116,8 +112,7 @@ class StorageAdapter:
         status: str | None = None,
         parent_id: str | None = None,
     ) -> list[Item]:
-        """
-        List items with optional filters.
+        """List items with optional filters.
 
         Combines items from both SQLite and Markdown sources.
 
@@ -144,8 +139,7 @@ class StorageAdapter:
         )
 
     def get_item(self, project: Project, item_id: str) -> Item | None:
-        """
-        Get item by ID.
+        """Get item by ID.
 
         Args:
             project: Project instance
@@ -165,8 +159,7 @@ class StorageAdapter:
         item_type: str,
         config: ItemCreateConfig | None = None,
     ) -> Item:
-        """
-        Create a new item.
+        """Create a new item.
 
         Args:
             project: Project instance
@@ -204,8 +197,7 @@ class StorageAdapter:
         item_id: str,
         config: ItemUpdateConfig | None = None,
     ) -> Item:
-        """
-        Update an existing item.
+        """Update an existing item.
 
         Args:
             project: Project instance
@@ -235,8 +227,7 @@ class StorageAdapter:
         return item
 
     def delete_item(self, project: Project, item_id: str) -> None:
-        """
-        Delete an item (soft delete).
+        """Delete an item (soft delete).
 
         Args:
             project: Project instance
@@ -260,8 +251,7 @@ class StorageAdapter:
         target_id: str | None = None,
         link_type: str | None = None,
     ) -> list[Link]:
-        """
-        List links with optional filters.
+        """List links with optional filters.
 
         Args:
             project: Project instance
@@ -289,8 +279,7 @@ class StorageAdapter:
         link_type: str,
         metadata: dict[str, Any] | None = None,
     ) -> Link:
-        """
-        Create a traceability link.
+        """Create a traceability link.
 
         Args:
             project: Project instance
@@ -313,8 +302,7 @@ class StorageAdapter:
         )
 
     def delete_link(self, project: Project, link_id: str) -> None:
-        """
-        Delete a link.
+        """Delete a link.
 
         Args:
             project: Project instance
@@ -329,8 +317,7 @@ class StorageAdapter:
     # ========================================================================
 
     def search_items(self, query: str, project_id: str | None = None) -> list[Item]:
-        """
-        Full-text search across items.
+        """Full-text search across items.
 
         Args:
             query: Search query
@@ -346,8 +333,7 @@ class StorageAdapter:
     # ========================================================================
 
     def get_sync_status(self) -> SyncState:
-        """
-        Get current sync status.
+        """Get current sync status.
 
         Returns:
             SyncState object
@@ -363,8 +349,7 @@ class StorageAdapter:
         return self.sync_engine.get_status()
 
     async def trigger_sync(self, force: bool = False) -> dict[str, Any]:
-        """
-        Trigger a sync operation.
+        """Trigger a sync operation.
 
         Args:
             force: Force sync even if recently synced
@@ -412,8 +397,7 @@ class StorageAdapter:
             }
 
     def get_pending_changes_count(self) -> int:
-        """
-        Get count of pending sync changes.
+        """Get count of pending sync changes.
 
         Returns:
             Number of pending changes
@@ -425,8 +409,7 @@ class StorageAdapter:
     # ========================================================================
 
     def get_unresolved_conflicts(self) -> list[Conflict]:
-        """
-        Get all unresolved conflicts.
+        """Get all unresolved conflicts.
 
         Returns:
             List of conflicts
@@ -445,8 +428,7 @@ class StorageAdapter:
             session.close()
 
     def get_conflict_count(self) -> int:
-        """
-        Get count of unresolved conflicts.
+        """Get count of unresolved conflicts.
 
         Returns:
             Number of unresolved conflicts
@@ -458,8 +440,7 @@ class StorageAdapter:
     # ========================================================================
 
     def get_project_stats(self, project: Project) -> dict[str, Any]:
-        """
-        Get statistics for a project.
+        """Get statistics for a project.
 
         Args:
             project: Project instance
@@ -516,8 +497,7 @@ class StorageAdapter:
     # ========================================================================
 
     def on_sync_status_change(self, callback: Callable[[SyncState], None]) -> Callable[[], None]:
-        """
-        Register callback for sync status changes.
+        """Register callback for sync status changes.
 
         Args:
             callback: Callback function that receives SyncState
@@ -533,8 +513,7 @@ class StorageAdapter:
         return unregister
 
     def on_conflict_detected(self, callback: Callable[[Conflict], None]) -> Callable[[], None]:
-        """
-        Register callback for conflict detection.
+        """Register callback for conflict detection.
 
         Args:
             callback: Callback function that receives Conflict
@@ -550,8 +529,7 @@ class StorageAdapter:
         return unregister
 
     def on_item_change(self, callback: Callable[[str], None]) -> Callable[[], None]:
-        """
-        Register callback for item changes.
+        """Register callback for item changes.
 
         Args:
             callback: Callback function that receives item ID
@@ -571,22 +549,18 @@ class StorageAdapter:
         for callback in self._sync_status_callbacks:
             try:
                 callback(state)
-            except Exception as e:
+            except Exception:
                 # Log but don't propagate callback errors
-                print(f"Error in sync status callback: {e}")
+                pass
 
     def _notify_conflict(self, conflict: Conflict) -> None:
         """Notify all conflict listeners."""
         for callback in self._conflict_callbacks:
-            try:
+            with contextlib.suppress(Exception):
                 callback(conflict)
-            except Exception as e:
-                print(f"Error in conflict callback: {e}")
 
     def _notify_item_change(self, item_id: str) -> None:
         """Notify all item change listeners."""
         for callback in self._item_change_callbacks:
-            try:
+            with contextlib.suppress(Exception):
                 callback(item_id)
-            except Exception as e:
-                print(f"Error in item change callback: {e}")

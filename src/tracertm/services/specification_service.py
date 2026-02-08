@@ -1,6 +1,4 @@
-"""
-Services for specification entities (ADR, Contract, Feature, Scenario, StepDefinition).
-"""
+"""Services for specification entities (ADR, Contract, Feature, Scenario, StepDefinition)."""
 
 from __future__ import annotations
 
@@ -9,13 +7,15 @@ import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from datetime import date as date_type
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import delete, func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.core.concurrency import update_with_retry
 from tracertm.models.specification import ADR, Contract, Feature, Scenario
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @dataclass
@@ -141,7 +141,7 @@ async def _maybe_await(value: Any) -> Any:
 class ADRService:
     """Service for Architecture Decision Records."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -154,7 +154,7 @@ class ADRService:
         opts = options or ADROptions()
         # Generate sequential ADR number
         result = await self.session.execute(
-            select(ADR).where(ADR.project_id == project_id).order_by(ADR.created_at.desc()).limit(1)
+            select(ADR).where(ADR.project_id == project_id).order_by(ADR.created_at.desc()).limit(1),
         )
         last_adr = await _maybe_await(result.scalar_one_or_none())
 
@@ -231,7 +231,8 @@ class ADRService:
         async def do_update() -> ADR:
             adr = await self.get(adr_id)
             if not adr:
-                raise ValueError(f"ADR {adr_id} not found")
+                msg = f"ADR {adr_id} not found"
+                raise ValueError(msg)
 
             for key, value in updates.items():
                 if hasattr(adr, key) and value is not None:
@@ -254,7 +255,7 @@ class ADRService:
         return (getattr(result, "rowcount", 0) or 0) > 0
 
     async def verify_compliance(
-        self, adr_id: str, compliance_score: float, verified_at: datetime | None = None
+        self, adr_id: str, compliance_score: float, verified_at: datetime | None = None,
     ) -> ADR | None:
         """Verify ADR compliance and update score."""
         adr = await self.get(adr_id)
@@ -300,7 +301,7 @@ class ADRService:
 class ContractService:
     """Service for Design-by-Contract specifications."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -313,7 +314,7 @@ class ContractService:
         opts = options or ContractOptions()
         # Generate sequential contract number
         result = await self.session.execute(
-            select(Contract).where(Contract.project_id == project_id).order_by(Contract.created_at.desc()).limit(1)
+            select(Contract).where(Contract.project_id == project_id).order_by(Contract.created_at.desc()).limit(1),
         )
         last_contract = await _maybe_await(result.scalar_one_or_none())
 
@@ -391,7 +392,7 @@ class ContractService:
     async def list_by_item(self, item_id: str) -> list[Contract]:
         """List contracts for an item."""
         result = await self.session.execute(
-            select(Contract).where(Contract.item_id == item_id).order_by(Contract.created_at.desc())
+            select(Contract).where(Contract.item_id == item_id).order_by(Contract.created_at.desc()),
         )
         scalars = await _maybe_await(result.scalars())
         rows = await _maybe_await(scalars.all())
@@ -403,7 +404,8 @@ class ContractService:
         async def do_update() -> Contract:
             contract = await self.get(contract_id)
             if not contract:
-                raise ValueError(f"Contract {contract_id} not found")
+                msg = f"Contract {contract_id} not found"
+                raise ValueError(msg)
 
             for key, value in updates.items():
                 if hasattr(contract, key) and value is not None:
@@ -470,7 +472,7 @@ class ContractService:
 class FeatureService:
     """Service for BDD Features."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -483,7 +485,7 @@ class FeatureService:
         opts = options or FeatureOptions()
         # Generate sequential feature number
         result = await self.session.execute(
-            select(Feature).where(Feature.project_id == project_id).order_by(Feature.created_at.desc()).limit(1)
+            select(Feature).where(Feature.project_id == project_id).order_by(Feature.created_at.desc()).limit(1),
         )
         last_feature = await _maybe_await(result.scalar_one_or_none())
 
@@ -558,7 +560,8 @@ class FeatureService:
         async def do_update() -> Feature:
             feature = await self.get(feature_id)
             if not feature:
-                raise ValueError(f"Feature {feature_id} not found")
+                msg = f"Feature {feature_id} not found"
+                raise ValueError(msg)
 
             for key, value in updates.items():
                 if hasattr(feature, key) and value is not None:
@@ -588,7 +591,7 @@ class FeatureService:
 
         # Get scenarios for this feature
         result = await self.session.execute(
-            select(Scenario).where(Scenario.feature_id == feature_id).order_by(Scenario.created_at)
+            select(Scenario).where(Scenario.feature_id == feature_id).order_by(Scenario.created_at),
         )
         scalars = await _maybe_await(result.scalars())
         scenarios = list(await _maybe_await(scalars.all()))
@@ -602,7 +605,7 @@ class FeatureService:
     async def calculate_pass_rate(self, feature_id: str) -> float:
         """Calculate average pass rate across scenarios."""
         result = await self.session.execute(
-            select(func.avg(Scenario.pass_rate)).where(Scenario.feature_id == feature_id)
+            select(func.avg(Scenario.pass_rate)).where(Scenario.feature_id == feature_id),
         )
         avg_pass_rate = await _maybe_await(result.scalar())
         avg_pass_rate = avg_pass_rate or 0.0
@@ -612,7 +615,7 @@ class FeatureService:
 class ScenarioService:
     """Service for BDD Scenarios."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(
@@ -627,11 +630,12 @@ class ScenarioService:
         feature = await self.session.execute(select(Feature).where(Feature.id == feature_id))
         feature_obj = await _maybe_await(feature.scalar_one_or_none())
         if not feature_obj:
-            raise ValueError(f"Feature {feature_id} not found")
+            msg = f"Feature {feature_id} not found"
+            raise ValueError(msg)
 
         # Generate sequential scenario number within feature
         result = await self.session.execute(
-            select(Scenario).where(Scenario.feature_id == feature_id).order_by(Scenario.created_at.desc()).limit(1)
+            select(Scenario).where(Scenario.feature_id == feature_id).order_by(Scenario.created_at.desc()).limit(1),
         )
         last_scenario = await _maybe_await(result.scalar_one_or_none())
 
@@ -698,7 +702,8 @@ class ScenarioService:
         async def do_update() -> Scenario:
             scenario = await self.get(scenario_id)
             if not scenario:
-                raise ValueError(f"Scenario {scenario_id} not found")
+                msg = f"Scenario {scenario_id} not found"
+                raise ValueError(msg)
 
             for key, value in updates.items():
                 if hasattr(scenario, key) and value is not None:
@@ -777,7 +782,7 @@ class ScenarioService:
 class StepDefinitionService:
     """Service for BDD Step Definitions."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(

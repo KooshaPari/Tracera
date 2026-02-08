@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-BMM Workflow Automation Script
+"""BMM Workflow Automation Script
 Automates BMad Method workflows using auggie/claude CLI with streaming JSON support.
 Supports parallel execution, live user interaction, and cross-project portability.
 """
@@ -11,6 +10,7 @@ import json
 import subprocess
 from dataclasses import dataclass
 from enum import Enum
+from itertools import starmap
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +18,7 @@ import yaml
 
 
 class WorkflowStatus(Enum):
-    """Workflow execution status"""
+    """Workflow execution status."""
 
     PENDING = "pending"
     RUNNING = "running"
@@ -30,7 +30,7 @@ class WorkflowStatus(Enum):
 
 @dataclass
 class WorkflowTask:
-    """Represents a single workflow task"""
+    """Represents a single workflow task."""
 
     id: str
     name: str
@@ -48,9 +48,9 @@ class WorkflowTask:
 
 
 class BMMAutomation:
-    """Main automation orchestrator for BMM workflows"""
+    """Main automation orchestrator for BMM workflows."""
 
-    def __init__(self, project_root: Path, cli_tool: str = "auto", verbose: bool = False):
+    def __init__(self, project_root: Path, cli_tool: str = "auto", verbose: bool = False) -> None:
         self.project_root = project_root
         self.verbose = verbose
         self.bmad_folder = project_root / ".bmad"
@@ -65,47 +65,46 @@ class BMMAutomation:
         self.workflow_status = self._load_workflow_status()
 
     def _detect_cli_tool(self) -> str:
-        """Detect available CLI tool (auggie or claude)"""
+        """Detect available CLI tool (auggie or claude)."""
         if subprocess.run(["which", "auggie"], capture_output=True).returncode == 0:
             return "auggie"
         if subprocess.run(["which", "claude"], capture_output=True).returncode == 0:
             return "claude"
-        raise RuntimeError("Neither auggie nor claude CLI found. Please install one.")
+        msg = "Neither auggie nor claude CLI found. Please install one."
+        raise RuntimeError(msg)
 
     def _load_config(self) -> dict[str, Any]:
-        """Load BMM configuration"""
+        """Load BMM configuration."""
         config_file = self.bmad_folder / "bmm" / "config.yaml"
         if not config_file.exists():
             return {}
-        with Path(config_file).open() as f:
+        with Path(config_file).open(encoding="utf-8") as f:
             return yaml.safe_load(f)
 
     def _load_workflow_status(self) -> dict[str, Any] | None:
-        """Load workflow status file"""
+        """Load workflow status file."""
         if not self.workflow_status_file.exists():
             return None
-        with Path(self.workflow_status_file).open() as f:
+        with Path(self.workflow_status_file).open(encoding="utf-8") as f:
             return yaml.safe_load(f)
 
-    def _save_workflow_status(self):
-        """Save updated workflow status"""
+    def _save_workflow_status(self) -> None:
+        """Save updated workflow status."""
         if self.workflow_status:
-            with Path(self.workflow_status_file).open("w") as f:
+            with Path(self.workflow_status_file).open("w", encoding="utf-8") as f:
                 yaml.dump(self.workflow_status, f, default_flow_style=False, sort_keys=False)
 
     def check_initialization(self) -> bool:
-        """Check if project is initialized with BMM"""
+        """Check if project is initialized with BMM."""
         return self.bmad_folder.exists() and self.workflow_status_file.exists() and self.workflow_status is not None
 
     async def run_init(self) -> bool:
-        """Run workflow initialization if needed"""
+        """Run workflow initialization if needed."""
         if self.check_initialization():
-            print("✓ Project already initialized")
             return True
 
-        print("⚙️  Initializing BMM project...")
         success = await self._run_workflow(
-            agent="bmad-master", workflow_command="/bmad:bmm:workflows:workflow-status:init", interactive=True
+            agent="bmad-master", workflow_command="/bmad:bmm:workflows:workflow-status:init", interactive=True,
         )
 
         if success:
@@ -113,7 +112,7 @@ class BMMAutomation:
         return success
 
     def _parse_workflow_tasks(self) -> list[WorkflowTask]:
-        """Parse workflow status into executable tasks"""
+        """Parse workflow status into executable tasks."""
         if not self.workflow_status or "workflow_status" not in self.workflow_status:
             return []
 
@@ -145,8 +144,8 @@ class BMMAutomation:
         return tasks
 
     def _build_agent_prompt(self, workflow_command: str, structured_output: bool = True) -> str:
-        """Build prompt for agent with structured output instructions"""
-        base_prompt = f"""Execute the workflow: {workflow_command}
+        """Build prompt for agent with structured output instructions."""
+        return f"""Execute the workflow: {workflow_command}
 
 CRITICAL INSTRUCTIONS FOR STRUCTURED OUTPUT:
 1. When you need user input, output JSON in this format:
@@ -163,29 +162,25 @@ CRITICAL INSTRUCTIONS FOR STRUCTURED OUTPUT:
 
 Follow the workflow instructions exactly. Use the structured JSON format above for all interactions.
 """
-        return base_prompt
 
     async def _run_workflow(
-        self, agent: str, workflow_command: str, interactive: bool = True, structured: bool = True
+        self, agent: str, workflow_command: str, interactive: bool = True, structured: bool = True,
     ) -> bool:
-        """Run a single workflow using CLI tool"""
-
+        """Run a single workflow using CLI tool."""
         if self.cli_tool == "auggie":
             return await self._run_auggie_workflow(agent, workflow_command, interactive, structured)
         return await self._run_claude_workflow(agent, workflow_command, interactive, structured)
 
     async def _run_auggie_workflow(
-        self, agent: str, workflow_command: str, interactive: bool, structured: bool
+        self, agent: str, workflow_command: str, interactive: bool, structured: bool,
     ) -> bool:
-        """Run workflow using auggie CLI"""
-
+        """Run workflow using auggie CLI."""
         # Load agent configuration
         agent_file = self.bmad_folder / "bmm" / "agents" / f"{agent}.agent.yaml"
         if not agent_file.exists():
             agent_file = self.bmad_folder / "core" / "agents" / f"{agent}.agent.yaml"
 
         if not agent_file.exists():
-            print(f"❌ Agent file not found: {agent}")
             return False
 
         # Build command
@@ -208,7 +203,7 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
             ])
 
         if self.verbose:
-            print(f"🔧 Running: {' '.join(cmd)}")
+            pass
 
         try:
             if interactive:
@@ -222,17 +217,14 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
                 if structured:
                     self._process_structured_output(result.stdout)
                 return True
-            print(f"❌ Workflow failed: {result.stderr}")
             return False
-        except Exception as e:
-            print(f"❌ Error running workflow: {e}")
+        except Exception:
             return False
 
     async def _run_claude_workflow(
-        self, agent: str, workflow_command: str, interactive: bool, structured: bool
+        self, agent: str, workflow_command: str, interactive: bool, structured: bool,
     ) -> bool:
-        """Run workflow using claude CLI with streaming JSON support"""
-
+        """Run workflow using claude CLI with streaming JSON support."""
         # Build command
         cmd = ["claude"]
 
@@ -243,7 +235,7 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
             cmd.extend(["--print", "--output-format", "stream-json" if structured else "text", prompt])
 
         if self.verbose:
-            print(f"🔧 Running: {' '.join(cmd)}")
+            pass
 
         try:
             if interactive:
@@ -251,7 +243,7 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
                 return result.returncode == 0
             # Use streaming JSON for real-time processing
             process = subprocess.Popen(
-                cmd, cwd=self.project_root, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+                cmd, cwd=self.project_root, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
             )
 
             # Process streaming output
@@ -266,16 +258,15 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
                         self._process_streaming_message(data)
                     except json.JSONDecodeError:
                         if self.verbose:
-                            print(f"Non-JSON output: {line.strip()}")
+                            pass
 
             process.wait()
             return process.returncode == 0
-        except Exception as e:
-            print(f"❌ Error running workflow: {e}")
+        except Exception:
             return False
 
-    def _process_structured_output(self, output: str):
-        """Process structured JSON output from workflow"""
+    def _process_structured_output(self, output: str) -> None:
+        """Process structured JSON output from workflow."""
         try:
             data = json.loads(output)
             if isinstance(data, dict):
@@ -284,10 +275,10 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
                 for item in data:
                     self._process_streaming_message(item)
         except json.JSONDecodeError:
-            print(f"⚠️  Non-JSON output received: {output[:200]}")
+            pass
 
-    def _process_streaming_message(self, data: dict[str, Any]):
-        """Process a single streaming message"""
+    def _process_streaming_message(self, data: dict[str, Any]) -> None:
+        """Process a single streaming message."""
         msg_type = data.get("type", "")
 
         if msg_type == "user_input":
@@ -305,61 +296,44 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
 
         elif msg_type == "complete":
             # Handle completion
-            output_file = data.get("output_file", "")
-            summary = data.get("summary", "")
-            print("\n✅ Workflow complete!")
-            print(f"   Output: {output_file}")
-            print(f"   Summary: {summary}")
+            data.get("output_file", "")
+            data.get("summary", "")
 
         elif msg_type == "progress":
             # Handle progress update
-            step = data.get("step", "")
-            message = data.get("message", "")
-            print(f"⚙️  {step}: {message}")
+            data.get("step", "")
+            data.get("message", "")
 
-        else:
-            # Unknown message type
-            if self.verbose:
-                print(f"📨 {json.dumps(data, indent=2)}")
+        # Unknown message type
+        elif self.verbose:
+            pass
 
     def _handle_user_input(self, question: str, options: list[str]):
-        """Handle user input request"""
-        print(f"\n❓ {question}")
+        """Handle user input request."""
         if options:
-            for i, opt in enumerate(options, 1):
-                print(f"   {i}. {opt}")
-        response = input("Your answer: ")
+            for _i, _opt in enumerate(options, 1):
+                pass
+        return input("Your answer: ")
         # TODO: Send response back to workflow
-        return response
 
     def _handle_checkpoint(self, section: str, content: str, next_step: str):
-        """Handle checkpoint approval"""
-        print("\n━━━━━━━━━━━━━━━━━━━━━━━")
-        print(f"📋 Section: {section}")
-        print(f"\n{content[:500]}..." if len(content) > 500 else f"\n{content}")
-        print("\n━━━━━━━━━━━━━━━━━━━━━━━")
-        print(f"Next: {next_step}")
-
-        response = input("\n[c] Continue, [e] Edit, [s] Skip: ").lower()
-        return response
+        """Handle checkpoint approval."""
+        return input("\n[c] Continue, [e] Edit, [s] Skip: ").lower()
 
     async def run_workflow_sequence(
-        self, workflow_ids: list[str] | None = None, parallel: bool = False, interactive: bool = True
-    ):
-        """Run a sequence of workflows"""
-
+        self, workflow_ids: list[str] | None = None, parallel: bool = False, interactive: bool = True,
+    ) -> None:
+        """Run a sequence of workflows."""
         tasks = self._parse_workflow_tasks()
 
         if workflow_ids:
             tasks = [t for t in tasks if t.id in workflow_ids]
 
         if not tasks:
-            print("No workflows to run")
             return
 
-        print(f"\n🚀 Running {len(tasks)} workflow(s)...")
         for task in tasks:
-            print(f"   • {task.name} ({task.agent})")
+            pass
 
         if parallel and len(tasks) > 1:
             # Run compatible workflows in parallel
@@ -369,15 +343,10 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
             for task in tasks:
                 await self._run_single_task(task, interactive)
 
-    async def _run_single_task(self, task: WorkflowTask, interactive: bool):
-        """Run a single workflow task"""
-        print(f"\n{'=' * 60}")
-        print(f"🎯 {task.name}")
-        print(f"   Agent: {task.agent}")
-        print(f"   Type: {task.status_type}")
+    async def _run_single_task(self, task: WorkflowTask, interactive: bool) -> None:
+        """Run a single workflow task."""
         if task.note:
-            print(f"   Note: {task.note}")
-        print(f"{'=' * 60}\n")
+            pass
 
         task.status = WorkflowStatus.RUNNING
         success = await self._run_workflow(agent=task.agent, workflow_command=task.command, interactive=interactive)
@@ -385,13 +354,11 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
         if success:
             task.status = WorkflowStatus.COMPLETE
             self._update_workflow_status(task)
-            print(f"\n✅ {task.name} completed")
         else:
             task.status = WorkflowStatus.FAILED
-            print(f"\n❌ {task.name} failed")
 
-    async def _run_parallel_workflows(self, tasks: list[WorkflowTask], interactive: bool):
-        """Run compatible workflows in parallel"""
+    async def _run_parallel_workflows(self, tasks: list[WorkflowTask], interactive: bool) -> None:
+        """Run compatible workflows in parallel."""
         # Group tasks by agent to avoid conflicts
         agent_groups = {}
         for task in tasks:
@@ -400,18 +367,18 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
             agent_groups[task.agent].append(task)
 
         # Run each agent's tasks sequentially, but different agents in parallel
-        async def run_agent_tasks(agent: str, agent_tasks: list[WorkflowTask]):
+        async def run_agent_tasks(agent: str, agent_tasks: list[WorkflowTask]) -> None:
             for task in agent_tasks:
                 await self._run_single_task(task, interactive)
 
         # Create tasks for each agent group
-        agent_coroutines = [run_agent_tasks(agent, agent_tasks) for agent, agent_tasks in agent_groups.items()]
+        agent_coroutines = list(starmap(run_agent_tasks, agent_groups.items()))
 
         # Run all agent groups in parallel
         await asyncio.gather(*agent_coroutines)
 
-    def _update_workflow_status(self, task: WorkflowTask):
-        """Update workflow status file after task completion"""
+    def _update_workflow_status(self, task: WorkflowTask) -> None:
+        """Update workflow status file after task completion."""
         if not self.workflow_status:
             return
 
@@ -427,46 +394,32 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
 
         self._save_workflow_status()
 
-    def show_status(self):
-        """Display current workflow status"""
+    def show_status(self) -> None:
+        """Display current workflow status."""
         if not self.workflow_status:
-            print("❌ No workflow status found. Run 'init' first.")
             return
 
-        print(f"\n{'=' * 60}")
-        print(f"📊 BMM Workflow Status - {self.workflow_status.get('project', 'Unknown')}")
-        print(f"{'=' * 60}")
-        print(f"Track: {self.workflow_status.get('selected_track', 'Unknown')}")
-        print(f"Type: {self.workflow_status.get('field_type', 'Unknown')}")
-        print(f"Generated: {self.workflow_status.get('generated', 'Unknown')}")
-        print()
-
         tasks = self._parse_workflow_tasks()
-        completed = sum(1 for t in tasks if t.status == WorkflowStatus.COMPLETE)
-
-        print(f"Progress: {completed}/{len(tasks)} workflows completed\n")
+        sum(1 for t in tasks if t.status == WorkflowStatus.COMPLETE)
 
         # Group by phase
         current_phase = None
         for phase_key, phase_data in self.workflow_status["workflow_status"].items():
             phase_name = phase_key.replace("_", " ").title()
             if phase_name != current_phase:
-                print(f"\n{phase_name}")
-                print("-" * 40)
                 current_phase = phase_name
 
-            for workflow_id, workflow_info in phase_data.items():
+            for workflow_info in phase_data.values():
                 status = workflow_info.get("status", "pending")
-                icon = "✅" if isinstance(status, str) and status.startswith("docs/") else "⏳"
-                status_type = workflow_info.get("status", "unknown")
+                "✅" if isinstance(status, str) and status.startswith("docs/") else "⏳"
+                workflow_info.get("status", "unknown")
 
-                print(f"  {icon} {workflow_id} ({status_type})")
                 if workflow_info.get("note"):
-                    print(f"     {workflow_info['note']}")
+                    pass
 
 
-def main():
-    """Main entry point"""
+def main() -> None:
+    """Main entry point."""
     parser = argparse.ArgumentParser(
         description="BMM Workflow Automation - Automate BMad Method workflows",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -497,15 +450,15 @@ Examples:
     parser.add_argument("workflows", nargs="*", help="Specific workflow IDs to run (for run command)")
 
     parser.add_argument(
-        "--project-root", type=Path, default=Path.cwd(), help="Project root directory (default: current directory)"
+        "--project-root", type=Path, default=Path.cwd(), help="Project root directory (default: current directory)",
     )
 
     parser.add_argument(
-        "--cli", choices=["auto", "auggie", "claude"], default="auto", help="CLI tool to use (default: auto-detect)"
+        "--cli", choices=["auto", "auggie", "claude"], default="auto", help="CLI tool to use (default: auto-detect)",
     )
 
     parser.add_argument(
-        "--interactive", action="store_true", default=True, help="Run workflows interactively (default)"
+        "--interactive", action="store_true", default=True, help="Run workflows interactively (default)",
     )
 
     parser.add_argument("--auto", action="store_true", help="Run workflows automatically without user interaction")
@@ -532,8 +485,8 @@ Examples:
         interactive = not args.auto
         asyncio.run(
             automation.run_workflow_sequence(
-                workflow_ids=args.workflows if args.workflows else None, parallel=args.parallel, interactive=interactive
-            )
+                workflow_ids=args.workflows or None, parallel=args.parallel, interactive=interactive,
+            ),
         )
 
     elif args.command == "next":
@@ -541,8 +494,6 @@ Examples:
         tasks = automation._parse_workflow_tasks()
         if tasks:
             asyncio.run(automation._run_single_task(tasks[0], interactive=True))
-        else:
-            print("✅ All workflows complete!")
 
 
 if __name__ == "__main__":

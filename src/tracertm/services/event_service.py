@@ -12,7 +12,7 @@ from tracertm.repositories.event_repository import EventRepository
 class EventService:
     """Service for event operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.events = EventRepository(session)
 

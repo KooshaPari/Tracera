@@ -1,5 +1,4 @@
-"""
-FFmpeg media processing pipeline for QA Integration system.
+"""FFmpeg media processing pipeline for QA Integration system.
 
 Provides video-to-GIF conversion, thumbnail generation, video compression,
 frame extraction, and scene detection using FFmpeg.
@@ -86,7 +85,7 @@ class FFmpegPipeline:
             await pipeline.video_to_gif("input.webm", "output.gif")
     """
 
-    def __init__(self, temp_dir: Path | None = None):
+    def __init__(self, temp_dir: Path | None = None) -> None:
         """Initialize FFmpegPipeline.
 
         Args:
@@ -533,7 +532,8 @@ class FFmpegPipeline:
         stdout, stderr = await proc.communicate()
 
         if proc.returncode != 0:
-            raise FFmpegError(f"ffprobe failed: {stderr.decode()}")
+            msg = f"ffprobe failed: {stderr.decode()}"
+            raise FFmpegError(msg)
 
         data = json.loads(stdout.decode())
 
@@ -543,7 +543,8 @@ class FFmpegPipeline:
         )
 
         if not video_stream:
-            raise FFmpegError("No video stream found")
+            msg = "No video stream found"
+            raise FFmpegError(msg)
 
         # Parse frame rate (usually "30000/1001" or "30/1")
         fps_parts = video_stream.get("r_frame_rate", "30/1").split("/")
@@ -589,7 +590,8 @@ class FFmpegPipeline:
             ValueError: If neither or both end_time and duration provided.
         """
         if (end_time is None) == (duration is None):
-            raise ValueError("Provide either end_time or duration, not both")
+            msg = "Provide either end_time or duration, not both"
+            raise ValueError(msg)
 
         args = ["-ss", str(start_time), "-i", str(input_path)]
 
@@ -627,8 +629,10 @@ class FFmpegPipeline:
             _, stderr = await asyncio.wait_for(proc.communicate(), timeout=DEFAULT_RUN_TIMEOUT)
 
             if proc.returncode != 0:
-                raise FFmpegError(f"FFmpeg failed: {stderr.decode()}")
+                msg = f"FFmpeg failed: {stderr.decode()}"
+                raise FFmpegError(msg)
         except TimeoutError:
             if proc is not None:
                 proc.kill()
-            raise FFmpegError(f"FFmpeg timed out after {DEFAULT_RUN_TIMEOUT} seconds") from None
+            msg = f"FFmpeg timed out after {DEFAULT_RUN_TIMEOUT} seconds"
+            raise FFmpegError(msg) from None

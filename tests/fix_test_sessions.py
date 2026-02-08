@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Script to fix all database session patterns in integration tests.
+"""Script to fix all database session patterns in integration tests.
 Replaces:
     db = temp_env["db"]
     with Session(db.engine) as session:
@@ -13,7 +12,7 @@ from pathlib import Path
 
 # Read the test file
 test_file = Path("/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/tests/integration/cli/test_cli_integration.py")
-content = test_file.read_text()
+content = test_file.read_text(encoding="utf-8")
 
 # Pattern 1: db = temp_env["db"] followed by with Session(db.engine) on next or nearby line
 # Replace with: with refresh_db_session(temp_env) as session:
@@ -65,8 +64,4 @@ while i < len(lines):
 
 # Write back
 new_content = "\n".join(new_lines)
-test_file.write_text(new_content)
-
-print("Fixed session patterns in test file")
-print(f"Original lines: {len(lines)}")
-print(f"New lines: {len(new_lines)}")
+test_file.write_text(new_content, encoding="utf-8")

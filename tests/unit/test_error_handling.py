@@ -1,5 +1,4 @@
-"""
-Unit tests for error handling and user-friendly messages.
+"""Unit tests for error handling and user-friendly messages.
 
 Story 1.6: Error Handling & User-Friendly Messages
 Test Cases: TC-1.6.1 to TC-1.6.7
@@ -21,9 +20,8 @@ from tracertm.cli.errors import (
 class TestErrorHandling:
     """Test error handling and user-friendly messages."""
 
-    def test_database_connection_error(self):
-        """
-        TC-1.6.1: Database connection error with helpful message.
+    def test_database_connection_error(self) -> None:
+        """TC-1.6.1: Database connection error with helpful message.
 
         Given: Database connection fails
         When: Error is raised
@@ -31,7 +29,7 @@ class TestErrorHandling:
         """
         # PostgreSQL connection error
         pg_error = DatabaseConnectionError(
-            "postgresql://localhost:5432/testdb", Exception("could not connect to server")
+            "postgresql://localhost:5432/testdb", Exception("could not connect to server"),
         )
 
         assert "Failed to connect to database" in pg_error.message
@@ -43,9 +41,8 @@ class TestErrorHandling:
         assert "Failed to connect to database" in sqlite_error.message
         assert pg_error.suggestion is not None
 
-    def test_invalid_configuration_error(self):
-        """
-        TC-1.6.2: Invalid configuration error with suggestion.
+    def test_invalid_configuration_error(self) -> None:
+        """TC-1.6.2: Invalid configuration error with suggestion.
 
         Given: Configuration is invalid
         When: Error is raised
@@ -57,9 +54,8 @@ class TestErrorHandling:
         assert "must start with 'postgresql://'" in error.message
         assert "rtm config set database_url" in (error.suggestion or "")
 
-    def test_missing_project_error(self):
-        """
-        TC-1.6.3: Missing project error with helpful guidance.
+    def test_missing_project_error(self) -> None:
+        """TC-1.6.3: Missing project error with helpful guidance.
 
         Given: Project does not exist
         When: Error is raised
@@ -75,9 +71,8 @@ class TestErrorHandling:
         assert "No current project set" in error2.message
         assert error2.suggestion is not None and "rtm project init" in error2.suggestion
 
-    def test_permission_error(self):
-        """
-        TC-1.6.4: Permission error with clear explanation.
+    def test_permission_error(self) -> None:
+        """TC-1.6.4: Permission error with clear explanation.
 
         Given: Permission denied for operation
         When: Error is raised
@@ -89,9 +84,8 @@ class TestErrorHandling:
         assert "/path/to/file" in error.message
         assert error.suggestion is not None and "permissions" in error.suggestion.lower()
 
-    def test_disk_space_error(self):
-        """
-        TC-1.6.5: Disk space error with size information.
+    def test_disk_space_error(self) -> None:
+        """TC-1.6.5: Disk space error with size information.
 
         Given: Insufficient disk space
         When: Error is raised
@@ -103,9 +97,8 @@ class TestErrorHandling:
         assert "100MB" in error.message
         assert error.suggestion is not None and "Free up disk space" in error.suggestion
 
-    def test_network_error(self):
-        """
-        TC-1.6.6: Network error with retry suggestion.
+    def test_network_error(self) -> None:
+        """TC-1.6.6: Network error with retry suggestion.
 
         Given: Network operation fails
         When: Error is raised
@@ -117,9 +110,8 @@ class TestErrorHandling:
         assert "connection timeout" in error.message
         assert error.suggestion is not None and "network connection" in error.suggestion.lower()
 
-    def test_user_friendly_error_messages(self):
-        """
-        TC-1.6.7: All errors have user-friendly messages.
+    def test_user_friendly_error_messages(self) -> None:
+        """TC-1.6.7: All errors have user-friendly messages.
 
         Given: Any TraceRTM error
         When: Error is displayed
@@ -149,20 +141,16 @@ class TestErrorHandling:
             # Just verify suggestion is not empty and meaningful
             assert len(error.suggestion) > 10  # More than just a few words
 
-    def test_validation_error_formatting(self):
-        """
-        Test validation error message formatting.
-        """
+    def test_validation_error_formatting(self) -> None:
+        """Test validation error message formatting."""
         message = format_validation_error("port", "abc", "integer between 1-65535")
 
         assert "Invalid value for 'port'" in message
         assert "got 'abc'" in message
         assert "expected integer between 1-65535" in message
 
-    def test_error_display_formatting(self):
-        """
-        Test that errors display with rich formatting.
-        """
+    def test_error_display_formatting(self) -> None:
+        """Test that errors display with rich formatting."""
         error = TraceRTMError("Test error", "Test suggestion")
 
         # Should not raise exception
@@ -171,10 +159,8 @@ class TestErrorHandling:
         assert error.message == "Test error"
         assert error.suggestion == "Test suggestion"
 
-    def test_handle_error_function(self):
-        """
-        Test generic error handling function.
-        """
+    def test_handle_error_function(self) -> None:
+        """Test generic error handling function."""
         # TraceRTM error
         tracertm_error = ConfigurationError("test")
         handle_error(tracertm_error)

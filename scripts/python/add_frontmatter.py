@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Add YAML frontmatter to documentation pages.
+"""Add YAML frontmatter to documentation pages.
 
 This script adds frontmatter metadata to all markdown files in the docs/ directory
 following the state model and cross-linking configuration.
@@ -257,7 +256,7 @@ def create_frontmatter(
         base["tags"].extend(tags_add)
 
     # Add configuration
-    base.update({k: v for k, v in config.items() if k != "template" and k != "tags_add"})
+    base.update({k: v for k, v in config.items() if k not in {"template", "tags_add"}})
 
     # Build YAML
     lines = ["---"]
@@ -322,8 +321,7 @@ def add_frontmatter_to_file(base_path: Path, filepath: str) -> bool:
     full_path = base_path / filepath
 
     try:
-        with Path(full_path).open() as f:
-            content = f.read()
+        content = Path(full_path).read_text(encoding="utf-8")
 
         # Remove existing frontmatter if present
         if has_frontmatter(content):
@@ -333,39 +331,25 @@ def add_frontmatter_to_file(base_path: Path, filepath: str) -> bool:
         frontmatter = create_frontmatter(template, config, tags_add)
 
         # Write back
-        with Path(full_path).open("w") as f:
-            f.write(frontmatter + content)
+        Path(full_path).write_text(frontmatter + content, encoding="utf-8")
 
         return True
-    except Exception as e:
-        print(f"Error processing {filepath}: {e}")
+    except Exception:
         return False
 
 
-def main():
+def main() -> None:
     """Add frontmatter to all documentation pages."""
     base_path = Path(__file__).parent.parent
 
-    print("🔄 Adding YAML frontmatter to documentation pages...\n")
-
-    total = len(PAGE_MAPPINGS)
+    len(PAGE_MAPPINGS)
     success = 0
 
     for filepath in sorted(PAGE_MAPPINGS.keys()):
         full_path = base_path / filepath
 
-        if full_path.exists():
-            if add_frontmatter_to_file(base_path, filepath):
-                print(f"✅ {filepath}")
-                success += 1
-            else:
-                print(f"⚠️  {filepath} (failed)")
-        else:
-            print(f"❌ {filepath} (not found)")
-
-    print(f"\n{'=' * 70}")
-    print(f"Completed: {success}/{total} files processed successfully")
-    print(f"{'=' * 70}")
+        if full_path.exists() and add_frontmatter_to_file(base_path, filepath):
+            success += 1
 
 
 if __name__ == "__main__":

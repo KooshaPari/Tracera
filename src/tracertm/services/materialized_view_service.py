@@ -25,12 +25,11 @@ class ViewStaleness:
 class MaterializedViewService:
     """Service for managing materialized views and incremental refresh."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def refresh_incremental(self) -> dict[str, Any]:
-        """
-        Refresh materialized views incrementally based on change log.
+        """Refresh materialized views incrementally based on change log.
 
         Returns:
             Dict with refresh statistics
@@ -49,8 +48,7 @@ class MaterializedViewService:
         }
 
     async def refresh_full(self) -> dict[str, Any]:
-        """
-        Perform full refresh of all materialized views.
+        """Perform full refresh of all materialized views.
 
         Returns:
             Dict with refresh statistics
@@ -68,8 +66,7 @@ class MaterializedViewService:
         }
 
     async def get_staleness(self) -> ViewStaleness:
-        """
-        Get staleness information for materialized views.
+        """Get staleness information for materialized views.
 
         Returns:
             ViewStaleness object with staleness information
@@ -97,8 +94,7 @@ class MaterializedViewService:
         )
 
     async def cleanup_change_log(self, days_to_keep: int = 30) -> int:
-        """
-        Clean up old processed change log entries.
+        """Clean up old processed change log entries.
 
         Args:
             days_to_keep: Number of days to keep (default: 30)
@@ -113,8 +109,7 @@ class MaterializedViewService:
         return int(deleted_count) if deleted_count else 0
 
     async def get_refresh_stats(self) -> dict[str, Any]:
-        """
-        Get statistics about materialized views.
+        """Get statistics about materialized views.
 
         Returns:
             Dict with view statistics
@@ -133,8 +128,8 @@ class MaterializedViewService:
                     COUNT(*) FILTER (WHERE processed = FALSE) as unprocessed,
                     COUNT(*) FILTER (WHERE processed = TRUE) as processed
                 FROM change_log
-            """
-            )
+            """,
+            ),
         )
         cl_row = change_log_stats.fetchone()
 
@@ -158,8 +153,7 @@ class MaterializedViewService:
         }
 
     async def auto_refresh_if_stale(self, max_staleness_seconds: float = 5.0) -> bool:
-        """
-        Automatically refresh views if they are stale.
+        """Automatically refresh views if they are stale.
 
         Args:
             max_staleness_seconds: Maximum staleness before refresh (default: 5.0)

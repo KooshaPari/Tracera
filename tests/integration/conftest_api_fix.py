@@ -1,5 +1,4 @@
-"""
-Fix for API layer test isolation issues.
+"""Fix for API layer test isolation issues.
 This conftest patch implements proper fixture cleanup and test isolation.
 """
 
@@ -86,6 +85,6 @@ def api_test_isolation():
 
 
 # Marker for API tests that need special isolation handling
-def pytest_configure(config):
+def pytest_configure(config) -> None:
     """Register custom markers."""
     config.addinivalue_line("markers", "api_isolated: mark test as needing API isolation")

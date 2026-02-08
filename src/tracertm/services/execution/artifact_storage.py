@@ -18,7 +18,7 @@ class ArtifactStorageService:
     def __init__(
         self,
         base_path: str | Path | None = None,
-    ):
+    ) -> None:
         """Initialize artifact storage.
 
         Args:
@@ -66,11 +66,12 @@ class ArtifactStorageService:
         """
         source = Path(source_path).resolve()
         if not source.is_file():
-            raise FileNotFoundError(f"Artifact file not found: {source}")
+            msg = f"Artifact file not found: {source}"
+            raise FileNotFoundError(msg)
 
         dest_dir = self._dir(project_id, execution_id)
         if subdir:
-            dest_dir = dest_dir / subdir
+            dest_dir /= subdir
         dest_dir.mkdir(parents=True, exist_ok=True)
 
         name = filename or source.name

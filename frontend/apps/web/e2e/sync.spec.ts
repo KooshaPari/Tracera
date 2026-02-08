@@ -5,35 +5,39 @@ import { expect, test } from './global-setup';
  * Tests sync functionality, offline mode, and real-time updates
  */
 test.describe('Sync and Offline Mode', () => {
+  const shortTimeoutMs = 2000;
+  const defaultTimeoutMs = 5000;
+  const longTimeoutMs = 10_000;
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
   });
 
   test.describe('Sync Status Indicator', () => {
-      // Look for sync status indicator
+    test('should show sync status indicator', async ({ page }) => {
       const syncIndicator = page.locator('[data-testid="sync-status"]');
-      await expect(syncIndicator).toBeVisible({ timeout: 5000 });
+      await expect(syncIndicator).toBeVisible({ timeout: defaultTimeoutMs });
 
-      // Alternative: check for sync icon
+      // Alternative: check for a sync icon/button.
       const syncIcon = page.getByRole('button', { name: /sync|synchronize/i });
-      await expect(syncIcon).toBeVisible({ timeout: 5000 });
+      await expect(syncIcon).toBeVisible({ timeout: defaultTimeoutMs });
     });
 
     test('should show synced status when online', async ({ page }) => {
       // Check for synced indicator
       const syncedText = page.getByText(/synced|up to date|connected/i);
-      await expect(syncedText).toBeVisible({ timeout: 10_000 });
+      await expect(syncedText).toBeVisible({ timeout: longTimeoutMs });
 
       // Check for green/success indicator
       const successIndicator = page.locator('[data-testid="sync-status"][class*="success"]');
-      await expect(successIndicator).toBeVisible({ timeout: 5000 });
+      await expect(successIndicator).toBeVisible({ timeout: defaultTimeoutMs });
     });
 
     test('should show last sync time', async ({ page }) => {
       // Look for last sync timestamp
       const lastSync = page.getByText(/last sync|synced.*ago|updated.*ago/i);
-      await expect(lastSync).toBeVisible({ timeout: 5000 });
+      await expect(lastSync).toBeVisible({ timeout: defaultTimeoutMs });
     });
 
     test('should trigger manual sync', async ({ page }) => {
@@ -41,19 +45,19 @@ test.describe('Sync and Offline Mode', () => {
       const syncBtn = page.getByRole('button', {
         name: /sync|refresh|reload/i,
       });
-      await expect(syncBtn).toBeVisible({ timeout: 5000 });
+      await expect(syncBtn).toBeVisible({ timeout: defaultTimeoutMs });
       await syncBtn.click();
 
       // Should show syncing indicator
       const syncingIndicator = page.getByText(/syncing|synchronizing/i);
-      await expect(syncingIndicator).toBeVisible({ timeout: 5000 });
+      await expect(syncingIndicator).toBeVisible({ timeout: defaultTimeoutMs });
 
       // Wait for sync to complete
       await page.waitForLoadState('networkidle');
 
       // Should show synced status
       const syncedIndicator = page.getByText(/synced|up to date/i);
-      await expect(syncedIndicator).toBeVisible({ timeout: 10_000 });
+      await expect(syncedIndicator).toBeVisible({ timeout: longTimeoutMs });
     });
   });
 
@@ -66,11 +70,11 @@ test.describe('Sync and Offline Mode', () => {
 
       // Should show offline indicator
       const offlineIndicator = page.getByText(/offline|disconnected|no connection/i);
-      await expect(offlineIndicator).toBeVisible({ timeout: 5000 });
+      await expect(offlineIndicator).toBeVisible({ timeout: defaultTimeoutMs });
 
       // Check for offline icon/badge
       const offlineBadge = page.locator('[data-testid="offline-badge"]');
-      await expect(offlineBadge).toBeVisible({ timeout: 5000 });
+      await expect(offlineBadge).toBeVisible({ timeout: defaultTimeoutMs });
 
       // Go back online
       await context.setOffline(false);
@@ -84,11 +88,11 @@ test.describe('Sync and Offline Mode', () => {
 
       // Look for offline banner
       const banner = page.getByRole('alert', { name: /offline/i });
-      await expect(banner).toBeVisible({ timeout: 5000 });
+      await expect(banner).toBeVisible({ timeout: defaultTimeoutMs });
 
       // Banner should be dismissible or auto-hide
       const closeBtn = banner.getByRole('button', { name: /close|dismiss/i });
-      await expect(closeBtn).toBeVisible({ timeout: 5000 });
+      await expect(closeBtn).toBeVisible({ timeout: defaultTimeoutMs });
       await closeBtn.click();
       await expect(banner).not.toBeVisible();
 
@@ -102,7 +106,7 @@ test.describe('Sync and Offline Mode', () => {
 
       // Verify items are loaded
       const items = page.locator('[data-testid="item-row"]');
-      await expect(items.first()).toBeVisible({ timeout: 10000 });
+      await expect(items.first()).toBeVisible({ timeout: longTimeoutMs });
 
       // Go offline
       await context.setOffline(true);
@@ -115,7 +119,7 @@ test.describe('Sync and Offline Mode', () => {
 
       // Should still show cached items
       const cachedItems = page.locator('[data-testid="item-row"]');
-      await expect(cachedItems.first()).toBeVisible({ timeout: 10000 });
+      await expect(cachedItems.first()).toBeVisible({ timeout: longTimeoutMs });
 
       await context.setOffline(false);
     });
@@ -131,7 +135,7 @@ test.describe('Sync and Offline Mode', () => {
       await page.waitForLoadState('networkidle');
 
       const createBtn = page.getByRole('button', { name: /create|new item/i });
-      await expect(createBtn).toBeVisible({ timeout: 5000 });
+      await expect(createBtn).toBeVisible({ timeout: defaultTimeoutMs });
       await createBtn.click();
 
       // Fill form
@@ -146,7 +150,7 @@ test.describe('Sync and Offline Mode', () => {
 
       // Should show queued message
       const queuedMsg = page.getByText(/queued|will sync|pending/i);
-      await expect(queuedMsg).toBeVisible({ timeout: 5000 });
+      await expect(queuedMsg).toBeVisible({ timeout: defaultTimeoutMs });
 
       await context.setOffline(false);
     });
@@ -167,14 +171,14 @@ test.describe('Sync and Offline Mode', () => {
 
       // Should show syncing indicator
       const syncingMsg = page.getByText(/syncing|uploading changes/i);
-      await expect(syncingMsg).toBeVisible({ timeout: 5000 });
+      await expect(syncingMsg).toBeVisible({ timeout: defaultTimeoutMs });
 
       // Wait for sync to complete
       await page.waitForTimeout(2000);
 
       // Should show synced status
       const syncedMsg = page.getByText(/synced|up to date/i);
-      await expect(syncedMsg).toBeVisible({ timeout: 10_000 });
+      await expect(syncedMsg).toBeVisible({ timeout: longTimeoutMs });
     });
   });
 
@@ -189,13 +193,13 @@ test.describe('Sync and Offline Mode', () => {
     test('should allow resolving conflicts', async ({ page }) => {
       // Navigate to settings or sync management
       const settingsLink = page.getByRole('link', { name: /settings/i });
-      await expect(settingsLink).toBeVisible({ timeout: 5000 });
+      await expect(settingsLink).toBeVisible({ timeout: defaultTimeoutMs });
       await settingsLink.click();
       await page.waitForLoadState('networkidle');
 
       // Look for conflict resolution UI
       const conflictSection = page.getByText(/conflicts|resolve/i);
-      await expect(conflictSection).toBeVisible({ timeout: 5000 });
+      await expect(conflictSection).toBeVisible({ timeout: defaultTimeoutMs });
     });
   });
 
@@ -203,11 +207,11 @@ test.describe('Sync and Offline Mode', () => {
     test('should show WebSocket connection status', async ({ page }) => {
       // Look for WebSocket indicator
       const wsIndicator = page.locator('[data-testid="websocket-status"]');
-      await expect(wsIndicator).toBeVisible({ timeout: 5000 });
+      await expect(wsIndicator).toBeVisible({ timeout: defaultTimeoutMs });
 
       // Check for connected status
       const connectedMsg = page.getByText(/connected|live/i);
-      await expect(connectedMsg).toBeVisible({ timeout: 10_000 });
+      await expect(connectedMsg).toBeVisible({ timeout: longTimeoutMs });
     });
 
     test('should receive real-time updates', async ({ page }) => {
@@ -227,7 +231,7 @@ test.describe('Sync and Offline Mode', () => {
     test('should show live status badges', async ({ page }) => {
       // Look for live status indicator
       const liveBadge = page.getByText(/live|real-time/i);
-      await expect(liveBadge).toBeVisible({ timeout: 5000 });
+      await expect(liveBadge).toBeVisible({ timeout: defaultTimeoutMs });
     });
   });
 
@@ -235,7 +239,7 @@ test.describe('Sync and Offline Mode', () => {
     test('should access sync settings', async ({ page }) => {
       // Navigate to settings
       const settingsLink = page.getByRole('link', { name: /settings/i });
-      await expect(settingsLink).toBeVisible({ timeout: 5000 });
+      await expect(settingsLink).toBeVisible({ timeout: defaultTimeoutMs });
       await settingsLink.click();
       await page.waitForLoadState('networkidle');
 
@@ -243,18 +247,18 @@ test.describe('Sync and Offline Mode', () => {
       const syncSection = page.getByRole('heading', {
         name: /sync|synchronization/i,
       });
-      await expect(syncSection).toBeVisible({ timeout: 5000 });
+      await expect(syncSection).toBeVisible({ timeout: defaultTimeoutMs });
     });
 
     test('should toggle auto-sync', async ({ page }) => {
       const settingsLink = page.getByRole('link', { name: /settings/i });
-      await expect(settingsLink).toBeVisible({ timeout: 5000 });
+      await expect(settingsLink).toBeVisible({ timeout: defaultTimeoutMs });
       await settingsLink.click();
       await page.waitForLoadState('networkidle');
 
       // Look for auto-sync toggle
       const autoSyncToggle = page.getByLabel(/auto.*sync|automatic.*sync/i);
-      await expect(autoSyncToggle).toBeVisible({ timeout: 5000 });
+      await expect(autoSyncToggle).toBeVisible({ timeout: defaultTimeoutMs });
       // Toggle off
       await autoSyncToggle.click();
       await page.waitForTimeout(500);
@@ -266,13 +270,13 @@ test.describe('Sync and Offline Mode', () => {
 
     test('should configure sync interval', async ({ page }) => {
       const settingsLink = page.getByRole('link', { name: /settings/i });
-      await expect(settingsLink).toBeVisible({ timeout: 5000 });
+      await expect(settingsLink).toBeVisible({ timeout: defaultTimeoutMs });
       await settingsLink.click();
       await page.waitForLoadState('networkidle');
 
       // Look for sync interval setting
       const intervalSelect = page.getByLabel(/sync interval|refresh rate/i);
-      await expect(intervalSelect).toBeVisible({ timeout: 5000 });
+      await expect(intervalSelect).toBeVisible({ timeout: defaultTimeoutMs });
       await intervalSelect.click();
       await page
         .getByText(/5.*minutes|10.*minutes|30.*minutes/i)
@@ -286,41 +290,45 @@ test.describe('Sync and Offline Mode', () => {
   test.describe('Sync History', () => {
     test('should display sync history', async ({ page }) => {
       const settingsLink = page.getByRole('link', { name: /settings/i });
-      if (await settingsLink.isVisible({ timeout: 2000 })) {
-        await settingsLink.click();
-        await page.waitForLoadState('networkidle');
-
-        // Look for sync history section
-        const historySection = page.getByRole('heading', {
-          name: /sync.*history|recent.*syncs/i,
-        });
-        // Look for sync log entries
-        const logEntries = page.locator('[data-testid="sync-log-entry"]');
-        await expect(logEntries.first()).toBeVisible({ timeout: 5000 });
-      } else {
-        console.log('Sync history not available');
+      try {
+        await expect(settingsLink).toBeVisible({ timeout: shortTimeoutMs });
+      } catch {
+        console.log('Settings not accessible');
+        return;
       }
-    } else {
-      console.log('Settings not accessible');
-    }
-  });
+
+      await settingsLink.click();
+      await page.waitForLoadState('networkidle');
+
+      const historySection = page.getByRole('heading', {
+        name: /sync.*history|recent.*syncs/i,
+      });
+
+      try {
+        await expect(historySection).toBeVisible({ timeout: defaultTimeoutMs });
+      } catch {
+        console.log('Sync history not available');
+        return;
+      }
+
+      const logEntries = page.locator('[data-testid="sync-log-entry"]');
+      await expect(logEntries.first()).toBeVisible({ timeout: defaultTimeoutMs });
+    });
 
     test('should show sync errors in history', async ({ page }) => {
       const settingsLink = page.getByRole('link', { name: /settings/i });
-      if (await settingsLink.isVisible({ timeout: 2000 })) {
-        await settingsLink.click();
-        await page.waitForLoadState('networkidle');
-
-        // Look for error entries in sync history
-        const errorEntry = page.locator('[data-testid="sync-error"]');
-        await expect(errorEntry)
-          .not.toBeVisible()
-          .catch(() => {
-            console.log('No sync errors in history (expected in normal operation)');
-          });
-      } else {
+      try {
+        await expect(settingsLink).toBeVisible({ timeout: shortTimeoutMs });
+      } catch {
         console.log('Settings not accessible');
+        return;
       }
+
+      await settingsLink.click();
+      await page.waitForLoadState('networkidle');
+
+      const errorEntry = page.locator('[data-testid="sync-error"]');
+      await expect(errorEntry).not.toBeVisible();
     });
   });
 
@@ -328,7 +336,7 @@ test.describe('Sync and Offline Mode', () => {
     test('should show error when sync fails', async ({ page, context }) => {
       // Simulate network error by going offline during sync
       const syncBtn = page.getByRole('button', { name: /sync/i });
-      await expect(syncBtn).toBeVisible({ timeout: 5000 });
+      await expect(syncBtn).toBeVisible({ timeout: defaultTimeoutMs });
       // Go offline
       await context.setOffline(true);
 
@@ -338,7 +346,7 @@ test.describe('Sync and Offline Mode', () => {
 
       // Should show error message
       const errorMsg = page.getByText(/sync failed|connection.*error|offline/i);
-      await expect(errorMsg).toBeVisible({ timeout: 5000 });
+      await expect(errorMsg).toBeVisible({ timeout: defaultTimeoutMs });
 
       await context.setOffline(false);
     });
@@ -349,11 +357,7 @@ test.describe('Sync and Offline Mode', () => {
 
       // Look for retry button in error state
       const retryBtn = page.getByRole('button', { name: /retry|try again/i });
-      await expect(retryBtn)
-        .not.toBeVisible()
-        .catch(() => {
-          console.log('No failed syncs to retry (expected in normal operation)');
-        });
+      await expect(retryBtn).not.toBeVisible();
     });
   });
 
@@ -364,7 +368,7 @@ test.describe('Sync and Offline Mode', () => {
 
       // Look for data freshness indicator
       const freshnessIndicator = page.getByText(/updated.*ago|last.*updated|fresh|stale/i);
-      await expect(freshnessIndicator).toBeVisible({ timeout: 5000 });
+      await expect(freshnessIndicator).toBeVisible({ timeout: defaultTimeoutMs });
     });
 
     test('should warn about stale data', async ({ page, context }) => {
@@ -382,7 +386,7 @@ test.describe('Sync and Offline Mode', () => {
 
       // Look for stale data warning
       const staleWarning = page.getByText(/stale|outdated|old data|offline data/i);
-      await expect(staleWarning).toBeVisible({ timeout: 5000 });
+      await expect(staleWarning).toBeVisible({ timeout: defaultTimeoutMs });
 
       await context.setOffline(false);
     });

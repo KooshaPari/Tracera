@@ -38,8 +38,7 @@ def temp_dir():
 def temp_file(temp_dir):
     """Create a temporary file with content."""
     file_path = os.path.join(temp_dir, "test_file.txt")
-    with pathlib.Path(file_path).open("w") as f:
-        f.write("Line 1\nLine 2\nLine 3\nLine 4\nLine 5\n")
+    pathlib.Path(file_path).write_text("Line 1\nLine 2\nLine 3\nLine 4\nLine 5\n", encoding="utf-8")
     return file_path
 
 
@@ -65,20 +64,20 @@ def reset_allowed_paths():
 class TestToolDefinitions:
     """Test the TOOLS array structure and schema."""
 
-    def test_tools_array_exists(self):
+    def test_tools_array_exists(self) -> None:
         """TOOLS array is defined and non-empty."""
         assert TOOLS is not None
         assert isinstance(TOOLS, list)
         assert len(TOOLS) > 0
 
-    def test_all_tools_have_required_fields(self):
+    def test_all_tools_have_required_fields(self) -> None:
         """Each tool has name, description, and input_schema."""
         for tool in TOOLS:
             assert "name" in tool, "Tool missing 'name'"
             assert "description" in tool, f"Tool {tool.get('name')} missing 'description'"
             assert "input_schema" in tool, f"Tool {tool['name']} missing 'input_schema'"
 
-    def test_filesystem_tools_defined(self):
+    def test_filesystem_tools_defined(self) -> None:
         """Filesystem tools are defined."""
         tool_names = {t["name"] for t in TOOLS}
         assert "read_file" in tool_names
@@ -87,12 +86,12 @@ class TestToolDefinitions:
         assert "list_directory" in tool_names
         assert "search_files" in tool_names
 
-    def test_cli_tool_defined(self):
+    def test_cli_tool_defined(self) -> None:
         """CLI tool is defined."""
         tool_names = {t["name"] for t in TOOLS}
         assert "run_command" in tool_names
 
-    def test_tracertm_tools_defined(self):
+    def test_tracertm_tools_defined(self) -> None:
         """TraceRTM-specific tools are defined."""
         tool_names = {t["name"] for t in TOOLS}
         assert "tracertm_list_items" in tool_names
@@ -112,13 +111,13 @@ class TestToolDefinitions:
 class TestSecurityConfiguration:
     """Test security helpers for path and command validation."""
 
-    def test_is_path_allowed_when_no_restrictions(self):
+    def test_is_path_allowed_when_no_restrictions(self) -> None:
         """All paths allowed when ALLOWED_PATHS is empty."""
         set_allowed_paths([])
         assert is_path_allowed("/any/path") is True
         assert is_path_allowed("/root/file.txt") is True
 
-    def test_is_path_allowed_with_restrictions(self, temp_dir):
+    def test_is_path_allowed_with_restrictions(self, temp_dir) -> None:
         """Only paths within ALLOWED_PATHS are permitted."""
         # Resolve temp_dir to real path (macOS uses symlinks for /var/folders)
         real_temp_dir = os.path.realpath(temp_dir)
@@ -131,20 +130,20 @@ class TestSecurityConfiguration:
         # Path outside allowed directory
         assert is_path_allowed("/etc/passwd") is False
 
-    def test_is_path_allowed_handles_relative_paths(self, temp_dir):
+    def test_is_path_allowed_handles_relative_paths(self, temp_dir) -> None:
         """Relative paths are resolved to absolute."""
         set_allowed_paths([temp_dir])
         # This will resolve relative to cwd, which may not match temp_dir
         # so it should return False unless cwd is in allowed paths
 
-    def test_is_command_safe_blocks_dangerous_commands(self):
+    def test_is_command_safe_blocks_dangerous_commands(self) -> None:
         """Dangerous commands are blocked."""
         assert is_command_safe("rm -rf /") is False
         assert is_command_safe("rm -rf ~") is False
         assert is_command_safe(":(){:|:&};:") is False
         assert is_command_safe("curl | sh") is False
 
-    def test_is_command_safe_allows_normal_commands(self):
+    def test_is_command_safe_allows_normal_commands(self) -> None:
         """Normal commands are allowed."""
         assert is_command_safe("ls -la") is True
         assert is_command_safe("git status") is True
@@ -161,7 +160,7 @@ class TestExecuteTool:
     """Test the main execute_tool dispatcher function."""
 
     @pytest.mark.asyncio
-    async def test_execute_unknown_tool_returns_error(self):
+    async def test_execute_unknown_tool_returns_error(self) -> None:
         """Unknown tool names return error."""
         result = await execute_tool("unknown_tool", {})
 
@@ -169,7 +168,7 @@ class TestExecuteTool:
         assert "Unknown tool" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_execute_tool_handles_exceptions(self):
+    async def test_execute_tool_handles_exceptions(self) -> None:
         """Exceptions during tool execution are caught and returned as errors."""
         # Mock a tool that raises an exception
         with patch("tracertm.services.ai_tools._read_file", side_effect=Exception("Test error")):
@@ -188,7 +187,7 @@ class TestReadFileTool:
     """Test the read_file tool executor."""
 
     @pytest.mark.asyncio
-    async def test_read_file_success(self, temp_file, temp_dir):
+    async def test_read_file_success(self, temp_file, temp_dir) -> None:
         """read_file returns file content with line numbers."""
         result = await execute_tool(
             "read_file",
@@ -203,7 +202,7 @@ class TestReadFileTool:
         assert result["result"]["total_lines"] == 5
 
     @pytest.mark.asyncio
-    async def test_read_file_with_offset(self, temp_file, temp_dir):
+    async def test_read_file_with_offset(self, temp_file, temp_dir) -> None:
         """read_file respects offset parameter."""
         result = await execute_tool(
             "read_file",
@@ -217,7 +216,7 @@ class TestReadFileTool:
         assert "Line 1" not in result["result"]["content"]
 
     @pytest.mark.asyncio
-    async def test_read_file_with_limit(self, temp_file, temp_dir):
+    async def test_read_file_with_limit(self, temp_file, temp_dir) -> None:
         """read_file respects limit parameter."""
         result = await execute_tool(
             "read_file",
@@ -229,7 +228,7 @@ class TestReadFileTool:
         assert result["result"]["total_lines"] == 2
 
     @pytest.mark.asyncio
-    async def test_read_file_not_found(self, temp_dir):
+    async def test_read_file_not_found(self, temp_dir) -> None:
         """read_file returns error for non-existent file."""
         result = await execute_tool(
             "read_file",
@@ -241,7 +240,7 @@ class TestReadFileTool:
         assert "not found" in result["error"].lower()
 
     @pytest.mark.asyncio
-    async def test_read_file_path_denied(self, temp_file, temp_dir):
+    async def test_read_file_path_denied(self, temp_file, temp_dir) -> None:
         """read_file returns error for paths outside allowed directories."""
         # Set allowed paths to a different directory
         set_allowed_paths(["/some/other/path"])
@@ -256,12 +255,11 @@ class TestReadFileTool:
         assert "Access denied" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_read_file_relative_path(self, temp_dir):
+    async def test_read_file_relative_path(self, temp_dir) -> None:
         """read_file handles relative paths with working directory."""
         # Create a file in the temp dir
         file_path = os.path.join(temp_dir, "relative_test.txt")
-        with pathlib.Path(file_path).open("w") as f:
-            f.write("Test content\n")
+        pathlib.Path(file_path).write_text("Test content\n", encoding="utf-8")
 
         result = await execute_tool(
             "read_file",
@@ -282,7 +280,7 @@ class TestWriteFileTool:
     """Test the write_file tool executor."""
 
     @pytest.mark.asyncio
-    async def test_write_file_success(self, temp_dir):
+    async def test_write_file_success(self, temp_dir) -> None:
         """write_file creates a new file with content."""
         file_path = os.path.join(temp_dir, "new_file.txt")
         content = "Hello, World!"
@@ -298,11 +296,11 @@ class TestWriteFileTool:
 
         # Verify file was actually created
         assert pathlib.Path(file_path).exists()
-        with pathlib.Path(file_path).open() as f:
+        with pathlib.Path(file_path).open(encoding="utf-8") as f:
             assert f.read() == content
 
     @pytest.mark.asyncio
-    async def test_write_file_creates_parent_dirs(self, temp_dir):
+    async def test_write_file_creates_parent_dirs(self, temp_dir) -> None:
         """write_file creates parent directories if needed."""
         file_path = os.path.join(temp_dir, "subdir", "nested", "file.txt")
         content = "Nested content"
@@ -317,7 +315,7 @@ class TestWriteFileTool:
         assert pathlib.Path(file_path).exists()
 
     @pytest.mark.asyncio
-    async def test_write_file_overwrites_existing(self, temp_file, temp_dir):
+    async def test_write_file_overwrites_existing(self, temp_file, temp_dir) -> None:
         """write_file overwrites existing file."""
         new_content = "Completely new content"
 
@@ -328,11 +326,11 @@ class TestWriteFileTool:
         )
 
         assert result["success"] is True
-        with pathlib.Path(temp_file).open() as f:
+        with pathlib.Path(temp_file).open(encoding="utf-8") as f:
             assert f.read() == new_content
 
     @pytest.mark.asyncio
-    async def test_write_file_path_denied(self, temp_dir):
+    async def test_write_file_path_denied(self, temp_dir) -> None:
         """write_file returns error for paths outside allowed directories."""
         set_allowed_paths(["/some/other/path"])
 
@@ -355,7 +353,7 @@ class TestEditFileTool:
     """Test the edit_file tool executor."""
 
     @pytest.mark.asyncio
-    async def test_edit_file_success(self, temp_file, temp_dir):
+    async def test_edit_file_success(self, temp_file, temp_dir) -> None:
         """edit_file replaces unique string."""
         result = await execute_tool(
             "edit_file",
@@ -370,13 +368,12 @@ class TestEditFileTool:
         assert result["success"] is True
         assert result["result"]["replacements"] == 1
 
-        with pathlib.Path(temp_file).open() as f:
-            content = f.read()
+        content = pathlib.Path(temp_file).read_text(encoding="utf-8")
         assert "Replaced Line" in content
         assert "Line 2" not in content
 
     @pytest.mark.asyncio
-    async def test_edit_file_string_not_found(self, temp_file, temp_dir):
+    async def test_edit_file_string_not_found(self, temp_file, temp_dir) -> None:
         """edit_file returns error when string not found."""
         result = await execute_tool(
             "edit_file",
@@ -392,11 +389,10 @@ class TestEditFileTool:
         assert "not found" in result["error"].lower()
 
     @pytest.mark.asyncio
-    async def test_edit_file_multiple_matches(self, temp_dir):
+    async def test_edit_file_multiple_matches(self, temp_dir) -> None:
         """edit_file returns error when string matches multiple times."""
         file_path = os.path.join(temp_dir, "duplicate.txt")
-        with pathlib.Path(file_path).open("w") as f:
-            f.write("duplicate\nsome text\nduplicate\n")
+        pathlib.Path(file_path).write_text("duplicate\nsome text\nduplicate\n", encoding="utf-8")
 
         result = await execute_tool(
             "edit_file",
@@ -412,7 +408,7 @@ class TestEditFileTool:
         assert "2 times" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_edit_file_not_found(self, temp_dir):
+    async def test_edit_file_not_found(self, temp_dir) -> None:
         """edit_file returns error for non-existent file."""
         result = await execute_tool(
             "edit_file",
@@ -437,14 +433,12 @@ class TestListDirectoryTool:
     """Test the list_directory tool executor."""
 
     @pytest.mark.asyncio
-    async def test_list_directory_success(self, temp_dir):
+    async def test_list_directory_success(self, temp_dir) -> None:
         """list_directory returns directory contents."""
         # Create some files and dirs
         pathlib.Path(os.path.join(temp_dir, "subdir")).mkdir(parents=True)
-        with pathlib.Path(os.path.join(temp_dir, "file1.txt")).open("w") as f:
-            f.write("content")
-        with pathlib.Path(os.path.join(temp_dir, "file2.py")).open("w") as f:
-            f.write("content")
+        pathlib.Path(os.path.join(temp_dir, "file1.txt")).write_text("content", encoding="utf-8")
+        pathlib.Path(os.path.join(temp_dir, "file2.py")).write_text("content", encoding="utf-8")
 
         result = await execute_tool(
             "list_directory",
@@ -460,12 +454,10 @@ class TestListDirectoryTool:
         assert "file2.py" in entry_names
 
     @pytest.mark.asyncio
-    async def test_list_directory_with_pattern(self, temp_dir):
+    async def test_list_directory_with_pattern(self, temp_dir) -> None:
         """list_directory filters by glob pattern."""
-        with pathlib.Path(os.path.join(temp_dir, "file1.txt")).open("w") as f:
-            f.write("content")
-        with pathlib.Path(os.path.join(temp_dir, "file2.py")).open("w") as f:
-            f.write("content")
+        pathlib.Path(os.path.join(temp_dir, "file1.txt")).write_text("content", encoding="utf-8")
+        pathlib.Path(os.path.join(temp_dir, "file2.py")).write_text("content", encoding="utf-8")
 
         result = await execute_tool(
             "list_directory",
@@ -479,14 +471,12 @@ class TestListDirectoryTool:
         assert entries[0]["path"] == "file2.py"
 
     @pytest.mark.asyncio
-    async def test_list_directory_recursive(self, temp_dir):
+    async def test_list_directory_recursive(self, temp_dir) -> None:
         """list_directory searches recursively when enabled."""
         # Create nested structure
         pathlib.Path(os.path.join(temp_dir, "subdir")).mkdir(parents=True)
-        with pathlib.Path(os.path.join(temp_dir, "root.txt")).open("w") as f:
-            f.write("content")
-        with pathlib.Path(os.path.join(temp_dir, "subdir", "nested.txt")).open("w") as f:
-            f.write("content")
+        pathlib.Path(os.path.join(temp_dir, "root.txt")).write_text("content", encoding="utf-8")
+        pathlib.Path(os.path.join(temp_dir, "subdir", "nested.txt")).write_text("content", encoding="utf-8")
 
         result = await execute_tool(
             "list_directory",
@@ -500,7 +490,7 @@ class TestListDirectoryTool:
         # Nested file should be found with path relative to temp_dir
 
     @pytest.mark.asyncio
-    async def test_list_directory_not_found(self, temp_dir):
+    async def test_list_directory_not_found(self, temp_dir) -> None:
         """list_directory returns error for non-existent directory."""
         result = await execute_tool(
             "list_directory",
@@ -521,12 +511,10 @@ class TestSearchFilesTool:
     """Test the search_files tool executor."""
 
     @pytest.mark.asyncio
-    async def test_search_files_finds_matches(self, temp_dir):
+    async def test_search_files_finds_matches(self, temp_dir) -> None:
         """search_files finds pattern matches in files."""
-        with pathlib.Path(os.path.join(temp_dir, "file1.py")).open("w") as f:
-            f.write("def hello_world():\n    pass\n")
-        with pathlib.Path(os.path.join(temp_dir, "file2.py")).open("w") as f:
-            f.write("def goodbye_world():\n    pass\n")
+        pathlib.Path(os.path.join(temp_dir, "file1.py")).write_text("def hello_world():\n    pass\n", encoding="utf-8")
+        pathlib.Path(os.path.join(temp_dir, "file2.py")).write_text("def goodbye_world():\n    pass\n", encoding="utf-8")
 
         result = await execute_tool(
             "search_files",
@@ -540,12 +528,10 @@ class TestSearchFilesTool:
         assert any("hello_world" in m["match"] for m in matches)
 
     @pytest.mark.asyncio
-    async def test_search_files_with_file_pattern(self, temp_dir):
+    async def test_search_files_with_file_pattern(self, temp_dir) -> None:
         """search_files filters by file pattern."""
-        with pathlib.Path(os.path.join(temp_dir, "code.py")).open("w") as f:
-            f.write("pattern_match\n")
-        with pathlib.Path(os.path.join(temp_dir, "text.txt")).open("w") as f:
-            f.write("pattern_match\n")
+        pathlib.Path(os.path.join(temp_dir, "code.py")).write_text("pattern_match\n", encoding="utf-8")
+        pathlib.Path(os.path.join(temp_dir, "text.txt")).write_text("pattern_match\n", encoding="utf-8")
 
         result = await execute_tool(
             "search_files",
@@ -558,12 +544,11 @@ class TestSearchFilesTool:
         assert all(m["file"].endswith(".py") for m in matches)
 
     @pytest.mark.asyncio
-    async def test_search_files_respects_max_results(self, temp_dir):
+    async def test_search_files_respects_max_results(self, temp_dir) -> None:
         """search_files limits results to max_results."""
         # Create file with many matches
-        with pathlib.Path(os.path.join(temp_dir, "many.txt")).open("w") as f:
-            for i in range(100):
-                f.write(f"match_line_{i}\n")
+        with pathlib.Path(os.path.join(temp_dir, "many.txt")).open("w", encoding="utf-8") as f:
+            f.writelines(f"match_line_{i}\n" for i in range(100))
 
         result = await execute_tool(
             "search_files",
@@ -575,7 +560,7 @@ class TestSearchFilesTool:
         assert len(result["result"]["matches"]) <= 5
 
     @pytest.mark.asyncio
-    async def test_search_files_invalid_regex(self, temp_dir):
+    async def test_search_files_invalid_regex(self, temp_dir) -> None:
         """search_files returns error for invalid regex."""
         result = await execute_tool(
             "search_files",
@@ -596,7 +581,7 @@ class TestRunCommandTool:
     """Test the run_command tool executor."""
 
     @pytest.mark.asyncio
-    async def test_run_command_success(self, temp_dir):
+    async def test_run_command_success(self, temp_dir) -> None:
         """run_command executes command and returns output."""
         result = await execute_tool(
             "run_command",
@@ -609,7 +594,7 @@ class TestRunCommandTool:
         assert result["result"]["exit_code"] == 0
 
     @pytest.mark.asyncio
-    async def test_run_command_captures_stderr(self, temp_dir):
+    async def test_run_command_captures_stderr(self, temp_dir) -> None:
         """run_command captures stderr output."""
         result = await execute_tool(
             "run_command",
@@ -621,7 +606,7 @@ class TestRunCommandTool:
         assert "error" in result["result"]["stderr"]
 
     @pytest.mark.asyncio
-    async def test_run_command_returns_exit_code(self, temp_dir):
+    async def test_run_command_returns_exit_code(self, temp_dir) -> None:
         """run_command returns the exit code."""
         result = await execute_tool(
             "run_command",
@@ -633,7 +618,7 @@ class TestRunCommandTool:
         assert result["result"]["exit_code"] == 42
 
     @pytest.mark.asyncio
-    async def test_run_command_blocked_dangerous(self, temp_dir):
+    async def test_run_command_blocked_dangerous(self, temp_dir) -> None:
         """run_command blocks dangerous commands."""
         result = await execute_tool(
             "run_command",
@@ -645,7 +630,7 @@ class TestRunCommandTool:
         assert "blocked" in result["error"].lower()
 
     @pytest.mark.asyncio
-    async def test_run_command_respects_timeout(self, temp_dir):
+    async def test_run_command_respects_timeout(self, temp_dir) -> None:
         """run_command times out long-running commands."""
         result = await execute_tool(
             "run_command",
@@ -657,7 +642,7 @@ class TestRunCommandTool:
         assert "timed out" in result["error"].lower()
 
     @pytest.mark.asyncio
-    async def test_run_command_uses_working_directory(self, temp_dir):
+    async def test_run_command_uses_working_directory(self, temp_dir) -> None:
         """run_command runs in specified working directory."""
         result = await execute_tool(
             "run_command",
@@ -679,7 +664,7 @@ class TestTraceRTMTools:
     """Test TraceRTM-specific tool executors."""
 
     @pytest.mark.asyncio
-    async def test_tracertm_list_items_requires_db_session(self):
+    async def test_tracertm_list_items_requires_db_session(self) -> None:
         """tracertm_list_items returns error without db_session."""
         result = await execute_tool(
             "tracertm_list_items",
@@ -691,7 +676,7 @@ class TestTraceRTMTools:
         assert "Database session required" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_tracertm_list_items_with_mock_session(self):
+    async def test_tracertm_list_items_with_mock_session(self) -> None:
         """tracertm_list_items queries repository with db_session."""
         mock_session = AsyncMock()
 
@@ -711,7 +696,7 @@ class TestTraceRTMTools:
             mock_repo.get_by_project.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_tracertm_get_item_requires_db_session(self):
+    async def test_tracertm_get_item_requires_db_session(self) -> None:
         """tracertm_get_item returns error without db_session."""
         result = await execute_tool(
             "tracertm_get_item",
@@ -723,7 +708,7 @@ class TestTraceRTMTools:
         assert "Database session required" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_tracertm_get_item_not_found(self):
+    async def test_tracertm_get_item_not_found(self) -> None:
         """tracertm_get_item returns error when item not found."""
         mock_session = AsyncMock()
 
@@ -742,7 +727,7 @@ class TestTraceRTMTools:
             assert "not found" in result["error"].lower()
 
     @pytest.mark.asyncio
-    async def test_tracertm_get_links_requires_db_session(self):
+    async def test_tracertm_get_links_requires_db_session(self) -> None:
         """tracertm_get_links returns error without db_session."""
         result = await execute_tool(
             "tracertm_get_links",
@@ -754,7 +739,7 @@ class TestTraceRTMTools:
         assert "Database session required" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_tracertm_impact_analysis_requires_db_session(self):
+    async def test_tracertm_impact_analysis_requires_db_session(self) -> None:
         """tracertm_impact_analysis returns error without db_session."""
         result = await execute_tool(
             "tracertm_impact_analysis",
@@ -766,7 +751,7 @@ class TestTraceRTMTools:
         assert "Database session required" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_tracertm_search_requires_db_session(self):
+    async def test_tracertm_search_requires_db_session(self) -> None:
         """tracertm_search returns error without db_session."""
         result = await execute_tool(
             "tracertm_search",
@@ -778,7 +763,7 @@ class TestTraceRTMTools:
         assert "Database session required" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_tracertm_create_item_requires_db_session(self):
+    async def test_tracertm_create_item_requires_db_session(self) -> None:
         """tracertm_create_item returns error without db_session."""
         result = await execute_tool(
             "tracertm_create_item",
@@ -794,7 +779,7 @@ class TestTraceRTMTools:
         assert "Database session required" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_tracertm_create_link_requires_db_session(self):
+    async def test_tracertm_create_link_requires_db_session(self) -> None:
         """tracertm_create_link returns error without db_session."""
         result = await execute_tool(
             "tracertm_create_link",
@@ -810,7 +795,7 @@ class TestTraceRTMTools:
         assert "Database session required" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_unknown_tracertm_tool(self):
+    async def test_unknown_tracertm_tool(self) -> None:
         """Unknown tracertm_* tools return error."""
         result = await execute_tool(
             "tracertm_unknown_tool",
@@ -830,24 +815,24 @@ class TestTraceRTMTools:
 class TestEnhancedSecurity:
     """Test enhanced security features."""
 
-    def test_is_command_safe_blocks_sudo_commands(self):
+    def test_is_command_safe_blocks_sudo_commands(self) -> None:
         """Sudo commands are blocked."""
         assert is_command_safe("sudo rm -rf /") is False
         assert is_command_safe("sudo chmod 777 /") is False
 
-    def test_is_command_safe_blocks_system_commands(self):
+    def test_is_command_safe_blocks_system_commands(self) -> None:
         """System control commands are blocked."""
         assert is_command_safe("shutdown now") is False
         assert is_command_safe("reboot") is False
         assert is_command_safe("halt") is False
 
-    def test_is_command_safe_blocks_destructive_dd(self):
+    def test_is_command_safe_blocks_destructive_dd(self) -> None:
         """Destructive dd commands are blocked."""
         assert is_command_safe("dd if=/dev/zero of=/dev/sda") is False
         assert is_command_safe("dd if=/dev/random of=/dev/hda") is False
 
     @pytest.mark.asyncio
-    async def test_run_command_caps_timeout(self, temp_dir):
+    async def test_run_command_caps_timeout(self, temp_dir) -> None:
         """run_command caps timeout at 5 minutes."""
         result = await execute_tool(
             "run_command",
@@ -858,7 +843,7 @@ class TestEnhancedSecurity:
         assert result["success"] is True
 
     @pytest.mark.asyncio
-    async def test_run_command_invalid_working_directory(self, temp_dir):
+    async def test_run_command_invalid_working_directory(self, temp_dir) -> None:
         """run_command returns error for invalid working directory."""
         result = await execute_tool(
             "run_command",
@@ -873,15 +858,13 @@ class TestBinaryFileSkipping:
     """Test binary file detection and skipping."""
 
     @pytest.mark.asyncio
-    async def test_search_skips_binary_files(self, temp_dir):
+    async def test_search_skips_binary_files(self, temp_dir) -> None:
         """search_files skips binary file extensions."""
         # Create a text file with match
-        with pathlib.Path(os.path.join(temp_dir, "code.py")).open("w") as f:
-            f.write("findme = True\n")
+        pathlib.Path(os.path.join(temp_dir, "code.py")).write_text("findme = True\n", encoding="utf-8")
 
         # Create a "binary" file with match (simulated by extension)
-        with pathlib.Path(os.path.join(temp_dir, "data.pyc")).open("w") as f:
-            f.write("findme = True\n")
+        pathlib.Path(os.path.join(temp_dir, "data.pyc")).write_text("findme = True\n", encoding="utf-8")
 
         result = await execute_tool(
             "search_files",
@@ -896,9 +879,8 @@ class TestBinaryFileSkipping:
         assert matches[0]["file"] == "code.py"
 
     @pytest.mark.asyncio
-    async def test_search_skips_image_files(self, temp_dir):
+    async def test_search_skips_image_files(self, temp_dir) -> None:
         """search_files skips image extensions."""
-
         assert is_binary_file("image.png") is True
         assert is_binary_file("photo.jpg") is True
         assert is_binary_file("icon.svg") is True
@@ -910,12 +892,11 @@ class TestEdgeCases:
     """Test edge cases and error handling."""
 
     @pytest.mark.asyncio
-    async def test_read_file_with_unicode(self, temp_dir):
+    async def test_read_file_with_unicode(self, temp_dir) -> None:
         """read_file handles unicode content."""
         file_path = os.path.join(temp_dir, "unicode.txt")
         content = "Hello 世界 🌍\nמה נשמע?\n"
-        with pathlib.Path(file_path).open("w", encoding="utf-8") as f:
-            f.write(content)
+        pathlib.Path(file_path).write_text(content, encoding="utf-8")
 
         result = await execute_tool(
             "read_file",
@@ -927,7 +908,7 @@ class TestEdgeCases:
         assert "世界" in result["result"]["content"]
 
     @pytest.mark.asyncio
-    async def test_write_file_with_unicode(self, temp_dir):
+    async def test_write_file_with_unicode(self, temp_dir) -> None:
         """write_file handles unicode content."""
         file_path = os.path.join(temp_dir, "unicode_write.txt")
         content = "Привет мир! 🚀"
@@ -943,10 +924,10 @@ class TestEdgeCases:
             assert f.read() == content
 
     @pytest.mark.asyncio
-    async def test_empty_file_operations(self, temp_dir):
+    async def test_empty_file_operations(self, temp_dir) -> None:
         """File operations handle empty files."""
         file_path = os.path.join(temp_dir, "empty.txt")
-        with pathlib.Path(file_path).open("w"):
+        with pathlib.Path(file_path).open("w", encoding="utf-8"):
             pass  # Create empty file
 
         result = await execute_tool(
@@ -959,7 +940,7 @@ class TestEdgeCases:
         assert result["result"]["total_lines"] == 0
 
     @pytest.mark.asyncio
-    async def test_search_files_in_empty_directory(self, temp_dir):
+    async def test_search_files_in_empty_directory(self, temp_dir) -> None:
         """search_files handles empty directories."""
         result = await execute_tool(
             "search_files",
@@ -971,7 +952,7 @@ class TestEdgeCases:
         assert len(result["result"]["matches"]) == 0
 
     @pytest.mark.asyncio
-    async def test_list_directory_empty(self, temp_dir):
+    async def test_list_directory_empty(self, temp_dir) -> None:
         """list_directory handles empty directories."""
         empty_dir = os.path.join(temp_dir, "empty_subdir")
         pathlib.Path(empty_dir).mkdir(parents=True)

@@ -1,4 +1,4 @@
-"""Add priority and owner fields to items table
+"""Add priority and owner fields to items table.
 
 Revision ID: 006_add_priority_owner
 Revises: 005_update_refresh_all_views

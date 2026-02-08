@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for Links API endpoints.
+"""Comprehensive tests for Links API endpoints.
 
 Tests all CRUD operations, validation, filtering, and edge cases for links.
 """
@@ -20,7 +19,7 @@ class TestLinksCRUD:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_create_link_minimal(self, mock_auth, mock_db):
+    def test_create_link_minimal(self, mock_auth, mock_db) -> None:
         """Test creating link with minimal required fields."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -56,7 +55,7 @@ class TestLinksCRUD:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_create_link_with_metadata(self, mock_auth, mock_db):
+    def test_create_link_with_metadata(self, mock_auth, mock_db) -> None:
         """Test creating link with metadata."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -96,7 +95,7 @@ class TestLinksCRUD:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_update_link_type(self, mock_auth, mock_db):
+    def test_update_link_type(self, mock_auth, mock_db) -> None:
         """Test updating link type."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -123,7 +122,7 @@ class TestLinksCRUD:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_update_link_metadata(self, mock_auth, mock_db):
+    def test_update_link_metadata(self, mock_auth, mock_db) -> None:
         """Test updating link metadata."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -155,7 +154,7 @@ class TestLinksFiltering:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_links_by_source_and_target_specific(self, mock_auth, mock_db):
+    def test_list_links_by_source_and_target_specific(self, mock_auth, mock_db) -> None:
         """Test filtering links by specific source and target combination."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -188,7 +187,7 @@ class TestLinksFiltering:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_links_pagination(self, mock_auth, mock_db):
+    def test_list_links_pagination(self, mock_auth, mock_db) -> None:
         """Test pagination of links list."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -220,7 +219,7 @@ class TestLinksFiltering:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_links_empty_result(self, mock_auth, mock_db):
+    def test_list_links_empty_result(self, mock_auth, mock_db) -> None:
         """Test list links when no results match filter."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -242,7 +241,7 @@ class TestLinksFiltering:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_links_multiple_items_as_source(self, mock_auth, mock_db):
+    def test_list_links_multiple_items_as_source(self, mock_auth, mock_db) -> None:
         """Test listing all links where item is source."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -289,7 +288,7 @@ class TestLinksFiltering:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_list_links_multiple_items_as_target(self, mock_auth, mock_db):
+    def test_list_links_multiple_items_as_target(self, mock_auth, mock_db) -> None:
         """Test listing all links where item is target."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -332,7 +331,7 @@ class TestLinksValidation:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_create_link_missing_project_id(self, mock_auth, mock_db):
+    def test_create_link_missing_project_id(self, mock_auth, mock_db) -> None:
         """Test link creation fails without project_id."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
@@ -345,11 +344,11 @@ class TestLinksValidation:
 
         response = client.post("/api/v1/links", json=payload)
         # Validation error - may be 422 or 500 depending on handler
-        assert response.status_code in [422, 500]
+        assert response.status_code in {422, 500}
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_create_link_missing_source_id(self, mock_auth, mock_db):
+    def test_create_link_missing_source_id(self, mock_auth, mock_db) -> None:
         """Test link creation fails without source_id."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
@@ -362,11 +361,11 @@ class TestLinksValidation:
 
         response = client.post("/api/v1/links", json=payload)
         # Validation error - may be 422 or 500 depending on handler
-        assert response.status_code in [422, 500]
+        assert response.status_code in {422, 500}
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_create_link_missing_target_id(self, mock_auth, mock_db):
+    def test_create_link_missing_target_id(self, mock_auth, mock_db) -> None:
         """Test link creation fails without target_id."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
@@ -379,11 +378,11 @@ class TestLinksValidation:
 
         response = client.post("/api/v1/links", json=payload)
         # Validation error - may be 422 or 500 depending on handler
-        assert response.status_code in [422, 500]
+        assert response.status_code in {422, 500}
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_create_link_missing_type(self, mock_auth, mock_db):
+    def test_create_link_missing_type(self, mock_auth, mock_db) -> None:
         """Test link creation fails without type."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
@@ -396,11 +395,11 @@ class TestLinksValidation:
 
         response = client.post("/api/v1/links", json=payload)
         # Validation error - may be 422 or 500 depending on handler
-        assert response.status_code in [422, 500]
+        assert response.status_code in {422, 500}
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_update_link_missing_required_field(self, mock_auth, mock_db):
+    def test_update_link_missing_required_field(self, mock_auth, mock_db) -> None:
         """Test updating link with minimal payload."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -429,7 +428,7 @@ class TestLinksEdgeCases:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_create_link_same_source_and_target(self, mock_auth, mock_db):
+    def test_create_link_same_source_and_target(self, mock_auth, mock_db) -> None:
         """Test creating self-referential link."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -462,7 +461,7 @@ class TestLinksEdgeCases:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_create_link_with_special_characters_in_ids(self, mock_auth, mock_db):
+    def test_create_link_with_special_characters_in_ids(self, mock_auth, mock_db) -> None:
         """Test creating link with special characters in item IDs."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -499,7 +498,7 @@ class TestLinksEdgeCases:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_create_link_with_complex_metadata(self, mock_auth, mock_db):
+    def test_create_link_with_complex_metadata(self, mock_auth, mock_db) -> None:
         """Test creating link with complex nested metadata."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -512,8 +511,8 @@ class TestLinksEdgeCases:
                 "level1": {
                     "level2": {
                         "value": "deep",
-                    }
-                }
+                    },
+                },
             },
             "list": [1, 2, 3],
         }
@@ -546,7 +545,7 @@ class TestLinksEdgeCases:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_create_link_with_various_types(self, mock_auth, mock_db):
+    def test_create_link_with_various_types(self, mock_auth, mock_db) -> None:
         """Test creating links with various link types."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()
@@ -589,7 +588,7 @@ class TestLinksEdgeCases:
 
     @patch("tracertm.api.main.get_db")
     @patch("tracertm.api.main.auth_guard")
-    def test_update_nonexistent_link(self, mock_auth, mock_db):
+    def test_update_nonexistent_link(self, mock_auth, mock_db) -> None:
         """Test updating non-existent link returns 404."""
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_session = AsyncMock()

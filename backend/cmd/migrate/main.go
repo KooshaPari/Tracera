@@ -4,7 +4,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -43,5 +42,5 @@ func main() {
 		return
 	}
 
-	fmt.Println("✅ Schema applied successfully")
+	log.Println("✅ Schema applied successfully")
 }

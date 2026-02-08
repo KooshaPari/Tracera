@@ -1,6 +1,4 @@
-"""
-Root pytest configuration - loads pytest-asyncio and shared test utilities
-"""
+"""Root pytest configuration - loads pytest-asyncio and shared test utilities."""
 
 # Load pytest-asyncio; pytest_benchmark is auto-loaded when installed
 pytest_plugins = ["pytest_asyncio"]
@@ -41,7 +39,7 @@ Path.mkdir = _safe_mkdir  # type: ignore[assignment]
 
 # Set asyncio mode to auto for better fixture handling
 @pytest.fixture(scope="session")
-def asyncio_mode():
+def asyncio_mode() -> str:
     return "auto"
 
 
@@ -167,7 +165,7 @@ def item_factory(db_session):
 
         repo = ItemRepository(db_session)
         item = await repo.create(
-            project_id=project_id, title=title, view=view, item_type=item_type, status=status, **kwargs
+            project_id=project_id, title=title, view=view, item_type=item_type, status=status, **kwargs,
         )
         await db_session.flush()
         return item
@@ -177,7 +175,7 @@ def item_factory(db_session):
 
 @pytest.fixture
 def router():
-    """Create router instance"""
+    """Create router instance."""
     router_cls = ArchRouter
     if router_cls is not None:
         return router_cls()
@@ -186,7 +184,7 @@ def router():
 
 @pytest.fixture
 def registry():
-    """Create registry instance"""
+    """Create registry instance."""
     if ToolRegistry is not None and TOOL_REGISTRY is not None:
         return ToolRegistry(TOOL_REGISTRY)
     pytest.skip("router module not available")
@@ -194,13 +192,13 @@ def registry():
 
 @pytest.fixture
 def tool_registry_dict():
-    """Get tool registry dictionary"""
+    """Get tool registry dictionary."""
     return TOOL_REGISTRY
 
 
 @pytest.fixture
 def sample_routes():
-    """Sample routes for testing"""
+    """Sample routes for testing."""
     return {
         "test_route_1": {
             "description": "Test route 1",

@@ -15,10 +15,12 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import yaml
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # Minimum lines required for a table-based history section
 _HISTORY_MIN_LINES = 3
@@ -53,7 +55,7 @@ class LinkData:
         """Create from dictionary parsed from YAML."""
         created = data["created"]
         if isinstance(created, str):
-            created = datetime.fromisoformat(created.replace("Z", "+00:00"))
+            created = datetime.fromisoformat(created)
 
         return cls(
             id=data["id"],
@@ -155,15 +157,13 @@ class ItemData:
 
         # Description
         if self.description:
-            sections.append("## Description\n")
-            sections.append(self.description)
+            sections.extend(("## Description\n", self.description))
 
         # Figma Preview (for wireframe type)
         if self.item_type == "wireframe" and self.figma_url:
             sections.append("## Figma Preview\n")
             if self.figma_file_key and self.figma_node_id:
-                sections.append(f"![Figma Preview](figma://{self.figma_file_key}/{self.figma_node_id})")
-                sections.append(f"\n[View in Figma]({self.figma_url})")
+                sections.extend((f"![Figma Preview](figma://{self.figma_file_key}/{self.figma_node_id})", f"\n[View in Figma]({self.figma_url})"))
             else:
                 sections.append(f"[View in Figma]({self.figma_url})")
 
@@ -184,14 +184,11 @@ class ItemData:
 
         # Notes
         if self.notes:
-            sections.append("## Notes\n")
-            sections.append(self.notes)
+            sections.extend(("## Notes\n", self.notes))
 
         # History
         if self.history:
-            sections.append("## History\n")
-            sections.append("| Version | Date | Author | Changes |")
-            sections.append("|---------|------|--------|---------|")
+            sections.extend(("## History\n", "| Version | Date | Author | Changes |", "|---------|------|--------|---------|"))
             sections.extend(
                 f"| {entry.get('version', '')} | {entry.get('date', '')} | "
                 f"{entry.get('author', '')} | {entry.get('changes', '')} |"
@@ -206,11 +203,11 @@ class ItemData:
         # Parse dates
         created = fm_data.get("created")
         if created and isinstance(created, str):
-            created = datetime.fromisoformat(created.replace("Z", "+00:00"))
+            created = datetime.fromisoformat(created)
 
         updated = fm_data.get("updated")
         if updated and isinstance(updated, str):
-            updated = datetime.fromisoformat(updated.replace("Z", "+00:00"))
+            updated = datetime.fromisoformat(updated)
 
         # Parse body sections
         title, description, acceptance_criteria, notes, history = _parse_markdown_body(body)
@@ -282,7 +279,8 @@ def parse_item_markdown(path: Path) -> ItemData:
         ValueError: If the file format is invalid
     """
     if not path.exists():
-        raise FileNotFoundError(f"Item file not found: {path}")
+        msg = f"Item file not found: {path}"
+        raise FileNotFoundError(msg)
 
     with path.open(encoding="utf-8") as f:
         content = f.read()
@@ -291,13 +289,15 @@ def parse_item_markdown(path: Path) -> ItemData:
     metadata, body = _parse_frontmatter(content)
 
     if not metadata:
-        raise ValueError(f"No YAML frontmatter found in {path}")
+        msg = f"No YAML frontmatter found in {path}"
+        raise ValueError(msg)
 
     # Validate required fields
     required_fields = ["id", "external_id", "type", "status"]
     missing = [f for f in required_fields if f not in metadata]
     if missing:
-        raise ValueError(f"Missing required frontmatter fields in {path}: {missing}")
+        msg = f"Missing required frontmatter fields in {path}: {missing}"
+        raise ValueError(msg)
 
     return ItemData.from_frontmatter_and_body(metadata, body)
 
@@ -314,7 +314,8 @@ def write_item_markdown(item: ItemData, path: Path) -> None:
     """
     # Validate required fields
     if not all([item.id, item.external_id, item.item_type, item.status]):
-        raise ValueError("ItemData missing required fields (id, external_id, item_type, status)")
+        msg = "ItemData missing required fields (id, external_id, item_type, status)"
+        raise ValueError(msg)
 
     # Create parent directory if it doesn't exist
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -341,7 +342,8 @@ def parse_links_yaml(path: Path) -> list[LinkData]:
         ValueError: If the YAML format is invalid
     """
     if not path.exists():
-        raise FileNotFoundError(f"Links file not found: {path}")
+        msg = f"Links file not found: {path}"
+        raise FileNotFoundError(msg)
 
     with path.open(encoding="utf-8") as f:
         data = yaml.safe_load(f)
@@ -354,7 +356,8 @@ def parse_links_yaml(path: Path) -> list[LinkData]:
         try:
             links.append(LinkData.from_dict(link_dict))
         except (KeyError, ValueError) as e:
-            raise ValueError(f"Invalid link format in {path}: {e}") from e
+            msg = f"Invalid link format in {path}: {e}"
+            raise ValueError(msg) from e
 
     return links
 
@@ -408,7 +411,8 @@ def parse_config_yaml(path: Path) -> dict[str, Any]:
         FileNotFoundError: If the file doesn't exist
     """
     if not path.exists():
-        raise FileNotFoundError(f"Config file not found: {path}")
+        msg = f"Config file not found: {path}"
+        raise FileNotFoundError(msg)
 
     with path.open(encoding="utf-8") as f:
         data = yaml.safe_load(f)
@@ -540,7 +544,8 @@ def _parse_frontmatter(content: str) -> tuple[dict[str, Any], str]:
     try:
         metadata = yaml.safe_load(yaml_str) or {}
     except yaml.YAMLError as e:
-        raise ValueError(f"Invalid YAML frontmatter: {e}") from e
+        msg = f"Invalid YAML frontmatter: {e}"
+        raise ValueError(msg) from e
 
     return metadata, body
 

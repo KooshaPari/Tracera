@@ -1,5 +1,4 @@
-"""
-Phase 15A: Quick Wins - Service Layer Edge Cases
+"""Phase 15A: Quick Wins - Service Layer Edge Cases.
 
 Focus: Edge cases and boundary conditions for services
 Target: EventService, CacheService
@@ -19,13 +18,13 @@ from tracertm.services.event_service import EventService
 class TestCacheServiceEdgeCases:
     """Edge cases for CacheService."""
 
-    def test_cache_service_init_without_redis(self):
+    def test_cache_service_init_without_redis(self) -> None:
         """Test cache service initialization when redis is not available."""
         with patch("tracertm.services.cache_service.REDIS_AVAILABLE", False):
             service = CacheService()
             assert service.redis_client is None
 
-    def test_cache_service_init_with_default_url(self):
+    def test_cache_service_init_with_default_url(self) -> None:
         """Test cache service initialization with default Redis URL."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -35,7 +34,7 @@ class TestCacheServiceEdgeCases:
             CacheService()
             mock_redis.assert_called_once_with("redis://localhost:6379", decode_responses=True)
 
-    def test_cache_service_init_with_custom_url(self):
+    def test_cache_service_init_with_custom_url(self) -> None:
         """Test cache service initialization with custom Redis URL."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -45,7 +44,7 @@ class TestCacheServiceEdgeCases:
             CacheService(redis_url="redis://custom:6380")
             mock_redis.assert_called_once_with("redis://custom:6380", decode_responses=True)
 
-    def test_cache_service_init_connection_failure(self):
+    def test_cache_service_init_connection_failure(self) -> None:
         """Test cache service handles connection failure gracefully."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_redis.side_effect = Exception("Connection failed")
@@ -53,7 +52,7 @@ class TestCacheServiceEdgeCases:
             service = CacheService()
             assert service.redis_client is None
 
-    def test_cache_service_init_ping_failure(self):
+    def test_cache_service_init_ping_failure(self) -> None:
         """Test cache service handles ping failure gracefully."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -63,7 +62,7 @@ class TestCacheServiceEdgeCases:
             service = CacheService()
             assert service.redis_client is None
 
-    def test_cache_service_stats_initialization(self):
+    def test_cache_service_stats_initialization(self) -> None:
         """Test that stats are properly initialized."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -74,7 +73,7 @@ class TestCacheServiceEdgeCases:
             assert service.stats["misses"] == 0
             assert service.stats["evictions"] == 0
 
-    def test_generate_key_simple(self):
+    def test_generate_key_simple(self) -> None:
         """Test cache key generation with simple parameters."""
         with patch("tracertm.services.cache_service.redis.from_url"):
             service = CacheService()
@@ -84,7 +83,7 @@ class TestCacheServiceEdgeCases:
             assert len(key) == 32  # MD5 hex digest length
             assert isinstance(key, str)
 
-    def test_generate_key_deterministic(self):
+    def test_generate_key_deterministic(self) -> None:
         """Test that key generation is deterministic."""
         with patch("tracertm.services.cache_service.redis.from_url"):
             service = CacheService()
@@ -92,7 +91,7 @@ class TestCacheServiceEdgeCases:
             key2 = service._generate_key("prefix", id="123", type="item")
             assert key1 == key2
 
-    def test_generate_key_order_independent(self):
+    def test_generate_key_order_independent(self) -> None:
         """Test that key generation is parameter order independent."""
         with patch("tracertm.services.cache_service.redis.from_url"):
             service = CacheService()
@@ -100,7 +99,7 @@ class TestCacheServiceEdgeCases:
             key2 = service._generate_key("prefix", type="item", id="123")
             assert key1 == key2
 
-    def test_generate_key_different_values(self):
+    def test_generate_key_different_values(self) -> None:
         """Test that different values generate different keys."""
         with patch("tracertm.services.cache_service.redis.from_url"):
             service = CacheService()
@@ -108,14 +107,14 @@ class TestCacheServiceEdgeCases:
             key2 = service._generate_key("prefix", id="456")
             assert key1 != key2
 
-    def test_generate_key_empty_params(self):
+    def test_generate_key_empty_params(self) -> None:
         """Test key generation with no parameters."""
         with patch("tracertm.services.cache_service.redis.from_url"):
             service = CacheService()
             key = service._generate_key("prefix")
             assert len(key) == 32
 
-    def test_generate_key_special_characters(self):
+    def test_generate_key_special_characters(self) -> None:
         """Test key generation with special characters."""
         with patch("tracertm.services.cache_service.redis.from_url"):
             service = CacheService()
@@ -123,7 +122,7 @@ class TestCacheServiceEdgeCases:
             assert len(key) == 32
 
     @pytest.mark.asyncio
-    async def test_get_without_redis_client(self):
+    async def test_get_without_redis_client(self) -> None:
         """Test get operation when redis client is None."""
         with patch("tracertm.services.cache_service.REDIS_AVAILABLE", False):
             service = CacheService()
@@ -132,7 +131,7 @@ class TestCacheServiceEdgeCases:
             assert service.stats["misses"] == 1
 
     @pytest.mark.asyncio
-    async def test_get_cache_hit(self):
+    async def test_get_cache_hit(self) -> None:
         """Test successful cache hit."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -148,7 +147,7 @@ class TestCacheServiceEdgeCases:
             assert service.stats["misses"] == 0
 
     @pytest.mark.asyncio
-    async def test_get_cache_miss(self):
+    async def test_get_cache_miss(self) -> None:
         """Test cache miss."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -163,7 +162,7 @@ class TestCacheServiceEdgeCases:
             assert service.stats["hits"] == 0
 
     @pytest.mark.asyncio
-    async def test_get_with_exception(self):
+    async def test_get_with_exception(self) -> None:
         """Test get operation when exception occurs."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -177,7 +176,7 @@ class TestCacheServiceEdgeCases:
             assert service.stats["misses"] == 1
 
     @pytest.mark.asyncio
-    async def test_get_with_invalid_json(self):
+    async def test_get_with_invalid_json(self) -> None:
         """Test get operation with invalid JSON data."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -191,7 +190,7 @@ class TestCacheServiceEdgeCases:
             assert result is None or service.stats["misses"] >= 1
 
     @pytest.mark.asyncio
-    async def test_set_without_redis_client(self):
+    async def test_set_without_redis_client(self) -> None:
         """Test set operation when redis client is None."""
         with patch("tracertm.services.cache_service.REDIS_AVAILABLE", False):
             service = CacheService()
@@ -199,7 +198,7 @@ class TestCacheServiceEdgeCases:
             assert result is False
 
     @pytest.mark.asyncio
-    async def test_set_success(self):
+    async def test_set_success(self) -> None:
         """Test successful set operation."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -212,7 +211,7 @@ class TestCacheServiceEdgeCases:
             mock_client.setex.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_set_with_custom_ttl(self):
+    async def test_set_with_custom_ttl(self) -> None:
         """Test set operation with custom TTL."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -226,7 +225,7 @@ class TestCacheServiceEdgeCases:
             assert call_args[0][1] == 7200  # TTL should be 7200
 
     @pytest.mark.asyncio
-    async def test_set_with_complex_data(self):
+    async def test_set_with_complex_data(self) -> None:
         """Test set operation with complex nested data."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -243,7 +242,7 @@ class TestCacheServiceEdgeCases:
             assert result is True
 
     @pytest.mark.asyncio
-    async def test_set_with_exception(self):
+    async def test_set_with_exception(self) -> None:
         """Test set operation when exception occurs."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -256,7 +255,7 @@ class TestCacheServiceEdgeCases:
             assert result is False
 
     @pytest.mark.asyncio
-    async def test_delete_without_redis_client(self):
+    async def test_delete_without_redis_client(self) -> None:
         """Test delete operation when redis client is None."""
         with patch("tracertm.services.cache_service.REDIS_AVAILABLE", False):
             service = CacheService()
@@ -264,7 +263,7 @@ class TestCacheServiceEdgeCases:
             assert result is False
 
     @pytest.mark.asyncio
-    async def test_delete_success(self):
+    async def test_delete_success(self) -> None:
         """Test successful delete operation."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -277,7 +276,7 @@ class TestCacheServiceEdgeCases:
             mock_client.delete.assert_called_once_with("test-key")
 
     @pytest.mark.asyncio
-    async def test_delete_with_exception(self):
+    async def test_delete_with_exception(self) -> None:
         """Test delete operation when exception occurs."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -290,7 +289,7 @@ class TestCacheServiceEdgeCases:
             assert result is False
 
     @pytest.mark.asyncio
-    async def test_clear_without_redis_client(self):
+    async def test_clear_without_redis_client(self) -> None:
         """Test clear operation when redis client is None."""
         with patch("tracertm.services.cache_service.REDIS_AVAILABLE", False):
             service = CacheService()
@@ -298,7 +297,7 @@ class TestCacheServiceEdgeCases:
             assert result is False
 
     @pytest.mark.asyncio
-    async def test_clear_success(self):
+    async def test_clear_success(self) -> None:
         """Test successful clear operation."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -316,7 +315,7 @@ class TestCacheServiceEdgeCases:
             assert service.stats["misses"] == 0
 
     @pytest.mark.asyncio
-    async def test_clear_with_exception(self):
+    async def test_clear_with_exception(self) -> None:
         """Test clear operation when exception occurs."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -329,7 +328,7 @@ class TestCacheServiceEdgeCases:
             assert result is False
 
     @pytest.mark.asyncio
-    async def test_clear_prefix_without_redis_client(self):
+    async def test_clear_prefix_without_redis_client(self) -> None:
         """Test clear_prefix operation when redis client is None."""
         with patch("tracertm.services.cache_service.REDIS_AVAILABLE", False):
             service = CacheService()
@@ -337,7 +336,7 @@ class TestCacheServiceEdgeCases:
             assert result == 0
 
     @pytest.mark.asyncio
-    async def test_clear_prefix_no_keys(self):
+    async def test_clear_prefix_no_keys(self) -> None:
         """Test clear_prefix when no keys match."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -350,7 +349,7 @@ class TestCacheServiceEdgeCases:
             assert result == 0
 
     @pytest.mark.asyncio
-    async def test_clear_prefix_with_keys(self):
+    async def test_clear_prefix_with_keys(self) -> None:
         """Test clear_prefix when keys are found."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -365,7 +364,7 @@ class TestCacheServiceEdgeCases:
             mock_client.keys.assert_called_once_with("test:*")
 
     @pytest.mark.asyncio
-    async def test_clear_prefix_with_exception(self):
+    async def test_clear_prefix_with_exception(self) -> None:
         """Test clear_prefix operation when exception occurs."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -378,7 +377,7 @@ class TestCacheServiceEdgeCases:
             assert result == 0
 
     @pytest.mark.asyncio
-    async def test_get_stats_no_operations(self):
+    async def test_get_stats_no_operations(self) -> None:
         """Test get_stats with no cache operations."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -393,7 +392,7 @@ class TestCacheServiceEdgeCases:
             assert stats.evictions == 0
 
     @pytest.mark.asyncio
-    async def test_get_stats_with_operations(self):
+    async def test_get_stats_with_operations(self) -> None:
         """Test get_stats after cache operations."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -411,7 +410,7 @@ class TestCacheServiceEdgeCases:
             assert stats.evictions == 1
 
     @pytest.mark.asyncio
-    async def test_get_stats_with_memory_info(self):
+    async def test_get_stats_with_memory_info(self) -> None:
         """Test get_stats includes memory information."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -424,7 +423,7 @@ class TestCacheServiceEdgeCases:
             assert stats.total_size_bytes == 1024000
 
     @pytest.mark.asyncio
-    async def test_get_stats_memory_error(self):
+    async def test_get_stats_memory_error(self) -> None:
         """Test get_stats when memory info fails."""
         with patch("tracertm.services.cache_service.redis.from_url") as mock_redis:
             mock_client = MagicMock()
@@ -441,7 +440,7 @@ class TestEventServiceEdgeCases:
     """Edge cases for EventService."""
 
     @pytest.mark.asyncio
-    async def test_event_service_init(self):
+    async def test_event_service_init(self) -> None:
         """Test event service initialization."""
         mock_session = AsyncMock()
         service = EventService(mock_session)
@@ -450,7 +449,7 @@ class TestEventServiceEdgeCases:
         assert service.events is not None
 
     @pytest.mark.asyncio
-    async def test_log_event_with_item_id(self):
+    async def test_log_event_with_item_id(self) -> None:
         """Test logging event with item_id."""
         mock_session = AsyncMock()
         service = EventService(mock_session)
@@ -477,7 +476,7 @@ class TestEventServiceEdgeCases:
         )
 
     @pytest.mark.asyncio
-    async def test_log_event_without_item_id(self):
+    async def test_log_event_without_item_id(self) -> None:
         """Test logging event without item_id (project-level event)."""
         mock_session = AsyncMock()
         service = EventService(mock_session)
@@ -486,7 +485,7 @@ class TestEventServiceEdgeCases:
         service.events.log = AsyncMock(return_value=mock_event)  # type: ignore[assignment]
 
         result = await service.log_event(
-            project_id="proj-1", event_type="project_created", event_data={"name": "Test Project"}, agent_id="agent-1"
+            project_id="proj-1", event_type="project_created", event_data={"name": "Test Project"}, agent_id="agent-1",
         )
 
         assert result is mock_event
@@ -500,7 +499,7 @@ class TestEventServiceEdgeCases:
         )
 
     @pytest.mark.asyncio
-    async def test_log_event_with_empty_data(self):
+    async def test_log_event_with_empty_data(self) -> None:
         """Test logging event with empty data dictionary."""
         mock_session = AsyncMock()
         service = EventService(mock_session)
@@ -513,7 +512,7 @@ class TestEventServiceEdgeCases:
         assert result is mock_event
 
     @pytest.mark.asyncio
-    async def test_log_event_with_complex_data(self):
+    async def test_log_event_with_complex_data(self) -> None:
         """Test logging event with complex nested data."""
         mock_session = AsyncMock()
         service = EventService(mock_session)
@@ -537,7 +536,7 @@ class TestEventServiceEdgeCases:
         assert result is mock_event
 
     @pytest.mark.asyncio
-    async def test_get_item_history(self):
+    async def test_get_item_history(self) -> None:
         """Test retrieving item history."""
         mock_session = AsyncMock()
         service = EventService(mock_session)
@@ -551,7 +550,7 @@ class TestEventServiceEdgeCases:
         service.events.get_by_entity.assert_called_once_with("item-1")
 
     @pytest.mark.asyncio
-    async def test_get_item_history_no_events(self):
+    async def test_get_item_history_no_events(self) -> None:
         """Test retrieving history for item with no events."""
         mock_session = AsyncMock()
         service = EventService(mock_session)
@@ -563,7 +562,7 @@ class TestEventServiceEdgeCases:
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_get_item_at_time(self):
+    async def test_get_item_at_time(self) -> None:
         """Test reconstructing item state at specific time."""
         mock_session = AsyncMock()
         service = EventService(mock_session)
@@ -578,7 +577,7 @@ class TestEventServiceEdgeCases:
         service.events.get_entity_at_time.assert_called_once_with("item-1", at_time)
 
     @pytest.mark.asyncio
-    async def test_get_item_at_time_not_found(self):
+    async def test_get_item_at_time_not_found(self) -> None:
         """Test getting item state when item didn't exist at that time."""
         mock_session = AsyncMock()
         service = EventService(mock_session)
@@ -591,7 +590,7 @@ class TestEventServiceEdgeCases:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_get_item_at_time_future_date(self):
+    async def test_get_item_at_time_future_date(self) -> None:
         """Test getting item state with future date."""
         mock_session = AsyncMock()
         service = EventService(mock_session)
@@ -607,7 +606,7 @@ class TestEventServiceEdgeCases:
 class TestCacheStatsDataclass:
     """Tests for CacheStats dataclass."""
 
-    def test_cache_stats_creation(self):
+    def test_cache_stats_creation(self) -> None:
         """Test creating CacheStats instance."""
         stats = CacheStats(hits=10, misses=5, hit_rate=66.67, total_size_bytes=1024, evictions=2)
 
@@ -617,14 +616,14 @@ class TestCacheStatsDataclass:
         assert stats.total_size_bytes == 1024
         assert stats.evictions == 2
 
-    def test_cache_stats_zero_values(self):
+    def test_cache_stats_zero_values(self) -> None:
         """Test CacheStats with all zero values."""
         stats = CacheStats(hits=0, misses=0, hit_rate=0.0, total_size_bytes=0, evictions=0)
 
         assert stats.hits == 0
         assert stats.hit_rate == 0.0
 
-    def test_cache_stats_large_values(self):
+    def test_cache_stats_large_values(self) -> None:
         """Test CacheStats with large values."""
         stats = CacheStats(
             hits=1000000,

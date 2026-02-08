@@ -1,6 +1,4 @@
-"""
-Pydantic schemas for Test Suite API.
-"""
+"""Pydantic schemas for Test Suite API."""
 
 from datetime import datetime
 from typing import Any

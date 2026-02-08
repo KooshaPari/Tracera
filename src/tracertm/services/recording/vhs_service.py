@@ -11,11 +11,13 @@ import os
 import subprocess  # noqa: S404
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from tracertm.models.execution_config import ExecutionEnvironmentConfig
-from tracertm.services.execution import ExecutionService
 from tracertm.services.recording.tape_generator import TapeFileGenerator
+
+if TYPE_CHECKING:
+    from tracertm.models.execution_config import ExecutionEnvironmentConfig
+    from tracertm.services.execution import ExecutionService
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +34,7 @@ class VHSExecutionService:
         execution_service: ExecutionService,
         *,
         vhs_command: str | None = None,
-    ):
+    ) -> None:
         """Initialize VHS execution service.
 
         Args:
@@ -68,13 +70,16 @@ class VHSExecutionService:
         """
         execution = await self._exec_service.get(execution_id)
         if not execution:
-            raise VHSExecutionError(f"Execution {execution_id} not found")
+            msg = f"Execution {execution_id} not found"
+            raise VHSExecutionError(msg)
         if execution.status != "pending":
-            raise VHSExecutionError(f"Execution {execution_id} is {execution.status}, expected pending")
+            msg = f"Execution {execution_id} is {execution.status}, expected pending"
+            raise VHSExecutionError(msg)
 
         config = await self._exec_service.get_config(execution.project_id)
         if config and not config.vhs_enabled:
-            raise VHSExecutionError("VHS is disabled for this project")
+            msg = "VHS is disabled for this project"
+            raise VHSExecutionError(msg)
 
         # Build tape file
         if tape_generator is None:
@@ -115,7 +120,8 @@ class VHSExecutionService:
                         output_path = alt_path
                         break
                 else:
-                    raise VHSExecutionError(f"VHS output not found: {output_filename} in {tmpdir}")
+                    msg = f"VHS output not found: {output_filename} in {tmpdir}"
+                    raise VHSExecutionError(msg)
 
             artifact = await self._exec_service.store_artifact(
                 execution_id,
@@ -212,7 +218,7 @@ class VHSExecutionService:
         try:
             # Docker cp: docker cp host_path container_id:container_path
             code, _, stderr = await docker._run(
-                "cp", str(tape_path), f"{execution.container_id}:{container_tape}", timeout=30
+                "cp", str(tape_path), f"{execution.container_id}:{container_tape}", timeout=30,
             )
             if code != 0:
                 return {

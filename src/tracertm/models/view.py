@@ -1,6 +1,4 @@
-"""
-View model for TraceRTM.
-"""
+"""View model for TraceRTM."""
 
 import uuid
 
@@ -18,8 +16,7 @@ def generate_view_uuid() -> str:
 
 
 class View(Base, TimestampMixin):
-    """
-    View model representing a named perspective for items.
+    """View model representing a named perspective for items.
 
     Views group items into user-facing, functional, UI, data, etc.
     """

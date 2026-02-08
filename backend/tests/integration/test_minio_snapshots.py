@@ -1,5 +1,4 @@
-"""
-Phase 6: E2E Integration Testing - MinIO Snapshot Tests
+"""Phase 6: E2E Integration Testing - MinIO Snapshot Tests.
 
 Tests sandbox snapshot creation, upload, download, and restoration.
 
@@ -30,10 +29,10 @@ from .test_helpers import (
     verify_s3_object,
 )
 
-
 # ============================================================================
 # Snapshot Upload/Download Tests
 # ============================================================================
+
 
 @pytest.mark.e2e
 @pytest.mark.asyncio
@@ -41,9 +40,8 @@ async def test_snapshot_upload_download(
     db_session,
     neo4j_driver,
     minio_clean,
-):
-    """
-    Test complete snapshot upload and download cycle.
+) -> None:
+    """Test complete snapshot upload and download cycle.
 
     Verifies:
     - Temporary files created
@@ -119,9 +117,8 @@ async def test_snapshot_metadata(
     db_session,
     neo4j_driver,
     minio_clean,
-):
-    """
-    Test snapshot metadata storage.
+) -> None:
+    """Test snapshot metadata storage.
 
     Verifies:
     - agent_checkpoints.sandbox_snapshot_s3_key populated
@@ -190,7 +187,7 @@ async def test_snapshot_metadata(
             "turn_number": 1,
             "state_snapshot": '{}',
             "s3_key": s3_key,
-        }
+        },
     )
     await db_session.commit()
 
@@ -200,7 +197,7 @@ async def test_snapshot_metadata(
             SELECT sandbox_snapshot_s3_key FROM agent_checkpoints
             WHERE session_id = :session_id
         """),
-        {"session_id": session_id}
+        {"session_id": session_id},
     )
     row = result.first()
     assert row.sandbox_snapshot_s3_key == s3_key
@@ -221,9 +218,8 @@ async def test_scheduled_snapshot_workflow(
     neo4j_driver,
     minio_clean,
     temporal_env,
-):
-    """
-    Test scheduled snapshot workflow creates snapshots via Temporal.
+) -> None:
+    """Test scheduled snapshot workflow creates snapshots via Temporal.
 
     Verifies:
     - Workflow starts successfully
@@ -236,8 +232,8 @@ async def test_scheduled_snapshot_workflow(
     Note: This test invokes the Go Temporal workflow from Python.
     The workflow is defined in backend/internal/temporal/workflows.go
     """
-    import subprocess
     import json
+    import subprocess
 
     # Create session with test data
     session_data = await create_test_session(
@@ -261,7 +257,7 @@ async def test_scheduled_snapshot_workflow(
             "type": "task",
             "status": "active",
             "priority": "high",
-        }
+        },
     )
     await db_session.commit()
 
@@ -303,7 +299,7 @@ async def test_scheduled_snapshot_workflow(
     # Verify checkpoint exists with S3 key
     result = await db_session.execute(
         text("SELECT sandbox_snapshot_s3_key FROM agent_checkpoints WHERE session_id = :id"),
-        {"id": session_id}
+        {"id": session_id},
     )
     row = result.first()
     assert row is not None
@@ -325,9 +321,8 @@ async def test_scheduled_snapshot_workflow(
 @pytest.mark.e2e
 def test_snapshot_compression_efficiency(
     minio_clean,
-):
-    """
-    Test snapshot compression achieves good compression ratio.
+) -> None:
+    """Test snapshot compression achieves good compression ratio.
 
     Verifies:
     - Text files compress well
@@ -387,9 +382,8 @@ async def test_snapshot_restoration(
     db_session,
     neo4j_driver,
     minio_clean,
-):
-    """
-    Test snapshot can be restored to new sandbox.
+) -> None:
+    """Test snapshot can be restored to new sandbox.
 
     Verifies:
     - Snapshot downloaded from S3
@@ -457,9 +451,8 @@ async def test_snapshot_restoration(
 @pytest.mark.e2e
 def test_snapshot_upload_failure_handling(
     minio_clean,
-):
-    """
-    Test snapshot upload failure is handled gracefully.
+) -> None:
+    """Test snapshot upload failure is handled gracefully.
 
     Verifies:
     - Invalid bucket name returns error
@@ -481,9 +474,8 @@ def test_snapshot_upload_failure_handling(
 @pytest.mark.e2e
 def test_snapshot_download_not_found(
     minio_clean,
-):
-    """
-    Test downloading non-existent snapshot returns error.
+) -> None:
+    """Test downloading non-existent snapshot returns error.
 
     Verifies:
     - Non-existent key returns error
@@ -507,9 +499,8 @@ async def test_snapshot_lifecycle_complete(
     db_session,
     neo4j_driver,
     minio_clean,
-):
-    """
-    Test complete snapshot lifecycle.
+) -> None:
+    """Test complete snapshot lifecycle.
 
     1. Create sandbox with files
     2. Create snapshot
@@ -565,7 +556,7 @@ async def test_snapshot_lifecycle_complete(
             "turn_number": 1,
             "state_snapshot": '{}',
             "s3_key": s3_key,
-        }
+        },
     )
     await db_session.commit()
 

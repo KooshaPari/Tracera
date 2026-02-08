@@ -540,7 +540,7 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
       await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Only the last call should execute
-      expect(mockCallback).toHaveBeenCalledTimes(1);
+      expect(mockCallback).toHaveBeenCalledOnce();
     });
   });
 

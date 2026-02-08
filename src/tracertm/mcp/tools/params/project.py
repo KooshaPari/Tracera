@@ -28,8 +28,7 @@ async def project_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
-    """
-    Unified project management tool.
+    """Unified project management tool.
 
     Actions:
     - create: Create new project (requires: name, description)
@@ -70,4 +69,5 @@ async def project_manage(
         )
         return _wrap(result, ctx, action)
 
-    raise ToolError(f"Unknown project action: {action}")
+    msg = f"Unknown project action: {action}"
+    raise ToolError(msg)

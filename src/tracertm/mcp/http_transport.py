@@ -16,13 +16,15 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections.abc import AsyncGenerator
-from typing import Any, Literal
-
-from fastapi import FastAPI
-from starlette.applications import Starlette
+from typing import TYPE_CHECKING, Any, Literal
 
 from tracertm.mcp.core import mcp
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
+    from fastapi import FastAPI
+    from starlette.applications import Starlette
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +97,7 @@ def mount_mcp_to_fastapi(
         >>> app = FastAPI()
         >>> mount_mcp_to_fastapi(app, path="/api/v1/mcp")
     """
-    logger.info(f"Mounting MCP to FastAPI at {path} with transport: {transport}")
+    logger.info("Mounting MCP to FastAPI at %s with transport: %s", path, transport)
 
     # Create the MCP HTTP app
     mcp_app = mcp.http_app(
@@ -114,7 +116,7 @@ def mount_mcp_to_fastapi(
     # Ensure parent app uses MCP lifespan (FastMCP expects this).
     app.router.lifespan_context = mcp_app.lifespan
 
-    logger.info(f"MCP mounted successfully at {path}")
+    logger.info("MCP mounted successfully at %s", path)
 
 
 # =============================================================================
@@ -176,7 +178,7 @@ async def create_progress_stream(
         }
 
     except asyncio.CancelledError:
-        logger.info(f"Progress stream cancelled for task: {task_id}")
+        logger.info("Progress stream cancelled for task: %s", task_id)
         yield {
             "event": "stream_cancelled",
             "data": {
@@ -187,7 +189,7 @@ async def create_progress_stream(
         raise
 
     except Exception as e:
-        logger.exception(f"Error in progress stream for task {task_id}: {e}")
+        logger.exception("Error in progress stream for task %s: %s", task_id, e)
         yield {
             "event": "stream_error",
             "data": {
@@ -220,10 +222,10 @@ def get_transport_type() -> Literal["http", "streamable-http", "sse"]:
     # Validate transport (stdio not supported)
     valid_transports = ["http", "streamable-http", "sse"]
     if transport not in valid_transports:
-        logger.warning(f"Invalid transport '{transport}', defaulting to 'http'. Valid options: {valid_transports}")
+        logger.warning("Invalid transport '%s', defaulting to 'http'. Valid options: %s", transport, valid_transports)
         transport = "http"
 
-    logger.info(f"Using MCP transport: {transport}")
+    logger.info("Using MCP transport: %s", transport)
     return transport  # type: ignore[return-value]
 
 

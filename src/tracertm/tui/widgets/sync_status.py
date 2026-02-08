@@ -1,11 +1,10 @@
-"""
-Sync status widget for TUI.
+"""Sync status widget for TUI.
 
 Displays real-time sync status, pending changes, and conflict notifications.
 """
 
 from datetime import UTC, datetime
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 # Time thresholds for relative time formatting
 _SECONDS_PER_MINUTE = 60
@@ -31,7 +30,8 @@ except ImportError:
         is_mounted: bool = False
 
         def query_one(self, selector: str, expect_type: type[Any]) -> Any:  # noqa: ANN401
-            raise RuntimeError("Textual not available")
+            msg = "Textual not available"
+            raise RuntimeError(msg)
 
         def update(self, content: str) -> None:
             return None
@@ -46,7 +46,7 @@ except ImportError:
         def __init__(self, *children: Any, **kwargs: Any) -> None:
             return None
 
-    class reactive(Generic[T]):
+    class reactive[T]:
         def __init__(self, default: T) -> None:
             self.default = default
 
@@ -56,8 +56,7 @@ TEXTUAL_AVAILABLE = textual_available
 if textual_available:
 
     class SyncStatusWidget(Static):
-        """
-        Widget displaying sync status with real-time updates.
+        """Widget displaying sync status with real-time updates.
 
         Shows:
         - Online/offline status
@@ -180,7 +179,7 @@ if textual_available:
             sync_info = self.query_one("#sync-info", Static)
             if self.pending_changes > 0:
                 sync_info.update(
-                    f"[bold]{self.pending_changes}[/] pending change" + ("s" if self.pending_changes != 1 else "")
+                    f"[bold]{self.pending_changes}[/] pending change" + ("s" if self.pending_changes != 1 else ""),
                 )
             elif self.last_sync:
                 time_ago = self._format_time_ago(self.last_sync)
@@ -192,7 +191,7 @@ if textual_available:
             conflict_info = self.query_one("#conflict-info", Static)
             if self.conflicts_count > 0:
                 conflict_info.update(
-                    f"[bold yellow]⚠[/] {self.conflicts_count} conflict" + ("s" if self.conflicts_count != 1 else "")
+                    f"[bold yellow]⚠[/] {self.conflicts_count} conflict" + ("s" if self.conflicts_count != 1 else ""),
                 )
                 conflict_info.add_class("conflict")
             else:
@@ -200,8 +199,7 @@ if textual_available:
                 conflict_info.remove_class("conflict")
 
         def _format_time_ago(self, dt: datetime) -> str:
-            """
-            Format datetime as relative time (e.g., '5 minutes ago').
+            """Format datetime as relative time (e.g., '5 minutes ago').
 
             Args:
                 dt: Datetime to format
@@ -226,8 +224,7 @@ if textual_available:
             return f"{days} day{'s' if days != 1 else ''} ago"
 
         def set_online(self, online: bool) -> None:
-            """
-            Set online status.
+            """Set online status.
 
             Args:
                 online: True if online
@@ -235,8 +232,7 @@ if textual_available:
             self.is_online = online
 
         def set_syncing(self, syncing: bool) -> None:
-            """
-            Set syncing status.
+            """Set syncing status.
 
             Args:
                 syncing: True if syncing
@@ -244,8 +240,7 @@ if textual_available:
             self.is_syncing = syncing
 
         def set_pending_changes(self, count: int) -> None:
-            """
-            Set pending changes count.
+            """Set pending changes count.
 
             Args:
                 count: Number of pending changes
@@ -253,8 +248,7 @@ if textual_available:
             self.pending_changes = count
 
         def set_last_sync(self, timestamp: datetime | None) -> None:
-            """
-            Set last sync timestamp.
+            """Set last sync timestamp.
 
             Args:
                 timestamp: Last sync time
@@ -262,8 +256,7 @@ if textual_available:
             self.last_sync = timestamp
 
         def set_conflicts(self, count: int) -> None:
-            """
-            Set conflicts count.
+            """Set conflicts count.
 
             Args:
                 count: Number of conflicts
@@ -271,8 +264,7 @@ if textual_available:
             self.conflicts_count = count
 
         def set_error(self, error: str | None) -> None:
-            """
-            Set error message.
+            """Set error message.
 
             Args:
                 error: Error message or None to clear
@@ -280,9 +272,7 @@ if textual_available:
             self.last_error = error
 
     class CompactSyncStatus(Static):
-        """
-        Compact single-line sync status widget for headers/footers.
-        """
+        """Compact single-line sync status widget for headers/footers."""
 
         is_online: reactive[bool] = reactive(False)
         is_syncing: reactive[bool] = reactive(False)

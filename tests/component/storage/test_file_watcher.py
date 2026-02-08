@@ -15,20 +15,20 @@ def _make_project(tmp_path: Path):
     return mgr, repo, trace_dir
 
 
-def test_init_raises_without_trace(tmp_path: Path):
+def test_init_raises_without_trace(tmp_path: Path) -> None:
     mgr = LocalStorageManager(base_dir=tmp_path / "g")
     with pytest.raises(ValueError):
         TraceFileWatcher(tmp_path / "missing", mgr)
 
 
-def test_stats_and_running_flag(tmp_path: Path):
+def test_stats_and_running_flag(tmp_path: Path) -> None:
     mgr, repo, trace_dir = _make_project(tmp_path)
     watcher = TraceFileWatcher(repo, mgr, debounce_ms=50)
     stats = watcher.get_stats()
     assert stats["is_running"] is False
 
 
-def test_debounce_process_event_updates_counters(tmp_path: Path):
+def test_debounce_process_event_updates_counters(tmp_path: Path) -> None:
     mgr, repo, trace_dir = _make_project(tmp_path)
     watcher = TraceFileWatcher(repo, mgr, debounce_ms=10)
 
@@ -44,7 +44,7 @@ def test_debounce_process_event_updates_counters(tmp_path: Path):
     assert stats["events_processed"] >= 1
 
 
-def test_process_event_handles_deleted(tmp_path: Path):
+def test_process_event_handles_deleted(tmp_path: Path) -> None:
     mgr, repo, trace_dir = _make_project(tmp_path)
     watcher = TraceFileWatcher(repo, mgr, debounce_ms=10)
 
@@ -54,7 +54,7 @@ def test_process_event_handles_deleted(tmp_path: Path):
     assert stats["events_processed"] >= 0
 
 
-def test_should_process_skips_hidden_and_sync(tmp_path: Path):
+def test_should_process_skips_hidden_and_sync(tmp_path: Path) -> None:
     mgr, repo, trace_dir = _make_project(tmp_path)
     watcher = TraceFileWatcher(repo, mgr, debounce_ms=10)
     handler = watcher._event_handler
@@ -65,11 +65,11 @@ def test_should_process_skips_hidden_and_sync(tmp_path: Path):
     assert handler._should_process(trace_dir / "items" / "ok.md") is True
 
 
-def test_auto_sync_queues_when_enabled(tmp_path: Path, monkeypatch):
+def test_auto_sync_queues_when_enabled(tmp_path: Path, monkeypatch) -> None:
     mgr, repo, trace_dir = _make_project(tmp_path)
     queued = {}
 
-    def fake_queue(entity_type, entity_id, operation, payload):
+    def fake_queue(entity_type, entity_id, operation, payload) -> None:
         queued["args"] = (entity_type, entity_id, operation, payload)
 
     monkeypatch.setattr(mgr, "queue_sync", fake_queue)

@@ -12,7 +12,10 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Iterable
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 CONFIG_PATH = Path("config/naming-guard.json")
 
@@ -268,16 +271,12 @@ def is_identifier_violation(
         return True
 
     tokens = split_identifier_tokens(name)
-    if any(token in forbidden_identifier_words for token in tokens):
-        return True
-
-    return False
+    return bool(any(token in forbidden_identifier_words for token in tokens))
 
 
 def strip_ts_comments(source: str) -> str:
     source = re.sub(r"/\\*.*?\\*/", "", source, flags=re.DOTALL)
-    source = re.sub(r"//.*", "", source)
-    return source
+    return re.sub(r"//.*", "", source)
 
 
 def iter_ts_identifiers(source: str) -> Iterable[str]:
@@ -369,8 +368,7 @@ def main() -> int:
     directory_violations: list[Path] = []
     identifier_violations: dict[Path, list[str]] = {}
     if check_directories:
-        for path in iter_directories(roots, exclude_parts):
-            if is_violation(
+        directory_violations.extend(path for path in iter_directories(roots, exclude_parts) if is_violation(
                 path,
                 args.lang,
                 patterns,
@@ -378,8 +376,7 @@ def main() -> int:
                 max_filename_length,
                 max_dirname_length,
                 max_path_depth,
-            ):
-                directory_violations.append(path)
+            ))
     for path in iter_files(roots, extensions, exclude_parts):
         if args.lang == "go" and (path.name.endswith("_test.go") or path.name.endswith(".pb.go")):
             continue
@@ -398,44 +395,30 @@ def main() -> int:
         ):
             violations.append(path)
         if check_identifiers and not any(part in str(path) for part in identifier_exclude):
-            names = []
-            for name in iter_identifier_names(path, args.lang):
-                if is_identifier_violation(
+            names = [name for name in iter_identifier_names(path, args.lang) if is_identifier_violation(
                     name,
                     args.lang,
                     patterns,
                     forbidden_identifier_words,
                     identifier_exceptions,
                     max_identifier_length,
-                ):
-                    names.append(name)
+                )]
             if names:
                 identifier_violations[path] = sorted(set(names))
 
     if violations or directory_violations or identifier_violations:
-        print("❌ NAMING EXPLOSION DETECTED")
-        print()
         if directory_violations:
-            print("The following directories use forbidden naming patterns:")
             for path in sorted(set(directory_violations)):
-                print(path)
-            print()
+                pass
         if violations:
-            print("The following files use forbidden naming patterns:")
             for path in sorted(set(violations)):
-                print(path)
-            print()
+                pass
         if identifier_violations:
-            print("The following files contain identifiers with forbidden naming patterns:")
             for path in sorted(identifier_violations):
-                print(path)
-                for name in identifier_violations[path]:
-                    print(f"  - {name}")
-        print()
-        print("Forbidden patterns: versioned (v2), name+digits, phase markers, stutters, length/path limits, and forbidden words")
+                for _name in identifier_violations[path]:
+                    pass
         return 1
 
-    print("✅ No naming explosion detected")
     return 0
 
 

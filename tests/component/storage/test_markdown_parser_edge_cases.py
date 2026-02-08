@@ -1,4 +1,4 @@
-"""Edge case tests for markdown_parser.py
+"""Edge case tests for markdown_parser.py.
 
 Tests cover:
 - Malformed YAML frontmatter
@@ -34,7 +34,7 @@ from tracertm.storage.markdown_parser import (
 class TestMarkdownParserEdgeCases:
     """Test edge cases in markdown parsing."""
 
-    def test_parse_malformed_yaml_frontmatter(self, tmp_path: Path):
+    def test_parse_malformed_yaml_frontmatter(self, tmp_path: Path) -> None:
         """Test parsing with malformed YAML frontmatter."""
         md_file = tmp_path / "malformed.md"
 
@@ -54,7 +54,7 @@ broken: [unclosed bracket
         with pytest.raises(ValueError, match="Invalid YAML frontmatter"):
             parse_item_markdown(md_file)
 
-    def test_parse_missing_required_fields(self, tmp_path: Path):
+    def test_parse_missing_required_fields(self, tmp_path: Path) -> None:
         """Test parsing with missing required frontmatter fields."""
         md_file = tmp_path / "missing_fields.md"
 
@@ -73,7 +73,7 @@ type: epic
         with pytest.raises(ValueError, match="Missing required frontmatter fields"):
             parse_item_markdown(md_file)
 
-    def test_parse_missing_frontmatter_entirely(self, tmp_path: Path):
+    def test_parse_missing_frontmatter_entirely(self, tmp_path: Path) -> None:
         """Test parsing file with no frontmatter."""
         md_file = tmp_path / "no_frontmatter.md"
 
@@ -82,7 +82,7 @@ type: epic
         with pytest.raises(ValueError, match="No YAML frontmatter found"):
             parse_item_markdown(md_file)
 
-    def test_parse_unicode_characters(self, tmp_path: Path):
+    def test_parse_unicode_characters(self, tmp_path: Path) -> None:
         """Test parsing with various Unicode characters."""
         md_file = tmp_path / "unicode.md"
 
@@ -119,7 +119,7 @@ RTL text: مرحبا بك
         assert "标签" in item.tags
         assert "🚀" in item.title
 
-    def test_parse_very_long_content(self, tmp_path: Path):
+    def test_parse_very_long_content(self, tmp_path: Path) -> None:
         """Test parsing of very long documents."""
         md_file = tmp_path / "long.md"
 
@@ -145,7 +145,7 @@ status: todo
         item = parse_item_markdown(md_file)
         assert "Line 9999" in item.description
 
-    def test_parse_nested_markdown_structures(self, tmp_path: Path):
+    def test_parse_nested_markdown_structures(self, tmp_path: Path) -> None:
         """Test deeply nested markdown structures."""
         md_file = tmp_path / "nested.md"
 
@@ -190,7 +190,7 @@ def nested():
         assert "Level 5" in item.description
         assert "Triple nested" in item.description
 
-    def test_parse_invalid_frontmatter_types(self, tmp_path: Path):
+    def test_parse_invalid_frontmatter_types(self, tmp_path: Path) -> None:
         """Test frontmatter with invalid field types."""
         md_file = tmp_path / "invalid_types.md"
 
@@ -214,7 +214,7 @@ created: 12345
         assert item.tags == "not_a_list"  # Will be stored as-is
         assert item.created == 12345  # Will be stored as-is
 
-    def test_parse_empty_frontmatter_values(self, tmp_path: Path):
+    def test_parse_empty_frontmatter_values(self, tmp_path: Path) -> None:
         """Test parsing with empty/null frontmatter values."""
         md_file = tmp_path / "empty.md"
 
@@ -246,7 +246,7 @@ tags: []
         assert item.description == ""
         assert item.notes == ""
 
-    def test_parse_acceptance_criteria_formats(self, tmp_path: Path):
+    def test_parse_acceptance_criteria_formats(self, tmp_path: Path) -> None:
         """Test parsing different acceptance criteria formats."""
         md_file = tmp_path / "criteria.md"
 
@@ -277,7 +277,7 @@ Not a checkbox item
         assert len(item.acceptance_criteria) >= 4
         assert any("Unchecked" in ac for ac in item.acceptance_criteria)
 
-    def test_parse_history_table_variations(self, tmp_path: Path):
+    def test_parse_history_table_variations(self, tmp_path: Path) -> None:
         """Test parsing history tables with variations."""
         md_file = tmp_path / "history.md"
 
@@ -308,7 +308,7 @@ status: todo
         assert "pipes" in item.history[1]["changes"]
         assert item.history[2]["author"] == ""
 
-    def test_parse_figma_wireframe_fields(self, tmp_path: Path):
+    def test_parse_figma_wireframe_fields(self, tmp_path: Path) -> None:
         """Test parsing wireframe with Figma-specific fields."""
         md_file = tmp_path / "wireframe.md"
 
@@ -347,7 +347,7 @@ Wireframe for login page
         assert "Login" in item.screens
         assert "STORY-001" in item.implements
 
-    def test_write_and_read_roundtrip(self, tmp_path: Path):
+    def test_write_and_read_roundtrip(self, tmp_path: Path) -> None:
         """Test that writing and reading preserves data."""
         md_file = tmp_path / "roundtrip.md"
 
@@ -380,7 +380,7 @@ Wireframe for login page
         assert parsed.owner == original.owner
         assert parsed.title == original.title
 
-    def test_write_item_missing_required_fields(self, tmp_path: Path):
+    def test_write_item_missing_required_fields(self, tmp_path: Path) -> None:
         """Test writing item with missing required fields."""
         md_file = tmp_path / "missing.md"
 
@@ -394,7 +394,7 @@ Wireframe for login page
         with pytest.raises(ValueError, match="missing required fields"):
             write_item_markdown(item, md_file)
 
-    def test_parse_links_yaml_empty(self, tmp_path: Path):
+    def test_parse_links_yaml_empty(self, tmp_path: Path) -> None:
         """Test parsing empty links.yaml."""
         links_file = tmp_path / "links.yaml"
         links_file.write_text("links: []\n", encoding="utf-8")
@@ -402,7 +402,7 @@ Wireframe for login page
         links = parse_links_yaml(links_file)
         assert links == []
 
-    def test_parse_links_yaml_invalid_format(self, tmp_path: Path):
+    def test_parse_links_yaml_invalid_format(self, tmp_path: Path) -> None:
         """Test parsing links.yaml with invalid format."""
         links_file = tmp_path / "links.yaml"
 
@@ -419,7 +419,7 @@ Wireframe for login page
         with pytest.raises(ValueError, match="Invalid link format"):
             parse_links_yaml(links_file)
 
-    def test_parse_config_yaml_empty(self, tmp_path: Path):
+    def test_parse_config_yaml_empty(self, tmp_path: Path) -> None:
         """Test parsing empty config.yaml."""
         config_file = tmp_path / "config.yaml"
         config_file.write_text("", encoding="utf-8")
@@ -427,7 +427,7 @@ Wireframe for login page
         config = parse_config_yaml(config_file)
         assert config == {}
 
-    def test_parse_config_yaml_complex(self, tmp_path: Path):
+    def test_parse_config_yaml_complex(self, tmp_path: Path) -> None:
         """Test parsing complex config.yaml."""
         config_file = tmp_path / "config.yaml"
 
@@ -458,7 +458,7 @@ counters:
         assert len(config["team"]) == 2
         assert config["counters"]["epic"] == 5
 
-    def test_link_data_to_dict_and_from_dict(self):
+    def test_link_data_to_dict_and_from_dict(self) -> None:
         """Test LinkData serialization roundtrip."""
         original = LinkData(
             id="link-1",
@@ -478,7 +478,7 @@ counters:
         assert parsed.link_type == original.link_type
         assert parsed.metadata == original.metadata
 
-    def test_link_data_from_dict_with_string_date(self):
+    def test_link_data_from_dict_with_string_date(self) -> None:
         """Test LinkData parsing with ISO date string."""
         data = {
             "id": "link-1",
@@ -491,7 +491,7 @@ counters:
         link = LinkData.from_dict(data)
         assert isinstance(link.created, datetime)
 
-    def test_get_item_path_various_types(self, tmp_path: Path):
+    def test_get_item_path_various_types(self, tmp_path: Path) -> None:
         """Test get_item_path for different item types."""
         base_dir = tmp_path
 
@@ -507,22 +507,22 @@ counters:
         path = get_item_path(base_dir, "MyProject", "wireframe", "WF-001")
         assert path == base_dir / "projects" / "MyProject" / "wireframes" / "WF-001.md"
 
-    def test_get_links_path(self, tmp_path: Path):
+    def test_get_links_path(self, tmp_path: Path) -> None:
         """Test get_links_path."""
         path = get_links_path(tmp_path, "MyProject")
         assert path == tmp_path / "projects" / "MyProject" / ".meta" / "links.yaml"
 
-    def test_get_config_path(self, tmp_path: Path):
+    def test_get_config_path(self, tmp_path: Path) -> None:
         """Test get_config_path."""
         path = get_config_path(tmp_path, "MyProject")
         assert path == tmp_path / "projects" / "MyProject" / ".meta" / "config.yaml"
 
-    def test_list_items_nonexistent_project(self, tmp_path: Path):
+    def test_list_items_nonexistent_project(self, tmp_path: Path) -> None:
         """Test list_items with non-existent project."""
         items = list_items(tmp_path, "NonExistent")
         assert items == []
 
-    def test_list_items_empty_project(self, tmp_path: Path):
+    def test_list_items_empty_project(self, tmp_path: Path) -> None:
         """Test list_items with empty project."""
         project_dir = tmp_path / "projects" / "EmptyProject"
         project_dir.mkdir(parents=True)
@@ -530,7 +530,7 @@ counters:
         items = list_items(tmp_path, "EmptyProject")
         assert items == []
 
-    def test_list_items_with_type_filter(self, tmp_path: Path):
+    def test_list_items_with_type_filter(self, tmp_path: Path) -> None:
         """Test list_items with item type filter."""
         project_dir = tmp_path / "projects" / "TestProject"
         epics_dir = project_dir / "epics"
@@ -557,7 +557,7 @@ counters:
         assert len(stories) == 1
         assert "STORY" in stories[0].name
 
-    def test_item_data_to_markdown_body_with_figma(self):
+    def test_item_data_to_markdown_body_with_figma(self) -> None:
         """Test ItemData.to_markdown_body with Figma fields."""
         item = ItemData(
             id="wf-1",
@@ -583,28 +583,28 @@ counters:
         assert "## Screens" in md_body
         assert "- Login" in md_body
 
-    def test_parse_file_not_found(self, tmp_path: Path):
+    def test_parse_file_not_found(self, tmp_path: Path) -> None:
         """Test parsing non-existent file."""
         md_file = tmp_path / "nonexistent.md"
 
         with pytest.raises(FileNotFoundError):
             parse_item_markdown(md_file)
 
-    def test_parse_links_file_not_found(self, tmp_path: Path):
+    def test_parse_links_file_not_found(self, tmp_path: Path) -> None:
         """Test parsing non-existent links.yaml."""
         links_file = tmp_path / "nonexistent.yaml"
 
         with pytest.raises(FileNotFoundError):
             parse_links_yaml(links_file)
 
-    def test_parse_config_file_not_found(self, tmp_path: Path):
+    def test_parse_config_file_not_found(self, tmp_path: Path) -> None:
         """Test parsing non-existent config.yaml."""
         config_file = tmp_path / "nonexistent.yaml"
 
         with pytest.raises(FileNotFoundError):
             parse_config_yaml(config_file)
 
-    def test_write_creates_parent_directories(self, tmp_path: Path):
+    def test_write_creates_parent_directories(self, tmp_path: Path) -> None:
         """Test that write functions create parent directories."""
         # Test write_item_markdown
         deep_path = tmp_path / "a" / "b" / "c" / "item.md"
@@ -628,7 +628,7 @@ counters:
         write_config_yaml({"test": "value"}, config_path)
         assert config_path.exists()
 
-    def test_special_characters_in_markdown(self, tmp_path: Path):
+    def test_special_characters_in_markdown(self, tmp_path: Path) -> None:
         """Test handling special markdown characters."""
         md_file = tmp_path / "special.md"
 

@@ -11,7 +11,7 @@ from tracertm.repositories.process_repository import ProcessRepository
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_problem_repository_crud(async_db_session):
+async def test_problem_repository_crud(async_db_session) -> None:
     """Test ProblemRepository CRUD operations."""
     # Create a project first
     project = Project(
@@ -65,7 +65,7 @@ async def test_problem_repository_crud(async_db_session):
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_problem_repository_stats(async_db_session):
+async def test_problem_repository_stats(async_db_session) -> None:
     """Test ProblemRepository stats aggregation."""
     project = Project(
         id=str(uuid4()),
@@ -116,7 +116,7 @@ async def test_problem_repository_stats(async_db_session):
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_process_repository_crud(async_db_session):
+async def test_process_repository_crud(async_db_session) -> None:
     """Test ProcessRepository CRUD operations."""
     project = Project(
         id=str(uuid4()),
@@ -175,7 +175,7 @@ async def test_process_repository_crud(async_db_session):
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_process_repository_stats(async_db_session):
+async def test_process_repository_stats(async_db_session) -> None:
     """Test ProcessRepository stats aggregation."""
     project = Project(
         id=str(uuid4()),

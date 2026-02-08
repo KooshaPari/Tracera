@@ -3,17 +3,19 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 from sqlalchemy import delete, select, update
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.workflow_schedule import WorkflowSchedule
 
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
 
 class WorkflowScheduleRepository:
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create_schedule(
@@ -67,7 +69,7 @@ class WorkflowScheduleRepository:
         await self.session.execute(
             update(WorkflowSchedule)
             .where(WorkflowSchedule.schedule_id == schedule_id)
-            .values(last_run_at=last_run_at, updated_at=datetime.now(UTC))
+            .values(last_run_at=last_run_at, updated_at=datetime.now(UTC)),
         )
 
     async def delete_by_schedule_id(self, schedule_id: str) -> int:

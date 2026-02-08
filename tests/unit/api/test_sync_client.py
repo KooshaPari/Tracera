@@ -1,6 +1,4 @@
-"""
-Unit tests for TraceRTM sync API client.
-"""
+"""Unit tests for TraceRTM sync API client."""
 
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, Mock, patch
@@ -199,7 +197,7 @@ class TestUploadResult:
                     "remote_version": 6,
                     "local_data": {},
                     "remote_data": {},
-                }
+                },
             ],
             "server_time": "2024-01-01T12:00:00",
             "errors": [{"entity_id": "item-004", "error": "Invalid data"}],
@@ -324,8 +322,8 @@ class TestApiClient:
                     "remote_version": 2,
                     "local_data": {},
                     "remote_data": {},
-                }
-            ]
+                },
+            ],
         }
 
         error = httpx.HTTPStatusError("Conflict", request=Mock(), response=mock_response)
@@ -354,8 +352,8 @@ class TestApiClient:
                     "data": {"title": "Remote Item"},
                     "version": 1,
                     "timestamp": since.isoformat(),
-                }
-            ]
+                },
+            ],
         }
 
         with patch.object(api_client, "_retry_request", new_callable=AsyncMock) as mock_request:
@@ -509,7 +507,7 @@ class TestFullSync:
                 operation=SyncOperation.UPDATE,
                 data={"title": "Remote Update"},
                 version=2,
-            )
+            ),
         ]
 
         with (

@@ -20,10 +20,9 @@ class TestIntegrationStatsEndpoint:
     """Integration tests for integration stats endpoint."""
 
     async def test_get_integration_stats_empty_project(
-        self, client: AsyncClient, test_project_id: str, auth_headers: dict
-    ):
-        """
-        Test getting integration stats for a project with no integrations.
+        self, client: AsyncClient, test_project_id: str, auth_headers: dict,
+    ) -> None:
+        """Test getting integration stats for a project with no integrations.
 
         GIVEN: A project with no integrations
         WHEN: GET /api/v1/integrations/stats
@@ -53,9 +52,8 @@ class TestIntegrationStatsEndpoint:
         test_project_id: str,
         auth_headers: dict,
         db: AsyncSession,
-    ):
-        """
-        Test getting integration stats with integration data.
+    ) -> None:
+        """Test getting integration stats with integration data.
 
         GIVEN: A project with integrations, mappings, and syncs
         WHEN: GET /api/v1/integrations/stats
@@ -130,9 +128,8 @@ class TestIntegrationStatsEndpoint:
         assert data["sync"]["queue_pending"] >= 1
         assert data["conflicts"]["pending"] >= 1
 
-    async def test_get_integration_stats_unauthorized(self, client: AsyncClient, test_project_id: str):
-        """
-        Test getting integration stats without authentication.
+    async def test_get_integration_stats_unauthorized(self, client: AsyncClient, test_project_id: str) -> None:
+        """Test getting integration stats without authentication.
 
         GIVEN: No authentication headers
         WHEN: GET /api/v1/integrations/stats
@@ -149,9 +146,8 @@ class TestIntegrationStatsEndpoint:
         self,
         client: AsyncClient,
         auth_headers: dict,
-    ):
-        """
-        Test getting integration stats for a project without access.
+    ) -> None:
+        """Test getting integration stats for a project without access.
 
         GIVEN: A project the user doesn't have access to
         WHEN: GET /api/v1/integrations/stats
@@ -165,4 +161,4 @@ class TestIntegrationStatsEndpoint:
 
         # Note: This might return 200 if check_project_access returns True by default
         # Update assertion based on actual access control implementation
-        assert response.status_code in [200, 403]
+        assert response.status_code in {200, 403}

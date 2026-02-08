@@ -11,7 +11,7 @@ from tracertm.repositories.project_repository import ProjectRepository
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_log_event(db_session: AsyncSession):
+async def test_log_event(db_session: AsyncSession) -> None:
     """Test logging an event."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -35,7 +35,7 @@ async def test_log_event(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_entity(db_session: AsyncSession):
+async def test_get_by_entity(db_session: AsyncSession) -> None:
     """Test getting events for an entity."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -64,7 +64,7 @@ async def test_get_by_entity(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project(db_session: AsyncSession):
+async def test_get_by_project(db_session: AsyncSession) -> None:
     """Test getting events for a project."""
     project_repo = ProjectRepository(db_session)
     project1 = await project_repo.create(name="Project 1", description="Test")
@@ -104,7 +104,7 @@ async def test_get_by_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_agent(db_session: AsyncSession):
+async def test_get_by_agent(db_session: AsyncSession) -> None:
     """Test getting events by agent."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -143,7 +143,7 @@ async def test_get_by_agent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_agent_no_events(db_session: AsyncSession):
+async def test_get_by_agent_no_events(db_session: AsyncSession) -> None:
     """Test getting events for agent with no events."""
     event_repo = EventRepository(db_session)
 
@@ -153,7 +153,7 @@ async def test_get_by_agent_no_events(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_log_event_with_all_fields(db_session: AsyncSession):
+async def test_log_event_with_all_fields(db_session: AsyncSession) -> None:
     """Test logging event with all optional fields."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -174,7 +174,7 @@ async def test_log_event_with_all_fields(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_entity_multiple_events(db_session: AsyncSession):
+async def test_get_by_entity_multiple_events(db_session: AsyncSession) -> None:
     """Test getting multiple events for same entity."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -197,7 +197,7 @@ async def test_get_by_entity_multiple_events(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_project_with_limit(db_session: AsyncSession):
+async def test_get_by_project_with_limit(db_session: AsyncSession) -> None:
     """Test getting project events with limit."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -220,7 +220,7 @@ async def test_get_by_project_with_limit(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_event_data_persistence(db_session: AsyncSession):
+async def test_event_data_persistence(db_session: AsyncSession) -> None:
     """Test that event data is persisted correctly."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -249,7 +249,7 @@ async def test_event_data_persistence(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_entity_at_time(db_session: AsyncSession):
+async def test_get_entity_at_time(db_session: AsyncSession) -> None:
     """Test getting entity state at a specific timestamp."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")
@@ -274,7 +274,7 @@ async def test_get_entity_at_time(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_entity_at_time_nonexistent(db_session: AsyncSession):
+async def test_get_entity_at_time_nonexistent(db_session: AsyncSession) -> None:
     """Test getting state for non-existent entity."""
     event_repo = EventRepository(db_session)
 
@@ -284,7 +284,7 @@ async def test_get_entity_at_time_nonexistent(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_entity_at_time_after_deletion(db_session: AsyncSession):
+async def test_get_entity_at_time_after_deletion(db_session: AsyncSession) -> None:
     """Test getting state after entity deletion."""
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name="Test Project", description="Test")

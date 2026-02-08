@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class JiraImportService:
     """Service for importing Jira projects."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.projects = ProjectRepository(session)
         self.items = ItemRepository(session)

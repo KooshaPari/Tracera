@@ -6,7 +6,7 @@ authentication, validation, and error handling.
 """
 
 from datetime import UTC, datetime
-from typing import Any, cast
+from typing import Annotated, Any, cast
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, status
 from pydantic import BaseModel
@@ -393,11 +393,11 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_requirement_spec(
-    project_id: str = Path(..., description="Project ID"),
-    data: RequirementSpecCreate | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    data: Annotated[RequirementSpecCreate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Create a requirement specification for an item.
 
     Args:
@@ -429,11 +429,11 @@ async def create_requirement_spec(
     response_model=RequirementSpecResponse,
 )
 async def get_requirement_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Requirement spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Requirement spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Get a requirement specification by ID.
 
     Args:
@@ -460,11 +460,11 @@ async def get_requirement_spec(
     response_model=RequirementSpecResponse,
 )
 async def get_requirement_spec_by_item(
-    project_id: str = Path(..., description="Project ID"),
-    item_id: str = Path(..., description="Item ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    item_id: Annotated[str, Path(description="Item ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Get a requirement specification by item ID.
 
     Args:
@@ -491,15 +491,15 @@ async def get_requirement_spec_by_item(
     response_model=RequirementSpecListResponse,
 )
 async def list_requirement_specs(
-    project_id: str = Path(..., description="Project ID"),
-    requirement_type: str | None = Query(None, description="Filter by requirement type"),
-    risk_level: str | None = Query(None, description="Filter by risk level"),
-    verification_status: str | None = Query(None, description="Filter by verification status"),
-    limit: int = Query(100, ge=1, le=500, description="Result limit"),
-    offset: int = Query(0, ge=0, description="Result offset"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    requirement_type: Annotated[str | None, Query(description="Filter by requirement type")] = None,
+    risk_level: Annotated[str | None, Query(description="Filter by risk level")] = None,
+    verification_status: Annotated[str | None, Query(description="Filter by verification status")] = None,
+    limit: Annotated[int, Query(ge=1, le=500, description="Result limit")] = 100,
+    offset: Annotated[int, Query(ge=0, description="Result offset")] = 0,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """List requirement specifications for a project.
 
     Args:
@@ -530,12 +530,12 @@ async def list_requirement_specs(
     response_model=RequirementSpecResponse,
 )
 async def update_requirement_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Requirement spec ID"),
-    data: RequirementSpecUpdate | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Requirement spec ID")],
+    data: Annotated[RequirementSpecUpdate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Update a requirement specification.
 
     Args:
@@ -568,11 +568,11 @@ async def update_requirement_spec(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_requirement_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Requirement spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Requirement spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Delete a requirement specification.
 
     Args:
@@ -596,11 +596,11 @@ async def delete_requirement_spec(
     response_model=RequirementSpecResponse,
 )
 async def analyze_requirement_quality(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Requirement spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Requirement spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Re-analyze quality for a requirement specification.
 
     Performs comprehensive quality analysis including:
@@ -633,11 +633,11 @@ async def analyze_requirement_quality(
     response_model=RequirementSpecResponse,
 )
 async def analyze_requirement_impact(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Requirement spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Requirement spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Analyze impact for a requirement specification.
 
     Analyzes:
@@ -670,17 +670,14 @@ async def analyze_requirement_impact(
     response_model=RequirementSpecResponse,
 )
 async def verify_requirement(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Requirement spec ID"),
-    evidence_type: str = Query(
-        ...,
-        description="Type of evidence (test_result, code_review, demo, documentation)",
-    ),
-    evidence_reference: str = Query(..., description="Reference to the evidence"),
-    description: str = Query(..., description="Verification description"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Requirement spec ID")],
+    evidence_type: Annotated[str, Query(description="Type of evidence (test_result, code_review, demo, documentation)")],
+    evidence_reference: Annotated[str, Query(description="Reference to the evidence")],
+    description: Annotated[str, Query(description="Verification description")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Mark a requirement as verified.
 
     Records verification evidence and updates verification status.
@@ -712,11 +709,11 @@ async def verify_requirement(
     response_model=RequirementSpecListResponse,
 )
 async def get_unverified_requirements(
-    project_id: str = Path(..., description="Project ID"),
-    limit: int = Query(100, ge=1, le=500, description="Result limit"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    limit: Annotated[int, Query(ge=1, le=500, description="Result limit")] = 100,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Get unverified requirements for a project.
 
     Args:
@@ -743,11 +740,11 @@ async def get_unverified_requirements(
     response_model=RequirementSpecListResponse,
 )
 async def get_high_risk_requirements(
-    project_id: str = Path(..., description="Project ID"),
-    limit: int = Query(100, ge=1, le=500, description="Result limit"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    limit: Annotated[int, Query(ge=1, le=500, description="Result limit")] = 100,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Get high/critical risk requirements for a project.
 
     Args:
@@ -780,11 +777,11 @@ async def get_high_risk_requirements(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_test_spec(
-    project_id: str = Path(..., description="Project ID"),
-    data: TestSpecCreate | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    data: Annotated[TestSpecCreate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Create a test specification for an item.
 
     Args:
@@ -816,11 +813,11 @@ async def create_test_spec(
     response_model=TestSpecResponse,
 )
 async def get_test_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Test spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Test spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Get a test specification by ID.
 
     Args:
@@ -847,11 +844,11 @@ async def get_test_spec(
     response_model=TestSpecResponse,
 )
 async def get_test_spec_by_item(
-    project_id: str = Path(..., description="Project ID"),
-    item_id: str = Path(..., description="Item ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    item_id: Annotated[str, Path(description="Item ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Get a test specification by item ID.
 
     Args:
@@ -878,14 +875,14 @@ async def get_test_spec_by_item(
     response_model=TestSpecListResponse,
 )
 async def list_test_specs(
-    project_id: str = Path(..., description="Project ID"),
-    test_type: str | None = Query(None, description="Filter by test type"),
-    is_quarantined: bool | None = Query(None, description="Filter by quarantine status"),
-    limit: int = Query(100, ge=1, le=500, description="Result limit"),
-    offset: int = Query(0, ge=0, description="Result offset"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    test_type: Annotated[str | None, Query(description="Filter by test type")] = None,
+    is_quarantined: Annotated[bool | None, Query(description="Filter by quarantine status")] = None,
+    limit: Annotated[int, Query(ge=1, le=500, description="Result limit")] = 100,
+    offset: Annotated[int, Query(ge=0, description="Result offset")] = 0,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """List test specifications for a project.
 
     Args:
@@ -915,12 +912,12 @@ async def list_test_specs(
     response_model=TestSpecResponse,
 )
 async def update_test_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Test spec ID"),
-    data: TestSpecUpdate | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Test spec ID")],
+    data: Annotated[TestSpecUpdate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Update a test specification.
 
     Args:
@@ -953,11 +950,11 @@ async def update_test_spec(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_test_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Test spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Test spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Delete a test specification.
 
     Args:
@@ -981,15 +978,15 @@ async def delete_test_spec(
     response_model=TestSpecResponse,
 )
 async def record_test_run(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Test spec ID"),
-    status: str = Query(..., pattern="^(passed|failed|skipped|blocked|flaky|timeout|error)$"),
-    duration_ms: int = Query(..., ge=0, description="Test duration in milliseconds"),
-    error_message: str | None = Query(None, description="Error message if test failed"),
-    environment: str | None = Query(None, description="Test environment"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Test spec ID")],
+    status: Annotated[str, Query(pattern="^(passed|failed|skipped|blocked|flaky|timeout|error)$")],
+    duration_ms: Annotated[int, Query(ge=0, description="Test duration in milliseconds")],
+    error_message: Annotated[str | None, Query(description="Error message if test failed")] = None,
+    environment: Annotated[str | None, Query(description="Test environment")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Record a test run and update metrics.
 
     Updates test metrics including:
@@ -1026,12 +1023,12 @@ async def record_test_run(
     response_model=TestSpecResponse,
 )
 async def quarantine_test(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Test spec ID"),
-    reason: str = Query(..., description="Reason for quarantine"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Test spec ID")],
+    reason: Annotated[str, Query(description="Reason for quarantine")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Quarantine a flaky test.
 
     Marks a test as quarantined to exclude it from CI/CD pipeline
@@ -1062,11 +1059,11 @@ async def quarantine_test(
     response_model=TestSpecResponse,
 )
 async def unquarantine_test(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Test spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Test spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Remove test from quarantine.
 
     Re-enables a previously quarantined test for CI/CD pipeline.
@@ -1095,12 +1092,12 @@ async def unquarantine_test(
     response_model=TestSpecListResponse,
 )
 async def get_flaky_tests(
-    project_id: str = Path(..., description="Project ID"),
-    threshold: float = Query(0.2, ge=0, le=1, description="Flakiness threshold"),
-    limit: int = Query(50, ge=1, le=200, description="Result limit"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    threshold: Annotated[float, Query(ge=0, le=1, description="Flakiness threshold")] = 0.2,
+    limit: Annotated[int, Query(ge=1, le=200, description="Result limit")] = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Get flaky tests above threshold.
 
     Returns tests with flakiness score above the specified threshold.
@@ -1130,10 +1127,10 @@ async def get_flaky_tests(
     response_model=TestHealthStats,
 )
 async def get_test_health_report(
-    project_id: str = Path(..., description="Project ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Get test health report for a project.
 
     Returns comprehensive test metrics including:
@@ -1171,11 +1168,11 @@ async def get_test_health_report(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_epic_spec(
-    project_id: str = Path(..., description="Project ID"),
-    data: EpicSpecCreate | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    data: Annotated[EpicSpecCreate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Create an epic specification for an item.
 
     Args:
@@ -1207,11 +1204,11 @@ async def create_epic_spec(
     response_model=EpicSpecResponse,
 )
 async def get_epic_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Epic spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Epic spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Get an epic specification by ID.
 
     Args:
@@ -1238,13 +1235,13 @@ async def get_epic_spec(
     response_model=EpicSpecListResponse,
 )
 async def list_epic_specs(
-    project_id: str = Path(..., description="Project ID"),
-    business_value: str | None = Query(None, description="Filter by business value"),
-    limit: int = Query(100, ge=1, le=500, description="Result limit"),
-    offset: int = Query(0, ge=0, description="Result offset"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    business_value: Annotated[str | None, Query(description="Filter by business value")] = None,
+    limit: Annotated[int, Query(ge=1, le=500, description="Result limit")] = 100,
+    offset: Annotated[int, Query(ge=0, description="Result offset")] = 0,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """List epic specifications for a project.
 
     Args:
@@ -1273,12 +1270,12 @@ async def list_epic_specs(
     response_model=EpicSpecResponse,
 )
 async def update_epic_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Epic spec ID"),
-    data: EpicSpecUpdate | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Epic spec ID")],
+    data: Annotated[EpicSpecUpdate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Update an epic specification.
 
     Args:
@@ -1311,11 +1308,11 @@ async def update_epic_spec(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_epic_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Epic spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Epic spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Delete an epic specification.
 
     Args:
@@ -1345,11 +1342,11 @@ async def delete_epic_spec(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_user_story_spec(
-    project_id: str = Path(..., description="Project ID"),
-    data: UserStorySpecCreate | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    data: Annotated[UserStorySpecCreate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Create a user story specification for an item.
 
     Args:
@@ -1381,11 +1378,11 @@ async def create_user_story_spec(
     response_model=UserStorySpecResponse,
 )
 async def get_user_story_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="User story spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="User story spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Get a user story specification by ID.
 
     Args:
@@ -1412,13 +1409,13 @@ async def get_user_story_spec(
     response_model=UserStorySpecListResponse,
 )
 async def list_user_story_specs(
-    project_id: str = Path(..., description="Project ID"),
-    priority: str | None = Query(None, description="Filter by priority"),
-    limit: int = Query(100, ge=1, le=500, description="Result limit"),
-    offset: int = Query(0, ge=0, description="Result offset"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    priority: Annotated[str | None, Query(description="Filter by priority")] = None,
+    limit: Annotated[int, Query(ge=1, le=500, description="Result limit")] = 100,
+    offset: Annotated[int, Query(ge=0, description="Result offset")] = 0,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """List user story specifications for a project.
 
     Args:
@@ -1447,12 +1444,12 @@ async def list_user_story_specs(
     response_model=UserStorySpecResponse,
 )
 async def update_user_story_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="User story spec ID"),
-    data: UserStorySpecUpdate | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="User story spec ID")],
+    data: Annotated[UserStorySpecUpdate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Update a user story specification.
 
     Args:
@@ -1485,11 +1482,11 @@ async def update_user_story_spec(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_user_story_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="User story spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="User story spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Delete a user story specification.
 
     Args:
@@ -1519,11 +1516,11 @@ async def delete_user_story_spec(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_task_spec(
-    project_id: str = Path(..., description="Project ID"),
-    data: TaskSpecCreate | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    data: Annotated[TaskSpecCreate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Create a task specification for an item.
 
     Args:
@@ -1555,11 +1552,11 @@ async def create_task_spec(
     response_model=TaskSpecResponse,
 )
 async def get_task_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Task spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Task spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Get a task specification by ID.
 
     Args:
@@ -1586,13 +1583,13 @@ async def get_task_spec(
     response_model=TaskSpecListResponse,
 )
 async def list_task_specs(
-    project_id: str = Path(..., description="Project ID"),
-    assigned_to: str | None = Query(None, description="Filter by assignee"),
-    limit: int = Query(100, ge=1, le=500, description="Result limit"),
-    offset: int = Query(0, ge=0, description="Result offset"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    assigned_to: Annotated[str | None, Query(description="Filter by assignee")] = None,
+    limit: Annotated[int, Query(ge=1, le=500, description="Result limit")] = 100,
+    offset: Annotated[int, Query(ge=0, description="Result offset")] = 0,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """List task specifications for a project.
 
     Args:
@@ -1621,12 +1618,12 @@ async def list_task_specs(
     response_model=TaskSpecResponse,
 )
 async def update_task_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Task spec ID"),
-    data: TaskSpecUpdate | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Task spec ID")],
+    data: Annotated[TaskSpecUpdate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Update a task specification.
 
     Args:
@@ -1659,11 +1656,11 @@ async def update_task_spec(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_task_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Task spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Task spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Delete a task specification.
 
     Args:
@@ -1693,11 +1690,11 @@ async def delete_task_spec(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_defect_spec(
-    project_id: str = Path(..., description="Project ID"),
-    data: DefectSpecCreate | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    data: Annotated[DefectSpecCreate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Create a defect specification for an item.
 
     Args:
@@ -1729,11 +1726,11 @@ async def create_defect_spec(
     response_model=DefectSpecResponse,
 )
 async def get_defect_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Defect spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Defect spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Get a defect specification by ID.
 
     Args:
@@ -1760,14 +1757,14 @@ async def get_defect_spec(
     response_model=DefectSpecListResponse,
 )
 async def list_defect_specs(
-    project_id: str = Path(..., description="Project ID"),
-    severity: str | None = Query(None, description="Filter by severity"),
-    resolution_status: str | None = Query(None, description="Filter by resolution status"),
-    limit: int = Query(100, ge=1, le=500, description="Result limit"),
-    offset: int = Query(0, ge=0, description="Result offset"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    severity: Annotated[str | None, Query(description="Filter by severity")] = None,
+    resolution_status: Annotated[str | None, Query(description="Filter by resolution status")] = None,
+    limit: Annotated[int, Query(ge=1, le=500, description="Result limit")] = 100,
+    offset: Annotated[int, Query(ge=0, description="Result offset")] = 0,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """List defect specifications for a project.
 
     Args:
@@ -1797,12 +1794,12 @@ async def list_defect_specs(
     response_model=DefectSpecResponse,
 )
 async def update_defect_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Defect spec ID"),
-    data: DefectSpecUpdate | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Defect spec ID")],
+    data: Annotated[DefectSpecUpdate | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Update a defect specification.
 
     Args:
@@ -1835,11 +1832,11 @@ async def update_defect_spec(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_defect_spec(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Defect spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Defect spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Delete a defect specification.
 
     Args:
@@ -1863,11 +1860,11 @@ async def delete_defect_spec(
     response_model=DefectSpecListResponse,
 )
 async def get_critical_defects(
-    project_id: str = Path(..., description="Project ID"),
-    limit: int = Query(50, ge=1, le=200, description="Result limit"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    limit: Annotated[int, Query(ge=1, le=200, description="Result limit")] = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> None:
     """Get critical/blocker defects for a project.
 
     Args:
@@ -1899,10 +1896,10 @@ async def get_critical_defects(
     response_model=ItemSpecStats,
 )
 async def get_item_spec_stats(
-    project_id: str = Path(..., description="Project ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Get aggregate statistics across all item spec types.
 
     Returns comprehensive metrics including:
@@ -1934,10 +1931,10 @@ async def get_item_spec_stats(
     response_model=RequirementQualityStats,
 )
 async def get_requirement_quality_stats(
-    project_id: str = Path(..., description="Project ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Get requirement quality statistics for a project.
 
     Args:
@@ -1963,10 +1960,10 @@ async def get_requirement_quality_stats(
     response_model=TestHealthStats,
 )
 async def get_test_health_stats(
-    project_id: str = Path(..., description="Project ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Get test health statistics for a project.
 
     Args:
@@ -1992,10 +1989,10 @@ async def get_test_health_stats(
     response_model=DefectMetrics,
 )
 async def get_defect_metrics(
-    project_id: str = Path(..., description="Project ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
-):
+    project_id: Annotated[str, Path(description="Project ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
     """Get defect metrics for a project.
 
     Args:
@@ -2021,6 +2018,8 @@ async def get_defect_metrics(
 # =============================================================================
 
 # Late imports for analytics (avoid circular imports)
+import operator
+
 from tracertm.repositories import (  # noqa: E402
     BaselineRepository,
     SpecEmbeddingRepository,
@@ -2077,9 +2076,9 @@ embedding_repo = SpecEmbeddingRepository()
     response_model=EARSAnalysisResponse,
 )
 async def analyze_ears_pattern(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Requirement spec ID"),
-    request: AnalyzeEARSRequest | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Requirement spec ID")],
+    request: Annotated[AnalyzeEARSRequest | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -2114,7 +2113,7 @@ async def analyze_ears_pattern(
             raise HTTPException(status_code=400, detail="Requirement content is required for EARS analysis")
 
         # Call the analytics service (cast for checker: we've raised if falsy)
-        result = spec_analytics_service.analyze_requirement(cast(str, requirement_text))
+        result = spec_analytics_service.analyze_requirement(cast("str", requirement_text))
         ears_analysis = result.get("ears_analysis", {})
 
         raw_pattern = ears_analysis.get("pattern_type", "complex")
@@ -2161,9 +2160,9 @@ async def analyze_ears_pattern(
     response_model=QualityScoreResponse,
 )
 async def analyze_quality_dimensions(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Requirement spec ID"),
-    request: AnalyzeQualityRequest | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Requirement spec ID")],
+    request: Annotated[AnalyzeQualityRequest | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -2199,7 +2198,7 @@ async def analyze_quality_dimensions(
             raise HTTPException(status_code=400, detail="Requirement content is required for quality analysis")
 
         # Call the analytics service (cast for checker: we've raised if falsy)
-        result = spec_analytics_service.analyze_requirement(cast(str, requirement_text))
+        result = spec_analytics_service.analyze_requirement(cast("str", requirement_text))
         quality_analysis = result.get("quality_analysis", {})
 
         raw_grade = quality_analysis.get("grade", "F")
@@ -2215,7 +2214,7 @@ async def analyze_quality_dimensions(
             critical_issues_count=int(quality_analysis.get("critical_issues_count", 0)),
             warning_issues_count=int(quality_analysis.get("warning_issues_count", 0)),
             top_improvement_areas=quality_analysis.get(
-                "improvement_priority", quality_analysis.get("top_improvement_areas", [])
+                "improvement_priority", quality_analysis.get("top_improvement_areas", []),
             )
             or [],
             analyzed_at=datetime.now(UTC),
@@ -2233,14 +2232,10 @@ async def analyze_quality_dimensions(
     response_model=VersionChainResponse,
 )
 async def get_version_chain(
-    project_id: str = Path(..., description="Project ID"),
-    spec_type: str = Path(
-        ...,
-        pattern="^(requirements|tests|epics|stories|tasks|defects)$",
-        description="Spec type",
-    ),
-    spec_id: str = Path(..., description="Spec ID"),
-    limit: int = Query(50, ge=1, le=200, description="Max chain entries"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_type: Annotated[str, Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type")],
+    spec_id: Annotated[str, Path(description="Spec ID")],
+    limit: Annotated[int, Query(ge=1, le=200, description="Max chain entries")] = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -2301,16 +2296,12 @@ async def get_version_chain(
     response_model=MerkleProofResponse,
 )
 async def verify_baseline(
-    project_id: str = Path(..., description="Project ID"),
-    spec_type: str = Path(
-        ...,
-        pattern="^(requirements|tests|epics|stories|tasks|defects)$",
-        description="Spec type",
-    ),
-    spec_id: str = Path(..., description="Spec ID"),
-    baseline_root: str = Query(..., description="Merkle root to verify against"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_type: Annotated[str, Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type")],
+    spec_id: Annotated[str, Path(description="Spec ID")],
+    baseline_root: Annotated[str, Query(description="Merkle root to verify against")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Verify spec against a baseline using Merkle proof.
 
@@ -2389,16 +2380,10 @@ async def verify_baseline(
     response_model=MerkleProofResponse,
 )
 async def get_merkle_proof(
-    project_id: str = Path(..., description="Project ID"),
-    spec_type: str = Path(
-        ...,
-        pattern="^(requirements|tests|epics|stories|tasks|defects)$",
-        description="Spec type",
-    ),
-    spec_id: str = Path(..., description="Spec ID"),
-    baseline_id: str = Query(
-        None, description="Baseline ID to get proof from (optional, uses latest if not specified)"
-    ),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_type: Annotated[str, Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type")],
+    spec_id: Annotated[str, Path(description="Spec ID")],
+    baseline_id: Annotated[str | None, Query(description="Baseline ID to get proof from (optional, uses latest if not specified)")] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -2477,15 +2462,11 @@ async def get_merkle_proof(
     response_model=ContentAddressResponse,
 )
 async def get_content_address(
-    project_id: str = Path(..., description="Project ID"),
-    spec_type: str = Path(
-        ...,
-        pattern="^(requirements|tests|epics|stories|tasks|defects)$",
-        description="Spec type",
-    ),
-    spec_id: str = Path(..., description="Spec ID"),
-    claims: dict[str, Any] = Depends(auth_guard),
-    db: AsyncSession = Depends(get_db),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_type: Annotated[str, Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type")],
+    spec_id: Annotated[str, Path(description="Spec ID")],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Get IPFS-style content addressing information.
 
@@ -2531,9 +2512,9 @@ async def get_content_address(
     response_model=FlakinessAnalysisResponse,
 )
 async def analyze_flakiness(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Test spec ID"),
-    request: AnalyzeFlakinessRequest | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Test spec ID")],
+    request: Annotated[AnalyzeFlakinessRequest | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -2572,7 +2553,7 @@ async def analyze_flakiness(
         run_history_list: list[dict[str, Any]] = run_history
         window_size_int: int = window_size
         analysis = spec_analytics_service.analyze_test_flakiness(
-            run_history=run_history_list, window_size=window_size_int
+            run_history=run_history_list, window_size=window_size_int,
         )
 
         # Map to API schema: spec_id, probability, entropy, quarantine_recommended, analyzed_at, etc.
@@ -2601,9 +2582,9 @@ async def analyze_flakiness(
     response_model=ODCClassificationResponse,
 )
 async def analyze_odc_classification(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Defect spec ID"),
-    request: AnalyzeODCRequest | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Defect spec ID")],
+    request: Annotated[AnalyzeODCRequest | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -2644,8 +2625,8 @@ async def analyze_odc_classification(
         # Call the analytics service (explicit types for checker)
         classification = spec_analytics_service.classify_defect(
             description=description,
-            trigger_context=cast(str | None, trigger_context),
-            impact_description=cast(str | None, impact_description),
+            trigger_context=cast("str | None", trigger_context),
+            impact_description=cast("str | None", impact_description),
         )
 
         return ODCClassificationResponse(
@@ -2672,9 +2653,9 @@ async def analyze_odc_classification(
     response_model=CVSSScoreResponse,
 )
 async def analyze_cvss_score(
-    project_id: str = Path(..., description="Project ID"),
-    spec_id: str = Path(..., description="Defect spec ID"),
-    request: AnalyzeCVSSRequest | None = Body(None),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_id: Annotated[str, Path(description="Defect spec ID")],
+    request: Annotated[AnalyzeCVSSRequest | None, Body()] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -2734,13 +2715,9 @@ async def analyze_cvss_score(
     response_model=ImpactAnalysisResponse,
 )
 async def analyze_impact(
-    project_id: str = Path(..., description="Project ID"),
-    spec_type: str = Path(
-        ...,
-        pattern="^(requirements|tests|epics|stories|tasks|defects)$",
-        description="Spec type",
-    ),
-    spec_id: str = Path(..., description="Spec ID"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_type: Annotated[str, Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type")],
+    spec_id: Annotated[str, Path(description="Spec ID")],
     request: AnalyzeImpactRequest | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
@@ -2769,18 +2746,18 @@ async def analyze_impact(
 
         if request:
             if hasattr(request, "adjacency"):
-                adjacency = cast(dict[str, list[str]], request.adjacency or {})
+                adjacency = cast("dict[str, list[str]]", request.adjacency or {})
             if hasattr(request, "item_metadata"):
                 raw = request.item_metadata
-                item_metadata = cast(dict[str, dict[str, Any]] | None, raw if isinstance(raw, dict) else None)
+                item_metadata = cast("dict[str, dict[str, Any]] | None", raw if isinstance(raw, dict) else None)
             if hasattr(request, "max_depth"):
                 max_depth = request.max_depth or 5
 
         # Call the analytics service (explicit types for checker)
         result = spec_analytics_service.analyze_change_impact(
             source_item_id=spec_id,
-            adjacency=cast(dict[str, list[str]], adjacency),
-            item_metadata=cast(dict[str, dict[str, Any]] | None, item_metadata),
+            adjacency=cast("dict[str, list[str]]", adjacency),
+            item_metadata=cast("dict[str, dict[str, Any]] | None", item_metadata),
             max_depth=max_depth,
         )
 
@@ -2829,13 +2806,9 @@ async def analyze_impact(
     response_model=PrioritizationResponse,
 )
 async def calculate_prioritization(
-    project_id: str = Path(..., description="Project ID"),
-    spec_type: str = Path(
-        ...,
-        pattern="^(requirements|epics|stories|tasks)$",
-        description="Spec type",
-    ),
-    spec_id: str = Path(..., description="Spec ID"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_type: Annotated[str, Path(pattern="^(requirements|epics|stories|tasks)$", description="Spec type")],
+    spec_id: Annotated[str, Path(description="Spec ID")],
     request: CalculatePrioritizationRequest | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
@@ -2924,7 +2897,7 @@ async def calculate_prioritization(
     response_model=CoverageGapAnalysisResponse,
 )
 async def analyze_coverage_gaps(
-    project_id: str = Path(..., description="Project ID"),
+    project_id: Annotated[str, Path(description="Project ID")],
     request: AnalyzeCoverageGapsRequest | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
@@ -2970,7 +2943,7 @@ async def analyze_coverage_gaps(
             requirements=requirements,
             tests=tests,
             trace_links=trace_links,
-            safety_level=cast(ServiceSafetyLevel | None, safety),
+            safety_level=cast("ServiceSafetyLevel | None", safety),
         )
 
         # Convert service gaps to schema CoverageGap
@@ -3005,7 +2978,7 @@ async def analyze_coverage_gaps(
     response_model=SuspectLinkAnalysisResponse,
 )
 async def analyze_suspect_links(
-    project_id: str = Path(..., description="Project ID"),
+    project_id: Annotated[str, Path(description="Project ID")],
     request: AnalyzeSuspectLinksRequest | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
@@ -3038,11 +3011,11 @@ async def analyze_suspect_links(
             if hasattr(request, "recent_changes"):
                 recent_changes = request.recent_changes or []
 
-        links_typed = cast(list[dict[str, Any]], links)
-        versions_typed = cast(dict[str, int], item_versions)
-        changes_typed = cast(list[dict[str, Any]], recent_changes)
+        links_typed = cast("list[dict[str, Any]]", links)
+        versions_typed = cast("dict[str, int]", item_versions)
+        changes_typed = cast("list[dict[str, Any]]", recent_changes)
         suspect_links = spec_analytics_service.detect_suspect_links(
-            links=links_typed, item_versions=versions_typed, recent_changes=changes_typed
+            links=links_typed, item_versions=versions_typed, recent_changes=changes_typed,
         )
 
         # Convert to schema SuspectLink
@@ -3075,13 +3048,9 @@ async def analyze_suspect_links(
     response_model=SimilarityAnalysisResponse,
 )
 async def analyze_similarity(
-    project_id: str = Path(..., description="Project ID"),
-    spec_type: str = Path(
-        ...,
-        pattern="^(requirements|tests|epics|stories|tasks|defects)$",
-        description="Spec type",
-    ),
-    spec_id: str = Path(..., description="Spec ID"),
+    project_id: Annotated[str, Path(description="Project ID")],
+    spec_type: Annotated[str, Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type")],
+    spec_id: Annotated[str, Path(description="Spec ID")],
     request: AnalyzeSimilarityRequest | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
@@ -3131,7 +3100,7 @@ async def analyze_similarity(
 
         # Get all embeddings for the project
         all_embeddings = await embedding_repo.get_embeddings_for_project(
-            db, project_id, embedding_model_name, search_spec_type
+            db, project_id, embedding_model_name, search_spec_type,
         )
 
         if len(all_embeddings) <= 1:
@@ -3182,7 +3151,7 @@ async def analyze_similarity(
                         potential_duplicates.append(item)
 
             # Sort by similarity score descending
-            similar_items.sort(key=lambda x: x["similarity_score"], reverse=True)
+            similar_items.sort(key=operator.itemgetter("similarity_score"), reverse=True)
             similar_items = similar_items[:max_results]
 
         except ImportError:

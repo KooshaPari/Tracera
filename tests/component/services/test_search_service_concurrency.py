@@ -1,5 +1,4 @@
-"""
-Comprehensive concurrency and filtering tests for search_service.
+"""Comprehensive concurrency and filtering tests for search_service.
 
 This module tests:
 - Concurrent index updates
@@ -38,7 +37,7 @@ class TestSearchServiceConcurrency:
         """Create service instance."""
         return SearchService(mock_session)
 
-    async def test_concurrent_index_updates(self, service):
+    async def test_concurrent_index_updates(self, service) -> None:
         """Test concurrent index updates."""
         # Simulate 10 concurrent updates
         tasks = [service.search(f"update_{i}", {"action": "index"}) for i in range(10)]
@@ -48,14 +47,14 @@ class TestSearchServiceConcurrency:
         assert len(results) == 10
         assert all(isinstance(r, list) for r in results)
 
-    async def test_search_index_corruption_recovery(self, service):
+    async def test_search_index_corruption_recovery(self, service) -> None:
         """Test recovery from corrupted search index."""
         # Simulate corrupted index search
         result = await service.search("corrupted_query", {"corrupted": True})
         assert isinstance(result, list)
         # In real implementation, would verify index is rebuilt/recovered
 
-    async def test_search_with_large_result_set(self, service):
+    async def test_search_with_large_result_set(self, service) -> None:
         """Test search returning large result set."""
         import time
 
@@ -68,7 +67,7 @@ class TestSearchServiceConcurrency:
         assert duration < 2.0, f"Search took {duration}s, expected < 2s"
         assert isinstance(result, list)
 
-    async def test_concurrent_search_and_index(self, service):
+    async def test_concurrent_search_and_index(self, service) -> None:
         """Test concurrent search while indexing."""
         # Mix search and index operations
         search_tasks = [service.search(f"query_{i}", {}) for i in range(5)]
@@ -81,7 +80,7 @@ class TestSearchServiceConcurrency:
         assert len(results) == 10
         assert all(isinstance(r, list) for r in results)
 
-    async def test_concurrent_search_same_query(self, service):
+    async def test_concurrent_search_same_query(self, service) -> None:
         """Test multiple concurrent searches for same query."""
         # Execute same query 20 times concurrently
         tasks = [service.search("same_query", {}) for _ in range(20)]
@@ -91,7 +90,7 @@ class TestSearchServiceConcurrency:
         # All results should be identical
         assert all(r == results[0] for r in results)
 
-    async def test_high_frequency_searches(self, service):
+    async def test_high_frequency_searches(self, service) -> None:
         """Test rapid successive searches."""
         import time
 
@@ -113,7 +112,7 @@ class TestSearchServiceFiltering:
         """Create service instance."""
         return SearchService(AsyncMock())
 
-    async def test_search_filter_special_characters(self, service):
+    async def test_search_filter_special_characters(self, service) -> None:
         """Test search with special character filters."""
         special_queries = [
             ("test@example.com", {}),
@@ -132,7 +131,7 @@ class TestSearchServiceFiltering:
             result = await service.search(query, filters)
             assert isinstance(result, list)
 
-    async def test_search_filter_regex_patterns(self, service):
+    async def test_search_filter_regex_patterns(self, service) -> None:
         """Test search with regex-like patterns."""
         regex_patterns = [
             ("^start", {}),
@@ -146,7 +145,7 @@ class TestSearchServiceFiltering:
             result = await service.search(query, filters)
             assert isinstance(result, list)
 
-    async def test_search_filter_performance(self, service):
+    async def test_search_filter_performance(self, service) -> None:
         """Test search filter performance on large dataset."""
         import time
 
@@ -166,7 +165,7 @@ class TestSearchServiceFiltering:
         assert duration < 1.0, f"Filtered search took {duration}s, expected < 1s"
         assert isinstance(result, list)
 
-    async def test_search_filter_unicode(self, service):
+    async def test_search_filter_unicode(self, service) -> None:
         """Test search with unicode characters."""
         unicode_queries = [
             ("测试", {}),
@@ -180,7 +179,7 @@ class TestSearchServiceFiltering:
             result = await service.search(query, filters)
             assert isinstance(result, list)
 
-    async def test_search_empty_and_none(self, service):
+    async def test_search_empty_and_none(self, service) -> None:
         """Test search with empty and None values."""
         test_cases = [
             (None, None),
@@ -195,7 +194,7 @@ class TestSearchServiceFiltering:
             result = await service.search(query, filters)
             assert isinstance(result, list)
 
-    async def test_search_filter_combinations(self, service):
+    async def test_search_filter_combinations(self, service) -> None:
         """Test various filter combinations."""
         filter_combinations = [
             {"a": 1},
@@ -214,7 +213,7 @@ class TestSearchServiceFiltering:
 class TestSearchServiceErrorHandling:
     """Test error handling in search service."""
 
-    async def test_search_with_database_error(self):
+    async def test_search_with_database_error(self) -> None:
         """Test search with database error."""
         mock_session = AsyncMock()
         mock_session.execute.side_effect = Exception("Database error")
@@ -225,7 +224,7 @@ class TestSearchServiceErrorHandling:
         result = await service.search("test", {})
         assert isinstance(result, list)
 
-    async def test_search_with_invalid_filters(self):
+    async def test_search_with_invalid_filters(self) -> None:
         """Test search with invalid filter types."""
         service = SearchService(AsyncMock())
 
@@ -239,13 +238,13 @@ class TestSearchServiceErrorHandling:
             result = await service.search("test", filters)
             assert isinstance(result, list)
 
-    async def test_search_service_initialization_without_session(self):
+    async def test_search_service_initialization_without_session(self) -> None:
         """Test service initialization without session."""
         service = SearchService(None)
         assert service is not None
         assert service.db_session is None
 
-    async def test_search_timeout_handling(self):
+    async def test_search_timeout_handling(self) -> None:
         """Test search with timeout."""
         service = SearchService(AsyncMock())
 
@@ -265,7 +264,7 @@ class TestSearchServicePerformance:
         """Create service instance."""
         return SearchService(AsyncMock())
 
-    async def test_search_response_time(self, service):
+    async def test_search_response_time(self, service) -> None:
         """Test search response time for typical queries."""
         import time
 
@@ -281,7 +280,7 @@ class TestSearchServicePerformance:
             duration = time.time() - start
             assert duration < 0.5, f"Query took {duration}s, expected < 0.5s"
 
-    async def test_search_memory_efficiency(self, service):
+    async def test_search_memory_efficiency(self, service) -> None:
         """Test search doesn't accumulate memory."""
         # Run many searches
         for i in range(1000):
@@ -289,7 +288,7 @@ class TestSearchServicePerformance:
 
         # Test completes without memory issues
 
-    async def test_search_cache_behavior(self, service):
+    async def test_search_cache_behavior(self, service) -> None:
         """Test search caching behavior."""
         # Search same query multiple times
         query = "cached_query"
@@ -303,7 +302,7 @@ class TestSearchServicePerformance:
         # All results should be consistent
         assert all(r == results[0] for r in results)
 
-    async def test_multiple_service_instances(self):
+    async def test_multiple_service_instances(self) -> None:
         """Test multiple service instances work independently."""
         services = [SearchService(AsyncMock()) for _ in range(10)]
 
@@ -313,7 +312,7 @@ class TestSearchServicePerformance:
         assert len(results) == 10
         assert all(isinstance(r, list) for r in results)
 
-    async def test_service_reuse_stability(self):
+    async def test_service_reuse_stability(self) -> None:
         """Test service remains stable with repeated use."""
         service = SearchService(AsyncMock())
 

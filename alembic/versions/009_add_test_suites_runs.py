@@ -1,4 +1,4 @@
-"""Add test suites and test runs for Phase 2 QE
+"""Add test suites and test runs for Phase 2 QE.
 
 Revision ID: 009_add_test_suites_runs
 Revises: 008_add_test_cases

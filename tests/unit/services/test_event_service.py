@@ -45,13 +45,13 @@ def test_data():
 class TestEventServiceInitialization:
     """Test EventService initialization."""
 
-    def test_event_service_creates_with_session(self, mock_session):
+    def test_event_service_creates_with_session(self, mock_session) -> None:
         """EventService initializes with async session."""
         service = EventService(mock_session)
         assert service.session == mock_session
         assert service.events is not None
 
-    def test_event_service_has_event_repository(self, mock_session):
+    def test_event_service_has_event_repository(self, mock_session) -> None:
         """EventService creates EventRepository instance."""
         service = EventService(mock_session)
         assert hasattr(service, "events")
@@ -61,7 +61,7 @@ class TestEventServiceLogEvent:
     """Test EventService.log_event method."""
 
     @pytest.mark.asyncio
-    async def test_log_event_with_item_id(self, event_service, test_data):
+    async def test_log_event_with_item_id(self, event_service, test_data) -> None:
         """log_event creates event with item_id."""
         mock_event = Event(
             project_id=test_data["project_id"],
@@ -90,7 +90,7 @@ class TestEventServiceLogEvent:
         assert call_kwargs["entity_type"] == "item"
 
     @pytest.mark.asyncio
-    async def test_log_event_without_item_id(self, event_service, test_data):
+    async def test_log_event_without_item_id(self, event_service, test_data) -> None:
         """log_event creates project event when no item_id."""
         mock_event = Event(
             project_id=test_data["project_id"],
@@ -120,7 +120,7 @@ class TestEventServiceGetItemHistory:
     """Test EventService.get_item_history method."""
 
     @pytest.mark.asyncio
-    async def test_get_item_history_returns_events(self, event_service, test_data):
+    async def test_get_item_history_returns_events(self, event_service, test_data) -> None:
         """get_item_history returns list of events."""
         mock_events = [
             Event(
@@ -149,7 +149,7 @@ class TestEventServiceGetItemHistory:
         event_service.events.get_by_entity.assert_called_once_with(test_data["item_id"])
 
     @pytest.mark.asyncio
-    async def test_get_item_history_empty_list(self, event_service, test_data):
+    async def test_get_item_history_empty_list(self, event_service, test_data) -> None:
         """get_item_history returns empty list when no events."""
         event_service.events.get_by_entity = AsyncMock(return_value=[])
 
@@ -163,7 +163,7 @@ class TestEventServiceGetItemAtTime:
     """Test EventService.get_item_at_time method."""
 
     @pytest.mark.asyncio
-    async def test_get_item_at_time_returns_state(self, event_service, test_data):
+    async def test_get_item_at_time_returns_state(self, event_service, test_data) -> None:
         """get_item_at_time returns item state at specific time."""
         item_state = {"id": test_data["item_id"], "title": "Item at that time", "status": "in_progress"}
         event_service.events.get_entity_at_time = AsyncMock(return_value=item_state)
@@ -175,7 +175,7 @@ class TestEventServiceGetItemAtTime:
         event_service.events.get_entity_at_time.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_get_item_at_time_returns_none(self, event_service, test_data):
+    async def test_get_item_at_time_returns_none(self, event_service, test_data) -> None:
         """get_item_at_time returns None when no history."""
         event_service.events.get_entity_at_time = AsyncMock(return_value=None)
 

@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from typing import Never
 
 import pytest
 
@@ -27,12 +28,12 @@ def _seed_items(session, project_id="proj-1", count=5, status="todo", view="FEAT
     return items
 
 
-def test_bulk_update_preview_warnings(sync_session):
+def test_bulk_update_preview_warnings(sync_session) -> None:
     _seed_items(sync_session, count=120)
     svc = BulkOperationService(sync_session)  # type: ignore[arg-type]
 
     preview = svc.bulk_update_preview(
-        project_id="proj-1", filters={"status": "todo"}, updates={"status": "done"}, limit=3
+        project_id="proj-1", filters={"status": "todo"}, updates={"status": "done"}, limit=3,
     )
 
     assert preview["total_count"] == 120
@@ -40,12 +41,12 @@ def test_bulk_update_preview_warnings(sync_session):
     assert any("Large operation" in w for w in preview["warnings"])
 
 
-def test_bulk_update_items_commits_and_logs(sync_session):
+def test_bulk_update_items_commits_and_logs(sync_session) -> None:
     items = _seed_items(sync_session, count=2)
     svc = BulkOperationService(sync_session)
 
     result = svc.bulk_update_items(
-        project_id="proj-1", filters={"status": "todo"}, updates={"status": "in_progress"}, agent_id="agent-1"
+        project_id="proj-1", filters={"status": "todo"}, updates={"status": "in_progress"}, agent_id="agent-1",
     )
 
     assert result == {"items_updated": 2}
@@ -57,18 +58,18 @@ def test_bulk_update_items_commits_and_logs(sync_session):
     assert sync_session.query(Event).count() == 2
 
 
-def test_bulk_update_items_rollback_on_failure(sync_session, monkeypatch):
+def test_bulk_update_items_rollback_on_failure(sync_session, monkeypatch) -> None:
     _seed_items(sync_session, count=1)
     svc = BulkOperationService(sync_session)
 
     rolled_back = SimpleNamespace(value=False)
 
-    def fake_rollback():
+    def fake_rollback() -> None:
         rolled_back.value = True
-        return
 
-    def failing_commit():
-        raise RuntimeError("commit fail")
+    def failing_commit() -> Never:
+        msg = "commit fail"
+        raise RuntimeError(msg)
 
     monkeypatch.setattr(sync_session, "rollback", fake_rollback)
     monkeypatch.setattr(sync_session, "commit", failing_commit)
@@ -79,7 +80,7 @@ def test_bulk_update_items_rollback_on_failure(sync_session, monkeypatch):
     assert rolled_back.value is True
 
 
-def test_bulk_delete_items_marks_deleted(sync_session):
+def test_bulk_delete_items_marks_deleted(sync_session) -> None:
     items = _seed_items(sync_session, count=3, status="todo")
     svc = BulkOperationService(sync_session)
 

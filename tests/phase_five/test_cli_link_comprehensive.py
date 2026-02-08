@@ -1,5 +1,4 @@
-"""
-Phase 5 - CLI Link Comprehensive Coverage Tests
+"""Phase 5 - CLI Link Comprehensive Coverage Tests.
 
 Target: 250+ tests covering 95%+ of src/tracertm/cli/commands/link.py (511 LOC @ 5.82% current)
 Focus lines: 60-171, 190-237, 252-334, 348-384, 398-440, 454-498, 516-589, 607-655, 668-736, 755-842, 860-967
@@ -76,7 +75,7 @@ def test_items(db_session: Session) -> dict[str, Item]:
         ("DATABASE", "table", "users table"),
     ]
 
-    for _i, (view, item_type, title) in enumerate(views_data):
+    for (view, item_type, title) in views_data:
         item = Item(
             title=title,
             view=view,
@@ -96,7 +95,7 @@ class TestBasicLinkOperations:
     """Test Basic Link Operations for CLI link commands."""
 
     def test_create_link_basic_success(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test basic link creation success."""
         source_item = test_items["feature_feature"]
@@ -105,13 +104,13 @@ class TestBasicLinkOperations:
         with patch("tracertm.cli.commands.link.get_session", return_value=db_session):
             with patch("tracertm.cli.commands.link.get_project_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
-                    link_app, ["create", str(source_item.id), str(target_item.id), "--type", "implements"]
+                    link_app, ["create", str(source_item.id), str(target_item.id), "--type", "implements"],
                 )
                 assert result.exit_code == 0
                 assert "implements" in result.stdout
 
     def test_create_link_all_types(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test link creation with all valid link types."""
         valid_link_types = [
@@ -136,12 +135,12 @@ class TestBasicLinkOperations:
             with patch("tracertm.cli.commands.link.get_session", return_value=db_session):
                 with patch("tracertm.cli.commands.link.get_project_path", return_value=temp_project_dir_with_db):
                     result = cli_runner.invoke(
-                        link_app, ["create", str(source_item.id), str(target_item.id), "--type", link_type]
+                        link_app, ["create", str(source_item.id), str(target_item.id), "--type", link_type],
                     )
                     assert result.exit_code == 0, f"Failed for link type: {link_type}"
 
     def test_create_link_with_metadata(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test link creation with metadata."""
         source_item = test_items["feature_feature"]
@@ -166,7 +165,7 @@ class TestBasicLinkOperations:
                 assert "implements" in result.stdout
 
     def test_create_link_invalid_type(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test link creation with invalid link type."""
         source_item = test_items["feature_feature"]
@@ -175,13 +174,13 @@ class TestBasicLinkOperations:
         with patch("tracertm.cli.commands.link.get_session", return_value=db_session):
             with patch("tracertm.cli.commands.link.get_project_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
-                    link_app, ["create", str(source_item.id), str(target_item.id), "--type", "invalid_type"]
+                    link_app, ["create", str(source_item.id), str(target_item.id), "--type", "invalid_type"],
                 )
                 assert result.exit_code != 0
                 assert "Invalid link type" in result.stdout
 
     def test_create_link_same_items(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test creating link between same item (should fail)."""
         source_item = test_items["feature_feature"]
@@ -189,13 +188,13 @@ class TestBasicLinkOperations:
         with patch("tracertm.cli.commands.link.get_session", return_value=db_session):
             with patch("tracertm.cli.commands.link.get_project_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
-                    link_app, ["create", str(source_item.id), str(source_item.id), "--type", "implements"]
+                    link_app, ["create", str(source_item.id), str(source_item.id), "--type", "implements"],
                 )
                 assert result.exit_code != 0
                 # Should indicate self-link restriction
 
     def test_create_link_nonexistent_source(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test creating link with non-existent source item."""
         target_item = test_items["code_function"]
@@ -203,13 +202,13 @@ class TestBasicLinkOperations:
         with patch("tracertm.cli.commands.link.get_session", return_value=db_session):
             with patch("tracertm.cli.commands.link.get_project_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
-                    link_app, ["create", "non-existent-source-id", str(target_item.id), "--type", "implements"]
+                    link_app, ["create", "non-existent-source-id", str(target_item.id), "--type", "implements"],
                 )
                 assert result.exit_code != 0
                 assert "not found" in result.stdout.lower()
 
     def test_create_link_nonexistent_target(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test creating link with non-existent target item."""
         source_item = test_items["feature_feature"]
@@ -217,13 +216,13 @@ class TestBasicLinkOperations:
         with patch("tracertm.cli.commands.link.get_session", return_value=db_session):
             with patch("tracertm.cli.commands.link.get_project_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
-                    link_app, ["create", str(source_item.id), "non-existent-target-id", "--type", "implements"]
+                    link_app, ["create", str(source_item.id), "non-existent-target-id", "--type", "implements"],
                 )
                 assert result.exit_code != 0
                 assert "not found" in result.stdout.lower()
 
     def test_list_links_basic(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test basic link listing."""
         # Create test links
@@ -251,7 +250,7 @@ class TestBasicLinkOperations:
                 assert result.stdout.count("implements") == len(created_links)
 
     def test_list_links_by_source(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test listing links filtered by source item."""
         source_item = test_items["feature_feature"]
@@ -284,7 +283,7 @@ class TestBasicLinkOperations:
                 assert "tests" not in result.stdout
 
     def test_list_links_by_target(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test listing links filtered by target item."""
         source_items = [test_items["feature_feature"], test_items["api_endpoint"]]
@@ -317,7 +316,7 @@ class TestBasicLinkOperations:
                 assert "tests" not in result.stdout
 
     def test_list_links_by_type(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test listing links filtered by link type."""
         source_item = test_items["feature_feature"]
@@ -350,7 +349,7 @@ class TestBasicLinkOperations:
                 assert "tests" not in result.stdout
 
     def test_list_links_with_limit(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test link listing with limit."""
         source_item = test_items["feature_feature"]
@@ -387,7 +386,7 @@ class TestBasicLinkOperations:
                 assert result.stdout.count("implements") <= 5
 
     def test_show_link_success(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test showing link details successfully."""
         source_item = test_items["feature_feature"]
@@ -415,7 +414,7 @@ class TestBasicLinkOperations:
                 assert "high" in result.stdout  # from metadata
 
     def test_show_link_not_found(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test showing non-existent link."""
         with patch("tracertm.cli.commands.link.get_session", return_value=db_session):
@@ -425,7 +424,7 @@ class TestBasicLinkOperations:
                 assert "not found" in result.stdout.lower()
 
     def test_update_link_basic(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test basic link update."""
         source_item = test_items["feature_feature"]
@@ -450,7 +449,7 @@ class TestBasicLinkOperations:
                 assert result.exit_code == 0
 
     def test_delete_link_success(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test successful link deletion."""
         source_item = test_items["feature_feature"]
@@ -475,7 +474,7 @@ class TestBasicLinkOperations:
                 assert "deleted" in result.stdout.lower()
 
     def test_delete_link_not_found(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session,
     ) -> None:
         """Test deleting non-existent link."""
         with patch("tracertm.cli.commands.link.get_session", return_value=db_session):
@@ -485,7 +484,7 @@ class TestBasicLinkOperations:
                 assert "not found" in result.stdout.lower()
 
     def test_bulk_create_links(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test bulk creation of links."""
         source_item = test_items["feature_feature"]
@@ -504,7 +503,7 @@ class TestBasicLinkOperations:
                 assert "related_to" in result.stdout
 
     def test_bulk_delete_links(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test bulk deletion of links."""
         source_item = test_items["feature_feature"]
@@ -538,7 +537,7 @@ class TestGraphAnalysisOperations:
     """Test Graph Analysis Operations for CLI link commands."""
 
     def test_cycle_detection_basic(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test basic cycle detection."""
         # Create items for cycle
@@ -572,13 +571,13 @@ class TestGraphAnalysisOperations:
         # Create cycle: A -> B -> C -> A
         links = [
             Link(
-                source_id=item_a.id, target_id=item_b.id, link_type="implements", metadata={}, project_id="test-project"
+                source_id=item_a.id, target_id=item_b.id, link_type="implements", metadata={}, project_id="test-project",
             ),
             Link(
-                source_id=item_b.id, target_id=item_c.id, link_type="implements", metadata={}, project_id="test-project"
+                source_id=item_b.id, target_id=item_c.id, link_type="implements", metadata={}, project_id="test-project",
             ),
             Link(
-                source_id=item_c.id, target_id=item_a.id, link_type="implements", metadata={}, project_id="test-project"
+                source_id=item_c.id, target_id=item_a.id, link_type="implements", metadata={}, project_id="test-project",
             ),
         ]
         db_session.add_all(links)
@@ -591,7 +590,7 @@ class TestGraphAnalysisOperations:
                 assert "cycle" in result.stdout.lower()
 
     def test_cycle_detection_no_cycle(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test cycle detection with no cycles."""
         # Create acyclic graph
@@ -625,10 +624,10 @@ class TestGraphAnalysisOperations:
         # Create acyclic links: A -> B -> C
         links = [
             Link(
-                source_id=item_a.id, target_id=item_b.id, link_type="implements", metadata={}, project_id="test-project"
+                source_id=item_a.id, target_id=item_b.id, link_type="implements", metadata={}, project_id="test-project",
             ),
             Link(
-                source_id=item_b.id, target_id=item_c.id, link_type="implements", metadata={}, project_id="test-project"
+                source_id=item_b.id, target_id=item_c.id, link_type="implements", metadata={}, project_id="test-project",
             ),
         ]
         db_session.add_all(links)
@@ -641,7 +640,7 @@ class TestGraphAnalysisOperations:
                 assert "no cycles" in result.stdout.lower() or "acyclic" in result.stdout.lower()
 
     def test_impact_analysis_basic(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test basic impact analysis."""
         # Create dependency chain
@@ -689,7 +688,7 @@ class TestGraphAnalysisOperations:
                 assert "impact" in result.stdout.lower()
 
     def test_impact_analysis_depth_limited(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test impact analysis with depth limit."""
         # Create multi-level dependency chain
@@ -727,7 +726,7 @@ class TestGraphAnalysisOperations:
                 assert "Level 0 Component" in result.stdout
 
     def test_graph_visualization_simple(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test simple graph visualization."""
         source_item = test_items["feature_feature"]
@@ -752,7 +751,7 @@ class TestGraphAnalysisOperations:
                 assert source_item.title in result.stdout
 
     def test_graph_visualization_ascii_art(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test graph visualization with ASCII art."""
         # Create tree structure
@@ -782,7 +781,7 @@ class TestGraphAnalysisOperations:
             children.append(child)
 
             link = Link(
-                source_id=child.id, target_id=root.id, link_type="depends_on", metadata={}, project_id="test-project"
+                source_id=child.id, target_id=root.id, link_type="depends_on", metadata={}, project_id="test-project",
             )
             db_session.add(link)
         db_session.commit()
@@ -796,7 +795,7 @@ class TestGraphAnalysisOperations:
                 assert any(char in result.stdout for char in ["│", "├", "└", "─"])
 
     def test_dependency_matrix(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test dependency matrix generation."""
         # Create items and their dependencies
@@ -835,7 +834,7 @@ class TestGraphAnalysisOperations:
                 assert "dependency" in result.stdout.lower()
 
     def test_missing_dependencies(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test missing dependencies detection."""
         # Create items that should have dependencies but don't
@@ -858,7 +857,7 @@ class TestGraphAnalysisOperations:
                 assert "missing" in result.stdout.lower() or "missing" in result.stdout.lower()
 
     def test_orphaned_items(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test orphaned items detection."""
         # Create orphaned item (no links)
@@ -894,7 +893,7 @@ class TestGraphAnalysisOperations:
                 assert "orphan" in result.stdout.lower()
 
     def test_graph_statistics(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test graph statistics calculation."""
         # Create various links for statistics
@@ -938,7 +937,7 @@ class TestGraphAnalysisOperations:
                 assert "tests" in result.stdout
 
     def test_path_finding(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test path finding between items."""
         # Create chain: A -> B -> C -> D
@@ -977,7 +976,7 @@ class TestGraphAnalysisOperations:
                 assert "Path Item 3" in result.stdout
 
     def test_shortest_path(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test shortest path finding."""
         # Create graph with multiple paths
@@ -1046,7 +1045,7 @@ class TestGraphAnalysisOperations:
         all_links = short_links + long_links
         for source_id, target_id in all_links:
             link = Link(
-                source_id=source_id, target_id=target_id, link_type="implements", metadata={}, project_id="test-project"
+                source_id=source_id, target_id=target_id, link_type="implements", metadata={}, project_id="test-project",
             )
             db_session.add(link)
         db_session.commit()
@@ -1065,7 +1064,7 @@ class TestAdvancedRelationshipManagement:
     """Test Advanced Relationship Management for CLI link commands."""
 
     def test_bidirectional_link_creation(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test creating bidirectional links."""
         source_item = test_items["feature_feature"]
@@ -1081,7 +1080,7 @@ class TestAdvancedRelationshipManagement:
                 assert "bidirectional" in result.stdout.lower() or "implements" in result.stdout
 
     def test_link_metadata_validation(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test link metadata validation."""
         source_item = test_items["feature_feature"]
@@ -1112,7 +1111,7 @@ class TestAdvancedRelationshipManagement:
                 assert result.exit_code == 0
 
     def test_link_metadata_invalid(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test creating link with invalid metadata."""
         source_item = test_items["feature_feature"]
@@ -1125,7 +1124,7 @@ class TestAdvancedRelationshipManagement:
                 result = cli_runner.invoke(
                     link_app,
                     cast(
-                        list[str],
+                        "list[str]",
                         [
                             "create",
                             str(source_item.id),
@@ -1140,7 +1139,7 @@ class TestAdvancedRelationshipManagement:
                 assert result.exit_code != 0
 
     def test_link_constraint_checking(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test link constraint validation."""
         source_item = test_items["feature_feature"]
@@ -1161,13 +1160,13 @@ class TestAdvancedRelationshipManagement:
         with patch("tracertm.cli.commands.link.get_session", return_value=db_session):
             with patch("tracertm.cli.commands.link.get_project_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
-                    link_app, ["create", str(source_item.id), str(target_item.id), "--type", "implements"]
+                    link_app, ["create", str(source_item.id), str(target_item.id), "--type", "implements"],
                 )
                 # Should either fail or warn about duplicate
                 assert result.exit_code != 0 or "duplicate" in result.stdout.lower()
 
     def test_multi_hop_relationship_query(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test querying multi-hop relationships."""
         # Create chain: A -> B -> C -> D -> E
@@ -1205,7 +1204,7 @@ class TestAdvancedRelationshipManagement:
                 assert "Chain Item 0" in result.stdout
 
     def test_link_type_transformation(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test transforming link types."""
         source_item = test_items["feature_feature"]
@@ -1225,11 +1224,11 @@ class TestAdvancedRelationshipManagement:
         # Transform link type
         with patch("tracertm.cli.commands.link.get_session", return_value=db_session):
             with patch("tracertm.cli.commands.link.get_project_path", return_value=temp_project_dir_with_db):
-                result = cli_runner.invoke(link_app, cast(list[str], ["update", str(link.id), "--type", "tested_by"]))
+                result = cli_runner.invoke(link_app, cast("list[str]", ["update", str(link.id), "--type", "tested_by"]))
                 assert result.exit_code == 0
 
     def test_link_aggregation_by_type(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test aggregating links by type."""
         source_items = list(test_items.values())[:3]
@@ -1259,7 +1258,7 @@ class TestAdvancedRelationshipManagement:
                     assert link_type in result.stdout
 
     def test_link_consistency_check(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test link consistency validation."""
         source_item = test_items["feature_feature"]
@@ -1284,7 +1283,7 @@ class TestAdvancedRelationshipManagement:
                 assert "consistent" in result.stdout.lower() or "errors" in result.stdout.lower()
 
     def test_bulk_link_transformation(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test bulk transformation of link types."""
         source_items = list(test_items.values())[:3]
@@ -1311,7 +1310,7 @@ class TestAdvancedRelationshipManagement:
                 assert result.exit_code == 0
 
     def test_link_cascade_operations(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test cascade operations on linked items."""
         # Create hierarchical linked structure
@@ -1342,7 +1341,7 @@ class TestAdvancedRelationshipManagement:
 
             # Create link from child to parent
             link = Link(
-                source_id=child.id, target_id=root.id, link_type="depends_on", metadata={}, project_id="test-project"
+                source_id=child.id, target_id=root.id, link_type="depends_on", metadata={}, project_id="test-project",
             )
             db_session.add(link)
         db_session.commit()
@@ -1352,14 +1351,14 @@ class TestAdvancedRelationshipManagement:
             with patch("tracertm.cli.commands.link.get_project_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
                     link_app,
-                    cast(list[str], ["delete-cascade", str(root.id)]),
+                    cast("list[str]", ["delete-cascade", str(root.id)]),
                     input="y",  # Confirm cascade deletion
                 )
                 assert result.exit_code == 0
                 assert "cascade" in result.stdout.lower()
 
     def test_link_enrichment(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test enriching links with additional metadata."""
         source_item = test_items["feature_feature"]
@@ -1388,12 +1387,12 @@ class TestAdvancedRelationshipManagement:
         with patch("tracertm.cli.commands.link.get_session", return_value=db_session):
             with patch("tracertm.cli.commands.link.get_project_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
-                    link_app, cast(list[str], ["enrich", str(link.id), "--metadata", json.dumps(enrichment_data)])
+                    link_app, cast("list[str]", ["enrich", str(link.id), "--metadata", json.dumps(enrichment_data)]),
                 )
                 assert result.exit_code == 0
 
     def test_link_export_import(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test exporting and importing links."""
         # Create multiple links
@@ -1426,7 +1425,7 @@ class TestAdvancedRelationshipManagement:
                 assert "implements" in result.stdout
 
     def test_link_validation_rules(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test link validation rules."""
         # Test invalid rule: feature cannot 'implement' test
@@ -1438,7 +1437,7 @@ class TestAdvancedRelationshipManagement:
                 result = cli_runner.invoke(
                     link_app,
                     cast(
-                        list[str],
+                        "list[str]",
                         ["create", str(feature_item.id), str(test_item.id), "--type", "implemented_by"],
                     ),
                 )
@@ -1446,7 +1445,7 @@ class TestAdvancedRelationshipManagement:
                 assert result.exit_code != 0 or "warning" in result.stdout.lower()
 
     def test_link_template_application(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test applying link templates."""
         # Define link template
@@ -1465,7 +1464,7 @@ class TestAdvancedRelationshipManagement:
                 result = cli_runner.invoke(
                     link_app,
                     cast(
-                        list[str],
+                        "list[str]",
                         [
                             "create-from-template",
                             str(source_item.id),
@@ -1478,7 +1477,7 @@ class TestAdvancedRelationshipManagement:
                 assert result.exit_code == 0
 
     def test_link_bulk_verification(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test bulk verification of links."""
         # Create multiple links with varying verification status
@@ -1511,7 +1510,7 @@ class TestCLIIntegrationScenarios:
     """Test CLI Integration Scenarios for CLI link commands."""
 
     def test_cli_error_handling_project_not_found(
-        self, cli_runner: CliRunner, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test CLI error handling when project not found."""
         non_existent_dir = Path("/tmp/non-existent-project")
@@ -1521,7 +1520,7 @@ class TestCLIIntegrationScenarios:
                 result = cli_runner.invoke(
                     link_app,
                     cast(
-                        list[str],
+                        "list[str]",
                         [
                             "create",
                             str(test_items["feature_feature"].id),
@@ -1535,7 +1534,7 @@ class TestCLIIntegrationScenarios:
                 assert "project" in result.stdout.lower() and "not found" in result.stdout.lower()
 
     def test_cli_rich_table_formatting(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test CLI rich table formatting for link display."""
         # Create multiple links
@@ -1560,7 +1559,7 @@ class TestCLIIntegrationScenarios:
                 assert "┌" in result.stdout or "│" in result.stdout or "└" in result.stdout
 
     def test_cli_paging_for_large_results(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test CLI paging for large link result sets."""
         source_item = test_items["feature_feature"]
@@ -1597,7 +1596,7 @@ class TestCLIIntegrationScenarios:
                 assert line_count <= 15  # Account for header/footer lines
 
     def test_cli_export_to_file(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test CLI export to file functionality."""
         source_item = test_items["feature_feature"]
@@ -1626,7 +1625,7 @@ class TestCLIIntegrationScenarios:
                 assert "implements" in exported_content
 
     def test_cli_import_from_file(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test CLI import from file functionality."""
         # Create import data
@@ -1677,7 +1676,7 @@ class TestCLIIntegrationScenarios:
             assert link_type in result.stdout
 
     def test_cli_shell_completion_link_ids(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test CLI shell completion for link IDs."""
         # Create test links
@@ -1699,7 +1698,7 @@ class TestCLIIntegrationScenarios:
         assert len(result.stdout.strip()) > 0
 
     def test_cli_progress_indication(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test CLI progress indication for long operations."""
         # Create many items for bulk operation
@@ -1737,7 +1736,7 @@ class TestCLIIntegrationScenarios:
                 assert "created" in result.stdout.lower()
 
     def test_cli_configuration_options(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test CLI configuration and options."""
         source_item = test_items["feature_feature"]
@@ -1749,7 +1748,7 @@ class TestCLIIntegrationScenarios:
                 result = cli_runner.invoke(
                     link_app,
                     cast(
-                        list[str],
+                        "list[str]",
                         ["--verbose", "create", str(source_item.id), str(target_item.id), "--type", "implements"],
                     ),
                 )
@@ -1774,7 +1773,7 @@ class TestCLIIntegrationScenarios:
         assert "--type" in result.stdout
 
     def test_cli_storage_integration(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test CLI integration with storage manager."""
         source_item = test_items["feature_feature"]
@@ -1784,7 +1783,7 @@ class TestCLIIntegrationScenarios:
         with patch("tracertm.cli.commands.link.get_session", return_value=db_session):
             with patch("tracertm.cli.commands.link.get_project_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
-                    link_app, ["create", str(source_item.id), str(target_item.id), "--type", "implements"]
+                    link_app, ["create", str(source_item.id), str(target_item.id), "--type", "implements"],
                 )
                 assert result.exit_code == 0
 
@@ -1799,7 +1798,7 @@ class TestCLIIntegrationScenarios:
         assert stored_link.project_id == "test-project"
 
     def test_cli_transaction_rollback(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item]
+        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session, test_items: dict[str, Item],
     ) -> None:
         """Test CLI transaction rollback on errors."""
         source_item = test_items["feature_feature"]
@@ -1810,7 +1809,7 @@ class TestCLIIntegrationScenarios:
             with patch("tracertm.cli.commands.link.get_project_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
                     link_app,
-                    cast(list[str], ["create", "invalid-source-id", str(target_item.id), "--type", "implements"]),
+                    cast("list[str]", ["create", "invalid-source-id", str(target_item.id), "--type", "implements"]),
                 )
                 assert result.exit_code != 0
 

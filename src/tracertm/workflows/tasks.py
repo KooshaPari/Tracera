@@ -33,7 +33,8 @@ async def _get_async_session() -> AsyncSession:
     config = ConfigManager()
     database_url = config.get("database_url")
     if not database_url:
-        raise ValueError("Database not configured")
+        msg = "Database not configured"
+        raise ValueError(msg)
 
     if database_url.startswith("sqlite:///"):
         async_database_url = database_url.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
@@ -93,12 +94,12 @@ async def graph_snapshot_task(
                 "hash": snapshot.snapshot_hash,
             }
             await _update_workflow_run(
-                session, workflow_run_id, WorkflowUpdateConfig("completed", result=result, completed=True)
+                session, workflow_run_id, WorkflowUpdateConfig("completed", result=result, completed=True),
             )
             return result
         except Exception as exc:
             await _update_workflow_run(
-                session, workflow_run_id, WorkflowUpdateConfig("failed", error_message=str(exc), completed=True)
+                session, workflow_run_id, WorkflowUpdateConfig("failed", error_message=str(exc), completed=True),
             )
             raise
 
@@ -110,12 +111,12 @@ async def graph_validation_task(project_id: str, graph_id: str, workflow_run_id:
             service = GraphValidationService(session)
             result = await service.validate_graph(project_id=project_id, graph_id=graph_id)
             await _update_workflow_run(
-                session, workflow_run_id, WorkflowUpdateConfig("completed", result=result, completed=True)
+                session, workflow_run_id, WorkflowUpdateConfig("completed", result=result, completed=True),
             )
             return result
         except Exception as exc:
             await _update_workflow_run(
-                session, workflow_run_id, WorkflowUpdateConfig("failed", error_message=str(exc), completed=True)
+                session, workflow_run_id, WorkflowUpdateConfig("failed", error_message=str(exc), completed=True),
             )
             raise
 
@@ -128,12 +129,12 @@ async def graph_export_task(project_id: str, workflow_run_id: str | None = None)
             export = await service.export_to_json(project_id)
             result = {"format": "graph_json", "content": export}
             await _update_workflow_run(
-                session, workflow_run_id, WorkflowUpdateConfig(status="completed", result=result, completed=True)
+                session, workflow_run_id, WorkflowUpdateConfig(status="completed", result=result, completed=True),
             )  # noqa: E501
             return result
         except Exception as exc:
             await _update_workflow_run(
-                session, workflow_run_id, WorkflowUpdateConfig(status="failed", error_message=str(exc), completed=True)
+                session, workflow_run_id, WorkflowUpdateConfig(status="failed", error_message=str(exc), completed=True),
             )  # noqa: E501
             raise
 
@@ -156,12 +157,12 @@ async def graph_diff_task(
                 to_version=to_version,
             )
             await _update_workflow_run(
-                session, workflow_run_id, WorkflowUpdateConfig(status="completed", result=result, completed=True)
+                session, workflow_run_id, WorkflowUpdateConfig(status="completed", result=result, completed=True),
             )  # noqa: E501
             return result
         except Exception as exc:
             await _update_workflow_run(
-                session, workflow_run_id, WorkflowUpdateConfig(status="failed", error_message=str(exc), completed=True)
+                session, workflow_run_id, WorkflowUpdateConfig(status="failed", error_message=str(exc), completed=True),
             )  # noqa: E501
             raise
 
@@ -174,12 +175,12 @@ async def integration_sync_task(limit: int = 50, workflow_run_id: str | None = N
             result = await processor.process_pending(limit=limit)
             await session.commit()
             await _update_workflow_run(
-                session, workflow_run_id, WorkflowUpdateConfig(status="completed", result=result, completed=True)
+                session, workflow_run_id, WorkflowUpdateConfig(status="completed", result=result, completed=True),
             )
             return result
         except Exception as exc:
             await _update_workflow_run(
-                session, workflow_run_id, WorkflowUpdateConfig(status="failed", error_message=str(exc), completed=True)
+                session, workflow_run_id, WorkflowUpdateConfig(status="failed", error_message=str(exc), completed=True),
             )
             raise
 
@@ -192,11 +193,11 @@ async def integration_retry_task(limit: int = 50, workflow_run_id: str | None = 
             result = await processor.process_retryable(limit=limit)
             await session.commit()
             await _update_workflow_run(
-                session, workflow_run_id, WorkflowUpdateConfig("completed", result=result, completed=True)
+                session, workflow_run_id, WorkflowUpdateConfig("completed", result=result, completed=True),
             )
             return result
         except Exception as exc:
             await _update_workflow_run(
-                session, workflow_run_id, WorkflowUpdateConfig("failed", error_message=str(exc), completed=True)
+                session, workflow_run_id, WorkflowUpdateConfig("failed", error_message=str(exc), completed=True),
             )
             raise

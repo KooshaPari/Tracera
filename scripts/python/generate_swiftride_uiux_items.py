@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Generate comprehensive UI/UX items for SwiftRide project.
+"""Generate comprehensive UI/UX items for SwiftRide project.
 Creates 600+ items across 7 categories with proper linking to features and user stories.
 """
 
@@ -2144,12 +2143,8 @@ VALUES (
 );"""
 
 
-def main():
+def main() -> None:
     """Generate all UI/UX items and write to SQL file."""
-
-    print("Generating SwiftRide UI/UX Items...")
-    print("=" * 80)
-
     # Generate all items
     wireframes = generate_wireframes()
     components = generate_components()
@@ -2160,17 +2155,6 @@ def main():
     ux_patterns = generate_ux_patterns()
 
     # Print summary
-    print("\nGenerated Items:")
-    print(f"  Wireframes: {len(wireframes)}")
-    print(f"  Components: {len(components)}")
-    print(f"  User Flows: {len(user_flows)}")
-    print(f"  Interactions: {len(interactions)}")
-    print(f"  Design Tokens: {len(design_tokens)}")
-    print(f"  Accessibility Requirements: {len(accessibility)}")
-    print(f"  UX Patterns: {len(ux_patterns)}")
-    print(
-        f"\nTotal: {len(wireframes) + len(components) + len(user_flows) + len(interactions) + len(design_tokens) + len(accessibility) + len(ux_patterns)} items"
-    )
 
     # Generate SQL
     sql_statements = []
@@ -2187,8 +2171,8 @@ def main():
             + len(interactions)
             + len(design_tokens)
             + len(accessibility)
-            + len(ux_patterns)
-        )
+            + len(ux_patterns),
+        ),
     )
     sql_statements.append("")
     sql_statements.append("BEGIN;")
@@ -2248,23 +2232,12 @@ def main():
     sql_statements.append("-- ========================================")
     for code, title, desc, metadata in ux_patterns:
         sql_statements.append(generate_insert_statement("ux_pattern", code, title, desc, metadata))
-    sql_statements.append("")
-
-    sql_statements.append("COMMIT;")
-    sql_statements.append("")
-    sql_statements.append("-- Verify counts")
-    sql_statements.append(
-        f"SELECT type, COUNT(*) FROM items WHERE project_id = '{PROJECT_ID}' AND type IN ('wireframe', 'component', 'user_flow', 'interaction', 'design_token', 'accessibility_requirement', 'ux_pattern') GROUP BY type ORDER BY type;"
-    )
+    sql_statements.extend(("", "COMMIT;", "", "-- Verify counts", f"SELECT type, COUNT(*) FROM items WHERE project_id = '{PROJECT_ID}' AND type IN ('wireframe', 'component', 'user_flow', 'interaction', 'design_token', 'accessibility_requirement', 'ux_pattern') GROUP BY type ORDER BY type;"))
 
     # Write to file
     output_file = Path(__file__).resolve().parent.parent / "data" / "tmp" / "swiftride_uiux_items.sql"
     with output_file.open("w") as f:
         f.write("\n".join(sql_statements))
-
-    print(f"\n✅ SQL file generated: {output_file!s}")
-    print("\nTo execute:")
-    print(f'  psql "postgresql://tracertm:tracertm_password@localhost:5432/tracertm" < {output_file}')
 
 
 if __name__ == "__main__":

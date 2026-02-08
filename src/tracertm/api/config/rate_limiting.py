@@ -157,10 +157,10 @@ def raise_rate_limit_error(key: str, request: Request) -> None:
     limiter = limiter_class()
 
     retry_after = getattr(limiter, "get_retry_after", lambda *args, **kwargs: None)(
-        key, request.method, request.url.path
+        key, request.method, request.url.path,
     )
     message = getattr(limiter, "get_message", lambda *args, **kwargs: "Rate limit exceeded")(
-        key, request.method, request.url.path
+        key, request.method, request.url.path,
     )
     headers = {"Retry-After": str(retry_after)} if retry_after is not None else None
 

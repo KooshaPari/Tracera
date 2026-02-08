@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for ItemListWidget.
+"""Comprehensive tests for ItemListWidget.
 
 Tests cover:
 - Widget initialization
@@ -28,35 +27,35 @@ from tracertm.tui.widgets.item_list import ItemListWidget
 class TestItemListWidget:
     """Test ItemListWidget initialization and basic functionality."""
 
-    def test_widget_initialization(self):
+    def test_widget_initialization(self) -> None:
         """Test widget can be initialized."""
         widget = ItemListWidget()
         assert widget is not None
         assert isinstance(widget, DataTable)
 
-    def test_widget_has_columns(self):
+    def test_widget_has_columns(self) -> None:
         """Test widget has default columns."""
         widget = ItemListWidget()
         # Columns are added in __init__
         # Verify through column attribute if available
         assert hasattr(widget, "columns")
 
-    def test_widget_inherits_datatable(self):
+    def test_widget_inherits_datatable(self) -> None:
         """Test widget inherits from DataTable."""
         widget = ItemListWidget()
         assert isinstance(widget, DataTable)
 
-    def test_widget_with_id(self):
+    def test_widget_with_id(self) -> None:
         """Test widget can be created with custom id."""
         widget = ItemListWidget(id="test-item-list")
         assert widget.id == "test-item-list"
 
-    def test_widget_with_classes(self):
+    def test_widget_with_classes(self) -> None:
         """Test widget can be created with CSS classes."""
         widget = ItemListWidget(classes="custom-class")
         assert "custom-class" in widget.classes
 
-    def test_multiple_widgets(self):
+    def test_multiple_widgets(self) -> None:
         """Test multiple widgets can coexist."""
         widget1 = ItemListWidget(id="list1")
         widget2 = ItemListWidget(id="list2")
@@ -68,13 +67,13 @@ class TestItemListWidget:
 class TestItemListWidgetColumns:
     """Test column management."""
 
-    def test_default_columns(self):
+    def test_default_columns(self) -> None:
         """Test default columns are present."""
         widget = ItemListWidget()
         # Default columns: ID, Title, Type, Status
         assert hasattr(widget, "columns")
 
-    def test_column_count(self):
+    def test_column_count(self) -> None:
         """Test correct number of default columns."""
         widget = ItemListWidget()
         # Should have 4 default columns
@@ -83,7 +82,7 @@ class TestItemListWidgetColumns:
         if hasattr(widget, "ordered_columns"):
             assert len(widget.ordered_columns) >= len(expected_columns)
 
-    def test_column_order(self):
+    def test_column_order(self) -> None:
         """Test columns are in correct order."""
         ItemListWidget()
         # Columns should be: ID, Title, Type, Status
@@ -96,14 +95,14 @@ class TestItemListWidgetColumns:
 class TestItemListWidgetDataManipulation:
     """Test data manipulation methods."""
 
-    def test_empty_widget(self):
+    def test_empty_widget(self) -> None:
         """Test empty widget state."""
         widget = ItemListWidget()
         # Empty widget should have no rows
         if hasattr(widget, "row_count"):
             assert widget.row_count == 0
 
-    def test_add_single_row(self):
+    def test_add_single_row(self) -> None:
         """Test adding a single row."""
         widget = ItemListWidget()
         # Add row with sample data
@@ -112,7 +111,7 @@ class TestItemListWidgetDataManipulation:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_add_multiple_rows(self):
+    def test_add_multiple_rows(self) -> None:
         """Test adding multiple rows."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
@@ -122,7 +121,7 @@ class TestItemListWidgetDataManipulation:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 3
 
-    def test_clear_widget(self):
+    def test_clear_widget(self) -> None:
         """Test clearing all rows."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row") and hasattr(widget, "clear"):
@@ -132,7 +131,7 @@ class TestItemListWidgetDataManipulation:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 0
 
-    def test_remove_row(self):
+    def test_remove_row(self) -> None:
         """Test removing specific row."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row") and hasattr(widget, "remove_row"):
@@ -147,7 +146,7 @@ class TestItemListWidgetDataManipulation:
 class TestItemListWidgetEdgeCases:
     """Test edge cases and error handling."""
 
-    def test_empty_row_values(self):
+    def test_empty_row_values(self) -> None:
         """Test adding row with empty values."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
@@ -155,7 +154,7 @@ class TestItemListWidgetEdgeCases:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_long_text_values(self):
+    def test_long_text_values(self) -> None:
         """Test adding row with very long text."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
@@ -164,7 +163,7 @@ class TestItemListWidgetEdgeCases:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_special_characters(self):
+    def test_special_characters(self) -> None:
         """Test adding row with special characters."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
@@ -172,7 +171,7 @@ class TestItemListWidgetEdgeCases:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_unicode_text(self):
+    def test_unicode_text(self) -> None:
         """Test adding row with unicode characters."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
@@ -180,7 +179,7 @@ class TestItemListWidgetEdgeCases:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_none_values(self):
+    def test_none_values(self) -> None:
         """Test handling None values."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
@@ -199,17 +198,17 @@ class TestItemListWidgetEdgeCases:
 class TestItemListWidgetStyling:
     """Test widget styling capabilities."""
 
-    def test_custom_styles(self):
+    def test_custom_styles(self) -> None:
         """Test widget accepts custom styles."""
         widget = ItemListWidget(classes="custom-style")
         assert "custom-style" in widget.classes
 
-    def test_multiple_classes(self):
+    def test_multiple_classes(self) -> None:
         """Test widget can have multiple CSS classes."""
         widget = ItemListWidget(classes="class1 class2 class3")
         assert any(c in widget.classes for c in ["class1", "class2", "class3"])
 
-    def test_id_attribute(self):
+    def test_id_attribute(self) -> None:
         """Test widget ID attribute."""
         widget = ItemListWidget(id="unique-id")
         assert widget.id == "unique-id"
@@ -219,7 +218,7 @@ class TestItemListWidgetStyling:
 class TestItemListWidgetIntegration:
     """Test widget integration scenarios."""
 
-    def test_populate_from_list(self):
+    def test_populate_from_list(self) -> None:
         """Test populating widget from item list."""
         widget = ItemListWidget()
 
@@ -236,7 +235,7 @@ class TestItemListWidgetIntegration:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == len(items)
 
-    def test_update_row_data(self):
+    def test_update_row_data(self) -> None:
         """Test updating existing row data."""
         widget = ItemListWidget()
 
@@ -249,7 +248,7 @@ class TestItemListWidgetIntegration:
                 # Method might not be available or use different API
                 pass
 
-    def test_clear_and_repopulate(self):
+    def test_clear_and_repopulate(self) -> None:
         """Test clearing and repopulating widget."""
         widget = ItemListWidget()
 
@@ -272,12 +271,12 @@ class TestItemListWidgetIntegration:
 class TestItemListWidgetPlaceholder:
     """Test placeholder class when Textual is not available."""
 
-    def test_placeholder_exists(self):
+    def test_placeholder_exists(self) -> None:
         """Test placeholder class exists."""
         # Widget should exist as placeholder
         assert ItemListWidget is not None
 
-    def test_placeholder_instantiation(self):
+    def test_placeholder_instantiation(self) -> None:
         """Test placeholder can be instantiated."""
         # Placeholder should be instantiable (empty class)
         widget = ItemListWidget()
@@ -287,12 +286,12 @@ class TestItemListWidgetPlaceholder:
 class TestItemListWidgetAvailability:
     """Test widget availability detection."""
 
-    def test_textual_availability_constant(self):
+    def test_textual_availability_constant(self) -> None:
         """Test TEXTUAL_AVAILABLE constant is defined."""
         assert WIDGET_TEXTUAL is not None
         assert isinstance(WIDGET_TEXTUAL, bool)
 
-    def test_textual_availability_matches(self):
+    def test_textual_availability_matches(self) -> None:
         """Test module TEXTUAL_AVAILABLE matches test import."""
         assert WIDGET_TEXTUAL == TEXTUAL_AVAILABLE
 
@@ -301,7 +300,7 @@ class TestItemListWidgetAvailability:
 class TestItemListWidgetDataTypes:
     """Test different data types in widget."""
 
-    def test_numeric_ids(self):
+    def test_numeric_ids(self) -> None:
         """Test widget with numeric IDs."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
@@ -309,7 +308,7 @@ class TestItemListWidgetDataTypes:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_uuid_ids(self):
+    def test_uuid_ids(self) -> None:
         """Test widget with UUID IDs."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
@@ -317,7 +316,7 @@ class TestItemListWidgetDataTypes:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_mixed_status_values(self):
+    def test_mixed_status_values(self) -> None:
         """Test widget with various status values."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
@@ -328,7 +327,7 @@ class TestItemListWidgetDataTypes:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == len(statuses)
 
-    def test_mixed_type_values(self):
+    def test_mixed_type_values(self) -> None:
         """Test widget with various type values."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
@@ -344,7 +343,7 @@ class TestItemListWidgetDataTypes:
 class TestItemListWidgetPerformance:
     """Test widget performance with various data sizes."""
 
-    def test_small_dataset(self):
+    def test_small_dataset(self) -> None:
         """Test widget with small dataset (10 items)."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
@@ -354,7 +353,7 @@ class TestItemListWidgetPerformance:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 10
 
-    def test_medium_dataset(self):
+    def test_medium_dataset(self) -> None:
         """Test widget with medium dataset (100 items)."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
@@ -364,7 +363,7 @@ class TestItemListWidgetPerformance:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 100
 
-    def test_large_dataset(self):
+    def test_large_dataset(self) -> None:
         """Test widget with large dataset (1000 items)."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
@@ -379,7 +378,7 @@ class TestItemListWidgetPerformance:
 class TestItemListWidgetRowOperations:
     """Test advanced row operations."""
 
-    def test_row_with_key(self):
+    def test_row_with_key(self) -> None:
         """Test adding row with custom key."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
@@ -387,7 +386,7 @@ class TestItemListWidgetRowOperations:
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
-    def test_duplicate_keys(self):
+    def test_duplicate_keys(self) -> None:
         """Test handling duplicate row keys."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
@@ -399,7 +398,7 @@ class TestItemListWidgetRowOperations:
                 # Expected exception for duplicate keys
                 pass
 
-    def test_get_row_by_key(self):
+    def test_get_row_by_key(self) -> None:
         """Test retrieving row by key."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row") and hasattr(widget, "get_row"):
@@ -411,7 +410,7 @@ class TestItemListWidgetRowOperations:
                 # Method might not be available
                 pass
 
-    def test_row_count_after_operations(self):
+    def test_row_count_after_operations(self) -> None:
         """Test row count after various operations."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row") and hasattr(widget, "row_count"):

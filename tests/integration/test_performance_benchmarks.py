@@ -1,5 +1,4 @@
-"""
-Performance benchmarks for TraceRTM core operations.
+"""Performance benchmarks for TraceRTM core operations.
 
 Tests bulk operations, graph traversals, and sync performance with 1000+ items.
 Includes baseline metrics, performance thresholds, and detailed reporting.
@@ -50,10 +49,10 @@ PERFORMANCE_THRESHOLD = 1.5
 class PerformanceMetrics:
     """Tracks performance metrics for tests."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.metrics: list[dict[str, Any]] = []
 
-    def record(self, test_name: str, operation: str, duration_ms: float, item_count: int = 1):
+    def record(self, test_name: str, operation: str, duration_ms: float, item_count: int = 1) -> None:
         """Record a performance measurement."""
         per_item = duration_ms / item_count if item_count > 0 else 0
         self.metrics.append({
@@ -120,7 +119,7 @@ def large_project(db_session):
 class TestBulkCreatePerformance:
     """Performance tests for bulk item creation."""
 
-    def test_bulk_create_100_items(self, db_session, large_project, perf_metrics):
+    def test_bulk_create_100_items(self, db_session, large_project, perf_metrics) -> None:
         """Test creating 100 items."""
         start = time.perf_counter()
 
@@ -147,7 +146,7 @@ class TestBulkCreatePerformance:
         query_count = db_session.query(Item).filter(Item.project_id == large_project.id).count()
         assert query_count == 100
 
-    def test_bulk_create_500_items(self, db_session, large_project, perf_metrics):
+    def test_bulk_create_500_items(self, db_session, large_project, perf_metrics) -> None:
         """Test creating 500 items."""
         start = time.perf_counter()
 
@@ -173,7 +172,7 @@ class TestBulkCreatePerformance:
         query_count = db_session.query(Item).filter(Item.project_id == large_project.id).count()
         assert query_count == 500
 
-    def test_bulk_create_1000_items(self, db_session, large_project, perf_metrics):
+    def test_bulk_create_1000_items(self, db_session, large_project, perf_metrics) -> None:
         """Test creating 1000+ items."""
         start = time.perf_counter()
 
@@ -199,7 +198,7 @@ class TestBulkCreatePerformance:
         query_count = db_session.query(Item).filter(Item.project_id == large_project.id).count()
         assert query_count == 1000
 
-    def test_bulk_create_2000_items(self, db_session, large_project, perf_metrics):
+    def test_bulk_create_2000_items(self, db_session, large_project, perf_metrics) -> None:
         """Test creating 2000 items in batches."""
         start = time.perf_counter()
 
@@ -235,7 +234,7 @@ class TestBulkCreatePerformance:
 class TestBulkUpdatePerformance:
     """Performance tests for bulk item updates."""
 
-    def test_bulk_update_100_items(self, db_session, large_project, perf_metrics):
+    def test_bulk_update_100_items(self, db_session, large_project, perf_metrics) -> None:
         """Test updating 100 items."""
         # Create items
         items = []
@@ -279,7 +278,7 @@ class TestBulkUpdatePerformance:
         )
         assert updated_count == 100
 
-    def test_bulk_update_500_items(self, db_session, large_project, perf_metrics):
+    def test_bulk_update_500_items(self, db_session, large_project, perf_metrics) -> None:
         """Test updating 500 items."""
         # Create items
         items = []
@@ -323,7 +322,7 @@ class TestBulkUpdatePerformance:
         )
         assert updated_count == 500
 
-    def test_bulk_update_1000_items(self, db_session, large_project, perf_metrics):
+    def test_bulk_update_1000_items(self, db_session, large_project, perf_metrics) -> None:
         """Test updating 1000+ items."""
         # Create items in batches
         for batch in range(2):
@@ -371,7 +370,7 @@ class TestBulkUpdatePerformance:
 class TestBulkOperationService:
     """Performance tests for BulkOperationService."""
 
-    def test_bulk_preview_large_dataset(self, db_session, large_project, perf_metrics):
+    def test_bulk_preview_large_dataset(self, db_session, large_project, perf_metrics) -> None:
         """Test preview on large dataset."""
         # Create 500 items
         items = []
@@ -413,7 +412,7 @@ class TestBulkOperationService:
         assert preview["total_count"] == 500
         assert len(preview["sample_items"]) <= 5
 
-    def test_bulk_update_service_performance(self, db_session, large_project, perf_metrics):
+    def test_bulk_update_service_performance(self, db_session, large_project, perf_metrics) -> None:
         """Test BulkOperationService update performance."""
         # Create 300 items
         items = []
@@ -462,7 +461,7 @@ class TestBulkOperationService:
 class TestGraphTraversalPerformance:
     """Performance tests for graph operations."""
 
-    def test_create_deep_dependency_chain(self, db_session, large_project, perf_metrics):
+    def test_create_deep_dependency_chain(self, db_session, large_project, perf_metrics) -> None:
         """Test creating deep dependency chain (50 levels)."""
         start = time.perf_counter()
 
@@ -497,7 +496,7 @@ class TestGraphTraversalPerformance:
         assert items[0].parent_id is None
         assert items[49].parent_id == "chain-48"
 
-    def test_create_wide_dependency_graph(self, db_session, large_project, perf_metrics):
+    def test_create_wide_dependency_graph(self, db_session, large_project, perf_metrics) -> None:
         """Test creating wide dependency graph (1 parent, 100 children)."""
         start = time.perf_counter()
 
@@ -541,7 +540,7 @@ class TestGraphTraversalPerformance:
         # Verify
         assert len(items) == 100
 
-    def test_traverse_deep_chain(self, db_session, large_project, perf_metrics):
+    def test_traverse_deep_chain(self, db_session, large_project, perf_metrics) -> None:
         """Test traversing deep dependency chain."""
         # Create chain
         items = []
@@ -592,7 +591,7 @@ class TestGraphTraversalPerformance:
         # Verify
         assert depth == 49
 
-    def test_create_complex_link_graph(self, db_session, large_project, perf_metrics):
+    def test_create_complex_link_graph(self, db_session, large_project, perf_metrics) -> None:
         """Test creating complex link graph with 500 items and 1000+ links."""
         # Create items
         items = []
@@ -650,7 +649,7 @@ class TestGraphTraversalPerformance:
         link_count = db_session.query(Link).filter(Link.project_id == large_project.id).count()
         assert link_count >= 800
 
-    def test_query_linked_items(self, db_session, large_project, perf_metrics):
+    def test_query_linked_items(self, db_session, large_project, perf_metrics) -> None:
         """Test querying items with many outgoing links."""
         # Create items
         items = []
@@ -721,7 +720,7 @@ class TestGraphTraversalPerformance:
 class TestSyncPerformance:
     """Performance tests for sync operations."""
 
-    def test_create_events_bulk(self, db_session, large_project, perf_metrics):
+    def test_create_events_bulk(self, db_session, large_project, perf_metrics) -> None:
         """Test creating bulk events."""
         start = time.perf_counter()
 
@@ -747,7 +746,7 @@ class TestSyncPerformance:
         event_count = db_session.query(Event).filter(Event.project_id == large_project.id).count()
         assert event_count == 500
 
-    def test_sync_state_tracking(self, db_session, large_project, perf_metrics):
+    def test_sync_state_tracking(self, db_session, large_project, perf_metrics) -> None:
         """Test tracking sync state with large change history."""
         # Create items with metadata
         items = []
@@ -795,7 +794,7 @@ class TestSyncPerformance:
         # Verify
         assert len(query_items) == 300
 
-    def test_changelog_generation(self, db_session, large_project, perf_metrics):
+    def test_changelog_generation(self, db_session, large_project, perf_metrics) -> None:
         """Test generating changelog for large item set."""
         # Create items with multiple versions
         items = []
@@ -847,7 +846,7 @@ class TestSyncPerformance:
 class TestQueryPerformance:
     """Performance tests for various query patterns."""
 
-    def test_filter_items_by_status(self, db_session, large_project, perf_metrics):
+    def test_filter_items_by_status(self, db_session, large_project, perf_metrics) -> None:
         """Test filtering items by status."""
         # Create items with mixed statuses
         items = []
@@ -890,7 +889,7 @@ class TestQueryPerformance:
         # Verify
         assert len(filtered) > 0
 
-    def test_filter_items_by_multiple_criteria(self, db_session, large_project, perf_metrics):
+    def test_filter_items_by_multiple_criteria(self, db_session, large_project, perf_metrics) -> None:
         """Test filtering with multiple criteria."""
         # Create items
         items = []
@@ -936,7 +935,7 @@ class TestQueryPerformance:
         # Verify
         assert len(filtered) >= 0
 
-    def test_count_items_large_dataset(self, db_session, large_project, perf_metrics):
+    def test_count_items_large_dataset(self, db_session, large_project, perf_metrics) -> None:
         """Test counting items in large dataset."""
         # Create 1000 items
         for batch in range(2):
@@ -970,7 +969,7 @@ class TestQueryPerformance:
         # Verify
         assert count == 1000
 
-    def test_list_items_with_offset_limit(self, db_session, large_project, perf_metrics):
+    def test_list_items_with_offset_limit(self, db_session, large_project, perf_metrics) -> None:
         """Test pagination performance."""
         # Create 500 items
         items = []
@@ -1022,7 +1021,7 @@ class TestQueryPerformance:
 class TestConcurrencyPerformance:
     """Performance tests for concurrent operations."""
 
-    def test_concurrent_item_creation(self, db_session, large_project, perf_metrics):
+    def test_concurrent_item_creation(self, db_session, large_project, perf_metrics) -> None:
         """Test sequential item creation (mimics concurrent load)."""
         start = time.perf_counter()
 
@@ -1052,7 +1051,7 @@ class TestConcurrencyPerformance:
         # Verify
         assert len(items) == 300
 
-    def test_rapid_status_transitions(self, db_session, large_project, perf_metrics):
+    def test_rapid_status_transitions(self, db_session, large_project, perf_metrics) -> None:
         """Test rapid status transitions on items."""
         # Create items
         items = []
@@ -1097,7 +1096,7 @@ class TestConcurrencyPerformance:
 # ============================================================================
 
 
-def test_performance_report_generation(perf_metrics):
+def test_performance_report_generation(perf_metrics) -> None:
     """Test that performance report can be generated."""
     # Add some sample metrics
     perf_metrics.record("test1", "operation1", 100.5, 50)
@@ -1127,7 +1126,7 @@ def test_performance_report_generation(perf_metrics):
 # ============================================================================
 
 
-def test_performance_under_threshold(perf_metrics):
+def test_performance_under_threshold(perf_metrics) -> None:
     """Test that we can verify performance thresholds."""
     perf_metrics.record("test_op", "operation", 50.0, 100)
 

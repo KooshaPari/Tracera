@@ -35,7 +35,7 @@ class BulkPreview:
 class BulkOperationService:
     """Service for bulk operations with preview."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.items = ItemRepository(session)
         self.events = EventRepository(session)
@@ -120,13 +120,14 @@ class BulkOperationService:
         if not skip_preview:
             preview = await self.preview_bulk_update(pid, filters, updates)
             if not preview.is_safe():
-                raise ValueError(f"Bulk operation has warnings: {preview.validation_warnings}")
+                msg = f"Bulk operation has warnings: {preview.validation_warnings}"
+                raise ValueError(msg)
 
         # Execute bulk update with parallel processing
         matching_items = await self.items.query(pid, filters)
 
         if not matching_items:
-            logger.info(f"No items matched filters for bulk update in project {pid}")
+            logger.info("No items matched filters for bulk update in project %s", pid)
             return []
 
         # Create parallel update tasks for all matching items
@@ -176,7 +177,7 @@ class BulkOperationService:
 
         logger.info(
             f"Bulk update completed: {len(updated_items)}/{len(matching_items)} "
-            f"items updated successfully, {conflicts} conflicts"
+            f"items updated successfully, {conflicts} conflicts",
         )
 
         return updated_items

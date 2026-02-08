@@ -1,6 +1,4 @@
-"""
-LinkType model for TraceRTM.
-"""
+"""LinkType model for TraceRTM."""
 
 import uuid
 
@@ -18,9 +16,7 @@ def generate_link_type_uuid() -> str:
 
 
 class LinkType(Base, TimestampMixin):
-    """
-    Link type catalog for project edge semantics.
-    """
+    """Link type catalog for project edge semantics."""
 
     __tablename__ = "link_types"
     __table_args__ = (

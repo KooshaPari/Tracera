@@ -1,6 +1,4 @@
-"""
-Pytest configuration and fixtures
-"""
+"""Pytest configuration and fixtures."""
 
 import asyncio
 import contextlib
@@ -150,16 +148,13 @@ async def test_db_engine():
 
 @pytest_asyncio.fixture(scope="function")
 async def async_db_session(db_session):
-    """
-    For tests expecting an async session, reuse the synchronous session to avoid greenlet issues.
-    """
+    """For tests expecting an async session, reuse the synchronous session to avoid greenlet issues."""
     yield db_session
 
 
 @pytest.fixture
 def project_factory(db_session):
-    """
-    Factory for creating test projects using ProjectRepository.
+    """Factory for creating test projects using ProjectRepository.
 
     This ensures projects are created using the same code path as production,
     providing more realistic test coverage.
@@ -178,8 +173,7 @@ def project_factory(db_session):
 
 @pytest.fixture
 def item_factory(db_session):
-    """
-    Factory for creating test items using ItemRepository.
+    """Factory for creating test items using ItemRepository.
 
     This ensures items are created using the same code path as production,
     providing more realistic test coverage.
@@ -198,7 +192,7 @@ def item_factory(db_session):
 
 @pytest.fixture
 def router():
-    """Create router instance"""
+    """Create router instance."""
     if ArchRouter is None:
         pytest.skip("router module not available")
     assert ArchRouter is not None  # narrow type after skip
@@ -207,7 +201,7 @@ def router():
 
 @pytest.fixture
 def registry():
-    """Create registry instance"""
+    """Create registry instance."""
     if ToolRegistry is None or TOOL_REGISTRY is None:
         pytest.skip("router module not available")
     assert ToolRegistry is not None and TOOL_REGISTRY is not None  # narrow type after skip
@@ -216,13 +210,13 @@ def registry():
 
 @pytest.fixture
 def tool_registry_dict():
-    """Get tool registry dictionary"""
+    """Get tool registry dictionary."""
     return TOOL_REGISTRY
 
 
 @pytest.fixture
 def sample_routes():
-    """Sample routes for testing"""
+    """Sample routes for testing."""
     return {
         "test_route_1": {
             "description": "Test route 1",
@@ -252,16 +246,14 @@ except ImportError:
 if TEXTUAL_AVAILABLE:
 
     class TextualTestApp(App):
-        """
-        Test application for mounting widgets in isolation.
+        """Test application for mounting widgets in isolation.
 
         This app provides a minimal container for testing Textual widgets
         that require an app context to initialize properly.
         """
 
-        def __init__(self, widget=None, *args, **kwargs):
-            """
-            Initialize test app.
+        def __init__(self, widget=None, *args, **kwargs) -> None:
+            """Initialize test app.
 
             Args:
                 widget: Widget to mount in the app (optional)
@@ -279,8 +271,7 @@ if TEXTUAL_AVAILABLE:
 
 @pytest_asyncio.fixture
 async def textual_app():
-    """
-    Provides a Textual application context for widget testing.
+    """Provides a Textual application context for widget testing.
 
     This fixture creates a test app and provides a pilot for interaction.
 
@@ -308,8 +299,7 @@ async def textual_app():
 
 @pytest.fixture
 def textual_app_context():
-    """
-    Enhanced Textual application context fixture for comprehensive widget testing.
+    """Enhanced Textual application context fixture for comprehensive widget testing.
 
     Provides both app and pilot instances for tests that need full app lifecycle control.
     Supports both async context manager and direct instantiation patterns.
@@ -341,8 +331,7 @@ def textual_app_context():
 
 @pytest.fixture
 def mounted_widget():
-    """
-    Synchronous fixture for widgets that need to be in an app context.
+    """Synchronous fixture for widgets that need to be in an app context.
 
     This is a workaround for tests that call methods requiring query_one()
     but don't actually need async interaction.
@@ -360,8 +349,7 @@ def mounted_widget():
         pytest.skip("Textual not available")
 
     def _mount_widget(widget):
-        """
-        Mount widget in a test app synchronously.
+        """Mount widget in a test app synchronously.
 
         This simulates the widget being mounted without needing
         an async context. Useful for testing reactive attributes
@@ -408,8 +396,7 @@ def mounted_widget():
 
 @pytest.fixture
 def verify_context_cleanup():
-    """
-    Fixture to verify that context managers properly call __exit__.
+    """Fixture to verify that context managers properly call __exit__.
 
     This helps catch resource leaks where __exit__ isn't being called.
 
@@ -429,9 +416,8 @@ def verify_context_cleanup():
         Callable that returns verification function
     """
 
-    def _verify(mock_context):
-        """
-        Verify that __exit__ was called on a context manager mock.
+    def _verify(mock_context) -> None:
+        """Verify that __exit__ was called on a context manager mock.
 
         Args:
             mock_context: MagicMock object with __exit__ attribute
@@ -453,8 +439,7 @@ def verify_context_cleanup():
 
 @pytest.fixture
 def verify_async_context_cleanup():
-    """
-    Fixture to verify that async context managers properly call __aexit__.
+    """Fixture to verify that async context managers properly call __aexit__.
 
     This helps catch resource leaks where __aexit__ isn't being called.
 
@@ -471,9 +456,8 @@ def verify_async_context_cleanup():
             verify_async_context_cleanup(mock_context)
     """
 
-    def _verify(mock_context):
-        """
-        Verify that __aexit__ was called on an async context manager mock.
+    def _verify(mock_context) -> None:
+        """Verify that __aexit__ was called on an async context manager mock.
 
         Args:
             mock_context: AsyncMock object with __aexit__ attribute

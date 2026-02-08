@@ -29,7 +29,7 @@ class CacheHeadersMiddleware(BaseHTTPMiddleware):
             else:
                 response.headers["Cache-Control"] = "private, max-age=60"
         # API mutations - no caching
-        elif path.startswith("/api") and request.method in ("POST", "PUT", "DELETE", "PATCH"):
+        elif path.startswith("/api") and request.method in {"POST", "PUT", "DELETE", "PATCH"}:
             response.headers["Cache-Control"] = "no-store"
 
         return response

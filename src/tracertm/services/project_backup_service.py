@@ -1,5 +1,4 @@
-"""
-Project backup and restore service for Epic 6 (Story 6.6, FR53).
+"""Project backup and restore service for Epic 6 (Story 6.6, FR53).
 
 Provides enhanced backup/restore capabilities with templates and cloning.
 """
@@ -16,11 +15,9 @@ from tracertm.models.project import Project
 
 
 class ProjectBackupService:
-    """
-    Service for project backup, restore, and template management (Story 6.6, FR53).
-    """
+    """Service for project backup, restore, and template management (Story 6.6, FR53)."""
 
-    def __init__(self, session: Session):
+    def __init__(self, session: Session) -> None:
         """Initialize project backup service."""
         self.session = session
 
@@ -30,8 +27,7 @@ class ProjectBackupService:
         include_history: bool = False,
         include_agents: bool = False,
     ) -> dict[str, Any]:
-        """
-        Create a complete backup of a project (Story 6.6, FR53).
+        """Create a complete backup of a project (Story 6.6, FR53).
 
         Args:
             project_id: Project ID to backup
@@ -43,7 +39,8 @@ class ProjectBackupService:
         """
         project = self.session.query(Project).filter(Project.id == project_id).first()
         if not project:
-            raise ValueError(f"Project not found: {project_id}")
+            msg = f"Project not found: {project_id}"
+            raise ValueError(msg)
 
         # Get all items
         items = self.session.query(Item).filter(Item.project_id == project_id, Item.deleted_at.is_(None)).all()
@@ -141,7 +138,7 @@ class ProjectBackupService:
         return str(project.id)
 
     def _restore_items_from_backup(
-        self, project_id: str, backup_data: dict[str, Any], preserve_ids: bool
+        self, project_id: str, backup_data: dict[str, Any], preserve_ids: bool,
     ) -> dict[str, str]:
         """Restore items and return old_id -> new_id map."""
         item_id_map: dict[str, str] = {}
@@ -181,7 +178,7 @@ class ProjectBackupService:
         self.session.commit()
 
     def _restore_links_from_backup(
-        self, project_id: str, backup_data: dict[str, Any], item_id_map: dict[str, str]
+        self, project_id: str, backup_data: dict[str, Any], item_id_map: dict[str, str],
     ) -> None:
         """Restore links using id map."""
         for link_data in backup_data.get("links", []):
@@ -203,8 +200,7 @@ class ProjectBackupService:
         project_name: str | None = None,
         preserve_ids: bool = False,
     ) -> str:
-        """
-        Restore a project from backup (Story 6.6, FR53).
+        """Restore a project from backup (Story 6.6, FR53).
 
         Args:
             backup_data: Backup data dictionary
@@ -215,7 +211,8 @@ class ProjectBackupService:
             New project ID
         """
         if not backup_data or "project" not in backup_data:
-            raise ValueError("Invalid backup data: missing 'project' section")
+            msg = "Invalid backup data: missing 'project' section"
+            raise ValueError(msg)
 
         project_id = self._get_or_create_project_from_backup(backup_data, project_name)
         item_id_map = self._restore_items_from_backup(project_id, backup_data, preserve_ids)
@@ -230,8 +227,7 @@ class ProjectBackupService:
         include_items: bool = True,
         include_links: bool = True,
     ) -> str:
-        """
-        Clone a project (Story 6.5, FR46).
+        """Clone a project (Story 6.5, FR46).
 
         Args:
             source_project_id: Source project ID
@@ -263,8 +259,7 @@ class ProjectBackupService:
         project_id: str,
         template_name: str,
     ) -> str:
-        """
-        Create a project template (Story 6.5, FR46).
+        """Create a project template (Story 6.5, FR46).
 
         Args:
             project_id: Project ID to use as template
@@ -292,8 +287,7 @@ class ProjectBackupService:
         return template_id
 
     def list_templates(self) -> list[dict[str, Any]]:
-        """
-        List all project templates (Story 6.5, FR46).
+        """List all project templates (Story 6.5, FR46).
 
         Returns:
             List of template dictionaries

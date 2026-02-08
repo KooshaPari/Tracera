@@ -41,7 +41,7 @@ class TokenBridge:
         audience: str | None = None,
         issuer: str | None = None,
         cache_ttl: int = 86400,  # 24 hours
-    ):
+    ) -> None:
         """Initialize token bridge.
 
         Args:
@@ -52,7 +52,8 @@ class TokenBridge:
             cache_ttl: JWKS cache TTL in seconds (default 24 hours)
         """
         if len(hs_secret) < HS256_MIN_SECRET_LENGTH:
-            raise ValueError("HS256 secret must be at least 32 characters")
+            msg = "HS256 secret must be at least 32 characters"
+            raise ValueError(msg)
 
         self.hs_secret = hs_secret
         self.jwks_url = jwks_url
@@ -94,18 +95,21 @@ class TokenBridge:
             try:
                 return self._validate_rs256_token(token)
             except Exception as e:
-                logger.error("Token validation failed for both HS256 and RS256")
-                raise jwt.InvalidTokenError(f"Token validation failed: HS256={rs_failure!r}, RS256={e!r}") from e
+                logger.exception("Token validation failed for both HS256 and RS256")
+                msg = f"Token validation failed: HS256={rs_failure!r}, RS256={e!r}"
+                raise jwt.InvalidTokenError(msg) from e
 
         # RS256 or other: try RS256 only (skip HS256 to avoid InvalidAlgorithmError)
         try:
             return self._validate_rs256_token(token)
         except ExpiredSignatureError as e:
             logger.warning("Token expired (RS256)")
-            raise jwt.InvalidTokenError("Token expired") from e
+            msg = "Token expired"
+            raise jwt.InvalidTokenError(msg) from e
         except Exception as e:
             logger.debug("RS256 validation failed: %s", e)
-            raise jwt.InvalidTokenError(f"Token validation failed: {e!r}") from e
+            msg = f"Token validation failed: {e!r}"
+            raise jwt.InvalidTokenError(msg) from e
 
     def _validate_rs256_token(self, token: str) -> dict[str, Any]:
         """Validate WorkOS RS256 token using JWKS.
@@ -138,19 +142,22 @@ class TokenBridge:
         token_issuer = decoded.get("iss")
         if self.issuer and token_issuer:
             iss_ok = str(token_issuer).rstrip("/") == str(self.issuer).rstrip("/") or str(token_issuer).startswith(
-                "https://api.workos.com/"
+                "https://api.workos.com/",
             )
             if not iss_ok:
-                raise InvalidIssuerError(f"Invalid issuer: expected {self.issuer!r}, got {token_issuer!r}")
+                msg = f"Invalid issuer: expected {self.issuer!r}, got {token_issuer!r}"
+                raise InvalidIssuerError(msg)
 
         # Optional manual audience check only when token has aud (avoid MissingRequiredClaimError)
         token_aud = decoded.get("aud")
         if self.audience and token_aud:
             if isinstance(token_aud, list[Any]):
                 if self.audience not in token_aud:
-                    raise InvalidAudienceError(f"Invalid audience: expected {self.audience!r}, got {token_aud!r}")
+                    msg = f"Invalid audience: expected {self.audience!r}, got {token_aud!r}"
+                    raise InvalidAudienceError(msg)
             elif token_aud != self.audience:
-                raise InvalidAudienceError(f"Invalid audience: expected {self.audience!r}, got {token_aud!r}")
+                msg = f"Invalid audience: expected {self.audience!r}, got {token_aud!r}"
+                raise InvalidAudienceError(msg)
 
         logger.info("Validated RS256 token for user %s", decoded.get("sub"))
         return decoded
@@ -213,7 +220,7 @@ class TokenBridge:
         }
 
         token = jwt.encode(payload, self.hs_secret, algorithm="HS256")
-        logger.info(f"Created bridge token for user {user_id} (org {org_id}), expires in {ttl_minutes} minutes")
+        logger.info("Created bridge token for user %s (org %s), expires in %s minutes", user_id, org_id, ttl_minutes)
         return token
 
     def refresh_jwks(self) -> None:
@@ -249,7 +256,8 @@ def get_token_bridge() -> TokenBridge:
     """
     hs_secret = os.getenv("JWT_SECRET")
     if not hs_secret:
-        raise ValueError("JWT_SECRET environment variable is required")
+        msg = "JWT_SECRET environment variable is required"
+        raise ValueError(msg)
 
     jwks_url = os.getenv("WORKOS_JWKS_URL")
     if not jwks_url:
@@ -259,7 +267,8 @@ def get_token_bridge() -> TokenBridge:
         if client_id:
             jwks_url = f"{api_base.rstrip('/')}/sso/jwks/{client_id}"
         else:
-            raise ValueError("Either WORKOS_JWKS_URL or WORKOS_CLIENT_ID must be set")
+            msg = "Either WORKOS_JWKS_URL or WORKOS_CLIENT_ID must be set"
+            raise ValueError(msg)
 
     return TokenBridge(
         hs_secret=hs_secret,

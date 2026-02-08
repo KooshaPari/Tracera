@@ -1,5 +1,4 @@
-"""
-Async database adapter for MCP tools.
+"""Async database adapter for MCP tools.
 
 Provides shared connection pool with FastAPI and RLS context management.
 This replaces the separate MCP database manager with a unified async engine.
@@ -8,16 +7,18 @@ This replaces the separate MCP database manager with a unified async engine.
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
 from tracertm.config.manager import ConfigManager
 from tracertm.core.context import current_user_id
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 # Singleton async engine (shared with FastAPI)
 _async_engine: AsyncEngine | None = None
@@ -26,8 +27,7 @@ _engine_lock = asyncio.Lock()
 
 
 async def get_async_engine() -> AsyncEngine:
-    """
-    Get or create the shared async database engine.
+    """Get or create the shared async database engine.
 
     This engine is shared between MCP tools and FastAPI routes,
     ensuring a single connection pool for optimal resource usage.
@@ -86,8 +86,7 @@ async def get_async_engine() -> AsyncEngine:
 
 
 def _convert_to_async_url(database_url: str) -> str:
-    """
-    Convert sync database URL to async driver URL.
+    """Convert sync database URL to async driver URL.
 
     Args:
         database_url: Sync database URL (postgresql:// or sqlite://)
@@ -101,15 +100,14 @@ def _convert_to_async_url(database_url: str) -> str:
         return database_url.replace("sqlite://", "sqlite+aiosqlite://", 1)
     if database_url.startswith("postgresql://"):
         # Remove query parameters that asyncpg doesn't support
-        base_url = database_url.split("?")[0]
+        base_url = database_url.split("?", maxsplit=1)[0]
         return base_url.replace("postgresql://", "postgresql+asyncpg://", 1)
     return database_url
 
 
 @asynccontextmanager
 async def get_mcp_session() -> AsyncGenerator[AsyncSession, None]:
-    """
-    Get an async database session with RLS context for MCP tools.
+    """Get an async database session with RLS context for MCP tools.
 
     This session:
     - Shares the connection pool with FastAPI
@@ -132,7 +130,8 @@ async def get_mcp_session() -> AsyncGenerator[AsyncSession, None]:
         await get_async_engine()
 
     if _async_session_factory is None:
-        raise RuntimeError("Failed to initialize async session factory")
+        msg = "Failed to initialize async session factory"
+        raise RuntimeError(msg)
 
     async with _async_session_factory() as session:
         try:
@@ -145,7 +144,7 @@ async def get_mcp_session() -> AsyncGenerator[AsyncSession, None]:
                 # Only set RLS for PostgreSQL
                 if database_url and "postgres" in database_url:
                     await session.execute(
-                        text("SELECT set_config('app.current_user_id', :user_id, false)"), {"user_id": user_id}
+                        text("SELECT set_config('app.current_user_id', :user_id, false)"), {"user_id": user_id},
                     )
 
             yield session
@@ -157,9 +156,8 @@ async def get_mcp_session() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
-async def reset_engine():
-    """
-    Reset the async engine (for testing purposes).
+async def reset_engine() -> None:
+    """Reset the async engine (for testing purposes).
 
     This should only be called in test teardown or when reconfiguring
     the database connection.
@@ -173,8 +171,7 @@ async def reset_engine():
 
 
 async def get_pool_status() -> dict[str, Any]:
-    """
-    Get current connection pool status.
+    """Get current connection pool status.
 
     Returns:
         Dictionary with pool metrics:

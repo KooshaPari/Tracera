@@ -1,5 +1,4 @@
-"""
-Graph visualization TUI application.
+"""Graph visualization TUI application.
 
 Visualizes item relationships and links as a graph.
 """
@@ -20,7 +19,7 @@ except ImportError:
     if TYPE_CHECKING:
         from textual.app import App, ComposeResult
         from textual.binding import Binding
-        from textual.containers import Container, Horizontal, Vertical
+        from textual.containers import Container
         from textual.geometry import Region
         from textual.widgets import DataTable, Footer, Header, Static
     else:
@@ -54,6 +53,7 @@ except ImportError:
 
 
 from sqlalchemy.orm import Session
+from textual.containers import Horizontal, Vertical
 
 from tracertm.config.manager import ConfigManager
 from tracertm.database.connection import DatabaseConnection
@@ -256,7 +256,8 @@ if not TEXTUAL_AVAILABLE:
         BINDINGS: ClassVar[list]
 
         def __init__(self) -> None:
-            raise ImportError("Textual is required for TUI. Install with: pip install textual")
+            msg = "Textual is required for TUI. Install with: pip install textual"
+            raise ImportError(msg)
 
         def setup_database(self) -> None: ...
         def load_graph_data(self) -> None: ...

@@ -21,7 +21,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Add table partitioning."""
-
     # =========================================================================
     # HELPER FUNCTION: Create partition maintenance function
     # =========================================================================
@@ -341,7 +340,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Remove table partitioning."""
-
     # Drop triggers
     op.execute("DROP TRIGGER IF EXISTS trigger_auto_create_project_partitions ON projects")
 

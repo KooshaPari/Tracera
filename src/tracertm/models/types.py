@@ -1,6 +1,4 @@
-"""
-Custom SQLAlchemy types for TraceRTM.
-"""
+"""Custom SQLAlchemy types for TraceRTM."""
 
 from typing import Any
 
@@ -11,8 +9,7 @@ from sqlalchemy.types import TypeDecorator
 
 
 class JSONType(TypeDecorator[dict[str, Any]]):
-    """
-    JSON type that uses JSONB for PostgreSQL and JSON for other databases.
+    """JSON type that uses JSONB for PostgreSQL and JSON for other databases.
 
     This allows us to use SQLite for testing while using JSONB in production.
     """

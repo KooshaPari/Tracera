@@ -38,7 +38,7 @@ def _event(session, project_id, entity_id, agent, minutes_ago=0):
     return event
 
 
-def test_detect_conflicts_finds_multiple_agents(sync_session):
+def test_detect_conflicts_finds_multiple_agents(sync_session) -> None:
     _seed_item(sync_session, item_id="item-1")
     _event(sync_session, "proj-1", "item-1", "agent-a", minutes_ago=1)
     _event(sync_session, "proj-1", "item-1", "agent-b", minutes_ago=0)
@@ -52,7 +52,7 @@ def test_detect_conflicts_finds_multiple_agents(sync_session):
     assert set(conflict["conflicting_agents"]) == {"agent-a", "agent-b"}
 
 
-def test_detect_conflicts_empty_when_single_agent(sync_session):
+def test_detect_conflicts_empty_when_single_agent(sync_session) -> None:
     _seed_item(sync_session, item_id="item-2")
     _event(sync_session, "proj-1", "item-2", "agent-a")
 
@@ -62,7 +62,7 @@ def test_detect_conflicts_empty_when_single_agent(sync_session):
     assert conflicts == []
 
 
-def test_resolve_conflict_last_write_and_merge(sync_session):
+def test_resolve_conflict_last_write_and_merge(sync_session) -> None:
     _seed_item(sync_session, item_id="item-3")
     # Create two events to trigger conflict path
     _event(sync_session, "proj-1", "item-3", "agent-a", minutes_ago=10)
@@ -79,7 +79,7 @@ def test_resolve_conflict_last_write_and_merge(sync_session):
     assert merge["strategy"] == "merge"
 
 
-def test_resolve_conflict_errors(sync_session):
+def test_resolve_conflict_errors(sync_session) -> None:
     svc = ConflictResolutionService(sync_session)
     with pytest.raises(ValueError):
         svc.resolve_conflict("proj-1", "missing-item")

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
+import contextlib
 import os
+import pathlib
 import re
 import sqlite3
 from collections.abc import Iterable
 
-REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+REPO_ROOT = pathlib.Path(os.path.join(pathlib.Path(__file__).parent, os.pardir)).resolve()
 
 SKIP_DIRS = {
     ".git",
@@ -110,10 +112,8 @@ def clean_sqlite_db(db_path: str) -> dict:
             result["projects_deleted"] = len(project_ids)
 
         conn.commit()
-        try:
+        with contextlib.suppress(sqlite3.Error):
             conn.execute("VACUUM")
-        except sqlite3.Error:
-            pass
     finally:
         conn.close()
 
@@ -127,12 +127,7 @@ def main() -> None:
     # Output summary for operator
     for result in results:
         if result["skipped"]:
-            print(f"SKIP {result['db']} ({result['reason']})")
-        else:
-            print(
-                f"CLEAN {result['db']} items_deleted={result['items_deleted']} "
-                f"projects_deleted={result['projects_deleted']}"
-            )
+            pass
 
 
 if __name__ == "__main__":

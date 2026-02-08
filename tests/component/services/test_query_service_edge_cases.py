@@ -1,5 +1,4 @@
-"""
-Comprehensive edge case and concurrency tests for query_service.
+"""Comprehensive edge case and concurrency tests for query_service.
 
 This module tests:
 - Concurrent query operations
@@ -38,7 +37,7 @@ class TestQueryServiceConcurrency:
         """Create service instance."""
         return QueryService(mock_session)
 
-    async def test_concurrent_queries(self, service):
+    async def test_concurrent_queries(self, service) -> None:
         """Test multiple concurrent query operations."""
         # Execute 10 concurrent queries
         tasks = [service.search({"criteria": f"query_{i}"}) for i in range(10)]
@@ -48,14 +47,14 @@ class TestQueryServiceConcurrency:
         assert len(results) == 10
         assert all(isinstance(r, list) for r in results)
 
-    async def test_query_with_circular_dependencies(self, service):
+    async def test_query_with_circular_dependencies(self, service) -> None:
         """Test query results with circular item dependencies."""
         # Service returns empty list for stub implementation
         result = await service.search({"circular": True})
         assert isinstance(result, list)
         # In real implementation, would verify circular dependency handling
 
-    async def test_large_dataset_query_performance(self, service):
+    async def test_large_dataset_query_performance(self, service) -> None:
         """Test query performance on large dataset."""
         import time
 
@@ -68,7 +67,7 @@ class TestQueryServiceConcurrency:
         assert duration < 1.0, f"Query took {duration}s, expected < 1s"
         assert isinstance(result, list)
 
-    async def test_query_cancellation(self, service):
+    async def test_query_cancellation(self, service) -> None:
         """Test query operation cancellation."""
 
         # Create a long-running task
@@ -86,7 +85,7 @@ class TestQueryServiceConcurrency:
         with pytest.raises(asyncio.CancelledError):
             await task
 
-    async def test_concurrent_search_with_different_criteria(self, service):
+    async def test_concurrent_search_with_different_criteria(self, service) -> None:
         """Test concurrent searches with different criteria."""
         criteria_list = [
             {"type": "epic"},
@@ -121,7 +120,7 @@ class TestQueryServiceErrors:
         """Create service instance."""
         return QueryService(mock_session)
 
-    async def test_query_with_invalid_filters(self, service):
+    async def test_query_with_invalid_filters(self, service) -> None:
         """Test query with invalid filter conditions."""
         # Test various invalid filter types
         invalid_filters = [
@@ -135,36 +134,36 @@ class TestQueryServiceErrors:
             # Stub implementation returns empty list, doesn't fail
             assert isinstance(result, list)
 
-    async def test_query_with_missing_dependencies(self, service):
+    async def test_query_with_missing_dependencies(self, service) -> None:
         """Test query when dependencies are missing."""
         result = await service.search({"missing_dependency": "nonexistent_id"})
         assert isinstance(result, list)
         # In real implementation, would verify graceful error handling
 
-    async def test_query_memory_limits(self, service):
+    async def test_query_memory_limits(self, service) -> None:
         """Test query behavior with memory constraints."""
         # Simulate large result set request
         result = await service.search({"limit": 100000})
         assert isinstance(result, list)
         # In real implementation, would verify memory-efficient streaming
 
-    async def test_query_with_none_criteria(self, service):
+    async def test_query_with_none_criteria(self, service) -> None:
         """Test query with None criteria."""
         result = await service.search(None)
         assert isinstance(result, list)
 
-    async def test_query_with_empty_criteria(self, service):
+    async def test_query_with_empty_criteria(self, service) -> None:
         """Test query with empty criteria."""
         result = await service.search({})
         assert isinstance(result, list)
 
-    async def test_query_service_initialization_without_session(self):
+    async def test_query_service_initialization_without_session(self) -> None:
         """Test service initialization without session."""
         service = QueryService(None)
         assert service is not None
         assert service.db_session is None
 
-    async def test_query_with_database_error(self):
+    async def test_query_with_database_error(self) -> None:
         """Test query with database error."""
         mock_session = AsyncMock()
         mock_session.execute.side_effect = Exception("Database connection failed")
@@ -185,7 +184,7 @@ class TestQueryServiceValidation:
         """Create service instance."""
         return QueryService(AsyncMock())
 
-    async def test_query_with_special_characters(self, service):
+    async def test_query_with_special_characters(self, service) -> None:
         """Test query with special characters in criteria."""
         special_chars = [
             {"query": "test@example.com"},
@@ -199,7 +198,7 @@ class TestQueryServiceValidation:
             result = await service.search(criteria)
             assert isinstance(result, list)
 
-    async def test_query_with_unicode(self, service):
+    async def test_query_with_unicode(self, service) -> None:
         """Test query with unicode characters."""
         unicode_queries = [
             {"query": "测试"},
@@ -212,7 +211,7 @@ class TestQueryServiceValidation:
             result = await service.search(criteria)
             assert isinstance(result, list)
 
-    async def test_query_result_consistency(self, service):
+    async def test_query_result_consistency(self, service) -> None:
         """Test query results are consistent across multiple calls."""
         criteria = {"test": "consistency"}
 
@@ -224,7 +223,7 @@ class TestQueryServiceValidation:
         # All results should be the same for same criteria
         assert all(r == results[0] for r in results)
 
-    async def test_query_with_pagination_params(self, service):
+    async def test_query_with_pagination_params(self, service) -> None:
         """Test query with pagination parameters."""
         result = await service.search({
             "limit": 10,
@@ -239,7 +238,7 @@ class TestQueryServiceValidation:
 class TestQueryServiceResourceManagement:
     """Test resource management and cleanup."""
 
-    async def test_multiple_service_instances(self):
+    async def test_multiple_service_instances(self) -> None:
         """Test multiple service instances don't interfere."""
         services = [QueryService(AsyncMock()) for _ in range(10)]
 
@@ -249,7 +248,7 @@ class TestQueryServiceResourceManagement:
         assert len(results) == 10
         assert all(isinstance(r, list) for r in results)
 
-    async def test_service_reuse(self):
+    async def test_service_reuse(self) -> None:
         """Test service can be reused multiple times."""
         service = QueryService(AsyncMock())
 
@@ -257,7 +256,7 @@ class TestQueryServiceResourceManagement:
             result = await service.search({"iteration": i})
             assert isinstance(result, list)
 
-    async def test_query_with_timeout(self):
+    async def test_query_with_timeout(self) -> None:
         """Test query with timeout constraint."""
         service = QueryService(AsyncMock())
 

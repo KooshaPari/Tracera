@@ -1,6 +1,4 @@
-"""
-Repository for GitHub App Installation operations.
-"""
+"""Repository for GitHub App Installation operations."""
 
 from datetime import UTC, datetime
 from typing import Any
@@ -14,7 +12,7 @@ from tracertm.models.github_app_installation import GitHubAppInstallation
 class GitHubAppInstallationRepository:
     """Repository for GitHub App installation operations."""
 
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
     async def create(
@@ -49,7 +47,7 @@ class GitHubAppInstallationRepository:
     async def get_by_github_installation_id(self, github_installation_id: int) -> GitHubAppInstallation | None:
         """Get installation by GitHub's installation ID."""
         result = await self.db.execute(
-            select(GitHubAppInstallation).where(GitHubAppInstallation.installation_id == github_installation_id)
+            select(GitHubAppInstallation).where(GitHubAppInstallation.installation_id == github_installation_id),
         )
         return result.scalar_one_or_none()
 
@@ -59,7 +57,7 @@ class GitHubAppInstallationRepository:
             select(GitHubAppInstallation)
             .where(GitHubAppInstallation.account_id == account_id)
             .where(GitHubAppInstallation.suspended_at.is_(None))
-            .order_by(GitHubAppInstallation.created_at.desc())
+            .order_by(GitHubAppInstallation.created_at.desc()),
         )
         return list(result.scalars().all())
 

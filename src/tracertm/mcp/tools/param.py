@@ -11,10 +11,9 @@ import asyncio
 import gzip
 import json
 import re
-from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, Never, cast
 
 
 def _path_write_text(path_str: str, content: str, encoding: str = "utf-8") -> None:
@@ -41,11 +40,13 @@ def _load_data_from_path(path: str) -> Any:
     """Sync helper: load import data from file path (run via asyncio.to_thread)."""
     p = Path(path)
     if not p.exists():
-        raise ToolError(f"File not found: {path}")
+        msg = f"File not found: {path}"
+        raise ToolError(msg)
     if p.suffix.lower() in {".yaml", ".yml"}:
         result = yaml.safe_load(p.read_text(encoding="utf-8"))
         if result is None:
-            raise ToolError(f"Failed to parse YAML file: {path}")
+            msg = f"Failed to parse YAML file: {path}"
+            raise ToolError(msg)
         return result
     return json.loads(p.read_text(encoding="utf-8"))
 
@@ -54,7 +55,8 @@ def _list_ingestable_paths(dir_path: str, recursive: bool) -> list[tuple[str, st
     """Sync helper: list (path_str, suffix) for ingestable files (run via asyncio.to_thread)."""
     directory = Path(dir_path)
     if not directory.exists():
-        raise ToolError(f"Directory not found: {dir_path}")
+        msg = f"Directory not found: {dir_path}"
+        raise ToolError(msg)
     patterns = {".md", ".mdx", ".yaml", ".yml"}
     files = directory.rglob("*") if recursive else directory.iterdir()
     return [(str(p), p.suffix.lower()) for p in files if p.is_file() and p.suffix.lower() in patterns]
@@ -74,7 +76,8 @@ def _backup_read(path_str: str) -> dict[str, Any]:
     """Sync helper: read backup from path (run via asyncio.to_thread)."""
     backup_file = Path(path_str)
     if not backup_file.exists():
-        raise ToolError(f"Backup file not found: {path_str}")
+        msg = f"Backup file not found: {path_str}"
+        raise ToolError(msg)
     if backup_file.suffix == ".gz":
         with gzip.open(backup_file, "rt", encoding="utf-8") as f:
             return json.load(f)
@@ -118,7 +121,8 @@ HOURS_IDLE_THRESHOLD = 24
 
 def _safe_table_name(name: str) -> str:
     if not _TABLE_NAME_RE.match(name):
-        raise ToolError(f"Invalid table name: {name!r}")
+        msg = f"Invalid table name: {name!r}"
+        raise ToolError(msg)
     return name
 
 
@@ -127,9 +131,10 @@ try:
     from tracertm.mcp.tools import core_tools as core
 except Exception:  # pragma: no cover - test fallback
 
-    async def _core_unavailable(*_args: Any, **_kwargs: Any):
+    async def _core_unavailable(*_args: Any, **_kwargs: Any) -> Never:
         await asyncio.sleep(0)
-        raise ToolError("MCP core tools are unavailable in this environment.")
+        msg = "MCP core tools are unavailable in this environment."
+        raise ToolError(msg)
 
     class _CoreStub:
         select_project = _core_unavailable
@@ -154,6 +159,9 @@ from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.services.benchmark_service import BenchmarkService
 from tracertm.services.chaos_mode_service import ChaosModeService
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
 
 # Wire unified dispatch to core tool implementations.
 project_tools = core
@@ -199,7 +207,7 @@ def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
 async def _call_tool(mod: Any, tool_name: str, **kwargs: Any) -> Any:
     """Invoke a tool by name on a module (handles FunctionTool/callable from @mcp.tool())."""
     fn = getattr(mod, tool_name)
-    return await cast(Callable[..., Awaitable[Any]], fn)(**kwargs)
+    return await cast("Callable[..., Awaitable[Any]]", fn)(**kwargs)
 
 
 def _get_access_token_from_ctx() -> Any | None:
@@ -229,11 +237,13 @@ def _resolve_project_id(payload: dict[str, Any], ctx: Any | None) -> str | None:
     if allowed:
         if project_id:
             if project_id not in allowed:
-                raise ToolError("Project access denied for requested project_id.")
+                msg = "Project access denied for requested project_id."
+                raise ToolError(msg)
             return project_id
         if len(allowed) == 1:
             return allowed[0]
-        raise ToolError("project_id required for this request.")
+        msg = "project_id required for this request."
+        raise ToolError(msg)
 
     return project_id
 
@@ -276,7 +286,7 @@ def _build_sync_engine() -> SyncEngine:
 
     return SyncEngine(
         db_connection=db_connection,
-        api_client=cast(TraceRTMClient, api_client),
+        api_client=cast("TraceRTMClient", api_client),
         storage_manager=storage_manager,
         config=SyncConfig(conflict_strategy=conflict_strategy),
     )
@@ -305,7 +315,8 @@ async def _get_async_session() -> AsyncSession:
     config = ConfigManager()
     database_url = config.get("database_url")
     if not database_url:
-        raise ToolError("Database URL not configured.")
+        msg = "Database URL not configured."
+        raise ToolError(msg)
 
     if database_url.startswith("postgresql://"):
         database_url = database_url.replace("postgresql://", "postgresql+asyncpg://")
@@ -315,7 +326,7 @@ async def _get_async_session() -> AsyncSession:
     engine = create_async_engine(database_url, echo=False)
     async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
     session = async_session_maker()
-    setattr(session, "_tracertm_engine", engine)
+    session._tracertm_engine = engine
     return session
 
 
@@ -357,7 +368,8 @@ async def project_manage(
         )
         return _wrap(result, ctx, action)
 
-    raise ToolError(f"Unknown project action: {action}")
+    msg = f"Unknown project action: {action}"
+    raise ToolError(msg)
 
 
 async def item_manage(
@@ -455,7 +467,8 @@ async def _item_manage_impl(
         )
         return _wrap(result, ctx, action)
 
-    raise ToolError(f"Unknown item action: {action}")
+    msg = f"Unknown item action: {action}"
+    raise ToolError(msg)
 
 
 async def link_manage(
@@ -499,7 +512,8 @@ async def link_manage(
         )
         return _wrap(result, ctx, action)
 
-    raise ToolError(f"Unknown link action: {action}")
+    msg = f"Unknown link action: {action}"
+    raise ToolError(msg)
 
 
 async def trace_analyze(
@@ -553,7 +567,8 @@ async def trace_analyze(
         result = await _call_tool(trace_tools, "project_health", ctx=ctx)
         return _wrap(result, ctx, kind)
 
-    raise ToolError(f"Unknown trace analysis kind: {kind}")
+    msg = f"Unknown trace analysis kind: {kind}"
+    raise ToolError(msg)
 
 
 async def graph_analyze(
@@ -579,7 +594,8 @@ async def graph_analyze(
         )
         return _wrap(result, ctx, kind)
 
-    raise ToolError(f"Unknown graph analysis kind: {kind}")
+    msg = f"Unknown graph analysis kind: {kind}"
+    raise ToolError(msg)
 
 
 async def spec_manage(
@@ -653,7 +669,8 @@ async def spec_manage(
         )
         return _wrap(result, ctx, f"{kind}.{action}")
 
-    raise ToolError(f"Unknown spec action: {kind}.{action}")
+    msg = f"Unknown spec action: {kind}.{action}"
+    raise ToolError(msg)
 
 
 async def quality_analyze(
@@ -687,13 +704,15 @@ async def _config_manage_impl(
     if action == "init":
         database_url = payload.get("database_url")
         if not database_url:
-            raise ToolError("database_url is required for config init.")
+            msg = "database_url is required for config init."
+            raise ToolError(msg)
         result = config.init(database_url=database_url).model_dump()
         return _wrap(result, ctx, action)
     if action == "get":
         key = payload.get("key")
         if not key:
-            raise ToolError("key is required for config get.")
+            msg = "key is required for config get."
+            raise ToolError(msg)
         config_path = config.projects_dir / project_id / "config.yaml" if project_id else config.config_path
         if config_path.exists():
             with config_path.open() as handle:
@@ -705,21 +724,24 @@ async def _config_manage_impl(
     if action == "set":
         key = payload.get("key")
         if key is None:
-            raise ToolError("key is required for config set.")
+            msg = "key is required for config set."
+            raise ToolError(msg)
         value = payload.get("value")
         config.set(key, value, project_id=project_id)
         return _wrap({"key": key, "value": value}, ctx, action)
     if action == "unset":
         key = payload.get("key")
         if not key:
-            raise ToolError("key is required for config unset.")
+            msg = "key is required for config unset."
+            raise ToolError(msg)
         config.set(key, None, project_id=project_id)
         return _wrap({"key": key}, ctx, action)
     if action == "list":
         result = config.get_config(project_id=project_id)
         return _wrap(result, ctx, action)
 
-    raise ToolError(f"Unknown config action: {action}")
+    msg = f"Unknown config action: {action}"
+    raise ToolError(msg)
 
 
 async def sync_manage(
@@ -780,7 +802,8 @@ async def _sync_manage_impl(
             action,
         )
 
-    raise ToolError(f"Unknown sync action: {action}")
+    msg = f"Unknown sync action: {action}"
+    raise ToolError(msg)
 
 
 async def export_manage(
@@ -798,12 +821,14 @@ async def export_manage(
         "markdown": export_cmd.export_to_markdown,
     }
     if action not in format_map:
-        raise ToolError("Unsupported export format. Use json|yaml|csv|markdown.")
+        msg = "Unsupported export format. Use json|yaml|csv|markdown."
+        raise ToolError(msg)
 
     config = ConfigManager()
     project_id = payload.get("project_id") or config.get("current_project_id")
     if not project_id:
-        raise ToolError("project_id is required for export.")
+        msg = "project_id is required for export."
+        raise ToolError(msg)
 
     storage = LocalStorageManager()
     with storage.get_session() as session:
@@ -842,9 +867,11 @@ async def import_manage(
             except json.JSONDecodeError:
                 result = yaml.safe_load(content)
                 if result is None:
-                    raise ToolError("Failed to parse YAML content")
+                    msg = "Failed to parse YAML content"
+                    raise ToolError(msg)
                 return result
-        raise ToolError("Provide data, content, or path for import.")
+        msg = "Provide data, content, or path for import."
+        raise ToolError(msg)
 
     path = payload.get("path")
     if path:
@@ -884,7 +911,8 @@ async def import_manage(
         import_cmd_module._import_github_data(data, project_name)
         return _wrap({"imported": True, "source": "github"}, ctx, action)
 
-    raise ToolError(f"Unknown import action: {action}")
+    msg = f"Unknown import action: {action}"
+    raise ToolError(msg)
 
 
 async def ingest_manage(
@@ -897,7 +925,8 @@ async def ingest_manage(
     action = action.lower()
     file_path = payload.get("path")
     if not file_path:
-        raise ToolError("path is required for ingestion.")
+        msg = "path is required for ingestion."
+        raise ToolError(msg)
 
     project_id = payload.get("project_id")
     view = payload.get("view", "FEATURE")
@@ -929,7 +958,8 @@ async def ingest_manage(
                 session.commit()
             return _wrap({"count": len(results), "results": results}, ctx, action)
         else:
-            raise ToolError(f"Unknown ingest action: {action}")
+            msg = f"Unknown ingest action: {action}"
+            raise ToolError(msg)
 
         if not dry_run:
             session.commit()
@@ -987,11 +1017,13 @@ async def backup_manage(
     if action == "restore":
         path = payload.get("path")
         if not path:
-            raise ToolError("path is required for restore.")
+            msg = "path is required for restore."
+            raise ToolError(msg)
         backup_data = await asyncio.to_thread(_backup_read, path)
 
         if not isinstance(backup_data, dict[str, Any]) or "tables" not in backup_data:
-            raise ToolError("Invalid backup format.")
+            msg = "Invalid backup format."
+            raise ToolError(msg)
 
         with storage.get_session() as session:
             for table, rows in backup_data["tables"].items():
@@ -1008,7 +1040,8 @@ async def backup_manage(
 
         return _wrap({"restored": True, "tables": len(backup_data["tables"])}, ctx, action)
 
-    raise ToolError(f"Unknown backup action: {action}")
+    msg = f"Unknown backup action: {action}"
+    raise ToolError(msg)
 
 
 async def watch_manage(
@@ -1040,7 +1073,8 @@ async def watch_manage(
     if action == "stop":
         watch_id = payload.get("watch_id")
         if not watch_id or watch_id not in _WATCHERS:
-            raise ToolError("watch_id not found.")
+            msg = "watch_id not found."
+            raise ToolError(msg)
         watcher = _WATCHERS.pop(watch_id)
         watcher.stop()
         return _wrap({"watch_id": watch_id, "stopped": True}, ctx, action)
@@ -1050,11 +1084,13 @@ async def watch_manage(
         if watch_id:
             watcher = _WATCHERS.get(watch_id)
             if not watcher:
-                raise ToolError("watch_id not found.")
+                msg = "watch_id not found."
+                raise ToolError(msg)
             return _wrap({"watch_id": watch_id, "stats": watcher.get_stats()}, ctx, action)
         return _wrap({k: v.get_stats() for k, v in _WATCHERS.items()}, ctx, action)
 
-    raise ToolError(f"Unknown watch action: {action}")
+    msg = f"Unknown watch action: {action}"
+    raise ToolError(msg)
 
 
 async def db_manage(
@@ -1077,7 +1113,8 @@ async def db_manage(
 
     database_url = config.get("database_url")
     if not database_url:
-        raise ToolError("Database URL not configured.")
+        msg = "Database URL not configured."
+        raise ToolError(msg)
 
     db = DatabaseConnection(database_url)
     db.connect()
@@ -1096,7 +1133,8 @@ async def db_manage(
     if action in {"reset", "rollback"}:
         confirm = bool(payload.get("confirm", False))
         if not confirm:
-            raise ToolError("confirm=true is required for destructive operations.")
+            msg = "confirm=true is required for destructive operations."
+            raise ToolError(msg)
         if action == "rollback":
             db.drop_tables()
         else:
@@ -1106,7 +1144,8 @@ async def db_manage(
         return _wrap({"status": "ok", "action": action}, ctx, action)
 
     db.close()
-    raise ToolError(f"Unknown db action: {action}")
+    msg = f"Unknown db action: {action}"
+    raise ToolError(msg)
 
 
 async def agents_manage(
@@ -1120,7 +1159,8 @@ async def agents_manage(
     config = ConfigManager()
     project_id = payload.get("project_id") or config.get("current_project_id")
     if not project_id:
-        raise ToolError("project_id is required.")
+        msg = "project_id is required."
+        raise ToolError(msg)
 
     storage = LocalStorageManager()
     with storage.get_session() as session:
@@ -1137,7 +1177,7 @@ async def agents_manage(
                             "last_activity_at": agent.last_activity_at,
                         }
                         for agent in agents
-                    ]
+                    ],
                 },
                 ctx,
                 action,
@@ -1168,7 +1208,7 @@ async def agents_manage(
                             "data": event.data,
                         }
                         for event in events
-                    ]
+                    ],
                 },
                 ctx,
                 action,
@@ -1257,7 +1297,7 @@ async def agents_manage(
                 health = "unknown"
                 if agent.last_activity_at:
                     try:
-                        last_activity = datetime.fromisoformat(agent.last_activity_at.replace("Z", "+00:00"))
+                        last_activity = datetime.fromisoformat(agent.last_activity_at)
                         hours_since = (datetime.now(UTC) - last_activity.replace(tzinfo=None)).total_seconds() / 3600
                         if hours_since < 1:
                             health = "healthy"
@@ -1278,7 +1318,8 @@ async def agents_manage(
                 })
             return _wrap({"health": healths}, ctx, action)
 
-    raise ToolError(f"Unknown agents action: {action}")
+    msg = f"Unknown agents action: {action}"
+    raise ToolError(msg)
 
 
 async def progress_manage(
@@ -1292,7 +1333,8 @@ async def progress_manage(
     config = ConfigManager()
     project_id = payload.get("project_id") or config.get("current_project_id")
     if not project_id:
-        raise ToolError("project_id is required.")
+        msg = "project_id is required."
+        raise ToolError(msg)
 
     storage = LocalStorageManager()
     with storage.get_session() as session:
@@ -1303,7 +1345,8 @@ async def progress_manage(
             if item_id:
                 item = session.query(Item).filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id).first()
                 if not item:
-                    raise ToolError(f"Item not found: {item_id}")
+                    msg = f"Item not found: {item_id}"
+                    raise ToolError(msg)
                 completion = service.calculate_completion(item.id)
                 return _wrap(
                     {
@@ -1361,7 +1404,8 @@ async def progress_manage(
             report = service.generate_progress_report(project_id, start_date, end_date)
             return _wrap(report, ctx, action)
 
-    raise ToolError(f"Unknown progress action: {action}")
+    msg = f"Unknown progress action: {action}"
+    raise ToolError(msg)
 
 
 async def saved_queries_manage(
@@ -1387,7 +1431,8 @@ async def _saved_queries_manage_impl(
     if action == "save":
         name = payload.get("name")
         if not name:
-            raise ToolError("name is required.")
+            msg = "name is required."
+            raise ToolError(msg)
         queries = saved_queries_module.load_saved_queries()
         query_def = {
             "filter": payload.get("filter"),
@@ -1403,7 +1448,8 @@ async def _saved_queries_manage_impl(
     if action == "delete":
         name = payload.get("name")
         if not name:
-            raise ToolError("name is required.")
+            msg = "name is required."
+            raise ToolError(msg)
         queries = saved_queries_module.load_saved_queries()
         if name in queries:
             del queries[name]
@@ -1413,11 +1459,13 @@ async def _saved_queries_manage_impl(
     if action == "get":
         name = payload.get("name")
         if not name:
-            raise ToolError("name is required.")
+            msg = "name is required."
+            raise ToolError(msg)
         queries = saved_queries_module.load_saved_queries()
         return _wrap({"name": name, "query": queries.get(name)}, ctx, action)
 
-    raise ToolError(f"Unknown saved-queries action: {action}")
+    msg = f"Unknown saved-queries action: {action}"
+    raise ToolError(msg)
 
 
 async def test_manage(
@@ -1478,13 +1526,14 @@ async def _test_manage_impl(
                         "output": result.output,
                     }
                     for result in results
-                ]
+                ],
             },
             ctx,
             action,
         )
 
-    raise ToolError(f"Unknown test action: {action}")
+    msg = f"Unknown test action: {action}"
+    raise ToolError(msg)
 
 
 async def tui_manage(
@@ -1503,7 +1552,7 @@ async def tui_manage(
                     {"name": "dashboard", "command": "rtm tui dashboard"},
                     {"name": "browser", "command": "rtm tui browser"},
                     {"name": "graph", "command": "rtm tui graph"},
-                ]
+                ],
             },
             ctx,
             action,
@@ -1532,7 +1581,8 @@ async def tui_manage(
         )
         return _wrap({"command": " ".join(cmd), "spawned": True, "pid": proc.pid}, ctx, action)
 
-    raise ToolError(f"Unknown tui action: {action}")
+    msg = f"Unknown tui action: {action}"
+    raise ToolError(msg)
 
 
 async def benchmark_manage(
@@ -1585,7 +1635,8 @@ async def benchmark_manage(
         if engine is not None:
             await engine.dispose()
 
-    raise ToolError(f"Unknown benchmark action: {action}")
+    msg = f"Unknown benchmark action: {action}"
+    raise ToolError(msg)
 
 
 async def chaos_manage(
@@ -1597,7 +1648,8 @@ async def chaos_manage(
     action = action.lower()
     project_id = payload.get("project_id") or ConfigManager().get("current_project_id")
     if action in {"explode", "crash", "zombies", "snapshot"} and not project_id:
-        raise ToolError("project_id is required.")
+        msg = "project_id is required."
+        raise ToolError(msg)
 
     session = await _get_async_session()
     engine = getattr(session, "_tracertm_engine", None)
@@ -1610,7 +1662,8 @@ async def chaos_manage(
             file_path = payload.get("path")
             view = payload.get("view", "FEATURE")
             if not file_path:
-                raise ToolError("path is required for explode.")
+                msg = "path is required for explode."
+                raise ToolError(msg)
             content = await asyncio.to_thread(_path_read_text, file_path, "utf-8")
             items_created = await service.explode_file(content, pid, view)
             await session.commit()
@@ -1619,7 +1672,8 @@ async def chaos_manage(
         if action == "crash":
             reason = payload.get("reason")
             if not reason:
-                raise ToolError("reason is required for crash.")
+                msg = "reason is required for crash."
+                raise ToolError(msg)
             item_ids = payload.get("item_ids") or []
             result = await service.track_scope_crash(pid, str(reason), item_ids)
             await session.commit()
@@ -1639,7 +1693,8 @@ async def chaos_manage(
             name = payload.get("name")
             description = payload.get("description")
             if not name:
-                raise ToolError("name is required for snapshot.")
+                msg = "name is required for snapshot."
+                raise ToolError(msg)
             result = await service.create_snapshot(pid, str(name), description)
             await session.commit()
             return _wrap(result, ctx, action)
@@ -1653,7 +1708,8 @@ async def chaos_manage(
         if engine is not None:
             await engine.dispose()
 
-    raise ToolError(f"Unknown chaos action: {action}")
+    msg = f"Unknown chaos action: {action}"
+    raise ToolError(msg)
 
 
 async def design_manage(
@@ -1690,7 +1746,8 @@ async def design_manage(
         figma_url = payload.get("figma_url")
         component_path = payload.get("component_path")
         if not component or not figma_url:
-            raise ToolError("component and figma_url are required.")
+            msg = "component and figma_url are required."
+            raise ToolError(msg)
         file_key, node_id = design_module._validate_figma_url(figma_url)
         designs_config = design_module._load_designs_config(trace_dir)
         components_config = design_module._load_components_config(trace_dir)
@@ -1764,10 +1821,10 @@ async def design_manage(
         designs_config = design_module._load_designs_config(trace_dir)
         components_config = design_module._load_components_config(trace_dir)
         cwd = Path.cwd()
-        if direction in ("pull", "both"):
+        if direction in {"pull", "both"}:
             proc = await asyncio.create_subprocess_exec("bun", "run", "figma:pull", cwd=cwd)
             await proc.wait()
-        if direction in ("push", "both"):
+        if direction in {"push", "both"}:
             proc = await asyncio.create_subprocess_exec("bun", "run", "figma:push", cwd=cwd)
             await proc.wait()
         designs_config["last_sync"] = datetime.now(UTC).isoformat()
@@ -1783,7 +1840,8 @@ async def design_manage(
         all_components = bool(payload.get("all", False))
         template = payload.get("template", "default")
         if not all_components and not component:
-            raise ToolError("Specify component or all=true.")
+            msg = "Specify component or all=true."
+            raise ToolError(msg)
         components_config = design_module._load_components_config(trace_dir)
         components_list = components_config.get("components", [])
         target_components = (
@@ -1812,14 +1870,16 @@ async def design_manage(
         component = payload.get("component")
         all_components = bool(payload.get("all", False))
         if not all_components and not component:
-            raise ToolError("Specify component or all=true.")
+            msg = "Specify component or all=true."
+            raise ToolError(msg)
         designs_config = design_module._load_designs_config(trace_dir)
         components_config = design_module._load_components_config(trace_dir)
         figma_config = designs_config.get("figma", {})
         figma_file_key = figma_config.get("file_key")
         figma_token = figma_config.get("access_token")
         if not figma_file_key or not figma_token:
-            raise ToolError("Figma credentials not configured.")
+            msg = "Figma credentials not configured."
+            raise ToolError(msg)
         components_list = components_config.get("components", [])
         target_components = (
             components_list if all_components else [c for c in components_list if c.get("name") == component]
@@ -1844,4 +1904,5 @@ async def design_manage(
             exported.append(comp.get("name"))
         return _wrap({"exported": exported}, ctx, action)
 
-    raise ToolError(f"Unknown design action: {action}")
+    msg = f"Unknown design action: {action}"
+    raise ToolError(msg)

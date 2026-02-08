@@ -1,5 +1,4 @@
-"""
-Tests for event_repository module.
+"""Tests for event_repository module.
 
 Coverage target: 70%+
 Tests CRUD operations, query optimization, error handling, and transaction management.
@@ -60,13 +59,13 @@ class TestEventRepository:
         except Exception:
             return None
 
-    def test_storage_initialization(self, storage_instance):
+    def test_storage_initialization(self, storage_instance) -> None:
         """Test storage can be initialized."""
         if storage_instance is not None:
             assert storage_instance is not None
 
     @pytest.mark.asyncio
-    async def test_basic_crud_operations(self, storage_instance, mock_db_session):
+    async def test_basic_crud_operations(self, storage_instance, mock_db_session) -> None:
         """Test basic CRUD operations."""
         if storage_instance is None:
             pytest.skip("Storage class not found or cannot be instantiated")
@@ -79,7 +78,7 @@ class TestEventRepositoryErrorHandling:
     """Test error handling."""
 
     @pytest.mark.asyncio
-    async def test_handles_database_errors(self):
+    async def test_handles_database_errors(self) -> None:
         """Test handling of database errors."""
         mock_session = AsyncMock()
         mock_session.execute.side_effect = Exception("Database error")
@@ -87,7 +86,7 @@ class TestEventRepositoryErrorHandling:
         # Test passes if no exception propagates
         assert True
 
-    def test_validates_inputs(self):
+    def test_validates_inputs(self) -> None:
         """Test input validation."""
         # Basic validation test
         assert True

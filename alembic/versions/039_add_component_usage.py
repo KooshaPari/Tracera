@@ -21,7 +21,6 @@ depends_on = None
 
 def upgrade() -> None:
     """Create component_usage table for tracking component instances."""
-
     op.create_table(
         "component_usage",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),

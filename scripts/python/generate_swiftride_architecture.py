@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Generate comprehensive SwiftRide Architecture Layer
+"""Generate comprehensive SwiftRide Architecture Layer.
 
 Generates 50+ items per type:
 - 60 microservices
@@ -29,7 +28,7 @@ def get_connection():
 
 
 def generate_microservices():
-    """Generate 60 microservices"""
+    """Generate 60 microservices."""
     services = []
 
     # Core Services (10)
@@ -147,7 +146,7 @@ def generate_microservices():
                 "service_code": code,
                 "category": category,
                 "deployment": "kubernetes",
-                "language": "go" if category in ["core", "driver", "rider", "trip"] else "python",
+                "language": "go" if category in {"core", "driver", "rider", "trip"} else "python",
                 "has_database": True,
                 "has_cache": True,
             }),
@@ -157,7 +156,7 @@ def generate_microservices():
 
 
 def generate_api_endpoints():
-    """Generate 200+ API endpoints"""
+    """Generate 200+ API endpoints."""
     endpoints = []
 
     # Driver APIs (40 endpoints)
@@ -431,7 +430,7 @@ def generate_api_endpoints():
 
 
 def generate_data_models():
-    """Generate 80+ data models"""
+    """Generate 80+ data models."""
     models = []
 
     # Core Aggregates (10)
@@ -552,7 +551,7 @@ def generate_data_models():
 
 
 def generate_database_tables():
-    """Generate 100+ database tables"""
+    """Generate 100+ database tables."""
     tables = []
 
     # Core tables (15)
@@ -724,7 +723,7 @@ def generate_database_tables():
 
 
 def generate_database_indexes():
-    """Generate 120+ database indexes"""
+    """Generate 120+ database indexes."""
     indexes = []
 
     # Primary indexes - one per table above (100 indexes covered by tables)
@@ -934,7 +933,7 @@ def generate_database_indexes():
 
 
 def generate_integration_points():
-    """Generate 70+ integration points"""
+    """Generate 70+ integration points."""
     integrations = []
 
     # Payment integrations (15)
@@ -1068,7 +1067,7 @@ def generate_integration_points():
                 "provider": provider,
                 "category": category,
                 "endpoint": endpoint,
-                "auth_type": "api_key" if provider in ["stripe", "sendgrid"] else "oauth2",
+                "auth_type": "api_key" if provider in {"stripe", "sendgrid"} else "oauth2",
             }),
         })
 
@@ -1076,7 +1075,7 @@ def generate_integration_points():
 
 
 def generate_events():
-    """Generate 100+ domain events"""
+    """Generate 100+ domain events."""
     events = []
 
     # Driver events (25)
@@ -1220,7 +1219,7 @@ def generate_events():
 
 
 def generate_message_queues():
-    """Generate 60+ message queues"""
+    """Generate 60+ message queues."""
     queues = []
 
     # Driver queues (15)
@@ -1325,7 +1324,7 @@ def generate_message_queues():
 
 
 def insert_items(conn, items):
-    """Batch insert items into database"""
+    """Batch insert items into database."""
     if not items:
         return 0
 
@@ -1364,40 +1363,28 @@ def insert_items(conn, items):
     return inserted
 
 
-def main():
-    """Main execution"""
-    print("🚀 Generating SwiftRide Architecture Layer")
-    print("=" * 60)
-
+def main() -> None:
+    """Main execution."""
     conn = get_connection()
 
     try:
         # Generate all items
-        print("\n📦 Generating items...")
 
         microservices = generate_microservices()
-        print(f"✓ Generated {len(microservices)} microservices")
 
         api_endpoints = generate_api_endpoints()
-        print(f"✓ Generated {len(api_endpoints)} API endpoints")
 
         data_models = generate_data_models()
-        print(f"✓ Generated {len(data_models)} data models")
 
         database_tables = generate_database_tables()
-        print(f"✓ Generated {len(database_tables)} database tables")
 
         database_indexes = generate_database_indexes()
-        print(f"✓ Generated {len(database_indexes)} database indexes")
 
         integration_points = generate_integration_points()
-        print(f"✓ Generated {len(integration_points)} integration points")
 
         events = generate_events()
-        print(f"✓ Generated {len(events)} domain events")
 
         message_queues = generate_message_queues()
-        print(f"✓ Generated {len(message_queues)} message queues")
 
         # Combine all items
         all_items = (
@@ -1411,20 +1398,7 @@ def main():
             + message_queues
         )
 
-        print(f"\n💾 Inserting {len(all_items)} items into database...")
-        inserted = insert_items(conn, all_items)
-
-        print(f"\n✅ Successfully inserted {inserted} items")
-        print("\n📊 Summary:")
-        print(f"   • {len(microservices)} microservices")
-        print(f"   • {len(api_endpoints)} API endpoints")
-        print(f"   • {len(data_models)} data models")
-        print(f"   • {len(database_tables)} database tables")
-        print(f"   • {len(database_indexes)} database indexes")
-        print(f"   • {len(integration_points)} integration points")
-        print(f"   • {len(events)} domain events")
-        print(f"   • {len(message_queues)} message queues")
-        print(f"\n🎉 Total: {len(all_items)} architecture items")
+        insert_items(conn, all_items)
 
     finally:
         conn.close()

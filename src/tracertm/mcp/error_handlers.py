@@ -27,7 +27,7 @@ class LLMFriendlyError(Exception):
         message: str,
         recovery_hint: str | None = None,
         context: dict[str, Any] | None = None,
-    ):
+    ) -> None:
         """Initialize LLM-friendly error.
 
         Args:
@@ -73,7 +73,7 @@ class ProjectNotSelectedError(LLMFriendlyError):
 class ProjectNotFoundError(LLMFriendlyError):
     """Raised when project doesn't exist."""
 
-    def __init__(self, project_id: str):
+    def __init__(self, project_id: str) -> None:
         super().__init__(
             message=f"Project '{project_id}' not found.",
             recovery_hint=("Use list_projects() to see available projects, or create_project() to create a new one."),
@@ -84,7 +84,7 @@ class ProjectNotFoundError(LLMFriendlyError):
 class ItemNotFoundError(LLMFriendlyError):
     """Raised when item doesn't exist."""
 
-    def __init__(self, item_id: str, project_id: str | None = None):
+    def __init__(self, item_id: str, project_id: str | None = None) -> None:
         context = {"item_id": item_id}
         if project_id:
             context["project_id"] = project_id
@@ -99,7 +99,7 @@ class ItemNotFoundError(LLMFriendlyError):
 class InvalidLinkError(LLMFriendlyError):
     """Raised when link creation fails."""
 
-    def __init__(self, source_id: str, target_id: str, reason: str):
+    def __init__(self, source_id: str, target_id: str, reason: str) -> None:
         super().__init__(
             message=f"Cannot create link from '{source_id}' to '{target_id}': {reason}",
             recovery_hint=(
@@ -118,7 +118,7 @@ class InvalidLinkError(LLMFriendlyError):
 class DatabaseError(LLMFriendlyError):
     """Raised when database operations fail."""
 
-    def __init__(self, operation: str, original_error: str):
+    def __init__(self, operation: str, original_error: str) -> None:
         super().__init__(
             message=f"Database operation '{operation}' failed.",
             recovery_hint=(
@@ -144,7 +144,7 @@ class DatabaseError(LLMFriendlyError):
 class ValidationError(LLMFriendlyError):
     """Raised when input validation fails."""
 
-    def __init__(self, field: str, value: Any, reason: str):
+    def __init__(self, field: str, value: Any, reason: str) -> None:
         super().__init__(
             message=f"Validation failed for field '{field}': {reason}",
             recovery_hint=(
@@ -163,7 +163,7 @@ class ValidationError(LLMFriendlyError):
 class AuthorizationError(LLMFriendlyError):
     """Raised when user lacks required permissions."""
 
-    def __init__(self, required_scopes: list[str], user_scopes: list[str]):
+    def __init__(self, required_scopes: list[str], user_scopes: list[str]) -> None:
         super().__init__(
             message="Insufficient permissions for this operation.",
             recovery_hint=("Request access from your administrator, or use a token with appropriate scopes."),
@@ -178,7 +178,7 @@ class AuthorizationError(LLMFriendlyError):
 class RateLimitError(LLMFriendlyError):
     """Raised when rate limit is exceeded."""
 
-    def __init__(self, limit_type: str, limit: int, wait_seconds: float | None = None):
+    def __init__(self, limit_type: str, limit: int, wait_seconds: float | None = None) -> None:
         message = f"Rate limit exceeded: {limit} calls per {limit_type}."
         hint = "Wait before making more requests"
         if wait_seconds:
@@ -198,7 +198,7 @@ class RateLimitError(LLMFriendlyError):
 class ErrorEnhancementMiddleware(Middleware):
     """Middleware that enhances errors with LLM-friendly messages."""
 
-    def __init__(self, include_stack_traces: bool = False):
+    def __init__(self, include_stack_traces: bool = False) -> None:
         """Initialize error enhancement middleware.
 
         Args:
@@ -277,13 +277,16 @@ class ErrorEnhancementMiddleware(Middleware):
             # Log the enhanced error
             if isinstance(enhanced, LLMFriendlyError):
                 error_dict = enhanced.to_dict()
-                logger.error(f"[ERROR_HANDLER] {tool_name}: {error_dict}")
+                logger.exception("[ERROR_HANDLER] %s: %s", tool_name, error_dict)
 
                 # Convert to ToolError for MCP
-                raise ToolError(
+                msg = (
                     f"{enhanced.message}\n\n"
                     f"Recovery hint: {enhanced.recovery_hint or 'None'}\n"
                     f"Context: {enhanced.context}"
+                )
+                raise ToolError(
+                    msg,
                 ) from e
             # Re-raise if not enhanced
             raise

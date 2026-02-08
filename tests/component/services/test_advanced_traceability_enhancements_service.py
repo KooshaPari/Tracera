@@ -9,7 +9,7 @@ from tracertm.services.advanced_traceability_enhancements_service import (
 
 
 @pytest.mark.asyncio
-async def test_detect_circular_dependencies(monkeypatch, async_session):
+async def test_detect_circular_dependencies(monkeypatch, async_session) -> None:
     items = [
         SimpleNamespace(id="a", outgoing_links=[SimpleNamespace(target_item_id="b")]),
         SimpleNamespace(id="b", outgoing_links=[SimpleNamespace(target_item_id="a")]),
@@ -24,7 +24,7 @@ async def test_detect_circular_dependencies(monkeypatch, async_session):
 
 
 @pytest.mark.asyncio
-async def test_coverage_gap_analysis(monkeypatch, async_session):
+async def test_coverage_gap_analysis(monkeypatch, async_session) -> None:
     items = [
         SimpleNamespace(id="s1", view="FEATURE", outgoing_links=[]),
         SimpleNamespace(id="t1", view="TEST"),
@@ -39,7 +39,7 @@ async def test_coverage_gap_analysis(monkeypatch, async_session):
 
 
 @pytest.mark.asyncio
-async def test_bidirectional_link_analysis(monkeypatch, async_session):
+async def test_bidirectional_link_analysis(monkeypatch, async_session) -> None:
     item = SimpleNamespace(id="i1", outgoing_links=[SimpleNamespace(target_item_id="i2", link_type="depends_on")])
     other = SimpleNamespace(id="i2", outgoing_links=[])
 

@@ -22,7 +22,7 @@ def upgrade() -> None:
         "workflow_runs",
         sa.Column("id", sa.String(36), primary_key=True),
         sa.Column(
-            "project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=True
+            "project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=True,
         ),
         sa.Column("graph_id", sa.String(255), sa.ForeignKey("graphs.id", ondelete="SET NULL"), nullable=True),
         sa.Column("workflow_name", sa.String(200), nullable=False),
@@ -35,7 +35,7 @@ def upgrade() -> None:
         sa.Column("started_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column(
-            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("CURRENT_TIMESTAMP")
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("CURRENT_TIMESTAMP"),
         ),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
     )

@@ -1,5 +1,4 @@
-"""
-Unit tests for testing_factories.py.
+"""Unit tests for testing_factories.py.
 
 Tests: Factory helper functions for test data generation.
 Coverage Target: 100% (64/64 lines)
@@ -19,7 +18,7 @@ from tracertm.testing_factories import (
 class TestCreateItemHelper:
     """Test create_item helper function."""
 
-    def test_create_item_with_defaults(self):
+    def test_create_item_with_defaults(self) -> None:
         """Test create_item creates Item with default values."""
         # Act
         item = create_item()
@@ -35,7 +34,7 @@ class TestCreateItemHelper:
         assert item.id is not None
         assert item.project_id is not None
 
-    def test_create_item_with_custom_title(self):
+    def test_create_item_with_custom_title(self) -> None:
         """Test create_item creates Item with custom title."""
         # Arrange
         custom_title = "Custom Test Item"
@@ -48,7 +47,7 @@ class TestCreateItemHelper:
         assert item.view == "FEATURE"
         assert item.item_type == "feature"
 
-    def test_create_item_with_custom_view(self):
+    def test_create_item_with_custom_view(self) -> None:
         """Test create_item creates Item with custom view."""
         # Arrange
         custom_view = "CODE"
@@ -61,7 +60,7 @@ class TestCreateItemHelper:
         assert item.view == custom_view
         assert item.item_type == "feature"
 
-    def test_create_item_with_custom_type(self):
+    def test_create_item_with_custom_type(self) -> None:
         """Test create_item creates Item with custom item_type."""
         # Arrange
         custom_type = "file"
@@ -74,7 +73,7 @@ class TestCreateItemHelper:
         assert item.view == "FEATURE"
         assert item.item_type == custom_type
 
-    def test_create_item_with_custom_project_id(self):
+    def test_create_item_with_custom_project_id(self) -> None:
         """Test create_item creates Item with custom project_id."""
         # Arrange
         custom_project_id = "custom-project-123"
@@ -85,7 +84,7 @@ class TestCreateItemHelper:
         # Assert
         assert item.project_id == custom_project_id
 
-    def test_create_item_with_custom_status(self):
+    def test_create_item_with_custom_status(self) -> None:
         """Test create_item creates Item with custom status."""
         # Arrange
         custom_status = "in_progress"
@@ -96,7 +95,7 @@ class TestCreateItemHelper:
         # Assert
         assert item.status == custom_status
 
-    def test_create_item_with_custom_priority(self):
+    def test_create_item_with_custom_priority(self) -> None:
         """Test create_item creates Item with custom priority."""
         # Arrange
         custom_priority = "high"
@@ -107,7 +106,7 @@ class TestCreateItemHelper:
         # Assert
         assert item.priority == custom_priority
 
-    def test_create_item_with_all_custom_values(self):
+    def test_create_item_with_all_custom_values(self) -> None:
         """Test create_item creates Item with all custom values."""
         # Arrange
         custom_title = "Integration Test"
@@ -135,7 +134,7 @@ class TestCreateItemHelper:
         assert item.status == custom_status
         assert item.priority == custom_priority
 
-    def test_create_item_generates_unique_ids(self):
+    def test_create_item_generates_unique_ids(self) -> None:
         """Test that create_item generates unique IDs for different items."""
         # Act
         item1 = create_item(title="Item 1")
@@ -144,7 +143,7 @@ class TestCreateItemHelper:
         # Assert
         assert item1.id != item2.id
 
-    def test_create_item_auto_generates_project_id_when_none(self):
+    def test_create_item_auto_generates_project_id_when_none(self) -> None:
         """Test that create_item auto-generates project_id when not provided."""
         # Act
         item = create_item()
@@ -153,7 +152,7 @@ class TestCreateItemHelper:
         assert item.project_id is not None
         assert len(str(item.project_id)) > 0
 
-    def test_create_item_has_all_required_fields(self):
+    def test_create_item_has_all_required_fields(self) -> None:
         """Test that created item has all required fields."""
         # Act
         item = create_item()
@@ -172,7 +171,7 @@ class TestCreateItemHelper:
 class TestCreateLinkHelper:
     """Test create_link helper function."""
 
-    def test_create_link_with_defaults(self):
+    def test_create_link_with_defaults(self) -> None:
         """Test create_link creates Link with default values."""
         # Act
         link = create_link()
@@ -186,7 +185,7 @@ class TestCreateLinkHelper:
         assert link.id is not None
         assert link.project_id is not None
 
-    def test_create_link_with_custom_source(self):
+    def test_create_link_with_custom_source(self) -> None:
         """Test create_link creates Link with custom source_item_id."""
         # Arrange
         custom_source = "custom-source-123"
@@ -199,7 +198,7 @@ class TestCreateLinkHelper:
         assert link.target_item_id == "target"
         assert link.link_type == "depends_on"
 
-    def test_create_link_with_custom_target(self):
+    def test_create_link_with_custom_target(self) -> None:
         """Test create_link creates Link with custom target_item_id."""
         # Arrange
         custom_target = "custom-target-456"
@@ -212,7 +211,7 @@ class TestCreateLinkHelper:
         assert link.target_item_id == custom_target
         assert link.link_type == "depends_on"
 
-    def test_create_link_with_custom_type(self):
+    def test_create_link_with_custom_type(self) -> None:
         """Test create_link creates Link with custom link_type."""
         # Arrange
         custom_type = "implements"
@@ -225,7 +224,7 @@ class TestCreateLinkHelper:
         assert link.target_item_id == "target"
         assert link.link_type == custom_type
 
-    def test_create_link_with_custom_project_id(self):
+    def test_create_link_with_custom_project_id(self) -> None:
         """Test create_link creates Link with custom project_id."""
         # Arrange
         custom_project_id = "custom-project-789"
@@ -236,7 +235,7 @@ class TestCreateLinkHelper:
         # Assert
         assert link.project_id == custom_project_id
 
-    def test_create_link_with_all_custom_values(self):
+    def test_create_link_with_all_custom_values(self) -> None:
         """Test create_link creates Link with all custom values."""
         # Arrange
         custom_source = "feature-001"
@@ -258,7 +257,7 @@ class TestCreateLinkHelper:
         assert link.link_type == custom_type
         assert link.project_id == custom_project_id
 
-    def test_create_link_generates_unique_ids(self):
+    def test_create_link_generates_unique_ids(self) -> None:
         """Test that create_link generates unique IDs for different links."""
         # Act
         link1 = create_link(link_type="depends_on")
@@ -267,7 +266,7 @@ class TestCreateLinkHelper:
         # Assert
         assert link1.id != link2.id
 
-    def test_create_link_auto_generates_project_id_when_none(self):
+    def test_create_link_auto_generates_project_id_when_none(self) -> None:
         """Test that create_link auto-generates project_id when not provided."""
         # Act
         link = create_link()
@@ -276,7 +275,7 @@ class TestCreateLinkHelper:
         assert link.project_id is not None
         assert len(str(link.project_id)) > 0
 
-    def test_create_link_has_all_required_fields(self):
+    def test_create_link_has_all_required_fields(self) -> None:
         """Test that created link has all required fields."""
         # Act
         link = create_link()
@@ -293,7 +292,7 @@ class TestCreateLinkHelper:
 class TestCreateProjectHelper:
     """Test create_project helper function."""
 
-    def test_create_project_with_defaults(self):
+    def test_create_project_with_defaults(self) -> None:
         """Test create_project creates Project with default values."""
         # Act
         project = create_project()
@@ -305,7 +304,7 @@ class TestCreateProjectHelper:
         assert project.description == "A test project"
         assert project.id is not None
 
-    def test_create_project_with_custom_name(self):
+    def test_create_project_with_custom_name(self) -> None:
         """Test create_project creates Project with custom name."""
         # Arrange
         custom_name = "My Custom Project"
@@ -317,7 +316,7 @@ class TestCreateProjectHelper:
         assert project.name == custom_name
         assert project.description == "A test project"
 
-    def test_create_project_with_custom_description(self):
+    def test_create_project_with_custom_description(self) -> None:
         """Test create_project creates Project with custom description."""
         # Arrange
         custom_description = "A custom project description"
@@ -329,7 +328,7 @@ class TestCreateProjectHelper:
         assert project.name == "Test Project"
         assert project.description == custom_description
 
-    def test_create_project_with_all_custom_values(self):
+    def test_create_project_with_all_custom_values(self) -> None:
         """Test create_project creates Project with all custom values."""
         # Arrange
         custom_name = "Integration Test Project"
@@ -345,7 +344,7 @@ class TestCreateProjectHelper:
         assert project.name == custom_name
         assert project.description == custom_description
 
-    def test_create_project_generates_unique_ids(self):
+    def test_create_project_generates_unique_ids(self) -> None:
         """Test that create_project generates unique IDs for different projects."""
         # Act
         project1 = create_project(name="Project 1")
@@ -354,7 +353,7 @@ class TestCreateProjectHelper:
         # Assert
         assert project1.id != project2.id
 
-    def test_create_project_has_all_required_fields(self):
+    def test_create_project_has_all_required_fields(self) -> None:
         """Test that created project has all required fields."""
         # Act
         project = create_project()
@@ -369,7 +368,7 @@ class TestCreateProjectHelper:
 class TestFactoryIntegration:
     """Test factory integration and edge cases."""
 
-    def test_multiple_items_have_unique_ids(self):
+    def test_multiple_items_have_unique_ids(self) -> None:
         """Test that factory creates items with unique IDs."""
         # Act
         item1 = create_item(title="Item 1")
@@ -381,7 +380,7 @@ class TestFactoryIntegration:
         assert item2.id != item3.id
         assert item1.id != item3.id
 
-    def test_multiple_links_have_unique_ids(self):
+    def test_multiple_links_have_unique_ids(self) -> None:
         """Test that factory creates links with unique IDs."""
         # Act
         link1 = create_link(link_type="depends_on")
@@ -393,7 +392,7 @@ class TestFactoryIntegration:
         assert link2.id != link3.id
         assert link1.id != link3.id
 
-    def test_multiple_projects_have_unique_ids(self):
+    def test_multiple_projects_have_unique_ids(self) -> None:
         """Test that factory creates projects with unique IDs."""
         # Act
         project1 = create_project(name="Project 1")
@@ -405,7 +404,7 @@ class TestFactoryIntegration:
         assert project2.id != project3.id
         assert project1.id != project3.id
 
-    def test_factory_preserves_model_structure(self):
+    def test_factory_preserves_model_structure(self) -> None:
         """Test that factories preserve model structure and required fields."""
         # Act
         item = create_item()
@@ -433,7 +432,7 @@ class TestFactoryIntegration:
         assert hasattr(project, "name")
         assert hasattr(project, "description")
 
-    def test_factory_creates_valid_string_ids(self):
+    def test_factory_creates_valid_string_ids(self) -> None:
         """Test that factories create valid string IDs."""
         # Act
         item = create_item()
@@ -448,7 +447,7 @@ class TestFactoryIntegration:
         assert isinstance(project.id, str)
         assert len(project.id) > 0
 
-    def test_item_and_link_can_share_project_id(self):
+    def test_item_and_link_can_share_project_id(self) -> None:
         """Test that items and links can be created with same project_id."""
         # Arrange
         shared_project_id = "shared-project-123"
@@ -462,7 +461,7 @@ class TestFactoryIntegration:
         assert link.project_id == shared_project_id
         assert item.project_id == link.project_id
 
-    def test_link_can_reference_items(self):
+    def test_link_can_reference_items(self) -> None:
         """Test that link can reference item IDs."""
         # Act
         item1 = create_item(title="Source Item")
@@ -476,7 +475,7 @@ class TestFactoryIntegration:
         assert link.source_item_id == str(item1.id)
         assert link.target_item_id == str(item2.id)
 
-    def test_empty_string_values_are_accepted(self):
+    def test_empty_string_values_are_accepted(self) -> None:
         """Test that empty string values are accepted where appropriate."""
         # Act
         item = create_item(title="")
@@ -487,7 +486,7 @@ class TestFactoryIntegration:
         assert project.name == ""
         assert project.description == ""
 
-    def test_factory_handles_special_characters(self):
+    def test_factory_handles_special_characters(self) -> None:
         """Test that factories handle special characters in strings."""
         # Arrange
         special_title = "Test Item @#$%^&*() 123"

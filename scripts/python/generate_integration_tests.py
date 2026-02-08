@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Integration Tests for SwiftRide"""
+"""Generate Integration Tests for SwiftRide."""
 
 import uuid
 from datetime import UTC, datetime
@@ -11,7 +11,7 @@ PROJECT_PATH = "samples/DEMO_PROJECT/.trace"
 
 
 class IntegrationTestGenerator:
-    def __init__(self, project_path: str):
+    def __init__(self, project_path: str) -> None:
         self.project_path = Path(project_path)
         self.project_yaml_path = self.project_path / "project.yaml"
         self.counters = self.load_counters()
@@ -21,14 +21,14 @@ class IntegrationTestGenerator:
         with self.project_yaml_path.open() as f:
             return yaml.safe_load(f).get("counters", {})
 
-    def save_counters(self):
+    def save_counters(self) -> None:
         with self.project_yaml_path.open() as f:
             project_data = yaml.safe_load(f)
         project_data["counters"] = self.counters
         with self.project_yaml_path.open("w") as f:
             yaml.dump(project_data, f, default_flow_style=False, sort_keys=False)
 
-    def create_test_item(self, title: str, description: str, priority: str = "medium"):
+    def create_test_item(self, title: str, description: str, priority: str = "medium") -> None:
         if "integration_test" not in self.counters:
             self.counters["integration_test"] = 0
         self.counters["integration_test"] += 1
@@ -70,10 +70,9 @@ class IntegrationTestGenerator:
 
         self.generated_count += 1
         if self.generated_count % 50 == 0:
-            print(f"  ✓ Generated {self.generated_count} integration tests")
+            pass
 
-    def generate(self):
-        print("\n=== Generating Integration Tests (150) ===")
+    def generate(self) -> None:
 
         tests = [
             # Core Flow Integration (30)
@@ -236,11 +235,10 @@ class IntegrationTestGenerator:
         for title, description, priority in tests:
             self.create_test_item(title, description, priority)
 
-        print(f"✓ Generated {self.generated_count} integration tests")
         self.save_counters()
 
 
-def main():
+def main() -> None:
     generator = IntegrationTestGenerator(PROJECT_PATH)
     generator.generate()
 

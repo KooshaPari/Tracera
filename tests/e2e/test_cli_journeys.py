@@ -29,7 +29,7 @@ class TestNewUserJourney:
     @patch("tracertm.cli.commands.config.ConfigManager")
     @patch("tracertm.database.connection.DatabaseConnection")
     @patch("tracertm.database.connection.DatabaseConnection")
-    def test_new_user_onboarding(self, mock_db_class, mock_project_db, mock_config_class):
+    def test_new_user_onboarding(self, mock_db_class, mock_project_db, mock_config_class) -> None:
         """Test new user: config → project → db → item."""
         mock_config = MagicMock()
         mock_config.get.return_value = "sqlite:///test.db"
@@ -81,10 +81,10 @@ class TestNewUserJourney:
         )
 
         # All should succeed (or fail gracefully)
-        assert result1.exit_code in [0, 1, 2]
-        assert result2.exit_code in [0, 1, 2]
-        assert result3.exit_code in [0, 1, 2]
-        assert result4.exit_code in [0, 1, 2]
+        assert result1.exit_code in {0, 1, 2}
+        assert result2.exit_code in {0, 1, 2}
+        assert result3.exit_code in {0, 1, 2}
+        assert result4.exit_code in {0, 1, 2}
 
 
 @pytest.mark.e2e
@@ -94,7 +94,7 @@ class TestFeatureDevelopmentJourney:
     @patch("tracertm.cli.commands.item.ConfigManager")
     @patch("tracertm.database.connection.DatabaseConnection")
     @patch("tracertm.database.connection.DatabaseConnection")
-    def test_feature_to_code_to_test_journey(self, mock_link_db, mock_item_db, mock_config_class):
+    def test_feature_to_code_to_test_journey(self, mock_link_db, mock_item_db, mock_config_class) -> None:
         """Test journey: create feature → create code → create test → link them."""
         mock_config = MagicMock()
         mock_config.get.return_value = "sqlite:///test.db"
@@ -183,11 +183,11 @@ class TestFeatureDevelopmentJourney:
         )
 
         # All should attempt execution
-        assert result1.exit_code in [0, 1, 2]
-        assert result2.exit_code in [0, 1, 2]
-        assert result3.exit_code in [0, 1, 2]
-        assert result4.exit_code in [0, 1, 2]
-        assert result5.exit_code in [0, 1, 2]
+        assert result1.exit_code in {0, 1, 2}
+        assert result2.exit_code in {0, 1, 2}
+        assert result3.exit_code in {0, 1, 2}
+        assert result4.exit_code in {0, 1, 2}
+        assert result5.exit_code in {0, 1, 2}
 
 
 @pytest.mark.e2e
@@ -198,7 +198,7 @@ class TestMultiViewTraceabilityJourney:
     @patch("tracertm.database.connection.DatabaseConnection")
     @patch("tracertm.cli.commands.search._get_storage_manager")
     @patch("tracertm.database.connection.DatabaseConnection")
-    def test_view_switch_search_drill_journey(self, mock_drill_db, mock_storage_mgr, mock_view_db, mock_config_class):
+    def test_view_switch_search_drill_journey(self, mock_drill_db, mock_storage_mgr, mock_view_db, mock_config_class) -> None:
         """Test journey: switch views → search → drill down."""
         mock_config = MagicMock()
         mock_config.get.return_value = "sqlite:///test.db"
@@ -221,7 +221,7 @@ class TestMultiViewTraceabilityJourney:
 
             def all(self):
                 return [
-                    SimpleNamespace(id="item-1", title="Login flow", view="FEATURE", item_type="feature", status="todo")
+                    SimpleNamespace(id="item-1", title="Login flow", view="FEATURE", item_type="feature", status="todo"),
                 ]
 
         @contextlib.contextmanager
@@ -247,11 +247,11 @@ class TestMultiViewTraceabilityJourney:
         # Step 5: View state
         result5 = runner.invoke(app, ["state", "--view", "FEATURE"], catch_exceptions=False)
 
-        assert result1.exit_code in [0, 1, 2]
-        assert result2.exit_code in [0, 1, 2]
-        assert result3.exit_code in [0, 1, 2]
-        assert result4.exit_code in [0, 1, 2]
-        assert result5.exit_code in [0, 1, 2]
+        assert result1.exit_code in {0, 1, 2}
+        assert result2.exit_code in {0, 1, 2}
+        assert result3.exit_code in {0, 1, 2}
+        assert result4.exit_code in {0, 1, 2}
+        assert result5.exit_code in {0, 1, 2}
 
 
 @pytest.mark.e2e
@@ -260,7 +260,7 @@ class TestBackupRestoreJourney:
 
     @patch("tracertm.cli.commands.backup.ConfigManager")
     @patch("tracertm.database.connection.DatabaseConnection")
-    def test_backup_restore_journey(self, mock_db_class, mock_config_class):
+    def test_backup_restore_journey(self, mock_db_class, mock_config_class) -> None:
         """Test journey: create items → backup → restore."""
         mock_config = MagicMock()
         mock_config.get.return_value = "sqlite:///test.db"
@@ -311,9 +311,9 @@ class TestBackupRestoreJourney:
                     catch_exceptions=False,
                 )
 
-                assert result1.exit_code in [0, 1, 2]
-                assert result2.exit_code in [0, 1, 2]
-                assert result3.exit_code in [0, 1, 2]
+                assert result1.exit_code in {0, 1, 2}
+                assert result2.exit_code in {0, 1, 2}
+                assert result3.exit_code in {0, 1, 2}
 
 
 @pytest.mark.e2e
@@ -323,7 +323,7 @@ class TestIngestionJourney:
     @patch("tracertm.cli.commands.ingest.ConfigManager")
     @patch("tracertm.database.connection.DatabaseConnection")
     @patch("tracertm.cli.commands.ingest.StatelessIngestionService")
-    def test_markdown_ingestion_journey(self, mock_service_class, mock_db_class, mock_config_class):
+    def test_markdown_ingestion_journey(self, mock_service_class, mock_db_class, mock_config_class) -> None:
         """Test journey: ingest markdown → view items."""
         mock_config = MagicMock()
         mock_config.get.return_value = "sqlite:///test.db"
@@ -341,7 +341,7 @@ class TestIngestionJourney:
         }
         mock_service_class.return_value = mock_service
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".md", delete=False) as f:
             f.write("# Test Document\n\n## Feature 1\n\nSome content.")
             md_path = Path(f.name)
 
@@ -356,7 +356,7 @@ class TestIngestionJourney:
             # Step 2: List items
             result2 = runner.invoke(app, ["item", "list", "--view", "FEATURE"], catch_exceptions=False)
 
-            assert result1.exit_code in [0, 1, 2]
-            assert result2.exit_code in [0, 1, 2]
+            assert result1.exit_code in {0, 1, 2}
+            assert result2.exit_code in {0, 1, 2}
         finally:
             md_path.unlink()

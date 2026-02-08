@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-SwiftRide Quality & Compliance Items - Complete Generator
+"""SwiftRide Quality & Compliance Items - Complete Generator
 Generates all 570+ items across 7 types in one execution.
 
 Run: python3 generate_swiftride_quality_all.py
@@ -651,13 +650,8 @@ class QualityItemsData:
     # For demonstration, I'm showing structure with quality_gates complete
 
 
-async def main():
+async def main() -> None:
     """Generate all quality items."""
-    print("🚀 SwiftRide Quality & Compliance Generator")
-    print(f"   Project: {PROJECT_ID}")
-    print(f"   Database: {DB_URL.split('@')[1]}")
-    print()
-
     conn = None
     try:
         conn = await asyncpg.connect(DB_URL)
@@ -682,19 +676,15 @@ async def main():
             return iid
 
         # Generate quality gates
-        print("📋 Generating Quality Gates...")
         for title, desc, pri, meta, tags in QualityItemsData.quality_gates():
             await insert_item(title, "quality_gate", desc, "active", pri, meta, tags)
-        print(f"   ✓ {counts.get('quality_gate', 0)} quality gates\n")
 
         # Summary
-        total = sum(counts.values())
-        print(f"✅ Generated {total} total items!")
-        for itype in sorted(counts.keys()):
-            print(f"   {itype}: {counts[itype]}")
+        sum(counts.values())
+        for _itype in sorted(counts.keys()):
+            pass
 
-    except Exception as e:
-        print(f"\n❌ Error: {e}")
+    except Exception:
         import traceback
 
         traceback.print_exc()

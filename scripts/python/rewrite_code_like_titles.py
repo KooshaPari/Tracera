@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import contextlib
 import os
 import re
 import sqlite3
@@ -252,7 +253,7 @@ def report_postgres(conn):
             where title !~ '^(GET|POST|PUT|PATCH|DELETE) '
             group by project_id
             order by total desc;
-            """
+            """,
         )
         return cur.fetchall()
 
@@ -265,7 +266,7 @@ def rewrite_postgres(conn):
         for row in rows:
             title = row["title"]
             original_title = row["original_title"] or ""
-            source = original_title if original_title else title
+            source = original_title or title
             if not is_code_like(source):
                 continue
             new_title = humanize_title(source)
@@ -353,42 +354,31 @@ def rewrite_sqlite(db_path: str):
             )
             result["updated"] = len(updates)
             conn.commit()
-        try:
+        with contextlib.suppress(sqlite3.Error):
             conn.execute("VACUUM")
-        except sqlite3.Error:
-            pass
     finally:
         conn.close()
 
     return result
 
 
-def main():
+def main() -> None:
     conn = psycopg2.connect(POSTGRES_URL)
     try:
         report = report_postgres(conn)
-        print("POSTGRES_REPORT")
-        for row in report:
-            print(
-                f"{row['project_id']} total={row['total']} allcaps_snake={row['allcaps_snake']} "
-                f"lowersnake={row['lowersnake']} function_like={row['function_like']} namespaced={row['namespaced']} "
-                f"arrow={row['arrow']} file_ext={row['file_ext']} underscore={row['underscore']}"
-            )
+        for _row in report:
+            pass
 
-        updated = rewrite_postgres(conn)
+        rewrite_postgres(conn)
         conn.commit()
-        print(f"POSTGRES_UPDATED {updated}")
     finally:
         conn.close()
 
     root = str(Path(__file__).resolve().parent.parent)
-    print("SQLITE_REWRITE")
     for db_path in sorted(set(iter_db_files(root))):
         res = rewrite_sqlite(db_path)
         if res["skipped"]:
-            print(f"SKIP {res['db']} ({res['reason']})")
-        else:
-            print(f"UPDATE {res['db']} updated={res['updated']}")
+            pass
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ from tracertm.mcp.database_manager import DatabaseManager, QueryMetrics
 
 
 @pytest.fixture
-def database_url():
+def database_url() -> str:
     """Test database URL (SQLite)."""
     return "sqlite+aiosqlite:///:memory:"
 
@@ -27,7 +27,7 @@ class TestDatabaseManager:
     """Test DatabaseManager functionality."""
 
     @pytest.mark.asyncio
-    async def test_initialization(self, database_url):
+    async def test_initialization(self, database_url) -> None:
         """Test DatabaseManager initialization."""
         manager = DatabaseManager(database_url)
         assert manager.database_url == database_url
@@ -41,7 +41,7 @@ class TestDatabaseManager:
         await manager.close()
 
     @pytest.mark.asyncio
-    async def test_singleton_pattern(self, database_url):
+    async def test_singleton_pattern(self, database_url) -> None:
         """Test singleton instance."""
         manager1 = await DatabaseManager.get_instance(database_url)
         manager2 = await DatabaseManager.get_instance()
@@ -51,7 +51,7 @@ class TestDatabaseManager:
         await manager1.close()
 
     @pytest.mark.asyncio
-    async def test_session_context(self, db_manager):
+    async def test_session_context(self, db_manager) -> None:
         """Test async session context manager."""
         async with db_manager.session() as session:
             result = await session.execute(text("SELECT 1"))
@@ -59,7 +59,7 @@ class TestDatabaseManager:
             assert value == 1
 
     @pytest.mark.asyncio
-    async def test_pool_status(self, db_manager):
+    async def test_pool_status(self, db_manager) -> None:
         """Test connection pool status."""
         status = await db_manager.get_pool_status()
 
@@ -69,7 +69,7 @@ class TestDatabaseManager:
         assert "checked_in" in status
 
     @pytest.mark.asyncio
-    async def test_health_check(self, db_manager):
+    async def test_health_check(self, db_manager) -> None:
         """Test database health check."""
         health = await db_manager.health_check()
 
@@ -80,7 +80,7 @@ class TestDatabaseManager:
         assert "queries" in health
 
     @pytest.mark.asyncio
-    async def test_multiple_sessions(self, db_manager):
+    async def test_multiple_sessions(self, db_manager) -> None:
         """Test multiple concurrent sessions."""
 
         async def query_db(value: int):
@@ -98,7 +98,7 @@ class TestDatabaseManager:
 class TestQueryMetrics:
     """Test QueryMetrics functionality."""
 
-    def test_record_query(self):
+    def test_record_query(self) -> None:
         """Test recording query execution."""
         metrics = QueryMetrics()
 
@@ -111,7 +111,7 @@ class TestQueryMetrics:
         assert stats["avg_duration_ms"] == 100.0
         assert stats["slow_queries_count"] == 1  # Only 150ms is slow (>100ms)
 
-    def test_slow_query_threshold(self):
+    def test_slow_query_threshold(self) -> None:
         """Test slow query detection."""
         metrics = QueryMetrics()
         metrics.slow_threshold_ms = 100.0
@@ -125,7 +125,7 @@ class TestQueryMetrics:
         assert len(metrics.slow_queries) == 1
         assert metrics.slow_queries[0]["duration_ms"] == 150.0
 
-    def test_reset(self):
+    def test_reset(self) -> None:
         """Test metrics reset."""
         metrics = QueryMetrics()
 
@@ -143,7 +143,7 @@ class TestQueryMetrics:
 
 
 @pytest.mark.asyncio
-async def test_url_conversion():
+async def test_url_conversion() -> None:
     """Test database URL conversion."""
     await asyncio.sleep(0)
     # PostgreSQL sync -> async

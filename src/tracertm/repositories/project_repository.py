@@ -13,7 +13,7 @@ from tracertm.models.project import Project
 class ProjectRepository:
     """Repository for Project CRUD operations."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def create(

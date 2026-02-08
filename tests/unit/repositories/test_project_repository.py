@@ -8,7 +8,7 @@ from tracertm.repositories.project_repository import ProjectRepository
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_project(db_session: AsyncSession):
+async def test_create_project(db_session: AsyncSession) -> None:
     """Test creating a project."""
     repo = ProjectRepository(db_session)
 
@@ -24,7 +24,7 @@ async def test_create_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_id(db_session: AsyncSession):
+async def test_get_by_id(db_session: AsyncSession) -> None:
     """Test retrieving a project by ID."""
     repo = ProjectRepository(db_session)
     created = await repo.create(name="Test Project", description="Test")
@@ -37,7 +37,7 @@ async def test_get_by_id(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_name(db_session: AsyncSession):
+async def test_get_by_name(db_session: AsyncSession) -> None:
     """Test retrieving a project by name."""
     repo = ProjectRepository(db_session)
     created = await repo.create(name="Unique Project", description="Test")
@@ -49,7 +49,7 @@ async def test_get_by_name(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_project(db_session: AsyncSession):
+async def test_update_project(db_session: AsyncSession) -> None:
     """Test updating a project."""
     repo = ProjectRepository(db_session)
     project = await repo.create(name="Original Name", description="Original")
@@ -68,7 +68,7 @@ async def test_update_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_all_projects(db_session: AsyncSession):
+async def test_get_all_projects(db_session: AsyncSession) -> None:
     """Test listing all projects."""
     repo = ProjectRepository(db_session)
 
@@ -82,7 +82,7 @@ async def test_get_all_projects(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_get_by_name_not_found(db_session: AsyncSession):
+async def test_get_by_name_not_found(db_session: AsyncSession) -> None:
     """Test getting project by name when not found."""
     repo = ProjectRepository(db_session)
 
@@ -92,7 +92,7 @@ async def test_get_by_name_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_update_nonexistent_project(db_session: AsyncSession):
+async def test_update_nonexistent_project(db_session: AsyncSession) -> None:
     """Test updating non-existent project returns None."""
     repo = ProjectRepository(db_session)
 
@@ -107,7 +107,7 @@ async def test_update_nonexistent_project(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_project_with_description(db_session: AsyncSession):
+async def test_project_with_description(db_session: AsyncSession) -> None:
     """Test creating project with description."""
     repo = ProjectRepository(db_session)
 

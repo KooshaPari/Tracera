@@ -154,7 +154,7 @@ class FishboneAnalysis(BaseModel):
 
     problem_statement: str
     categories: list[dict[str, Any]] = Field(
-        ..., description="List of categories with causes: [{'name': '...', 'causes': [...]}]"
+        ..., description="List of categories with causes: [{'name': '...', 'causes': [...]}]",
     )
     identified_root_causes: list[str]
 

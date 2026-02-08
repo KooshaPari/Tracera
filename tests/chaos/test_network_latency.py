@@ -1,5 +1,4 @@
-"""
-Chaos Test: Network Latency Injection
+"""Chaos Test: Network Latency Injection.
 
 Tests system resilience when network latency is introduced to various services.
 Verifies that applications handle slow networks gracefully and recover within SLA.
@@ -30,8 +29,7 @@ async def test_database_latency_injection(
     db_session,
     assert_recovery_within_target,
 ) -> None:
-    """
-    Test: Inject 500ms latency to PostgreSQL connections.
+    """Test: Inject 500ms latency to PostgreSQL connections.
 
     Scenario:
     1. Establish baseline connection (healthy)
@@ -88,8 +86,7 @@ async def test_redis_latency_injection(
     redis_client: redis.Redis,
     assert_recovery_within_target,
 ) -> None:
-    """
-    Test: Inject 300ms latency to Redis connections.
+    """Test: Inject 300ms latency to Redis connections.
 
     Scenario:
     1. Verify Redis is responsive (baseline)
@@ -145,8 +142,7 @@ async def test_backend_api_latency(
     go_backend_proxy: str,
     assert_recovery_within_target,
 ) -> None:
-    """
-    Test: Inject latency to Go backend API.
+    """Test: Inject latency to Go backend API.
 
     Scenario:
     1. Call health endpoint (baseline)
@@ -202,8 +198,7 @@ async def test_variable_latency_spikes(
     postgres_proxy: str,
     db_session,
 ) -> None:
-    """
-    Test: Variable latency spikes (simulates intermittent network issues).
+    """Test: Variable latency spikes (simulates intermittent network issues).
 
     Scenario:
     1. Inject latency with high jitter (500ms ± 300ms)

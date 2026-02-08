@@ -1,5 +1,4 @@
-"""
-Template for Integration Tests - Copy this file to create new test modules.
+"""Template for Integration Tests - Copy this file to create new test modules.
 
 This template provides the standard structure for writing real integration tests
 that exercise actual services with a real (SQLite) database.
@@ -32,7 +31,7 @@ pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
 class TestMyService:
     """Test suite for MyService - Replace with actual service name."""
 
-    async def test_create_item_in_existing_project(self, db_session):
+    async def test_create_item_in_existing_project(self, db_session) -> None:
         """Test creating an item in an existing project - happy path."""
         # Setup: Create a project
         project_repo = ProjectRepository(db_session)
@@ -53,7 +52,7 @@ class TestMyService:
         assert item.title == "Test Item"
         assert str(item.project_id) == str(project.id)
 
-    async def test_create_item_with_invalid_project_id_raises_error(self, db_session):
+    async def test_create_item_with_invalid_project_id_raises_error(self, db_session) -> None:
         """Test creating an item with non-existent project raises error."""
         item_repo = ItemRepository(db_session)
 
@@ -66,7 +65,7 @@ class TestMyService:
                 item_type="feature",
             )
 
-    async def test_retrieve_item_after_creation(self, db_session):
+    async def test_retrieve_item_after_creation(self, db_session) -> None:
         """Test retrieving an item after creation - round-trip test."""
         # Setup
         project_repo = ProjectRepository(db_session)
@@ -88,7 +87,7 @@ class TestMyService:
         assert retrieved_item.id == created_item.id
         assert retrieved_item.title == "Test Item"
 
-    async def test_update_item_attributes(self, db_session):
+    async def test_update_item_attributes(self, db_session) -> None:
         """Test updating item attributes."""
         # Setup
         project_repo = ProjectRepository(db_session)
@@ -116,7 +115,7 @@ class TestMyService:
         verified = await item_repo.get_by_id(item.id, project_id=str(project.id))
         assert verified is not None and verified.title == "Updated Title"
 
-    async def test_delete_item_removes_from_database(self, db_session):
+    async def test_delete_item_removes_from_database(self, db_session) -> None:
         """Test deleting an item removes it from database."""
         # Setup
         project_repo = ProjectRepository(db_session)
@@ -138,7 +137,7 @@ class TestMyService:
         retrieved = await item_repo.get_by_id(item_id, project_id=str(project.id))
         assert retrieved is None
 
-    async def test_list_items_returns_all_items(self, db_session):
+    async def test_list_items_returns_all_items(self, db_session) -> None:
         """Test listing items returns all created items."""
         # Setup
         project_repo = ProjectRepository(db_session)
@@ -158,7 +157,7 @@ class TestMyService:
         assert any(i.title == "Item 2" for i in items)
         assert any(i.title == "Item 3" for i in items)
 
-    async def test_filter_items_by_type(self, db_session):
+    async def test_filter_items_by_type(self, db_session) -> None:
         """Test filtering items by type."""
         # Setup
         project_repo = ProjectRepository(db_session)
@@ -177,7 +176,7 @@ class TestMyService:
         assert len(features) == 2
         assert all(i.item_type == "feature" for i in features)
 
-    async def test_service_error_handling_on_invalid_input(self, db_session):
+    async def test_service_error_handling_on_invalid_input(self, db_session) -> None:
         """Test service handles invalid input gracefully."""
         item_repo = ItemRepository(db_session)
 

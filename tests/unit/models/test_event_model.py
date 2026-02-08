@@ -22,7 +22,7 @@ def test_data():
 class TestEventModelCreation:
     """Test Event model creation."""
 
-    def test_event_creation_with_required_fields(self, test_data):
+    def test_event_creation_with_required_fields(self, test_data) -> None:
         """Event creates with required fields."""
         event = Event(
             project_id=test_data["project_id"],
@@ -37,7 +37,7 @@ class TestEventModelCreation:
         assert event.entity_id == test_data["entity_id"]
         assert event.data == {"title": "New Item"}
 
-    def test_event_creation_with_agent(self, test_data):
+    def test_event_creation_with_agent(self, test_data) -> None:
         """Event can include agent_id."""
         event = Event(
             project_id=test_data["project_id"],
@@ -49,7 +49,7 @@ class TestEventModelCreation:
         )
         assert event.agent_id == test_data["agent_id"]
 
-    def test_event_agent_id_optional(self, test_data):
+    def test_event_agent_id_optional(self, test_data) -> None:
         """Event agent_id is optional."""
         event = Event(
             project_id=test_data["project_id"],
@@ -64,7 +64,7 @@ class TestEventModelCreation:
 class TestEventModelTypes:
     """Test Event model with different event types."""
 
-    def test_event_type_item_created(self, test_data):
+    def test_event_type_item_created(self, test_data) -> None:
         """Event supports item_created type."""
         event = Event(
             project_id=test_data["project_id"],
@@ -75,7 +75,7 @@ class TestEventModelTypes:
         )
         assert event.event_type == "item_created"
 
-    def test_event_type_item_updated(self, test_data):
+    def test_event_type_item_updated(self, test_data) -> None:
         """Event supports item_updated type."""
         event = Event(
             project_id=test_data["project_id"],
@@ -86,7 +86,7 @@ class TestEventModelTypes:
         )
         assert event.event_type == "item_updated"
 
-    def test_event_type_link_created(self, test_data):
+    def test_event_type_link_created(self, test_data) -> None:
         """Event supports link_created type."""
         event = Event(
             project_id=test_data["project_id"],
@@ -97,7 +97,7 @@ class TestEventModelTypes:
         )
         assert event.event_type == "link_created"
 
-    def test_event_type_project_created(self, test_data):
+    def test_event_type_project_created(self, test_data) -> None:
         """Event supports project_created type."""
         event = Event(
             project_id=test_data["project_id"],
@@ -112,7 +112,7 @@ class TestEventModelTypes:
 class TestEventModelEntityTypes:
     """Test Event model with different entity types."""
 
-    def test_entity_type_item(self, test_data):
+    def test_entity_type_item(self, test_data) -> None:
         """Event supports Item entity type."""
         event = Event(
             project_id=test_data["project_id"],
@@ -123,7 +123,7 @@ class TestEventModelEntityTypes:
         )
         assert event.entity_type == "Item"
 
-    def test_entity_type_link(self, test_data):
+    def test_entity_type_link(self, test_data) -> None:
         """Event supports Link entity type."""
         event = Event(
             project_id=test_data["project_id"],
@@ -134,7 +134,7 @@ class TestEventModelEntityTypes:
         )
         assert event.entity_type == "Link"
 
-    def test_entity_type_project(self, test_data):
+    def test_entity_type_project(self, test_data) -> None:
         """Event supports Project entity type."""
         event = Event(
             project_id=test_data["project_id"],
@@ -149,7 +149,7 @@ class TestEventModelEntityTypes:
 class TestEventModelData:
     """Test Event model data field."""
 
-    def test_event_data_is_dict(self, test_data):
+    def test_event_data_is_dict(self, test_data) -> None:
         """Event data field is dictionary."""
         event_data = {"status": "done", "updated_by": "user@example.com"}
         event = Event(
@@ -162,7 +162,7 @@ class TestEventModelData:
         assert isinstance(event.data, dict)
         assert event.data == event_data
 
-    def test_event_data_empty_dict(self, test_data):
+    def test_event_data_empty_dict(self, test_data) -> None:
         """Event data can be empty dict."""
         event = Event(
             project_id=test_data["project_id"],
@@ -173,7 +173,7 @@ class TestEventModelData:
         )
         assert event.data == {}
 
-    def test_event_data_nested_structures(self, test_data):
+    def test_event_data_nested_structures(self, test_data) -> None:
         """Event data can contain nested structures."""
         event_data = {
             "changes": {"status": {"from": "todo", "to": "done"}, "priority": {"from": "low", "to": "high"}},
@@ -192,7 +192,7 @@ class TestEventModelData:
 class TestEventModelAttributes:
     """Test Event model attributes."""
 
-    def test_event_has_timestamp_attributes(self, test_data):
+    def test_event_has_timestamp_attributes(self, test_data) -> None:
         """Event has timestamp attributes."""
         event = Event(
             project_id=test_data["project_id"],
@@ -204,7 +204,7 @@ class TestEventModelAttributes:
         assert hasattr(event, "created_at")
         assert hasattr(event, "updated_at")
 
-    def test_event_has_id_attribute(self, test_data):
+    def test_event_has_id_attribute(self, test_data) -> None:
         """Event has id attribute (auto-increment)."""
         event = Event(
             project_id=test_data["project_id"],
@@ -219,7 +219,7 @@ class TestEventModelAttributes:
 class TestEventModelRepresentation:
     """Test Event model representation."""
 
-    def test_event_repr(self, test_data):
+    def test_event_repr(self, test_data) -> None:
         """Event has string representation."""
         event = Event(
             project_id=test_data["project_id"],

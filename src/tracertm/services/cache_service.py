@@ -86,15 +86,15 @@ class CacheService:
 
     _instance: "CacheService | None" = None
 
-    def __init__(self, redis_url: str | None = None):
-        """
-        Initialize cache service.
+    def __init__(self, redis_url: str | None = None) -> None:
+        """Initialize cache service.
 
         Args:
             redis_url: Redis connection URL (default: redis://localhost:6379)
         """
         if not REDIS_AVAILABLE:
-            raise RuntimeError("Redis client library not available (redis.asyncio)")
+            msg = "Redis client library not available (redis.asyncio)"
+            raise RuntimeError(msg)
 
         redis_url = redis_url or "redis://localhost:6379"
         try:
@@ -107,7 +107,8 @@ class CacheService:
             logger.info("CacheService initialized with Redis at %s", redis_url)
         except Exception as e:
             # Required dependency: fail clearly, do not degrade silently (CLAUDE.md).
-            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
+            msg = f"Redis unavailable: {e}"
+            raise RedisUnavailableError(msg) from e
 
         self.stats = {
             "hits": 0,
@@ -144,9 +145,7 @@ class CacheService:
         return 300
 
     async def get(self, key: str) -> Any | None:
-        """
-        Get value from cache. Raises RedisUnavailableError on connection failure (required service).
-        """
+        """Get value from cache. Raises RedisUnavailableError on connection failure (required service)."""
         try:
             value = await self.redis_client.get(key)
             if value:
@@ -158,7 +157,8 @@ class CacheService:
             raise
         except Exception as e:
             # Redis connection/timeout: fail clearly, do not return None (CLAUDE.md).
-            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
+            msg = f"Redis unavailable: {e}"
+            raise RedisUnavailableError(msg) from e
 
     async def set(
         self,
@@ -167,9 +167,7 @@ class CacheService:
         ttl_seconds: int | None = None,
         cache_type: str | None = None,
     ) -> bool:
-        """
-        Set value in cache. Raises RedisUnavailableError on connection failure (required service).
-        """
+        """Set value in cache. Raises RedisUnavailableError on connection failure (required service)."""
         if ttl_seconds is None and cache_type:
             ttl_seconds = self._get_ttl(cache_type)
         elif ttl_seconds is None:
@@ -185,23 +183,22 @@ class CacheService:
         except (RedisUnavailableError, RuntimeError):
             raise
         except Exception as e:
-            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
+            msg = f"Redis unavailable: {e}"
+            raise RedisUnavailableError(msg) from e
 
     async def delete(self, key: str) -> bool:
-        """
-        Delete value from cache. Raises RedisUnavailableError on connection failure (required service).
-        """
+        """Delete value from cache. Raises RedisUnavailableError on connection failure (required service)."""
         try:
             await self.redis_client.delete(key)
             return True
         except (RedisUnavailableError, RuntimeError):
             raise
         except Exception as e:
-            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
+            msg = f"Redis unavailable: {e}"
+            raise RedisUnavailableError(msg) from e
 
     async def invalidate(self, cache_type: str, **kwargs: Any) -> bool:
-        """
-        Invalidate cache for a specific type and parameters.
+        """Invalidate cache for a specific type and parameters.
 
         Args:
             cache_type: Type of cache to invalidate
@@ -214,9 +211,7 @@ class CacheService:
         return await self.delete(key)
 
     async def clear(self) -> bool:
-        """
-        Clear all cache entries. Raises RedisUnavailableError on connection failure (required service).
-        """
+        """Clear all cache entries. Raises RedisUnavailableError on connection failure (required service)."""
         try:
             await self.redis_client.flushdb()
             self.stats = {"hits": 0, "misses": 0, "evictions": 0}
@@ -224,11 +219,11 @@ class CacheService:
         except (RedisUnavailableError, RuntimeError):
             raise
         except Exception as e:
-            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
+            msg = f"Redis unavailable: {e}"
+            raise RedisUnavailableError(msg) from e
 
     async def clear_prefix(self, prefix: str) -> int:
-        """
-        Clear all cache entries with given prefix.
+        """Clear all cache entries with given prefix.
 
         Raises RedisUnavailableError on connection failure (required service).
         """
@@ -243,11 +238,11 @@ class CacheService:
         except (RedisUnavailableError, RuntimeError):
             raise
         except Exception as e:
-            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
+            msg = f"Redis unavailable: {e}"
+            raise RedisUnavailableError(msg) from e
 
     async def invalidate_project(self, project_id: str) -> int:
-        """
-        Invalidate all cache entries for a project.
+        """Invalidate all cache entries for a project.
 
         Raises RedisUnavailableError on connection failure (required service).
         """
@@ -266,8 +261,7 @@ class CacheService:
         return total_deleted
 
     async def get_stats(self) -> CacheStats:
-        """
-        Get cache statistics.
+        """Get cache statistics.
 
         Returns:
             CacheStats object
@@ -281,7 +275,8 @@ class CacheService:
         except (RedisUnavailableError, RuntimeError):
             raise
         except Exception as e:
-            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
+            msg = f"Redis unavailable: {e}"
+            raise RedisUnavailableError(msg) from e
 
         return CacheStats(
             hits=self.stats["hits"],
@@ -299,7 +294,8 @@ class CacheService:
         except (RedisUnavailableError, RuntimeError):
             raise
         except Exception as e:
-            raise RedisUnavailableError(f"Redis unavailable: {e}") from e
+            msg = f"Redis unavailable: {e}"
+            raise RedisUnavailableError(msg) from e
 
 
 # Cached operations helper functions
@@ -309,8 +305,7 @@ async def cached_get(
     fetch_fn,
     **kwargs,
 ) -> Any:
-    """
-    Get value from cache or fetch and cache it.
+    """Get value from cache or fetch and cache it.
 
     Args:
         cache: CacheService instance

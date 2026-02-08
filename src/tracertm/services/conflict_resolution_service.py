@@ -1,5 +1,4 @@
-"""
-Conflict resolution service for Epic 5 (Story 5.5, FR43).
+"""Conflict resolution service for Epic 5 (Story 5.5, FR43).
 
 Provides conflict detection and resolution strategies.
 """
@@ -16,11 +15,9 @@ MIN_EVENTS_FOR_CONFLICT = 2
 
 
 class ConflictResolutionService:
-    """
-    Service for detecting and resolving conflicts (Story 5.5, FR43).
-    """
+    """Service for detecting and resolving conflicts (Story 5.5, FR43)."""
 
-    def __init__(self, session: Session):
+    def __init__(self, session: Session) -> None:
         """Initialize conflict resolution service."""
         self.session = session
 
@@ -30,8 +27,7 @@ class ConflictResolutionService:
         item_id: str | None = None,
         time_window_seconds: int = 60,
     ) -> list[dict[str, Any]]:
-        """
-        Detect conflicts for items (Story 5.5).
+        """Detect conflicts for items (Story 5.5).
 
         Args:
             project_id: Project ID
@@ -87,8 +83,7 @@ class ConflictResolutionService:
         item_id: str,
         strategy: str = "last_write_wins",
     ) -> dict[str, Any]:
-        """
-        Resolve a conflict using specified strategy (Story 5.5).
+        """Resolve a conflict using specified strategy (Story 5.5).
 
         Args:
             project_id: Project ID
@@ -101,7 +96,8 @@ class ConflictResolutionService:
         item = self.session.query(Item).filter(Item.id == item_id, Item.project_id == project_id).first()
 
         if not item:
-            raise ValueError(f"Item not found: {item_id}")
+            msg = f"Item not found: {item_id}"
+            raise ValueError(msg)
 
         # Get recent events for this item
         events = (
@@ -141,4 +137,5 @@ class ConflictResolutionService:
                 "note": "Merge strategy requires manual review",
             }
 
-        raise ValueError(f"Unknown resolution strategy: {strategy}")
+        msg = f"Unknown resolution strategy: {strategy}"
+        raise ValueError(msg)

@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.edge_type import EdgeType
 from tracertm.models.graph import Graph
@@ -14,11 +13,14 @@ from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.node_kind_rule import NodeKindRule
 
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
 
 class GraphValidationService:
     """Validate graph integrity and rules."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def validate_graph(self, project_id: str, graph_id: str) -> dict[str, Any]:
@@ -28,7 +30,7 @@ class GraphValidationService:
             return {"errors": ["graph_not_found"], "warnings": []}
 
         nodes_result = await self.session.execute(
-            select(Item).join(GraphNode, GraphNode.item_id == Item.id).where(GraphNode.graph_id == graph_id)
+            select(Item).join(GraphNode, GraphNode.item_id == Item.id).where(GraphNode.graph_id == graph_id),
         )
         nodes = list(nodes_result.scalars().all())
         node_ids = {n.id for n in nodes}

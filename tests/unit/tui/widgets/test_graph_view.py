@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for GraphViewWidget.
+"""Comprehensive tests for GraphViewWidget.
 
 Tests cover:
 - Widget initialization
@@ -27,18 +26,18 @@ from tracertm.tui.widgets.graph_view import GraphViewWidget
 class TestGraphViewWidget:
     """Test GraphViewWidget initialization and basic functionality."""
 
-    def test_widget_initialization(self):
+    def test_widget_initialization(self) -> None:
         """Test widget can be initialized."""
         widget = GraphViewWidget()
         assert widget is not None
         assert isinstance(widget, Static)
 
-    def test_widget_inherits_static(self):
+    def test_widget_inherits_static(self) -> None:
         """Test widget inherits from Static."""
         widget = GraphViewWidget()
         assert isinstance(widget, Static)
 
-    def test_widget_has_content(self):
+    def test_widget_has_content(self) -> None:
         """Test widget has initial content."""
         widget = GraphViewWidget()
         # Default content should be "Graph View"
@@ -46,17 +45,17 @@ class TestGraphViewWidget:
             # Content may be stored in various attributes
             assert widget is not None
 
-    def test_widget_with_id(self):
+    def test_widget_with_id(self) -> None:
         """Test widget can be created with custom id."""
         widget = GraphViewWidget(id="test-graph")
         assert widget.id == "test-graph"
 
-    def test_widget_with_classes(self):
+    def test_widget_with_classes(self) -> None:
         """Test widget can be created with CSS classes."""
         widget = GraphViewWidget(classes="custom-class")
         assert "custom-class" in widget.classes
 
-    def test_multiple_widgets(self):
+    def test_multiple_widgets(self) -> None:
         """Test multiple widgets can coexist."""
         widget1 = GraphViewWidget(id="graph1")
         widget2 = GraphViewWidget(id="graph2")
@@ -68,13 +67,13 @@ class TestGraphViewWidget:
 class TestGraphViewWidgetContent:
     """Test content management."""
 
-    def test_default_content(self):
+    def test_default_content(self) -> None:
         """Test default content is set."""
         widget = GraphViewWidget()
         # Widget should be initialized with "Graph View"
         assert widget is not None
 
-    def test_update_content(self):
+    def test_update_content(self) -> None:
         """Test updating widget content."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -82,14 +81,14 @@ class TestGraphViewWidgetContent:
             # Content should be updated
             assert widget is not None
 
-    def test_empty_content(self):
+    def test_empty_content(self) -> None:
         """Test widget with empty content."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
             widget.update("")
             assert widget is not None
 
-    def test_multiline_content(self):
+    def test_multiline_content(self) -> None:
         """Test widget with multiline content."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -97,7 +96,7 @@ class TestGraphViewWidgetContent:
             widget.update(content)
             assert widget is not None
 
-    def test_large_content(self):
+    def test_large_content(self) -> None:
         """Test widget with large content."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -110,13 +109,13 @@ class TestGraphViewWidgetContent:
 class TestGraphViewWidgetDisplay:
     """Test display functionality."""
 
-    def test_graph_visualization_placeholder(self):
+    def test_graph_visualization_placeholder(self) -> None:
         """Test widget serves as graph visualization placeholder."""
         widget = GraphViewWidget()
         # Widget should be a Static widget ready for graph content
         assert isinstance(widget, Static)
 
-    def test_ascii_graph_content(self):
+    def test_ascii_graph_content(self) -> None:
         """Test widget can display ASCII graph."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -130,7 +129,7 @@ class TestGraphViewWidgetDisplay:
             widget.update(ascii_graph)
             assert widget is not None
 
-    def test_node_list_content(self):
+    def test_node_list_content(self) -> None:
         """Test widget can display node list."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -138,7 +137,7 @@ class TestGraphViewWidgetDisplay:
             widget.update(node_list)
             assert widget is not None
 
-    def test_edge_list_content(self):
+    def test_edge_list_content(self) -> None:
         """Test widget can display edge list."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -151,22 +150,22 @@ class TestGraphViewWidgetDisplay:
 class TestGraphViewWidgetStyling:
     """Test widget styling capabilities."""
 
-    def test_custom_styles(self):
+    def test_custom_styles(self) -> None:
         """Test widget accepts custom styles."""
         widget = GraphViewWidget(classes="custom-style")
         assert "custom-style" in widget.classes
 
-    def test_multiple_classes(self):
+    def test_multiple_classes(self) -> None:
         """Test widget can have multiple CSS classes."""
         widget = GraphViewWidget(classes="class1 class2 class3")
         assert any(c in widget.classes for c in ["class1", "class2", "class3"])
 
-    def test_id_attribute(self):
+    def test_id_attribute(self) -> None:
         """Test widget ID attribute."""
         widget = GraphViewWidget(id="unique-graph")
         assert widget.id == "unique-graph"
 
-    def test_expand_attribute(self):
+    def test_expand_attribute(self) -> None:
         """Test widget expand attribute."""
         widget = GraphViewWidget(expand=True)
         if hasattr(widget, "expand"):
@@ -177,7 +176,7 @@ class TestGraphViewWidgetStyling:
 class TestGraphViewWidgetEdgeCases:
     """Test edge cases and error handling."""
 
-    def test_none_content(self):
+    def test_none_content(self) -> None:
         """Test widget with None content."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -188,7 +187,7 @@ class TestGraphViewWidgetEdgeCases:
                 # Expected exception for None
                 pass
 
-    def test_special_characters(self):
+    def test_special_characters(self) -> None:
         """Test widget with special characters."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -196,7 +195,7 @@ class TestGraphViewWidgetEdgeCases:
             widget.update(content)
             assert widget is not None
 
-    def test_unicode_content(self):
+    def test_unicode_content(self) -> None:
         """Test widget with unicode characters."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -204,7 +203,7 @@ class TestGraphViewWidgetEdgeCases:
             widget.update(content)
             assert widget is not None
 
-    def test_very_long_line(self):
+    def test_very_long_line(self) -> None:
         """Test widget with very long single line."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -212,7 +211,7 @@ class TestGraphViewWidgetEdgeCases:
             widget.update(content)
             assert widget is not None
 
-    def test_many_lines(self):
+    def test_many_lines(self) -> None:
         """Test widget with many lines."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -225,7 +224,7 @@ class TestGraphViewWidgetEdgeCases:
 class TestGraphViewWidgetIntegration:
     """Test widget integration scenarios."""
 
-    def test_update_multiple_times(self):
+    def test_update_multiple_times(self) -> None:
         """Test updating content multiple times."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -234,7 +233,7 @@ class TestGraphViewWidgetIntegration:
             widget.update("Third content")
             assert widget is not None
 
-    def test_clear_content(self):
+    def test_clear_content(self) -> None:
         """Test clearing content."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -242,7 +241,7 @@ class TestGraphViewWidgetIntegration:
             widget.update("")
             assert widget is not None
 
-    def test_graph_state_changes(self):
+    def test_graph_state_changes(self) -> None:
         """Test representing different graph states."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -260,7 +259,7 @@ class TestGraphViewWidgetIntegration:
 
             assert widget is not None
 
-    def test_progressive_updates(self):
+    def test_progressive_updates(self) -> None:
         """Test progressive content updates."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -274,7 +273,7 @@ class TestGraphViewWidgetIntegration:
 class TestGraphViewWidgetFormats:
     """Test different graph format representations."""
 
-    def test_dot_format(self):
+    def test_dot_format(self) -> None:
         """Test DOT format graph."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -288,7 +287,7 @@ class TestGraphViewWidgetFormats:
             widget.update(dot_graph)
             assert widget is not None
 
-    def test_adjacency_list(self):
+    def test_adjacency_list(self) -> None:
         """Test adjacency list format."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -296,7 +295,7 @@ class TestGraphViewWidgetFormats:
             widget.update(adj_list)
             assert widget is not None
 
-    def test_matrix_format(self):
+    def test_matrix_format(self) -> None:
         """Test matrix format."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -304,7 +303,7 @@ class TestGraphViewWidgetFormats:
             widget.update(matrix)
             assert widget is not None
 
-    def test_json_format(self):
+    def test_json_format(self) -> None:
         """Test JSON graph representation."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -317,11 +316,11 @@ class TestGraphViewWidgetFormats:
 class TestGraphViewWidgetPlaceholder:
     """Test placeholder class when Textual is not available."""
 
-    def test_placeholder_exists(self):
+    def test_placeholder_exists(self) -> None:
         """Test placeholder class exists."""
         assert GraphViewWidget is not None
 
-    def test_placeholder_instantiation(self):
+    def test_placeholder_instantiation(self) -> None:
         """Test placeholder can be instantiated."""
         widget = GraphViewWidget()
         assert widget is not None
@@ -330,12 +329,12 @@ class TestGraphViewWidgetPlaceholder:
 class TestGraphViewWidgetAvailability:
     """Test widget availability detection."""
 
-    def test_textual_availability_constant(self):
+    def test_textual_availability_constant(self) -> None:
         """Test TEXTUAL_AVAILABLE constant is defined."""
         assert WIDGET_TEXTUAL is not None
         assert isinstance(WIDGET_TEXTUAL, bool)
 
-    def test_textual_availability_matches(self):
+    def test_textual_availability_matches(self) -> None:
         """Test module TEXTUAL_AVAILABLE matches test import."""
         assert WIDGET_TEXTUAL == TEXTUAL_AVAILABLE
 
@@ -344,21 +343,21 @@ class TestGraphViewWidgetAvailability:
 class TestGraphViewWidgetDataTypes:
     """Test different data type representations."""
 
-    def test_string_content(self):
+    def test_string_content(self) -> None:
         """Test string content."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
             widget.update("Simple string graph")
             assert widget is not None
 
-    def test_numeric_content(self):
+    def test_numeric_content(self) -> None:
         """Test numeric content."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
             widget.update("Nodes: 10, Edges: 15")
             assert widget is not None
 
-    def test_formatted_content(self):
+    def test_formatted_content(self) -> None:
         """Test formatted content."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -366,7 +365,7 @@ class TestGraphViewWidgetDataTypes:
             widget.update(formatted)
             assert widget is not None
 
-    def test_table_content(self):
+    def test_table_content(self) -> None:
         """Test table-like content."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -379,12 +378,12 @@ class TestGraphViewWidgetDataTypes:
 class TestGraphViewWidgetState:
     """Test widget state management."""
 
-    def test_initial_state(self):
+    def test_initial_state(self) -> None:
         """Test widget initial state."""
         widget = GraphViewWidget()
         assert widget is not None
 
-    def test_state_persistence(self):
+    def test_state_persistence(self) -> None:
         """Test state persists across updates."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -394,7 +393,7 @@ class TestGraphViewWidgetState:
             widget.update("State 2")
             assert widget is not None
 
-    def test_reset_to_default(self):
+    def test_reset_to_default(self) -> None:
         """Test resetting to default state."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -407,7 +406,7 @@ class TestGraphViewWidgetState:
 class TestGraphViewWidgetPerformance:
     """Test widget performance scenarios."""
 
-    def test_rapid_updates(self):
+    def test_rapid_updates(self) -> None:
         """Test rapid content updates."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -415,7 +414,7 @@ class TestGraphViewWidgetPerformance:
                 widget.update(f"Update {i}")
             assert widget is not None
 
-    def test_large_graph_content(self):
+    def test_large_graph_content(self) -> None:
         """Test large graph content."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -423,7 +422,7 @@ class TestGraphViewWidgetPerformance:
             widget.update(nodes)
             assert widget is not None
 
-    def test_complex_graph(self):
+    def test_complex_graph(self) -> None:
         """Test complex graph representation."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
@@ -438,24 +437,24 @@ class TestGraphViewWidgetPerformance:
 class TestGraphViewWidgetCustomization:
     """Test widget customization options."""
 
-    def test_custom_name(self):
+    def test_custom_name(self) -> None:
         """Test widget with custom name."""
         widget = GraphViewWidget(name="my-graph")
         if hasattr(widget, "name"):
             assert widget.name == "my-graph"
 
-    def test_custom_id(self):
+    def test_custom_id(self) -> None:
         """Test widget with custom ID."""
         widget = GraphViewWidget(id="graph-1")
         assert widget.id == "graph-1"
 
-    def test_disabled_state(self):
+    def test_disabled_state(self) -> None:
         """Test widget disabled state."""
         widget = GraphViewWidget(disabled=True)
         if hasattr(widget, "disabled"):
             assert widget.disabled is True
 
-    def test_tooltip(self):
+    def test_tooltip(self) -> None:
         """Test widget with tooltip."""
         widget = GraphViewWidget()
         if hasattr(widget, "tooltip"):
@@ -467,20 +466,20 @@ class TestGraphViewWidgetCustomization:
 class TestGraphViewWidgetAccessibility:
     """Test widget accessibility features."""
 
-    def test_widget_name_attribute(self):
+    def test_widget_name_attribute(self) -> None:
         """Test widget has name attribute."""
         widget = GraphViewWidget(name="graph-view")
         if hasattr(widget, "name"):
             assert widget.name == "graph-view"
 
-    def test_describable_content(self):
+    def test_describable_content(self) -> None:
         """Test content can be described."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
             widget.update("10 nodes, 15 edges, density: 0.3")
             assert widget is not None
 
-    def test_structured_content(self):
+    def test_structured_content(self) -> None:
         """Test structured accessible content."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):

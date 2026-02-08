@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for tracertm.tui.adapters.storage_adapter module.
+"""Comprehensive tests for tracertm.tui.adapters.storage_adapter module.
 
 Tests storage adapter functionality including project operations, item management,
 link management, sync operations, and reactive callbacks.
@@ -8,6 +7,7 @@ Coverage target: 80%+ of 138 statements
 
 from datetime import datetime
 from pathlib import Path
+from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -42,7 +42,7 @@ def storage_adapter(mock_storage, mock_sync_engine):
 class TestAdapterInitialization:
     """Test StorageAdapter initialization."""
 
-    def test_init_with_default_base_dir(self):
+    def test_init_with_default_base_dir(self) -> None:
         """Test adapter initializes with default base directory."""
         with patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager") as mock_storage:
             adapter = StorageAdapter()
@@ -53,7 +53,7 @@ class TestAdapterInitialization:
             assert adapter._conflict_callbacks == []
             assert adapter._item_change_callbacks == []
 
-    def test_init_with_custom_base_dir(self):
+    def test_init_with_custom_base_dir(self) -> None:
         """Test adapter initializes with custom base directory."""
         custom_dir = Path("/custom/path")
 
@@ -62,7 +62,7 @@ class TestAdapterInitialization:
 
             mock_storage.assert_called_once_with(custom_dir)
 
-    def test_init_with_sync_engine(self, mock_sync_engine):
+    def test_init_with_sync_engine(self, mock_sync_engine) -> None:
         """Test adapter initializes with sync engine."""
         with patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager"):
             adapter = StorageAdapter(sync_engine=mock_sync_engine)
@@ -73,7 +73,7 @@ class TestAdapterInitialization:
 class TestProjectOperations:
     """Test project-related operations."""
 
-    def test_get_project_success(self, storage_adapter, mock_storage):
+    def test_get_project_success(self, storage_adapter, mock_storage) -> None:
         """Test getting project by name."""
         project_storage = MagicMock()
         mock_project = Project(name="Test Project", description="Test")
@@ -86,7 +86,7 @@ class TestProjectOperations:
         mock_storage.get_project_storage.assert_called_once_with("Test Project")
         project_storage.get_project.assert_called_once()
 
-    def test_get_project_not_found(self, storage_adapter, mock_storage):
+    def test_get_project_not_found(self, storage_adapter, mock_storage) -> None:
         """Test getting non-existent project returns None."""
         project_storage = MagicMock()
         project_storage.get_project.return_value = None
@@ -96,7 +96,7 @@ class TestProjectOperations:
 
         assert result is None
 
-    def test_create_project(self, storage_adapter, mock_storage):
+    def test_create_project(self, storage_adapter, mock_storage) -> None:
         """Test creating a project."""
         project_storage = MagicMock()
         mock_project = Project(name="New Project", description="Description")
@@ -112,7 +112,7 @@ class TestProjectOperations:
 class TestItemOperations:
     """Test item-related operations."""
 
-    def test_list_items_all(self, storage_adapter, mock_storage):
+    def test_list_items_all(self, storage_adapter, mock_storage) -> None:
         """Test listing all items in a project."""
         project = Project(name="Test", id="proj-1")
         item_storage = MagicMock()
@@ -128,7 +128,7 @@ class TestItemOperations:
         assert result == mock_items
         item_storage.list_items.assert_called_once_with(item_type=None, status=None, parent_id=None)
 
-    def test_list_items_with_filters(self, storage_adapter, mock_storage):
+    def test_list_items_with_filters(self, storage_adapter, mock_storage) -> None:
         """Test listing items with type, status, and parent filters."""
         project = Project(name="Test", id="proj-1")
         item_storage = MagicMock()
@@ -144,7 +144,7 @@ class TestItemOperations:
         assert result == mock_items
         item_storage.list_items.assert_called_once_with(item_type="epic", status="in_progress", parent_id="parent-1")
 
-    def test_get_item(self, storage_adapter, mock_storage):
+    def test_get_item(self, storage_adapter, mock_storage) -> None:
         """Test getting single item by ID."""
         project = Project(name="Test", id="proj-1")
         item_storage = MagicMock()
@@ -160,7 +160,7 @@ class TestItemOperations:
         assert result == mock_item
         item_storage.get_item.assert_called_once_with("item-1")
 
-    def test_create_item(self, storage_adapter, mock_storage):
+    def test_create_item(self, storage_adapter, mock_storage) -> None:
         """Test creating a new item."""
         project = Project(name="Test", id="proj-1")
         item_storage = MagicMock()
@@ -173,7 +173,7 @@ class TestItemOperations:
 
         # Track callback notifications
         callback_called = []
-        storage_adapter.on_item_change(lambda item_id: callback_called.append(item_id))
+        storage_adapter.on_item_change(callback_called.append)
 
         result = storage_adapter.create_item(
             project,
@@ -188,7 +188,7 @@ class TestItemOperations:
         assert result == mock_item
         assert "item-new" in callback_called
 
-    def test_update_item(self, storage_adapter, mock_storage):
+    def test_update_item(self, storage_adapter, mock_storage) -> None:
         """Test updating an existing item."""
         project = Project(name="Test", id="proj-1")
         item_storage = MagicMock()
@@ -201,14 +201,14 @@ class TestItemOperations:
 
         # Track callback notifications
         callback_called = []
-        storage_adapter.on_item_change(lambda item_id: callback_called.append(item_id))
+        storage_adapter.on_item_change(callback_called.append)
 
         result = storage_adapter.update_item(project, item_id="item-1", title="Updated Item", status="done")
 
         assert result == mock_item
         assert "item-1" in callback_called
 
-    def test_delete_item(self, storage_adapter, mock_storage):
+    def test_delete_item(self, storage_adapter, mock_storage) -> None:
         """Test soft-deleting an item."""
         project = Project(name="Test", id="proj-1")
         item_storage = MagicMock()
@@ -219,7 +219,7 @@ class TestItemOperations:
 
         # Track callback notifications
         callback_called = []
-        storage_adapter.on_item_change(lambda item_id: callback_called.append(item_id))
+        storage_adapter.on_item_change(callback_called.append)
 
         storage_adapter.delete_item(project, "item-1")
 
@@ -230,7 +230,7 @@ class TestItemOperations:
 class TestLinkOperations:
     """Test link-related operations."""
 
-    def test_list_links(self, storage_adapter, mock_storage):
+    def test_list_links(self, storage_adapter, mock_storage) -> None:
         """Test listing links with filters."""
         project = Project(name="Test", id="proj-1")
         item_storage = MagicMock()
@@ -246,7 +246,7 @@ class TestLinkOperations:
         assert result == mock_links
         item_storage.list_links.assert_called_once_with(source_id="item-1", target_id=None, link_type="implements")
 
-    def test_create_link(self, storage_adapter, mock_storage):
+    def test_create_link(self, storage_adapter, mock_storage) -> None:
         """Test creating a traceability link."""
         project = Project(name="Test", id="proj-1")
         item_storage = MagicMock()
@@ -258,12 +258,12 @@ class TestLinkOperations:
         mock_storage.get_project_storage.return_value = project_storage
 
         result = storage_adapter.create_link(
-            project, source_id="item-1", target_id="item-2", link_type="implements", metadata={"key": "value"}
+            project, source_id="item-1", target_id="item-2", link_type="implements", metadata={"key": "value"},
         )
 
         assert result == mock_link
 
-    def test_delete_link(self, storage_adapter, mock_storage):
+    def test_delete_link(self, storage_adapter, mock_storage) -> None:
         """Test deleting a link."""
         project = Project(name="Test", id="proj-1")
         item_storage = MagicMock()
@@ -280,7 +280,7 @@ class TestLinkOperations:
 class TestSearchOperations:
     """Test search functionality."""
 
-    def test_search_items(self, storage_adapter, mock_storage):
+    def test_search_items(self, storage_adapter, mock_storage) -> None:
         """Test full-text search across items."""
         mock_results = [Item(id="item-1", title="Matching Item")]
         mock_storage.search_items.return_value = mock_results
@@ -294,7 +294,7 @@ class TestSearchOperations:
 class TestSyncOperations:
     """Test sync-related operations."""
 
-    def test_get_sync_status_with_sync_engine(self, storage_adapter, mock_sync_engine):
+    def test_get_sync_status_with_sync_engine(self, storage_adapter, mock_sync_engine) -> None:
         """Test getting sync status when sync engine is configured."""
         mock_state = SyncState(last_sync=datetime.now(), pending_changes=5, status=SyncStatus.IDLE)
         mock_sync_engine.get_status.return_value = mock_state
@@ -304,7 +304,7 @@ class TestSyncOperations:
         assert result == mock_state
         mock_sync_engine.get_status.assert_called_once()
 
-    def test_get_sync_status_without_sync_engine(self, mock_storage):
+    def test_get_sync_status_without_sync_engine(self, mock_storage) -> None:
         """Test getting sync status without sync engine returns default state."""
         with patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager"):
             adapter = StorageAdapter(sync_engine=None)
@@ -318,7 +318,7 @@ class TestSyncOperations:
             assert result.status == SyncStatus.IDLE
 
     @pytest.mark.asyncio
-    async def test_trigger_sync_success(self, storage_adapter, mock_sync_engine):
+    async def test_trigger_sync_success(self, storage_adapter, mock_sync_engine) -> None:
         """Test triggering sync operation successfully."""
         mock_result = MagicMock(success=True, entities_synced=10, conflicts=[], errors=[], duration_seconds=2.5)
         mock_sync_engine.sync = AsyncMock(return_value=mock_result)
@@ -326,7 +326,7 @@ class TestSyncOperations:
 
         # Track callback notifications
         callback_states = []
-        storage_adapter.on_sync_status_change(lambda state: callback_states.append(state))
+        storage_adapter.on_sync_status_change(callback_states.append)
 
         result = await storage_adapter.trigger_sync()
 
@@ -335,7 +335,7 @@ class TestSyncOperations:
         assert len(callback_states) >= 1  # At least one callback
 
     @pytest.mark.asyncio
-    async def test_trigger_sync_without_sync_engine(self, mock_storage):
+    async def test_trigger_sync_without_sync_engine(self, mock_storage) -> None:
         """Test triggering sync without sync engine returns error."""
         with patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager"):
             adapter = StorageAdapter(sync_engine=None)
@@ -346,20 +346,20 @@ class TestSyncOperations:
             assert "not configured" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_trigger_sync_error(self, storage_adapter, mock_sync_engine):
+    async def test_trigger_sync_error(self, storage_adapter, mock_sync_engine) -> None:
         """Test sync operation handling errors."""
         mock_sync_engine.sync = AsyncMock(side_effect=Exception("Sync failed"))
 
         # Track callback notifications
         callback_states = []
-        storage_adapter.on_sync_status_change(lambda state: callback_states.append(state))
+        storage_adapter.on_sync_status_change(callback_states.append)
 
         result = await storage_adapter.trigger_sync()
 
         assert result["success"] is False
         assert "Sync failed" in result["error"]
 
-    def test_get_pending_changes_count(self, storage_adapter, mock_storage):
+    def test_get_pending_changes_count(self, storage_adapter, mock_storage) -> None:
         """Test getting count of pending sync changes."""
         mock_storage.get_sync_queue.return_value = [{"id": str(i)} for i in range(5)]
 
@@ -371,7 +371,7 @@ class TestSyncOperations:
 class TestConflictOperations:
     """Test conflict-related operations."""
 
-    def test_get_unresolved_conflicts(self, storage_adapter, mock_storage):
+    def test_get_unresolved_conflicts(self, storage_adapter, mock_storage) -> None:
         """Test getting unresolved conflicts."""
         mock_session = MagicMock()
         mock_storage.get_session.return_value = mock_session
@@ -387,7 +387,7 @@ class TestConflictOperations:
             assert result == mock_conflicts
             mock_session.close.assert_called_once()
 
-    def test_get_conflict_count(self, storage_adapter, mock_storage):
+    def test_get_conflict_count(self, storage_adapter, mock_storage) -> None:
         """Test getting count of unresolved conflicts."""
         mock_session = MagicMock()
         mock_storage.get_session.return_value = mock_session
@@ -405,11 +405,11 @@ class TestConflictOperations:
 class TestReactiveCallbacks:
     """Test reactive callback registration and notifications."""
 
-    def test_on_sync_status_change_registration(self, storage_adapter):
+    def test_on_sync_status_change_registration(self, storage_adapter) -> None:
         """Test registering sync status change callback."""
         callback_called = []
 
-        def test_callback(state):
+        def test_callback(state) -> None:
             callback_called.append(state)
 
         unregister = storage_adapter.on_sync_status_change(test_callback)
@@ -426,11 +426,11 @@ class TestReactiveCallbacks:
         storage_adapter._notify_sync_status(test_state)
         assert len(callback_called) == 1  # Still 1
 
-    def test_on_conflict_detected_registration(self, storage_adapter):
+    def test_on_conflict_detected_registration(self, storage_adapter) -> None:
         """Test registering conflict detection callback."""
         callback_called = []
 
-        def test_callback(conflict):
+        def test_callback(conflict) -> None:
             callback_called.append(conflict)
 
         unregister = storage_adapter.on_conflict_detected(test_callback)
@@ -446,11 +446,11 @@ class TestReactiveCallbacks:
         storage_adapter._notify_conflict(test_conflict)
         assert len(callback_called) == 1
 
-    def test_on_item_change_registration(self, storage_adapter):
+    def test_on_item_change_registration(self, storage_adapter) -> None:
         """Test registering item change callback."""
         callback_called = []
 
-        def test_callback(item_id):
+        def test_callback(item_id) -> None:
             callback_called.append(item_id)
 
         unregister = storage_adapter.on_item_change(test_callback)
@@ -466,15 +466,16 @@ class TestReactiveCallbacks:
         storage_adapter._notify_item_change("item-456")
         assert len(callback_called) == 1
 
-    def test_callback_error_handling(self, storage_adapter):
+    def test_callback_error_handling(self, storage_adapter) -> None:
         """Test callbacks that raise exceptions don't break notification."""
 
-        def failing_callback(state):
-            raise Exception("Callback error")
+        def failing_callback(state) -> Never:
+            msg = "Callback error"
+            raise Exception(msg)
 
         called: list[bool] = [False]
 
-        def working_callback(state):
+        def working_callback(state) -> None:
             called[0] = True
 
         storage_adapter.on_sync_status_change(failing_callback)
