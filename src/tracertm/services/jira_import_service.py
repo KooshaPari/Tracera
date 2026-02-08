@@ -133,7 +133,7 @@ class JiraImportService:
             }
 
         except (json.JSONDecodeError, ValueError, KeyError, OperationalError) as e:
-            logger.error(f"Jira import failed: {e}", exc_info=True)
+            logger.error("Jira import failed: %s", e, exc_info=True)
             return {
                 "success": False,
                 "errors": [f"Import failed: {e!s}"],

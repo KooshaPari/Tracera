@@ -1,6 +1,6 @@
-import { client } from '@/api/client';
-
 import type { Process, ProcessExecution } from '@tracertm/types';
+
+import { client } from '@/api/client';
 
 import type {
   CreateExecutionData,
@@ -206,7 +206,9 @@ async function fetchProcessStats(projectId: string): Promise<{
   return processParsers.parseProcessStats(json);
 }
 
-async function createExecution(data: CreateExecutionData): Promise<{ id: string; executionNumber: string }> {
+async function createExecution(
+  data: CreateExecutionData,
+): Promise<{ id: string; executionNumber: string }> {
   const json = await fetchJson(`${API_URL}/api/v1/processes/${data.processId}/executions`, {
     body: JSON.stringify({
       context_data: data.contextData ?? {},

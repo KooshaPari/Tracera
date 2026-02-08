@@ -1,6 +1,16 @@
-import { ChevronRight, Edit3, ExternalLink, MoreVertical, Trash2, X } from 'lucide-react';
+import { ChevronRight, ExternalLink, MoreVertical, Trash2 } from 'lucide-react';
 
-import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Separator } from '@tracertm/ui';
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Separator,
+} from '@tracertm/ui';
+
+import { TopBarEditingActions } from './TopBarEditingActions';
+import { TopBarViewActions } from './TopBarViewActions';
 
 interface TopBarProps {
   isEditing: boolean;
@@ -13,39 +23,6 @@ interface TopBarProps {
   onOpenNewTab: () => void;
 }
 
-interface EditingActionsProps {
-  onCancelEdit: () => void;
-  onSave: () => void;
-}
-
-function EditingActions({ onCancelEdit, onSave }: EditingActionsProps): JSX.Element {
-  return (
-    <>
-      <Button size='sm' className='gap-2 rounded-full' onClick={onSave}>
-        <ChevronRight className='h-4 w-4' />
-        Save
-      </Button>
-      <Button variant='outline' size='sm' className='gap-2 rounded-full' onClick={onCancelEdit}>
-        <X className='h-4 w-4' />
-        Cancel
-      </Button>
-    </>
-  );
-}
-
-interface ViewActionsProps {
-  onStartEdit: () => void;
-}
-
-function ViewActions({ onStartEdit }: ViewActionsProps): JSX.Element {
-  return (
-    <Button variant='outline' size='sm' className='gap-2 rounded-full' onClick={onStartEdit}>
-      <Edit3 className='h-3.5 w-3.5' />
-      Edit
-    </Button>
-  );
-}
-
 export function TopBar({
   isEditing,
   onBack,
@@ -56,11 +33,9 @@ export function TopBar({
   onShare,
   onStartEdit,
 }: TopBarProps): JSX.Element {
-  let editActions: JSX.Element;
+  let editActions: JSX.Element = <TopBarViewActions onStartEdit={onStartEdit} />;
   if (isEditing) {
-    editActions = <EditingActions onSave={onSave} onCancelEdit={onCancelEdit} />;
-  } else {
-    editActions = <ViewActions onStartEdit={onStartEdit} />;
+    editActions = <TopBarEditingActions onSave={onSave} onCancelEdit={onCancelEdit} />;
   }
 
   return (

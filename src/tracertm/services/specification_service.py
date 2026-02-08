@@ -14,12 +14,12 @@ from sqlalchemy import delete, func, select
 from tracertm.constants import (
     DEFAULT_LIMIT,
     DEFAULT_OFFSET,
-    SCORE_MIN,
     SCORE_MAX,
-    SEQUENCE_START,
+    SCORE_MIN,
     SEQUENCE_PADDING,
-    VERSION_INITIAL,
+    SEQUENCE_START,
     VERSION_INCREMENT,
+    VERSION_INITIAL,
     ZERO,
 )
 from tracertm.core.concurrency import update_with_retry

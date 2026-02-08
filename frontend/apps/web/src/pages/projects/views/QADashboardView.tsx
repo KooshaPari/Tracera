@@ -27,7 +27,7 @@ import {
   useFlakyTests,
   usePassRateTrend,
   useQAMetricsSummary,
-} from '@/hooks/useQAMetrics';
+} from '@/hooks/useQaMetrics';
 /* eslint-disable complexity, func-style, max-lines-per-function, no-magic-numbers, react/jsx-max-depth, react-perf/jsx-no-new-function-as-prop, react-perf/jsx-no-new-object-as-prop, sort-imports, unicorn/filename-case */
 import {
   Badge,

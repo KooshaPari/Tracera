@@ -294,7 +294,10 @@ function useCreateItemWithSpec(): ReturnType<
   const token = useAuthToken();
   return useMutation({
     mutationFn: async (data: CreateItemWithSpecData): Promise<TypedItem> => {
-      const result = await createItemWithSpec(itemsUtils.normalizeCreateItemWithSpecData(data), token);
+      const result = await createItemWithSpec(
+        itemsUtils.normalizeCreateItemWithSpecData(data),
+        token,
+      );
       return result;
     },
     onError: (error: Error): void => {

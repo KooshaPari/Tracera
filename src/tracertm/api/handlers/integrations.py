@@ -10,10 +10,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.config.rate_limiting import enforce_rate_limit
 from tracertm.constants import (
-    HTTP_FORBIDDEN,
-    TIME_WINDOW_WEEK,
-    PERCENTAGE_MAX,
     DECIMAL_PRECISION_DEFAULT,
+    HTTP_FORBIDDEN,
+    PERCENTAGE_MAX,
+    TIME_WINDOW_WEEK,
     ZERO,
 )
 from tracertm.models.integration import (

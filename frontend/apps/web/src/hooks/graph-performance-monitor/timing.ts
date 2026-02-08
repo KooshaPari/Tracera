@@ -8,7 +8,12 @@ function createInterval(
     return undefined;
   }
   const intervalId = setInterval(callback, intervalMs);
-  return { intervalId, clear: () => clearInterval(intervalId) };
+  return {
+    clear: (): void => {
+      clearInterval(intervalId);
+    },
+    intervalId,
+  };
 }
 
 function resolveReportInterval(reportInterval: number | undefined): number {
@@ -19,4 +24,3 @@ function resolveReportInterval(reportInterval: number | undefined): number {
 }
 
 export { createInterval, resolveReportInterval };
-

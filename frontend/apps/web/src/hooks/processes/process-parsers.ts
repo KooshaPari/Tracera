@@ -266,7 +266,11 @@ function parseProcessVersionResponse(input: unknown): {
   };
 }
 
-function parseActivationResponse(input: unknown): { id: string; status: string; isActiveVersion: boolean } {
+function parseActivationResponse(input: unknown): {
+  id: string;
+  status: string;
+  isActiveVersion: boolean;
+} {
   const data = processGuards.asRecord(input, 'activate response');
   return {
     id: processGuards.toStringId(data['id'], 'id'),
@@ -331,4 +335,3 @@ export {
   parseStatusResponse,
   processParsers,
 };
-

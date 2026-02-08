@@ -1,10 +1,10 @@
-import os
+import pathlib
 
 allowlist = {}
-with open('config/loc-allowlist.txt', 'r') as f:
+with pathlib.Path("config/loc-allowlist.txt").open("r") as f:
     for line in f:
         line = line.strip()
-        if not line or line.startswith('#'):
+        if not line or line.startswith("#"):
             continue
         parts = line.split()
         if len(parts) == 2:
@@ -12,9 +12,9 @@ with open('config/loc-allowlist.txt', 'r') as f:
 
 violations = []
 for file_path, limit in allowlist.items():
-    if os.path.exists(file_path):
+    if pathlib.Path(file_path).exists():
         try:
-            with open(file_path, 'r', errors='ignore') as f:
+            with pathlib.Path(file_path).open("r", errors="ignore") as f:
                 lines = f.readlines()
                 count = len(lines)
                 if count > limit:

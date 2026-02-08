@@ -791,7 +791,7 @@ async def _run_command(params: dict[str, Any], base_dir: str | None) -> dict[str
             logger.debug("Process kill failed: %s", e)
         return {"success": False, "error": f"Command timed out after {timeout}s"}
     except (OSError, subprocess.SubprocessError) as e:
-        logger.error(f"Command execution failed: {e}", exc_info=True)
+        logger.error("Command execution failed: %s", e, exc_info=True)
         return {"success": False, "error": str(e)}
 
 

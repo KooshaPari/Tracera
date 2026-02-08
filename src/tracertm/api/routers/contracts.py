@@ -1,3 +1,5 @@
+"""Contract specification API routes."""
+
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -22,6 +24,7 @@ async def create_contract(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
+    """Create a new contract spec."""
     service = ContractService(db)
     return await service.create_contract(
         project_id=contract.project_id,
@@ -42,6 +45,7 @@ async def get_contract(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
+    """Return a contract spec by id."""
     service = ContractService(db)
     contract = await service.get_contract(contract_id)
     if not contract:
@@ -56,6 +60,7 @@ async def get_contract_activities(
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    """List contract activity events."""
     repo = EventRepository(db)
     events = await repo.get_by_entity(contract_id, limit=limit)
     activities = [
@@ -83,6 +88,7 @@ async def update_contract(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
+    """Update contract spec fields."""
     service = ContractService(db)
     update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
     updated_contract = await service.update_contract(contract_id, **update_data)
@@ -97,6 +103,7 @@ async def delete_contract(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> None:
+    """Delete a contract spec by id."""
     service = ContractService(db)
     success = await service.delete_contract(contract_id)
     if not success:
@@ -110,5 +117,6 @@ async def list_contracts(
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    """List contract specs for a project."""
     service = ContractService(db)
     return await service.list_contracts(project_id, item_id)

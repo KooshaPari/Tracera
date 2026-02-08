@@ -1,14 +1,6 @@
 import type { ViewType } from '@tracertm/types';
 
-import {
-  DEFAULT_CREATE_LABEL,
-  DEFAULT_DESCRIPTION,
-  DEFAULT_EMPTY_DESCRIPTION,
-  DEFAULT_EMPTY_TITLE,
-  DEFAULT_NEW_LABEL,
-  DEFAULT_TITLE,
-  EMPTY_STRING,
-} from './constants';
+import itemsTableConstants from './constants';
 
 const VIEW_LABELS: Record<
   string,
@@ -177,7 +169,7 @@ function getViewLabels(view?: ViewType): {
   createButtonLabel?: string;
   newButtonLabel?: string;
 } {
-  let key = EMPTY_STRING;
+  let key = itemsTableConstants.EMPTY_STRING;
   if (typeof view === 'string') {
     key = view.toLowerCase();
   }
@@ -186,13 +178,13 @@ function getViewLabels(view?: ViewType): {
     return labels;
   }
   return {
-    createButtonLabel: DEFAULT_CREATE_LABEL,
-    createModalTitle: DEFAULT_CREATE_LABEL,
-    description: DEFAULT_DESCRIPTION,
-    emptyDescription: DEFAULT_EMPTY_DESCRIPTION,
-    emptyTitle: DEFAULT_EMPTY_TITLE,
-    newButtonLabel: DEFAULT_NEW_LABEL,
-    title: DEFAULT_TITLE,
+    createButtonLabel: itemsTableConstants.DEFAULT_CREATE_LABEL,
+    createModalTitle: itemsTableConstants.DEFAULT_CREATE_LABEL,
+    description: itemsTableConstants.DEFAULT_DESCRIPTION,
+    emptyDescription: itemsTableConstants.DEFAULT_EMPTY_DESCRIPTION,
+    emptyTitle: itemsTableConstants.DEFAULT_EMPTY_TITLE,
+    newButtonLabel: itemsTableConstants.DEFAULT_NEW_LABEL,
+    title: itemsTableConstants.DEFAULT_TITLE,
   };
 }
 

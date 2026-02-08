@@ -13,4 +13,3 @@ const priorityColors: Record<string, string> = {
 };
 
 export { priorityColors, statusColors };
-

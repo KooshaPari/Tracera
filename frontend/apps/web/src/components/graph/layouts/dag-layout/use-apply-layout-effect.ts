@@ -1,4 +1,5 @@
 import type { Edge, Node } from '@xyflow/react';
+
 import { useEffect, type RefObject } from 'react';
 
 import { logger } from '@/lib/logger';
@@ -9,7 +10,11 @@ const ZERO = Number('0');
 
 interface ApplyLayoutEffectParams<NodeData extends Record<string, unknown>> {
   applySyncLayout: (inputNodes: Node<NodeData>[], inputEdges: Edge[]) => SyncLayoutResult<NodeData>;
-  computeElkLayout: (inputNodes: Node<NodeData>[], inputEdges: Edge[], options: ElkOptions) => Promise<Node<NodeData>[]>;
+  computeElkLayout: (
+    inputNodes: Node<NodeData>[],
+    inputEdges: Edge[],
+    options: ElkOptions,
+  ) => Promise<Node<NodeData>[]>;
   edges: Edge[];
   elkOptions: ElkOptions | undefined;
   getGridFallback: (inputNodes: Node<NodeData>[]) => Node<NodeData>[];

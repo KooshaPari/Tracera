@@ -2,7 +2,7 @@ import type { Priority } from '@tracertm/types';
 
 import { cn } from '@/lib/utils';
 
-import { DEFAULT_PRIORITY } from './constants';
+import itemsTableConstants from './constants';
 
 const PRIORITY_COLORS: Record<Priority, string> = {
   critical: 'bg-red-500',
@@ -16,7 +16,7 @@ interface PriorityDotProps {
 }
 
 function PriorityDot({ priority }: PriorityDotProps): JSX.Element {
-  let key: Priority = DEFAULT_PRIORITY;
+  let key: Priority = itemsTableConstants.DEFAULT_PRIORITY;
   if (priority !== undefined) {
     key = priority;
   }

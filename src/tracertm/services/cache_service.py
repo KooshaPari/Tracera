@@ -10,12 +10,12 @@ from typing import Any
 from tracertm.constants import (
     DEFAULT_POOL_SIZE,
     HASH_SIZE_STANDARD,
-    TTL_VERY_SHORT,
-    TTL_SHORT,
-    TTL_MEDIUM,
-    TTL_STANDARD,
-    TTL_LONG,
     TTL_EXTENDED,
+    TTL_LONG,
+    TTL_MEDIUM,
+    TTL_SHORT,
+    TTL_STANDARD,
+    TTL_VERY_SHORT,
     ZERO,
 )
 

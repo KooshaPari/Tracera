@@ -1,3 +1,5 @@
+"""Quality analysis API routes."""
+
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,6 +18,7 @@ async def analyze_quality(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
+    """Run requirement quality analysis for an item."""
     service = RequirementQualityService(db)
     try:
         return await service.analyze_quality(item_id)
@@ -29,6 +32,7 @@ async def get_quality(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
+    """Return the latest quality analysis for an item."""
     service = RequirementQualityService(db)
     quality = await service.get_quality(item_id)
     if not quality:

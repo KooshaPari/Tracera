@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { Project } from '@tracertm/types';
@@ -112,9 +112,7 @@ const parseCanonicalProject = (value: unknown): CanonicalExport['project'] | und
   return project;
 };
 
-const parseCanonicalItem = (
-  value: unknown,
-): CanonicalExport['items'][number] | undefined => {
+const parseCanonicalItem = (value: unknown): CanonicalExport['items'][number] | undefined => {
   if (!isRecord(value)) {
     return undefined;
   }
@@ -124,7 +122,13 @@ const parseCanonicalItem = (
   const view = readString(value, 'view');
   const type = readString(value, 'type');
   const status = readString(value, 'status');
-  if (id === undefined || title === undefined || view === undefined || type === undefined || status === undefined) {
+  if (
+    id === undefined ||
+    title === undefined ||
+    view === undefined ||
+    type === undefined ||
+    status === undefined
+  ) {
     return undefined;
   }
 
@@ -290,10 +294,7 @@ function useImportMutation(
   });
 }
 
-function renderImportDialogContent(
-  model: ImportDialogModel,
-  projects: Project[],
-): JSX.Element {
+function renderImportDialogContent(model: ImportDialogModel, projects: Project[]): JSX.Element {
   let importLabel = 'Execute Ingestion';
   if (model.isImporting) {
     importLabel = 'Importing…';
@@ -369,10 +370,7 @@ function renderImportDialogContent(
   );
 }
 
-function useImportDialogModel({
-  onOpenChange,
-  projects,
-}: ImportDialogProps): ImportDialogModel {
+function useImportDialogModel({ onOpenChange, projects }: ImportDialogProps): ImportDialogModel {
   const [importMode, setImportMode] = useState<ImportMode>('full');
   const [importProjectId, setImportProjectId] = useState<string | undefined>();
   const [importFile, setImportFile] = useState<File | undefined>();
@@ -392,16 +390,13 @@ function useImportDialogModel({
     setImportMode(value);
   }, []);
 
-  const handleProjectChange = useCallback(
-    (value: string): void => {
-      if (value === EMPTY_STRING) {
-        setImportProjectId(undefined);
-        return;
-      }
-      setImportProjectId(value);
-    },
-    [],
-  );
+  const handleProjectChange = useCallback((value: string): void => {
+    if (value === EMPTY_STRING) {
+      setImportProjectId(undefined);
+      return;
+    }
+    setImportProjectId(value);
+  }, []);
 
   const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
     const file = event.target.files?.[0];

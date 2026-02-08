@@ -12,8 +12,8 @@ import {
   DropdownMenuTrigger,
 } from '@tracertm/ui';
 
-import { ITEM_ID_PREFIX_LENGTH, ROW_INDEX_OFFSET } from './constants';
-import { getItemOwnerLabel, getPriorityLabel } from './formatters';
+import itemsTableConstants from './constants';
+import itemsTableFormatters from './formatters';
 import { PriorityDot } from './priority-dot';
 import { StatusBadge } from './status-badges';
 
@@ -40,13 +40,13 @@ function ItemTableRow({
     onDelete(item.id);
   };
 
-  const owner = getItemOwnerLabel(item.owner);
-  const priorityLabel = getPriorityLabel(item.priority);
+  const owner = itemsTableFormatters.getItemOwnerLabel(item.owner);
+  const priorityLabel = itemsTableFormatters.getPriorityLabel(item.priority);
 
   return (
     <TableRow
       role='row'
-      rowIndex={rowIndex + ROW_INDEX_OFFSET}
+      rowIndex={rowIndex + itemsTableConstants.ROW_INDEX_OFFSET}
       data-testid='item-card'
       className='group border-border/30 hover:bg-muted/30 active:bg-muted/40 border-b transition-all duration-200 ease-out'
     >
@@ -72,7 +72,7 @@ function ItemTableRow({
             {item.title}
           </div>
           <div className='text-muted-foreground mt-0.5 font-mono text-[10px] uppercase'>
-            {item.id.slice(0, ITEM_ID_PREFIX_LENGTH)}
+            {item.id.slice(0, itemsTableConstants.ITEM_ID_PREFIX_LENGTH)}
           </div>
         </button>
       </TableCell>
