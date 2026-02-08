@@ -14,6 +14,15 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
     """Populate auth context when a bearer token is present."""
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        """Set current_user_id from bearer token when available.
+
+        Args:
+            request: Incoming HTTP request.
+            call_next: Next middleware/endpoint handler.
+
+        Returns:
+            Downstream response.
+        """
         token = None
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.lower().startswith("bearer "):

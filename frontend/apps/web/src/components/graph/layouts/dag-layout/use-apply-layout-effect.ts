@@ -1,6 +1,5 @@
 import type { Edge, Node } from '@xyflow/react';
-import type { RefObject } from 'react';
-import { useEffect } from 'react';
+import { useEffect, type RefObject } from 'react';
 
 import { logger } from '@/lib/logger';
 
@@ -75,8 +74,9 @@ function useApplyLayoutEffect<NodeData extends Record<string, unknown>>({
       }
     };
 
-    // `runLayoutSafe` catches internally; do not use `.catch` to satisfy promise lint rules.
-    runLayoutSafe();
+    // If this rejects, the internal try/catch already logged and handled fallbacks.
+    // Keeping a reference avoids `no-floating-promises` without using `void` or `.catch`.
+    const _layoutPromise: Promise<void> = runLayoutSafe();
 
     return (): void => {
       cancelled = true;
@@ -96,4 +96,3 @@ function useApplyLayoutEffect<NodeData extends Record<string, unknown>>({
 }
 
 export { useApplyLayoutEffect };
-

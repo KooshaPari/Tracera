@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -125,6 +126,7 @@ type EventBus struct {
 	js            natslib.JetStreamContext
 	subscriptions map[string]*natslib.Subscription
 	mu            sync.RWMutex
+	prefix        string
 }
 
 // Config holds NATS configuration
@@ -136,6 +138,7 @@ type Config struct {
 	ReconnectWait  time.Duration
 	StreamName     string
 	StreamSubjects []string
+	SubjectPrefix  string
 }
 
 // DefaultConfig returns default NATS configuration
@@ -152,6 +155,7 @@ func DefaultConfig() *Config {
 			"tracertm.projects.>",
 			"tracertm.entities.>",
 		},
+		SubjectPrefix: "tracertm.",
 	}
 }
 
@@ -190,6 +194,7 @@ func NewEventBus(config *Config) (*EventBus, error) {
 		conn:          conn,
 		js:            js,
 		subscriptions: make(map[string]*natslib.Subscription),
+		prefix:        config.SubjectPrefix,
 	}
 
 	// Create or update the stream
@@ -222,6 +227,7 @@ func (b *EventBus) ensureStream(config *Config) error {
 	// Try to add the stream, update if it already exists
 	_, err := b.js.AddStream(streamConfig)
 	if err != nil {
+		log.Printf("AddStream failed: %v", err)
 		// Try to update if it exists
 		_, err = b.js.UpdateStream(streamConfig)
 		if err != nil {
@@ -234,19 +240,19 @@ func (b *EventBus) ensureStream(config *Config) error {
 
 // Publish publishes an event to all subscribers
 func (b *EventBus) Publish(event *events.Event) error {
-	subject := "tracertm.events." + string(event.EventType)
+	subject := b.prefix + "events." + string(event.EventType)
 	return b.publishToSubject(subject, event)
 }
 
 // PublishToProject publishes an event to project-specific subscribers
 func (b *EventBus) PublishToProject(projectID string, event *events.Event) error {
-	subject := fmt.Sprintf("tracertm.projects.%s.%s", projectID, string(event.EventType))
+	subject := fmt.Sprintf("%sprojects.%s.%s", b.prefix, projectID, string(event.EventType))
 	return b.publishToSubject(subject, event)
 }
 
 // PublishToEntity publishes an event to entity-specific subscribers
 func (b *EventBus) PublishToEntity(entityID string, event *events.Event) error {
-	subject := fmt.Sprintf("tracertm.entities.%s.%s", entityID, string(event.EventType))
+	subject := fmt.Sprintf("%sentities.%s.%s", b.prefix, entityID, string(event.EventType))
 	return b.publishToSubject(subject, event)
 }
 
@@ -268,35 +274,43 @@ func (b *EventBus) publishToSubject(subject string, event *events.Event) error {
 
 // Subscribe subscribes to all events
 func (b *EventBus) Subscribe(handler func(*events.Event)) error {
-	subject := "tracertm.events.>"
+	subject := b.prefix + "events.>"
 	return b.subscribeToSubject(subject, "all-events", handler)
 }
 
 // SubscribeToProject subscribes to project-specific events
 func (b *EventBus) SubscribeToProject(projectID string, handler func(*events.Event)) error {
-	subject := "tracertm.projects." + projectID + ".>"
+	subject := b.prefix + "projects." + projectID + ".>"
 	subscriptionID := "project-" + projectID
 	return b.subscribeToSubject(subject, subscriptionID, handler)
 }
 
 // SubscribeToEntity subscribes to entity-specific events
 func (b *EventBus) SubscribeToEntity(entityID string, handler func(*events.Event)) error {
-	subject := "tracertm.entities." + entityID + ".>"
+	subject := b.prefix + "entities." + entityID + ".>"
 	subscriptionID := "entity-" + entityID
 	return b.subscribeToSubject(subject, subscriptionID, handler)
 }
 
 // SubscribeToEventType subscribes to specific event types
 func (b *EventBus) SubscribeToEventType(eventType events.EventType, handler func(*events.Event)) error {
-	subject := "tracertm.events." + string(eventType)
+	subject := b.prefix + "events." + string(eventType)
 	subscriptionID := "type-" + string(eventType)
 	return b.subscribeToSubject(subject, subscriptionID, handler)
+}
+
+// sanitizeDurableName replaces invalid characters in durable names
+func sanitizeDurableName(name string) string {
+	return strings.ReplaceAll(name, ".", "-")
 }
 
 // subscribeToSubject is a helper to subscribe to a specific subject
 func (b *EventBus) subscribeToSubject(subject, durableName string, handler func(*events.Event)) error {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	// Sanitize durable name
+	durableName = sanitizeDurableName(durableName)
 
 	// Check if already subscribed
 	if _, exists := b.subscriptions[durableName]; exists {
@@ -399,7 +413,7 @@ func (b *EventBus) QueueSubscribe(subject, queue string, handler func(*events.Ev
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
-	subscriptionID := fmt.Sprintf("queue-%s-%s", queue, subject)
+	subscriptionID := sanitizeDurableName(fmt.Sprintf("queue-%s-%s", queue, subject))
 
 	// Check if already subscribed
 	if _, exists := b.subscriptions[subscriptionID]; exists {

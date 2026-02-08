@@ -1,149 +1,222 @@
-import type { ExecutionStatus, Process, ProcessCategory, ProcessExecution, ProcessStatus } from '@tracertm/types';
+import type {
+  ExecutionStatus,
+  Process,
+  ProcessCategory,
+  ProcessExecution,
+  ProcessInput,
+  ProcessOutput,
+  ProcessStage,
+  ProcessStatus,
+  ProcessSwimlane,
+  ProcessTrigger,
+} from '@tracertm/types';
 
-import {
-  asRecord,
-  getOptionalArray,
-  getOptionalBoolean,
-  getOptionalNumber,
-  getOptionalRecord,
-  getOptionalString,
-  getOptionalStringArray,
-  getRequiredArray,
-  getRequiredBoolean,
-  getRequiredNumber,
-  getRequiredString,
-  parseNumberMap,
-  toStringId,
-  type JsonRecord,
-} from './process-guards';
+import { processGuards } from './process-guards';
+
+function parseRequiredString(value: unknown, key: string): string {
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new TypeError(`Missing or invalid required string field: ${key}`);
+  }
+  return value;
+}
 
 function parseProcessStatus(value: unknown): ProcessStatus {
   const str = parseRequiredString(value, 'status');
   switch (str) {
-    case 'active':
+    case 'active': {
       return 'active';
-    case 'archived':
+    }
+    case 'archived': {
       return 'archived';
-    case 'deprecated':
+    }
+    case 'deprecated': {
       return 'deprecated';
-    case 'draft':
+    }
+    case 'draft': {
       return 'draft';
-    case 'retired':
+    }
+    case 'retired': {
       return 'retired';
-    default:
+    }
+    default: {
       throw new Error(`Invalid status value: ${str}`);
+    }
   }
 }
 
 function parseProcessCategory(value: unknown): ProcessCategory {
   const str = parseRequiredString(value, 'category');
   switch (str) {
-    case 'compliance':
+    case 'compliance': {
       return 'compliance';
-    case 'development':
+    }
+    case 'development': {
       return 'development';
-    case 'integration':
+    }
+    case 'integration': {
       return 'integration';
-    case 'management':
+    }
+    case 'management': {
       return 'management';
-    case 'operational':
+    }
+    case 'operational': {
       return 'operational';
-    case 'other':
+    }
+    case 'other': {
       return 'other';
-    case 'support':
+    }
+    case 'support': {
       return 'support';
-    default:
+    }
+    default: {
       throw new Error(`Invalid category value: ${str}`);
+    }
   }
 }
 
 function parseExecutionStatus(value: unknown): ExecutionStatus {
   const str = parseRequiredString(value, 'status');
   switch (str) {
-    case 'cancelled':
+    case 'cancelled': {
       return 'cancelled';
-    case 'completed':
+    }
+    case 'completed': {
       return 'completed';
-    case 'failed':
+    }
+    case 'failed': {
       return 'failed';
-    case 'in_progress':
+    }
+    case 'in_progress': {
       return 'in_progress';
-    case 'pending':
+    }
+    case 'pending': {
       return 'pending';
-    default:
+    }
+    default: {
       throw new Error(`Invalid status value: ${str}`);
+    }
   }
 }
 
-function parseRequiredString(value: unknown, key: string): string {
-  if (typeof value !== 'string' || value.length === 0) {
-    throw new Error(`Missing or invalid required string field: ${key}`);
-  }
-  return value;
+function parseInput(item: unknown): ProcessInput {
+  const data = processGuards.asRecord(item, 'process input');
+  return {
+    description: processGuards.getOptionalString(data, 'description'),
+    name: processGuards.getRequiredString(data, 'name'),
+    required: processGuards.getOptionalBoolean(data, 'required'),
+    type: processGuards.getRequiredString(data, 'type'),
+  };
+}
+
+function parseOutput(item: unknown): ProcessOutput {
+  const data = processGuards.asRecord(item, 'process output');
+  return {
+    description: processGuards.getOptionalString(data, 'description'),
+    name: processGuards.getRequiredString(data, 'name'),
+    type: processGuards.getRequiredString(data, 'type'),
+  };
+}
+
+function parseStage(item: unknown): ProcessStage {
+  const data = processGuards.asRecord(item, 'process stage');
+  return {
+    assignedRole: processGuards.getOptionalString(data, 'assigned_role'),
+    description: processGuards.getOptionalString(data, 'description'),
+    estimatedDurationMinutes: processGuards.getOptionalNumber(data, 'estimated_duration_minutes'),
+    id: processGuards.getRequiredString(data, 'id'),
+    name: processGuards.getRequiredString(data, 'name'),
+    order: processGuards.getRequiredNumber(data, 'order'),
+    required: processGuards.getOptionalBoolean(data, 'required'),
+  };
+}
+
+function parseSwimlane(item: unknown): ProcessSwimlane {
+  const data = processGuards.asRecord(item, 'process swimlane');
+  return {
+    description: processGuards.getOptionalString(data, 'description'),
+    id: processGuards.getRequiredString(data, 'id'),
+    name: processGuards.getRequiredString(data, 'name'),
+    role: processGuards.getOptionalString(data, 'role'),
+  };
+}
+
+function parseTrigger(item: unknown): ProcessTrigger {
+  const data = processGuards.asRecord(item, 'process trigger');
+  return {
+    condition: processGuards.getOptionalString(data, 'condition'),
+    description: processGuards.getOptionalString(data, 'description'),
+    name: processGuards.getRequiredString(data, 'name'),
+    type: processGuards.getRequiredString(data, 'type'),
+  };
 }
 
 function parseProcess(input: unknown): Process {
-  const data = asRecord(input, 'process');
+  const data = processGuards.asRecord(input, 'process');
+  const stagesRaw = processGuards.getOptionalArray(data, 'stages');
+  const swimlanesRaw = processGuards.getOptionalArray(data, 'swimlanes');
+  const inputsRaw = processGuards.getOptionalArray(data, 'inputs');
+  const outputsRaw = processGuards.getOptionalArray(data, 'outputs');
+  const triggersRaw = processGuards.getOptionalArray(data, 'triggers');
 
   return {
-    activatedAt: getOptionalString(data, 'activated_at'),
-    activatedBy: getOptionalString(data, 'activated_by'),
-    bpmnDiagramUrl: getOptionalString(data, 'bpmn_diagram_url'),
-    bpmnXml: getOptionalString(data, 'bpmn_xml'),
+    activatedAt: processGuards.getOptionalString(data, 'activated_at'),
+    activatedBy: processGuards.getOptionalString(data, 'activated_by'),
+    bpmnDiagramUrl: processGuards.getOptionalString(data, 'bpmn_diagram_url'),
+    bpmnXml: processGuards.getOptionalString(data, 'bpmn_xml'),
     category: data['category'] === undefined ? undefined : parseProcessCategory(data['category']),
-    createdAt: getRequiredString(data, 'created_at'),
-    deprecatedAt: getOptionalString(data, 'deprecated_at'),
-    deprecatedBy: getOptionalString(data, 'deprecated_by'),
-    deprecationReason: getOptionalString(data, 'deprecation_reason'),
-    description: getOptionalString(data, 'description'),
-    exitCriteria: getOptionalStringArray(data, 'exit_criteria'),
-    expectedDurationHours: getOptionalNumber(data, 'expected_duration_hours'),
-    id: toStringId(data['id'], 'id'),
-    inputs: getOptionalArray(data, 'inputs')?.map((item: unknown) => item) as Process['inputs'],
-    isActiveVersion: getRequiredBoolean(data, 'is_active_version'),
-    metadata: getOptionalRecord(data, 'metadata'),
-    name: getRequiredString(data, 'name'),
-    outputs: getOptionalArray(data, 'outputs')?.map((item: unknown) => item) as Process['outputs'],
-    owner: getOptionalString(data, 'owner'),
-    parentVersionId: getOptionalString(data, 'parent_version_id'),
-    processNumber: getRequiredString(data, 'process_number'),
-    projectId: getRequiredString(data, 'project_id'),
-    purpose: getOptionalString(data, 'purpose'),
-    relatedProcessIds: getOptionalStringArray(data, 'related_process_ids'),
-    responsibleTeam: getOptionalString(data, 'responsible_team'),
-    slaHours: getOptionalNumber(data, 'sla_hours'),
-    stages: getOptionalArray(data, 'stages')?.map((item: unknown) => item) as Process['stages'],
+    createdAt: processGuards.getRequiredString(data, 'created_at'),
+    deprecatedAt: processGuards.getOptionalString(data, 'deprecated_at'),
+    deprecatedBy: processGuards.getOptionalString(data, 'deprecated_by'),
+    deprecationReason: processGuards.getOptionalString(data, 'deprecation_reason'),
+    description: processGuards.getOptionalString(data, 'description'),
+    exitCriteria: processGuards.getOptionalStringArray(data, 'exit_criteria'),
+    expectedDurationHours: processGuards.getOptionalNumber(data, 'expected_duration_hours'),
+    id: processGuards.toStringId(data['id'], 'id'),
+    inputs: inputsRaw?.map((item: unknown) => parseInput(item)),
+    isActiveVersion: processGuards.getRequiredBoolean(data, 'is_active_version'),
+    metadata: processGuards.getOptionalRecord(data, 'metadata'),
+    name: processGuards.getRequiredString(data, 'name'),
+    outputs: outputsRaw?.map((item: unknown) => parseOutput(item)),
+    owner: processGuards.getOptionalString(data, 'owner'),
+    parentVersionId: processGuards.getOptionalString(data, 'parent_version_id'),
+    processNumber: processGuards.getRequiredString(data, 'process_number'),
+    projectId: processGuards.getRequiredString(data, 'project_id'),
+    purpose: processGuards.getOptionalString(data, 'purpose'),
+    relatedProcessIds: processGuards.getOptionalStringArray(data, 'related_process_ids'),
+    responsibleTeam: processGuards.getOptionalString(data, 'responsible_team'),
+    slaHours: processGuards.getOptionalNumber(data, 'sla_hours'),
+    stages: stagesRaw?.map((item: unknown) => parseStage(item)),
     status: parseProcessStatus(data['status']),
-    swimlanes: getOptionalArray(data, 'swimlanes')?.map((item: unknown) => item) as Process['swimlanes'],
-    tags: getOptionalStringArray(data, 'tags'),
-    triggers: getOptionalArray(data, 'triggers')?.map((item: unknown) => item) as Process['triggers'],
-    updatedAt: getRequiredString(data, 'updated_at'),
-    version: getRequiredNumber(data, 'version'),
-    versionNotes: getOptionalString(data, 'version_notes'),
-    versionNumber: getRequiredNumber(data, 'version_number'),
+    swimlanes: swimlanesRaw?.map((item: unknown) => parseSwimlane(item)),
+    tags: processGuards.getOptionalStringArray(data, 'tags'),
+    triggers: triggersRaw?.map((item: unknown) => parseTrigger(item)),
+    updatedAt: processGuards.getRequiredString(data, 'updated_at'),
+    version: processGuards.getRequiredNumber(data, 'version'),
+    versionNotes: processGuards.getOptionalString(data, 'version_notes'),
+    versionNumber: processGuards.getRequiredNumber(data, 'version_number'),
   };
 }
 
 function parseExecution(input: unknown): ProcessExecution {
-  const data = asRecord(input, 'execution');
+  const data = processGuards.asRecord(input, 'execution');
 
   return {
-    completedAt: getOptionalString(data, 'completed_at'),
-    completedBy: getOptionalString(data, 'completed_by'),
-    completedStages: getOptionalStringArray(data, 'completed_stages'),
-    contextData: getOptionalRecord(data, 'context_data'),
-    createdAt: getRequiredString(data, 'created_at'),
-    currentStageId: getOptionalString(data, 'current_stage_id'),
-    executionNumber: getRequiredString(data, 'execution_number'),
-    id: toStringId(data['id'], 'id'),
-    initiatedBy: getOptionalString(data, 'initiated_by'),
-    outputItemIds: getOptionalStringArray(data, 'output_item_ids'),
-    processId: getRequiredString(data, 'process_id'),
-    resultSummary: getOptionalString(data, 'result_summary'),
-    startedAt: getOptionalString(data, 'started_at'),
+    completedAt: processGuards.getOptionalString(data, 'completed_at'),
+    completedBy: processGuards.getOptionalString(data, 'completed_by'),
+    completedStages: processGuards.getOptionalStringArray(data, 'completed_stages'),
+    contextData: processGuards.getOptionalRecord(data, 'context_data'),
+    createdAt: processGuards.getRequiredString(data, 'created_at'),
+    currentStageId: processGuards.getOptionalString(data, 'current_stage_id'),
+    executionNumber: processGuards.getRequiredString(data, 'execution_number'),
+    id: processGuards.toStringId(data['id'], 'id'),
+    initiatedBy: processGuards.getOptionalString(data, 'initiated_by'),
+    outputItemIds: processGuards.getOptionalStringArray(data, 'output_item_ids'),
+    processId: processGuards.getRequiredString(data, 'process_id'),
+    resultSummary: processGuards.getOptionalString(data, 'result_summary'),
+    startedAt: processGuards.getOptionalString(data, 'started_at'),
     status: parseExecutionStatus(data['status']),
-    triggerItemId: getOptionalString(data, 'trigger_item_id'),
-    updatedAt: getRequiredString(data, 'updated_at'),
+    triggerItemId: processGuards.getOptionalString(data, 'trigger_item_id'),
+    updatedAt: processGuards.getRequiredString(data, 'updated_at'),
   };
 }
 
@@ -153,28 +226,28 @@ function parseProcessStats(input: unknown): {
   byCategory: Record<string, number>;
   total: number;
 } {
-  const data = asRecord(input, 'process stats');
+  const data = processGuards.asRecord(input, 'process stats');
   return {
-    byCategory: parseNumberMap(getOptionalRecord(data, 'by_category')),
-    byStatus: parseNumberMap(getOptionalRecord(data, 'by_status')),
-    projectId: getRequiredString(data, 'project_id'),
-    total: getOptionalNumber(data, 'total') ?? 0,
+    byCategory: processGuards.parseNumberMap(processGuards.getOptionalRecord(data, 'by_category')),
+    byStatus: processGuards.parseNumberMap(processGuards.getOptionalRecord(data, 'by_status')),
+    projectId: processGuards.getRequiredString(data, 'project_id'),
+    total: processGuards.getOptionalNumber(data, 'total') ?? 0,
   };
 }
 
 function parseIdProcessNumber(input: unknown): { id: string; processNumber: string } {
-  const data = asRecord(input, 'create process response');
+  const data = processGuards.asRecord(input, 'create process response');
   return {
-    id: toStringId(data['id'], 'id'),
-    processNumber: getRequiredString(data, 'process_number'),
+    id: processGuards.toStringId(data['id'], 'id'),
+    processNumber: processGuards.getRequiredString(data, 'process_number'),
   };
 }
 
 function parseIdVersion(input: unknown): { id: string; version: number } {
-  const data = asRecord(input, 'update process response');
+  const data = processGuards.asRecord(input, 'update process response');
   return {
-    id: toStringId(data['id'], 'id'),
-    version: getRequiredNumber(data, 'version'),
+    id: processGuards.toStringId(data['id'], 'id'),
+    version: processGuards.getRequiredNumber(data, 'version'),
   };
 }
 
@@ -184,37 +257,37 @@ function parseProcessVersionResponse(input: unknown): {
   versionNumber: number;
   parentVersionId: string;
 } {
-  const data = asRecord(input, 'create version response');
+  const data = processGuards.asRecord(input, 'create version response');
   return {
-    id: toStringId(data['id'], 'id'),
-    parentVersionId: getRequiredString(data, 'parent_version_id'),
-    processNumber: getRequiredString(data, 'process_number'),
-    versionNumber: getRequiredNumber(data, 'version_number'),
+    id: processGuards.toStringId(data['id'], 'id'),
+    parentVersionId: processGuards.getRequiredString(data, 'parent_version_id'),
+    processNumber: processGuards.getRequiredString(data, 'process_number'),
+    versionNumber: processGuards.getRequiredNumber(data, 'version_number'),
   };
 }
 
 function parseActivationResponse(input: unknown): { id: string; status: string; isActiveVersion: boolean } {
-  const data = asRecord(input, 'activate response');
+  const data = processGuards.asRecord(input, 'activate response');
   return {
-    id: toStringId(data['id'], 'id'),
-    isActiveVersion: getRequiredBoolean(data, 'is_active_version'),
-    status: getRequiredString(data, 'status'),
+    id: processGuards.toStringId(data['id'], 'id'),
+    isActiveVersion: processGuards.getRequiredBoolean(data, 'is_active_version'),
+    status: processGuards.getRequiredString(data, 'status'),
   };
 }
 
 function parseStatusResponse(input: unknown): { id: string; status: string } {
-  const data = asRecord(input, 'status response');
+  const data = processGuards.asRecord(input, 'status response');
   return {
-    id: toStringId(data['id'], 'id'),
-    status: getRequiredString(data, 'status'),
+    id: processGuards.toStringId(data['id'], 'id'),
+    status: processGuards.getRequiredString(data, 'status'),
   };
 }
 
 function parseExecutionCreateResponse(input: unknown): { id: string; executionNumber: string } {
-  const data = asRecord(input, 'create execution response');
+  const data = processGuards.asRecord(input, 'create execution response');
   return {
-    executionNumber: getRequiredString(data, 'execution_number'),
-    id: toStringId(data['id'], 'id'),
+    executionNumber: processGuards.getRequiredString(data, 'execution_number'),
+    id: processGuards.toStringId(data['id'], 'id'),
   };
 }
 
@@ -223,13 +296,27 @@ function parseAdvanceResponse(input: unknown): {
   currentStageId: string;
   completedStages: string[];
 } {
-  const data = asRecord(input, 'advance response');
+  const data = processGuards.asRecord(input, 'advance response');
+  const stages = processGuards.getRequiredArray(data, 'completed_stages');
   return {
-    completedStages: getRequiredArray(data, 'completed_stages').map((item: unknown) => parseRequiredString(item, 'completed_stages')),
-    currentStageId: getRequiredString(data, 'current_stage_id'),
-    id: toStringId(data['id'], 'id'),
+    completedStages: stages.map((item: unknown) => parseRequiredString(item, 'completed_stages')),
+    currentStageId: processGuards.getRequiredString(data, 'current_stage_id'),
+    id: processGuards.toStringId(data['id'], 'id'),
   };
 }
+
+const processParsers = {
+  parseActivationResponse,
+  parseAdvanceResponse,
+  parseExecution,
+  parseExecutionCreateResponse,
+  parseIdProcessNumber,
+  parseIdVersion,
+  parseProcess,
+  parseProcessStats,
+  parseProcessVersionResponse,
+  parseStatusResponse,
+};
 
 export {
   parseActivationResponse,
@@ -242,5 +329,6 @@ export {
   parseProcessStats,
   parseProcessVersionResponse,
   parseStatusResponse,
+  processParsers,
 };
 

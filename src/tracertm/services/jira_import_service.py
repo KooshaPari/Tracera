@@ -4,8 +4,10 @@ import json
 import logging
 from typing import Any, ClassVar
 
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tracertm.core.concurrency import ConcurrencyError
 from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
@@ -108,7 +110,8 @@ class JiraImportService:
                     item = await self._import_jira_issue(str(project.id), issue, agent_id)
                     issue_map[issue["key"]] = item.id
                     items_imported += 1
-                except Exception as e:
+                except (ValueError, KeyError, ConcurrencyError, OperationalError) as e:
+                    logger.warning(f"Failed to import issue {issue.get('key', 'unknown')}: {e}")
                     errors.append(f"Failed to import {issue['key']}: {e!s}")
 
             # Import links
@@ -117,7 +120,8 @@ class JiraImportService:
                 try:
                     links = await self._import_jira_links(str(project.id), issue, issue_map, agent_id)
                     links_imported += len(links)
-                except Exception as e:
+                except (ValueError, KeyError, ConcurrencyError, OperationalError) as e:
+                    logger.warning(f"Failed to import links for issue {issue.get('key', 'unknown')}: {e}")
                     errors.append(f"Failed to import links for {issue['key']}: {e!s}")
 
             return {
@@ -128,7 +132,8 @@ class JiraImportService:
                 "errors": errors,
             }
 
-        except Exception as e:
+        except (json.JSONDecodeError, ValueError, KeyError, OperationalError) as e:
+            logger.error(f"Jira import failed: {e}", exc_info=True)
             return {
                 "success": False,
                 "errors": [f"Import failed: {e!s}"],
@@ -213,7 +218,7 @@ class JiraImportService:
                         link_type=link_type,
                     )
                     links.append(link_obj)
-            except Exception as e:
+            except (ValueError, ConcurrencyError, OperationalError) as e:
                 logger.debug("Link creation skipped: %s", e)
 
         return links

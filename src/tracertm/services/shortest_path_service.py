@@ -6,6 +6,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Any
 
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.repositories.item_repository import ItemRepository
@@ -93,7 +94,7 @@ class ShortestPathService:
                         link_types=cached["link_types"],
                         exists=cached["exists"],
                     )
-            except Exception as e:
+            except (KeyError, ValueError, TypeError) as e:
                 logger.warning("Cache read failed for path %s -> %s: %s", source_id, target_id, e)
 
         # Compute path (existing logic)
@@ -114,7 +115,7 @@ class ShortestPathService:
                 cache_key = f"tracertm:graph:{project_id}:path:{source_id}:{target_id}:{link_types_key}"
                 await self.cache.set(cache_key, cache_data, ttl_seconds=300)
                 logger.debug("Cached path %s -> %s in project %s", source_id, target_id, project_id)
-            except Exception as e:
+            except (ValueError, TypeError, OperationalError) as e:
                 logger.warning("Cache write failed for path %s -> %s: %s", source_id, target_id, e)
 
         return result
@@ -278,7 +279,7 @@ class ShortestPathService:
                             exists=data["exists"],
                         )
                     return results
-            except Exception as e:
+            except (KeyError, ValueError, TypeError) as e:
                 logger.warning("Cache read failed for all paths from %s: %s", source_id, e)
 
         # Compute paths (existing logic)
@@ -301,7 +302,7 @@ class ShortestPathService:
                 cache_key = f"tracertm:graph:{project_id}:all_paths:{source_id}:{link_types_key}"
                 await self.cache.set(cache_key, cache_data, ttl_seconds=300)
                 logger.debug("Cached all paths from %s in project %s", source_id, project_id)
-            except Exception as e:
+            except (ValueError, TypeError, OperationalError) as e:
                 logger.warning("Cache write failed for all paths from %s: %s", source_id, e)
 
         return results

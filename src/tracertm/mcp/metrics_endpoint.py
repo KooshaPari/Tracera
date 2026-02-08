@@ -6,6 +6,7 @@ Can be run standalone or integrated with the MCP server.
 
 from __future__ import annotations
 
+import errno
 import logging
 import os
 import subprocess
@@ -16,6 +17,9 @@ from typing import Any
 from tracertm.mcp.metrics import MetricsExporter, mcp_registry
 
 logger = logging.getLogger(__name__)
+
+# System error codes
+EADDRINUSE = errno.EADDRINUSE  # Address already in use (48 on macOS, 98 on Linux)
 
 
 class MetricsHandler(BaseHTTPRequestHandler):
@@ -88,7 +92,7 @@ class MetricsServer:
             self.thread.start()
             logger.info(f"Metrics server started at http://{self.host}:{self.port}/metrics")
         except OSError as e:
-            if e.errno == 48 and (
+            if e.errno == EADDRINUSE and (
                 os.getenv("PYTEST_CURRENT_TEST") or os.getenv("PYTEST_RUNNING") or os.getenv("PYTEST_WORKER")
             ):
                 logger.warning("Metrics server port already in use during tests; continuing without metrics")

@@ -161,6 +161,24 @@ function isNonEmptyString(value: string | undefined): value is string {
   return value !== undefined && value.length > 0;
 }
 
+const testRunGuards = {
+  asRecord,
+  getOptionalArray,
+  getOptionalBoolean,
+  getOptionalNumber,
+  getOptionalRecord,
+  getOptionalString,
+  getOptionalStringArray,
+  getRequiredArray,
+  getRequiredBoolean,
+  getRequiredNumber,
+  getRequiredRecord,
+  getRequiredString,
+  getRequiredStringArray,
+  isNonEmptyString,
+  toStringId,
+};
+
 export {
   asRecord,
   getOptionalArray,
@@ -176,6 +194,7 @@ export {
   getRequiredString,
   getRequiredStringArray,
   isNonEmptyString,
+  testRunGuards,
   toStringId,
   type JsonRecord,
 };

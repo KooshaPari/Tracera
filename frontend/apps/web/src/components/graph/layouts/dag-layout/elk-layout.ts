@@ -44,12 +44,16 @@ interface PromiseWithResolvers<Value> {
   reject: (reason: unknown) => void;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
 function isPromiseWithResolvers<Value>(value: unknown): value is PromiseWithResolvers<Value> {
-  if (!value || typeof value !== 'object') {
+  if (!isRecord(value)) {
     return false;
   }
 
-  const candidate = value as Record<string, unknown>;
+  const candidate = value;
   return (
     typeof candidate['resolve'] === 'function' &&
     typeof candidate['reject'] === 'function' &&
@@ -103,7 +107,7 @@ async function applyElkLayout<NodeData extends Record<string, unknown>>(
   const result = await elk.layout(graph);
 
   const positionMap = new Map<string, { x: number; y: number }>();
-  for (const child of result.children || []) {
+  for (const child of result.children ?? []) {
     if (child.x !== undefined && child.y !== undefined) {
       positionMap.set(child.id, { x: child.x, y: child.y });
     }

@@ -19,6 +19,15 @@ class CacheHeadersMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        """Apply Cache-Control headers based on request path and method.
+
+        Args:
+            request: Incoming HTTP request.
+            call_next: Next middleware/endpoint handler.
+
+        Returns:
+            The response with appropriate cache headers.
+        """
         response = await call_next(request)
 
         path = request.url.path
@@ -41,7 +50,22 @@ class CacheHeadersMiddleware(BaseHTTPMiddleware):
 
 
 class AuthenticationMiddleware(BaseHTTPMiddleware):
+    """Best-effort middleware to populate user context from a bearer token.
+
+    This middleware does not enforce authentication; it only extracts the user
+    id when a valid bearer token is present.
+    """
+
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        """Parse bearer token (if any) and set the current_user_id context.
+
+        Args:
+            request: Incoming HTTP request.
+            call_next: Next middleware/endpoint handler.
+
+        Returns:
+            The response from the downstream handler.
+        """
         token = None
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.lower().startswith("bearer "):

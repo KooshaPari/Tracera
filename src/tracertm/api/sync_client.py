@@ -14,10 +14,15 @@ import httpx
 from loguru import logger
 
 from tracertm.config.manager import ConfigManager
-
-HTTP_CONFLICT = 409
-HTTP_UNAUTHORIZED = 401
-HTTP_TOO_MANY_REQUESTS = 429
+from tracertm.constants import (
+    HTTP_CONFLICT,
+    HTTP_UNAUTHORIZED,
+    HTTP_TOO_MANY_REQUESTS,
+    TIMEOUT_DEFAULT,
+    MAX_RETRIES_DEFAULT,
+    RETRY_BACKOFF_BASE,
+    RETRY_BACKOFF_MAX,
+)
 
 
 class SyncOperation(StrEnum):
@@ -43,10 +48,10 @@ class ApiConfig:
 
     base_url: str
     token: str | None = None
-    timeout: float = 30.0
-    max_retries: int = 3
-    retry_backoff_base: float = 2.0
-    retry_backoff_max: float = 60.0
+    timeout: float = TIMEOUT_DEFAULT
+    max_retries: int = MAX_RETRIES_DEFAULT
+    retry_backoff_base: float = RETRY_BACKOFF_BASE
+    retry_backoff_max: float = RETRY_BACKOFF_MAX
     verify_ssl: bool = True
 
     @classmethod
@@ -68,11 +73,11 @@ class ApiConfig:
 
         # Handle timeout - could be string or numeric
         timeout_value = config_manager.get("api_timeout")
-        timeout = float(timeout_value) if timeout_value is not None else 30.0
+        timeout = float(timeout_value) if timeout_value is not None else TIMEOUT_DEFAULT
 
         # Handle max_retries - could be string or numeric
         retries_value = config_manager.get("api_max_retries")
-        max_retries = int(retries_value) if retries_value is not None else 3
+        max_retries = int(retries_value) if retries_value is not None else MAX_RETRIES_DEFAULT
 
         return cls(
             base_url=api_url.rstrip("/"),

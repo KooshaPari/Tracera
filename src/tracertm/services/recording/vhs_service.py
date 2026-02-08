@@ -225,7 +225,7 @@ class VHSExecutionService:
                     "success": False,
                     "error_message": f"Failed to copy tape to container: {stderr[:200]}",
                 }
-        except Exception as e:
+        except (OSError, subprocess.SubprocessError) as e:
             return {
                 "success": False,
                 "error_message": f"Failed to copy tape to container: {e}",
@@ -263,7 +263,7 @@ class VHSExecutionService:
                     )
                     if code2 == 0:
                         break
-        except Exception as e:
+        except (OSError, subprocess.SubprocessError) as e:
             # Output might be in different location or format
             logger.debug("Copy from container failed (trying next path): %s", e)
 

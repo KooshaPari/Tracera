@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
+from sqlalchemy.exc import OperationalError
 from temporalio.client import (
     Client,
     Schedule,
@@ -94,7 +95,7 @@ class TemporalService:
                 "task_queue": self.settings.task_queue,
                 "ui_url": self.settings.ui_url,
             }
-        except Exception as exc:
+        except (ValueError, KeyError, OperationalError) as exc:
             return {
                 "enabled": True,
                 "status": "error",

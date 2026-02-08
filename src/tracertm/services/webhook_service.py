@@ -6,8 +6,16 @@ import time
 from datetime import UTC, datetime
 from typing import Any
 
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tracertm.constants import (
+    HTTP_OK,
+    HTTP_UNAUTHORIZED,
+    HTTP_BAD_REQUEST,
+    HTTP_TOO_MANY_REQUESTS,
+    PREVIEW_SIZE_DEFAULT,
+)
 from tracertm.models.webhook_integration import WebhookStatus
 from tracertm.repositories.test_run_repository import TestRunRepository
 from tracertm.repositories.webhook_repository import WebhookRepository
@@ -112,10 +120,10 @@ class WebhookService:
                 source_ip=source_ip,
                 user_agent=user_agent,
                 request_headers=headers,
-                request_body_preview=str(payload)[:1000],
+                request_body_preview=str(payload)[:PREVIEW_SIZE_DEFAULT],
                 payload_size_bytes=len(raw_payload),
                 success=False,
-                status_code=429,
+                status_code=HTTP_TOO_MANY_REQUESTS,
                 error_message="Rate limit exceeded",
                 processing_time_ms=processing_time,
             )
@@ -147,7 +155,7 @@ class WebhookService:
                     user_agent=user_agent,
                     request_headers=headers,
                     success=False,
-                    status_code=401,
+                    status_code=HTTP_UNAUTHORIZED,
                     error_message="Missing signature",
                     processing_time_ms=processing_time,
                 )
@@ -167,7 +175,7 @@ class WebhookService:
                     user_agent=user_agent,
                     request_headers=headers,
                     success=False,
-                    status_code=401,
+                    status_code=HTTP_UNAUTHORIZED,
                     error_message="Invalid signature",
                     processing_time_ms=processing_time,
                 )
@@ -221,10 +229,10 @@ class WebhookService:
                 source_ip=source_ip,
                 user_agent=user_agent,
                 request_headers=headers,
-                request_body_preview=str(payload)[:1000],
+                request_body_preview=str(payload)[:PREVIEW_SIZE_DEFAULT],
                 payload_size_bytes=len(raw_payload),
                 success=True,
-                status_code=200,
+                status_code=HTTP_OK,
                 processing_time_ms=processing_time,
                 test_run_id=test_run_id,
                 results_submitted=results_submitted,
@@ -238,7 +246,7 @@ class WebhookService:
                 "rate_limit_remaining": remaining - 1,
             }
 
-        except Exception as e:
+        except (ValueError, KeyError, OperationalError) as e:
             processing_time = int((time.time() - start_time) * 1000)
             error_message = str(e)
             await self.webhook_repo.create_log(
@@ -247,10 +255,10 @@ class WebhookService:
                 source_ip=source_ip,
                 user_agent=user_agent,
                 request_headers=headers,
-                request_body_preview=str(payload)[:1000],
+                request_body_preview=str(payload)[:PREVIEW_SIZE_DEFAULT],
                 payload_size_bytes=len(raw_payload),
                 success=False,
-                status_code=400,
+                status_code=HTTP_BAD_REQUEST,
                 error_message=error_message,
                 processing_time_ms=processing_time,
             )

@@ -15,7 +15,7 @@ async def analyze_quality(
     item_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     service = RequirementQualityService(db)
     try:
         return await service.analyze_quality(item_id)
@@ -28,7 +28,7 @@ async def get_quality(
     item_id: str,
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     service = RequirementQualityService(db)
     quality = await service.get_quality(item_id)
     if not quality:

@@ -106,7 +106,7 @@ class TUIService:
                 try:
                     result = handler(*args, **kwargs)
                     results.append(result)
-                except Exception as e:
+                except (OSError, ValueError) as e:
                     results.append({"error": str(e)})
         return results
 

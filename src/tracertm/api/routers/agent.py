@@ -21,7 +21,7 @@ from tracertm.schemas.agent import (
 router = APIRouter(prefix="/agent", tags=["Agent"])
 
 
-def _agent_service(request: Request):
+def _agent_service(request: Request) -> Any:
     """Use app-scoped agent service when available."""
     if hasattr(request.app.state, "agent_service"):
         return request.app.state.agent_service
@@ -41,7 +41,7 @@ async def create_agent_session(
     body: AgentSessionCreate,
     claims: Annotated[dict, Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Create an agent session (sandbox). Returns session_id and sandbox_root for use in chat."""
     from datetime import UTC, datetime
 
@@ -70,7 +70,7 @@ async def get_agent_session(
     session_id: str,
     claims: Annotated[dict, Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
-):
+) -> dict[str, Any]:
     """Get agent session metadata by session_id."""
     result = await db.execute(select(AgentSession).where(AgentSession.session_id == session_id))
     row = result.scalar_one_or_none()
@@ -86,7 +86,7 @@ async def list_agent_sessions(
     project_id: Annotated[str | None, Query(description="Filter by project ID")] = None,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
-):
+) -> dict[str, Any]:
     """List agent sessions, optionally filtered by project_id."""
     q = select(AgentSession).order_by(AgentSession.created_at.desc())
     count_q = select(func.count()).select_from(AgentSession)
@@ -146,7 +146,7 @@ async def delete_agent_session(
 async def start_agent_run(
     body: AgentRunRequest,
     claims: Annotated[dict, Depends(auth_guard)],
-):
+) -> dict[str, Any]:
     """Start a checkpointed agent run workflow in Temporal. Use for long or resumable runs."""
     from tracertm.services.temporal_service import TemporalService
 

@@ -397,7 +397,7 @@ class NativeOrchestrator:
             if handle.workspace.exists():
                 logger.debug(f"Removing workspace {handle.workspace}")
                 shutil.rmtree(handle.workspace)
-        except Exception as e:
+        except (OSError, subprocess.SubprocessError) as e:
             logger.warning(f"Failed to remove workspace {handle.workspace}: {e}")
 
         # Remove from tracking

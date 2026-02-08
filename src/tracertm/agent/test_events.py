@@ -38,6 +38,7 @@ class MockNATSClient:
     """Mock NATS client for testing event publishing."""
 
     def __init__(self) -> None:
+        """Initialize the mock NATS client."""
         self.published_events: list[dict[str, Any]] = []
         self._js = MagicMock()
         self._js.publish = AsyncMock(side_effect=self._mock_publish)

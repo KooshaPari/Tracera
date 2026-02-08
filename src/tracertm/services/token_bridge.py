@@ -81,7 +81,7 @@ class TokenBridge:
         try:
             unverified = jwt.get_unverified_header(token)
             alg = (unverified.get("alg") or "RS256").upper() if isinstance(unverified.get("alg"), str) else "RS256"
-        except Exception:
+        except (jwt.InvalidTokenError, KeyError, ValueError):
             alg = "RS256"
 
         rs_failure: Exception | None = None
@@ -89,7 +89,7 @@ class TokenBridge:
             # Token claims HS256: try HS256 first, then RS256
             try:
                 return self._validate_hs256_token(token)
-            except Exception as e:
+            except (jwt.InvalidTokenError, ValueError) as e:
                 rs_failure = e
                 logger.debug("HS256 validation failed: %s, trying RS256...", e)
             try:

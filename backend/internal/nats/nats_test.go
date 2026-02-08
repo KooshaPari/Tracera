@@ -69,13 +69,28 @@ func publishCases() []publishCase {
 	}
 }
 
+func testConfig() *Config {
+	config := DefaultConfig()
+	// Use a unique stream name and subjects for each test run to avoid interference and overlap
+	uniqueID := fmt.Sprintf("%d_%d", os.Getpid(), time.Now().UnixNano())
+	config.StreamName = fmt.Sprintf("TEST_STREAM_%s", uniqueID)
+	config.SubjectPrefix = fmt.Sprintf("test.%s.", uniqueID)
+	config.StreamSubjects = []string{
+		config.SubjectPrefix + ">",
+	}
+	return config
+}
+
 func withEventBus(t *testing.T, fn func(*EventBus)) {
 	t.Helper()
-	bus, err := NewEventBus(DefaultConfig())
+	config := testConfig()
+	bus, err := NewEventBus(config)
 	if err != nil {
 		t.Skipf("NATS server not available: %v", err)
 	}
 	defer func() {
+		// Clean up the stream after test
+		_ = bus.DeleteStream(config.StreamName)
 		if err := bus.Close(); err != nil {
 			t.Logf("error closing bus: %v", err)
 		}
@@ -423,7 +438,7 @@ func TestNewEventBus(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	config := DefaultConfig()
+	config := testConfig()
 
 	t.Run("successful initialization", func(t *testing.T) {
 		bus, err := NewEventBus(config)
@@ -480,20 +495,28 @@ func TestNATSEventBusSubscribe(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	withEventBus(t, func(bus *EventBus) {
-		t.Run("subscribe and receive event", func(t *testing.T) {
+	t.Run("subscribe and receive event", func(t *testing.T) {
+		withEventBus(t, func(bus *EventBus) {
 			testSubscribeReceiveEvent(t, bus)
 		})
-		t.Run("subscribe to project events", func(t *testing.T) {
+	})
+	t.Run("subscribe to project events", func(t *testing.T) {
+		withEventBus(t, func(bus *EventBus) {
 			testSubscribeProjectEvents(t, bus)
 		})
-		t.Run("subscribe to entity events", func(t *testing.T) {
+	})
+	t.Run("subscribe to entity events", func(t *testing.T) {
+		withEventBus(t, func(bus *EventBus) {
 			testSubscribeEntityEvents(t, bus)
 		})
-		t.Run("subscribe to event type", func(t *testing.T) {
+	})
+	t.Run("subscribe to event type", func(t *testing.T) {
+		withEventBus(t, func(bus *EventBus) {
 			testSubscribeEventType(t, bus)
 		})
-		t.Run("duplicate subscription fails", func(t *testing.T) {
+	})
+	t.Run("duplicate subscription fails", func(t *testing.T) {
+		withEventBus(t, func(bus *EventBus) {
 			testDuplicateSubscription(t, bus)
 		})
 	})
@@ -504,7 +527,7 @@ func TestNATSEventBusUnsubscribe(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	bus, err := NewEventBus(DefaultConfig())
+	bus, err := NewEventBus(testConfig())
 	if err != nil {
 		t.Skipf("NATS server not available: %v", err)
 	}
@@ -557,7 +580,7 @@ func TestNATSEventBusPublishBatch(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	bus, err := NewEventBus(DefaultConfig())
+	bus, err := NewEventBus(testConfig())
 	if err != nil {
 		t.Skipf("NATS server not available: %v", err)
 	}
@@ -594,7 +617,7 @@ func TestNATSEventBusQueueSubscribe(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	bus, err := NewEventBus(DefaultConfig())
+	bus, err := NewEventBus(testConfig())
 	if err != nil {
 		t.Skipf("NATS server not available: %v", err)
 	}
@@ -655,7 +678,7 @@ func TestNATSEventBusGetStats(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	bus, err := NewEventBus(DefaultConfig())
+	bus, err := NewEventBus(testConfig())
 	if err != nil {
 		t.Skipf("NATS server not available: %v", err)
 	}
@@ -684,7 +707,7 @@ func TestNATSEventBusDrainAndClose(t *testing.T) {
 	}
 
 	t.Run("graceful drain and close", func(t *testing.T) {
-		bus, err := NewEventBus(DefaultConfig())
+		bus, err := NewEventBus(testConfig())
 		if err != nil {
 			t.Skipf("NATS server not available: %v", err)
 		}
@@ -702,7 +725,7 @@ func TestNATSEventBusDrainAndClose(t *testing.T) {
 	})
 
 	t.Run("drain with context timeout", func(t *testing.T) {
-		bus, err := NewEventBus(DefaultConfig())
+		bus, err := NewEventBus(testConfig())
 		if err != nil {
 			t.Skipf("NATS server not available: %v", err)
 		}
@@ -722,7 +745,7 @@ func TestNATSEventBusStreamOperations(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	bus, err := NewEventBus(DefaultConfig())
+	bus, err := NewEventBus(testConfig())
 	if err != nil {
 		t.Skipf("NATS server not available: %v", err)
 	}
@@ -769,7 +792,7 @@ func TestNATSErrorScenarios(t *testing.T) {
 	}
 
 	t.Run("publish to closed bus", func(t *testing.T) {
-		bus, err := NewEventBus(DefaultConfig())
+		bus, err := NewEventBus(testConfig())
 		if err != nil {
 			t.Skipf("NATS server not available: %v", err)
 		}
@@ -786,7 +809,7 @@ func TestNATSErrorScenarios(t *testing.T) {
 	})
 
 	t.Run("subscribe to closed bus", func(t *testing.T) {
-		bus, err := NewEventBus(DefaultConfig())
+		bus, err := NewEventBus(testConfig())
 		if err != nil {
 			t.Skipf("NATS server not available: %v", err)
 		}
@@ -802,7 +825,7 @@ func TestNATSMessageMarshaling(t *testing.T) {
 		t.Skip("skipping NATS integration test in short mode")
 	}
 
-	bus, err := NewEventBus(DefaultConfig())
+	bus, err := NewEventBus(testConfig())
 	if err != nil {
 		t.Skipf("NATS server not available: %v", err)
 	}
@@ -858,7 +881,7 @@ func TestNATSReconnectHandlers(t *testing.T) {
 	}
 
 	t.Run("handlers are registered", func(t *testing.T) {
-		bus, err := NewEventBus(DefaultConfig())
+		bus, err := NewEventBus(testConfig())
 		if err != nil {
 			t.Skipf("NATS server not available: %v", err)
 		}

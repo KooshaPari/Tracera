@@ -337,6 +337,21 @@ async function fetchTestSuiteStats(projectId: string): Promise<TestSuiteStats> {
   return decodeTestSuiteStats(raw);
 }
 
+const testSuitesApi = {
+  addTestCaseToSuite,
+  createTestSuite,
+  deleteTestSuite,
+  fetchSuiteTestCases,
+  fetchTestSuite,
+  fetchTestSuiteActivities,
+  fetchTestSuiteStats,
+  fetchTestSuites,
+  reorderSuiteTestCases,
+  removeTestCaseFromSuite,
+  transitionTestSuiteStatus,
+  updateTestSuite,
+} as const;
+
 export type { AddTestCaseToSuiteInput, CreateTestSuiteData, TestSuiteFilters };
 
 export {
@@ -350,6 +365,7 @@ export {
   fetchTestSuites,
   reorderSuiteTestCases,
   removeTestCaseFromSuite,
+  testSuitesApi,
   transitionTestSuiteStatus,
   updateTestSuite,
 };

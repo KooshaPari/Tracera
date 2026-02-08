@@ -155,6 +155,22 @@ function parseNumberMap(input: JsonRecord | undefined): Record<string, number> {
   return out;
 }
 
+const processGuards = {
+  asRecord,
+  getOptionalArray,
+  getOptionalBoolean,
+  getOptionalNumber,
+  getOptionalRecord,
+  getOptionalString,
+  getOptionalStringArray,
+  getRequiredArray,
+  getRequiredBoolean,
+  getRequiredNumber,
+  getRequiredString,
+  parseNumberMap,
+  toStringId,
+};
+
 export {
   asRecord,
   getOptionalArray,
@@ -168,6 +184,7 @@ export {
   getRequiredNumber,
   getRequiredString,
   parseNumberMap,
+  processGuards,
   toStringId,
   type JsonRecord,
 };

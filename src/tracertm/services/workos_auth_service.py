@@ -13,7 +13,7 @@ from jwt import PyJWKClient
 
 try:
     from workos import WorkOSClient
-except Exception:  # pragma: no cover - optional for environments without WorkOS
+except (ImportError, ModuleNotFoundError):  # pragma: no cover - optional for environments without WorkOS
     WorkOSClient = Any
     WorkOSClient = None
 
@@ -96,7 +96,7 @@ def verify_access_token(token: str) -> dict[str, Any]:
         # Decode header without verification to get algorithm
         unverified_header = jwt.get_unverified_header(token)
         algorithm = unverified_header.get("alg", "RS256")
-    except Exception as e:
+    except (jwt.InvalidTokenError, KeyError, ValueError) as e:
         # If header parsing fails, log and default to RS256
         # This should rarely happen with valid tokens
         logger.warning("Failed to parse JWT header for algorithm: %s. Defaulting to RS256.", e)

@@ -6,8 +6,10 @@ import uuid
 from io import StringIO
 from typing import Any
 
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tracertm.core.concurrency import ConcurrencyError
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 from tracertm.repositories.project_repository import ProjectRepository
@@ -145,7 +147,7 @@ class ExportImportService:
                     status=item_data.get("status", "todo"),
                 )
                 imported_count += 1
-            except Exception as e:
+            except (ValueError, ConcurrencyError, OperationalError) as e:
                 errors.append(str(e))
 
         return {
@@ -165,7 +167,7 @@ class ExportImportService:
         try:
             reader = csv.DictReader(StringIO(csv_data))
             rows = list(reader)
-        except Exception as e:
+        except (csv.Error, ValueError) as e:
             return {"error": f"Invalid CSV format: {e!s}"}
 
         imported_count = 0
@@ -181,7 +183,7 @@ class ExportImportService:
                     status=row.get("Status", "todo"),
                 )
                 imported_count += 1
-            except Exception as e:
+            except (ValueError, ConcurrencyError, OperationalError) as e:
                 errors.append(str(e))
 
         return {
