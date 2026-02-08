@@ -7,10 +7,10 @@ Coverage target: 80%+ of 127 statements
 
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, Mock
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE
-
 
 import pytest
+
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE
 
 # Skip all tests if Textual not available
 pytest.importorskip("textual")

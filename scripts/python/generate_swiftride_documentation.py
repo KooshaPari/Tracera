@@ -23,11 +23,12 @@ from pathlib import Path
 # Add backend to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
 
+from typing import Any
+
 from dotenv import load_dotenv
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from typing import Any
 
 load_dotenv()
 

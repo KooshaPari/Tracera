@@ -19,12 +19,11 @@ Tests for:
 
 from datetime import UTC, datetime
 from uuid import uuid4
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.repositories.problem_repository import ProblemRepository
 from tracertm.repositories.project_repository import ProjectRepository

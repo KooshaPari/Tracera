@@ -12,14 +12,13 @@ Target: +5% coverage on ProjectBackupService module
 """
 
 from datetime import UTC, datetime, timezone
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
 from tracertm.models.base import Base
 from tracertm.models.item import Item
 from tracertm.models.link import Link

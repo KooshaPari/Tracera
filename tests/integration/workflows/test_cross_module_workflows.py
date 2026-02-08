@@ -33,11 +33,11 @@ Total: 70-90 comprehensive cross-module workflow tests
 import asyncio
 from datetime import datetime
 from uuid import uuid4
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.orm import Session
+
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
 
 # Repositories are async but tests use sync Session; type ignores and asyncio.run() used for checker compatibility.
 from tracertm.models.item import Item

@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta
 from types import SimpleNamespace
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.services.advanced_analytics_service import AdvancedAnalyticsService
 
 pytestmark = pytest.mark.integration

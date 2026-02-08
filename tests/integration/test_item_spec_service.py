@@ -1,9 +1,8 @@
 """Integration tests for item_spec_service with database."""
 
 import pytest
+
 from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
-
-
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.services.item_spec_service import (

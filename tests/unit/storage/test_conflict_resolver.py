@@ -8,13 +8,12 @@ import json
 import tempfile
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.storage.conflict_resolver import (
     Conflict,
     ConflictBackup,

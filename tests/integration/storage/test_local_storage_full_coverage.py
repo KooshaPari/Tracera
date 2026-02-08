@@ -20,13 +20,12 @@ import time
 from collections.abc import Generator
 from pathlib import Path
 from typing import cast
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_TWO
-
 
 import pytest
 import yaml
 from sqlalchemy import text
 
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_TWO
 from tracertm.models import Item, Link, Project
 from tracertm.storage.local_storage import (
     ItemStorage,

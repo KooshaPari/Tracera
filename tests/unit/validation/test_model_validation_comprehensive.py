@@ -7,12 +7,11 @@ Scope: Field validation, constraints, type constraints, relationships
 import math
 import uuid
 from datetime import datetime
-from tests.test_constants import COUNT_FOUR, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
-
 
 import pytest
 from pydantic import ValidationError
 
+from tests.test_constants import COUNT_FOUR, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project

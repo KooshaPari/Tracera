@@ -10,13 +10,12 @@ import tempfile
 from collections.abc import Generator
 from pathlib import Path
 from unittest.mock import patch
-from tests.test_constants import COUNT_FIVE
-
 
 import pytest
 from sqlalchemy.orm import Session
 from typer.testing import CliRunner
 
+from tests.test_constants import COUNT_FIVE
 from tracertm.cli.commands.item import app as item_app
 from tracertm.models.item import Item
 from tracertm.models.project import Project

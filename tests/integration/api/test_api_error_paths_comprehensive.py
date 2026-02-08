@@ -13,8 +13,6 @@ import tempfile
 from datetime import UTC, datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_TOO_MANY_REQUESTS, HTTP_UNAUTHORIZED
-
 
 import pytest
 from fastapi.testclient import TestClient
@@ -22,6 +20,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 
+from tests.test_constants import (
+    COUNT_FIVE,
+    COUNT_TEN,
+    COUNT_THREE,
+    COUNT_TWO,
+    HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_TOO_MANY_REQUESTS,
+    HTTP_UNAUTHORIZED,
+)
 from tracertm.api.client import TraceRTMClient
 from tracertm.api.main import app
 from tracertm.api.sync_client import (

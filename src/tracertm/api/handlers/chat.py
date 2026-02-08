@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from tracertm.services.agent_service import AgentService
 from fastapi import Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from tracertm.api.config.rate_limiting import enforce_rate_limit
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.schemas.chat import ChatRequest
+from tracertm.services.agent_service import AgentService
 
 logger = logging.getLogger(__name__)
 

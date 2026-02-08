@@ -7,11 +7,11 @@ for the hybrid local storage architecture.
 import json
 import sqlite3
 from datetime import UTC, datetime
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 import yaml
+
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 
 # ============================================================================
 # FIXTURES

@@ -12,11 +12,10 @@ Success Criteria:
 
 import asyncio
 import time
-from tests.test_constants import COUNT_FIVE
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE
 from tracertm.models.agent import Agent
 from tracertm.services.agent_coordination_service import AgentCoordinationService
 from tracertm.services.item_service import ItemService

@@ -1,10 +1,10 @@
 """Integration tests for Epic 5: Agent Metrics (Story 5.6)."""
 
 from datetime import UTC, datetime, timedelta, timezone
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE
-
 
 import pytest
+
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE
 
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session

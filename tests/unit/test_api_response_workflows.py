@@ -11,8 +11,15 @@ Complete coverage of:
 import json
 from datetime import datetime, timedelta
 from typing import Never
-from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO, HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR, HTTP_NOT_FOUND
 
+from tests.test_constants import (
+    COUNT_FOUR,
+    COUNT_THREE,
+    COUNT_TWO,
+    HTTP_BAD_REQUEST,
+    HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_NOT_FOUND,
+)
 
 
 class TestAPIResponsePaths:

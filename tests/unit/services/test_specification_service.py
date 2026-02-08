@@ -1,11 +1,10 @@
 """Unit tests for specification services."""
 
 from unittest.mock import AsyncMock, MagicMock
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_TWO
 from tracertm.models.adr import ADR
 from tracertm.models.contract import Contract
 from tracertm.models.feature import Feature

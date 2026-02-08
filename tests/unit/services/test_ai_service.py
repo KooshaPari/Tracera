@@ -10,11 +10,10 @@ import pathlib
 import tempfile
 from typing import ClassVar
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.services.ai_service import (
     AIService,
     AIServiceError,

@@ -15,11 +15,10 @@ import math
 from datetime import UTC, datetime
 from typing import Never
 from unittest.mock import AsyncMock
-from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO, HTTP_OK
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO, HTTP_OK
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 from tracertm.repositories.project_repository import ProjectRepository

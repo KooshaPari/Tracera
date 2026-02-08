@@ -11,12 +11,11 @@ Focus areas:
 
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, Mock
-from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project

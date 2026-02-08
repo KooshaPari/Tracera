@@ -8,10 +8,10 @@ Coverage target: 80%+ of 101 statements
 from datetime import datetime
 from typing import Any, cast
 from unittest.mock import MagicMock, Mock, patch
-from tests.test_constants import COUNT_THREE
-
 
 import pytest
+
+from tests.test_constants import COUNT_THREE
 
 # Skip all tests if Textual not available
 pytest.importorskip("textual")

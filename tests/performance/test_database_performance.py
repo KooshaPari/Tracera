@@ -9,12 +9,12 @@ Tests measure performance of:
 """
 
 from typing import Any
-from tests.test_constants import COUNT_THREE
-
 
 import pytest
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import Session
+
+from tests.test_constants import COUNT_THREE
 
 pytestmark = pytest.mark.performance
 

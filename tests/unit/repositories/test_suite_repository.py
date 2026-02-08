@@ -17,12 +17,11 @@ Tests for:
 """
 
 from uuid import uuid4
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
 from tracertm.models import test_case as tc_models
 
 # Use module-qualified import to avoid pytest collection issue

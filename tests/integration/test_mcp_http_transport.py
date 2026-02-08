@@ -9,8 +9,6 @@ Tests the FastMCP 3.0 HTTP/SSE transport implementation including:
 """
 
 from __future__ import annotations
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, HTTP_OK
-
 
 import asyncio
 import contextlib
@@ -22,6 +20,7 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from mcp.server.streamable_http import DEFAULT_NEGOTIATED_VERSION, MCP_SESSION_ID_HEADER
 
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, HTTP_OK
 from tracertm.mcp.http_transport import (
     DEFAULT_MCP_PATH,
     create_progress_stream,

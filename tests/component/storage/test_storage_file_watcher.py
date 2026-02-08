@@ -17,13 +17,12 @@ Coverage includes:
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 import yaml
 from sqlalchemy import text
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.models import Item, Project
 from tracertm.storage.file_watcher import TraceFileWatcher, _TraceEventHandler
 from tracertm.storage.local_storage import (

@@ -18,9 +18,8 @@ import pytest
 from sqlalchemy import and_, create_engine, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import sessionmaker
+
 from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
-
 from tracertm.models.base import Base
 from tracertm.models.item import Item
 from tracertm.models.link import Link

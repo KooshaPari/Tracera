@@ -2,11 +2,10 @@ import asyncio
 from datetime import UTC, datetime, timedelta, timezone
 from types import SimpleNamespace
 from typing import Never
-from tests.test_constants import COUNT_FIVE
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE
 from tracertm.storage.conflict_resolver import ConflictStrategy
 from tracertm.storage.local_storage import LocalStorageManager
 from tracertm.storage.sync_engine import (

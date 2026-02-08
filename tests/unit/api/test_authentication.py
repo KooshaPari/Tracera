@@ -5,12 +5,12 @@ Tests authentication mechanisms, token validation, and access control.
 
 from datetime import UTC, datetime, timezone
 from unittest.mock import MagicMock, patch
-from tests.test_constants import HTTP_OK, HTTP_UNAUTHORIZED
-
 
 import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
+
+from tests.test_constants import HTTP_OK, HTTP_UNAUTHORIZED
 
 
 @pytest.fixture

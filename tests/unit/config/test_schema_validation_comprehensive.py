@@ -13,9 +13,8 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 from pydantic import ValidationError
+
 from tests.test_constants import COUNT_TEN, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
-
-
 from tracertm.config.schema import Config
 
 

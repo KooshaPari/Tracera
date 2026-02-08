@@ -14,12 +14,11 @@ import asyncio
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
-
 
 import pytest
 from sqlalchemy import create_engine
 
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
 from tracertm.models.base import Base
 from tracertm.storage.conflict_resolver import ConflictStrategy
 from tracertm.storage.sync_engine import (

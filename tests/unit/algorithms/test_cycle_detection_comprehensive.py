@@ -11,14 +11,13 @@ Coverage goal: +2-3% improvement
 """
 
 from unittest.mock import AsyncMock, Mock
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
+from tests.test_constants import COUNT_TWO
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.services.cycle_detection_service import CycleDetectionService

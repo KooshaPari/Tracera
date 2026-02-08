@@ -6,13 +6,12 @@ otherwise remain unexecuted in integration flows.
 import asyncio
 from datetime import datetime
 from typing import Never
-from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO, HTTP_TOO_MANY_REQUESTS
-
 
 import pytest
 from fastapi import HTTPException
 from starlette.requests import Request
 
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO, HTTP_TOO_MANY_REQUESTS
 from tracertm.api import main
 
 

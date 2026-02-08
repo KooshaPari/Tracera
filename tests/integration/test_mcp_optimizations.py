@@ -10,8 +10,6 @@ Tests that all MCP optimizations work correctly together:
 """
 
 from __future__ import annotations
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_TWO
-
 
 import asyncio
 import gzip
@@ -20,6 +18,8 @@ import os
 from unittest.mock import MagicMock
 
 import pytest
+
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_TWO
 
 # ============================================================
 # Fixtures

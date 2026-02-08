@@ -12,12 +12,11 @@ Tests core/database.py:
 import logging
 from typing import Never
 from unittest.mock import patch
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.core.config import Config, DatabaseConfig
 from tracertm.core.database import (
     drop_db,

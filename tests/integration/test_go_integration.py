@@ -2,13 +2,12 @@
 
 import asyncio
 from collections.abc import AsyncGenerator
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import httpx
 import pytest
 import pytest_asyncio
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.clients.go_client import GoBackendClient, GoBackendError
 
 

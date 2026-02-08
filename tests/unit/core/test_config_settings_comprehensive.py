@@ -21,13 +21,12 @@ Test areas:
 import os
 from pathlib import Path
 from unittest.mock import patch
-from tests.test_constants import COUNT_FOUR, COUNT_TEN, HTTP_OK
-
 
 import pytest
 import yaml
 from pydantic import ValidationError
 
+from tests.test_constants import COUNT_FOUR, COUNT_TEN, HTTP_OK
 from tracertm.config.manager import ConfigManager
 from tracertm.config.schema import Config as SchemaConfig
 from tracertm.config.settings import (

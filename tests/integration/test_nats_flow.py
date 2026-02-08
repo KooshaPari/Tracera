@@ -3,11 +3,11 @@
 import asyncio
 import os
 from typing import Any
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
 import pytest_asyncio
+
+from tests.test_constants import COUNT_TWO
 
 # NATS client import for tests that optionally use real NATS (most use MockNATSClient)
 from tracertm.infrastructure.nats_client import NATSClient

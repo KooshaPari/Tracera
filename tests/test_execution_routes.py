@@ -2,13 +2,12 @@
 
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_TWO, HTTP_BAD_REQUEST, HTTP_NOT_FOUND
-
 
 import pytest
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_TWO, HTTP_BAD_REQUEST, HTTP_NOT_FOUND
 from tracertm.api.routers.execution import (
     add_artifact,
     complete_execution,

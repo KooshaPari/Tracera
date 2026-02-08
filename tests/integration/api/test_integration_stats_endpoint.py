@@ -3,9 +3,8 @@
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from tests.test_constants import COUNT_TWO, HTTP_OK, HTTP_UNAUTHORIZED
-
-
 from tracertm.models.integration import (
     IntegrationConflict,
     IntegrationCredential,

@@ -15,12 +15,11 @@ Total: 50+ comprehensive concurrency tests
 """
 
 from typing import cast
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.orm import Session
 
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_TWO
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project

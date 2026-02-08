@@ -2,9 +2,8 @@
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from tests.test_constants import COUNT_TWO
-
-
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 from tracertm.repositories.project_repository import ProjectRepository

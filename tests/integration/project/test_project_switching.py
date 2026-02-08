@@ -1,10 +1,10 @@
 """Integration tests for Epic 6: Project Switching & Isolation (Stories 6.3, 6.4)."""
 
 import time
-from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR
-
 
 import pytest
+
+from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR
 
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session

@@ -9,8 +9,8 @@ Focus on high-impact coverage gains:
 """
 
 from datetime import datetime, timedelta
-from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO
 
+from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO
 
 
 class TestImpactAnalysisAlgorithms:

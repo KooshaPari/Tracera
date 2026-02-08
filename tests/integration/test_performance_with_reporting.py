@@ -9,11 +9,10 @@ import time
 from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_TWO
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project

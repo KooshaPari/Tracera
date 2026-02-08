@@ -12,9 +12,8 @@ Tests database/connection.py:
 import pytest
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
+
 from tests.test_constants import COUNT_TWO
-
-
 from tracertm.database.connection import DatabaseConnection, get_engine, get_session
 
 

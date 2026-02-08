@@ -11,11 +11,10 @@ Tests all functions in tracertm.utils.figma:
 """
 
 from typing import Never
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_TWO
 from tracertm.utils.figma import (
     FigmaAPIError,
     FigmaMetadata,

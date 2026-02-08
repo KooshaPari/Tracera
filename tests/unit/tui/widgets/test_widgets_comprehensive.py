@@ -21,10 +21,10 @@ Coverage includes:
 from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 from unittest.mock import MagicMock, PropertyMock, patch
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_TWO
-
 
 import pytest
+
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_TWO
 
 try:
     from textual.widgets import DataTable, Static, Tree

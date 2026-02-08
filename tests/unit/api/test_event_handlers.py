@@ -1,10 +1,10 @@
 """Unit tests for event handlers in main.py."""
 
 from unittest.mock import AsyncMock
-from tests.test_constants import COUNT_FIVE
-
 
 import pytest
+
+from tests.test_constants import COUNT_FIVE
 
 
 @pytest.mark.asyncio

@@ -1,12 +1,11 @@
 import asyncio
 from datetime import UTC, datetime, timezone
 from typing import Never
-from tests.test_constants import COUNT_TWO
-
 
 import httpx
 import pytest
 
+from tests.test_constants import COUNT_TWO
 from tracertm.api.sync_client import ApiConfig, ApiError, AuthenticationError, SyncClient
 
 pytestmark = pytest.mark.integration

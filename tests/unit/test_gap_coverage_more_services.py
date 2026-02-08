@@ -5,10 +5,10 @@ Targets: query_optimization_service.py (22.58%), project_backup_service.py (11.9
 """
 
 from unittest.mock import AsyncMock, MagicMock
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
+
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 
 
 class TestQueryOptimizationService:

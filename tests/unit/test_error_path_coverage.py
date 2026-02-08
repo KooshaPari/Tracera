@@ -17,14 +17,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import Session
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.api.client import TraceRTMClient
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.database.connection import DatabaseConnection

@@ -15,9 +15,8 @@ Target Coverage: 90%+ for specification repositories
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO
-
-
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.models.item import Item
 from tracertm.models.project import Project

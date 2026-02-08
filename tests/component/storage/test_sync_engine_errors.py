@@ -14,11 +14,10 @@ Tests cover:
 import asyncio
 from datetime import datetime
 from unittest.mock import AsyncMock, Mock, patch
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TWO
 from tracertm.storage.sync_engine import (
     ChangeDetector,
     EntityType,

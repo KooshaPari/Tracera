@@ -10,11 +10,11 @@ Tests for:
 
 import asyncio
 from unittest.mock import AsyncMock, MagicMock
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
 
 
 class TestAsyncDatabaseOperations:

@@ -6,11 +6,10 @@ Tests workflow execution, checkpoint creation, and session resumability.
 import tempfile
 from pathlib import Path
 from uuid import uuid4
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
 from tracertm.models.agent_session import AgentSession
 from tracertm.services.checkpoint_service import CheckpointService
 

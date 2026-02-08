@@ -1,11 +1,10 @@
 """Unit tests for shortest path service caching."""
 
 from unittest.mock import AsyncMock, MagicMock
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_TWO
 from tracertm.services.cache_service import CacheService
 from tracertm.services.shortest_path_service import ShortestPathService
 

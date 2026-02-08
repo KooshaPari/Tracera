@@ -4,11 +4,18 @@ Tests error responses, exception handling, and error recovery.
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_THREE, HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR, HTTP_NOT_FOUND, HTTP_OK, HTTP_UNPROCESSABLE_ENTITY
-
 
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import IntegrityError, OperationalError
+
+from tests.test_constants import (
+    COUNT_THREE,
+    HTTP_BAD_REQUEST,
+    HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_NOT_FOUND,
+    HTTP_OK,
+    HTTP_UNPROCESSABLE_ENTITY,
+)
 
 
 class TestHTTPErrorResponses:

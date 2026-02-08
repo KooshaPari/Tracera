@@ -14,13 +14,12 @@ Target: ~80 tests to bring coverage to 80%+
 import asyncio
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
-from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
 from tracertm.models.integration import (
     IntegrationRateLimit,
     IntegrationSyncQueue,

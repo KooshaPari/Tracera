@@ -14,11 +14,10 @@ Tests for:
 import asyncio
 import time
 from typing import Never
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
 from tracertm.core.concurrency import ConcurrencyError, update_with_retry
 
 # ==============================================================================

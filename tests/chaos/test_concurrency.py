@@ -14,12 +14,11 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_THREE
-
 
 import pytest
 from sqlalchemy.orm.exc import StaleDataError
 
+from tests.test_constants import COUNT_THREE
 from tracertm.core.concurrency import ConcurrencyError, update_with_retry
 from tracertm.services.concurrent_operations_service import (
     ConcurrencyError as SyncConcurrencyError,

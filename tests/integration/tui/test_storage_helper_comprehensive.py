@@ -21,11 +21,10 @@ from pathlib import Path
 from threading import Thread
 from typing import Never
 from unittest.mock import MagicMock, patch
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
 from tracertm.cli.storage_helper import (
     _human_time_delta,
     _trigger_sync,

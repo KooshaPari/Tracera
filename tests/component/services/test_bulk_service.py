@@ -1,9 +1,8 @@
 from types import SimpleNamespace
-from tests.test_constants import COUNT_FIVE
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.services.bulk_service import BulkOperationService, BulkPreview
 

@@ -10,12 +10,11 @@ Tests that MCP endpoints properly integrate with FastAPI authentication:
 
 from typing import Never
 from unittest.mock import MagicMock, patch
-from tests.test_constants import COUNT_TWO, HTTP_NO_CONTENT, HTTP_OK, HTTP_UNAUTHORIZED
-
 
 import pytest
 from fastapi.testclient import TestClient
 
+from tests.test_constants import COUNT_TWO, HTTP_NO_CONTENT, HTTP_OK, HTTP_UNAUTHORIZED
 from tracertm.api.main import app
 from tracertm.core.context import current_user_id
 

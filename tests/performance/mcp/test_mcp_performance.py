@@ -11,8 +11,6 @@ Tests MCP server optimizations including:
 """
 
 from __future__ import annotations
-from tests.test_constants import COUNT_FIVE, COUNT_TWO
-
 
 import asyncio
 import json
@@ -26,6 +24,7 @@ import pytest
 from tests.performance.conftest import (
     measure_time,
 )
+from tests.test_constants import COUNT_FIVE, COUNT_TWO
 
 # ============================================================
 # Performance Thresholds for MCP Operations

@@ -7,12 +7,20 @@ Tests:
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_OK, HTTP_UNPROCESSABLE_ENTITY
-
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from tests.test_constants import (
+    COUNT_FIVE,
+    COUNT_FOUR,
+    COUNT_TEN,
+    COUNT_THREE,
+    COUNT_TWO,
+    HTTP_OK,
+    HTTP_UNPROCESSABLE_ENTITY,
+)
 
 
 @pytest.fixture

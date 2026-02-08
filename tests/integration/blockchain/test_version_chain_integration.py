@@ -10,9 +10,8 @@ Tests full workflow including:
 
 import pytest
 import pytest_asyncio
+
 from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
-
-
 from tracertm.models.project import Project
 from tracertm.repositories.blockchain_repository import VersionBlockRepository
 

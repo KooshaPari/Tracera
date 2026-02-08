@@ -9,13 +9,12 @@ This module provides 50+ tests for:
 """
 
 from typing import Never
-from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
+from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO
 from tracertm.utils.figma import (
     FigmaAPIError,
     FigmaMetadata,

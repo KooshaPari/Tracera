@@ -5,11 +5,11 @@ for various item types (epics, stories, tests, tasks).
 """
 
 from datetime import UTC, datetime
-from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 import yaml
+
+from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO
 
 # ============================================================================
 # FIXTURES

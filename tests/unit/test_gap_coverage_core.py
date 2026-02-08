@@ -6,10 +6,10 @@ import asyncio
 from datetime import datetime
 from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
+
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 
 
 class TestConcurrencyError:

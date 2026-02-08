@@ -2,13 +2,12 @@
 
 import asyncio
 from unittest.mock import AsyncMock, patch
-from tests.test_constants import COUNT_TEN, COUNT_THREE
-
 
 import httpx
 import pytest
 from aiohttp import web
 
+from tests.test_constants import COUNT_TEN, COUNT_THREE
 from tracertm.clients.go_client import GoBackendClient, GoBackendError, generate_cache_key
 
 

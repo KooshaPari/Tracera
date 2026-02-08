@@ -1,11 +1,10 @@
 """Integration tests for Problem and Process repositories."""
 
 from uuid import uuid4
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_TWO
 from tracertm.models.project import Project
 from tracertm.repositories.problem_repository import ProblemRepository
 from tracertm.repositories.process_repository import ProcessRepository

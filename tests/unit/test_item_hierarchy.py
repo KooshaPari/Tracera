@@ -2,11 +2,10 @@
 
 import uuid
 from unittest.mock import AsyncMock
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_TWO
 from tracertm.models.item import Item
 from tracertm.services.item_service import ItemService
 

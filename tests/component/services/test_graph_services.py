@@ -1,7 +1,6 @@
 import pytest
+
 from tests.test_constants import COUNT_THREE, COUNT_TWO
-
-
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project

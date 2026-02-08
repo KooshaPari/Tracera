@@ -5,14 +5,13 @@ unhandled exception) and that validators enforce documented constraints.
 """
 
 import string
-from tests.test_constants import COUNT_FOUR
-
 
 import pytest
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 from pydantic import ValidationError
 
+from tests.test_constants import COUNT_FOUR
 from tracertm.schemas.account import AccountCreate
 from tracertm.schemas.item import ItemCreate, ItemUpdate
 from tracertm.schemas.link import LinkCreate

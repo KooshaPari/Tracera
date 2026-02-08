@@ -5,13 +5,12 @@ Comprehensive tests covering GitHub Project link CRUD operations.
 
 import asyncio
 from uuid import uuid4
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
 from tracertm.repositories.github_project_repository import GitHubProjectRepository
 from tracertm.repositories.project_repository import ProjectRepository
 

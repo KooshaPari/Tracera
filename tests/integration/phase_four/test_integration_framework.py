@@ -42,10 +42,10 @@ TOTAL: 400+ TESTS
 """
 
 import asyncio
-from tests.test_constants import COUNT_FOUR, COUNT_THREE, HTTP_BAD_REQUEST, HTTP_OK
-
 
 import pytest
+
+from tests.test_constants import COUNT_FOUR, COUNT_THREE, HTTP_BAD_REQUEST, HTTP_OK
 
 pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
 

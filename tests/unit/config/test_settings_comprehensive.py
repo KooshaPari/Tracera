@@ -4,12 +4,11 @@ Target: +2% coverage on configuration paths (40 test cases)
 """
 
 from pathlib import Path
-from tests.test_constants import COUNT_TEN, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
-
 
 import pytest
 from pydantic import ValidationError
 
+from tests.test_constants import COUNT_TEN, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
 from tracertm.config.settings import (
     DatabaseSettings,
     TraceSettings,

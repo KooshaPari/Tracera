@@ -13,10 +13,10 @@ Test Count: 40+ tests
 
 from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
+
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
 
 try:
     from textual.app import ComposeResult  # type: ignore[unresolved-import]

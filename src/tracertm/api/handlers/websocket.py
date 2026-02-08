@@ -7,7 +7,7 @@ Breaks down websocket_endpoint (complexity 29) into focused functions.
 import asyncio
 import contextlib
 import logging
-from typing import Callable, Any
+from typing import Any, Callable
 
 from fastapi import WebSocket, WebSocketDisconnect
 

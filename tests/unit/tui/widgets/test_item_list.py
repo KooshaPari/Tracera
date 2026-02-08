@@ -10,8 +10,8 @@ Tests cover:
 """
 
 import pytest
-from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO
 
+from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO
 
 try:
     from textual.widgets import DataTable  # type: ignore[import-untyped]

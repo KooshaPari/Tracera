@@ -7,10 +7,10 @@ Coverage target: 80%+ (221 lines total)
 
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
+
+from tests.test_constants import COUNT_TWO
 
 try:
     from textual.app import App  # type: ignore[unresolved-import]

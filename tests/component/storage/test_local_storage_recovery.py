@@ -13,11 +13,10 @@ Tests cover:
 from pathlib import Path
 from threading import Thread
 from unittest.mock import patch
-from tests.test_constants import COUNT_TEN, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_TEN, COUNT_TWO
 from tracertm.models import Item
 from tracertm.storage.local_storage import (
     LocalStorageManager,

@@ -62,6 +62,17 @@ class Link(Base, TimestampMixin):
     link_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
 
     def __init__(self, **kwargs: object) -> None:
+        """Initialize Link instance.
+
+        Handles field aliasing for backward compatibility:
+        - 'type' → 'link_type'
+        - 'metadata' → 'link_metadata'
+        - 'source_id' → 'source_item_id'
+        - 'target_id' → 'target_item_id'
+
+        Args:
+            **kwargs: Keyword arguments for model fields.
+        """
         if "type" in kwargs and "link_type" not in kwargs:
             kwargs["link_type"] = kwargs.pop("type")
         if "metadata" in kwargs and "link_metadata" not in kwargs:

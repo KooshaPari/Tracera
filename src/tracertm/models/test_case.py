@@ -166,6 +166,13 @@ class TestCase(Base, TimestampMixin):
     }
 
     def __init__(self, **kwargs: object) -> None:
+        """Initialize TestCase instance.
+
+        Handles metadata field aliasing for backward compatibility.
+
+        Args:
+            **kwargs: Keyword arguments for model fields.
+        """
         # Map friendly aliases
         if "metadata" in kwargs and "test_case_metadata" not in kwargs:
             kwargs["test_case_metadata"] = kwargs.pop("metadata")

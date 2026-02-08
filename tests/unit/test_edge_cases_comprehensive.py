@@ -17,12 +17,11 @@ from datetime import UTC, datetime
 from typing import Any, Never, cast
 from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
-from tests.test_constants import COUNT_TEN, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
-
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_TEN, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
 from tracertm.core.concurrency import ConcurrencyError, update_with_retry
 from tracertm.models.item import Item
 from tracertm.models.link import Link

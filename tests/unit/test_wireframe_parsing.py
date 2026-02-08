@@ -2,11 +2,10 @@
 
 from datetime import datetime
 from pathlib import Path
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_TWO
 from tracertm.storage.markdown_parser import ItemData, parse_item_markdown, write_item_markdown
 from tracertm.utils.figma import (
     FigmaMetadata,

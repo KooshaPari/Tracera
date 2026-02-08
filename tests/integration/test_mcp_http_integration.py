@@ -9,8 +9,6 @@ Tests cover:
 """
 
 from __future__ import annotations
-from tests.test_constants import COUNT_FIVE, HTTP_OK
-
 
 import asyncio
 import json
@@ -20,6 +18,8 @@ import httpx
 import pytest
 from httpx import ASGITransport
 from starlette.testclient import TestClient
+
+from tests.test_constants import COUNT_FIVE, HTTP_OK
 
 # ============================================================================
 # Fixtures

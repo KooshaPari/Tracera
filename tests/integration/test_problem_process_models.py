@@ -2,11 +2,10 @@
 
 from datetime import UTC, datetime, timezone
 from uuid import uuid4
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_TWO
 from tracertm.models.problem import Problem, ProblemActivity
 from tracertm.models.process import Process, ProcessExecution
 from tracertm.models.project import Project

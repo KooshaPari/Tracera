@@ -21,8 +21,6 @@ from datetime import UTC, datetime, timedelta, timezone
 from typing import Never
 from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 import pytest_asyncio
@@ -30,6 +28,7 @@ import yaml
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project

@@ -2,9 +2,8 @@
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from tests.test_constants import COUNT_FIVE, COUNT_TWO
-
-
 from tracertm.repositories.agent_repository import AgentRepository
 from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.item_repository import ItemRepository

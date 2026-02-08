@@ -8,8 +8,8 @@ Direct testing of actual service methods:
 """
 
 from unittest.mock import Mock, patch
-from tests.test_constants import COUNT_TWO
 
+from tests.test_constants import COUNT_TWO
 
 
 class TestImpactAnalysisServiceMethods:

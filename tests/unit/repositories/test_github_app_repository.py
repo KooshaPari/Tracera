@@ -6,13 +6,12 @@ Comprehensive tests covering GitHub App installation CRUD operations.
 import asyncio
 from datetime import datetime
 from uuid import uuid4
-from tests.test_constants import COUNT_THREE
-
 
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_THREE
 from tracertm.repositories.account_repository import AccountRepository
 from tracertm.repositories.github_app_repository import GitHubAppInstallationRepository
 

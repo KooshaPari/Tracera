@@ -7,11 +7,10 @@ Tests:
 """
 
 from datetime import UTC, datetime
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
 from tracertm.repositories.blockchain_repository import (
     BaselineRepository,
     SpecEmbeddingRepository,

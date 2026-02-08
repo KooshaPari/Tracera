@@ -4,12 +4,11 @@ Tests: Model creation, persistence, retrieval
 """
 
 import logging
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.orm import Session
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.database.connection import DatabaseConnection
 from tracertm.models.agent import Agent
 from tracertm.models.item import Item

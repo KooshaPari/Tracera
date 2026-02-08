@@ -12,14 +12,13 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Never
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
 from tracertm.models.agent import Agent
 from tracertm.models.base import Base
 from tracertm.models.item import Item

@@ -5,10 +5,10 @@ resource ownership, and permission validation.
 """
 
 from unittest.mock import patch
-from tests.test_constants import COUNT_THREE
-
 
 import pytest
+
+from tests.test_constants import COUNT_THREE
 
 
 @pytest.fixture

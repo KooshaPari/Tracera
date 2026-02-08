@@ -15,12 +15,11 @@ Routes tested:
 
 import json
 from unittest.mock import AsyncMock, patch
-from tests.test_constants import HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
-
 
 import pytest
 from fastapi.testclient import TestClient
 
+from tests.test_constants import HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
 from tracertm.api.main import app
 
 # Use TestClient for synchronous testing

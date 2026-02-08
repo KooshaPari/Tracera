@@ -179,6 +179,13 @@ class Problem(Base, TimestampMixin):
     }
 
     def __init__(self, **kwargs: object) -> None:
+        """Initialize Problem instance.
+
+        Handles metadata field aliasing for backward compatibility.
+
+        Args:
+            **kwargs: Keyword arguments for model fields.
+        """
         # Map friendly aliases
         if "metadata" in kwargs and "problem_metadata" not in kwargs:
             kwargs["problem_metadata"] = kwargs.pop("metadata")

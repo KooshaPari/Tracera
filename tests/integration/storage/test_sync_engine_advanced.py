@@ -27,13 +27,12 @@ import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import AsyncMock
-from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
 from tracertm.models import Base
 from tracertm.storage.conflict_resolver import (
     ConflictStrategy,

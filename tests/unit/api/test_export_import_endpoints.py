@@ -7,12 +7,12 @@ Tests:
 
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_TWO, HTTP_BAD_REQUEST, HTTP_NOT_FOUND, HTTP_OK
-
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from tests.test_constants import COUNT_TWO, HTTP_BAD_REQUEST, HTTP_NOT_FOUND, HTTP_OK
 
 
 @pytest.fixture

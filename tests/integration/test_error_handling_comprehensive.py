@@ -8,9 +8,8 @@ Target: +3-4% coverage (40-55 tests)
 
 import pytest
 from sqlalchemy.exc import IntegrityError, OperationalError
+
 from tests.test_constants import COUNT_FIVE, COUNT_THREE
-
-
 from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link

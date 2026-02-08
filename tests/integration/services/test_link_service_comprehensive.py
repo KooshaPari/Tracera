@@ -15,8 +15,6 @@ Test count: 45+
 
 import time
 from datetime import datetime
-from tests.test_constants import COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 import pytest_asyncio
@@ -24,6 +22,7 @@ from sqlalchemy import create_engine, func
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
+from tests.test_constants import COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
 from tracertm.models.base import Base
 from tracertm.models.item import Item
 from tracertm.models.link import Link

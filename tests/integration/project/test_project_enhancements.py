@@ -1,10 +1,10 @@
 """Integration tests for Epic 6: Project Enhancements (Stories 6.3-6.6)."""
 
 import json
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
+
+from tests.test_constants import COUNT_TWO
 
 pytestmark = pytest.mark.integration
 

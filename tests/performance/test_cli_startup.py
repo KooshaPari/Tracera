@@ -12,10 +12,10 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from tests.test_constants import COUNT_TEN, HTTP_INTERNAL_SERVER_ERROR
-
 
 import pytest
+
+from tests.test_constants import COUNT_TEN, HTTP_INTERNAL_SERVER_ERROR
 
 psutil = pytest.importorskip("psutil")
 

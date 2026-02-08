@@ -9,8 +9,6 @@ Tests cover:
 """
 
 from __future__ import annotations
-from tests.test_constants import COUNT_TWO
-
 
 import json
 from typing import Any
@@ -18,6 +16,8 @@ from unittest.mock import MagicMock
 
 import pytest
 from starlette.testclient import TestClient
+
+from tests.test_constants import COUNT_TWO
 
 # ============================================================================
 # Fixtures

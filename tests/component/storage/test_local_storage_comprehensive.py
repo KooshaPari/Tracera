@@ -14,13 +14,12 @@ import tempfile
 import uuid
 from datetime import datetime
 from pathlib import Path
-from tests.test_constants import COUNT_FIVE
-
 
 import pytest
 import yaml
 from sqlalchemy import text
 
+from tests.test_constants import COUNT_FIVE
 from tracertm.storage.local_storage import (
     LocalStorageManager,
     ProjectStorage,

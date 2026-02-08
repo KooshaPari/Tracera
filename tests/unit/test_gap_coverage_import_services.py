@@ -4,10 +4,10 @@ Targets: services/github_import_service.py (22.73%), services/jira_import_servic
 
 import json
 from unittest.mock import AsyncMock, MagicMock
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
+
+from tests.test_constants import COUNT_TWO
 
 
 class TestGitHubImportService:

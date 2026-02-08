@@ -9,12 +9,12 @@ Tests:
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_NOT_FOUND, HTTP_OK
-
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_NOT_FOUND, HTTP_OK
 
 
 @pytest.fixture

@@ -2,11 +2,10 @@
 
 from unittest.mock import AsyncMock
 from uuid import uuid4
-from tests.test_constants import COUNT_FIVE, COUNT_THREE
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE, COUNT_THREE
 from tracertm.models.item import Item
 from tracertm.services.bulk_service import BulkOperationService, BulkPreview
 

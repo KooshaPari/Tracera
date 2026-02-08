@@ -4,10 +4,10 @@ Tests programmatic access for AI agents.
 """
 
 import json
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
+
+from tests.test_constants import COUNT_TWO
 
 pytestmark = pytest.mark.integration
 

@@ -535,7 +535,7 @@ async def link_github_app_installation(
     data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Link a GitHub App installation to an account."""
     user_id = claims.get("sub") if isinstance(claims, dict) else None
     account_id = data.get("account_id")

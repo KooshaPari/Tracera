@@ -7,10 +7,10 @@ over time and identify regressions.
 import json
 import time
 from pathlib import Path
-from tests.test_constants import COUNT_TEN
-
 
 import pytest
+
+from tests.test_constants import COUNT_TEN
 
 # ============================================================
 # Benchmark Fixtures

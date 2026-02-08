@@ -6,13 +6,12 @@ requiring a running Redis instance.
 
 import hashlib
 from typing import Any
-from tests.test_constants import COUNT_THREE
-
 
 import pytest
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 
+from tests.test_constants import COUNT_THREE
 from tracertm.services.cache_service import CACHE_CONFIG, CacheService
 
 # ---------------------------------------------------------------------------

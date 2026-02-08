@@ -17,9 +17,8 @@ Total: 100+ comprehensive error path tests
 import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+
 from tests.test_constants import COUNT_TWO
-
-
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project

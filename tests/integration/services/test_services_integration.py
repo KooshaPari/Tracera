@@ -16,8 +16,6 @@ import json
 import pathlib
 from datetime import UTC, datetime, timezone
 from io import StringIO
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 import pytest_asyncio
@@ -25,6 +23,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
 from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link

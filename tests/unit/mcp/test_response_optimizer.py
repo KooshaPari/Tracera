@@ -1,9 +1,8 @@
 """Unit tests for response_optimizer module."""
 
 import json
+
 from tests.test_constants import COUNT_FIVE, COUNT_TWO
-
-
 from tracertm.mcp.tools.response_optimizer import (
     ResponseFormat,
     format_error,

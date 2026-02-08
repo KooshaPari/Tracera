@@ -1,11 +1,10 @@
 """Tests for QueryCache (Phase 3)."""
 
 import asyncio
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.mcp.cache import CacheEntry, QueryCache
 
 

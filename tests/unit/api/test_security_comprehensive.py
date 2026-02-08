@@ -21,11 +21,11 @@ import json
 import logging
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
-from tests.test_constants import COUNT_TEN, HTTP_OK, HTTP_UNAUTHORIZED
-
 
 import pytest
 from fastapi.testclient import TestClient
+
+from tests.test_constants import COUNT_TEN, HTTP_OK, HTTP_UNAUTHORIZED
 
 logger = logging.getLogger(__name__)
 
