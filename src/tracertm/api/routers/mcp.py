@@ -28,7 +28,7 @@ from tracertm.mcp.core import get_mcp
 logger = logging.getLogger(__name__)
 
 
-def _mcp() -> Any:
+def _mcp() -> object:
     """Lazy MCP server for HTTP (no env required for API startup)."""
     return get_mcp("http")
 
@@ -102,7 +102,7 @@ def _set_user_context(claims: dict[str, Any]) -> None:
         logger.debug("Set account context: %s", account_id)
 
 
-async def _handle_mcp_call(method: str, params: dict[str, Any] | None, claims: dict[str, Any]) -> Any:
+async def _handle_mcp_call(method: str, params: dict[str, Any] | None, claims: dict[str, Any]) -> object:
     """Handle an MCP method call.
 
     Args:
