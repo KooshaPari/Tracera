@@ -7,8 +7,6 @@ Validates that the entire application stack recovers from cascading failures.
 import asyncio
 import logging
 import time
-from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
-
 
 import httpx
 import pytest
@@ -16,6 +14,7 @@ import redis.asyncio as redis
 from sqlalchemy import text
 
 from tests.chaos.toxiproxy_client import ToxiproxyClient
+from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
 
 logger = logging.getLogger(__name__)
 

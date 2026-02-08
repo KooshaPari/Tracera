@@ -9,8 +9,6 @@ Tests cover:
 """
 
 from __future__ import annotations
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
-
 
 import asyncio
 import time
@@ -18,6 +16,8 @@ from typing import Any
 
 import httpx
 import pytest
+
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
 
 # ============================================================================
 # Configuration

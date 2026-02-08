@@ -14,13 +14,12 @@ Features:
 """
 
 import asyncio
-from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
 from tracertm.models.base import Base
 from tracertm.models.item import Item
 from tracertm.models.link import Link

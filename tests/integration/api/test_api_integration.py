@@ -14,8 +14,6 @@ import tempfile
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO, HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR, HTTP_NOT_FOUND, HTTP_OK
-
 
 import httpx
 import pytest
@@ -24,6 +22,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
+from tests.test_constants import (
+    COUNT_FIVE,
+    COUNT_THREE,
+    COUNT_TWO,
+    HTTP_BAD_REQUEST,
+    HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_NOT_FOUND,
+    HTTP_OK,
+)
 from tracertm.api.client import BatchResult, TraceRTMClient
 from tracertm.api.main import app, get_db
 from tracertm.api.sync_client import (

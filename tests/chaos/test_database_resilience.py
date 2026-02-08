@@ -8,13 +8,12 @@ Uses unittest.mock to simulate failures without requiring live infrastructure.
 
 from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_THREE
-
 
 import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 
+from tests.test_constants import COUNT_THREE
 from tracertm.core.concurrency import ConcurrencyError, update_with_retry
 from tracertm.database.connection import DatabaseConnection
 

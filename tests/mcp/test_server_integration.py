@@ -9,12 +9,12 @@ Tests cover:
 """
 
 from __future__ import annotations
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import os
 
 import pytest
+
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 
 # ============================================================================
 # Fixtures

@@ -5,13 +5,12 @@ import hmac
 import json
 import pathlib
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR, HTTP_UNAUTHORIZED
-
 
 import pytest
 from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR, HTTP_UNAUTHORIZED
 from tracertm.api.handlers.webhooks import (
     github_app_webhook,
     handle_installation_created,

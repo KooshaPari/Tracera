@@ -15,11 +15,10 @@ Coverage Areas:
 
 from datetime import datetime
 from unittest.mock import AsyncMock, Mock
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
 from tracertm.models.item import Item
 from tracertm.services.item_service import STATUS_TRANSITIONS, ItemService
 

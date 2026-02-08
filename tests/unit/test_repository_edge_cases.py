@@ -6,12 +6,11 @@ Coverage Goal: Increase repository coverage with edge cases
 """
 
 from unittest.mock import AsyncMock, MagicMock
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_TWO
 from tracertm.models.link import Link
 from tracertm.repositories.link_repository import LinkRepository
 

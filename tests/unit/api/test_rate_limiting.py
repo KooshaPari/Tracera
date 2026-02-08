@@ -6,11 +6,11 @@ Tests rate limiting mechanisms, throttling, and quota management.
 import time
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
-from tests.test_constants import COUNT_TEN, HTTP_TOO_MANY_REQUESTS
-
 
 import pytest
 from fastapi.testclient import TestClient
+
+from tests.test_constants import COUNT_TEN, HTTP_TOO_MANY_REQUESTS
 
 
 @pytest.fixture

@@ -3,12 +3,11 @@
 Tests: Model creation, properties, relationships
 """
 
+from tests.test_constants import COUNT_TWO
 from tracertm.models.agent import Agent
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
-from tests.test_constants import COUNT_TWO
-
 
 
 class TestItemModelComprehensive:

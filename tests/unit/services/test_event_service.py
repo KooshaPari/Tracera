@@ -3,11 +3,10 @@
 from datetime import datetime
 from unittest.mock import AsyncMock
 from uuid import uuid4
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_TWO
 from tracertm.models.event import Event
 from tracertm.services.event_service import EventService
 

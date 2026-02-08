@@ -1,11 +1,10 @@
 """Unit tests for tracertm.agent.types."""
 
 from datetime import UTC, datetime, timezone
-from tests.test_constants import COUNT_FOUR, COUNT_TEN, COUNT_THREE
-
 
 import pytest
 
+from tests.test_constants import COUNT_FOUR, COUNT_TEN, COUNT_THREE
 from tracertm.agent.types import (
     ExecutionRequest,
     ExecutionResult,

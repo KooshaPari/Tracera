@@ -12,11 +12,10 @@ Tests cover:
 
 from datetime import datetime
 from pathlib import Path
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
 from tracertm.storage.markdown_parser import (
     ItemData,
     LinkData,

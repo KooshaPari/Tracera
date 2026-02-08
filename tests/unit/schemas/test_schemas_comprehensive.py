@@ -11,12 +11,11 @@ Tests all schemas in tracertm.schemas:
 """
 
 from datetime import datetime
-from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR
-
 
 import pytest
 from pydantic import ValidationError
 
+from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR
 from tracertm.schemas.event import EventCreate, EventResponse
 from tracertm.schemas.item import ItemCreate, ItemResponse, ItemUpdate
 from tracertm.schemas.link import LinkCreate, LinkResponse

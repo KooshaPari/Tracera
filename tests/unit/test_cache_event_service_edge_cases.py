@@ -8,11 +8,10 @@ Coverage Goal: Increase coverage by testing edge cases
 import json
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
 from tracertm.services.cache_service import CacheService, CacheStats
 from tracertm.services.event_service import EventService
 

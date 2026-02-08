@@ -5,11 +5,10 @@ Target: +1% coverage on logging initialization paths
 
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-from tests.test_constants import COUNT_THREE
-
 
 import pytest
 
+from tests.test_constants import COUNT_THREE
 from tracertm.logging_config import get_logger
 
 

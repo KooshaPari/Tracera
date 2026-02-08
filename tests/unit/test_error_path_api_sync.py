@@ -14,13 +14,12 @@ import pathlib
 from datetime import UTC, datetime
 from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
-
 
 import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
 from tracertm.api.client import TraceRTMClient
 from tracertm.models.item import Item
 from tracertm.repositories.item_repository import ItemRepository

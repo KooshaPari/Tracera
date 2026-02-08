@@ -8,12 +8,12 @@ These tests validate complete workflows:
 """
 
 from __future__ import annotations
-from tests.test_constants import COUNT_TEN
-
 
 import os
 
 import pytest
+
+from tests.test_constants import COUNT_TEN
 
 # ============================================================================
 # Fixtures

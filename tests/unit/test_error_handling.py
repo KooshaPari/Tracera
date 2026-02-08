@@ -4,6 +4,7 @@ Story 1.6: Error Handling & User-Friendly Messages
 Test Cases: TC-1.6.1 to TC-1.6.7
 """
 
+from tests.test_constants import COUNT_TEN
 from tracertm.cli.errors import (
     ConfigurationError,
     DatabaseConnectionError,
@@ -15,8 +16,6 @@ from tracertm.cli.errors import (
     format_validation_error,
     handle_error,
 )
-from tests.test_constants import COUNT_TEN
-
 
 
 class TestErrorHandling:

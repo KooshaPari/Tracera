@@ -1,11 +1,10 @@
 import asyncio
 from types import SimpleNamespace
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
 from fastmcp.exceptions import ToolError
 
+from tests.test_constants import COUNT_TWO
 from tracertm.mcp.tools import param as param_tools
 
 

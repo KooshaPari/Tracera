@@ -12,11 +12,10 @@ Tests cover:
 import asyncio
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
-from tests.test_constants import COUNT_FIVE
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE
 from tracertm.storage.conflict_resolver import ConflictStrategy
 from tracertm.storage.sync_engine import (
     ChangeDetector,

@@ -15,13 +15,12 @@ Total: 50+ comprehensive failure scenario tests
 """
 
 from typing import cast
-from tests.test_constants import COUNT_TEN
-
 
 import pytest
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
 
+from tests.test_constants import COUNT_TEN
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project

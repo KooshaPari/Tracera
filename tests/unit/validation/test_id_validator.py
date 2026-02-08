@@ -1,9 +1,8 @@
 """Tests for UUID validation utilities."""
 
 import pytest
+
 from tests.test_constants import COUNT_FIVE, COUNT_FOUR
-
-
 from tracertm.validation.id_validator import (
     generate_uuid,
     is_valid_uuid,

@@ -16,13 +16,12 @@ Coverage Strategy: Happy paths, edge cases, error scenarios, concurrent operatio
 """
 
 from datetime import UTC, datetime, timedelta
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
 from tracertm.models.agent import Agent
 from tracertm.models.event import Event
 from tracertm.models.item import Item

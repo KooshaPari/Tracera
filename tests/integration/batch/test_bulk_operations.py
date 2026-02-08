@@ -1,8 +1,8 @@
 """Integration tests for Epic 2: Bulk Operations (Story 2.8, FR14)."""
 
 import pytest
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
 
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
 
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session

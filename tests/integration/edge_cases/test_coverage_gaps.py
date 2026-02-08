@@ -16,13 +16,19 @@ Focus areas:
 
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
-from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK, HTTP_TOO_MANY_REQUESTS
-
 
 import httpx
 import pytest
 from sqlalchemy.exc import IntegrityError, OperationalError
 
+from tests.test_constants import (
+    COUNT_FIVE,
+    COUNT_THREE,
+    COUNT_TWO,
+    HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_OK,
+    HTTP_TOO_MANY_REQUESTS,
+)
 from tracertm.api.sync_client import (
     ApiClient,
     ApiConfig,

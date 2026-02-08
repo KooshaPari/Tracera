@@ -1,10 +1,9 @@
 from types import SimpleNamespace
 from typing import Never
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.models.item import Item
 from tracertm.services.bulk_operation_service import BulkOperationService
 

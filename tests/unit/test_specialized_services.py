@@ -2,7 +2,6 @@
 from tests.test_constants import COUNT_TWO
 
 
-
 class TestTraceabilityMatrix:
     """Test traceability matrix service."""
 

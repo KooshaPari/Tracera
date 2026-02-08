@@ -1,52 +1,37 @@
-import type { Contract, ContractActivity, ContractStats, ContractStatus, ContractType } from '@tracertm/types';
+import type * as Types from '@tracertm/types';
 
-import { API_URL, assignDefined, getAuthHeaders, withFallback } from './base';
-import {
-  asContractConditions,
-  asContractStatus,
-  asContractTransitions,
-  asContractType,
-  asNumber,
-  asNumberRecord,
-  asOptionalString,
-  asOptionalStringArray,
-  asRecord,
-  asRecordArray,
-  asSpecLanguage,
-  asString,
-  buildVerificationResult,
-  toApiRecord,
-} from './decoders';
+import * as base from './base';
+import * as decoders from './decoders';
 
 // =============================================================================
 // Transform
 // =============================================================================
 
-function transformContract(data: Record<string, unknown>): Contract {
+function transformContract(data: Record<string, unknown>): Types.Contract {
   return {
-    contractNumber: asString(data['contract_number']),
-    contractType: asContractType(data['contract_type']),
-    createdAt: asString(data['created_at']),
-    description: asOptionalString(data['description']),
-    executableSpec: asOptionalString(data['executable_spec']),
-    id: asString(data['id']),
-    initialState: asOptionalString(data['initial_state']),
-    invariants: asContractConditions(data['invariants']),
-    itemId: asString(data['item_id']),
-    lastVerifiedAt: asOptionalString(data['last_verified_at']),
-    metadata: asRecord(data['metadata']),
-    postconditions: asContractConditions(data['postconditions']),
-    preconditions: asContractConditions(data['preconditions']),
-    projectId: asString(data['project_id']),
-    specLanguage: asSpecLanguage(data['spec_language']),
-    states: asOptionalStringArray(data['states']),
-    status: asContractStatus(data['status']),
-    tags: asOptionalStringArray(data['tags']),
-    title: asString(data['title']),
-    transitions: asContractTransitions(data['transitions']),
-    updatedAt: asString(data['updated_at']),
-    verificationResult: buildVerificationResult(data['verification_result']),
-    version: asNumber(data['version']),
+    contractNumber: decoders.asString(data['contract_number']),
+    contractType: decoders.asContractType(data['contract_type']),
+    createdAt: decoders.asString(data['created_at']),
+    description: decoders.asOptionalString(data['description']),
+    executableSpec: decoders.asOptionalString(data['executable_spec']),
+    id: decoders.asString(data['id']),
+    initialState: decoders.asOptionalString(data['initial_state']),
+    invariants: decoders.asContractConditions(data['invariants']),
+    itemId: decoders.asString(data['item_id']),
+    lastVerifiedAt: decoders.asOptionalString(data['last_verified_at']),
+    metadata: decoders.asRecord(data['metadata']),
+    postconditions: decoders.asContractConditions(data['postconditions']),
+    preconditions: decoders.asContractConditions(data['preconditions']),
+    projectId: decoders.asString(data['project_id']),
+    specLanguage: decoders.asSpecLanguage(data['spec_language']),
+    states: decoders.asOptionalStringArray(data['states']),
+    status: decoders.asContractStatus(data['status']),
+    tags: decoders.asOptionalStringArray(data['tags']),
+    title: decoders.asString(data['title']),
+    transitions: decoders.asContractTransitions(data['transitions']),
+    updatedAt: decoders.asString(data['updated_at']),
+    verificationResult: decoders.buildVerificationResult(data['verification_result']),
+    version: decoders.asNumber(data['version']),
   };
 }
 
@@ -56,14 +41,14 @@ function transformContract(data: Record<string, unknown>): Contract {
 
 interface ContractFilters {
   projectId: string;
-  status?: ContractStatus;
-  contractType?: ContractType;
+  status?: Types.ContractStatus;
+  contractType?: Types.ContractType;
   search?: string;
 }
 
 async function fetchContracts(
   filters: ContractFilters,
-): Promise<{ contracts: Contract[]; total: number }> {
+): Promise<{ contracts: Types.Contract[]; total: number }> {
   const params = new URLSearchParams();
   params.set('project_id', filters.projectId);
   if (filters.status !== undefined) {
@@ -76,28 +61,30 @@ async function fetchContracts(
     params.set('search', filters.search);
   }
 
-  const res = await fetch(`${API_URL}/api/v1/contracts?${params}`, {
-    headers: { 'X-Bulk-Operation': 'true', ...getAuthHeaders() },
+  const res = await fetch(`${base.API_URL}/api/v1/contracts?${params}`, {
+    headers: { 'X-Bulk-Operation': 'true', ...base.getAuthHeaders() },
   });
   if (!res.ok) {
     const errorText = await res.text();
     throw new Error(`Failed to fetch contracts: ${res.status} ${errorText}`);
   }
-  const data = toApiRecord(await res.json());
+  const data = decoders.toApiRecord(await res.json());
   return {
-    contracts: asRecordArray(data['contracts']).map((entry) => transformContract(entry)),
-    total: asNumber(data['total']),
+    contracts: decoders
+      .asRecordArray(data['contracts'])
+      .map((entry) => transformContract(entry)),
+    total: decoders.asNumber(data['total']),
   };
 }
 
-async function fetchContract(id: string): Promise<Contract> {
-  const res = await fetch(`${API_URL}/api/v1/contracts/${id}`, {
-    headers: getAuthHeaders(),
+async function fetchContract(id: string): Promise<Types.Contract> {
+  const res = await fetch(`${base.API_URL}/api/v1/contracts/${id}`, {
+    headers: base.getAuthHeaders(),
   });
   if (!res.ok) {
     throw new Error('Failed to fetch contract');
   }
-  const data = toApiRecord(await res.json());
+  const data = decoders.toApiRecord(await res.json());
   return transformContract(data);
 }
 
@@ -106,7 +93,7 @@ interface CreateContractData {
   itemId: string;
   title: string;
   description?: string;
-  contractType: ContractType;
+  contractType: Types.ContractType;
   preconditions: unknown[];
   postconditions: unknown[];
   invariants: unknown[];
@@ -117,36 +104,36 @@ interface CreateContractData {
 async function createContract(
   data: CreateContractData,
 ): Promise<{ id: string; contractNumber: string }> {
-  const res = await fetch(`${API_URL}/api/v1/contracts`, {
+  const res = await fetch(`${base.API_URL}/api/v1/contracts`, {
     body: JSON.stringify({
       contract_type: data['contractType'],
       description: data['description'],
       invariants: data['invariants'],
       item_id: data['itemId'],
-      metadata: withFallback(data['metadata'], {}),
+      metadata: base.withFallback(data['metadata'], {}),
       postconditions: data['postconditions'],
       preconditions: data['preconditions'],
       project_id: data['projectId'],
       tags: data['tags'],
       title: data['title'],
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json', ...base.getAuthHeaders() },
     method: 'POST',
   });
   if (!res.ok) {
     throw new Error('Failed to create contract');
   }
-  const result = toApiRecord(await res.json());
+  const result = decoders.toApiRecord(await res.json());
   return {
-    contractNumber: asString(result['contract_number']),
-    id: asString(result['id']),
+    contractNumber: decoders.asString(result['contract_number']),
+    id: decoders.asString(result['id']),
   };
 }
 
 interface UpdateContractData {
   title?: string;
   description?: string;
-  status?: ContractStatus;
+  status?: Types.ContractStatus;
   preconditions?: unknown[];
   postconditions?: unknown[];
   invariants?: unknown[];
@@ -159,7 +146,7 @@ async function updateContract(
   data: UpdateContractData,
 ): Promise<{ id: string; version: number }> {
   const body: Record<string, unknown> = {};
-  assignDefined(body, [
+  base.assignDefined(body, [
     ['title', data['title']],
     ['description', data['description']],
     ['status', data['status']],
@@ -170,21 +157,24 @@ async function updateContract(
     ['metadata', data['metadata']],
   ]);
 
-  const res = await fetch(`${API_URL}/api/v1/contracts/${id}`, {
+  const res = await fetch(`${base.API_URL}/api/v1/contracts/${id}`, {
     body: JSON.stringify(body),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json', ...base.getAuthHeaders() },
     method: 'PATCH',
   });
   if (!res.ok) {
     throw new Error('Failed to update contract');
   }
-  const result = toApiRecord(await res.json());
-  return { id: asString(result['id']), version: asNumber(result['version']) };
+  const result = decoders.toApiRecord(await res.json());
+  return {
+    id: decoders.asString(result['id']),
+    version: decoders.asNumber(result['version']),
+  };
 }
 
 async function deleteContract(id: string): Promise<void> {
-  const res = await fetch(`${API_URL}/api/v1/contracts/${id}`, {
-    headers: getAuthHeaders(),
+  const res = await fetch(`${base.API_URL}/api/v1/contracts/${id}`, {
+    headers: base.getAuthHeaders(),
     method: 'DELETE',
   });
   if (!res.ok) {
@@ -194,70 +184,70 @@ async function deleteContract(id: string): Promise<void> {
 
 async function verifyContract(id: string): Promise<{
   id: string;
-  status: ContractStatus;
+  status: Types.ContractStatus;
   verificationResult: {
     status: string;
     passedConditions: number;
     failedConditions: number;
   };
 }> {
-  const res = await fetch(`${API_URL}/api/v1/contracts/${id}/verify`, {
+  const res = await fetch(`${base.API_URL}/api/v1/contracts/${id}/verify`, {
     body: JSON.stringify({}),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json', ...base.getAuthHeaders() },
     method: 'POST',
   });
   if (!res.ok) {
     throw new Error('Failed to verify contract');
   }
-  const result = toApiRecord(await res.json());
-  const verificationResult = toApiRecord(result['verification_result']);
+  const result = decoders.toApiRecord(await res.json());
+  const verificationResult = decoders.toApiRecord(result['verification_result']);
   return {
-    id: asString(result['id']),
-    status: asContractStatus(result['status']),
+    id: decoders.asString(result['id']),
+    status: decoders.asContractStatus(result['status']),
     verificationResult: {
-      status: asString(verificationResult['status']),
-      passedConditions: asNumber(verificationResult['passed_conditions']),
-      failedConditions: asNumber(verificationResult['failed_conditions']),
+      status: decoders.asString(verificationResult['status']),
+      passedConditions: decoders.asNumber(verificationResult['passed_conditions']),
+      failedConditions: decoders.asNumber(verificationResult['failed_conditions']),
     },
   };
 }
 
-async function fetchContractActivities(contractId: string): Promise<ContractActivity[]> {
-  const res = await fetch(`${API_URL}/api/v1/contracts/${contractId}/activities`, {
-    headers: getAuthHeaders(),
+async function fetchContractActivities(contractId: string): Promise<Types.ContractActivity[]> {
+  const res = await fetch(`${base.API_URL}/api/v1/contracts/${contractId}/activities`, {
+    headers: base.getAuthHeaders(),
   });
   if (!res.ok) {
     throw new Error('Failed to fetch contract activities');
   }
-  const data = toApiRecord(await res.json());
-  const activities = asRecordArray(data['activities']);
+  const data = decoders.toApiRecord(await res.json());
+  const activities = decoders.asRecordArray(data['activities']);
   return activities.map((activity) => ({
-    activityType: asString(activity['activity_type']),
-    contractId: asString(activity['contract_id']),
-    createdAt: asString(activity['created_at']),
-    description: asOptionalString(activity['description']),
-    fromValue: asOptionalString(activity['from_value']),
-    id: asString(activity['id']),
-    performedBy: asOptionalString(activity['performed_by']),
-    toValue: asOptionalString(activity['to_value']),
+    activityType: decoders.asString(activity['activity_type']),
+    contractId: decoders.asString(activity['contract_id']),
+    createdAt: decoders.asString(activity['created_at']),
+    description: decoders.asOptionalString(activity['description']),
+    fromValue: decoders.asOptionalString(activity['from_value']),
+    id: decoders.asString(activity['id']),
+    performedBy: decoders.asOptionalString(activity['performed_by']),
+    toValue: decoders.asOptionalString(activity['to_value']),
   }));
 }
 
-async function fetchContractStats(projectId: string): Promise<ContractStats> {
-  const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/contracts/stats`, {
-    headers: getAuthHeaders(),
+async function fetchContractStats(projectId: string): Promise<Types.ContractStats> {
+  const res = await fetch(`${base.API_URL}/api/v1/projects/${projectId}/contracts/stats`, {
+    headers: base.getAuthHeaders(),
   });
   if (!res.ok) {
     throw new Error('Failed to fetch contract stats');
   }
-  const data = toApiRecord(await res.json());
+  const data = decoders.toApiRecord(await res.json());
   return {
-    byStatus: asNumberRecord(data['by_status']),
-    byType: asNumberRecord(data['by_type']),
-    projectId: asString(data['project_id']),
-    total: asNumber(data['total']),
-    verificationRate: asNumber(data['verification_rate']),
-    violationCount: asNumber(data['violation_count']),
+    byStatus: decoders.asNumberRecord(data['by_status']),
+    byType: decoders.asNumberRecord(data['by_type']),
+    projectId: decoders.asString(data['project_id']),
+    total: decoders.asNumber(data['total']),
+    verificationRate: decoders.asNumber(data['verification_rate']),
+    violationCount: decoders.asNumber(data['violation_count']),
   };
 }
 
@@ -274,4 +264,3 @@ export {
   type CreateContractData,
   type UpdateContractData,
 };
-

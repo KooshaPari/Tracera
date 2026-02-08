@@ -1,8 +1,8 @@
 """Integration tests for Epic 4: Dependency Detection (Story 4.6, FR22, NFR-R2)."""
 
 import pytest
-from tests.test_constants import COUNT_TWO
 
+from tests.test_constants import COUNT_TWO
 
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session

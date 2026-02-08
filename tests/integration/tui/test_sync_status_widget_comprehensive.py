@@ -10,10 +10,10 @@ Test count: 30+ tests across all functionality
 
 from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, patch
-from tests.test_constants import COUNT_FIVE, COUNT_THREE
-
 
 import pytest
+
+from tests.test_constants import COUNT_FIVE, COUNT_THREE
 
 # Skip all tests if Textual not available
 pytest.importorskip("textual")

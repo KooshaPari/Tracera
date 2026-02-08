@@ -5,13 +5,12 @@ Comprehensive test coverage for test coverage traceability operations.
 
 from datetime import datetime
 from uuid import uuid4
-from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
 from tracertm.models import test_case as tc_models
 from tracertm.models import test_coverage as cov_models
 

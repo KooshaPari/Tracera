@@ -11,11 +11,10 @@ Tests for:
 import asyncio
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_FIVE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE, COUNT_TWO
 from tracertm.storage.sync_engine import (
     ChangeDetector,
     EntityType,

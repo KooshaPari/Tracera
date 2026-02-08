@@ -1,6 +1,6 @@
 import pytest
-from tests.test_constants import COUNT_TEN
 
+from tests.test_constants import COUNT_TEN
 
 # Remove direct import of models that might trigger table re-definition issues if not handled carefully in tests
 # from src.tracertm.models.item import Item, ItemStatus, ItemType, ItemView

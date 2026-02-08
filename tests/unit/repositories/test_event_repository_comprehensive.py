@@ -11,12 +11,11 @@ This file covers all missing functionality identified in coverage analysis:
 import asyncio
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.project_repository import ProjectRepository
 

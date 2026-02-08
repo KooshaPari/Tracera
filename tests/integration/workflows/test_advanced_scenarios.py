@@ -27,13 +27,12 @@ Total: 50+ advanced integration scenario tests
 
 from datetime import datetime
 from uuid import uuid4
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project

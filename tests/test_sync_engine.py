@@ -10,11 +10,10 @@ Tests basic functionality of the sync engine including:
 import hashlib
 from pathlib import Path
 from unittest.mock import MagicMock
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.storage import (
     ChangeDetector,
     EntityType,

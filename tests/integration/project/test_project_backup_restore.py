@@ -1,8 +1,8 @@
 """Integration tests for Epic 6: Project Backup & Restore (Story 6.6, FR53)."""
 
 import pytest
-from tests.test_constants import COUNT_TWO
 
+from tests.test_constants import COUNT_TWO
 
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session

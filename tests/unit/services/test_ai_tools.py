@@ -7,11 +7,10 @@ import os
 import pathlib
 import tempfile
 from unittest.mock import AsyncMock, patch
-from tests.test_constants import COUNT_FIVE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE, COUNT_TWO
 from tracertm.services.ai_tools import (
     TOOLS,
     execute_tool,

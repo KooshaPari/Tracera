@@ -9,8 +9,8 @@ Complete coverage of complex service algorithms:
 """
 
 from datetime import datetime, timedelta
-from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO
 
+from tests.test_constants import COUNT_FOUR, COUNT_THREE, COUNT_TWO
 
 
 class TestImpactAnalysisServiceInternals:

@@ -2,11 +2,10 @@
 
 import asyncio
 from datetime import UTC, datetime, timezone
-from tests.test_constants import COUNT_FIVE, COUNT_TEN
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE, COUNT_TEN
 from tracertm.infrastructure.event_bus import EventBus
 from tracertm.infrastructure.nats_client import NATSClient
 

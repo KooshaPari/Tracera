@@ -9,10 +9,10 @@ from datetime import datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
+
+from tests.test_constants import COUNT_TWO
 
 # Skip all tests if Textual not available
 pytest.importorskip("textual")

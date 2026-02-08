@@ -10,9 +10,8 @@ Tests full workflow including:
 
 import pytest
 import pytest_asyncio
+
 from tests.test_constants import COUNT_FIVE, COUNT_THREE
-
-
 from tracertm.models.blockchain import (
     BaselineItem,
     MerkleProofCache,

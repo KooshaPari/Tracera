@@ -1,11 +1,10 @@
 import time
 from typing import Never
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.orm.exc import StaleDataError
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.services.concurrent_operations_service import (
     ConcurrencyError,
     ConcurrentOperationsService,

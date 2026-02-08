@@ -9,11 +9,10 @@ Target: +4-5% coverage (45-60 tests)
 
 from datetime import UTC, datetime, timezone
 from typing import Any
-from tests.test_constants import COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO
 from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link

@@ -5,13 +5,12 @@ Comprehensive tests covering Linear App installation CRUD operations.
 
 from datetime import datetime
 from uuid import uuid4
-from tests.test_constants import COUNT_FOUR, COUNT_THREE
-
 
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_FOUR, COUNT_THREE
 from tracertm.models.linear_app import LinearAppInstallation
 from tracertm.repositories.account_repository import AccountRepository
 from tracertm.repositories.linear_app_repository import LinearAppInstallationRepository

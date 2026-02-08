@@ -2,12 +2,11 @@
 
 import tempfile
 from pathlib import Path
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 import yaml
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.storage import LocalStorageManager
 
 

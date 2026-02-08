@@ -5,12 +5,11 @@ and correct response structure with minimal but effective mocking.
 """
 
 from unittest.mock import AsyncMock, patch
-from tests.test_constants import HTTP_NOT_FOUND, HTTP_OK, HTTP_UNAUTHORIZED
-
 
 import pytest
 from fastapi.testclient import TestClient
 
+from tests.test_constants import HTTP_NOT_FOUND, HTTP_OK, HTTP_UNAUTHORIZED
 from tracertm.api.main import app
 
 client = TestClient(app)

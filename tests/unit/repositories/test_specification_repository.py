@@ -5,13 +5,12 @@ Comprehensive test coverage for specification CRUD and query operations.
 
 from datetime import UTC, datetime
 from uuid import uuid4
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.project_repository import ProjectRepository

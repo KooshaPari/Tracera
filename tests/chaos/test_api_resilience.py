@@ -9,12 +9,11 @@ Uses unittest.mock to simulate httpx failures without a live Go backend.
 
 from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import httpx
 import pytest
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.clients.go_client import GoBackendClient, GoBackendError
 
 

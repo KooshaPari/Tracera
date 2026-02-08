@@ -7,8 +7,6 @@ Tests automatic reconnection, retry logic, and graceful degradation.
 import asyncio
 import logging
 import time
-from tests.test_constants import HTTP_OK
-
 
 import httpx
 import pytest
@@ -17,6 +15,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, OperationalError
 
 from tests.chaos.toxiproxy_client import ToxiproxyClient
+from tests.test_constants import HTTP_OK
 
 logger = logging.getLogger(__name__)
 

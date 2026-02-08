@@ -13,6 +13,8 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from typing import Any
+
 from hooks import (
     auggie_pre_discovery,
     claude_cli_pre_discovery,
@@ -20,7 +22,6 @@ from hooks import (
     droid_pre_discovery,
 )
 from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
-from typing import Any
 
 
 class MockSearchService:

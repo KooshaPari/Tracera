@@ -12,14 +12,20 @@ Coverage target: 90%+ for entire API module
 import json
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_TOO_MANY_REQUESTS
-
 
 import httpx
 import pytest
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import StaleDataError
 
+from tests.test_constants import (
+    COUNT_FIVE,
+    COUNT_FOUR,
+    COUNT_THREE,
+    COUNT_TWO,
+    HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_TOO_MANY_REQUESTS,
+)
 from tracertm.api.client import TraceRTMClient
 from tracertm.api.sync_client import (
     ApiClient,

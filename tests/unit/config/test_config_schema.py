@@ -5,9 +5,8 @@ Target: +1% coverage on schema validation paths
 
 import pytest
 from pydantic import ValidationError
+
 from tests.test_constants import COUNT_TEN, COUNT_THREE, HTTP_INTERNAL_SERVER_ERROR
-
-
 from tracertm.config.schema import Config
 
 

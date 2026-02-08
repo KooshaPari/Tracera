@@ -12,11 +12,10 @@ Focus areas:
 import asyncio
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, Mock
-from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
-
 
 import pytest
 
+from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.services.item_service import ItemService

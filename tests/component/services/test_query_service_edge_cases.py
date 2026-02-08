@@ -13,11 +13,10 @@ Target: 90%+ coverage for query_service.py
 
 import asyncio
 from unittest.mock import AsyncMock
-from tests.test_constants import COUNT_FIVE, COUNT_TEN
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE, COUNT_TEN
 from tracertm.services.query_service import QueryService
 
 

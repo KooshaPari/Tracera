@@ -9,12 +9,11 @@ This file covers all missing functionality identified in coverage analysis:
 """
 
 from uuid import uuid4
-from tests.test_constants import COUNT_THREE
-
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_THREE
 from tracertm.repositories.project_repository import ProjectRepository
 
 

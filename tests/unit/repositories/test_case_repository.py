@@ -22,12 +22,11 @@ Tests for:
 """
 
 from uuid import uuid4
-from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.repositories import test_case_repository as tc_repo
 from tracertm.repositories.project_repository import ProjectRepository

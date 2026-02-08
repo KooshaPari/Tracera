@@ -5,10 +5,10 @@ Tests for API key generation, validation, rotation, and security.
 
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import patch
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
+
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 
 
 @pytest.fixture

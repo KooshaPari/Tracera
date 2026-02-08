@@ -6,8 +6,6 @@ Verifies that applications handle slow networks gracefully and recover within SL
 
 import logging
 import time
-from tests.test_constants import HTTP_OK
-
 
 import httpx
 import pytest
@@ -15,6 +13,7 @@ import redis.asyncio as redis
 from sqlalchemy import text
 
 from tests.chaos.toxiproxy_client import ToxiproxyClient
+from tests.test_constants import HTTP_OK
 
 logger = logging.getLogger(__name__)
 

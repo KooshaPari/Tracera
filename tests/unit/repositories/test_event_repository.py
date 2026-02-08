@@ -1,12 +1,11 @@
 """Unit tests for EventRepository."""
 
 from datetime import UTC, datetime, timezone
-from tests.test_constants import COUNT_FIVE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.test_constants import COUNT_FIVE, COUNT_TWO
 from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.project_repository import ProjectRepository
 

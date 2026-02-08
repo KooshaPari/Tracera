@@ -6,10 +6,10 @@ and token management scenarios.
 
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import patch
-from tests.test_constants import COUNT_THREE
-
 
 import pytest
+
+from tests.test_constants import COUNT_THREE
 
 
 @pytest.fixture

@@ -2,14 +2,13 @@ from datetime import UTC, datetime, timezone
 from types import SimpleNamespace
 from typing import cast
 from uuid import uuid4
-from tests.test_constants import COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_NOT_FOUND, HTTP_OK
-
 
 import pytest
 import pytest_asyncio
 from fastapi import HTTPException
 from httpx import ASGITransport, AsyncClient
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_NOT_FOUND, HTTP_OK
 from tracertm.api import main
 
 

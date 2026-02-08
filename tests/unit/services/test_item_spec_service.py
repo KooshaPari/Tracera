@@ -1,9 +1,8 @@
 """Tests for item_spec_service module."""
 
 import pytest
+
 from tests.test_constants import COUNT_TWO
-
-
 from tracertm.services.item_spec_service import (
     RequirementQualityAnalyzer,
     TestSpecFlakinessDector,

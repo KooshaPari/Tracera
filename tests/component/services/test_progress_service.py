@@ -1,9 +1,9 @@
 from datetime import UTC, datetime, timedelta, timezone
-from tests.test_constants import COUNT_TWO
-
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+
+from tests.test_constants import COUNT_TWO
 
 # Import ALL models to ensure they're registered with Base.metadata
 from tracertm.models.base import Base

@@ -12,12 +12,11 @@ and edge cases to achieve 100% coverage.
 """
 
 from datetime import UTC, datetime, timedelta, timezone
-from tests.test_constants import COUNT_THREE, COUNT_TWO
-
 
 import pytest
 import pytest_asyncio
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO
 from tracertm.services.api_webhooks_service import APIWebhooksService
 from tracertm.services.commit_linking_service import CommitLinkingService
 from tracertm.services.documentation_service import DocumentationService

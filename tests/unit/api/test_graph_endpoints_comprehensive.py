@@ -5,12 +5,12 @@ Tests:
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_THREE, COUNT_TWO, HTTP_OK
-
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from tests.test_constants import COUNT_THREE, COUNT_TWO, HTTP_OK
 
 
 @pytest.fixture

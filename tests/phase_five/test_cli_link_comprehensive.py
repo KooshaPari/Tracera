@@ -10,13 +10,12 @@ from collections.abc import Generator
 from pathlib import Path
 from typing import cast
 from unittest.mock import patch
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TWO
-
 
 import pytest
 from sqlalchemy.orm import Session
 from typer.testing import CliRunner
 
+from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TWO
 from tracertm.cli.commands.link import app as link_app
 from tracertm.models.item import Item
 from tracertm.models.link import Link

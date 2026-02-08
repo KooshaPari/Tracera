@@ -9,12 +9,11 @@ import asyncio
 from pathlib import Path
 from typing import Never
 from unittest.mock import Mock, mock_open, patch
-from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
-
 
 import pytest
 from sqlalchemy import create_engine
 
+from tests.test_constants import COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
 from tracertm.core.concurrency import ConcurrencyError, update_with_retry
 from tracertm.core.config import Config, DatabaseConfig, UIConfig, get_config, set_config
 from tracertm.models.types import JSONType

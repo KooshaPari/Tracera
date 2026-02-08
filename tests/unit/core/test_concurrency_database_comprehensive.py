@@ -13,13 +13,12 @@ Focuses on:
 import asyncio
 import threading
 from typing import Never
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
 from tracertm.core.concurrency import ConcurrencyError, update_with_retry
 from tracertm.database.connection import DatabaseConnection, get_session
 

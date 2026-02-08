@@ -1,9 +1,8 @@
 from datetime import UTC, datetime, timedelta, timezone
-from tests.test_constants import COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_TWO
 from tracertm.models.agent import Agent
 from tracertm.models.event import Event
 from tracertm.models.project import Project

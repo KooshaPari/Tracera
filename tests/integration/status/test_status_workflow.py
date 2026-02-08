@@ -1,8 +1,8 @@
 """Integration tests for Epic 2: Status Workflow (Story 2.7, FR13)."""
 
 import pytest
-from tests.test_constants import COUNT_TWO
 
+from tests.test_constants import COUNT_TWO
 
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session

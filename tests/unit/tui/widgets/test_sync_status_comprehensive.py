@@ -7,10 +7,10 @@ Coverage target: 80%+ (313 lines total)
 
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
+
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
 
 # Skip all tests if Textual not available
 pytest.importorskip("textual")

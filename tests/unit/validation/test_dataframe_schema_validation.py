@@ -7,8 +7,8 @@ Tests for:
 """
 
 import pytest
-from tests.test_constants import COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
 
+from tests.test_constants import COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
 
 pd = pytest.importorskip("pandas")
 

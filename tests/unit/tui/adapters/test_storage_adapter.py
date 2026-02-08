@@ -9,11 +9,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Never
 from unittest.mock import AsyncMock, MagicMock, patch
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
-
 
 import pytest
 
+from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO
 from tracertm.models import Item, Link, Project
 from tracertm.storage.sync_engine import SyncState, SyncStatus
 from tracertm.tui.adapters.storage_adapter import StorageAdapter

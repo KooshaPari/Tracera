@@ -12,8 +12,8 @@ Target: Additional +0.5-1% coverage
 import os
 from unittest.mock import patch
 from uuid import uuid4
-from tests.test_constants import COUNT_THREE, HTTP_INTERNAL_SERVER_ERROR
 
+from tests.test_constants import COUNT_THREE, HTTP_INTERNAL_SERVER_ERROR
 
 
 class TestCommandLineArgumentEdgeCases:

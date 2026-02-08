@@ -1,8 +1,8 @@
 """Integration tests for Epic 5: Batch Operations (Story 5.5, FR44)."""
 
 import pytest
-from tests.test_constants import COUNT_TEN, COUNT_TWO
 
+from tests.test_constants import COUNT_TEN, COUNT_TWO
 
 pytestmark = pytest.mark.integration
 

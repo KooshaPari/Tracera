@@ -10,11 +10,11 @@ Tests measure performance under concurrent load:
 
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR
-
 
 import pytest
 from sqlalchemy.orm import sessionmaker
+
+from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR
 
 pytestmark = pytest.mark.performance
 
