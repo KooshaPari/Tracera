@@ -153,6 +153,11 @@ class ADRService:
     """Service for Architecture Decision Records."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def create(
@@ -313,6 +318,11 @@ class ContractService:
     """Service for Design-by-Contract specifications."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def create(
@@ -484,6 +494,11 @@ class FeatureService:
     """Service for BDD Features."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def create(
@@ -627,6 +642,11 @@ class ScenarioService:
     """Service for BDD Scenarios."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def create(
@@ -794,6 +814,11 @@ class StepDefinitionService:
     """Service for BDD Step Definitions."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def create(
@@ -821,42 +846,42 @@ class StepDefinitionService:
 
     async def find_matching(
         self,
-        project_id: str,
-        step_text: str,
-        step_type: str | None = None,
+        project_id: str,  # noqa: ARG002 - reserved for future implementation
+        step_text: str,  # noqa: ARG002 - reserved for future implementation
+        step_type: str | None = None,  # noqa: ARG002 - reserved for future implementation
     ) -> list[dict[str, Any]]:
         """Find step definitions matching text (mock implementation)."""
         # In a real implementation, this would query database with pattern matching
         # For now, return empty list as placeholder
         return []
 
-    async def get(self, step_id: str) -> dict[str, Any] | None:
+    async def get(self, step_id: str) -> dict[str, Any] | None:  # noqa: ARG002 - reserved for future implementation
         """Get Step Definition by ID."""
         # Placeholder implementation
         return None
 
     async def list_by_project(
         self,
-        project_id: str,
-        step_type: str | None = None,
-        skip: int = DEFAULT_OFFSET,
-        limit: int = DEFAULT_LIMIT,
+        project_id: str,  # noqa: ARG002 - reserved for future implementation
+        step_type: str | None = None,  # noqa: ARG002 - reserved for future implementation
+        skip: int = DEFAULT_OFFSET,  # noqa: ARG002 - reserved for future implementation
+        limit: int = DEFAULT_LIMIT,  # noqa: ARG002 - reserved for future implementation
     ) -> tuple[list[dict[str, Any]], int]:
         """List step definitions for a project."""
         # Placeholder implementation
         return [], 0
 
-    async def update(self, step_id: str, **updates: Any) -> dict[str, Any] | None:
+    async def update(self, step_id: str, **updates: Any) -> dict[str, Any] | None:  # noqa: ARG002 - reserved for future implementation
         """Update a Step Definition."""
         # Placeholder implementation
         return None
 
-    async def delete(self, step_id: str) -> bool:
+    async def delete(self, step_id: str) -> bool:  # noqa: ARG002 - reserved for future implementation
         """Delete a Step Definition."""
         # Placeholder implementation
         return False
 
-    async def increment_usage(self, step_id: str) -> dict[str, Any] | None:
+    async def increment_usage(self, step_id: str) -> dict[str, Any] | None:  # noqa: ARG002 - reserved for future implementation
         """Increment usage count for a step definition."""
         # Placeholder implementation
         return None

@@ -5,7 +5,7 @@ import hmac
 import os
 import secrets
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from fastapi import Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,6 +25,9 @@ from tracertm.repositories.integration_repository import (
 from tracertm.repositories.webhook_repository import WebhookRepository
 from tracertm.services.encryption_service import EncryptionService
 from tracertm.services.github_project_service import GitHubProjectService
+
+if TYPE_CHECKING:
+    from tracertm.models.github_app_installation import GitHubAppInstallation
 
 # ==================== HELPER FUNCTIONS ====================
 
@@ -148,7 +151,7 @@ def _require_int(payload: dict[str, Any], key: str) -> int:
 
 async def _fetch_repos_from_installation(
     client: GitHubClient,
-    installation: Any,
+    installation: GitHubAppInstallation,
     search: str | None,
     per_page: int,
     page: int,
@@ -244,7 +247,7 @@ def _format_project_response(project: dict) -> dict:
     }
 
 
-def _format_installation_response(installation: Any) -> dict:
+def _format_installation_response(installation: GitHubAppInstallation) -> dict:
     """Format a single installation response."""
     return {
         "id": installation.id,

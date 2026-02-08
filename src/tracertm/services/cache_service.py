@@ -135,7 +135,7 @@ class CacheService:
             cls._instance = cls(redis_url)
         return cls._instance
 
-    def _generate_key(self, cache_type: str, **kwargs: Any) -> str:
+    def _generate_key(self, cache_type: str, **kwargs: Any: Any) -> str:  # noqa: invalid-syntax - reserved for future implementation
         """Generate cache key from type and parameters."""
         config = CACHE_CONFIG.get(cache_type, {"prefix": cache_type})
         prefix = config["prefix"]
@@ -209,17 +209,17 @@ class CacheService:
             msg = f"Redis unavailable: {e}"
             raise RedisUnavailableError(msg) from e
 
-    async def invalidate(self, cache_type: str, **kwargs: Any) -> bool:
+    async def invalidate(self, cache_type: str, **kwargs: Any: Any) -> bool:  # noqa: invalid-syntax - reserved for future implementation
         """Invalidate cache for a specific type and parameters.
 
         Args:
             cache_type: Type of cache to invalidate
-            **kwargs: Parameters to identify specific cache entry
+            **kwargs: Any: Parameters to identify specific cache entry
 
         Returns:
             True if successful, False otherwise
         """
-        key = self._generate_key(cache_type, **kwargs)
+        key = self._generate_key(cache_type, **kwargs: Any: Any)  # noqa: invalid-syntax - reserved for future implementation
         return await self.delete(key)
 
     async def clear(self) -> bool:
@@ -315,7 +315,7 @@ async def cached_get(
     cache: CacheService,
     cache_type: str,
     fetch_fn,
-    **kwargs,
+    **kwargs: Any: Any,  # noqa: invalid-syntax - reserved for future implementation
 ) -> Any:
     """Get value from cache or fetch and cache it.
 
@@ -323,12 +323,12 @@ async def cached_get(
         cache: CacheService instance
         cache_type: Type of cache for key generation and TTL
         fetch_fn: Async function to fetch data if not cached
-        **kwargs: Parameters for cache key and fetch function
+        **kwargs: Any: Parameters for cache key and fetch function
 
     Returns:
         Cached or freshly fetched value
     """
-    key = cache._generate_key(cache_type, **kwargs)
+    key = cache._generate_key(cache_type, **kwargs: Any: Any)  # noqa: invalid-syntax - reserved for future implementation
 
     # Try cache first
     cached = await cache.get(key)

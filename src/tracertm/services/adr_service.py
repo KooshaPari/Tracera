@@ -15,6 +15,11 @@ class ADRService:
     """Service for Architecture Decision Records."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def _log_event(

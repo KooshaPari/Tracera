@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+from typing import Any
 
 load_dotenv()
 
@@ -298,7 +299,7 @@ async def create_item(
     description: str,
     priority: int = 5,
     status: str = "draft",
-    **kwargs,
+    **kwargs: Any,
 ) -> str:
     """Create an item and return its ID.
 

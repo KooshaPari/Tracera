@@ -27,7 +27,7 @@ from tracertm.storage import LocalStorageManager
 
 app = typer.Typer(help="Backup, restore, and template management")
 
-def get_service(session) -> Any:
+def get_service(session: Any) -> Any:
     from tracertm.services.project_backup_service import ProjectBackupService
     return ProjectBackupService(session)
 
@@ -94,7 +94,7 @@ def restore_project(
     backup_file: Path = typer.Argument(..., help="Backup file path (.json or .json.gz)"),
     project_name: Optional[str] = typer.Option(None, "--name", "-n", help="New name for the restored project"),
     force: bool = typer.Option(False, "--force", "-f", help="Force restore without confirmation"),
-):
+)->  None:
     """
     Restore a project from a backup file.
     """
@@ -135,7 +135,7 @@ def clone_project(
     target_name: str = typer.Argument(..., help="Name for the new cloned project"),
     no_items: bool = typer.Option(False, "--no-items", help="Do not clone items"),
     no_links: bool = typer.Option(False, "--no-links", help="Do not clone links"),
-):
+)->  None:
     """
     Clone an existing project.
     """
@@ -163,7 +163,7 @@ def clone_project(
 def create_template(
     project_id: str = typer.Argument(..., help="Project ID to use as template"),
     template_name: str = typer.Argument(..., help="Name for the template"),
-):
+)->  None:
     """
     Create a project template from an existing project.
     """
@@ -183,7 +183,7 @@ def create_template(
         raise typer.Exit(1)
 
 @app.command("list-templates")
-def list_templates():
+def list_templates() -> None:
     """
     List all available project templates.
     """

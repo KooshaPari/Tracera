@@ -20,6 +20,11 @@ class JiraImportService:
     """Service for importing Jira projects."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.projects = ProjectRepository(session)
         self.items = ItemRepository(session)
@@ -133,7 +138,7 @@ class JiraImportService:
             }
 
         except (json.JSONDecodeError, ValueError, KeyError, OperationalError) as e:
-            logger.error("Jira import failed: %s", e, exc_info=True)
+            logger.exception("Jira import failed: %s", e)
             return {
                 "success": False,
                 "errors": [f"Import failed: {e!s}"],
@@ -185,7 +190,7 @@ class JiraImportService:
         project_id: str,
         issue: dict[str, Any],
         issue_map: dict[str, str],
-        agent_id: str,
+        agent_id: str,  # noqa: ARG002 - required by interface
     ) -> list[Any]:
         """Import Jira issue links."""
         links = []

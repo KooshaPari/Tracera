@@ -27,6 +27,11 @@ class RequirementQualityService:
     """Service for Requirement Quality Analysis."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def analyze_quality(self, item_id: str) -> RequirementQuality:

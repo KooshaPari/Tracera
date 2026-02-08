@@ -174,32 +174,31 @@ func (tq *TaskQueue) DequeueTask(projectID string, capabilities []AgentCapabilit
 	for index := 0; index < tq.queue.Len(); index++ {
 		task := (*tq.queue)[index]
 
-		// Check project match
-		if task.ProjectID != projectID {
-			continue
+		if tq.taskMatches(task, projectID, capMap) {
+			// Remove task from queue
+			heap.Remove(tq.queue, index)
+			delete(tq.queuedTasks, task.ID)
+			return task
 		}
-
-		// Check capabilities
-		hasAllCapabilities := true
-		for _, required := range task.RequiredCapabilities {
-			if !capMap[required] {
-				hasAllCapabilities = false
-				break
-			}
-		}
-
-		if !hasAllCapabilities {
-			continue
-		}
-
-		// Remove task from queue
-		heap.Remove(tq.queue, index)
-		delete(tq.queuedTasks, task.ID)
-
-		return task
 	}
 
 	return nil
+}
+
+func (tq *TaskQueue) taskMatches(task *Task, projectID string, agentCaps map[string]bool) bool {
+	// Check project match
+	if task.ProjectID != projectID {
+		return false
+	}
+
+	// Check capabilities
+	for _, required := range task.RequiredCapabilities {
+		if !agentCaps[required] {
+			return false
+		}
+	}
+
+	return true
 }
 
 // RequeueTask puts a task back in the queue (used for retries)
@@ -459,48 +458,65 @@ func (tq *TaskQueue) LoadTasksFromDB() error {
 		return nil
 	}
 
-	type TaskStore struct {
-		ID        string
-		ProjectID string
-		Status    string
-		Priority  int
-		Data      []byte
-		CreatedAt time.Time
-		UpdatedAt time.Time
-	}
-
-	var taskStores []TaskStore
-	if err := tq.db.Table("agent_tasks").
-		Where("status IN ?", []string{string(TaskStatusPending), string(TaskStatusAssigned), string(TaskStatusRunning)}).
-		Find(&taskStores).Error; err != nil {
-		return fmt.Errorf("failed to load tasks from database: %w", err)
+	taskStores, err := tq.getNonTerminalTasksFromDB()
+	if err != nil {
+		return err
 	}
 
 	for _, ts := range taskStores {
-		var task Task
-		if err := json.Unmarshal(ts.Data, &task); err != nil {
-			return fmt.Errorf("failed to unmarshal agent task %s from database: %w", ts.ID, err)
+		task, err := tq.loadAndNormalizeTask(ts)
+		if err != nil {
+			return err
 		}
 
-		// After a process restart, we do not assume an in-memory agent still holds a claim.
-		// Converge all non-terminal tasks to pending so they are claimable again.
-		if task.Status != TaskStatusPending {
-			task.Status = TaskStatusPending
-			task.AssignedTo = ""
-			task.AssignedAt = time.Time{}
-
-			if err := tq.saveTask(&task); err != nil {
-				return fmt.Errorf("failed to normalize agent task %s to pending: %w", task.ID, err)
-			}
-		}
-
-		tq.taskIndex[task.ID] = &task
+		tq.taskIndex[task.ID] = task
 
 		if task.Status == TaskStatusPending {
-			heap.Push(tq.queue, &task)
+			heap.Push(tq.queue, task)
 			tq.queuedTasks[task.ID] = true
 		}
 	}
 
 	return nil
+}
+
+type taskStore struct {
+	ID        string
+	ProjectID string
+	Status    string
+	Priority  int
+	Data      []byte
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+func (tq *TaskQueue) getNonTerminalTasksFromDB() ([]taskStore, error) {
+	var taskStores []taskStore
+	nonTerminalStatuses := []string{string(TaskStatusPending), string(TaskStatusAssigned), string(TaskStatusRunning)}
+	if err := tq.db.Table("agent_tasks").
+		Where("status IN ?", nonTerminalStatuses).
+		Find(&taskStores).Error; err != nil {
+		return nil, fmt.Errorf("failed to load tasks from database: %w", err)
+	}
+	return taskStores, nil
+}
+
+func (tq *TaskQueue) loadAndNormalizeTask(ts taskStore) (*Task, error) {
+	var task Task
+	if err := json.Unmarshal(ts.Data, &task); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal agent task %s from database: %w", ts.ID, err)
+	}
+
+	// After a process restart, we do not assume an in-memory agent still holds a claim.
+	// Converge all non-terminal tasks to pending so they are claimable again.
+	if task.Status != TaskStatusPending {
+		task.Status = TaskStatusPending
+		task.AssignedTo = ""
+		task.AssignedAt = time.Time{}
+
+		if err := tq.saveTask(&task); err != nil {
+			return nil, fmt.Errorf("failed to normalize agent task %s to pending: %w", task.ID, err)
+		}
+	}
+	return &task, nil
 }

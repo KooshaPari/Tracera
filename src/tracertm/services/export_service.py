@@ -17,6 +17,11 @@ class ExportService:
     """Service for exporting TraceRTM data."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.projects = ProjectRepository(session)
         self.items = ItemRepository(session)

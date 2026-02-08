@@ -1642,7 +1642,7 @@ async def create_item_endpoint(
         }
     except Exception as exc:
         await db.rollback()
-        logger.error("Error creating item: %s", exc, exc_info=True)
+        logger.exception("Error creating item: %s", exc)
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
@@ -1697,7 +1697,7 @@ async def update_item_endpoint(
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except Exception as exc:
         await db.rollback()
-        logger.error("Error updating item: %s", exc, exc_info=True)
+        logger.exception("Error updating item: %s", exc)
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
@@ -2632,7 +2632,7 @@ async def create_project(
         }
     except Exception as exc:
         await db.rollback()
-        logger.error("Error creating project: %s", exc, exc_info=True)
+        logger.exception("Error creating project: %s", exc)
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 

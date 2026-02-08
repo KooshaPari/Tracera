@@ -16,6 +16,11 @@ class CommitLinkingService:
     """Service for parsing commits and auto-linking to items."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)
@@ -34,8 +39,8 @@ class CommitLinkingService:
         self,
         project_id: str,
         commit_message: str,
-        commit_hash: str,
-        author: str,
+        commit_hash: str,  # noqa: ARG002 - reserved for future implementation
+        author: str,  # noqa: ARG002 - reserved for future implementation
     ) -> dict[str, Any]:
         """Parse commit message and extract item references."""
         references = {

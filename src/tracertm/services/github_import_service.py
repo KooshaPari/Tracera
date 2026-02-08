@@ -20,6 +20,11 @@ class GitHubImportService:
     """Service for importing GitHub Projects."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.projects = ProjectRepository(session)
         self.items = ItemRepository(session)
@@ -111,7 +116,7 @@ class GitHubImportService:
             }
 
         except (json.JSONDecodeError, ValueError, KeyError, OperationalError) as e:
-            logger.error("GitHub import failed: %s", e, exc_info=True)
+            logger.exception("GitHub import failed: %s", e)
             return {
                 "success": False,
                 "errors": [f"Import failed: {e!s}"],
@@ -162,7 +167,7 @@ class GitHubImportService:
         project_id: str,
         item_data: dict[str, Any],
         item_map: dict[str, str],
-        agent_id: str,
+        agent_id: str,  # noqa: ARG002 - required by interface
     ) -> list[Any]:
         """Import GitHub item links (PRs to issues)."""
         links = []

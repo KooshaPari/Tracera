@@ -15,6 +15,11 @@ class ProcessRepository:
     """Repository for Process CRUD operations with optimistic locking."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize repository.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     def _generate_process_number(self) -> str:

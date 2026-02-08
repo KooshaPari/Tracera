@@ -39,6 +39,11 @@ class EventSourcingService:
     """Service for event sourcing and replay."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.events = EventRepository(session)
         self.items = ItemRepository(session)
@@ -70,7 +75,7 @@ class EventSourcingService:
 
     async def replay_events(
         self,
-        project_id: str | uuid.UUID,
+        project_id: str | uuid.UUID,  # noqa: ARG002 - reserved for future implementation
         entity_id: str,
         up_to_timestamp: str | None = None,
     ) -> ReplayResult:

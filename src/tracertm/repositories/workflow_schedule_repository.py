@@ -16,6 +16,11 @@ if TYPE_CHECKING:
 
 class WorkflowScheduleRepository:
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize repository.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def create_schedule(

@@ -26,6 +26,11 @@ class MaterializedViewService:
     """Service for managing materialized views and incremental refresh."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def refresh_incremental(self) -> dict[str, Any]:

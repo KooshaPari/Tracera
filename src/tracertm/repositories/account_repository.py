@@ -13,6 +13,11 @@ class AccountRepository:
     """Repository for account operations."""
 
     def __init__(self, db: AsyncSession) -> None:
+        """Initialize account repository.
+        
+        Args:
+            db: SQLAlchemy async session for database operations.
+        """
         self.db = db
 
     async def create(

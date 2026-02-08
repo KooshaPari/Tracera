@@ -24,6 +24,11 @@ if TYPE_CHECKING:
 
 class IntegrationSyncProcessor:
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         encryption_key = __import__("os").environ.get("ENCRYPTION_KEY", "")
         encryption_service = EncryptionService(encryption_key) if encryption_key else None

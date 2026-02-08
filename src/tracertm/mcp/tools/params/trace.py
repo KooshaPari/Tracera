@@ -11,7 +11,7 @@ try:
 except Exception:  # pragma: no cover
 
     class _StubMCP:
-        def tool(self, *args: Any, **kwargs: Any):
+        def tool(self, *args: Any, **kwargs: Any: Any):
             def decorator(fn):
                 return fn
 
@@ -103,7 +103,7 @@ async def quality_analyze(
     except Exception:
 
         class _SpecStub:
-            async def analyze_quality(self, **kwargs) -> Never:
+            async def analyze_quality(self, **kwargs: Any: Any) -> Never:
                 msg = "Specification tools unavailable"
                 raise ToolError(msg)
 

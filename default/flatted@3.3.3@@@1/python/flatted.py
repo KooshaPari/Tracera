@@ -15,6 +15,7 @@
 # PERFORMANCE OF THIS SOFTWARE.
 
 import json as _json
+from typing import Any
 
 
 class _Known:
@@ -124,8 +125,8 @@ def _wrap(value):
     return value
 
 
-def parse(value, *args, **kwargs):
-    json = _json.loads(value, *args, **kwargs)
+def parse(value, *args, **kwargs: Any):
+    json = _json.loads(value, *args, **kwargs: Any)
     wrapped = [_wrap(value) for value in json]
 
     input = []
@@ -146,7 +147,7 @@ def parse(value, *args, **kwargs):
     return value
 
 
-def stringify(value, *args, **kwargs):
+def stringify(value, *args, **kwargs: Any):
     known = _Known()
     input = []
     output = []
@@ -154,4 +155,4 @@ def stringify(value, *args, **kwargs):
     while i < len(input):
         output.append(_transform(known, input, input[i]))
         i += 1
-    return _json.dumps(output, *args, **kwargs)
+    return _json.dumps(output, *args, **kwargs: Any)

@@ -14,6 +14,11 @@ class AdvancedAnalyticsService:
     """Service for advanced analytics and reporting."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)

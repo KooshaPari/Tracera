@@ -19,6 +19,11 @@ class GraphReportService:
     """Generate QA reports for graph coverage and integrity."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def _fetch_graph(self, project_id: str, graph_id: str) -> Graph | None:

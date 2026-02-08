@@ -20,12 +20,13 @@ from hooks import (
     droid_pre_discovery,
 )
 from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
+from typing import Any
 
 
 class MockSearchService:
     """Mock search service for testing."""
 
-    async def semantic_search(self, *args, **kwargs):
+    async def semantic_search(self, *args, **kwargs: Any):
         return []
 
 

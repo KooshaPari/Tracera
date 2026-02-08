@@ -214,7 +214,7 @@ class TraceFileWatcher:
             self._changes_by_type[event_type] += 1
 
         except Exception as e:
-            logger.error("Error processing %s event for %s: %s", event_type, path, e, exc_info=True)
+            logger.exception("Error processing %s event for %s: %s", event_type, path, e)
 
     def _handle_item_change(self, path: Path, event_type: str) -> None:
         """Handle change to an item markdown file.

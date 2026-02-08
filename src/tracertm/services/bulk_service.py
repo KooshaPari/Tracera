@@ -36,6 +36,11 @@ class BulkOperationService:
     """Service for bulk operations with preview."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.items = ItemRepository(session)
         self.events = EventRepository(session)

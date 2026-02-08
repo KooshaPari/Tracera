@@ -247,6 +247,11 @@ class IntegrationMappingRepository:
     """Repository for item-to-external mappings."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize repository.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def create(
@@ -394,6 +399,11 @@ class IntegrationSyncQueueRepository:
     """Repository for sync queue."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize repository.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def enqueue(
@@ -558,6 +568,11 @@ class IntegrationSyncLogRepository:
     """Repository for sync logs."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize repository.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def create(
@@ -646,6 +661,11 @@ class IntegrationConflictRepository:
     """Repository for sync conflicts."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize repository.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def create(
@@ -730,6 +750,11 @@ class IntegrationRateLimitRepository:
     """Repository for rate limit tracking."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize repository.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def get_or_create(

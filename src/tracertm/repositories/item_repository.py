@@ -20,6 +20,11 @@ class ItemRepository:
     """Repository for Item CRUD operations with optimistic locking."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize repository.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def create(

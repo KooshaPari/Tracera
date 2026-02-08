@@ -18,6 +18,11 @@ class ADRRepository:
     """Repository for ADR (Architecture Decision Record) CRUD operations."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize repository.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     def _generate_adr_number(self) -> str:
@@ -246,6 +251,11 @@ class ContractRepository:
     """Repository for Contract CRUD operations."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize repository.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     def _generate_contract_number(self) -> str:
@@ -458,6 +468,11 @@ class FeatureRepository:
     """Repository for Feature CRUD operations."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize repository.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     def _generate_feature_number(self) -> str:
@@ -667,6 +682,11 @@ class ScenarioRepository:
     """Repository for Scenario CRUD operations."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize repository.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     def _generate_scenario_number(self) -> str:

@@ -40,6 +40,11 @@ class AgentCoordinationService:
     """Service for agent coordination and conflict resolution."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.agents = AgentRepository(session)
         self.events = EventRepository(session)

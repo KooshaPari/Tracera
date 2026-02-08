@@ -13,6 +13,11 @@ class PerformanceTuningService:
     """Service for performance tuning and optimization."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.metrics: list[dict[str, Any]] = []
         self.recommendations: list[str] = []

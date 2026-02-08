@@ -14,6 +14,11 @@ class ScenarioService:
     """Service for BDD Scenarios."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def _get_project_id(self, feature_id: str) -> str | None:

@@ -204,7 +204,7 @@ async def cached_query(
     compute_fn,
     ttl: int = 300,
     invalidate_on_write: bool = False,
-    **cache_key_args,
+    **cache_key_args: Any: Any,
 ):
     """Execute a query with caching.
 
@@ -213,7 +213,7 @@ async def cached_query(
         compute_fn: Async function that computes the result
         ttl: Time to live in seconds (default 5 minutes)
         invalidate_on_write: If True, invalidate this cache key on writes
-        **cache_key_args: Additional arguments for cache key generation
+        **cache_key_args: Any: Additional arguments for cache key generation
 
     Returns:
         Cached or computed result
@@ -223,7 +223,7 @@ async def cached_query(
         cache_key,
         compute_fn,
         ttl=ttl,
-        **cache_key_args,
+        **cache_key_args: Any: Any,
     )
 
 

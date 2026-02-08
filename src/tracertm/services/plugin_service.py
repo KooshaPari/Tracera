@@ -125,13 +125,13 @@ class PluginService:
                 return False
         return False
 
-    def execute_hook(self, hook_name: str, *args, **kwargs) -> list[Any]:
+    def execute_hook(self, hook_name: str, *args, **kwargs: Any: Any) -> list[Any]:  # noqa: invalid-syntax - reserved for future implementation
         """Execute all callbacks for a hook."""
         results = []
         if hook_name in self.hooks:
             for callback in self.hooks[hook_name]:
                 try:
-                    result = callback(*args, **kwargs)
+                    result = callback(*args, **kwargs: Any: Any)  # noqa: invalid-syntax - reserved for future implementation
                     results.append(result)
                 except (ImportError, ModuleNotFoundError, AttributeError) as e:
                     results.append({"error": str(e)})

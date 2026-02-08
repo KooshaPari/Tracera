@@ -295,7 +295,7 @@ class ApiClient:
         """Async context manager exit."""
         await self.close()
 
-    async def _retry_request(
+    async def _retry_request(  # noqa: PLR0915
         self,
         method: str,
         endpoint: str,

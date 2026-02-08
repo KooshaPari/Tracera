@@ -53,6 +53,11 @@ class BenchmarkService:
     }
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
     async def benchmark_view_query(self, view_name: str, limit: int = 100) -> BenchmarkResult:

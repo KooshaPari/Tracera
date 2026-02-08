@@ -20,6 +20,11 @@ class ChaosModeService:
     """Service for advanced chaos mode features."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)
@@ -65,7 +70,7 @@ class ChaosModeService:
 
     async def analyze_impact(
         self,
-        project_id: str | uuid.UUID,
+        project_id: str | uuid.UUID,  # noqa: ARG002 - reserved for future implementation
         item_id: str | uuid.UUID,
     ) -> dict[str, Any]:
         """Analyze impact of changing an item."""

@@ -126,6 +126,12 @@ class BaseSpecRepository:
     """Base repository with common CRUD operations for all spec types."""
 
     def __init__(self, session: AsyncSession, model_class) -> None:
+        """Initialize repository with database session and model class.
+
+        Args:
+            session: AsyncSession for database operations.
+            model_class: SQLAlchemy model class for this repository.
+        """
         self.session = session
         self.model_class = model_class
 
@@ -1285,6 +1291,11 @@ class ItemSpecBatchRepository:
     """Repository for batch operations across all spec types."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize repository.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.requirements = RequirementSpecRepository(session)
         self.tests = TestSpecRepository(session)

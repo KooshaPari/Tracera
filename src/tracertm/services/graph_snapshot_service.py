@@ -28,6 +28,11 @@ class GraphSnapshotService:
     """Create, fetch, and diff graph snapshots."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.graph_service = GraphService(session)
 

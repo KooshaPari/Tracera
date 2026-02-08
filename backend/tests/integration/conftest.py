@@ -17,7 +17,7 @@ import os
 # Import application components
 import sys
 from datetime import UTC, datetime, timezone
-from typing import AsyncGenerator, Generator
+from typing import AsyncGenerator, Generator, Any
 from uuid import uuid4
 
 import pytest
@@ -362,7 +362,7 @@ def test_session_factory():
     def _create_session(
         project_id: str | None = None,
         user_id: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> dict:
         return {
             "session_id": str(uuid4()),
@@ -370,7 +370,7 @@ def test_session_factory():
             "user_id": user_id or str(uuid4()),
             "sandbox_root": f"/tmp/test-{uuid4()}",
             "created_at": datetime.now(UTC),
-            **kwargs,
+            **kwargs: Any,
         }
 
     return _create_session
@@ -382,7 +382,7 @@ def test_checkpoint_factory():
     def _create_checkpoint(
         session_id: str,
         turn_number: int = 1,
-        **kwargs,
+        **kwargs: Any,
     ) -> dict:
         return {
             "checkpoint_id": str(uuid4()),
@@ -393,7 +393,7 @@ def test_checkpoint_factory():
                 "context": {},
             },
             "created_at": datetime.now(UTC),
-            **kwargs,
+            **kwargs: Any,
         }
 
     return _create_checkpoint

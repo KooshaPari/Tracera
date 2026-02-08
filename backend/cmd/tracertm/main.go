@@ -15,6 +15,12 @@ import (
 )
 
 func main() {
+	if err := run(); err != nil {
+		log.Fatalf("Fatal error: %v", err)
+	}
+}
+
+func run() error {
 	// Preflight checks run automatically via init() in preflight.go
 
 	ctx := context.Background()
@@ -25,14 +31,18 @@ func main() {
 	// Initialize infrastructure (database, redis, NATS, etc.)
 	infra, err := infrastructure.InitializeInfrastructure(ctx, cfg)
 	if err != nil {
-		log.Fatalf("Failed to initialize infrastructure: %v", err)
+		return fmt.Errorf("failed to initialize infrastructure: %w", err)
 	}
-	defer infra.Close(ctx)
+	defer func() {
+		if err := infra.Close(ctx); err != nil {
+			log.Printf("Error closing infrastructure: %v", err)
+		}
+	}()
 
 	// Create server
 	srv, err := server.NewServer(infra, cfg)
 	if err != nil {
-		log.Fatalf("Failed to create server: %v", err)
+		return fmt.Errorf("failed to create server: %w", err)
 	}
 
 	// Setup graceful shutdown
@@ -54,10 +64,12 @@ func main() {
 	}()
 
 	// Start server (blocking)
-	address := fmt.Sprintf(":%s", cfg.Port)
+	address := ":" + cfg.Port
 	fmt.Println("Starting TraceRTM backend server...")
 	fmt.Printf("Server listening on %s\n", address)
 	if err := srv.Start(address); err != nil {
-		log.Fatalf("Server error: %v", err)
+		return fmt.Errorf("server error: %w", err)
 	}
+
+	return nil
 }

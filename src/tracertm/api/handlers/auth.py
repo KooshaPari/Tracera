@@ -423,7 +423,7 @@ def _extract_user_info(result: dict[str, Any]) -> dict[str, Any] | None:
 # ==================== FastAPI Endpoint Wrappers ====================
 
 
-async def auth_callback_endpoint(payload: AuthCallbackPayload):
+async def auth_callback_endpoint(payload: AuthCallbackPayload) -> dict[str, Any]:
     """FastAPI endpoint wrapper for auth callback."""
     return await auth_callback_handler(payload)
 
@@ -431,14 +431,14 @@ async def auth_callback_endpoint(payload: AuthCallbackPayload):
 async def auth_me_endpoint(
     claims: dict[str, Any] = Depends(lambda: None),  # Will be provided by main.py
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """FastAPI endpoint wrapper for auth/me."""
     return await auth_me_handler(claims, db)
 
 
 async def auth_logout_endpoint(
     claims: dict[str, Any] = Depends(lambda: None),  # Will be provided by main.py
-):
+) -> dict[str, Any]:
     """FastAPI endpoint wrapper for auth logout."""
     return await auth_logout_handler(claims)
 
@@ -446,7 +446,7 @@ async def auth_logout_endpoint(
 async def signup_endpoint(
     data: dict[str, Any],
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """FastAPI endpoint wrapper for signup."""
     return await signup_handler(data, db)
 
@@ -454,21 +454,21 @@ async def signup_endpoint(
 async def login_endpoint(
     data: dict[str, Any],
     db: AsyncSession = Depends(get_db),
-):
+) -> dict[str, Any]:
     """FastAPI endpoint wrapper for login."""
     return await login_handler(data, db)
 
 
-async def device_code_endpoint(data: dict[str, Any]):
+async def device_code_endpoint(data: dict[str, Any]) -> DeviceCodeResponse:
     """FastAPI endpoint wrapper for device code."""
     return await device_code_handler(data)
 
 
-async def device_token_endpoint(data: dict[str, Any]):
+async def device_token_endpoint(data: dict[str, Any]) -> DeviceTokenResponse:
     """FastAPI endpoint wrapper for device token."""
     return await device_token_handler(data)
 
 
-async def device_complete_endpoint(data: dict[str, Any]):
+async def device_complete_endpoint(data: dict[str, Any]) -> dict[str, Any]:
     """FastAPI endpoint wrapper for device complete."""
     return await device_complete_handler(data)

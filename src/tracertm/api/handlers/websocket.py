@@ -7,7 +7,7 @@ Breaks down websocket_endpoint (complexity 29) into focused functions.
 import asyncio
 import contextlib
 import logging
-from typing import Any
+from typing import Callable, Any
 
 from fastapi import WebSocket, WebSocketDisconnect
 
@@ -121,7 +121,7 @@ async def _verify_token_or_close(
     websocket: WebSocket,
     ws_closed: dict[str, bool],
     token: str,
-    verify_token_func,
+    verify_token_func: Callable[[str], dict[str, Any]],
 ) -> dict[str, Any] | None:
     try:
         claims = verify_token_func(token)

@@ -267,7 +267,7 @@ async def verify_neo4j_relationship(
             """
             params = {"session_id": session_id}
 
-        result = await session.run(query, **params)
+        result = await session.run(query, **params: Any)
         record = await result.single()
         return record["count"] > 0
 
@@ -369,7 +369,7 @@ class EventCollector:
         """Clear collected events."""
         self.events.clear()
 
-    def find_event(self, **criteria) -> dict[str, Any] | None:
+    def find_event(self, **criteria: Any) -> dict[str, Any] | None:
         """Find first event matching all criteria."""
         for event in self.events:
             if all(event.get(k) == v for k, v in criteria.items()):

@@ -617,7 +617,7 @@ class SyncEngine:
                 return result
 
             except Exception as e:
-                logger.error("Sync failed: %s", e, exc_info=True)
+                logger.exception("Sync failed: %s", e)
                 self.state_manager.update_status(SyncStatus.ERROR)
                 self.state_manager.update_error(str(e))
 
@@ -666,7 +666,7 @@ class SyncEngine:
             logger.info("Change detection complete: %s changes queued", changes_queued)
 
         except Exception as e:
-            logger.error("Error detecting changes: %s", e, exc_info=True)
+            logger.exception("Error detecting changes: %s", e)
 
         return changes_queued
 
@@ -717,7 +717,7 @@ class SyncEngine:
                     await asyncio.sleep(delay)
 
             except Exception as e:
-                logger.error(f"Error processing change {change.id}: {e}", exc_info=True)
+                logger.exception(f"Error processing change {change.id}: {e}")
                 self.queue.update_retry(change.id, str(e))
                 result.errors.append(str(e))
 
@@ -758,14 +758,14 @@ class SyncEngine:
                     await self._apply_remote_change(change)
                     result.entities_synced += 1
                 except Exception as e:
-                    logger.error("Error applying remote change: %s", e, exc_info=True)
+                    logger.exception("Error applying remote change: %s", e)
                     result.errors.append(str(e))
 
             if remote_changes:
                 logger.info(f"Applied {result.entities_synced} remote changes")
 
         except Exception as e:
-            logger.error("Failed to pull changes: %s", e, exc_info=True)
+            logger.exception("Failed to pull changes: %s", e)
             result.errors.append(str(e))
             result.success = False
 
@@ -814,7 +814,7 @@ class SyncEngine:
             return True
 
         except Exception as e:
-            logger.error("Upload failed: %s", e, exc_info=True)
+            logger.exception("Upload failed: %s", e)
             return False
 
     async def _apply_remote_change(self, change: dict[str, Any]) -> None:
@@ -887,7 +887,7 @@ class SyncEngine:
             logger.debug(f"Successfully applied remote change for {entity_type.value} {entity_id}")
 
         except Exception as e:
-            logger.error("Error applying remote change: %s", e, exc_info=True)
+            logger.exception("Error applying remote change: %s", e)
             raise
 
     def _resolve_conflict(self, local_data: dict[str, Any], remote_data: dict[str, Any]) -> dict[str, Any]:
@@ -918,7 +918,7 @@ class SyncEngine:
                 conflict_file = self._create_conflict_file(local_data, remote_data)
                 logger.warning("Manual conflict resolution required, created %s", conflict_file)
             except Exception as e:
-                logger.error("Failed to create conflict file: %s", e, exc_info=True)
+                logger.exception("Failed to create conflict file: %s", e)
             return local_data
 
         return local_data

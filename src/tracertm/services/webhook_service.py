@@ -25,6 +25,11 @@ class WebhookService:
     """Service for processing webhook requests."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.webhook_repo: WebhookRepository = WebhookRepository(session)
         self.test_run_repo: TestRunRepository = TestRunRepository(session)

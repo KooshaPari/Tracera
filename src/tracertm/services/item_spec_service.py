@@ -325,6 +325,11 @@ class ImpactAnalyzer:
     """
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.link_repo = LinkRepository(session)
         self.item_repo = ItemRepository(session)
@@ -537,6 +542,11 @@ class RequirementSpecService:
     """
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.item_repo = ItemRepository(session)
         self.quality_repo = RequirementQualityRepository(session)
@@ -881,7 +891,7 @@ class TestSpecFlakinessDector:
 
     def calculate_flakiness_score(
         self,
-        pass_count: int,
+        pass_count: int,  # noqa: ARG002 - reserved for future implementation
         fail_count: int,
         total_runs: int,
         recent_failures: list[dict],
@@ -948,9 +958,14 @@ class AIPropertyPlaceholder:
     """
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
 
-    async def calculate_embeddings(self, item_id: str) -> list[float] | None:
+    async def calculate_embeddings(self, item_id: str) -> list[float] | None:  # noqa: ARG002 - reserved for future implementation
         """Calculate semantic embeddings for requirement text.
 
         Future: Use OpenAI embeddings or similar.
@@ -965,7 +980,7 @@ class AIPropertyPlaceholder:
         return None
 
     async def find_similar_requirements(
-        self, item_id: str, project_id: str, threshold: float = 0.85,
+        self, item_id: str, project_id: str, threshold: float = 0.85,  # noqa: ARG002 - reserved for future implementation
     ) -> list[dict[str, Any]]:
         """Find semantically similar requirements.
 
@@ -982,7 +997,7 @@ class AIPropertyPlaceholder:
         # Placeholder: return empty list for now
         return []
 
-    async def detect_inconsistencies(self, item_id: str) -> list[dict[str, str]]:
+    async def detect_inconsistencies(self, item_id: str) -> list[dict[str, str]]:  # noqa: ARG002 - reserved for future implementation
         """Detect inconsistencies with related requirements.
 
         Future: Use LLM-based analysis.
@@ -996,7 +1011,7 @@ class AIPropertyPlaceholder:
         # Placeholder: return empty list for now
         return []
 
-    async def suggest_acceptance_criteria(self, item_id: str) -> list[str]:
+    async def suggest_acceptance_criteria(self, item_id: str) -> list[str]:  # noqa: ARG002 - reserved for future implementation
         """Generate suggested acceptance criteria for requirement.
 
         Future: Use generative AI.

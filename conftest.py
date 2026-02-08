@@ -27,7 +27,7 @@ _um.Mock = _um.MagicMock  # type: ignore[assignment]
 _original_mkdir = Path.mkdir
 
 
-def _safe_mkdir(self: Path, *args, **kwargs):
+def _safe_mkdir(self: Path, *args, **kwargs: Any):
     # If path looks like a file (has a suffix), just ensure parents exist
     if self.suffix:
         return _original_mkdir(self.parent, parents=True, exist_ok=True)
@@ -160,12 +160,12 @@ def project_factory(db_session):
 def item_factory(db_session):
     """Factory for creating test items."""
 
-    async def create_item(project_id, title="Test Item", view="FEATURE", item_type="feature", status="todo", **kwargs):
+    async def create_item(project_id, title="Test Item", view="FEATURE", item_type="feature", status="todo", **kwargs: Any):
         from tracertm.repositories.item_repository import ItemRepository
 
         repo = ItemRepository(db_session)
         item = await repo.create(
-            project_id=project_id, title=title, view=view, item_type=item_type, status=status, **kwargs,
+            project_id=project_id, title=title, view=view, item_type=item_type, status=status, **kwargs
         )
         await db_session.flush()
         return item

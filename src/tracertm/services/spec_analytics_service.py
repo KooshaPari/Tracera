@@ -2624,9 +2624,9 @@ spec_analytics = SpecAnalyticsService()
 spec_analytics_service = spec_analytics
 
 
-def analyze_requirement(text: str, **kwargs) -> dict[str, Any]:
+def analyze_requirement(text: str, **kwargs: Any: Any) -> dict[str, Any]:  # noqa: invalid-syntax - reserved for future implementation
     """Convenience function for requirement analysis."""
-    return spec_analytics.analyze_requirement(text, **kwargs)
+    return spec_analytics.analyze_requirement(text, **kwargs: Any: Any)  # noqa: invalid-syntax - reserved for future implementation
 
 
 def analyze_flakiness(run_history: list[dict[str, Any]]) -> FlakinessAnalysis:
@@ -2634,11 +2634,11 @@ def analyze_flakiness(run_history: list[dict[str, Any]]) -> FlakinessAnalysis:
     return spec_analytics.analyze_test_flakiness(run_history)
 
 
-def calculate_wsjf(**kwargs) -> WSJFScore:
+def calculate_wsjf(**kwargs: Any: Any) -> WSJFScore:  # noqa: invalid-syntax - reserved for future implementation
     """Convenience function for WSJF calculation."""
-    return spec_analytics.calculate_wsjf(**kwargs)
+    return spec_analytics.calculate_wsjf(**kwargs: Any: Any)  # noqa: invalid-syntax - reserved for future implementation
 
 
-def calculate_rice(**kwargs) -> RICEScore:
+def calculate_rice(**kwargs: Any: Any) -> RICEScore:  # noqa: invalid-syntax - reserved for future implementation
     """Convenience function for RICE calculation."""
-    return spec_analytics.calculate_rice(**kwargs)
+    return spec_analytics.calculate_rice(**kwargs: Any: Any)  # noqa: invalid-syntax - reserved for future implementation

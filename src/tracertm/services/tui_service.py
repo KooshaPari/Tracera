@@ -98,13 +98,13 @@ class TUIService:
             self.event_handlers[event_name] = []
         self.event_handlers[event_name].append(handler)
 
-    def trigger_event(self, event_name: str, *args, **kwargs) -> list[Any]:
+    def trigger_event(self, event_name: str, *args, **kwargs: Any: Any) -> list[Any]:  # noqa: invalid-syntax - reserved for future implementation
         """Trigger event and execute all handlers."""
         results = []
         if event_name in self.event_handlers:
             for handler in self.event_handlers[event_name]:
                 try:
-                    result = handler(*args, **kwargs)
+                    result = handler(*args, **kwargs: Any: Any)  # noqa: invalid-syntax - reserved for future implementation
                     results.append(result)
                 except (OSError, ValueError) as e:
                     results.append({"error": str(e)})

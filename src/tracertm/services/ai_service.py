@@ -200,7 +200,7 @@ class AIService:
                 break
 
             except Exception as e:
-                logger.error("Claude API error: %s", e, exc_info=True)
+                logger.exception("Claude API error: %s", e)
                 yield format_sse(SSEEvent.ERROR, {"error": str(e)})
                 break
 
@@ -281,7 +281,7 @@ class AIService:
                 final_text = "".join(text_parts)
                 break
             except Exception as e:
-                logger.error("run_chat_turn_with_tools error: %s", e, exc_info=True)
+                logger.exception("run_chat_turn_with_tools error: %s", e)
                 final_text = f"[Error: {e}]"
                 break
 
@@ -430,7 +430,7 @@ class AIService:
                 break
 
             except Exception as e:
-                logger.error("Streaming error: %s", e, exc_info=True)
+                logger.exception("Streaming error: %s", e)
                 yield format_sse(SSEEvent.ERROR, {"error": str(e)})
                 break
 

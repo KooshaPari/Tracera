@@ -24,6 +24,11 @@ class CriticalPathService:
     """Service for calculating critical path in project networks."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)
@@ -134,7 +139,7 @@ class CriticalPathService:
         self,
         adjacency_list: dict[str, list[str]],
         critical_items: set[str],
-        topo_order: list[str],
+        topo_order: list[str],  # noqa: ARG002 - reserved for future implementation
     ) -> list[str]:
         """Find the critical path from start to end nodes.
 

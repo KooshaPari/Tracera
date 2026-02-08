@@ -492,6 +492,15 @@ class Scenario(Base, TimestampMixin):
     )
 
     def __init__(self, **kwargs: object) -> None:
+        """Initialize Scenario instance.
+
+        Handles metadata field aliasing for backward compatibility,
+        automatically converting 'metadata' and 'metadata_' kwargs
+        to 'scenario_metadata'.
+
+        Args:
+            **kwargs: Keyword arguments for model fields.
+        """
         if "metadata" in kwargs and "scenario_metadata" not in kwargs:
             kwargs["scenario_metadata"] = kwargs.pop("metadata")
         if "metadata_" in kwargs and "scenario_metadata" not in kwargs:
@@ -499,17 +508,42 @@ class Scenario(Base, TimestampMixin):
         super().__init__(**kwargs)
 
     def __getattribute__(self, name: str) -> object:
+        """Get attribute value with metadata aliasing.
+
+        Transparently redirects 'metadata' attribute access to 'scenario_metadata'
+        for backward compatibility.
+
+        Args:
+            name: Attribute name to retrieve.
+
+        Returns:
+            Attribute value, with 'metadata' redirected to 'scenario_metadata'.
+        """
         if name == "metadata":
             return object.__getattribute__(self, "scenario_metadata")
         return super().__getattribute__(name)
 
     def __setattr__(self, name: str, value: object) -> None:
+        """Set attribute value with metadata aliasing.
+
+        Transparently redirects 'metadata' attribute assignment to 'scenario_metadata'
+        for backward compatibility.
+
+        Args:
+            name: Attribute name to set.
+            value: Value to assign.
+        """
         if name == "metadata":
             name = "scenario_metadata"
         super().__setattr__(name, value)
 
     @property
     def metadata_(self) -> dict[str, object]:
+        """Alias property for accessing scenario_metadata.
+
+        Returns:
+            The scenario metadata dictionary.
+        """
         return self.scenario_metadata
 
     @metadata_.setter
@@ -589,19 +623,52 @@ class StepDefinition(Base, TimestampMixin):
     }
 
     def __init__(self, **kwargs: object) -> None:
+        """Initialize StepDefinition instance.
+
+        Handles metadata field aliasing for backward compatibility,
+        automatically converting 'metadata' kwargs to 'step_metadata'.
+
+        Args:
+            **kwargs: Keyword arguments for model fields.
+        """
         if "metadata" in kwargs and "step_metadata" not in kwargs:
             kwargs["step_metadata"] = kwargs.pop("metadata")
         super().__init__(**kwargs)
 
     def __getattribute__(self, name: str) -> object:
+        """Get attribute value with metadata aliasing.
+
+        Transparently redirects 'metadata' attribute access to 'step_metadata'
+        for backward compatibility.
+
+        Args:
+            name: Attribute name to retrieve.
+
+        Returns:
+            Attribute value, with 'metadata' redirected to 'step_metadata'.
+        """
         if name == "metadata":
             return object.__getattribute__(self, "step_metadata")
         return super().__getattribute__(name)
 
     def __setattr__(self, name: str, value: object) -> None:
+        """Set attribute value with metadata aliasing.
+
+        Transparently redirects 'metadata' attribute assignment to 'step_metadata'
+        for backward compatibility.
+
+        Args:
+            name: Attribute name to set.
+            value: Value to assign.
+        """
         if name == "metadata":
             name = "step_metadata"
         super().__setattr__(name, value)
 
     def __repr__(self) -> str:
+        """Return string representation of StepDefinition.
+
+        Returns:
+            String showing StepDefinition ID, type, and pattern.
+        """
         return f"<StepDefinition(id={self.id!r}, type={self.step_type!r}, pattern={self.pattern!r})>"

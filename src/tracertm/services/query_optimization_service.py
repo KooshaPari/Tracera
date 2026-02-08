@@ -23,6 +23,11 @@ class QueryOptimizationService:
     """Service for optimizing queries."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize service.
+        
+        Args:
+            session: SQLAlchemy async session for database operations.
+        """
         self.session = session
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)
@@ -147,7 +152,7 @@ class QueryOptimizationService:
             "total_items_returned": sum(s["items_returned"] for s in self.query_stats),
         }
 
-    def recommend_indexes(self, project_id: str) -> list[str]:
+    def recommend_indexes(self, project_id: str) -> list[str]:  # noqa: ARG002 - reserved for future implementation
         """Recommend indexes based on query patterns."""
         recommendations = []
 

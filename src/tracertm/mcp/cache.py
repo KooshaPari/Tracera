@@ -57,7 +57,7 @@ class QueryCache:
         self._hits = 0
         self._misses = 0
 
-    def _make_key(self, prefix: str, *args, **kwargs) -> str:
+    def _make_key(self, prefix: str, *args, **kwargs: Any) -> str:
         """Generate cache key from arguments."""
         # Create a stable string representation
         key_data = {
@@ -68,7 +68,7 @@ class QueryCache:
         key_str = json.dumps(key_data, sort_keys=True, default=str)
         return hashlib.sha256(key_str.encode()).hexdigest()
 
-    async def get(self, prefix: str, *args, **kwargs) -> Any | None:
+    async def get(self, prefix: str, *args, **kwargs: Any) -> Any | None:
         """Get value from cache.
 
         Args:
@@ -98,7 +98,7 @@ class QueryCache:
             self._hits += 1
             return entry.value
 
-    async def set(self, prefix: str, value: Any, ttl: int | None = None, *args, **kwargs) -> None:
+    async def set(self, prefix: str, value: Any, ttl: int | None = None, *args, **kwargs: Any) -> None:
         """Set value in cache.
 
         Args:
@@ -136,7 +136,7 @@ class QueryCache:
                     del self._cache[key]
 
     async def get_or_compute(
-        self, prefix: str, compute_fn: Callable[..., Any], ttl: int | None = None, *args, **kwargs,
+        self, prefix: str, compute_fn: Callable[..., Any], ttl: int | None = None, *args, **kwargs: Any,
     ) -> Any:
         """Get from cache or compute and cache the result.
 

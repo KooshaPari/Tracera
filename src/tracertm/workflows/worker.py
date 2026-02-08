@@ -101,7 +101,7 @@ async def main() -> None:
         await worker.run()
 
     except Exception as exc:
-        logger.error("Failed to start Temporal worker: %s", exc, exc_info=True)
+        logger.exception("Failed to start Temporal worker: %s", exc)
         raise
 
 

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from tracertm.services.agent_service import AgentService
 from fastapi import Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -219,7 +220,7 @@ async def _generate_sse_stream(
     except AIServiceError as e:
         yield _format_error_sse(str(e))
     except Exception as e:
-        logger.error("Chat streaming error: %s", e, exc_info=True)
+        logger.exception("Chat streaming error: %s", e)
         yield _format_error_sse("An unexpected error occurred")
 
 
@@ -382,5 +383,5 @@ async def simple_chat(
     except AIServiceError as e:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
-        logger.error("Chat error: %s", e, exc_info=True)
+        logger.exception("Chat error: %s", e)
         raise HTTPException(status_code=500, detail="An unexpected error occurred")
