@@ -11,5 +11,5 @@ class NotificationService:
     def __init__(self, db_session: Any | None = None) -> None:
         self.db_session = db_session
 
-    async def notify(self, message: str) -> bool:
+    async def notify(self, message: str) -> bool:  # noqa: ARG002
         return True

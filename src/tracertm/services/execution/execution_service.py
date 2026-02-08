@@ -127,11 +127,11 @@ class ExecutionService:
 
     async def _start_with_native(
         self,
-        execution: Any,
+        execution: Any,  # noqa: ARG002
         execution_id: str,
         config: Any,
         mount_source: Path | str | None,
-        command: list[str] | None,
+        command: list[str] | None,  # noqa: ARG002
     ) -> bool:
         """Start execution using native subprocess orchestrator."""
         if not await self._orchestrator.is_available():

@@ -147,7 +147,7 @@ class VHSExecutionService:
 
     def _build_tape_generator(
         self,
-        execution_id: str,
+        execution_id: str,  # noqa: ARG002
         commands: list[str],
         config: ExecutionEnvironmentConfig | None,
     ) -> TapeFileGenerator:
@@ -172,7 +172,7 @@ class VHSExecutionService:
 
         return tape
 
-    async def _execute_subprocess(self, tape_path: Path, output_filename: str, workdir: Path) -> dict[str, Any]:
+    async def _execute_subprocess(self, tape_path: Path, output_filename: str, workdir: Path) -> dict[str, Any]:  # noqa: ARG002
         """Execute VHS via subprocess."""
         cmd = [self._vhs_cmd, str(tape_path)]
         try:

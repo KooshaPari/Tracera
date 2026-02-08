@@ -11,5 +11,5 @@ class QueryService:
     def __init__(self, db_session: Any | None = None) -> None:
         self.db_session = db_session
 
-    async def search(self, criteria: dict[str, object] | None = None) -> list[dict[str, object]]:
+    async def search(self, criteria: dict[str, object] | None = None) -> list[dict[str, object]]:  # noqa: ARG002
         return []

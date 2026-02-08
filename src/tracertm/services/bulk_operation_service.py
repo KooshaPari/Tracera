@@ -254,7 +254,7 @@ class BulkOperationService:
 
     def bulk_create_preview(
         self,
-        project_id: str | uuid.UUID,
+        project_id: str | uuid.UUID,  # noqa: ARG002
         csv_data: str,
         limit: int = 5,
     ) -> dict[str, Any]:

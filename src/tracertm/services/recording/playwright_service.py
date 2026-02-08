@@ -162,7 +162,7 @@ class PlaywrightExecutionService:
 
     async def _execute_subprocess(
         self,
-        execution_id: str,
+        execution_id: str,  # noqa: ARG002
         url: str | None,
         script: str | None,
         workdir: Path,

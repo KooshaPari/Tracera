@@ -11,5 +11,5 @@ class HistoryService:
     def __init__(self, db_session: Any | None = None) -> None:
         self.db_session = db_session
 
-    async def get_history(self, *args: Any, **kwargs: Any) -> list[dict[str, object]]:
+    async def get_history(self, *args: Any, **kwargs: Any) -> list[dict[str, object]]:  # noqa: ARG002
         return []
