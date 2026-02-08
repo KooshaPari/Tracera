@@ -1,7 +1,8 @@
 import type { CacheStatistics } from '@/lib/cache';
 
-import { PERCENT_SCALE, ZERO } from './constants';
 import type { CacheHitRateMetrics, LODDistribution, PerformanceMetrics } from './types';
+
+import { PERCENT_SCALE, ZERO } from './constants';
 
 interface PerformanceMemory {
   usedJSHeapSize: number;
@@ -48,7 +49,11 @@ function toCacheHitRateMetrics(stats: CacheStatistics | undefined): CacheHitRate
   };
 }
 
-function computeCombinedCache(layout: CacheHitRateMetrics, grouping: CacheHitRateMetrics, search: CacheHitRateMetrics): CacheHitRateMetrics {
+function computeCombinedCache(
+  layout: CacheHitRateMetrics,
+  grouping: CacheHitRateMetrics,
+  search: CacheHitRateMetrics,
+): CacheHitRateMetrics {
   const totalRequests = layout.totalRequests + grouping.totalRequests + search.totalRequests;
   const hits = layout.hits + grouping.hits + search.hits;
   const misses = layout.misses + grouping.misses + search.misses;
@@ -101,8 +106,7 @@ function resolveTiming(now: number, markers: TimingMarkers): PerformanceMetrics[
 }
 
 function resolveMemory(): PerformanceMetrics['memory'] | undefined {
-  const performanceWithMemory = performance as PerformanceWithMemory;
-  const memory = performanceWithMemory.memory;
+  const { memory } = performance as PerformanceWithMemory;
   if (memory === undefined) {
     return undefined;
   }
@@ -134,10 +138,13 @@ function buildPerformanceMetrics(params: {
   const nodeRatios = computeCullingRatio(nodes.total, nodes.rendered);
   const edgeRatios = computeCullingRatio(edges.total, edges.rendered);
 
-  const layoutCache = toCacheHitRateMetrics(params.cacheStats?.layout);
-  const groupingCache = toCacheHitRateMetrics(params.cacheStats?.grouping);
-  const searchCache = toCacheHitRateMetrics(params.cacheStats?.search);
+  const { cacheStats } = params;
+  const layoutCache = toCacheHitRateMetrics(cacheStats?.layout);
+  const groupingCache = toCacheHitRateMetrics(cacheStats?.grouping);
+  const searchCache = toCacheHitRateMetrics(cacheStats?.search);
   const combined = computeCombinedCache(layoutCache, groupingCache, searchCache);
+
+  const { fps, interaction, lodDistribution, now, timingMarkers } = params;
 
   return {
     cache: {
@@ -149,21 +156,21 @@ function buildPerformanceMetrics(params: {
     edges: {
       culled: edgeRatios.culled,
       cullingRatio: edgeRatios.ratio,
-      rendered: params.edges.rendered,
-      total: params.edges.total,
+      rendered: edges.rendered,
+      total: edges.total,
     },
-    fps: params.fps,
-    interaction: params.interaction,
-    lod: resolveLOD(params.lodDistribution),
+    fps,
+    interaction,
+    lod: resolveLOD(lodDistribution),
     memory: resolveMemory(),
     nodes: {
       culled: nodeRatios.culled,
       cullingRatio: nodeRatios.ratio,
-      rendered: params.nodes.rendered,
-      total: params.nodes.total,
+      rendered: nodes.rendered,
+      total: nodes.total,
     },
-    timestamp: params.now,
-    timing: resolveTiming(params.now, params.timingMarkers),
+    timestamp: now,
+    timing: resolveTiming(now, timingMarkers),
   };
 }
 

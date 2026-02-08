@@ -3,8 +3,8 @@ import { ArrowDown, ArrowUp } from 'lucide-react';
 import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 
-import { ROW_INDEX_OFFSET, TABLE_HEADER_WIDTH } from './constants';
-import { getSortAriaLabel, getSortDirection } from './formatters';
+import itemsTableConstants from './constants';
+import itemsTableFormatters from './formatters';
 
 interface TableHeaderProps {
   sortColumn: string;
@@ -13,8 +13,8 @@ interface TableHeaderProps {
 }
 
 function TableHeaderRow({ sortColumn, sortOrder, onSort }: TableHeaderProps): JSX.Element {
-  const sortDirection = getSortDirection(sortColumn, sortOrder, 'title');
-  const ariaLabel = `Node Identifier ${getSortAriaLabel(sortColumn, sortOrder, 'title')}`;
+  const sortDirection = itemsTableFormatters.getSortDirection(sortColumn, sortOrder, 'title');
+  const ariaLabel = `Node Identifier ${itemsTableFormatters.getSortAriaLabel(sortColumn, sortOrder, 'title')}`;
   let sortIcon: JSX.Element | undefined;
   if (sortColumn === 'title' && sortOrder === 'asc') {
     sortIcon = <ArrowUp className='h-3 w-3' />;
@@ -27,11 +27,11 @@ function TableHeaderRow({ sortColumn, sortOrder, onSort }: TableHeaderProps): JS
     <TableHeader>
       <TableRow role='row' className='border-border/50 border-b hover:bg-transparent'>
         <TableHead
-          colIndex={ROW_INDEX_OFFSET}
+          colIndex={itemsTableConstants.ROW_INDEX_OFFSET}
           sortDirection={sortDirection}
           className={cn(
             'bg-card/50 sticky top-0 z-10 h-14 px-6 text-[10px] font-black tracking-widest uppercase',
-            `w-[${TABLE_HEADER_WIDTH}px]`,
+            `w-[${itemsTableConstants.TABLE_HEADER_WIDTH}px]`,
           )}
         >
           <button
@@ -47,31 +47,31 @@ function TableHeaderRow({ sortColumn, sortOrder, onSort }: TableHeaderProps): JS
           </button>
         </TableHead>
         <TableHead
-          colIndex={ROW_INDEX_OFFSET + 1}
+          colIndex={itemsTableConstants.ROW_INDEX_OFFSET + 1}
           className='bg-card/50 sticky top-0 z-10 text-[10px] font-black tracking-widest uppercase'
         >
           Type
         </TableHead>
         <TableHead
-          colIndex={ROW_INDEX_OFFSET + 2}
+          colIndex={itemsTableConstants.ROW_INDEX_OFFSET + 2}
           className='bg-card/50 sticky top-0 z-10 text-[10px] font-black tracking-widest uppercase'
         >
           Status
         </TableHead>
         <TableHead
-          colIndex={ROW_INDEX_OFFSET + 3}
+          colIndex={itemsTableConstants.ROW_INDEX_OFFSET + 3}
           className='bg-card/50 sticky top-0 z-10 text-[10px] font-black tracking-widest uppercase'
         >
           Priority
         </TableHead>
         <TableHead
-          colIndex={ROW_INDEX_OFFSET + 4}
+          colIndex={itemsTableConstants.ROW_INDEX_OFFSET + 4}
           className='bg-card/50 sticky top-0 z-10 text-[10px] font-black tracking-widest uppercase'
         >
           Owner
         </TableHead>
         <TableHead
-          colIndex={ROW_INDEX_OFFSET + 5}
+          colIndex={itemsTableConstants.ROW_INDEX_OFFSET + 5}
           className='bg-card/50 sticky top-0 z-10 px-6 text-right text-[10px] font-black tracking-widest uppercase'
         >
           Actions

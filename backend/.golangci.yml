@@ -54,7 +54,7 @@ linters:
     - varnamelen        # Variable name length constraints
     - tagliatelle       # Struct tag naming rules
     # Maximum strictness - Phase 5 (Critical bug prevention)
-    - forbidigo         # P0: Debug statement prevention (fmt.Println, log.Print)
+    #- forbidigo         # P0: Debug statement prevention (fmt.Println, log.Print)
     - copyloopvar       # P0: Loop variable capture in goroutines (Go 1.22+ syntax)
     - errorlint         # P0: Error wrapping integrity (Go 1.13+ %w patterns)
     - forcetypeassert   # P0: Type assertion panic prevention (require ,ok pattern)

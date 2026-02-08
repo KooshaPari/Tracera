@@ -90,6 +90,58 @@ const toggleSortOrder = (value: ProjectsListSortOrder): ProjectsListSortOrder =>
   return 'asc';
 };
 
+interface ProjectsListData {
+  projectsArray: Project[];
+  projectsLoading: boolean;
+}
+
+function useProjectsListData(): ProjectsListData {
+  const { data: projects, isLoading: projectsLoading } = useProjects();
+  const projectsArray = useMemo<Project[]>((): Project[] => {
+    if (Array.isArray(projects)) {
+      return projects;
+    }
+    return [];
+  }, [projects]);
+
+  return { projectsArray, projectsLoading };
+}
+
+function useInitialCreateDialogOpen(): boolean {
+  const searchParams = useSearch({ strict: false }) as unknown;
+  const action = useMemo<string | undefined>(() => getSearchAction(searchParams), [searchParams]);
+  return useMemo<boolean>(() => getInitialShowCreateDialog(action), [action]);
+}
+
+function useFilteredAndSortedProjects({
+  projectsArray,
+  searchQuery,
+  sortBy,
+  sortOrder,
+}: {
+  projectsArray: Project[];
+  searchQuery: string;
+  sortBy: ProjectsListSortBy;
+  sortOrder: ProjectsListSortOrder;
+}): ProjectsListEntry[] {
+  return useMemo<ProjectsListEntry[]>((): ProjectsListEntry[] => {
+    const query = searchQuery.trim().toLowerCase();
+    const entries = buildEntries(projectsArray);
+
+    const filtered: ProjectsListEntry[] = [];
+    for (const entry of entries) {
+      const displayName = entry.project.name ?? EMPTY_STRING;
+      if (query === EMPTY_STRING || displayName.toLowerCase().includes(query)) {
+        filtered.push(entry);
+      }
+    }
+
+    const sorted = [...filtered];
+    sorted.sort((first, second) => compareEntries(first, second, sortBy, sortOrder));
+    return sorted;
+  }, [projectsArray, searchQuery, sortBy, sortOrder]);
+}
+
 interface ProjectsListViewModel {
   editingProject: Project | undefined;
   filteredAndSorted: ProjectsListEntry[];
@@ -117,15 +169,8 @@ interface ProjectsListViewModel {
 }
 
 function useProjectsListViewModel(): ProjectsListViewModel {
-  const searchParams = useSearch({ strict: false });
-  const action = useMemo<string | undefined>(() => getSearchAction(searchParams), [searchParams]);
-  const initialShowCreateDialog = useMemo<boolean>(() => getInitialShowCreateDialog(action), [action]);
-
-  const { data: projects, isLoading: projectsLoading } = useProjects();
-  const projectsArray = useMemo<Project[]>(
-    (): Project[] => (Array.isArray(projects) ? projects : []),
-    [projects],
-  );
+  const initialShowCreateDialog = useInitialCreateDialogOpen();
+  const { projectsArray, projectsLoading } = useProjectsListData();
 
   const [searchQuery, setSearchQuery] = useState(EMPTY_STRING);
   const [sortBy, setSortBy] = useState<ProjectsListSortBy>('date');
@@ -135,36 +180,48 @@ function useProjectsListViewModel(): ProjectsListViewModel {
   const [showCreateDialog, setShowCreateDialog] = useState<boolean>(initialShowCreateDialog);
   const [editingProject, setEditingProject] = useState<Project | undefined>();
 
-  const filteredAndSorted = useMemo<ProjectsListEntry[]>((): ProjectsListEntry[] => {
-    const query = searchQuery.trim().toLowerCase();
-    const entries = buildEntries(projectsArray);
+  const filteredAndSorted = useFilteredAndSortedProjects({
+    projectsArray,
+    searchQuery,
+    sortBy,
+    sortOrder,
+  });
 
-    const filtered: ProjectsListEntry[] = [];
-    for (const entry of entries) {
-      const displayName = entry.project.name ?? EMPTY_STRING;
-      if (query === EMPTY_STRING || displayName.toLowerCase().includes(query)) {
-        filtered.push(entry);
-      }
-    }
+  const openCreateDialog = useCallback((): void => {
+    setShowCreateDialog(true);
+  }, []);
 
-    const sorted = [...filtered];
-    sorted.sort((first, second) => compareEntries(first, second, sortBy, sortOrder));
-    return sorted;
-  }, [projectsArray, searchQuery, sortBy, sortOrder]);
-
-  const openCreateDialog = useCallback((): void => setShowCreateDialog(true), []);
-  const handleCreateDialogOpenChange = useCallback((open: boolean): void => setShowCreateDialog(open), []);
+  const handleCreateDialogOpenChange = useCallback((open: boolean): void => {
+    setShowCreateDialog(open);
+  }, []);
 
   const handleCreated = useCallback((project: Project): void => {
     globalThis.location.assign(`/projects/${project.id}/views/integrations`);
   }, []);
 
-  const openExportDialog = useCallback((): void => setShowExportDialog(true), []);
-  const openImportDialog = useCallback((): void => setShowImportDialog(true), []);
-  const handleSearchQueryChange = useCallback((value: string): void => setSearchQuery(value), []);
-  const handleSortByChange = useCallback((value: ProjectsListSortBy): void => setSortBy(value), []);
-  const handleSortOrderToggle = useCallback((): void => setSortOrder(toggleSortOrder), []);
-  const handleClearSearch = useCallback((): void => setSearchQuery(EMPTY_STRING), []);
+  const openExportDialog = useCallback((): void => {
+    setShowExportDialog(true);
+  }, []);
+
+  const openImportDialog = useCallback((): void => {
+    setShowImportDialog(true);
+  }, []);
+
+  const handleSearchQueryChange = useCallback((value: string): void => {
+    setSearchQuery(value);
+  }, []);
+
+  const handleSortByChange = useCallback((value: ProjectsListSortBy): void => {
+    setSortBy(value);
+  }, []);
+
+  const handleSortOrderToggle = useCallback((): void => {
+    setSortOrder(toggleSortOrder);
+  }, []);
+
+  const handleClearSearch = useCallback((): void => {
+    setSearchQuery(EMPTY_STRING);
+  }, []);
 
   const handleEditProject = useCallback((project: Project): void => {
     setEditingProject(project);
@@ -204,12 +261,37 @@ function useProjectsListViewModel(): ProjectsListViewModel {
   };
 }
 
-export function ProjectsListView(): JSX.Element {
+function ProjectsListView(): JSX.Element {
   const model = useProjectsListViewModel();
   return renderProjectsListView(model);
 }
 
-export { ProjectsListView as default };
+function renderProjectsListContent({
+  filteredAndSorted,
+  handleClearSearch,
+  handleEditProject,
+  searchQuery,
+}: Pick<
+  ProjectsListViewModel,
+  'filteredAndSorted' | 'handleClearSearch' | 'handleEditProject' | 'searchQuery'
+>): JSX.Element {
+  if (filteredAndSorted.length === 0) {
+    return <ProjectsListEmptyState searchQuery={searchQuery} onClearSearch={handleClearSearch} />;
+  }
+
+  return (
+    <div className='stagger-children grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+      {filteredAndSorted.map(({ project, itemCount }) => (
+        <ProjectCard
+          key={project.id}
+          project={project}
+          itemCount={itemCount}
+          onEdit={handleEditProject}
+        />
+      ))}
+    </div>
+  );
+}
 
 function renderProjectsListView(model: ProjectsListViewModel): JSX.Element {
   const {
@@ -241,23 +323,12 @@ function renderProjectsListView(model: ProjectsListViewModel): JSX.Element {
     return <ProjectsListLoadingState />;
   }
 
-  let content: JSX.Element = (
-    <ProjectsListEmptyState searchQuery={searchQuery} onClearSearch={handleClearSearch} />
-  );
-  if (filteredAndSorted.length > 0) {
-    content = (
-      <div className='stagger-children grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-        {filteredAndSorted.map(({ project, itemCount }) => (
-          <ProjectCard
-            key={project.id}
-            project={project}
-            itemCount={itemCount}
-            onEdit={handleEditProject}
-          />
-        ))}
-      </div>
-    );
-  }
+  const content = renderProjectsListContent({
+    filteredAndSorted,
+    handleClearSearch,
+    handleEditProject,
+    searchQuery,
+  });
 
   return (
     <div className='animate-in-fade-up mx-auto max-w-[1600px] space-y-8 p-6'>
@@ -303,3 +374,5 @@ function renderProjectsListView(model: ProjectsListViewModel): JSX.Element {
     </div>
   );
 }
+
+export { ProjectsListView };

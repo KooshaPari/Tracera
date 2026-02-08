@@ -1,3 +1,5 @@
+"""BDD feature/scenario API routes."""
+
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -29,6 +31,7 @@ async def create_feature(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
+    """Create a new BDD feature."""
     service = FeatureService(db)
     options = CreateFeatureInput(
         description=feature.description,
@@ -52,6 +55,7 @@ async def get_feature(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
+    """Return a BDD feature by id."""
     service = FeatureService(db)
     feature = await service.get_feature(feature_id)
     if not feature:
@@ -79,6 +83,7 @@ async def get_feature_activities(
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    """List feature activity events."""
     repo = EventRepository(db)
     events = await repo.get_by_entity(feature_id, limit=limit)
     activities = [
@@ -105,6 +110,7 @@ async def delete_feature(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> None:
+    """Delete a BDD feature by id."""
     service = FeatureService(db)
     success = await service.delete_feature(feature_id)
     if not success:
@@ -118,6 +124,7 @@ async def list_features(
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    """List BDD features for a project."""
     service = FeatureService(db)
     return await service.list_features(project_id, status)
 
@@ -134,6 +141,7 @@ async def create_scenario(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
+    """Create a BDD scenario for a feature."""
     service = ScenarioService(db)
     # Validate feature exists
     feat_service = FeatureService(db)
@@ -161,6 +169,7 @@ async def get_scenario(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
+    """Return a BDD scenario by id."""
     service = ScenarioService(db)
     scenario = await service.get_scenario(scenario_id)
     if not scenario:
@@ -175,6 +184,7 @@ async def get_scenario_activities(
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    """List scenario activity events."""
     repo = EventRepository(db)
     events = await repo.get_by_entity(scenario_id, limit=limit)
     activities = [
@@ -201,6 +211,7 @@ async def delete_scenario(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> None:
+    """Delete a BDD scenario by id."""
     service = ScenarioService(db)
     success = await service.delete_scenario(scenario_id)
     if not success:

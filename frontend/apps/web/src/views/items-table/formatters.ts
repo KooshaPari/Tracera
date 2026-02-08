@@ -1,6 +1,6 @@
 import type { Priority, TypedItem, ViewType } from '@tracertm/types';
 
-import { DEFAULT_PRIORITY, DEFAULT_VIEW, EMPTY_STRING, FILTER_ALL } from './constants';
+import itemsTableConstants from './constants';
 
 function readString(value: unknown): string | undefined {
   if (typeof value === 'string') {
@@ -23,7 +23,7 @@ function getViewSegment(view?: ViewType, fallback?: ViewType): string {
   if (fallback !== undefined) {
     return fallback.toLowerCase();
   }
-  return DEFAULT_VIEW;
+  return itemsTableConstants.DEFAULT_VIEW;
 }
 
 function getItemOwnerLabel(owner?: string): { label: string; initial: string } {
@@ -37,7 +37,7 @@ function getPriorityLabel(priority?: Priority): string {
   if (priority !== undefined) {
     return priority;
   }
-  return DEFAULT_PRIORITY;
+  return itemsTableConstants.DEFAULT_PRIORITY;
 }
 
 function getSearchValue(searchParams: Record<string, unknown>, key: string): string | undefined {
@@ -52,14 +52,14 @@ function createViewTypeValue(value: string | undefined): string {
   if (value !== undefined && value.trim() !== '') {
     return value;
   }
-  return FILTER_ALL;
+  return itemsTableConstants.FILTER_ALL;
 }
 
 function getFilterValue(value: string | undefined): string | undefined {
   if (value === undefined) {
     return undefined;
   }
-  if (value === FILTER_ALL) {
+  if (value === itemsTableConstants.FILTER_ALL) {
     return undefined;
   }
   return value;
@@ -72,14 +72,14 @@ function getItemTypeValue(type: string | undefined, view: ViewType | undefined):
   if (view !== undefined) {
     return view;
   }
-  return DEFAULT_VIEW;
+  return itemsTableConstants.DEFAULT_VIEW;
 }
 
 function getViewValue(view: ViewType | undefined): ViewType {
   if (view !== undefined) {
     return view;
   }
-  return DEFAULT_VIEW as ViewType;
+  return itemsTableConstants.DEFAULT_VIEW as ViewType;
 }
 
 function getSearchMessage(liveMessage: string, title: string): string {
@@ -132,7 +132,7 @@ function getSortedItems(
     }
 
     let matchesQuery = true;
-    if (query !== EMPTY_STRING) {
+    if (query !== itemsTableConstants.EMPTY_STRING) {
       const titleMatch = item.title.toLowerCase().includes(query);
       const idMatch = item.id.toLowerCase().includes(query);
       matchesQuery = titleMatch || idMatch;
@@ -172,20 +172,3 @@ const itemsTableFormatters = {
 } as const;
 
 export default itemsTableFormatters;
-
-export {
-  createViewTypeValue,
-  getFilterValue,
-  getItemOwnerLabel,
-  getItemTypeValue,
-  getLiveMessage,
-  getPriorityLabel,
-  getSearchMessage,
-  getSearchValue,
-  getSortedItems,
-  getSortAriaLabel,
-  getSortDirection,
-  getViewSegment,
-  getViewValue,
-  hasValue,
-};

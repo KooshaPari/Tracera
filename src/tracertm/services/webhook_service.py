@@ -10,10 +10,10 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.constants import (
-    HTTP_OK,
-    HTTP_UNAUTHORIZED,
     HTTP_BAD_REQUEST,
+    HTTP_OK,
     HTTP_TOO_MANY_REQUESTS,
+    HTTP_UNAUTHORIZED,
     PREVIEW_SIZE_DEFAULT,
 )
 from tracertm.models.webhook_integration import WebhookStatus

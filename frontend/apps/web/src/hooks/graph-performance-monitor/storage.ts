@@ -1,7 +1,13 @@
 import { logger } from '@/lib/logger';
 
-import { PROFILER_HISTORY_LIMIT, STORAGE_HISTORY_LIMIT, STORAGE_KEY_METRICS, STORAGE_KEY_PROFILER_PREFIX } from './constants';
 import type { PerformanceMetrics } from './types';
+
+import {
+  PROFILER_HISTORY_LIMIT,
+  STORAGE_HISTORY_LIMIT,
+  STORAGE_KEY_METRICS,
+  STORAGE_KEY_PROFILER_PREFIX,
+} from './constants';
 
 const ZERO = Number('0');
 
@@ -103,7 +109,10 @@ function appendProfilerEntryToStorage(monitorId: string, entry: ProfilerEntry): 
   try {
     const key = getProfilerStorageKey(monitorId);
     const stored = sessionStorage.getItem(key);
-    const history = stored === null || stored.length === ZERO ? [] : safeParseJsonArray(stored);
+    let history: unknown[] = [];
+    if (stored !== null && stored.length > ZERO) {
+      history = safeParseJsonArray(stored);
+    }
     const filtered: ProfilerEntry[] = [];
     for (const item of history) {
       if (isProfilerEntry(item)) {

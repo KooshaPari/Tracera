@@ -4,8 +4,8 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.item_repository import ItemRepository

@@ -1,3 +1,5 @@
+"""Notification API routes."""
+
 import logging
 from datetime import UTC, datetime
 from typing import Annotated, Any
@@ -16,6 +18,8 @@ router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
 
 class NotificationResponse(BaseModel):
+    """Serialized notification payload returned to clients."""
+
     id: str
     type: str
     title: str
@@ -33,6 +37,7 @@ async def list_notifications(
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    """List notifications for the authenticated user."""
     user_id = claims.get("sub")
     if not user_id:
         raise HTTPException(status_code=401, detail="User not authenticated")
@@ -65,6 +70,7 @@ async def mark_as_read(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
+    """Mark a single notification as read."""
     user_id = claims.get("sub")
     if not user_id:
         raise HTTPException(status_code=401, detail="User not authenticated")
@@ -91,6 +97,7 @@ async def mark_all_as_read(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
+    """Mark all notifications as read for the authenticated user."""
     user_id = claims.get("sub")
     if not await _notifications_table_exists(db):
         return {"status": "success"}

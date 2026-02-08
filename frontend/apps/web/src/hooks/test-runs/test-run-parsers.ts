@@ -178,7 +178,10 @@ function parseStepResults(stepResultsRaw: unknown[] | undefined): TestResult['st
   });
 }
 
-function parseTestRunActivitiesResponse(input: unknown): { runId: string; activities: TestRunActivity[] } {
+function parseTestRunActivitiesResponse(input: unknown): {
+  runId: string;
+  activities: TestRunActivity[];
+} {
   const data = testRunGuards.asRecord(input, 'activities response');
   const activitiesRaw = testRunGuards.getRequiredArray(data, 'activities');
   const activities = activitiesRaw.map((item: unknown): TestRunActivity => {

@@ -111,7 +111,7 @@ class GitHubImportService:
             }
 
         except (json.JSONDecodeError, ValueError, KeyError, OperationalError) as e:
-            logger.error(f"GitHub import failed: {e}", exc_info=True)
+            logger.error("GitHub import failed: %s", e, exc_info=True)
             return {
                 "success": False,
                 "errors": [f"Import failed: {e!s}"],

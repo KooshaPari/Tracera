@@ -404,6 +404,7 @@ async def create_contract_spec(
         contract: Contract creation payload
         claims: Authentication claims from JWT
         db: Database session
+        event_bus: Event bus for publishing spec lifecycle events
 
     Returns:
         ContractResponse: Created contract
@@ -987,6 +988,7 @@ async def list_scenario_activities_for_project(
     claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
     db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
 ) -> dict[str, Any]:
+    """List scenario activity events for a project."""
     repo = EventRepository(db)
     events = await repo.get_by_project(project_id, limit=limit + offset)
     activities = [
@@ -1052,6 +1054,7 @@ async def get_scenario_activities(
     claims: Annotated[dict[str, Any], Depends(auth_guard)] = Depends(auth_guard),
     db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
 ) -> dict[str, Any]:
+    """List activity events for a scenario."""
     repo = EventRepository(db)
     events = await repo.get_by_entity(scenario_id, limit=limit + offset)
     activities = [

@@ -16,12 +16,12 @@ from loguru import logger
 from tracertm.config.manager import ConfigManager
 from tracertm.constants import (
     HTTP_CONFLICT,
-    HTTP_UNAUTHORIZED,
     HTTP_TOO_MANY_REQUESTS,
-    TIMEOUT_DEFAULT,
+    HTTP_UNAUTHORIZED,
     MAX_RETRIES_DEFAULT,
     RETRY_BACKOFF_BASE,
     RETRY_BACKOFF_MAX,
+    TIMEOUT_DEFAULT,
 )
 
 

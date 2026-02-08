@@ -21,4 +21,3 @@ export const ProjectsListLoadingState = memo(function ProjectsListLoadingState()
     </div>
   );
 });
-

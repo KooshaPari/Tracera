@@ -1,8 +1,12 @@
 import type { Edge, Node } from '@xyflow/react';
+
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { logger } from '@/lib/logger';
 
+import type { ElkOptions, LayoutConfig, LayoutType, SyncLayoutResult } from './types';
+
+import { computeLayout } from './compute-layout';
 import {
   DEFAULT_CENTER_X,
   DEFAULT_CENTER_Y,
@@ -13,14 +17,12 @@ import {
   DEFAULT_NODE_WIDTH,
   DEFAULT_RANK_SEP,
 } from './constants';
-import { computeLayout } from './compute-layout';
 import { computeElkLayoutInternal, getElkOptions } from './elk-layout';
 import { applyGridLayout } from './grid-layout';
 import { getLayoutConfig } from './layout-config';
 import { buildSignature } from './signature';
 import { resolveSyncLayout } from './sync-layout';
 import { useApplyLayoutEffect } from './use-apply-layout-effect';
-import type { ElkOptions, LayoutConfig, LayoutType, SyncLayoutResult } from './types';
 
 interface UseDagLayoutOptions {
   nodeWidth?: number;
@@ -61,10 +63,7 @@ function useDagLayout<NodeData extends Record<string, unknown>>(
   const [isLayouting, setIsLayouting] = useState(false);
 
   const layoutConfig = useMemo(() => getLayoutConfig(layout), [layout]);
-  const signature = useMemo(
-    () => buildSignature({ edges, layout, nodes }),
-    [edges, layout, nodes],
-  );
+  const signature = useMemo(() => buildSignature({ edges, layout, nodes }), [edges, layout, nodes]);
 
   const applySyncLayout = useCallback(
     (inputNodes: Node<NodeData>[], inputEdges: Edge[]): SyncLayoutResult<NodeData> =>

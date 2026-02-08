@@ -100,4 +100,3 @@ const ProjectsListFiltersBar = memo(function ProjectsListFiltersBar({
 });
 
 export { ProjectsListFiltersBar, type ProjectsListSortBy, type ProjectsListSortOrder };
-

@@ -5,8 +5,8 @@ import type { TypedItem } from '@tracertm/types';
 
 import { Badge, Button } from '@tracertm/ui';
 
-import { ITEM_ID_PREFIX_LENGTH } from './constants';
-import { getItemOwnerLabel, getPriorityLabel } from './formatters';
+import itemsTableConstants from './constants';
+import itemsTableFormatters from './formatters';
 import { PriorityDot } from './priority-dot';
 import { StatusBadge } from './status-badges';
 
@@ -16,8 +16,8 @@ function buildCardItems(
   onDelete: (id: string) => void,
 ): CardItem[] {
   return items.map((item) => {
-    const owner = getItemOwnerLabel(item.owner);
-    const priorityLabel = getPriorityLabel(item.priority);
+    const owner = itemsTableFormatters.getItemOwnerLabel(item.owner);
+    const priorityLabel = itemsTableFormatters.getPriorityLabel(item.priority);
     const handleNavigate = (): void => {
       onNavigate(item);
     };
@@ -79,7 +79,7 @@ function buildCardItems(
         </div>
       ),
       status: <StatusBadge status={item.status} />,
-      subtitle: item.id.slice(0, ITEM_ID_PREFIX_LENGTH),
+      subtitle: item.id.slice(0, itemsTableConstants.ITEM_ID_PREFIX_LENGTH),
       title: item.title,
     };
   });

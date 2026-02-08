@@ -2,6 +2,8 @@ import { useCallback } from 'react';
 
 import type { Item } from '@tracertm/types';
 
+import type { DraftState } from './types';
+
 import {
   reportAnalysisComplete,
   reportImpactComplete,
@@ -11,7 +13,6 @@ import {
 import { useItemMutations } from './item-mutations';
 import { itemDetailSelectors as selectors } from './selectors-facade';
 import { useSpecActions } from './spec-actions';
-import type { DraftState } from './types';
 
 interface ViewModelActions {
   buildLinkToItem: (id: string) => string;
@@ -40,8 +41,19 @@ interface Inputs {
 }
 
 export function useItemDetailViewModelActions(inputs: Inputs): ViewModelActions {
-  const { itemId, projectId, viewType, item, draft, resetDraft, setIsEditing, sourceLinks, targetLinks, upstreamCount, downstreamCount } =
-    inputs;
+  const {
+    itemId,
+    projectId,
+    viewType,
+    item,
+    draft,
+    resetDraft,
+    setIsEditing,
+    sourceLinks,
+    targetLinks,
+    upstreamCount,
+    downstreamCount,
+  } = inputs;
 
   const buildLinkToItem = useCallback(
     (id: string): string => selectors.buildItemLink(projectId, viewType, id),

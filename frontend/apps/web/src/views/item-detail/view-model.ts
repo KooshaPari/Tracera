@@ -276,7 +276,7 @@ function useDraftState(item: Item | undefined): DraftActions {
   );
 }
 
-export function useItemDetailViewModel(params: Params): ItemDetailViewModel {
+function useItemDetailViewModel(params: Params): ItemDetailViewModel {
   const { itemId, projectId, viewTypeParam } = params;
   const itemQuery = useItem(itemId ?? EMPTY_STRING);
   const item = itemQuery.data;
@@ -329,13 +329,19 @@ export function useItemDetailViewModel(params: Params): ItemDetailViewModel {
   });
 
   return {
-    query, itemId, projectId, viewType,
-    isEditing, draft: draftState.draft,
+    query,
+    itemId,
+    projectId,
+    viewType,
+    isEditing,
+    draft: draftState.draft,
     upstreamCount: linksState.upstreamCount,
     downstreamCount: linksState.downstreamCount,
     metadataCount: metadataState.metadataCount,
-    displayStatus, displayPriority,
-    createdAtLabel: createdLabel, updatedAtLabel: updatedLabel,
+    displayStatus,
+    displayPriority,
+    createdAtLabel: createdLabel,
+    updatedAtLabel: updatedLabel,
     sourceLinks: linksState.sourceLinks,
     targetLinks: linksState.targetLinks,
     metadataSearch: metadataState.metadataSearch,
@@ -343,7 +349,8 @@ export function useItemDetailViewModel(params: Params): ItemDetailViewModel {
     filteredMetadata: metadataState.filteredMetadata,
     integrationMetadata: metadataState.integrationMetadata,
     generalMetadata: metadataState.generalMetadata,
-    dimensionEntries: dims, timelineEvents: events,
+    dimensionEntries: dims,
+    timelineEvents: events,
     buildLinkToItem: vmActions.buildLinkToItem,
     startEditing: vmActions.startEditing,
     cancelEditing: vmActions.cancelEditing,
@@ -361,4 +368,4 @@ export function useItemDetailViewModel(params: Params): ItemDetailViewModel {
   };
 }
 
-export type { ItemDetailViewModel };
+export { useItemDetailViewModel, type ItemDetailViewModel };

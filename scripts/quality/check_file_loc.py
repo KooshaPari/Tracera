@@ -145,8 +145,14 @@ def main() -> int:
             violations.append(f"{lines}:{rel_path}")
 
     if violations:
+        print(f"{RED}❌ LOC guard failed ({len(violations)} files).{NC}")
+        print("Files over the limit:")
         for entry in sorted(violations, key=lambda v: int(v.split(":", 1)[0]), reverse=True):
-            _count, _rest = entry.split(":", 1)
+            count, rest = entry.split(":", 1)
+            print(f"  - {YELLOW}{count}{NC}:{rest}")
+        print("")
+        print("To allow a file, add a line to config/loc-allowlist.txt:")
+        print("  <path> <max_loc>")
         return 1
 
     return 0

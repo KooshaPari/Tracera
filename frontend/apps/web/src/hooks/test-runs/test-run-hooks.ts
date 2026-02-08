@@ -8,8 +8,9 @@ import {
 
 import type { TestResult, TestRunActivity, TestRunStats } from '@tracertm/types';
 
-import { testRunApi } from './test-run-api';
 import type { CreateTestRunData, SubmitTestResultData, TestRunFilters } from './test-run-types';
+
+import { testRunApi } from './test-run-api';
 
 type TestRunsResponse = Awaited<ReturnType<typeof testRunApi.fetchTestRuns>>;
 type BulkSubmitResponse = Awaited<ReturnType<typeof testRunApi.submitBulkTestResults>>;
@@ -190,7 +191,7 @@ function useTestRunResults(runId: string): UseQueryResult<TestResult[]> {
 
 function useTestRunActivities(
   runId: string,
-  limit: number = 50,
+  limit = 50,
 ): UseQueryResult<{ runId: string; activities: TestRunActivity[] }> {
   return useQuery({
     enabled: runId.length > 0,

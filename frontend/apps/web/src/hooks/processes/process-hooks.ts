@@ -8,8 +8,9 @@ import {
 
 import type { ExecutionStatus, Process, ProcessExecution } from '@tracertm/types';
 
-import { processApi } from './process-api';
 import type { CreateExecutionData, CreateProcessData, ProcessFilters } from './process-types';
+
+import { processApi } from './process-api';
 
 type ProcessesResponse = Awaited<ReturnType<typeof processApi.fetchProcesses>>;
 type ExecutionsResponse = Awaited<ReturnType<typeof processApi.fetchExecutions>>;
@@ -60,7 +61,10 @@ function useUpdateProcess(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { id: string; data: Partial<Omit<CreateProcessData, 'projectId'>> }) => {
+    mutationFn: async (vars: {
+      id: string;
+      data: Partial<Omit<CreateProcessData, 'projectId'>>;
+    }) => {
       const result = await processApi.updateProcess(vars.id, vars.data);
       return result;
     },
@@ -128,8 +132,7 @@ function useDeleteProcess(): UseMutationResult<void, unknown, string> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const result = await processApi.deleteProcess(id);
-      return result;
+      await processApi.deleteProcess(id);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['processes'] });
@@ -153,7 +156,7 @@ function useProcessStats(
 function useProcessExecutions(
   processId: string,
   status: ExecutionStatus | undefined,
-  limit: number = 50,
+  limit = 50,
 ): UseQueryResult<ExecutionsResponse> {
   return useQuery({
     enabled: processId.length > 0,
@@ -230,7 +233,11 @@ function useCompleteExecution(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { executionId: string; resultSummary?: string; outputItemIds?: string[] }) => {
+    mutationFn: async (vars: {
+      executionId: string;
+      resultSummary?: string;
+      outputItemIds?: string[];
+    }) => {
       const result = await processApi.completeExecution(
         vars.executionId,
         vars.resultSummary,
@@ -261,4 +268,3 @@ export {
   useStartExecution,
   useUpdateProcess,
 };
-

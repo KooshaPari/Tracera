@@ -1,3 +1,5 @@
+"""ADR (Architecture Decision Record) API routes."""
+
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -22,6 +24,7 @@ async def create_adr(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
+    """Create a new ADR."""
     service = ADRService(db)
     return await service.create_adr(
         project_id=adr.project_id,
@@ -44,6 +47,7 @@ async def get_adr(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
+    """Return an ADR by id."""
     service = ADRService(db)
     adr = await service.get_adr(adr_id)
     if not adr:
@@ -58,6 +62,7 @@ async def get_adr_activities(
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    """List ADR activity events."""
     repo = EventRepository(db)
     events = await repo.get_by_entity(adr_id, limit=limit)
     activities = [
@@ -85,6 +90,7 @@ async def update_adr(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
+    """Update ADR fields."""
     service = ADRService(db)
     # Filter out None values
     update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
@@ -100,6 +106,7 @@ async def delete_adr(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> None:
+    """Delete an ADR by id."""
     service = ADRService(db)
     success = await service.delete_adr(adr_id)
     if not success:
@@ -113,5 +120,6 @@ async def list_adrs(
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    """List ADRs for a project."""
     service = ADRService(db)
     return await service.list_adrs(project_id, status)

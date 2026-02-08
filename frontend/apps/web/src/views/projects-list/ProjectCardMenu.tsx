@@ -135,10 +135,13 @@ export const ProjectCardMenu = memo(function ProjectCardMenu({
     copyMutation.mutate(projectId);
   }, [copyMutation, projectId]);
 
-  const handleDeleteRequest = useCallback((event: React.MouseEvent<HTMLDivElement>): void => {
-    event.stopPropagation();
-    onRequestDelete();
-  }, [onRequestDelete]);
+  const handleDeleteRequest = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>): void => {
+      event.stopPropagation();
+      onRequestDelete();
+    },
+    [onRequestDelete],
+  );
 
   return renderProjectCardMenuView({
     onCopyId: handleCopyId,
