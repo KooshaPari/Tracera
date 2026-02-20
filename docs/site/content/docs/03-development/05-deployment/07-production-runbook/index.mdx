@@ -1,0 +1,1359 @@
+---
+title: Production Deployment Runbook
+description: Comprehensive operational guide for deploying TraceRTM to production environments
+---
+
+# Production Deployment Runbook
+
+This runbook provides step-by-step procedures for deploying TraceRTM to production environments, including health checks, rollback procedures, and troubleshooting guidance.
+
+## Quick Reference
+
+```bash
+# Health check commands
+curl -f http://localhost:8080/health  # Backend
+curl -f http://localhost:8000/health  # Python API
+
+# Deploy production
+docker-compose -f docker-compose.prod.yml up -d
+
+# View logs
+docker-compose -f docker-compose.prod.yml logs -f
+
+# Rollback
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --force-recreate
+```
+
+---
+
+## 1. Pre-Deployment Checklist
+
+### 1.1 Environment Verification
+
+Before beginning deployment, verify all prerequisites are met:
+
+**Infrastructure Requirements**
+- [ ] Docker Engine 24.0+ installed
+- [ ] Docker Compose v2.20+ installed
+- [ ] Minimum 4GB RAM available
+- [ ] Minimum 20GB disk space available
+- [ ] Network connectivity to all cloud services
+- [ ] SSL/TLS certificates ready (if applicable)
+
+**Cloud Services Status**
+- [ ] Supabase project created and accessible
+- [ ] Upstash Redis instance provisioned
+- [ ] Synadia NATS account configured
+- [ ] Neo4j Aura database created
+- [ ] Hatchet account activated
+- [ ] WorkOS application registered
+
+**Credentials Verification**
+```bash
+# Verify all required environment variables are set
+cat > check_env.sh << 'EOF'
+#!/bin/bash
+REQUIRED_VARS=(
+  "DB_DIRECT_URL"
+  "DB_TRANS_POOL_URL"
+  "DB_SESS_POOL_URL"
+  "UPSTASH_REDIS_REST_URL"
+  "UPSTASH_REDIS_REST_TOKEN"
+  "NATS_USER_JWT"
+  "NATS_USER_NKEY_SEED"
+  "NEO4J_URI"
+  "NEO4J_USERNAME"
+  "NEO4J_PASSWORD"
+  "HATCHET_CLIENT_TOKEN"
+  "WORKOS_CLIENT_ID"
+  "WORKOS_API_KEY"
+  "SUPABASE_URL"
+  "SUPABASE_ANON_KEY"
+  "SUPABASE_SERVICE_KEY"
+)
+
+MISSING=()
+for var in "${REQUIRED_VARS[@]}"; do
+  if [ -z "${!var}" ]; then
+    MISSING+=("$var")
+  fi
+done
+
+if [ ${#MISSING[@]} -ne 0 ]; then
+  echo "❌ Missing required environment variables:"
+  printf '  - %s\n' "${MISSING[@]}"
+  exit 1
+else
+  echo "✅ All required environment variables are set"
+fi
+EOF
+
+chmod +x check_env.sh
+./check_env.sh
+```
+
+### 1.2 Code Verification
+
+**Version Control**
+- [ ] All changes committed to version control
+- [ ] On correct deployment branch (main/production)
+- [ ] No uncommitted changes in working directory
+- [ ] Git tag created for this release
+
+```bash
+# Verify clean working directory
+git status
+
+# Create release tag
+git tag -a v1.0.0 -m "Production release v1.0.0"
+git push origin v1.0.0
+```
+
+**Build Verification**
+- [ ] Docker images build successfully
+- [ ] All tests passing (unit, integration, e2e)
+- [ ] Code coverage meets minimum threshold (>80%)
+- [ ] Security scans completed (no high/critical issues)
+- [ ] Dependencies updated and vulnerability-free
+
+```bash
+# Run test suite
+pytest tests/ --cov=src --cov-report=term-missing
+
+# Build images locally to verify
+docker-compose -f docker-compose.prod.yml build
+
+# Scan for vulnerabilities
+docker scan tracertm-backend-prod
+```
+
+### 1.3 Backup Current State
+
+**Database Backup**
+```bash
+# Create timestamped backup
+BACKUP_DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_FILE="tracertm_backup_${BACKUP_DATE}.sql.gz"
+
+# Backup Supabase database
+pg_dump "${DB_DIRECT_URL}" | gzip > "${BACKUP_FILE}"
+
+# Verify backup integrity
+gunzip -c "${BACKUP_FILE}" | head -n 50
+
+echo "✅ Backup created: ${BACKUP_FILE}"
+```
+
+**Configuration Backup**
+```bash
+# Backup current environment configuration
+cp .env .env.backup.$(date +%Y%m%d_%H%M%S)
+
+# Backup current docker-compose state
+docker-compose -f docker-compose.prod.yml config > docker-compose.backup.yml
+```
+
+---
+
+## 2. Environment Preparation
+
+### 2.1 Production Environment Variables
+
+Create production `.env` file from template:
+
+```bash
+# Copy template
+cp .env.example .env.production
+
+# Edit with production values
+nano .env.production
+```
+
+**Required Environment Variables:**
+
+```bash
+# Database Configuration (Supabase)
+DB_DIRECT_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-us-east-1.pooler.supabase.com:5432/postgres
+DB_TRANS_POOL_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+DB_SESS_POOL_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+
+# Redis Configuration (Upstash)
+UPSTASH_REDIS_REST_URL=https://[ENDPOINT].upstash.io
+UPSTASH_REDIS_REST_TOKEN=AXXXXxxx...
+
+# NATS Configuration (Synadia)
+NATS_USER_JWT=eyJ0eXAiOiJKV1QiLCJhbGc...
+NATS_USER_NKEY_SEED=SUAXXXXX...
+
+# Neo4j Configuration (Aura)
+NEO4J_URI=neo4j+s://xxxxxxxx.databases.neo4j.io
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=your-password
+NEO4J_DATABASE=neo4j
+
+# Hatchet Configuration
+HATCHET_CLIENT_TOKEN=your-hatchet-token
+
+# WorkOS Configuration
+WORKOS_CLIENT_ID=client_xxxxxxxxxxxxx
+WORKOS_API_KEY=sk_live_xxxxxxxxxxxxx
+
+# Supabase Configuration
+SUPABASE_URL=https://[PROJECT-REF].supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# Application Configuration
+ENV=production
+LOG_LEVEL=info
+PORT=8080
+```
+
+### 2.2 Security Hardening
+
+**File Permissions**
+```bash
+# Restrict .env file permissions
+chmod 600 .env.production
+
+# Verify ownership
+chown root:root .env.production
+
+# Verify no sensitive data in logs
+grep -r "password\|token\|secret" logs/ || echo "✅ No secrets in logs"
+```
+
+**Network Security**
+```bash
+# Configure firewall rules
+# Allow only necessary ports
+ufw allow 80/tcp    # HTTP
+ufw allow 443/tcp   # HTTPS
+ufw allow 22/tcp    # SSH (restrict to specific IPs)
+ufw enable
+
+# Verify firewall status
+ufw status verbose
+```
+
+---
+
+## 3. Database Setup and Migrations
+
+### 3.1 Database Initialization
+
+**Schema Verification**
+```bash
+# Connect to Supabase database
+psql "${DB_DIRECT_URL}"
+
+# Verify database is empty or check existing schema version
+SELECT tablename FROM pg_tables WHERE schemaname = 'public';
+```
+
+**Apply Base Schema**
+```sql
+-- Run schema.sql (if fresh install)
+\i backend/schema.sql
+
+-- Verify extensions
+SELECT extname, extversion FROM pg_extension
+WHERE extname IN ('uuid-ossp', 'pg_trgm', 'vector');
+
+-- Expected output:
+--   uuid-ossp | 1.1
+--   pg_trgm   | 1.6
+--   vector    | 0.5.0
+```
+
+**Create Indexes**
+```sql
+-- Verify critical indexes exist
+SELECT schemaname, tablename, indexname
+FROM pg_indexes
+WHERE schemaname = 'public'
+ORDER BY tablename, indexname;
+
+-- Should include:
+-- idx_items_project_id
+-- idx_items_search_vector
+-- idx_items_embedding
+-- idx_links_source_id
+-- idx_links_target_id
+-- idx_events_project_id
+```
+
+### 3.2 Data Migration (if upgrading)
+
+**Migration Script**
+```bash
+# If upgrading from existing version
+cat > migrate_data.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "Starting data migration..."
+
+# 1. Create migration tracking table
+psql "${DB_DIRECT_URL}" << SQL
+CREATE TABLE IF NOT EXISTS schema_migrations (
+  version VARCHAR(255) PRIMARY KEY,
+  applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+SQL
+
+# 2. Apply migrations in order
+for migration in backend/migrations/*.sql; do
+  VERSION=$(basename "$migration" .sql)
+
+  # Check if already applied
+  APPLIED=$(psql "${DB_DIRECT_URL}" -t -c \
+    "SELECT COUNT(*) FROM schema_migrations WHERE version='$VERSION'")
+
+  if [ "$APPLIED" -eq 0 ]; then
+    echo "Applying migration: $VERSION"
+    psql "${DB_DIRECT_URL}" < "$migration"
+    psql "${DB_DIRECT_URL}" -c \
+      "INSERT INTO schema_migrations (version) VALUES ('$VERSION')"
+  else
+    echo "Skipping already applied: $VERSION"
+  fi
+done
+
+echo "✅ Migration complete"
+EOF
+
+chmod +x migrate_data.sh
+./migrate_data.sh
+```
+
+### 3.3 Database Health Check
+
+```bash
+# Verify database connectivity
+psql "${DB_DIRECT_URL}" -c "SELECT version();"
+
+# Check table counts
+psql "${DB_DIRECT_URL}" -c "
+SELECT
+  'projects' as table, COUNT(*) as count FROM projects
+UNION ALL
+SELECT 'items', COUNT(*) FROM items
+UNION ALL
+SELECT 'links', COUNT(*) FROM links
+UNION ALL
+SELECT 'agents', COUNT(*) FROM agents
+UNION ALL
+SELECT 'events', COUNT(*) FROM events;
+"
+
+# Verify database size
+psql "${DB_DIRECT_URL}" -c "
+SELECT pg_size_pretty(pg_database_size(current_database()));
+"
+```
+
+---
+
+## 4. Service Deployment Order
+
+Deploy services in dependency order to ensure proper startup:
+
+### 4.1 Pre-Deployment Verification
+
+```bash
+# Pull latest images (if using registry)
+docker-compose -f docker-compose.prod.yml pull
+
+# Verify configuration
+docker-compose -f docker-compose.prod.yml config
+
+# Check for port conflicts
+netstat -tuln | grep -E ':(8080|8000|3000|9090)'
+```
+
+### 4.2 Deployment Sequence
+
+**Step 1: Start Core Infrastructure** ✅
+```bash
+# External services (Supabase, Upstash, Synadia) are already running
+# Verify connectivity
+curl -f "${SUPABASE_URL}/rest/v1/" \
+  -H "apikey: ${SUPABASE_ANON_KEY}" || echo "❌ Supabase unreachable"
+
+redis-cli -u "${UPSTASH_REDIS_REST_URL}" ping || echo "❌ Redis unreachable"
+```
+
+**Step 2: Deploy Backend Service** 🚀
+```bash
+# Start backend container
+docker-compose -f docker-compose.prod.yml up -d tracertm-backend
+
+# Wait for healthy status (max 60s)
+timeout 60 bash -c 'until docker inspect --format="{{.State.Health.Status}}" tracertm-backend-prod | grep -q "healthy"; do sleep 2; done' \
+  && echo "✅ Backend healthy" || echo "❌ Backend health check timeout"
+
+# Verify health endpoint
+curl -f http://localhost:8080/health | jq .
+
+# Expected output:
+# {
+#   "status": "healthy",
+#   "version": "1.0.0",
+#   "service": "TraceRTM Backend"
+# }
+```
+
+**Step 3: Verify Backend Logs** 📋
+```bash
+# Check for errors in startup
+docker-compose -f docker-compose.prod.yml logs tracertm-backend | tail -50
+
+# Should see:
+# ✓ Database connected
+# ✓ Redis connected
+# ✓ NATS connected
+# ✓ Server listening on :8080
+```
+
+### 4.3 Service Resource Monitoring
+
+**Check Resource Usage**
+```bash
+# Monitor container resources
+docker stats tracertm-backend-prod --no-stream
+
+# Expected values:
+# CPU: < 50%
+# Memory: 300-800MB (limit: 1GB)
+# Network I/O: Variable
+```
+
+---
+
+## 5. Health Check Verification
+
+### 5.1 Application Health Checks
+
+**Backend Health**
+```bash
+# Basic health check
+curl -f http://localhost:8080/health
+
+# Detailed health check with dependencies
+curl http://localhost:8080/health/detailed | jq .
+
+# Expected output:
+# {
+#   "status": "healthy",
+#   "version": "1.0.0",
+#   "checks": {
+#     "database": "connected",
+#     "redis": "connected",
+#     "nats": "connected",
+#     "neo4j": "connected"
+#   },
+#   "uptime": 3600,
+#   "timestamp": "2024-12-07T20:00:00Z"
+# }
+```
+
+**Python API Health** (if deployed separately)
+```bash
+curl -f http://localhost:8000/health | jq .
+
+# Expected:
+# {
+#   "status": "healthy",
+#   "version": "1.0.0",
+#   "service": "TraceRTM API"
+# }
+```
+
+### 5.2 Dependency Health Checks
+
+**Database Connectivity**
+```bash
+# Test database query
+psql "${DB_DIRECT_URL}" -c "SELECT 1 as test;" | grep -q "1 row" \
+  && echo "✅ Database OK" || echo "❌ Database failed"
+
+# Check connection pool
+psql "${DB_DIRECT_URL}" -c "
+SELECT count(*) as active_connections
+FROM pg_stat_activity
+WHERE datname = current_database();
+"
+```
+
+**Redis Connectivity**
+```bash
+# Test Redis connection
+curl -X POST "${UPSTASH_REDIS_REST_URL}/ping" \
+  -H "Authorization: Bearer ${UPSTASH_REDIS_REST_TOKEN}" | jq .
+
+# Expected: {"result":"PONG"}
+```
+
+**Neo4j Connectivity**
+```bash
+# Test Neo4j connection
+cypher-shell -a "${NEO4J_URI}" \
+  -u "${NEO4J_USERNAME}" \
+  -p "${NEO4J_PASSWORD}" \
+  "RETURN 'connected' as status;"
+
+# Expected: "connected"
+```
+
+### 5.3 Automated Health Check Script
+
+```bash
+cat > health_check.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "🏥 TraceRTM Health Check"
+echo "======================="
+
+# 1. Backend health
+echo -n "Backend API: "
+if curl -sf http://localhost:8080/health > /dev/null; then
+  echo "✅ Healthy"
+else
+  echo "❌ Failed"
+  exit 1
+fi
+
+# 2. Database connection
+echo -n "Database: "
+if psql "${DB_DIRECT_URL}" -c "SELECT 1;" > /dev/null 2>&1; then
+  echo "✅ Connected"
+else
+  echo "❌ Failed"
+  exit 1
+fi
+
+# 3. Redis connection
+echo -n "Redis: "
+if curl -sf -X POST "${UPSTASH_REDIS_REST_URL}/ping" \
+  -H "Authorization: Bearer ${UPSTASH_REDIS_REST_TOKEN}" > /dev/null; then
+  echo "✅ Connected"
+else
+  echo "❌ Failed"
+  exit 1
+fi
+
+# 4. Container status
+echo -n "Container: "
+if docker inspect --format="{{.State.Health.Status}}" tracertm-backend-prod | grep -q "healthy"; then
+  echo "✅ Healthy"
+else
+  echo "❌ Unhealthy"
+  exit 1
+fi
+
+echo ""
+echo "✅ All systems operational"
+EOF
+
+chmod +x health_check.sh
+./health_check.sh
+```
+
+---
+
+## 6. Traffic Cutover Procedure
+
+### 6.1 Pre-Cutover Verification
+
+```bash
+# 1. Verify new deployment is fully healthy
+./health_check.sh
+
+# 2. Run smoke tests
+curl http://localhost:8080/api/v1/projects | jq .
+curl http://localhost:8080/api/v1/items?project_id=test | jq .
+
+# 3. Check error rates in logs
+docker-compose -f docker-compose.prod.yml logs tracertm-backend | grep ERROR | wc -l
+# Should be 0
+```
+
+### 6.2 Blue-Green Deployment (Recommended)
+
+**Setup Blue-Green Environment**
+```bash
+# Keep old version running on port 8081
+# Start new version on port 8080
+# Use load balancer or nginx to route traffic
+
+# nginx configuration example
+cat > nginx.conf << 'EOF'
+upstream backend {
+    # New version (green)
+    server localhost:8080 weight=10;
+    # Old version (blue) - fallback
+    server localhost:8081 weight=0 backup;
+}
+
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://backend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # Health check endpoint
+    location /health {
+        access_log off;
+        proxy_pass http://backend/health;
+    }
+}
+EOF
+```
+
+**Gradual Traffic Shift**
+```bash
+# 1. Start with 10% traffic to new version
+# Update nginx upstream weights:
+#   server localhost:8080 weight=1;  # New
+#   server localhost:8081 weight=9;  # Old
+
+# 2. Monitor for 10 minutes
+./health_check.sh
+docker-compose logs -f tracertm-backend
+
+# 3. Increase to 50% if no errors
+#   server localhost:8080 weight=5;  # New
+#   server localhost:8081 weight=5;  # Old
+
+# 4. Monitor for 10 minutes
+
+# 5. Shift 100% to new version
+#   server localhost:8080 weight=10; # New
+#   server localhost:8081 weight=0;  # Old (backup)
+
+# 6. Monitor for 30 minutes
+
+# 7. Stop old version if successful
+docker stop tracertm-backend-old
+```
+
+### 6.3 DNS/Load Balancer Update
+
+```bash
+# If using cloud load balancer
+# Update target group to point to new instances
+
+# AWS ALB example
+aws elbv2 register-targets \
+  --target-group-arn arn:aws:elasticloadbalancing:... \
+  --targets Id=i-new-instance
+
+# Verify targets are healthy
+aws elbv2 describe-target-health \
+  --target-group-arn arn:aws:elasticloadbalancing:...
+
+# Deregister old targets
+aws elbv2 deregister-targets \
+  --target-group-arn arn:aws:elasticloadbalancing:... \
+  --targets Id=i-old-instance
+```
+
+---
+
+## 7. Rollback Procedures
+
+### 7.1 Immediate Rollback (< 5 minutes)
+
+**Quick Rollback to Previous Version**
+```bash
+# Stop current deployment
+docker-compose -f docker-compose.prod.yml down
+
+# Restore previous environment
+cp .env.backup.[TIMESTAMP] .env
+
+# Start previous version
+docker-compose -f docker-compose.backup.yml up -d
+
+# Verify rollback
+./health_check.sh
+
+# Check logs
+docker-compose logs -f tracertm-backend
+```
+
+### 7.2 Database Rollback
+
+**Restore Database from Backup**
+```bash
+# CRITICAL: This will delete current data
+# Only use if database corruption or critical data issues
+
+# 1. Stop all services
+docker-compose -f docker-compose.prod.yml down
+
+# 2. Restore database
+BACKUP_FILE="tracertm_backup_[TIMESTAMP].sql.gz"
+gunzip -c "${BACKUP_FILE}" | psql "${DB_DIRECT_URL}"
+
+# 3. Verify restoration
+psql "${DB_DIRECT_URL}" -c "SELECT COUNT(*) FROM projects;"
+
+# 4. Restart services
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### 7.3 Configuration Rollback
+
+**Rollback Environment Variables**
+```bash
+# Restore previous configuration
+cp .env.backup.[TIMESTAMP] .env
+
+# Reload containers with new config
+docker-compose -f docker-compose.prod.yml up -d --force-recreate
+
+# Verify configuration
+docker-compose -f docker-compose.prod.yml config
+```
+
+### 7.4 Rollback Decision Matrix
+
+| Scenario | Action | Time |
+|----------|--------|------|
+| Health check fails after deployment | Immediate rollback | < 2 min |
+| Error rate > 5% | Immediate rollback | < 5 min |
+| Database migration fails | Restore DB + rollback | < 10 min |
+| Memory leak detected | Rollback + investigate | < 5 min |
+| API response time > 2s | Investigate, rollback if degrading | 10-15 min |
+| Minor UI issues | Fix forward, no rollback | N/A |
+
+---
+
+## 8. Post-Deployment Verification
+
+### 8.1 Functional Testing
+
+**API Endpoint Tests**
+```bash
+cat > verify_deployment.sh << 'EOF'
+#!/bin/bash
+set -e
+
+BASE_URL="http://localhost:8080"
+API_URL="http://localhost:8000"
+
+echo "🧪 Post-Deployment Verification"
+echo "==============================="
+
+# Test 1: Health check
+echo -n "1. Health check: "
+curl -sf "${BASE_URL}/health" > /dev/null && echo "✅" || exit 1
+
+# Test 2: List projects
+echo -n "2. List projects: "
+curl -sf "${API_URL}/api/v1/projects" > /dev/null && echo "✅" || exit 1
+
+# Test 3: Create test item
+echo -n "3. Create item: "
+TEST_RESPONSE=$(curl -sf -X POST "${API_URL}/api/v1/items" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project_id": "test",
+    "title": "Deployment Verification",
+    "type": "test",
+    "status": "done"
+  }')
+echo "$TEST_RESPONSE" | jq -e '.id' > /dev/null && echo "✅" || exit 1
+
+# Test 4: Search functionality
+echo -n "4. Search: "
+curl -sf "${API_URL}/api/v1/search?q=deployment" > /dev/null && echo "✅" || exit 1
+
+# Test 5: Database query
+echo -n "5. Database: "
+psql "${DB_DIRECT_URL}" -c "SELECT COUNT(*) FROM items;" > /dev/null && echo "✅" || exit 1
+
+echo ""
+echo "✅ All verification tests passed"
+EOF
+
+chmod +x verify_deployment.sh
+./verify_deployment.sh
+```
+
+### 8.2 Performance Testing
+
+**Response Time Verification**
+```bash
+# Test API response times
+ab -n 100 -c 10 http://localhost:8080/health
+
+# Expected:
+# - Mean response time < 100ms
+# - 95th percentile < 200ms
+# - 0% failed requests
+
+# Database query performance
+psql "${DB_DIRECT_URL}" -c "
+EXPLAIN ANALYZE
+SELECT * FROM items WHERE project_id = 'test'
+LIMIT 100;
+"
+
+# Should use index scan, not sequential scan
+```
+
+### 8.3 Load Testing
+
+```bash
+# Install Apache Bench or use wrk
+# Test with sustained load
+
+wrk -t4 -c100 -d30s http://localhost:8080/api/v1/projects
+
+# Monitor during load test
+docker stats tracertm-backend-prod
+
+# Expected:
+# - CPU < 80%
+# - Memory < 900MB
+# - No container restarts
+# - No health check failures
+```
+
+---
+
+## 9. Monitoring Setup Verification
+
+### 9.1 Logging Verification
+
+**Verify Log Collection**
+```bash
+# Check Docker logs
+docker-compose -f docker-compose.prod.yml logs --tail=100
+
+# Verify log format
+docker-compose logs tracertm-backend | head -5
+
+# Expected format (JSON):
+# {"level":"info","time":"2024-12-07T20:00:00Z","msg":"Server started"}
+
+# Check log volume
+du -sh /var/lib/docker/containers/*/
+```
+
+**Log Rotation Setup**
+```bash
+# Configure Docker log rotation
+cat > /etc/docker/daemon.json << 'EOF'
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  }
+}
+EOF
+
+# Restart Docker
+systemctl restart docker
+```
+
+### 9.2 Metrics Collection
+
+**Prometheus Metrics**
+```bash
+# If using Prometheus (from docker-compose.yml)
+# Verify metrics endpoint
+curl http://localhost:8080/metrics
+
+# Should return Prometheus format:
+# tracertm_requests_total{method="GET",endpoint="/health"} 100
+# tracertm_request_duration_seconds_sum 5.2
+```
+
+**Container Metrics**
+```bash
+# Enable container metrics collection
+docker stats --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}"
+
+# Export to monitoring system
+docker stats --no-stream --format json | jq .
+```
+
+### 9.3 Alerting Configuration
+
+**Setup Health Check Alerts**
+```bash
+# Example: Slack webhook for critical alerts
+cat > alert_check.sh << 'EOF'
+#!/bin/bash
+SLACK_WEBHOOK="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+
+if ! ./health_check.sh > /dev/null 2>&1; then
+  curl -X POST "$SLACK_WEBHOOK" \
+    -H 'Content-Type: application/json' \
+    -d '{
+      "text": "🚨 TraceRTM Health Check Failed!",
+      "attachments": [{
+        "color": "danger",
+        "fields": [{
+          "title": "Environment",
+          "value": "Production",
+          "short": true
+        }, {
+          "title": "Time",
+          "value": "'"$(date)"'",
+          "short": true
+        }]
+      }]
+    }'
+fi
+EOF
+
+chmod +x alert_check.sh
+
+# Add to crontab (check every 5 minutes)
+(crontab -l 2>/dev/null; echo "*/5 * * * * /path/to/alert_check.sh") | crontab -
+```
+
+---
+
+## 10. Common Issues and Fixes
+
+### 10.1 Container Won't Start
+
+**Symptoms:**
+- Container exits immediately
+- Health check never becomes healthy
+- Port binding errors
+
+**Diagnosis:**
+```bash
+# Check container logs
+docker-compose -f docker-compose.prod.yml logs tracertm-backend
+
+# Check container exit code
+docker inspect tracertm-backend-prod --format='{{.State.ExitCode}}'
+
+# Common exit codes:
+# 1   - Application error
+# 137 - OOM killed (out of memory)
+# 139 - Segmentation fault
+```
+
+**Fixes:**
+
+**Port Conflict:**
+```bash
+# Find process using port 8080
+lsof -i :8080
+# or
+netstat -tuln | grep 8080
+
+# Kill conflicting process
+kill -9 [PID]
+
+# Or change TraceRTM port in docker-compose.prod.yml
+```
+
+**Memory Issues:**
+```bash
+# Increase memory limit in docker-compose.prod.yml
+deploy:
+  resources:
+    limits:
+      memory: 2G  # Increase from 1G
+
+# Clear Docker system resources
+docker system prune -a
+```
+
+**Database Connection Failures:**
+```bash
+# Test connection manually
+psql "${DB_DIRECT_URL}" -c "SELECT 1;"
+
+# Common issues:
+# 1. Wrong credentials - verify .env
+# 2. Firewall blocking - check Supabase IP allowlist
+# 3. SSL required - ensure connection string includes sslmode=require
+```
+
+### 10.2 Slow Performance
+
+**Symptoms:**
+- API response time > 2 seconds
+- Health checks timing out
+- High CPU usage
+
+**Diagnosis:**
+```bash
+# Check resource usage
+docker stats tracertm-backend-prod
+
+# Check database query performance
+psql "${DB_DIRECT_URL}" -c "
+SELECT query, calls, total_time, mean_time
+FROM pg_stat_statements
+ORDER BY total_time DESC
+LIMIT 10;
+"
+
+# Check for missing indexes
+psql "${DB_DIRECT_URL}" -c "
+SELECT schemaname, tablename, attname, n_distinct, correlation
+FROM pg_stats
+WHERE schemaname = 'public'
+ORDER BY abs(correlation) DESC;
+"
+```
+
+**Fixes:**
+
+**Add Missing Indexes:**
+```sql
+-- Example: Add index if missing
+CREATE INDEX CONCURRENTLY idx_items_status ON items(status);
+CREATE INDEX CONCURRENTLY idx_links_type ON links(type);
+```
+
+**Increase Connection Pool:**
+```bash
+# Update database URL to increase pool size
+DB_DIRECT_URL="...?pool_size=20&max_overflow=40"
+```
+
+**Enable Query Caching:**
+```bash
+# Verify Redis is configured
+curl -X POST "${UPSTASH_REDIS_REST_URL}/ping" \
+  -H "Authorization: Bearer ${UPSTASH_REDIS_REST_TOKEN}"
+
+# Check cache hit rate
+curl -X POST "${UPSTASH_REDIS_REST_URL}/INFO" \
+  -H "Authorization: Bearer ${UPSTASH_REDIS_REST_TOKEN}" | grep keyspace
+```
+
+### 10.3 Database Connection Pool Exhausted
+
+**Symptoms:**
+- "remaining connection slots are reserved" errors
+- "too many connections" errors
+- API requests hang
+
+**Diagnosis:**
+```bash
+# Check active connections
+psql "${DB_DIRECT_URL}" -c "
+SELECT
+  count(*) as total_connections,
+  count(*) FILTER (WHERE state = 'active') as active,
+  count(*) FILTER (WHERE state = 'idle') as idle
+FROM pg_stat_activity;
+"
+
+# Check max connections
+psql "${DB_DIRECT_URL}" -c "SHOW max_connections;"
+```
+
+**Fixes:**
+```bash
+# Use transaction pooler URL instead of direct
+DB_TRANS_POOL_URL="postgresql://...pooler.supabase.com:6543/..."
+
+# Update docker-compose.prod.yml
+environment:
+  DATABASE_URL: ${DB_TRANS_POOL_URL}  # Not DB_DIRECT_URL
+
+# Restart container
+docker-compose -f docker-compose.prod.yml restart tracertm-backend
+```
+
+### 10.4 Memory Leaks
+
+**Symptoms:**
+- Container memory usage grows over time
+- Container gets killed (exit code 137)
+- Performance degrades over time
+
+**Diagnosis:**
+```bash
+# Monitor memory over time
+watch -n 5 'docker stats tracertm-backend-prod --no-stream'
+
+# Check for goroutine leaks (Go backend)
+curl http://localhost:8080/debug/pprof/goroutine?debug=1
+
+# Generate memory profile
+curl http://localhost:8080/debug/pprof/heap > heap.prof
+```
+
+**Temporary Fix:**
+```bash
+# Add automatic restart on memory limit
+# In docker-compose.prod.yml:
+deploy:
+  restart_policy:
+    condition: on-failure
+    max_attempts: 3
+
+# Or manually restart
+docker-compose -f docker-compose.prod.yml restart tracertm-backend
+```
+
+**Permanent Fix:**
+```bash
+# Update to patched version
+git pull origin main
+docker-compose -f docker-compose.prod.yml build --no-cache
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+---
+
+## 11. Emergency Procedures
+
+### 11.1 Emergency Shutdown
+
+**Complete System Shutdown:**
+```bash
+#!/bin/bash
+# emergency_shutdown.sh
+
+echo "🚨 EMERGENCY SHUTDOWN INITIATED"
+echo "==============================="
+
+# 1. Stop accepting new requests (if using load balancer)
+# Update load balancer to return 503
+
+# 2. Wait for in-flight requests (max 30s)
+sleep 30
+
+# 3. Stop all containers
+docker-compose -f docker-compose.prod.yml down
+
+# 4. Verify all stopped
+docker ps -a | grep tracertm
+
+# 5. Create incident report
+cat > incident_$(date +%Y%m%d_%H%M%S).txt << EOF
+Emergency Shutdown
+Time: $(date)
+Triggered by: ${USER}
+Reason: ${1:-"Not specified"}
+EOF
+
+echo "✅ Shutdown complete"
+```
+
+### 11.2 Data Recovery
+
+**Recover from Catastrophic Failure:**
+```bash
+#!/bin/bash
+# disaster_recovery.sh
+
+echo "🔧 DISASTER RECOVERY"
+echo "===================="
+
+# 1. Find most recent backup
+LATEST_BACKUP=$(ls -t tracertm_backup_*.sql.gz | head -1)
+echo "Latest backup: $LATEST_BACKUP"
+
+# 2. Verify backup integrity
+if gunzip -t "$LATEST_BACKUP"; then
+  echo "✅ Backup integrity verified"
+else
+  echo "❌ Backup corrupted - aborting"
+  exit 1
+fi
+
+# 3. Stop all services
+docker-compose -f docker-compose.prod.yml down
+
+# 4. Restore database
+echo "Restoring database from $LATEST_BACKUP..."
+gunzip -c "$LATEST_BACKUP" | psql "${DB_DIRECT_URL}"
+
+# 5. Verify restoration
+ITEMS_COUNT=$(psql "${DB_DIRECT_URL}" -t -c "SELECT COUNT(*) FROM items;")
+echo "Restored $ITEMS_COUNT items"
+
+# 6. Restart services
+docker-compose -f docker-compose.prod.yml up -d
+
+# 7. Verify health
+./health_check.sh
+
+echo "✅ Recovery complete"
+```
+
+### 11.3 Communication Plan
+
+**Stakeholder Notification:**
+```bash
+# Send status page update
+curl -X POST https://api.statuspage.io/v1/pages/[PAGE_ID]/incidents \
+  -H "Authorization: OAuth [TOKEN]" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "incident": {
+      "name": "TraceRTM Service Degradation",
+      "status": "investigating",
+      "impact_override": "major",
+      "body": "We are investigating reports of slow response times."
+    }
+  }'
+
+# Send email to ops team
+mail -s "TraceRTM Production Alert" ops@example.com << EOF
+Alert: TraceRTM production environment experiencing issues
+
+Time: $(date)
+Severity: High
+Status: Investigating
+
+Initial diagnosis:
+- Backend health check failing
+- Database connection timeout
+- Error rate: 25%
+
+Actions taken:
+- Rolled back to previous version
+- Investigating database issues
+- Monitoring error logs
+
+Next steps:
+- Database performance analysis
+- Root cause investigation
+- Incident report to follow
+
+EOF
+```
+
+### 11.4 Incident Checklist
+
+**During Incident:**
+- [ ] Assess severity (P0-P4)
+- [ ] Notify on-call engineer
+- [ ] Create incident channel (#incident-YYYYMMDD)
+- [ ] Start incident log (time-stamped notes)
+- [ ] Communicate to stakeholders
+- [ ] Implement temporary fix (if possible)
+- [ ] Escalate if needed
+- [ ] Monitor recovery
+
+**Post-Incident:**
+- [ ] Write incident report
+- [ ] Conduct blameless postmortem
+- [ ] Create action items
+- [ ] Update runbooks
+- [ ] Share learnings with team
+- [ ] Implement preventive measures
+
+---
+
+## 12. Maintenance Windows
+
+### 12.1 Planned Maintenance
+
+**Schedule:**
+- Regular maintenance: Every Sunday 2:00-4:00 AM UTC
+- Emergency patches: As needed with 24h notice
+- Major upgrades: Quarterly, scheduled 1 week in advance
+
+**Maintenance Procedure:**
+```bash
+#!/bin/bash
+# maintenance.sh
+
+# 1. Announce maintenance
+echo "Starting maintenance window at $(date)"
+
+# 2. Enable maintenance mode (return 503)
+# Update load balancer or nginx
+
+# 3. Backup current state
+./backup.sh
+
+# 4. Apply updates
+git pull origin main
+docker-compose -f docker-compose.prod.yml pull
+docker-compose -f docker-compose.prod.yml up -d --force-recreate
+
+# 5. Run migrations
+./migrate_data.sh
+
+# 6. Verify deployment
+./health_check.sh
+./verify_deployment.sh
+
+# 7. Disable maintenance mode
+# Restore load balancer
+
+# 8. Monitor for 15 minutes
+sleep 900
+./health_check.sh
+
+echo "Maintenance complete at $(date)"
+```
+
+---
+
+## Appendix
+
+### A. Useful Commands
+
+```bash
+# View all container logs
+docker-compose -f docker-compose.prod.yml logs -f
+
+# Restart single service
+docker-compose -f docker-compose.prod.yml restart tracertm-backend
+
+# View container resource usage
+docker stats
+
+# Execute command in container
+docker-compose -f docker-compose.prod.yml exec tracertm-backend sh
+
+# View container processes
+docker top tracertm-backend-prod
+
+# Inspect container configuration
+docker inspect tracertm-backend-prod
+
+# Export container logs
+docker logs tracertm-backend-prod > backend.log 2>&1
+```
+
+### B. Support Contacts
+
+| Service | Support | Documentation |
+|---------|---------|---------------|
+| Supabase | support@supabase.com | https://supabase.com/docs |
+| Upstash | support@upstash.com | https://docs.upstash.com |
+| Synadia | support@synadia.com | https://docs.synadia.com |
+| Neo4j | support@neo4j.com | https://neo4j.com/docs |
+| Hatchet | support@hatchet.run | https://docs.hatchet.run |
+| WorkOS | support@workos.com | https://workos.com/docs |
+
+### C. Version History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0.0 | 2024-12-07 | Initial production deployment runbook |
+
+---
+
+**Document Ownership:** DevOps Team
+**Last Updated:** 2024-12-07
+**Next Review:** 2025-01-07

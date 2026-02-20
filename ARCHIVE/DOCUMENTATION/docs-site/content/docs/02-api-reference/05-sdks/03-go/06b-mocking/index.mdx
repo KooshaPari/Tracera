@@ -1,0 +1,589 @@
+---
+title: "Mocking"
+description: "Creating mocks for testing with the TraceRTM Go SDK"
+---
+
+# Mocking
+
+Patterns and best practices for mocking the TraceRTM Go SDK in tests.
+
+## Manual Mocks
+
+### Basic Mock Implementation
+
+```go
+// mock_items.go
+type MockItemsService struct {
+    GetFunc            func(ctx context.Context, id string) (*tracertm.Item, error)
+    ListFunc           func(ctx context.Context, projectID string, opts *tracertm.ListItemsOptions) (*tracertm.ItemList, error)
+    CreateFunc         func(ctx context.Context, projectID string, input *tracertm.CreateItemInput) (*tracertm.Item, error)
+    UpdateFunc         func(ctx context.Context, id string, input *tracertm.UpdateItemInput) (*tracertm.Item, error)
+    DeleteFunc         func(ctx context.Context, id string) error
+    TransitionFunc     func(ctx context.Context, id string, input *tracertm.TransitionInput) (*tracertm.Item, error)
+
+    // Call tracking
+    GetCalls    []string
+    ListCalls   []ListCall
+    CreateCalls []CreateCall
+}
+
+type ListCall struct {
+    ProjectID string
+    Options   *tracertm.ListItemsOptions
+}
+
+type CreateCall struct {
+    ProjectID string
+    Input     *tracertm.CreateItemInput
+}
+
+func (m *MockItemsService) Get(ctx context.Context, id string) (*tracertm.Item, error) {
+    m.GetCalls = append(m.GetCalls, id)
+    if m.GetFunc != nil {
+        return m.GetFunc(ctx, id)
+    }
+    return nil, nil
+}
+
+func (m *MockItemsService) List(ctx context.Context, projectID string, opts *tracertm.ListItemsOptions) (*tracertm.ItemList, error) {
+    m.ListCalls = append(m.ListCalls, ListCall{ProjectID: projectID, Options: opts})
+    if m.ListFunc != nil {
+        return m.ListFunc(ctx, projectID, opts)
+    }
+    return &tracertm.ItemList{}, nil
+}
+
+func (m *MockItemsService) Create(ctx context.Context, projectID string, input *tracertm.CreateItemInput) (*tracertm.Item, error) {
+    m.CreateCalls = append(m.CreateCalls, CreateCall{ProjectID: projectID, Input: input})
+    if m.CreateFunc != nil {
+        return m.CreateFunc(ctx, projectID, input)
+    }
+    return nil, nil
+}
+
+func (m *MockItemsService) Update(ctx context.Context, id string, input *tracertm.UpdateItemInput) (*tracertm.Item, error) {
+    if m.UpdateFunc != nil {
+        return m.UpdateFunc(ctx, id, input)
+    }
+    return nil, nil
+}
+
+func (m *MockItemsService) Delete(ctx context.Context, id string) error {
+    if m.DeleteFunc != nil {
+        return m.DeleteFunc(ctx, id)
+    }
+    return nil
+}
+
+func (m *MockItemsService) Transition(ctx context.Context, id string, input *tracertm.TransitionInput) (*tracertm.Item, error) {
+    if m.TransitionFunc != nil {
+        return m.TransitionFunc(ctx, id, input)
+    }
+    return nil, nil
+}
+```
+
+### Full Client Mock
+
+```go
+// mock_client.go
+type MockClient struct {
+    ProjectsMock *MockProjectsService
+    ItemsMock    *MockItemsService
+    LinksMock    *MockLinksService
+    ReportsMock  *MockReportsService
+}
+
+func NewMockClient() *MockClient {
+    return &MockClient{
+        ProjectsMock: &MockProjectsService{},
+        ItemsMock:    &MockItemsService{},
+        LinksMock:    &MockLinksService{},
+        ReportsMock:  &MockReportsService{},
+    }
+}
+
+func (c *MockClient) Projects() ProjectsServiceInterface {
+    return c.ProjectsMock
+}
+
+func (c *MockClient) Items() ItemsServiceInterface {
+    return c.ItemsMock
+}
+
+func (c *MockClient) Links() LinksServiceInterface {
+    return c.LinksMock
+}
+
+func (c *MockClient) Reports() ReportsServiceInterface {
+    return c.ReportsMock
+}
+```
+
+---
+
+## Using Mocks in Tests
+
+### Basic Usage
+
+```go
+func TestServiceWithMock(t *testing.T) {
+    mock := &MockItemsService{
+        GetFunc: func(ctx context.Context, id string) (*tracertm.Item, error) {
+            return &tracertm.Item{
+                ID:    id,
+                Key:   "REQ-1",
+                Title: "Test Requirement",
+            }, nil
+        },
+    }
+
+    svc := NewService(mock)
+    item, err := svc.GetItem(context.Background(), "item_123")
+
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+
+    if item.Key != "REQ-1" {
+        t.Errorf("expected key REQ-1, got %s", item.Key)
+    }
+
+    // Verify mock was called
+    if len(mock.GetCalls) != 1 {
+        t.Errorf("expected 1 Get call, got %d", len(mock.GetCalls))
+    }
+
+    if mock.GetCalls[0] != "item_123" {
+        t.Errorf("expected Get call with item_123, got %s", mock.GetCalls[0])
+    }
+}
+```
+
+### Testing Error Scenarios
+
+```go
+func TestServiceErrorHandling(t *testing.T) {
+    mock := &MockItemsService{
+        GetFunc: func(ctx context.Context, id string) (*tracertm.Item, error) {
+            return nil, &tracertm.NotFoundError{
+                ResourceType: "item",
+                ResourceID:   id,
+            }
+        },
+    }
+
+    svc := NewService(mock)
+    _, err := svc.GetItem(context.Background(), "item_999")
+
+    if err == nil {
+        t.Fatal("expected error, got nil")
+    }
+
+    var notFoundErr *tracertm.NotFoundError
+    if !errors.As(err, &notFoundErr) {
+        t.Errorf("expected NotFoundError, got %T", err)
+    }
+}
+```
+
+---
+
+## Mock Builders
+
+### Fluent Mock Builder
+
+```go
+type ItemsMockBuilder struct {
+    mock *MockItemsService
+}
+
+func NewItemsMockBuilder() *ItemsMockBuilder {
+    return &ItemsMockBuilder{
+        mock: &MockItemsService{},
+    }
+}
+
+func (b *ItemsMockBuilder) WithGet(item *tracertm.Item, err error) *ItemsMockBuilder {
+    b.mock.GetFunc = func(ctx context.Context, id string) (*tracertm.Item, error) {
+        return item, err
+    }
+    return b
+}
+
+func (b *ItemsMockBuilder) WithGetByID(items map[string]*tracertm.Item) *ItemsMockBuilder {
+    b.mock.GetFunc = func(ctx context.Context, id string) (*tracertm.Item, error) {
+        if item, ok := items[id]; ok {
+            return item, nil
+        }
+        return nil, &tracertm.NotFoundError{ResourceID: id}
+    }
+    return b
+}
+
+func (b *ItemsMockBuilder) WithList(items *tracertm.ItemList, err error) *ItemsMockBuilder {
+    b.mock.ListFunc = func(ctx context.Context, projectID string, opts *tracertm.ListItemsOptions) (*tracertm.ItemList, error) {
+        return items, err
+    }
+    return b
+}
+
+func (b *ItemsMockBuilder) WithCreate(fn func(*tracertm.CreateItemInput) (*tracertm.Item, error)) *ItemsMockBuilder {
+    b.mock.CreateFunc = func(ctx context.Context, projectID string, input *tracertm.CreateItemInput) (*tracertm.Item, error) {
+        return fn(input)
+    }
+    return b
+}
+
+func (b *ItemsMockBuilder) Build() *MockItemsService {
+    return b.mock
+}
+```
+
+### Using the Builder
+
+```go
+func TestWithMockBuilder(t *testing.T) {
+    mock := NewItemsMockBuilder().
+        WithGetByID(map[string]*tracertm.Item{
+            "item_1": {ID: "item_1", Key: "REQ-1", Title: "Requirement 1"},
+            "item_2": {ID: "item_2", Key: "REQ-2", Title: "Requirement 2"},
+        }).
+        WithList(&tracertm.ItemList{
+            Data:  []*tracertm.Item{{ID: "item_1"}, {ID: "item_2"}},
+            Total: 2,
+        }, nil).
+        Build()
+
+    svc := NewService(mock)
+
+    // Test Get
+    item, err := svc.GetItem(context.Background(), "item_1")
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+    if item.Key != "REQ-1" {
+        t.Errorf("expected REQ-1, got %s", item.Key)
+    }
+
+    // Test not found
+    _, err = svc.GetItem(context.Background(), "item_999")
+    if err == nil {
+        t.Error("expected error for non-existent item")
+    }
+}
+```
+
+---
+
+## Stateful Mocks
+
+### In-Memory Store Mock
+
+```go
+type InMemoryItemsService struct {
+    items   map[string]*tracertm.Item
+    nextID  int
+    mu      sync.RWMutex
+}
+
+func NewInMemoryItemsService() *InMemoryItemsService {
+    return &InMemoryItemsService{
+        items:  make(map[string]*tracertm.Item),
+        nextID: 1,
+    }
+}
+
+func (s *InMemoryItemsService) Get(ctx context.Context, id string) (*tracertm.Item, error) {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+
+    item, ok := s.items[id]
+    if !ok {
+        return nil, &tracertm.NotFoundError{ResourceID: id}
+    }
+    return item, nil
+}
+
+func (s *InMemoryItemsService) List(ctx context.Context, projectID string, opts *tracertm.ListItemsOptions) (*tracertm.ItemList, error) {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+
+    var items []*tracertm.Item
+    for _, item := range s.items {
+        if item.ProjectID == projectID {
+            items = append(items, item)
+        }
+    }
+
+    return &tracertm.ItemList{
+        Data:  items,
+        Total: len(items),
+    }, nil
+}
+
+func (s *InMemoryItemsService) Create(ctx context.Context, projectID string, input *tracertm.CreateItemInput) (*tracertm.Item, error) {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+
+    id := fmt.Sprintf("item_%d", s.nextID)
+    s.nextID++
+
+    item := &tracertm.Item{
+        ID:          id,
+        ProjectID:   projectID,
+        Key:         fmt.Sprintf("REQ-%d", s.nextID),
+        Type:        input.Type,
+        Title:       input.Title,
+        Description: input.Description,
+        Priority:    input.Priority,
+        Status:      "draft",
+        CreatedAt:   time.Now(),
+        UpdatedAt:   time.Now(),
+    }
+
+    s.items[id] = item
+    return item, nil
+}
+
+func (s *InMemoryItemsService) Update(ctx context.Context, id string, input *tracertm.UpdateItemInput) (*tracertm.Item, error) {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+
+    item, ok := s.items[id]
+    if !ok {
+        return nil, &tracertm.NotFoundError{ResourceID: id}
+    }
+
+    if input.Title != "" {
+        item.Title = input.Title
+    }
+    if input.Description != "" {
+        item.Description = input.Description
+    }
+    if input.Priority != "" {
+        item.Priority = input.Priority
+    }
+    item.UpdatedAt = time.Now()
+
+    return item, nil
+}
+
+func (s *InMemoryItemsService) Delete(ctx context.Context, id string) error {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+
+    if _, ok := s.items[id]; !ok {
+        return &tracertm.NotFoundError{ResourceID: id}
+    }
+
+    delete(s.items, id)
+    return nil
+}
+```
+
+### Using Stateful Mock
+
+```go
+func TestCRUDOperations(t *testing.T) {
+    store := NewInMemoryItemsService()
+    ctx := context.Background()
+
+    // Create
+    created, err := store.Create(ctx, "proj_1", &tracertm.CreateItemInput{
+        Type:  "requirement",
+        Title: "Test Item",
+    })
+    if err != nil {
+        t.Fatalf("create failed: %v", err)
+    }
+
+    // Read
+    fetched, err := store.Get(ctx, created.ID)
+    if err != nil {
+        t.Fatalf("get failed: %v", err)
+    }
+    if fetched.Title != "Test Item" {
+        t.Errorf("expected 'Test Item', got '%s'", fetched.Title)
+    }
+
+    // Update
+    updated, err := store.Update(ctx, created.ID, &tracertm.UpdateItemInput{
+        Title: "Updated Item",
+    })
+    if err != nil {
+        t.Fatalf("update failed: %v", err)
+    }
+    if updated.Title != "Updated Item" {
+        t.Errorf("expected 'Updated Item', got '%s'", updated.Title)
+    }
+
+    // Delete
+    err = store.Delete(ctx, created.ID)
+    if err != nil {
+        t.Fatalf("delete failed: %v", err)
+    }
+
+    // Verify deleted
+    _, err = store.Get(ctx, created.ID)
+    if err == nil {
+        t.Error("expected not found error after delete")
+    }
+}
+```
+
+---
+
+## Mock Verification
+
+### Verifying Calls
+
+```go
+func TestCallVerification(t *testing.T) {
+    mock := &MockItemsService{
+        CreateFunc: func(ctx context.Context, projectID string, input *tracertm.CreateItemInput) (*tracertm.Item, error) {
+            return &tracertm.Item{ID: "new_item"}, nil
+        },
+    }
+
+    svc := NewService(mock)
+
+    // Perform operations
+    svc.CreateRequirement(context.Background(), "proj_1", "Title 1")
+    svc.CreateRequirement(context.Background(), "proj_1", "Title 2")
+    svc.CreateRequirement(context.Background(), "proj_2", "Title 3")
+
+    // Verify call count
+    if len(mock.CreateCalls) != 3 {
+        t.Errorf("expected 3 Create calls, got %d", len(mock.CreateCalls))
+    }
+
+    // Verify call arguments
+    proj1Calls := 0
+    for _, call := range mock.CreateCalls {
+        if call.ProjectID == "proj_1" {
+            proj1Calls++
+        }
+    }
+    if proj1Calls != 2 {
+        t.Errorf("expected 2 calls to proj_1, got %d", proj1Calls)
+    }
+
+    // Verify specific call
+    if mock.CreateCalls[0].Input.Title != "Title 1" {
+        t.Errorf("expected first call with 'Title 1', got '%s'", mock.CreateCalls[0].Input.Title)
+    }
+}
+```
+
+### Expectation-Based Verification
+
+```go
+type MockExpectation struct {
+    Method string
+    Args   []interface{}
+    Called bool
+}
+
+type ExpectationMock struct {
+    expectations []*MockExpectation
+    mu           sync.Mutex
+}
+
+func (m *ExpectationMock) Expect(method string, args ...interface{}) *MockExpectation {
+    m.mu.Lock()
+    defer m.mu.Unlock()
+
+    exp := &MockExpectation{Method: method, Args: args}
+    m.expectations = append(m.expectations, exp)
+    return exp
+}
+
+func (m *ExpectationMock) Verify(t *testing.T) {
+    t.Helper()
+    m.mu.Lock()
+    defer m.mu.Unlock()
+
+    for _, exp := range m.expectations {
+        if !exp.Called {
+            t.Errorf("expected call to %s was not made", exp.Method)
+        }
+    }
+}
+
+func (m *ExpectationMock) markCalled(method string, args ...interface{}) {
+    m.mu.Lock()
+    defer m.mu.Unlock()
+
+    for _, exp := range m.expectations {
+        if exp.Method == method && !exp.Called {
+            exp.Called = true
+            return
+        }
+    }
+}
+```
+
+---
+
+## HTTP Mock Server
+
+```go
+func NewMockHTTPServer(t *testing.T) (*httptest.Server, *tracertm.Client) {
+    t.Helper()
+
+    mux := http.NewServeMux()
+
+    // Mock endpoints
+    mux.HandleFunc("/v1/projects", func(w http.ResponseWriter, r *http.Request) {
+        json.NewEncoder(w).Encode(&tracertm.ProjectList{
+            Data: []*tracertm.Project{
+                {ID: "proj_1", Name: "Project 1", Key: "P1"},
+            },
+            Total: 1,
+        })
+    })
+
+    mux.HandleFunc("/v1/projects/proj_1/items", func(w http.ResponseWriter, r *http.Request) {
+        json.NewEncoder(w).Encode(&tracertm.ItemList{
+            Data: []*tracertm.Item{
+                {ID: "item_1", Key: "P1-1", Title: "Item 1"},
+            },
+            Total: 1,
+        })
+    })
+
+    server := httptest.NewServer(mux)
+
+    client := tracertm.NewClient(
+        "test_api_key",
+        tracertm.WithBaseURL(server.URL+"/v1"),
+    )
+
+    return server, client
+}
+
+func TestWithHTTPMock(t *testing.T) {
+    server, client := NewMockHTTPServer(t)
+    defer server.Close()
+
+    ctx := context.Background()
+
+    projects, err := client.Projects.List(ctx, nil)
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+
+    if len(projects.Data) != 1 {
+        t.Errorf("expected 1 project, got %d", len(projects.Data))
+    }
+}
+```
+
+---
+
+## Related Documentation
+
+- [Testing](/docs/api-reference/sdks/go/testing) - Testing overview
+- [Unit Tests](/docs/api-reference/sdks/go/unit-tests) - Unit test patterns
+- [Error Handling](/docs/api-reference/sdks/go/error-handling) - Error types

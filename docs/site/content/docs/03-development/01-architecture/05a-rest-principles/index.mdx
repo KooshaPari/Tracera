@@ -1,0 +1,139 @@
+---
+title: "REST Principles"
+description: "REST architectural principles applied in TraceRTM"
+keywords: [rest, principles, http, api, architecture]
+---
+
+# REST Principles
+
+REST (Representational State Transfer) principles applied in TraceRTM API.
+
+## REST Principles
+
+### 1. Stateless
+
+Each request contains all information needed to process it:
+
+```http
+GET /api/v1/items HTTP/1.1
+Host: api.tracertm.dev
+Authorization: Bearer token123
+```
+
+No server-side session state required.
+
+### 2. Client-Server
+
+Clear separation between client and server:
+
+- **Client**: Handles UI and user interaction
+- **Server**: Handles data storage and business logic
+
+### 3. Uniform Interface
+
+Consistent interface across all resources:
+
+```python
+# Same pattern for all resources
+GET    /api/v1/items
+POST   /api/v1/items
+GET    /api/v1/items/{id}
+PUT    /api/v1/items/{id}
+DELETE /api/v1/items/{id}
+```
+
+### 4. Resource-Based
+
+Resources are identified by URLs:
+
+```python
+# Resources
+/api/v1/items/{id}
+/api/v1/projects/{id}
+/api/v1/links/{id}
+
+# Not actions
+/api/v1/createItem
+/api/v1/deleteItem
+```
+
+### 5. HTTP Methods
+
+Use HTTP methods correctly:
+
+| Method | Usage | Idempotent |
+|--------|-------|------------|
+| GET | Retrieve resource | Yes |
+| POST | Create resource | No |
+| PUT | Update/replace | Yes |
+| PATCH | Partial update | No |
+| DELETE | Delete resource | Yes |
+
+### 6. Status Codes
+
+Use appropriate HTTP status codes:
+
+- `200 OK`: Success
+- `201 Created`: Resource created
+- `204 No Content`: Success, no body
+- `400 Bad Request`: Invalid request
+- `401 Unauthorized`: Authentication required
+- `404 Not Found`: Resource not found
+- `422 Unprocessable Entity`: Validation error
+
+## HATEOAS (Optional)
+
+Hypermedia as the Engine of Application State:
+
+```json
+{
+  "id": "item_123",
+  "title": "User Authentication",
+  "_links": {
+    "self": "/api/v1/items/item_123",
+    "project": "/api/v1/projects/proj_123",
+    "links": "/api/v1/items/item_123/links"
+  }
+}
+```
+
+## Best Practices
+
+### 1. Use Nouns, Not Verbs
+
+```python
+# Good
+GET /api/v1/items
+POST /api/v1/items
+
+# Bad
+GET /api/v1/getItems
+POST /api/v1/createItem
+```
+
+### 2. Use Plural Nouns
+
+```python
+# Good
+/api/v1/items
+/api/v1/projects
+
+# Bad
+/api/v1/item
+/api/v1/project
+```
+
+### 3. Use Query Parameters for Filtering
+
+```python
+# Good
+GET /api/v1/items?status=active&view=requirements
+
+# Bad
+GET /api/v1/items/active/requirements
+```
+
+## Related Documentation
+
+- [API Design](./05-api-design) - API design patterns
+- [REST API](/docs/api-reference/rest-api/overview) - API reference

@@ -1,0 +1,206 @@
+{
+  "version": "2.0",
+  "project": "trace",
+  "stacks": [
+    "python",
+    "go",
+    "typescript"
+  ],
+  "coverage_threshold": 80,
+  "line_length": 120,
+  "test_pyramid": {
+    "unit": 70,
+    "integration": 20,
+    "e2e": 10,
+    "tolerance": 5
+  },
+  "traceability": {
+    "enabled": false,
+    "fr_source": "FUNCTIONAL_REQUIREMENTS.md",
+    "tag_format": "FR-[A-Z]+-[0-9]+"
+  },
+  "criticality_tier": "established",
+  "governance": {
+    "delivery_model": "brownfield",
+    "enforce_brownfield_gate": false,
+    "enforce_greenfield_gate": false,
+    "enforce_probabilistic_gate": false,
+    "probabilistic": {
+      "min_sample_size": 100,
+      "drift_reverify_days": 30
+    },
+    "reliability": {
+      "enforce_slo_gate": true,
+      "enforce_flake_quarantine": true,
+      "enforce_dispute_gate": true,
+      "max_flake_rate": 0.1,
+      "min_pass_rate": 0.9,
+      "quarantine_ttl_days": 14,
+      "max_dispute_open_days": 14
+    },
+    "rolling_wave": {
+      "enforce_gate": true,
+      "review_window_days": 14,
+      "require_promotion_evidence": true
+    },
+    "assurance_case": {
+      "enforce_gate": true,
+      "require_top_claim_coverage": true
+    },
+    "privacy_preserving": {
+      "enforce_gate": true,
+      "zk_required": false,
+      "require_private_sigstore": true,
+      "proof_ttl_days": 30
+    },
+    "playbooks": {
+      "enforce_gate": true
+    },
+    "artifact_quality": {
+      "enforce_gate": true,
+      "max_age_days": 30,
+      "require_proof_refs": true,
+      "block_placeholders": true
+    },
+    "debt_registry": {
+      "enforce_gate": true,
+      "auto_register": true,
+      "require_owner": true,
+      "high_sla_days": 14,
+      "medium_sla_days": 30,
+      "low_sla_days": 60
+    },
+    "onchain": {
+      "enforce_transition_receipt": true,
+      "require_tx_hash": true,
+      "max_anchor_age_days": 30,
+      "require_contract_tool_evidence": true,
+      "tool_evidence_max_age_days": 14,
+      "require_contract_tool_pass": true
+    },
+    "formal": {
+      "enforce_registry_gate": true,
+      "max_verify_age_days": 30,
+      "require_evidence_refs": true,
+      "require_executor_evidence": true,
+      "executor_evidence_max_age_days": 14,
+      "require_executor_pass": true
+    },
+    "toolchains": {
+      "enforce_lockfile": true,
+      "profile": "critical-default",
+      "applicability": {
+        "onchain": false,
+        "formal": false
+      },
+      "require_evaluated_when_applicable": true,
+      "require_nonempty_results_when_applicable": true,
+      "onchain_min_required_tools": [
+        "forge"
+      ],
+      "formal_min_required_executors": [
+        "dafny",
+        "tlc",
+        "alloy"
+      ],
+      "formal_min_required_executors_count": 1,
+      "require_min_pass_count_when_applicable": true,
+      "onchain_min_pass_count": 1,
+      "formal_min_pass_count": 1,
+      "require_known_statuses_when_applicable": true,
+      "allowed_result_statuses": [
+        "pass",
+        "fail",
+        "warn",
+        "skip",
+        "not_run",
+        "error"
+      ],
+      "require_consistent_aggregate_pass_when_applicable": true,
+      "fail_result_statuses": [
+        "fail",
+        "error"
+      ],
+      "max_fail_status_count_when_pass": 0,
+      "require_provenance_metadata_when_applicable": true,
+      "max_report_time_skew_days": 2,
+      "require_source_report_scheme_when_applicable": true,
+      "allowed_source_report_schemes": [
+        "file://"
+      ],
+      "require_source_report_digest_when_applicable": true,
+      "source_report_digest_algorithm": "sha256",
+      "require_source_report_local_sandbox_when_applicable": true,
+      "source_report_allowed_roots": [
+        ".claude/verification/"
+      ],
+      "require_source_report_digest_format_when_applicable": true,
+      "source_report_digest_sha256_regex": "^[a-f0-9]{64}$",
+      "require_report_timestamp_match_when_applicable": true,
+      "max_report_timestamp_delta_seconds": 60,
+      "require_evidence_schema_version_when_applicable": true,
+      "evidence_schema_version": "1",
+      "require_expected_source_report_target_when_applicable": true,
+      "expected_onchain_source_report": "file://.claude/verification/onchain-contract-gate.json",
+      "expected_formal_source_report": "file://.claude/verification/formal-methods-gate.json",
+      "require_error_count_consistency_when_applicable": true,
+      "min_error_count_delta_vs_fail_statuses": 0,
+      "max_error_count_delta_vs_fail_statuses": 0,
+      "require_result_keyset_consistency_when_applicable": true,
+      "max_missing_result_keys_vs_source_report": 0,
+      "max_extra_result_keys_vs_source_report": 0,
+      "require_result_status_match_when_applicable": true,
+      "max_status_mismatch_count_vs_source_report": 0,
+      "require_warning_count_consistency_when_applicable": true,
+      "min_warning_count_delta_vs_warn_statuses": 0,
+      "max_warning_count_delta_vs_warn_statuses": 0,
+      "warn_result_statuses": [
+        "warn"
+      ],
+      "require_source_report_nonempty_checks_when_applicable": true,
+      "min_source_report_checks_count_when_applicable": 1,
+      "require_source_report_pass_match_when_applicable": true,
+      "max_source_report_pass_mismatch_count_when_applicable": 0,
+      "require_unique_source_report_check_keys_when_applicable": true,
+      "max_duplicate_source_report_check_keys_when_applicable": 0,
+      "require_source_report_known_statuses_when_applicable": true,
+      "max_unknown_source_report_status_count_when_applicable": 0,
+      "require_source_report_check_shape_when_applicable": true,
+      "max_invalid_source_report_check_rows_when_applicable": 0,
+      "require_consistent_source_report_pass_when_applicable": true,
+      "require_source_report_warning_count_consistency_when_applicable": true,
+      "max_source_report_fail_status_count_when_pass": 0,
+      "min_source_report_warning_count_delta_vs_warn_statuses": 0,
+      "max_source_report_warning_count_delta_vs_warn_statuses": 0,
+      "require_source_report_error_count_consistency_when_applicable": true,
+      "min_source_report_error_count_delta_vs_fail_statuses": 0,
+      "max_source_report_error_count_delta_vs_fail_statuses": 0,
+      "require_source_report_check_key_format_when_applicable": true,
+      "max_invalid_source_report_check_keys_when_applicable": 0,
+      "source_report_check_key_regex": "^[A-Za-z0-9._:/-]+$"
+    },
+    "health": {
+      "min_score": 95
+    },
+    "smart_contract": {
+      "enforce_gate": false,
+      "enforce_by_tier": {
+        "new": false,
+        "established": true,
+        "critical": true
+      },
+      "min_fr_coverage_percent": 95,
+      "allow_orphan_frs": false,
+      "allow_orphan_tests": false,
+      "require_test_pyramid": true,
+      "min_evidence_files": 1,
+      "required_methodologies": {
+        "bdd": true,
+        "property_based": false,
+        "mutation": false,
+        "contract": false,
+        "chaos": false
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/query_optimization_service.py
+# hypothesis_version: 6.148.7
+
+[0.1, 0.5, 1.0, 100, 300, 10000, 'Excellent', 'Fair', 'Good', 'Poor', 'cache_keys', 'cached_at', 'cached_queries', 'items_returned', 'max_execution_time', 'min_execution_time', 'performance_rating', 'query_filters', 'result', 'status', 'timestamp', 'total_items_returned', 'total_queries', 'ttl_seconds', 'view']

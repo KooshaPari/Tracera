@@ -1,0 +1,190 @@
+---
+title: "Search Engine"
+description: "Full-text search implementation in TraceRTM"
+keywords: [search, full-text, indexing, elasticsearch]
+---
+
+# Search Engine
+
+Full-text search implementation for TraceRTM items and content.
+
+## PostgreSQL Full-Text Search
+
+### Basic Search
+
+```python
+from sqlalchemy import text
+
+async def search_items(session: AsyncSession, query: str):
+    """Search items using PostgreSQL full-text search."""
+    stmt = text("""
+        SELECT id, title, description,
+               ts_rank_cd(to_tsvector('english', title || ' ' || description), 
+                         plainto_tsquery('english', :query)) AS rank
+        FROM items
+        WHERE to_tsvector('english', title || ' ' || description) 
+              @@ plainto_tsquery('english', :query)
+        ORDER BY rank DESC
+    """)
+    
+    result = await session.execute(stmt, {"query": query})
+    return result.fetchall()
+```
+
+### Indexed Search
+
+```sql
+-- Create GIN index for full-text search
+CREATE INDEX idx_items_search ON items 
+USING GIN(to_tsvector('english', title || ' ' || COALESCE(description, '')));
+
+-- Search query
+SELECT * FROM items
+WHERE to_tsvector('english', title || ' ' || description) 
+      @@ plainto_tsquery('english', 'authentication');
+```
+
+## Search Service
+
+### Search Implementation
+
+```python
+class SearchService:
+    def __init__(self, db: AsyncSession):
+        self.db = db
+    
+    async def search(
+        self,
+        query: str,
+        project_id: str | None = None,
+        view: str | None = None,
+        limit: int = 50
+    ) -> list[dict]:
+        """Search items with filters."""
+        conditions = []
+        params = {"query": query}
+        
+        if project_id:
+            conditions.append("project_id = :project_id")
+            params["project_id"] = project_id
+        
+        if view:
+            conditions.append("view = :view")
+            params["view"] = view
+        
+        where_clause = " AND ".join(conditions) if conditions else "1=1"
+        
+        stmt = text(f"""
+            SELECT id, title, description, view, status,
+                   ts_rank_cd(
+                       to_tsvector('english', title || ' ' || COALESCE(description, '')),
+                       plainto_tsquery('english', :query)
+                   ) AS rank
+            FROM items
+            WHERE to_tsvector('english', title || ' ' || COALESCE(description, ''))
+                  @@ plainto_tsquery('english', :query)
+              AND {where_clause}
+            ORDER BY rank DESC
+            LIMIT :limit
+        """)
+        
+        params["limit"] = limit
+        result = await session.execute(stmt, params)
+        return [dict(row) for row in result]
+```
+
+## Search Features
+
+### Phrase Search
+
+```python
+# Exact phrase
+query = '"OAuth 2.0 authentication"'
+
+# PostgreSQL query
+plainto_tsquery('english', query)
+```
+
+### Boolean Operators
+
+```python
+# AND (default)
+query = "authentication AND OAuth"
+
+# OR
+query = "authentication OR login"
+
+# NOT
+query = "authentication NOT basic"
+```
+
+### Field-Specific Search
+
+```python
+# Search in title only
+stmt = text("""
+    SELECT * FROM items
+    WHERE to_tsvector('english', title) 
+          @@ plainto_tsquery('english', :query)
+""")
+```
+
+## Search Indexing
+
+### Update Search Index
+
+```python
+async def index_item(session: AsyncSession, item: Item):
+    """Index item for search."""
+    # PostgreSQL automatically updates GIN index
+    # For external search engines, update here
+    pass
+```
+
+### Reindex All
+
+```python
+async def reindex_all(session: AsyncSession):
+    """Reindex all items."""
+    # Refresh materialized search index if used
+    await session.execute(text("REFRESH MATERIALIZED VIEW search_index"))
+    await session.commit()
+```
+
+## Search Results
+
+### Relevance Scoring
+
+```python
+# Use ts_rank for relevance
+stmt = text("""
+    SELECT id, title,
+           ts_rank(
+               to_tsvector('english', title || ' ' || description),
+               plainto_tsquery('english', :query)
+           ) AS relevance
+    FROM items
+    WHERE to_tsvector('english', title || ' ' || description)
+          @@ plainto_tsquery('english', :query)
+    ORDER BY relevance DESC
+""")
+```
+
+### Highlighting
+
+```python
+# Highlight matches
+stmt = text("""
+    SELECT id, title,
+           ts_headline('english', title, 
+                      plainto_tsquery('english', :query)) AS highlighted
+    FROM items
+    WHERE to_tsvector('english', title) 
+          @@ plainto_tsquery('english', :query)
+""")
+```
+
+## Related Documentation
+
+- [Elasticsearch](./04a-elasticsearch) - Elasticsearch integration
+- [Search API](/docs/api-reference/rest-api/search) - Search API reference

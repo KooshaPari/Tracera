@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/mvp_shortcuts.py
+# hypothesis_version: 6.148.7
+
+['--description', '--limit', '--local', '--metadata', '--owner', '--priority', '--status', '--type', '--version', '-d', '-l', '-m', '-o', '-s', '-t', '-v', 'Description', 'FEATURE', 'Filter by owner', 'Filter by priority', 'Filter by status', 'Filter by type', 'Item ID', 'Owner', 'Priority', 'Requirement title', 'Show metadata', 'Status', 'TEST', 'epic', 'feature', 'medium', 'spec', 'story', 'task', 'test', 'test_case', 'todo']

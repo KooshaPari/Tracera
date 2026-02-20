@@ -1,0 +1,84 @@
+---
+title: "CLI Installation - Windows"
+description: "Install the TraceRTM CLI on Windows"
+keywords: [cli, installation, windows, powershell]
+---
+
+# CLI Installation - Windows
+
+Install the TraceRTM CLI on Windows using pip or the Windows installer.
+
+## Prerequisites
+
+- Python 3.12 or higher
+- pip (included with Python)
+
+## Method 1: Using pip
+
+### Install Python
+
+1. Download Python 3.12+ from [python.org](https://www.python.org/downloads/)
+2. Run installer
+3. Check "Add Python to PATH" during installation
+
+### Install CLI
+
+Open PowerShell or Command Prompt:
+
+```powershell
+pip install tracertm-cli
+```
+
+### Add to PATH (if needed)
+
+If `trace` command is not found:
+
+1. Find Python Scripts directory:
+   ```powershell
+   python -m site --user-base
+   ```
+2. Add `Scripts` folder to PATH:
+   - Open System Properties → Environment Variables
+   - Add `%USERPROFILE%\AppData\Roaming\Python\Python312\Scripts` to PATH
+
+## Method 2: Windows Installer
+
+Download the Windows installer from [GitHub Releases](https://github.com/tracertm/tracertm-cli/releases):
+
+1. Download `tracertm-cli-windows-amd64.msi`
+2. Run installer
+3. Follow installation wizard
+
+## Verify Installation
+
+```powershell
+trace --version
+```
+
+## WSL2 (Recommended)
+
+For better compatibility, consider using WSL2:
+
+```bash
+# In WSL2
+sudo apt-get update
+sudo apt-get install python3.12 python3-pip
+pip3 install tracertm-cli
+```
+
+## Troubleshooting
+
+### Command Not Found
+
+```powershell
+# Check installation
+pip show tracertm-cli
+
+# Use python -m
+python -m tracertm --version
+```
+
+## Next Steps
+
+- [Configuration](../02-configuration) - Configure CLI
+- [Commands](../03-commands) - Learn commands

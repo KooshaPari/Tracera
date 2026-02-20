@@ -1,0 +1,219 @@
+---
+title: "System Components"
+description: "Overview of TraceRTM system components and their interactions"
+keywords: [architecture, components, system design]
+---
+
+# System Components
+
+Overview of TraceRTM system components and how they interact.
+
+## Component Architecture
+
+```
+┌─────────────────────────────────────────┐
+│           Client Layer                  │
+│  ┌──────┐  ┌──────┐  ┌──────┐         │
+│  │ CLI  │  │ TUI  │  │ Web  │         │
+│  └──┬───┘  └──┬───┘  └──┬───┘         │
+└─────┼─────────┼──────────┼─────────────┘
+      │         │          │
+      └─────────┴──────────┘
+              │
+      ┌───────▼────────┐
+      │   API Layer    │
+      │   (FastAPI)    │
+      └───────┬────────┘
+              │
+      ┌───────▼────────┐
+      │ Service Layer  │
+      │ (Business Logic)│
+      └───────┬────────┘
+              │
+      ┌───────▼────────┐
+      │Repository Layer│
+      │  (Data Access) │
+      └───────┬────────┘
+              │
+      ┌───────▼────────┐
+      │   Database     │
+      │  (PostgreSQL)  │
+      └────────────────┘
+```
+
+## Core Components
+
+### API Layer
+
+**Location**: `src/tracertm/api/`
+
+**Responsibilities**:
+- HTTP request handling
+- Request validation
+- Response formatting
+- Authentication/Authorization
+
+**Key Files**:
+- `main.py`: FastAPI app and routes
+- `auth.py`: Authentication logic
+- `middleware.py`: Request middleware
+
+### Service Layer
+
+**Location**: `src/tracertm/services/`
+
+**Responsibilities**:
+- Business logic
+- Validation rules
+- Orchestration
+- Event publishing
+
+**Key Services**:
+- `item_service.py`: Item management
+- `link_service.py`: Link management
+- `project_service.py`: Project management
+- `export_service.py`: Data export
+
+### Repository Layer
+
+**Location**: `src/tracertm/repositories/`
+
+**Responsibilities**:
+- Data access abstraction
+- Query building
+- Transaction management
+
+**Key Repositories**:
+- `item_repository.py`: Item data access
+- `link_repository.py`: Link data access
+- `project_repository.py`: Project data access
+
+### Models
+
+**Location**: `src/tracertm/models/`
+
+**Types**:
+- **ORM Models**: SQLAlchemy models
+- **Schemas**: Pydantic models
+- **DTOs**: Data transfer objects
+
+## Supporting Components
+
+### Authentication
+
+**Location**: `src/tracertm/auth/`
+
+**Features**:
+- JWT token generation/validation
+- API key validation
+- OAuth 2.0 support
+- Role-based access control
+
+### Events
+
+**Location**: `src/tracertm/events/`
+
+**Features**:
+- Event publishing
+- Event subscriptions
+- Event handlers
+- Webhook integration
+
+### Caching
+
+**Location**: `src/tracertm/cache/`
+
+**Features**:
+- Redis integration
+- Cache invalidation
+- Cache strategies
+
+### Storage
+
+**Location**: `src/tracertm/storage/`
+
+**Backends**:
+- Local file system
+- S3-compatible storage
+- Azure Blob Storage
+
+## Component Interactions
+
+### Create Item Flow
+
+```
+API Handler
+    ↓ calls
+Item Service
+    ↓ calls
+Item Repository
+    ↓ queries
+Database
+    ↓ returns
+Item Repository
+    ↓ returns
+Item Service
+    ↓ publishes
+Event Bus
+    ↓ returns
+API Handler
+    ↓ returns
+Client
+```
+
+### Query Flow
+
+```
+API Handler
+    ↓ calls
+Item Service
+    ↓ checks
+Cache
+    ↓ if miss, calls
+Item Repository
+    ↓ queries
+Database
+    ↓ stores in
+Cache
+    ↓ returns
+Item Service
+    ↓ returns
+API Handler
+```
+
+## Data Flow
+
+### Request → Response
+
+1. **Client** sends HTTP request
+2. **API Layer** validates and routes
+3. **Service Layer** applies business logic
+4. **Repository Layer** queries database
+5. **Database** returns data
+6. **Response** flows back through layers
+
+### Event Flow
+
+1. **Service** publishes event
+2. **Event Bus** routes to handlers
+3. **Handlers** process event
+4. **Webhooks** triggered (if configured)
+
+## Component Dependencies
+
+```
+API Layer
+  depends on → Service Layer
+    depends on → Repository Layer
+      depends on → Database
+
+Service Layer
+  depends on → Event Bus
+  depends on → Cache
+  depends on → Storage
+```
+
+## Related Documentation
+
+- [Request Flow](./02a-request-flow) - Request processing
+- [Internals](../developer/internals) - Implementation details

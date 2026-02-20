@@ -1,0 +1,9 @@
+# Bandit Security Configuration (INI format)
+# Detects common security issues in Python code.
+# Strict mode: run with -l high -i high (e.g. in CI: bandit -r src/ -l high -i high).
+# Inline skip: use # nosec BXXX with a brief reason; document in QUALITY_QUICK_REFERENCE.
+
+[bandit]
+exclude = /tests,/.venv,/venv,/__pycache__,.pytest_cache
+tests =
+skips =

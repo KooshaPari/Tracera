@@ -1,0 +1,430 @@
+---
+title: "Architecture"
+description: "Comprehensive overview of TraceRTM's system architecture, design patterns, and technical decisions"
+---
+
+# Architecture Overview
+
+TraceRTM employs a modern, layered architecture designed for scalability, maintainability, and AI agent collaboration. This document provides a comprehensive overview of the system design.
+
+## High-Level Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                          Presentation Layer                          │
+├─────────────────────────────────────────────────────────────────────┤
+│  Web Application  │  CLI Tool  │  TUI Application  │  Python SDK    │
+│  (React/TS)       │  (Typer)   │  (Textual)        │  (Async)       │
+└─────────┬─────────┴──────┬─────┴─────────┬─────────┴───────┬────────┘
+          │                │               │                 │
+          ▼                ▼               ▼                 ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                           API Gateway                                │
+├─────────────────────────────────────────────────────────────────────┤
+│  FastAPI Application                                                 │
+│  ├─ REST Endpoints (/api/v1/*)                                      │
+│  ├─ WebSocket Handlers (/ws/*)                                      │
+│  ├─ GraphQL Endpoint (/graphql) [optional]                          │
+│  └─ Health & Metrics (/health, /metrics)                            │
+└─────────┬─────────────────────────────────────────────────┬─────────┘
+          │                                                 │
+          ▼                                                 ▼
+┌──────────────────────────────┐       ┌──────────────────────────────┐
+│       Service Layer          │       │      Cross-Cutting Concerns   │
+├──────────────────────────────┤       ├──────────────────────────────┤
+│  ProjectService              │       │  Authentication (WorkOS)      │
+│  ItemService                 │       │  Authorization (RBAC)         │
+│  LinkService                 │       │  Logging (Structured)         │
+│  GraphService                │       │  Caching (Redis)              │
+│  SyncService                 │       │  Rate Limiting                │
+│  SearchService               │       │  Error Handling               │
+│  AgentCoordinationService    │       │  Validation                   │
+└─────────┬────────────────────┘       └──────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                        Repository Layer                              │
+├─────────────────────────────────────────────────────────────────────┤
+│  ProjectRepository  │  ItemRepository  │  LinkRepository            │
+│  AgentRepository    │  EventRepository │  BaseRepository            │
+└─────────┬───────────┴─────────┬────────┴─────────────────┬──────────┘
+          │                     │                          │
+          ▼                     ▼                          ▼
+┌─────────────────────┐ ┌─────────────────┐ ┌─────────────────────────┐
+│     PostgreSQL      │ │      Neo4j      │ │    File Storage         │
+│   (Primary Store)   │ │  (Graph Store)  │ │   (Local/S3/GCS)        │
+├─────────────────────┤ ├─────────────────┤ ├─────────────────────────┤
+│  • Projects         │ │  • Traceability │ │  • Item attachments     │
+│  • Items            │ │    relationships│ │  • Export files         │
+│  • Links            │ │  • Impact       │ │  • Backup archives      │
+│  • Agents           │ │    analysis     │ │  • Sync state           │
+│  • Events           │ │  • Graph queries│ │                         │
+│  • Change history   │ │                 │ │                         │
+└─────────────────────┘ └─────────────────┘ └─────────────────────────┘
+```
+
+## Core Components
+
+### 1. Presentation Layer
+
+TraceRTM offers multiple interfaces to suit different workflows:
+
+| Interface | Technology | Use Case |
+|-----------|------------|----------|
+| **Web UI** | React 19 + TanStack | Full graphical interface, dashboards |
+| **CLI** | Typer | Automation, scripting, CI/CD |
+| **TUI** | Textual | Terminal-based visual interface |
+| **SDK** | Python async | Programmatic access, agent integration |
+
+### 2. API Gateway
+
+The FastAPI-based API gateway handles all external communication:
+
+```python
+# API structure
+src/tracertm/api/
+├── main.py              # Application factory
+├── routers/
+│   ├── projects.py      # Project endpoints
+│   ├── items.py         # Item CRUD endpoints
+│   ├── links.py         # Link management
+│   ├── graph.py         # Graph queries
+│   ├── sync.py          # Sync operations
+│   └── agents.py        # Agent coordination
+├── middleware/
+│   ├── auth.py          # Authentication
+│   ├── cors.py          # CORS handling
+│   └── logging.py       # Request logging
+├── schemas/
+│   ├── requests.py      # Request validation
+│   └── responses.py     # Response models
+└── dependencies.py      # Dependency injection
+```
+
+### 3. Service Layer
+
+Business logic is encapsulated in service classes:
+
+```python
+# Service pattern example
+class ItemService:
+    def __init__(
+        self,
+        item_repo: ItemRepository,
+        link_repo: LinkRepository,
+        event_repo: EventRepository,
+        cache: CacheService,
+    ):
+        self.item_repo = item_repo
+        self.link_repo = link_repo
+        self.event_repo = event_repo
+        self.cache = cache
+
+    async def create_item(
+        self,
+        session: AsyncSession,
+        project_id: str,
+        data: ItemCreate,
+        agent_id: str | None = None,
+    ) -> Item:
+        # Validate project exists
+        # Create item with optimistic locking
+        # Record creation event
+        # Invalidate relevant caches
+        # Return created item
+        ...
+```
+
+### 4. Repository Layer
+
+Data access is abstracted through repository classes:
+
+```python
+# Repository pattern
+class BaseRepository[T]:
+    async def get(self, session: AsyncSession, id: str) -> T | None
+    async def list(self, session: AsyncSession, **filters) -> list[T]
+    async def create(self, session: AsyncSession, entity: T) -> T
+    async def update(self, session: AsyncSession, entity: T) -> T
+    async def delete(self, session: AsyncSession, id: str) -> bool
+```
+
+## Data Architecture
+
+### PostgreSQL Schema
+
+Primary relational storage with JSONB support:
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│    projects     │     │     items       │     │     links       │
+├─────────────────┤     ├─────────────────┤     ├─────────────────┤
+│ id (PK)         │────<│ project_id (FK) │     │ id (PK)         │
+│ name            │     │ id (PK)         │────<│ source_id (FK)  │
+│ description     │     │ title           │────<│ target_id (FK)  │
+│ metadata (JSONB)│     │ description     │     │ link_type       │
+│ created_at      │     │ view            │     │ metadata (JSONB)│
+│ updated_at      │     │ item_type       │     │ created_at      │
+└─────────────────┘     │ status          │     │ updated_at      │
+                        │ priority        │     └─────────────────┘
+                        │ parent_id (FK)  │
+                        │ metadata (JSONB)│
+                        │ version         │
+                        │ deleted_at      │
+                        │ created_at      │
+                        │ updated_at      │
+                        └─────────────────┘
+                               │
+                               ▼
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│     agents      │     │  agent_events   │     │     events      │
+├─────────────────┤     ├─────────────────┤     ├─────────────────┤
+│ id (PK)         │────<│ agent_id (FK)   │     │ id (PK)         │
+│ project_id (FK) │     │ item_id (FK)    │     │ project_id (FK) │
+│ name            │     │ event_type      │     │ entity_type     │
+│ agent_type      │     │ event_data      │     │ entity_id       │
+│ status          │     │ created_at      │     │ event_type      │
+│ metadata (JSONB)│     └─────────────────┘     │ data (JSONB)    │
+│ last_activity   │                             │ created_at      │
+└─────────────────┘                             └─────────────────┘
+```
+
+### Neo4j Graph Model
+
+Optimized for traceability queries:
+
+```cypher
+// Node types
+(:Project {id, name, metadata})
+(:Item {id, title, type, status, view})
+(:Agent {id, name, type, status})
+
+// Relationship types
+(:Item)-[:IMPLEMENTS]->(:Item)      // Code implements requirement
+(:Item)-[:TESTS]->(:Item)           // Test covers requirement/code
+(:Item)-[:DEPENDS_ON]->(:Item)      // Dependency relationship
+(:Item)-[:CHILD_OF]->(:Item)        // Parent-child hierarchy
+(:Agent)-[:CREATED]->(:Item)        // Agent created item
+(:Agent)-[:MODIFIED]->(:Item)       // Agent modified item
+```
+
+## Key Design Patterns
+
+### 1. Optimistic Locking
+
+Prevents concurrent modification conflicts:
+
+```python
+class Item(Base):
+    __tablename__ = "items"
+
+    version: Mapped[int] = mapped_column(default=1)
+
+    __mapper_args__ = {
+        "version_id_col": version,
+    }
+
+# Usage - raises StaleDataError if version changed
+item = await repo.get(session, item_id)
+item.title = "Updated"
+await session.commit()  # Checks version before committing
+```
+
+### 2. Event Sourcing
+
+Complete change history for audit and replay:
+
+```python
+# Every state change is recorded
+@dataclass
+class Event:
+    entity_type: str      # "item", "link", "project"
+    entity_id: str
+    event_type: str       # "created", "updated", "deleted"
+    data: dict            # Before/after state
+    agent_id: str | None
+    timestamp: datetime
+```
+
+### 3. Repository Pattern
+
+Abstracts data access from business logic:
+
+```python
+# Easy to swap implementations
+class ItemRepository(Protocol):
+    async def get(self, session: AsyncSession, id: str) -> Item | None: ...
+    async def list(self, session: AsyncSession, **filters) -> list[Item]: ...
+
+class PostgresItemRepository(ItemRepository):
+    # PostgreSQL implementation
+    ...
+
+class MockItemRepository(ItemRepository):
+    # In-memory implementation for testing
+    ...
+```
+
+### 4. Dependency Injection
+
+Services receive their dependencies at construction:
+
+```python
+# Using FastAPI's dependency injection
+def get_item_service(
+    item_repo: Annotated[ItemRepository, Depends(get_item_repo)],
+    link_repo: Annotated[LinkRepository, Depends(get_link_repo)],
+    cache: Annotated[CacheService, Depends(get_cache)],
+) -> ItemService:
+    return ItemService(item_repo, link_repo, cache)
+
+@router.get("/items/{item_id}")
+async def get_item(
+    item_id: str,
+    service: Annotated[ItemService, Depends(get_item_service)],
+):
+    return await service.get_item(item_id)
+```
+
+## Agent Coordination
+
+TraceRTM is designed for multi-agent collaboration:
+
+### Coordination Protocol
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Agent Coordination Flow                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  Agent A                  Server                   Agent B       │
+│     │                       │                         │          │
+│     │──register────────────>│                         │          │
+│     │<─────────────────ack──│                         │          │
+│     │                       │<──────register──────────│          │
+│     │                       │──ack───────────────────>│          │
+│     │                       │                         │          │
+│     │──acquire_lock(item)──>│                         │          │
+│     │<───────────lock_ok────│                         │          │
+│     │                       │                         │          │
+│     │──update_item─────────>│                         │          │
+│     │<───────────────ok─────│──notify_change─────────>│          │
+│     │                       │                         │          │
+│     │──release_lock────────>│                         │          │
+│     │<───────────ok─────────│                         │          │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Conflict Resolution
+
+When conflicts occur:
+
+1. **Detection**: Version mismatch during update
+2. **Preservation**: Both versions stored in metadata
+3. **Resolution**: Manual or automatic merge strategies
+4. **Notification**: Affected agents/users notified
+
+## Security Architecture
+
+### Authentication Flow
+
+```
+Client → API Gateway → WorkOS/Auth Provider → JWT Validation → Protected Resource
+```
+
+### Authorization (RBAC)
+
+```python
+# Role-based permissions
+ROLES = {
+    "admin": ["*"],
+    "editor": ["read", "create", "update", "link"],
+    "viewer": ["read"],
+    "agent": ["read", "create", "update", "link", "agent_ops"],
+}
+
+# Permission check
+@router.put("/items/{item_id}")
+async def update_item(
+    item_id: str,
+    data: ItemUpdate,
+    user: Annotated[User, Depends(require_permission("update"))],
+):
+    ...
+```
+
+## Performance Considerations
+
+### Caching Strategy
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      Cache Hierarchy                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  L1: In-Memory (LRU)     TTL: 60s      Hot data, per-instance   │
+│           │                                                      │
+│           ▼                                                      │
+│  L2: Redis                TTL: 5min    Shared across instances   │
+│           │                                                      │
+│           ▼                                                      │
+│  L3: PostgreSQL           -            Source of truth           │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Query Optimization
+
+- **Indexes**: Composite indexes for common query patterns
+- **Pagination**: Cursor-based for large datasets
+- **Eager Loading**: N+1 query prevention with joinedload
+- **Connection Pooling**: Async pool with health checks
+
+## Scalability
+
+### Horizontal Scaling
+
+```
+                    ┌─────────────────┐
+                    │   Load Balancer │
+                    │   (nginx/ALB)   │
+                    └────────┬────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         │                   │                   │
+         ▼                   ▼                   ▼
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│   API Server    │ │   API Server    │ │   API Server    │
+│   Instance 1    │ │   Instance 2    │ │   Instance N    │
+└────────┬────────┘ └────────┬────────┘ └────────┬────────┘
+         │                   │                   │
+         └───────────────────┼───────────────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+              ▼              ▼              ▼
+       ┌───────────┐  ┌───────────┐  ┌───────────┐
+       │ PostgreSQL│  │   Redis   │  │   Neo4j   │
+       │  Primary  │  │  Cluster  │  │  Cluster  │
+       │ + Replica │  │           │  │           │
+       └───────────┘  └───────────┘  └───────────┘
+```
+
+## Documentation Structure
+
+Continue to specific architecture topics:
+
+- [System Design](/docs/development/architecture/system-design) - Detailed system design
+- [Frontend Architecture](/docs/development/architecture/frontend) - React/TypeScript patterns
+- [Backend Architecture](/docs/development/architecture/backend) - Python/FastAPI patterns
+- [Database Schema](/docs/development/architecture/database) - Complete schema reference
+- [Infrastructure](/docs/development/architecture/infrastructure) - Deployment architecture
+- [Security](/docs/development/architecture/security) - Security implementation
+
+## Related Documentation
+
+- [Setup Guide](/docs/development/setup) - Development environment setup
+- [API Reference](/api) - REST API documentation
+- [Contributing](/docs/development/contributing) - Contribution guidelines
+

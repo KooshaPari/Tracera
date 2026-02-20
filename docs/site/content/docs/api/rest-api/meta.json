@@ -1,0 +1,10 @@
+{
+  "title": "REST API",
+  "pages": [
+    "index",
+    "health",
+    "items",
+    "links",
+    "analysis"
+  ]
+}

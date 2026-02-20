@@ -1,0 +1,7 @@
+# Isolate ARCHIVE from project linting. Vendored/archived code (gyp, dmg-builder, etc.)
+# is not maintained here; do not run Ruff on it.
+# Root pyproject.toml uses extend-exclude = ["ARCHIVE", "ARCHIVE/**"] and force-exclude;
+# this file ensures that when Ruff resolves config from inside ARCHIVE (e.g. IDE opening a file),
+# everything under ARCHIVE is excluded.
+[tool.ruff]
+extend-exclude = ["**"]

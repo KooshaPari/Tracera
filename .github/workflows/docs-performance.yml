@@ -1,0 +1,156 @@
+name: Documentation Performance Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'frontend/apps/docs/**'
+      - '.github/workflows/docs-performance.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'frontend/apps/docs/**'
+  workflow_dispatch:
+
+jobs:
+  performance-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        working-directory: frontend/apps/docs
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run performance audit
+        run: bun run test:performance
+
+      - name: Build for Lighthouse
+        run: bun run build
+
+      - name: Run Lighthouse CI
+        run: bun run lighthouse
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        continue-on-error: true
+
+      - name: Install Playwright browsers
+        run: bunx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: bun run test:e2e --project=chromium
+        env:
+          BASE_URL: http://localhost:3001
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/apps/docs/playwright-report/
+          retention-days: 7
+
+      - name: Upload Lighthouse results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-results
+          path: frontend/apps/docs/.lighthouseci/
+          retention-days: 7
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Try to read performance results
+            let comment = '## 📊 Documentation Performance Test Results\n\n';
+
+            try {
+              const lhciPath = path.join(process.cwd(), 'frontend/apps/docs/.lighthouseci');
+              if (fs.existsSync(lhciPath)) {
+                comment += '### Lighthouse Results\n';
+                comment += '✅ Lighthouse audit completed. Check artifacts for detailed report.\n\n';
+              }
+            } catch (error) {
+              console.log('Could not read Lighthouse results:', error);
+            }
+
+            comment += '### E2E Tests\n';
+            comment += '✅ E2E tests completed. Check workflow logs for details.\n\n';
+
+            comment += '### Next Steps\n';
+            comment += '- Download artifacts to view detailed reports\n';
+            comment += '- Review Lighthouse recommendations\n';
+            comment += '- Check E2E test screenshots for any failures\n';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  bundle-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: frontend/apps/docs
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Analyze bundle
+        run: bun run audit:bundle
+        env:
+          ANALYZE: true
+
+      - name: Check bundle size
+        run: |
+          echo "Checking bundle sizes..."
+          du -sh .next/static/* || echo "No static directory found"
+
+          # Calculate total size
+          TOTAL_SIZE=$(du -sb .next/static | cut -f1)
+          echo "Total bundle size: $TOTAL_SIZE bytes"
+
+          # Target: 200KB gzipped (roughly 600KB uncompressed)
+          if [ $TOTAL_SIZE -gt 600000 ]; then
+            echo "⚠️ Warning: Bundle size exceeds target (>600KB)"
+            exit 1
+          else
+            echo "✅ Bundle size within target"
+          fi
+
+      - name: Upload bundle analysis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-analysis
+          path: frontend/apps/docs/.next/analyze/
+          retention-days: 7

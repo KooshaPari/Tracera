@@ -1,0 +1,111 @@
+---
+title: "Software Development"
+description: "Using TraceRTM for software development projects"
+keywords: [software development, requirements, testing, traceability]
+---
+
+# Software Development
+
+Using TraceRTM for requirements traceability in software development projects.
+
+## Overview
+
+TraceRTM helps software development teams maintain traceability from requirements through design, implementation, and testing.
+
+## Common Workflows
+
+### Requirements to Test Cases
+
+1. **Create Requirements**
+   ```python
+   requirement = client.items.create(
+       title="User Authentication",
+       view="requirements",
+       description="System must authenticate users"
+   )
+   ```
+
+2. **Create Test Cases**
+   ```python
+   test_case = client.items.create(
+       title="Login Test",
+       view="test-cases",
+       description="Test user login functionality"
+   )
+   ```
+
+3. **Link Requirements to Tests**
+   ```python
+   link = client.links.create(
+       source_id=requirement.id,
+       target_id=test_case.id,
+       link_type="verified_by"
+   )
+   ```
+
+### Design to Implementation
+
+1. **Design Documents** → Link to requirements
+2. **Code References** → Link to design documents
+3. **Test Cases** → Link to code references
+
+## Benefits
+
+### 1. Requirements Coverage
+
+Track which requirements are covered by tests:
+
+```python
+# Get test coverage for requirement
+coverage = client.analysis.get_coverage(requirement_id)
+print(f"Coverage: {coverage.percentage}%")
+```
+
+### 2. Impact Analysis
+
+Analyze impact of requirement changes:
+
+```python
+# Find all items affected by requirement change
+impact = client.analysis.get_impact(requirement_id)
+print(f"Affected items: {len(impact.affected_items)}")
+```
+
+### 3. Traceability Reports
+
+Generate traceability matrices:
+
+```python
+# Export traceability matrix
+matrix = client.export.traceability_matrix(project_id)
+```
+
+## Integration with Development Tools
+
+### CI/CD Integration
+
+```yaml
+# GitHub Actions example
+- name: Update TraceRTM
+  run: |
+    python scripts/update_tracertm.py
+```
+
+### JIRA Integration
+
+Sync requirements with JIRA tickets:
+
+```python
+# Create item from JIRA ticket
+item = client.items.create(
+    title=jira_ticket.summary,
+    description=jira_ticket.description,
+    metadata={"jira_key": jira_ticket.key}
+)
+```
+
+## Related Documentation
+
+- [Agile Teams](./01a-agile-teams) - Agile development workflows
+- [Waterfall Projects](./01b-waterfall-projects) - Traditional workflows
+- [API Reference](/docs/api-reference) - Complete API documentation

@@ -1,0 +1,581 @@
+---
+title: "Concurrency"
+description: "Concurrent programming patterns with the TraceRTM Go SDK"
+---
+
+# Concurrency
+
+The TraceRTM Go SDK is designed to be fully concurrent-safe. This guide covers patterns and best practices for concurrent operations.
+
+## Thread Safety
+
+The TraceRTM client is safe for concurrent use:
+
+```go
+client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+
+// Safe to use from multiple goroutines
+var wg sync.WaitGroup
+for i := 0; i < 10; i++ {
+    wg.Add(1)
+    go func(id int) {
+        defer wg.Done()
+        projects, _ := client.Projects.List(ctx, nil)
+        fmt.Printf("Goroutine %d: %d projects\n", id, len(projects.Data))
+    }(i)
+}
+wg.Wait()
+```
+
+---
+
+## Parallel Requests
+
+### Using sync.WaitGroup
+
+Load multiple resources in parallel:
+
+```go
+func loadProjectData(ctx context.Context, client *tracertm.Client, projectID string) (*ProjectData, error) {
+    var wg sync.WaitGroup
+    var mu sync.Mutex
+    var errs []error
+
+    data := &ProjectData{}
+
+    // Load project
+    wg.Add(1)
+    go func() {
+        defer wg.Done()
+        project, err := client.Projects.Get(ctx, projectID)
+        mu.Lock()
+        defer mu.Unlock()
+        if err != nil {
+            errs = append(errs, err)
+            return
+        }
+        data.Project = project
+    }()
+
+    // Load items
+    wg.Add(1)
+    go func() {
+        defer wg.Done()
+        items, err := client.Items.List(ctx, projectID, nil)
+        mu.Lock()
+        defer mu.Unlock()
+        if err != nil {
+            errs = append(errs, err)
+            return
+        }
+        data.Items = items.Data
+    }()
+
+    // Load stats
+    wg.Add(1)
+    go func() {
+        defer wg.Done()
+        stats, err := client.Projects.GetStats(ctx, projectID)
+        mu.Lock()
+        defer mu.Unlock()
+        if err != nil {
+            errs = append(errs, err)
+            return
+        }
+        data.Stats = stats
+    }()
+
+    wg.Wait()
+
+    if len(errs) > 0 {
+        return nil, fmt.Errorf("errors loading project data: %v", errs)
+    }
+    return data, nil
+}
+
+type ProjectData struct {
+    Project *tracertm.Project
+    Items   []*tracertm.Item
+    Stats   *tracertm.ProjectStats
+}
+```
+
+### Using errgroup
+
+Better error handling with `golang.org/x/sync/errgroup`:
+
+```go
+import "golang.org/x/sync/errgroup"
+
+func loadProjectData(ctx context.Context, client *tracertm.Client, projectID string) (*ProjectData, error) {
+    g, ctx := errgroup.WithContext(ctx)
+    data := &ProjectData{}
+
+    g.Go(func() error {
+        project, err := client.Projects.Get(ctx, projectID)
+        if err != nil {
+            return err
+        }
+        data.Project = project
+        return nil
+    })
+
+    g.Go(func() error {
+        items, err := client.Items.List(ctx, projectID, nil)
+        if err != nil {
+            return err
+        }
+        data.Items = items.Data
+        return nil
+    })
+
+    g.Go(func() error {
+        stats, err := client.Projects.GetStats(ctx, projectID)
+        if err != nil {
+            return err
+        }
+        data.Stats = stats
+        return nil
+    })
+
+    if err := g.Wait(); err != nil {
+        return nil, err
+    }
+    return data, nil
+}
+```
+
+---
+
+## Worker Pool Pattern
+
+Process items with controlled concurrency:
+
+```go
+func processItems(ctx context.Context, client *tracertm.Client, projectID string, workers int) error {
+    // Collect item IDs
+    var itemIDs []string
+    iter := client.Items.Iterate(ctx, projectID, nil)
+    for iter.Next() {
+        itemIDs = append(itemIDs, iter.Item().ID)
+    }
+    if err := iter.Err(); err != nil {
+        return err
+    }
+
+    // Create job and result channels
+    jobs := make(chan string, len(itemIDs))
+    results := make(chan error, len(itemIDs))
+
+    // Start workers
+    var wg sync.WaitGroup
+    for w := 0; w < workers; w++ {
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            for id := range jobs {
+                err := processItem(ctx, client, id)
+                results <- err
+            }
+        }()
+    }
+
+    // Send jobs
+    for _, id := range itemIDs {
+        jobs <- id
+    }
+    close(jobs)
+
+    // Wait for completion
+    go func() {
+        wg.Wait()
+        close(results)
+    }()
+
+    // Collect errors
+    var errs []error
+    for err := range results {
+        if err != nil {
+            errs = append(errs, err)
+        }
+    }
+
+    if len(errs) > 0 {
+        return fmt.Errorf("%d errors occurred", len(errs))
+    }
+    return nil
+}
+
+func processItem(ctx context.Context, client *tracertm.Client, id string) error {
+    item, err := client.Items.Get(ctx, id)
+    if err != nil {
+        return err
+    }
+    fmt.Printf("Processed: %s\n", item.Key)
+    return nil
+}
+```
+
+---
+
+## Semaphore Pattern
+
+Limit concurrent requests:
+
+```go
+import "golang.org/x/sync/semaphore"
+
+func fetchItemsConcurrently(ctx context.Context, client *tracertm.Client, ids []string, maxConcurrent int64) ([]*tracertm.Item, error) {
+    sem := semaphore.NewWeighted(maxConcurrent)
+
+    var mu sync.Mutex
+    var items []*tracertm.Item
+    var errs []error
+
+    var wg sync.WaitGroup
+
+    for _, id := range ids {
+        wg.Add(1)
+        go func(itemID string) {
+            defer wg.Done()
+
+            // Acquire semaphore
+            if err := sem.Acquire(ctx, 1); err != nil {
+                mu.Lock()
+                errs = append(errs, err)
+                mu.Unlock()
+                return
+            }
+            defer sem.Release(1)
+
+            // Fetch item
+            item, err := client.Items.Get(ctx, itemID)
+
+            mu.Lock()
+            defer mu.Unlock()
+            if err != nil {
+                errs = append(errs, err)
+                return
+            }
+            items = append(items, item)
+        }(id)
+    }
+
+    wg.Wait()
+
+    if len(errs) > 0 {
+        return items, fmt.Errorf("%d errors occurred", len(errs))
+    }
+    return items, nil
+}
+```
+
+---
+
+## Fan-Out/Fan-In Pattern
+
+Distribute work and collect results:
+
+```go
+func analyzeProjects(ctx context.Context, client *tracertm.Client) ([]ProjectAnalysis, error) {
+    // Get all projects
+    projects, err := client.Projects.List(ctx, nil)
+    if err != nil {
+        return nil, err
+    }
+
+    // Fan-out: analyze each project
+    resultCh := make(chan ProjectAnalysis, len(projects.Data))
+
+    var wg sync.WaitGroup
+    for _, p := range projects.Data {
+        wg.Add(1)
+        go func(project *tracertm.Project) {
+            defer wg.Done()
+            analysis := analyzeProject(ctx, client, project)
+            resultCh <- analysis
+        }(p)
+    }
+
+    // Close channel when all goroutines complete
+    go func() {
+        wg.Wait()
+        close(resultCh)
+    }()
+
+    // Fan-in: collect results
+    var results []ProjectAnalysis
+    for analysis := range resultCh {
+        results = append(results, analysis)
+    }
+
+    return results, nil
+}
+
+type ProjectAnalysis struct {
+    ProjectID string
+    ItemCount int
+    Coverage  float64
+    Error     error
+}
+
+func analyzeProject(ctx context.Context, client *tracertm.Client, project *tracertm.Project) ProjectAnalysis {
+    result := ProjectAnalysis{ProjectID: project.ID}
+
+    // Get item count
+    items, err := client.Items.List(ctx, project.ID, &tracertm.ListItemsOptions{Limit: 1})
+    if err != nil {
+        result.Error = err
+        return result
+    }
+    result.ItemCount = items.Total
+
+    // Get coverage
+    coverage, err := client.Reports.Coverage(ctx, &tracertm.CoverageReportInput{
+        ProjectID:  project.ID,
+        SourceType: "requirement",
+        TargetType: "test_case",
+    })
+    if err != nil {
+        result.Error = err
+        return result
+    }
+    result.Coverage = coverage.CoveragePercent
+
+    return result
+}
+```
+
+---
+
+## Pipeline Pattern
+
+Build processing pipelines with channels:
+
+```go
+func processPipeline(ctx context.Context, client *tracertm.Client, projectID string) error {
+    // Stage 1: Source - emit items
+    items := source(ctx, client, projectID)
+
+    // Stage 2: Filter - only high priority
+    highPriority := filter(ctx, items, func(i *tracertm.Item) bool {
+        return i.Priority == "high" || i.Priority == "critical"
+    })
+
+    // Stage 3: Enrich - add additional data
+    enriched := enrich(ctx, client, highPriority)
+
+    // Stage 4: Sink - process results
+    for item := range enriched {
+        fmt.Printf("Processing: %s - %s\n", item.Key, item.Title)
+    }
+
+    return nil
+}
+
+func source(ctx context.Context, client *tracertm.Client, projectID string) <-chan *tracertm.Item {
+    out := make(chan *tracertm.Item)
+    go func() {
+        defer close(out)
+        iter := client.Items.Iterate(ctx, projectID, nil)
+        for iter.Next() {
+            select {
+            case <-ctx.Done():
+                return
+            case out <- iter.Item():
+            }
+        }
+    }()
+    return out
+}
+
+func filter(ctx context.Context, in <-chan *tracertm.Item, predicate func(*tracertm.Item) bool) <-chan *tracertm.Item {
+    out := make(chan *tracertm.Item)
+    go func() {
+        defer close(out)
+        for item := range in {
+            if predicate(item) {
+                select {
+                case <-ctx.Done():
+                    return
+                case out <- item:
+                }
+            }
+        }
+    }()
+    return out
+}
+
+func enrich(ctx context.Context, client *tracertm.Client, in <-chan *tracertm.Item) <-chan *tracertm.Item {
+    out := make(chan *tracertm.Item)
+    go func() {
+        defer close(out)
+        for item := range in {
+            // Get fresh data with all fields
+            enriched, err := client.Items.Get(ctx, item.ID)
+            if err != nil {
+                continue
+            }
+            select {
+            case <-ctx.Done():
+                return
+            case out <- enriched:
+            }
+        }
+    }()
+    return out
+}
+```
+
+---
+
+## Rate Limiting
+
+Respect API rate limits:
+
+```go
+import "golang.org/x/time/rate"
+
+type RateLimitedClient struct {
+    client  *tracertm.Client
+    limiter *rate.Limiter
+}
+
+func NewRateLimitedClient(apiKey string, requestsPerSecond float64) *RateLimitedClient {
+    return &RateLimitedClient{
+        client:  tracertm.NewClient(apiKey),
+        limiter: rate.NewLimiter(rate.Limit(requestsPerSecond), 1),
+    }
+}
+
+func (c *RateLimitedClient) GetItem(ctx context.Context, id string) (*tracertm.Item, error) {
+    if err := c.limiter.Wait(ctx); err != nil {
+        return nil, err
+    }
+    return c.client.Items.Get(ctx, id)
+}
+
+func (c *RateLimitedClient) ListItems(ctx context.Context, projectID string, opts *tracertm.ListItemsOptions) (*tracertm.ItemList, error) {
+    if err := c.limiter.Wait(ctx); err != nil {
+        return nil, err
+    }
+    return c.client.Items.List(ctx, projectID, opts)
+}
+```
+
+---
+
+## Context Cancellation
+
+Handle cancellation properly:
+
+```go
+func longRunningOperation(ctx context.Context, client *tracertm.Client, projectID string) error {
+    iter := client.Items.Iterate(ctx, projectID, nil)
+
+    for iter.Next() {
+        // Check for cancellation
+        select {
+        case <-ctx.Done():
+            return ctx.Err()
+        default:
+        }
+
+        item := iter.Item()
+
+        // Process item (long operation)
+        if err := processItem(ctx, client, item); err != nil {
+            return err
+        }
+    }
+
+    return iter.Err()
+}
+
+func main() {
+    client := tracertm.NewClient(os.Getenv("TRACERTM_API_KEY"))
+
+    // Create cancelable context
+    ctx, cancel := context.WithCancel(context.Background())
+    defer cancel()
+
+    // Handle interrupt
+    go func() {
+        sigCh := make(chan os.Signal, 1)
+        signal.Notify(sigCh, os.Interrupt)
+        <-sigCh
+        fmt.Println("\nCancelling...")
+        cancel()
+    }()
+
+    if err := longRunningOperation(ctx, client, "proj_abc123"); err != nil {
+        if err == context.Canceled {
+            fmt.Println("Operation cancelled")
+        } else {
+            log.Fatal(err)
+        }
+    }
+}
+```
+
+---
+
+## Best Practices
+
+### 1. Always Use Context
+
+```go
+// Good - respects cancellation
+ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+defer cancel()
+items, err := client.Items.List(ctx, projectID, nil)
+
+// Bad - ignores cancellation
+items, err := client.Items.List(context.Background(), projectID, nil)
+```
+
+### 2. Limit Concurrent Requests
+
+```go
+// Good - controlled concurrency
+sem := semaphore.NewWeighted(10)
+for _, id := range ids {
+    sem.Acquire(ctx, 1)
+    go func(id string) {
+        defer sem.Release(1)
+        // process
+    }(id)
+}
+
+// Bad - unbounded concurrency
+for _, id := range ids {
+    go func(id string) {
+        // May overwhelm API
+    }(id)
+}
+```
+
+### 3. Handle Errors from All Goroutines
+
+```go
+// Good - collects all errors
+g, ctx := errgroup.WithContext(ctx)
+g.Go(func() error { return task1(ctx) })
+g.Go(func() error { return task2(ctx) })
+if err := g.Wait(); err != nil {
+    return err
+}
+
+// Bad - ignores errors
+go func() { task1(ctx) }()
+go func() { task2(ctx) }()
+```
+
+---
+
+## Related Documentation
+
+- [Goroutines](/docs/api-reference/sdks/go/goroutines) - Goroutine patterns
+- [Channels](/docs/api-reference/sdks/go/channels) - Channel patterns
+- [Error Handling](/docs/api-reference/sdks/go/error-handling) - Error handling
+- [Advanced Examples](/docs/api-reference/sdks/go/advanced-examples) - Complex examples

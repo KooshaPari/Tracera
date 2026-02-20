@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/config/settings.py
+# hypothesis_version: 6.148.7
+
+[100, 200, 300, 1000, 3600, 10000, '.config', '.env', '.tracertm', 'API', 'Batch operation size', 'CODE', 'CRITICAL', 'Cache TTL in seconds', 'Connection pool size', 'DATABASE', 'DEBUG', 'Data directory path', 'Default view type', 'ERROR', 'Enable caching', 'FEATURE', 'INFO', 'Log format string', 'Logging level', 'PROGRESS', 'ROADMAP', 'TEST', 'TRACERTM_', 'WARNING', 'WIREFRAME', '__', '_instance', 'config.yaml', 'csv', 'ignore', 'json', 'postgresql://', 'sqlite:///', 'table', 'tracertm', 'url', 'utf-8', 'yaml']

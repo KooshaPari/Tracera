@@ -1,0 +1,1020 @@
+name: qa-governance
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  governance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate governance quality schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f ".claude/quality.json" ]]; then
+            echo "No .claude/quality.json; skipping schema validation."
+            exit 0
+          fi
+          if [[ -f "scripts/validate-quality-schema.py" && -f "schemas/quality-governance.schema.json" ]]; then
+            python3 scripts/validate-quality-schema.py .claude/quality.json
+          else
+            python3 - <<'PY'
+import json
+import sys
+
+path = ".claude/quality.json"
+data = json.load(open(path, "r", encoding="utf-8"))
+required = {
+    "version", "project", "stacks", "coverage_threshold", "line_length",
+    "test_pyramid", "traceability", "criticality_tier", "governance",
+}
+missing = sorted(required - set(data.keys()))
+if missing:
+    print(f"quality schema validation failed: missing top-level keys: {','.join(missing)}")
+    sys.exit(2)
+gov = data.get("governance")
+if not isinstance(gov, dict):
+    print("quality schema validation failed: governance must be an object")
+    sys.exit(2)
+for k in (
+    "delivery_model", "probabilistic", "reliability", "rolling_wave",
+    "assurance_case", "privacy_preserving", "playbooks",
+    "artifact_quality", "debt_registry", "onchain", "formal",
+    "toolchains", "health",
+):
+    if k not in gov:
+        print(f"quality schema validation failed: governance.{k} missing")
+        sys.exit(2)
+print("quality schema validation passed")
+PY
+          fi
+
+      - name: Verify FR source onboarding contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=".claude/fr-source-contract.json"
+          if [[ ! -f "$contract" ]]; then
+            echo "Missing $contract"
+            exit 2
+          fi
+          project_name="$(jq -r '.project // ""' .claude/quality.json 2>/dev/null || echo "")"
+          c_project="$(jq -r '.project // ""' "$contract" 2>/dev/null || echo "")"
+          c_state="$(jq -r '.state // ""' "$contract" 2>/dev/null || echo "")"
+          c_reco="$(jq -r '.enforcement_recommendation // ""' "$contract" 2>/dev/null || echo "")"
+          [[ -n "$c_project" ]] || { echo "fr-source contract missing project"; exit 2; }
+          [[ -n "$c_state" ]] || { echo "fr-source contract missing state"; exit 2; }
+          [[ -n "$c_reco" ]] || { echo "fr-source contract missing enforcement_recommendation"; exit 2; }
+          [[ "$c_state" == "ready" || "$c_state" == "onboarding" || "$c_state" == "missing" ]] || { echo "fr-source contract invalid state: $c_state"; exit 2; }
+          [[ "$c_reco" == "enforce" || "$c_reco" == "advisory" || "$c_reco" == "defer" ]] || { echo "fr-source contract invalid recommendation: $c_reco"; exit 2; }
+          if [[ -n "$project_name" && "$c_project" != "$project_name" ]]; then
+            echo "fr-source contract project mismatch: quality=$project_name contract=$c_project"
+            exit 2
+          fi
+
+      - name: Smart contract governance check (spec->tests->evidence)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .claude/verification
+          if [[ -f "scripts/qa-smart-contract-gate.py" ]]; then
+            python3 scripts/qa-smart-contract-gate.py --enforce-by-policy
+          else
+            python3 - <<'PY'
+import json, os, re, pathlib, datetime, sys
+root = pathlib.Path(".")
+q = root / ".claude/quality.json"
+fr = "FUNCTIONAL_REQUIREMENTS.md"
+if q.exists():
+    try:
+        fr = json.loads(q.read_text(encoding="utf-8")).get("traceability", {}).get("fr_source", fr)
+    except Exception:
+        pass
+fr_path = root / fr
+out = root / ".claude/verification/smart-contract-gate.json"
+out.parent.mkdir(parents=True, exist_ok=True)
+if not fr_path.exists():
+    payload = {
+        "generated_at": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "status": "not_applicable",
+        "pass": True,
+        "reason": f"missing_fr_source:{fr}",
+        "fr_source": fr,
+        "total_frs": 0,
+        "covered_frs": 0,
+        "fr_coverage_percent": 0.0,
+        "orphan_frs": [],
+        "orphan_tests": [],
+    }
+else:
+    text = fr_path.read_text(encoding="utf-8", errors="ignore")
+    fr_ids = sorted(set(re.findall(r"\\bFR-[A-Z]+-[0-9]+\\b", text)))
+    payload = {
+        "generated_at": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "status": "advisory",
+        "pass": True,
+        "reason": "fallback_advisory",
+        "fr_source": fr,
+        "total_frs": len(fr_ids),
+        "covered_frs": 0,
+        "fr_coverage_percent": 0.0,
+        "orphan_frs": fr_ids,
+        "orphan_tests": [],
+    }
+out.write_text(json.dumps(payload, indent=2) + "\\n", encoding="utf-8")
+print("smart-contract fallback report generated:", out)
+PY
+          fi
+
+      - name: Install N4/N5 toolchains (critical profile)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f ".claude/quality.json" ]]; then
+            exit 0
+          fi
+          tier="$(jq -r '.criticality_tier // "established"' .claude/quality.json)"
+          if [[ "$tier" != "critical" ]]; then
+            echo "Non-critical project: skipping strict toolchain install."
+            exit 0
+          fi
+
+          lock=".claude/governance-toolchain.lock.json"
+          test -f "$lock" || { echo "Missing $lock"; exit 2; }
+
+          sudo apt-get update -y
+          sudo apt-get install -y curl jq python3-pip
+          python3 -m pip install --upgrade pip
+
+          slither_ver="$(jq -r '.toolchains.onchain.slither // "0.10.4"' "$lock")"
+          python3 -m pip install "slither-analyzer==$slither_ver"
+
+          if ! command -v forge >/dev/null 2>&1; then
+            curl -L https://foundry.paradigm.xyz | bash
+            source "$HOME/.bashrc" 2>/dev/null || true
+            "$HOME/.foundry/bin/foundryup"
+            echo "$HOME/.foundry/bin" >> "$GITHUB_PATH"
+          fi
+
+      - name: Refresh N4/N5 evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f ".claude/quality.json" ]]; then
+            exit 0
+          fi
+          tier="$(jq -r '.criticality_tier // "established"' .claude/quality.json)"
+          if [[ "$tier" != "critical" ]]; then
+            echo "Non-critical project: skipping strict N4/N5 evidence refresh."
+            exit 0
+          fi
+
+          mkdir -p .claude/verification
+          evidence_schema_version="$(jq -r '.governance.toolchains.evidence_schema_version // "1"' .claude/quality.json)"
+          onchain_applicable="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+          if [[ "$onchain_applicable" == "true" ]]; then
+            [[ -x "$HOME/.claude/hooks/qa-onchain-contract-gate.sh" ]] || { echo "Missing qa-onchain-contract-gate hook"; exit 2; }
+            printf '{"cwd":"%s"}' "$PWD" | "$HOME/.claude/hooks/qa-onchain-contract-gate.sh"
+          else
+            jq -n --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              '{generated_at:$ts,status:"no_contracts",checks:[],pass:true,error_count:0}' > .claude/verification/onchain-contract-gate.json
+          fi
+
+          formal_applicable="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+          if [[ "$formal_applicable" == "true" ]]; then
+            [[ -x "$HOME/.claude/hooks/qa-formal-methods-gate.sh" ]] || { echo "Missing qa-formal-methods-gate hook"; exit 2; }
+            printf '{"cwd":"%s"}' "$PWD" | "$HOME/.claude/hooks/qa-formal-methods-gate.sh"
+          else
+            jq -n --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              '{generated_at:$ts,status:"not_declared",checks:[],pass:true,error_count:0,warn_count:0}' > .claude/verification/formal-methods-gate.json
+          fi
+
+          if [[ -f ".claude/verification/onchain-contract-gate.json" ]]; then
+            if command -v sha256sum >/dev/null 2>&1; then
+              report_sha256="$(sha256sum .claude/verification/onchain-contract-gate.json | awk "{print \$1}")"
+            else
+              report_sha256="$(shasum -a 256 .claude/verification/onchain-contract-gate.json | awk "{print \$1}")"
+            fi
+            jq -n --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg sv "$evidence_schema_version" --arg sha "$report_sha256" --slurpfile r .claude/verification/onchain-contract-gate.json '
+              ($r[0] // {}) as $x |
+              {
+                schema_version:$sv,
+                generated_at:$ts,
+                source_report:"file://.claude/verification/onchain-contract-gate.json",
+                source_report_sha256:$sha,
+                report_generated_at:($x.generated_at // ""),
+                status:(if ($x.status // "")=="no_contracts" then "not_applicable" else "evaluated" end),
+                pass:(if ($x.status // "")=="no_contracts" then true else ($x.pass // false) end),
+                error_count:($x.error_count // 0),
+                warning_count:($x.warning_count // $x.warn_count // 0),
+                tools:(($x.checks // []) | map({key:(.tool // "unknown"), value:(.status // "unknown")}) | from_entries)
+              }' > .claude/verification/onchain-tooling-evidence.json
+          fi
+
+          if [[ -f ".claude/verification/formal-methods-gate.json" ]]; then
+            if command -v sha256sum >/dev/null 2>&1; then
+              report_sha256="$(sha256sum .claude/verification/formal-methods-gate.json | awk "{print \$1}")"
+            else
+              report_sha256="$(shasum -a 256 .claude/verification/formal-methods-gate.json | awk "{print \$1}")"
+            fi
+            jq -n --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg sv "$evidence_schema_version" --arg sha "$report_sha256" --slurpfile r .claude/verification/formal-methods-gate.json '
+              ($r[0] // {}) as $x |
+              {
+                schema_version:$sv,
+                generated_at:$ts,
+                source_report:"file://.claude/verification/formal-methods-gate.json",
+                source_report_sha256:$sha,
+                report_generated_at:($x.generated_at // ""),
+                status:(if ($x.status // "")=="not_declared" then "not_applicable" else "evaluated" end),
+                pass:(if ($x.status // "")=="not_declared" then true else ($x.pass // false) end),
+                error_count:($x.error_count // 0),
+                warning_count:($x.warning_count // $x.warn_count // 0),
+                executors:(($x.checks // []) | map({key:(.tool // "unknown"), value:(.status // "unknown")}) | from_entries)
+              }' > .claude/verification/formal-execution-evidence.json
+          fi
+
+      - name: Verify governance baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f ".claude/quality.json" ]]; then
+            echo "No .claude/quality.json; skipping governance checks."
+            exit 0
+          fi
+
+          tier="$(jq -r '.criticality_tier // "established"' .claude/quality.json)"
+          model="$(jq -r '.governance.delivery_model // "auto"' .claude/quality.json)"
+          if [[ "$tier" == "critical" && "$model" == "auto" ]]; then
+            echo "Critical project must set explicit governance.delivery_model"
+            exit 2
+          fi
+
+          if [[ "$tier" == "critical" ]]; then
+            test -f .claude/governance-toolchain.lock.json || { echo "Missing .claude/governance-toolchain.lock.json"; exit 2; }
+            test -f contracts/rolling-wave.json || { echo "Missing contracts/rolling-wave.json"; exit 2; }
+            test -f contracts/assurance-case.json || { echo "Missing contracts/assurance-case.json"; exit 2; }
+            test -f contracts/playbooks/brownfield.playbook.json -o -f contracts/playbooks/greenfield.playbook.json || { echo "Missing playbook file"; exit 2; }
+            test -f .claude/verification/debt-register.json || { echo "Missing .claude/verification/debt-register.json"; exit 2; }
+            test -f .claude/verification/onchain-ledger.jsonl || { echo "Missing .claude/verification/onchain-ledger.jsonl"; exit 2; }
+            test -f .claude/verification/onchain-payload.json || { echo "Missing .claude/verification/onchain-payload.json"; exit 2; }
+            test -f .claude/verification/onchain-tooling-evidence.json || { echo "Missing .claude/verification/onchain-tooling-evidence.json"; exit 2; }
+            test -f contracts/formal/registry.json || { echo "Missing contracts/formal/registry.json"; exit 2; }
+            test -f .claude/verification/formal-execution-evidence.json || { echo "Missing .claude/verification/formal-execution-evidence.json"; exit 2; }
+            test -f .claude/verification/reliability-slo-baseline.json || { echo "Missing .claude/verification/reliability-slo-baseline.json"; exit 2; }
+            test -f .claude/verification/flake-observations.jsonl || { echo "Missing .claude/verification/flake-observations.jsonl"; exit 2; }
+            test -f .claude/quarantine/flaky-tests.json || { echo "Missing .claude/quarantine/flaky-tests.json"; exit 2; }
+            test -f .claude/verification/disputes.jsonl || { echo "Missing .claude/verification/disputes.jsonl"; exit 2; }
+            test -f .claude/playbooks/dispute-resolution.md || { echo "Missing .claude/playbooks/dispute-resolution.md"; exit 2; }
+
+            tx_required="$(jq -r '.governance.onchain.require_tx_hash // false' .claude/quality.json)"
+            if [[ "$tx_required" == "true" ]]; then
+              bad_tx="$(jq -s '[.[] | select((.event_type // "")=="transition_anchor" and ((.tx_hash // "")|test("^0x[a-fA-F0-9]{64}$")|not))] | length' .claude/verification/onchain-ledger.jsonl 2>/dev/null || echo 0)"
+              [[ "$bad_tx" -eq 0 ]] || { echo "Invalid or missing tx_hash for transition_anchor events: $bad_tx"; exit 2; }
+            fi
+
+            # WBS-F5: Canonical tx-receipt validation via shared validator script
+            test -x scripts/validate-tx-receipt.sh || { echo "Missing scripts/validate-tx-receipt.sh"; exit 2; }
+            bash scripts/validate-tx-receipt.sh .
+
+            private_sigstore="$(jq -r '.governance.privacy_preserving.require_private_sigstore // false' .claude/quality.json)"
+            if [[ "$private_sigstore" == "true" ]]; then
+              test -f .claude/sigstore-private.json || { echo "Missing .claude/sigstore-private.json"; exit 2; }
+            fi
+
+            onchain_tool_pass_required="$(jq -r '.governance.onchain.require_contract_tool_pass // true' .claude/quality.json)"
+            if [[ "$onchain_tool_pass_required" == "true" ]]; then
+              onchain_tool_pass="$(jq -r '.pass // false' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo false)"
+              [[ "$onchain_tool_pass" == "true" ]] || { echo "Onchain tooling evidence pass=false"; exit 2; }
+            fi
+            formal_exec_pass_required="$(jq -r '.governance.formal.require_executor_pass // true' .claude/quality.json)"
+            if [[ "$formal_exec_pass_required" == "true" ]]; then
+              formal_exec_pass="$(jq -r '.pass // false' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo false)"
+              [[ "$formal_exec_pass" == "true" ]] || { echo "Formal execution evidence pass=false"; exit 2; }
+            fi
+            require_eval="$(jq -r '.governance.toolchains.require_evaluated_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_eval" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_status="$(jq -r '.status // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ "$onchain_status" == "evaluated" ]] || { echo "Onchain tooling evidence must be evaluated when applicable"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_status="$(jq -r '.status // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ "$formal_status" == "evaluated" ]] || { echo "Formal execution evidence must be evaluated when applicable"; exit 2; }
+              fi
+            fi
+            require_evidence_schema_version="$(jq -r '.governance.toolchains.require_evidence_schema_version_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_evidence_schema_version" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              evidence_schema_version="$(jq -r '.governance.toolchains.evidence_schema_version // "1"' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_sv="$(jq -r '.schema_version // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ "$onchain_sv" == "$evidence_schema_version" ]] || { echo "Onchain evidence schema_version mismatch: expected=$evidence_schema_version actual=$onchain_sv"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_sv="$(jq -r '.schema_version // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ "$formal_sv" == "$evidence_schema_version" ]] || { echo "Formal evidence schema_version mismatch: expected=$evidence_schema_version actual=$formal_sv"; exit 2; }
+              fi
+            fi
+            require_expected_source_report_target="$(jq -r '.governance.toolchains.require_expected_source_report_target_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_expected_source_report_target" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              expected_onchain_source_report="$(jq -r '.governance.toolchains.expected_onchain_source_report // "file://.claude/verification/onchain-contract-gate.json"' .claude/quality.json)"
+              expected_formal_source_report="$(jq -r '.governance.toolchains.expected_formal_source_report // "file://.claude/verification/formal-methods-gate.json"' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ "$onchain_source_report" == "$expected_onchain_source_report" ]] || { echo "Onchain source_report mismatch: expected=$expected_onchain_source_report actual=$onchain_source_report"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ "$formal_source_report" == "$expected_formal_source_report" ]] || { echo "Formal source_report mismatch: expected=$expected_formal_source_report actual=$formal_source_report"; exit 2; }
+              fi
+            fi
+            require_error_count_consistency="$(jq -r '.governance.toolchains.require_error_count_consistency_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_error_count_consistency" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              fail_statuses="$(jq -r '(.governance.toolchains.fail_result_statuses // ["fail","error"]) | join(",")' .claude/quality.json)"
+              min_error_delta="$(jq -r '.governance.toolchains.min_error_count_delta_vs_fail_statuses // 0' .claude/quality.json)"
+              max_error_delta="$(jq -r '.governance.toolchains.max_error_count_delta_vs_fail_statuses // 0' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_error_count="$(jq -r '.error_count // 0' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo 0)"
+                onchain_fail_count="$(jq -r --arg csv "$fail_statuses" '.tools | if type=="object" then [to_entries[] | select(((.value|tostring) as $v | (($csv|split(","))|index($v))))] | length else 0 end' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo 0)"
+                onchain_min_allowed=$((onchain_fail_count + min_error_delta))
+                onchain_max_allowed=$((onchain_fail_count + max_error_delta))
+                [[ "$onchain_error_count" -ge "$onchain_min_allowed" && "$onchain_error_count" -le "$onchain_max_allowed" ]] || { echo "Onchain error_count inconsistent: error_count=$onchain_error_count fail_count=$onchain_fail_count allowed=[$onchain_min_allowed,$onchain_max_allowed]"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_error_count="$(jq -r '.error_count // 0' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo 0)"
+                formal_fail_count="$(jq -r --arg csv "$fail_statuses" '.executors | if type=="object" then [to_entries[] | select(((.value|tostring) as $v | (($csv|split(","))|index($v))))] | length else 0 end' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo 0)"
+                formal_min_allowed=$((formal_fail_count + min_error_delta))
+                formal_max_allowed=$((formal_fail_count + max_error_delta))
+                [[ "$formal_error_count" -ge "$formal_min_allowed" && "$formal_error_count" -le "$formal_max_allowed" ]] || { echo "Formal error_count inconsistent: error_count=$formal_error_count fail_count=$formal_fail_count allowed=[$formal_min_allowed,$formal_max_allowed]"; exit 2; }
+              fi
+            fi
+            require_warning_count_consistency="$(jq -r '.governance.toolchains.require_warning_count_consistency_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_warning_count_consistency" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              warn_statuses="$(jq -r '(.governance.toolchains.warn_result_statuses // ["warn"]) | join(",")' .claude/quality.json)"
+              min_warning_delta="$(jq -r '.governance.toolchains.min_warning_count_delta_vs_warn_statuses // 0' .claude/quality.json)"
+              max_warning_delta="$(jq -r '.governance.toolchains.max_warning_count_delta_vs_warn_statuses // 0' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_warning_count="$(jq -r '.warning_count // .warn_count // 0' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo 0)"
+                onchain_warn_status_count="$(jq -r --arg csv "$warn_statuses" '.tools | if type=="object" then [to_entries[] | select(((.value|tostring) as $v | (($csv|split(","))|index($v))))] | length else 0 end' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo 0)"
+                onchain_min_warn_allowed=$((onchain_warn_status_count + min_warning_delta))
+                onchain_max_warn_allowed=$((onchain_warn_status_count + max_warning_delta))
+                [[ "$onchain_warning_count" -ge "$onchain_min_warn_allowed" && "$onchain_warning_count" -le "$onchain_max_warn_allowed" ]] || { echo "Onchain warning_count inconsistent: warning_count=$onchain_warning_count warn_status_count=$onchain_warn_status_count allowed=[$onchain_min_warn_allowed,$onchain_max_warn_allowed]"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_warning_count="$(jq -r '.warning_count // .warn_count // 0' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo 0)"
+                formal_warn_status_count="$(jq -r --arg csv "$warn_statuses" '.executors | if type=="object" then [to_entries[] | select(((.value|tostring) as $v | (($csv|split(","))|index($v))))] | length else 0 end' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo 0)"
+                formal_min_warn_allowed=$((formal_warn_status_count + min_warning_delta))
+                formal_max_warn_allowed=$((formal_warn_status_count + max_warning_delta))
+                [[ "$formal_warning_count" -ge "$formal_min_warn_allowed" && "$formal_warning_count" -le "$formal_max_warn_allowed" ]] || { echo "Formal warning_count inconsistent: warning_count=$formal_warning_count warn_status_count=$formal_warn_status_count allowed=[$formal_min_warn_allowed,$formal_max_warn_allowed]"; exit 2; }
+              fi
+            fi
+            require_result_keyset_consistency="$(jq -r '.governance.toolchains.require_result_keyset_consistency_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_result_keyset_consistency" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              max_missing_keys="$(jq -r '.governance.toolchains.max_missing_result_keys_vs_source_report // 0' .claude/quality.json)"
+              max_extra_keys="$(jq -r '.governance.toolchains.max_extra_result_keys_vs_source_report // 0' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ "$onchain_source_report" == file://* ]] || { echo "Onchain source_report must use file:// for keyset consistency"; exit 2; }
+                onchain_report_rel="${onchain_source_report#file://}"
+                onchain_report_path="$PWD/$onchain_report_rel"
+                test -f "$onchain_report_path" || { echo "Onchain source report file missing: $onchain_report_rel"; exit 2; }
+                onchain_missing_key_count="$(jq -n --slurpfile e .claude/verification/onchain-tooling-evidence.json --slurpfile r "$onchain_report_path" '
+                  (($e[0].tools // {}) | keys) as $ek
+                  | (($r[0].checks // []) | map(.tool // "unknown") | unique) as $rk
+                  | [$rk[] | select(($ek | index(.))|not)] | length
+                ' 2>/dev/null || echo 999999)"
+                onchain_extra_key_count="$(jq -n --slurpfile e .claude/verification/onchain-tooling-evidence.json --slurpfile r "$onchain_report_path" '
+                  (($e[0].tools // {}) | keys) as $ek
+                  | (($r[0].checks // []) | map(.tool // "unknown") | unique) as $rk
+                  | [$ek[] | select(($rk | index(.))|not)] | length
+                ' 2>/dev/null || echo 999999)"
+                [[ "$onchain_missing_key_count" -le "$max_missing_keys" ]] || { echo "Onchain result keyset missing entries: missing=$onchain_missing_key_count max=$max_missing_keys"; exit 2; }
+                [[ "$onchain_extra_key_count" -le "$max_extra_keys" ]] || { echo "Onchain result keyset has extra entries: extra=$onchain_extra_key_count max=$max_extra_keys"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ "$formal_source_report" == file://* ]] || { echo "Formal source_report must use file:// for keyset consistency"; exit 2; }
+                formal_report_rel="${formal_source_report#file://}"
+                formal_report_path="$PWD/$formal_report_rel"
+                test -f "$formal_report_path" || { echo "Formal source report file missing: $formal_report_rel"; exit 2; }
+                formal_missing_key_count="$(jq -n --slurpfile e .claude/verification/formal-execution-evidence.json --slurpfile r "$formal_report_path" '
+                  (($e[0].executors // {}) | keys) as $ek
+                  | (($r[0].checks // []) | map(.tool // "unknown") | unique) as $rk
+                  | [$rk[] | select(($ek | index(.))|not)] | length
+                ' 2>/dev/null || echo 999999)"
+                formal_extra_key_count="$(jq -n --slurpfile e .claude/verification/formal-execution-evidence.json --slurpfile r "$formal_report_path" '
+                  (($e[0].executors // {}) | keys) as $ek
+                  | (($r[0].checks // []) | map(.tool // "unknown") | unique) as $rk
+                  | [$ek[] | select(($rk | index(.))|not)] | length
+                ' 2>/dev/null || echo 999999)"
+                [[ "$formal_missing_key_count" -le "$max_missing_keys" ]] || { echo "Formal result keyset missing entries: missing=$formal_missing_key_count max=$max_missing_keys"; exit 2; }
+                [[ "$formal_extra_key_count" -le "$max_extra_keys" ]] || { echo "Formal result keyset has extra entries: extra=$formal_extra_key_count max=$max_extra_keys"; exit 2; }
+              fi
+            fi
+            require_result_status_match="$(jq -r '.governance.toolchains.require_result_status_match_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_result_status_match" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              max_status_mismatch="$(jq -r '.governance.toolchains.max_status_mismatch_count_vs_source_report // 0' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ "$onchain_source_report" == file://* ]] || { echo "Onchain source_report must use file:// for status-match consistency"; exit 2; }
+                onchain_report_rel="${onchain_source_report#file://}"
+                onchain_report_path="$PWD/$onchain_report_rel"
+                test -f "$onchain_report_path" || { echo "Onchain source report file missing: $onchain_report_rel"; exit 2; }
+                onchain_status_mismatch_count="$(jq -n --slurpfile e .claude/verification/onchain-tooling-evidence.json --slurpfile r "$onchain_report_path" '
+                  (($e[0].tools // {})) as $ev
+                  | (($r[0].checks // []) | map({key:(.tool // "unknown"), value:(.status // "unknown")}) | from_entries) as $rp
+                  | [($rp | keys[]) | select(($ev[.] // "") != ($rp[.] // ""))] | length
+                ' 2>/dev/null || echo 999999)"
+                [[ "$onchain_status_mismatch_count" -le "$max_status_mismatch" ]] || { echo "Onchain result status mismatches exceed max: mismatch=$onchain_status_mismatch_count max=$max_status_mismatch"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ "$formal_source_report" == file://* ]] || { echo "Formal source_report must use file:// for status-match consistency"; exit 2; }
+                formal_report_rel="${formal_source_report#file://}"
+                formal_report_path="$PWD/$formal_report_rel"
+                test -f "$formal_report_path" || { echo "Formal source report file missing: $formal_report_rel"; exit 2; }
+                formal_status_mismatch_count="$(jq -n --slurpfile e .claude/verification/formal-execution-evidence.json --slurpfile r "$formal_report_path" '
+                  (($e[0].executors // {})) as $ev
+                  | (($r[0].checks // []) | map({key:(.tool // "unknown"), value:(.status // "unknown")}) | from_entries) as $rp
+                  | [($rp | keys[]) | select(($ev[.] // "") != ($rp[.] // ""))] | length
+                ' 2>/dev/null || echo 999999)"
+                [[ "$formal_status_mismatch_count" -le "$max_status_mismatch" ]] || { echo "Formal result status mismatches exceed max: mismatch=$formal_status_mismatch_count max=$max_status_mismatch"; exit 2; }
+              fi
+            fi
+            require_source_report_nonempty_checks="$(jq -r '.governance.toolchains.require_source_report_nonempty_checks_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_source_report_nonempty_checks" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              min_source_checks="$(jq -r '.governance.toolchains.min_source_report_checks_count_when_applicable // 1' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ "$onchain_source_report" == file://* ]] || { echo "Onchain source_report must use file:// for source-check-count consistency"; exit 2; }
+                onchain_report_rel="${onchain_source_report#file://}"
+                onchain_report_path="$PWD/$onchain_report_rel"
+                test -f "$onchain_report_path" || { echo "Onchain source report file missing: $onchain_report_rel"; exit 2; }
+                onchain_source_checks_count="$(jq -r '.checks | if type=="array" then length else 0 end' "$onchain_report_path" 2>/dev/null || echo 0)"
+                [[ "$onchain_source_checks_count" -ge "$min_source_checks" ]] || { echo "Onchain source report checks below minimum: checks=$onchain_source_checks_count min=$min_source_checks"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ "$formal_source_report" == file://* ]] || { echo "Formal source_report must use file:// for source-check-count consistency"; exit 2; }
+                formal_report_rel="${formal_source_report#file://}"
+                formal_report_path="$PWD/$formal_report_rel"
+                test -f "$formal_report_path" || { echo "Formal source report file missing: $formal_report_rel"; exit 2; }
+                formal_source_checks_count="$(jq -r '.checks | if type=="array" then length else 0 end' "$formal_report_path" 2>/dev/null || echo 0)"
+                [[ "$formal_source_checks_count" -ge "$min_source_checks" ]] || { echo "Formal source report checks below minimum: checks=$formal_source_checks_count min=$min_source_checks"; exit 2; }
+              fi
+            fi
+            require_source_report_pass_match="$(jq -r '.governance.toolchains.require_source_report_pass_match_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_source_report_pass_match" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              max_pass_mismatch="$(jq -r '.governance.toolchains.max_source_report_pass_mismatch_count_when_applicable // 0' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ "$onchain_source_report" == file://* ]] || { echo "Onchain source_report must use file:// for pass-match consistency"; exit 2; }
+                onchain_report_rel="${onchain_source_report#file://}"
+                onchain_report_path="$PWD/$onchain_report_rel"
+                test -f "$onchain_report_path" || { echo "Onchain source report file missing: $onchain_report_rel"; exit 2; }
+                onchain_evidence_pass="$(jq -r '.pass // false' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo false)"
+                onchain_report_pass="$(jq -r '.pass // false' "$onchain_report_path" 2>/dev/null || echo false)"
+                onchain_pass_mismatch_count=0
+                [[ "$onchain_evidence_pass" == "$onchain_report_pass" ]] || onchain_pass_mismatch_count=1
+                [[ "$onchain_pass_mismatch_count" -le "$max_pass_mismatch" ]] || { echo "Onchain source-report pass mismatch exceeds max: mismatch=$onchain_pass_mismatch_count max=$max_pass_mismatch"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ "$formal_source_report" == file://* ]] || { echo "Formal source_report must use file:// for pass-match consistency"; exit 2; }
+                formal_report_rel="${formal_source_report#file://}"
+                formal_report_path="$PWD/$formal_report_rel"
+                test -f "$formal_report_path" || { echo "Formal source report file missing: $formal_report_rel"; exit 2; }
+                formal_evidence_pass="$(jq -r '.pass // false' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo false)"
+                formal_report_pass="$(jq -r '.pass // false' "$formal_report_path" 2>/dev/null || echo false)"
+                formal_pass_mismatch_count=0
+                [[ "$formal_evidence_pass" == "$formal_report_pass" ]] || formal_pass_mismatch_count=1
+                [[ "$formal_pass_mismatch_count" -le "$max_pass_mismatch" ]] || { echo "Formal source-report pass mismatch exceeds max: mismatch=$formal_pass_mismatch_count max=$max_pass_mismatch"; exit 2; }
+              fi
+            fi
+            require_unique_source_report_check_keys="$(jq -r '.governance.toolchains.require_unique_source_report_check_keys_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_unique_source_report_check_keys" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              max_duplicate_check_keys="$(jq -r '.governance.toolchains.max_duplicate_source_report_check_keys_when_applicable // 0' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ "$onchain_source_report" == file://* ]] || { echo "Onchain source_report must use file:// for duplicate-check-keys consistency"; exit 2; }
+                onchain_report_rel="${onchain_source_report#file://}"
+                onchain_report_path="$PWD/$onchain_report_rel"
+                test -f "$onchain_report_path" || { echo "Onchain source report file missing: $onchain_report_rel"; exit 2; }
+                onchain_duplicate_check_keys_count="$(jq -r '
+                  (.checks // []) as $c
+                  | ([$c[] | (.tool // "unknown")] | group_by(.) | map(select(length>1) | (length - 1)) | add) // 0
+                ' "$onchain_report_path" 2>/dev/null || echo 999999)"
+                [[ "$onchain_duplicate_check_keys_count" -le "$max_duplicate_check_keys" ]] || { echo "Onchain source report duplicate check keys exceed max: duplicate=$onchain_duplicate_check_keys_count max=$max_duplicate_check_keys"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ "$formal_source_report" == file://* ]] || { echo "Formal source_report must use file:// for duplicate-check-keys consistency"; exit 2; }
+                formal_report_rel="${formal_source_report#file://}"
+                formal_report_path="$PWD/$formal_report_rel"
+                test -f "$formal_report_path" || { echo "Formal source report file missing: $formal_report_rel"; exit 2; }
+                formal_duplicate_check_keys_count="$(jq -r '
+                  (.checks // []) as $c
+                  | ([$c[] | (.tool // "unknown")] | group_by(.) | map(select(length>1) | (length - 1)) | add) // 0
+                ' "$formal_report_path" 2>/dev/null || echo 999999)"
+                [[ "$formal_duplicate_check_keys_count" -le "$max_duplicate_check_keys" ]] || { echo "Formal source report duplicate check keys exceed max: duplicate=$formal_duplicate_check_keys_count max=$max_duplicate_check_keys"; exit 2; }
+              fi
+            fi
+            require_source_report_known_statuses="$(jq -r '.governance.toolchains.require_source_report_known_statuses_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_source_report_known_statuses" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              allowed_statuses="$(jq -r '(.governance.toolchains.allowed_result_statuses // ["pass","fail","warn","skip","not_run","error"]) | join(",")' .claude/quality.json)"
+              max_unknown_source_statuses="$(jq -r '.governance.toolchains.max_unknown_source_report_status_count_when_applicable // 0' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ "$onchain_source_report" == file://* ]] || { echo "Onchain source_report must use file:// for known-statuses consistency"; exit 2; }
+                onchain_report_rel="${onchain_source_report#file://}"
+                onchain_report_path="$PWD/$onchain_report_rel"
+                test -f "$onchain_report_path" || { echo "Onchain source report file missing: $onchain_report_rel"; exit 2; }
+                onchain_unknown_source_status_count="$(jq -r --arg csv "$allowed_statuses" '
+                  .checks | if type=="array" then
+                    [ .[] | select((((.status // "unknown")|tostring) as $v | (($csv|split(","))|index($v)|not))) ] | length
+                  else 0 end
+                ' "$onchain_report_path" 2>/dev/null || echo 999999)"
+                [[ "$onchain_unknown_source_status_count" -le "$max_unknown_source_statuses" ]] || { echo "Onchain source report unknown statuses exceed max: unknown=$onchain_unknown_source_status_count max=$max_unknown_source_statuses"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ "$formal_source_report" == file://* ]] || { echo "Formal source_report must use file:// for known-statuses consistency"; exit 2; }
+                formal_report_rel="${formal_source_report#file://}"
+                formal_report_path="$PWD/$formal_report_rel"
+                test -f "$formal_report_path" || { echo "Formal source report file missing: $formal_report_rel"; exit 2; }
+                formal_unknown_source_status_count="$(jq -r --arg csv "$allowed_statuses" '
+                  .checks | if type=="array" then
+                    [ .[] | select((((.status // "unknown")|tostring) as $v | (($csv|split(","))|index($v)|not))) ] | length
+                  else 0 end
+                ' "$formal_report_path" 2>/dev/null || echo 999999)"
+                [[ "$formal_unknown_source_status_count" -le "$max_unknown_source_statuses" ]] || { echo "Formal source report unknown statuses exceed max: unknown=$formal_unknown_source_status_count max=$max_unknown_source_statuses"; exit 2; }
+              fi
+            fi
+            require_source_report_check_shape="$(jq -r '.governance.toolchains.require_source_report_check_shape_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_source_report_check_shape" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              max_invalid_check_rows="$(jq -r '.governance.toolchains.max_invalid_source_report_check_rows_when_applicable // 0' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ "$onchain_source_report" == file://* ]] || { echo "Onchain source_report must use file:// for check-shape consistency"; exit 2; }
+                onchain_report_rel="${onchain_source_report#file://}"
+                onchain_report_path="$PWD/$onchain_report_rel"
+                test -f "$onchain_report_path" || { echo "Onchain source report file missing: $onchain_report_rel"; exit 2; }
+                onchain_invalid_check_rows_count="$(jq -r '
+                  .checks | if type=="array" then
+                    [ .[] | select(((.tool // "")|type!="string" or (.tool|length==0) or ((.status // "")|type!="string" or (.status|length==0))) ] | length
+                  else 999999 end
+                ' "$onchain_report_path" 2>/dev/null || echo 999999)"
+                [[ "$onchain_invalid_check_rows_count" -le "$max_invalid_check_rows" ]] || { echo "Onchain source report invalid check rows exceed max: invalid=$onchain_invalid_check_rows_count max=$max_invalid_check_rows"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ "$formal_source_report" == file://* ]] || { echo "Formal source_report must use file:// for check-shape consistency"; exit 2; }
+                formal_report_rel="${formal_source_report#file://}"
+                formal_report_path="$PWD/$formal_report_rel"
+                test -f "$formal_report_path" || { echo "Formal source report file missing: $formal_report_rel"; exit 2; }
+                formal_invalid_check_rows_count="$(jq -r '
+                  .checks | if type=="array" then
+                    [ .[] | select(((.tool // "")|type!="string" or (.tool|length==0) or ((.status // "")|type!="string" or (.status|length==0))) ] | length
+                  else 999999 end
+                ' "$formal_report_path" 2>/dev/null || echo 999999)"
+                [[ "$formal_invalid_check_rows_count" -le "$max_invalid_check_rows" ]] || { echo "Formal source report invalid check rows exceed max: invalid=$formal_invalid_check_rows_count max=$max_invalid_check_rows"; exit 2; }
+              fi
+            fi
+            require_source_report_check_key_format="$(jq -r '.governance.toolchains.require_source_report_check_key_format_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_source_report_check_key_format" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              source_report_check_key_regex="$(jq -r '.governance.toolchains.source_report_check_key_regex // "^[A-Za-z0-9._:/-]+$"' .claude/quality.json)"
+              max_invalid_check_keys="$(jq -r '.governance.toolchains.max_invalid_source_report_check_keys_when_applicable // 0' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ "$onchain_source_report" == file://* ]] || { echo "Onchain source_report must use file:// for check-key-format consistency"; exit 2; }
+                onchain_report_rel="${onchain_source_report#file://}"
+                onchain_report_path="$PWD/$onchain_report_rel"
+                test -f "$onchain_report_path" || { echo "Onchain source report file missing: $onchain_report_rel"; exit 2; }
+                onchain_invalid_check_keys_count="$(jq -r --arg re "$source_report_check_key_regex" '
+                  .checks | if type=="array" then
+                    [ .[] | select((((.tool // "")|type) != "string") or ((.tool // "") | test($re) | not)) ] | length
+                  else 999999 end
+                ' "$onchain_report_path" 2>/dev/null || echo 999999)"
+                [[ "$onchain_invalid_check_keys_count" -le "$max_invalid_check_keys" ]] || { echo "Onchain source report invalid check keys exceed max: invalid=$onchain_invalid_check_keys_count max=$max_invalid_check_keys"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ "$formal_source_report" == file://* ]] || { echo "Formal source_report must use file:// for check-key-format consistency"; exit 2; }
+                formal_report_rel="${formal_source_report#file://}"
+                formal_report_path="$PWD/$formal_report_rel"
+                test -f "$formal_report_path" || { echo "Formal source report file missing: $formal_report_rel"; exit 2; }
+                formal_invalid_check_keys_count="$(jq -r --arg re "$source_report_check_key_regex" '
+                  .checks | if type=="array" then
+                    [ .[] | select((((.tool // "")|type) != "string") or ((.tool // "") | test($re) | not)) ] | length
+                  else 999999 end
+                ' "$formal_report_path" 2>/dev/null || echo 999999)"
+                [[ "$formal_invalid_check_keys_count" -le "$max_invalid_check_keys" ]] || { echo "Formal source report invalid check keys exceed max: invalid=$formal_invalid_check_keys_count max=$max_invalid_check_keys"; exit 2; }
+              fi
+            fi
+            require_source_report_warning_count_consistency="$(jq -r '.governance.toolchains.require_source_report_warning_count_consistency_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_source_report_warning_count_consistency" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              warn_statuses="$(jq -r '(.governance.toolchains.warn_result_statuses // ["warn"]) | join(",")' .claude/quality.json)"
+              min_source_warning_delta="$(jq -r '.governance.toolchains.min_source_report_warning_count_delta_vs_warn_statuses // 0' .claude/quality.json)"
+              max_source_warning_delta="$(jq -r '.governance.toolchains.max_source_report_warning_count_delta_vs_warn_statuses // 0' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ "$onchain_source_report" == file://* ]] || { echo "Onchain source_report must use file:// for source warning-count consistency"; exit 2; }
+                onchain_report_rel="${onchain_source_report#file://}"
+                onchain_report_path="$PWD/$onchain_report_rel"
+                test -f "$onchain_report_path" || { echo "Onchain source report file missing: $onchain_report_rel"; exit 2; }
+                onchain_report_warning_count="$(jq -r '.warning_count // .warn_count // 0' "$onchain_report_path" 2>/dev/null || echo 0)"
+                onchain_report_warn_status_count="$(jq -r --arg csv "$warn_statuses" '
+                  .checks | if type=="array" then
+                    [ .[] | select((((.status // "unknown")|tostring) as $v | (($csv|split(","))|index($v))) ] | length
+                  else 0 end
+                ' "$onchain_report_path" 2>/dev/null || echo 0)"
+                onchain_min_source_warn_allowed=$((onchain_report_warn_status_count + min_source_warning_delta))
+                onchain_max_source_warn_allowed=$((onchain_report_warn_status_count + max_source_warning_delta))
+                [[ "$onchain_report_warning_count" -ge "$onchain_min_source_warn_allowed" && "$onchain_report_warning_count" -le "$onchain_max_source_warn_allowed" ]] || { echo "Onchain source report warning_count inconsistent: warning_count=$onchain_report_warning_count warn_status_count=$onchain_report_warn_status_count allowed=[$onchain_min_source_warn_allowed,$onchain_max_source_warn_allowed]"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ "$formal_source_report" == file://* ]] || { echo "Formal source_report must use file:// for source warning-count consistency"; exit 2; }
+                formal_report_rel="${formal_source_report#file://}"
+                formal_report_path="$PWD/$formal_report_rel"
+                test -f "$formal_report_path" || { echo "Formal source report file missing: $formal_report_rel"; exit 2; }
+                formal_report_warning_count="$(jq -r '.warning_count // .warn_count // 0' "$formal_report_path" 2>/dev/null || echo 0)"
+                formal_report_warn_status_count="$(jq -r --arg csv "$warn_statuses" '
+                  .checks | if type=="array" then
+                    [ .[] | select((((.status // "unknown")|tostring) as $v | (($csv|split(","))|index($v))) ] | length
+                  else 0 end
+                ' "$formal_report_path" 2>/dev/null || echo 0)"
+                formal_min_source_warn_allowed=$((formal_report_warn_status_count + min_source_warning_delta))
+                formal_max_source_warn_allowed=$((formal_report_warn_status_count + max_source_warning_delta))
+                [[ "$formal_report_warning_count" -ge "$formal_min_source_warn_allowed" && "$formal_report_warning_count" -le "$formal_max_source_warn_allowed" ]] || { echo "Formal source report warning_count inconsistent: warning_count=$formal_report_warning_count warn_status_count=$formal_report_warn_status_count allowed=[$formal_min_source_warn_allowed,$formal_max_source_warn_allowed]"; exit 2; }
+              fi
+            fi
+            require_source_report_error_count_consistency="$(jq -r '.governance.toolchains.require_source_report_error_count_consistency_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_source_report_error_count_consistency" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              fail_statuses="$(jq -r '(.governance.toolchains.fail_result_statuses // ["fail","error"]) | join(",")' .claude/quality.json)"
+              min_source_error_delta="$(jq -r '.governance.toolchains.min_source_report_error_count_delta_vs_fail_statuses // 0' .claude/quality.json)"
+              max_source_error_delta="$(jq -r '.governance.toolchains.max_source_report_error_count_delta_vs_fail_statuses // 0' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ "$onchain_source_report" == file://* ]] || { echo "Onchain source_report must use file:// for source error-count consistency"; exit 2; }
+                onchain_report_rel="${onchain_source_report#file://}"
+                onchain_report_path="$PWD/$onchain_report_rel"
+                test -f "$onchain_report_path" || { echo "Onchain source report file missing: $onchain_report_rel"; exit 2; }
+                onchain_report_error_count="$(jq -r '.error_count // 0' "$onchain_report_path" 2>/dev/null || echo 0)"
+                onchain_report_fail_status_count="$(jq -r --arg csv "$fail_statuses" '
+                  .checks | if type=="array" then
+                    [ .[] | select((((.status // "unknown")|tostring) as $v | (($csv|split(","))|index($v))) ] | length
+                  else 0 end
+                ' "$onchain_report_path" 2>/dev/null || echo 0)"
+                onchain_min_source_error_allowed=$((onchain_report_fail_status_count + min_source_error_delta))
+                onchain_max_source_error_allowed=$((onchain_report_fail_status_count + max_source_error_delta))
+                [[ "$onchain_report_error_count" -ge "$onchain_min_source_error_allowed" && "$onchain_report_error_count" -le "$onchain_max_source_error_allowed" ]] || { echo "Onchain source report error_count inconsistent: error_count=$onchain_report_error_count fail_status_count=$onchain_report_fail_status_count allowed=[$onchain_min_source_error_allowed,$onchain_max_source_error_allowed]"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ "$formal_source_report" == file://* ]] || { echo "Formal source_report must use file:// for source error-count consistency"; exit 2; }
+                formal_report_rel="${formal_source_report#file://}"
+                formal_report_path="$PWD/$formal_report_rel"
+                test -f "$formal_report_path" || { echo "Formal source report file missing: $formal_report_rel"; exit 2; }
+                formal_report_error_count="$(jq -r '.error_count // 0' "$formal_report_path" 2>/dev/null || echo 0)"
+                formal_report_fail_status_count="$(jq -r --arg csv "$fail_statuses" '
+                  .checks | if type=="array" then
+                    [ .[] | select((((.status // "unknown")|tostring) as $v | (($csv|split(","))|index($v))) ] | length
+                  else 0 end
+                ' "$formal_report_path" 2>/dev/null || echo 0)"
+                formal_min_source_error_allowed=$((formal_report_fail_status_count + min_source_error_delta))
+                formal_max_source_error_allowed=$((formal_report_fail_status_count + max_source_error_delta))
+                [[ "$formal_report_error_count" -ge "$formal_min_source_error_allowed" && "$formal_report_error_count" -le "$formal_max_source_error_allowed" ]] || { echo "Formal source report error_count inconsistent: error_count=$formal_report_error_count fail_status_count=$formal_report_fail_status_count allowed=[$formal_min_source_error_allowed,$formal_max_source_error_allowed]"; exit 2; }
+              fi
+            fi
+            require_provenance="$(jq -r '.governance.toolchains.require_provenance_metadata_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_provenance" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              max_report_skew_days="$(jq -r '.governance.toolchains.max_report_time_skew_days // 2' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ -n "$onchain_source_report" ]] || { echo "Onchain tooling evidence missing source_report"; exit 2; }
+                onchain_report_ok="$(jq -r '(.report_generated_at // "" | fromdateiso8601?) != null' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo false)"
+                onchain_generated_ok="$(jq -r '(.generated_at // "" | fromdateiso8601?) != null' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo false)"
+                [[ "$onchain_report_ok" == "true" ]] || { echo "Onchain tooling evidence has invalid report_generated_at"; exit 2; }
+                [[ "$onchain_generated_ok" == "true" ]] || { echo "Onchain tooling evidence has invalid generated_at"; exit 2; }
+                onchain_report_skew_days="$(jq -r '((.generated_at|fromdateiso8601) - (.report_generated_at|fromdateiso8601)) / 86400' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo 999999)"
+                awk "BEGIN {exit !($onchain_report_skew_days >= 0 && $onchain_report_skew_days <= $max_report_skew_days)}" || { echo "Onchain tooling evidence report skew too large: days=$onchain_report_skew_days max=$max_report_skew_days"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ -n "$formal_source_report" ]] || { echo "Formal execution evidence missing source_report"; exit 2; }
+                formal_report_ok="$(jq -r '(.report_generated_at // "" | fromdateiso8601?) != null' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo false)"
+                formal_generated_ok="$(jq -r '(.generated_at // "" | fromdateiso8601?) != null' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo false)"
+                [[ "$formal_report_ok" == "true" ]] || { echo "Formal execution evidence has invalid report_generated_at"; exit 2; }
+                [[ "$formal_generated_ok" == "true" ]] || { echo "Formal execution evidence has invalid generated_at"; exit 2; }
+                formal_report_skew_days="$(jq -r '((.generated_at|fromdateiso8601) - (.report_generated_at|fromdateiso8601)) / 86400' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo 999999)"
+                awk "BEGIN {exit !($formal_report_skew_days >= 0 && $formal_report_skew_days <= $max_report_skew_days)}" || { echo "Formal execution evidence report skew too large: days=$formal_report_skew_days max=$max_report_skew_days"; exit 2; }
+              fi
+            fi
+            require_source_report_scheme="$(jq -r '.governance.toolchains.require_source_report_scheme_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_source_report_scheme" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              allowed_source_report_schemes="$(jq -r '(.governance.toolchains.allowed_source_report_schemes // ["file://"]) | join(",")' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                onchain_scheme_ok="$(jq -n --arg s "$onchain_source_report" --arg csv "$allowed_source_report_schemes" '($csv|split(",")) as $p | any($p[]; ($s|startswith(.)))')"
+                [[ "$onchain_scheme_ok" == "true" ]] || { echo "Onchain source_report scheme not allowed: $onchain_source_report"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                formal_scheme_ok="$(jq -n --arg s "$formal_source_report" --arg csv "$allowed_source_report_schemes" '($csv|split(",")) as $p | any($p[]; ($s|startswith(.)))')"
+                [[ "$formal_scheme_ok" == "true" ]] || { echo "Formal source_report scheme not allowed: $formal_source_report"; exit 2; }
+              fi
+            fi
+            require_source_report_local_sandbox="$(jq -r '.governance.toolchains.require_source_report_local_sandbox_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_source_report_local_sandbox" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              source_report_allowed_roots="$(jq -r '(.governance.toolchains.source_report_allowed_roots // [".claude/verification/"]) | join(",")' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ "$onchain_source_report" == file://* ]] || { echo "Onchain source_report must use file:// for sandbox check"; exit 2; }
+                onchain_report_rel="${onchain_source_report#file://}"
+                [[ "$onchain_report_rel" != /* && "$onchain_report_rel" != *".."* ]] || { echo "Onchain source_report path unsafe: $onchain_report_rel"; exit 2; }
+                onchain_root_ok="$(jq -n --arg rel "$onchain_report_rel" --arg csv "$source_report_allowed_roots" '($csv|split(",")) as $p | any($p[]; ($rel|startswith(.)))')"
+                [[ "$onchain_root_ok" == "true" ]] || { echo "Onchain source_report path outside allowed roots: $onchain_report_rel"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ "$formal_source_report" == file://* ]] || { echo "Formal source_report must use file:// for sandbox check"; exit 2; }
+                formal_report_rel="${formal_source_report#file://}"
+                [[ "$formal_report_rel" != /* && "$formal_report_rel" != *".."* ]] || { echo "Formal source_report path unsafe: $formal_report_rel"; exit 2; }
+                formal_root_ok="$(jq -n --arg rel "$formal_report_rel" --arg csv "$source_report_allowed_roots" '($csv|split(",")) as $p | any($p[]; ($rel|startswith(.)))')"
+                [[ "$formal_root_ok" == "true" ]] || { echo "Formal source_report path outside allowed roots: $formal_report_rel"; exit 2; }
+              fi
+            fi
+            require_source_report_digest="$(jq -r '.governance.toolchains.require_source_report_digest_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_source_report_digest" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              digest_algorithm="$(jq -r '.governance.toolchains.source_report_digest_algorithm // "sha256"' .claude/quality.json)"
+              digest_regex="$(jq -r '.governance.toolchains.source_report_digest_sha256_regex // "^[a-f0-9]{64}$"' .claude/quality.json)"
+              require_digest_format="$(jq -r '.governance.toolchains.require_source_report_digest_format_when_applicable // true' .claude/quality.json)"
+              [[ "$digest_algorithm" == "sha256" ]] || { echo "Unsupported source report digest algorithm: $digest_algorithm"; exit 2; }
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                onchain_source_report_sha256="$(jq -r '.source_report_sha256 // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ -n "$onchain_source_report_sha256" ]] || { echo "Onchain evidence missing source_report_sha256"; exit 2; }
+                if [[ "$require_digest_format" == "true" ]]; then
+                  [[ "$onchain_source_report_sha256" =~ $digest_regex ]] || { echo "Onchain source_report_sha256 invalid format"; exit 2; }
+                fi
+                [[ "$onchain_source_report" == file://* ]] || { echo "Onchain source_report must use file:// for digest verification"; exit 2; }
+                onchain_report_rel="${onchain_source_report#file://}"
+                onchain_report_path="$PWD/$onchain_report_rel"
+                test -f "$onchain_report_path" || { echo "Onchain source report file missing: $onchain_report_rel"; exit 2; }
+                if command -v sha256sum >/dev/null 2>&1; then
+                  onchain_report_sha256="$(sha256sum "$onchain_report_path" | awk "{print \$1}")"
+                else
+                  onchain_report_sha256="$(shasum -a 256 "$onchain_report_path" | awk "{print \$1}")"
+                fi
+                [[ "$onchain_source_report_sha256" == "$onchain_report_sha256" ]] || { echo "Onchain source report digest mismatch"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                formal_source_report_sha256="$(jq -r '.source_report_sha256 // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ -n "$formal_source_report_sha256" ]] || { echo "Formal evidence missing source_report_sha256"; exit 2; }
+                if [[ "$require_digest_format" == "true" ]]; then
+                  [[ "$formal_source_report_sha256" =~ $digest_regex ]] || { echo "Formal source_report_sha256 invalid format"; exit 2; }
+                fi
+                [[ "$formal_source_report" == file://* ]] || { echo "Formal source_report must use file:// for digest verification"; exit 2; }
+                formal_report_rel="${formal_source_report#file://}"
+                formal_report_path="$PWD/$formal_report_rel"
+                test -f "$formal_report_path" || { echo "Formal source report file missing: $formal_report_rel"; exit 2; }
+                if command -v sha256sum >/dev/null 2>&1; then
+                  formal_report_sha256="$(sha256sum "$formal_report_path" | awk "{print \$1}")"
+                else
+                  formal_report_sha256="$(shasum -a 256 "$formal_report_path" | awk "{print \$1}")"
+                fi
+                [[ "$formal_source_report_sha256" == "$formal_report_sha256" ]] || { echo "Formal source report digest mismatch"; exit 2; }
+              fi
+            fi
+            require_report_timestamp_match="$(jq -r '.governance.toolchains.require_report_timestamp_match_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_report_timestamp_match" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              max_report_timestamp_delta_seconds="$(jq -r '.governance.toolchains.max_report_timestamp_delta_seconds // 60' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_source_report="$(jq -r '.source_report // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                [[ "$onchain_source_report" == file://* ]] || { echo "Onchain source_report must use file:// for timestamp match"; exit 2; }
+                onchain_report_rel="${onchain_source_report#file://}"
+                onchain_report_path="$PWD/$onchain_report_rel"
+                test -f "$onchain_report_path" || { echo "Onchain source report file missing: $onchain_report_rel"; exit 2; }
+                onchain_ev_report_generated_at="$(jq -r '.report_generated_at // ""' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                onchain_src_generated_at="$(jq -r '.generated_at // ""' "$onchain_report_path" 2>/dev/null || echo "")"
+                onchain_delta_sec="$(jq -n --arg a "$onchain_ev_report_generated_at" --arg b "$onchain_src_generated_at" '((($a|fromdateiso8601?) - ($b|fromdateiso8601?)) | if . == null then 1e9 else (if . < 0 then -. else . end) end)')"
+                awk "BEGIN {exit !($onchain_delta_sec <= $max_report_timestamp_delta_seconds)}" || { echo "Onchain report_generated_at mismatch: delta_sec=$onchain_delta_sec max=$max_report_timestamp_delta_seconds"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_source_report="$(jq -r '.source_report // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                [[ "$formal_source_report" == file://* ]] || { echo "Formal source_report must use file:// for timestamp match"; exit 2; }
+                formal_report_rel="${formal_source_report#file://}"
+                formal_report_path="$PWD/$formal_report_rel"
+                test -f "$formal_report_path" || { echo "Formal source report file missing: $formal_report_rel"; exit 2; }
+                formal_ev_report_generated_at="$(jq -r '.report_generated_at // ""' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                formal_src_generated_at="$(jq -r '.generated_at // ""' "$formal_report_path" 2>/dev/null || echo "")"
+                formal_delta_sec="$(jq -n --arg a "$formal_ev_report_generated_at" --arg b "$formal_src_generated_at" '((($a|fromdateiso8601?) - ($b|fromdateiso8601?)) | if . == null then 1e9 else (if . < 0 then -. else . end) end)')"
+                awk "BEGIN {exit !($formal_delta_sec <= $max_report_timestamp_delta_seconds)}" || { echo "Formal report_generated_at mismatch: delta_sec=$formal_delta_sec max=$max_report_timestamp_delta_seconds"; exit 2; }
+              fi
+            fi
+            require_nonempty="$(jq -r '.governance.toolchains.require_nonempty_results_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_nonempty" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              onchain_min="$(jq -r '(.governance.toolchains.onchain_min_required_tools // ["forge"]) | join(",")' .claude/quality.json)"
+              formal_min="$(jq -r '(.governance.toolchains.formal_min_required_executors // ["dafny","tlc","alloy"]) | join(",")' .claude/quality.json)"
+              formal_min_count="$(jq -r '.governance.toolchains.formal_min_required_executors_count // 1' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                tcount="$(jq '.tools | if type=="object" then length else 0 end' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo 0)"
+                [[ "$tcount" -gt 0 ]] || { echo "Onchain tooling evidence tools must be non-empty when applicable"; exit 2; }
+                IFS=',' read -r -a min_onchain_tools <<< "$onchain_min"
+                for t in "${min_onchain_tools[@]}"; do
+                  [[ -n "$t" ]] || continue
+                  present="$(jq -r --arg t "$t" '.tools[$t] // empty' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo "")"
+                  [[ -n "$present" ]] || { echo "Onchain tooling missing required tool: $t"; exit 2; }
+                done
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                ecount="$(jq '.executors | if type=="object" then length else 0 end' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo 0)"
+                [[ "$ecount" -gt 0 ]] || { echo "Formal execution evidence executors must be non-empty when applicable"; exit 2; }
+                IFS=',' read -r -a min_formal_execs <<< "$formal_min"
+                hit=0
+                for e in "${min_formal_execs[@]}"; do
+                  [[ -n "$e" ]] || continue
+                  present="$(jq -r --arg e "$e" '.executors[$e] // empty' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo "")"
+                  [[ -n "$present" ]] && hit=$((hit + 1))
+                done
+                [[ "$hit" -ge "$formal_min_count" ]] || { echo "Formal execution missing required executors: hit=$hit min=$formal_min_count"; exit 2; }
+              fi
+            fi
+            require_known_statuses="$(jq -r '.governance.toolchains.require_known_statuses_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_known_statuses" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              allowed_statuses="$(jq -r '(.governance.toolchains.allowed_result_statuses // ["pass","fail","warn","skip","not_run","error"]) | join(",")' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_unknown_status_count="$(jq -r --arg csv "$allowed_statuses" '.tools | if type=="object" then [to_entries[] | select(((.value|tostring) as $v | (($csv|split(","))|index($v)|not)))] | length else 0 end' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo 0)"
+                [[ "$onchain_unknown_status_count" -eq 0 ]] || { echo "Onchain tooling has unknown statuses: $onchain_unknown_status_count"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_unknown_status_count="$(jq -r --arg csv "$allowed_statuses" '.executors | if type=="object" then [to_entries[] | select(((.value|tostring) as $v | (($csv|split(","))|index($v)|not)))] | length else 0 end' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo 0)"
+                [[ "$formal_unknown_status_count" -eq 0 ]] || { echo "Formal execution has unknown statuses: $formal_unknown_status_count"; exit 2; }
+              fi
+            fi
+            require_consistent_aggregate="$(jq -r '.governance.toolchains.require_consistent_aggregate_pass_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_consistent_aggregate" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              fail_statuses="$(jq -r '(.governance.toolchains.fail_result_statuses // ["fail","error"]) | join(",")' .claude/quality.json)"
+              max_fail_when_pass="$(jq -r '.governance.toolchains.max_fail_status_count_when_pass // 0' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_aggregate_pass="$(jq -r '.pass // false' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo false)"
+                onchain_fail_count="$(jq -r --arg csv "$fail_statuses" '.tools | if type=="object" then [to_entries[] | select(((.value|tostring) as $v | (($csv|split(","))|index($v))))] | length else 0 end' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo 0)"
+                if [[ "$onchain_aggregate_pass" == "true" ]]; then
+                  [[ "$onchain_fail_count" -le "$max_fail_when_pass" ]] || { echo "Onchain aggregate pass inconsistent with fail statuses: fail_count=$onchain_fail_count max=$max_fail_when_pass"; exit 2; }
+                else
+                  [[ "$onchain_fail_count" -gt 0 ]] || { echo "Onchain aggregate pass=false without fail statuses"; exit 2; }
+                fi
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_aggregate_pass="$(jq -r '.pass // false' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo false)"
+                formal_fail_count="$(jq -r --arg csv "$fail_statuses" '.executors | if type=="object" then [to_entries[] | select(((.value|tostring) as $v | (($csv|split(","))|index($v))))] | length else 0 end' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo 0)"
+                if [[ "$formal_aggregate_pass" == "true" ]]; then
+                  [[ "$formal_fail_count" -le "$max_fail_when_pass" ]] || { echo "Formal aggregate pass inconsistent with fail statuses: fail_count=$formal_fail_count max=$max_fail_when_pass"; exit 2; }
+                else
+                  [[ "$formal_fail_count" -gt 0 ]] || { echo "Formal aggregate pass=false without fail statuses"; exit 2; }
+                fi
+              fi
+            fi
+            require_min_pass="$(jq -r '.governance.toolchains.require_min_pass_count_when_applicable // true' .claude/quality.json)"
+            if [[ "$require_min_pass" == "true" ]]; then
+              app_onchain="$(jq -r '.governance.toolchains.applicability.onchain // false' .claude/quality.json)"
+              app_formal="$(jq -r '.governance.toolchains.applicability.formal // false' .claude/quality.json)"
+              onchain_min_pass_count="$(jq -r '.governance.toolchains.onchain_min_pass_count // 1' .claude/quality.json)"
+              formal_min_pass_count="$(jq -r '.governance.toolchains.formal_min_pass_count // 1' .claude/quality.json)"
+              if [[ "$app_onchain" == "true" ]]; then
+                onchain_pass_count="$(jq '.tools | if type=="object" then [to_entries[] | select(.value=="pass")] | length else 0 end' .claude/verification/onchain-tooling-evidence.json 2>/dev/null || echo 0)"
+                [[ "$onchain_pass_count" -ge "$onchain_min_pass_count" ]] || { echo "Onchain tooling pass-count below minimum: pass=$onchain_pass_count min=$onchain_min_pass_count"; exit 2; }
+              fi
+              if [[ "$app_formal" == "true" ]]; then
+                formal_pass_count="$(jq '.executors | if type=="object" then [to_entries[] | select(.value=="pass")] | length else 0 end' .claude/verification/formal-execution-evidence.json 2>/dev/null || echo 0)"
+                [[ "$formal_pass_count" -ge "$formal_min_pass_count" ]] || { echo "Formal executor pass-count below minimum: pass=$formal_pass_count min=$formal_min_pass_count"; exit 2; }
+              fi
+            fi
+          fi
+
+      - name: Validate ZK proof gate when required
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f ".claude/quality.json" ]]; then
+            exit 0
+          fi
+          privacy_enabled="$(jq -r '.governance.privacy_preserving.enforce_gate // false' .claude/quality.json)"
+          zk_required="$(jq -r '.governance.privacy_preserving.zk_required // false' .claude/quality.json)"
+          if [[ "$privacy_enabled" != "true" || "$zk_required" != "true" ]]; then
+            echo "ZK proof gate not required for this project."
+            exit 0
+          fi
+
+          test -x scripts/verify-zk-proof-gate.sh || { echo "Missing scripts/verify-zk-proof-gate.sh"; exit 2; }
+          bash scripts/verify-zk-proof-gate.sh .
+          gate_file=".claude/verification/privacy-proof-gate.json"
+          test -f "$gate_file" || { echo "Missing $gate_file"; exit 2; }
+          gate_pass="$(jq -r '.pass // false' "$gate_file" 2>/dev/null || echo false)"
+          [[ "$gate_pass" == "true" ]] || { echo "ZK proof gate did not pass"; exit 2; }
+
+      - name: Detect governance drift (fail-closed)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -x scripts/governance-drift-detector.sh || { echo "Missing scripts/governance-drift-detector.sh"; exit 2; }
+          report_file=".claude/verification/governance-drift-report.json"
+          bash scripts/governance-drift-detector.sh . "$report_file"
+          test -f "$report_file" || { echo "Missing $report_file"; exit 2; }
+          drift_count="$(jq -r '.drift_count // 999999' "$report_file" 2>/dev/null || echo 999999)"
+          [[ "$drift_count" -eq 0 ]] || { echo "Governance drift detected: $drift_count"; exit 2; }
+
+      - name: Governance health threshold gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -x scripts/governance-health-report.sh || { echo "Missing scripts/governance-health-report.sh"; exit 2; }
+          min_score="$(jq -r '.governance.health.min_score // 80' .claude/quality.json 2>/dev/null || echo 80)"
+          export HEALTH_MIN_SCORE="$min_score"
+          health_report=".claude/verification/governance-health-report.json"
+          health_history=".claude/verification/governance-health-history.jsonl"
+          bash scripts/governance-health-report.sh . "$health_report" "$health_history"
+          test -f "$health_report" || { echo "Missing $health_report"; exit 2; }
+          health_score="$(jq -r '.score // -1' "$health_report" 2>/dev/null || echo -1)"
+          [[ "$health_score" -ge "$min_score" ]] || { echo "Governance health below threshold: score=$health_score min=$min_score"; exit 2; }
+
+      - name: Verify artifact quality (critical strict)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f ".claude/quality.json" ]]; then
+            exit 0
+          fi
+          tier="$(jq -r '.criticality_tier // "established"' .claude/quality.json)"
+          if [[ "$tier" != "critical" ]]; then
+            echo "Non-critical project: advisory-only artifact quality in CI."
+            exit 0
+          fi
+
+          files=()
+          [[ -f contracts/assurance-case.json ]] && files+=(contracts/assurance-case.json)
+          [[ -f contracts/rolling-wave.json ]] && files+=(contracts/rolling-wave.json)
+          [[ -f .claude/verification/privacy-proof.json ]] && files+=(.claude/verification/privacy-proof.json)
+
+          if [[ "${#files[@]}" -eq 0 ]]; then
+            echo "No artifact-quality files present for strict checks."
+            exit 2
+          fi
+
+          if rg -n -i 'placeholder|bootstrap|todo|tbd' "${files[@]}"; then
+            echo "Placeholder markers found in quality artifacts."
+            exit 2
+          fi

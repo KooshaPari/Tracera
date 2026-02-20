@@ -1,0 +1,434 @@
+---
+title: Rate Limit Headers
+description: Detailed reference for all rate limit headers returned by the TraceRTM API
+---
+
+# Rate Limit Headers
+
+This reference documents all rate limit headers returned by the TraceRTM API, including standard headers, extended headers, and special cases.
+
+## Standard Headers
+
+### X-RateLimit-Limit
+
+The maximum number of requests allowed in the current time window.
+
+```http
+X-RateLimit-Limit: 300
+```
+
+**Notes:**
+- Value depends on your plan and endpoint type
+- May vary between different API endpoints
+- Represents the configured limit, not necessarily your plan maximum
+
+### X-RateLimit-Remaining
+
+The number of requests remaining in the current window.
+
+```http
+X-RateLimit-Remaining: 295
+```
+
+**Notes:**
+- Decrements with each request
+- Resets when the window expires
+- May be negative briefly during high concurrency
+
+### X-RateLimit-Reset
+
+Unix timestamp (seconds since epoch) when the rate limit window resets.
+
+```http
+X-RateLimit-Reset: 1705747860
+```
+
+**Notes:**
+- Always in UTC
+- Use this to calculate wait time: `reset - current_time`
+- Windows are typically 60 seconds
+
+### X-RateLimit-Policy
+
+The rate limit policy in a machine-readable format.
+
+```http
+X-RateLimit-Policy: 300;w=60
+```
+
+**Format:** `{limit};w={window_seconds}`
+
+| Component | Description |
+|-----------|-------------|
+| `limit` | Maximum requests |
+| `w` | Window duration in seconds |
+
+**Extended format with multiple limits:**
+
+```http
+X-RateLimit-Policy: 300;w=60, 10000;w=3600
+```
+
+---
+
+## Scope Headers
+
+### X-RateLimit-Scope
+
+Indicates what the rate limit applies to.
+
+```http
+X-RateLimit-Scope: user
+```
+
+| Scope | Description |
+|-------|-------------|
+| `user` | Per-user limit across all API keys |
+| `api_key` | Per-API key limit |
+| `organization` | Shared across organization |
+| `project` | Per-project limit |
+| `global` | System-wide limit |
+
+### X-RateLimit-Resource
+
+The specific resource being rate limited.
+
+```http
+X-RateLimit-Resource: items
+```
+
+Common values:
+- `items` - Item operations
+- `search` - Search operations
+- `batch` - Batch operations
+- `import` - Import operations
+- `export` - Export operations
+- `webhooks` - Webhook deliveries
+
+---
+
+## Extended Headers
+
+### Token-Based Limits
+
+For endpoints that use token-based rate limiting (e.g., search, AI features):
+
+```http
+X-RateLimit-Limit-Tokens: 100000
+X-RateLimit-Remaining-Tokens: 95000
+X-RateLimit-Reset-Tokens: 1705747860
+```
+
+### Request-Based Limits
+
+Explicit request count headers:
+
+```http
+X-RateLimit-Limit-Requests: 300
+X-RateLimit-Remaining-Requests: 295
+```
+
+### Concurrent Request Limits
+
+For tracking concurrent/active requests:
+
+```http
+X-RateLimit-Limit-Concurrent: 10
+X-RateLimit-Current-Concurrent: 3
+```
+
+---
+
+## Retry Headers
+
+### Retry-After
+
+Included in 429 responses, indicates seconds to wait before retrying.
+
+```http
+Retry-After: 45
+```
+
+**Notes:**
+- Always respect this header
+- May be longer than calculated from Reset header
+- Sometimes includes a date instead of seconds
+
+### X-RateLimit-RetryAfter-Ms
+
+Millisecond precision retry time (TraceRTM extension).
+
+```http
+X-RateLimit-RetryAfter-Ms: 45250
+```
+
+---
+
+## Cost Headers
+
+### X-RateLimit-Cost
+
+The "cost" of the current request against the rate limit.
+
+```http
+X-RateLimit-Cost: 1
+```
+
+| Operation | Typical Cost |
+|-----------|--------------|
+| GET (read) | 1 |
+| POST (create) | 2 |
+| PUT (update) | 2 |
+| DELETE | 2 |
+| Search | 3 |
+| Batch (per item) | 0.5 |
+| Export | 10 |
+
+### X-RateLimit-Cost-Tokens
+
+Token cost for token-based operations:
+
+```http
+X-RateLimit-Cost-Tokens: 1500
+```
+
+---
+
+## Burst Headers
+
+### X-RateLimit-Burst-Limit
+
+Maximum burst capacity.
+
+```http
+X-RateLimit-Burst-Limit: 50
+```
+
+### X-RateLimit-Burst-Remaining
+
+Remaining burst capacity.
+
+```http
+X-RateLimit-Burst-Remaining: 45
+```
+
+---
+
+## Warning Headers
+
+### X-RateLimit-Warning
+
+Advisory warning when approaching limits.
+
+```http
+X-RateLimit-Warning: approaching_limit
+```
+
+| Value | Description |
+|-------|-------------|
+| `approaching_limit` | >80% of limit used |
+| `high_usage` | >90% of limit used |
+| `near_burst` | Approaching burst limit |
+
+### X-RateLimit-Warning-Threshold
+
+The threshold that triggered the warning.
+
+```http
+X-RateLimit-Warning-Threshold: 0.80
+```
+
+---
+
+## Complete Response Examples
+
+### Successful Request
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 295
+X-RateLimit-Reset: 1705747860
+X-RateLimit-Policy: 300;w=60
+X-RateLimit-Scope: user
+X-RateLimit-Cost: 1
+
+{"data": {...}}
+```
+
+### Approaching Limit
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 45
+X-RateLimit-Reset: 1705747860
+X-RateLimit-Policy: 300;w=60
+X-RateLimit-Scope: user
+X-RateLimit-Warning: approaching_limit
+X-RateLimit-Warning-Threshold: 0.85
+
+{"data": {...}}
+```
+
+### Rate Limited
+
+```http
+HTTP/1.1 429 Too Many Requests
+Content-Type: application/json
+Retry-After: 45
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1705747860
+X-RateLimit-Policy: 300;w=60
+X-RateLimit-Scope: user
+
+{
+  "error": {
+    "code": "RATE_LIMITED",
+    "message": "Rate limit exceeded"
+  }
+}
+```
+
+### Search with Token Limits
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 297
+X-RateLimit-Limit-Tokens: 100000
+X-RateLimit-Remaining-Tokens: 98500
+X-RateLimit-Cost: 3
+X-RateLimit-Cost-Tokens: 1500
+X-RateLimit-Reset: 1705747860
+
+{"results": [...]}
+```
+
+### Batch Operation
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 245
+X-RateLimit-Cost: 50
+X-RateLimit-Reset: 1705747860
+X-RateLimit-Resource: batch
+
+{"results": [...]}
+```
+
+---
+
+## Parsing Headers
+
+### Python
+
+```python
+def parse_rate_limit_headers(response):
+    return {
+        'limit': int(response.headers.get('X-RateLimit-Limit', 0)),
+        'remaining': int(response.headers.get('X-RateLimit-Remaining', 0)),
+        'reset': int(response.headers.get('X-RateLimit-Reset', 0)),
+        'scope': response.headers.get('X-RateLimit-Scope', 'unknown'),
+        'cost': int(response.headers.get('X-RateLimit-Cost', 1)),
+        'warning': response.headers.get('X-RateLimit-Warning'),
+        'retry_after': int(response.headers.get('Retry-After', 0)) if response.status_code == 429 else None
+    }
+
+def should_backoff(headers):
+    """Determine if we should slow down requests"""
+    usage_percent = (headers['limit'] - headers['remaining']) / headers['limit']
+    return usage_percent > 0.8 or headers['warning'] is not None
+
+def calculate_wait_time(headers):
+    """Calculate time to wait before next request"""
+    import time
+    if headers['retry_after']:
+        return headers['retry_after']
+
+    reset_time = headers['reset']
+    current_time = int(time.time())
+    return max(0, reset_time - current_time)
+```
+
+### TypeScript
+
+```typescript
+interface RateLimitHeaders {
+  limit: number;
+  remaining: number;
+  reset: number;
+  scope: string;
+  cost: number;
+  warning?: string;
+  retryAfter?: number;
+}
+
+function parseRateLimitHeaders(headers: Headers): RateLimitHeaders {
+  return {
+    limit: parseInt(headers.get('X-RateLimit-Limit') || '0'),
+    remaining: parseInt(headers.get('X-RateLimit-Remaining') || '0'),
+    reset: parseInt(headers.get('X-RateLimit-Reset') || '0'),
+    scope: headers.get('X-RateLimit-Scope') || 'unknown',
+    cost: parseInt(headers.get('X-RateLimit-Cost') || '1'),
+    warning: headers.get('X-RateLimit-Warning') || undefined,
+    retryAfter: headers.get('Retry-After')
+      ? parseInt(headers.get('Retry-After')!)
+      : undefined
+  };
+}
+
+function shouldBackoff(headers: RateLimitHeaders): boolean {
+  const usagePercent = (headers.limit - headers.remaining) / headers.limit;
+  return usagePercent > 0.8 || headers.warning !== undefined;
+}
+```
+
+### Go
+
+```go
+type RateLimitHeaders struct {
+    Limit      int
+    Remaining  int
+    Reset      int64
+    Scope      string
+    Cost       int
+    Warning    string
+    RetryAfter int
+}
+
+func ParseRateLimitHeaders(resp *http.Response) RateLimitHeaders {
+    return RateLimitHeaders{
+        Limit:      parseIntHeader(resp, "X-RateLimit-Limit"),
+        Remaining:  parseIntHeader(resp, "X-RateLimit-Remaining"),
+        Reset:      int64(parseIntHeader(resp, "X-RateLimit-Reset")),
+        Scope:      resp.Header.Get("X-RateLimit-Scope"),
+        Cost:       parseIntHeader(resp, "X-RateLimit-Cost"),
+        Warning:    resp.Header.Get("X-RateLimit-Warning"),
+        RetryAfter: parseIntHeader(resp, "Retry-After"),
+    }
+}
+
+func parseIntHeader(resp *http.Response, name string) int {
+    if val := resp.Header.Get(name); val != "" {
+        if i, err := strconv.Atoi(val); err == nil {
+            return i
+        }
+    }
+    return 0
+}
+```
+
+---
+
+## Related Documentation
+
+- [Rate Limiting](/docs/api-reference/rest-api/rate-limiting) - Overview and best practices
+- [Error Handling](/docs/api-reference/rest-api/errors) - Error response formats
+- [API Overview](/docs/api-reference/rest-api/overview) - General API information

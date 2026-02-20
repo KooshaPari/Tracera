@@ -1,0 +1,127 @@
+---
+title: "Job Processing"
+description: "Background job processing implementation"
+keywords: [jobs, processing, background, tasks, workers]
+---
+
+# Job Processing
+
+Implementation details for background job processing.
+
+## Job Types
+
+### Export Job
+
+```python
+async def process_export_job(job: dict):
+    """Process export job."""
+    project_id = job["data"]["project_id"]
+    format = job["data"]["format"]
+    
+    # Update status
+    await update_job_status(job["id"], "processing")
+    
+    try:
+        # Generate export
+        export_data = await export_service.export(project_id, format)
+        
+        # Save export
+        file_path = await storage_service.save_export(export_data, format)
+        
+        # Update status
+        await update_job_status(job["id"], "completed", {
+            "file_path": file_path
+        })
+    except Exception as e:
+        await update_job_status(job["id"], "failed", {
+            "error": str(e)
+        })
+        raise
+```
+
+### Import Job
+
+```python
+async def process_import_job(job: dict):
+    """Process import job."""
+    project_id = job["data"]["project_id"]
+    file_path = job["data"]["file_path"]
+    
+    await update_job_status(job["id"], "processing")
+    
+    try:
+        # Load import data
+        import_data = await storage_service.load(file_path)
+        
+        # Import data
+        result = await import_service.import_data(project_id, import_data)
+        
+        await update_job_status(job["id"], "completed", {
+            "imported": result["imported"]
+        })
+    except Exception as e:
+        await update_job_status(job["id"], "failed", {
+            "error": str(e)
+        })
+        raise
+```
+
+## Worker Pool
+
+### Multiple Workers
+
+```python
+import asyncio
+
+async def start_workers(queue: Queue, num_workers: int = 4):
+    """Start worker pool."""
+    workers = []
+    for i in range(num_workers):
+        worker = asyncio.create_task(worker_loop(queue, f"worker-{i}"))
+        workers.append(worker)
+    
+    # Wait for all workers
+    await asyncio.gather(*workers)
+
+async def worker_loop(queue: Queue, worker_id: str):
+    """Worker loop."""
+    logger.info(f"Worker {worker_id} started")
+    
+    while True:
+        try:
+            job = await queue.dequeue(timeout=1)
+            if job:
+                await process_job(job, worker_id)
+        except asyncio.TimeoutError:
+            continue
+        except Exception as e:
+            logger.error(f"Worker {worker_id} error: {e}", exc_info=True)
+```
+
+## Job Scheduling
+
+### Scheduled Jobs
+
+```python
+import asyncio
+from datetime import datetime, timedelta
+
+async def schedule_daily_backup():
+    """Schedule daily backup job."""
+    while True:
+        # Calculate next run time (2 AM)
+        now = datetime.now()
+        next_run = (now + timedelta(days=1)).replace(hour=2, minute=0, second=0)
+        wait_seconds = (next_run - now).total_seconds()
+        
+        await asyncio.sleep(wait_seconds)
+        
+        # Create backup job
+        await queue.enqueue("backup", {
+            "timestamp": datetime.utcnow().isoformat()
+        })
+```
+
+## Related Documentation
+
+- [Queue System](./07-queue-system) - Queue overview

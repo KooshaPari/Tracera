@@ -1,0 +1,16 @@
+{
+  "title": "Client Guides",
+  "description": "Platform-specific client documentation",
+  "icon": "Monitor",
+  "pages": [
+    "index",
+    "---Web UI---",
+    "web-ui",
+    "---CLI---",
+    "cli-guide",
+    "---TUI---",
+    "tui-guide",
+    "---Desktop App---",
+    "desktop"
+  ]
+}

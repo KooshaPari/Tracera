@@ -1,0 +1,1026 @@
+---
+title: "Building Custom Plugins"
+description: "Advanced guide to developing, testing, and distributing custom plugins for TracerTM"
+---
+
+# Building Custom Plugins
+
+Learn how to extend TracerTM functionality by building custom plugins. This comprehensive guide covers the complete plugin development lifecycle from architecture to distribution.
+
+## Overview
+
+TracerTM's plugin system enables developers to extend the platform with custom functionality including:
+
+- Custom views and visualizations
+- New link types and relationships
+- Export/import formats
+- Query filters and transformations
+- Workflow automation and integrations
+
+## Plugin Architecture Overview
+
+### Core Components
+
+TracerTM's plugin architecture consists of three main components:
+
+1. **PluginService**: Central registry managing plugin lifecycle
+2. **Plugin Definition**: Metadata and configuration
+3. **Hook System**: Event-driven extension points
+
+### Plugin Types
+
+```python
+from tracertm.services.plugin_service import PluginType
+
+# Available plugin types
+PluginType.VIEW            # Custom views and visualizations
+PluginType.LINK_TYPE       # New relationship types
+PluginType.EXPORT_FORMAT   # Export/import formats
+PluginType.QUERY_FILTER    # Data transformation filters
+PluginType.CUSTOM          # General-purpose plugins
+```
+
+### Plugin Lifecycle
+
+1. **Registration** - Plugin registers with PluginService
+2. **Initialization** - Plugin initializes resources and hooks
+3. **Execution** - Plugin responds to hooks and events
+4. **Shutdown** - Plugin cleans up resources (if needed)
+
+## Development Environment Setup
+
+### Prerequisites
+
+Ensure you have TracerTM installed with development dependencies:
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/tracertm.git
+cd tracertm
+
+# Install with development dependencies
+pip install -e ".[dev]"
+
+# Verify installation
+tracertm --version
+```
+
+### Project Structure
+
+Create a plugin project with this structure:
+
+```
+my-plugin/
+├── pyproject.toml          # Package metadata
+├── README.md               # Plugin documentation
+├── src/
+│   └── tracertm_my_plugin/
+│       ├── __init__.py     # Plugin entry point
+│       ├── plugin.py       # Main plugin class
+│       └── hooks.py        # Hook implementations
+└── tests/
+    ├── __init__.py
+    └── test_plugin.py      # Plugin tests
+```
+
+### Development Dependencies
+
+```toml
+[project]
+name = "tracertm-my-plugin"
+version = "0.1.0"
+dependencies = [
+    "tracertm>=0.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+]
+```
+
+## Creating a Basic Plugin
+
+### Step 1: Define Plugin Metadata
+
+Create a `Plugin` instance with required metadata:
+
+```python
+# src/tracertm_my_plugin/plugin.py
+from tracertm.services.plugin_service import Plugin, PluginType
+
+def create_plugin() -> Plugin:
+    """Create plugin definition."""
+    return Plugin(
+        name="my_custom_plugin",
+        version="1.0.0",
+        plugin_type=PluginType.CUSTOM,
+        description="My custom TracerTM plugin",
+        author="Your Name <your.email@example.com>",
+        enabled=True,
+        config={
+            "setting1": "default_value",
+            "max_items": 100,
+            "debug": False,
+        }
+    )
+```
+
+### Step 2: Implement Plugin Class
+
+```python
+# src/tracertm_my_plugin/plugin.py
+from typing import Any
+from tracertm.services.plugin_service import PluginService
+
+class MyCustomPlugin:
+    """Custom plugin implementation."""
+
+    def __init__(self, service: PluginService):
+        self.service = service
+        self.plugin = create_plugin()
+        self.config = self.plugin.config
+
+    def register(self):
+        """Register plugin with service."""
+        # Register plugin
+        self.service.plugins[self.plugin.name] = self.plugin
+
+        # Register hooks
+        self.service.register_hook("item_created", self.on_item_created)
+        self.service.register_hook("item_updated", self.on_item_updated)
+
+        print(f"Plugin {self.plugin.name} v{self.plugin.version} registered")
+
+    def on_item_created(self, item_data: dict[str, Any]) -> dict[str, Any]:
+        """Handle item creation event."""
+        if self.config.get("debug"):
+            print(f"Item created: {item_data.get('id')}")
+
+        # Perform custom logic
+        return {
+            "plugin": self.plugin.name,
+            "action": "item_created",
+            "timestamp": item_data.get("created_at"),
+        }
+
+    def on_item_updated(self, item_data: dict[str, Any]) -> dict[str, Any]:
+        """Handle item update event."""
+        if self.config.get("debug"):
+            print(f"Item updated: {item_data.get('id')}")
+
+        return {
+            "plugin": self.plugin.name,
+            "action": "item_updated",
+        }
+
+    def unregister(self):
+        """Unregister plugin and cleanup."""
+        self.service.unregister_hook("item_created", self.on_item_created)
+        self.service.unregister_hook("item_updated", self.on_item_updated)
+        self.service.unregister_plugin(self.plugin.name)
+
+        print(f"Plugin {self.plugin.name} unregistered")
+```
+
+### Step 3: Create Entry Point
+
+```python
+# src/tracertm_my_plugin/__init__.py
+"""My Custom TracerTM Plugin."""
+
+from tracertm_my_plugin.plugin import MyCustomPlugin, create_plugin
+
+__version__ = "1.0.0"
+__all__ = ["MyCustomPlugin", "create_plugin"]
+
+
+def initialize(service):
+    """Initialize plugin with service."""
+    plugin = MyCustomPlugin(service)
+    plugin.register()
+    return plugin
+```
+
+## Plugin Hooks and Events
+
+### Available Hooks
+
+TracerTM provides numerous hooks for different events:
+
+```python
+# Item lifecycle hooks
+"item_created"      # When new item is created
+"item_updated"      # When item is updated
+"item_deleted"      # When item is deleted
+"item_restored"     # When soft-deleted item is restored
+
+# Project hooks
+"project_created"   # New project created
+"project_updated"   # Project updated
+
+# Link hooks
+"link_created"      # New link created
+"link_deleted"      # Link removed
+
+# Query hooks
+"query_executed"    # Query performed
+"export_started"    # Export initiated
+"import_completed"  # Import finished
+```
+
+### Registering Hook Handlers
+
+```python
+def register_hooks(service: PluginService):
+    """Register all plugin hooks."""
+
+    # Single hook
+    service.register_hook("item_created", handle_item_created)
+
+    # Multiple hooks to same handler
+    for event in ["item_created", "item_updated", "item_deleted"]:
+        service.register_hook(event, log_item_change)
+
+    # Multiple handlers for same event
+    service.register_hook("query_executed", validate_query)
+    service.register_hook("query_executed", log_query)
+    service.register_hook("query_executed", optimize_query)
+```
+
+### Hook Handler Signatures
+
+```python
+# Simple handler
+def handle_item_created(item_data: dict) -> Any:
+    """Process item creation."""
+    return {"status": "processed"}
+
+# Handler with multiple arguments
+def handle_link_created(source_id: str, target_id: str, link_type: str) -> Any:
+    """Process link creation."""
+    return {
+        "link": f"{source_id} -> {target_id}",
+        "type": link_type
+    }
+
+# Async handler (if needed)
+async def handle_async_event(event_data: dict) -> Any:
+    """Process event asynchronously."""
+    await some_async_operation()
+    return {"status": "completed"}
+```
+
+## Accessing TracerTM APIs from Plugins
+
+### Database Access
+
+```python
+from sqlalchemy.ext.asyncio import AsyncSession
+from tracertm.repositories.item_repository import ItemRepository
+from tracertm.repositories.project_repository import ProjectRepository
+
+class DatabasePlugin:
+    """Plugin with database access."""
+
+    def __init__(self, session: AsyncSession):
+        self.items = ItemRepository(session)
+        self.projects = ProjectRepository(session)
+
+    async def get_project_stats(self, project_id: str) -> dict:
+        """Get project statistics."""
+        project = await self.projects.get_by_id(project_id)
+        items = await self.items.get_by_project(project_id)
+
+        return {
+            "project_name": project.name,
+            "total_items": len(items),
+            "items_by_status": self._count_by_status(items),
+        }
+
+    def _count_by_status(self, items) -> dict:
+        """Count items by status."""
+        counts = {}
+        for item in items:
+            counts[item.status] = counts.get(item.status, 0) + 1
+        return counts
+```
+
+### Service Layer Access
+
+```python
+from tracertm.services.item_service import ItemService
+from tracertm.services.export_service import ExportService
+
+class ServicePlugin:
+    """Plugin using TracerTM services."""
+
+    def __init__(self, session: AsyncSession):
+        self.item_service = ItemService(session)
+        self.export_service = ExportService(session)
+
+    async def export_item_hierarchy(
+        self,
+        root_item_id: str,
+        format: str = "json"
+    ) -> str:
+        """Export item and all descendants."""
+        # Get item with children
+        item = await self.item_service.get_item_with_links(root_item_id)
+        descendants = await self.item_service.get_descendants(root_item_id)
+
+        # Build export data
+        export_data = {
+            "root": item,
+            "children": descendants,
+            "total_items": len(descendants) + 1,
+        }
+
+        # Use export service
+        if format == "json":
+            return await self.export_service.export_to_json(
+                item["item"].project_id
+            )
+        elif format == "markdown":
+            return await self.export_service.export_to_markdown(
+                item["item"].project_id
+            )
+```
+
+### API Client Access
+
+```python
+from tracertm.api.client import TraceRTMClient
+
+class APIPlugin:
+    """Plugin using API client."""
+
+    def __init__(self, api_url: str = "http://localhost:8000"):
+        self.client = TraceRTMClient(base_url=api_url)
+
+    async def sync_with_remote(self, project_id: str):
+        """Sync project with remote instance."""
+        # Get local items
+        local_items = await self.get_local_items(project_id)
+
+        # Get remote items
+        remote_items = await self.client.get_items(project_id)
+
+        # Sync differences
+        return self.reconcile_items(local_items, remote_items)
+```
+
+## Plugin Configuration
+
+### Configuration Schema
+
+```python
+from pydantic import BaseModel, Field
+from typing import Literal
+
+class PluginConfig(BaseModel):
+    """Plugin configuration schema."""
+
+    enabled: bool = True
+    debug: bool = Field(default=False, description="Enable debug logging")
+    max_items: int = Field(default=100, ge=1, le=10000)
+    export_format: Literal["json", "csv", "markdown"] = "json"
+    notifications: dict[str, bool] = {
+        "on_error": True,
+        "on_success": False,
+    }
+
+    class Config:
+        extra = "allow"  # Allow additional fields
+```
+
+### Loading Configuration
+
+```python
+def load_config() -> PluginConfig:
+    """Load plugin configuration."""
+    import os
+    import yaml
+
+    # Load from file
+    config_path = os.getenv("PLUGIN_CONFIG", "plugin.yaml")
+
+    if os.path.exists(config_path):
+        with open(config_path) as f:
+            config_data = yaml.safe_load(f)
+    else:
+        config_data = {}
+
+    # Override with environment variables
+    config_data.update({
+        "debug": os.getenv("PLUGIN_DEBUG", "false").lower() == "true",
+        "max_items": int(os.getenv("PLUGIN_MAX_ITEMS", "100")),
+    })
+
+    return PluginConfig(**config_data)
+```
+
+### Runtime Configuration Updates
+
+```python
+def update_config(service: PluginService, plugin_name: str, updates: dict):
+    """Update plugin configuration at runtime."""
+    plugin = service.update_plugin_config(plugin_name, updates)
+
+    if plugin:
+        print(f"Updated configuration for {plugin_name}")
+        print(f"New config: {plugin.config}")
+    else:
+        print(f"Plugin {plugin_name} not found")
+```
+
+## Testing Plugins
+
+### Basic Plugin Test
+
+```python
+# tests/test_plugin.py
+import pytest
+from tracertm.services.plugin_service import PluginService, PluginType
+from tracertm_my_plugin import MyCustomPlugin
+
+class TestMyPlugin:
+    """Test suite for MyCustomPlugin."""
+
+    @pytest.fixture
+    def service(self):
+        """Create plugin service."""
+        return PluginService()
+
+    @pytest.fixture
+    def plugin(self, service):
+        """Create plugin instance."""
+        plugin = MyCustomPlugin(service)
+        plugin.register()
+        return plugin
+
+    def test_plugin_registration(self, service, plugin):
+        """Test plugin registers correctly."""
+        assert plugin.plugin.name in service.plugins
+        assert service.plugins[plugin.plugin.name].enabled
+
+    def test_plugin_version(self, plugin):
+        """Test plugin has correct version."""
+        assert plugin.plugin.version == "1.0.0"
+
+    def test_item_created_hook(self, service, plugin):
+        """Test item_created hook executes."""
+        item_data = {
+            "id": "test-123",
+            "title": "Test Item",
+            "created_at": "2025-01-01T00:00:00Z",
+        }
+
+        results = service.execute_hook("item_created", item_data)
+
+        assert len(results) == 1
+        assert results[0]["action"] == "item_created"
+```
+
+### Testing with Database
+
+```python
+import pytest
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from tracertm.models.base import Base
+
+@pytest.fixture
+async def db_session():
+    """Create test database session."""
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+
+    # Create tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    # Create session
+    async with AsyncSession(engine) as session:
+        yield session
+
+    await engine.dispose()
+
+@pytest.mark.asyncio
+async def test_plugin_with_database(db_session):
+    """Test plugin with database access."""
+    from tracertm_my_plugin.db_plugin import DatabasePlugin
+
+    plugin = DatabasePlugin(db_session)
+
+    # Test database operations
+    stats = await plugin.get_project_stats("test-project")
+    assert "total_items" in stats
+```
+
+### Integration Testing
+
+```python
+@pytest.mark.asyncio
+async def test_plugin_integration(db_session):
+    """Test plugin integration with TracerTM."""
+    from tracertm.services.item_service import ItemService
+
+    # Create test data
+    item_service = ItemService(db_session)
+    item = await item_service.create_item(
+        project_id="test-project",
+        title="Test Item",
+        view="requirements",
+        item_type="requirement",
+        agent_id="test-agent",
+    )
+
+    # Trigger plugin hooks
+    service = PluginService()
+    plugin = MyCustomPlugin(service)
+    plugin.register()
+
+    # Execute hook
+    results = service.execute_hook("item_created", {
+        "id": item.id,
+        "title": item.title,
+    })
+
+    assert len(results) > 0
+```
+
+## Packaging and Distribution
+
+### Package Structure
+
+```toml
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tracertm-my-plugin"
+version = "1.0.0"
+description = "Custom plugin for TracerTM"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Name", email = "you@example.com"}
+]
+keywords = ["tracertm", "plugin", "traceability"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "tracertm>=0.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+]
+
+[project.entry-points."tracertm.plugins"]
+my_plugin = "tracertm_my_plugin:initialize"
+```
+
+### Building the Package
+
+```bash
+# Install build tools
+pip install build twine
+
+# Build distribution
+python -m build
+
+# Check distribution
+twine check dist/*
+
+# Upload to PyPI (optional)
+twine upload dist/*
+```
+
+### Installing the Plugin
+
+```bash
+# Install from PyPI
+pip install tracertm-my-plugin
+
+# Install from local development
+pip install -e /path/to/my-plugin
+
+# Install from Git
+pip install git+https://github.com/username/tracertm-my-plugin.git
+```
+
+## Plugin Security Considerations
+
+### Input Validation
+
+```python
+from pydantic import BaseModel, validator
+
+class PluginInput(BaseModel):
+    """Validated plugin input."""
+
+    item_id: str
+    project_id: str
+
+    @validator("item_id", "project_id")
+    def validate_id(cls, v):
+        """Validate ID format."""
+        if not v or len(v) > 255:
+            raise ValueError("Invalid ID")
+        return v
+
+def safe_handler(input_data: dict) -> dict:
+    """Handler with input validation."""
+    try:
+        validated = PluginInput(**input_data)
+        return process_validated_input(validated)
+    except Exception as e:
+        return {"error": str(e)}
+```
+
+### Error Handling
+
+```python
+def robust_hook_handler(data: dict) -> dict:
+    """Hook handler with comprehensive error handling."""
+    try:
+        # Validate input
+        if not isinstance(data, dict):
+            raise TypeError("Expected dict input")
+
+        # Process data
+        result = process_data(data)
+
+        # Validate output
+        return sanitize_output(result)
+
+    except ValueError as e:
+        logger.error(f"Validation error: {e}")
+        return {"error": "Invalid input", "details": str(e)}
+
+    except Exception as e:
+        logger.exception(f"Unexpected error: {e}")
+        return {"error": "Processing failed"}
+```
+
+### Resource Limits
+
+```python
+import time
+from functools import wraps
+
+def rate_limit(max_calls: int, period: int):
+    """Rate limiting decorator."""
+    calls = []
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            now = time.time()
+            # Remove old calls
+            calls[:] = [c for c in calls if c > now - period]
+
+            if len(calls) >= max_calls:
+                raise Exception("Rate limit exceeded")
+
+            calls.append(now)
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+@rate_limit(max_calls=100, period=60)
+def limited_hook_handler(data: dict) -> dict:
+    """Hook handler with rate limiting."""
+    return process_data(data)
+```
+
+### Sandboxing
+
+```python
+import subprocess
+import tempfile
+import json
+
+def sandboxed_execution(plugin_code: str, input_data: dict) -> dict:
+    """Execute plugin code in sandboxed environment."""
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.py') as f:
+        f.write(plugin_code)
+        f.flush()
+
+        try:
+            result = subprocess.run(
+                ['python', f.name],
+                input=json.dumps(input_data),
+                capture_output=True,
+                timeout=30,  # 30 second timeout
+                text=True,
+            )
+
+            if result.returncode == 0:
+                return json.loads(result.stdout)
+            else:
+                return {"error": result.stderr}
+
+        except subprocess.TimeoutExpired:
+            return {"error": "Execution timeout"}
+        except Exception as e:
+            return {"error": str(e)}
+```
+
+## Example: Custom Report Plugin
+
+Here's a complete example of a custom report generation plugin:
+
+```python
+# src/tracertm_report_plugin/plugin.py
+"""Custom Report Generation Plugin for TracerTM."""
+
+from typing import Any
+from datetime import datetime
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from tracertm.services.plugin_service import Plugin, PluginService, PluginType
+from tracertm.services.item_service import ItemService
+from tracertm.services.export_service import ExportService
+
+
+class ReportPlugin:
+    """Generate custom traceability reports."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+        self.item_service = ItemService(session)
+        self.export_service = ExportService(session)
+
+        # Create plugin definition
+        self.plugin = Plugin(
+            name="custom_report_generator",
+            version="1.0.0",
+            plugin_type=PluginType.EXPORT_FORMAT,
+            description="Generate custom traceability reports with statistics",
+            author="TracerTM Team <team@tracertm.dev>",
+            enabled=True,
+            config={
+                "include_graphs": True,
+                "include_metrics": True,
+                "format": "html",
+                "max_depth": 5,
+            }
+        )
+
+    def register(self, service: PluginService):
+        """Register plugin with service."""
+        service.plugins[self.plugin.name] = self.plugin
+        service.register_hook("export_report", self.generate_report)
+        print(f"Report plugin v{self.plugin.version} registered")
+
+    async def generate_report(
+        self,
+        project_id: str,
+        **options: Any
+    ) -> dict[str, Any]:
+        """Generate comprehensive project report."""
+
+        # Gather data
+        items = await self.item_service.list_items(project_id)
+
+        # Calculate statistics
+        stats = self._calculate_statistics(items)
+
+        # Generate report sections
+        report = {
+            "metadata": self._generate_metadata(project_id),
+            "executive_summary": self._generate_summary(stats),
+            "statistics": stats,
+            "items_by_view": self._group_by_view(items),
+            "coverage_analysis": await self._analyze_coverage(project_id),
+        }
+
+        # Format output
+        if self.plugin.config.get("format") == "html":
+            return {"html": self._format_as_html(report)}
+        else:
+            return report
+
+    def _calculate_statistics(self, items: list) -> dict:
+        """Calculate report statistics."""
+        total = len(items)
+        by_status = {}
+        by_type = {}
+        by_view = {}
+
+        for item in items:
+            by_status[item.status] = by_status.get(item.status, 0) + 1
+            by_type[item.item_type] = by_type.get(item.item_type, 0) + 1
+            by_view[item.view] = by_view.get(item.view, 0) + 1
+
+        return {
+            "total_items": total,
+            "by_status": by_status,
+            "by_type": by_type,
+            "by_view": by_view,
+            "completion_rate": (
+                by_status.get("done", 0) / total * 100 if total > 0 else 0
+            ),
+        }
+
+    def _generate_metadata(self, project_id: str) -> dict:
+        """Generate report metadata."""
+        return {
+            "report_type": "Traceability Report",
+            "project_id": project_id,
+            "generated_at": datetime.utcnow().isoformat(),
+            "plugin_version": self.plugin.version,
+        }
+
+    def _generate_summary(self, stats: dict) -> str:
+        """Generate executive summary."""
+        total = stats["total_items"]
+        completion = stats["completion_rate"]
+
+        summary = f"""
+        Project contains {total} items across {len(stats['by_view'])} views.
+        Overall completion rate: {completion:.1f}%
+
+        Status breakdown:
+        """
+
+        for status, count in stats["by_status"].items():
+            percentage = (count / total * 100) if total > 0 else 0
+            summary += f"  - {status}: {count} ({percentage:.1f}%)\n"
+
+        return summary.strip()
+
+    def _group_by_view(self, items: list) -> dict:
+        """Group items by view."""
+        by_view = {}
+        for item in items:
+            if item.view not in by_view:
+                by_view[item.view] = []
+            by_view[item.view].append({
+                "id": item.id,
+                "title": item.title,
+                "status": item.status,
+                "type": item.item_type,
+            })
+        return by_view
+
+    async def _analyze_coverage(self, project_id: str) -> dict:
+        """Analyze traceability coverage."""
+        # This would analyze link coverage between views
+        return {
+            "requirements_to_tests": "85%",
+            "tests_to_code": "92%",
+            "overall_coverage": "88%",
+        }
+
+    def _format_as_html(self, report: dict) -> str:
+        """Format report as HTML."""
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Traceability Report</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                h1 {{ color: #333; }}
+                .stat {{ background: #f0f0f0; padding: 10px; margin: 10px 0; }}
+                table {{ border-collapse: collapse; width: 100%; }}
+                th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+                th {{ background-color: #4CAF50; color: white; }}
+            </style>
+        </head>
+        <body>
+            <h1>Traceability Report</h1>
+            <p><strong>Generated:</strong> {report['metadata']['generated_at']}</p>
+
+            <h2>Executive Summary</h2>
+            <pre>{report['executive_summary']}</pre>
+
+            <h2>Statistics</h2>
+            <div class="stat">
+                <strong>Total Items:</strong> {report['statistics']['total_items']}<br>
+                <strong>Completion Rate:</strong> {report['statistics']['completion_rate']:.1f}%
+            </div>
+
+            <h2>Coverage Analysis</h2>
+            <div class="stat">
+                <strong>Requirements to Tests:</strong> {report['coverage_analysis']['requirements_to_tests']}<br>
+                <strong>Tests to Code:</strong> {report['coverage_analysis']['tests_to_code']}<br>
+                <strong>Overall Coverage:</strong> {report['coverage_analysis']['overall_coverage']}
+            </div>
+        </body>
+        </html>
+        """
+        return html
+
+
+# Plugin initialization
+def initialize(service: PluginService, session: AsyncSession):
+    """Initialize report plugin."""
+    plugin = ReportPlugin(session)
+    plugin.register(service)
+    return plugin
+```
+
+### Using the Report Plugin
+
+```python
+from tracertm.services.plugin_service import PluginService
+from tracertm_report_plugin import initialize
+
+# Initialize
+service = PluginService()
+report_plugin = initialize(service, db_session)
+
+# Generate report
+result = await service.execute_hook(
+    "export_report",
+    project_id="my-project",
+    format="html"
+)
+
+# Save report
+with open("report.html", "w") as f:
+    f.write(result[0]["html"])
+```
+
+## Best Practices
+
+1. **Keep plugins focused**: One plugin should do one thing well
+2. **Handle errors gracefully**: Never crash the host application
+3. **Document thoroughly**: Include docstrings and README
+4. **Test comprehensively**: Aim for 90%+ test coverage
+5. **Version carefully**: Use semantic versioning
+6. **Validate inputs**: Never trust external data
+7. **Log appropriately**: Use structured logging
+8. **Clean up resources**: Implement proper shutdown
+9. **Follow conventions**: Match TracerTM code style
+10. **Consider performance**: Don't block the main thread
+
+## Troubleshooting
+
+### Plugin Not Loading
+
+Check plugin registration:
+
+```python
+# Verify plugin is registered
+service = PluginService()
+print(service.list_plugins())
+
+# Check for errors
+stats = service.get_plugin_stats()
+print(f"Total plugins: {stats['total_plugins']}")
+```
+
+### Hook Not Executing
+
+Verify hook registration:
+
+```python
+# Check registered hooks
+print(service.hooks)
+
+# Test hook directly
+results = service.execute_hook("my_event", test_data)
+print(f"Hook results: {results}")
+```
+
+### Configuration Issues
+
+Debug configuration:
+
+```python
+# Check current config
+plugin = service.get_plugin("my_plugin")
+print(f"Config: {plugin.config}")
+
+# Update config
+service.update_plugin_config("my_plugin", {"debug": True})
+```
+
+## Resources
+
+- [Plugin API Reference](/docs/api-reference/plugins)
+- [PluginService Source Code](https://github.com/tracertm/tracertm/blob/main/src/tracertm/services/plugin_service.py)
+- [Example Plugins Repository](https://github.com/tracertm/example-plugins)
+- [Community Plugins](https://tracertm.dev/plugins)
+
+## Next Steps
+
+- Explore [Advanced Services](/docs/wiki/tutorials/advanced/custom-services)
+- Learn about [Event Sourcing](/docs/wiki/tutorials/advanced/event-sourcing)
+- Build [Custom Integrations](/docs/wiki/tutorials/advanced/integrations)

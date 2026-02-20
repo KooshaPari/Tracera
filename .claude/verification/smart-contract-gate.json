@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-02-14T09:26:35Z",
+  "status": "not_applicable",
+  "pass": true,
+  "reason": "missing_fr_source:FUNCTIONAL_REQUIREMENTS.md",
+  "fr_source": "FUNCTIONAL_REQUIREMENTS.md",
+  "total_frs": 0,
+  "covered_frs": 0,
+  "fr_coverage_percent": 0.0,
+  "orphan_frs": [],
+  "orphan_tests": [],
+  "methodology": {
+    "unit": true,
+    "integration": true,
+    "e2e": true,
+    "bdd": false,
+    "property_based": true,
+    "contract": true,
+    "chaos": true,
+    "mutation": false
+  },
+  "evidence_files_present": [],
+  "policy": {
+    "tier": "established",
+    "enforce_gate": false,
+    "enforce_by_tier": {
+      "new": false,
+      "established": true,
+      "critical": true
+    },
+    "min_fr_coverage_percent": 95.0,
+    "allow_orphan_frs": false,
+    "allow_orphan_tests": false,
+    "require_test_pyramid": true,
+    "min_evidence_files": 1,
+    "required_methodologies": {
+      "bdd": true,
+      "property_based": false,
+      "mutation": false,
+      "contract": false,
+      "chaos": false
+    }
+  },
+  "checks": {}
+}

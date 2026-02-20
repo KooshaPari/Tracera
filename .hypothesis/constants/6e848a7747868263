@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/graph.py
+# hypothesis_version: 6.151.4
+
+[100, 200, 255, 'CASCADE', 'SET NULL', 'extend_existing', 'graph_type', 'graphs', 'items.id', 'name', 'project_id', 'projects.id']

@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/init.py
+# hypothesis_version: 6.148.7
+
+['# ', '*.md', '---', '--name', '--path', '-n', '-p', '.git', '.gitignore', '.meta', '.trace', '1.0.0', 'Project name', '[cyan].meta/[/cyan]', 'agents', 'agents.yaml', 'auto_link_commits', 'content_hash', 'counters', 'created_via', 'current_project_id', 'current_project_name', 'default_priority', 'default_status', 'description', 'docs', 'epic', 'epics', 'external_id', 'full', 'green', 'hooks', 'id', 'incremental', 'init', 'last_indexed', 'last_synced', 'links', 'links.yaml', 'local_path', 'medium', 'name', 'on_item_create', 'on_item_update', 'on_link_create', 'owner', 'parent', 'priority', 'project.yaml', 'related_to', 'rtm init', 'settings', 'source', 'status', 'stories', 'story', 'sync.yaml', 'tags', 'target', 'task', 'tasks', 'team', 'test', 'tests', 'title', 'todo', 'type', 'utf-8', 'version']

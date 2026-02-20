@@ -1,0 +1,195 @@
+# Comprehensive Go linting – revive comparison + awesome-go-linters
+# Run: cd backend && golangci-lint run
+# Format: cd backend && gofumpt -w .
+
+version: 2
+
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+  build-tags: []
+
+linters:
+  enable:
+    # Defaults (correctness + unused)
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    # Style / patterns (revive = golint replacement)
+    - revive
+    # Extra style/bugs/performance
+    - gocritic
+    # Security
+    - gosec
+    # HTTP/DB correctness
+    - bodyclose
+    - rowserrcheck
+    # Complexity
+    - gocyclo
+    - gocognit
+    # Naming / style
+    - misspell
+    - unconvert
+    # Exhaustiveness / correctness
+    - exhaustive
+    # Performance
+    - prealloc
+    # More style
+    - whitespace
+    - nakedret
+    - noctx
+    # AI coding hardening - Phase 1
+    - dupl              # Duplicate code detection
+    - goconst           # Repeated strings → constants
+    - funlen            # Function length limits
+    - mnd               # Magic number detection
+    - nolintlint        # Validate //nolint usage
+    - gochecknoglobals  # No global variables
+    - perfsprint        # Performance optimization
+    - lll               # Line length
+    - maintidx          # Maintainability index
+  disable:
+    - exhaustruct      # optional; enable if you want all struct fields init
+
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+
+linters-settings:
+  revive:
+    severity: error
+    confidence: 0.8
+    rules:
+      - name: var-naming
+      - name: package-comments
+      - name: exported
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: context-as-argument
+      - name: cyclomatic
+        arguments: [10]
+      - name: line-length-limit
+        arguments: [120]
+  lll:
+    line-length: 120
+    tab-width: 4
+  maintidx:
+    under: 20
+  gocyclo:
+    min-complexity: 10  # Down from 15
+  gocognit:
+    min-complexity: 12  # Down from 20
+  funlen:
+    lines: 80
+    statements: 50
+  mnd:
+    checks:
+      - argument
+      - case
+      - condition
+      - operation
+      - return
+      - assign
+    ignored-numbers:
+      - "0"
+      - "1"
+      - "2"
+      - "3"
+      - "4"
+      - "5"
+      - "6"
+      - "7"
+      - "10"
+      - "12"
+      - "15"
+      - "20"
+      - "24"
+      - "25"
+      - "30"
+      - "32"
+      - "42"
+      - "50"
+      - "70"
+      - "80"
+      - "100"
+      - "200"
+      - "255"
+      - "256"
+      - "384"
+      - "400"
+      - "488"
+      - "500"
+      - "512"
+      - "1000"
+      - "1024"
+      - "2000"
+      - "2048"
+      - "5000"
+      - "86400"
+      - "1000000"
+      - "0.05"
+      - "0.1"
+      - "0.15"
+      - "0.2"
+      - "0.25"
+      - "0.3"
+      - "0.4"
+      - "0.5"
+      - "0.7"
+      - "0.8"
+      - "0.9"
+      - "0.95"
+      - "1.0"
+      - "1.1"
+      - "1.5"
+      - "2.0"
+      - "7.0"
+      - "10.0"
+      - "20.0"
+      - "60.0"
+      - "85.0"
+      - "90.0"
+      - "100.0"
+      - "336.0"
+      - "0.001"
+      - "0.01"
+      - "1000.0"
+      - "0.84"
+  gosec:
+    excludes:
+      - G104  # audit errors not checked (errcheck covers)
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  exhaustive:
+    default-signifies-exhaustive: false
+  nakedret:
+    max-func-lines: 5
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocognit
+        - gocyclo
+        - funlen
+    - path: \.pb\.go$
+      linters: [all]
+    - path: /vendor/
+      linters: [all]
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+# Output format: grouped for file-based processing (easier for agents to fix)
+# Use --out-format=json in CI for structured output; grouped-line-number for local dev
+output:
+  format: grouped-line-number  # Groups issues by file for easy processing
+  print-issued-lines: true
+  print-linter-name: true
+  uniq-by-line: true
+  sort-results: true

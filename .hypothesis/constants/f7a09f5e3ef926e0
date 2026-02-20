@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/agent_monitoring_service.py
+# hypothesis_version: 6.148.7
+
+[10.0, 24.0, 3600, '+00:00', 'Z', 'active', 'agent_id', 'agent_name', 'conflict_rate', 'count', 'error', 'error_rate', 'health', 'health_status', 'healthy', 'high_conflict_rate', 'hours_since_activity', 'idle', 'last_activity', 'message', 'metrics', 'no_activity', 'ok', 'severity', 'stale', 'stale_agent', 'status', 'type', 'unknown', 'warning']

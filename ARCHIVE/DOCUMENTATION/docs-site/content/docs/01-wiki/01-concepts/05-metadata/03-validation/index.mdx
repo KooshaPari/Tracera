@@ -1,0 +1,530 @@
+---
+title: "Validation Rules"
+description: "Enforce data quality with field and cross-field validation"
+---
+
+# Validation Rules
+
+Validation ensures metadata quality by enforcing constraints on field values. TraceRTM supports field-level validation, cross-field rules, and workflow-triggered validation.
+
+## Field-Level Validation
+
+### Type Validation
+
+```yaml
+# .tracertm/config.yaml
+metadata:
+  fields:
+    # String validation
+    - name: external_id
+      type: string
+      max_length: 50
+      min_length: 3
+      pattern: "^[A-Z]+-[0-9]+$"
+      pattern_message: "Must be format PREFIX-123"
+
+    # Number validation
+    - name: story_points
+      type: number
+      min: 1
+      max: 21
+      integer_only: true
+
+    # Enum validation (automatic)
+    - name: priority
+      type: enum
+      values: [low, medium, high, critical]
+      # Only these values allowed
+
+    # Array validation
+    - name: tags
+      type: array
+      item_type: string
+      min_items: 1
+      max_items: 10
+      unique: true
+```
+
+### Required Fields
+
+```yaml
+- name: owner
+  type: string
+  required: true
+  required_message: "Every item must have an owner"
+
+- name: risk_level
+  type: enum
+  values: [low, medium, high]
+  required_on_status: [in_progress, done]
+  required_message: "Risk level required before starting work"
+```
+
+### Conditional Requirements
+
+```yaml
+validation:
+  rules:
+    # If security_sensitive, require security_reviewer
+    - when:
+        field: security_sensitive
+        equals: true
+      require:
+        field: security_reviewer
+        not_empty: true
+        message: "Security-sensitive items need a reviewer"
+
+    # If priority is critical, require justification
+    - when:
+        field: priority
+        equals: critical
+      require:
+        field: critical_justification
+        min_length: 50
+        message: "Critical priority requires detailed justification"
+```
+
+## Cross-Field Validation
+
+### Comparison Rules
+
+```yaml
+validation:
+  rules:
+    # End date must be after start date
+    - condition: "end_date > start_date"
+      message: "End date must be after start date"
+
+    # Actual hours can't exceed estimated
+    - condition: "actual_hours <= estimated_hours * 1.5"
+      severity: warning
+      message: "Actual hours significantly exceed estimate"
+
+    # Completion percentage matches status
+    - when:
+        field: status
+        equals: done
+      require:
+        field: completion_percentage
+        equals: 100
+        message: "Done items must have 100% completion"
+```
+
+### Multi-Field Conditions
+
+```yaml
+validation:
+  rules:
+    # High risk + high impact requires approval
+    - when:
+        all:
+          - field: risk_level
+            in: [high, critical]
+          - field: impact_level
+            in: [high, critical]
+      require:
+        field: approved_by
+        not_empty: true
+        message: "High risk/impact items require approval"
+
+    # Either internal_id or external_id required
+    - when:
+        any:
+          - field: internal_id
+            is_empty: true
+          - field: external_id
+            is_empty: true
+      require:
+        any_of:
+          - field: internal_id
+          - field: external_id
+        message: "Either internal_id or external_id required"
+```
+
+## Workflow Validation
+
+### Transition Guards
+
+```yaml
+# .tracertm/workflows/feature.yaml
+name: feature
+states:
+  - draft
+  - ready
+  - in_progress
+  - review
+  - done
+
+transitions:
+  - from: draft
+    to: ready
+    guards:
+      - field: description
+        min_length: 100
+        message: "Add detailed description before marking ready"
+      - field: acceptance_criteria
+        not_empty: true
+        message: "Define acceptance criteria"
+
+  - from: ready
+    to: in_progress
+    guards:
+      - field: assignee
+        not_empty: true
+        message: "Assign to someone before starting"
+      - field: estimated_hours
+        not_empty: true
+        message: "Add estimate"
+
+  - from: in_progress
+    to: review
+    guards:
+      - link_type: realized_by
+        target_type: code
+        min_count: 1
+        message: "Must have implementing code"
+
+  - from: review
+    to: done
+    guards:
+      - link_type: verified_by
+        target_type: test
+        min_count: 1
+        message: "Must have passing tests"
+      - field: security_reviewed
+        equals: true
+        when:
+          field: security_sensitive
+          equals: true
+        message: "Security review required"
+```
+
+### State-Specific Requirements
+
+```yaml
+validation:
+  by_status:
+    in_progress:
+      required:
+        - assignee
+        - estimated_hours
+        - sprint
+
+    review:
+      required:
+        - completion_percentage
+        - reviewer
+
+    done:
+      required:
+        - actual_hours
+        - completion_notes
+```
+
+## Link Validation
+
+### Link Requirements
+
+```yaml
+validation:
+  links:
+    # Features must have tests
+    - source_type: feature
+      link_type: verified_by
+      target_type: test
+      min_count: 1
+      on_status: [review, done]
+      message: "Feature must have at least one test"
+
+    # Code must implement something
+    - source_type: code
+      link_type: implements
+      target_type: [design, feature]
+      min_count: 1
+      message: "Code must link to what it implements"
+
+    # No circular dependencies
+    - link_type: depends_on
+      no_cycles: true
+      message: "Circular dependency detected"
+```
+
+### Link Cardinality
+
+```yaml
+validation:
+  links:
+    # Each code module implements exactly one design
+    - source_type: code
+      link_type: implements
+      cardinality: "1"
+      message: "Code should implement exactly one design"
+
+    # Feature can have 1-5 implementing code modules
+    - source_type: feature
+      link_type: realized_by
+      cardinality: "1..5"
+      message: "Feature should have 1-5 code modules"
+```
+
+## Running Validation
+
+### On Save
+
+```python
+from tracertm import TraceRTMClient, ValidationError
+
+client = TraceRTMClient()
+
+try:
+    client.create_item(
+        title="Feature",
+        item_type="feature",
+        metadata={"priority": "invalid"}  # Not a valid enum value
+    )
+except ValidationError as e:
+    print(f"Validation failed: {e.message}")
+    for error in e.errors:
+        print(f"  - {error.field}: {error.message}")
+```
+
+### On Transition
+
+```python
+try:
+    client.transition("FEAT-001", to_status="done")
+except ValidationError as e:
+    print(f"Cannot transition: {e.message}")
+    # "Cannot transition: Must have passing tests"
+```
+
+### Manual Validation
+
+```python
+# Validate without saving
+result = client.validate_item({
+    "title": "Feature",
+    "item_type": "feature",
+    "metadata": {
+        "priority": "high",
+        "story_points": 8
+    }
+})
+
+if result.valid:
+    print("Item is valid")
+else:
+    for error in result.errors:
+        print(f"{error.field}: {error.message}")
+```
+
+### Batch Validation
+
+```python
+# Validate all items
+results = client.validate_all(
+    item_type="feature",
+    status="in_progress"
+)
+
+for item_id, errors in results.items():
+    if errors:
+        print(f"{item_id}: {len(errors)} errors")
+```
+
+## CLI Usage
+
+```bash
+# Validate single item
+tracertm validate FEAT-001
+
+# Output:
+# Validating FEAT-001...
+# ✗ Validation failed (2 errors)
+#   - description: Minimum length 100 characters (current: 45)
+#   - acceptance_criteria: Required field is empty
+
+# Validate all items
+tracertm validate --all
+
+# Validate by type
+tracertm validate --type feature
+
+# Validate specific rules
+tracertm validate FEAT-001 --rules required,links
+
+# Show warnings
+tracertm validate FEAT-001 --include-warnings
+
+# Dry-run transition validation
+tracertm transition FEAT-001 --to done --dry-run
+# Shows what would fail without actually transitioning
+```
+
+## Validation Severity
+
+### Error vs Warning
+
+```yaml
+validation:
+  rules:
+    # Error: blocks save/transition
+    - field: owner
+      required: true
+      severity: error
+      message: "Owner is required"
+
+    # Warning: allows but flags
+    - field: documentation
+      required: true
+      severity: warning
+      message: "Consider adding documentation"
+
+    # Info: informational only
+    - condition: "story_points > 13"
+      severity: info
+      message: "Large story - consider breaking down"
+```
+
+### Handling Severities
+
+```python
+result = client.validate_item(item)
+
+print(f"Errors: {len(result.errors)}")
+print(f"Warnings: {len(result.warnings)}")
+print(f"Info: {len(result.info)}")
+
+# Errors block, warnings don't
+if result.errors:
+    raise ValidationError(result.errors)
+elif result.warnings:
+    print("Saved with warnings:")
+    for w in result.warnings:
+        print(f"  - {w.message}")
+```
+
+## Custom Validators
+
+### Python Validators
+
+```python
+from tracertm.validation import Validator, register_validator
+
+@register_validator("valid_email")
+def validate_email(value, field, item):
+    """Custom email validation."""
+    import re
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(pattern, value):
+        return f"Invalid email format: {value}"
+    return None  # Valid
+
+@register_validator("assignee_not_owner")
+def validate_different_people(value, field, item):
+    """Assignee can't be the same as owner."""
+    if value == item.metadata.get("owner"):
+        return "Assignee must be different from owner"
+    return None
+```
+
+### Using Custom Validators
+
+```yaml
+metadata:
+  fields:
+    - name: contact_email
+      type: string
+      validators:
+        - valid_email
+
+    - name: assignee
+      type: string
+      validators:
+        - assignee_not_owner
+```
+
+## Validation Reports
+
+```bash
+# Generate validation report
+tracertm report validation --output validation-report.html
+
+# Output:
+# Validation Report
+# ════════════════════════════
+#
+# Summary:
+#   Total items: 245
+#   Valid: 230
+#   With errors: 10
+#   With warnings: 25
+#
+# By Type:
+#   feature: 8 errors, 12 warnings
+#   code: 2 errors, 8 warnings
+#   test: 0 errors, 5 warnings
+#
+# Top Issues:
+#   1. Missing test links (8 items)
+#   2. Empty acceptance criteria (5 items)
+#   3. Missing owner (3 items)
+```
+
+## Best Practices
+
+### 1. Validate Incrementally
+
+```yaml
+# Require more as items progress
+validation:
+  by_status:
+    draft:
+      required: [title]  # Minimal
+
+    ready:
+      required: [title, description, acceptance_criteria]
+
+    in_progress:
+      required: [title, description, acceptance_criteria, assignee, estimate]
+
+    done:
+      required: [title, description, acceptance_criteria, assignee, estimate, actual_hours]
+```
+
+### 2. Provide Clear Messages
+
+```yaml
+# Good: Specific, actionable message
+- field: acceptance_criteria
+  required: true
+  message: "Add acceptance criteria using Given/When/Then format"
+
+# Avoid: Generic message
+- field: acceptance_criteria
+  required: true
+  message: "Field required"
+```
+
+### 3. Use Warnings for Guidance
+
+```yaml
+# Warning for best practices
+- field: description
+  min_length: 200
+  severity: warning
+  message: "Consider adding more detail to the description"
+
+# Error for hard requirements
+- field: description
+  min_length: 50
+  severity: error
+  message: "Description must be at least 50 characters"
+```
+
+## Related Topics
+
+- [Standard Fields](/docs/wiki/concepts/metadata/standard-fields) - Built-in fields
+- [Custom Fields](/docs/wiki/concepts/metadata/custom-fields) - Define fields
+- [Workflows](/docs/wiki/concepts/workflows) - Transition validation
+

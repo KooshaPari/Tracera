@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/query.py
+# hypothesis_version: 6.148.7
+
+[' [All Projects]', ',', '--all-projects', '--filter', '--json', '--limit', '--link-type', '--owner', '--priority', '--related-to', '--status', '--type', '--view', '-f', '-l', '-o', '-s', '-t', '-v', '=', 'Filter by item type', 'Filter by owner', 'Filter by priority', 'Filter by status', 'Filter by view', 'ID', 'Output as JSON', 'Owner', 'Priority', 'Project', 'Status', 'Title', 'Type', 'Unknown', 'View', 'blue', 'count', 'created_at', 'current_project_id', 'cyan', 'description', 'dim', 'green', 'id', 'items', 'magenta', 'metadata', 'owner', 'parent_id', 'priority', 'project_id', 'project_name', 'query', 'status', 'title', 'type', 'updated_at', 'version', 'view', 'yellow']

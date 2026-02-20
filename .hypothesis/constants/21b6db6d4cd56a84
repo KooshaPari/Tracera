@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/conflict_resolution_service.py
+# hypothesis_version: 6.148.7
+
+['No conflict detected', 'conflict_detected', 'conflicting_agents', 'entity_id', 'entity_type', 'event_count', 'first_event', 'item_updated', 'item_version', 'last_event', 'last_write_wins', 'merge', 'note', 'reason', 'resolved', 'strategy', 'winner_agent']

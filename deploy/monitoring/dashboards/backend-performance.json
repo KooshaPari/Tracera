@@ -1,0 +1,119 @@
+{
+  "annotations": {
+    "list": [{
+      "builtIn": 1,
+      "datasource": "-- Grafana --",
+      "enable": true,
+      "hide": true,
+      "iconColor": "rgba(0, 211, 255, 1)",
+      "name": "Annotations & Alerts",
+      "type": "dashboard"
+    }]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {"asDropdown": false, "icon": "external link", "includeVars": true, "keepTime": true, "tags": [], "targetBlank": true, "title": "Frontend Performance", "type": "link", "url": "/d/frontend-performance"},
+    {"asDropdown": false, "icon": "external link", "includeVars": true, "keepTime": true, "tags": [], "targetBlank": true, "title": "Infrastructure Health", "type": "link", "url": "/d/infrastructure-health"}
+  ],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 20, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": true}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 0.5}]}, "unit": "s"}, "overrides": [{"matcher": {"id": "byName", "options": "P50"}, "properties": [{"id": "color", "value": {"fixedColor": "green", "mode": "fixed"}}]}, {"matcher": {"id": "byName", "options": "P95"}, "properties": [{"id": "color", "value": {"fixedColor": "orange", "mode": "fixed"}}]}, {"matcher": {"id": "byName", "options": "P99"}, "properties": [{"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}]}, {"matcher": {"id": "byName", "options": "P99.9"}, "properties": [{"id": "color", "value": {"fixedColor": "dark-red", "mode": "fixed"}}]}]},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "id": 1,
+      "options": {"legend": {"calcs": ["mean", "lastNotNull", "max"], "displayMode": "table", "placement": "right"}, "tooltip": {"mode": "multi"}},
+      "targets": [
+        {"expr": "histogram_quantile(0.50, sum(rate(tracertm_request_duration_seconds_bucket[5m])) by (le, job))", "legendFormat": "P50 - {{ job }}", "refId": "A"},
+        {"expr": "histogram_quantile(0.95, sum(rate(tracertm_request_duration_seconds_bucket[5m])) by (le, job))", "legendFormat": "P95 - {{ job }}", "refId": "B"},
+        {"expr": "histogram_quantile(0.99, sum(rate(tracertm_request_duration_seconds_bucket[5m])) by (le, job))", "legendFormat": "P99 - {{ job }}", "refId": "C"},
+        {"expr": "histogram_quantile(0.999, sum(rate(tracertm_request_duration_seconds_bucket[5m])) by (le, job))", "legendFormat": "P99.9 - {{ job }}", "refId": "D"}
+      ],
+      "title": "Request Latency Percentiles (P50, P95, P99, P99.9)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "lineWidth": 2, "showPoints": "never"}, "unit": "percentunit"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "id": 2,
+      "options": {"legend": {"calcs": ["mean", "lastNotNull"], "displayMode": "table", "placement": "right"}, "tooltip": {"mode": "multi"}},
+      "targets": [
+        {"expr": "sum by (job, status) (rate(tracertm_requests_total{status=~\"5..\"}[5m])) / sum by (job) (rate(tracertm_requests_total[5m]))", "legendFormat": "{{ job }} - {{ status }}", "refId": "A"}
+      ],
+      "title": "Error Rate by Service and Status Code",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisPlacement": "auto", "drawStyle": "line", "fillOpacity": 20, "lineWidth": 2, "showPoints": "never"}, "unit": "reqps"}},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "id": 3,
+      "options": {"legend": {"calcs": ["mean", "lastNotNull", "max"], "displayMode": "table", "placement": "right"}},
+      "targets": [
+        {"expr": "sum by (job) (rate(tracertm_requests_total[5m]))", "legendFormat": "{{ job }}", "refId": "A"}
+      ],
+      "title": "Throughput (Requests per Second)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"color": {"mode": "continuous-GrYlRd"}, "custom": {"align": "auto", "displayMode": "color-background"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 0.1}, {"color": "red", "value": 1}]}, "unit": "s"}},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "id": 4,
+      "options": {"showHeader": true, "sortBy": [{"desc": true, "displayName": "Avg Duration"}]},
+      "targets": [
+        {"expr": "topk(20, avg by (query) (rate(tracertm_db_query_duration_seconds_sum[5m]) / rate(tracertm_db_query_duration_seconds_count[5m])))", "format": "table", "instant": true, "refId": "A"}
+      ],
+      "title": "Top 20 Slowest Database Queries",
+      "transformations": [{"id": "organize", "options": {"excludeByName": {"Time": true}, "renameByName": {"Value": "Avg Duration", "query": "Query"}}}],
+      "type": "table"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisPlacement": "auto", "drawStyle": "line", "fillOpacity": 10, "lineWidth": 2}, "unit": "s"}},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "id": 5,
+      "options": {"legend": {"calcs": ["mean", "lastNotNull"], "displayMode": "table", "placement": "right"}},
+      "targets": [
+        {"expr": "histogram_quantile(0.95, sum by (service, le) (rate(tracertm_external_api_duration_seconds_bucket[5m])))", "legendFormat": "{{ service }} P95", "refId": "A"}
+      ],
+      "title": "External API Call Latency (P95)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 0.5}, {"color": "green", "value": 0.8}]}, "unit": "percentunit"}},
+      "gridPos": {"h": 8, "w": 6, "x": 12, "y": 16},
+      "id": 6,
+      "options": {"orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"]}, "showThresholdLabels": false, "showThresholdMarkers": true},
+      "targets": [
+        {"expr": "sum(rate(tracertm_cache_hits_total[5m])) / (sum(rate(tracertm_cache_hits_total[5m])) + sum(rate(tracertm_cache_misses_total[5m])))", "refId": "A"}
+      ],
+      "title": "Cache Hit Ratio",
+      "type": "gauge"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 10}, {"color": "red", "value": 50}]}, "unit": "short"}},
+      "gridPos": {"h": 8, "w": 6, "x": 18, "y": 16},
+      "id": 7,
+      "options": {"orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "targets": [
+        {"expr": "sum by (job) (tracertm_active_requests)", "legendFormat": "{{ job }}", "refId": "A"}
+      ],
+      "title": "Active Requests",
+      "type": "gauge"
+    }
+  ],
+  "refresh": "5m",
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": ["tracertm", "backend", "performance", "api"],
+  "time": {"from": "now-6h", "to": "now"},
+  "title": "Backend Performance - API Metrics",
+  "uid": "backend-performance",
+  "version": 1
+}

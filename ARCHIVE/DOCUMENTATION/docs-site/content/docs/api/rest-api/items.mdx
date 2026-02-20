@@ -1,0 +1,185 @@
+---
+title: "Items"
+description: "Operations for managing requirements items"
+---
+
+# Items
+
+Operations for managing requirements items
+
+## Endpoints
+
+### List Items
+
+<Badge variant="blue">GET</Badge> `/api/v1/items`
+
+Retrieve a paginated list of items in a project
+
+
+### Parameters
+
+| Name | Type | Location | Required | Description |
+|------|------|----------|----------|-------------|
+| `project_id` | string (uuid) | query | ✓ | Unique identifier for the project |
+| `skip` | integer | query |  | Number of items to skip (for pagination) |
+| `limit` | integer | query |  | Maximum number of items to return |
+
+
+### Code Examples
+
+<Tabs items={["cURL", "JavaScript", "Python", "Go"]}>
+
+<Tab value="cURL">
+
+```bash
+curl -X GET "https://api.tracertm.com/api/v1/items" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+</Tab>
+
+<Tab value="JavaScript">
+
+```javascript
+const response = await fetch('https://api.tracertm.com/api/v1/items', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_TOKEN',
+    'Content-Type': 'application/json'
+  }
+});
+const data = await response.json();
+console.log(data);
+```
+
+</Tab>
+
+<Tab value="Python">
+
+```python
+import requests
+
+response = requests.get(
+    "https://api.tracertm.com/api/v1/items",
+    headers={"Authorization": "Bearer YOUR_TOKEN"}
+)
+data = response.json()
+print(data)
+```
+
+</Tab>
+
+<Tab value="Go">
+
+```go
+package main
+
+import (
+    "fmt"
+    "net/http"
+)
+
+func main() {
+    req, _ := http.NewRequest("GET", "https://api.tracertm.com/api/v1/items", nil)
+    req.Header.Set("Authorization", "Bearer YOUR_TOKEN")
+    req.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    // Handle response...
+}
+```
+
+</Tab>
+
+</Tabs>
+
+---
+
+### Get Item
+
+<Badge variant="blue">GET</Badge> `/api/v1/items/{item_id}`
+
+Retrieve detailed information about a specific item
+
+
+### Parameters
+
+| Name | Type | Location | Required | Description |
+|------|------|----------|----------|-------------|
+| `item_id` | string (uuid) | path | ✓ | Unique identifier for the item |
+
+
+### Code Examples
+
+<Tabs items={["cURL", "JavaScript", "Python", "Go"]}>
+
+<Tab value="cURL">
+
+```bash
+curl -X GET "https://api.tracertm.com/api/v1/items/{item_id}" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+</Tab>
+
+<Tab value="JavaScript">
+
+```javascript
+const response = await fetch('https://api.tracertm.com/api/v1/items/{item_id}', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_TOKEN',
+    'Content-Type': 'application/json'
+  }
+});
+const data = await response.json();
+console.log(data);
+```
+
+</Tab>
+
+<Tab value="Python">
+
+```python
+import requests
+
+response = requests.get(
+    "https://api.tracertm.com/api/v1/items/{item_id}",
+    headers={"Authorization": "Bearer YOUR_TOKEN"}
+)
+data = response.json()
+print(data)
+```
+
+</Tab>
+
+<Tab value="Go">
+
+```go
+package main
+
+import (
+    "fmt"
+    "net/http"
+)
+
+func main() {
+    req, _ := http.NewRequest("GET", "https://api.tracertm.com/api/v1/items/{item_id}", nil)
+    req.Header.Set("Authorization", "Bearer YOUR_TOKEN")
+    req.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    // Handle response...
+}
+```
+
+</Tab>
+
+</Tabs>
+
+---
+

@@ -1,0 +1,1050 @@
+---
+title: "Slack Integration"
+description: "Connect TracerTM with Slack for real-time notifications, interactive commands, and team collaboration"
+---
+
+# Slack Integration
+
+Integrate TracerTM with Slack to bring traceability updates, alerts, and interactive commands directly into your team's communication hub.
+
+## Overview
+
+The TracerTM Slack integration provides:
+
+- **Real-time Notifications**: Get instant updates when requirements, test cases, or links change
+- **Interactive Commands**: Execute TracerTM commands directly from Slack using slash commands
+- **Workflow Automation**: Trigger TracerTM actions from Slack workflows
+- **Alert Routing**: Route notifications to specific channels based on severity and project
+- **Status Updates**: Receive automated reports on traceability coverage and compliance
+- **Interactive Messages**: Approve changes, create links, and update items without leaving Slack
+
+## Prerequisites
+
+Before setting up the Slack integration, ensure you have:
+
+- Admin access to your Slack workspace
+- TracerTM server running with API access
+- HTTPS endpoint for webhook callbacks (required for interactive features)
+- Slack workspace plan that supports apps (Free, Pro, or Enterprise)
+
+## Slack App Setup
+
+### Creating Your Slack App
+
+1. **Navigate to the Slack API Dashboard**
+   - Go to [api.slack.com/apps](https://api.slack.com/apps)
+   - Click "Create New App"
+   - Choose "From scratch"
+   - Name: "TracerTM" (or your preferred name)
+   - Select your workspace
+
+2. **Configure OAuth Scopes**
+
+Navigate to "OAuth & Permissions" and add the following scopes:
+
+**Bot Token Scopes:**
+```
+chat:write          - Send messages as TracerTM bot
+chat:write.public   - Send messages to public channels
+commands            - Add slash commands
+channels:read       - View channel information
+groups:read         - View private channel information
+im:write            - Send direct messages
+users:read          - View workspace users
+reactions:write     - Add reactions to messages
+files:write         - Upload coverage reports and exports
+```
+
+**User Token Scopes (Optional):**
+```
+channels:history    - Read public channel messages
+groups:history      - Read private channel messages
+```
+
+3. **Install App to Workspace**
+   - Click "Install to Workspace"
+   - Review permissions and authorize
+   - Copy the "Bot User OAuth Token" (starts with `xoxb-`)
+
+### Configuring TracerTM
+
+Add your Slack credentials to TracerTM configuration:
+
+```bash
+# Using TracerTM CLI
+tracertm config set integrations.slack.enabled true
+tracertm config set integrations.slack.bot_token "xoxb-your-bot-token"
+tracertm config set integrations.slack.signing_secret "your-signing-secret"
+```
+
+Or configure via `tracertm.config.yaml`:
+
+```yaml
+integrations:
+  slack:
+    enabled: true
+    bot_token: "${SLACK_BOT_TOKEN}"
+    signing_secret: "${SLACK_SIGNING_SECRET}"
+    default_channel: "#tracertm-notifications"
+    notification_settings:
+      enabled: true
+      mention_users: true
+      thread_replies: true
+```
+
+### Environment Variables
+
+Store sensitive credentials in environment variables:
+
+```bash
+export SLACK_BOT_TOKEN="xoxb-your-bot-token-here"
+export SLACK_SIGNING_SECRET="your-signing-secret-here"
+export SLACK_APP_TOKEN="xapp-your-app-token"  # For Socket Mode
+```
+
+## Webhook Notifications
+
+### Setting Up Incoming Webhooks
+
+1. **Create Webhook URL**
+   - In Slack App settings, navigate to "Incoming Webhooks"
+   - Activate Incoming Webhooks
+   - Click "Add New Webhook to Workspace"
+   - Select the default channel (e.g., `#tracertm-notifications`)
+   - Copy the webhook URL
+
+2. **Configure in TracerTM**
+
+```yaml
+integrations:
+  slack:
+    webhooks:
+      default: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXX"
+      alerts: "https://hooks.slack.com/services/T00000000/B00000000/YYYYYYYYYYYY"
+      reports: "https://hooks.slack.com/services/T00000000/B00000000/ZZZZZZZZZZZZ"
+```
+
+### Webhook Notification Examples
+
+**Requirement Change Notification:**
+
+```python
+from tracertm.integrations.slack import SlackNotifier
+
+notifier = SlackNotifier()
+
+# Send requirement update
+notifier.send_message(
+    channel="#requirements",
+    text="Requirement Updated",
+    blocks=[
+        {
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": "📝 Requirement Updated"
+            }
+        },
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": f"*ID:*\n{req_id}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": f"*Project:*\n{project_name}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": f"*Status:*\n{status}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": f"*Modified By:*\n<@{user_id}>"
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"*Changes:*\n```{diff_summary}```"
+            }
+        },
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "View Details"
+                    },
+                    "url": f"https://tracertm.app/requirements/{req_id}",
+                    "style": "primary"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "View History"
+                    },
+                    "url": f"https://tracertm.app/requirements/{req_id}/history"
+                }
+            ]
+        }
+    ]
+)
+```
+
+**Coverage Alert:**
+
+```python
+# Low coverage warning
+notifier.send_message(
+    channel="#alerts",
+    text="Low Test Coverage Alert",
+    blocks=[
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "⚠️ *Test Coverage Below Threshold*"
+            }
+        },
+        {
+            "type": "section",
+            "fields": [
+                {"type": "mrkdwn", "text": f"*Project:*\n{project}"},
+                {"type": "mrkdwn", "text": f"*Coverage:*\n{coverage}%"},
+                {"type": "mrkdwn", "text": f"*Threshold:*\n{threshold}%"},
+                {"type": "mrkdwn", "text": f"*Gap:*\n{gap} requirements"}
+            ]
+        }
+    ]
+)
+```
+
+## Slash Commands
+
+### Registering Slash Commands
+
+1. **In Slack App Settings:**
+   - Navigate to "Slash Commands"
+   - Click "Create New Command"
+   - Configure each command:
+
+**Available Commands:**
+
+| Command | Description | Usage |
+|---------|-------------|-------|
+| `/tracertm status` | Show project status | `/tracertm status [project]` |
+| `/tracertm search` | Search requirements | `/tracertm search <query>` |
+| `/tracertm create` | Create new item | `/tracertm create <type> <title>` |
+| `/tracertm link` | Create traceability link | `/tracertm link <source> <target>` |
+| `/tracertm coverage` | Show coverage report | `/tracertm coverage [project]` |
+| `/tracertm matrix` | Generate matrix | `/tracertm matrix <project>` |
+
+2. **Configure Request URL:**
+   ```
+   https://your-tracertm-instance.com/api/v1/slack/commands
+   ```
+
+### Implementing Command Handlers
+
+**Python FastAPI Example:**
+
+```python
+from fastapi import FastAPI, Request, HTTPException
+from slack_sdk import WebClient
+from slack_sdk.signature import SignatureVerifier
+import hmac
+import hashlib
+
+app = FastAPI()
+slack_client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
+verifier = SignatureVerifier(os.getenv("SLACK_SIGNING_SECRET"))
+
+@app.post("/api/v1/slack/commands")
+async def handle_slack_command(request: Request):
+    # Verify request signature
+    body = await request.body()
+    timestamp = request.headers.get("X-Slack-Request-Timestamp")
+    signature = request.headers.get("X-Slack-Signature")
+
+    if not verifier.is_valid(body, timestamp, signature):
+        raise HTTPException(status_code=403, detail="Invalid signature")
+
+    # Parse command
+    form_data = await request.form()
+    command = form_data.get("command")
+    text = form_data.get("text", "")
+    user_id = form_data.get("user_id")
+    channel_id = form_data.get("channel_id")
+
+    # Route to handler
+    if command == "/tracertm":
+        return await handle_tracertm_command(text, user_id, channel_id)
+
+    return {"text": "Unknown command"}
+
+async def handle_tracertm_command(text: str, user_id: str, channel_id: str):
+    """Handle /tracertm command with subcommands"""
+    args = text.split()
+
+    if not args:
+        return {
+            "response_type": "ephemeral",
+            "text": "Available commands: status, search, create, link, coverage, matrix"
+        }
+
+    subcommand = args[0]
+
+    if subcommand == "status":
+        project = args[1] if len(args) > 1 else None
+        status_data = await get_project_status(project)
+
+        return {
+            "response_type": "in_channel",
+            "blocks": [
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": f"📊 Project Status: {status_data['name']}"
+                    }
+                },
+                {
+                    "type": "section",
+                    "fields": [
+                        {"type": "mrkdwn", "text": f"*Requirements:*\n{status_data['requirements']}"},
+                        {"type": "mrkdwn", "text": f"*Test Cases:*\n{status_data['tests']}"},
+                        {"type": "mrkdwn", "text": f"*Coverage:*\n{status_data['coverage']}%"},
+                        {"type": "mrkdwn", "text": f"*Status:*\n{status_data['status']}"}
+                    ]
+                }
+            ]
+        }
+
+    elif subcommand == "search":
+        query = " ".join(args[1:])
+        results = await search_items(query)
+
+        return {
+            "response_type": "ephemeral",
+            "blocks": format_search_results(results)
+        }
+
+    elif subcommand == "coverage":
+        project = args[1] if len(args) > 1 else None
+        coverage = await get_coverage_report(project)
+
+        # Upload detailed report as file
+        slack_client.files_upload_v2(
+            channel=channel_id,
+            file=generate_coverage_pdf(coverage),
+            filename=f"coverage_report_{project}.pdf",
+            initial_comment=f"Coverage report generated by <@{user_id}>"
+        )
+
+        return {
+            "response_type": "in_channel",
+            "text": f"Coverage report generated for {project}"
+        }
+
+    return {
+        "response_type": "ephemeral",
+        "text": f"Unknown subcommand: {subcommand}"
+    }
+```
+
+## Interactive Messages and Buttons
+
+### Creating Interactive Approval Workflows
+
+**Send Approval Request:**
+
+```python
+from slack_sdk.models.blocks import (
+    HeaderBlock, SectionBlock, ActionsBlock, ButtonElement
+)
+
+def send_approval_request(change_id: str, change_details: dict):
+    """Send interactive approval request for requirement changes"""
+
+    blocks = [
+        HeaderBlock(text="🔔 Approval Required"),
+        SectionBlock(
+            text=f"*Requirement Change:* {change_details['title']}\n"
+                 f"*Requested by:* <@{change_details['user_id']}>\n"
+                 f"*Impact:* {change_details['impact_level']}"
+        ),
+        SectionBlock(
+            text=f"```{change_details['description']}```"
+        ),
+        ActionsBlock(
+            elements=[
+                ButtonElement(
+                    text="✅ Approve",
+                    action_id=f"approve_{change_id}",
+                    style="primary",
+                    value=change_id
+                ),
+                ButtonElement(
+                    text="❌ Reject",
+                    action_id=f"reject_{change_id}",
+                    style="danger",
+                    value=change_id
+                ),
+                ButtonElement(
+                    text="💬 Comment",
+                    action_id=f"comment_{change_id}",
+                    value=change_id
+                )
+            ]
+        )
+    ]
+
+    slack_client.chat_postMessage(
+        channel="#approvals",
+        text="Approval Required",
+        blocks=blocks
+    )
+```
+
+**Handle Button Interactions:**
+
+```python
+@app.post("/api/v1/slack/interactions")
+async def handle_interactions(request: Request):
+    """Handle button clicks and interactive components"""
+
+    # Verify signature
+    body = await request.body()
+    if not verifier.is_valid_request(body, request.headers):
+        raise HTTPException(status_code=403)
+
+    # Parse payload
+    form_data = await request.form()
+    payload = json.loads(form_data.get("payload"))
+
+    action = payload["actions"][0]
+    action_id = action["action_id"]
+    user_id = payload["user"]["id"]
+    message_ts = payload["message"]["ts"]
+    channel_id = payload["channel"]["id"]
+
+    if action_id.startswith("approve_"):
+        change_id = action["value"]
+        await approve_change(change_id, user_id)
+
+        # Update message
+        slack_client.chat_update(
+            channel=channel_id,
+            ts=message_ts,
+            text="Change Approved",
+            blocks=[
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"✅ *Approved by <@{user_id}>*"
+                    }
+                }
+            ]
+        )
+
+    elif action_id.startswith("reject_"):
+        change_id = action["value"]
+        await reject_change(change_id, user_id)
+
+        slack_client.chat_update(
+            channel=channel_id,
+            ts=message_ts,
+            text="Change Rejected",
+            blocks=[
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"❌ *Rejected by <@{user_id}>*"
+                    }
+                }
+            ]
+        )
+
+    return {"ok": True}
+```
+
+## Channel Notifications Configuration
+
+### Channel Routing Rules
+
+Configure which notifications go to which channels:
+
+```yaml
+integrations:
+  slack:
+    channel_routing:
+      # Project-based routing
+      projects:
+        "project-alpha":
+          default: "#project-alpha"
+          alerts: "#project-alpha-alerts"
+          reports: "#project-alpha-reports"
+        "project-beta":
+          default: "#project-beta"
+          alerts: "#alerts"
+
+      # Event-based routing
+      events:
+        requirement_created: "#requirements"
+        requirement_updated: "#requirements"
+        test_case_failed: "#test-failures"
+        coverage_threshold_breach: "#alerts"
+        link_created: "#traceability"
+        compliance_issue: "#compliance"
+
+      # Default fallback
+      default_channel: "#tracertm-general"
+```
+
+**Dynamic Channel Selection:**
+
+```python
+class ChannelRouter:
+    """Route notifications to appropriate Slack channels"""
+
+    def __init__(self, config: dict):
+        self.config = config
+
+    def get_channel(self, event_type: str, project: str = None,
+                   severity: str = None) -> str:
+        """Determine target channel based on event context"""
+
+        # Project-specific routing
+        if project and project in self.config['projects']:
+            project_config = self.config['projects'][project]
+
+            if severity in ['critical', 'high']:
+                return project_config.get('alerts', project_config['default'])
+
+            return project_config['default']
+
+        # Event-based routing
+        if event_type in self.config['events']:
+            return self.config['events'][event_type]
+
+        # Severity-based routing
+        if severity in ['critical', 'high']:
+            return self.config.get('alert_channel', '#alerts')
+
+        return self.config['default_channel']
+```
+
+## Alert Routing by Severity
+
+### Severity-Based Notification Strategy
+
+```python
+from enum import Enum
+from typing import List, Optional
+
+class Severity(Enum):
+    INFO = "info"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+class AlertRouter:
+    """Route alerts based on severity and content"""
+
+    SEVERITY_CONFIG = {
+        Severity.CRITICAL: {
+            'channels': ['#alerts', '#on-call'],
+            'mention': '@channel',
+            'emoji': '🚨',
+            'color': '#FF0000',
+            'notify_users': True,
+            'create_incident': True
+        },
+        Severity.HIGH: {
+            'channels': ['#alerts'],
+            'mention': '@here',
+            'emoji': '⚠️',
+            'color': '#FFA500',
+            'notify_users': True
+        },
+        Severity.MEDIUM: {
+            'channels': ['#notifications'],
+            'emoji': '⚡',
+            'color': '#FFFF00',
+            'notify_users': False
+        },
+        Severity.LOW: {
+            'channels': ['#notifications'],
+            'emoji': 'ℹ️',
+            'color': '#36A64F',
+            'notify_users': False
+        },
+        Severity.INFO: {
+            'channels': ['#general'],
+            'emoji': '📌',
+            'color': '#0000FF',
+            'notify_users': False
+        }
+    }
+
+    async def send_alert(self, severity: Severity, title: str,
+                        details: dict, project: str = None):
+        """Send alert with appropriate routing and formatting"""
+
+        config = self.SEVERITY_CONFIG[severity]
+
+        # Build message blocks
+        blocks = [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": f"{config['emoji']} {title}"
+                }
+            },
+            {
+                "type": "section",
+                "fields": self._format_fields(details)
+            }
+        ]
+
+        # Add mention for high severity
+        if config.get('mention'):
+            blocks.insert(0, {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": config['mention']
+                }
+            })
+
+        # Send to all configured channels
+        for channel in config['channels']:
+            await slack_client.chat_postMessage(
+                channel=channel,
+                text=title,
+                blocks=blocks,
+                attachments=[{
+                    "color": config['color'],
+                    "fields": [
+                        {
+                            "title": "Severity",
+                            "value": severity.value.upper(),
+                            "short": True
+                        },
+                        {
+                            "title": "Project",
+                            "value": project or "N/A",
+                            "short": True
+                        }
+                    ]
+                }]
+            )
+
+        # Notify specific users for critical alerts
+        if config.get('notify_users') and severity in [Severity.CRITICAL, Severity.HIGH]:
+            await self._notify_on_call_users(title, details, project)
+```
+
+### Example Alert Scenarios
+
+```python
+# Critical: Compliance violation
+await alert_router.send_alert(
+    severity=Severity.CRITICAL,
+    title="Compliance Violation Detected",
+    details={
+        "requirement_id": "REQ-SEC-001",
+        "violation": "Untested security requirement",
+        "deadline": "2 days",
+        "risk": "Audit failure"
+    },
+    project="medical-device"
+)
+
+# High: Coverage drop
+await alert_router.send_alert(
+    severity=Severity.HIGH,
+    title="Test Coverage Drop Detected",
+    details={
+        "previous_coverage": "95%",
+        "current_coverage": "82%",
+        "drop": "13%",
+        "affected_requirements": 15
+    }
+)
+
+# Medium: Stale requirements
+await alert_router.send_alert(
+    severity=Severity.MEDIUM,
+    title="Stale Requirements Detected",
+    details={
+        "count": 8,
+        "last_updated": "6 months ago",
+        "project": "legacy-system"
+    }
+)
+```
+
+## Slack Workflow Integration
+
+### Using Workflow Builder with TracerTM
+
+**Create Automated Workflows:**
+
+1. **Daily Status Report Workflow**
+   ```
+   Trigger: Scheduled (Every weekday at 9 AM)
+   ↓
+   Action: Webhook to TracerTM API
+   POST https://tracertm.app/api/v1/reports/daily
+   ↓
+   Action: Send to channel (#daily-reports)
+   ```
+
+2. **Requirement Approval Workflow**
+   ```
+   Trigger: Reaction added (:eyes:) to message
+   ↓
+   Action: Webhook to create approval request
+   POST https://tracertm.app/api/v1/approvals/create
+   ↓
+   Action: Send approval buttons to approvers
+   ```
+
+### TracerTM API Endpoints for Workflows
+
+```python
+@app.post("/api/v1/workflows/slack/daily-report")
+async def generate_daily_report(request: SlackWorkflowRequest):
+    """Generate daily status report for Slack workflow"""
+
+    report = await generate_status_report(
+        project=request.project,
+        date=datetime.now()
+    )
+
+    return {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": f"📊 Daily Report - {report.date}"
+                }
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*New Requirements:*\n{report.new_requirements}"},
+                    {"type": "mrkdwn", "text": f"*Updated Tests:*\n{report.updated_tests}"},
+                    {"type": "mrkdwn", "text": f"*Coverage Change:*\n{report.coverage_delta}"},
+                    {"type": "mrkdwn", "text": f"*Open Issues:*\n{report.open_issues}"}
+                ]
+            },
+            {
+                "type": "divider"
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "*Top Activities:*\n" + "\n".join(
+                        f"• {activity}" for activity in report.top_activities
+                    )
+                }
+            }
+        ]
+    }
+```
+
+## Security Considerations
+
+### Request Verification
+
+Always verify Slack requests to prevent unauthorized access:
+
+```python
+import hmac
+import hashlib
+from time import time
+
+def verify_slack_request(request_body: bytes, timestamp: str,
+                        signature: str, signing_secret: str) -> bool:
+    """Verify request came from Slack"""
+
+    # Reject old requests (prevent replay attacks)
+    if abs(time() - int(timestamp)) > 60 * 5:  # 5 minutes
+        return False
+
+    # Compute expected signature
+    sig_basestring = f"v0:{timestamp}:{request_body.decode()}"
+    expected_signature = 'v0=' + hmac.new(
+        signing_secret.encode(),
+        sig_basestring.encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    # Compare signatures (constant-time comparison)
+    return hmac.compare_digest(expected_signature, signature)
+```
+
+### Token Management
+
+```python
+from cryptography.fernet import Fernet
+import os
+
+class TokenManager:
+    """Secure token storage and rotation"""
+
+    def __init__(self):
+        self.cipher = Fernet(os.getenv('ENCRYPTION_KEY'))
+
+    def encrypt_token(self, token: str) -> str:
+        """Encrypt Slack token for storage"""
+        return self.cipher.encrypt(token.encode()).decode()
+
+    def decrypt_token(self, encrypted_token: str) -> str:
+        """Decrypt stored token for use"""
+        return self.cipher.decrypt(encrypted_token.encode()).decode()
+
+    async def rotate_token(self, old_token: str, new_token: str):
+        """Rotate token with zero downtime"""
+        # Store new token
+        encrypted_new = self.encrypt_token(new_token)
+        await db.store_token('slack_bot_token_new', encrypted_new)
+
+        # Test new token
+        client = WebClient(token=new_token)
+        await client.auth_test()
+
+        # Activate new token
+        await db.activate_token('slack_bot_token')
+
+        # Archive old token
+        await db.archive_token('slack_bot_token_old', old_token)
+```
+
+### Rate Limiting
+
+Implement rate limiting to comply with Slack API limits:
+
+```python
+from ratelimit import limits, sleep_and_retry
+import asyncio
+
+class RateLimitedSlackClient:
+    """Slack client with built-in rate limiting"""
+
+    def __init__(self, token: str):
+        self.client = WebClient(token=token)
+        self.message_semaphore = asyncio.Semaphore(1)  # 1 per second
+
+    @sleep_and_retry
+    @limits(calls=1, period=1)  # Tier 2: 1 per second
+    async def send_message(self, channel: str, **kwargs):
+        """Rate-limited message sending"""
+        async with self.message_semaphore:
+            return await self.client.chat_postMessage(
+                channel=channel,
+                **kwargs
+            )
+
+    @sleep_and_retry
+    @limits(calls=20, period=60)  # Tier 3: 20 per minute
+    async def upload_file(self, **kwargs):
+        """Rate-limited file upload"""
+        return await self.client.files_upload_v2(**kwargs)
+```
+
+## Best Practices for Team Notifications
+
+### 1. Message Prioritization
+
+```python
+class NotificationPriority:
+    """Smart notification batching and prioritization"""
+
+    def __init__(self):
+        self.batch_queue = defaultdict(list)
+        self.immediate_threshold = Severity.HIGH
+
+    async def queue_notification(self, notification: dict):
+        """Queue or send notification based on priority"""
+
+        severity = notification.get('severity', Severity.INFO)
+
+        if severity.value >= self.immediate_threshold.value:
+            # Send immediately
+            await self.send_notification(notification)
+        else:
+            # Batch for later
+            channel = notification['channel']
+            self.batch_queue[channel].append(notification)
+
+    async def send_batched_notifications(self):
+        """Send batched notifications every 15 minutes"""
+        for channel, notifications in self.batch_queue.items():
+            if not notifications:
+                continue
+
+            # Group by type
+            grouped = self._group_notifications(notifications)
+
+            # Create digest
+            blocks = self._create_digest(grouped)
+
+            await slack_client.chat_postMessage(
+                channel=channel,
+                text=f"{len(notifications)} updates",
+                blocks=blocks
+            )
+
+        self.batch_queue.clear()
+```
+
+### 2. Thread Management
+
+Keep related notifications in threads to reduce channel noise:
+
+```python
+async def send_threaded_update(parent_message_id: str, update: dict):
+    """Send update as thread reply"""
+
+    await slack_client.chat_postMessage(
+        channel=update['channel'],
+        thread_ts=parent_message_id,
+        text=update['text'],
+        reply_broadcast=update.get('broadcast', False)  # Only broadcast important updates
+    )
+```
+
+### 3. User Mention Guidelines
+
+```python
+def should_mention_user(severity: Severity, user_role: str) -> bool:
+    """Determine if user should be mentioned"""
+
+    mention_rules = {
+        Severity.CRITICAL: ['on-call', 'lead', 'manager'],
+        Severity.HIGH: ['assignee', 'reviewer'],
+        Severity.MEDIUM: ['assignee'],
+        Severity.LOW: [],
+        Severity.INFO: []
+    }
+
+    return user_role in mention_rules.get(severity, [])
+```
+
+### 4. Quiet Hours
+
+Respect team work-life balance:
+
+```python
+from datetime import datetime, time
+import pytz
+
+def is_quiet_hours(timezone: str = 'UTC') -> bool:
+    """Check if current time is during quiet hours"""
+
+    tz = pytz.timezone(timezone)
+    current_time = datetime.now(tz).time()
+
+    # Quiet hours: 10 PM - 8 AM
+    quiet_start = time(22, 0)
+    quiet_end = time(8, 0)
+
+    if quiet_start <= current_time or current_time <= quiet_end:
+        return True
+
+    return False
+
+async def send_notification_smart(notification: dict):
+    """Send notification with quiet hours awareness"""
+
+    if is_quiet_hours() and notification['severity'] < Severity.CRITICAL:
+        # Queue for morning delivery
+        await queue_for_morning_digest(notification)
+    else:
+        await send_notification(notification)
+```
+
+### 5. Notification Templates
+
+Create reusable templates for consistency:
+
+```python
+TEMPLATES = {
+    'requirement_change': {
+        'emoji': '📝',
+        'fields': ['id', 'title', 'status', 'assignee'],
+        'actions': ['view', 'edit', 'history']
+    },
+    'test_failure': {
+        'emoji': '❌',
+        'fields': ['test_id', 'requirement', 'error', 'logs'],
+        'actions': ['view_logs', 'rerun', 'assign']
+    },
+    'coverage_report': {
+        'emoji': '📊',
+        'fields': ['coverage', 'delta', 'uncovered', 'trend'],
+        'actions': ['view_report', 'download_pdf']
+    }
+}
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**1. Messages Not Appearing**
+- Verify bot is invited to channel: `/invite @TracerTM`
+- Check bot token scopes include `chat:write`
+- Ensure webhook URL is correct and accessible
+
+**2. Slash Commands Not Working**
+- Verify request URL is HTTPS
+- Check signature verification logic
+- Ensure commands are responding within 3 seconds
+
+**3. Interactive Buttons Not Responding**
+- Verify interactivity endpoint is configured
+- Check that action_ids are unique
+- Ensure handler responds within 3 seconds
+
+**4. Rate Limit Errors**
+- Implement exponential backoff
+- Batch similar notifications
+- Use Slack's recommended rate limits
+
+### Debug Mode
+
+Enable debug logging for troubleshooting:
+
+```python
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+slack_logger = logging.getLogger('slack_sdk')
+slack_logger.setLevel(logging.DEBUG)
+```
+
+## Related Resources
+
+- [Slack API Documentation](https://api.slack.com/docs)
+- [Block Kit Builder](https://app.slack.com/block-kit-builder)
+- [TracerTM API Reference](/docs/api-reference)
+- [Webhook Configuration](/docs/wiki/concepts/integrations/webhooks)
+- [Authentication & Security](/docs/wiki/concepts/security)

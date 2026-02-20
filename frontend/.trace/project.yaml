@@ -1,0 +1,12 @@
+counters:
+  epic: 3
+  story: 17
+  file: 10
+  screen: 5
+description: React-based frontend application with modern UI components and design
+  system
+name: Frontend Application
+settings:
+  default_priority: medium
+  default_status: todo
+version: 1.0.0

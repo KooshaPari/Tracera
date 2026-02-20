@@ -1,0 +1,268 @@
+# Pre-commit hooks configuration - OPTIMIZED FOR SPEED (<5s target)
+# Install: pre-commit install
+# Run manually: pre-commit run --all-files
+# Update: pre-commit autoupdate
+#
+# PERFORMANCE NOTES:
+# - Slow checks (ty, semgrep, interrogate, pytest) moved to CI
+# - Fast linting/formatting kept in pre-commit with STRICT configs
+# - Parallel execution enabled
+# - File filtering optimized for changed files only
+#
+# PHASE 1 LINTING INTEGRATION:
+# - Python: Ruff with complexity rules (C90, PLR) - FAST
+# - Frontend: oxlint with standard config (AI-strict in CI) - FAST
+# - Go: gofmt only (golangci-lint 7 new linters in CI) - FAST
+#
+# FR REFERENCE VALIDATION:
+# - Validates FR/ADR/Epic references in code match master docs
+# - Run manually: python scripts/python/verify_fr_references.py --git-staged
+# - Script: scripts/python/verify_fr_references.py
+# - Checks: FUNCTIONAL_REQUIREMENTS.md, PRD.md, docs/adr/*.md
+
+repos:
+  # ============================================================================
+  # FAST CHECKS - Run locally on every commit (target: <5s)
+  # ============================================================================
+
+  # Ruff - Lightning-fast linting and formatting (Python)
+  # Uses pyproject.toml config with complexity rules (C90, PLR)
+  # Note: Output format defaults to text (grouped by file for easy processing)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix, --output-format=grouped]
+        # Complexity limits from pyproject.toml:
+        # - McCabe max-complexity: 7
+        # - max-args: 5, max-branches: 12, max-returns: 6, max-statements: 50
+        # Output: grouped by file for easy processing by agents
+        pass_filenames: true
+      - id: ruff-format
+        # Strict format: double quotes, 4-space indent, trailing commas
+        pass_filenames: true
+
+  # Basic file quality checks (very fast)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        pass_filenames: true
+      - id: end-of-file-fixer
+        pass_filenames: true
+      - id: check-yaml
+        pass_filenames: true
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+        pass_filenames: true
+      - id: check-merge-conflict
+        pass_filenames: true
+      - id: debug-statements
+        pass_filenames: true
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+        pass_filenames: true
+
+  # Unused imports and variables (fast cleanup)
+  - repo: https://github.com/hadialqattan/pycln
+    rev: v2.2.2
+    hooks:
+      - id: pycln
+        args: [--all]
+        pass_filenames: true
+
+  # YAML/JSON/Markdown formatting (fast)
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+        types_or: [yaml, json, markdown]
+        pass_filenames: true
+        # Only check changed files
+        files: \.(ya?ml|json|md)$
+
+  # Go - format only (fast, lint moved to CI)
+  - repo: local
+    hooks:
+      - id: gofmt
+        name: gofmt (backend)
+        entry: gofmt -s -w
+        language: system
+        types: [go]
+        files: ^backend/
+        pass_filenames: true
+
+  # Quality Guards - naming explosion + file LOC limits (strict, fast-ish)
+  - repo: local
+    hooks:
+      - id: generated-contracts
+        name: generated contracts (OpenAPI + SDKs)
+        entry: bash scripts/shell/check-generated-contracts.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: loc-guard
+        name: file LOC guard
+        entry: bash scripts/shell/check-file-loc.sh
+        language: system
+        pass_filenames: false
+      - id: naming-explosion-python
+        name: naming explosion (python)
+        entry: bash scripts/shell/check-naming-explosion-python.sh
+        language: system
+        pass_filenames: false
+      - id: naming-explosion-go
+        name: naming explosion (go)
+        entry: bash scripts/shell/check-naming-explosion-go.sh
+        language: system
+        pass_filenames: false
+      - id: naming-explosion-frontend
+        name: naming explosion (frontend)
+        entry: bash -c 'cd frontend && bash scripts/check-naming-explosion.sh'
+        language: system
+      - id: routes-entrypoints
+        name: routes entrypoint guard
+        entry: bash scripts/shell/check-route-entrypoints.sh
+        language: system
+        pass_filenames: false
+
+  # Block new linter suppressions (fast)
+  - repo: local
+    hooks:
+      - id: no-new-suppressions
+        name: block new linter suppressions
+        entry: bash
+        args:
+          - -c
+          - |
+            if git diff --cached --diff-filter=ACM -U0 | grep -E "^\+" | grep -v "^(\+\+\+)" | grep -qE "(# noqa|# nolint|eslint-disable|@ts-ignore)"; then
+              echo "ERROR: New linter suppressions detected. Fix the code instead."
+              exit 1
+            else
+              exit 0
+            fi
+        language: system
+        pass_filenames: false
+
+  # Frontend - oxlint (fast, strict linting)
+  # Uses standard .oxlintrc.json (AI-strict config moved to CI)
+  - repo: local
+    hooks:
+      - id: oxlint-frontend
+        name: oxlint (frontend - standard config)
+        entry: bash -c 'cd frontend && bun run lint'
+        language: system
+        pass_filenames: false
+        files: ^frontend/.*\.(js|ts|tsx|jsx|mjs|cjs)$
+        # Standard config includes:
+        # - TypeScript strict rules
+        # - Complexity limits (max 50 lines/fn, max 3 params, depth 3)
+        # - React performance checks
+        # - Import/circular dependency detection
+
+  # Frontend - oxfmt (fast format)
+  - repo: local
+    hooks:
+      - id: oxfmt-frontend
+        name: oxfmt (frontend - format only)
+        entry: bash -c 'cd frontend && bun run format'
+        language: system
+        pass_filenames: false
+        files: ^frontend/.*\.(js|ts|tsx|jsx|json|mjs|cjs)$
+
+  # Desktop app - oxlint (fast lint)
+  - repo: local
+    hooks:
+      - id: oxlint-desktop
+        name: oxlint (desktop app)
+        entry: bash -c 'cd frontend/apps/desktop && bun x oxlint -c .oxlintrc.json .'
+        language: system
+        pass_filenames: false
+        files: ^frontend/apps/desktop/.*\.(js|ts|tsx|jsx|mjs|cjs)$
+
+  # Quick coverage check on staged frontend files
+  - repo: local
+    hooks:
+      - id: vitest-changed
+        name: vitest (changed files only)
+        entry: bash -c 'cd frontend && bun run vitest --changed --run 2>/dev/null || true'
+        language: system
+        pass_filenames: false
+        files: ^frontend/.*\.(ts|tsx)$
+        stages: [pre-push]
+
+  # Verify FR/ADR/Epic references in code (fast validation)
+  # This hook validates that all FR/ADR/Epic IDs in docstrings exist in master docs
+  # - Extracts FR-XXX-YYY, ADR-NNN, E1.2.3 from docstrings
+  # - Validates against FUNCTIONAL_REQUIREMENTS.md, PRD.md, docs/adr/
+  # - Fails on invalid ID (e.g., FR-XXX-999 that doesn't exist)
+  # - Warns if new service/API file has no FR reference
+  # Run manually: python scripts/python/verify_fr_references.py --git-staged
+  - repo: local
+    hooks:
+      - id: verify-fr-references
+        name: Verify FR/ADR references in code
+        entry: python scripts/python/verify_fr_references.py
+        language: system
+        files: '\.(py|go|ts|tsx)$'
+        pass_filenames: true
+        stages: [pre-commit]
+
+# ============================================================================
+# SLOW CHECKS - MOVED TO CI ONLY (See .github/workflows/quality.yml)
+# ============================================================================
+# The following checks are now CI-only for better developer experience:
+# - Ty (type checking) - runs in CI quality.yml
+# - Bandit (security) - runs in CI quality.yml
+# - Semgrep (security) - runs in CI quality.yml
+# - Interrogate (docstring coverage) - runs in CI quality.yml
+# - Tach (architecture boundaries) - runs in CI quality.yml
+# - golangci-lint (7 new linters: dupl, goconst, funlen, mnd, nolintlint,
+#   gochecknoglobals, perfsprint) - runs in CI ci.yml
+# - oxlint AI-strict config (max strictness) - runs in CI quality.yml
+# - pytest (tests) - runs in CI ci.yml and tests.yml
+#
+# Run these manually when needed:
+#   uv run ty check src/ --error-on-warning
+#   uv run bandit -r src/
+#   semgrep --config=p/security-audit src/
+#   uv run interrogate -vv src/
+#   uv run tach check
+#   cd backend && golangci-lint run
+#   cd frontend && bun oxlint -c .oxlintrc.json.ai-strict
+#   pytest
+# ============================================================================
+
+# Global settings
+default_language_version:
+  python: python3.12
+
+# Exclude patterns (optimized for performance)
+exclude: |
+  (?x)^(
+    \.venv/|
+    venv/|
+    __pycache__/|
+    \.pytest_cache/|
+    \.mypy_cache/|
+    \.ruff_cache/|
+    \.git/|
+    \.github/|
+    build/|
+    dist/|
+    \.egg-info/|
+    node_modules/|
+    \.next/|
+    coverage/|
+    htmlcov/|
+    .*\.lock$|
+    .*\.log$
+  )
+
+# Performance optimizations
+default_stages: [pre-commit]
+fail_fast: true  # Stop on first error for faster feedback
+minimum_pre_commit_version: 2.15.0
+
+# Parallel execution (enabled by default in pre-commit v3.0+)
+# This will run independent hooks in parallel automatically

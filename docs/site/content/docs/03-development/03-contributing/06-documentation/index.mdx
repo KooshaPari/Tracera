@@ -1,0 +1,200 @@
+---
+title: "Contributing: Documentation"
+description: "Doc standards for contributions."
+---
+
+## Documentation Standards
+
+All documentation contributions must follow these standards to maintain clarity, consistency, and usability across the project.
+
+## When to Update Documentation
+
+Update documentation when you:
+
+- **Add or modify features:** Update relevant feature docs and API references
+- **Change behavior:** Document the impact on users and provide migration guidance
+- **Fix bugs:** Add test cases and explanations to prevent regressions
+- **Improve performance:** Document optimization techniques and trade-offs
+- **Update dependencies:** Document version requirements and compatibility notes
+- **Create new examples:** Share patterns and best practices
+
+## Documentation Format
+
+### File Organization
+
+```
+docs-site/content/docs/
+├── 00-getting-started/         # For new users
+├── 01-wiki/                    # Core concepts and guides
+├── 02-api-reference/           # API and CLI reference
+├── 03-development/             # For contributors
+└── 04-changelog/              # Release notes
+```
+
+### MDX File Structure
+
+Every MDX file must include:
+
+1. **Frontmatter** - Title and description
+2. **H2 Headings** - Main sections
+3. **H3 Headings** - Subsections
+4. **Code blocks** - With language syntax highlighting
+5. **Links** - Internal and external references
+
+```markdown
+---
+title: "Feature Name"
+description: "Brief description of what users will learn."
+---
+
+## Overview
+Introduce the feature and its use cases.
+
+## Getting Started
+Step-by-step setup instructions.
+
+## Examples
+Concrete code examples showing common patterns.
+
+## See Also
+- [Related page](/docs/path)
+- [External resource](https://example.com)
+```
+
+## Content Guidelines
+
+### Examples and Edge Cases
+
+Every feature page must include:
+
+- **Basic example:** Simplest usage pattern
+- **Advanced example:** Complex use case
+- **Edge cases:** Unusual scenarios and limitations
+- **Error handling:** Common errors and solutions
+
+### Code Quality
+
+Code examples must be:
+
+- **Executable:** Users should be able to copy and run examples
+- **Tested:** Examples are tested as part of CI/CD
+- **Documented:** Inline comments explain non-obvious parts
+- **Safe:** Examples handle errors gracefully
+- **Current:** Use latest stable API versions
+
+### Clarity and Brevity
+
+- Use short, clear sections (keep paragraphs to 3-4 sentences)
+- Avoid jargon without explanation
+- Use bullet points for lists
+- Add visual separators with headings
+- Link to related topics instead of repeating content
+
+## Style Guide
+
+### Headings
+
+```markdown
+# Page Title (auto-generated from frontmatter)
+## Main Section
+### Subsection
+#### Sub-subsection (avoid if possible)
+```
+
+### Links
+
+Internal links:
+```markdown
+[Link text](/docs/section/page)
+```
+
+External links:
+```markdown
+[External docs](https://example.com)
+```
+
+### Code Blocks
+
+Always specify language:
+
+```bash
+# Bash
+trace artifacts list --project my-project
+```
+
+```python
+# Python
+from tracertm import Client
+client = Client(api_key="...")
+```
+
+```typescript
+// TypeScript
+import { TraceClient } from "@tracertm/sdk";
+const client = new TraceClient();
+```
+
+### Lists
+
+Use hyphens for unordered lists:
+
+```markdown
+- First item
+- Second item
+- Third item
+```
+
+Use numbers for sequences:
+
+```markdown
+1. First step
+2. Second step
+3. Third step
+```
+
+## Technical Documentation
+
+### API Documentation
+
+Include for every endpoint:
+
+- **Description:** What the endpoint does
+- **HTTP Method and Path:** `GET /api/items/{id}`
+- **Authentication:** Required auth method
+- **Parameters:** All query/path/body parameters
+- **Response:** Example response with schema
+- **Errors:** Possible error codes and messages
+
+### Configuration Documentation
+
+Include for every config option:
+
+- **Name:** Exact config key
+- **Type:** string, number, boolean, object
+- **Default:** Default value if applicable
+- **Description:** What this option does
+- **Example:** Practical configuration example
+- **Related:** Links to related options
+
+## Review Checklist
+
+Before submitting a PR with documentation changes:
+
+- [ ] Spelling and grammar are correct
+- [ ] All code examples are executable
+- [ ] Links to other docs are valid
+- [ ] Headings follow consistent style
+- [ ] Tables are well-formatted
+- [ ] No hardcoded version numbers (use variables)
+- [ ] Technical accuracy verified
+- [ ] Examples tested locally
+
+## Common Mistakes to Avoid
+
+- Don't include version numbers in prose (use variables)
+- Don't reference outdated tools or dependencies
+- Don't assume user knowledge without explanation
+- Don't repeat content from other pages (link instead)
+- Don't include sensitive information (keys, tokens, etc.)
+- Don't write very long paragraphs (break them up)
+- Don't skip important edge cases or limitations

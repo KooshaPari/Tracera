@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/progress.py
+# hypothesis_version: 6.148.7
+
+[', ', '--days', '--interval', '--item', '--json', '--limit', '--view', '-d', '-i', '-l', '-v', 'Blocked By', 'Days Stalled', 'Item', 'Last Updated', 'N/A', 'Output as JSON', 'Status', 'blocked', 'blockers', 'by_status', 'current_project_id', 'daily', 'days_stalled', 'dim', 'green', 'last_updated', 'red', 'report', 'show', 'stalled', 'status', 'storage_dir', 'title', 'track', 'velocity', 'yellow']

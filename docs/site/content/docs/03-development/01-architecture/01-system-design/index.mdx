@@ -1,0 +1,164 @@
+---
+title: "System Design"
+description: "High-level system architecture and design of TraceRTM"
+keywords: [architecture, system design, design, structure]
+---
+
+# System Design
+
+High-level architecture and design principles of TraceRTM.
+
+## Architecture Overview
+
+### Layered Architecture
+
+```
+┌─────────────────────────────────────┐
+│      Client Layer                  │
+│  (CLI, TUI, Web UI, Desktop)      │
+└──────────────┬──────────────────────┘
+               │
+┌──────────────▼──────────────────────┐
+│      API Layer (FastAPI)           │
+│  (REST Endpoints, Validation)       │
+└──────────────┬──────────────────────┘
+               │
+┌──────────────▼──────────────────────┐
+│      Service Layer                 │
+│  (Business Logic, Orchestration)   │
+└──────────────┬──────────────────────┘
+               │
+┌──────────────▼──────────────────────┐
+│      Repository Layer              │
+│  (Data Access, Abstraction)        │
+└──────────────┬──────────────────────┘
+               │
+┌──────────────▼──────────────────────┐
+│      Database Layer                │
+│  (PostgreSQL, Redis)               │
+└─────────────────────────────────────┘
+```
+
+## Core Principles
+
+### 1. Separation of Concerns
+
+- **API Layer**: HTTP handling, validation
+- **Service Layer**: Business logic
+- **Repository Layer**: Data access
+- **Database Layer**: Data persistence
+
+### 2. Dependency Injection
+
+```python
+# Services depend on abstractions, not implementations
+class ItemService:
+    def __init__(self, repo: ItemRepository, event_bus: EventBus):
+        self.repo = repo
+        self.event_bus = event_bus
+```
+
+### 3. Event-Driven Architecture
+
+```python
+# Loose coupling through events
+item_service.create(data)
+  → publishes "item.created" event
+  → notification service handles event
+  → search service indexes item
+```
+
+## Technology Stack
+
+### Backend
+
+- **FastAPI**: Web framework
+- **SQLAlchemy**: ORM
+- **PostgreSQL**: Primary database
+- **Redis**: Caching (optional)
+- **Alembic**: Migrations
+
+### Frontend
+
+- **Next.js**: React framework
+- **TypeScript**: Type safety
+- **Tailwind CSS**: Styling
+- **Fumadocs**: Documentation
+
+### CLI/TUI
+
+- **Python**: Runtime
+- **Click**: CLI framework
+- **Textual**: TUI framework
+
+## Design Patterns
+
+### Repository Pattern
+
+```python
+# Abstract data access
+class ItemRepository:
+    async def get_by_id(self, id: str) -> Item:
+        pass
+    
+    async def create(self, data: dict) -> Item:
+        pass
+```
+
+### Service Pattern
+
+```python
+# Encapsulate business logic
+class ItemService:
+    def __init__(self, repo: ItemRepository):
+        self.repo = repo
+    
+    async def create(self, data: dict) -> Item:
+        # Business logic
+        validate(data)
+        # Data access
+        return await self.repo.create(data)
+```
+
+### Event Bus Pattern
+
+```python
+# Decoupled communication
+event_bus.publish("item.created", data)
+  → handlers process event asynchronously
+```
+
+## Scalability
+
+### Horizontal Scaling
+
+- Stateless API servers
+- Database read replicas
+- Redis for shared cache
+- Load balancer
+
+### Vertical Scaling
+
+- Increase instance size
+- Optimize database queries
+- Add caching layers
+
+## Security
+
+### Authentication
+
+- JWT tokens
+- API keys
+- OAuth 2.0
+
+### Authorization
+
+- Role-based access control
+- Scope-based permissions
+- Resource-level permissions
+
+## Related Documentation
+
+- [Components](./03-components) - System components
+- [Request Flow](./02a-request-flow) - Request processing
+- [Data Flow](./02-data-flow) - Data flow patterns

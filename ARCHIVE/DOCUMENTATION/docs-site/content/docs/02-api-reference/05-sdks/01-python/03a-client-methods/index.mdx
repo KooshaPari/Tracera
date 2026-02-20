@@ -1,0 +1,514 @@
+---
+title: "Client Methods"
+description: "Detailed documentation of all TraceRTM Python SDK client methods"
+---
+
+# Client Methods
+
+Comprehensive documentation of all methods available on the TraceRTM Python SDK client.
+
+## Client Configuration
+
+### TraceRTMClient
+
+```python
+from tracertm import TraceRTMClient
+
+# Basic initialization
+client = TraceRTMClient()
+
+# Full configuration
+client = TraceRTMClient(
+    api_key="rtm_live_sk_...",
+    base_url="https://api.tracertm.dev/v1",
+    timeout=30.0,
+    max_retries=3,
+    retry_delay=1.0,
+    headers={"X-Custom-Header": "value"},
+    verify_ssl=True
+)
+```
+
+### Client Properties
+
+```python
+# Get current configuration
+print(client.base_url)
+print(client.timeout)
+
+# Check authentication
+print(client.is_authenticated)
+
+# Get rate limit info (after a request)
+print(client.rate_limit_remaining)
+print(client.rate_limit_reset)
+```
+
+---
+
+## Projects API
+
+### list()
+
+List all accessible projects.
+
+```python
+# Basic list
+projects = client.projects.list()
+
+# With pagination
+projects = client.projects.list(
+    limit=20,
+    offset=0
+)
+
+# With sorting
+projects = client.projects.list(
+    sort="created_at",
+    order="desc"
+)
+
+# Iterate all projects
+for project in client.projects.iterate():
+    print(project.name)
+```
+
+**Parameters:**
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `limit` | `int` | `50` | Maximum results per page (1-100) |
+| `offset` | `int` | `0` | Number of results to skip |
+| `sort` | `str` | `"name"` | Sort field: `name`, `created_at`, `updated_at` |
+| `order` | `str` | `"asc"` | Sort order: `asc`, `desc` |
+
+### get()
+
+Retrieve a single project.
+
+```python
+project = client.projects.get("proj_abc123")
+
+# Access properties
+print(project.name)
+print(project.key)
+print(project.description)
+print(project.created_at)
+```
+
+### create()
+
+Create a new project.
+
+```python
+project = client.projects.create(
+    name="My New Project",
+    key="MYNEW",
+    description="Project description",
+    workflow_id="wf_default",
+    settings={
+        "allow_public_access": False,
+        "default_item_type": "requirement"
+    }
+)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `name` | `str` | Yes | Project name |
+| `key` | `str` | Yes | Unique project key (2-10 chars, uppercase) |
+| `description` | `str` | No | Project description |
+| `workflow_id` | `str` | No | Workflow to use for items |
+| `settings` | `dict` | No | Project settings |
+
+### update()
+
+Update an existing project.
+
+```python
+project = client.projects.update(
+    "proj_abc123",
+    name="Updated Name",
+    description="Updated description"
+)
+```
+
+### delete()
+
+Delete a project.
+
+```python
+client.projects.delete("proj_abc123")
+```
+
+---
+
+## Items API
+
+### list()
+
+List items with filtering.
+
+```python
+# Basic list
+items = client.items.list(project_id="proj_abc123")
+
+# With filters
+items = client.items.list(
+    project_id="proj_abc123",
+    type="requirement",
+    status="approved",
+    assignee_id="user_123",
+    tags=["security"],
+    search="authentication"
+)
+
+# With date filters
+from datetime import datetime, timedelta
+
+items = client.items.list(
+    project_id="proj_abc123",
+    created_after=datetime.now() - timedelta(days=7),
+    created_before=datetime.now()
+)
+
+# With includes
+items = client.items.list(
+    project_id="proj_abc123",
+    include=["links", "history"]
+)
+```
+
+**Filter Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `project_id` | `str` | Required. Project ID |
+| `type` | `str` | Filter by item type |
+| `status` | `str` | Filter by status |
+| `assignee_id` | `str` | Filter by assignee |
+| `created_by` | `str` | Filter by creator |
+| `tags` | `list[str]` | Filter by tags (AND logic) |
+| `search` | `str` | Full-text search |
+| `created_after` | `datetime` | Created after date |
+| `created_before` | `datetime` | Created before date |
+| `updated_after` | `datetime` | Updated after date |
+| `updated_before` | `datetime` | Updated before date |
+| `parent_id` | `str` | Filter by parent item |
+| `has_links` | `bool` | Filter items with/without links |
+
+**Include Options:**
+
+| Value | Description |
+|-------|-------------|
+| `links` | Include linked items |
+| `history` | Include change history |
+| `artifacts` | Include file attachments |
+| `comments` | Include comments |
+
+### get()
+
+Get a single item.
+
+```python
+item = client.items.get("item_abc123")
+
+# With related data
+item = client.items.get(
+    "item_abc123",
+    include=["links", "history", "artifacts", "comments"]
+)
+
+# Access properties
+print(item.title)
+print(item.type)
+print(item.status)
+print(item.fields.get("acceptance_criteria"))
+
+# Access related data (when included)
+for link in item.links or []:
+    print(f"Linked to: {link.target_id}")
+```
+
+### create()
+
+Create a new item.
+
+```python
+# Create requirement
+requirement = client.items.create(
+    project_id="proj_abc123",
+    type="requirement",
+    title="User Authentication",
+    description="Users must authenticate before accessing the system",
+    priority="high",
+    tags=["security", "auth"],
+    fields={
+        "acceptance_criteria": "User can log in with email and password",
+        "business_value": 9
+    }
+)
+
+# Create test case
+test_case = client.items.create(
+    project_id="proj_abc123",
+    type="test_case",
+    title="Verify Login Success",
+    fields={
+        "preconditions": "User account exists",
+        "steps": [
+            {"step": 1, "action": "Navigate to login page", "expected": "Login form displayed"},
+            {"step": 2, "action": "Enter credentials", "expected": "Fields accept input"},
+            {"step": 3, "action": "Click login", "expected": "User logged in"}
+        ]
+    }
+)
+
+# Create with parent
+child = client.items.create(
+    project_id="proj_abc123",
+    type="requirement",
+    title="Password Requirements",
+    parent_id="item_req_001"
+)
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `project_id` | `str` | Yes | Project ID |
+| `type` | `str` | Yes | Item type |
+| `title` | `str` | Yes | Item title |
+| `description` | `str` | No | Item description |
+| `status` | `str` | No | Initial status |
+| `priority` | `str` | No | Priority level |
+| `assignee_id` | `str` | No | Assignee user ID |
+| `due_date` | `date` | No | Due date |
+| `tags` | `list[str]` | No | Item tags |
+| `fields` | `dict` | No | Custom field values |
+| `parent_id` | `str` | No | Parent item ID |
+
+### update()
+
+Update an existing item.
+
+```python
+item = client.items.update(
+    "item_abc123",
+    title="Updated Title",
+    description="Updated description",
+    status="in_review",
+    assignee_id="user_456"
+)
+
+# Update custom fields
+item = client.items.update(
+    "item_abc123",
+    fields={
+        "acceptance_criteria": "Updated criteria",
+        "business_value": 10
+    }
+)
+
+# Add tags (merge with existing)
+item = client.items.update(
+    "item_abc123",
+    add_tags=["new-tag"]
+)
+
+# Remove tags
+item = client.items.update(
+    "item_abc123",
+    remove_tags=["old-tag"]
+)
+```
+
+### delete()
+
+Delete an item.
+
+```python
+client.items.delete("item_abc123")
+```
+
+### bulk_create()
+
+Create multiple items in one request.
+
+```python
+results = client.items.bulk_create([
+    {
+        "project_id": "proj_abc123",
+        "type": "requirement",
+        "title": "Requirement 1"
+    },
+    {
+        "project_id": "proj_abc123",
+        "type": "requirement",
+        "title": "Requirement 2"
+    }
+])
+
+for result in results:
+    if result.success:
+        print(f"Created: {result.item.id}")
+    else:
+        print(f"Failed: {result.error}")
+```
+
+### bulk_update()
+
+Update multiple items in one request.
+
+```python
+results = client.items.bulk_update([
+    {"id": "item_1", "status": "approved"},
+    {"id": "item_2", "status": "approved"}
+])
+```
+
+### bulk_delete()
+
+Delete multiple items.
+
+```python
+results = client.items.bulk_delete(["item_1", "item_2", "item_3"])
+```
+
+### transition()
+
+Execute a workflow transition.
+
+```python
+item = client.items.transition(
+    "item_abc123",
+    transition="approve",
+    comment="Approved after review"
+)
+```
+
+### available_transitions()
+
+Get available transitions for an item.
+
+```python
+transitions = client.items.available_transitions("item_abc123")
+
+for t in transitions:
+    print(f"{t.name}: {t.from_state} -> {t.to_state}")
+```
+
+---
+
+## Links API
+
+### list()
+
+List links with filtering.
+
+```python
+# List all links in a project
+links = client.links.list(project_id="proj_abc123")
+
+# List links for a specific item
+links = client.links.list(source_id="item_abc123")
+links = client.links.list(target_id="item_abc123")
+
+# Filter by link type
+links = client.links.list(
+    project_id="proj_abc123",
+    type="verified_by"
+)
+```
+
+### get()
+
+Get a specific link.
+
+```python
+link = client.links.get("link_abc123")
+```
+
+### create()
+
+Create a link between items.
+
+```python
+link = client.links.create(
+    source_id="item_req_001",
+    target_id="item_tc_001",
+    type="verified_by",
+    description="Test verifies requirement"
+)
+```
+
+**Link Types:**
+
+| Type | Description |
+|------|-------------|
+| `traces_to` | Generic traceability |
+| `verified_by` | Item is verified by target |
+| `implements` | Item implements target |
+| `parent_of` | Hierarchical parent |
+| `relates_to` | Related items |
+| `depends_on` | Dependency relationship |
+| `duplicates` | Duplicate items |
+| `blocks` | Blocking relationship |
+
+### delete()
+
+Delete a link.
+
+```python
+client.links.delete("link_abc123")
+```
+
+### bulk_create()
+
+Create multiple links.
+
+```python
+results = client.links.bulk_create([
+    {"source_id": "item_1", "target_id": "item_2", "type": "traces_to"},
+    {"source_id": "item_1", "target_id": "item_3", "type": "verified_by"}
+])
+```
+
+---
+
+## Iteration Methods
+
+All list methods support automatic pagination through iterators:
+
+```python
+# Iterate all items (handles pagination automatically)
+for item in client.items.iterate(project_id="proj_abc123"):
+    print(item.title)
+
+# Iterate with filters
+for item in client.items.iterate(
+    project_id="proj_abc123",
+    type="requirement",
+    status="approved"
+):
+    process_requirement(item)
+
+# Iterate projects
+for project in client.projects.iterate():
+    print(project.name)
+
+# Iterate links
+for link in client.links.iterate(project_id="proj_abc123"):
+    print(f"{link.source_id} -> {link.target_id}")
+```
+
+---
+
+## Related Documentation
+
+- [API Reference](/docs/api-reference/sdks/python/api-reference) - Overview
+- [Models](/docs/api-reference/sdks/python/models) - Data types
+- [Async Client](/docs/api-reference/sdks/python/async) - Async operations

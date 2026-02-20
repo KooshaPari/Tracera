@@ -1,0 +1,72 @@
+---
+title: "JavaScript SDK Installation"
+description: "Install and set up the TraceRTM JavaScript/TypeScript SDK"
+keywords: [javascript, typescript, sdk, installation, npm, node]
+---
+
+# JavaScript SDK Installation
+
+The TraceRTM JavaScript SDK provides a TypeScript-first interface to the TraceRTM API for Node.js and browser environments.
+
+## Installation
+
+### Using npm
+
+```bash
+npm install @tracertm/sdk
+```
+
+### Using yarn
+
+```bash
+yarn add @tracertm/sdk
+```
+
+### Using pnpm
+
+```bash
+pnpm add @tracertm/sdk
+```
+
+## Requirements
+
+- Node.js 18.0 or higher
+- npm 9.0 or higher (or yarn/pnpm)
+
+## TypeScript Support
+
+The SDK includes full TypeScript definitions:
+
+```typescript
+import { TraceRTM } from '@tracertm/sdk';
+
+const client = new TraceRTM({
+  apiKey: 'rtm_live_abc123...'
+});
+```
+
+## Verify Installation
+
+```javascript
+const { TraceRTM } = require('@tracertm/sdk');
+console.log(TraceRTM.VERSION);
+```
+
+## Quick Start
+
+```javascript
+import { TraceRTM } from '@tracertm/sdk';
+
+const client = new TraceRTM({
+  apiKey: process.env.TRACERTM_API_KEY
+});
+
+// List projects
+const projects = await client.projects.list();
+console.log(projects);
+```
+
+## Next Steps
+
+- [Quickstart](./02-quickstart) - Get started quickly
+- [Authentication](./03-authentication) - Set up authentication

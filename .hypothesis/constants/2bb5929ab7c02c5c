@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/plugin_service.py
+# hypothesis_version: 6.148.7
+
+['by_type', 'custom', 'disabled', 'enabled', 'error', 'export_format', 'link_type', 'query_filter', 'total_hooks', 'total_plugins', 'view']

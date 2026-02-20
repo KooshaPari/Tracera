@@ -1,0 +1,90 @@
+{
+  "timestamp": "2026-02-14T09:07:02Z",
+  "tool": "Write",
+  "file_path": ".claude/verification/qa-attestation.json",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+}
+{
+  "timestamp": "2026-02-14T09:07:03Z",
+  "tool": "Write",
+  "file_path": ".claude/verification/qa-attestation.sig",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+}
+{
+  "timestamp": "2026-02-14T09:09:42Z",
+  "tool": "Write",
+  "file_path": "VERIFICATION_POLICY.md",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+}
+{
+  "timestamp": "2026-02-14T09:12:54Z",
+  "tool": "Write",
+  "file_path": ".claude/verification/qa-attestation.json",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+}
+{
+  "timestamp": "2026-02-14T09:12:59Z",
+  "tool": "Write",
+  "file_path": ".claude/verification/qa-attestation.sig",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+}
+{
+  "timestamp": "2026-02-14T09:13:06Z",
+  "tool": "Write",
+  "file_path": ".claude/verification/qa-attestation.bundle.json",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+}
+{
+  "timestamp": "2026-02-14T09:13:33Z",
+  "tool": "Write",
+  "file_path": "docs/guides/SUPPLY_CHAIN_SETUP.md",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+}
+{
+  "timestamp": "2026-02-14T09:14:54Z",
+  "tool": "Write",
+  "file_path": "docs/reference/QUALITY_GATE_QUICK_REF.md",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+}
+{
+  "timestamp": "2026-02-14T09:15:44Z",
+  "tool": "Edit",
+  "file_path": ".claude/verification/qa-attestation.json",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+}
+{
+  "timestamp": "2026-02-14T09:16:28Z",
+  "tool": "Write",
+  "file_path": "docs/guides/CRITICAL_TIER_TEST_REQUIREMENTS.md",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+}
+{
+  "timestamp": "2026-02-14T09:16:39Z",
+  "tool": "Edit",
+  "file_path": "docs/reference/QUALITY_GATE_QUICK_REF.md",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+}
+{
+  "timestamp": "2026-02-14T09:18:50Z",
+  "tool": "Write",
+  "file_path": "docs/guides/quick-start/CRITICAL_TIER_BYPASS.md",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+}
+{
+  "timestamp": "2026-02-14T09:19:57Z",
+  "tool": "Edit",
+  "file_path": ".claude/quality.json",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+}
+{
+  "timestamp": "2026-02-14T09:25:59Z",
+  "tool": "Write",
+  "file_path": ".claude/BYPASS_INSTRUCTIONS.md",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+}
+{
+  "timestamp": "2026-02-14T09:26:25Z",
+  "tool": "Edit",
+  "file_path": ".claude/verification/qa-attestation.json",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace"
+}

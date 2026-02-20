@@ -1,0 +1,14 @@
+---
+title: "Query Engine"
+description: "Query layer."
+---
+
+## Role in the architecture
+- Optimizes search/filter queries over artifacts.
+- Uses indexes and precomputed projections where needed.
+- Guards against full-table scans via limits.
+
+## Considerations
+- Throughput vs. latency trade-offs.
+- Failure domains and retry/backoff strategies.
+- Data model ownership and boundaries.

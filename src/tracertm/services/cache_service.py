@@ -1,4 +1,9 @@
-"""Caching service for TraceRTM using Redis. Redis is required; fail clearly when unavailable (CLAUDE.md)."""
+"""Caching service for TraceRTM using Redis. Redis is required; fail clearly when unavailable (CLAUDE.md).
+
+Functional Requirements: FR-INFRA-004
+"""
+
+from __future__ import annotations
 
 import hashlib
 import json
@@ -96,7 +101,7 @@ CACHE_CONFIG = {
 class CacheService:
     """Service for caching using async Redis."""
 
-    _instance: "CacheService | None" = None
+    _instance: CacheService | None = None
 
     def __init__(self, redis_url: str | None = None) -> None:
         """Initialize cache service.
@@ -129,7 +134,7 @@ class CacheService:
         }
 
     @classmethod
-    def get_instance(cls, redis_url: str | None = None) -> "CacheService":
+    def get_instance(cls, redis_url: str | None = None) -> CacheService:
         """Get singleton instance of CacheService."""
         if cls._instance is None:
             cls._instance = cls(redis_url)
@@ -156,7 +161,7 @@ class CacheService:
             return int(ttl)
         return TTL_LONG
 
-    async def get(self, key: str) -> Any | None:
+    async def get(self, key: str) -> object | None:
         """Get value from cache. Raises RedisUnavailableError on connection failure (required service)."""
         try:
             value = await self.redis_client.get(key)
@@ -164,18 +169,19 @@ class CacheService:
                 self.stats["hits"] += 1
                 return json.loads(value)
             self.stats["misses"] += 1
-            return None
         except (RedisUnavailableError, RuntimeError):
             raise
         except Exception as e:
             # Redis connection/timeout: fail clearly, do not return None (CLAUDE.md).
             msg = f"Redis unavailable: {e}"
             raise RedisUnavailableError(msg) from e
+        else:
+            return None
 
     async def set(
         self,
         key: str,
-        value: Any,
+        value: object,
         ttl_seconds: int | None = None,
         cache_type: str | None = None,
     ) -> bool:
@@ -191,35 +197,37 @@ class CacheService:
                 ttl_seconds,
                 json.dumps(value, default=str),
             )
-            return True
         except (RedisUnavailableError, RuntimeError):
             raise
         except Exception as e:
             msg = f"Redis unavailable: {e}"
             raise RedisUnavailableError(msg) from e
+        else:
+            return True
 
     async def delete(self, key: str) -> bool:
         """Delete value from cache. Raises RedisUnavailableError on connection failure (required service)."""
         try:
             await self.redis_client.delete(key)
-            return True
         except (RedisUnavailableError, RuntimeError):
             raise
         except Exception as e:
             msg = f"Redis unavailable: {e}"
             raise RedisUnavailableError(msg) from e
+        else:
+            return True
 
     async def invalidate(self, cache_type: str, **kwargs: object) -> bool:
         """Invalidate cache for a specific type and parameters.
 
         Args:
             cache_type: Type of cache to invalidate
-            **kwargs: Any: Parameters to identify specific cache entry
+            **kwargs: object: Parameters to identify specific cache entry
 
         Returns:
             True if successful, False otherwise
         """
-        key = self._generate_key(cache_type, **kwargs)  # noqa: invalid-syntax - reserved for future implementation
+        key = self._generate_key(cache_type, **kwargs)
         return await self.delete(key)
 
     async def clear(self) -> bool:
@@ -227,12 +235,13 @@ class CacheService:
         try:
             await self.redis_client.flushdb()
             self.stats = {"hits": 0, "misses": 0, "evictions": 0}
-            return True
         except (RedisUnavailableError, RuntimeError):
             raise
         except Exception as e:
             msg = f"Redis unavailable: {e}"
             raise RedisUnavailableError(msg) from e
+        else:
+            return True
 
     async def clear_prefix(self, prefix: str) -> int:
         """Clear all cache entries with given prefix.
@@ -246,12 +255,13 @@ class CacheService:
             if keys:
                 deleted: int = await self.redis_client.delete(*keys)
                 return deleted
-            return 0
         except (RedisUnavailableError, RuntimeError):
             raise
         except Exception as e:
             msg = f"Redis unavailable: {e}"
             raise RedisUnavailableError(msg) from e
+        else:
+            return 0
 
     async def invalidate_project(self, project_id: str) -> int:
         """Invalidate all cache entries for a project.
@@ -302,33 +312,34 @@ class CacheService:
         """Check if Redis is healthy. Raises RedisUnavailableError when Redis is down (required service)."""
         try:
             await self.redis_client.ping()
-            return True
         except (RedisUnavailableError, RuntimeError):
             raise
         except Exception as e:
             msg = f"Redis unavailable: {e}"
             raise RedisUnavailableError(msg) from e
+        else:
+            return True
 
 
 # Cached operations helper functions
 async def cached_get(
     cache: CacheService,
     cache_type: str,
-    fetch_fn,
+    fetch_fn: Any,
     **kwargs: object,
-) -> Any:
+) -> object:
     """Get value from cache or fetch and cache it.
 
     Args:
         cache: CacheService instance
         cache_type: Type of cache for key generation and TTL
         fetch_fn: Async function to fetch data if not cached
-        **kwargs: Any: Parameters for cache key and fetch function
+        **kwargs: object: Parameters for cache key and fetch function
 
     Returns:
         Cached or freshly fetched value
     """
-    key = cache._generate_key(cache_type, **kwargs)  # noqa: invalid-syntax - reserved for future implementation
+    key = cache._generate_key(cache_type, **kwargs)
 
     # Try cache first
     cached = await cache.get(key)

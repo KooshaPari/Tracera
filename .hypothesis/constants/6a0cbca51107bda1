@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/db.py
+# hypothesis_version: 6.148.7
+
+['--confirm', 'Checked Out', 'Database Status', 'Pool Size', 'Property', 'Status', 'Tables', 'Value', 'Version', 'checked_out', 'connected', 'cyan', 'green', 'migrate', 'pool_size', 'rollback', 'status', 'tables', 'version']

@@ -1,0 +1,403 @@
+---
+title: "JWT Claims"
+description: "Complete reference for JWT claims used in TraceRTM authentication tokens"
+---
+
+# JWT Claims Reference
+
+This document provides a complete reference for all JWT claims used in TraceRTM authentication tokens, including standard claims, custom claims, and claim validation rules.
+
+## Standard Claims (RFC 7519)
+
+### Registered Claims
+
+| Claim | Name | Type | Required | Description |
+|-------|------|------|----------|-------------|
+| `iss` | Issuer | string | Yes | Identifies the principal that issued the JWT. Always `https://auth.tracertm.dev` |
+| `sub` | Subject | string | Yes | Principal that is the subject of the JWT (user ID, agent ID, or service ID) |
+| `aud` | Audience | string/array | Yes | Recipients that the JWT is intended for. Usually `https://api.tracertm.dev` |
+| `exp` | Expiration Time | number | Yes | Unix timestamp after which the JWT must not be accepted |
+| `nbf` | Not Before | number | No | Unix timestamp before which the JWT must not be accepted |
+| `iat` | Issued At | number | Yes | Unix timestamp when the JWT was issued |
+| `jti` | JWT ID | string | Yes | Unique identifier for the JWT, used for revocation |
+
+### Example
+
+```json
+{
+  "iss": "https://auth.tracertm.dev",
+  "sub": "user_abc123def456",
+  "aud": "https://api.tracertm.dev",
+  "exp": 1704067200,
+  "nbf": 1704063600,
+  "iat": 1704063600,
+  "jti": "jwt_xyz789"
+}
+```
+
+## TraceRTM Custom Claims
+
+### Identity Claims
+
+| Claim | Type | Description |
+|-------|------|-------------|
+| `user_id` | string | User's unique identifier (same as `sub` for user tokens) |
+| `email` | string | User's email address |
+| `name` | string | User's display name |
+| `picture` | string | URL to user's profile picture |
+| `email_verified` | boolean | Whether the email has been verified |
+
+### Organization Claims
+
+| Claim | Type | Description |
+|-------|------|-------------|
+| `org_id` | string | Organization identifier |
+| `org_name` | string | Organization display name |
+| `org_role` | string | User's role within the organization |
+| `team_ids` | string[] | List of team IDs the user belongs to |
+
+### Authorization Claims
+
+| Claim | Type | Description |
+|-------|------|-------------|
+| `scope` | string | Space-separated list of granted scopes |
+| `permissions` | string[] | Explicit permissions granted |
+| `role` | string | User's global role (admin, editor, viewer) |
+| `project_ids` | string[] | Specific project IDs user can access (if restricted) |
+
+### Agent Claims
+
+| Claim | Type | Description |
+|-------|------|-------------|
+| `agent_id` | string | AI agent identifier (for agent tokens) |
+| `agent_type` | string | Type of agent (claude, gpt, custom) |
+| `agent_capabilities` | string[] | Agent's allowed capabilities |
+| `parent_user_id` | string | User who authorized the agent |
+
+### Session Claims
+
+| Claim | Type | Description |
+|-------|------|-------------|
+| `sid` | string | Session identifier |
+| `auth_time` | number | Time when authentication occurred |
+| `amr` | string[] | Authentication methods used |
+| `acr` | string | Authentication context class reference |
+
+## Complete Token Examples
+
+### User Access Token
+
+```json
+{
+  "iss": "https://auth.tracertm.dev",
+  "sub": "user_abc123",
+  "aud": "https://api.tracertm.dev",
+  "exp": 1704067200,
+  "iat": 1704063600,
+  "jti": "jwt_user_xyz789",
+
+  "user_id": "user_abc123",
+  "email": "alice@example.com",
+  "name": "Alice Johnson",
+  "email_verified": true,
+
+  "org_id": "org_456",
+  "org_name": "Acme Corp",
+  "org_role": "admin",
+  "team_ids": ["team_dev", "team_qa"],
+
+  "scope": "read:projects write:projects read:items write:items read:links write:links",
+  "role": "editor",
+
+  "sid": "sess_abc123",
+  "auth_time": 1704063500,
+  "amr": ["pwd", "mfa"]
+}
+```
+
+### Agent Access Token
+
+```json
+{
+  "iss": "https://auth.tracertm.dev",
+  "sub": "agent_claude_001",
+  "aud": "https://api.tracertm.dev",
+  "exp": 1704067200,
+  "iat": 1704063600,
+  "jti": "jwt_agent_xyz789",
+
+  "agent_id": "agent_claude_001",
+  "agent_type": "claude",
+  "agent_capabilities": ["read", "write", "suggest"],
+  "parent_user_id": "user_abc123",
+
+  "org_id": "org_456",
+  "project_ids": ["proj_123", "proj_456"],
+
+  "scope": "read:items write:items read:links write:links agent:operate",
+  "role": "agent"
+}
+```
+
+### Service Account Token
+
+```json
+{
+  "iss": "https://auth.tracertm.dev",
+  "sub": "service_cicd",
+  "aud": "https://api.tracertm.dev",
+  "exp": 1704067200,
+  "iat": 1704063600,
+  "jti": "jwt_svc_xyz789",
+
+  "type": "service",
+  "service_id": "service_cicd",
+  "service_name": "CI/CD Pipeline",
+
+  "org_id": "org_456",
+
+  "scope": "read:projects write:items read:links write:links",
+  "role": "service"
+}
+```
+
+### ID Token (OpenID Connect)
+
+```json
+{
+  "iss": "https://auth.tracertm.dev",
+  "sub": "user_abc123",
+  "aud": "client_xyz",
+  "exp": 1704067200,
+  "iat": 1704063600,
+  "nonce": "random_nonce_value",
+
+  "name": "Alice Johnson",
+  "email": "alice@example.com",
+  "email_verified": true,
+  "picture": "https://avatars.tracertm.dev/user_abc123.jpg",
+
+  "auth_time": 1704063500,
+  "amr": ["pwd"],
+  "acr": "urn:tracertm:acr:password"
+}
+```
+
+## Scope Reference
+
+### Project Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `read:projects` | List and view projects |
+| `write:projects` | Create, update, delete projects |
+| `admin:projects` | Manage project settings and members |
+
+### Item Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `read:items` | List and view items |
+| `write:items` | Create, update, delete items |
+| `admin:items` | Manage item settings |
+
+### Link Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `read:links` | List and view traceability links |
+| `write:links` | Create, update, delete links |
+
+### Agent Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `read:agents` | View agent information |
+| `write:agents` | Register and manage agents |
+| `agent:operate` | Perform agent operations |
+
+### Administrative Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `admin:users` | Manage users |
+| `admin:api_keys` | Manage API keys |
+| `admin:org` | Manage organization settings |
+| `admin:*` | Full administrative access |
+
+## Claim Validation
+
+### Python Validation
+
+```python
+from datetime import datetime
+from typing import Optional
+
+def validate_claims(
+    claims: dict,
+    required_scopes: Optional[list[str]] = None,
+    required_org: Optional[str] = None,
+    required_project: Optional[str] = None
+) -> bool:
+    """Validate JWT claims."""
+
+    # Check issuer
+    if claims.get("iss") != "https://auth.tracertm.dev":
+        raise InvalidClaimError("Invalid issuer")
+
+    # Check audience
+    aud = claims.get("aud")
+    valid_audiences = ["https://api.tracertm.dev"]
+    if isinstance(aud, str):
+        if aud not in valid_audiences:
+            raise InvalidClaimError("Invalid audience")
+    elif isinstance(aud, list):
+        if not any(a in valid_audiences for a in aud):
+            raise InvalidClaimError("Invalid audience")
+
+    # Check expiration
+    exp = claims.get("exp")
+    if not exp or datetime.utcnow().timestamp() > exp:
+        raise InvalidClaimError("Token expired")
+
+    # Check not before
+    nbf = claims.get("nbf")
+    if nbf and datetime.utcnow().timestamp() < nbf:
+        raise InvalidClaimError("Token not yet valid")
+
+    # Check required scopes
+    if required_scopes:
+        token_scopes = claims.get("scope", "").split(" ")
+        for scope in required_scopes:
+            if scope not in token_scopes and "admin:*" not in token_scopes:
+                raise InsufficientScopeError(f"Missing scope: {scope}")
+
+    # Check organization
+    if required_org and claims.get("org_id") != required_org:
+        raise InvalidClaimError("Invalid organization")
+
+    # Check project access
+    if required_project:
+        project_ids = claims.get("project_ids", [])
+        if project_ids and required_project not in project_ids:
+            raise InvalidClaimError("No access to project")
+
+    return True
+
+# Usage
+try:
+    validate_claims(
+        claims,
+        required_scopes=["read:items", "write:items"],
+        required_org="org_456",
+        required_project="proj_123"
+    )
+except InvalidClaimError as e:
+    return {"error": str(e)}, 401
+except InsufficientScopeError as e:
+    return {"error": str(e)}, 403
+```
+
+### TypeScript Validation
+
+```typescript
+interface JWTClaims {
+  iss: string
+  sub: string
+  aud: string | string[]
+  exp: number
+  iat: number
+  jti: string
+  scope?: string
+  org_id?: string
+  role?: string
+  project_ids?: string[]
+  agent_id?: string
+}
+
+function validateClaims(
+  claims: JWTClaims,
+  options: {
+    requiredScopes?: string[]
+    requiredOrg?: string
+    requiredProject?: string
+  } = {}
+): void {
+  // Check issuer
+  if (claims.iss !== 'https://auth.tracertm.dev') {
+    throw new InvalidClaimError('Invalid issuer')
+  }
+
+  // Check audience
+  const validAudiences = ['https://api.tracertm.dev']
+  const aud = Array.isArray(claims.aud) ? claims.aud : [claims.aud]
+  if (!aud.some(a => validAudiences.includes(a))) {
+    throw new InvalidClaimError('Invalid audience')
+  }
+
+  // Check expiration
+  if (Date.now() / 1000 > claims.exp) {
+    throw new InvalidClaimError('Token expired')
+  }
+
+  // Check scopes
+  if (options.requiredScopes) {
+    const tokenScopes = (claims.scope || '').split(' ')
+    for (const scope of options.requiredScopes) {
+      if (!tokenScopes.includes(scope) && !tokenScopes.includes('admin:*')) {
+        throw new InsufficientScopeError(`Missing scope: ${scope}`)
+      }
+    }
+  }
+
+  // Check organization
+  if (options.requiredOrg && claims.org_id !== options.requiredOrg) {
+    throw new InvalidClaimError('Invalid organization')
+  }
+
+  // Check project
+  if (options.requiredProject && claims.project_ids) {
+    if (!claims.project_ids.includes(options.requiredProject)) {
+      throw new InvalidClaimError('No access to project')
+    }
+  }
+}
+```
+
+## Custom Claims for Extensions
+
+You can request custom claims for specific integrations:
+
+```python
+# Request custom claims during OAuth flow
+auth_url = oauth.get_authorization_url(
+    scopes=["read:projects", "openid", "profile"],
+    additional_claims={
+        "id_token": {
+            "department": {"essential": True},
+            "cost_center": None
+        }
+    }
+)
+```
+
+## Claim Encryption
+
+For sensitive claims, TraceRTM supports encrypted JWTs (JWE):
+
+```python
+from tracertm.auth import decrypt_token
+
+# Encrypted token
+encrypted_jwt = "eyJhbGciOiJSU0EtT0FFUCIsImVuYyI6IkEyNTZHQ00ifQ..."
+
+# Decrypt using your private key
+claims = decrypt_token(encrypted_jwt, private_key)
+```
+
+## Related Documentation
+
+- [JWT Authentication](/docs/api-reference/authentication/jwt) - JWT overview
+- [OAuth 2.0](/docs/api-reference/authentication/oauth) - OAuth flows
+- [Security](/docs/wiki/guides/security) - Security best practices
+

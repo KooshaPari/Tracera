@@ -1,0 +1,101 @@
+---
+title: "CLI Scripting"
+description: "Automate TraceRTM operations using CLI scripts"
+keywords: [cli, scripting, automation, bash, shell, scripts]
+---
+
+# CLI Scripting
+
+Automate TraceRTM operations using shell scripts and the CLI.
+
+## Basic Scripting
+
+### Bash Example
+
+```bash
+#!/bin/bash
+
+# Set API key
+export TRACERTM_API_KEY="rtm_live_abc123..."
+
+# Create project
+PROJECT_ID=$(trace project create "Scripted Project" --output json | jq -r '.id')
+
+# Create items
+REQ_ID=$(trace item create \
+  --title "Requirement 1" \
+  --view requirements \
+  --output json | jq -r '.id')
+
+TEST_ID=$(trace item create \
+  --title "Test 1" \
+  --view test-cases \
+  --output json | jq -r '.id')
+
+# Create link
+trace link create --source $REQ_ID --target $TEST_ID --type verified_by
+
+echo "Script completed successfully"
+```
+
+## Using JSON Output
+
+The `--output json` flag enables programmatic processing:
+
+```bash
+# Get project ID
+PROJECT_ID=$(trace project list --output json | jq -r '.[0].id')
+
+# Get item IDs
+ITEM_IDS=$(trace item list --output json | jq -r '.[].id')
+
+# Process each item
+for item_id in $ITEM_IDS; do
+  trace item update $item_id --status active
+done
+```
+
+## Error Handling
+
+```bash
+#!/bin/bash
+
+set -e  # Exit on error
+
+trace project create "My Project" || {
+  echo "Failed to create project"
+  exit 1
+}
+```
+
+## Conditional Operations
+
+```bash
+# Check if item exists
+if trace item get item_abc123 > /dev/null 2>&1; then
+  echo "Item exists"
+  trace item update item_abc123 --status active
+else
+  echo "Item not found, creating..."
+  trace item create --title "New Item" --view requirements
+fi
+```
+
+## Batch Operations
+
+```bash
+#!/bin/bash
+
+# Create multiple items
+for i in {1..10}; do
+  trace item create \
+    --title "Requirement $i" \
+    --view requirements \
+    --status draft
+done
+```
+
+## Related Documentation
+
+- [Bash Scripts](./04a-bash-scripts) - Advanced bash examples
+- [Commands](./03-commands) - Command reference

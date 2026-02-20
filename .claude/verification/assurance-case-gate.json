@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-02-14T08:56:02Z",
+  "tier": "critical",
+  "enabled": true,
+  "policy": {
+    "require_top_claim_coverage": true
+  },
+  "error_count": 0,
+  "warn_count": 0,
+  "checks": [
+    {
+      "check": "case_file_present",
+      "status": "pass"
+    },
+    {
+      "check": "case_json_valid",
+      "status": "pass"
+    },
+    {
+      "check": "required_fields",
+      "status": "pass",
+      "count": 0
+    },
+    {
+      "check": "top_claim_coverage",
+      "status": "pass",
+      "count": 0
+    },
+    {
+      "check": "evidence_nodes_have_refs",
+      "status": "pass",
+      "count": 0
+    },
+    {
+      "check": "evidence_refs_quality",
+      "status": "pass",
+      "count": 0
+    }
+  ],
+  "pass": true
+}

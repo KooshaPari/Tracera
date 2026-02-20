@@ -1,0 +1,147 @@
+---
+title: "ELK Stack"
+description: "Set up ELK stack for log aggregation"
+keywords: [elk, elasticsearch, logstash, kibana, logging]
+---
+
+# ELK Stack
+
+Set up ELK (Elasticsearch, Logstash, Kibana) stack for log aggregation.
+
+## Architecture
+
+```
+Applications
+    ↓
+Logstash (Processing)
+    ↓
+Elasticsearch (Storage)
+    ↓
+Kibana (Visualization)
+```
+
+## Docker Compose
+
+### ELK Stack Setup
+
+```yaml
+version: '3.8'
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.0.0
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.0.0
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ./logstash/config:/usr/share/logstash/config
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.0.0
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+
+volumes:
+  elasticsearch_data:
+```
+
+## Logstash Configuration
+
+### Pipeline Config
+
+```ruby
+# logstash/pipeline/logstash.conf
+input {
+  beats {
+    port => 5044
+  }
+}
+
+filter {
+  if [fields][service] == "tracertm-api" {
+    grok {
+      match => { "message" => "%{TIMESTAMP_ISO8601:timestamp} - %{WORD:logger} - %{LOGLEVEL:level} - %{GREEDYDATA:message}" }
+    }
+    
+    date {
+      match => [ "timestamp", "yyyy-MM-dd HH:mm:ss" ]
+    }
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["elasticsearch:9200"]
+    index => "tracertm-%{+YYYY.MM.dd}"
+  }
+}
+```
+
+## Filebeat
+
+### Filebeat Configuration
+
+```yaml
+# filebeat.yml
+filebeat.inputs:
+  - type: container
+    paths:
+      - '/var/lib/docker/containers/*/*.log'
+    processors:
+      - add_docker_metadata:
+          host: "unix:///var/run/docker.sock"
+
+output.logstash:
+  hosts: ["logstash:5044"]
+```
+
+## Kibana Dashboards
+
+### Create Dashboard
+
+1. Go to Kibana → Dashboard
+2. Create visualization
+3. Select index pattern: `tracertm-*`
+4. Choose visualization type
+5. Configure fields and metrics
+
+### Example Queries
+
+```json
+// Error rate over time
+{
+  "query": {
+    "match": { "level": "ERROR" }
+  },
+  "aggs": {
+    "errors_over_time": {
+      "date_histogram": {
+        "field": "@timestamp",
+        "interval": "1h"
+      }
+    }
+  }
+}
+```
+
+## Related Documentation
+
+- [Logging](./05-logging) - Logging configuration
+- [Monitoring](./04a-prometheus) - Metrics monitoring

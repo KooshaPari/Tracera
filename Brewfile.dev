@@ -1,0 +1,28 @@
+# Core databases
+brew "postgresql@17"
+brew "redis"
+brew "neo4j"
+
+# Message broker
+brew "nats-server"
+
+# Workflow engine
+brew "temporal"
+
+# Reverse proxy
+brew "caddy"
+
+# Monitoring stack
+brew "prometheus"
+brew "grafana"
+
+# Exporters
+brew "node_exporter"
+# Note: postgres_exporter and redis_exporter installed via setup script (not in Homebrew)
+
+# Process orchestration
+brew "f1bonacc1/tap/process-compose"
+
+# Development tools
+brew "air"  # Go hot reload
+brew "go-task"

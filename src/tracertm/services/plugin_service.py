@@ -1,4 +1,7 @@
-"""Service for managing plugins."""
+"""Service for managing plugins.
+
+Functional Requirements: FR-AI-004
+"""
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -45,6 +48,7 @@ class PluginService:
     """Service for managing plugins."""
 
     def __init__(self) -> None:
+        """Initialize."""
         self.plugins: dict[str, Plugin] = {}
         self.hooks: dict[str, list[Callable]] = {}
 
@@ -120,18 +124,19 @@ class PluginService:
         if hook_name in self.hooks:
             try:
                 self.hooks[hook_name].remove(callback)
-                return True
             except ValueError:
                 return False
+            else:
+                return True
         return False
 
-    def execute_hook(self, hook_name: str, *args: object, **kwargs: object) -> list[Any]:
+    def execute_hook(self, hook_name: str, *args: object, **kwargs: object) -> list[object]:
         """Execute all callbacks for a hook."""
         results = []
         if hook_name in self.hooks:
             for callback in self.hooks[hook_name]:
                 try:
-                    result = callback(*args, **kwargs)  # noqa: invalid-syntax - reserved for future implementation
+                    result = callback(*args, **kwargs)
                     results.append(result)
                 except (ImportError, ModuleNotFoundError, AttributeError) as e:
                     results.append({"error": str(e)})

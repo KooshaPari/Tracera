@@ -1,0 +1,609 @@
+---
+title: "Async/Await"
+description: "Modern async/await patterns with the TraceRTM JavaScript SDK"
+---
+
+# Async/Await
+
+The async/await syntax provides a cleaner way to work with Promises in JavaScript and TypeScript.
+
+## Basics
+
+### Async Functions
+
+An `async` function always returns a Promise:
+
+```typescript
+import { TraceRTMClient } from "@tracertm/sdk";
+
+const client = new TraceRTMClient({
+  apiKey: process.env.TRACERTM_API_KEY,
+});
+
+async function getProject(id: string) {
+  const project = await client.projects.get(id);
+  return project; // Automatically wrapped in Promise
+}
+
+// Returns Promise<Project>
+getProject("proj_123").then((project) => console.log(project.name));
+```
+
+### The await Keyword
+
+`await` pauses execution until a Promise resolves:
+
+```typescript
+async function main() {
+  console.log("Starting...");
+
+  const project = await client.projects.get("proj_123");
+  console.log(`Got project: ${project.name}`);
+
+  const items = await client.items.list({ projectId: project.id });
+  console.log(`Found ${items.total} items`);
+
+  console.log("Done!");
+}
+
+main();
+
+// Output:
+// Starting...
+// Got project: My Project
+// Found 42 items
+// Done!
+```
+
+---
+
+## Error Handling
+
+### try/catch/finally
+
+```typescript
+async function safeGetProject(id: string) {
+  try {
+    const project = await client.projects.get(id);
+    console.log(`Found: ${project.name}`);
+    return project;
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+    return null;
+  } finally {
+    console.log("Operation complete");
+  }
+}
+```
+
+### Typed Error Handling
+
+```typescript
+import {
+  NotFoundError,
+  ValidationError,
+  RateLimitError,
+  AuthenticationError,
+} from "@tracertm/sdk/errors";
+
+async function handleErrors(itemId: string) {
+  try {
+    return await client.items.get(itemId);
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      console.log("Item does not exist");
+      return null;
+    }
+
+    if (error instanceof ValidationError) {
+      console.log("Invalid item ID format");
+      return null;
+    }
+
+    if (error instanceof RateLimitError) {
+      console.log(`Rate limited. Retry after ${error.retryAfter}s`);
+      throw error;
+    }
+
+    if (error instanceof AuthenticationError) {
+      console.log("Invalid API key");
+      throw error;
+    }
+
+    // Unknown error
+    throw error;
+  }
+}
+```
+
+### Error Boundaries
+
+Catch errors at specific levels:
+
+```typescript
+async function processProject(projectId: string) {
+  const project = await client.projects.get(projectId);
+
+  // Inner try/catch for non-critical operation
+  let stats;
+  try {
+    stats = await client.projects.getStats(projectId);
+  } catch (error) {
+    console.warn("Could not load stats, continuing...");
+    stats = null;
+  }
+
+  // Continue with main operation
+  const items = await client.items.list({ projectId });
+
+  return { project, stats, items };
+}
+```
+
+---
+
+## Sequential vs Parallel
+
+### Sequential Execution
+
+Operations run one after another:
+
+```typescript
+async function sequential() {
+  console.time("sequential");
+
+  const proj1 = await client.projects.get("proj_1");
+  const proj2 = await client.projects.get("proj_2");
+  const proj3 = await client.projects.get("proj_3");
+
+  console.timeEnd("sequential");
+  // ~300ms (100ms x 3)
+
+  return [proj1, proj2, proj3];
+}
+```
+
+### Parallel Execution
+
+Operations run simultaneously:
+
+```typescript
+async function parallel() {
+  console.time("parallel");
+
+  const [proj1, proj2, proj3] = await Promise.all([
+    client.projects.get("proj_1"),
+    client.projects.get("proj_2"),
+    client.projects.get("proj_3"),
+  ]);
+
+  console.timeEnd("parallel");
+  // ~100ms (all at once)
+
+  return [proj1, proj2, proj3];
+}
+```
+
+### When to Use Each
+
+```typescript
+async function example(projectId: string) {
+  // SEQUENTIAL: When operations depend on each other
+  const project = await client.projects.get(projectId);
+  const items = await client.items.list({ projectId: project.id });
+  const firstItem = await client.items.get(items.data[0].id);
+
+  // PARALLEL: When operations are independent
+  const [coverage, matrix, stats] = await Promise.all([
+    client.reports.coverage({ projectId, sourceType: "requirement", targetType: "test_case" }),
+    client.reports.traceabilityMatrix({ projectId, sourceTypes: ["requirement"], targetTypes: ["test_case"] }),
+    client.projects.getStats(projectId),
+  ]);
+
+  return { project, items, firstItem, coverage, matrix, stats };
+}
+```
+
+---
+
+## Loops and Iteration
+
+### for...of with await
+
+Process items sequentially:
+
+```typescript
+async function processSequentially(itemIds: string[]) {
+  const results: Item[] = [];
+
+  for (const id of itemIds) {
+    const item = await client.items.get(id);
+    results.push(item);
+    console.log(`Processed: ${item.title}`);
+  }
+
+  return results;
+}
+```
+
+### for await...of
+
+Iterate over async iterables:
+
+```typescript
+async function* fetchItems(projectId: string) {
+  let offset = 0;
+  const limit = 100;
+
+  while (true) {
+    const response = await client.items.list({ projectId, limit, offset });
+
+    for (const item of response.data) {
+      yield item;
+    }
+
+    if (!response.hasMore) break;
+    offset += limit;
+  }
+}
+
+async function processAllItems(projectId: string) {
+  for await (const item of fetchItems(projectId)) {
+    console.log(item.title);
+  }
+}
+```
+
+### Parallel Loop Processing
+
+```typescript
+async function processParallel(itemIds: string[]) {
+  const results = await Promise.all(
+    itemIds.map((id) => client.items.get(id))
+  );
+
+  return results;
+}
+```
+
+### Controlled Concurrency
+
+```typescript
+async function processWithLimit(
+  itemIds: string[],
+  concurrency: number = 5
+) {
+  const results: Item[] = [];
+
+  for (let i = 0; i < itemIds.length; i += concurrency) {
+    const batch = itemIds.slice(i, i + concurrency);
+    const batchResults = await Promise.all(
+      batch.map((id) => client.items.get(id))
+    );
+    results.push(...batchResults);
+  }
+
+  return results;
+}
+```
+
+---
+
+## Common Patterns
+
+### Conditional Await
+
+```typescript
+async function getProjectData(projectId: string, options: {
+  includeItems?: boolean;
+  includeCoverage?: boolean;
+} = {}) {
+  const project = await client.projects.get(projectId);
+
+  let items = null;
+  if (options.includeItems) {
+    items = await client.items.list({ projectId });
+  }
+
+  let coverage = null;
+  if (options.includeCoverage) {
+    coverage = await client.reports.coverage({
+      projectId,
+      sourceType: "requirement",
+      targetType: "test_case",
+    });
+  }
+
+  return { project, items, coverage };
+}
+```
+
+### Early Return
+
+```typescript
+async function findItemByTitle(projectId: string, title: string) {
+  const items = await client.items.list({
+    projectId,
+    search: title,
+    limit: 100,
+  });
+
+  for (const item of items.data) {
+    if (item.title === title) {
+      return item; // Early return when found
+    }
+  }
+
+  return null;
+}
+```
+
+### Retry Pattern
+
+```typescript
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3
+): Promise<T> {
+  let lastError: Error;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+      console.log(`Attempt ${attempt} failed: ${lastError.message}`);
+
+      if (attempt < maxRetries) {
+        const delay = Math.pow(2, attempt) * 1000;
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+  }
+
+  throw lastError!;
+}
+
+// Usage
+const item = await withRetry(() => client.items.get("item_123"));
+```
+
+### Timeout Pattern
+
+```typescript
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number
+): Promise<T> {
+  const timeout = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error("Operation timed out")), timeoutMs);
+  });
+
+  return Promise.race([promise, timeout]);
+}
+
+// Usage
+try {
+  const item = await withTimeout(client.items.get("item_123"), 5000);
+} catch (error) {
+  if (error.message === "Operation timed out") {
+    console.log("Request took too long");
+  }
+}
+```
+
+---
+
+## Async in Different Contexts
+
+### Top-Level Await (ES Modules)
+
+```typescript
+// In ES modules, you can use top-level await
+const client = new TraceRTMClient({
+  apiKey: process.env.TRACERTM_API_KEY,
+});
+
+const projects = await client.projects.list();
+console.log(`Found ${projects.total} projects`);
+
+export { projects };
+```
+
+### IIFE Pattern (CommonJS)
+
+```typescript
+// For CommonJS or older environments
+(async () => {
+  const client = new TraceRTMClient({
+    apiKey: process.env.TRACERTM_API_KEY,
+  });
+
+  const projects = await client.projects.list();
+  console.log(`Found ${projects.total} projects`);
+})();
+```
+
+### Class Methods
+
+```typescript
+class ProjectManager {
+  private client: TraceRTMClient;
+
+  constructor(apiKey: string) {
+    this.client = new TraceRTMClient({ apiKey });
+  }
+
+  async getProjectWithItems(projectId: string) {
+    const project = await this.client.projects.get(projectId);
+    const items = await this.client.items.list({ projectId });
+    return { project, items: items.data };
+  }
+
+  async createLinkedItems(projectId: string, reqTitle: string, testTitle: string) {
+    const req = await this.client.items.create({
+      projectId,
+      type: "requirement",
+      title: reqTitle,
+    });
+
+    const test = await this.client.items.create({
+      projectId,
+      type: "test_case",
+      title: testTitle,
+    });
+
+    await this.client.links.create({
+      sourceId: req.id,
+      targetId: test.id,
+      type: "verified_by",
+    });
+
+    return { req, test };
+  }
+}
+```
+
+### Arrow Functions
+
+```typescript
+const fetchProject = async (id: string) => {
+  return await client.projects.get(id);
+};
+
+// Shorter form (implicit return)
+const fetchProjectShort = async (id: string) =>
+  client.projects.get(id);
+
+// Array methods with async
+const projectIds = ["proj_1", "proj_2", "proj_3"];
+
+// Note: map returns array of promises, not awaited values
+const projectPromises = projectIds.map(async (id) => {
+  return await client.projects.get(id);
+});
+
+// Await all promises
+const projects = await Promise.all(projectPromises);
+```
+
+---
+
+## Debugging Async Code
+
+### Stack Traces
+
+Enable async stack traces in Node.js:
+
+```bash
+node --async-stack-traces app.js
+```
+
+### Logging Async Flow
+
+```typescript
+async function debugFlow(projectId: string) {
+  console.log("1. Starting");
+
+  const project = await client.projects.get(projectId);
+  console.log("2. Got project:", project.name);
+
+  const items = await client.items.list({ projectId });
+  console.log("3. Got items:", items.total);
+
+  console.log("4. Done");
+  return { project, items };
+}
+```
+
+### Using Debug Libraries
+
+```typescript
+import debug from "debug";
+
+const log = debug("app:tracertm");
+
+async function fetchWithLogging(itemId: string) {
+  log("Fetching item %s", itemId);
+  const start = Date.now();
+
+  const item = await client.items.get(itemId);
+
+  log("Fetched item %s in %dms", itemId, Date.now() - start);
+  return item;
+}
+```
+
+---
+
+## Best Practices
+
+### 1. Avoid await in Loops When Possible
+
+```typescript
+// Slow - sequential
+async function slow(ids: string[]) {
+  const results = [];
+  for (const id of ids) {
+    results.push(await client.items.get(id));
+  }
+  return results;
+}
+
+// Fast - parallel
+async function fast(ids: string[]) {
+  return Promise.all(ids.map((id) => client.items.get(id)));
+}
+```
+
+### 2. Start Promises Before await
+
+```typescript
+// Better - start all promises first
+async function better(projectId: string) {
+  const projectPromise = client.projects.get(projectId);
+  const statsPromise = client.projects.getStats(projectId);
+
+  const project = await projectPromise;
+  const stats = await statsPromise;
+
+  return { project, stats };
+}
+
+// Best - use Promise.all
+async function best(projectId: string) {
+  const [project, stats] = await Promise.all([
+    client.projects.get(projectId),
+    client.projects.getStats(projectId),
+  ]);
+
+  return { project, stats };
+}
+```
+
+### 3. Handle Errors Appropriately
+
+```typescript
+async function robust(projectId: string) {
+  // Critical error - should throw
+  const project = await client.projects.get(projectId);
+
+  // Non-critical - handle gracefully
+  let stats = null;
+  try {
+    stats = await client.projects.getStats(projectId);
+  } catch {
+    console.warn("Stats unavailable");
+  }
+
+  return { project, stats };
+}
+```
+
+---
+
+## Related Documentation
+
+- [Async Operations](/docs/api-reference/sdks/javascript/async) - Async overview
+- [Promises](/docs/api-reference/sdks/javascript/promises) - Promise patterns
+- [Error Handling](/docs/api-reference/sdks/javascript/error-handling) - Error handling

@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/requirement_quality.py
+# hypothesis_version: 6.151.4
+
+[0.0, 0.5, 255, 'CASCADE', 'Item', 'idx_rq_cpi', 'idx_rq_item_id', 'idx_rq_overall_score', 'idx_rq_project_id', 'idx_rq_volatility', 'item_id', 'items.id', 'project_id', 'requirement_quality', 'volatility_index']

@@ -1,0 +1,512 @@
+---
+title: "Promises"
+description: "Promise-based patterns for the TraceRTM JavaScript SDK"
+---
+
+# Promises
+
+All TraceRTM SDK methods return Promises, enabling flexible async handling.
+
+## Promise Basics
+
+### What is a Promise?
+
+A Promise represents an asynchronous operation that will eventually produce a value or an error:
+
+```typescript
+const promise = client.projects.get("proj_123");
+
+// Promise states:
+// - Pending: Operation in progress
+// - Fulfilled: Operation succeeded, has a value
+// - Rejected: Operation failed, has an error
+```
+
+### Basic Promise Usage
+
+```typescript
+client.projects
+  .get("proj_123")
+  .then((project) => {
+    // Success: project is the resolved value
+    console.log(project.name);
+  })
+  .catch((error) => {
+    // Error: operation failed
+    console.error(error.message);
+  })
+  .finally(() => {
+    // Always runs after then/catch
+    console.log("Operation complete");
+  });
+```
+
+---
+
+## Chaining Promises
+
+### Sequential Operations
+
+Chain `.then()` calls for sequential operations:
+
+```typescript
+client.projects
+  .get("proj_123")
+  .then((project) => {
+    console.log(`Got project: ${project.name}`);
+    return client.items.list({ projectId: project.id });
+  })
+  .then((items) => {
+    console.log(`Found ${items.total} items`);
+    return items.data[0];
+  })
+  .then((firstItem) => {
+    if (firstItem) {
+      console.log(`First item: ${firstItem.title}`);
+    }
+  })
+  .catch((error) => {
+    console.error("Error in chain:", error.message);
+  });
+```
+
+### Returning Values
+
+Each `.then()` can return a value or another Promise:
+
+```typescript
+client.items
+  .get("item_123")
+  .then((item) => {
+    // Return a plain value
+    return item.title.toUpperCase();
+  })
+  .then((upperTitle) => {
+    // Receives the plain value
+    console.log(upperTitle);
+  });
+
+client.items
+  .get("item_123")
+  .then((item) => {
+    // Return another Promise
+    return client.items.update(item.id, { status: "approved" });
+  })
+  .then((updatedItem) => {
+    // Receives the resolved Promise value
+    console.log(updatedItem.status);
+  });
+```
+
+---
+
+## Error Handling
+
+### Using .catch()
+
+Catch errors anywhere in the chain:
+
+```typescript
+client.projects
+  .get("proj_123")
+  .then((project) => {
+    return client.items.list({ projectId: project.id });
+  })
+  .then((items) => {
+    if (items.total === 0) {
+      throw new Error("No items found");
+    }
+    return items.data;
+  })
+  .catch((error) => {
+    // Catches errors from any point in the chain
+    console.error("Error:", error.message);
+  });
+```
+
+### Error Recovery
+
+Return a value from `.catch()` to recover:
+
+```typescript
+client.items
+  .get("item_123")
+  .catch((error) => {
+    if (error instanceof NotFoundError) {
+      // Return a default value
+      return { id: null, title: "Default Item" };
+    }
+    throw error; // Re-throw other errors
+  })
+  .then((item) => {
+    // Continues with recovered value or real item
+    console.log(item.title);
+  });
+```
+
+### Multiple .catch() Handlers
+
+Handle errors at different points:
+
+```typescript
+client.projects
+  .get("proj_123")
+  .catch((error) => {
+    console.error("Failed to get project");
+    throw error; // Re-throw to continue error propagation
+  })
+  .then((project) => {
+    return client.items.list({ projectId: project.id });
+  })
+  .catch((error) => {
+    console.error("Failed to list items");
+    return { data: [], total: 0 }; // Recover with empty list
+  })
+  .then((items) => {
+    console.log(`Items: ${items.total}`);
+  });
+```
+
+---
+
+## Promise.all
+
+Execute multiple promises in parallel:
+
+```typescript
+Promise.all([
+  client.projects.get("proj_1"),
+  client.projects.get("proj_2"),
+  client.projects.get("proj_3"),
+])
+  .then(([proj1, proj2, proj3]) => {
+    console.log(proj1.name, proj2.name, proj3.name);
+  })
+  .catch((error) => {
+    // Rejects if ANY promise rejects
+    console.error("At least one project failed:", error);
+  });
+```
+
+### Dynamic Promise.all
+
+```typescript
+const projectIds = ["proj_1", "proj_2", "proj_3"];
+
+Promise.all(projectIds.map((id) => client.projects.get(id)))
+  .then((projects) => {
+    projects.forEach((p) => console.log(p.name));
+  })
+  .catch(console.error);
+```
+
+---
+
+## Promise.allSettled
+
+Get results from all promises, even if some fail:
+
+```typescript
+Promise.allSettled([
+  client.projects.get("proj_1"),
+  client.projects.get("nonexistent"),
+  client.projects.get("proj_3"),
+]).then((results) => {
+  results.forEach((result, index) => {
+    if (result.status === "fulfilled") {
+      console.log(`Project ${index}: ${result.value.name}`);
+    } else {
+      console.log(`Project ${index} failed: ${result.reason.message}`);
+    }
+  });
+});
+
+// Output:
+// Project 0: Project One
+// Project 1 failed: Not found
+// Project 2: Project Three
+```
+
+### Separating Successes and Failures
+
+```typescript
+Promise.allSettled(
+  itemIds.map((id) => client.items.get(id))
+).then((results) => {
+  const successes = results
+    .filter((r): r is PromiseFulfilledResult<Item> => r.status === "fulfilled")
+    .map((r) => r.value);
+
+  const failures = results
+    .filter((r): r is PromiseRejectedResult => r.status === "rejected")
+    .map((r) => r.reason);
+
+  console.log(`Loaded ${successes.length} items`);
+  console.log(`Failed to load ${failures.length} items`);
+});
+```
+
+---
+
+## Promise.race
+
+Get the first promise to settle:
+
+```typescript
+Promise.race([
+  client.items.get("item_123"),
+  new Promise((_, reject) =>
+    setTimeout(() => reject(new Error("Timeout")), 5000)
+  ),
+])
+  .then((item) => {
+    console.log("Got item:", item.title);
+  })
+  .catch((error) => {
+    console.error("Failed or timed out:", error.message);
+  });
+```
+
+### First Successful Result
+
+```typescript
+// Get item from first available source
+Promise.race([
+  client.items.get("item_123"),
+  getFromCache("item_123"),
+  getFromBackup("item_123"),
+]).then((item) => {
+  console.log("Got item from fastest source");
+});
+```
+
+---
+
+## Promise.any
+
+Get the first promise to fulfill (ignores rejections):
+
+```typescript
+Promise.any([
+  client.projects.get("proj_maybe_1"),
+  client.projects.get("proj_maybe_2"),
+  client.projects.get("proj_maybe_3"),
+])
+  .then((project) => {
+    // First successful result
+    console.log("Found project:", project.name);
+  })
+  .catch((error) => {
+    // AggregateError - all promises rejected
+    console.error("All lookups failed:", error.errors);
+  });
+```
+
+---
+
+## Creating Promises
+
+### Promise Constructor
+
+```typescript
+function waitAndFetch(id: string, delayMs: number): Promise<Item> {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      client.items
+        .get(id)
+        .then(resolve)
+        .catch(reject);
+    }, delayMs);
+  });
+}
+
+waitAndFetch("item_123", 1000).then((item) => {
+  console.log("Fetched after delay:", item.title);
+});
+```
+
+### Promise.resolve and Promise.reject
+
+```typescript
+// Create an immediately resolved promise
+const cachedProject = getCached("proj_123");
+const projectPromise = cachedProject
+  ? Promise.resolve(cachedProject)
+  : client.projects.get("proj_123");
+
+// Create an immediately rejected promise
+function validateId(id: string): Promise<string> {
+  if (!id.startsWith("proj_")) {
+    return Promise.reject(new Error("Invalid project ID format"));
+  }
+  return Promise.resolve(id);
+}
+```
+
+---
+
+## Common Patterns
+
+### Conditional Chaining
+
+```typescript
+function getProjectWithItems(projectId: string, includeItems: boolean) {
+  return client.projects.get(projectId).then((project) => {
+    if (includeItems) {
+      return client.items
+        .list({ projectId: project.id })
+        .then((items) => ({ project, items: items.data }));
+    }
+    return { project, items: [] };
+  });
+}
+```
+
+### Retry Pattern
+
+```typescript
+function retryPromise<T>(
+  fn: () => Promise<T>,
+  retries: number = 3,
+  delay: number = 1000
+): Promise<T> {
+  return fn().catch((error) => {
+    if (retries === 0) {
+      throw error;
+    }
+    return new Promise((resolve) =>
+      setTimeout(
+        () => resolve(retryPromise(fn, retries - 1, delay * 2)),
+        delay
+      )
+    );
+  });
+}
+
+// Usage
+retryPromise(() => client.items.get("item_123"), 3, 1000)
+  .then((item) => console.log(item.title))
+  .catch((error) => console.error("All retries failed:", error));
+```
+
+### Sequential Processing
+
+```typescript
+function processSequentially<T, R>(
+  items: T[],
+  processor: (item: T) => Promise<R>
+): Promise<R[]> {
+  return items.reduce(
+    (chain, item) =>
+      chain.then((results) =>
+        processor(item).then((result) => [...results, result])
+      ),
+    Promise.resolve([] as R[])
+  );
+}
+
+// Usage
+processSequentially(
+  ["item_1", "item_2", "item_3"],
+  (id) => client.items.get(id)
+).then((items) => {
+  console.log("All items loaded sequentially");
+});
+```
+
+### Memoization
+
+```typescript
+const projectCache = new Map<string, Promise<Project>>();
+
+function getProjectCached(id: string): Promise<Project> {
+  if (!projectCache.has(id)) {
+    projectCache.set(id, client.projects.get(id));
+  }
+  return projectCache.get(id)!;
+}
+
+// Multiple calls return the same promise
+getProjectCached("proj_123").then(console.log);
+getProjectCached("proj_123").then(console.log); // Same request
+```
+
+---
+
+## Converting Callbacks to Promises
+
+### Promisify Pattern
+
+```typescript
+function promisify<T>(fn: (callback: (err: Error | null, result?: T) => void) => void): Promise<T> {
+  return new Promise((resolve, reject) => {
+    fn((err, result) => {
+      if (err) reject(err);
+      else resolve(result!);
+    });
+  });
+}
+
+// Example: Convert callback-based function
+function legacyFetch(id: string, callback: (err: Error | null, data?: any) => void) {
+  // ... callback-based implementation
+}
+
+const fetchPromise = promisify((cb) => legacyFetch("item_123", cb));
+```
+
+---
+
+## Best Practices
+
+### 1. Always Return Promises
+
+```typescript
+// Bad - broken chain
+client.projects.get("proj_123").then((project) => {
+  client.items.list({ projectId: project.id }); // Not returned!
+});
+
+// Good - maintained chain
+client.projects.get("proj_123").then((project) => {
+  return client.items.list({ projectId: project.id });
+});
+```
+
+### 2. Handle All Rejections
+
+```typescript
+// Bad - unhandled rejection
+client.projects.get("proj_123");
+
+// Good - handle errors
+client.projects.get("proj_123").catch(console.error);
+```
+
+### 3. Avoid Nesting
+
+```typescript
+// Bad - callback hell with promises
+client.projects.get("proj_123").then((project) => {
+  client.items.list({ projectId: project.id }).then((items) => {
+    client.items.get(items.data[0].id).then((item) => {
+      console.log(item);
+    });
+  });
+});
+
+// Good - flat chain
+client.projects
+  .get("proj_123")
+  .then((project) => client.items.list({ projectId: project.id }))
+  .then((items) => client.items.get(items.data[0].id))
+  .then((item) => console.log(item));
+```
+
+---
+
+## Related Documentation
+
+- [Async Operations](/docs/api-reference/sdks/javascript/async) - Async overview
+- [Async/Await](/docs/api-reference/sdks/javascript/async-await) - Modern syntax
+- [Error Handling](/docs/api-reference/sdks/javascript/error-handling) - Handle errors

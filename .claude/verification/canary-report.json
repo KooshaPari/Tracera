@@ -1,0 +1,7 @@
+{
+  "generated_at": "2026-02-14T06:21:35Z",
+  "project": "trace",
+  "pass": false,
+  "canary_run": false,
+  "notes": "Bootstrap placeholder; run canary deployment and set pass=true before release."
+}

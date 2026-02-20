@@ -1,0 +1,1677 @@
+{
+  "options": {
+    "threshold": 0.35,
+    "distance": 80,
+    "minMatchCharLength": 2,
+    "ignoreLocation": false,
+    "location": 0,
+    "useExtendedSearch": false,
+    "findAllMatches": false,
+    "isCaseSensitive": false,
+    "shouldSort": true,
+    "keys": [
+      {
+        "name": "title",
+        "weight": 10
+      },
+      {
+        "name": "description",
+        "weight": 5
+      },
+      {
+        "name": "headings",
+        "weight": 3
+      }
+    ],
+    "includeScore": true,
+    "includeMatches": true
+  },
+  "index": {
+    "keys": [
+      {
+        "path": ["title"],
+        "id": "title",
+        "weight": 10,
+        "src": "title"
+      },
+      {
+        "path": ["description"],
+        "id": "description",
+        "weight": 5,
+        "src": "description"
+      },
+      {
+        "path": ["headings"],
+        "id": "headings",
+        "weight": 3,
+        "src": "headings"
+      }
+    ],
+    "records": [
+      {
+        "i": 0,
+        "$": {
+          "0": {
+            "v": "Quick Start Guide",
+            "n": 0.577
+          },
+          "1": {
+            "v": "Get up and running with TraceRTM in 10 minutes",
+            "n": 0.333
+          },
+          "2": [
+            {
+              "v": "Step 4: View Your Items",
+              "i": 9,
+              "n": 0.447
+            },
+            {
+              "v": "Create a user story",
+              "i": 8,
+              "n": 0.5
+            },
+            {
+              "v": "Create a feature under the epic",
+              "i": 7,
+              "n": 0.408
+            },
+            {
+              "v": "Create an epic",
+              "i": 6,
+              "n": 0.577
+            },
+            {
+              "v": "Step 3: Create Items",
+              "i": 5,
+              "n": 0.5
+            },
+            {
+              "v": "Create a project",
+              "i": 4,
+              "n": 0.577
+            },
+            {
+              "v": "Step 2: Create Your First Project",
+              "i": 3,
+              "n": 0.408
+            },
+            {
+              "v": "Initialize with SQLite (easiest for getting started)",
+              "i": 2,
+              "n": 0.378
+            },
+            {
+              "v": "Step 1: Initialize Configuration",
+              "i": 1,
+              "n": 0.5
+            },
+            {
+              "v": "Quick Start Guide",
+              "i": 0,
+              "n": 0.577
+            }
+          ]
+        }
+      },
+      {
+        "i": 1,
+        "$": {
+          "0": {
+            "v": "Getting Started",
+            "n": 0.707
+          },
+          "1": {
+            "v": "Get started with TraceRTM in minutes",
+            "n": 0.408
+          },
+          "2": [
+            {
+              "v": "3. Frontend Setup",
+              "i": 9,
+              "n": 0.577
+            },
+            {
+              "v": "Start the backend server",
+              "i": 8,
+              "n": 0.5
+            },
+            {
+              "v": "Run database migrations",
+              "i": 7,
+              "n": 0.577
+            },
+            {
+              "v": "Set up environment variables",
+              "i": 6,
+              "n": 0.5
+            },
+            {
+              "v": "Install dependencies with uv",
+              "i": 5,
+              "n": 0.5
+            },
+            {
+              "v": "2. Backend Setup",
+              "i": 4,
+              "n": 0.577
+            },
+            {
+              "v": "1. Clone the Repository",
+              "i": 3,
+              "n": 0.5
+            },
+            {
+              "v": "Installation",
+              "i": 2,
+              "n": 1
+            },
+            {
+              "v": "Prerequisites",
+              "i": 1,
+              "n": 1
+            },
+            {
+              "v": "Getting Started with TraceRTM",
+              "i": 0,
+              "n": 0.5
+            }
+          ]
+        }
+      },
+      {
+        "i": 2,
+        "$": {
+          "0": {
+            "v": "Contributing Guide",
+            "n": 0.707
+          },
+          "1": {
+            "v": "How to contribute to TraceRTM",
+            "n": 0.447
+          },
+          "2": [
+            {
+              "v": "Running Tests",
+              "i": 9,
+              "n": 0.707
+            },
+            {
+              "v": "Test Coverage Requirements",
+              "i": 8,
+              "n": 0.577
+            },
+            {
+              "v": "Test Traceability",
+              "i": 7,
+              "n": 0.707
+            },
+            {
+              "v": "Test Organization",
+              "i": 6,
+              "n": 0.707
+            },
+            {
+              "v": "Test Template",
+              "i": 5,
+              "n": 0.707
+            },
+            {
+              "v": "Test Function Naming",
+              "i": 4,
+              "n": 0.577
+            },
+            {
+              "v": "Test Naming Convention",
+              "i": 3,
+              "n": 0.577
+            },
+            {
+              "v": "Test Requirements",
+              "i": 2,
+              "n": 0.707
+            },
+            {
+              "v": "Getting Started",
+              "i": 1,
+              "n": 0.707
+            },
+            {
+              "v": "Contributing to TraceRTM",
+              "i": 0,
+              "n": 0.577
+            }
+          ]
+        }
+      },
+      {
+        "i": 3,
+        "$": {
+          "0": {
+            "v": "CLI Tutorial",
+            "n": 0.707
+          },
+          "1": {
+            "v": "Complete guide to using the TraceRTM CLI",
+            "n": 0.378
+          },
+          "2": [
+            {
+              "v": "List projects",
+              "i": 9,
+              "n": 0.707
+            },
+            {
+              "v": "Check database status",
+              "i": 8,
+              "n": 0.577
+            },
+            {
+              "v": "Step 3: Verify Setup",
+              "i": 7,
+              "n": 0.5
+            },
+            {
+              "v": "Create a project",
+              "i": 6,
+              "n": 0.577
+            },
+            {
+              "v": "Step 2: Create Your First Project",
+              "i": 5,
+              "n": 0.408
+            },
+            {
+              "v": "Initialize with SQLite (easiest for getting started)",
+              "i": 4,
+              "n": 0.378
+            },
+            {
+              "v": "Step 1: Initialize Configuration",
+              "i": 3,
+              "n": 0.5
+            },
+            {
+              "v": "Tutorial 1: Your First Project",
+              "i": 2,
+              "n": 0.447
+            },
+            {
+              "v": "📖 Welcome",
+              "i": 1,
+              "n": 0.707
+            },
+            {
+              "v": "TraceRTM CLI Tutorial",
+              "i": 0,
+              "n": 0.577
+            }
+          ]
+        }
+      },
+      {
+        "i": 4,
+        "$": {
+          "0": {
+            "v": "Team Onboarding",
+            "n": 0.707
+          },
+          "1": {
+            "v": "Complete onboarding guide for new team members",
+            "n": 0.378
+          },
+          "2": [
+            {
+              "v": "Terminal 2 - Frontend",
+              "i": 9,
+              "n": 0.5
+            },
+            {
+              "v": "Terminal 1 - Backend",
+              "i": 8,
+              "n": 0.5
+            },
+            {
+              "v": "2. Start Development Servers",
+              "i": 7,
+              "n": 0.5
+            },
+            {
+              "v": "Set up backend",
+              "i": 6,
+              "n": 0.577
+            },
+            {
+              "v": "Install dependencies with bun (not npm!)",
+              "i": 5,
+              "n": 0.408
+            },
+            {
+              "v": "Navigate to project root",
+              "i": 4,
+              "n": 0.5
+            },
+            {
+              "v": "1. Set Up Your Environment",
+              "i": 3,
+              "n": 0.447
+            },
+            {
+              "v": "Quick Start",
+              "i": 2,
+              "n": 0.707
+            },
+            {
+              "v": "What is Trace RTM?",
+              "i": 1,
+              "n": 0.5
+            },
+            {
+              "v": "Team Onboarding Guide",
+              "i": 0,
+              "n": 0.577
+            }
+          ]
+        }
+      },
+      {
+        "i": 5,
+        "$": {
+          "0": {
+            "v": "Database Guide",
+            "n": 0.707
+          },
+          "1": {
+            "v": "Database management and best practices",
+            "n": 0.447
+          },
+          "2": [
+            {
+              "v": "Migration File",
+              "i": 9,
+              "n": 0.707
+            },
+            {
+              "v": "Create empty migration",
+              "i": 8,
+              "n": 0.577
+            },
+            {
+              "v": "Auto-generate migration from model changes",
+              "i": 7,
+              "n": 0.447
+            },
+            {
+              "v": "Creating Migrations",
+              "i": 6,
+              "n": 0.707
+            },
+            {
+              "v": "Migrations",
+              "i": 5,
+              "n": 1
+            },
+            {
+              "v": "Links Table",
+              "i": 4,
+              "n": 0.707
+            },
+            {
+              "v": "Items Table",
+              "i": 3,
+              "n": 0.707
+            },
+            {
+              "v": "Core Tables",
+              "i": 2,
+              "n": 0.707
+            },
+            {
+              "v": "Database Schema",
+              "i": 1,
+              "n": 0.707
+            },
+            {
+              "v": "Database Guide",
+              "i": 0,
+              "n": 0.707
+            }
+          ]
+        }
+      },
+      {
+        "i": 6,
+        "$": {
+          "0": {
+            "v": "Guides",
+            "n": 1
+          },
+          "1": {
+            "v": "Step-by-step guides for common tasks",
+            "n": 0.447
+          },
+          "2": [
+            {
+              "v": "Advanced Topics",
+              "i": 4,
+              "n": 0.707
+            },
+            {
+              "v": "Integration Guides",
+              "i": 3,
+              "n": 0.707
+            },
+            {
+              "v": "Deployment Guides",
+              "i": 2,
+              "n": 0.707
+            },
+            {
+              "v": "Getting Started Guides",
+              "i": 1,
+              "n": 0.577
+            },
+            {
+              "v": "TraceRTM Guides",
+              "i": 0,
+              "n": 0.707
+            }
+          ]
+        }
+      },
+      {
+        "i": 7,
+        "$": {
+          "0": {
+            "v": "Testing Guide",
+            "n": 0.707
+          },
+          "1": {
+            "v": "Comprehensive testing strategy for TraceRTM",
+            "n": 0.447
+          },
+          "2": [
+            {
+              "v": "Specific file",
+              "i": 9,
+              "n": 0.707
+            },
+            {
+              "v": "All tests",
+              "i": 8,
+              "n": 0.707
+            },
+            {
+              "v": "Running Backend Tests",
+              "i": 7,
+              "n": 0.577
+            },
+            {
+              "v": "tests/integration/test_items_api.py",
+              "i": 6,
+              "n": 1
+            },
+            {
+              "v": "Integration Tests",
+              "i": 5,
+              "n": 0.707
+            },
+            {
+              "v": "tests/unit/services/test_item_service.py",
+              "i": 4,
+              "n": 1
+            },
+            {
+              "v": "Unit Tests",
+              "i": 3,
+              "n": 0.707
+            },
+            {
+              "v": "Backend Testing",
+              "i": 2,
+              "n": 0.707
+            },
+            {
+              "v": "Testing Pyramid",
+              "i": 1,
+              "n": 0.707
+            },
+            {
+              "v": "Testing Guide",
+              "i": 0,
+              "n": 0.707
+            }
+          ]
+        }
+      },
+      {
+        "i": 8,
+        "$": {
+          "0": {
+            "v": "Configuration Precedence",
+            "n": 0.707
+          },
+          "1": {
+            "v": "Understanding TraceRTM configuration",
+            "n": 0.577
+          },
+          "2": [
+            {
+              "v": "Tips",
+              "i": 9,
+              "n": 1
+            },
+            {
+              "v": "How Resolution Works",
+              "i": 8,
+              "n": 0.577
+            },
+            {
+              "v": "Example: Repo Project Config",
+              "i": 7,
+              "n": 0.5
+            },
+            {
+              "v": "Local state (ignored)",
+              "i": 6,
+              "n": 0.577
+            },
+            {
+              "v": "User project (per‑project per‑user)",
+              "i": 5,
+              "n": 0.5
+            },
+            {
+              "v": "Repo project (shared)",
+              "i": 4,
+              "n": 0.577
+            },
+            {
+              "v": "Global (user)",
+              "i": 3,
+              "n": 0.707
+            },
+            {
+              "v": "Locations",
+              "i": 2,
+              "n": 1
+            },
+            {
+              "v": "Precedence Order",
+              "i": 1,
+              "n": 0.707
+            },
+            {
+              "v": "TraceRTM Config Precedence & Locations",
+              "i": 0,
+              "n": 0.447
+            }
+          ]
+        }
+      },
+      {
+        "i": 9,
+        "$": {
+          "0": {
+            "v": "Migration Guide",
+            "n": 0.707
+          },
+          "1": {
+            "v": "Guide for migrating data from external systems to TraceRTM",
+            "n": 0.333
+          },
+          "2": [
+            {
+              "v": "Example transformation",
+              "i": 9,
+              "n": 0.707
+            },
+            {
+              "v": "2. Transform Data",
+              "i": 8,
+              "n": 0.577
+            },
+            {
+              "v": "Export as CSV from Excel/Google Sheets",
+              "i": 7,
+              "n": 0.408
+            },
+            {
+              "v": "Spreadsheet",
+              "i": 6,
+              "n": 1
+            },
+            {
+              "v": "GitHub",
+              "i": 5,
+              "n": 1
+            },
+            {
+              "v": "Jira",
+              "i": 4,
+              "n": 1
+            },
+            {
+              "v": "1. Prepare Source Data",
+              "i": 3,
+              "n": 0.5
+            },
+            {
+              "v": "Migration Process",
+              "i": 2,
+              "n": 0.707
+            },
+            {
+              "v": "Supported Sources",
+              "i": 1,
+              "n": 0.707
+            },
+            {
+              "v": "Migration Guide",
+              "i": 0,
+              "n": 0.707
+            }
+          ]
+        }
+      },
+      {
+        "i": 10,
+        "$": {
+          "0": {
+            "v": "Deployment Guide",
+            "n": 0.707
+          },
+          "1": {
+            "v": "Complete deployment and operations guide for TraceRTM",
+            "n": 0.378
+          },
+          "2": [
+            {
+              "v": "Terminal 1 - Backend",
+              "i": 9,
+              "n": 0.5
+            },
+            {
+              "v": "Start development servers",
+              "i": 8,
+              "n": 0.577
+            },
+            {
+              "v": "Frontend setup",
+              "i": 7,
+              "n": 0.707
+            },
+            {
+              "v": "Backend setup",
+              "i": 6,
+              "n": 0.707
+            },
+            {
+              "v": "Start infrastructure services",
+              "i": 5,
+              "n": 0.577
+            },
+            {
+              "v": "Clone repository",
+              "i": 4,
+              "n": 0.707
+            },
+            {
+              "v": "Local Development",
+              "i": 3,
+              "n": 0.707
+            },
+            {
+              "v": "Prerequisites",
+              "i": 2,
+              "n": 1
+            },
+            {
+              "v": "Quick Start",
+              "i": 1,
+              "n": 0.707
+            },
+            {
+              "v": "Deployment Guide",
+              "i": 0,
+              "n": 0.707
+            }
+          ]
+        }
+      },
+      {
+        "i": 11,
+        "$": {
+          "0": {
+            "v": "MCP Tools Guide",
+            "n": 0.577
+          },
+          "1": {
+            "v": "Using Model Context Protocol with TraceRTM",
+            "n": 0.408
+          },
+          "2": [
+            {
+              "v": "Per-user system dir",
+              "i": 9,
+              "n": 0.577
+            },
+            {
+              "v": "Storage & State",
+              "i": 8,
+              "n": 0.577
+            },
+            {
+              "v": "Auth Matrix",
+              "i": 7,
+              "n": 0.707
+            },
+            {
+              "v": "API",
+              "i": 6,
+              "n": 1
+            },
+            {
+              "v": "CLI (Typer + Rich)",
+              "i": 5,
+              "n": 0.5
+            },
+            {
+              "v": "MCP (FastMCP server)",
+              "i": 4,
+              "n": 0.577
+            },
+            {
+              "v": "Clients at a Glance",
+              "i": 3,
+              "n": 0.5
+            },
+            {
+              "v": "Key Principles",
+              "i": 2,
+              "n": 0.707
+            },
+            {
+              "v": "Scope",
+              "i": 1,
+              "n": 1
+            },
+            {
+              "v": "TraceRTM MCP/CLI/API Capability Matrix (Offline + Online)",
+              "i": 0,
+              "n": 0.378
+            }
+          ]
+        }
+      },
+      {
+        "i": 12,
+        "$": {
+          "0": {
+            "v": "Development Guide",
+            "n": 0.707
+          },
+          "1": {
+            "v": "Developer guide for contributing to TraceRTM",
+            "n": 0.408
+          },
+          "2": [
+            {
+              "v": "Development Workflow",
+              "i": 9,
+              "n": 0.707
+            },
+            {
+              "v": "Project Structure",
+              "i": 8,
+              "n": 0.707
+            },
+            {
+              "v": "Start infrastructure",
+              "i": 7,
+              "n": 0.707
+            },
+            {
+              "v": "Frontend setup",
+              "i": 6,
+              "n": 0.707
+            },
+            {
+              "v": "Backend setup",
+              "i": 5,
+              "n": 0.707
+            },
+            {
+              "v": "Clone repository",
+              "i": 4,
+              "n": 0.707
+            },
+            {
+              "v": "Initial Setup",
+              "i": 3,
+              "n": 0.707
+            },
+            {
+              "v": "Prerequisites",
+              "i": 2,
+              "n": 1
+            },
+            {
+              "v": "Setup",
+              "i": 1,
+              "n": 1
+            },
+            {
+              "v": "Development Guide",
+              "i": 0,
+              "n": 0.707
+            }
+          ]
+        }
+      },
+      {
+        "i": 13,
+        "$": {
+          "0": {
+            "v": "TraceRTM Documentation",
+            "n": 0.707
+          },
+          "1": {
+            "v": "Welcome to TraceRTM - Requirements Traceability & Management Platform",
+            "n": 0.333
+          },
+          "2": [
+            {
+              "v": "Architecture",
+              "i": 4,
+              "n": 1
+            },
+            {
+              "v": "Getting Started",
+              "i": 3,
+              "n": 0.707
+            },
+            {
+              "v": "Features",
+              "i": 2,
+              "n": 1
+            },
+            {
+              "v": "Quick Links",
+              "i": 1,
+              "n": 0.707
+            },
+            {
+              "v": "Welcome to TraceRTM",
+              "i": 0,
+              "n": 0.577
+            }
+          ]
+        }
+      },
+      {
+        "i": 14,
+        "$": {
+          "0": {
+            "v": "Backend Architecture",
+            "n": 0.707
+          },
+          "1": {
+            "v": "FastAPI backend architecture and design patterns",
+            "n": 0.408
+          },
+          "2": [
+            {
+              "v": "Dependency Injection",
+              "i": 9,
+              "n": 0.707
+            },
+            {
+              "v": "Layer 4: Models & Schemas",
+              "i": 8,
+              "n": 0.447
+            },
+            {
+              "v": "Layer 3: Repositories",
+              "i": 7,
+              "n": 0.577
+            },
+            {
+              "v": "Layer 2: Services",
+              "i": 6,
+              "n": 0.577
+            },
+            {
+              "v": "Layer 1: API Routes",
+              "i": 5,
+              "n": 0.5
+            },
+            {
+              "v": "Architecture Layers",
+              "i": 4,
+              "n": 0.707
+            },
+            {
+              "v": "Infrastructure",
+              "i": 3,
+              "n": 1
+            },
+            {
+              "v": "Core Framework",
+              "i": 2,
+              "n": 0.707
+            },
+            {
+              "v": "Tech Stack",
+              "i": 1,
+              "n": 0.707
+            },
+            {
+              "v": "Backend Architecture",
+              "i": 0,
+              "n": 0.707
+            }
+          ]
+        }
+      },
+      {
+        "i": 15,
+        "$": {
+          "0": {
+            "v": "Architecture",
+            "n": 1
+          },
+          "1": {
+            "v": "System architecture and design decisions",
+            "n": 0.447
+          },
+          "2": [
+            {
+              "v": "Database",
+              "i": 9,
+              "n": 1
+            },
+            {
+              "v": "Frontend",
+              "i": 8,
+              "n": 1
+            },
+            {
+              "v": "Backend",
+              "i": 7,
+              "n": 1
+            },
+            {
+              "v": "Technology Stack",
+              "i": 6,
+              "n": 0.707
+            },
+            {
+              "v": "3. Event-Driven Architecture",
+              "i": 5,
+              "n": 0.577
+            },
+            {
+              "v": "2. API-First Design",
+              "i": 4,
+              "n": 0.577
+            },
+            {
+              "v": "1. Clean Architecture",
+              "i": 3,
+              "n": 0.577
+            },
+            {
+              "v": "Architecture Principles",
+              "i": 2,
+              "n": 0.707
+            },
+            {
+              "v": "System Overview",
+              "i": 1,
+              "n": 0.707
+            },
+            {
+              "v": "TraceRTM Architecture",
+              "i": 0,
+              "n": 0.707
+            }
+          ]
+        }
+      },
+      {
+        "i": 16,
+        "$": {
+          "0": {
+            "v": "Frontend Architecture",
+            "n": 0.707
+          },
+          "1": {
+            "v": "React application architecture and design patterns",
+            "n": 0.408
+          },
+          "2": [
+            {
+              "v": "Data Fetching Pattern",
+              "i": 9,
+              "n": 0.577
+            },
+            {
+              "v": "State Management",
+              "i": 8,
+              "n": 0.707
+            },
+            {
+              "v": "Component Organization",
+              "i": 7,
+              "n": 0.707
+            },
+            {
+              "v": "Architecture Patterns",
+              "i": 6,
+              "n": 0.707
+            },
+            {
+              "v": "Project Structure",
+              "i": 5,
+              "n": 0.707
+            },
+            {
+              "v": "Graph Visualization",
+              "i": 4,
+              "n": 0.707
+            },
+            {
+              "v": "Routing & Data",
+              "i": 3,
+              "n": 0.577
+            },
+            {
+              "v": "Core Framework",
+              "i": 2,
+              "n": 0.707
+            },
+            {
+              "v": "Tech Stack",
+              "i": 1,
+              "n": 0.707
+            },
+            {
+              "v": "Frontend Architecture",
+              "i": 0,
+              "n": 0.707
+            }
+          ]
+        }
+      },
+      {
+        "i": 17,
+        "$": {
+          "0": {
+            "v": "CLI Architecture",
+            "n": 0.707
+          },
+          "1": {
+            "v": "Command-line interface architecture and design patterns",
+            "n": 0.408
+          },
+          "2": [
+            {
+              "v": "Tables",
+              "i": 9,
+              "n": 1
+            },
+            {
+              "v": "Rich Output Patterns",
+              "i": 8,
+              "n": 0.577
+            },
+            {
+              "v": "Standard Command Pattern",
+              "i": 7,
+              "n": 0.577
+            },
+            {
+              "v": "Command Structure",
+              "i": 6,
+              "n": 0.707
+            },
+            {
+              "v": "Layer 4: Data Layer",
+              "i": 5,
+              "n": 0.5
+            },
+            {
+              "v": "Layer 3: Services",
+              "i": 4,
+              "n": 0.577
+            },
+            {
+              "v": "Layer 2: Command Groups",
+              "i": 3,
+              "n": 0.5
+            },
+            {
+              "v": "Layer 1: Entry Point",
+              "i": 2,
+              "n": 0.5
+            },
+            {
+              "v": "Architecture Layers",
+              "i": 1,
+              "n": 0.707
+            },
+            {
+              "v": "TraceRTM CLI Architecture",
+              "i": 0,
+              "n": 0.577
+            }
+          ]
+        }
+      },
+      {
+        "i": 18,
+        "$": {
+          "0": {
+            "v": "Authentication",
+            "n": 1
+          },
+          "1": {
+            "v": "Device-based OAuth 2.0 authentication flow",
+            "n": 0.447
+          },
+          "2": [
+            {
+              "v": "Error Handling",
+              "i": 6,
+              "n": 0.707
+            },
+            {
+              "v": "Get Current User",
+              "i": 5,
+              "n": 0.577
+            },
+            {
+              "v": "Poll for Token",
+              "i": 4,
+              "n": 0.577
+            },
+            {
+              "v": "Start Device Authorization",
+              "i": 3,
+              "n": 0.577
+            },
+            {
+              "v": "Endpoints",
+              "i": 2,
+              "n": 1
+            },
+            {
+              "v": "Authentication Flow",
+              "i": 1,
+              "n": 0.707
+            },
+            {
+              "v": "Authentication",
+              "i": 0,
+              "n": 1
+            }
+          ]
+        }
+      },
+      {
+        "i": 19,
+        "$": {
+          "0": {
+            "v": "API Reference",
+            "n": 0.707
+          },
+          "1": {
+            "v": "Complete TraceRTM REST API documentation with interactive examples",
+            "n": 0.354
+          },
+          "2": [
+            {
+              "v": "Specifications & Testing",
+              "i": 9,
+              "n": 0.577
+            },
+            {
+              "v": "Integrations",
+              "i": 8,
+              "n": 1
+            },
+            {
+              "v": "Traceability",
+              "i": 7,
+              "n": 1
+            },
+            {
+              "v": "Projects & Items",
+              "i": 6,
+              "n": 0.577
+            },
+            {
+              "v": "Authentication & Authorization",
+              "i": 5,
+              "n": 0.577
+            },
+            {
+              "v": "API Categories",
+              "i": 4,
+              "n": 0.707
+            },
+            {
+              "v": "Authentication",
+              "i": 3,
+              "n": 1
+            },
+            {
+              "v": "Base URL",
+              "i": 2,
+              "n": 0.707
+            },
+            {
+              "v": "Overview",
+              "i": 1,
+              "n": 1
+            },
+            {
+              "v": "API Reference",
+              "i": 0,
+              "n": 0.707
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "documents": [
+    {
+      "id": "/docs/00-getting-started/quick-start",
+      "url": "/docs/00-getting-started/quick-start",
+      "title": "Quick Start Guide",
+      "description": "Get up and running with TraceRTM in 10 minutes",
+      "content": "# Quick Start Guide Get TraceRTM up and running in 10 minutes. ## Step 1: Initialize Configuration Expected output: ## Step 2: Create Your First Project Expected output: ## Step 3: Create Items ## Step 4: View Your Items ## Step 5: Create Cross-View Links ## Next Steps - CLI Tutorial: Complete CLI walkthrough - Architecture Overview: Understand the system - API Reference: Explore the API ## Need Help? - Check the FAQ - Read the Troubleshooting Guide - Open an issue on GitHub",
+      "headings": [
+        "Quick Start Guide",
+        "Step 1: Initialize Configuration",
+        "Initialize with SQLite (easiest for getting started)",
+        "Step 2: Create Your First Project",
+        "Create a project",
+        "Step 3: Create Items",
+        "Create an epic",
+        "Create a feature under the epic",
+        "Create a user story",
+        "Step 4: View Your Items"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/00-getting-started",
+      "url": "/docs/00-getting-started",
+      "title": "Getting Started",
+      "description": "Get started with TraceRTM in minutes",
+      "content": "# Getting Started with TraceRTM Welcome to TraceRTM! This guide will help you get up and running with the platform. ## Prerequisites Before you begin, ensure you have: - Python 3.12 or higher - Node.js 20 or higher - PostgreSQL 14 or higher (or SQLite for development) - Bun package manager (for frontend development) ## Installation ### 1. Clone the Repository ### 2. Backend Setup The API will be available at . ### 3. Frontend Setup The web app will be available at . ## Next Steps - CLI Tutorial: Learn how to use the CLI - Contributing Guide: How to contribute - Architecture Overview: Understand the system design ## Quick Links | Resource | Description | |----------|-------------| | API Documentation | Interactive API docs | | CLI Tutorial | Command-line interface guide | | MCP Tools | Model Context Protocol integration |",
+      "headings": [
+        "Getting Started with TraceRTM",
+        "Prerequisites",
+        "Installation",
+        "1. Clone the Repository",
+        "2. Backend Setup",
+        "Install dependencies with uv",
+        "Set up environment variables",
+        "Run database migrations",
+        "Start the backend server",
+        "3. Frontend Setup"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/00-getting-started/contributing",
+      "url": "/docs/00-getting-started/contributing",
+      "title": "Contributing Guide",
+      "description": "How to contribute to TraceRTM",
+      "content": "# Contributing to TraceRTM **Last Updated:** 2025-11-21 --- ## Getting Started 1. Fork the repository 2. Clone your fork 3. Create a feature branch 4. Make your changes 5. Write tests 6. Submit a pull request --- ## Test Requirements ### Test Naming Convention All tests must follow the TC-X.Y.Z naming convention: ### Test Function Naming ### Test Template Use the template in for all new tests. ### Test Organization ### Test Traceability Every test must be linked to: 1. **Functional Requirement (FR)** - What requirement does it test? 2. **User Story** - Which story does it implement? 3. **Test Type** - Unit, Integration, or E2E? 4. **Priority** - P0 (critical), P1 (important), P2 (nice-to-have)? ### Test Coverage Requirements - Minimum 80% code coverage - All FRs must have test coverage - All stories must have test coverage - Mix of positive, negative, and edge case tests --- ## Running Tests ### Run All Tests ### Run Specific Test File ### Run Specific Test ### Run with Coverage ### Ru",
+      "headings": [
+        "Contributing to TraceRTM",
+        "Getting Started",
+        "Test Requirements",
+        "Test Naming Convention",
+        "Test Function Naming",
+        "Test Template",
+        "Test Organization",
+        "Test Traceability",
+        "Test Coverage Requirements",
+        "Running Tests"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/00-getting-started/cli-tutorial",
+      "url": "/docs/00-getting-started/cli-tutorial",
+      "title": "CLI Tutorial",
+      "description": "Complete guide to using the TraceRTM CLI",
+      "content": "# TraceRTM CLI Tutorial **Version**: 1.0 **Last Updated**: 2025-01-27 --- ## 📖 Welcome This tutorial will guide you through using TraceRTM CLI to manage your projects. By the end, you'll be able to create items, manage links, switch views, and use all core features. **Estimated Time**: 30-45 minutes --- ## Tutorial 1: Your First Project ### Step 1: Initialize Configuration First, set up TraceRTM: **Expected Output**: ### Step 2: Create Your First Project **Expected Output**: ### Step 3: Verify Setup **Congratulations!** You've set up your first TraceRTM project. --- ## Tutorial 2: Creating Items ### Step 1: Create a Feature **Note the ID** from the output (e.g., ) ### Step 2: Create a Feature Under the Epic ### Step 3: Create a Story ### Step 4: List Your Items ### Step 5: View Item Details **You've created your first item hierarchy!** --- ## Tutorial 3: Managing Links ### Step 1: Create Items in Different Views ### Step 2: Create Links ### Step 3: List Links **You've created cross-vi",
+      "headings": [
+        "TraceRTM CLI Tutorial",
+        "📖 Welcome",
+        "Tutorial 1: Your First Project",
+        "Step 1: Initialize Configuration",
+        "Initialize with SQLite (easiest for getting started)",
+        "Step 2: Create Your First Project",
+        "Create a project",
+        "Step 3: Verify Setup",
+        "Check database status",
+        "List projects"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/00-getting-started/onboarding",
+      "url": "/docs/00-getting-started/onboarding",
+      "title": "Team Onboarding",
+      "description": "Complete onboarding guide for new team members",
+      "content": "# Team Onboarding Guide Welcome to the Trace RTM project! This guide will help you get up to speed quickly. ## What is Trace RTM? Trace is a comprehensive multi-view project management system optimized for power users orchestrating 1000+ AI agents. It provides: - **16 views** covering all PM aspects (Feature, Code, Test, API, etc.) - **Git-style versioning** with time-travel capability - **NATS-based event coordination** for distributed task execution - **Natural language assertions** and verification systems - **Comprehensive traceability** with 60+ link types ## Quick Start ### 1. Set Up Your Environment ### 2. Start Development Servers ### 3. Verify Installation - Backend: http://localhost:8000/docs - Frontend: http://localhost:5173 - Docs: http://localhost:3001 ## Key Architectural Decisions ### Why NATS Over Redis? | Feature | NATS JetStream | Redis | |---------|----------------|-------| | Message Delivery | At-least-once, exactly-once ✅ | At-most-once ❌ | | Persistence | Built-in",
+      "headings": [
+        "Team Onboarding Guide",
+        "What is Trace RTM?",
+        "Quick Start",
+        "1. Set Up Your Environment",
+        "Navigate to project root",
+        "Install dependencies with bun (not npm!)",
+        "Set up backend",
+        "2. Start Development Servers",
+        "Terminal 1 - Backend",
+        "Terminal 2 - Frontend"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/02-guides/database",
+      "url": "/docs/02-guides/database",
+      "title": "Database Guide",
+      "description": "Database management and best practices",
+      "content": "# Database Guide TraceRTM uses PostgreSQL as the primary database with SQLAlchemy ORM and Alembic for migrations. ## Database Schema ### Core Tables #### Items Table Stores all traceability items: #### Links Table Stores relationships between items: ## Migrations ### Creating Migrations ### Migration File ### Running Migrations ## Querying ### Basic Queries ### Joins ### Eager Loading ### Aggregations ## Indexes ### Creating Indexes ### Index Usage ## Performance Optimization ### Query Optimization ### Connection Pooling ### Batch Operations ## JSONB Queries PostgreSQL JSONB support for flexible metadata: ## Full-Text Search ## Backup and Restore ### Backup ### Restore ### Automated Backups Add to crontab: ## Monitoring ### Query Performance ### Connection Stats ### Table Statistics ## Maintenance ### VACUUM ### REINDEX ## Best Practices 1. **Use transactions** - Wrap related operations 2. **Add indexes** - For frequently queried columns 3. **Eager load relationships** - Avoid N+1 quer",
+      "headings": [
+        "Database Guide",
+        "Database Schema",
+        "Core Tables",
+        "Items Table",
+        "Links Table",
+        "Migrations",
+        "Creating Migrations",
+        "Auto-generate migration from model changes",
+        "Create empty migration",
+        "Migration File"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/02-guides",
+      "url": "/docs/02-guides",
+      "title": "Guides",
+      "description": "Step-by-step guides for common tasks",
+      "content": "# TraceRTM Guides Practical guides for using TraceRTM effectively. ## Getting Started Guides - MCP Tools: Using Model Context Protocol tools - Configuration: Understanding configuration precedence - Developer Guide: Contributing to TraceRTM ## Deployment Guides - Deployment: Deploying TraceRTM to production - Kubernetes: Running on Kubernetes - Docker: Docker deployment ## Integration Guides - Jira Integration: Integrate with Jira - GitHub Integration: Integrate with GitHub - Linear Integration: Integrate with Linear ## Advanced Topics - Custom Views: Create custom views - Extensions: Build extensions - API Integration: Integrate with external APIs",
+      "headings": [
+        "TraceRTM Guides",
+        "Getting Started Guides",
+        "Deployment Guides",
+        "Integration Guides",
+        "Advanced Topics"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/02-guides/testing",
+      "url": "/docs/02-guides/testing",
+      "title": "Testing Guide",
+      "description": "Comprehensive testing strategy for TraceRTM",
+      "content": "# Testing Guide TraceRTM uses a multi-layered testing approach to ensure code quality and reliability. ## Testing Pyramid ## Backend Testing ### Unit Tests Test individual functions and classes in isolation. **Location**: **Tools**: pytest, pytest-asyncio, pytest-mock ### Integration Tests Test API endpoints with real database. **Location**: **Tools**: pytest, httpx, TestClient ### Running Backend Tests ## Frontend Testing ### Unit Tests Test individual components and hooks. **Location**: **Tools**: Vitest, Testing Library ### Hook Testing ### Running Frontend Tests ## End-to-End Tests Test complete user flows in a real browser. **Location**: **Tools**: Playwright ### Running E2E Tests ## Test Fixtures ### Backend Fixtures ### Frontend Fixtures ## Mocking ### Backend Mocking ### Frontend Mocking ## Coverage ### Backend Coverage ### Frontend Coverage ## CI/CD Integration ### GitHub Actions ## Best Practices 1. **Write tests first** (TDD) - Think through requirements 2. **Test behavior, ",
+      "headings": [
+        "Testing Guide",
+        "Testing Pyramid",
+        "Backend Testing",
+        "Unit Tests",
+        "tests/unit/services/test_item_service.py",
+        "Integration Tests",
+        "tests/integration/test_items_api.py",
+        "Running Backend Tests",
+        "All tests",
+        "Specific file"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/02-guides/config-precedence",
+      "url": "/docs/02-guides/config-precedence",
+      "title": "Configuration Precedence",
+      "description": "Understanding TraceRTM configuration",
+      "content": "# TraceRTM Config Precedence & Locations TraceRTM resolves configuration from multiple sources. This guide explains **where config lives** and **how precedence is applied**. ## Precedence Order Highest → Lowest: 1. **CLI flags** (per-command overrides) 2. **Environment variables** () 3. **Repo project config** () 4. **User project config** () 5. **Global config** () Notes: - Repo project config is intended to be **git‑tracked** and shared. - User project config is for **per‑user overrides**. - Global config is the **fallback** for all projects. ## Locations ### Global (user) - ### Repo project (shared) - ### User project (per‑project per‑user) - ### Local state (ignored) - for db/tmp/cache files ## Example: Repo Project Config ## How Resolution Works - CLI and env override everything. - If key exists in , it is used for all users. - If a user sets a per‑project override in , it wins over the repo config. - If no project config is present, the global config applies. ## Tips - Keep only ",
+      "headings": [
+        "TraceRTM Config Precedence & Locations",
+        "Precedence Order",
+        "Locations",
+        "Global (user)",
+        "Repo project (shared)",
+        "User project (per‑project per‑user)",
+        "Local state (ignored)",
+        "Example: Repo Project Config",
+        "How Resolution Works",
+        "Tips"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/02-guides/migration",
+      "url": "/docs/02-guides/migration",
+      "title": "Migration Guide",
+      "description": "Guide for migrating data from external systems to TraceRTM",
+      "content": "# Migration Guide This guide covers migrating requirements, test cases, and traceability links from external systems into TraceRTM. ## Supported Sources TraceRTM can import data from: - **Jira** - Issues, epics, sprints - **GitHub** - Issues, pull requests, projects - **Spreadsheets** - CSV, Excel files - **ReqIF** - Requirements Interchange Format - **Markdown/MDX** - Documentation files ## Migration Process ### 1. Prepare Source Data Export data from your current system: ### 2. Transform Data Map source fields to TraceRTM schema: ### 3. Import Data Use the CLI to import: ## Jira Migration ### Export from Jira ### Field Mapping | Jira Field | TraceRTM Field | Notes | |------------|----------------|-------| | Summary | title | Direct mapping | | Description | description | Converted from Atlassian format | | Issue Type | type | Maps to item types | | Status | status | Maps to item statuses | | Priority | metadata.priority | Stored in metadata | | Labels | metadata.labels | Array in met",
+      "headings": [
+        "Migration Guide",
+        "Supported Sources",
+        "Migration Process",
+        "1. Prepare Source Data",
+        "Jira",
+        "GitHub",
+        "Spreadsheet",
+        "Export as CSV from Excel/Google Sheets",
+        "2. Transform Data",
+        "Example transformation"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/02-guides/deployment",
+      "url": "/docs/02-guides/deployment",
+      "title": "Deployment Guide",
+      "description": "Complete deployment and operations guide for TraceRTM",
+      "content": "# Deployment Guide Complete deployment and operations guide for TraceRTM in various environments. ## Quick Start ### Prerequisites - **Docker & Docker Compose** - Container runtime - **Python 3.12+** - Backend runtime - **Node.js 20+** - Frontend build - **PostgreSQL 15+** - Database - **Redis 7+** - Caching layer ### Local Development ### Docker Deployment ## Services ### PostgreSQL - **Port**: 5432 - **Database**: tracertm - **User**: tracertm - **Password**: Set via env var ### Redis - **Port**: 6379 - **Purpose**: Caching, sessions, rate limiting ### NATS - **Port**: 4222 (client), 8222 (monitoring) - **Purpose**: Event streaming, pub/sub ### API - **Port**: 8000 - **Endpoint**: http://localhost:8000 - **Docs**: http://localhost:8000/docs ## Configuration ### Environment Variables Create a file: ### Database Migrations Using Alembic for schema management: ## Production Deployment ### Using Docker Compose 1. **Update environment variables**: 2. **Build and start**: 3. **Run migratio",
+      "headings": [
+        "Deployment Guide",
+        "Quick Start",
+        "Prerequisites",
+        "Local Development",
+        "Clone repository",
+        "Start infrastructure services",
+        "Backend setup",
+        "Frontend setup",
+        "Start development servers",
+        "Terminal 1 - Backend"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/02-guides/mcp-tools",
+      "url": "/docs/02-guides/mcp-tools",
+      "title": "MCP Tools Guide",
+      "description": "Using Model Context Protocol with TraceRTM",
+      "content": "# TraceRTM MCP/CLI/API Capability Matrix (Offline + Online) ## Scope This doc maps **MCP**, **CLI**, and **API** capabilities in both **offline** and **online** modes, and clarifies that each client is optional. ## Key Principles - **Offline-first:** Local DB is primary for local operations. - **Online optional:** Sync/API only required for remote collaboration. - **Client optionality:** MCP and CLI can be used independently (or together). - **Auth separation:** MCP auth does **not** depend on CLI state. ## Clients at a Glance ### MCP (FastMCP server) - **Entry:** or - **Auth:** WorkOS AuthKit JWT (OAuth), optional static dev API keys - **Offline:** Full CRUD + analysis via local DB - **Online:** Sync via API if configured ### CLI (Typer + Rich) - **Entry:** - **Auth:** WorkOS AuthKit device flow - **Offline:** Full CRUD + analysis via local DB - **Online:** Sync/pull/push via API ### API - **Local API client:** (DB-backed) - **Remote sync client:** (HTTP) - **Auth:** Bearer token (Aut",
+      "headings": [
+        "TraceRTM MCP/CLI/API Capability Matrix (Offline + Online)",
+        "Scope",
+        "Key Principles",
+        "Clients at a Glance",
+        "MCP (FastMCP server)",
+        "CLI (Typer + Rich)",
+        "API",
+        "Auth Matrix",
+        "Storage & State",
+        "Per-user system dir"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/02-guides/development",
+      "url": "/docs/02-guides/development",
+      "title": "Development Guide",
+      "description": "Developer guide for contributing to TraceRTM",
+      "content": "# Development Guide Complete guide for developers working on TraceRTM. ## Setup ### Prerequisites Install required tools: - **Python 3.12+** - Use uv for fast package management - **Node.js 20+** - Use bun for frontend - **Docker** - For infrastructure services - **Git** - Version control ### Initial Setup ## Project Structure ## Development Workflow ### 1. Create Feature Branch ### 2. Make Changes Follow TDD (Test-Driven Development): ### 3. Code Quality Run checks before committing: ### 4. Commit Changes Use conventional commits: ### 5. Push and Create PR ## Backend Development ### Adding a New API Endpoint 1. **Define schema** (): 2. **Create repository method** (): 3. **Add service method** (): 4. **Create endpoint** (): 5. **Write tests** (): ### Database Migrations Create migration when models change: ### Adding CLI Commands 1. **Create command file** (): 2. **Register in main CLI** (): ### Adding MCP Tools 1. **Define tool** (): 2. **Register tool** (): ## Frontend Development #",
+      "headings": [
+        "Development Guide",
+        "Setup",
+        "Prerequisites",
+        "Initial Setup",
+        "Clone repository",
+        "Backend setup",
+        "Frontend setup",
+        "Start infrastructure",
+        "Project Structure",
+        "Development Workflow"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs",
+      "url": "/docs",
+      "title": "TraceRTM Documentation",
+      "description": "Welcome to TraceRTM - Requirements Traceability & Management Platform",
+      "content": "# Welcome to TraceRTM TraceRTM is a comprehensive requirements traceability and management platform designed for modern software development teams. ## Quick Links - Getting Started - Set up TraceRTM and create your first project - Architecture - Understand the system design and components - Guides - Step-by-step guides for common tasks - API Reference - Complete API documentation and examples ## Features - **Multi-View System**: Manage requirements, code, tests, and APIs in unified views - **Cross-View Traceability**: Link items across different views for complete traceability - **Real-time Collaboration**: Work together with real-time updates via WebSocket - **GraphQL & REST APIs**: Flexible API access for integrations - **CLI & MCP Tools**: Command-line and Model Context Protocol tools for automation - **Enterprise-Ready**: Built with FastAPI, PostgreSQL, and React for scale ## Getting Started Start with our Quick Start Guide to get up and running in minutes. ## Architecture TraceRTM",
+      "headings": [
+        "Welcome to TraceRTM",
+        "Quick Links",
+        "Features",
+        "Getting Started",
+        "Architecture"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/01-architecture/backend-architecture",
+      "url": "/docs/01-architecture/backend-architecture",
+      "title": "Backend Architecture",
+      "description": "FastAPI backend architecture and design patterns",
+      "content": "# Backend Architecture The TraceRTM backend is built with FastAPI following clean architecture principles with clear separation of concerns. ## Tech Stack ### Core Framework - **FastAPI** - Modern async web framework - **Python 3.12** - Latest Python with type hints - **Pydantic** - Data validation and serialization - **SQLAlchemy** - ORM for database operations - **Alembic** - Database migrations ### Infrastructure - **PostgreSQL** - Primary database - **Redis** - Caching layer - **NATS** - Event streaming - **uv** - Fast package manager ## Architecture Layers ### Layer 1: API Routes **Location**: FastAPI routers handling HTTP requests: ### Layer 2: Services **Location**: Business logic layer: ### Layer 3: Repositories **Location**: Data access layer: ### Layer 4: Models & Schemas **Models** () - SQLAlchemy ORM models: **Schemas** () - Pydantic validation models: ## Dependency Injection FastAPI's dependency injection system: ## Database Management ### Connection Pool ### Migrations Us",
+      "headings": [
+        "Backend Architecture",
+        "Tech Stack",
+        "Core Framework",
+        "Infrastructure",
+        "Architecture Layers",
+        "Layer 1: API Routes",
+        "Layer 2: Services",
+        "Layer 3: Repositories",
+        "Layer 4: Models & Schemas",
+        "Dependency Injection"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/01-architecture",
+      "url": "/docs/01-architecture",
+      "title": "Architecture",
+      "description": "System architecture and design decisions",
+      "content": "# TraceRTM Architecture TraceRTM is built with a modern, scalable architecture designed for enterprise requirements management. ## System Overview TraceRTM consists of several key components: - **Backend API**: FastAPI-based REST and GraphQL APIs - **Frontend Web**: React application with TanStack Router and Query - **Database**: PostgreSQL with SQLAlchemy ORM - **Real-time**: NATS and WebSocket for live updates - **CLI**: Command-line interface with Typer - **MCP**: Model Context Protocol for AI integration ## Architecture Principles ### 1. Clean Architecture We follow clean architecture principles with clear separation of concerns: - **Domain Layer**: Core business logic and entities - **Application Layer**: Use cases and services - **Infrastructure Layer**: Database, external services, APIs - **Presentation Layer**: Web UI, CLI, MCP tools ### 2. API-First Design All functionality is exposed through well-defined APIs: - **REST API**: For standard CRUD operations - **GraphQL API**: Fo",
+      "headings": [
+        "TraceRTM Architecture",
+        "System Overview",
+        "Architecture Principles",
+        "1. Clean Architecture",
+        "2. API-First Design",
+        "3. Event-Driven Architecture",
+        "Technology Stack",
+        "Backend",
+        "Frontend",
+        "Database"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/01-architecture/frontend-architecture",
+      "url": "/docs/01-architecture/frontend-architecture",
+      "title": "Frontend Architecture",
+      "description": "React application architecture and design patterns",
+      "content": "# Frontend Architecture The TraceRTM frontend is a modern React application built with TypeScript, TanStack Router, and TanStack Query. ## Tech Stack ### Core Framework - **React 18** - UI framework with concurrent features - **TypeScript** - Type-safe development - **Vite** - Fast build tooling - **Tailwind CSS** - Utility-first styling - **shadcn/ui** - Accessible component library ### Routing & Data - **TanStack Router** - Type-safe file-based routing - **TanStack Query** - Server state management - **Zod** - Runtime validation ### Graph Visualization - **React Flow** - Interactive graph visualization - **D3.js** - Advanced visualizations ## Project Structure ## Architecture Patterns ### Component Organization Components follow a clear hierarchy: 1. **Pages** () - Route-level components 2. **Views** () - Feature-level components 3. **Components** () - Reusable UI components 4. **Primitives** () - Base shadcn/ui components ### State Management **Server State** (TanStack Query): - API",
+      "headings": [
+        "Frontend Architecture",
+        "Tech Stack",
+        "Core Framework",
+        "Routing & Data",
+        "Graph Visualization",
+        "Project Structure",
+        "Architecture Patterns",
+        "Component Organization",
+        "State Management",
+        "Data Fetching Pattern"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/01-architecture/cli-architecture",
+      "url": "/docs/01-architecture/cli-architecture",
+      "title": "CLI Architecture",
+      "description": "Command-line interface architecture and design patterns",
+      "content": "# TraceRTM CLI Architecture The TraceRTM CLI is built on **Typer** (FastAPI's CLI framework) with **Rich** for beautiful terminal output. The architecture follows a modular command group pattern, making it easy to extend and maintain. ## Architecture Layers ### Layer 1: Entry Point **File**: The main entry point that: - Initializes the Typer app - Registers all command groups - Handles global options (--version, --debug) - Sets up Rich console ### Layer 2: Command Groups **Location**: Each command group is a separate Typer app: - - Configuration management - - Project management - - Item CRUD operations - - Link management - - View switching - - Database operations - - Backup/restore - - Project state dashboard - - Cross-view search - - Drill-down navigation - - Stateless ingestion (MD/MDX/YAML) - - Data export - - Item history - - Performance benchmarking ### Layer 3: Services **Location**: Business logic is separated into services: - - Item operations - - Link operations - - View man",
+      "headings": [
+        "TraceRTM CLI Architecture",
+        "Architecture Layers",
+        "Layer 1: Entry Point",
+        "Layer 2: Command Groups",
+        "Layer 3: Services",
+        "Layer 4: Data Layer",
+        "Command Structure",
+        "Standard Command Pattern",
+        "Rich Output Patterns",
+        "Tables"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/03-api-reference/01-auth",
+      "url": "/docs/03-api-reference/01-auth",
+      "title": "Authentication",
+      "description": "Device-based OAuth 2.0 authentication flow",
+      "content": "# Authentication TraceRTM uses device-based OAuth 2.0 authentication, designed for CLI tools and desktop applications. ## Authentication Flow ## Endpoints ### Start Device Authorization Initiates the device authorization flow. **Request Body:** **Response:** **Code Samples:** ### Poll for Token Poll this endpoint to check if the user has completed authorization. **Request Body:** **Responses:** **Success (200):** **Pending (400):** **Expired (400):** ### Get Current User Returns information about the currently authenticated user. **Headers:** **Response:** **Code Sample:** ## Error Handling All authentication endpoints return standard error responses: Common error codes: - - Invalid client_id - - Missing or invalid parameters - - User hasn't authorized yet - - Too many polling requests - - Device code expired - - User denied authorization",
+      "headings": [
+        "Authentication",
+        "Authentication Flow",
+        "Endpoints",
+        "Start Device Authorization",
+        "Poll for Token",
+        "Get Current User",
+        "Error Handling"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "/docs/03-api-reference",
+      "url": "/docs/03-api-reference",
+      "title": "API Reference",
+      "description": "Complete TraceRTM REST API documentation with interactive examples",
+      "content": "# API Reference Welcome to the TraceRTM API reference documentation. This section provides comprehensive documentation for all available API endpoints, auto-generated from the backend OpenAPI specification. ## Overview The TraceRTM API is a RESTful API built with FastAPI that provides programmatic access to all traceability management features. All endpoints return JSON responses and follow standard HTTP status code conventions. ### Base URL ### Authentication Most endpoints require authentication. TraceRTM uses device-based OAuth 2.0 flow: 1. Request a device code from 2. User navigates to verification URL and enters the code 3. Poll to receive access token 4. Include token in header: See Authentication for detailed endpoint documentation. ## API Categories The API is organized into the following categories: ### Authentication & Authorization - Device authorization flow - Token management - User context ### Projects & Items - Project management - Requirements tracking - Test case mana",
+      "headings": [
+        "API Reference",
+        "Overview",
+        "Base URL",
+        "Authentication",
+        "API Categories",
+        "Authentication & Authorization",
+        "Projects & Items",
+        "Traceability",
+        "Integrations",
+        "Specifications & Testing"
+      ],
+      "priority": 4
+    }
+  ]
+}

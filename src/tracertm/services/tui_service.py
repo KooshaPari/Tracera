@@ -1,9 +1,16 @@
-"""Service for TUI (Terminal User Interface) management."""
+"""Service for TUI (Terminal User Interface) management.
 
-from collections.abc import Callable
+Functional Requirements: FR-APP-001
+"""
+
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class UIComponentType(StrEnum):
@@ -34,6 +41,7 @@ class TUIService:
     """Service for managing TUI components and interactions."""
 
     def __init__(self) -> None:
+        """Initialize."""
         self.components: dict[str, UIComponent] = {}
         self.current_view: str | None = None
         self.event_handlers: dict[str, list[Callable]] = {}
@@ -98,13 +106,13 @@ class TUIService:
             self.event_handlers[event_name] = []
         self.event_handlers[event_name].append(handler)
 
-    def trigger_event(self, event_name: str, *args: object, **kwargs: object) -> list[Any]:
+    def trigger_event(self, event_name: str, *args: object, **kwargs: object) -> list[object]:
         """Trigger event and execute all handlers."""
         results = []
         if event_name in self.event_handlers:
             for handler in self.event_handlers[event_name]:
                 try:
-                    result = handler(*args, **kwargs)  # noqa: invalid-syntax - reserved for future implementation
+                    result = handler(*args, **kwargs)
                     results.append(result)
                 except (OSError, ValueError) as e:
                     results.append({"error": str(e)})

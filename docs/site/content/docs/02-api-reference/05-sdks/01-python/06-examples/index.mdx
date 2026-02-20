@@ -1,0 +1,230 @@
+---
+title: "Python SDK Examples"
+description: "Complete examples using the TraceRTM Python SDK"
+keywords: [python, sdk, examples, code samples, tutorials]
+---
+
+# Python SDK Examples
+
+Complete examples demonstrating TraceRTM Python SDK usage.
+
+## Complete Workflow Example
+
+```python
+from tracertm import TraceRTM
+import os
+
+# Initialize client
+client = TraceRTM(api_key=os.getenv("TRACERTM_API_KEY"))
+
+# 1. Create project
+project = client.projects.create(
+    name="Authentication System",
+    description="OAuth 2.0 implementation",
+    metadata={"team": "backend"}
+)
+
+# 2. Create requirements
+req1 = client.create_item(
+    title="OAuth 2.0 Support",
+    view="requirements",
+    item_type="requirement",
+    status="draft",
+    priority="high",
+    metadata={"component": "auth-service"}
+)
+
+req2 = client.create_item(
+    title="JWT Token Validation",
+    view="requirements",
+    item_type="requirement",
+    status="draft",
+    priority="high"
+)
+
+# 3. Create test cases
+test1 = client.create_item(
+    title="OAuth Flow Test",
+    view="test-cases",
+    item_type="test-case",
+    status="draft"
+)
+
+test2 = client.create_item(
+    title="JWT Validation Test",
+    view="test-cases",
+    item_type="test-case",
+    status="draft"
+)
+
+# 4. Create traceability links
+client.create_link(
+    source_id=req1.id,
+    target_id=test1.id,
+    link_type="verified_by"
+)
+
+client.create_link(
+    source_id=req2.id,
+    target_id=test2.id,
+    link_type="verified_by"
+)
+
+# 5. Transition items
+client.transition_item_status(req1.id, "active", "Requirements finalized")
+client.transition_item_status(test1.id, "active", "Test case ready")
+
+print("Traceability matrix created successfully!")
+```
+
+## Impact Analysis Example
+
+```python
+# Analyze impact of changing a requirement
+impact = client.analyze_impact(
+    item_id="item_req_001",
+    project_id="proj_123"
+)
+
+print(f"Changing this item will affect {impact['total_affected']} items:")
+for affected in impact['affected_items']:
+    print(f"  - {affected['title']} (depth: {affected['depth']})")
+```
+
+## Cycle Detection Example
+
+```python
+# Check for cycles
+cycles = client.detect_cycles(project_id="proj_123")
+
+if cycles['has_cycles']:
+    print(f"Warning: {cycles['total_cycles']} cycles detected")
+    print(f"Affected items: {cycles['affected_items']}")
+else:
+    print("No cycles detected - graph is acyclic")
+```
+
+## Query and Filter Example
+
+```python
+# Query active requirements
+items = client.query_items(
+    view="requirements",
+    status="active",
+    limit=100
+)
+
+# Filter by metadata
+high_priority = [
+    item for item in items
+    if item.get('metadata', {}).get('priority') == 'high'
+]
+
+print(f"Found {len(high_priority)} high-priority requirements")
+```
+
+## Batch Operations Example
+
+```python
+# Create multiple items
+titles = ["Req 1", "Req 2", "Req 3", "Req 4", "Req 5"]
+items = []
+
+for title in titles:
+    item = client.create_item(
+        title=title,
+        view="requirements",
+        item_type="requirement",
+        status="draft"
+    )
+    items.append(item)
+    print(f"Created: {item.id}")
+
+print(f"Created {len(items)} items in batch")
+```
+
+## Export and Import Example
+
+```python
+# Export project
+export_data = client.projects.export(
+    project_id="proj_123",
+    format="json"
+)
+
+# Save to file
+import json
+with open("backup.json", "w") as f:
+    json.dump(export_data, f, indent=2)
+
+# Import to new project
+new_project = client.projects.create(name="Restored Project")
+
+with open("backup.json", "r") as f:
+    import_data = json.load(f)
+
+result = client.projects.import_data(
+    project_id=new_project.id,
+    format="json",
+    data=json.dumps(import_data)
+)
+
+print(f"Imported {result['imported']['items']} items")
+```
+
+## Agent Example
+
+```python
+# Register agent
+agent_id = client.register_agent(
+    name="Analysis Agent",
+    capabilities=["impact_analysis", "cycle_detection"],
+    agent_type="ai_agent"
+)
+
+# Perform operations as agent
+items = client.query_items(view="requirements", limit=50)
+
+# Operations are automatically logged
+print(f"Agent {agent_id} queried {len(items)} items")
+```
+
+## Error Handling Example
+
+```python
+from tracertm.exceptions import (
+    NotFoundError,
+    ValidationError,
+    RateLimitError
+)
+
+def safe_operation(client, item_id):
+    try:
+        item = client.get_item(item_id)
+        if not item:
+            print("Item not found")
+            return
+        
+        # Perform operation
+        client.transition_item_status(item_id, "active")
+        print("Operation successful")
+        
+    except NotFoundError:
+        print("Item not found")
+    except ValidationError as e:
+        print(f"Validation error: {e}")
+    except RateLimitError as e:
+        print(f"Rate limited. Retry after {e.retry_after} seconds")
+        import time
+        time.sleep(e.retry_after)
+        # Retry
+        safe_operation(client, item_id)
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+```
+
+## Related Documentation
+
+- [Quickstart](./02-quickstart) - Get started
+- [Authentication](./03-authentication) - Auth setup
+- [Artifacts](./04-artifacts) - Item operations

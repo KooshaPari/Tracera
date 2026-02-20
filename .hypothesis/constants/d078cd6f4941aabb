@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/config/schema.py
+# hypothesis_version: 6.148.7
+
+[1.0, 30.0, 300.0, 300, 1000, 10000, '/', 'API', 'CODE', 'DATABASE', 'DEBUG', 'ERROR', 'FEATURE', 'INFO', 'Logging level', 'PROGRESS', 'ROADMAP', 'TEST', 'WARNING', 'WIREFRAME', 'api_url', 'csv', 'database_url', 'forbid', 'http://', 'https://', 'json', 'last_write_wins', 'local_wins', 'manual', 'postgresql://', 'remote_wins', 'sqlite:///', 'table', 'yaml']

@@ -1,0 +1,11 @@
+# Local TraceRTM state (ignore)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+*.bak
+*.log
+*.tmp
+/cache/
+/state/
+/tmp/

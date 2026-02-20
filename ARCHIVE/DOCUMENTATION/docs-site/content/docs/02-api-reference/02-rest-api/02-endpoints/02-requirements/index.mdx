@@ -1,0 +1,801 @@
+---
+title: Requirements API
+description: Complete API reference for managing requirements, specifications, and traceable items in TraceRTM
+---
+
+# Requirements API
+
+Requirements (and other item types like test cases, designs, etc.) are the core building blocks of TraceRTM. This API manages all traceable items within a project.
+
+## Endpoints Overview
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/v1/projects/{project_id}/items` | List items |
+| `POST` | `/v1/projects/{project_id}/items` | Create item |
+| `GET` | `/v1/projects/{project_id}/items/{item_id}` | Get item |
+| `PATCH` | `/v1/projects/{project_id}/items/{item_id}` | Update item |
+| `DELETE` | `/v1/projects/{project_id}/items/{item_id}` | Delete item |
+| `POST` | `/v1/projects/{project_id}/items/batch` | Batch operations |
+| `POST` | `/v1/projects/{project_id}/items/query` | Advanced query |
+| `GET` | `/v1/projects/{project_id}/items/{item_id}/history` | Item history |
+| `GET` | `/v1/projects/{project_id}/items/{item_id}/links` | Item links |
+
+---
+
+## The Item Object
+
+```json
+{
+  "id": "item_req_001abc",
+  "project_id": "proj_abc123",
+  "type": "requirement",
+  "item_number": "VCS-REQ-001",
+  "title": "System shall process sensor data within 10ms",
+  "description": "The vehicle control system must process all incoming sensor data and produce control outputs within a 10 millisecond window to ensure real-time responsiveness.",
+  "status": "approved",
+  "priority": "critical",
+  "assignee_id": "user_engineer123",
+  "parent_id": null,
+  "tags": ["safety-critical", "real-time", "performance"],
+  "custom_fields": {
+    "verification_method": "test",
+    "safety_level": "ASIL-D",
+    "source": "SRS-2024-001"
+  },
+  "version": 3,
+  "created_by": "user_analyst456",
+  "created_at": "2024-01-15T10:30:00Z",
+  "updated_at": "2024-11-20T14:22:00Z",
+  "approved_at": "2024-11-20T14:22:00Z",
+  "approved_by": "user_manager789"
+}
+```
+
+### Item Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique item identifier (prefix: `item_`) |
+| `project_id` | string | Parent project ID |
+| `type` | string | Item type: `requirement`, `test_case`, `design`, `issue`, `task` |
+| `item_number` | string | Human-readable identifier (auto-generated) |
+| `title` | string | Item title (1-500 characters) |
+| `description` | string | Rich text description (max 50,000 characters) |
+| `status` | string | Workflow status |
+| `priority` | string | `critical`, `high`, `medium`, `low` |
+| `assignee_id` | string | Assigned user ID |
+| `parent_id` | string | Parent item ID (for hierarchy) |
+| `tags` | array | String tags for categorization |
+| `custom_fields` | object | Custom field values |
+| `version` | integer | Item version number |
+| `created_by` | string | Creator user ID |
+| `created_at` | string | ISO 8601 creation timestamp |
+| `updated_at` | string | ISO 8601 last update timestamp |
+| `approved_at` | string | ISO 8601 approval timestamp |
+| `approved_by` | string | Approver user ID |
+
+### Item Types
+
+| Type | Description | Use Case |
+|------|-------------|----------|
+| `requirement` | Functional or non-functional requirement | What the system shall do |
+| `test_case` | Test procedure or scenario | Verification of requirements |
+| `design` | Design specification or decision | How requirements are implemented |
+| `issue` | Bug, defect, or problem | Tracking problems |
+| `task` | Work item or action | Project management |
+
+---
+
+## List Items
+
+Retrieve items from a project with filtering and pagination.
+
+```http
+GET /v1/projects/{project_id}/items
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `type` | string | — | Filter by item type |
+| `status` | string | — | Filter by status |
+| `priority` | string | — | Filter by priority |
+| `assignee_id` | string | — | Filter by assignee |
+| `parent_id` | string | — | Filter by parent (use `null` for root) |
+| `tags` | string | — | Filter by tags (comma-separated) |
+| `tags_match` | string | `any` | Tag matching: `any`, `all` |
+| `search` | string | — | Full-text search |
+| `created_after` | string | — | Created after ISO date |
+| `created_before` | string | — | Created before ISO date |
+| `updated_after` | string | — | Updated after ISO date |
+| `sort` | string | `updated_at` | Sort field |
+| `order` | string | `desc` | Sort order |
+| `limit` | integer | 20 | Results per page (1-100) |
+| `cursor` | string | — | Pagination cursor |
+| `include` | string | — | Include: `links`, `children`, `history` |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/items?type=requirement&status=approved&limit=20" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "item_req_001abc",
+      "project_id": "proj_abc123",
+      "type": "requirement",
+      "item_number": "VCS-REQ-001",
+      "title": "System shall process sensor data within 10ms",
+      "status": "approved",
+      "priority": "critical",
+      "tags": ["safety-critical", "real-time"],
+      "version": 3,
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-11-20T14:22:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 450,
+    "limit": 20,
+    "has_next": true,
+    "has_prev": false,
+    "next_cursor": "eyJpZCI6Iml0ZW1fcmVxXzAyMCJ9"
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# List approved requirements
+items = client.items.list(
+    project_id="proj_abc123",
+    type="requirement",
+    status="approved",
+    limit=20
+)
+
+for item in items.data:
+    print(f"{item.item_number}: {item.title}")
+
+# Iterate through all items
+for item in client.items.iterate(project_id="proj_abc123", type="requirement"):
+    print(f"{item.item_number}: {item.title}")
+
+# Search with tags
+items = client.items.list(
+    project_id="proj_abc123",
+    tags=["safety-critical"],
+    tags_match="any"
+)
+
+# Full-text search
+items = client.items.list(
+    project_id="proj_abc123",
+    search="sensor data processing"
+)
+```
+
+#### TypeScript
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// List approved requirements
+const items = await client.items.list({
+  projectId: 'proj_abc123',
+  type: 'requirement',
+  status: 'approved',
+  limit: 20
+});
+
+items.data.forEach(item => {
+  console.log(`${item.itemNumber}: ${item.title}`);
+});
+
+// Async iteration
+for await (const item of client.items.iterate({
+  projectId: 'proj_abc123',
+  type: 'requirement'
+})) {
+  console.log(`${item.itemNumber}: ${item.title}`);
+}
+```
+
+#### Go
+
+```go
+items, err := client.Items.List(ctx, "proj_abc123", &tracertm.ListItemsRequest{
+    Type:   tracertm.ItemTypeRequirement,
+    Status: "approved",
+    Limit:  20,
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+for _, item := range items.Data {
+    fmt.Printf("%s: %s\n", item.ItemNumber, item.Title)
+}
+```
+
+---
+
+## Create Item
+
+Create a new item in a project.
+
+```http
+POST /v1/projects/{project_id}/items
+```
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | string | Yes | Item type |
+| `title` | string | Yes | Item title (1-500 chars) |
+| `description` | string | No | Rich text description |
+| `priority` | string | No | Priority level |
+| `assignee_id` | string | No | Assigned user |
+| `parent_id` | string | No | Parent item for hierarchy |
+| `tags` | array | No | Tags for categorization |
+| `custom_fields` | object | No | Custom field values |
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_abc123/items" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "requirement",
+    "title": "System shall log all critical events",
+    "description": "All safety-critical events must be logged with timestamps and severity levels for audit purposes.",
+    "priority": "high",
+    "assignee_id": "user_engineer123",
+    "tags": ["safety", "audit", "logging"],
+    "custom_fields": {
+      "verification_method": "inspection",
+      "safety_level": "ASIL-B",
+      "source": "SRS-2024-045"
+    }
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "item_req_045xyz",
+    "project_id": "proj_abc123",
+    "type": "requirement",
+    "item_number": "VCS-REQ-045",
+    "title": "System shall log all critical events",
+    "description": "All safety-critical events must be logged...",
+    "status": "draft",
+    "priority": "high",
+    "assignee_id": "user_engineer123",
+    "parent_id": null,
+    "tags": ["safety", "audit", "logging"],
+    "custom_fields": {
+      "verification_method": "inspection",
+      "safety_level": "ASIL-B",
+      "source": "SRS-2024-045"
+    },
+    "version": 1,
+    "created_by": "user_creator123",
+    "created_at": "2024-12-08T10:00:00Z",
+    "updated_at": "2024-12-08T10:00:00Z"
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+item = client.items.create(
+    project_id="proj_abc123",
+    type="requirement",
+    title="System shall log all critical events",
+    description="All safety-critical events must be logged...",
+    priority="high",
+    assignee_id="user_engineer123",
+    tags=["safety", "audit", "logging"],
+    custom_fields={
+        "verification_method": "inspection",
+        "safety_level": "ASIL-B"
+    }
+)
+
+print(f"Created: {item.item_number}")
+```
+
+#### TypeScript
+
+```typescript
+const item = await client.items.create({
+  projectId: 'proj_abc123',
+  type: 'requirement',
+  title: 'System shall log all critical events',
+  description: 'All safety-critical events must be logged...',
+  priority: 'high',
+  assigneeId: 'user_engineer123',
+  tags: ['safety', 'audit', 'logging'],
+  customFields: {
+    verificationMethod: 'inspection',
+    safetyLevel: 'ASIL-B'
+  }
+});
+
+console.log(`Created: ${item.itemNumber}`);
+```
+
+---
+
+## Get Item
+
+Retrieve a single item by ID.
+
+```http
+GET /v1/projects/{project_id}/items/{item_id}
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `include` | string | — | Include: `links`, `children`, `history`, `comments` |
+| `version` | integer | — | Specific version (default: latest) |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/items/item_req_001?include=links,children" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "item_req_001abc",
+    "project_id": "proj_abc123",
+    "type": "requirement",
+    "item_number": "VCS-REQ-001",
+    "title": "System shall process sensor data within 10ms",
+    "description": "The vehicle control system must process...",
+    "status": "approved",
+    "priority": "critical",
+    "version": 3,
+    "links": {
+      "outgoing": [
+        {
+          "id": "link_001",
+          "type": "verified_by",
+          "target_id": "item_tc_001",
+          "target_title": "Sensor Processing Timing Test"
+        }
+      ],
+      "incoming": [
+        {
+          "id": "link_002",
+          "type": "derived_from",
+          "source_id": "item_req_parent",
+          "source_title": "Real-time Processing Requirements"
+        }
+      ]
+    },
+    "children": [
+      {
+        "id": "item_req_001a",
+        "item_number": "VCS-REQ-001.1",
+        "title": "Temperature sensor processing",
+        "status": "approved"
+      }
+    ],
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-11-20T14:22:00Z"
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+# Get item with links and children
+item = client.items.get(
+    project_id="proj_abc123",
+    item_id="item_req_001",
+    include=["links", "children"]
+)
+
+print(f"Item: {item.item_number}")
+print(f"Outgoing links: {len(item.links.outgoing)}")
+print(f"Children: {len(item.children)}")
+
+# Get specific version
+item_v2 = client.items.get(
+    project_id="proj_abc123",
+    item_id="item_req_001",
+    version=2
+)
+```
+
+---
+
+## Update Item
+
+Update an existing item.
+
+```http
+PATCH /v1/projects/{project_id}/items/{item_id}
+```
+
+### Request Body
+
+All fields are optional. Only provided fields will be updated.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Item title |
+| `description` | string | Item description |
+| `priority` | string | Priority level |
+| `assignee_id` | string | Assigned user |
+| `parent_id` | string | Parent item |
+| `tags` | array | Replace all tags |
+| `custom_fields` | object | Merge with existing |
+| `change_reason` | string | Reason for change (if required) |
+
+### Request
+
+```bash
+curl -X PATCH "https://api.tracertm.dev/v1/projects/proj_abc123/items/item_req_001" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "System shall process sensor data within 5ms",
+    "priority": "critical",
+    "custom_fields": {
+      "safety_level": "ASIL-D"
+    },
+    "change_reason": "Tightened timing requirement per safety analysis"
+  }'
+```
+
+### Response
+
+Returns the updated item object with incremented version.
+
+### SDK Examples
+
+#### Python
+
+```python
+item = client.items.update(
+    project_id="proj_abc123",
+    item_id="item_req_001",
+    title="System shall process sensor data within 5ms",
+    priority="critical",
+    custom_fields={"safety_level": "ASIL-D"},
+    change_reason="Tightened timing requirement per safety analysis"
+)
+
+print(f"Updated to version {item.version}")
+```
+
+---
+
+## Delete Item
+
+Delete an item. Linked items will have their links removed.
+
+```http
+DELETE /v1/projects/{project_id}/items/{item_id}
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `cascade` | boolean | false | Delete children too |
+| `reason` | string | — | Deletion reason (if required) |
+
+### Request
+
+```bash
+curl -X DELETE "https://api.tracertm.dev/v1/projects/proj_abc123/items/item_req_obsolete?reason=Obsolete" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+---
+
+## Batch Operations
+
+Perform multiple item operations in a single request.
+
+```http
+POST /v1/projects/{project_id}/items/batch
+```
+
+### Request Body
+
+```json
+{
+  "operations": [
+    {
+      "method": "create",
+      "data": {
+        "type": "requirement",
+        "title": "New requirement 1"
+      }
+    },
+    {
+      "method": "update",
+      "id": "item_req_002",
+      "data": {
+        "status": "approved"
+      }
+    },
+    {
+      "method": "delete",
+      "id": "item_req_obsolete"
+    }
+  ]
+}
+```
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_abc123/items/batch" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "operations": [
+      {"method": "create", "data": {"type": "requirement", "title": "Req 1"}},
+      {"method": "create", "data": {"type": "requirement", "title": "Req 2"}},
+      {"method": "update", "id": "item_req_003", "data": {"priority": "high"}}
+    ]
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "results": [
+      {"index": 0, "success": true, "id": "item_req_new1", "method": "create"},
+      {"index": 1, "success": true, "id": "item_req_new2", "method": "create"},
+      {"index": 2, "success": true, "id": "item_req_003", "method": "update"}
+    ],
+    "summary": {
+      "total": 3,
+      "succeeded": 3,
+      "failed": 0
+    }
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+results = client.items.batch(
+    project_id="proj_abc123",
+    operations=[
+        {"method": "create", "data": {"type": "requirement", "title": "Req 1"}},
+        {"method": "create", "data": {"type": "requirement", "title": "Req 2"}},
+        {"method": "update", "id": "item_req_003", "data": {"priority": "high"}}
+    ]
+)
+
+print(f"Succeeded: {results.summary.succeeded}/{results.summary.total}")
+```
+
+---
+
+## Advanced Query
+
+Perform complex queries with filter expressions.
+
+```http
+POST /v1/projects/{project_id}/items/query
+```
+
+### Request Body
+
+```json
+{
+  "filter": {
+    "or": [
+      {"priority": {"eq": "critical"}},
+      {"and": [
+        {"priority": {"eq": "high"}},
+        {"status": {"in": ["draft", "in_review"]}}
+      ]}
+    ]
+  },
+  "sort": [
+    {"field": "priority", "order": "desc"},
+    {"field": "updated_at", "order": "desc"}
+  ],
+  "limit": 50
+}
+```
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_abc123/items/query" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filter": {
+      "or": [
+        {"priority": {"eq": "critical"}},
+        {"and": [
+          {"status": {"eq": "draft"}},
+          {"assignee_id": {"eq": "user_engineer123"}}
+        ]}
+      ]
+    }
+  }'
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+items = client.items.query(
+    project_id="proj_abc123",
+    filter={
+        "or": [
+            {"priority": {"eq": "critical"}},
+            {"and": [
+                {"status": {"eq": "draft"}},
+                {"assignee_id": {"eq": "user_engineer123"}}
+            ]}
+        ]
+    }
+)
+```
+
+---
+
+## Item History
+
+Get the version history of an item.
+
+```http
+GET /v1/projects/{project_id}/items/{item_id}/history
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `limit` | integer | 20 | Results per page |
+| `cursor` | string | — | Pagination cursor |
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "version": 3,
+      "changed_at": "2024-11-20T14:22:00Z",
+      "changed_by": "user_engineer123",
+      "change_reason": "Tightened timing requirement",
+      "changes": [
+        {
+          "field": "title",
+          "old_value": "Process sensor data within 10ms",
+          "new_value": "Process sensor data within 5ms"
+        }
+      ]
+    },
+    {
+      "version": 2,
+      "changed_at": "2024-06-15T09:00:00Z",
+      "changed_by": "user_analyst456",
+      "change_reason": "Added safety classification",
+      "changes": [
+        {
+          "field": "custom_fields.safety_level",
+          "old_value": null,
+          "new_value": "ASIL-D"
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+## Error Responses
+
+### Item Not Found
+
+```json
+{
+  "error": {
+    "code": "ITEM_NOT_FOUND",
+    "message": "Item 'item_invalid' not found in project 'proj_abc123'",
+    "status": 404
+  }
+}
+```
+
+### Validation Error
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid item data",
+    "status": 422,
+    "details": {
+      "errors": [
+        {"field": "title", "message": "Title is required"},
+        {"field": "type", "message": "Invalid item type 'unknown'"}
+      ]
+    }
+  }
+}
+```
+
+### Workflow Error
+
+```json
+{
+  "error": {
+    "code": "WORKFLOW_TRANSITION_INVALID",
+    "message": "Cannot transition from 'draft' to 'approved'",
+    "status": 422,
+    "details": {
+      "current_status": "draft",
+      "requested_status": "approved",
+      "allowed_transitions": ["in_review", "rejected"]
+    }
+  }
+}
+```
+
+---
+
+## Related Documentation
+
+- [Projects API](/docs/api-reference/rest-api/endpoints/projects) - Project management
+- [Links API](/docs/api-reference/rest-api/endpoints/relationships) - Traceability links
+- [Tests API](/docs/api-reference/rest-api/endpoints/tests) - Test case management
+- [Workflows API](/docs/api-reference/rest-api/endpoints/workflows) - Status transitions
+- [Filtering](/docs/api-reference/rest-api/filtering) - Filter syntax reference

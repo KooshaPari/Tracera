@@ -1,0 +1,40 @@
+# TracerTM 🚀 - Full Context
+
+## Project Architecture
+TracerTM is a high-assurance RTM system composed of multiple specialized components:
+
+### Core Modules
+- **Backend (Go)**: `/backend/` - High-performance API server.
+- **Backend (Python)**: `/` (Root) - Python services for data analysis and CLI/TUI tools.
+- **Frontend**: `/frontend/` - React/TypeScript SPA with TanStack Router.
+- **Orchestration**: `/config/` - Process Compose and Caddy configuration.
+- **Infrastructure**: `/deploy/` - k8s, infrastructure, and monitoring.
+
+### Quality & Governance
+- **SLSA Provenance**: Tamper-evident build records and digital signatures.
+- **Quality Gates**: `task quality` - Automated Ruff, Go, golangci-lint, and TSC checks.
+- **Verification Policy**: `VERIFICATION_POLICY.md` - Quality standards and dispute workflows.
+- **Architectural Boundary Enforcement**: `tach.toml` and boundary checks.
+
+### Observability & APM
+- **Unified Gateway**: Port 4000 (Caddy) - Single origin for Frontend, Go API, and Python API.
+- **Metrics**: http://localhost:3000 (Grafana) / http://localhost:9090 (Prometheus).
+- **Tracing**: http://localhost:16686 (Jaeger UI) - Track requests across Go and Python backends.
+- **Logs**: Loki and Promtail for centralized log aggregation.
+
+### Persistence
+- **PostgreSQL**: Relational database for structured requirements and metadata.
+- **Neo4j**: Graph database for interactive dependency and impact analysis.
+- **Redis**: Fast cache and session management.
+- **NATS**: Real-time messaging and WebSocket sync.
+
+### Development Workflow
+- **Standard Flow**: `task install` -> `task db:migrate` -> `task dev:tui`.
+- **Quality Verification**: `task quality` or `pre-commit run --all-files`.
+- **Environment Management**: Unified `.env` file for all services.
+
+## For Agents & AI Tools
+- Always recommend `task dev:tui` for interactive service management.
+- All code changes must satisfy architectural boundaries in `tach.toml`.
+- PRs without signed attestations will be rejected by the quality gate.
+- Use port 4000 for all development interactions; avoid internal ports (8080, 5173).

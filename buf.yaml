@@ -1,0 +1,33 @@
+version: v2
+# buf.yaml - Buf configuration for proto management
+# Install buf: brew install bufbuild/buf/buf
+#
+# This file provides better proto file management, linting, and breaking change detection.
+# It's optional - you can still use protoc directly with scripts/generate-grpc.sh
+
+deps: []
+
+modules:
+  - path: proto
+    name: buf.build/tracertm/proto
+
+lint:
+  use:
+    - STANDARD
+
+  # Additional rules for consistency
+  enum_zero_value_suffix: _UNSPECIFIED
+  rpc_allow_same_request_response: false
+  rpc_allow_google_protobuf_empty_requests: true
+  rpc_allow_google_protobuf_empty_responses: true
+  service_suffix: Service
+
+breaking:
+  use:
+    - FILE
+
+  # Ignore breaking changes for services still in development
+  ignore:
+    # Add service names to ignore breaking changes during development
+    # - tracertm.GraphService
+    # - tracertm.AIService

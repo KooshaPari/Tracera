@@ -1,0 +1,6 @@
+# Rollback logs and state
+# This directory stores:
+# - rollback.log: Rollback operation logs
+# - health-monitor.log: Health monitoring logs
+# - rollback-state.json: Current rollback state
+# - last-rollback-time: Cooldown tracking

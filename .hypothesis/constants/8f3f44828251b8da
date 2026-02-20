@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/apps/graph.py
+# hypothesis_version: 6.148.7
+
+[0.5, 1.0, 1.2, 5.0, 100, '#graph-canvas', '#graph-stats', '#link-table', '+', '-', '=', '?', 'Graph Info', 'Graph Visualization\n', 'Help', 'Quit', 'Refresh', 'Relationship Graph', 'Relationship Graph\n', 'Source', 'Target', 'Type', 'Zoom In', 'Zoom Out', 'current_project_id', 'database_url', 'graph-canvas', 'graph-panel', 'graph-stats', 'graph-title', 'help', 'info-panel', 'info-title', 'link-table', 'q', 'quit', 'r', 'refresh', 'unknown', 'zoom_in', 'zoom_out']

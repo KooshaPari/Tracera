@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-02-14T08:56:02Z",
+  "tier": "critical",
+  "enabled": true,
+  "policy": {
+    "zk_required": false,
+    "require_private_sigstore": true
+  },
+  "schema": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/schemas/privacy-proof.schema.json",
+  "error_count": 0,
+  "warn_count": 1,
+  "checks": [
+    {
+      "check": "proof_file_present",
+      "status": "warn",
+      "output": "proof file absent; lane enabled without strict zk requirement"
+    },
+    {
+      "check": "private_sigstore_config",
+      "status": "pass"
+    }
+  ],
+  "pass": true
+}

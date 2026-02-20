@@ -1,0 +1,580 @@
+---
+title: "Requirement Writing"
+description: "Best practices for writing clear, testable, and traceable requirements in TraceRTM"
+---
+
+# Requirement Writing Best Practices
+
+Well-written requirements are the foundation of successful projects. They enable accurate implementation, comprehensive testing, and meaningful traceability.
+
+## The SMART Framework
+
+### Specific
+
+Requirements should be precise and unambiguous:
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# Bad: Vague requirement
+bad_req = client.create_item(
+    title="Fast login",
+    item_type="feature",
+    description="The system should be fast"  # What is "fast"?
+)
+
+# Good: Specific requirement
+good_req = client.create_item(
+    title="Login response time",
+    item_type="feature",
+    description="""
+    The login API shall respond within 500ms for 95% of requests
+    under normal load conditions (up to 1000 concurrent users).
+    """,
+    metadata={
+        "metric": "response_time",
+        "threshold": "500ms",
+        "percentile": "95th"
+    }
+)
+```
+
+### Measurable
+
+Include quantifiable acceptance criteria:
+
+```python
+# Measurable requirement with clear criteria
+feature = client.create_item(
+    title="Password complexity",
+    item_type="feature",
+    description="""
+    User passwords shall meet the following complexity requirements:
+
+    - Minimum length: 12 characters
+    - Must contain: uppercase, lowercase, number, special character
+    - Cannot contain: username, common dictionary words
+    - Cannot reuse: last 10 passwords
+    """,
+    metadata={
+        "min_length": 12,
+        "requires_uppercase": True,
+        "requires_lowercase": True,
+        "requires_number": True,
+        "requires_special": True,
+        "history_depth": 10
+    }
+)
+```
+
+### Achievable
+
+Requirements must be technically feasible:
+
+```python
+# Include feasibility assessment
+feature = client.create_item(
+    title="Real-time data sync",
+    item_type="feature",
+    description="""
+    The system shall synchronize user data across devices within 2 seconds.
+
+    Technical Constraints:
+    - Network latency: assumed < 100ms
+    - Data size: < 1MB per sync
+    - Conflict resolution: last-write-wins with timestamp
+    """,
+    metadata={
+        "feasibility": "verified",
+        "dependencies": ["websocket-service", "conflict-resolver"],
+        "complexity": "medium"
+    }
+)
+```
+
+### Relevant
+
+Link requirements to business objectives:
+
+```python
+# Connect to business value
+feature = client.create_item(
+    title="Two-factor authentication",
+    item_type="feature",
+    description="""
+    Users shall have the option to enable 2FA via SMS or authenticator app.
+
+    Business Justification:
+    - Security compliance: SOC2 requirement
+    - Customer request: 45% of enterprise customers
+    - Risk reduction: 99.9% fewer account compromises
+    """,
+    metadata={
+        "business_value": "high",
+        "compliance": ["SOC2", "ISO27001"],
+        "customer_priority": "enterprise"
+    }
+)
+
+# Link to business objective
+client.create_link(feature.id, "OBJ-001", "supports")
+```
+
+### Testable
+
+Every requirement must be verifiable:
+
+```python
+# Testable requirement with clear verification method
+feature = client.create_item(
+    title="Session timeout",
+    item_type="feature",
+    description="""
+    User sessions shall automatically expire after 30 minutes of inactivity.
+
+    Verification Method:
+    1. Log in as test user
+    2. Wait 30 minutes without activity
+    3. Attempt any action
+    4. Verify redirect to login page
+    5. Verify session cookie is invalidated
+    """,
+    metadata={
+        "testable": True,
+        "verification_method": "automated",
+        "test_environment": ["integration", "staging"]
+    }
+)
+```
+
+## Requirement Structure
+
+### Standard Template
+
+Use consistent structure for all requirements:
+
+```python
+def create_requirement(client, title, **kwargs):
+    """Create a well-structured requirement."""
+    return client.create_item(
+        title=title,
+        item_type="feature",
+        description=f"""
+## Description
+{kwargs.get('description', '')}
+
+## Acceptance Criteria
+{kwargs.get('acceptance_criteria', '')}
+
+## Verification Method
+{kwargs.get('verification_method', 'Manual testing')}
+
+## Dependencies
+{kwargs.get('dependencies', 'None')}
+
+## Assumptions
+{kwargs.get('assumptions', 'None')}
+
+## Notes
+{kwargs.get('notes', '')}
+        """,
+        metadata={
+            "priority": kwargs.get('priority', 'medium'),
+            "complexity": kwargs.get('complexity', 'medium'),
+            "source": kwargs.get('source', 'stakeholder'),
+            "testable": True
+        }
+    )
+
+# Usage
+req = create_requirement(
+    client,
+    title="User registration",
+    description="New users can create accounts with email verification",
+    acceptance_criteria="""
+- User provides email, password, and name
+- System validates email format
+- System sends verification email
+- User clicks verification link
+- Account is activated
+    """,
+    verification_method="Automated integration test",
+    priority="high",
+    complexity="low"
+)
+```
+
+### Hierarchical Organization
+
+Organize requirements in logical hierarchies:
+
+```python
+# Epic (high-level capability)
+epic = client.create_item(
+    title="User Authentication",
+    item_type="epic",
+    description="Complete authentication and authorization system"
+)
+
+# Features (specific functionality)
+features = [
+    ("Login", "Users can authenticate with email/password"),
+    ("Registration", "New users can create accounts"),
+    ("Password Reset", "Users can recover forgotten passwords"),
+    ("2FA", "Optional two-factor authentication")
+]
+
+for title, desc in features:
+    feature = client.create_item(
+        title=title,
+        item_type="feature",
+        description=desc
+    )
+    client.create_link(feature.id, epic.id, "child_of")
+
+# Stories (implementation units)
+stories = [
+    ("Login form UI", "Login"),
+    ("Login API endpoint", "Login"),
+    ("Session management", "Login")
+]
+
+for story_title, parent_title in stories:
+    story = client.create_item(
+        title=story_title,
+        item_type="story",
+        description=f"Implement {story_title}"
+    )
+    parent = client.find_items(title=parent_title)[0]
+    client.create_link(story.id, parent.id, "child_of")
+```
+
+## Writing Guidelines
+
+### Use Active Voice
+
+```markdown
+# Bad: Passive voice
+The data shall be validated by the system.
+
+# Good: Active voice
+The system shall validate the data.
+```
+
+### One Requirement Per Statement
+
+```python
+# Bad: Multiple requirements combined
+bad = client.create_item(
+    title="Login and session",
+    description="User can login and system creates session and logs activity"
+)
+
+# Good: Separate requirements
+login = client.create_item(
+    title="User login",
+    description="System authenticates user with valid credentials"
+)
+
+session = client.create_item(
+    title="Session creation",
+    description="System creates session upon successful authentication"
+)
+
+logging = client.create_item(
+    title="Login activity logging",
+    description="System logs all authentication attempts"
+)
+
+# Link related requirements
+client.create_link(session.id, login.id, "depends_on")
+client.create_link(logging.id, login.id, "depends_on")
+```
+
+### Avoid Ambiguous Terms
+
+Replace vague words with specific criteria:
+
+| Avoid | Replace With |
+|-------|-------------|
+| "fast" | "within 500ms" |
+| "user-friendly" | specific UI criteria |
+| "secure" | specific security controls |
+| "scalable" | "up to 10,000 concurrent users" |
+| "reliable" | "99.9% uptime" |
+| "easy" | specific usability criteria |
+| "should" | "shall" (mandatory) or "may" (optional) |
+
+### Use Consistent Terminology
+
+```yaml
+# .tracertm/glossary.yaml
+terminology:
+  user: "A person who has registered and authenticated with the system"
+  session: "An authenticated connection lasting until logout or timeout"
+  administrator: "A user with elevated privileges for system configuration"
+
+  # Requirement keywords
+  shall: "Mandatory requirement"
+  should: "Recommended but not required"
+  may: "Optional feature"
+```
+
+## Acceptance Criteria
+
+### Format Options
+
+**Given-When-Then (BDD style):**
+
+```python
+feature = client.create_item(
+    title="Successful login",
+    item_type="feature",
+    description="""
+    Given a registered user with valid credentials
+    When the user submits the login form
+    Then the system authenticates the user
+    And creates a new session
+    And redirects to the dashboard
+    """
+)
+```
+
+**Checklist Format:**
+
+```python
+feature = client.create_item(
+    title="Password reset",
+    item_type="feature",
+    description="""
+    Acceptance Criteria:
+    - [ ] User can request reset via email
+    - [ ] System sends email within 1 minute
+    - [ ] Reset link expires after 24 hours
+    - [ ] User can set new password
+    - [ ] Old password no longer works
+    - [ ] User is notified of password change
+    """
+)
+```
+
+**Scenario-Based:**
+
+```python
+feature = client.create_item(
+    title="Rate limiting",
+    item_type="feature",
+    description="""
+    Scenario 1: Normal usage
+    - User makes 10 requests per minute
+    - All requests succeed
+
+    Scenario 2: Rate exceeded
+    - User makes 100 requests in 1 minute
+    - First 60 succeed
+    - Remaining return 429 status
+    - Headers show retry-after time
+
+    Scenario 3: Rate recovery
+    - User exceeds rate limit
+    - User waits for retry-after period
+    - Next request succeeds
+    """
+)
+```
+
+## Priority and Classification
+
+### Priority Levels
+
+```python
+# Define priority schema
+PRIORITY_LEVELS = {
+    "critical": {
+        "description": "System cannot function without this",
+        "timeline": "Must be in MVP",
+        "testing": "Requires full test coverage"
+    },
+    "high": {
+        "description": "Important for core functionality",
+        "timeline": "Should be in initial release",
+        "testing": "Requires comprehensive testing"
+    },
+    "medium": {
+        "description": "Enhances user experience",
+        "timeline": "Can be in subsequent release",
+        "testing": "Requires basic test coverage"
+    },
+    "low": {
+        "description": "Nice to have",
+        "timeline": "Future consideration",
+        "testing": "Smoke test sufficient"
+    }
+}
+
+# Apply priority
+feature = client.create_item(
+    title="Data export",
+    item_type="feature",
+    description="Users can export their data in CSV format",
+    metadata={
+        "priority": "medium",
+        "priority_rationale": "Requested by 30% of users, not blocking core functionality"
+    }
+)
+```
+
+### Requirement Types
+
+```python
+# Categorize requirements
+REQUIREMENT_TYPES = {
+    "functional": "What the system does",
+    "performance": "How fast/efficiently it does it",
+    "security": "Protection and access control",
+    "usability": "User experience",
+    "reliability": "Uptime and error handling",
+    "compatibility": "Integration with other systems",
+    "compliance": "Regulatory requirements"
+}
+
+# Example of each type
+functional = client.create_item(
+    title="User can upload files",
+    item_type="feature",
+    metadata={"requirement_type": "functional"}
+)
+
+performance = client.create_item(
+    title="File upload < 5 seconds for 10MB",
+    item_type="feature",
+    metadata={"requirement_type": "performance"}
+)
+
+security = client.create_item(
+    title="Files scanned for malware",
+    item_type="feature",
+    metadata={"requirement_type": "security"}
+)
+```
+
+## Validation
+
+### Requirement Quality Check
+
+```python
+def validate_requirement(item):
+    """Check requirement quality."""
+    issues = []
+
+    # Check title
+    if len(item.title) < 10:
+        issues.append("Title too short")
+
+    # Check description
+    if not item.description or len(item.description) < 50:
+        issues.append("Description too brief")
+
+    # Check for vague terms
+    vague_terms = ["fast", "easy", "user-friendly", "secure", "should"]
+    for term in vague_terms:
+        if term in item.description.lower():
+            issues.append(f"Contains vague term: {term}")
+
+    # Check for acceptance criteria
+    if "acceptance criteria" not in item.description.lower():
+        issues.append("Missing acceptance criteria")
+
+    # Check testability flag
+    if not item.metadata.get("testable"):
+        issues.append("Not marked as testable")
+
+    return issues
+
+# Validate all requirements
+for item in client.get_items(item_type="feature"):
+    issues = validate_requirement(item)
+    if issues:
+        print(f"{item.id}: {', '.join(issues)}")
+```
+
+### CLI Validation
+
+```bash
+# Validate requirement quality
+tracertm validate --rules requirement-quality
+
+# Check for orphan requirements
+tracertm validate --check orphans --type feature
+
+# Report incomplete requirements
+tracertm report gaps --type feature --output gaps.html
+```
+
+## Templates
+
+### Feature Requirement Template
+
+```markdown
+## Feature: [Title]
+
+### Description
+[Clear description of what the feature does]
+
+### User Story
+As a [user type]
+I want to [action]
+So that [benefit]
+
+### Acceptance Criteria
+- [ ] Criterion 1
+- [ ] Criterion 2
+- [ ] Criterion 3
+
+### Business Rules
+1. Rule 1
+2. Rule 2
+
+### Technical Notes
+- Note 1
+- Note 2
+
+### Dependencies
+- [List dependencies]
+
+### Priority
+[Critical/High/Medium/Low] - [Justification]
+```
+
+### Non-Functional Requirement Template
+
+```markdown
+## Non-Functional Requirement: [Title]
+
+### Category
+[Performance/Security/Reliability/Usability]
+
+### Description
+[Clear description]
+
+### Metric
+- Measurement: [What to measure]
+- Target: [Specific value]
+- Threshold: [Minimum acceptable]
+
+### Verification Method
+[How to test/measure]
+
+### Monitoring
+[How to track in production]
+```
+
+## Related Topics
+
+- [Test Management](/docs/wiki/best-practices/test-management) - Testing requirements
+- [Traceability](/docs/wiki/best-practices/traceability) - Linking requirements
+- [Artifacts](/docs/wiki/concepts/artifacts) - Artifact types
+- [Workflows](/docs/wiki/concepts/workflows) - Requirement workflows
+

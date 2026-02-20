@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-02-14T09:54:03Z",
+  "checks": [
+    {
+      "name": "ruff",
+      "status": "aligned",
+      "missing": []
+    },
+    {
+      "name": "golangci",
+      "status": "aligned",
+      "missing": []
+    },
+    {
+      "name": "oxlint",
+      "status": "aligned",
+      "missing": []
+    }
+  ],
+  "aligned_count": 3,
+  "partial_count": 0
+}

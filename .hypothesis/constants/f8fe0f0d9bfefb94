@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/schemas/process.py
+# hypothesis_version: 6.151.4
+
+[500, 'active', 'archived', 'cancelled', 'completed', 'compliance', 'deprecated', 'development', 'draft', 'failed', 'in_progress', 'integration', 'management', 'operational', 'other', 'pending', 'retired', 'support']

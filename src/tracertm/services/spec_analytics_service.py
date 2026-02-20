@@ -30,7 +30,12 @@ This service provides:
 13. Formal Constraint Verification (Z3-style)
 14. Coverage Gap Analysis
 15. Test Oracle Pattern Detection
+
+
+Functional Requirements: FR-QUAL-010
 """
+
+from __future__ import annotations
 
 import hashlib
 import json
@@ -44,8 +49,6 @@ from itertools import starmap
 from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
-
-# from tracertm.services.spec_analytics_service_v2 import SpecAnalyticsServiceV2  # TODO: Fix missing module
 
 # Threshold constants for analysis
 _MIN_SAMPLES_FOR_METRICS = 2
@@ -540,16 +543,20 @@ class EARSPatternAnalyzer:
     # Pattern regexes ordered by specificity
     PATTERNS: ClassVar[dict[EARSPatternType, re.Pattern[str]]] = {
         EARSPatternType.UNWANTED: re.compile(
-            r"^(?:if|when)\s+(.+?),?\s+(?:then\s+)?(?:the\s+)?(\w+)\s+shall\s+(?:not|never)\s+(.+)$", re.IGNORECASE,
+            r"^(?:if|when)\s+(.+?),?\s+(?:then\s+)?(?:the\s+)?(\w+)\s+shall\s+(?:not|never)\s+(.+)$",
+            re.IGNORECASE,
         ),
         EARSPatternType.COMPLEX: re.compile(
-            r"^(?:while\s+(.+?)\s+)?(?:when|if|upon)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE,
+            r"^(?:while\s+(.+?)\s+)?(?:when|if|upon)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$",
+            re.IGNORECASE,
         ),
         EARSPatternType.STATE_DRIVEN: re.compile(
-            r"^(?:while|during|as\s+long\s+as)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE,
+            r"^(?:while|during|as\s+long\s+as)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$",
+            re.IGNORECASE,
         ),
         EARSPatternType.EVENT_DRIVEN: re.compile(
-            r"^(?:when|upon|after|once|if)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE,
+            r"^(?:when|upon|after|once|if)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$",
+            re.IGNORECASE,
         ),
         EARSPatternType.OPTIONAL: re.compile(
             r"^(?:where|if|in\s+case)\s+(.+?)\s+(?:is\s+)?(?:enabled|configured|available|supported),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$",
@@ -736,7 +743,7 @@ class EARSPatternAnalyzer:
     def _calculate_confidence(
         self,
         text: str,
-        pattern_type: EARSPatternType,
+        _pattern_type: EARSPatternType,
         components: EARSComponents,
         ambiguous: list[str],
         incomplete: list[str],
@@ -768,7 +775,11 @@ class EARSPatternAnalyzer:
         return max(0.0, min(1.0, confidence))
 
     def _validate(
-        self, text: str, components: EARSComponents, ambiguous: list[str], incomplete: list[str],
+        self,
+        text: str,
+        _components: EARSComponents,
+        ambiguous: list[str],
+        incomplete: list[str],
     ) -> list[str]:
         """Validate requirement for quality issues."""
         issues = []
@@ -823,13 +834,13 @@ class EARSPatternAnalyzer:
         if pattern_type == EARSPatternType.UBIQUITOUS:
             return f"The {components.system_name or '<system>'} shall {components.system_response or '<response>'}."
         if pattern_type == EARSPatternType.EVENT_DRIVEN:
-            return f"WHEN {components.trigger or '<trigger>'}, the {components.system_name or '<system>'} shall {components.system_response or '<response>'}."  # noqa: E501
+            return f"WHEN {components.trigger or '<trigger>'}, the {components.system_name or '<system>'} shall {components.system_response or '<response>'}."
         if pattern_type == EARSPatternType.STATE_DRIVEN:
-            return f"WHILE {components.precondition or '<state>'}, the {components.system_name or '<system>'} shall {components.system_response or '<response>'}."  # noqa: E501
+            return f"WHILE {components.precondition or '<state>'}, the {components.system_name or '<system>'} shall {components.system_response or '<response>'}."
         if pattern_type == EARSPatternType.OPTIONAL:
-            return f"WHERE {components.constraint or '<feature>'} is enabled, the {components.system_name or '<system>'} shall {components.system_response or '<response>'}."  # noqa: E501
+            return f"WHERE {components.constraint or '<feature>'} is enabled, the {components.system_name or '<system>'} shall {components.system_response or '<response>'}."
         if pattern_type == EARSPatternType.UNWANTED:
-            return f"IF {components.precondition or '<condition>'}, THEN the {components.system_name or '<system>'} shall NOT {components.postcondition or '<action>'}."  # noqa: E501
+            return f"IF {components.precondition or '<condition>'}, THEN the {components.system_name or '<system>'} shall NOT {components.postcondition or '<action>'}."
         if pattern_type == EARSPatternType.COMPLEX:
             parts = []
             if components.precondition:
@@ -894,12 +905,14 @@ class RequirementQualityAnalyzer:
         issues.extend(necessity_issues)
 
         scores[QualityDimension.TRACEABILITY.value], traceability_issues = self._analyze_traceability(
-            linked_tests, linked_items,
+            linked_tests,
+            linked_items,
         )
         issues.extend(traceability_issues)
 
         scores[QualityDimension.CONSISTENCY.value], consistency_issues = self._analyze_consistency(
-            requirement_text, related_requirements,
+            requirement_text,
+            related_requirements,
         )
         issues.extend(consistency_issues)
 
@@ -1230,7 +1243,9 @@ class RequirementQualityAnalyzer:
         return score, issues
 
     def _analyze_traceability(
-        self, linked_tests: list[str] | None, linked_items: dict[str, list[str]] | None,
+        self,
+        linked_tests: list[str] | None,
+        linked_items: dict[str, list[str]] | None,
     ) -> tuple[float, list[QualityIssue]]:
         """Analyze traceability dimension."""
         issues = []
@@ -1265,7 +1280,9 @@ class RequirementQualityAnalyzer:
         return max(0.0, score), issues
 
     def _analyze_consistency(
-        self, text: str, related_requirements: list[str] | None,
+        self,
+        text: str,
+        _related_requirements: list[str] | None,
     ) -> tuple[float, list[QualityIssue]]:
         """Analyze consistency dimension."""
         issues = []
@@ -1317,7 +1334,9 @@ class VersionChain:
 
     @staticmethod
     def create_genesis_block(
-        content: dict[str, Any], author_id: str, change_summary: str = "Initial creation",
+        content: dict[str, Any],
+        author_id: str,
+        change_summary: str = "Initial creation",
     ) -> VersionBlock:
         """Create the first block in a version chain."""
         content_hash = VersionChain._hash_content(content)
@@ -1346,7 +1365,11 @@ class VersionChain:
 
     @staticmethod
     def add_block(
-        previous_block: VersionBlock, content: dict[str, Any], author_id: str, change_type: str, change_summary: str,
+        previous_block: VersionBlock,
+        content: dict[str, Any],
+        author_id: str,
+        change_type: str,
+        change_summary: str,
     ) -> VersionBlock:
         """Add a new block linked to previous."""
         content_hash = VersionChain._hash_content(content)
@@ -1571,14 +1594,20 @@ class FlakinessDetector:
 
         # Calculate flakiness score
         flakiness_score = self._calculate_flakiness_score(
-            failure_rate, entropy, max_failures, max_passes, duration_variance,
+            failure_rate,
+            entropy,
+            max_failures,
+            max_passes,
+            duration_variance,
         )
 
         # Determine severity
         severity = self._score_to_severity(flakiness_score)
 
         # Failure clustering (temporal)
-        clustering_score = self._calculate_failure_clustering([(r.get("timestamp"), r.get("status")) for r in recent])
+        clustering_score = self._calculate_failure_clustering([
+            (r.get("timestamp"), r.get("status") or "") for r in recent
+        ])
 
         # Quarantine recommendation
         quarantine_recommended = (
@@ -1652,7 +1681,10 @@ class FlakinessDetector:
         return max_count
 
     def _detect_patterns(
-        self, runs: list[dict[str, Any]], durations: list[float], _timestamps: list[Any],
+        self,
+        runs: list[dict[str, Any]],
+        durations: list[float],
+        _timestamps: list[object],
     ) -> list[FlakinessPattern]:
         """Detect specific flakiness patterns."""
         patterns = []
@@ -1666,7 +1698,8 @@ class FlakinessDetector:
                     patterns.append(FlakinessPattern.RESOURCE_DEPENDENT)
 
         # Check for alternating pattern (possible race condition)
-        statuses = [r.get("status") for r in runs]
+        statuses_raw = [r.get("status") for r in runs]
+        statuses: list[str] = [s for s in statuses_raw if isinstance(s, str)]
         if len(statuses) > FLAKINESS_RACE_MIN_LENGTH:
             transitions = self._count_transitions(statuses)
             if transitions > len(statuses) * 0.6:
@@ -1678,7 +1711,12 @@ class FlakinessDetector:
         return patterns
 
     def _calculate_flakiness_score(
-        self, failure_rate: float, entropy: float, max_failures: int, max_passes: int, duration_variance: float | None,
+        self,
+        failure_rate: float,
+        entropy: float,
+        max_failures: int,
+        max_passes: int,
+        duration_variance: float | None,
     ) -> float:
         """Calculate composite flakiness score.
 
@@ -1807,7 +1845,10 @@ class ODCClassifier:
     ]
 
     def classify(
-        self, defect_description: str, trigger_context: str | None = None, impact_description: str | None = None,
+        self,
+        defect_description: str,
+        trigger_context: str | None = None,
+        impact_description: str | None = None,
     ) -> ODCClassification:
         """Classify a defect using ODC taxonomy."""
         desc_lower = defect_description.lower()
@@ -1840,7 +1881,7 @@ class ODCClassifier:
             scores[dtype] = score
 
         if max(scores.values()) > 0:
-            return max(scores, key=scores.get)
+            return max(scores, key=lambda k: scores[k])
 
         return ODCDefectType.FUNCTION  # Default
 
@@ -1868,7 +1909,7 @@ class ODCClassifier:
             scores[impact] = score
 
         if max(scores.values()) > 0:
-            return max(scores, key=scores.get)
+            return max(scores, key=lambda k: scores[k])
 
         return ODCImpact.CAPABILITY  # Default
 
@@ -1893,7 +1934,11 @@ class PrioritizationCalculator:
 
     @staticmethod
     def calculate_wsjf(
-        business_value: int, time_criticality: int, risk_reduction: int, job_size: int, opportunity_enablement: int = 1,
+        business_value: int,
+        time_criticality: int,
+        risk_reduction: int,
+        job_size: int,
+        opportunity_enablement: int = 1,
     ) -> WSJFScore:
         """Calculate WSJF score per SAFe framework.
 
@@ -1910,7 +1955,6 @@ class PrioritizationCalculator:
         # Cost of Delay (sum of value factors)
         cost_of_delay = business_value + time_criticality + risk_reduction + opportunity_enablement
 
-        # WSJF = CoD / Size
         wsjf_score = cost_of_delay / job_size
 
         return WSJFScore(
@@ -1939,7 +1983,11 @@ class PrioritizationCalculator:
         rice_score = (reach * impact * confidence) / effort
 
         return RICEScore(
-            reach=reach, impact=impact, confidence=confidence, effort=effort, rice_score=round(rice_score, 2),
+            reach=reach,
+            impact=impact,
+            confidence=confidence,
+            effort=effort,
+            rice_score=round(rice_score, 2),
         )
 
     @staticmethod
@@ -1977,7 +2025,7 @@ class PrioritizationCalculator:
 
         Returns dict with keys: must, should, could, wont
         """
-        result = {"must": [], "should": [], "could": [], "wont": []}
+        result: dict[str, list[str]] = {"must": [], "should": [], "could": [], "wont": []}
 
         for item in items:
             score = item.get("priority_score", 0)
@@ -2019,7 +2067,7 @@ class ImpactAnalyzer:
 
         Args:
             source_item_id: The item being changed
-            adjacency: Dict mapping item_id -> list[Any] of dependent item_ids
+            adjacency: Dict mapping item_id -> list[object] of dependent item_ids
             item_metadata: Optional metadata for items (type, criticality, etc.)
             max_depth: Maximum traversal depth
         """
@@ -2054,7 +2102,7 @@ class ImpactAnalyzer:
         item_metadata: dict[str, dict[str, Any]] | None,
         max_depth: int,
     ) -> tuple[list[str], list[str], list[str], list[str], int]:
-        visited = set()
+        visited: set[str] = set()
         direct_impacts: list[str] = []
         transitive_impacts: list[str] = []
         affected_tests: list[str] = []
@@ -2152,7 +2200,11 @@ class ImpactAnalyzer:
         return critical_path
 
     def _calculate_risk_score(
-        self, blast_radius: int, critical_count: int, depth: int, metadata: dict[str, dict[str, Any]] | None,
+        self,
+        blast_radius: int,
+        critical_count: int,
+        depth: int,
+        _metadata: dict[str, dict[str, Any]] | None,
     ) -> float:
         """Calculate composite risk score."""
         # Base risk from blast radius
@@ -2180,7 +2232,10 @@ class SuspectLinkDetector:
     """
 
     def detect_suspect_links(
-        self, links: list[dict[str, Any]], item_versions: dict[str, int], recent_changes: list[dict[str, Any]],
+        self,
+        links: list[dict[str, Any]],
+        item_versions: dict[str, int],
+        recent_changes: list[dict[str, Any]],
     ) -> list[SuspectLink]:
         """Detect links that may be invalid after recent changes.
 
@@ -2290,8 +2345,12 @@ class CoverageGapAnalyzer:
         for link in trace_links:
             if link.get("link_type") != "verifies":
                 continue
-            covered_reqs.add(link.get("target_id"))
-            linked_tests.add(link.get("source_id"))
+            target_id = link.get("target_id")
+            source_id = link.get("source_id")
+            if isinstance(target_id, str):
+                covered_reqs.add(target_id)
+            if isinstance(source_id, str):
+                linked_tests.add(source_id)
         return covered_reqs, linked_tests
 
     def _find_requirement_gaps(
@@ -2405,6 +2464,7 @@ class SpecAnalyticsService:
     """
 
     def __init__(self) -> None:
+        """Initialize."""
         self.ears_analyzer = EARSPatternAnalyzer()
         self.quality_analyzer = RequirementQualityAnalyzer()
         self.flakiness_detector = FlakinessDetector()
@@ -2430,7 +2490,10 @@ class SpecAnalyticsService:
         """
         ears_result = self.ears_analyzer.analyze(requirement_text)
         quality_result = self.quality_analyzer.analyze(
-            requirement_text, related_requirements, linked_tests, linked_items,
+            requirement_text,
+            related_requirements,
+            linked_tests,
+            linked_items,
         )
 
         return {
@@ -2458,7 +2521,10 @@ class SpecAnalyticsService:
     # -------------------------------------------------------------------------
 
     def create_genesis_block(
-        self, content: dict[str, Any], author_id: str, change_summary: str = "Initial creation",
+        self,
+        content: dict[str, Any],
+        author_id: str,
+        change_summary: str = "Initial creation",
     ) -> VersionBlock:
         """Create first block in version chain."""
         return VersionChain.create_genesis_block(content, author_id, change_summary)
@@ -2515,7 +2581,10 @@ class SpecAnalyticsService:
     # -------------------------------------------------------------------------
 
     def classify_defect(
-        self, description: str, trigger_context: str | None = None, impact_description: str | None = None,
+        self,
+        description: str,
+        trigger_context: str | None = None,
+        impact_description: str | None = None,
     ) -> ODCClassification:
         """Classify defect using IBM ODC taxonomy."""
         return self.odc_classifier.classify(description, trigger_context, impact_description)
@@ -2534,7 +2603,11 @@ class SpecAnalyticsService:
     ) -> WSJFScore:
         """Calculate WSJF prioritization score."""
         return PrioritizationCalculator.calculate_wsjf(
-            business_value, time_criticality, risk_reduction, job_size, opportunity_enablement,
+            business_value,
+            time_criticality,
+            risk_reduction,
+            job_size,
+            opportunity_enablement,
         )
 
     def calculate_rice(self, reach: int, impact: float, confidence: float, effort: int) -> RICEScore:
@@ -2568,7 +2641,10 @@ class SpecAnalyticsService:
     # -------------------------------------------------------------------------
 
     def detect_suspect_links(
-        self, links: list[dict[str, Any]], item_versions: dict[str, int], recent_changes: list[dict[str, Any]],
+        self,
+        links: list[dict[str, Any]],
+        item_versions: dict[str, int],
+        recent_changes: list[dict[str, Any]],
     ) -> list[SuspectLink]:
         """Detect suspect trace links after changes."""
         return self.suspect_link_detector.detect_suspect_links(links, item_versions, recent_changes)
@@ -2624,9 +2700,9 @@ spec_analytics = SpecAnalyticsService()
 spec_analytics_service = spec_analytics
 
 
-def analyze_requirement(text: str, **kwargs: object) -> dict[str, Any]:
+def analyze_requirement(text: str, **kwargs: Any) -> dict[str, Any]:
     """Convenience function for requirement analysis."""
-    return spec_analytics.analyze_requirement(text, **kwargs)  # noqa: invalid-syntax - reserved for future implementation
+    return spec_analytics.analyze_requirement(text, **kwargs)
 
 
 def analyze_flakiness(run_history: list[dict[str, Any]]) -> FlakinessAnalysis:
@@ -2634,11 +2710,11 @@ def analyze_flakiness(run_history: list[dict[str, Any]]) -> FlakinessAnalysis:
     return spec_analytics.analyze_test_flakiness(run_history)
 
 
-def calculate_wsjf(**kwargs: object) -> WSJFScore:
+def calculate_wsjf(**kwargs: Any) -> WSJFScore:
     """Convenience function for WSJF calculation."""
-    return spec_analytics.calculate_wsjf(**kwargs)  # noqa: invalid-syntax - reserved for future implementation
+    return spec_analytics.calculate_wsjf(**kwargs)
 
 
-def calculate_rice(**kwargs: object) -> RICEScore:
+def calculate_rice(**kwargs: Any) -> RICEScore:
     """Convenience function for RICE calculation."""
-    return spec_analytics.calculate_rice(**kwargs)  # noqa: invalid-syntax - reserved for future implementation
+    return spec_analytics.calculate_rice(**kwargs)

@@ -1,0 +1,19 @@
+---
+title: "Kubernetes Deployment"
+description: "Deploy on Kubernetes."
+---
+
+## Summary
+- Use Deployments for stateless services; StatefulSets for DB if self-hosted.
+- Configure liveness/readiness probes.
+- Use HPA with CPU and custom metrics.
+
+## Steps
+```bash
+kubectl apply -f k8s/
+```
+
+## Operational checks
+- Health endpoints return 200 for API and worker pods.
+- Background queues drain within SLO after deploy.
+- Logs and metrics flowing to your observability stack.

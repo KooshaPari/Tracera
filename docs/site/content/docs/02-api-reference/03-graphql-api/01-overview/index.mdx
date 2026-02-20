@@ -1,0 +1,709 @@
+---
+title: "GraphQL Overview"
+description: "Introduction to TraceRTM GraphQL API - queries, mutations, subscriptions, and key concepts"
+keywords: [graphql, overview, introduction, queries, mutations]
+---
+
+# GraphQL Overview
+
+TraceRTM's GraphQL API provides a flexible, type-safe way to interact with your traceability data. Fetch exactly what you need in a single request, subscribe to real-time updates, and leverage strong typing for better developer experience.
+
+## What is GraphQL?
+
+GraphQL is a query language and runtime for APIs that allows you to:
+
+- **Request exactly the data you need** - No over-fetching or under-fetching
+- **Fetch related data in one request** - Get projects, items, and links together
+- **Strong typing** - Schema defines all available operations and types
+- **Real-time updates** - Subscriptions for live data changes
+- **Self-documenting** - Introspection reveals the complete schema
+
+## GraphQL vs REST
+
+### REST Example
+
+```bash
+# Multiple requests needed
+GET /v1/projects/proj_123
+GET /v1/projects/proj_123/items
+GET /v1/projects/proj_123/items/item_456/links
+```
+
+### GraphQL Example
+
+```graphql
+# Single request gets everything
+query {
+  project(id: "proj_123") {
+    name
+    items {
+      id
+      title
+      links {
+        id
+        type
+        target { title }
+      }
+    }
+  }
+}
+```
+
+---
+
+## Endpoint
+
+### GraphQL Endpoint
+
+```
+POST https://api.tracertm.dev/graphql
+```
+
+### GraphQL Playground
+
+Interactive GraphQL explorer and documentation:
+
+```
+https://api.tracertm.dev/graphql/playground
+```
+
+Access the playground to:
+- Explore the schema
+- Test queries interactively
+- View auto-generated documentation
+- See query execution plans
+
+---
+
+## Authentication
+
+GraphQL uses the same authentication as the REST API:
+
+```bash
+curl -X POST https://api.tracertm.dev/graphql \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ projects { id name } }"}'
+```
+
+**Supported Methods:**
+- API Keys: `Bearer rtm_live_sk_...`
+- JWT Tokens: `Bearer eyJhbGciOiJSUzI1NiIs...`
+
+---
+
+## Basic Query
+
+### Simple Query
+
+```graphql
+query {
+  projects {
+    id
+    name
+    key
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "projects": [
+      {
+        "id": "proj_abc123",
+        "name": "Vehicle Control System",
+        "key": "VCS"
+      }
+    ]
+  }
+}
+```
+
+### Query with Arguments
+
+```graphql
+query {
+  project(id: "proj_abc123") {
+    id
+    name
+    items(first: 10) {
+      edges {
+        node {
+          id
+          title
+        }
+      }
+    }
+  }
+}
+```
+
+### Query with Variables
+
+```graphql
+query GetProject($projectId: ID!, $limit: Int) {
+  project(id: $projectId) {
+    id
+    name
+    items(first: $limit) {
+      edges {
+        node {
+          id
+          title
+          status
+        }
+      }
+    }
+  }
+}
+```
+
+**Variables:**
+```json
+{
+  "projectId": "proj_abc123",
+  "limit": 20
+}
+```
+
+---
+
+## Basic Mutation
+
+### Create Item
+
+```graphql
+mutation CreateItem($input: CreateItemInput!) {
+  createItem(input: $input) {
+    id
+    itemNumber
+    title
+    status
+  }
+}
+```
+
+**Variables:**
+```json
+{
+  "input": {
+    "projectId": "proj_abc123",
+    "type": "requirement",
+    "title": "User Authentication",
+    "description": "Implement secure login",
+    "priority": "high"
+  }
+}
+```
+
+### Update Item
+
+```graphql
+mutation UpdateItem($id: ID!, $input: UpdateItemInput!) {
+  updateItem(id: $id, input: $input) {
+    id
+    title
+    status
+    version
+  }
+}
+```
+
+---
+
+## Subscription
+
+### Real-time Item Updates
+
+```graphql
+subscription ItemUpdates($projectId: ID!) {
+  itemUpdated(projectId: $projectId) {
+    id
+    title
+    status
+    updatedAt
+  }
+}
+```
+
+**Connection:**
+```javascript
+import { SubscriptionClient } from 'subscriptions-transport-ws';
+
+const client = new SubscriptionClient(
+  'wss://api.tracertm.dev/graphql',
+  {
+    connectionParams: {
+      authorization: `Bearer ${apiKey}`
+    }
+  }
+);
+```
+
+---
+
+## Key Features
+
+### 1. Type Safety
+
+GraphQL schema provides compile-time type checking:
+
+```graphql
+type Item {
+  id: ID!
+  title: String!
+  status: ItemStatus!
+  priority: Priority
+  createdAt: DateTime!
+}
+
+enum ItemStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  REJECTED
+}
+```
+
+### 2. Field Selection
+
+Request only the fields you need:
+
+```graphql
+# Minimal query
+query {
+  item(id: "item_123") {
+    id
+    title
+  }
+}
+
+# Detailed query
+query {
+  item(id: "item_123") {
+    id
+    title
+    description
+    status
+    priority
+    assignee {
+      id
+      name
+      email
+    }
+    links {
+      outgoing {
+        type
+        target { title }
+      }
+    }
+    history {
+      version
+      changedAt
+      changes {
+        field
+        oldValue
+        newValue
+      }
+    }
+  }
+}
+```
+
+### 3. Nested Queries
+
+Fetch related data in one request:
+
+```graphql
+query {
+  project(id: "proj_123") {
+    name
+    items {
+      id
+      title
+      links {
+        target {
+          id
+          title
+          type
+        }
+      }
+    }
+  }
+}
+```
+
+### 4. Aliases
+
+Query the same field multiple times with different arguments:
+
+```graphql
+query {
+  project(id: "proj_123") {
+    approvedItems: items(filter: { status: APPROVED }) {
+      id
+      title
+    }
+    draftItems: items(filter: { status: DRAFT }) {
+      id
+      title
+    }
+  }
+}
+```
+
+### 5. Fragments
+
+Reuse field selections:
+
+```graphql
+fragment ItemDetails on Item {
+  id
+  title
+  status
+  priority
+  assignee {
+    name
+  }
+}
+
+query {
+  item1: item(id: "item_1") {
+    ...ItemDetails
+  }
+  item2: item(id: "item_2") {
+    ...ItemDetails
+  }
+}
+```
+
+---
+
+## Common Patterns
+
+### Fetching Related Data
+
+```graphql
+query GetItemWithContext($itemId: ID!) {
+  item(id: $itemId) {
+    id
+    title
+    project {
+      id
+      name
+    }
+    assignee {
+      id
+      name
+      email
+    }
+    links {
+      outgoing {
+        type
+        target {
+          id
+          title
+          type
+        }
+      }
+    }
+  }
+}
+```
+
+### Filtering and Pagination
+
+```graphql
+query GetFilteredItems(
+  $projectId: ID!
+  $status: ItemStatus
+  $cursor: String
+) {
+  items(
+    projectId: $projectId
+    filter: { status: $status }
+    first: 20
+    after: $cursor
+  ) {
+    edges {
+      node {
+        id
+        title
+        status
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+```
+
+### Batch Operations
+
+```graphql
+mutation BatchCreateItems($inputs: [CreateItemInput!]!) {
+  batchCreateItems(inputs: $inputs) {
+    results {
+      success
+      item {
+        id
+        title
+      }
+      error {
+        message
+      }
+    }
+  }
+}
+```
+
+---
+
+## Error Handling
+
+GraphQL returns errors in a structured format:
+
+```json
+{
+  "data": {
+    "item": null
+  },
+  "errors": [
+    {
+      "message": "Item not found",
+      "locations": [{"line": 2, "column": 3}],
+      "path": ["item"],
+      "extensions": {
+        "code": "NOT_FOUND",
+        "resourceId": "item_invalid",
+        "requestId": "req_abc123"
+      }
+    }
+  ]
+}
+```
+
+### Partial Results
+
+GraphQL can return partial data even when some fields error:
+
+```json
+{
+  "data": {
+    "project": {
+      "id": "proj_123",
+      "name": "My Project",
+      "items": null  // Error on this field
+    }
+  },
+  "errors": [
+    {
+      "message": "Permission denied",
+      "path": ["project", "items"]
+    }
+  ]
+}
+```
+
+---
+
+## Introspection
+
+Query the schema itself:
+
+```graphql
+query IntrospectSchema {
+  __schema {
+    types {
+      name
+      kind
+      fields {
+        name
+        type {
+          name
+          kind
+        }
+      }
+    }
+  }
+}
+```
+
+### Type Information
+
+```graphql
+query GetTypeInfo {
+  __type(name: "Item") {
+    name
+    description
+    fields {
+      name
+      description
+      type {
+        name
+        kind
+      }
+    }
+  }
+}
+```
+
+---
+
+## Best Practices
+
+### 1. Use Variables
+
+```graphql
+# ✅ Good: Parameterized
+query GetItem($id: ID!) {
+  item(id: $id) { title }
+}
+
+# ❌ Bad: String interpolation
+query {
+  item(id: "hardcoded_id") { title }
+}
+```
+
+### 2. Request Only Needed Fields
+
+```graphql
+# ✅ Good: Only needed fields
+query {
+  item(id: "item_123") {
+    id
+    title
+  }
+}
+
+# ❌ Bad: Over-fetching
+query {
+  item(id: "item_123") {
+    id
+    title
+    description
+    status
+    priority
+    assignee { ... }
+    links { ... }
+    history { ... }
+    # ... many unused fields
+  }
+}
+```
+
+### 3. Use Fragments for Reusability
+
+```graphql
+fragment ItemSummary on Item {
+  id
+  title
+  status
+}
+
+query {
+  item1: item(id: "item_1") { ...ItemSummary }
+  item2: item(id: "item_2") { ...ItemSummary }
+}
+```
+
+### 4. Handle Errors Gracefully
+
+```typescript
+const { data, errors } = await client.request(query);
+
+if (errors) {
+  errors.forEach(error => {
+    console.error(`GraphQL Error: ${error.message}`);
+    if (error.extensions?.code === 'NOT_FOUND') {
+      // Handle not found
+    }
+  });
+}
+
+if (data) {
+  // Process data
+}
+```
+
+### 5. Use Aliases for Multiple Queries
+
+```graphql
+query {
+  project: project(id: "proj_123") {
+    name
+  }
+  items: items(projectId: "proj_123", filter: { status: APPROVED }) {
+    edges { node { id title } }
+  }
+  links: links(projectId: "proj_123") {
+    id
+    type
+  }
+}
+```
+
+---
+
+## Rate Limiting
+
+GraphQL requests count toward your API rate limits. Complex queries may consume multiple rate limit tokens.
+
+**Tips:**
+- Batch related queries when possible
+- Use subscriptions instead of polling
+- Cache query results appropriately
+- Monitor rate limit headers
+
+---
+
+## Performance Considerations
+
+### Query Complexity
+
+GraphQL calculates query complexity to prevent expensive queries:
+
+```graphql
+# Simple query (low complexity)
+query {
+  project(id: "proj_123") {
+    name
+  }
+}
+
+# Complex query (higher complexity)
+query {
+  project(id: "proj_123") {
+    items {
+      links {
+        target {
+          links {
+            target { title }  # Deep nesting
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### N+1 Problem
+
+GraphQL resolvers use DataLoader to batch requests and avoid N+1 queries automatically.
+
+---
+
+## Related Documentation
+
+- [Schema Reference](/docs/api-reference/graphql-api/schema) - Complete schema documentation
+- [Queries](/docs/api-reference/graphql-api/queries) - Query examples and patterns
+- [Mutations](/docs/api-reference/graphql-api/mutations) - Mutation reference
+- [Subscriptions](/docs/api-reference/graphql-api/subscriptions) - Real-time subscriptions
+- [REST API](/docs/api-reference/rest-api) - Alternative REST API
+

@@ -1,0 +1,223 @@
+# Gitpod Configuration for TracerTM
+# https://www.gitpod.io/docs/references/gitpod-yml
+
+image:
+  file: .devcontainer/Dockerfile
+
+# Port configuration
+ports:
+  # Gateway (primary access point)
+  - port: 4000
+    name: Gateway
+    description: Caddy reverse proxy (main entry point)
+    onOpen: open-preview
+    visibility: public
+
+  # Frontend
+  - port: 5173
+    name: Frontend
+    description: Vite development server
+    onOpen: notify
+    visibility: public
+
+  # Backend APIs
+  - port: 8080
+    name: Go Backend
+    description: Go API server
+    onOpen: ignore
+    visibility: private
+
+  - port: 8000
+    name: Python Backend
+    description: Python FastAPI server
+    onOpen: ignore
+    visibility: private
+
+  # Databases
+  - port: 5432
+    name: PostgreSQL
+    description: PostgreSQL database
+    onOpen: ignore
+    visibility: private
+
+  - port: 6379
+    name: Redis
+    description: Redis cache
+    onOpen: ignore
+    visibility: private
+
+  - port: 7474
+    name: Neo4j Browser
+    description: Neo4j web interface
+    onOpen: ignore
+    visibility: public
+
+  - port: 7687
+    name: Neo4j Bolt
+    description: Neo4j database connection
+    onOpen: ignore
+    visibility: private
+
+  # Messaging
+  - port: 4222
+    name: NATS
+    description: NATS message broker
+    onOpen: ignore
+    visibility: private
+
+  - port: 8222
+    name: NATS Monitoring
+    description: NATS HTTP monitoring
+    onOpen: ignore
+    visibility: private
+
+  # Workflow Engine
+  - port: 7233
+    name: Temporal
+    description: Temporal workflow engine
+    onOpen: ignore
+    visibility: private
+
+  # Monitoring
+  - port: 9090
+    name: Prometheus
+    description: Metrics collection
+    onOpen: ignore
+    visibility: public
+
+  - port: 3000
+    name: Grafana
+    description: Monitoring dashboards
+    onOpen: ignore
+    visibility: public
+
+  # Exporters
+  - port: 9187
+    name: PostgreSQL Exporter
+    description: PostgreSQL metrics
+    onOpen: ignore
+    visibility: private
+
+  - port: 9121
+    name: Redis Exporter
+    description: Redis metrics
+    onOpen: ignore
+    visibility: private
+
+# Tasks - execution order: before, init, command
+tasks:
+  # Init task runs in prebuilds and on workspace start
+  - name: Setup
+    init: |
+      # This runs during prebuilds to speed up workspace startup
+      echo "🚀 Setting up TracerTM development environment..."
+
+      # Install Python dependencies
+      if [ -f "pyproject.toml" ]; then
+        echo "📦 Installing Python dependencies..."
+        uv sync
+      fi
+
+      # Install Go dependencies
+      if [ -f "backend/go.mod" ]; then
+        echo "📦 Downloading Go modules..."
+        cd backend && go mod download && cd ..
+      fi
+
+      # Install frontend dependencies
+      if [ -f "frontend/package.json" ]; then
+        echo "📦 Installing frontend dependencies..."
+        cd frontend && bun install && cd ..
+      fi
+
+      # Pre-build Go backend (faster first run)
+      if [ -d "backend" ]; then
+        echo "🔨 Pre-building Go backend..."
+        cd backend && go build ./... && cd ..
+      fi
+
+      echo "✅ Dependencies installed!"
+
+    command: |
+      # This runs every time the workspace starts (after init)
+      echo "🔧 Starting TracerTM services..."
+
+      # Wait for PostgreSQL to be ready
+      echo "⏳ Waiting for PostgreSQL..."
+      until pg_isready -h localhost -p 5432 -U tracertm; do
+        sleep 2
+      done
+
+      # Run database migrations
+      echo "🗄️  Running database migrations..."
+      uv run alembic upgrade head
+
+      # Start all services with process-compose
+      echo "🚀 Starting all services..."
+      make dev-tui
+
+  # Optional: Separate terminal for logs
+  - name: Logs
+    command: |
+      echo "📋 Service logs will appear here..."
+      echo "Press Ctrl+C to stop watching logs"
+      sleep 5
+      tail -f .process-compose/logs/*.log
+
+# VS Code extensions to install
+vscode:
+  extensions:
+    # Go
+    - golang.go
+
+    # Python
+    - ms-python.python
+    - ms-python.vscode-pylance
+    - ms-python.black-formatter
+    - charliermarsh.ruff
+
+    # JavaScript/TypeScript/React
+    - dbaeumer.vscode-eslint
+    - esbenp.prettier-vscode
+    - bradlc.vscode-tailwindcss
+
+    # Database
+    - mtxr.sqltools
+    - mtxr.sqltools-driver-pg
+
+    # Docker
+    - ms-azuretools.vscode-docker
+
+    # Git
+    - eamodio.gitlens
+
+    # YAML
+    - redhat.vscode-yaml
+
+    # Utilities
+    - streetsidesoftware.code-spell-checker
+    - editorconfig.editorconfig
+
+# GitHub integration
+github:
+  prebuilds:
+    # Enable prebuilds for faster workspace startup
+    master: true
+    branches: true
+    pullRequests: true
+    pullRequestsFromForks: false
+    addCheck: true
+    addComment: true
+    addBadge: true
+
+# JetBrains IDE support (optional)
+jetbrains:
+  intellij:
+    prebuilds:
+      version: stable
+  goland:
+    prebuilds:
+      version: stable
+  pycharm:
+    prebuilds:
+      version: stable

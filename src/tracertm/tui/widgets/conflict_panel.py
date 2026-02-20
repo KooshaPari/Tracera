@@ -3,7 +3,10 @@
 Displays and manages sync conflicts with resolution options.
 """
 
+from collections.abc import Iterator
 from typing import TYPE_CHECKING, Any, ClassVar
+
+from tracertm.storage.conflict_resolver import Conflict, compare_versions
 
 try:
     from textual.app import ComposeResult
@@ -24,32 +27,32 @@ except ImportError:
         from textual.widgets import Button, DataTable, Label, Static
     else:
 
-        class Container:
-            pass
+        class Container:  # type: ignore[no-redef]
+            """Container."""
 
-        class Vertical:
-            pass
+        class Vertical:  # type: ignore[no-redef]
+            """Vertical."""
 
-        class DataTable:
-            pass
+        class DataTable:  # type: ignore[no-redef]
+            """DataTable."""
 
-        class Label:
-            pass
+        class Label:  # type: ignore[no-redef]
+            """Label."""
 
-        class Static:
-            pass
+        class Static:  # type: ignore[no-redef]
+            """Static."""
 
-        class Button:
-            pass
+        class Button:  # type: ignore[no-redef]
+            """Button."""
 
-        class Binding:
-            pass
+        class Binding:  # type: ignore[no-redef]
+            """Binding."""
 
-        class Message:
-            pass
+        class Message:  # type: ignore[no-redef]
+            """Message."""
 
-        class ComposeResult:
-            pass
+        class ComposeResult:  # type: ignore[no-redef]
+            """ComposeResult."""
 
 
 if TEXTUAL_AVAILABLE:
@@ -115,13 +118,13 @@ if TEXTUAL_AVAILABLE:
         }
         """
 
-        def __init__(self, conflicts: list[Any] | None = None, *args: object, **kwargs: object) -> None:
+        def __init__(self, conflicts: list[object] | None = None, *args: object, **kwargs: object) -> None:
             """Initialize conflict panel.
 
             Args:
                 conflicts: List of Conflict objects
             """
-            super().__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)  # type: ignore[arg-type]
             self.conflicts = conflicts or []
             self.selected_conflict = None
 
@@ -131,7 +134,7 @@ if TEXTUAL_AVAILABLE:
 
             with Vertical(id="conflict-list"):
                 yield Label("Unresolved Conflicts:")
-                table = DataTable(id="conflicts-table")
+                table: Any = DataTable(id="conflicts-table")
                 table.add_columns("Type", "ID", "Local", "Remote", "Detected")
                 yield table
 
@@ -155,13 +158,13 @@ if TEXTUAL_AVAILABLE:
             table.clear()
 
             for conflict in self.conflicts:
-                local_v = conflict.local_version.vector_clock.version
-                remote_v = conflict.remote_version.vector_clock.version
-                detected = conflict.detected_at.strftime("%Y-%m-%d %H:%M")
+                local_v = conflict.local_version.vector_clock.version  # type: ignore[attr-defined]
+                remote_v = conflict.remote_version.vector_clock.version  # type: ignore[attr-defined]
+                detected = conflict.detected_at.strftime("%Y-%m-%d %H:%M")  # type: ignore[attr-defined]
 
                 table.add_row(
-                    conflict.entity_type,
-                    conflict.entity_id[:12] + "...",
+                    conflict.entity_type,  # type: ignore[attr-defined]
+                    conflict.entity_id[:12] + "...",  # type: ignore[attr-defined]
                     f"v{local_v}",
                     f"v{remote_v}",
                     detected,
@@ -169,11 +172,14 @@ if TEXTUAL_AVAILABLE:
 
         def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
             """Handle conflict selection."""
-            if event.row_index < len(self.conflicts):
-                self.selected_conflict = self.conflicts[event.row_index]
-                self.show_conflict_detail(self.selected_conflict)
+            if event.row_index < len(self.conflicts):  # type: ignore[attr-defined]
+                idx = event.row_index  # type: ignore[attr-defined]
+                self.selected_conflict = (
+                    self.conflicts[idx] if isinstance(idx, int) and idx < len(self.conflicts) else None  # type: ignore[assignment]
+                )
+                self.show_conflict_detail(self.selected_conflict)  # type: ignore[arg-type]
 
-        def show_conflict_detail(self, conflict) -> None:
+        def show_conflict_detail(self, conflict: Conflict) -> None:
             """Show detailed view of a conflict.
 
             Args:
@@ -202,8 +208,6 @@ if TEXTUAL_AVAILABLE:
             ]
 
             # Compare data
-            from tracertm.storage.conflict_resolver import compare_versions
-
             differences = compare_versions(local, remote)
 
             if differences["modified"]:
@@ -249,7 +253,8 @@ if TEXTUAL_AVAILABLE:
         class ConflictResolved(Message):
             """Message sent when conflict is resolved."""
 
-            def __init__(self, conflict, strategy: str) -> None:
+            def __init__(self, conflict: Conflict, strategy: str) -> None:
+                """Initialize."""
                 super().__init__()
                 self.conflict = conflict
                 self.strategy = strategy
@@ -258,6 +263,7 @@ if TEXTUAL_AVAILABLE:
             """Message sent when panel is closed."""
 
             def __init__(self) -> None:
+                """Initialize."""
                 super().__init__()
 
 
@@ -270,45 +276,49 @@ if not TEXTUAL_AVAILABLE:
         conflicts: list
         selected_conflict: object | None
 
-        def __init__(self, conflicts: list[Any] | None = None, *args: object, **kwargs: object) -> None:
+        def __init__(self, conflicts: list[object] | None = None, *_args: object, **_kwargs: object) -> None:
+            """Initialize."""
             self.conflicts = conflicts or []
             self.selected_conflict = None
 
-        def compose(self):  # type: ignore[no-untyped-def]
+        def compose(self) -> Iterator[object]:
+            """Compose."""
             return iter(())
 
         def on_mount(self) -> None:
-            pass
+            """On mount."""
 
         def refresh_conflict_list(self) -> None:
-            pass
+            """Refresh conflict list."""
 
         def on_data_table_row_selected(self, event: object) -> None:
-            pass
+            """On data table row selected."""
 
         def show_conflict_detail(self, conflict: object) -> None:
-            pass
+            """Show conflict detail."""
 
         def action_resolve_local(self) -> None:
-            pass
+            """Action resolve local."""
 
         def action_resolve_remote(self) -> None:
-            pass
+            """Action resolve remote."""
 
         def action_resolve_manual(self) -> None:
-            pass
+            """Action resolve manual."""
 
         def action_close(self) -> None:
-            pass
+            """Action close."""
 
         def on_button_pressed(self, event: object) -> None:
-            pass
+            """On button pressed."""
 
         def post_message(self, message: object) -> None:
-            pass
+            """Post message."""
 
         class ConflictResolved:
-            def __init__(self, conflict: object, strategy: str) -> None: ...
+            def __init__(self, conflict: object, strategy: str) -> None:
+                """Initialize."""
 
         class ConflictPanelClosed:
-            def __init__(self) -> None: ...
+            def __init__(self) -> None:
+                """Initialize."""

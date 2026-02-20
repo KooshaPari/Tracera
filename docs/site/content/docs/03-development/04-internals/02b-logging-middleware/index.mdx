@@ -1,0 +1,161 @@
+---
+title: "Logging Middleware"
+description: "Request and response logging middleware"
+keywords: [logging, middleware, requests, monitoring]
+---
+
+# Logging Middleware
+
+Middleware for logging HTTP requests and responses.
+
+## Basic Logging
+
+### Request/Response Logging
+
+```python
+import logging
+import time
+from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi import Request
+
+logger = logging.getLogger(__name__)
+
+class LoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.time()
+        
+        # Log request
+        logger.info(
+            f"{request.method} {request.url.path}",
+            extra={
+                "method": request.method,
+                "path": request.url.path,
+                "query": str(request.query_params),
+                "client": request.client.host if request.client else None
+            }
+        )
+        
+        # Process request
+        response = await call_next(request)
+        
+        # Log response
+        process_time = time.time() - start_time
+        logger.info(
+            f"{request.method} {request.url.path} - {response.status_code}",
+            extra={
+                "status_code": response.status_code,
+                "process_time": process_time
+            }
+        )
+        
+        return response
+```
+
+## Structured Logging
+
+### JSON Logging
+
+```python
+import json
+import logging
+from datetime import datetime
+
+class JSONFormatter(logging.Formatter):
+    def format(self, record):
+        log_data = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "level": record.levelname,
+            "message": record.getMessage(),
+            "module": record.module,
+            "function": record.funcName,
+            **getattr(record, "extra", {})
+        }
+        return json.dumps(log_data)
+
+# Configure logger
+handler = logging.StreamHandler()
+handler.setFormatter(JSONFormatter())
+logger.addHandler(handler)
+```
+
+## Request Context
+
+### Add Request ID
+
+```python
+import uuid
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class RequestIDMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # Generate or use existing request ID
+        request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+        request.state.request_id = request_id
+        
+        # Process request
+        response = await call_next(request)
+        
+        # Add request ID to response
+        response.headers["X-Request-ID"] = request_id
+        
+        return response
+```
+
+## Error Logging
+
+### Log Exceptions
+
+```python
+from starlette.middleware.base import BaseHTTPMiddleware
+import traceback
+
+class ErrorLoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        try:
+            return await call_next(request)
+        except Exception as e:
+            logger.error(
+                f"Unhandled exception: {e}",
+                extra={
+                    "method": request.method,
+                    "path": request.url.path,
+                    "exception": str(e),
+                    "traceback": traceback.format_exc()
+                },
+                exc_info=True
+            )
+            raise
+```
+
+## Performance Logging
+
+### Slow Request Detection
+
+```python
+class PerformanceLoggingMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, slow_threshold: float = 1.0):
+        super().__init__(app)
+        self.slow_threshold = slow_threshold
+    
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.time()
+        response = await call_next(request)
+        process_time = time.time() - start_time
+        
+        if process_time > self.slow_threshold:
+            logger.warning(
+                f"Slow request: {request.url.path} took {process_time:.2f}s",
+                extra={
+                    "path": request.url.path,
+                    "process_time": process_time,
+                    "threshold": self.slow_threshold
+                }
+            )
+        
+        return response
+```
+
+## Related Documentation
+
+- [Middleware](./02-middleware) - Middleware overview
+- [Logging Configuration](../../02-setup/05-environment-variables) - Log settings

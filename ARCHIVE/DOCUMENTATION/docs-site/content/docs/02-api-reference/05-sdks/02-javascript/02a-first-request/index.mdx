@@ -1,0 +1,275 @@
+---
+title: "First Request"
+description: "Make your first API request with the TraceRTM JavaScript SDK"
+---
+
+# First Request
+
+Step-by-step guide to making your first API request with the TraceRTM JavaScript SDK.
+
+## Prerequisites
+
+1. **Install the SDK**: `npm install @tracertm/sdk`
+2. **Get your API key**: From [TraceRTM Dashboard](https://app.tracertm.dev/settings/api-keys)
+3. **Set up environment**: Store your API key securely
+
+---
+
+## Step 1: Set Up Your Environment
+
+### Create .env File
+
+```bash
+TRACERTM_API_KEY=rtm_live_sk_your_api_key_here
+```
+
+### Install dotenv (if using Node.js)
+
+```bash
+npm install dotenv
+```
+
+---
+
+## Step 2: Initialize the Client
+
+```typescript
+import "dotenv/config";
+import { TraceRTMClient } from "@tracertm/sdk";
+
+const client = new TraceRTMClient({
+  apiKey: process.env.TRACERTM_API_KEY,
+});
+```
+
+---
+
+## Step 3: Make Your First Request
+
+### List Projects
+
+```typescript
+async function listProjects() {
+  const response = await client.projects.list();
+
+  console.log(`Total projects: ${response.total}`);
+
+  for (const project of response.data) {
+    console.log(`- ${project.name} (${project.key})`);
+  }
+
+  return response;
+}
+
+listProjects();
+```
+
+### Expected Output
+
+```
+Total projects: 3
+- E-Commerce Platform (ECOM)
+- Mobile App (MOBILE)
+- API Gateway (API)
+```
+
+---
+
+## Step 4: Handle the Response
+
+### Response Structure
+
+```typescript
+interface PaginatedResponse<T> {
+  data: T[]; // Array of results
+  total: number; // Total count
+  limit: number; // Page size
+  offset: number; // Current offset
+  hasMore: boolean; // More pages available
+}
+```
+
+### Working with Responses
+
+```typescript
+const response = await client.projects.list({ limit: 10 });
+
+// Access data array
+const projects = response.data;
+
+// Check pagination
+if (response.hasMore) {
+  console.log("More projects available");
+}
+
+// Get specific project
+const firstProject = projects[0];
+console.log(firstProject.id); // "proj_abc123"
+console.log(firstProject.name); // "My Project"
+```
+
+---
+
+## Step 5: Error Handling
+
+```typescript
+import {
+  TraceRTMError,
+  NotFoundError,
+  AuthenticationError,
+  RateLimitError,
+} from "@tracertm/sdk/errors";
+
+async function safeRequest() {
+  try {
+    const projects = await client.projects.list();
+    return projects;
+  } catch (error) {
+    if (error instanceof AuthenticationError) {
+      console.error("Invalid API key. Check your TRACERTM_API_KEY.");
+    } else if (error instanceof RateLimitError) {
+      console.error(`Rate limited. Retry after ${error.retryAfter} seconds.`);
+    } else if (error instanceof TraceRTMError) {
+      console.error(`API error: ${error.message}`);
+    } else {
+      throw error;
+    }
+  }
+}
+```
+
+---
+
+## Complete First Request Example
+
+```typescript
+// first-request.ts
+import "dotenv/config";
+import { TraceRTMClient } from "@tracertm/sdk";
+import { TraceRTMError, AuthenticationError } from "@tracertm/sdk/errors";
+
+async function main() {
+  // Validate API key exists
+  if (!process.env.TRACERTM_API_KEY) {
+    console.error("Missing TRACERTM_API_KEY environment variable");
+    process.exit(1);
+  }
+
+  // Initialize client
+  const client = new TraceRTMClient({
+    apiKey: process.env.TRACERTM_API_KEY,
+  });
+
+  try {
+    // Make first request
+    console.log("Connecting to TraceRTM API...\n");
+
+    const projects = await client.projects.list({ limit: 5 });
+
+    console.log("Connection successful!\n");
+    console.log(`Found ${projects.total} project(s):\n`);
+
+    if (projects.data.length === 0) {
+      console.log("No projects found. Create your first project:");
+      console.log("  const project = await client.projects.create({");
+      console.log('    name: "My Project",');
+      console.log('    key: "MYPROJ"');
+      console.log("  });");
+    } else {
+      for (const project of projects.data) {
+        console.log(`  [${project.key}] ${project.name}`);
+        console.log(`      ID: ${project.id}`);
+        console.log(`      Created: ${project.createdAt}`);
+        console.log("");
+      }
+    }
+  } catch (error) {
+    if (error instanceof AuthenticationError) {
+      console.error("Authentication failed!");
+      console.error("Please check your API key:");
+      console.error("  1. Go to https://app.tracertm.dev/settings/api-keys");
+      console.error("  2. Copy your API key");
+      console.error("  3. Set TRACERTM_API_KEY in your .env file");
+    } else if (error instanceof TraceRTMError) {
+      console.error(`API Error: ${error.message}`);
+      console.error(`Status: ${error.status}`);
+    } else {
+      console.error("Unexpected error:", error);
+    }
+    process.exit(1);
+  }
+}
+
+main();
+```
+
+### Run It
+
+```bash
+npx tsx first-request.ts
+# or
+node --loader ts-node/esm first-request.ts
+```
+
+---
+
+## Verify Your Setup
+
+Use this quick verification script:
+
+```typescript
+import { TraceRTMClient, version } from "@tracertm/sdk";
+
+async function verify() {
+  console.log(`SDK Version: ${version}`);
+
+  const client = new TraceRTMClient({
+    apiKey: process.env.TRACERTM_API_KEY,
+  });
+
+  // Test connection
+  const start = Date.now();
+  const projects = await client.projects.list({ limit: 1 });
+  const duration = Date.now() - start;
+
+  console.log(`API Response: ${duration}ms`);
+  console.log(`Connection: OK`);
+  console.log(`Projects: ${projects.total}`);
+}
+
+verify().catch((e) => {
+  console.error("Verification failed:", e.message);
+  process.exit(1);
+});
+```
+
+---
+
+## Common Issues
+
+### "Invalid API Key"
+
+- Check the key starts with `rtm_live_sk_` or `rtm_test_sk_`
+- Ensure no extra whitespace
+- Verify the key hasn't been revoked
+
+### "Network Error"
+
+- Check internet connection
+- Verify firewall allows HTTPS to api.tracertm.dev
+- Try with a longer timeout: `timeout: 60000`
+
+### "Module Not Found"
+
+- Run `npm install @tracertm/sdk`
+- Check your import syntax matches your module system
+
+---
+
+## Next Steps
+
+Now that you've made your first request:
+
+- [Create a project](/docs/api-reference/sdks/javascript/basic-examples) - Create your first project
+- [API Reference](/docs/api-reference/sdks/javascript/api-reference) - Explore all methods
+- [TypeScript](/docs/api-reference/sdks/javascript/typescript) - Full type safety

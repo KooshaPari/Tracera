@@ -1,0 +1,696 @@
+{
+  "id": null,
+  "uid": "slo-dashboard",
+  "title": "TraceRTM SLO/SLI Dashboard",
+  "tags": [
+    "slo",
+    "sli",
+    "sla",
+    "reliability"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 0,
+  "refresh": "1m",
+  "panels": [
+    {
+      "id": 1,
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "type": "row",
+      "title": "Service Level Objectives (SLOs)"
+    },
+    {
+      "id": 2,
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 4
+      },
+      "type": "stat",
+      "title": "Availability SLO (99.9%)",
+      "description": "Percentage of successful requests (non-5xx) over the last 30 days",
+      "targets": [
+        {
+          "expr": "sum(increase(http_requests_total{job=\"go-backend\",status_code!~\"5..\"}[30d])) / sum(increase(http_requests_total{job=\"go-backend\"}[30d])) * 100",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 99.0
+              },
+              {
+                "color": "green",
+                "value": 99.9
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 4
+      },
+      "type": "stat",
+      "title": "Latency SLO (95th %ile < 500ms)",
+      "description": "95th percentile latency over the last 30 days",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"go-backend\"}[30d])) by (le)) * 1000",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 500
+              },
+              {
+                "color": "red",
+                "value": 1000
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 4
+      },
+      "type": "stat",
+      "title": "Error Budget Remaining (30d)",
+      "description": "Remaining error budget based on 99.9% availability SLO",
+      "targets": [
+        {
+          "expr": "(0.999 - (sum(increase(http_requests_total{job=\"go-backend\",status_code!~\"5..\"}[30d])) / sum(increase(http_requests_total{job=\"go-backend\"}[30d])))) / 0.001 * 100",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 20
+              },
+              {
+                "color": "green",
+                "value": 50
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 4
+      },
+      "type": "stat",
+      "title": "Success Rate (Last Hour)",
+      "description": "Success rate in the last hour",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=\"go-backend\",status_code!~\"5..\"}[1h])) / sum(rate(http_requests_total{job=\"go-backend\"}[1h])) * 100",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 99
+              },
+              {
+                "color": "green",
+                "value": 99.9
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "type": "row",
+      "title": "Service Level Indicators (SLIs)"
+    },
+    {
+      "id": 7,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "type": "graph",
+      "title": "Request Success Rate (Rolling 7d)",
+      "targets": [
+        {
+          "expr": "sum(increase(http_requests_total{job=\"go-backend\",status_code!~\"5..\"}[7d])) / sum(increase(http_requests_total{job=\"go-backend\"}[7d])) * 100",
+          "legendFormat": "Success Rate",
+          "refId": "A"
+        },
+        {
+          "expr": "99.9",
+          "legendFormat": "SLO Target (99.9%)",
+          "refId": "B"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "percent",
+          "label": "Success Rate",
+          "min": 99,
+          "max": 100
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "xaxis": {
+        "mode": "time"
+      },
+      "legend": {
+        "show": true,
+        "values": true,
+        "current": true
+      },
+      "tooltip": {
+        "shared": true,
+        "sort": 2
+      }
+    },
+    {
+      "id": 8,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "type": "graph",
+      "title": "Latency Percentiles (Rolling 7d)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=\"go-backend\"}[7d])) by (le)) * 1000",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"go-backend\"}[7d])) by (le)) * 1000",
+          "legendFormat": "p95",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"go-backend\"}[7d])) by (le)) * 1000",
+          "legendFormat": "p99",
+          "refId": "C"
+        },
+        {
+          "expr": "500",
+          "legendFormat": "SLO Target (500ms)",
+          "refId": "D"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "ms",
+          "label": "Latency"
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "xaxis": {
+        "mode": "time"
+      },
+      "legend": {
+        "show": true,
+        "values": true,
+        "current": true
+      },
+      "tooltip": {
+        "shared": true,
+        "sort": 2
+      }
+    },
+    {
+      "id": 9,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "type": "graph",
+      "title": "Error Budget Burn Rate",
+      "description": "Rate at which error budget is being consumed",
+      "targets": [
+        {
+          "expr": "(1 - (sum(rate(http_requests_total{job=\"go-backend\",status_code!~\"5..\"}[1h])) / sum(rate(http_requests_total{job=\"go-backend\"}[1h])))) / (1 - 0.999)",
+          "legendFormat": "1h Burn Rate",
+          "refId": "A"
+        },
+        {
+          "expr": "(1 - (sum(rate(http_requests_total{job=\"go-backend\",status_code!~\"5..\"}[6h])) / sum(rate(http_requests_total{job=\"go-backend\"}[6h])))) / (1 - 0.999)",
+          "legendFormat": "6h Burn Rate",
+          "refId": "B"
+        },
+        {
+          "expr": "(1 - (sum(rate(http_requests_total{job=\"go-backend\",status_code!~\"5..\"}[24h])) / sum(rate(http_requests_total{job=\"go-backend\"}[24h])))) / (1 - 0.999)",
+          "legendFormat": "24h Burn Rate",
+          "refId": "C"
+        },
+        {
+          "expr": "1",
+          "legendFormat": "Normal Burn Rate",
+          "refId": "D"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Burn Rate Multiplier"
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "xaxis": {
+        "mode": "time"
+      },
+      "legend": {
+        "show": true,
+        "values": true,
+        "current": true
+      },
+      "tooltip": {
+        "shared": true,
+        "sort": 2
+      },
+      "alert": {
+        "name": "High Error Budget Burn",
+        "conditions": [
+          {
+            "evaluator": {
+              "params": [
+                10
+              ],
+              "type": "gt"
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": [
+                "A",
+                "5m",
+                "now"
+              ]
+            },
+            "reducer": {
+              "params": [],
+              "type": "avg"
+            },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "frequency": "1m",
+        "handler": 1,
+        "noDataState": "no_data",
+        "notifications": []
+      }
+    },
+    {
+      "id": 10,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "type": "graph",
+      "title": "Database Query SLI",
+      "description": "Database query success rate and latency",
+      "targets": [
+        {
+          "expr": "sum(rate(db_query_success_total{job=\"go-backend\"}[5m])) / sum(rate(db_query_total{job=\"go-backend\"}[5m])) * 100",
+          "legendFormat": "Success Rate %",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(db_query_duration_seconds_bucket{job=\"go-backend\"}[5m])) by (le)) * 1000",
+          "legendFormat": "p95 Latency (ms)",
+          "refId": "B"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Value"
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "xaxis": {
+        "mode": "time"
+      },
+      "legend": {
+        "show": true,
+        "values": true,
+        "current": true
+      },
+      "tooltip": {
+        "shared": true,
+        "sort": 2
+      }
+    },
+    {
+      "id": 11,
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "type": "row",
+      "title": "Component SLIs"
+    },
+    {
+      "id": 12,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 36
+      },
+      "type": "graph",
+      "title": "API Endpoint Availability by Path",
+      "targets": [
+        {
+          "expr": "sum by (endpoint) (rate(http_requests_total{job=\"go-backend\",status_code!~\"5..\"}[5m])) / sum by (endpoint) (rate(http_requests_total{job=\"go-backend\"}[5m])) * 100",
+          "legendFormat": "{{endpoint}}",
+          "refId": "A"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "percent",
+          "label": "Availability %",
+          "min": 95,
+          "max": 100
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "xaxis": {
+        "mode": "time"
+      },
+      "legend": {
+        "show": true,
+        "values": true,
+        "current": true
+      },
+      "tooltip": {
+        "shared": true,
+        "sort": 2
+      }
+    },
+    {
+      "id": 13,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 36
+      },
+      "type": "graph",
+      "title": "WebSocket Connection Uptime",
+      "targets": [
+        {
+          "expr": "sum(websocket_connections_active{job=\"go-backend\"}) / sum(websocket_connections_total{job=\"go-backend\"}) * 100",
+          "legendFormat": "Connection Stability %",
+          "refId": "A"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "percent",
+          "label": "Uptime %",
+          "min": 95,
+          "max": 100
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "xaxis": {
+        "mode": "time"
+      },
+      "legend": {
+        "show": true,
+        "values": true,
+        "current": true
+      },
+      "tooltip": {
+        "shared": true,
+        "sort": 2
+      }
+    },
+    {
+      "id": 14,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 36
+      },
+      "type": "graph",
+      "title": "Temporal Workflow Success Rate",
+      "targets": [
+        {
+          "expr": "sum(rate(temporal_workflow_completed_total[5m])) / (sum(rate(temporal_workflow_completed_total[5m])) + sum(rate(temporal_workflow_failed_total[5m]))) * 100",
+          "legendFormat": "Success Rate %",
+          "refId": "A"
+        },
+        {
+          "expr": "99",
+          "legendFormat": "Target (99%)",
+          "refId": "B"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "percent",
+          "label": "Success Rate %",
+          "min": 95,
+          "max": 100
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "xaxis": {
+        "mode": "time"
+      },
+      "legend": {
+        "show": true,
+        "values": true,
+        "current": true
+      },
+      "tooltip": {
+        "shared": true,
+        "sort": 2
+      }
+    },
+    {
+      "id": 15,
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 44
+      },
+      "type": "table",
+      "title": "SLO Compliance Summary (Last 30 Days)",
+      "targets": [
+        {
+          "expr": "sum(increase(http_requests_total{job=\"go-backend\",status_code!~\"5..\"}[30d])) / sum(increase(http_requests_total{job=\"go-backend\"}[30d])) * 100",
+          "format": "table",
+          "instant": true,
+          "refId": "A",
+          "legendFormat": "Availability SLO"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"go-backend\"}[30d])) by (le)) * 1000",
+          "format": "table",
+          "instant": true,
+          "refId": "B",
+          "legendFormat": "Latency SLO"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "Value #A": "Availability (%)",
+              "Value #B": "p95 Latency (ms)"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "slo_window",
+        "type": "custom",
+        "query": "1h,6h,24h,7d,30d",
+        "current": {
+          "text": "30d",
+          "value": "30d"
+        },
+        "multi": false
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h"
+    ]
+  }
+}

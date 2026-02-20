@@ -1,0 +1,269 @@
+---
+title: "Code Style"
+description: "Coding standards and style guide for TraceRTM"
+keywords: [code style, formatting, linting, standards]
+---
+
+# Code Style
+
+Coding standards and style guide for TraceRTM development.
+
+## Python Style
+
+### PEP 8 Compliance
+
+Follow [PEP 8](https://pep8.org/) style guide:
+
+- Use 4 spaces for indentation
+- Maximum line length: 88 characters (Black default)
+- Use snake_case for functions and variables
+- Use PascalCase for classes
+
+### Code Formatting
+
+#### Black
+
+We use [Black](https://black.readthedocs.io/) for code formatting:
+
+```bash
+# Format code
+black .
+
+# Check formatting
+black --check .
+
+# Format specific file
+black src/tracertm/api/main.py
+```
+
+Configuration in `pyproject.toml`:
+```toml
+[tool.black]
+line-length = 88
+target-version = ['py312']
+```
+
+#### isort
+
+Sort imports with [isort](https://pycqa.github.io/isort/):
+
+```bash
+# Sort imports
+isort .
+
+# Check imports
+isort --check-only .
+```
+
+### Linting
+
+#### flake8
+
+```bash
+# Run flake8
+flake8 .
+
+# Ignore specific errors
+flake8 --ignore=E501,W503 .
+```
+
+Configuration in `.flake8`:
+```ini
+[flake8]
+max-line-length = 88
+extend-ignore = E203, W503
+exclude = .git,__pycache__,venv
+```
+
+#### mypy
+
+Type checking with [mypy](https://mypy.readthedocs.io/):
+
+```bash
+# Type check
+mypy .
+
+# Check specific module
+mypy src/tracertm/api/
+```
+
+## Type Hints
+
+Use type hints for all functions:
+
+```python
+from typing import Optional, List, Dict
+
+def get_item(item_id: str) -> Optional[Dict[str, Any]]:
+    """Get item by ID."""
+    pass
+
+def list_items(project_id: str, limit: int = 100) -> List[Dict[str, Any]]:
+    """List items in project."""
+    pass
+```
+
+## Docstrings
+
+Use Google-style docstrings:
+
+```python
+def create_item(
+    title: str,
+    view: str,
+    status: str = "draft"
+) -> Dict[str, Any]:
+    """Create a new item.
+
+    Args:
+        title: Item title
+        view: Item view (requirements, test-cases, etc.)
+        status: Item status (default: draft)
+
+    Returns:
+        Created item dictionary
+
+    Raises:
+        ValidationError: If title or view is invalid
+    """
+    pass
+```
+
+## Naming Conventions
+
+### Variables and Functions
+
+```python
+# Good
+item_id = "item_123"
+user_name = "john_doe"
+get_item_by_id()
+
+# Bad
+itemId = "item_123"
+userName = "john_doe"
+getItemById()
+```
+
+### Classes
+
+```python
+# Good
+class ItemRepository:
+    pass
+
+class DatabaseConnection:
+    pass
+```
+
+### Constants
+
+```python
+# Good
+MAX_ITEMS_PER_PAGE = 100
+DEFAULT_TIMEOUT = 30
+
+# Bad
+maxItemsPerPage = 100
+defaultTimeout = 30
+```
+
+## File Organization
+
+### Imports Order
+
+1. Standard library
+2. Third-party packages
+3. Local application imports
+
+```python
+# Standard library
+import os
+from typing import Dict, List
+
+# Third-party
+from fastapi import APIRouter, Depends
+from sqlalchemy import select
+
+# Local
+from tracertm.database import get_db
+from tracertm.models import Item
+```
+
+## Error Handling
+
+### Use Specific Exceptions
+
+```python
+# Good
+if not item:
+    raise NotFoundError(f"Item {item_id} not found")
+
+# Bad
+if not item:
+    raise Exception("Item not found")
+```
+
+### Error Messages
+
+```python
+# Good - descriptive
+raise ValidationError("Item title cannot be empty")
+
+# Bad - vague
+raise ValidationError("Invalid input")
+```
+
+## Testing Style
+
+### Test Naming
+
+```python
+# Good
+def test_create_item_with_valid_data():
+    pass
+
+def test_create_item_fails_with_empty_title():
+    pass
+
+# Bad
+def test1():
+    pass
+
+def test_item():
+    pass
+```
+
+### Test Organization
+
+```python
+class TestItemCreation:
+    def test_valid_creation(self):
+        pass
+    
+    def test_invalid_title(self):
+        pass
+    
+    def test_duplicate_title(self):
+        pass
+```
+
+## Pre-commit Hooks
+
+Install pre-commit hooks:
+
+```bash
+pre-commit install
+```
+
+Hooks run automatically on commit:
+- Black formatting
+- isort import sorting
+- flake8 linting
+- mypy type checking
+
+## Related Documentation
+
+- [TypeScript Style](./01b-typescript-style) - Frontend code style
+- [Go Style](./01a-go-style) - Go code style (if applicable)
+- [Testing](../04-testing) - Testing guidelines

@@ -1,0 +1,820 @@
+---
+title: "Linux Installation"
+description: "Comprehensive guide for installing TracerTM on Linux distributions"
+---
+
+# Linux Installation
+
+This guide covers installing TracerTM on various Linux distributions. TracerTM supports all major Linux distributions and provides multiple installation methods.
+
+## System Requirements
+
+### Minimum Requirements
+
+- **OS**: Any modern Linux distribution (kernel 3.10+)
+- **Python**: 3.12 or higher
+- **RAM**: 512 MB minimum, 2 GB recommended
+- **Disk Space**: 500 MB for installation
+- **Architecture**: x86_64 (amd64), ARM64 (aarch64)
+
+### Required System Libraries
+
+```bash
+# Core libraries (usually pre-installed)
+- libssl (OpenSSL 1.1.1+)
+- libffi (7.0+)
+- zlib (1.2.11+)
+- libbz2
+- libreadline
+- libsqlite3
+```
+
+### Optional Dependencies
+
+```bash
+# For PostgreSQL support
+- libpq-dev (PostgreSQL client libraries)
+
+# For desktop integration
+- python3-gi (GObject introspection)
+- libnotify (desktop notifications)
+
+# For enhanced terminal experience
+- xclip or xsel (clipboard integration)
+```
+
+## Installation Methods
+
+### Method 1: Ubuntu/Debian (apt)
+
+TracerTM can be installed via pip on Ubuntu/Debian systems after installing Python 3.12+.
+
+#### Install Python 3.12 (if needed)
+
+```bash
+# Ubuntu 24.04+ / Debian 13+ (Python 3.12 included)
+sudo apt update
+sudo apt install python3 python3-pip python3-venv
+
+# Ubuntu 22.04 or older (use deadsnakes PPA)
+sudo apt update
+sudo apt install software-properties-common
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.12 python3.12-venv python3.12-dev
+```
+
+#### Install System Dependencies
+
+```bash
+# Install required development headers
+sudo apt install -y \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    libpq-dev \
+    libsqlite3-dev \
+    git \
+    curl
+
+# Optional: For desktop integration
+sudo apt install -y \
+    python3-gi \
+    libnotify-bin \
+    xclip
+```
+
+#### Install TracerTM with pipx (Recommended)
+
+```bash
+# Install pipx
+sudo apt install pipx
+pipx ensurepath
+
+# Install TracerTM
+pipx install tracertm
+
+# Verify installation
+tracertm --version
+rtm --version
+```
+
+#### Install TracerTM with pip
+
+```bash
+# Create virtual environment (recommended)
+python3.12 -m venv ~/.tracertm-env
+source ~/.tracertm-env/bin/activate
+
+# Install TracerTM
+pip install tracertm
+
+# Verify installation
+tracertm --version
+```
+
+### Method 2: Fedora/RHEL/CentOS (dnf)
+
+#### Install Python 3.12 (if needed)
+
+```bash
+# Fedora 39+ (Python 3.12 included)
+sudo dnf install python3 python3-pip
+
+# Fedora 38 or older / RHEL 9 / CentOS Stream 9
+sudo dnf install python3.12 python3.12-pip
+
+# Enable EPEL for RHEL/CentOS
+sudo dnf install epel-release
+sudo dnf install python3.12
+```
+
+#### Install System Dependencies
+
+```bash
+# Install development tools
+sudo dnf groupinstall "Development Tools"
+sudo dnf install -y \
+    openssl-devel \
+    libffi-devel \
+    postgresql-devel \
+    sqlite-devel \
+    git \
+    curl
+
+# Optional: Desktop integration
+sudo dnf install -y \
+    python3-gobject \
+    libnotify \
+    xclip
+```
+
+#### Install TracerTM
+
+```bash
+# Using pipx (recommended)
+sudo dnf install pipx
+pipx ensurepath
+pipx install tracertm
+
+# Or using pip in virtual environment
+python3.12 -m venv ~/.tracertm-env
+source ~/.tracertm-env/bin/activate
+pip install tracertm
+
+# Verify installation
+tracertm --version
+```
+
+### Method 3: Arch Linux (pacman/yay)
+
+#### Install Python and Dependencies
+
+```bash
+# Update system
+sudo pacman -Syu
+
+# Install Python and required packages
+sudo pacman -S python python-pip python-pipx base-devel git curl
+
+# Install development libraries
+sudo pacman -S openssl libffi postgresql-libs sqlite
+
+# Optional: Desktop integration
+sudo pacman -S python-gobject libnotify xclip
+```
+
+#### Install TracerTM
+
+```bash
+# Using pipx (recommended)
+pipx ensurepath
+pipx install tracertm
+
+# Or using pip in virtual environment
+python -m venv ~/.tracertm-env
+source ~/.tracertm-env/bin/activate
+pip install tracertm
+
+# Verify installation
+tracertm --version
+```
+
+#### Creating an AUR Package (Advanced)
+
+```bash
+# Clone AUR helper (if not installed)
+git clone https://aur.archlinux.org/yay.git
+cd yay
+makepkg -si
+
+# Note: TracerTM AUR package is coming soon
+# For now, use pipx or pip installation methods
+```
+
+### Method 4: Universal Installation (pip/pipx)
+
+This method works on any Linux distribution with Python 3.12+.
+
+#### Using pipx (Recommended)
+
+```bash
+# Install pipx (if not available via package manager)
+python3.12 -m pip install --user pipx
+python3.12 -m pipx ensurepath
+
+# Restart shell or source profile
+source ~/.bashrc  # or ~/.zshrc for zsh
+
+# Install TracerTM
+pipx install tracertm
+
+# Upgrade TracerTM
+pipx upgrade tracertm
+
+# Verify installation
+which tracertm
+tracertm --version
+```
+
+#### Using pip with Virtual Environment
+
+```bash
+# Create dedicated virtual environment
+mkdir -p ~/.virtualenvs
+python3.12 -m venv ~/.virtualenvs/tracertm
+
+# Activate virtual environment
+source ~/.virtualenvs/tracertm/bin/activate
+
+# Install TracerTM
+pip install tracertm
+
+# Create wrapper script (optional)
+cat > ~/.local/bin/tracertm << 'EOF'
+#!/bin/bash
+source ~/.virtualenvs/tracertm/bin/activate
+exec python -m tracertm.cli "$@"
+EOF
+chmod +x ~/.local/bin/tracertm
+
+# Verify installation
+tracertm --version
+```
+
+### Method 5: Install from Source
+
+For development or latest features.
+
+#### Clone Repository
+
+```bash
+# Clone the repository
+git clone https://github.com/tracertm/tracertm.git
+cd tracertm
+
+# Optional: Checkout specific version
+git checkout v0.1.0
+```
+
+#### Install Dependencies
+
+```bash
+# Create virtual environment
+python3.12 -m venv .venv
+source .venv/bin/activate
+
+# Upgrade pip
+pip install --upgrade pip
+
+# Install in development mode
+pip install -e .
+
+# Or install with all optional features
+pip install -e ".[all]"
+
+# Or install with specific feature sets
+pip install -e ".[dev,test,observability]"
+```
+
+#### Verify Installation
+
+```bash
+# Check installation
+tracertm --version
+rtm --version
+
+# Run tests
+pytest
+
+# Check code quality
+ruff check .
+mypy src/
+```
+
+## Shell Completion Setup
+
+TracerTM supports shell completion for bash, zsh, and fish.
+
+### Bash Completion
+
+```bash
+# Install completion script
+tracertm --install-completion bash
+
+# Or manually add to ~/.bashrc
+cat >> ~/.bashrc << 'EOF'
+eval "$(_TRACERTM_COMPLETE=bash_source tracertm)"
+eval "$(_RTM_COMPLETE=bash_source rtm)"
+EOF
+
+# Reload shell configuration
+source ~/.bashrc
+```
+
+### Zsh Completion
+
+```bash
+# Install completion script
+tracertm --install-completion zsh
+
+# Or manually add to ~/.zshrc
+cat >> ~/.zshrc << 'EOF'
+eval "$(_TRACERTM_COMPLETE=zsh_source tracertm)"
+eval "$(_RTM_COMPLETE=zsh_source rtm)"
+EOF
+
+# Reload shell configuration
+source ~/.zshrc
+```
+
+### Fish Completion
+
+```bash
+# Install completion script
+tracertm --install-completion fish
+
+# Or manually create completion file
+mkdir -p ~/.config/fish/completions
+tracertm --show-completion fish > ~/.config/fish/completions/tracertm.fish
+rtm --show-completion fish > ~/.config/fish/completions/rtm.fish
+```
+
+## Desktop Integration
+
+### Create Desktop Entry
+
+```bash
+# Create .desktop file
+mkdir -p ~/.local/share/applications
+cat > ~/.local/share/applications/tracertm.desktop << EOF
+[Desktop Entry]
+Type=Application
+Name=TracerTM
+Comment=Requirements Traceability Management System
+Exec=$(which tracertm) tui
+Icon=tracertm
+Terminal=true
+Categories=Development;ProjectManagement;
+Keywords=requirements;traceability;rtm;project;
+EOF
+
+# Update desktop database
+update-desktop-database ~/.local/share/applications
+```
+
+### Add to System Menu
+
+```bash
+# Copy desktop file to system location (requires sudo)
+sudo cp ~/.local/share/applications/tracertm.desktop /usr/share/applications/
+
+# Update system desktop database
+sudo update-desktop-database
+```
+
+### File Association (for .rtm files)
+
+```bash
+# Associate .rtm files with TracerTM
+cat > ~/.local/share/applications/tracertm-viewer.desktop << EOF
+[Desktop Entry]
+Type=Application
+Name=TracerTM Viewer
+Exec=$(which tracertm) open %f
+MimeType=application/x-tracertm;
+NoDisplay=true
+EOF
+
+# Register MIME type
+cat > ~/.local/share/mime/packages/tracertm.xml << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-tracertm">
+    <comment>TracerTM Project File</comment>
+    <glob pattern="*.rtm"/>
+  </mime-type>
+</mime-info>
+EOF
+
+# Update MIME database
+update-mime-database ~/.local/share/mime
+```
+
+## Systemd Service Setup (Optional)
+
+For running TracerTM API server as a system service.
+
+### Create Service File
+
+```bash
+# Create systemd user service
+mkdir -p ~/.config/systemd/user
+cat > ~/.config/systemd/user/tracertm-api.service << EOF
+[Unit]
+Description=TracerTM API Server
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=$(which tracertm) api start --host 0.0.0.0 --port 8080
+Restart=on-failure
+RestartSec=5s
+Environment="TRACERTM_ENV=production"
+Environment="TRACERTM_LOG_LEVEL=info"
+
+[Install]
+WantedBy=default.target
+EOF
+```
+
+### Enable and Start Service
+
+```bash
+# Reload systemd user daemon
+systemctl --user daemon-reload
+
+# Enable service to start on boot
+systemctl --user enable tracertm-api.service
+
+# Start service
+systemctl --user start tracertm-api.service
+
+# Check service status
+systemctl --user status tracertm-api.service
+
+# View service logs
+journalctl --user -u tracertm-api.service -f
+```
+
+### System-Wide Service (requires sudo)
+
+```bash
+# Create system service
+sudo cat > /etc/systemd/system/tracertm-api.service << EOF
+[Unit]
+Description=TracerTM API Server
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=tracertm
+Group=tracertm
+WorkingDirectory=/opt/tracertm
+ExecStart=/usr/local/bin/tracertm api start --host 0.0.0.0 --port 8080
+Restart=on-failure
+RestartSec=5s
+Environment="TRACERTM_ENV=production"
+EnvironmentFile=/etc/tracertm/tracertm.env
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Create tracertm user
+sudo useradd -r -s /bin/false tracertm
+
+# Create configuration directory
+sudo mkdir -p /etc/tracertm
+sudo chown tracertm:tracertm /etc/tracertm
+
+# Enable and start service
+sudo systemctl daemon-reload
+sudo systemctl enable tracertm-api.service
+sudo systemctl start tracertm-api.service
+```
+
+## Permissions and PATH Setup
+
+### Add User to Required Groups
+
+```bash
+# Add user to docker group (if using Docker)
+sudo usermod -aG docker $USER
+
+# Add user to postgres group (if running local PostgreSQL)
+sudo usermod -aG postgres $USER
+
+# Apply group changes (logout/login required)
+newgrp docker
+```
+
+### Configure PATH
+
+```bash
+# Ensure local bin is in PATH
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+
+# For pipx installations
+pipx ensurepath
+
+# Reload shell configuration
+source ~/.bashrc
+```
+
+### Set Up Environment Variables
+
+```bash
+# Add TracerTM environment variables to ~/.bashrc
+cat >> ~/.bashrc << 'EOF'
+# TracerTM Configuration
+export TRACERTM_HOME="$HOME/.tracertm"
+export TRACERTM_CONFIG="$HOME/.tracertm/config.yaml"
+export TRACERTM_LOG_LEVEL="info"
+export TRACERTM_ENV="development"
+EOF
+
+# Create configuration directory
+mkdir -p ~/.tracertm
+
+# Initialize configuration
+tracertm config init
+```
+
+### File Permissions
+
+```bash
+# Set correct permissions for TracerTM directory
+chmod 755 ~/.tracertm
+chmod 644 ~/.tracertm/config.yaml
+
+# Protect sensitive files (if any)
+chmod 600 ~/.tracertm/credentials.json
+```
+
+## Updating TracerTM
+
+### Update via pipx
+
+```bash
+# Update to latest version
+pipx upgrade tracertm
+
+# Update to specific version
+pipx install tracertm==0.2.0 --force
+
+# Verify new version
+tracertm --version
+```
+
+### Update via pip
+
+```bash
+# Activate virtual environment
+source ~/.virtualenvs/tracertm/bin/activate
+
+# Update to latest version
+pip install --upgrade tracertm
+
+# Update to specific version
+pip install tracertm==0.2.0
+
+# Verify new version
+tracertm --version
+```
+
+### Update from Source
+
+```bash
+# Navigate to repository
+cd tracertm
+
+# Pull latest changes
+git pull origin main
+
+# Checkout specific version (optional)
+git checkout v0.2.0
+
+# Activate virtual environment
+source .venv/bin/activate
+
+# Reinstall
+pip install -e . --force-reinstall
+
+# Verify new version
+tracertm --version
+```
+
+## Common Linux-Specific Issues
+
+### Issue 1: Command Not Found
+
+```bash
+# Problem: tracertm: command not found
+
+# Solution 1: Check PATH
+echo $PATH | grep -o "$HOME/.local/bin"
+
+# Solution 2: Add to PATH
+export PATH="$HOME/.local/bin:$PATH"
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+
+# Solution 3: Create symlink
+sudo ln -s $(which tracertm) /usr/local/bin/tracertm
+```
+
+### Issue 2: Permission Denied
+
+```bash
+# Problem: Permission denied when running tracertm
+
+# Solution 1: Check file permissions
+ls -l $(which tracertm)
+
+# Solution 2: Fix permissions
+chmod +x $(which tracertm)
+
+# Solution 3: Use sudo (if system-wide install)
+sudo tracertm --version
+```
+
+### Issue 3: Python Version Mismatch
+
+```bash
+# Problem: TracerTM requires Python 3.12+
+
+# Solution 1: Check Python version
+python3 --version
+
+# Solution 2: Use specific Python version
+python3.12 -m pip install tracertm
+
+# Solution 3: Install Python 3.12 (see distribution-specific sections above)
+```
+
+### Issue 4: Missing System Libraries
+
+```bash
+# Problem: ImportError: libssl.so.1.1: cannot open shared object file
+
+# Solution (Ubuntu/Debian):
+sudo apt install libssl-dev libffi-dev
+
+# Solution (Fedora/RHEL):
+sudo dnf install openssl-devel libffi-devel
+
+# Solution (Arch):
+sudo pacman -S openssl libffi
+```
+
+### Issue 5: Database Connection Issues
+
+```bash
+# Problem: Cannot connect to PostgreSQL database
+
+# Solution 1: Check PostgreSQL is running
+sudo systemctl status postgresql
+
+# Solution 2: Install PostgreSQL client libraries
+sudo apt install libpq-dev  # Ubuntu/Debian
+sudo dnf install postgresql-devel  # Fedora/RHEL
+sudo pacman -S postgresql-libs  # Arch
+
+# Solution 3: Verify connection string
+tracertm config show database
+```
+
+### Issue 6: Terminal Display Issues
+
+```bash
+# Problem: TUI not displaying correctly
+
+# Solution 1: Check terminal support
+echo $TERM
+# Should be xterm-256color or similar
+
+# Solution 2: Set TERM variable
+export TERM=xterm-256color
+echo 'export TERM=xterm-256color' >> ~/.bashrc
+
+# Solution 3: Update terminal emulator
+sudo apt install gnome-terminal  # or other modern terminal
+```
+
+### Issue 7: SSL Certificate Errors
+
+```bash
+# Problem: SSL certificate verification failed
+
+# Solution 1: Update CA certificates
+sudo update-ca-certificates  # Ubuntu/Debian
+sudo update-ca-trust  # Fedora/RHEL
+sudo update-ca-trust enable  # Arch
+
+# Solution 2: Install certificates
+sudo apt install ca-certificates
+```
+
+## Verification Checklist
+
+After installation, verify everything is working:
+
+```bash
+# Check version
+tracertm --version
+rtm --version
+
+# Check health
+tracertm health
+
+# Initialize configuration
+tracertm config init
+
+# Create test project
+tracertm project create "Test Project"
+
+# List projects
+tracertm project list
+
+# Launch TUI
+tracertm tui
+
+# Test shell completion (type and press TAB)
+tracertm <TAB>
+```
+
+## Uninstallation
+
+### Remove via pipx
+
+```bash
+# Uninstall TracerTM
+pipx uninstall tracertm
+
+# Remove configuration (optional)
+rm -rf ~/.tracertm
+```
+
+### Remove via pip
+
+```bash
+# Activate virtual environment
+source ~/.virtualenvs/tracertm/bin/activate
+
+# Uninstall TracerTM
+pip uninstall tracertm
+
+# Remove virtual environment (optional)
+rm -rf ~/.virtualenvs/tracertm
+
+# Remove configuration (optional)
+rm -rf ~/.tracertm
+```
+
+### Clean Up System Integration
+
+```bash
+# Remove desktop entries
+rm ~/.local/share/applications/tracertm*.desktop
+rm /usr/share/applications/tracertm*.desktop  # requires sudo
+
+# Remove MIME types
+rm ~/.local/share/mime/packages/tracertm.xml
+
+# Remove systemd service
+systemctl --user stop tracertm-api.service
+systemctl --user disable tracertm-api.service
+rm ~/.config/systemd/user/tracertm-api.service
+
+# System service (requires sudo)
+sudo systemctl stop tracertm-api.service
+sudo systemctl disable tracertm-api.service
+sudo rm /etc/systemd/system/tracertm-api.service
+```
+
+## Next Steps
+
+After successful installation:
+
+1. **Configure TracerTM**: [Configuration Guide](/docs/getting-started/configuration)
+2. **Quick Start Tutorial**: [Quick Start](/docs/getting-started/quick-start)
+3. **Create Your First Project**: [First Project Guide](/docs/getting-started/first-project)
+4. **Explore CLI Commands**: [CLI Reference](/docs/reference/cli)
+5. **Set Up Database**: [Database Setup](/docs/getting-started/database-setup)
+
+## Additional Resources
+
+- [Troubleshooting Guide](/docs/help/troubleshooting)
+- [FAQ](/docs/help/faq)
+- [Community Support](https://github.com/tracertm/tracertm/discussions)
+- [Report Issues](https://github.com/tracertm/tracertm/issues)

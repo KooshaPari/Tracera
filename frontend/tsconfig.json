@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "paths": {
+      "@tracertm/types": ["./packages/types/src/types.ts"],
+      "@tracertm/ui": ["./packages/ui/src/ui.ts"],
+      "@tracertm/state": ["./packages/state/src/state.ts"],
+      "@tracertm/api-client": ["./packages/api-client/src/api-client.ts"]
+    },
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "allowJs": true,
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "resolvePackageJsonExports": true,
+    "resolvePackageJsonImports": true,
+    "noEmit": true,
+
+    "strict": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+    "exactOptionalPropertyTypes": true,
+
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "isolatedDeclarations": false,
+
+    "noUncheckedSideEffectImports": true
+  },
+  "files": [],
+  "exclude": ["node_modules", "dist", "build", "coverage", ".turbo"],
+  "references": [
+    { "path": "./packages/types" },
+    { "path": "./packages/state" },
+    { "path": "./packages/ui" },
+    { "path": "./packages/api-client" },
+    { "path": "./packages/config" }
+  ]
+}

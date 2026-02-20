@@ -1,0 +1,441 @@
+---
+title: API Versioning
+description: Understanding TraceRTM API versioning strategy, version lifecycle, and compatibility guarantees
+---
+
+# API Versioning
+
+TraceRTM uses URL-based versioning to ensure API stability while enabling continuous improvement. This guide covers our versioning strategy, compatibility guarantees, and how to migrate between versions.
+
+## Versioning Strategy
+
+### URL-Based Versioning
+
+The API version is specified in the URL path:
+
+```
+https://api.tracertm.dev/v1/projects
+https://api.tracertm.dev/v2/projects
+```
+
+### Current Version
+
+| Version | Status | Release Date | Support Until |
+|---------|--------|--------------|---------------|
+| v1 | **Current** | 2023-06-01 | At least 2025-06-01 |
+
+---
+
+## Version Lifecycle
+
+### Stages
+
+```
+Preview → Current → Deprecated → Sunset
+```
+
+| Stage | Description | SLA | Breaking Changes |
+|-------|-------------|-----|------------------|
+| **Preview** | Early access, may change | Best effort | Possible |
+| **Current** | Production-ready, stable | Full SLA | None |
+| **Deprecated** | Still works, migration advised | Full SLA | None |
+| **Sunset** | No longer available | None | N/A |
+
+### Timeline Guarantees
+
+- **Minimum Support**: Each version supported for at least 24 months after "Current" release
+- **Deprecation Notice**: 12 months before deprecation
+- **Sunset Notice**: 6 months before sunset
+- **Migration Guide**: Published with deprecation notice
+
+---
+
+## Specifying the Version
+
+### URL Path (Recommended)
+
+```bash
+# Explicit version in URL
+curl "https://api.tracertm.dev/v1/projects" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### API-Version Header (Optional)
+
+For minor version pinning:
+
+```bash
+curl "https://api.tracertm.dev/v1/projects" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "API-Version: 2024-01-15"
+```
+
+### SDK Configuration
+
+#### Python
+
+```python
+from tracertm import TraceRTMClient
+
+# Default: latest v1
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# Pin to specific date version
+client = TraceRTMClient(
+    api_key="rtm_live_sk_...",
+    api_version="2024-01-15"
+)
+
+# Use v2 (when available)
+client = TraceRTMClient(
+    api_key="rtm_live_sk_...",
+    base_url="https://api.tracertm.dev/v2"
+)
+```
+
+#### TypeScript
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+// Default: latest v1
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// Pin to specific date version
+const pinnedClient = new TraceRTMClient({
+  apiKey: 'rtm_live_sk_...',
+  apiVersion: '2024-01-15'
+});
+
+// Use v2 (when available)
+const v2Client = new TraceRTMClient({
+  apiKey: 'rtm_live_sk_...',
+  baseUrl: 'https://api.tracertm.dev/v2'
+});
+```
+
+#### Go
+
+```go
+package main
+
+import "github.com/tracertm/tracertm-go"
+
+func main() {
+    // Default: latest v1
+    client := tracertm.NewClient("rtm_live_sk_...")
+
+    // Pin to specific date version
+    pinnedClient := tracertm.NewClient("rtm_live_sk_...",
+        tracertm.WithAPIVersion("2024-01-15"),
+    )
+
+    // Use v2 (when available)
+    v2Client := tracertm.NewClient("rtm_live_sk_...",
+        tracertm.WithBaseURL("https://api.tracertm.dev/v2"),
+    )
+}
+```
+
+---
+
+## Compatibility Guarantees
+
+### What We Guarantee (Non-Breaking)
+
+The following changes are **non-breaking** and may happen without version change:
+
+| Change Type | Example |
+|-------------|---------|
+| Add new endpoints | `POST /v1/projects/{id}/archive` |
+| Add optional request fields | New optional `metadata` field |
+| Add response fields | New `last_sync_at` in item response |
+| Add new enum values | New status `on_hold` |
+| Add new error codes | New `QUOTA_EXCEEDED` error |
+| Add new webhook events | New `item.commented` event |
+| Expand field limits | Increase title max length |
+| Improve error messages | Clearer validation messages |
+
+### What Requires New Version (Breaking)
+
+The following changes are **breaking** and require a new version:
+
+| Change Type | Example |
+|-------------|---------|
+| Remove endpoints | Remove `DELETE /v1/items/{id}` |
+| Remove required fields | Remove `title` from create |
+| Remove response fields | Remove `legacy_id` field |
+| Rename fields | `created` → `created_at` |
+| Change field types | `id: string` → `id: number` |
+| Change authentication | Bearer → API key header |
+| Change error formats | Different error JSON structure |
+| Reduce limits | Decrease max batch size |
+| Change default behavior | Default sort order change |
+
+---
+
+## Version Response Headers
+
+All responses include version information:
+
+```http
+HTTP/1.1 200 OK
+X-API-Version: v1
+X-API-Date-Version: 2024-01-15
+X-API-Deprecated: false
+```
+
+### Deprecation Headers
+
+When using a deprecated version:
+
+```http
+HTTP/1.1 200 OK
+X-API-Version: v1
+X-API-Deprecated: true
+X-API-Deprecation-Date: 2024-12-01
+X-API-Sunset-Date: 2025-06-01
+Deprecation: true
+Sunset: Sat, 01 Jun 2025 00:00:00 GMT
+Link: <https://docs.tracertm.dev/migration/v1-to-v2>; rel="successor-version"
+```
+
+---
+
+## Date-Based Versions
+
+Within a major version, we use date-based versions for minor changes:
+
+### Available Date Versions
+
+| Date Version | Changes |
+|--------------|---------|
+| `2024-01-15` | Initial v1 release |
+| `2024-03-01` | Added batch operations |
+| `2024-06-01` | Added cursor pagination |
+| `2024-09-01` | Added multi-sort support |
+| `2024-12-01` | Added filter expressions |
+
+### Using Date Versions
+
+```bash
+# Use specific date version
+curl "https://api.tracertm.dev/v1/projects" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "API-Version: 2024-06-01"
+```
+
+### Date Version Behavior
+
+- If no `API-Version` header: Latest behavior
+- If `API-Version` specified: Behavior as of that date
+- Unknown date: Returns 400 error
+
+```json
+{
+  "error": {
+    "code": "INVALID_API_VERSION",
+    "message": "Unknown API version '2022-01-01'",
+    "details": {
+      "requested_version": "2022-01-01",
+      "available_versions": ["2024-01-15", "2024-03-01", "2024-06-01", "2024-09-01", "2024-12-01"]
+    }
+  }
+}
+```
+
+---
+
+## SDK Version Compatibility
+
+### SDK to API Version Mapping
+
+| SDK Version | Default API Version | Supported API Versions |
+|-------------|--------------------|-----------------------|
+| Python 1.x | v1 (2024-01-15) | v1 |
+| Python 2.x | v1 (2024-12-01) | v1 |
+| TypeScript 1.x | v1 (2024-01-15) | v1 |
+| TypeScript 2.x | v1 (2024-12-01) | v1 |
+| Go 1.x | v1 (2024-01-15) | v1 |
+| Go 2.x | v1 (2024-12-01) | v1 |
+
+### Checking SDK Version
+
+#### Python
+
+```python
+import tracertm
+
+print(tracertm.__version__)  # "2.1.0"
+print(tracertm.API_VERSION)  # "v1"
+print(tracertm.API_DATE_VERSION)  # "2024-12-01"
+```
+
+#### TypeScript
+
+```typescript
+import { version, apiVersion, apiDateVersion } from '@tracertm/sdk';
+
+console.log(version);          // "2.1.0"
+console.log(apiVersion);       // "v1"
+console.log(apiDateVersion);   // "2024-12-01"
+```
+
+#### Go
+
+```go
+import "github.com/tracertm/tracertm-go"
+
+fmt.Println(tracertm.Version)         // "2.1.0"
+fmt.Println(tracertm.APIVersion)      // "v1"
+fmt.Println(tracertm.APIDateVersion)  // "2024-12-01"
+```
+
+---
+
+## Handling Version Changes
+
+### Detecting Deprecation
+
+Check response headers in your application:
+
+```python
+import requests
+
+response = requests.get(
+    "https://api.tracertm.dev/v1/projects",
+    headers={"Authorization": "Bearer rtm_live_sk_..."}
+)
+
+if response.headers.get("X-API-Deprecated") == "true":
+    deprecation_date = response.headers.get("X-API-Deprecation-Date")
+    sunset_date = response.headers.get("X-API-Sunset-Date")
+    migration_url = response.headers.get("Link")
+
+    print(f"Warning: API deprecated on {deprecation_date}")
+    print(f"Sunset date: {sunset_date}")
+    print(f"Migration guide: {migration_url}")
+```
+
+### Subscribing to Version Updates
+
+#### Email Notifications
+
+Configure in your dashboard:
+
+```
+Settings → API → Version Notifications
+```
+
+#### Webhook Notifications
+
+```json
+{
+  "event": "api.version.deprecated",
+  "data": {
+    "version": "v1",
+    "deprecation_date": "2024-12-01",
+    "sunset_date": "2025-06-01",
+    "migration_guide_url": "https://docs.tracertm.dev/migration/v1-to-v2",
+    "affected_endpoints": ["all"]
+  }
+}
+```
+
+---
+
+## Best Practices
+
+### 1. Pin Your API Version
+
+```python
+# Good: Pinned version, predictable behavior
+client = TraceRTMClient(
+    api_key="rtm_live_sk_...",
+    api_version="2024-06-01"
+)
+
+# Risky: Latest version, behavior may change
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+```
+
+### 2. Test Against New Versions
+
+```python
+# Test environment with latest version
+test_client = TraceRTMClient(
+    api_key="rtm_test_sk_...",
+    api_version=None  # Latest
+)
+
+# Production with pinned version
+prod_client = TraceRTMClient(
+    api_key="rtm_live_sk_...",
+    api_version="2024-06-01"
+)
+```
+
+### 3. Monitor Deprecation Headers
+
+```python
+def check_api_health(response):
+    if response.headers.get("X-API-Deprecated") == "true":
+        # Alert your team
+        send_alert(
+            "API Deprecation Warning",
+            f"Sunset date: {response.headers.get('X-API-Sunset-Date')}"
+        )
+```
+
+### 4. Plan Migrations Early
+
+- Subscribe to deprecation notifications
+- Review migration guides when published
+- Test in staging before production migration
+- Allow buffer time before sunset
+
+---
+
+## Version Discovery
+
+### Get Available Versions
+
+```bash
+curl "https://api.tracertm.dev/versions" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+Response:
+
+```json
+{
+  "versions": [
+    {
+      "version": "v1",
+      "status": "current",
+      "released_at": "2023-06-01",
+      "deprecated_at": null,
+      "sunset_at": null,
+      "date_versions": [
+        "2024-01-15",
+        "2024-03-01",
+        "2024-06-01",
+        "2024-09-01",
+        "2024-12-01"
+      ],
+      "latest_date_version": "2024-12-01",
+      "documentation_url": "https://docs.tracertm.dev/api/v1"
+    }
+  ],
+  "current_version": "v1",
+  "preview_versions": []
+}
+```
+
+---
+
+## Related Documentation
+
+- [API Versions](/docs/api-reference/rest-api/api-versions) - Version history and changelogs
+- [Deprecations](/docs/api-reference/rest-api/deprecations) - Current deprecation notices
+- [Migration Guide](/docs/api-reference/rest-api/migration-guide) - Version migration guides

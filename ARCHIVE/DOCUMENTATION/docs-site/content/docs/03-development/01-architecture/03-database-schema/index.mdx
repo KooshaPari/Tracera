@@ -1,0 +1,14 @@
+---
+title: "Database Schema"
+description: "Schema principles."
+---
+
+## Role in the architecture
+- Normalized core tables for artifacts, relationships, workflows.
+- Audit trails via event sourcing or append-only logs.
+- Indexes on project, type, and updated_at for common queries.
+
+## Considerations
+- Throughput vs. latency trade-offs.
+- Failure domains and retry/backoff strategies.
+- Data model ownership and boundaries.

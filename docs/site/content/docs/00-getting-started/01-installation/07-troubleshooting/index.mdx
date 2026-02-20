@@ -1,0 +1,1058 @@
+---
+title: "Installation Troubleshooting"
+description: "Comprehensive troubleshooting guide for TraceRTM installation issues"
+---
+
+# Installation Troubleshooting
+
+This guide helps you diagnose and fix common installation issues with TraceRTM. Follow the troubleshooting steps that match your error message or symptom.
+
+## Quick Diagnostic Commands
+
+Before diving into specific issues, run these commands to gather diagnostic information:
+
+```bash
+# Check Python version
+python --version
+python3 --version
+
+# Check pip/pipx availability
+pip --version
+pipx --version
+
+# Check PATH configuration
+echo $PATH
+
+# Check if tracertm is installed
+which tracertm
+tracertm --version
+
+# Check database connectivity (if installed)
+tracertm health
+
+# Check running processes
+ps aux | grep -E "postgres|redis|neo4j"
+
+# Check port usage
+lsof -i :8080  # API port
+lsof -i :5432  # PostgreSQL
+lsof -i :6379  # Redis
+```
+
+---
+
+## 1. Python Version Issues
+
+### Error: "Python 3.12+ required"
+
+**Symptom**: Installation fails with message about Python version.
+
+**Diagnosis**:
+```bash
+python --version
+# or
+python3 --version
+```
+
+**Solutions**:
+
+#### macOS (Homebrew)
+```bash
+# Install Python 3.12+
+brew install python@3.12
+
+# Verify installation
+python3.12 --version
+
+# Use specific version
+python3.12 -m pip install tracertm
+
+# Or create alias
+echo 'alias python=python3.12' >> ~/.zshrc
+source ~/.zshrc
+```
+
+#### Ubuntu/Debian
+```bash
+# Add deadsnakes PPA for latest Python
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt-get update
+
+# Install Python 3.12
+sudo apt-get install python3.12 python3.12-venv python3.12-dev
+
+# Install pip for Python 3.12
+curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
+
+# Verify
+python3.12 --version
+```
+
+#### RHEL/CentOS/Fedora
+```bash
+# Fedora
+sudo dnf install python3.12
+
+# RHEL/CentOS (compile from source)
+sudo yum install gcc openssl-devel bzip2-devel libffi-devel
+cd /tmp
+wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tgz
+tar xzf Python-3.12.0.tgz
+cd Python-3.12.0
+./configure --enable-optimizations
+sudo make altinstall
+```
+
+#### Windows
+```bash
+# Download from python.org
+# https://www.python.org/downloads/windows/
+
+# Or use winget
+winget install Python.Python.3.12
+
+# Verify in PowerShell
+python --version
+```
+
+### Error: "python: command not found"
+
+**Solution**:
+```bash
+# macOS/Linux - python3 is the standard name
+python3 --version
+
+# Create alias
+echo 'alias python=python3' >> ~/.bashrc  # or ~/.zshrc
+source ~/.bashrc
+
+# Or use update-alternatives (Linux)
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
+```
+
+---
+
+## 2. pip/pipx Installation Problems
+
+### Error: "pip: command not found"
+
+**Solution**:
+```bash
+# macOS
+python3 -m ensurepip --upgrade
+
+# Ubuntu/Debian
+sudo apt-get install python3-pip
+
+# RHEL/CentOS/Fedora
+sudo yum install python3-pip
+
+# Manual installation
+curl -sS https://bootstrap.pypa.io/get-pip.py | python3
+```
+
+### Error: "externally-managed-environment"
+
+**Symptom**: Modern Python installations (3.11+) prevent global pip installs.
+
+```
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─> To install Python packages system-wide, try apt install
+    python3-xyz, where xyz is the package you are trying to
+    install.
+```
+
+**Solution 1: Use pipx (Recommended)**
+```bash
+# Install pipx
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+
+# Restart shell
+source ~/.bashrc  # or ~/.zshrc
+
+# Install tracertm
+pipx install tracertm
+
+# Verify
+tracertm --version
+```
+
+**Solution 2: Use virtual environment**
+```bash
+# Create virtual environment
+python3 -m venv ~/tracertm-env
+
+# Activate
+source ~/tracertm-env/bin/activate  # macOS/Linux
+# or
+~/tracertm-env/Scripts/activate  # Windows
+
+# Install
+pip install tracertm
+
+# Verify
+tracertm --version
+```
+
+**Solution 3: Override (Not Recommended)**
+```bash
+# Use --break-system-packages flag
+pip install --break-system-packages tracertm
+
+# Or create pip.conf
+mkdir -p ~/.config/pip
+echo '[global]' > ~/.config/pip/pip.conf
+echo 'break-system-packages = true' >> ~/.config/pip/pip.conf
+```
+
+### Error: "Could not find a version that satisfies the requirement"
+
+**Symptom**: Package not found or version incompatible.
+
+**Solution**:
+```bash
+# Update pip
+python3 -m pip install --upgrade pip
+
+# Clear pip cache
+pip cache purge
+
+# Install with verbose output
+pip install tracertm -v
+
+# Try specific Python version
+python3.12 -m pip install tracertm
+
+# Check PyPI directly
+curl https://pypi.org/pypi/tracertm/json | grep -i version
+```
+
+---
+
+## 3. Permission Errors
+
+### Error: "Permission denied" during installation
+
+**Symptom**:
+```
+ERROR: Could not install packages due to an OSError: [Errno 13] Permission denied: '/usr/local/lib/python3.12/site-packages/tracertm'
+```
+
+**Solution 1: User installation (Recommended)**
+```bash
+# Install for current user only
+pip install --user tracertm
+
+# Ensure ~/.local/bin is in PATH
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+**Solution 2: Use virtual environment**
+```bash
+python3 -m venv ~/tracertm-env
+source ~/tracertm-env/bin/activate
+pip install tracertm
+```
+
+**Solution 3: Fix ownership (macOS/Linux)**
+```bash
+# Fix pip installation directory ownership
+sudo chown -R $USER:$USER ~/.local
+
+# Or fix global Python packages (careful!)
+sudo chown -R $USER /usr/local/lib/python3.12/site-packages
+```
+
+**Solution 4: Use sudo (Not Recommended)**
+```bash
+# Only as last resort
+sudo pip install tracertm
+
+# Better: use pipx with sudo
+sudo pipx install tracertm
+```
+
+### Error: "Operation not permitted" on macOS
+
+**Symptom**: System Integrity Protection (SIP) prevents modifications.
+
+**Solution**:
+```bash
+# Don't disable SIP! Use user installation instead
+pip install --user tracertm
+
+# Or use Homebrew Python (not system Python)
+brew install python@3.12
+/opt/homebrew/bin/python3.12 -m pip install tracertm
+```
+
+---
+
+## 4. PATH Not Configured Correctly
+
+### Error: "tracertm: command not found" after installation
+
+**Diagnosis**:
+```bash
+# Find where tracertm was installed
+pip show tracertm | grep Location
+ls -la ~/.local/bin/tracertm
+which python
+which pip
+```
+
+**Solution**:
+
+#### macOS (Zsh)
+```bash
+# Add to PATH
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# If using Homebrew Python
+echo 'export PATH="/opt/homebrew/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+#### Linux (Bash)
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+#### Windows (PowerShell)
+```powershell
+# Add to user PATH
+$env:Path += ";$env:LOCALAPPDATA\Programs\Python\Python312\Scripts"
+
+# Permanent (requires admin)
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";$env:LOCALAPPDATA\Programs\Python\Python312\Scripts", "User")
+```
+
+### Error: Multiple Python installations conflict
+
+**Symptom**: Wrong version of tracertm or Python is executed.
+
+**Solution**:
+```bash
+# Use full path
+python3.12 -m tracertm --version
+
+# Or create specific alias
+echo 'alias tracertm="python3.12 -m tracertm"' >> ~/.zshrc
+
+# Find all Python installations
+which -a python python3
+
+# Check PATH order
+echo $PATH | tr ':' '\n' | nl
+```
+
+---
+
+## 5. Database Connection Issues
+
+### Error: "Failed to connect to database"
+
+**Diagnosis**:
+```bash
+# Check if PostgreSQL is running
+pg_isready -h localhost -p 5432
+
+# Try connecting manually
+psql -U tracertm -d tracertm -h localhost
+
+# Check Docker containers (if using Docker)
+docker ps | grep postgres
+docker logs tracertm-postgres
+```
+
+**Solutions**:
+
+#### PostgreSQL not running
+```bash
+# macOS (Homebrew)
+brew services start postgresql@14
+
+# Ubuntu/Debian
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# Docker
+docker-compose up -d postgres
+```
+
+#### Connection refused
+```bash
+# Check PostgreSQL is listening on correct port
+sudo netstat -tlnp | grep 5432
+# or
+sudo lsof -i :5432
+
+# Edit postgresql.conf to listen on all interfaces
+# /etc/postgresql/14/main/postgresql.conf
+listen_addresses = '*'
+
+# Restart PostgreSQL
+sudo systemctl restart postgresql
+```
+
+#### Authentication failed
+```bash
+# Check pg_hba.conf
+sudo nano /etc/postgresql/14/main/pg_hba.conf
+
+# Add line for password authentication
+# host    all             all             127.0.0.1/32            md5
+
+# Reload PostgreSQL
+sudo systemctl reload postgresql
+
+# Reset password
+sudo -u postgres psql
+ALTER USER tracertm WITH PASSWORD 'newpassword';
+\q
+```
+
+#### Database does not exist
+```bash
+# Create database
+sudo -u postgres createdb tracertm
+sudo -u postgres createuser tracertm
+
+# Or via SQL
+sudo -u postgres psql
+CREATE DATABASE tracertm;
+CREATE USER tracertm WITH PASSWORD 'password';
+GRANT ALL PRIVILEGES ON DATABASE tracertm TO tracertm;
+\q
+
+# Update .env file
+echo 'TRACERTM_DATABASE__URL=postgresql://tracertm:password@localhost:5432/tracertm' > .env
+```
+
+### Error: "SQLite database is locked"
+
+**Symptom**: Multiple processes trying to access SQLite simultaneously.
+
+**Solution**:
+```bash
+# Check for other tracertm processes
+ps aux | grep tracertm
+kill <pid>  # if stuck
+
+# Use PostgreSQL instead for concurrent access
+TRACERTM_DATABASE__URL=postgresql://localhost/tracertm tracertm health
+
+# Or increase SQLite timeout
+TRACERTM_DATABASE__TIMEOUT=30 tracertm health
+```
+
+---
+
+## 6. Port Conflicts
+
+### Error: "Address already in use" or "Port 8080 is already in use"
+
+**Diagnosis**:
+```bash
+# Find what's using the port
+lsof -i :8080
+# or
+netstat -tlnp | grep 8080
+# or (macOS)
+lsof -i :8080 -P
+
+# Check all TraceRTM ports
+lsof -i :8080  # API
+lsof -i :5432  # PostgreSQL
+lsof -i :6379  # Redis
+lsof -i :7687  # Neo4j
+```
+
+**Solutions**:
+
+#### Kill conflicting process
+```bash
+# Find PID
+lsof -ti :8080
+
+# Kill process
+kill $(lsof -ti :8080)
+
+# Force kill if needed
+kill -9 $(lsof -ti :8080)
+```
+
+#### Use different port
+```bash
+# Set port via environment variable
+export TRACERTM_API_PORT=8081
+tracertm serve --port 8081
+
+# Or in .env file
+echo 'TRACERTM_API_PORT=8081' >> .env
+```
+
+#### Docker port conflicts
+```bash
+# Edit docker-compose.yml
+# Change port mapping:
+ports:
+  - "8081:8080"  # host:container
+
+# Restart containers
+docker-compose down
+docker-compose up -d
+```
+
+---
+
+## 7. Docker-Specific Issues
+
+### Error: "Cannot connect to Docker daemon"
+
+**Diagnosis**:
+```bash
+docker info
+docker ps
+```
+
+**Solutions**:
+
+#### Docker not running
+```bash
+# macOS (Docker Desktop)
+open -a Docker
+
+# Linux (systemd)
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Verify
+docker run hello-world
+```
+
+#### Permission denied (Linux)
+```bash
+# Add user to docker group
+sudo usermod -aG docker $USER
+
+# Logout and login again, or:
+newgrp docker
+
+# Verify
+docker ps
+```
+
+### Error: "docker-compose: command not found"
+
+**Solution**:
+```bash
+# Use docker compose (v2, built-in)
+docker compose up -d
+
+# Or install docker-compose standalone
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+```
+
+### Error: "Container exits immediately"
+
+**Diagnosis**:
+```bash
+# Check container logs
+docker-compose logs postgres
+docker-compose logs redis
+
+# Check container status
+docker-compose ps
+
+# Inspect container
+docker inspect tracertm-postgres
+```
+
+**Solutions**:
+```bash
+# Remove volumes and restart
+docker-compose down -v
+docker-compose up -d
+
+# Check for port conflicts
+docker-compose down
+docker-compose up
+
+# Rebuild images
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+### Error: "Network error" or "Cannot connect to network"
+
+**Solution**:
+```bash
+# List networks
+docker network ls
+
+# Create network if missing
+docker network create tracertm-network
+
+# Recreate network
+docker-compose down
+docker network rm tracertm_default
+docker-compose up -d
+```
+
+---
+
+## 8. Network and Proxy Problems
+
+### Error: "Could not fetch URL" or "Connection timeout"
+
+**Diagnosis**:
+```bash
+# Test internet connectivity
+curl -I https://pypi.org
+
+# Check proxy settings
+echo $HTTP_PROXY
+echo $HTTPS_PROXY
+env | grep -i proxy
+```
+
+**Solutions**:
+
+#### Configure pip proxy
+```bash
+# Set proxy for current session
+export HTTP_PROXY=http://proxy.example.com:8080
+export HTTPS_PROXY=http://proxy.example.com:8080
+
+# Configure pip
+mkdir -p ~/.config/pip
+cat > ~/.config/pip/pip.conf << EOF
+[global]
+proxy = http://proxy.example.com:8080
+trusted-host = pypi.org pypi.python.org files.pythonhosted.org
+EOF
+
+# Install with proxy
+pip install --proxy http://proxy.example.com:8080 tracertm
+```
+
+#### Bypass proxy for local addresses
+```bash
+export NO_PROXY=localhost,127.0.0.1,.local
+```
+
+#### Use alternative PyPI mirror
+```bash
+# Use custom index
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple tracertm
+
+# Configure permanently
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+---
+
+## 9. SSL Certificate Errors
+
+### Error: "SSL: CERTIFICATE_VERIFY_FAILED"
+
+**Symptom**:
+```
+pip is configured with locations that require TLS/SSL, however the ssl module in Python is not available.
+```
+
+**Solutions**:
+
+#### macOS
+```bash
+# Install certificates
+/Applications/Python\ 3.12/Install\ Certificates.command
+
+# Or install certifi
+pip install --upgrade certifi
+
+# Or use Homebrew's OpenSSL
+brew install openssl
+export LDFLAGS="-L/opt/homebrew/opt/openssl@3/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/openssl@3/include"
+```
+
+#### Ubuntu/Debian
+```bash
+# Update ca-certificates
+sudo apt-get install ca-certificates
+sudo update-ca-certificates
+
+# Reinstall Python with SSL support
+sudo apt-get install libssl-dev
+# Then rebuild Python
+```
+
+#### Windows
+```bash
+# Install/update certifi
+python -m pip install --upgrade certifi
+
+# Or download certificates
+certutil -generateSSTFromWU roots.sst
+```
+
+#### Temporary workaround (NOT RECOMMENDED)
+```bash
+# Disable SSL verification (INSECURE!)
+pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org tracertm
+
+# Or set environment variable
+export PIP_TRUSTED_HOST="pypi.org files.pythonhosted.org"
+```
+
+---
+
+## 10. Dependency Conflicts
+
+### Error: "Incompatible requirements" or "Conflicts with package X"
+
+**Diagnosis**:
+```bash
+# Check installed packages
+pip list
+
+# Check for conflicts
+pip check
+
+# Show dependency tree
+pip install pipdeptree
+pipdeptree
+```
+
+**Solutions**:
+
+#### Fresh virtual environment
+```bash
+# Create clean environment
+python3 -m venv tracertm-clean
+source tracertm-clean/bin/activate
+
+# Install only tracertm
+pip install tracertm
+
+# Verify
+tracertm --version
+```
+
+#### Upgrade pip and setuptools
+```bash
+python3 -m pip install --upgrade pip setuptools wheel
+pip install tracertm
+```
+
+#### Resolve specific conflicts
+```bash
+# Uninstall conflicting package
+pip uninstall <conflicting-package>
+
+# Install compatible version
+pip install "package>=2.0,<3.0"
+
+# Or let pip resolve
+pip install --upgrade --force-reinstall tracertm
+```
+
+### Error: "No matching distribution found"
+
+**Symptom**: Package or specific version not available for your platform.
+
+**Solution**:
+```bash
+# Check available versions
+pip index versions tracertm
+
+# Try installing from source
+pip install --no-binary :all: tracertm
+
+# Or use pre-release
+pip install --pre tracertm
+
+# Check your platform
+python -c "import platform; print(platform.platform())"
+```
+
+---
+
+## 11. Platform-Specific Issues
+
+### macOS Issues
+
+#### Error: "xcrun: error: invalid active developer path"
+
+**Solution**:
+```bash
+# Install Xcode Command Line Tools
+xcode-select --install
+
+# Accept license
+sudo xcodebuild -license accept
+```
+
+#### Error: "Symbol not found: _PyUnicode_AsUTF8"
+
+**Solution**:
+```bash
+# Reinstall Python via Homebrew
+brew reinstall python@3.12
+
+# Use Homebrew Python explicitly
+/opt/homebrew/bin/python3.12 -m pip install tracertm
+```
+
+### Linux Issues
+
+#### Error: "Python.h: No such file or directory"
+
+**Solution**:
+```bash
+# Ubuntu/Debian
+sudo apt-get install python3.12-dev
+
+# RHEL/CentOS/Fedora
+sudo yum install python3-devel
+
+# Or
+sudo dnf install python3-devel
+```
+
+#### Error: "pg_config: not found"
+
+**Solution**:
+```bash
+# Ubuntu/Debian
+sudo apt-get install libpq-dev
+
+# RHEL/CentOS/Fedora
+sudo yum install postgresql-devel
+```
+
+### Windows Issues
+
+#### Error: "Microsoft Visual C++ 14.0 is required"
+
+**Solution**:
+```bash
+# Download and install Microsoft C++ Build Tools
+# https://visualstudio.microsoft.com/visual-cpp-build-tools/
+
+# Or install Visual Studio with C++ support
+```
+
+#### Error: "Failed to create process" in WSL
+
+**Solution**:
+```bash
+# Update WSL
+wsl --update
+
+# Or reinstall distribution
+wsl --unregister Ubuntu
+wsl --install Ubuntu
+
+# Use Windows Python instead
+/mnt/c/Python312/python.exe -m pip install tracertm
+```
+
+#### Long PATH issues (Windows)
+
+**Solution**:
+```bash
+# Enable long path support (requires admin)
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+
+# Or use shorter path for venv
+python -m venv C:\venv\tr
+```
+
+---
+
+## 12. Collecting Diagnostic Information
+
+When asking for help, collect this information:
+
+### System Information
+```bash
+# Operating system
+uname -a  # Linux/macOS
+systeminfo  # Windows
+
+# Python version and path
+python --version
+which python
+python -c "import sys; print(sys.executable)"
+
+# pip version
+pip --version
+
+# Installed packages
+pip list
+pip show tracertm
+```
+
+### Installation Logs
+```bash
+# Install with verbose logging
+pip install tracertm -vvv 2>&1 | tee install.log
+
+# Check recent logs
+tail -n 100 install.log
+```
+
+### Environment Variables
+```bash
+# Show relevant environment
+env | grep -E "PYTHON|PIP|PATH|TRACERTM"
+
+# Show .env contents (remove secrets!)
+cat .env | grep -v PASSWORD | grep -v SECRET
+```
+
+### Database Diagnostics
+```bash
+# PostgreSQL status
+pg_isready -h localhost -p 5432
+
+# Connection test
+psql -U tracertm -d tracertm -c "SELECT version();"
+
+# Check tracertm health
+tracertm health --verbose
+```
+
+### Network Diagnostics
+```bash
+# Test connectivity to PyPI
+curl -I https://pypi.org
+
+# Test database connection
+nc -zv localhost 5432
+
+# Show listening ports
+netstat -tlnp | grep -E "5432|6379|8080"
+```
+
+---
+
+## 13. Getting Help
+
+If you still encounter issues after trying these solutions:
+
+### 1. Check Documentation
+- [Installation Guide](/docs/getting-started/installation)
+- [Quick Start](/docs/getting-started/quick-start)
+- [Configuration](/docs/configuration)
+- [FAQ](/docs/faq)
+
+### 2. Search Existing Issues
+- [GitHub Issues](https://github.com/tracertm/tracertm/issues)
+- Search for your error message
+- Check both open and closed issues
+
+### 3. Community Support
+- [GitHub Discussions](https://github.com/tracertm/tracertm/discussions)
+- [Discord Server](https://discord.gg/tracertm)
+- [Stack Overflow](https://stackoverflow.com/questions/tagged/tracertm) (tag: `tracertm`)
+
+### 4. File a Bug Report
+
+When creating an issue, include:
+
+```markdown
+**Environment:**
+- OS: [e.g., macOS 14.1, Ubuntu 22.04]
+- Python version: [output of `python --version`]
+- TraceRTM version: [output of `tracertm --version` or "not installed"]
+- Installation method: [pip, pipx, Docker, source]
+
+**Issue:**
+[Clear description of the problem]
+
+**Error message:**
+```
+[Paste full error message]
+```
+
+**Steps to reproduce:**
+1. [First step]
+2. [Second step]
+3. [...]
+
+**What I tried:**
+- [Solution 1]
+- [Solution 2]
+
+**Logs:**
+```
+[Paste relevant logs]
+```
+
+**Additional context:**
+[Any other relevant information]
+```
+
+### 5. Enterprise Support
+
+For enterprise customers:
+- Email: support@tracertm.com
+- Priority support: Available with Enterprise license
+- SLA: 24-hour response time
+
+---
+
+## Common Error Patterns
+
+Quick reference for common error signatures:
+
+| Error Pattern | Section | Quick Fix |
+|--------------|---------|-----------|
+| `Python 3.12+ required` | [Python Version](#1-python-version-issues) | Install Python 3.12+ |
+| `pip: command not found` | [pip Installation](#2-pippipx-installation-problems) | Install pip |
+| `externally-managed-environment` | [pip Installation](#2-pippipx-installation-problems) | Use pipx or venv |
+| `Permission denied` | [Permissions](#3-permission-errors) | Use `--user` flag |
+| `tracertm: command not found` | [PATH](#4-path-not-configured-correctly) | Fix PATH variable |
+| `Failed to connect to database` | [Database](#5-database-connection-issues) | Start PostgreSQL |
+| `Address already in use` | [Port Conflicts](#6-port-conflicts) | Change port or kill process |
+| `Cannot connect to Docker daemon` | [Docker](#7-docker-specific-issues) | Start Docker |
+| `Could not fetch URL` | [Network](#8-network-and-proxy-problems) | Configure proxy |
+| `CERTIFICATE_VERIFY_FAILED` | [SSL](#9-ssl-certificate-errors) | Install certificates |
+| `Incompatible requirements` | [Dependencies](#10-dependency-conflicts) | Use clean venv |
+
+---
+
+## Prevention Tips
+
+Avoid common issues by following these best practices:
+
+1. **Always use virtual environments** for Python projects
+2. **Keep Python and pip updated** to latest stable versions
+3. **Use pipx** for installing CLI tools like tracertm
+4. **Check system requirements** before installing
+5. **Read error messages carefully** - they often contain the solution
+6. **Test with minimal configuration** first, add complexity later
+7. **Keep backups** of working configurations
+8. **Document** your working setup for team members
+
+---
+
+## Next Steps
+
+Once you've resolved installation issues:
+
+1. [Quick Start Guide](/docs/getting-started/quick-start) - Get started with TraceRTM
+2. [Configuration](/docs/configuration) - Configure TraceRTM for your needs
+3. [First Project](/docs/getting-started/first-project) - Create your first project
+4. [CLI Reference](/docs/cli) - Learn CLI commands

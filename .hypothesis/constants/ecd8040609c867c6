@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/item_service.py
+# hypothesis_version: 6.148.7
+
+[100, 'affected_items', 'blocked', 'both', 'changes', 'current_values', 'deleted', 'done', 'error', 'errors', 'failed', 'id', 'in_progress', 'item', 'item_bulk_deleted', 'item_bulk_updated', 'item_created', 'item_deleted', 'item_id', 'item_restored', 'item_status_changed', 'item_type', 'item_updated', 'links', 'medium', 'metadata_updates', 'new_status', 'new_values', 'old_status', 'owner', 'percentage', 'priority', 'relates_to', 'soft', 'soft_delete', 'status', 'success', 'title', 'todo', 'total', 'total_items', 'unknown', 'updated', 'updates', 'view']

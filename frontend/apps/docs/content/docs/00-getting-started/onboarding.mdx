@@ -1,0 +1,272 @@
+---
+title: Team Onboarding
+description: Complete onboarding guide for new team members
+---
+
+# Team Onboarding Guide
+
+Welcome to the Trace RTM project! This guide will help you get up to speed quickly.
+
+## What is Trace RTM?
+
+Trace is a comprehensive multi-view project management system optimized for power users orchestrating 1000+ AI agents. It provides:
+
+- **16 views** covering all PM aspects (Feature, Code, Test, API, etc.)
+- **Git-style versioning** with time-travel capability
+- **NATS-based event coordination** for distributed task execution
+- **Natural language assertions** and verification systems
+- **Comprehensive traceability** with 60+ link types
+
+## Quick Start
+
+### 1. Set Up Your Environment
+
+```bash
+# Navigate to project root
+cd /Users/kooshapari/temp-PRODVERCEL/485/kush/trace
+
+# Install dependencies with bun (not npm!)
+cd frontend
+bun install
+
+# Set up backend
+cd ..
+uv sync
+```
+
+### 2. Start Development Servers
+
+```bash
+# Terminal 1 - Backend
+uv run uvicorn src.tracertm.api.main:app --reload
+
+# Terminal 2 - Frontend
+cd frontend/apps/web
+bun run dev
+
+# Terminal 3 - Docs (optional)
+cd frontend/apps/docs
+bun run dev
+```
+
+### 3. Verify Installation
+
+- Backend: http://localhost:8000/docs
+- Frontend: http://localhost:5173
+- Docs: http://localhost:3001
+
+## Key Architectural Decisions
+
+### Why NATS Over Redis?
+
+| Feature          | NATS JetStream                 | Redis                 |
+| ---------------- | ------------------------------ | --------------------- |
+| Message Delivery | At-least-once, exactly-once ✅ | At-most-once ❌       |
+| Persistence      | Built-in JetStream ✅          | Requires AOF/RDB ⚠️   |
+| Work Queues      | Pull consumers ✅              | Lua scripts ⚠️        |
+| Clustering       | Native ✅                      | Complex sharding ⚠️   |
+| DAG Coordination | Perfect fit ✅                 | Workarounds needed ❌ |
+
+**Decision**: Use NATS for distributed event coordination and agent orchestration.
+
+### Versioning Strategy
+
+**Hybrid event sourcing + snapshots**:
+
+- Events: Complete audit trail, time-travel capability
+- Snapshots: Performance optimization (every 100 events)
+- Git-style: Content-addressable commits with DAG structure
+- Semantic: Automatic version bumping from conventional commits
+
+### Storage Architecture
+
+**SQLite → PostgreSQL migration path**:
+
+- Start: SQLite for simplicity and local development
+- Scale: PostgreSQL for production and multi-user scenarios
+- Optional: Neo4j for graph queries on links
+- Audit: Immutable NATS JetStream for event log
+
+## Technology Stack
+
+### Core Framework
+
+- **FastMCP**: stdio MCP server foundation
+- **Python 3.12**: Latest Python with type hints
+- **uv**: Fast Python package manager
+- **NATS**: Event coordination and messaging
+
+### Frontend
+
+- **React 18**: UI framework
+- **TanStack Router**: Type-safe routing
+- **TanStack Query**: Data fetching and caching
+- **Tailwind CSS**: Styling
+- **shadcn/ui**: Component library
+
+### CLI & TUI
+
+- **Typer**: Beautiful CLI framework
+- **Rich**: Terminal formatting
+- **Textual**: Interactive TUI
+
+### Versioning & Storage
+
+- **pygit2**: Git-style versioning
+- **SQLAlchemy**: ORM for database
+- **SQLite/PostgreSQL**: Primary storage
+- **zstandard**: Compression
+- **msgpack**: Efficient serialization
+
+## Project Structure
+
+```
+trace/
+├── src/tracertm/          # Backend Python code
+│   ├── api/               # FastAPI routes
+│   ├── services/          # Business logic
+│   ├── repositories/      # Data access
+│   ├── models/            # SQLAlchemy models
+│   └── schemas/           # Pydantic schemas
+├── frontend/
+│   ├── apps/
+│   │   ├── web/           # Main web application
+│   │   └── docs/          # Documentation site
+│   └── packages/
+│       └── types/         # Shared TypeScript types
+├── tests/                 # Python tests
+├── docs/                  # Documentation source
+└── scripts/               # Utility scripts
+```
+
+## Development Workflow
+
+### 1. Create a Feature Branch
+
+```bash
+git checkout -b feature/your-feature-name
+```
+
+### 2. Make Changes
+
+- Follow TDD (Test-Driven Development)
+- Write tests first
+- Implement feature
+- Ensure all tests pass
+
+### 3. Run Tests
+
+```bash
+# Backend tests
+pytest
+
+# Frontend tests
+cd frontend/apps/web
+bun test
+
+# E2E tests
+bun run test:e2e
+```
+
+### 4. Code Quality Checks
+
+```bash
+# Backend linting
+ruff check .
+ruff format .
+
+# Frontend linting
+bun run lint
+
+# Type checking
+ty check src/ --error-on-warning
+```
+
+### 5. Commit and Push
+
+```bash
+git add .
+git commit -m "feat: your feature description"
+git push origin feature/your-feature-name
+```
+
+### 6. Create Pull Request
+
+- Use GitHub UI to create PR
+- Ensure CI checks pass
+- Request review from team
+
+## Performance Targets
+
+| Operation       | Target    | Strategy                    |
+| --------------- | --------- | --------------------------- |
+| View Switch     | &lt;50ms  | Caching + virtual scrolling |
+| Item Creation   | &lt;200ms | Intelligent CRUD with async |
+| Commit          | &lt;100ms | Batch operations            |
+| Time-Travel     | &lt;500ms | Snapshot + event replay     |
+| Critical Path   | &lt;2s    | Optimized DAG algorithms    |
+| NL Verification | &lt;5s    | Multi-tier caching          |
+| Full Validation | &lt;30s   | Parallel processing         |
+
+## Common Tasks
+
+### Adding a New View
+
+1. Define schema in `frontend/packages/types`
+2. Create API endpoint in `src/tracertm/api/routers`
+3. Add repository method in `src/tracertm/repositories`
+4. Create React component in `frontend/apps/web/src/views`
+5. Add route in TanStack Router
+6. Write tests
+
+### Adding a New MCP Tool
+
+1. Define tool in `src/tracertm/mcp/tools`
+2. Register in `src/tracertm/mcp/server.py`
+3. Add schema validation
+4. Write unit tests
+5. Add integration tests
+6. Update documentation
+
+### Working with NATS
+
+```python
+from tracertm.infrastructure.nats import NATSClient
+
+async with NATSClient() as client:
+    # Publish event
+    await client.publish("events.item.created", {
+        "item_id": "123",
+        "type": "requirement"
+    })
+
+    # Subscribe to events
+    async for msg in client.subscribe("events.item.*"):
+        print(f"Received: {msg.data}")
+```
+
+## Resources
+
+- [Architecture Docs](/01-architecture)
+- [API Reference](/03-api-reference)
+- [Guides](/02-guides)
+- [GitHub Repository](https://github.com/your-org/trace)
+
+## Getting Help
+
+- Check [FAQ](/08-reference/faq)
+- See [Troubleshooting](/08-reference/troubleshooting)
+- Ask in team Slack channel
+- Review existing PRs and issues
+
+## Success Criteria
+
+You're ready to contribute when you can:
+
+- ✅ Run all development servers locally
+- ✅ Understand the architecture
+- ✅ Run tests successfully
+- ✅ Create a simple feature
+- ✅ Submit a pull request
+
+Welcome to the team! 🎉

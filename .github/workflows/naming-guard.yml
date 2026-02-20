@@ -1,0 +1,57 @@
+name: Naming Explosion Guard
+
+on:
+  pull_request:
+    paths:
+      - 'src/**/*.py'
+      - 'internal/**/*.go'
+      - 'backend/**/*.go'
+      - 'frontend/**/*.ts'
+      - 'frontend/**/*.tsx'
+      - 'frontend/**/*.js'
+      - 'frontend/**/*.jsx'
+      - 'scripts/shell/check-file-loc.sh'
+      - 'scripts/quality/check_file_loc.py'
+      - 'config/loc-guard.json'
+      - 'scripts/shell/check-naming-explosion-*.sh'
+      - 'frontend/scripts/check-naming-explosion.sh'
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**/*.py'
+      - 'internal/**/*.go'
+      - 'backend/**/*.go'
+      - 'frontend/**/*.ts'
+      - 'frontend/**/*.tsx'
+      - 'frontend/**/*.js'
+      - 'frontend/**/*.jsx'
+      - 'scripts/shell/check-file-loc.sh'
+      - 'scripts/quality/check_file_loc.py'
+      - 'config/loc-guard.json'
+      - 'scripts/shell/check-naming-explosion-*.sh'
+      - 'frontend/scripts/check-naming-explosion.sh'
+
+jobs:
+  check-naming:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Check file length limits
+        run: bash scripts/shell/check-file-loc.sh
+
+      - name: Check route entrypoint rules (frontend)
+        run: bash scripts/shell/check-route-entrypoints.sh
+
+      - name: Check for naming explosion patterns (Python)
+        run: bash scripts/shell/check-naming-explosion-python.sh
+
+      - name: Check for naming explosion patterns (Go)
+        run: bash scripts/shell/check-naming-explosion-go.sh
+
+      - name: Check for naming explosion patterns (Frontend)
+        run: bash frontend/scripts/check-naming-explosion.sh
