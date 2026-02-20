@@ -21,6 +21,7 @@ TracerTM is a comprehensive requirements traceability matrix (RTM) system design
 - [Governance & Hardening](#-governance--hardening)
 - [Testing & Quality](#-testing--quality)
 - [Documentation](#-documentation)
+- [Docs Deploy](#-docs-deploy)
 - [Contributing](#-contributing)
 - [License](#-license)
 
@@ -104,10 +105,33 @@ We maintain a rigorous multi-layer testing strategy:
 
 ## 📚 Documentation
 
+- **[Docsets](./docs/docsets/)** — Role-specific technical docsets.
+  - [Developer (Internal)](./docs/docsets/developer/internal/)
+  - [Developer (External)](./docs/docsets/developer/external/)
+  - [Technical User](./docs/docsets/user/)
+  - [Agent Operator](./docs/docsets/agent/)
 - **[First Run Checklist](./docs/checklists/FIRST_RUN_CHECKLIST.md)** — New clone setup.
 - **[API Documentation](http://localhost:4000/docs)** — Interactive API explorer.
 - **[Architecture Overview](./docs/reference/ARCHITECTURE_LAYERS.md)** — Deep dive into internals.
 - **[Verification Policy](VERIFICATION_POLICY.md)** — Quality standards and dispute workflows.
+
+---
+
+## 🚢 Docs Deploy
+
+Local VitePress docs site:
+
+```bash
+cd docs
+npm install
+npm run docs:dev
+npm run docs:build
+```
+
+GitHub Pages:
+
+- Workflow: `.github/workflows/vitepress-pages.yml`
+- URL convention: `https://<owner>.github.io/trace/`
 
 ---
 
