@@ -55,6 +55,18 @@ tasks:
       - task --list
     silent: true
 
+  check:
+    desc: "Canonical full-project check"
+    cmds:
+      - task: quality
+
+  release:prep:
+    desc: "Canonical release preparation checks"
+    cmds:
+      - task: changelog:check
+      - task: check
+      - task: ci:quality
+
   install:
     desc: "Install native dependencies"
     cmds:
@@ -136,6 +148,26 @@ tasks:
       - cd backend && ./scripts/generate-openapi.sh
       - ./scripts/lint-go-chunks.sh
 
+  quality:go:lint:
+    desc: "Go linting for split runner (backend module root)"
+    cmds:
+      - cd backend && golangci-lint run ./...
+
+  quality:go:build:
+    desc: "Go build for split runner (backend module root)"
+    cmds:
+      - cd backend && go build ./...
+
+  quality:go:test:
+    desc: "Go test for split runner (backend module root)"
+    cmds:
+      - cd backend && go test -race -count=1 ./...
+
+  proto:gen:
+    desc: "Generate protobuf/grpc artifacts"
+    cmds:
+      - bun run generate:grpc
+
   lint:frontend:
     desc: "Frontend linting"
     cmds:
@@ -202,6 +234,11 @@ tasks:
     cmds:
       - task: quality:gate
 
+  quality:
+    desc: "Run full project quality gate (strict-by-default)"
+    cmds:
+      - task: quality:local
+
   typecheck:
     desc: "Run all type checkers (alias)"
     cmds:
@@ -228,6 +265,49 @@ tasks:
     desc: "Run full quality gate (project-specific)"
     cmds:
       - bash scripts/shell/run-quality-split.sh
+
+  ci:
+    desc: "Run local CI emulation lane (pre-commit, quality, matrix tests, smoke)"
+    cmds:
+      - task: ci:pre-commit
+      - task: ci:quality
+      - task: ci:test:matrix
+      - task: ci:smoke
+
+  ci:checks:
+    desc: "Run minimal CI checks: pre-commit + quality"
+    cmds:
+      - task: ci:pre-commit
+      - task: ci:quality
+
+  ci:pre-commit:
+    desc: "Run all pre-commit hooks as CI does"
+    cmds:
+      - pre-commit run --all-files
+
+  ci:pre-push:
+    desc: "Run pre-push stage hooks for local push validation"
+    cmds:
+      - pre-commit run --all-files --hook-stage pre-push
+
+  ci:quality:
+    desc: "Run project quality checks used by CI"
+    cmds:
+      - task: quality:local
+
+  ci:test:matrix:
+    desc: "Run CI-style Python matrix tests in dockerized containerized mode"
+    cmds:
+      - CI_MATRIX_FAIL_FAST=true CI_MATRIX_TEST_TYPES="unit integration e2e property" bash scripts/shell/run-ci-matrix.sh
+
+  ci:smoke:
+    desc: "Run smoke validation matrix for deployed/runtime checks"
+    cmds:
+      - CI_SMOKE_MATRIX="gateway k6" CI_SMOKE_FAIL_FAST=true CI_SMOKE_REQUIRE_K6=false bash scripts/shell/run-smoke-matrix.sh
+
+  # Optional: strict local default matrix (3.12 property) and parallel local experiments
+  # - CI_MATRIX_TEST_TYPES="unit integration e2e property"
+  # - CI_MATRIX_WORKERS=2 CI_MATRIX_FAIL_FAST=false
 
   quality:dag:tui:
     desc: "Run quality DAG with TUI progress (writes progress.json for dashboard)"

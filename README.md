@@ -113,6 +113,7 @@ We maintain a rigorous multi-layer testing strategy:
 - **[First Run Checklist](./docs/checklists/FIRST_RUN_CHECKLIST.md)** — New clone setup.
 - **[Changelog Process](./docs/guides/CHANGELOG_PROCESS.md)** — How entries are added and released.
 - **[Changelog Entry Template](./docs/reference/CHANGELOG_ENTRY_TEMPLATE.md)** — Copy/paste snippet for new entries.
+- **[Project Setup Style](./docs/guides/PROJECT_SETUP_STYLE.md)** — Standardized repo command/process baseline.
 - **[API Documentation](http://localhost:4000/docs)** — Interactive API explorer.
 - **[Architecture Overview](./docs/reference/ARCHITECTURE_LAYERS.md)** — Deep dive into internals.
 - **[Verification Policy](VERIFICATION_POLICY.md)** — Quality standards and dispute workflows.
