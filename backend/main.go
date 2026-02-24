@@ -85,7 +85,7 @@ import (
 
 	"github.com/joho/godotenv"
 
-	_ "github.com/kooshapari/tracertm-backend/docs" // Import generated docs
+	// _ "github.com/kooshapari/tracertm-backend/docs" // Import generated docs
 	"github.com/kooshapari/tracertm-backend/internal/config"
 	"github.com/kooshapari/tracertm-backend/internal/database"
 	grpcserver "github.com/kooshapari/tracertm-backend/internal/grpc"

@@ -144,3 +144,9 @@ backend/build-errors.log
 # Brewfile lock
 Brewfile.lock.json
 .aider*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
