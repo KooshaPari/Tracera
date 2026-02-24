@@ -118,6 +118,10 @@ We maintain a rigorous multi-layer testing strategy:
 - **[Architecture Overview](./docs/reference/ARCHITECTURE_LAYERS.md)** — Deep dive into internals.
 - **[Verification Policy](VERIFICATION_POLICY.md)** — Quality standards and dispute workflows.
 
+### Documentation Hub
+
+For a unified view of all Kush ecosystem projects, visit the [Docs Hub](../docs-hub/index.md).
+
 ---
 
 ## 🚢 Docs Deploy
