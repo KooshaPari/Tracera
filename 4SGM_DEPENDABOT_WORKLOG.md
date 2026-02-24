@@ -181,19 +181,16 @@
 
 ## Action Items
 
-- [ ] **P0:** Upgrade Next.js to >= 14.2.25 or 15.x (RCE vulnerability)
-- [ ] **P1:** Upgrade urllib3 to >= 2.2.3
-- [ ] **P1:** Upgrade python-multipart to >= 4.0.0
-- [ ] **P1:** Upgrade nbconvert to >= 7.0.0
-- [ ] **P1:** Upgrade cryptography to >= 44.0.0
-- [ ] **P1:** Upgrade glob to >= 10.4.0
-- [ ] **P1:** Upgrade minimatch to >= 3.1.4
-- [ ] **P2:** Upgrade Svelte to latest
-- [ ] **P2:** Upgrade esbuild to >= 0.25.0
-- [ ] **P2:** Upgrade diskcache to >= 6.0.0
-- [ ] **P2:** Upgrade ajv to >= 8.17.1
-- [ ] **P2:** Upgrade authlib to >= 1.4.0
-- [ ] **P3:** Upgrade jsondiffpatch, ai, mcp SDK
+### FIXED ✅
+- [x] **P0:** Upgrade Next.js to >= 15.0.5 (RCE vulnerability) - FIXED in v15.0.5
+- [x] **P1:** Allow python-multipart >= 4.0.0 - FIXED in pyproject.toml
+- [x] **P1:** Add uv overrides for safe transitive deps - FIXED (urllib3>=2.2.3, mcp>=1.1.0, fastmcp>=0.3.0)
+
+### Remaining
+- [ ] **P2:** esbuild (dev only, medium)
+- [ ] **P3:** svelte (not used in 4sgm)
+- [ ] **P3:** ajv (transitive from langchain)
+- [ ] **P3:** jsondiffpatch (transitive)
 
 ---
 
