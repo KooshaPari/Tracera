@@ -1,27 +1,30 @@
-import { defineConfig } from "vitepress";
-
-// Import shared base config
-import baseConfig from "../../../docs-hub/.vitepress/base.config";
-
-const repo = process.env.GITHUB_REPOSITORY?.split("/")[1] ?? "trace";
-const isCI = process.env.GITHUB_ACTIONS === "true";
-const docsBase = isCI ? `/${repo}/` : "/";
+import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  ...baseConfig,
-  // Project-specific overrides
-  title: "trace",
-  description: "trace platform documentation",
-  base: docsBase,
-  srcDir: "site",
+  title: 'trace',
+  description: 'trace documentation',
+  srcDir: 'site',
+  lastUpdated: true,
+  cleanUrls: true,
+  ignoreDeadLinks: true,
   themeConfig: {
-    ...baseConfig.themeConfig,
     nav: [
-      { text: "Home", link: "/" },
-      { text: "Repository Docs", link: "https://github.com/kooshapari/trace/tree/main/docs" }
+      { text: 'Home', link: '/' },
+      { text: 'Wiki', link: '/wiki/' },
+      { text: 'Development Guide', link: '/development/' },
+      { text: 'Document Index', link: '/index/' },
+      { text: 'API', link: '/api/' },
+      { text: 'Roadmap', link: '/roadmap/' }
     ],
-    socialLinks: [
-      { icon: "github", link: "https://github.com/kooshapari/trace" }
-    ]
+    sidebar: {
+      '/wiki/': [{ text: 'Wiki (User Guides)', items: [{ text: 'Overview', link: '/wiki/' }] }],
+      '/development/': [{ text: 'Development Guide', items: [{ text: 'Overview', link: '/development/' }] }],
+      '/index/': [{ text: 'Document Index', items: [{ text: 'Overview', link: '/index/' }, { text: 'Raw/All', link: '/index/raw-all' }, { text: 'Planning', link: '/index/planning' }, { text: 'Specs', link: '/index/specs' }, { text: 'Research', link: '/index/research' }, { text: 'Worklogs', link: '/index/worklogs' }, { text: 'Other', link: '/index/other' }] }],
+      '/api/': [{ text: 'API', items: [{ text: 'Overview', link: '/api/' }] }],
+      '/roadmap/': [{ text: 'Roadmap', items: [{ text: 'Overview', link: '/roadmap/' }] }],
+      '/': [{ text: 'Quick Links', items: [{ text: 'Wiki', link: '/wiki/' }, { text: 'Development Guide', link: '/development/' }, { text: 'Document Index', link: '/index/' }, { text: 'API', link: '/api/' }, { text: 'Roadmap', link: '/roadmap/' }] }]
+    },
+    search: { provider: 'local' },
+    socialLinks: [{ icon: 'github', link: 'https://github.com/KooshaPari/trace' }]
   }
-});
+})
