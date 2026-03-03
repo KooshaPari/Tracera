@@ -445,17 +445,12 @@ jobs:
       run: |
         go test -v -race -short -coverprofile=coverage-short.out -covermode=atomic ./...
 
-    # Run all tests including slow ones
+    # Run all tests including slow ones (single attempt for deterministic outcomes)
     - name: Run all tests with coverage
       if: success() || failure()
-      uses: nick-fields/retry@v3
-      with:
-        timeout_minutes: 10
-        max_attempts: 2  # Retry flaky tests
-        retry_on: error
-        command: |
-          cd backend
-          go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+      working-directory: backend
+      run: |
+        go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
 
     # Detect flaky Go tests
     - name: Detect flaky Go tests
@@ -854,19 +849,14 @@ jobs:
         working-directory: frontend/apps/web
         run: bunx playwright install-deps chromium
 
-      # Run E2E tests with retry for flaky tests
+      # Run E2E tests (single attempt for deterministic outcomes)
       - name: Run Playwright E2E tests
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 20
-          max_attempts: 3  # Retry flaky E2E tests up to 3 times
-          retry_on: error
-          command: |
-            cd frontend/apps/web
-            CI=true \
-            DATABASE_URL=postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test \
-            REDIS_URL=redis://localhost:6379 \
-            bun run test:e2e --project=chromium --reporter=html,json
+        working-directory: frontend/apps/web
+        run: |
+          CI=true \
+          DATABASE_URL=postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test \
+          REDIS_URL=redis://localhost:6379 \
+          bun run test:e2e --project=chromium --reporter=html,json
 
       # Generate E2E test summary
       - name: Generate E2E test summary
