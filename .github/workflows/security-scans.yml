@@ -18,18 +18,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # npm audit for frontend
+      # npm audit for frontend (gates on high+critical only)
       - name: Run npm audit
         run: |
-          npm audit --audit-level=moderate --json > npm-audit.json || true
-        continue-on-error: true
+          if [ -f package.json ]; then
+            npm audit --audit-level=high --json > npm-audit.json
+          else
+            echo '{"metadata":{"vulnerabilities":{"high":0,"critical":0}}}' > npm-audit.json
+          fi
 
-      # pip-audit for Python
+      # pip-audit for Python (gates on any detected vulnerabilities)
       - name: Run pip-audit
         run: |
-          pip install pip-audit
-          pip-audit --format=json > pip-audit.json || true
-        continue-on-error: true
+          if [ -f pyproject.toml ] || [ -f requirements.txt ] || [ -f requirements-dev.txt ]; then
+            pip install pip-audit
+            pip-audit --format=json > pip-audit.json
+          else
+            echo '{"dependencies":[],"vulnerabilities":[]}' > pip-audit.json
+          fi
 
       # Trivy for container/vulnerability scanning
       - name: Run Trivy
@@ -38,7 +44,9 @@ jobs:
           scan-type: 'fs'
           format: 'json'
           output: 'trivy.json'
-        continue-on-error: true
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+          exit-code: '1'
 
       # Upload security reports
       - name: Upload security reports
@@ -53,14 +61,23 @@ jobs:
       # Create GitHub Security Advisory
       - name: Check for critical vulnerabilities
         run: |
+          set -euo pipefail
           echo "=== Security Scan Summary ==="
           echo "Review security reports at: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           
           # Check npm audit results
           if [ -f npm-audit.json ]; then
-            CRITICAL=$(cat npm-audit.json | jq '.metadata.vulnerabilities.critical // 0')
+            CRITICAL=$(jq '.metadata.vulnerabilities.critical // 0' npm-audit.json)
+            HIGH=$(jq '.metadata.vulnerabilities.high // 0' npm-audit.json)
+            echo "npm high: $HIGH"
+            echo "npm critical: $CRITICAL"
             if [ "$CRITICAL" -gt 0 ]; then
-              echo "::warning::npm: $CRITICAL critical vulnerabilities found"
+              echo "::error::npm: $CRITICAL critical vulnerabilities found"
+              exit 1
+            fi
+            if [ "$HIGH" -gt 0 ]; then
+              echo "::error::npm: $HIGH high vulnerabilities found"
+              exit 1
             fi
           fi
 
