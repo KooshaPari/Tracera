@@ -414,7 +414,7 @@ class TestResourceLimitErrors:
             ),
             pytest.raises(OSError, match="Too many open files"),
         ):
-            pathlib.Path("/dev/null").open(encoding="utf-8").close()
+            await asyncio.to_thread(pathlib.Path("/dev/null").read_text, encoding="utf-8")
 
     async def test_request_queue_full(self) -> None:
         """Test handling of full request queue."""
