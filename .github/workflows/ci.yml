@@ -265,7 +265,6 @@ jobs:
     name: Python Exploratory Tests
     runs-on: ubuntu-latest
     needs: [python-tests]
-    continue-on-error: true  # Non-blocking initially
 
     services:
       postgres:
@@ -317,7 +316,7 @@ jobs:
         REDIS_URL: redis://localhost:6379
         PYTHONPATH: ${{ github.workspace }}/src
       run: |
-        pytest tests/ -m "property" -v --tb=short --maxfail=10 || true
+        pytest tests/ -m "property" -v --tb=short --maxfail=10
 
     - name: Run chaos/resilience tests
       env:
@@ -325,13 +324,13 @@ jobs:
         REDIS_URL: redis://localhost:6379
         PYTHONPATH: ${{ github.workspace }}/src
       run: |
-        pytest tests/ -m "chaos" -v --tb=short --maxfail=10 || true
+        pytest tests/ -m "chaos" -v --tb=short --maxfail=10
 
     - name: Generate exploratory test summary
       if: always()
       run: |
         echo "## Python Exploratory Test Results" >> $GITHUB_STEP_SUMMARY
-        echo "Property-based and chaos tests (non-blocking)" >> $GITHUB_STEP_SUMMARY
+        echo "Property-based and chaos tests (required gate)" >> $GITHUB_STEP_SUMMARY
 
   # Go Tests
   go-tests:
