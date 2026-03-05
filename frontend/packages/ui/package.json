@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc --build",
     "clean": "tsc --build --clean",
-    "format": "oxfmt src/",
+    "format": "bun x oxfmt src/",
     "test": "vitest --run",
     "test:coverage": "vitest --run --coverage"
   },
