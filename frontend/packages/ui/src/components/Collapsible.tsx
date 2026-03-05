@@ -11,8 +11,7 @@ interface CollapsibleProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'o
 }
 
 const Collapsible = React.forwardRef<HTMLDivElement, CollapsibleProps>(
-  ({ open = false, onOpenChange, children, className, ...props }, ref) => {
-    return (
+  ({ open = false, onOpenChange, children, className, ...props }, ref) => (
       <div ref={ref} className={cn('space-y-2', className)} {...props}>
         {React.Children.map(children, (child) => {
           if (React.isValidElement(child)) {
@@ -24,8 +23,7 @@ const Collapsible = React.forwardRef<HTMLDivElement, CollapsibleProps>(
           return child;
         })}
       </div>
-    );
-  },
+    ),
 );
 
 Collapsible.displayName = 'Collapsible';
@@ -41,8 +39,7 @@ interface CollapsibleTriggerProps extends Omit<
 }
 
 const CollapsibleTrigger = React.forwardRef<HTMLButtonElement, CollapsibleTriggerProps>(
-  ({ open = false, onOpenChange, children, className, ...props }, ref) => {
-    return (
+  ({ open = false, onOpenChange, children, className, ...props }, ref) => (
       <button
         ref={ref}
         type='button'
@@ -58,8 +55,7 @@ const CollapsibleTrigger = React.forwardRef<HTMLButtonElement, CollapsibleTrigge
           )}
         />
       </button>
-    );
-  },
+    ),
 );
 
 CollapsibleTrigger.displayName = 'CollapsibleTrigger';
@@ -75,8 +71,7 @@ interface CollapsibleContentProps extends Omit<
 }
 
 const CollapsibleContent = React.forwardRef<HTMLDivElement, CollapsibleContentProps>(
-  ({ open = false, onOpenChange: _onOpenChange, children, className, ...props }, ref) => {
-    return (
+  ({ open = false, onOpenChange: _onOpenChange, children, className, ...props }, ref) => (
       <div
         ref={ref}
         className={cn(
@@ -88,8 +83,7 @@ const CollapsibleContent = React.forwardRef<HTMLDivElement, CollapsibleContentPr
       >
         {open && children}
       </div>
-    );
-  },
+    ),
 );
 
 CollapsibleContent.displayName = 'CollapsibleContent';
