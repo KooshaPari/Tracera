@@ -1,19 +1,26 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { expect, test } from '@vitest/globals';
 
-import type { FrontendConfig } from '../config';
+import type {
+  FrontendConfig,
+  loadFrontendConfig as LoadFrontendConfigFunction,
+  validateFrontendConfig as ValidateFrontendConfigFunction,
+} from '../config';
 
 import { EnvManager } from '../env-manager';
 
 /**
  * Helper: assert that a function throws an Error whose message contains the expected substring.
  * Vitest 4.x toThrow() is broken on Node 25, so we use try/catch.
+ *
+ * @param {() => unknown} fn Function expected to throw.
+ * @param {string} expectedMessage Substring expected in the error message.
  */
 function expectThrow(fn: () => unknown, expectedMessage: string): void {
   let caught: unknown;
   try {
     fn();
-  } catch (e) {
-    caught = e;
+  } catch (error) {
+    caught = error;
   }
   expect(caught).toBeDefined();
   expect(caught).toBeInstanceOf(Error);
@@ -21,15 +28,22 @@ function expectThrow(fn: () => unknown, expectedMessage: string): void {
 }
 
 // We import loadFrontendConfig and validateFrontendConfig lazily to avoid
-// the module-level singleton `frontendConfig` from throwing when required
-// env vars are not set during module evaluation.
-async function getConfigModule() {
+// The module-level singleton `frontendConfig` from throwing when required
+// Env vars are not set during module evaluation.
+async function getConfigModule(): ReturnType<typeof importConfigModule> {
   return await import('../config');
+}
+
+function importConfigModule() {
+  return import('../config');
 }
 
 /**
  * Helper to create an EnvManager seeded with the minimum required env vars
  * for loadFrontendConfig to succeed without throwing.
+ *
+ * @param {Record<string, string | number | boolean | undefined>} overrides Optional values that override defaults.
+ * @returns {EnvManager} A configured EnvManager instance.
  */
 function makeEnvWithRequired(
   overrides: Record<string, string | number | boolean | undefined> = {},
@@ -43,13 +57,13 @@ function makeEnvWithRequired(
   return mgr;
 }
 
-describe('loadFrontendConfig', () => {
+test.describe('loadFrontendConfig', () => {
   let originalEnv: NodeJS.ProcessEnv;
-  let loadFrontendConfig: typeof import('../config').loadFrontendConfig;
+  let loadFrontendConfig: LoadFrontendConfigFunction;
 
-  beforeEach(async () => {
+  test.beforeEach(async () => {
     originalEnv = { ...process.env };
-    // Set required env vars so the module-level singleton does not throw on import
+    // Set required env vars so the module-level singleton does not throw on import.
     process.env.VITE_API_URL = 'http://import-guard';
     process.env.VITE_WS_URL = 'ws://import-guard';
     process.env.VITE_WORKOS_CLIENT_ID = 'import_guard_id';
@@ -57,11 +71,11 @@ describe('loadFrontendConfig', () => {
     loadFrontendConfig = mod.loadFrontendConfig;
   });
 
-  afterEach(() => {
+  test.afterEach(() => {
     process.env = originalEnv;
   });
 
-  it('loads config with all required variables present', () => {
+  test('loads config with all required variables present', () => {
     const env = makeEnvWithRequired();
     const config = loadFrontendConfig(env);
     expect(config.apiUrl).toBe('http://localhost:8080');
@@ -69,7 +83,7 @@ describe('loadFrontendConfig', () => {
     expect(config.workosClientId).toBe('client_test_id');
   });
 
-  it('throws when VITE_API_URL is missing', () => {
+  test('throws when VITE_API_URL is missing', () => {
     const env = new EnvManager({
       VITE_WS_URL: 'ws://localhost',
       VITE_WORKOS_CLIENT_ID: 'id',
@@ -83,7 +97,7 @@ describe('loadFrontendConfig', () => {
     );
   });
 
-  it('throws when VITE_WS_URL is missing', () => {
+  test('throws when VITE_WS_URL is missing', () => {
     const env = new EnvManager({});
     env.clear();
     env.set('VITE_API_URL', 'http://localhost');
@@ -91,7 +105,7 @@ describe('loadFrontendConfig', () => {
     expectThrow(() => loadFrontendConfig(env), 'Required environment variable VITE_WS_URL not set');
   });
 
-  it('throws when VITE_WORKOS_CLIENT_ID is missing', () => {
+  test('throws when VITE_WORKOS_CLIENT_ID is missing', () => {
     const env = new EnvManager({});
     env.clear();
     env.set('VITE_API_URL', 'http://localhost');
@@ -102,7 +116,7 @@ describe('loadFrontendConfig', () => {
     );
   });
 
-  it('applies default values for optional config', () => {
+  test('applies default values for optional config', () => {
     const env = makeEnvWithRequired();
     const config = loadFrontendConfig(env);
     expect(config.appEnv).toBe('development');
@@ -118,7 +132,7 @@ describe('loadFrontendConfig', () => {
     expect(config.locale).toBe('en-US');
   });
 
-  it('respects overridden optional values', () => {
+  test('respects overridden optional values', () => {
     const env = makeEnvWithRequired({
       VITE_ENVIRONMENT: 'production',
       VITE_DEBUG: 'true',
@@ -137,7 +151,7 @@ describe('loadFrontendConfig', () => {
     const config = loadFrontendConfig(env);
     expect(config.appEnv).toBe('production');
     expect(config.appDebug).toBeTruthy();
-    expect(config.apiTimeout).toBe(5_000);
+    expect(config.apiTimeout).toBe(5000);
     expect(config.apiRetries).toBe(5);
     expect(config.enableAnalytics).toBeFalsy();
     expect(config.enableSentry).toBeTruthy();
@@ -150,14 +164,14 @@ describe('loadFrontendConfig', () => {
     expect(config.supabaseAnonKey).toBe('anon_key_123');
   });
 
-  it('defaults supabaseUrl and supabaseAnonKey to empty strings', () => {
+  test('defaults supabaseUrl and supabaseAnonKey to empty strings', () => {
     const env = makeEnvWithRequired();
     const config = loadFrontendConfig(env);
     expect(config.supabaseUrl).toBe('');
     expect(config.supabaseAnonKey).toBe('');
   });
 
-  it('creates a new EnvManager when none is provided', () => {
+  test('creates a new EnvManager when none is provided', () => {
     process.env.VITE_API_URL = 'http://from-process';
     process.env.VITE_WS_URL = 'ws://from-process';
     process.env.VITE_WORKOS_CLIENT_ID = 'from_process_id';
@@ -168,11 +182,11 @@ describe('loadFrontendConfig', () => {
   });
 });
 
-describe('validateFrontendConfig', () => {
-  let validateFrontendConfig: typeof import('../config').validateFrontendConfig;
+test.describe('validateFrontendConfig', () => {
+  let validateFrontendConfig: ValidateFrontendConfigFunction;
 
-  beforeEach(async () => {
-    // Set required env vars so the module-level singleton does not throw on import
+  test.beforeEach(async () => {
+    // Set required env vars so the module-level singleton does not throw on import.
     process.env.VITE_API_URL = 'http://import-guard';
     process.env.VITE_WS_URL = 'ws://import-guard';
     process.env.VITE_WORKOS_CLIENT_ID = 'import_guard_id';
@@ -202,82 +216,91 @@ describe('validateFrontendConfig', () => {
     };
   }
 
-  it('does not throw for a valid config', () => {
+  test('does not throw for a valid config', () => {
     validateFrontendConfig(makeValidConfig());
   });
 
-  it('throws when apiUrl is empty', () => {
+  test('throws when apiUrl is empty', () => {
     expectThrow(
       () => validateFrontendConfig(makeValidConfig({ apiUrl: '' })),
       'VITE_API_URL is required',
     );
   });
 
-  it('throws when wsUrl is empty', () => {
+  test('throws when wsUrl is empty', () => {
     expectThrow(
       () => validateFrontendConfig(makeValidConfig({ wsUrl: '' })),
       'VITE_WS_URL is required',
     );
   });
 
-  it('throws when workosClientId is empty', () => {
+  test('throws when workosClientId is empty', () => {
     expectThrow(
       () => validateFrontendConfig(makeValidConfig({ workosClientId: '' })),
       'VITE_WORKOS_CLIENT_ID is required',
     );
   });
 
-  it('throws when apiTimeout is below 1000', () => {
+  test('throws when apiTimeout is below 1000', () => {
     expectThrow(
       () => validateFrontendConfig(makeValidConfig({ apiTimeout: 500 })),
       'VITE_API_TIMEOUT must be at least 1000ms',
     );
   });
 
-  it('throws when apiRetries is negative', () => {
+  test('throws when apiRetries is negative', () => {
     expectThrow(
       () => validateFrontendConfig(makeValidConfig({ apiRetries: -1 })),
       'VITE_API_RETRIES must be non-negative',
     );
   });
 
-  it('throws for invalid appEnv', () => {
+  test('throws for invalid appEnv', () => {
     expectThrow(
-      () => validateFrontendConfig(makeValidConfig({ appEnv: 'invalid' as any })),
+      () =>
+        validateFrontendConfig(
+          makeValidConfig({ appEnv: 'invalid' as unknown as FrontendConfig['appEnv'] }),
+        ),
       'Invalid VITE_ENVIRONMENT: invalid',
     );
   });
 
-  it('throws for invalid logLevel', () => {
+  test('throws for invalid logLevel', () => {
     expectThrow(
-      () => validateFrontendConfig(makeValidConfig({ logLevel: 'verbose' as any })),
+      () =>
+        validateFrontendConfig(
+          makeValidConfig({ logLevel: 'verbose' as unknown as FrontendConfig['logLevel'] }),
+        ),
       'Invalid VITE_LOG_LEVEL: verbose',
     );
   });
 
-  it('throws for invalid theme', () => {
+  test('throws for invalid theme', () => {
     expectThrow(
-      () => validateFrontendConfig(makeValidConfig({ theme: 'midnight' as any })),
+      () =>
+        validateFrontendConfig(
+          makeValidConfig({ theme: 'midnight' as unknown as FrontendConfig['theme'] }),
+        ),
       'Invalid VITE_THEME: midnight',
     );
   });
 
-  it('collects multiple errors and reports all of them', () => {
+  test('collects multiple errors and reports all of them', () => {
     const badConfig = makeValidConfig({
       apiUrl: '',
       wsUrl: '',
       workosClientId: '',
       apiTimeout: 100,
       apiRetries: -2,
-      appEnv: 'bogus' as any,
-      logLevel: 'trace' as any,
-      theme: 'neon' as any,
+      appEnv: 'bogus' as unknown as FrontendConfig['appEnv'],
+      logLevel: 'trace' as unknown as FrontendConfig['logLevel'],
+      theme: 'neon' as unknown as FrontendConfig['theme'],
     });
     let caught: unknown;
     try {
       validateFrontendConfig(badConfig);
-    } catch (e) {
-      caught = e;
+    } catch (error) {
+      caught = error;
     }
     expect(caught).toBeDefined();
     const message = (caught as Error).message;
@@ -292,28 +315,28 @@ describe('validateFrontendConfig', () => {
     expect(message).toContain('Invalid VITE_THEME: neon');
   });
 
-  it('accepts valid appEnv values: staging and production', () => {
+  test('accepts valid appEnv values: staging and production', () => {
     validateFrontendConfig(makeValidConfig({ appEnv: 'staging' }));
     validateFrontendConfig(makeValidConfig({ appEnv: 'production' }));
   });
 
-  it('accepts valid logLevel values', () => {
+  test('accepts valid logLevel values', () => {
     for (const level of ['debug', 'info', 'warn', 'error'] as const) {
       validateFrontendConfig(makeValidConfig({ logLevel: level }));
     }
   });
 
-  it('accepts valid theme values', () => {
+  test('accepts valid theme values', () => {
     for (const theme of ['light', 'dark', 'auto'] as const) {
       validateFrontendConfig(makeValidConfig({ theme }));
     }
   });
 
-  it('accepts apiRetries of zero', () => {
+  test('accepts apiRetries of zero', () => {
     validateFrontendConfig(makeValidConfig({ apiRetries: 0 }));
   });
 
-  it('accepts apiTimeout of exactly 1000', () => {
+  test('accepts apiTimeout of exactly 1000', () => {
     validateFrontendConfig(makeValidConfig({ apiTimeout: 1000 }));
   });
 });
