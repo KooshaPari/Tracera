@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from '../components/Dialog';
 
-describe('Dialog', () => {
+describe('Dialog component', () => {
   it('renders the trigger button', () => {
     render(
       <Dialog>
@@ -78,7 +78,7 @@ describe('Dialog', () => {
   });
 });
 
-describe('DialogHeader', () => {
+describe('DialogHeader component', () => {
   it('renders children', () => {
     render(<DialogHeader>Header content</DialogHeader>);
     expect(screen.getByText('Header content')).toBeInTheDocument();
@@ -90,7 +90,7 @@ describe('DialogHeader', () => {
   });
 });
 
-describe('DialogFooter', () => {
+describe('DialogFooter component', () => {
   it('renders children', () => {
     render(<DialogFooter>Footer content</DialogFooter>);
     expect(screen.getByText('Footer content')).toBeInTheDocument();
@@ -102,7 +102,7 @@ describe('DialogFooter', () => {
   });
 });
 
-describe('DialogTitle', () => {
+describe('DialogTitle component', () => {
   it('renders within an open dialog', () => {
     render(
       <Dialog open>
@@ -116,7 +116,7 @@ describe('DialogTitle', () => {
   });
 });
 
-describe('DialogDescription', () => {
+describe('DialogDescription component', () => {
   it('renders within an open dialog', () => {
     render(
       <Dialog open>

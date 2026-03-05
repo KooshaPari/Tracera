@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Alert, AlertDescription, AlertTitle } from '../components/Alert';
 
-describe('Alert', () => {
+describe('Alert component', () => {
   it('renders with role=alert', () => {
     render(<Alert>Alert content</Alert>);
     expect(screen.getByRole('alert')).toBeInTheDocument();
@@ -52,7 +52,7 @@ describe('Alert', () => {
   });
 });
 
-describe('AlertTitle', () => {
+describe('AlertTitle component', () => {
   it('renders as h5 element', () => {
     render(<AlertTitle>Title</AlertTitle>);
     const title = screen.getByText('Title');
@@ -71,7 +71,7 @@ describe('AlertTitle', () => {
   });
 });
 
-describe('AlertDescription', () => {
+describe('AlertDescription component', () => {
   it('renders children', () => {
     render(<AlertDescription>Description text</AlertDescription>);
     expect(screen.getByText('Description text')).toBeInTheDocument();

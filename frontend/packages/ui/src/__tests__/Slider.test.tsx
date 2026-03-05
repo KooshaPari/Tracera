@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Slider } from '../components/Slider';
 
-describe('Slider', () => {
+describe('Slider component', () => {
   it('renders a slider root element', () => {
     const { container } = render(<Slider value={[50]} />);
     const root = container.firstChild as HTMLElement;

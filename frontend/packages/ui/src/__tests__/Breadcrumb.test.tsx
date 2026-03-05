@@ -12,7 +12,7 @@ import {
   BreadcrumbSeparator,
 } from '../components/Breadcrumb';
 
-describe('Breadcrumb', () => {
+describe('Breadcrumb component', () => {
   it('renders as nav element with aria-label', () => {
     render(
       <Breadcrumb>
@@ -42,7 +42,7 @@ describe('Breadcrumb', () => {
   });
 });
 
-describe('BreadcrumbList', () => {
+describe('BreadcrumbList component', () => {
   it('renders as ol element', () => {
     render(
       <Breadcrumb>
@@ -70,7 +70,7 @@ describe('BreadcrumbList', () => {
   });
 });
 
-describe('BreadcrumbItem', () => {
+describe('BreadcrumbItem component', () => {
   it('renders as li element', () => {
     render(
       <Breadcrumb>
@@ -85,7 +85,7 @@ describe('BreadcrumbItem', () => {
   });
 });
 
-describe('BreadcrumbLink', () => {
+describe('BreadcrumbLink component', () => {
   it('renders as anchor by default', () => {
     render(
       <Breadcrumb>
@@ -116,7 +116,7 @@ describe('BreadcrumbLink', () => {
   });
 });
 
-describe('BreadcrumbPage', () => {
+describe('BreadcrumbPage component', () => {
   it('renders with aria-current=page', () => {
     render(
       <Breadcrumb>
@@ -133,7 +133,7 @@ describe('BreadcrumbPage', () => {
   });
 });
 
-describe('BreadcrumbSeparator', () => {
+describe('BreadcrumbSeparator component', () => {
   it('renders with aria-hidden', () => {
     const { container } = render(
       <Breadcrumb>
@@ -164,7 +164,7 @@ describe('BreadcrumbSeparator', () => {
   });
 });
 
-describe('BreadcrumbEllipsis', () => {
+describe('BreadcrumbEllipsis component', () => {
   it('renders with aria-hidden', () => {
     const { container } = render(
       <Breadcrumb>

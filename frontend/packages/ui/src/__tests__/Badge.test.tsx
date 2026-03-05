@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Badge } from '../components/Badge';
 
-describe('Badge', () => {
+describe('Badge component', () => {
   it('renders with children', () => {
     render(<Badge>New</Badge>);
     expect(screen.getByText('New')).toBeInTheDocument();

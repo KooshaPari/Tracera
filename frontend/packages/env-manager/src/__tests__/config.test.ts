@@ -106,12 +106,12 @@ describe('loadFrontendConfig', () => {
     const env = makeEnvWithRequired();
     const config = loadFrontendConfig(env);
     expect(config.appEnv).toBe('development');
-    expect(config.appDebug).toBe(false);
-    expect(config.apiTimeout).toBe(30000);
+    expect(config.appDebug).toBeFalsy();
+    expect(config.apiTimeout).toBe(30_000);
     expect(config.apiRetries).toBe(3);
-    expect(config.enableAnalytics).toBe(true);
-    expect(config.enableSentry).toBe(false);
-    expect(config.enableDatadog).toBe(false);
+    expect(config.enableAnalytics).toBeTruthy();
+    expect(config.enableSentry).toBeFalsy();
+    expect(config.enableDatadog).toBeFalsy();
     expect(config.logLevel).toBe('info');
     expect(config.logFormat).toBe('json');
     expect(config.theme).toBe('auto');
@@ -122,7 +122,7 @@ describe('loadFrontendConfig', () => {
     const env = makeEnvWithRequired({
       VITE_ENVIRONMENT: 'production',
       VITE_DEBUG: 'true',
-      VITE_API_TIMEOUT: '5000',
+      VITE_API_TIMEOUT: '5_000',
       VITE_API_RETRIES: '5',
       VITE_ENABLE_ANALYTICS: 'false',
       VITE_ENABLE_SENTRY: '1',
@@ -136,12 +136,12 @@ describe('loadFrontendConfig', () => {
     });
     const config = loadFrontendConfig(env);
     expect(config.appEnv).toBe('production');
-    expect(config.appDebug).toBe(true);
-    expect(config.apiTimeout).toBe(5000);
+    expect(config.appDebug).toBeTruthy();
+    expect(config.apiTimeout).toBe(5_000);
     expect(config.apiRetries).toBe(5);
-    expect(config.enableAnalytics).toBe(false);
-    expect(config.enableSentry).toBe(true);
-    expect(config.enableDatadog).toBe(true);
+    expect(config.enableAnalytics).toBeFalsy();
+    expect(config.enableSentry).toBeTruthy();
+    expect(config.enableDatadog).toBeTruthy();
     expect(config.logLevel).toBe('debug');
     expect(config.logFormat).toBe('text');
     expect(config.theme).toBe('dark');
@@ -186,7 +186,7 @@ describe('validateFrontendConfig', () => {
       appDebug: false,
       apiUrl: 'http://localhost:8080',
       wsUrl: 'ws://localhost:8080',
-      apiTimeout: 30000,
+      apiTimeout: 30_000,
       apiRetries: 3,
       workosClientId: 'client_id',
       supabaseUrl: '',

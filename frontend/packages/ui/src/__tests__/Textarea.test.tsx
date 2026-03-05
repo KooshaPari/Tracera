@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { Textarea } from '../components/Textarea';
 
-describe('Textarea', () => {
+describe('Textarea component', () => {
   it('renders a textarea element', () => {
     render(<Textarea />);
     expect(screen.getByRole('textbox')).toBeInTheDocument();

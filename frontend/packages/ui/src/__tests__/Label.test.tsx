@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Label } from '../components/Label';
 
-describe('Label', () => {
+describe('Label component', () => {
   it('renders as a label element', () => {
     render(<Label>Username</Label>);
     const label = screen.getByText('Username');

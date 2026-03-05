@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Progress } from '../components/Progress';
 
-describe('Progress', () => {
+describe('Progress component', () => {
   it('renders a progressbar element', () => {
     render(<Progress value={50} />);
     expect(screen.getByRole('progressbar')).toBeInTheDocument();

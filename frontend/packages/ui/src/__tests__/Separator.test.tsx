@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Separator } from '../components/Separator';
 
-describe('Separator', () => {
+describe('Separator component', () => {
   it('renders with role=separator', () => {
     render(<Separator />);
     expect(screen.getByRole('separator')).toBeInTheDocument();

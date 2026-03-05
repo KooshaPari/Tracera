@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Skeleton } from '../components/Skeleton';
 
-describe('Skeleton', () => {
+describe('Skeleton component', () => {
   it('renders a div element', () => {
     const { container } = render(<Skeleton />);
     expect(container.firstChild).toBeInstanceOf(HTMLDivElement);

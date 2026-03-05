@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/Tabs';
 
-describe('Tabs', () => {
+describe('Tabs component', () => {
   const renderTabs = () =>
     render(
       <Tabs defaultValue='tab1'>
@@ -81,7 +81,7 @@ describe('Tabs', () => {
   });
 });
 
-describe('TabsList', () => {
+describe('TabsList component', () => {
   it('forwards ref', () => {
     const ref = createRef<HTMLDivElement>();
     render(
@@ -106,7 +106,7 @@ describe('TabsList', () => {
   });
 });
 
-describe('TabsTrigger', () => {
+describe('TabsTrigger component', () => {
   it('can be disabled', () => {
     render(
       <Tabs defaultValue='t1'>
@@ -121,7 +121,7 @@ describe('TabsTrigger', () => {
   });
 });
 
-describe('TabsContent', () => {
+describe('TabsContent component', () => {
   it('forwards ref', () => {
     const ref = createRef<HTMLDivElement>();
     render(

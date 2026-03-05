@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '../components/DropdownMenu';
 
-describe('DropdownMenu', () => {
+describe('DropdownMenu component', () => {
   const openDropdown = () => {
     // Radix dropdown needs pointerDown then click to open
     const trigger = screen.getByText('Open Menu');
@@ -68,7 +68,7 @@ describe('DropdownMenu', () => {
   });
 });
 
-describe('DropdownMenuItem', () => {
+describe('DropdownMenuItem component', () => {
   it('renders with inset padding when inset is true', () => {
     render(
       <DropdownMenu>
@@ -85,7 +85,7 @@ describe('DropdownMenuItem', () => {
   });
 });
 
-describe('DropdownMenuCheckboxItem', () => {
+describe('DropdownMenuCheckboxItem component', () => {
   it('renders checkbox item with default checked=false', () => {
     render(
       <DropdownMenu>
@@ -117,7 +117,7 @@ describe('DropdownMenuCheckboxItem', () => {
   });
 });
 
-describe('DropdownMenuLabel', () => {
+describe('DropdownMenuLabel component', () => {
   it('renders with inset padding when inset is true', () => {
     render(
       <DropdownMenu>

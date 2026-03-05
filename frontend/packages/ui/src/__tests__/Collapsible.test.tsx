@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../components/Collapsible';
 
-describe('Collapsible', () => {
+describe('Collapsible component', () => {
   it('renders children', () => {
     render(
       <Collapsible>
@@ -60,7 +60,7 @@ describe('Collapsible', () => {
   });
 });
 
-describe('CollapsibleTrigger', () => {
+describe('CollapsibleTrigger component', () => {
   it('renders as a button', () => {
     render(
       <Collapsible>
@@ -80,7 +80,7 @@ describe('CollapsibleTrigger', () => {
   });
 });
 
-describe('CollapsibleContent', () => {
+describe('CollapsibleContent component', () => {
   it('applies opacity-0 and max-h-0 classes when closed', () => {
     const { container } = render(
       <Collapsible>

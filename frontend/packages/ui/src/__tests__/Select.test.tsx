@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '../components/Select';
 
-describe('Select', () => {
+describe('Select component', () => {
   it('renders the trigger with combobox role', () => {
     render(
       <Select>
@@ -54,7 +54,7 @@ describe('Select', () => {
   });
 });
 
-describe('SelectTrigger', () => {
+describe('SelectTrigger component', () => {
   it('applies custom className', () => {
     render(
       <Select>

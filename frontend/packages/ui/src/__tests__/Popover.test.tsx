@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Popover, PopoverContent, PopoverTrigger } from '../components/Popover';
 
-describe('Popover', () => {
+describe('Popover component', () => {
   it('renders the trigger', () => {
     render(
       <Popover>

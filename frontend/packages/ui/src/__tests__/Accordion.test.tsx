@@ -9,7 +9,7 @@ import {
   AccordionTrigger,
 } from '../components/Accordion';
 
-describe('Accordion', () => {
+describe('Accordion component', () => {
   const renderAccordion = () =>
     render(
       <Accordion type='single' collapsible>
@@ -62,7 +62,7 @@ describe('Accordion', () => {
   });
 });
 
-describe('AccordionItem', () => {
+describe('AccordionItem component', () => {
   it('forwards ref', () => {
     const ref = createRef<HTMLDivElement>();
     render(
@@ -89,7 +89,7 @@ describe('AccordionItem', () => {
   });
 });
 
-describe('AccordionTrigger', () => {
+describe('AccordionTrigger component', () => {
   it('renders as a button', () => {
     render(
       <Accordion type='single' collapsible>

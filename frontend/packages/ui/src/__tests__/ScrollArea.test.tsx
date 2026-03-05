@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { ScrollArea } from '../components/ScrollArea';
 
-describe('ScrollArea', () => {
+describe('ScrollArea component', () => {
   it('renders children', () => {
     render(
       <ScrollArea>

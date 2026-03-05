@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { Input } from '../components/Input';
 
-describe('Input', () => {
+describe('Input component', () => {
   it('renders an input element', () => {
     render(<Input />);
     expect(screen.getByRole('textbox')).toBeInTheDocument();

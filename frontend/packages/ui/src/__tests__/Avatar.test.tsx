@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../components/Avatar';
 
-describe('Avatar', () => {
+describe('Avatar component', () => {
   it('renders the avatar container', () => {
     const { container } = render(
       <Avatar data-testid='avatar'>
@@ -36,7 +36,7 @@ describe('Avatar', () => {
   });
 });
 
-describe('AvatarImage', () => {
+describe('AvatarImage component', () => {
   it('renders an img element with src', () => {
     render(
       <Avatar>
@@ -67,7 +67,7 @@ describe('AvatarImage', () => {
   });
 });
 
-describe('AvatarFallback', () => {
+describe('AvatarFallback component', () => {
   it('renders fallback text', () => {
     render(
       <Avatar>

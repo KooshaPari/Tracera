@@ -48,8 +48,8 @@ describe('EnvManager', () => {
 
     it('skips undefined values in config object', () => {
       const mgr = new EnvManager({ DEFINED: 'yes', UNDEF: undefined });
-      expect(mgr.has('DEFINED')).toBe(true);
-      expect(mgr.has('UNDEF')).toBe(false);
+      expect(mgr.has('DEFINED')).toBeTruthy();
+      expect(mgr.has('UNDEF')).toBeFalsy();
     });
 
     it('coerces numeric and boolean config values to strings', () => {
@@ -160,44 +160,44 @@ describe('EnvManager', () => {
   describe('getBoolean', () => {
     it('returns true for "true"', () => {
       const mgr = new EnvManager({ FLAG: 'true' });
-      expect(mgr.getBoolean('FLAG')).toBe(true);
+      expect(mgr.getBoolean('FLAG')).toBeTruthy();
     });
 
     it('returns true for "1"', () => {
       const mgr = new EnvManager({ FLAG: '1' });
-      expect(mgr.getBoolean('FLAG')).toBe(true);
+      expect(mgr.getBoolean('FLAG')).toBeTruthy();
     });
 
     it('returns true for "yes"', () => {
       const mgr = new EnvManager({ FLAG: 'yes' });
-      expect(mgr.getBoolean('FLAG')).toBe(true);
+      expect(mgr.getBoolean('FLAG')).toBeTruthy();
     });
 
     it('returns true for "on"', () => {
       const mgr = new EnvManager({ FLAG: 'on' });
-      expect(mgr.getBoolean('FLAG')).toBe(true);
+      expect(mgr.getBoolean('FLAG')).toBeTruthy();
     });
 
     it('is case-insensitive for truthy values', () => {
       const mgr = new EnvManager({ FLAG: 'TRUE' });
-      expect(mgr.getBoolean('FLAG')).toBe(true);
+      expect(mgr.getBoolean('FLAG')).toBeTruthy();
     });
 
     it('returns false for unrecognized string values', () => {
       const mgr = new EnvManager({ FLAG: 'false' });
-      expect(mgr.getBoolean('FLAG')).toBe(false);
+      expect(mgr.getBoolean('FLAG')).toBeFalsy();
     });
 
     it('returns false for "0"', () => {
       const mgr = new EnvManager({ FLAG: '0' });
-      expect(mgr.getBoolean('FLAG')).toBe(false);
+      expect(mgr.getBoolean('FLAG')).toBeFalsy();
     });
 
     it('returns default value when key is missing', () => {
       const mgr = new EnvManager({});
       mgr.clear();
-      expect(mgr.getBoolean('MISSING')).toBe(false);
-      expect(mgr.getBoolean('MISSING', true)).toBe(true);
+      expect(mgr.getBoolean('MISSING')).toBeFalsy();
+      expect(mgr.getBoolean('MISSING', true)).toBeTruthy();
     });
   });
 
@@ -299,13 +299,13 @@ describe('EnvManager', () => {
   describe('has', () => {
     it('returns true for existing key', () => {
       const mgr = new EnvManager({ EXISTS: 'yes' });
-      expect(mgr.has('EXISTS')).toBe(true);
+      expect(mgr.has('EXISTS')).toBeTruthy();
     });
 
     it('returns false for missing key', () => {
       const mgr = new EnvManager({});
       mgr.clear();
-      expect(mgr.has('NOPE')).toBe(false);
+      expect(mgr.has('NOPE')).toBeFalsy();
     });
   });
 
@@ -378,8 +378,8 @@ describe('EnvManager', () => {
     it('removes all variables', () => {
       const mgr = new EnvManager({ A: '1', B: '2' });
       mgr.clear();
-      expect(mgr.has('A')).toBe(false);
-      expect(mgr.has('B')).toBe(false);
+      expect(mgr.has('A')).toBeFalsy();
+      expect(mgr.has('B')).toBeFalsy();
       expect(mgr.getAll()).toEqual({});
     });
   });

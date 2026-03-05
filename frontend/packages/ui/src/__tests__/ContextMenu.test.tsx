@@ -23,7 +23,7 @@ const openContextMenu = () => {
   fireEvent.contextMenu(trigger);
 };
 
-describe('ContextMenu', () => {
+describe('ContextMenu component', () => {
   it('renders the trigger', () => {
     render(
       <ContextMenu>
@@ -214,7 +214,7 @@ describe('ContextMenu', () => {
   });
 });
 
-describe('ContextMenuShortcut', () => {
+describe('ContextMenuShortcut component', () => {
   it('renders shortcut text', () => {
     render(<ContextMenuShortcut>Ctrl+C</ContextMenuShortcut>);
     expect(screen.getByText('Ctrl+C')).toBeInTheDocument();

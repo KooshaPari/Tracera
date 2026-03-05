@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/Tooltip';
 
-describe('Tooltip', () => {
+describe('Tooltip component', () => {
   it('renders the trigger element', () => {
     render(
       <TooltipProvider>

@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from '../components/Card';
 
-describe('Card', () => {
+describe('Card component', () => {
   it('renders with children', () => {
     render(<Card>Card content</Card>);
     expect(screen.getByText('Card content')).toBeInTheDocument();
@@ -29,7 +29,7 @@ describe('Card', () => {
   });
 });
 
-describe('CardHeader', () => {
+describe('CardHeader component', () => {
   it('renders with children', () => {
     render(<CardHeader>Header</CardHeader>);
     expect(screen.getByText('Header')).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('CardHeader', () => {
   });
 });
 
-describe('CardTitle', () => {
+describe('CardTitle component', () => {
   it('renders as h3 element', () => {
     render(<CardTitle>Title</CardTitle>);
     const title = screen.getByText('Title');
@@ -61,7 +61,7 @@ describe('CardTitle', () => {
   });
 });
 
-describe('CardDescription', () => {
+describe('CardDescription component', () => {
   it('renders as p element', () => {
     render(<CardDescription>Description</CardDescription>);
     const desc = screen.getByText('Description');
@@ -74,7 +74,7 @@ describe('CardDescription', () => {
   });
 });
 
-describe('CardContent', () => {
+describe('CardContent component', () => {
   it('renders children', () => {
     render(<CardContent>Content here</CardContent>);
     expect(screen.getByText('Content here')).toBeInTheDocument();
@@ -87,7 +87,7 @@ describe('CardContent', () => {
   });
 });
 
-describe('CardFooter', () => {
+describe('CardFooter component', () => {
   it('renders children', () => {
     render(<CardFooter>Footer</CardFooter>);
     expect(screen.getByText('Footer')).toBeInTheDocument();
