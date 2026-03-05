@@ -35,7 +35,7 @@ jobs:
             ${{ runner.os }}-uv-
 
       - name: Install dependencies
-        run: uv sync --all
+        run: uv sync --all-groups
 
       - name: Install pytest-xdist for parallelization
         run: uv pip install pytest-xdist

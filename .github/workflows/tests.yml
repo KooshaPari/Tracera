@@ -68,7 +68,7 @@ jobs:
             ${{ runner.os }}-uv-
 
       - name: Install dependencies
-        run: uv sync --all
+        run: uv sync --all-groups
 
       # Run fast tests first (unit tests)
       - name: Run ${{ matrix.test-type }} tests (fast first)
@@ -205,7 +205,7 @@ jobs:
             ${{ runner.os }}-uv-
 
       - name: Install dependencies
-        run: uv sync --all
+        run: uv sync --all-groups
 
       # Run all tests in parallel with pytest-xdist
       - name: Run all tests in parallel
