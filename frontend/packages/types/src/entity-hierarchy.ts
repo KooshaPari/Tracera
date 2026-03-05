@@ -618,6 +618,9 @@ export function isDesignEntityType(type: EntityType): type is DesignEntityType {
 
 /**
  * Get valid child types for an entity
+ *
+ * @param {EntityType} entityType - Parent entity type.
+ * @returns {EntityType[]} List of allowed child entity types.
  */
 export function getValidChildTypes(entityType: EntityType): EntityType[] {
   return ENTITY_HIERARCHY[entityType] || [];
@@ -625,6 +628,10 @@ export function getValidChildTypes(entityType: EntityType): EntityType[] {
 
 /**
  * Check if a parent-child relationship is valid
+ *
+ * @param {EntityType} parentType - Proposed parent entity type.
+ * @param {EntityType} childType - Proposed child entity type.
+ * @returns {boolean} True when the child type is allowed under the parent.
  */
 export function isValidParentChild(parentType: EntityType, childType: EntityType): boolean {
   const validChildren = ENTITY_HIERARCHY[parentType];
@@ -633,6 +640,9 @@ export function isValidParentChild(parentType: EntityType, childType: EntityType
 
 /**
  * Get depth level for an entity type
+ *
+ * @param {EntityType} entityType - Entity type to resolve.
+ * @returns {number} Numeric depth level in the hierarchy.
  */
 export function getEntityDepth(entityType: EntityType): number {
   return ENTITY_DEPTH_LEVELS[entityType] ?? 0;
@@ -640,6 +650,9 @@ export function getEntityDepth(entityType: EntityType): number {
 
 /**
  * Get perspective for entity type
+ *
+ * @param {EntityType} entityType - Entity type to evaluate.
+ * @returns {'ui' | 'product' | 'technical' | 'test' | 'design' | 'doc'} Perspective bucket.
  */
 export function getEntityPerspective(
   entityType: EntityType,
