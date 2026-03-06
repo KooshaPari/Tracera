@@ -5,9 +5,11 @@
  * Verifies correct force calculations and performance targets
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import * as Vitest from 'vitest';
 
 import { logger } from '../logger';
+
+const { afterEach, beforeEach, describe, expect, it } = Vitest;
 
 // ============================================================================
 // MOCK GPU APIS
@@ -15,45 +17,53 @@ import { logger } from '../logger';
 
 // Mock WebGPU API (for testing in jsdom environment)
 const mockGPUAdapter = {
-  requestDevice: vi.fn(async () => ({
-    createBuffer: vi.fn(() => ({
-      destroy: vi.fn(),
-      mapAsync: vi.fn(async () => {}),
-      getMappedRange: vi.fn(() => new ArrayBuffer(1024)),
-      unmap: vi.fn(),
+  requestDevice: Vitest.vi.fn(async () => ({
+    createBuffer: Vitest.vi.fn(() => ({
+      destroy: Vitest.vi.fn(),
+      mapAsync: Vitest.vi.fn(async () => {}),
+      getMappedRange: Vitest.vi.fn(() => new ArrayBuffer(1024)),
+      unmap: Vitest.vi.fn(),
     })),
-    createShaderModule: vi.fn(() => ({})),
-    createBindGroupLayout: vi.fn(() => ({})),
-    createPipelineLayout: vi.fn(() => ({})),
-    createComputePipeline: vi.fn(() => ({
-      getBindGroupLayout: vi.fn(() => ({})),
+    createShaderModule: Vitest.vi.fn(() => ({})),
+    createBindGroupLayout: Vitest.vi.fn(() => ({})),
+    createPipelineLayout: Vitest.vi.fn(() => ({})),
+    createComputePipeline: Vitest.vi.fn(() => ({
+      getBindGroupLayout: Vitest.vi.fn(() => ({})),
     })),
-    createBindGroup: vi.fn(() => ({})),
-    createCommandEncoder: vi.fn(() => ({
-      beginComputePass: vi.fn(() => ({
-        setPipeline: vi.fn(),
-        setBindGroup: vi.fn(),
-        dispatchWorkgroups: vi.fn(),
-        end: vi.fn(),
+    createBindGroup: Vitest.vi.fn(() => ({})),
+    createCommandEncoder: Vitest.vi.fn(() => ({
+      beginComputePass: Vitest.vi.fn(() => ({
+        setPipeline: Vitest.vi.fn(),
+        setBindGroup: Vitest.vi.fn(),
+        dispatchWorkgroups: Vitest.vi.fn(),
+        end: Vitest.vi.fn(),
       })),
-      copyBufferToBuffer: vi.fn(),
-      finish: vi.fn(() => ({})),
+      copyBufferToBuffer: Vitest.vi.fn(),
+      finish: Vitest.vi.fn(() => ({})),
     })),
     queue: {
-      writeBuffer: vi.fn(),
-      submit: vi.fn(),
-      onSubmittedWorkDone: vi.fn(async () => {}),
+      writeBuffer: Vitest.vi.fn(),
+      submit: Vitest.vi.fn(),
+      onSubmittedWorkDone: Vitest.vi.fn(async () => {}),
     },
-    destroy: vi.fn(),
+    destroy: Vitest.vi.fn(),
     lost: Promise.resolve({ message: 'test', reason: 'destroyed' }),
   })),
 };
 
 const mockNavigator = {
   gpu: {
-    requestAdapter: vi.fn(async () => mockGPUAdapter),
+    requestAdapter: Vitest.vi.fn(async () => mockGPUAdapter),
   },
 };
+
+async function requestMockDevice() {
+  const adapter = await mockNavigator.gpu.requestAdapter();
+
+  Vitest.expect(adapter).toBeTruthy();
+
+  return adapter.requestDevice();
+}
 
 // ============================================================================
 // TEST UTILITIES
@@ -61,6 +71,10 @@ const mockNavigator = {
 
 /**
  * Generate test graph data
+ *
+ * @param {number} nodeCount Number of nodes to generate.
+ * @returns {{ positions: Float32Array; velocities: Float32Array; forces: Float32Array }}
+ *   Position, velocity, and force buffers for the test graph.
  */
 function generateTestGraph(nodeCount: number) {
   const positions = new Float32Array(nodeCount * 2);
@@ -81,6 +95,10 @@ function generateTestGraph(nodeCount: number) {
 
 /**
  * Generate test edges
+ *
+ * @param {number} nodeCount Number of nodes in the graph.
+ * @param {number} density Edge density ratio to generate.
+ * @returns {Uint32Array} Edge pairs as a flat typed array.
  */
 function generateTestEdges(nodeCount: number, density = 0.1): Uint32Array {
   const maxEdges = Math.floor(nodeCount * nodeCount * density);
@@ -100,48 +118,47 @@ function generateTestEdges(nodeCount: number, density = 0.1): Uint32Array {
 // TESTS
 // ============================================================================
 
-describe('GPU Compute Infrastructure', () => {
-  beforeEach(() => {
+Vitest.describe('GPU Compute Infrastructure', () => {
+  Vitest.beforeEach(() => {
     // Mock navigator.gpu
-    Object.defineProperty(global.navigator, 'gpu', {
+    Object.defineProperty(globalThis.navigator, 'gpu', {
       value: mockNavigator.gpu,
       writable: true,
       configurable: true,
     });
   });
 
-  afterEach(() => {
-    vi.clearAllMocks();
+  Vitest.afterEach(() => {
+    Vitest.vi.clearAllMocks();
   });
 
-  describe('WebGPU Device Initialization', () => {
-    it('should detect WebGPU support', () => {
-      expect(navigator.gpu).toBeDefined();
+  Vitest.describe('WebGPU Device Initialization', () => {
+    Vitest.it('should detect WebGPU support', () => {
+      Vitest.expect(globalThis.navigator.gpu).toBeDefined();
     });
 
-    it('should request adapter with high-performance preference', async () => {
+    Vitest.it('should request adapter with high-performance preference', async () => {
       await mockNavigator.gpu.requestAdapter({ powerPreference: 'high-performance' });
 
-      expect(mockNavigator.gpu.requestAdapter).toHaveBeenCalledWith({
+      Vitest.expect(mockNavigator.gpu.requestAdapter).toHaveBeenCalledWith({
         powerPreference: 'high-performance',
       });
     });
 
-    it('should handle adapter request failure', async () => {
+    Vitest.it('should handle adapter request failure', async () => {
       const originalRequestAdapter = mockNavigator.gpu.requestAdapter;
-      mockNavigator.gpu.requestAdapter = vi.fn(async () => null);
+      mockNavigator.gpu.requestAdapter = Vitest.vi.fn(async () => null);
 
       const adapter = await mockNavigator.gpu.requestAdapter();
-      expect(adapter).toBeNull();
+      Vitest.expect(adapter).toBeNull();
 
       mockNavigator.gpu.requestAdapter = originalRequestAdapter;
     });
   });
 
-  describe('Buffer Management', () => {
-    it('should create storage buffers with correct size', async () => {
-      const adapter = await mockNavigator.gpu.requestAdapter();
-      const device = await adapter!.requestDevice();
+  Vitest.describe('Buffer Management', () => {
+    Vitest.it('should create storage buffers with correct size', async () => {
+      const device = await requestMockDevice();
 
       const nodeCount = 1000;
       const positionsSize = nodeCount * 2 * Float32Array.BYTES_PER_ELEMENT;
@@ -151,40 +168,37 @@ describe('GPU Compute Infrastructure', () => {
         usage: 3, // STORAGE | COPY_DST
       });
 
-      expect(device.createBuffer).toHaveBeenCalledWith(
-        expect.objectContaining({
+      Vitest.expect(device.createBuffer).toHaveBeenCalledWith(
+        Vitest.expect.objectContaining({
           size: positionsSize,
         }),
       );
     });
 
-    it('should write data to buffers', async () => {
-      const adapter = await mockNavigator.gpu.requestAdapter();
-      const device = await adapter!.requestDevice();
+    Vitest.it('should write data to buffers', async () => {
+      const device = await requestMockDevice();
 
       const testData = new Float32Array([1, 2, 3, 4]);
       const buffer = device.createBuffer({ size: 16, usage: 3 });
 
       device.queue.writeBuffer(buffer, 0, testData);
 
-      expect(device.queue.writeBuffer).toHaveBeenCalledWith(buffer, 0, testData);
+      Vitest.expect(device.queue.writeBuffer).toHaveBeenCalledWith(buffer, 0, testData);
     });
   });
 
-  describe('Compute Pipeline', () => {
-    it('should create shader module from WGSL code', async () => {
-      const adapter = await mockNavigator.gpu.requestAdapter();
-      const device = await adapter!.requestDevice();
+  Vitest.describe('Compute Pipeline', () => {
+    Vitest.it('should create shader module from WGSL code', async () => {
+      const device = await requestMockDevice();
 
       const shaderCode = '@compute @workgroup_size(64) fn main() {}';
       device.createShaderModule({ code: shaderCode });
 
-      expect(device.createShaderModule).toHaveBeenCalledWith({ code: shaderCode });
+      Vitest.expect(device.createShaderModule).toHaveBeenCalledWith({ code: shaderCode });
     });
 
-    it('should create compute pipeline with entry point', async () => {
-      const adapter = await mockNavigator.gpu.requestAdapter();
-      const device = await adapter!.requestDevice();
+    Vitest.it('should create compute pipeline with entry point', async () => {
+      const device = await requestMockDevice();
 
       const shaderModule = device.createShaderModule({ code: '' });
       const layout = device.createPipelineLayout({ bindGroupLayouts: [] });
@@ -197,9 +211,9 @@ describe('GPU Compute Infrastructure', () => {
         },
       });
 
-      expect(device.createComputePipeline).toHaveBeenCalledWith(
-        expect.objectContaining({
-          compute: expect.objectContaining({
+      Vitest.expect(device.createComputePipeline).toHaveBeenCalledWith(
+        Vitest.expect.objectContaining({
+          compute: Vitest.expect.objectContaining({
             entryPoint: 'main',
           }),
         }),
@@ -207,8 +221,8 @@ describe('GPU Compute Infrastructure', () => {
     });
   });
 
-  describe('Force Calculation Logic', () => {
-    it('should calculate repulsion force correctly', () => {
+  Vitest.describe('Force Calculation Logic', () => {
+    Vitest.it('should calculate repulsion force correctly', () => {
       // Test the math for repulsion force
       // F = k / r² where k = repulsionStrength
 
@@ -223,10 +237,10 @@ describe('GPU Compute Infrastructure', () => {
 
       const expectedForceX = (delta.x / dist) * force;
 
-      expect(expectedForceX).toBeCloseTo(-0.5, 1);
+      Vitest.expect(expectedForceX).toBeCloseTo(-0.5, 1);
     });
 
-    it('should calculate attraction force correctly', () => {
+    Vitest.it('should calculate attraction force correctly', () => {
       // Test the math for attraction force
       // F = k * d where k = attractionStrength
 
@@ -235,25 +249,24 @@ describe('GPU Compute Infrastructure', () => {
       const strength = 0.1;
 
       const delta = { x: pos2.x - pos1.x, y: pos2.y - pos1.y };
-      const dist = Math.sqrt(delta.x * delta.x + delta.y * delta.y);
+      const dist = Math.hypot(delta.x, delta.y);
       const force = strength * dist;
 
       const expectedForceX = (delta.x / dist) * force;
 
-      expect(expectedForceX).toBeCloseTo(10, 1);
+      Vitest.expect(expectedForceX).toBeCloseTo(10, 1);
     });
   });
 
   describe('Workgroup Dispatch', () => {
     it('should calculate correct workgroup count for node count', async () => {
-      const adapter = await mockNavigator.gpu.requestAdapter();
-      const device = await adapter!.requestDevice();
+      const device = await requestMockDevice();
 
-      const nodeCount = 10000;
+      const nodeCount = 10_000;
       const workgroupSize = 64;
       const workgroupCount = Math.ceil(nodeCount / workgroupSize);
 
-      expect(workgroupCount).toBe(157); // ceil(10000 / 64)
+      expect(workgroupCount).toBe(157); // Ceil(10_000 / 64)
 
       const encoder = device.createCommandEncoder();
       const pass = encoder.beginComputePass();
@@ -281,12 +294,12 @@ describe('GPU Compute Infrastructure', () => {
 
   describe('Performance Metrics', () => {
     it('should measure iteration time', async () => {
-      const startTime = performance.now();
+      const startTime = globalThis.performance.now();
 
       // Simulate some work
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise((resolve) => globalThis.setTimeout(resolve, 10));
 
-      const duration = performance.now() - startTime;
+      const duration = globalThis.performance.now() - startTime;
       expect(duration).toBeGreaterThanOrEqual(10);
     });
 
@@ -294,7 +307,7 @@ describe('GPU Compute Infrastructure', () => {
       // Target: <100ms per iteration on GPU vs ~30s CPU
       // This is ~300x speedup minimum
 
-      const cpuTime = 30000; // 30s baseline
+      const cpuTime = 30_000; // 30s baseline
       const targetGPUTime = 100; // 100ms target
       const expectedSpeedup = cpuTime / targetGPUTime;
 
@@ -313,7 +326,7 @@ describe.skip('WebGL Compute Fallback', () => {
   let gl: WebGL2RenderingContext | null;
 
   beforeEach(() => {
-    canvas = document.createElement('canvas');
+    canvas = globalThis.document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 512;
     gl = canvas.getContext('webgl2');
@@ -334,26 +347,39 @@ describe.skip('WebGL Compute Fallback', () => {
     });
 
     it('should check for float texture support', () => {
-      if (!gl) return;
+      if (!gl) {
+        return;
+      }
 
       const floatExt = gl.getExtension('EXT_color_buffer_float');
-      // In jsdom, this will be null, but in real browser it should exist
+      // In jsdom, this will be null, but in real browser it should exist.
       expect(floatExt).toBeDefined();
     });
   });
 
   describe('Texture Creation', () => {
     it('should create float textures for data', () => {
-      if (!gl) return;
+      if (!gl) {
+        return;
+      }
 
       const texture = gl.createTexture();
       expect(texture).toBeTruthy();
 
       gl.bindTexture(gl.TEXTURE_2D, texture);
 
-      const testData = new Float32Array(512 * 512 * 2);
-      // In real implementation:
-      // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG32F, 512, 512, 0, gl.RG, gl.FLOAT, testData);
+      // Example real implementation:
+      // Gl.texImage2D(
+      //   Gl.TEXTURE_2D,
+      //   0,
+      //   Gl.RG32F,
+      //   512,
+      //   512,
+      //   0,
+      //   Gl.RG,
+      //   Gl.FLOAT,
+      //   New Float32Array(512 * 512 * 2),
+      // );
 
       expect(texture).not.toBeNull();
     });
@@ -361,7 +387,9 @@ describe.skip('WebGL Compute Fallback', () => {
 
   describe('Shader Compilation', () => {
     it('should compile vertex shader', () => {
-      if (!gl) return;
+      if (!gl) {
+        return;
+      }
 
       const vertexShaderSource = `#version 300 es
         precision highp float;
@@ -378,14 +406,16 @@ describe.skip('WebGL Compute Fallback', () => {
         gl.shaderSource(shader, vertexShaderSource);
         gl.compileShader(shader);
 
-        // In real browser, check compile status
-        // const success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-        // expect(success).toBe(true);
+        // In real browser, check compile status.
+        // Const success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+        // Expect(success).toBe(true);
       }
     });
 
     it('should compile fragment shader', () => {
-      if (!gl) return;
+      if (!gl) {
+        return;
+      }
 
       const fragmentShaderSource = `#version 300 es
         precision highp float;
@@ -419,7 +449,7 @@ describe('GPU Compute Integration', () => {
     expect(forces).toHaveLength(200);
 
     // Check initial velocities are zero
-    expect(velocities.every((v) => v === 0)).toBe(true);
+    expect(velocities.every((velocity) => velocity === 0)).toBeTruthy();
   });
 
   it('should generate valid edge data', () => {
@@ -429,9 +459,9 @@ describe('GPU Compute Integration', () => {
     expect(edges.length % 2).toBe(0); // Pairs of source/target
 
     // Check all indices are within bounds
-    for (let i = 0; i < edges.length; i++) {
-      expect(edges[i]).toBeGreaterThanOrEqual(0);
-      expect(edges[i]).toBeLessThan(100);
+    for (const edge of edges) {
+      expect(edge).toBeGreaterThanOrEqual(0);
+      expect(edge).toBeLessThan(100);
     }
   });
 

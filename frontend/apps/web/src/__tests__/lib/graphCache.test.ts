@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import * as Vitest from 'vitest';
 
 import {
   cacheKeys,
@@ -10,65 +10,67 @@ import {
   useGraphCache,
 } from '@/lib/graphCache';
 
-describe('Graph Cache - LRU Implementation', () => {
-  describe('Cache Creation', () => {
-    it('should create a new cache with default settings', () => {
+const { afterEach, beforeEach, describe, expect, it } = Vitest;
+
+Vitest.describe('Graph Cache - LRU Implementation', () => {
+  Vitest.describe('Cache Creation', () => {
+    Vitest.it('should create a new cache with default settings', () => {
       const cache = createGraphCache();
       const stats = cache.getStats();
 
-      expect(stats.totalEntries).toBe(0);
-      expect(stats.maxEntries).toBe(100);
-      expect(stats.totalMemory).toBe(0);
+      Vitest.expect(stats.totalEntries).toBe(0);
+      Vitest.expect(stats.maxEntries).toBe(100);
+      Vitest.expect(stats.totalMemory).toBe(0);
     });
 
-    it('should create a cache with custom settings', () => {
-      const cache = createGraphCache(50, 10485760); // 50 entries, 10 MB
+    Vitest.it('should create a cache with custom settings', () => {
+      const cache = createGraphCache(50, 10_485_760); // 50 entries, 10 MB
       const stats = cache.getStats();
 
-      expect(stats.maxEntries).toBe(50);
-      expect(stats.maxMemory).toBe(10485760);
+      Vitest.expect(stats.maxEntries).toBe(50);
+      Vitest.expect(stats.maxMemory).toBe(10_485_760);
     });
   });
 
-  describe('Basic Operations', () => {
+  Vitest.describe('Basic Operations', () => {
     let cache: ReturnType<typeof createGraphCache>;
 
-    beforeEach(() => {
+    Vitest.beforeEach(() => {
       cache = createGraphCache();
     });
 
-    it('should set and get values', () => {
+    Vitest.it('should set and get values', () => {
       const value = { data: 'test' };
       cache.set('key1', value);
 
       const retrieved = cache.get('key1');
-      expect(retrieved).toEqual(value);
+      Vitest.expect(retrieved).toEqual(value);
     });
 
-    it('should return null for non-existent keys', () => {
+    Vitest.it('should return null for non-existent keys', () => {
       const result = cache.get('non-existent');
-      expect(result).toBeNull();
+      Vitest.expect(result).toBeNull();
     });
 
-    it('should check key existence', () => {
+    Vitest.it('should check key existence', () => {
       cache.set('key1', { data: 'test' });
 
-      expect(cache.has('key1')).toBe(true);
-      expect(cache.has('key2')).toBe(false);
+      Vitest.expect(cache.has('key1')).toBeTruthy();
+      Vitest.expect(cache.has('key2')).toBeFalsy();
     });
 
     it('should delete entries', () => {
       cache.set('key1', { data: 'test' });
-      expect(cache.has('key1')).toBe(true);
+      expect(cache.has('key1')).toBeTruthy();
 
       const deleted = cache.delete('key1');
-      expect(deleted).toBe(true);
-      expect(cache.has('key1')).toBe(false);
+      expect(deleted).toBeTruthy();
+      expect(cache.has('key1')).toBeFalsy();
     });
 
     it('should return false when deleting non-existent key', () => {
       const deleted = cache.delete('non-existent');
-      expect(deleted).toBe(false);
+      expect(deleted).toBeFalsy();
     });
 
     it('should clear all entries', () => {
@@ -93,8 +95,8 @@ describe('Graph Cache - LRU Implementation', () => {
       // Add 4th entry - should evict key1 (least recently used)
       cache.set('key4', { data: 'value4' });
 
-      expect(cache.has('key1')).toBe(false);
-      expect(cache.has('key4')).toBe(true);
+      expect(cache.has('key1')).toBeFalsy();
+      expect(cache.has('key4')).toBeTruthy();
     });
 
     it('should not evict recently accessed entries', () => {
@@ -110,8 +112,8 @@ describe('Graph Cache - LRU Implementation', () => {
       // Add 4th entry - should evict key2
       cache.set('key4', { data: 'value4' });
 
-      expect(cache.has('key1')).toBe(true); // Recently accessed
-      expect(cache.has('key2')).toBe(false); // Evicted
+      expect(cache.has('key1')).toBeTruthy(); // Recently accessed
+      expect(cache.has('key2')).toBeFalsy(); // Evicted
     });
 
     it('should respect memory limits', () => {
@@ -217,8 +219,8 @@ describe('Graph Cache - LRU Implementation', () => {
       const count = cache.invalidatePattern('layout:*');
 
       expect(count).toBe(2);
-      expect(cache.has('layout:graph1:force')).toBe(false);
-      expect(cache.has('grouping:graph1:strategy')).toBe(true);
+      expect(cache.has('layout:graph1:force')).toBeFalsy();
+      expect(cache.has('grouping:graph1:strategy')).toBeTruthy();
     });
 
     it('should support wildcard patterns', () => {
@@ -229,7 +231,7 @@ describe('Graph Cache - LRU Implementation', () => {
       const count = cache.invalidatePattern('layout:*');
 
       expect(count).toBe(2);
-      expect(cache.has('search:graph1')).toBe(true);
+      expect(cache.has('search:graph1')).toBeTruthy();
     });
 
     it('should return count of invalidated entries', () => {
@@ -263,7 +265,7 @@ describe('Graph Cache - LRU Implementation', () => {
     });
 
     it('should bulk load entries', () => {
-      const entries: Array<[string, any]> = [
+      const entries: [string, unknown][] = [
         ['key1', { data: 'value1' }],
         ['key2', { data: 'value2' }],
         ['key3', { data: 'value3' }],
