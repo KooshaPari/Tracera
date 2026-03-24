@@ -91,6 +91,14 @@ TracerTM operates at a **critical** quality tier:
 3. **Verification Policy**: Defined dispute workflows for quality gate decisions in `VERIFICATION_POLICY.md`.
 4. **Security Scanning**: Automated `govulncheck`, `bandit`, and security audits.
 
+### Review-Traceability Rule
+
+- PR review comments that block requirements, API contracts, or architecture are treated as traceability events.
+- For each closed PR in a stacked flow, record at least one of:
+  - resolved comment thread, or
+  - explicit follow-up PR reference with dependency order and trace matrix impact.
+- PRD references and trace entries should include review-thread outcomes before promoting to `beta/rc`.
+
 ---
 
 ## 🧪 Testing & Quality

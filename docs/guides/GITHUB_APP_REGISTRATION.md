@@ -222,7 +222,7 @@ Based on the permissions selected, subscribe to these events:
 
 **Where can this GitHub App be installed?**
 
-- ⬜ **Only on this account** (@KooshaPari)
+- ⬜ **Only on this account** (@kooshapari)
 - ✅ **Any account** (Recommended)
   - Allows installation by any user or organization
   - Better for broader adoption
