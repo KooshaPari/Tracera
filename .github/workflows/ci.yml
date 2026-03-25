@@ -64,6 +64,8 @@ jobs:
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
+        with:
+          cache: 'pip'
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
@@ -301,6 +303,8 @@ jobs:
 
     - name: Set up Python 3.12
       uses: actions/setup-python@v5
+        with:
+          cache: 'pip'
       with:
         python-version: '3.12'
         cache: 'pip'

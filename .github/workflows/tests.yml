@@ -57,6 +57,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
+          cache: 'pip'
+        with:
           python-version: ${{ matrix.python-version }}
 
       - name: Cache uv dependencies
@@ -177,6 +179,8 @@ jobs:
 
       - name: Set up Python
         uses: actions/setup-python@v5
+        with:
+          cache: 'pip'
         with:
           python-version: "3.12"
 
