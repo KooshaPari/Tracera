@@ -1,3 +1,7 @@
+![Build Status](https://github.com/Phenotype-Enterprise/trace/actions/workflows/quality-gate.yml/badge.svg)
+![Security Audit](https://github.com/Phenotype-Enterprise/trace/actions/workflows/security-guard.yml/badge.svg)
+![Policy Compliance](https://github.com/Phenotype-Enterprise/trace/actions/workflows/policy-gate.yml/badge.svg)
+
 # TracerTM 🚀
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/kooshapari/tracertm)](https://goreportcard.com/report/github.com/kooshapari/tracertm)
@@ -90,6 +94,14 @@ TracerTM operates at a **critical** quality tier:
 2. **Provenance**: All builds generate SLSA attestations with digital signatures.
 3. **Verification Policy**: Defined dispute workflows for quality gate decisions in `VERIFICATION_POLICY.md`.
 4. **Security Scanning**: Automated `govulncheck`, `bandit`, and security audits.
+
+### Review-Traceability Rule
+
+- PR review comments that block requirements, API contracts, or architecture are treated as traceability events.
+- For each closed PR in a stacked flow, record at least one of:
+  - resolved comment thread, or
+  - explicit follow-up PR reference with dependency order and trace matrix impact.
+- PRD references and trace entries should include review-thread outcomes before promoting to `beta/rc`.
 
 ---
 

@@ -6,8 +6,7 @@
   "main": "./src/config.ts",
   "exports": {
     "./tailwind": "./tailwind.config.ts",
-    "./tsconfig": "./tsconfig.base.json",
-    "./biome": "./biome.config.json"
+    "./tsconfig": "./tsconfig.base.json"
   },
   "scripts": {
     "build": "tsc --build",

@@ -1,67 +1,57 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type {
-  CreateFeatureData,
-  FeatureFilters,
-  UpdateFeatureData,
-} from '@/hooks/useSpecifications.api';
+import * as specificationsApi from '@/hooks/useSpecifications.api';
+import * as queryUtils from './query-utils';
 
-import {
-  createFeature,
-  deleteFeature,
-  fetchFeature,
-  fetchFeatureActivities,
-  fetchFeatures,
-  fetchFeatureStats,
-  updateFeature,
-} from '@/hooks/useSpecifications.api';
+type FetchFeaturesResult = Awaited<ReturnType<typeof specificationsApi.fetchFeatures>>;
 
-import type { MutationResult, QueryResult } from './query-utils';
+type FetchFeatureResult = Awaited<ReturnType<typeof specificationsApi.fetchFeature>>;
 
-import { invalidateQueries } from './query-utils';
+type CreateFeatureResult = Awaited<ReturnType<typeof specificationsApi.createFeature>>;
 
-type FetchFeaturesResult = Awaited<ReturnType<typeof fetchFeatures>>;
+type UpdateFeatureResult = Awaited<ReturnType<typeof specificationsApi.updateFeature>>;
 
-type FetchFeatureResult = Awaited<ReturnType<typeof fetchFeature>>;
+type FetchFeatureActivitiesResult = Awaited<
+  ReturnType<typeof specificationsApi.fetchFeatureActivities>
+>;
 
-type CreateFeatureResult = Awaited<ReturnType<typeof createFeature>>;
+type FetchFeatureStatsResult = Awaited<ReturnType<typeof specificationsApi.fetchFeatureStats>>;
 
-type UpdateFeatureResult = Awaited<ReturnType<typeof updateFeature>>;
-
-type FetchFeatureActivitiesResult = Awaited<ReturnType<typeof fetchFeatureActivities>>;
-
-type FetchFeatureStatsResult = Awaited<ReturnType<typeof fetchFeatureStats>>;
-
-const useFeatures = (filters: FeatureFilters): QueryResult<FetchFeaturesResult> =>
+const useFeatures = (
+  filters: specificationsApi.FeatureFilters,
+): queryUtils.QueryResult<FetchFeaturesResult> =>
   useQuery({
     enabled: Boolean(filters.projectId),
     queryFn: async () => {
-      const response = await fetchFeatures(filters);
+      const response = await specificationsApi.fetchFeatures(filters);
       return response;
     },
     queryKey: ['features', JSON.stringify(filters)],
   });
 
-const useFeature = (id: string): QueryResult<FetchFeatureResult> =>
+const useFeature = (id: string): queryUtils.QueryResult<FetchFeatureResult> =>
   useQuery({
     enabled: Boolean(id),
     queryFn: async () => {
-      const response = await fetchFeature(id);
+      const response = await specificationsApi.fetchFeature(id);
       return response;
     },
     queryKey: ['features', id],
   });
 
-const useCreateFeature = (): MutationResult<CreateFeatureResult, CreateFeatureData> => {
+const useCreateFeature = (): queryUtils.MutationResult<
+  CreateFeatureResult,
+  specificationsApi.CreateFeatureData
+> => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateFeatureData) => {
-      const response = await createFeature(data);
+    mutationFn: async (data: specificationsApi.CreateFeatureData) => {
+      const response = await specificationsApi.createFeature(data);
       return response;
     },
     onSuccess: async (_, variables) => {
-      await invalidateQueries(queryClient, [['features'], ['featureStats']]);
+      await queryUtils.invalidateQueries(queryClient, [['features'], ['featureStats']]);
       await queryClient.invalidateQueries({
         queryKey: ['specificationSummary', variables.projectId],
       });
@@ -71,30 +61,30 @@ const useCreateFeature = (): MutationResult<CreateFeatureResult, CreateFeatureDa
 
 const useUpdateFeature = (): MutationResult<
   UpdateFeatureResult,
-  { id: string; data: UpdateFeatureData }
+  { id: string; data: specificationsApi.UpdateFeatureData }
 > => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateFeatureData }) => {
-      const response = await updateFeature(id, data);
+    mutationFn: async ({ id, data }: { id: string; data: specificationsApi.UpdateFeatureData }) => {
+      const response = await specificationsApi.updateFeature(id, data);
       return response;
     },
     onSuccess: async (_, { id }) => {
-      await invalidateQueries(queryClient, [['features', id], ['features']]);
+      await queryUtils.invalidateQueries(queryClient, [['features', id], ['features']]);
     },
   });
 };
 
-const useDeleteFeature = (): MutationResult<void, string> => {
+const useDeleteFeature = (): queryUtils.MutationResult<void, string> => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      await deleteFeature(id);
+      await specificationsApi.deleteFeature(id);
     },
     onSuccess: async () => {
-      await invalidateQueries(queryClient, [
+      await queryUtils.invalidateQueries(queryClient, [
         ['features'],
         ['featureStats'],
         ['specificationSummary'],
@@ -103,21 +93,25 @@ const useDeleteFeature = (): MutationResult<void, string> => {
   });
 };
 
-const useFeatureActivities = (featureId: string): QueryResult<FetchFeatureActivitiesResult> =>
+const useFeatureActivities = (
+  featureId: string,
+): queryUtils.QueryResult<FetchFeatureActivitiesResult> =>
   useQuery({
     enabled: Boolean(featureId),
     queryFn: async () => {
-      const response = await fetchFeatureActivities(featureId);
+      const response = await specificationsApi.fetchFeatureActivities(featureId);
       return response;
     },
     queryKey: ['featureActivities', featureId],
   });
 
-const useFeatureStats = (projectId: string): QueryResult<FetchFeatureStatsResult> =>
+const useFeatureStats = (
+  projectId: string,
+): queryUtils.QueryResult<FetchFeatureStatsResult> =>
   useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => {
-      const response = await fetchFeatureStats(projectId);
+      const response = await specificationsApi.fetchFeatureStats(projectId);
       return response;
     },
     queryKey: ['featureStats', projectId],

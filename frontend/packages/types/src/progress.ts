@@ -224,7 +224,7 @@ export interface ProgressSnapshot {
 export interface ProjectMetrics {
   // Item counts
   totalItems: number;
-  byStatus: Record<string, number>; // e.g., { "todo": 10, "in_progress": 5 }
+  byStatus: Record<string, number>; // E.g., { "todo": 10, "in_progress": 5 }
   byPriority: Record<string, number>;
   byType: Record<string, number>;
 
@@ -471,19 +471,31 @@ export interface DashboardLayout {
 // =============================================================================
 // UTILITY FUNCTIONS
 // =============================================================================
+const BLOCKED_RISK_THRESHOLD_PERCENT = 30;
+const PROGRESS_RED_THRESHOLD = 0.5;
+const PROGRESS_YELLOW_THRESHOLD = 0.8;
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 /**
  * Calculate health status from metrics
+ *
+ * @param {boolean} onTime - Whether the workstream is currently on schedule.
+ * @param {number} blockedPercentage - Percentage of blocked work items.
+ * @param {number} progressVsExpected - Ratio of actual progress vs expected progress.
+ * @returns {HealthStatus} Health status color bucket.
  */
 export function calculateHealthStatus(
   onTime: boolean,
   blockedPercentage: number,
   progressVsExpected: number,
 ): HealthStatus {
-  if (blockedPercentage > 30 || progressVsExpected < 0.5) {
+  if (
+    blockedPercentage > BLOCKED_RISK_THRESHOLD_PERCENT ||
+    progressVsExpected < PROGRESS_RED_THRESHOLD
+  ) {
     return 'red';
   }
-  if (blockedPercentage > 10 || progressVsExpected < 0.8 || !onTime) {
+  if (blockedPercentage > 10 || progressVsExpected < PROGRESS_YELLOW_THRESHOLD || !onTime) {
     return 'yellow';
   }
   return 'green';
@@ -491,6 +503,9 @@ export function calculateHealthStatus(
 
 /**
  * Get health status color
+ *
+ * @param {HealthStatus} health - Health status value.
+ * @returns {string} Hex color mapped to the given status.
  */
 export function getHealthColor(health: HealthStatus): string {
   const colors: Record<HealthStatus, string> = {
@@ -504,6 +519,9 @@ export function getHealthColor(health: HealthStatus): string {
 
 /**
  * Get milestone status color
+ *
+ * @param {MilestoneStatus} status - Milestone status value.
+ * @returns {string} Hex color mapped to milestone status.
  */
 export function getMilestoneStatusColor(status: MilestoneStatus): string {
   const colors: Record<MilestoneStatus, string> = {
@@ -519,6 +537,9 @@ export function getMilestoneStatusColor(status: MilestoneStatus): string {
 
 /**
  * Get sprint status color
+ *
+ * @param {SprintStatus} status - Sprint status value.
+ * @returns {string} Hex color mapped to sprint status.
  */
 export function getSprintStatusColor(status: SprintStatus): string {
   const colors: Record<SprintStatus, string> = {
@@ -532,41 +553,63 @@ export function getSprintStatusColor(status: SprintStatus): string {
 
 /**
  * Calculate days until target date
+ *
+ * @param {string} targetDate - ISO date string for the target date.
+ * @returns {number} Number of days from now to target date.
  */
 export function daysUntilTarget(targetDate: string): number {
   const target = new Date(targetDate);
   const now = new Date();
   const diffTime = target.getTime() - now.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.ceil(diffTime / MS_PER_DAY);
 }
 
 /**
  * Calculate progress percentage
+ *
+ * @param {number} completed - Number of completed work items/points.
+ * @param {number} total - Total number of work items/points.
+ * @returns {number} Rounded completion percentage.
  */
 export function calculateProgressPercentage(completed: number, total: number): number {
-  if (total === 0) return 0;
+  if (total === 0) {
+    return 0;
+  }
   return Math.round((completed / total) * 100);
 }
 
 /**
  * Calculate velocity from history
+ *
+ * @param {VelocityDataPoint[]} history - Historical velocity data points.
+ * @param {number} periods - Number of recent periods to include in averaging.
+ * @returns {number} Rounded average completed points for recent periods.
  */
 export function calculateVelocity(history: VelocityDataPoint[], periods = 3): number {
-  if (history.length === 0) return 0;
+  if (history.length === 0) {
+    return 0;
+  }
   const recent = history.slice(-periods);
-  const totalCompleted = recent.reduce((sum, p) => sum + p.completedPoints, 0);
+  const totalCompleted = recent.reduce((sum, point) => sum + point.completedPoints, 0);
   return Math.round(totalCompleted / recent.length);
 }
 
 /**
  * Calculate estimated completion date based on velocity
+ *
+ * @param {number} remainingPoints - Number of points remaining.
+ * @param {number} velocity - Average completed points per time period.
+ * @param {Date} startDate - Start date for projection.
+ * @returns {Date | null} Projected completion date, or null if velocity is not positive.
  */
 export function estimateCompletionDate(
   remainingPoints: number,
   velocity: number,
   startDate: Date = new Date(),
 ): Date | null {
-  if (velocity <= 0) return null;
+  if (velocity <= 0) {
+    return null;
+  }
   const daysRemaining = Math.ceil(remainingPoints / velocity);
   const completionDate = new Date(startDate);
   completionDate.setDate(completionDate.getDate() + daysRemaining);

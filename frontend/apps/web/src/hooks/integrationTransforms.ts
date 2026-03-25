@@ -1,116 +1,248 @@
 import type * as TracerTypes from '@tracertm/types';
 
-type ApiRecord = Record<string, unknown>;
+type ApiRecord = Readonly<Record<string, unknown>>;
+
+const INTEGRATION_PROVIDERS = ['github', 'github_projects', 'linear'] as const;
+const CREDENTIAL_TYPES = ['oauth', 'pat', 'api_key'] as const;
+const CREDENTIAL_STATUSES = ['active', 'expired', 'revoked', 'invalid', 'pending_reauth'] as const;
+const MAPPING_DIRECTIONS = ['pull', 'push', 'bidirectional'] as const;
+const MAPPING_STATUSES = ['active', 'paused', 'error', 'pending'] as const;
+const SYNC_QUEUE_STATUSES = ['pending', 'processing', 'completed', 'failed', 'cancelled'] as const;
+const CONFLICT_STATUSES = ['pending', 'resolved', 'skipped'] as const;
+const CONFLICT_RESOLUTION_STRATEGIES = [
+  'local_wins',
+  'external_wins',
+  'manual',
+  'merge',
+  'skip',
+] as const;
+
+const isRecord = (value: unknown): value is ApiRecord =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isEnumValue = <Value extends string>(
+  value: unknown,
+  allowedValues: readonly Value[],
+): value is Value => typeof value === 'string' && (allowedValues as readonly string[]).includes(value);
 
 const toNumber = (value: unknown): number => Number(value ?? 0);
 
+const readString = (record: ApiRecord, key: string): string => {
+  const value = record[key];
+  return typeof value === 'string' ? value : '';
+};
+
+const readOptionalString = (record: ApiRecord, key: string): string | undefined => {
+  const value = record[key];
+  return typeof value === 'string' ? value : undefined;
+};
+
+const readNumber = (record: ApiRecord, key: string): number => {
+  const value = record[key];
+  return typeof value === 'number' ? value : toNumber(value);
+};
+
+const readOptionalNumber = (record: ApiRecord, key: string): number | undefined => {
+  const value = record[key];
+  return typeof value === 'number' ? value : undefined;
+};
+
+const readBoolean = (record: ApiRecord, key: string): boolean => record[key] === true;
+
+const readRecord = (record: ApiRecord, key: string): ApiRecord | undefined => {
+  const value = record[key];
+  return isRecord(value) ? value : undefined;
+};
+
+const readStringArray = (record: ApiRecord, key: string): string[] => {
+  const value = record[key];
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((item): item is string => typeof item === 'string');
+};
+
+const readRecordArray = (record: ApiRecord, key: string): ApiRecord[] => {
+  const value = record[key];
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((item): item is ApiRecord => isRecord(item));
+};
+
+const readUnknownRecord = (record: ApiRecord, key: string): Record<string, unknown> | undefined => {
+  const value = readRecord(record, key);
+  return value ? { ...value } : undefined;
+};
+
+const readStringRecord = (record: ApiRecord, key: string): Record<string, string> | undefined => {
+  const value = readRecord(record, key);
+  if (!value) {
+    return undefined;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).filter(([, entryValue]): entryValue is string => typeof entryValue === 'string'),
+  );
+};
+
+const readNumberRecord = (record: ApiRecord, key: string): Record<string, number> => {
+  const value = readRecord(record, key);
+  if (!value) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).flatMap(([entryKey, entryValue]) =>
+      typeof entryValue === 'number' ? [[entryKey, entryValue] as const] : [],
+    ),
+  );
+};
+
+const readConflictResolutionRecord = (
+  record: ApiRecord,
+  key: string,
+): Record<string, TracerTypes.ConflictResolutionStrategy> | undefined => {
+  const value = readRecord(record, key);
+  if (!value) {
+    return undefined;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).flatMap(([entryKey, entryValue]) =>
+      isEnumValue(entryValue, CONFLICT_RESOLUTION_STRATEGIES)
+        ? [[entryKey, entryValue] as const]
+        : [],
+    ),
+  );
+};
+
+const readEnum = <Value extends string>(
+  record: ApiRecord,
+  key: string,
+  allowedValues: readonly Value[],
+  fallback: Value,
+): Value => {
+  const value = record[key];
+  return isEnumValue(value, allowedValues) ? value : fallback;
+};
+
 const transformCredential = (data: ApiRecord): TracerTypes.IntegrationCredential => ({
-  createdAt: data['created_at'] as string,
-  credentialType: data['credential_type'] as TracerTypes.IntegrationCredential['credentialType'],
-  expiresAt: data['expires_at'] as string | undefined,
-  id: data['id'] as string,
-  lastValidatedAt: data['last_validated_at'] as string | undefined,
-  projectId: (data['project_id'] as string | undefined) ?? undefined,
-  provider: data['provider'] as TracerTypes.IntegrationProvider,
-  providerMetadata: data['provider_metadata'] as Record<string, unknown> | undefined,
-  providerUserId: data['provider_user_id'] as string | undefined,
-  scopes: (data['scopes'] as string[]) ?? [],
-  status: data['status'] as TracerTypes.IntegrationCredential['status'],
-  updatedAt: data['updated_at'] as string,
-  validationError: data['validation_error'] as string | undefined,
+  createdAt: readString(data, 'created_at'),
+  credentialType: readEnum(data, 'credential_type', CREDENTIAL_TYPES, 'oauth'),
+  expiresAt: readOptionalString(data, 'expires_at'),
+  id: readString(data, 'id'),
+  lastValidatedAt: readOptionalString(data, 'last_validated_at'),
+  projectId: readOptionalString(data, 'project_id'),
+  provider: readEnum(data, 'provider', INTEGRATION_PROVIDERS, 'github'),
+  providerMetadata: readUnknownRecord(data, 'provider_metadata'),
+  providerUserId: readOptionalString(data, 'provider_user_id'),
+  scopes: readStringArray(data, 'scopes'),
+  status: readEnum(data, 'status', CREDENTIAL_STATUSES, 'active'),
+  updatedAt: readString(data, 'updated_at'),
+  validationError: readOptionalString(data, 'validation_error'),
 });
 
 const transformMapping = (data: ApiRecord): TracerTypes.IntegrationMapping => ({
-  createdAt: data['created_at'] as string,
-  credentialId: data['credential_id'] as string,
-  direction: data['direction'] as TracerTypes.MappingDirection,
-  externalId: data['external_id'] as string,
-  externalKey: data['external_key'] as string | undefined,
-  externalType: data['external_type'] as string,
-  externalUrl: data['external_url'] as string | undefined,
-  externalVersion: data['external_version'] as string | undefined,
-  fieldMappings: data['field_mappings'] as Record<string, string> | undefined,
-  fieldResolutionRules: data['field_resolution_rules'] as
-    | Record<string, TracerTypes.ConflictResolutionStrategy>
-    | undefined,
-  id: data['id'] as string,
-  lastSyncError: data['last_sync_error'] as string | undefined,
-  lastSyncStatus: data['last_sync_status'] as string | undefined,
-  lastSyncedAt: data['last_synced_at'] as string | undefined,
-  localItemId: data['local_item_id'] as string,
-  localItemType: data['local_item_type'] as string,
-  localVersion: data['local_version'] as number | undefined,
-  mappingMetadata: data['mapping_metadata'] as Record<string, unknown> | undefined,
-  provider: data['provider'] as TracerTypes.IntegrationProvider,
-  status: data['status'] as TracerTypes.IntegrationMapping['status'],
-  syncEnabled: data['sync_enabled'] as boolean,
-  updatedAt: data['updated_at'] as string,
+  createdAt: readString(data, 'created_at'),
+  credentialId: readString(data, 'credential_id'),
+  direction: readEnum(data, 'direction', MAPPING_DIRECTIONS, 'pull'),
+  externalId: readString(data, 'external_id'),
+  externalKey: readOptionalString(data, 'external_key'),
+  externalType: readString(data, 'external_type'),
+  externalUrl: readOptionalString(data, 'external_url'),
+  externalVersion: readOptionalString(data, 'external_version'),
+  fieldMappings: readStringRecord(data, 'field_mappings'),
+  fieldResolutionRules: readConflictResolutionRecord(data, 'field_resolution_rules'),
+  id: readString(data, 'id'),
+  lastSyncError: readOptionalString(data, 'last_sync_error'),
+  lastSyncStatus: readOptionalString(data, 'last_sync_status'),
+  lastSyncedAt: readOptionalString(data, 'last_synced_at'),
+  localItemId: readString(data, 'local_item_id'),
+  localItemType: readString(data, 'local_item_type'),
+  localVersion: readOptionalNumber(data, 'local_version'),
+  mappingMetadata: readUnknownRecord(data, 'mapping_metadata'),
+  provider: readEnum(data, 'provider', INTEGRATION_PROVIDERS, 'github'),
+  status: readEnum(data, 'status', MAPPING_STATUSES, 'active'),
+  syncEnabled: readBoolean(data, 'sync_enabled'),
+  updatedAt: readString(data, 'updated_at'),
 });
 
 const transformSyncQueueItem = (data: ApiRecord): TracerTypes.SyncQueueItem => ({
-  completedAt: data['completed_at'] as string | undefined,
-  createdAt: data['created_at'] as string,
-  credentialId: data['credential_id'] as string,
-  direction: data['direction'] as TracerTypes.MappingDirection,
-  errorMessage: data['error_message'] as string | undefined,
-  eventType: data['event_type'] as string,
-  id: data['id'] as string,
-  mappingId: data['mapping_id'] as string | undefined,
-  maxRetries: data['max_retries'] as number,
-  priority: data['priority'] as number,
-  provider: data['provider'] as TracerTypes.IntegrationProvider,
-  retryCount: data['retry_count'] as number,
-  scheduledAt: data['scheduled_at'] as string,
-  startedAt: data['started_at'] as string | undefined,
-  status: data['status'] as TracerTypes.SyncQueueItem['status'],
+  completedAt: readOptionalString(data, 'completed_at'),
+  createdAt: readString(data, 'created_at'),
+  credentialId: readOptionalString(data, 'credential_id'),
+  direction: readEnum(data, 'direction', MAPPING_DIRECTIONS, 'pull'),
+  errorMessage: readOptionalString(data, 'error_message'),
+  eventType: readString(data, 'event_type'),
+  id: readString(data, 'id'),
+  mappingId: readOptionalString(data, 'mapping_id'),
+  maxRetries: readNumber(data, 'max_retries'),
+  priority: readNumber(data, 'priority'),
+  provider: readEnum(data, 'provider', INTEGRATION_PROVIDERS, 'github'),
+  retryCount: readNumber(data, 'retry_count'),
+  scheduledAt: readOptionalString(data, 'scheduled_at'),
+  startedAt: readOptionalString(data, 'started_at'),
+  status: readEnum(data, 'status', SYNC_QUEUE_STATUSES, 'pending'),
 });
 
 const transformSyncLog = (data: ApiRecord): TracerTypes.SyncLog => ({
-  completedAt: data['completed_at'] as string | undefined,
-  createdAt: data['created_at'] as string,
-  credentialId: data['credential_id'] as string,
-  direction: data['direction'] as TracerTypes.MappingDirection,
-  durationMs: data['duration_ms'] as number | undefined,
-  errorMessage: data['error_message'] as string | undefined,
-  eventType: data['event_type'] as string,
-  id: data['id'] as string,
-  itemsFailed: data['items_failed'] as number,
-  itemsProcessed: data['items_processed'] as number,
-  itemsSkipped: data['items_skipped'] as number,
-  mappingId: data['mapping_id'] as string | undefined,
-  provider: data['provider'] as TracerTypes.IntegrationProvider,
-  startedAt: data['started_at'] as string,
-  status: data['status'] as TracerTypes.SyncLog['status'],
+  completedAt: readOptionalString(data, 'completed_at'),
+  createdAt: readString(data, 'created_at'),
+  credentialId: readOptionalString(data, 'credential_id'),
+  direction: readEnum(data, 'direction', MAPPING_DIRECTIONS, 'pull'),
+  durationMs: readOptionalNumber(data, 'duration_ms'),
+  errorMessage: readOptionalString(data, 'error_message'),
+  eventType: readString(data, 'event_type'),
+  id: readString(data, 'id'),
+  itemsFailed: readNumber(data, 'items_failed'),
+  itemsProcessed: readNumber(data, 'items_processed'),
+  itemsSkipped: readNumber(data, 'items_skipped'),
+  mappingId: readOptionalString(data, 'mapping_id'),
+  provider: readEnum(data, 'provider', INTEGRATION_PROVIDERS, 'github'),
+  startedAt: readOptionalString(data, 'started_at'),
+  status: readString(data, 'status'),
 });
 
 const transformConflict = (data: ApiRecord): TracerTypes.SyncConflict => ({
-  conflictType: data['conflict_type'] as TracerTypes.SyncConflict['conflictType'],
-  createdAt: data['created_at'] as string,
-  externalModifiedAt: data['external_modified_at'] as string,
+  conflictType: readString(data, 'conflict_type'),
+  createdAt: readString(data, 'created_at'),
+  externalModifiedAt: readOptionalString(data, 'external_modified_at'),
   externalValue: data['external_value'],
-  fieldName: data['field_name'] as string,
-  id: data['id'] as string,
-  localModifiedAt: data['local_modified_at'] as string,
+  fieldName: readOptionalString(data, 'field_name'),
+  id: readString(data, 'id'),
+  localModifiedAt: readOptionalString(data, 'local_modified_at'),
   localValue: data['local_value'],
-  mappingId: data['mapping_id'] as string,
-  provider: data['provider'] as TracerTypes.IntegrationProvider,
-  resolution: data['resolution'] as TracerTypes.SyncConflict['resolution'] | undefined,
-  resolvedAt: data['resolved_at'] as string | undefined,
-  resolvedBy: data['resolved_by'] as string | undefined,
+  mappingId: readString(data, 'mapping_id'),
+  provider: readEnum(data, 'provider', INTEGRATION_PROVIDERS, 'github'),
+  resolution: readOptionalString(data, 'resolution'),
+  resolvedAt: readOptionalString(data, 'resolved_at'),
+  resolvedBy: readOptionalString(data, 'resolved_by'),
   resolvedValue: data['resolved_value'],
-  status: data['status'] as TracerTypes.SyncConflict['status'],
+  status: readEnum(data, 'status', CONFLICT_STATUSES, 'pending'),
 });
 
-const transformSyncStatus = (data: ApiRecord): TracerTypes.SyncStatusSummary => ({
-  projectId: data['project_id'] as string,
-  providers: ((data['providers'] as ApiRecord[]) ?? []).map((provider) => ({
-    lastValidated: (provider['last_validated'] as string | undefined) ?? undefined,
-    provider: provider['provider'] as TracerTypes.IntegrationProvider,
-    status: provider['status'] as TracerTypes.CredentialStatus,
-  })),
-  queue: data['queue'] as TracerTypes.SyncStatusSummary['queue'],
-  recentSyncs: ((data['recent_syncs'] as ApiRecord[]) ?? []).map((sync) => transformSyncLog(sync)),
-});
+const transformSyncStatus = (data: ApiRecord): TracerTypes.SyncStatusSummary => {
+  const queue = readRecord(data, 'queue');
+
+  return {
+    projectId: readString(data, 'project_id'),
+    providers: readRecordArray(data, 'providers').map((provider) => ({
+      lastValidated: readOptionalString(provider, 'last_validated'),
+      provider: readEnum(provider, 'provider', INTEGRATION_PROVIDERS, 'github'),
+      status: readEnum(provider, 'status', CREDENTIAL_STATUSES, 'active'),
+    })),
+    queue: {
+      completed: toNumber(queue?.completed),
+      failed: toNumber(queue?.failed),
+      pending: toNumber(queue?.pending),
+      processing: toNumber(queue?.processing),
+    },
+    recentSyncs: readRecordArray(data, 'recent_syncs').map((sync) => transformSyncLog(sync)),
+  };
+};
 
 const buildConflictStats = (
   conflicts: ApiRecord | undefined,
@@ -123,16 +255,16 @@ const buildMappingsStats = (
   mappings: ApiRecord | undefined,
 ): TracerTypes.IntegrationStats['mappings'] => ({
   active: toNumber(mappings?.active),
-  byProvider: (mappings?.by_provider as Record<string, number>) ?? {},
+  byProvider: mappings ? readNumberRecord(mappings, 'by_provider') : {},
   total: toNumber(mappings?.total),
 });
 
 const buildProviderStats = (data: ApiRecord): TracerTypes.IntegrationStats['providers'] => {
-  const providers = (data['providers'] as ApiRecord[] | undefined) ?? [];
+  const providers = readRecordArray(data, 'providers');
   return providers.map((provider) => ({
-    credentialType: provider['credential_type'] as TracerTypes.CredentialType,
-    provider: provider['provider'] as TracerTypes.IntegrationProvider,
-    status: provider['status'] as TracerTypes.CredentialStatus,
+    credentialType: readEnum(provider, 'credential_type', CREDENTIAL_TYPES, 'oauth'),
+    provider: readEnum(provider, 'provider', INTEGRATION_PROVIDERS, 'github'),
+    status: readEnum(provider, 'status', CREDENTIAL_STATUSES, 'active'),
   }));
 };
 
@@ -143,14 +275,14 @@ const buildSyncStats = (sync: ApiRecord | undefined): TracerTypes.IntegrationSta
 });
 
 const transformStats = (data: ApiRecord): TracerTypes.IntegrationStats => {
-  const mappings = data['mappings'] as ApiRecord | undefined;
-  const sync = data['sync'] as ApiRecord | undefined;
-  const conflicts = data['conflicts'] as ApiRecord | undefined;
+  const mappings = readRecord(data, 'mappings');
+  const sync = readRecord(data, 'sync');
+  const conflicts = readRecord(data, 'conflicts');
 
   return {
     conflicts: buildConflictStats(conflicts),
     mappings: buildMappingsStats(mappings),
-    projectId: data['project_id'] as string,
+    projectId: readString(data, 'project_id'),
     providers: buildProviderStats(data),
     sync: buildSyncStats(sync),
   };

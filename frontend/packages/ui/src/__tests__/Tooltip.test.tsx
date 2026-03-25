@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import * as Vitest from 'vitest';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/Tooltip';
 
-describe('Tooltip', () => {
-  it('renders the trigger element', () => {
+Vitest.describe('Tooltip component', () => {
+  Vitest.it('renders the trigger element', () => {
     render(
       <TooltipProvider>
         <Tooltip>
@@ -13,10 +13,10 @@ describe('Tooltip', () => {
         </Tooltip>
       </TooltipProvider>,
     );
-    expect(screen.getByText('Hover me')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Hover me')).toBeInTheDocument();
   });
 
-  it('renders tooltip content when open', () => {
+  Vitest.it('renders tooltip content when open', () => {
     render(
       <TooltipProvider>
         <Tooltip open>
@@ -27,10 +27,10 @@ describe('Tooltip', () => {
     );
     // Radix renders tooltip text in both the visible content and an sr-only span
     const matches = screen.getAllByText('Tooltip content');
-    expect(matches.length).toBeGreaterThanOrEqual(1);
+    Vitest.expect(matches.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders with custom className on TooltipContent', () => {
+  Vitest.it('renders with custom className on TooltipContent', () => {
     render(
       <TooltipProvider>
         <Tooltip open>
@@ -42,10 +42,10 @@ describe('Tooltip', () => {
     // Radix duplicates text (visible + sr-only), find the one with our className
     const matches = screen.getAllByText('Custom Content');
     const withClass = matches.find((el) => el.className.includes('custom-tooltip'));
-    expect(withClass).toBeDefined();
+    Vitest.expect(withClass).toBeDefined();
   });
 
-  it('does not render tooltip content when closed', () => {
+  Vitest.it('does not render tooltip content when closed', () => {
     render(
       <TooltipProvider>
         <Tooltip open={false}>
@@ -54,6 +54,6 @@ describe('Tooltip', () => {
         </Tooltip>
       </TooltipProvider>,
     );
-    expect(screen.queryByText('Hidden')).not.toBeInTheDocument();
+    Vitest.expect(screen.queryByText('Hidden')).not.toBeInTheDocument();
   });
 });

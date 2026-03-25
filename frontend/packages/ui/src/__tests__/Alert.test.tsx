@@ -1,103 +1,103 @@
 import { render, screen } from '@testing-library/react';
 import { createRef } from 'react';
-import { describe, expect, it } from 'vitest';
+import * as Vitest from 'vitest';
 
 import { Alert, AlertDescription, AlertTitle } from '../components/Alert';
 
-describe('Alert', () => {
-  it('renders with role=alert', () => {
+Vitest.describe('Alert component', () => {
+  Vitest.it('renders with role=alert', () => {
     render(<Alert>Alert content</Alert>);
-    expect(screen.getByRole('alert')).toBeInTheDocument();
+    Vitest.expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
-  it('renders children', () => {
+  Vitest.it('renders children', () => {
     render(<Alert>Warning message</Alert>);
-    expect(screen.getByText('Warning message')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Warning message')).toBeInTheDocument();
   });
 
-  it('applies default variant', () => {
+  Vitest.it('applies default variant', () => {
     render(<Alert>Default</Alert>);
     const alert = screen.getByRole('alert');
-    expect(alert.className).toContain('bg-background');
+    Vitest.expect(alert.className).toContain('bg-background');
   });
 
-  it('applies destructive variant', () => {
+  Vitest.it('applies destructive variant', () => {
     render(<Alert variant='destructive'>Error</Alert>);
     const alert = screen.getByRole('alert');
-    expect(alert.className).toContain('border-destructive');
+    Vitest.expect(alert.className).toContain('border-destructive');
   });
 
-  it('applies success variant', () => {
+  Vitest.it('applies success variant', () => {
     render(<Alert variant='success'>Success</Alert>);
     const alert = screen.getByRole('alert');
-    expect(alert.className).toContain('border-green-500');
+    Vitest.expect(alert.className).toContain('border-green-500');
   });
 
-  it('applies warning variant', () => {
+  Vitest.it('applies warning variant', () => {
     render(<Alert variant='warning'>Warning</Alert>);
     const alert = screen.getByRole('alert');
-    expect(alert.className).toContain('border-yellow-500');
+    Vitest.expect(alert.className).toContain('border-yellow-500');
   });
 
-  it('forwards ref', () => {
+  Vitest.it('forwards ref', () => {
     const ref = createRef<HTMLDivElement>();
     render(<Alert ref={ref}>Ref test</Alert>);
-    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    Vitest.expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
 
-  it('merges custom className', () => {
+  Vitest.it('merges custom className', () => {
     render(<Alert className='my-alert'>Custom</Alert>);
     const alert = screen.getByRole('alert');
-    expect(alert.className).toContain('my-alert');
+    Vitest.expect(alert.className).toContain('my-alert');
   });
 });
 
-describe('AlertTitle', () => {
-  it('renders as h5 element', () => {
+Vitest.describe('AlertTitle component', () => {
+  Vitest.it('renders as h5 element', () => {
     render(<AlertTitle>Title</AlertTitle>);
     const title = screen.getByText('Title');
-    expect(title.tagName).toBe('H5');
+    Vitest.expect(title.tagName).toBe('H5');
   });
 
-  it('forwards ref', () => {
+  Vitest.it('forwards ref', () => {
     const ref = createRef<HTMLParagraphElement>();
     render(<AlertTitle ref={ref}>Ref title</AlertTitle>);
-    expect(ref.current).toBeInstanceOf(HTMLHeadingElement);
+    Vitest.expect(ref.current).toBeInstanceOf(HTMLHeadingElement);
   });
 
-  it('applies custom className', () => {
+  Vitest.it('applies custom className', () => {
     render(<AlertTitle className='custom-title'>Title</AlertTitle>);
-    expect(screen.getByText('Title').className).toContain('custom-title');
+    Vitest.expect(screen.getByText('Title').className).toContain('custom-title');
   });
 });
 
-describe('AlertDescription', () => {
-  it('renders children', () => {
+Vitest.describe('AlertDescription component', () => {
+  Vitest.it('renders children', () => {
     render(<AlertDescription>Description text</AlertDescription>);
-    expect(screen.getByText('Description text')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Description text')).toBeInTheDocument();
   });
 
-  it('renders as div element', () => {
+  Vitest.it('renders as div element', () => {
     render(<AlertDescription>Desc</AlertDescription>);
-    expect(screen.getByText('Desc').tagName).toBe('DIV');
+    Vitest.expect(screen.getByText('Desc').tagName).toBe('DIV');
   });
 
-  it('forwards ref', () => {
+  Vitest.it('forwards ref', () => {
     const ref = createRef<HTMLParagraphElement>();
     render(<AlertDescription ref={ref}>Ref desc</AlertDescription>);
-    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    Vitest.expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
 });
 
-describe('Alert composition', () => {
-  it('renders title and description together', () => {
+Vitest.describe('Alert composition', () => {
+  Vitest.it('renders title and description together', () => {
     render(
       <Alert>
         <AlertTitle>Error occurred</AlertTitle>
         <AlertDescription>Please try again later.</AlertDescription>
       </Alert>,
     );
-    expect(screen.getByText('Error occurred')).toBeInTheDocument();
-    expect(screen.getByText('Please try again later.')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Error occurred')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Please try again later.')).toBeInTheDocument();
   });
 });

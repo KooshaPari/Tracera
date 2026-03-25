@@ -12,6 +12,8 @@ let tokenFetchPromise: Promise<string> | null = null;
 /**
  * Fetch CSRF token from server
  * Uses a promise to avoid race conditions if called multiple times
+ *
+ * @returns {Promise<string>} The current valid CSRF token.
  */
 export const fetchCSRFToken = async (): Promise<string> => {
   // If a fetch is already in progress, return that promise
@@ -64,13 +66,15 @@ export const fetchCSRFToken = async (): Promise<string> => {
 /**
  * Get current CSRF token without fetching
  * Returns null if token not loaded yet
+ *
+ * @returns {string | null} The cached CSRF token when available.
  */
-export const getCSRFToken = (): string | null => {
-  return csrfToken;
-};
+export const getCSRFToken = (): string | null => csrfToken;
 
 /**
  * Set CSRF token (used after receiving new token in response)
+ *
+ * @param {string} token The CSRF token received from the backend.
  */
 export const setCSRFToken = (token: string): void => {
   csrfToken = token;
@@ -79,6 +83,8 @@ export const setCSRFToken = (token: string): void => {
 
 /**
  * Refresh CSRF token by fetching a new one
+ *
+ * @returns {Promise<string>} A fresh CSRF token from the backend.
  */
 export const refreshCSRFToken = async (): Promise<string> => {
   csrfToken = null; // Clear current token
@@ -89,6 +95,8 @@ export const refreshCSRFToken = async (): Promise<string> => {
 /**
  * Initialize CSRF protection on app startup
  * This should be called once when the app initializes
+ *
+ * @returns {Promise<void>} Resolves after the initialization attempt completes.
  */
 export const initializeCSRF = async (): Promise<void> => {
   try {
@@ -103,14 +111,19 @@ export const initializeCSRF = async (): Promise<void> => {
 
 /**
  * Check if a request method requires CSRF protection
+ *
+ * @param {string} method The HTTP method being evaluated.
+ * @returns {boolean} Whether the method mutates server state.
  */
-const isStateChangingRequest = (method: string): boolean => {
-  return ['DELETE', 'PATCH', 'POST', 'PUT'].includes(method.toUpperCase());
-};
+const isStateChangingRequest = (method: string): boolean =>
+  ['DELETE', 'PATCH', 'POST', 'PUT'].includes(method.toUpperCase());
 
 /**
  * Get CSRF headers to include in requests
  * Returns headers object with CSRF token if request requires it
+ *
+ * @param {string} method The HTTP method for the outgoing request.
+ * @returns {Record<string, string>} The CSRF headers that should be attached to the request.
  */
 export const getCSRFHeaders = (method: string): Record<string, string> => {
   if (!isStateChangingRequest(method)) {
@@ -130,6 +143,9 @@ export const getCSRFHeaders = (method: string): Record<string, string> => {
 /**
  * Extract CSRF token from response (if server sends new token)
  * Some servers may send token in response header or body
+ *
+ * @param {Response} response The HTTP response that may contain a refreshed token.
+ * @returns {string | null} The extracted token, or `null` when no token is present.
  */
 export const extractCSRFTokenFromResponse = (response: Response): string | null => {
   // Check for token in response header
@@ -153,8 +169,16 @@ export const extractCSRFTokenFromResponse = (response: Response): string | null 
 /**
  * Middleware for API client to automatically include CSRF tokens
  * This should be used with the API client to inject tokens into all requests
+ *
+ * @returns {(request: Request) => Promise<Request>} A request interceptor that attaches CSRF headers when needed.
  */
-export const createCSRFRequestInterceptor = () => {
+export function createCSRFRequestInterceptor(): (request: Request) => Promise<Request> {
+  /**
+   * Inject the current CSRF token into a cloned request when required.
+   *
+   * @param {Request} request The outgoing request to clone and decorate.
+   * @returns {Promise<Request>} The cloned request with CSRF headers when needed.
+   */
   return async (request: Request): Promise<Request> => {
     // Clone the request to modify it
     const newRequest = request.clone();
@@ -178,11 +202,14 @@ export const createCSRFRequestInterceptor = () => {
 
     return newRequest;
   };
-};
+}
 
 /**
  * Middleware for API client to handle CSRF errors
  * Returns true if error was a CSRF error and was handled
+ *
+ * @param {Response} response The response to inspect for CSRF failures.
+ * @returns {Promise<boolean>} Whether the error was identified as a CSRF failure and handled.
  */
 export const handleCSRFError = async (response: Response): Promise<boolean> => {
   // Check for CSRF-related 403 errors
@@ -220,6 +247,8 @@ export const handleCSRFError = async (response: Response): Promise<boolean> => {
 /**
  * Get all CSRF-related cookies
  * Useful for debugging
+ *
+ * @returns {Record<string, string>} A map of cookie names to cookie values.
  */
 export const getCSRFCookies = (): Record<string, string> => {
   const cookies: Record<string, string> = {};
@@ -250,11 +279,15 @@ export const clearCSRFToken = (): void => {
 
 /**
  * Debug helper to log CSRF state
+ *
+ * @returns {void}
  */
 export const logCSRFState = (): void => {
+  const tokenPreviewLength = 20;
   logger.group('[CSRF] Current State');
   logger.info('Token in memory:', csrfToken ? 'Yes' : 'No');
-  logger.info('Token value:', `${csrfToken?.substring(0, 20)}...` || 'None');
+  const tokenPreview = csrfToken ? `${csrfToken.slice(0, tokenPreviewLength)}...` : 'None';
+  logger.info('Token value:', tokenPreview);
   logger.info('Cookies:', getCSRFCookies());
   logger.groupEnd();
 };

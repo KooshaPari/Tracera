@@ -15,6 +15,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
+          cache: 'npm'
+        with:
           node-version: '20'
 
       - uses: actions/setup-go@v4
@@ -37,6 +39,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
+          cache: 'npm'
+        with:
           node-version: '20'
 
       - name: Install bun
@@ -53,13 +57,11 @@ jobs:
         run: |
           cd frontend/apps/web
           bun run test:e2e -- websocket-validation.spec.ts
-        continue-on-error: true
 
       - name: Run Playwright route validation
         run: |
           cd frontend/apps/web
           bun run test:e2e -- route-validation.spec.ts
-        continue-on-error: true
 
       - name: Upload Playwright report
         if: always()
@@ -78,6 +80,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
+          cache: 'npm'
+        with:
           node-version: '20'
 
       - name: Install bun
@@ -94,7 +98,6 @@ jobs:
         run: |
           cd frontend/apps/web
           bun run test -- src/__tests__/api/routes-validation.comprehensive.test.ts
-        continue-on-error: true
 
       - name: Upload Vitest report
         if: always()
@@ -119,13 +122,11 @@ jobs:
         run: |
           cd backend
           go test -v ./internal/handlers -run TestAllRoutes -race
-        continue-on-error: true
 
       - name: Run Go WebSocket CORS validation
         run: |
           cd backend
           go test -v ./internal/handlers -run TestWebSocketCORSHeaders -race
-        continue-on-error: true
 
       - name: Upload Go test results
         if: always()
@@ -162,7 +163,6 @@ jobs:
         run: |
           cd backend
           uv run pytest tests/unit/api/test_routes_validation.py -v --tb=short
-        continue-on-error: true
 
       - name: Upload Python test results
         if: always()

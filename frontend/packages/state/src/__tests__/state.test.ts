@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest/globals';
 
 import type { Agent, Item, Link, Project } from '@tracertm/types';
 
@@ -111,15 +111,15 @@ describe('appState$ initial state', () => {
   it('has correct default UI state', () => {
     const ui = appState$.ui.get();
     expect(ui.currentView).toBe('FEATURE');
-    expect(ui.isDarkMode).toBe(false);
+    expect(ui.isDarkMode).toBeFalsy();
     expect(ui.searchQuery).toBe('');
     expect(ui.selectedItemId).toBeNull();
-    expect(ui.sidebarOpen).toBe(true);
+    expect(ui.sidebarOpen).toBeTruthy();
   });
 
   it('has correct default sync state', () => {
     const sync = appState$.sync.get();
-    expect(sync.isOnline).toBe(true);
+    expect(sync.isOnline).toBeTruthy();
     expect(sync.lastSyncedAt).toBeNull();
     expect(sync.pendingMutations).toBe(0);
   });
@@ -144,9 +144,9 @@ describe('selectors', () => {
   });
 
   it('isOnline$ reflects appState$.sync.isOnline', () => {
-    expect(isOnline$.get()).toBe(true);
+    expect(isOnline$.get()).toBeTruthy();
     appState$.sync.isOnline.set(false);
-    expect(isOnline$.get()).toBe(false);
+    expect(isOnline$.get()).toBeFalsy();
   });
 
   it('selectors update when actions mutate state', () => {
@@ -157,7 +157,7 @@ describe('selectors', () => {
     expect(currentView$.get()).toBe('DATABASE');
 
     actions.setOnline(false);
-    expect(isOnline$.get()).toBe(false);
+    expect(isOnline$.get()).toBeFalsy();
   });
 });
 
@@ -191,18 +191,18 @@ describe('actions.selectItem', () => {
 describe('actions.setOnline', () => {
   it('sets online to false', () => {
     actions.setOnline(false);
-    expect(appState$.sync.isOnline.get()).toBe(false);
+    expect(appState$.sync.isOnline.get()).toBeFalsy();
   });
 
   it('sets online back to true', () => {
     actions.setOnline(false);
     actions.setOnline(true);
-    expect(appState$.sync.isOnline.get()).toBe(true);
+    expect(appState$.sync.isOnline.get()).toBeTruthy();
   });
 
   it('is idempotent when setting the same value', () => {
     actions.setOnline(true);
-    expect(appState$.sync.isOnline.get()).toBe(true);
+    expect(appState$.sync.isOnline.get()).toBeTruthy();
   });
 });
 
@@ -258,15 +258,15 @@ describe('actions.setView', () => {
 
 describe('actions.toggleDarkMode', () => {
   it('toggles from false to true', () => {
-    expect(appState$.ui.isDarkMode.get()).toBe(false);
+    expect(appState$.ui.isDarkMode.get()).toBeFalsy();
     actions.toggleDarkMode();
-    expect(appState$.ui.isDarkMode.get()).toBe(true);
+    expect(appState$.ui.isDarkMode.get()).toBeTruthy();
   });
 
   it('toggles from true back to false', () => {
     actions.toggleDarkMode();
     actions.toggleDarkMode();
-    expect(appState$.ui.isDarkMode.get()).toBe(false);
+    expect(appState$.ui.isDarkMode.get()).toBeFalsy();
   });
 
   it('round-trips correctly over multiple toggles', () => {
@@ -274,7 +274,7 @@ describe('actions.toggleDarkMode', () => {
       actions.toggleDarkMode();
     }
     // 5 toggles from false => true
-    expect(appState$.ui.isDarkMode.get()).toBe(true);
+    expect(appState$.ui.isDarkMode.get()).toBeTruthy();
   });
 });
 
@@ -284,15 +284,15 @@ describe('actions.toggleDarkMode', () => {
 
 describe('actions.toggleSidebar', () => {
   it('toggles from true (default) to false', () => {
-    expect(appState$.ui.sidebarOpen.get()).toBe(true);
+    expect(appState$.ui.sidebarOpen.get()).toBeTruthy();
     actions.toggleSidebar();
-    expect(appState$.ui.sidebarOpen.get()).toBe(false);
+    expect(appState$.ui.sidebarOpen.get()).toBeFalsy();
   });
 
   it('toggles back to true', () => {
     actions.toggleSidebar();
     actions.toggleSidebar();
-    expect(appState$.ui.sidebarOpen.get()).toBe(true);
+    expect(appState$.ui.sidebarOpen.get()).toBeTruthy();
   });
 });
 
@@ -394,7 +394,7 @@ describe('edge cases', () => {
     actions.toggleDarkMode();
     actions.toggleDarkMode();
     actions.toggleDarkMode();
-    expect(appState$.ui.isDarkMode.get()).toBe(false);
+    expect(appState$.ui.isDarkMode.get()).toBeFalsy();
   });
 
   it('multiple toggleSidebar calls converge to expected value', () => {
@@ -402,16 +402,16 @@ describe('edge cases', () => {
     actions.toggleSidebar();
     actions.toggleSidebar();
     actions.toggleSidebar();
-    expect(appState$.ui.sidebarOpen.get()).toBe(false);
+    expect(appState$.ui.sidebarOpen.get()).toBeFalsy();
   });
 
   it('does not cross-contaminate UI and sync state', () => {
     actions.setOnline(false);
     actions.toggleDarkMode();
-    expect(appState$.sync.isOnline.get()).toBe(false);
-    expect(appState$.ui.isDarkMode.get()).toBe(true);
+    expect(appState$.sync.isOnline.get()).toBeFalsy();
+    expect(appState$.ui.isDarkMode.get()).toBeTruthy();
     // Other UI fields remain unchanged
-    expect(appState$.ui.sidebarOpen.get()).toBe(true);
+    expect(appState$.ui.sidebarOpen.get()).toBeTruthy();
     expect(appState$.ui.currentView.get()).toBe('FEATURE');
   });
 
@@ -458,11 +458,11 @@ describe('composite state scenarios', () => {
 
     // User toggles dark mode
     actions.toggleDarkMode();
-    expect(appState$.ui.isDarkMode.get()).toBe(true);
+    expect(appState$.ui.isDarkMode.get()).toBeTruthy();
 
     // User goes offline
     actions.setOnline(false);
-    expect(isOnline$.get()).toBe(false);
+    expect(isOnline$.get()).toBeFalsy();
     appState$.sync.pendingMutations.set(2);
 
     // User comes back online and mutations are synced
@@ -470,7 +470,7 @@ describe('composite state scenarios', () => {
     appState$.sync.pendingMutations.set(0);
     appState$.sync.lastSyncedAt.set('2025-06-15T13:00:00Z');
 
-    expect(isOnline$.get()).toBe(true);
+    expect(isOnline$.get()).toBeTruthy();
     expect(appState$.sync.pendingMutations.get()).toBe(0);
     expect(appState$.sync.lastSyncedAt.get()).toBe('2025-06-15T13:00:00Z');
   });

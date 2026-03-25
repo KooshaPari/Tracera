@@ -19,7 +19,10 @@ const AuthCallback = () => {
         const state = params.get('state');
 
         if (!code) {
-          const errorDesc = params.get('error_description') ?? params.get('error') ?? 'No authorization code received';
+          const errorDesc =
+            params.get('error_description') ??
+            params.get('error') ??
+            'No authorization code received';
           throw new Error(errorDesc);
         }
 

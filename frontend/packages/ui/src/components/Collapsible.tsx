@@ -10,22 +10,25 @@ interface CollapsibleProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'o
   className?: string;
 }
 
+interface CollapsibleChildProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
 const Collapsible = React.forwardRef<HTMLDivElement, CollapsibleProps>(
-  ({ open = false, onOpenChange, children, className, ...props }, ref) => {
-    return (
-      <div ref={ref} className={cn('space-y-2', className)} {...props}>
-        {React.Children.map(children, (child) => {
-          if (React.isValidElement(child)) {
-            return React.cloneElement(child, {
-              onOpenChange,
-              open,
-            } as any);
-          }
-          return child;
-        })}
-      </div>
-    );
-  },
+  ({ open = false, onOpenChange, children, className, ...props }, ref) => (
+    <div ref={ref} className={cn('space-y-2', className)} {...props}>
+      {React.Children.map(children, (child) => {
+        if (React.isValidElement(child)) {
+          return React.cloneElement(child as React.ReactElement<CollapsibleChildProps>, {
+            onOpenChange,
+            open,
+          });
+        }
+        return child;
+      })}
+    </div>
+  ),
 );
 
 Collapsible.displayName = 'Collapsible';
@@ -42,11 +45,15 @@ interface CollapsibleTriggerProps extends Omit<
 
 const CollapsibleTrigger = React.forwardRef<HTMLButtonElement, CollapsibleTriggerProps>(
   ({ open = false, onOpenChange, children, className, ...props }, ref) => {
+    const handleClick = React.useCallback(() => {
+      onOpenChange?.(!open);
+    }, [onOpenChange, open]);
+
     return (
       <button
         ref={ref}
         type='button'
-        onClick={() => onOpenChange?.(!open)}
+        onClick={handleClick}
         className={cn('w-full flex items-center justify-between transition-all', className)}
         {...props}
       >
@@ -75,21 +82,19 @@ interface CollapsibleContentProps extends Omit<
 }
 
 const CollapsibleContent = React.forwardRef<HTMLDivElement, CollapsibleContentProps>(
-  ({ open = false, onOpenChange: _onOpenChange, children, className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'overflow-hidden transition-all duration-200',
-          open ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0',
-          className,
-        )}
-        {...props}
-      >
-        {open && children}
-      </div>
-    );
-  },
+  ({ open = false, onOpenChange: _onOpenChange, children, className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        'overflow-hidden transition-all duration-200',
+        open ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0',
+        className,
+      )}
+      {...props}
+    >
+      {open && children}
+    </div>
+  ),
 );
 
 CollapsibleContent.displayName = 'CollapsibleContent';

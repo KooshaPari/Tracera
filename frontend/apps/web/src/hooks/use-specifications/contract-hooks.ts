@@ -1,70 +1,59 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type {
-  ContractFilters,
-  CreateContractData,
-  UpdateContractData,
-} from '@/hooks/useSpecifications.api';
+import * as specificationsApi from '@/hooks/useSpecifications.api';
+import * as queryUtils from './query-utils';
 
-import {
-  createContract,
-  deleteContract,
-  fetchContract,
-  fetchContractActivities,
-  fetchContracts,
-  fetchContractStats,
-  updateContract,
-  verifyContract,
-} from '@/hooks/useSpecifications.api';
+type FetchContractsResult = Awaited<ReturnType<typeof specificationsApi.fetchContracts>>;
 
-import type { MutationResult, QueryResult } from './query-utils';
+type FetchContractResult = Awaited<ReturnType<typeof specificationsApi.fetchContract>>;
 
-import { invalidateQueries } from './query-utils';
+type CreateContractResult = Awaited<ReturnType<typeof specificationsApi.createContract>>;
 
-type FetchContractsResult = Awaited<ReturnType<typeof fetchContracts>>;
+type UpdateContractResult = Awaited<ReturnType<typeof specificationsApi.updateContract>>;
 
-type FetchContractResult = Awaited<ReturnType<typeof fetchContract>>;
+type VerifyContractResult = Awaited<ReturnType<typeof specificationsApi.verifyContract>>;
 
-type CreateContractResult = Awaited<ReturnType<typeof createContract>>;
+type FetchContractActivitiesResult = Awaited<
+  ReturnType<typeof specificationsApi.fetchContractActivities>
+>;
 
-type UpdateContractResult = Awaited<ReturnType<typeof updateContract>>;
+type FetchContractStatsResult = Awaited<ReturnType<typeof specificationsApi.fetchContractStats>>;
 
-type VerifyContractResult = Awaited<ReturnType<typeof verifyContract>>;
-
-type FetchContractActivitiesResult = Awaited<ReturnType<typeof fetchContractActivities>>;
-
-type FetchContractStatsResult = Awaited<ReturnType<typeof fetchContractStats>>;
-
-const useContracts = (filters: ContractFilters): QueryResult<FetchContractsResult> =>
+const useContracts = (
+  filters: specificationsApi.ContractFilters,
+): queryUtils.QueryResult<FetchContractsResult> =>
   useQuery({
     enabled: Boolean(filters.projectId),
     queryFn: async () => {
-      const response = await fetchContracts(filters);
+      const response = await specificationsApi.fetchContracts(filters);
       return response;
     },
     queryKey: ['contracts', JSON.stringify(filters)],
   });
 
-const useContract = (id: string): QueryResult<FetchContractResult> =>
+const useContract = (id: string): queryUtils.QueryResult<FetchContractResult> =>
   useQuery({
     enabled: Boolean(id),
     queryFn: async () => {
-      const response = await fetchContract(id);
+      const response = await specificationsApi.fetchContract(id);
       return response;
     },
     queryKey: ['contracts', id],
   });
 
-const useCreateContract = (): MutationResult<CreateContractResult, CreateContractData> => {
+const useCreateContract = (): queryUtils.MutationResult<
+  CreateContractResult,
+  specificationsApi.CreateContractData
+> => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateContractData) => {
-      const response = await createContract(data);
+    mutationFn: async (data: specificationsApi.CreateContractData) => {
+      const response = await specificationsApi.createContract(data);
       return response;
     },
     onSuccess: async (_, variables) => {
-      await invalidateQueries(queryClient, [['contracts'], ['contractStats']]);
+      await queryUtils.invalidateQueries(queryClient, [['contracts'], ['contractStats']]);
       await queryClient.invalidateQueries({
         queryKey: ['specificationSummary', variables.projectId],
       });
@@ -74,30 +63,30 @@ const useCreateContract = (): MutationResult<CreateContractResult, CreateContrac
 
 const useUpdateContract = (): MutationResult<
   UpdateContractResult,
-  { id: string; data: UpdateContractData }
+  { id: string; data: specificationsApi.UpdateContractData }
 > => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateContractData }) => {
-      const response = await updateContract(id, data);
+    mutationFn: async ({ id, data }: { id: string; data: specificationsApi.UpdateContractData }) => {
+      const response = await specificationsApi.updateContract(id, data);
       return response;
     },
     onSuccess: async (_, { id }) => {
-      await invalidateQueries(queryClient, [['contracts', id], ['contracts']]);
+      await queryUtils.invalidateQueries(queryClient, [['contracts', id], ['contracts']]);
     },
   });
 };
 
-const useDeleteContract = (): MutationResult<void, string> => {
+const useDeleteContract = (): queryUtils.MutationResult<void, string> => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      await deleteContract(id);
+      await specificationsApi.deleteContract(id);
     },
     onSuccess: async () => {
-      await invalidateQueries(queryClient, [
+      await queryUtils.invalidateQueries(queryClient, [
         ['contracts'],
         ['contractStats'],
         ['specificationSummary'],
@@ -106,36 +95,40 @@ const useDeleteContract = (): MutationResult<void, string> => {
   });
 };
 
-const useVerifyContract = (): MutationResult<VerifyContractResult, string> => {
+const useVerifyContract = (): queryUtils.MutationResult<VerifyContractResult, string> => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await verifyContract(id);
+      const response = await specificationsApi.verifyContract(id);
       return response;
     },
     onSuccess: async (_, id) => {
-      await invalidateQueries(queryClient, [['contracts', id], ['contracts'], ['contractStats']]);
+      await queryUtils.invalidateQueries(queryClient, [['contracts', id], ['contracts'], ['contractStats']]);
       await queryClient.invalidateQueries({ queryKey: ['specificationSummary'] });
     },
   });
 };
 
-const useContractActivities = (contractId: string): QueryResult<FetchContractActivitiesResult> =>
+const useContractActivities = (
+  contractId: string,
+): queryUtils.QueryResult<FetchContractActivitiesResult> =>
   useQuery({
     enabled: Boolean(contractId),
     queryFn: async () => {
-      const response = await fetchContractActivities(contractId);
+      const response = await specificationsApi.fetchContractActivities(contractId);
       return response;
     },
     queryKey: ['contractActivities', contractId],
   });
 
-const useContractStats = (projectId: string): QueryResult<FetchContractStatsResult> =>
+const useContractStats = (
+  projectId: string,
+): queryUtils.QueryResult<FetchContractStatsResult> =>
   useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => {
-      const response = await fetchContractStats(projectId);
+      const response = await specificationsApi.fetchContractStats(projectId);
       return response;
     },
     queryKey: ['contractStats', projectId],

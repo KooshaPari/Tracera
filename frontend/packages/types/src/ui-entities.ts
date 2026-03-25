@@ -130,7 +130,7 @@ export type UITrigger =
  */
 export interface DesignTokenRef {
   tokenId: string;
-  tokenName: string; // e.g., "colors.primary.500"
+  tokenName: string; // E.g., "colors.primary.500"
   tokenType: DesignTokenType;
   value: string; // Resolved value
   usage: string; // How it's used: "background", "border", etc.

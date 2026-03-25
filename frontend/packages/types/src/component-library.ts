@@ -17,7 +17,7 @@ export interface ComponentLibrary {
   projectId: string;
 
   // Identity
-  name: string; // e.g., "Acme Design System"
+  name: string; // E.g., "Acme Design System"
   slug: string; // URL-safe: "acme-design-system"
   description?: string | undefined;
   version: string; // Semantic version
@@ -67,8 +67,8 @@ export interface LibraryComponent {
   projectId: string;
 
   // Identity
-  name: string; // e.g., "Button"
-  displayName: string; // e.g., "Primary Button"
+  name: string; // E.g., "Button"
+  displayName: string; // E.g., "Primary Button"
   description?: string | undefined;
 
   // Classification
@@ -190,8 +190,8 @@ export interface DesignToken {
   projectId: string;
 
   // Identity
-  name: string; // e.g., "colors.primary.500"
-  path: string[]; // e.g., ["colors", "primary", "500"]
+  name: string; // E.g., "colors.primary.500"
+  path: string[]; // E.g., ["colors", "primary", "500"]
   description?: string | undefined;
 
   // Value

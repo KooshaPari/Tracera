@@ -96,13 +96,11 @@
     "lint": {
       "inputs": [
         "src/**",
-        ".biome.json",
-        "biome.json",
         ".eslintrc*",
         ".oxlintrc.json",
         "package.json"
       ],
-      "outputs": [".eslintcache", ".biomecache"],
+      "outputs": [".eslintcache"],
       "dependsOn": [],
       "outputLogs": "hash-only"
     },

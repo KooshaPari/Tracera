@@ -40,27 +40,27 @@ export const isOnline$ = appState$.sync.isOnline;
 
 // Actions
 export const actions = {
-  selectItem: (id: string | null) => {
+  selectItem: (id: string | null): void => {
     appState$.ui.selectedItemId.set(id);
   },
 
-  setOnline: (online: boolean) => {
+  setOnline: (online: boolean): void => {
     appState$.sync.isOnline.set(online);
   },
 
-  setProject: (project: Project) => {
+  setProject: (project: Project): void => {
     appState$.currentProject.set(project);
   },
 
-  setView: (view: string) => {
+  setView: (view: string): void => {
     appState$.ui.currentView.set(view);
   },
 
-  toggleDarkMode: () => {
+  toggleDarkMode: (): void => {
     appState$.ui.isDarkMode.set(!appState$.ui.isDarkMode.get());
   },
 
-  toggleSidebar: () => {
+  toggleSidebar: (): void => {
     appState$.ui.sidebarOpen.set(!appState$.ui.sidebarOpen.get());
   },
 };

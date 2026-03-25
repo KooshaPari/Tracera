@@ -1,6 +1,4 @@
-import type { UseQueryResult } from '@tanstack/react-query';
-
-import { useQuery } from '@tanstack/react-query';
+import * as reactQuery from '@tanstack/react-query';
 
 import type * as TracerTypes from '@tracertm/types';
 
@@ -249,8 +247,8 @@ const useGitHubRepos = (
   credentialId: string,
   search?: string,
   page?: number,
-): UseQueryResult<GitHubReposResponse> =>
-  useQuery({
+): reactQuery.UseQueryResult<GitHubReposResponse> =>
+  reactQuery.useQuery({
     enabled: Boolean(credentialId),
     queryFn: async () => fetchGitHubRepos(credentialId, search, page),
     queryKey: ['integrations', 'github', 'repos', credentialId, search, page],
@@ -262,8 +260,8 @@ const useGitHubIssues = (
   repo: string,
   state?: string,
   page?: number,
-): UseQueryResult<GitHubIssuesResponse> =>
-  useQuery({
+): reactQuery.UseQueryResult<GitHubIssuesResponse> =>
+  reactQuery.useQuery({
     enabled: Boolean(credentialId) && Boolean(owner) && Boolean(repo),
     queryFn: async () => fetchGitHubIssues(credentialId, owner, repo, state, page),
     queryKey: ['integrations', 'github', 'issues', credentialId, owner, repo, state, page],
@@ -273,15 +271,15 @@ const useGitHubProjects = (
   credentialId: string,
   owner: string,
   isOrg?: boolean,
-): UseQueryResult<GitHubProjectsResponse> =>
-  useQuery({
+): reactQuery.UseQueryResult<GitHubProjectsResponse> =>
+  reactQuery.useQuery({
     enabled: Boolean(credentialId) && Boolean(owner),
     queryFn: async () => fetchGitHubProjects(credentialId, owner, isOrg),
     queryKey: ['integrations', 'github', 'projects', credentialId, owner, isOrg],
   });
 
-const useLinearTeams = (credentialId: string): UseQueryResult<LinearTeamsResponse> =>
-  useQuery({
+const useLinearTeams = (credentialId: string): reactQuery.UseQueryResult<LinearTeamsResponse> =>
+  reactQuery.useQuery({
     enabled: Boolean(credentialId),
     queryFn: async () => fetchLinearTeams(credentialId),
     queryKey: ['integrations', 'linear', 'teams', credentialId],
@@ -291,8 +289,8 @@ const useLinearIssues = (
   credentialId: string,
   teamId: string,
   first?: number,
-): UseQueryResult<LinearIssuesResponse> =>
-  useQuery({
+): reactQuery.UseQueryResult<LinearIssuesResponse> =>
+  reactQuery.useQuery({
     enabled: Boolean(credentialId) && Boolean(teamId),
     queryFn: async () => fetchLinearIssues(credentialId, teamId, first),
     queryKey: ['integrations', 'linear', 'issues', credentialId, teamId, first],
@@ -301,8 +299,8 @@ const useLinearIssues = (
 const useLinearProjects = (
   credentialId: string,
   first?: number,
-): UseQueryResult<LinearProjectsResponse> =>
-  useQuery({
+): reactQuery.UseQueryResult<LinearProjectsResponse> =>
+  reactQuery.useQuery({
     enabled: Boolean(credentialId),
     queryFn: async () => fetchLinearProjects(credentialId, first),
     queryKey: ['integrations', 'linear', 'projects', credentialId, first],

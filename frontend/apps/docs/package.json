@@ -10,7 +10,7 @@
     "start": "next start --port 3001",
     "lint": "bun run format",
     "lint:fix": "bun run format",
-    "format": "oxfmt .",
+    "format": "bun x oxfmt .",
     "openapi": "bun run scripts/generate-openapi.ts",
     "openapi:sync": "bash scripts/sync-openapi.sh",
     "search:index": "bun run scripts/build-search-index.ts",

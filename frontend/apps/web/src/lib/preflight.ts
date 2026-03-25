@@ -1,40 +1,42 @@
-type PreflightResult = {
+interface PreflightResult {
   errors: string[];
   ok: boolean;
-};
+}
 
-type PreflightCheck = {
+interface PreflightCheck {
   name: string;
   url: string;
-};
+}
 
 type PreflightState = 'checking' | 'healthy' | 'unhealthy';
 
-type PreflightUpdate = {
+interface PreflightUpdate {
   error?: string | undefined;
   hint?: string | undefined;
   isRetrying?: boolean | undefined;
   ok: boolean;
-};
+}
 
-type HealthCheckResult = {
+interface HealthCheckResult {
   error: string | null;
   hint?: string | undefined;
-};
+}
 
 type InfraStatus = 'degraded' | 'healthy' | 'unknown' | 'unhealthy';
 
-type InfraDisplay = {
+interface InfraDisplay {
   color: string;
   label: string;
   state: PreflightState;
-};
+}
 
 const DEFAULT_TIMEOUT_MS = Number('8000');
 const FULL_PERCENT = Number('100');
 const RELOAD_DELAY_MS = Number('240');
 const HTTP_UNAUTHORIZED = Number('401');
 const HTTP_FORBIDDEN = Number('403');
+const MIN_ITEM_OPACITY = Number('0.2');
+const OPACITY_STEP = Number('0.15');
 
 const PREFLIGHT_STATE_COLORS: Record<PreflightState, string> = {
   checking: '#f59e0b',
@@ -182,7 +184,9 @@ const buildCheckItems = (checks: PreflightCheck[]): string =>
 
 const getInfraItems = (checks: PreflightCheck[]): string[] => {
   const dependsOnBackend = checks.some((check) => check.name.includes('backend'));
-  if (!dependsOnBackend) return [];
+  if (!dependsOnBackend) {
+    return [];
+  }
   return ['database', 'redis', 'nats', 'go_backend', 'mcp'];
 };
 
@@ -213,7 +217,7 @@ const buildInfraSection = (infraItems: string[]): string => {
 };
 
 const renderPreflightLoading = (checks: PreflightCheck[]): void => {
-  const root = document.getElementById('root');
+  const root = document.querySelector<HTMLElement>('#root');
   if (!root) {
     throw new Error('Root element not found');
   }
@@ -253,31 +257,40 @@ const revealItem = (name: string): void => {
   }
 };
 
-let revealOrder: string[] = [];
-let revealIndex = 0;
+const revealState: { index: number; order: string[] } = {
+  index: 0,
+  order: [],
+};
 
 const setRevealOrder = (checks: PreflightCheck[]): void => {
-  revealOrder = checks.map((check) => check.name);
-  revealIndex = 0;
+  revealState.order = checks.map((check) => check.name);
+  revealState.index = 0;
   revealNext();
 };
 
 const revealNext = (): void => {
-  if (revealIndex >= revealOrder.length) return;
-  const nextName = revealOrder[revealIndex]!;
-  revealIndex += 1;
+  if (revealState.index >= revealState.order.length) {
+    return;
+  }
+  const nextName = revealState.order.at(revealState.index);
+  if (!nextName) {
+    return;
+  }
+  revealState.index += 1;
   revealItem(nextName);
   setListOpacity();
 };
 
 const setListOpacity = (): void => {
   const list = document.querySelector('[data-preflight-list]') as HTMLElement | null;
-  if (!list) return;
-  const items = Array.from(list.querySelectorAll<HTMLElement>('[data-check]'));
+  if (!list) {
+    return;
+  }
+  const items = [...list.querySelectorAll<HTMLElement>('[data-check]')];
   const total = items.length;
   items.forEach((item, index) => {
     const distance = total - index - 1;
-    const opacity = Math.max(0.2, 1 - distance * 0.15);
+    const opacity = Math.max(MIN_ITEM_OPACITY, 1 - distance * OPACITY_STEP);
     item.style.opacity = `${opacity}`;
   });
 };
@@ -285,7 +298,9 @@ const setListOpacity = (): void => {
 const scrollToLatest = (name: string): void => {
   const list = document.querySelector('[data-preflight-list]') as HTMLElement | null;
   const item = document.querySelector(`[data-check="${name}"]`) as HTMLElement | null;
-  if (!list || !item) return;
+  if (!list || !item) {
+    return;
+  }
   const top = item.offsetTop - 12;
   list.scrollTo({ top, behavior: 'smooth' });
   item.animate(
@@ -318,9 +333,17 @@ const getStatusLabel = (update: PreflightUpdate): string => {
   return 'Down';
 };
 
-const updatePreflightCheck = (name: string, update: PreflightUpdate): void => {
-  const item = document.querySelector(`[data-check="${name}"]`);
-  if (!item) return;
+const setElementState = (element: Element, state: PreflightState): void => {
+  if (element instanceof HTMLElement) {
+    element.dataset.state = state;
+  }
+};
+
+const setCheckStatusVisuals = (
+  item: Element,
+  state: PreflightState,
+  update: PreflightUpdate,
+): void => {
   const status = item.querySelector('[data-status]') as HTMLElement | null;
   const icon = item.querySelector('[data-icon]') as HTMLElement | null;
   const errorEl = item.querySelector('[data-error]') as HTMLElement | null;
@@ -328,9 +351,6 @@ const updatePreflightCheck = (name: string, update: PreflightUpdate): void => {
   const skeleton = item.querySelector('[data-skeleton]') as HTMLElement | null;
   const retryBtn = item.querySelector('[data-retry]') as HTMLButtonElement | null;
   const statusText = item.querySelector('[data-status-text]') as HTMLElement | null;
-  const state = getPreflightState(update);
-
-  revealNext();
 
   if (status) {
     status.style.background = PREFLIGHT_STATE_COLORS[state];
@@ -340,6 +360,21 @@ const updatePreflightCheck = (name: string, update: PreflightUpdate): void => {
     icon.textContent = PREFLIGHT_STATUS_ICONS[state];
     icon.style.color = PREFLIGHT_STATE_COLORS[state];
   }
+  updateStatusDetails(update, errorEl, hintEl, skeleton, retryBtn);
+  if (statusText) {
+    const statusLabel = getStatusLabel(update);
+    statusText.textContent = statusLabel;
+    statusText.style.color = PREFLIGHT_STATE_COLORS[state];
+  }
+};
+
+const updateStatusDetails = (
+  update: PreflightUpdate,
+  errorEl: HTMLElement | null,
+  hintEl: HTMLElement | null,
+  skeleton: HTMLElement | null,
+  retryBtn: HTMLButtonElement | null,
+): void => {
   if (errorEl) {
     errorEl.textContent = update.error || '';
     errorEl.style.display = update.ok ? 'none' : 'block';
@@ -355,14 +390,20 @@ const updatePreflightCheck = (name: string, update: PreflightUpdate): void => {
   if (retryBtn) {
     retryBtn.style.display = update.ok ? 'none' : 'inline-flex';
   }
-  item.setAttribute('data-state', state);
+};
+
+const updatePreflightCheck = (name: string, update: PreflightUpdate): void => {
+  const item = document.querySelector(`[data-check="${name}"]`);
+  if (!item) {
+    return;
+  }
+  const state = getPreflightState(update);
+
+  revealNext();
+  setCheckStatusVisuals(item, state, update);
+  setElementState(item, state);
   setListOpacity();
   scrollToLatest(name);
-  if (statusText) {
-    const statusLabel = getStatusLabel(update);
-    statusText.textContent = statusLabel;
-    statusText.style.color = PREFLIGHT_STATE_COLORS[state];
-  }
 };
 
 const updatePreflightProgress = (percent: number): void => {
@@ -382,11 +423,13 @@ const getInfraDisplay = (status: InfraStatus): InfraDisplay => ({
 
 const updateInfraStatus = (map: Record<string, InfraStatus>): void => {
   const list = document.querySelector('[data-infra-list]');
-  if (!list) return;
+  if (!list) {
+    return;
+  }
 
   const entries = [...list.querySelectorAll('[data-infra]')];
   entries.forEach((entry) => {
-    const key = entry.getAttribute('data-infra') || '';
+    const key = entry instanceof HTMLElement ? entry.dataset.infra || '' : '';
     const status = (map[key] || 'unknown') as InfraStatus;
     const display = getInfraDisplay(status);
     const dot = entry.querySelector('[data-infra-status]') as HTMLElement | null;
@@ -398,7 +441,7 @@ const updateInfraStatus = (map: Record<string, InfraStatus>): void => {
     if (shimmer) {
       shimmer.style.display = status === 'unknown' ? 'block' : 'none';
     }
-    entry.setAttribute('data-state', display.state);
+    setElementState(entry, display.state);
     if (text) {
       text.textContent = display.label;
       text.style.color = display.color;
@@ -407,7 +450,9 @@ const updateInfraStatus = (map: Record<string, InfraStatus>): void => {
 };
 
 const pulseItem = (element: Element | null): void => {
-  if (!element) return;
+  if (!element) {
+    return;
+  }
   element.classList.remove('preflight-fade');
   requestAnimationFrame(() => {
     element.classList.add('preflight-fade');
@@ -468,11 +513,19 @@ const checkHealth = async (target: string): Promise<HealthCheckResult> => {
 };
 
 const normalizeInfraStatus = (value?: string | null): InfraStatus | null => {
-  if (!value) return null;
+  if (!value) {
+    return null;
+  }
   const lower = value.toLowerCase();
-  if (lower === 'healthy' || lower === 'ok') return 'healthy';
-  if (lower === 'degraded') return 'degraded';
-  if (lower === 'unhealthy' || lower === 'down') return 'unhealthy';
+  if (lower === 'healthy' || lower === 'ok') {
+    return 'healthy';
+  }
+  if (lower === 'degraded') {
+    return 'degraded';
+  }
+  if (lower === 'unhealthy' || lower === 'down') {
+    return 'unhealthy';
+  }
   return null;
 };
 
@@ -493,13 +546,21 @@ const fetchPythonInfra = async (baseUrl: string): Promise<Record<string, InfraSt
     const components = data.components || {};
     const integration = data.integration || {};
     const databaseStatus = normalizeInfraStatus(components['database']?.status);
-    if (databaseStatus) status.database = databaseStatus;
+    if (databaseStatus) {
+      status.database = databaseStatus;
+    }
     const redisStatus = normalizeInfraStatus(components['redis']?.status);
-    if (redisStatus) status.redis = redisStatus;
+    if (redisStatus) {
+      status.redis = redisStatus;
+    }
     const natsStatus = normalizeInfraStatus(components['nats']?.status);
-    if (natsStatus) status.nats = natsStatus;
+    if (natsStatus) {
+      status.nats = natsStatus;
+    }
     const goStatus = normalizeInfraStatus(integration['go_backend']?.status);
-    if (goStatus) status.go_backend = goStatus;
+    if (goStatus) {
+      status.go_backend = goStatus;
+    }
   } catch {
     return status;
   }
@@ -571,12 +632,14 @@ const updateProgress = (completed: number, total: number): void => {
   updatePreflightProgress(percent);
 };
 
-const wireRetryButton = (check: PreflightCheck, retryHandler: () => void): void => {
+const wireRetryButton = (check: PreflightCheck, retryHandler: () => Promise<void>): void => {
   const item = document.querySelector(`[data-check="${check.name}"]`);
   const retryBtn = item?.querySelector('[data-retry]') as HTMLButtonElement | null;
   if (retryBtn) {
-    retryBtn.onclick = () => {
-      retryHandler();
+    retryBtn.onclick = (): void => {
+      retryHandler().catch((error: unknown) => {
+        throw error;
+      });
     };
   }
 };
@@ -641,8 +704,8 @@ export const runFrontendPreflight = async (): Promise<PreflightResult> => {
       statusMap,
       total: checks.length,
     });
-    wireRetryButton(check, () => {
-      retryCheck(check);
+    wireRetryButton(check, async (): Promise<void> => {
+      await retryCheck(check);
     });
   }
 
@@ -650,7 +713,7 @@ export const runFrontendPreflight = async (): Promise<PreflightResult> => {
 };
 
 export const renderPreflightFailure = (result: PreflightResult): void => {
-  const root = document.getElementById('root');
+  const root = document.querySelector<HTMLElement>('#root');
   if (!root) {
     throw new Error('Root element not found');
   }
@@ -675,12 +738,12 @@ export const renderPreflightFailure = (result: PreflightResult): void => {
 		</div>
 	`;
 
-  const retry = document.getElementById('preflight-retry');
+  const retry = document.querySelector<HTMLElement>('#preflight-retry');
   if (retry) {
-    retry.onclick = () => fadeOutAndReload();
+    retry.onclick = (): void => fadeOutAndReload();
   }
-  const refresh = document.getElementById('preflight-refresh');
+  const refresh = document.querySelector<HTMLElement>('#preflight-refresh');
   if (refresh) {
-    refresh.onclick = () => fadeOutAndReload();
+    refresh.onclick = (): void => fadeOutAndReload();
   }
 };

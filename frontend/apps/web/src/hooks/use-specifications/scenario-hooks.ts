@@ -1,49 +1,36 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { CreateScenarioData, UpdateScenarioData } from '@/hooks/useSpecifications.api';
+import * as specificationsApi from '@/hooks/useSpecifications.api';
+import * as queryUtils from './query-utils';
 
-import {
-  createScenario,
-  deleteScenario,
-  fetchProjectScenarioActivities,
-  fetchProjectScenarios,
-  fetchScenario,
-  fetchScenarioActivities,
-  fetchScenarios,
-  runScenario,
-  updateScenario,
-} from '@/hooks/useSpecifications.api';
-
-import type { MutationResult, QueryResult } from './query-utils';
-
-import { invalidateQueries } from './query-utils';
-
-type FetchScenarioActivitiesResult = Awaited<ReturnType<typeof fetchScenarioActivities>>;
-
-type FetchProjectScenariosResult = Awaited<ReturnType<typeof fetchProjectScenarios>>;
-
-type FetchProjectScenarioActivitiesResult = Awaited<
-  ReturnType<typeof fetchProjectScenarioActivities>
+type FetchScenarioActivitiesResult = Awaited<
+  ReturnType<typeof specificationsApi.fetchScenarioActivities>
 >;
 
-type FetchScenariosResult = Awaited<ReturnType<typeof fetchScenarios>>;
+type FetchProjectScenariosResult = Awaited<ReturnType<typeof specificationsApi.fetchProjectScenarios>>;
 
-type FetchScenarioResult = Awaited<ReturnType<typeof fetchScenario>>;
+type FetchProjectScenarioActivitiesResult = Awaited<
+  ReturnType<typeof specificationsApi.fetchProjectScenarioActivities>
+>;
 
-type CreateScenarioResult = Awaited<ReturnType<typeof createScenario>>;
+type FetchScenariosResult = Awaited<ReturnType<typeof specificationsApi.fetchScenarios>>;
 
-type UpdateScenarioResult = Awaited<ReturnType<typeof updateScenario>>;
+type FetchScenarioResult = Awaited<ReturnType<typeof specificationsApi.fetchScenario>>;
 
-type RunScenarioResult = Awaited<ReturnType<typeof runScenario>>;
+type CreateScenarioResult = Awaited<ReturnType<typeof specificationsApi.createScenario>>;
+
+type UpdateScenarioResult = Awaited<ReturnType<typeof specificationsApi.updateScenario>>;
+
+type RunScenarioResult = Awaited<ReturnType<typeof specificationsApi.runScenario>>;
 
 const useScenarioActivities = (
   scenarioId: string,
   options?: { limit?: number; offset?: number },
-): QueryResult<FetchScenarioActivitiesResult> =>
+): queryUtils.QueryResult<FetchScenarioActivitiesResult> =>
   useQuery({
     enabled: Boolean(scenarioId),
     queryFn: async () => {
-      const response = await fetchScenarioActivities(scenarioId, options);
+      const response = await specificationsApi.fetchScenarioActivities(scenarioId, options);
       return response;
     },
     queryKey: ['scenarioActivities', scenarioId, JSON.stringify(options)],
@@ -52,11 +39,11 @@ const useScenarioActivities = (
 const useProjectScenarios = (
   projectId: string,
   status?: string,
-): QueryResult<FetchProjectScenariosResult> =>
+): queryUtils.QueryResult<FetchProjectScenariosResult> =>
   useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => {
-      const response = await fetchProjectScenarios(projectId, status);
+      const response = await specificationsApi.fetchProjectScenarios(projectId, status);
       return response;
     },
     queryKey: ['projectScenarios', projectId, status],
@@ -71,46 +58,49 @@ const useProjectScenarioActivities = (
     since?: string;
     until?: string;
   },
-): QueryResult<FetchProjectScenarioActivitiesResult> =>
+): queryUtils.QueryResult<FetchProjectScenarioActivitiesResult> =>
   useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => {
-      const response = await fetchProjectScenarioActivities(projectId, options);
+      const response = await specificationsApi.fetchProjectScenarioActivities(projectId, options);
       return response;
     },
     queryKey: ['projectScenarioActivities', projectId, JSON.stringify(options)],
   });
 
-const useScenarios = (featureId: string): QueryResult<FetchScenariosResult> =>
+const useScenarios = (featureId: string): queryUtils.QueryResult<FetchScenariosResult> =>
   useQuery({
     enabled: Boolean(featureId),
     queryFn: async () => {
-      const response = await fetchScenarios(featureId);
+      const response = await specificationsApi.fetchScenarios(featureId);
       return response;
     },
     queryKey: ['scenarios', featureId],
   });
 
-const useScenario = (id: string): QueryResult<FetchScenarioResult> =>
+const useScenario = (id: string): queryUtils.QueryResult<FetchScenarioResult> =>
   useQuery({
     enabled: Boolean(id),
     queryFn: async () => {
-      const response = await fetchScenario(id);
+      const response = await specificationsApi.fetchScenario(id);
       return response;
     },
     queryKey: ['scenarios', id],
   });
 
-const useCreateScenario = (): MutationResult<CreateScenarioResult, CreateScenarioData> => {
+const useCreateScenario = (): queryUtils.MutationResult<
+  CreateScenarioResult,
+  specificationsApi.CreateScenarioData
+> => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateScenarioData) => {
-      const response = await createScenario(data);
+    mutationFn: async (data: specificationsApi.CreateScenarioData) => {
+      const response = await specificationsApi.createScenario(data);
       return response;
     },
     onSuccess: async () => {
-      await invalidateQueries(queryClient, [
+      await queryUtils.invalidateQueries(queryClient, [
         ['scenarios'],
         ['projectScenarios'],
         ['featureStats'],
@@ -122,30 +112,30 @@ const useCreateScenario = (): MutationResult<CreateScenarioResult, CreateScenari
 
 const useUpdateScenario = (): MutationResult<
   UpdateScenarioResult,
-  { id: string; data: UpdateScenarioData }
+  { id: string; data: specificationsApi.UpdateScenarioData }
 > => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateScenarioData }) => {
-      const response = await updateScenario(id, data);
+    mutationFn: async ({ id, data }: { id: string; data: specificationsApi.UpdateScenarioData }) => {
+      const response = await specificationsApi.updateScenario(id, data);
       return response;
     },
     onSuccess: async (_, { id }) => {
-      await invalidateQueries(queryClient, [['scenarios', id], ['scenarios'], ['featureStats']]);
+      await queryUtils.invalidateQueries(queryClient, [['scenarios', id], ['scenarios'], ['featureStats']]);
     },
   });
 };
 
-const useDeleteScenario = (): MutationResult<void, string> => {
+const useDeleteScenario = (): queryUtils.MutationResult<void, string> => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      await deleteScenario(id);
+      await specificationsApi.deleteScenario(id);
     },
     onSuccess: async () => {
-      await invalidateQueries(queryClient, [
+      await queryUtils.invalidateQueries(queryClient, [
         ['scenarios'],
         ['projectScenarios'],
         ['featureStats'],
@@ -155,16 +145,16 @@ const useDeleteScenario = (): MutationResult<void, string> => {
   });
 };
 
-const useRunScenario = (): MutationResult<RunScenarioResult, string> => {
+const useRunScenario = (): queryUtils.MutationResult<RunScenarioResult, string> => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await runScenario(id);
+      const response = await specificationsApi.runScenario(id);
       return response;
     },
     onSuccess: async (_, id) => {
-      await invalidateQueries(queryClient, [['scenarios', id], ['scenarios'], ['featureStats']]);
+      await queryUtils.invalidateQueries(queryClient, [['scenarios', id], ['scenarios'], ['featureStats']]);
       await queryClient.invalidateQueries({ queryKey: ['specificationSummary'] });
     },
   });

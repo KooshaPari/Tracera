@@ -1,3 +1,5 @@
+import type { ComponentType, JSX } from 'react';
+
 import { AlertCircle, CheckCircle2, GitBranch, Zap } from 'lucide-react';
 
 import { Badge, cn } from '@tracertm/ui';
@@ -15,7 +17,7 @@ const stepConfig: Record<
   {
     color: string;
     bgColor: string;
-    icon: React.ComponentType<{ className?: string }>;
+    icon: ComponentType<{ className?: string }>;
     description: string;
   }
 > = {
@@ -57,7 +59,7 @@ const stepConfig: Record<
   },
 };
 
-export function StepBadge({ type, className, compact = false }: StepBadgeProps) {
+export function StepBadge({ type, className, compact = false }: StepBadgeProps): JSX.Element {
   const config = stepConfig[type];
   const Icon = config.icon;
 

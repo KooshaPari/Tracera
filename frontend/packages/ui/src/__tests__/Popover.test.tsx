@@ -1,20 +1,20 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import * as Vitest from 'vitest';
 
 import { Popover, PopoverContent, PopoverTrigger } from '../components/Popover';
 
-describe('Popover', () => {
-  it('renders the trigger', () => {
+Vitest.describe('Popover component', () => {
+  Vitest.it('renders the trigger', () => {
     render(
       <Popover>
         <PopoverTrigger>Open Popover</PopoverTrigger>
         <PopoverContent>Popover body</PopoverContent>
       </Popover>,
     );
-    expect(screen.getByText('Open Popover')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Open Popover')).toBeInTheDocument();
   });
 
-  it('opens popover when trigger is clicked', () => {
+  Vitest.it('opens popover when trigger is clicked', () => {
     render(
       <Popover>
         <PopoverTrigger>Open</PopoverTrigger>
@@ -22,26 +22,26 @@ describe('Popover', () => {
       </Popover>,
     );
     fireEvent.click(screen.getByText('Open'));
-    expect(screen.getByText('Popover content here')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Popover content here')).toBeInTheDocument();
   });
 
-  it('renders popover content when open', () => {
+  Vitest.it('renders popover content when open', () => {
     render(
       <Popover open>
         <PopoverTrigger>Trigger</PopoverTrigger>
         <PopoverContent>Always visible</PopoverContent>
       </Popover>,
     );
-    expect(screen.getByText('Always visible')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Always visible')).toBeInTheDocument();
   });
 
-  it('applies custom className to PopoverContent', () => {
+  Vitest.it('applies custom className to PopoverContent', () => {
     render(
       <Popover open>
         <PopoverTrigger>Trigger</PopoverTrigger>
         <PopoverContent className='custom-popover'>Content</PopoverContent>
       </Popover>,
     );
-    expect(screen.getByText('Content').className).toContain('custom-popover');
+    Vitest.expect(screen.getByText('Content').className).toContain('custom-popover');
   });
 });

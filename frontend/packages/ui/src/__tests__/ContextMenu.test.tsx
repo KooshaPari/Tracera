@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import * as Vitest from 'vitest';
 
 import {
   ContextMenu,
@@ -23,8 +23,8 @@ const openContextMenu = () => {
   fireEvent.contextMenu(trigger);
 };
 
-describe('ContextMenu', () => {
-  it('renders the trigger', () => {
+Vitest.describe('ContextMenu component', () => {
+  Vitest.it('renders the trigger', () => {
     render(
       <ContextMenu>
         <ContextMenuTrigger data-testid='ctx-trigger'>Right click me</ContextMenuTrigger>
@@ -33,10 +33,10 @@ describe('ContextMenu', () => {
         </ContextMenuContent>
       </ContextMenu>,
     );
-    expect(screen.getByText('Right click me')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Right click me')).toBeInTheDocument();
   });
 
-  it('opens context menu on right click and shows items', () => {
+  Vitest.it('opens context menu on right click and shows items', () => {
     render(
       <ContextMenu>
         <ContextMenuTrigger data-testid='ctx-trigger'>Right click</ContextMenuTrigger>
@@ -47,11 +47,11 @@ describe('ContextMenu', () => {
       </ContextMenu>,
     );
     openContextMenu();
-    expect(screen.getByText('Edit')).toBeInTheDocument();
-    expect(screen.getByText('Delete')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Edit')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Delete')).toBeInTheDocument();
   });
 
-  it('renders menu item without inset', () => {
+  Vitest.it('renders menu item without inset', () => {
     render(
       <ContextMenu>
         <ContextMenuTrigger data-testid='ctx-trigger'>Right click</ContextMenuTrigger>
@@ -61,10 +61,10 @@ describe('ContextMenu', () => {
       </ContextMenu>,
     );
     openContextMenu();
-    expect(screen.getByText('No Inset').className).not.toContain('pl-8');
+    Vitest.expect(screen.getByText('No Inset').className).not.toContain('pl-8');
   });
 
-  it('renders menu item with inset', () => {
+  Vitest.it('renders menu item with inset', () => {
     render(
       <ContextMenu>
         <ContextMenuTrigger data-testid='ctx-trigger'>Right click</ContextMenuTrigger>
@@ -74,10 +74,10 @@ describe('ContextMenu', () => {
       </ContextMenu>,
     );
     openContextMenu();
-    expect(screen.getByText('Inset Item').className).toContain('pl-8');
+    Vitest.expect(screen.getByText('Inset Item').className).toContain('pl-8');
   });
 
-  it('renders label without inset', () => {
+  Vitest.it('renders label without inset', () => {
     render(
       <ContextMenu>
         <ContextMenuTrigger data-testid='ctx-trigger'>Right click</ContextMenuTrigger>
@@ -87,10 +87,10 @@ describe('ContextMenu', () => {
       </ContextMenu>,
     );
     openContextMenu();
-    expect(screen.getByText('Label').className).not.toContain('pl-8');
+    Vitest.expect(screen.getByText('Label').className).not.toContain('pl-8');
   });
 
-  it('renders label with inset', () => {
+  Vitest.it('renders label with inset', () => {
     render(
       <ContextMenu>
         <ContextMenuTrigger data-testid='ctx-trigger'>Right click</ContextMenuTrigger>
@@ -100,10 +100,10 @@ describe('ContextMenu', () => {
       </ContextMenu>,
     );
     openContextMenu();
-    expect(screen.getByText('Inset Label').className).toContain('pl-8');
+    Vitest.expect(screen.getByText('Inset Label').className).toContain('pl-8');
   });
 
-  it('renders separator', () => {
+  Vitest.it('renders separator', () => {
     render(
       <ContextMenu>
         <ContextMenuTrigger data-testid='ctx-trigger'>Right click</ContextMenuTrigger>
@@ -116,10 +116,10 @@ describe('ContextMenu', () => {
     );
     openContextMenu();
     const seps = document.querySelectorAll("[role='separator']");
-    expect(seps.length).toBeGreaterThan(0);
+    Vitest.expect(seps.length).toBeGreaterThan(0);
   });
 
-  it('renders checkbox item with checked=undefined', () => {
+  Vitest.it('renders checkbox item with checked=undefined', () => {
     render(
       <ContextMenu>
         <ContextMenuTrigger data-testid='ctx-trigger'>Right click</ContextMenuTrigger>
@@ -129,10 +129,10 @@ describe('ContextMenu', () => {
       </ContextMenu>,
     );
     openContextMenu();
-    expect(screen.getByText('Unchecked')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Unchecked')).toBeInTheDocument();
   });
 
-  it('renders checkbox item with checked=true', () => {
+  Vitest.it('renders checkbox item with checked=true', () => {
     render(
       <ContextMenu>
         <ContextMenuTrigger data-testid='ctx-trigger'>Right click</ContextMenuTrigger>
@@ -142,10 +142,10 @@ describe('ContextMenu', () => {
       </ContextMenu>,
     );
     openContextMenu();
-    expect(screen.getByText('Checked')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Checked')).toBeInTheDocument();
   });
 
-  it('renders radio item inside radio group', () => {
+  Vitest.it('renders radio item inside radio group', () => {
     render(
       <ContextMenu>
         <ContextMenuTrigger data-testid='ctx-trigger'>Right click</ContextMenuTrigger>
@@ -158,11 +158,11 @@ describe('ContextMenu', () => {
       </ContextMenu>,
     );
     openContextMenu();
-    expect(screen.getByText('Option A')).toBeInTheDocument();
-    expect(screen.getByText('Option B')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Option A')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Option B')).toBeInTheDocument();
   });
 
-  it('renders sub trigger without inset', () => {
+  Vitest.it('renders sub trigger without inset', () => {
     render(
       <ContextMenu>
         <ContextMenuTrigger data-testid='ctx-trigger'>Right click</ContextMenuTrigger>
@@ -177,10 +177,10 @@ describe('ContextMenu', () => {
       </ContextMenu>,
     );
     openContextMenu();
-    expect(screen.getByText('Sub Menu').className).not.toContain('pl-8');
+    Vitest.expect(screen.getByText('Sub Menu').className).not.toContain('pl-8');
   });
 
-  it('renders sub trigger with inset', () => {
+  Vitest.it('renders sub trigger with inset', () => {
     render(
       <ContextMenu>
         <ContextMenuTrigger data-testid='ctx-trigger'>Right click</ContextMenuTrigger>
@@ -195,10 +195,10 @@ describe('ContextMenu', () => {
       </ContextMenu>,
     );
     openContextMenu();
-    expect(screen.getByText('Inset Sub').className).toContain('pl-8');
+    Vitest.expect(screen.getByText('Inset Sub').className).toContain('pl-8');
   });
 
-  it('renders content with custom className', () => {
+  Vitest.it('renders content with custom className', () => {
     render(
       <ContextMenu>
         <ContextMenuTrigger data-testid='ctx-trigger'>Right click</ContextMenuTrigger>
@@ -208,27 +208,27 @@ describe('ContextMenu', () => {
       </ContextMenu>,
     );
     openContextMenu();
-    expect(screen.getByText('Item').closest("[role='menu']")?.className).toContain(
+    Vitest.expect(screen.getByText('Item').closest("[role='menu']")?.className).toContain(
       'custom-ctx-content',
     );
   });
 });
 
-describe('ContextMenuShortcut', () => {
-  it('renders shortcut text', () => {
+Vitest.describe('ContextMenuShortcut component', () => {
+  Vitest.it('renders shortcut text', () => {
     render(<ContextMenuShortcut>Ctrl+C</ContextMenuShortcut>);
-    expect(screen.getByText('Ctrl+C')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Ctrl+C')).toBeInTheDocument();
   });
 
-  it('applies custom className', () => {
+  Vitest.it('applies custom className', () => {
     render(<ContextMenuShortcut className='custom-shortcut'>Ctrl+V</ContextMenuShortcut>);
-    expect(screen.getByText('Ctrl+V').className).toContain('custom-shortcut');
+    Vitest.expect(screen.getByText('Ctrl+V').className).toContain('custom-shortcut');
   });
 
-  it('has default styling classes', () => {
+  Vitest.it('has default styling classes', () => {
     render(<ContextMenuShortcut>Ctrl+X</ContextMenuShortcut>);
     const shortcut = screen.getByText('Ctrl+X');
-    expect(shortcut.className).toContain('ml-auto');
-    expect(shortcut.className).toContain('text-xs');
+    Vitest.expect(shortcut.className).toContain('ml-auto');
+    Vitest.expect(shortcut.className).toContain('text-xs');
   });
 });

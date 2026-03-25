@@ -555,6 +555,10 @@ export interface TemporalFilter {
 
 /**
  * Check if a lifecycle transition is valid
+ *
+ * @param {ItemLifecycle} from - Current lifecycle stage.
+ * @param {ItemLifecycle} to - Target lifecycle stage.
+ * @returns {boolean} True when transition from `from` to `to` is allowed.
  */
 export function isValidLifecycleTransition(from: ItemLifecycle, to: ItemLifecycle): boolean {
   return LIFECYCLE_TRANSITIONS[from]?.includes(to) ?? false;
@@ -562,6 +566,9 @@ export function isValidLifecycleTransition(from: ItemLifecycle, to: ItemLifecycl
 
 /**
  * Get display color for branch type
+ *
+ * @param {BranchType} branchType - Branch type to map.
+ * @returns {string} Hex color for branch type.
  */
 export function getBranchTypeColor(branchType: BranchType): string {
   const colors: Record<BranchType, string> = {
@@ -577,6 +584,9 @@ export function getBranchTypeColor(branchType: BranchType): string {
 
 /**
  * Get display color for lifecycle stage
+ *
+ * @param {ItemLifecycle} lifecycle - Lifecycle stage to map.
+ * @returns {string} Hex color for lifecycle stage.
  */
 export function getLifecycleColor(lifecycle: ItemLifecycle): string {
   const colors: Record<ItemLifecycle, string> = {
@@ -595,6 +605,9 @@ export function getLifecycleColor(lifecycle: ItemLifecycle): string {
 
 /**
  * Get display icon for branch type
+ *
+ * @param {BranchType} branchType - Branch type to map.
+ * @returns {string} Icon name for branch type.
  */
 export function getBranchTypeIcon(branchType: BranchType): string {
   const icons: Record<BranchType, string> = {

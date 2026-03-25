@@ -212,12 +212,6 @@ tasks:
       - cd backend/tests && ./test-commands.sh integration
       - uv run pytest backend/tests/integration/test_full_agent_lifecycle.py -v
 
-  test:e2e:
-    desc: "Run E2E tests"
-    cmds:
-      - echo "🧪 Running E2E tests..."
-      - cd backend/tests/e2e && go test -tags=e2e -timeout=30m ./...
-
   test:env:up:
     desc: "Start test environment (PostgreSQL, Redis, Neo4j, NATS)"
     cmds:

@@ -17,6 +17,6 @@ fix_jobs:
     command: "task go:lint"
     deps: []
   fe-lint:
-    checker: biome
+    checker: oxlint
     command: "bun run --cwd frontend lint"
     deps: []

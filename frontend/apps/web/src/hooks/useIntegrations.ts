@@ -1,6 +1,4 @@
-import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-
-import { useMutation, useQuery } from '@tanstack/react-query';
+import * as reactQuery from '@tanstack/react-query';
 
 import type { IntegrationProvider, MappingDirection } from '@tracertm/types';
 
@@ -113,16 +111,16 @@ async function fetchCredentials(projectId: string): Promise<CredentialsResponse>
   };
 }
 
-function useCredentials(projectId: string): UseQueryResult<CredentialsResponse> {
-  return useQuery({
+function useCredentials(projectId: string): reactQuery.UseQueryResult<CredentialsResponse> {
+  return reactQuery.useQuery({
     enabled: projectId !== '',
     queryFn: async () => fetchCredentials(projectId),
     queryKey: ['integrations', 'credentials', projectId],
   });
 }
 
-function useValidateCredential(): UseMutationResult<unknown, Error, string> {
-  return useMutation({
+function useValidateCredential(): reactQuery.UseMutationResult<unknown, Error, string> {
+  return reactQuery.useMutation({
     mutationFn: async (credentialId: string) => {
       const res = await fetch(
         `${API_URL}/api/v1/integrations/credentials/${credentialId}/validate`,
@@ -139,8 +137,8 @@ function useValidateCredential(): UseMutationResult<unknown, Error, string> {
   });
 }
 
-function useDeleteCredential(): UseMutationResult<unknown, Error, string> {
-  return useMutation({
+function useDeleteCredential(): reactQuery.UseMutationResult<unknown, Error, string> {
+  return reactQuery.useMutation({
     mutationFn: async (credentialId: string) => {
       const res = await fetch(`${API_URL}/api/v1/integrations/credentials/${credentialId}`, {
         headers: getAuthHeaders(),
@@ -156,8 +154,8 @@ function useDeleteCredential(): UseMutationResult<unknown, Error, string> {
 
 // ==================== OAuth ====================
 
-function useStartOAuth(): UseMutationResult<StartOAuthResponse, Error, StartOAuthInput> {
-  return useMutation({
+function useStartOAuth(): reactQuery.UseMutationResult<StartOAuthResponse, Error, StartOAuthInput> {
+  return reactQuery.useMutation({
     mutationFn: async (data: StartOAuthInput) => {
       const res = await fetch(`${API_URL}/api/v1/integrations/oauth/start`, {
         body: JSON.stringify({
@@ -179,8 +177,8 @@ function useStartOAuth(): UseMutationResult<StartOAuthResponse, Error, StartOAut
   });
 }
 
-function useCompleteOAuth(): UseMutationResult<unknown, Error, CompleteOAuthInput> {
-  return useMutation({
+function useCompleteOAuth(): reactQuery.UseMutationResult<unknown, Error, CompleteOAuthInput> {
+  return reactQuery.useMutation({
     mutationFn: async (data: CompleteOAuthInput) => {
       const res = await fetch(`${API_URL}/api/v1/integrations/oauth/callback`, {
         body: JSON.stringify({
@@ -227,16 +225,16 @@ async function fetchMappings(
 function useMappings(
   projectId: string,
   provider?: IntegrationProvider,
-): UseQueryResult<MappingsResponse> {
-  return useQuery({
+): reactQuery.UseQueryResult<MappingsResponse> {
+  return reactQuery.useQuery({
     enabled: projectId !== '',
     queryFn: async () => fetchMappings(projectId, provider),
     queryKey: ['integrations', 'mappings', projectId, provider],
   });
 }
 
-function useCreateMapping(): UseMutationResult<unknown, Error, CreateMappingInput> {
-  return useMutation({
+function useCreateMapping(): reactQuery.UseMutationResult<unknown, Error, CreateMappingInput> {
+  return reactQuery.useMutation({
     mutationFn: async (data: CreateMappingInput) => {
       const res = await fetch(`${API_URL}/api/v1/integrations/mappings`, {
         body: JSON.stringify({
@@ -264,8 +262,8 @@ function useCreateMapping(): UseMutationResult<unknown, Error, CreateMappingInpu
   });
 }
 
-function useUpdateMapping(): UseMutationResult<unknown, Error, UpdateMappingInput> {
-  return useMutation({
+function useUpdateMapping(): reactQuery.UseMutationResult<unknown, Error, UpdateMappingInput> {
+  return reactQuery.useMutation({
     mutationFn: async ({ mappingId, ...data }: UpdateMappingInput) => {
       const res = await fetch(`${API_URL}/api/v1/integrations/mappings/${mappingId}`, {
         body: JSON.stringify({
@@ -285,8 +283,8 @@ function useUpdateMapping(): UseMutationResult<unknown, Error, UpdateMappingInpu
   });
 }
 
-function useDeleteMapping(): UseMutationResult<unknown, Error, string> {
-  return useMutation({
+function useDeleteMapping(): reactQuery.UseMutationResult<unknown, Error, string> {
+  return reactQuery.useMutation({
     mutationFn: async (mappingId: string) => {
       const res = await fetch(`${API_URL}/api/v1/integrations/mappings/${mappingId}`, {
         headers: getAuthHeaders(),
@@ -302,8 +300,10 @@ function useDeleteMapping(): UseMutationResult<unknown, Error, string> {
 
 // ==================== Sync ====================
 
-function useSyncStatus(projectId: string): UseQueryResult<ReturnType<typeof transformSyncStatus>> {
-  return useQuery({
+function useSyncStatus(
+  projectId: string,
+): reactQuery.UseQueryResult<ReturnType<typeof transformSyncStatus>> {
+  return reactQuery.useQuery({
     enabled: projectId !== '',
     queryFn: async () => {
       const res = await fetch(
@@ -325,8 +325,8 @@ function useSyncQueue(
   projectId: string,
   status?: string,
   limit?: number,
-): UseQueryResult<SyncQueueResponse> {
-  return useQuery({
+): reactQuery.UseQueryResult<SyncQueueResponse> {
+  return reactQuery.useQuery({
     enabled: projectId !== '',
     queryFn: async () => {
       const params = new URLSearchParams({ project_id: projectId });
@@ -354,8 +354,8 @@ function useSyncQueue(
   });
 }
 
-function useTriggerSync(): UseMutationResult<unknown, Error, TriggerSyncInput> {
-  return useMutation({
+function useTriggerSync(): reactQuery.UseMutationResult<unknown, Error, TriggerSyncInput> {
+  return reactQuery.useMutation({
     mutationFn: async (data: TriggerSyncInput) => {
       const res = await fetch(`${API_URL}/api/v1/integrations/sync/trigger`, {
         body: JSON.stringify({
@@ -377,8 +377,11 @@ function useTriggerSync(): UseMutationResult<unknown, Error, TriggerSyncInput> {
 
 // ==================== Conflicts ====================
 
-function useConflicts(projectId: string, status?: string): UseQueryResult<ConflictsResponse> {
-  return useQuery({
+function useConflicts(
+  projectId: string,
+  status?: string,
+): reactQuery.UseQueryResult<ConflictsResponse> {
+  return reactQuery.useQuery({
     enabled: projectId !== '',
     queryFn: async () => {
       const params = new URLSearchParams({ project_id: projectId });
@@ -403,8 +406,8 @@ function useConflicts(projectId: string, status?: string): UseQueryResult<Confli
   });
 }
 
-function useResolveConflict(): UseMutationResult<unknown, Error, ResolveConflictInput> {
-  return useMutation({
+function useResolveConflict(): reactQuery.UseMutationResult<unknown, Error, ResolveConflictInput> {
+  return reactQuery.useMutation({
     mutationFn: async ({ conflictId, resolution, mergedValue }: ResolveConflictInput) => {
       const res = await fetch(`${API_URL}/api/v1/integrations/conflicts/${conflictId}/resolve`, {
         body: JSON.stringify({
@@ -424,8 +427,10 @@ function useResolveConflict(): UseMutationResult<unknown, Error, ResolveConflict
 
 // ==================== Stats ====================
 
-function useIntegrationStats(projectId: string): UseQueryResult<ReturnType<typeof transformStats>> {
-  return useQuery({
+function useIntegrationStats(
+  projectId: string,
+): reactQuery.UseQueryResult<ReturnType<typeof transformStats>> {
+  return reactQuery.useQuery({
     enabled: projectId !== '',
     queryFn: async () => {
       const res = await fetch(`${API_URL}/api/v1/integrations/stats?project_id=${projectId}`, {

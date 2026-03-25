@@ -811,10 +811,7 @@ max-statements = 50   # Relaxed from 40 to reduce per-file-ignores
 ".claude/**/*.py" = ["INP001", "ANN401", "BLE001", "RUF067", "A002", "DTZ005", "PTH118", "SIM113"]
 "find_violations.py" = ["INP001", "C901", "PLR0912", "PLR2004", "S110", "A001", "PTH118", "BLE001", "PLW2901"]
 "generate_dep_tree.py" = ["INP001", "C901", "PLR0912", "PLR0915", "S110", "A001", "PTH118", "FURB101", "BLE001"]
-# Async/path in tests: avoid blocking in async (ASYNC230/240), pathlib vs os (PTH)
 "tests/unit/services/test_ai_tools.py" = ["ASYNC230", "ASYNC240", "PTH118"]
-"tests/unit/test_error_path_api_sync.py" = ["ASYNC230"]
-"tests/unit/test_error_path_coverage.py" = ["ASYNC240"]
 "src/tracertm/agent/test_events.py" = ["S101", "S108", "PT019"]
 # Subprocess-controlled files: keep security exemptions only
 "src/tracertm/services/agents/codex_service.py" = ["S404", "PLC0415"]  # subprocess for tool execution; controlled; lazy imports

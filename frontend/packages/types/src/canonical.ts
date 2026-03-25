@@ -29,8 +29,8 @@ export type EquivalenceStrategy =
 export const STRATEGY_CONFIDENCE: Record<EquivalenceStrategy, number> = {
   api_contract: 0.9,
   co_occurrence: 0.3,
-  explicit_annotation: 1.0,
-  manual_link: 1.0,
+  explicit_annotation: 1,
+  manual_link: 1,
   naming_pattern: 0.7,
   semantic_similarity: 0.6,
   shared_canonical: 0.9,

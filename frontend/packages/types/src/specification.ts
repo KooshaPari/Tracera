@@ -211,7 +211,7 @@ export interface Feature {
   soThat?: string | undefined; // So that [benefit]
 
   status: FeatureStatus;
-  filePath?: string | undefined; // features/auth.feature
+  filePath?: string | undefined; // Features/auth.feature
   tags?: string[] | undefined;
 
   // Aggregated stats
@@ -301,12 +301,12 @@ export interface ScenarioResult {
   durationMs?: number | undefined;
 
   // Step results
-  stepResults: Array<{
+  stepResults: {
     stepNumber: number;
     status: 'pass' | 'fail' | 'pending' | 'error' | 'skipped';
     error?: string | undefined;
     durationMs?: number | undefined;
-  }>;
+  }[];
 
   // Error details
   errorMessage?: string | undefined;
@@ -331,11 +331,11 @@ export interface StepDefinition {
   implementationCode?: string | undefined;
 
   // Parameters extracted from pattern
-  parameters: Array<{
+  parameters: {
     name: string;
     type: 'string' | 'number' | 'table' | 'docString';
     description?: string | undefined;
-  }>;
+  }[];
 
   documentation?: string | undefined;
   examples?: string[] | undefined;
@@ -402,13 +402,13 @@ export interface SpecificationSummary {
     coverage: number;
   };
 
-  // Combined health score
+  // Combined Health Score
   healthScore: number; // 0-100
-  healthDetails: Array<{
+  healthDetails: {
     category: string;
     score: number;
     issues: string[];
-  }>;
+  }[];
 }
 
 // =============================================================================
@@ -428,18 +428,18 @@ export interface SpecificationLink {
 }
 
 export interface SpecificationGraph {
-  nodes: Array<{
+  nodes: {
     id: string;
     type: 'adr' | 'contract' | 'feature' | 'scenario' | 'requirement' | 'test';
     label: string;
     status: string;
     metadata?: Record<string, unknown> | undefined;
-  }>;
-  edges: Array<{
+  }[];
+  edges: {
     id: string;
     source: string;
     target: string;
     type: string;
     label?: string | undefined;
-  }>;
+  }[];
 }

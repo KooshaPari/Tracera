@@ -57,6 +57,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
+          cache: 'pip'
+        with:
           python-version: ${{ matrix.python-version }}
 
       - name: Cache uv dependencies
@@ -73,35 +75,23 @@ jobs:
       # Run fast tests first (unit tests)
       - name: Run ${{ matrix.test-type }} tests (fast first)
         id: test-run
-        uses: nick-fields/retry@v3
         env:
           DATABASE_URL: postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test
           REDIS_URL: redis://localhost:6379
           PYTHONPATH: ${{ github.workspace }}/src
-        with:
-          timeout_minutes: 15
-          max_attempts: ${{ matrix.test-type == 'e2e' && 3 || 1 }}  # Retry flaky e2e tests
-          retry_on: error
-          command: |
-            if [ "${{ matrix.test-type }}" = "unit" ]; then
-              # Unit tests: Fast tests first, then slow tests
-              uv run pytest tests/ -m "unit and not slow" -v --cov=src/tracertm --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=junit-${{ matrix.test-type }}.xml
-              uv run pytest tests/ -m "unit and slow" -v --cov=src/tracertm --cov-append --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=junit-${{ matrix.test-type }}-slow.xml
-            elif [ "${{ matrix.test-type }}" = "integration" ]; then
-              uv run pytest tests/ -m "integration and not slow" -v --junitxml=junit-${{ matrix.test-type }}.xml
-              uv run pytest tests/ -m "integration and slow" -v --junitxml=junit-${{ matrix.test-type }}-slow.xml
-            elif [ "${{ matrix.test-type }}" = "e2e" ]; then
-              uv run pytest tests/ -m "e2e" -v --junitxml=junit-${{ matrix.test-type }}.xml
-            elif [ "${{ matrix.test-type }}" = "property" ]; then
-              uv run pytest tests/test_property_based.py -v --junitxml=junit-${{ matrix.test-type }}.xml
-            fi
-
-      # Detect flaky tests (tests that pass on retry)
-      - name: Detect flaky tests
-        if: steps.test-run.outcome == 'success' && steps.test-run.outputs.total_attempts > 1
         run: |
-          echo "::warning::Flaky test detected in ${{ matrix.test-type }} tests - passed after ${{ steps.test-run.outputs.total_attempts }} attempts"
-          echo "FLAKY_TEST_DETECTED=true" >> $GITHUB_ENV
+          if [ "${{ matrix.test-type }}" = "unit" ]; then
+            # Unit tests: Fast tests first, then slow tests
+            uv run pytest tests/ -m "unit and not slow" -v --cov=src/tracertm --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=junit-${{ matrix.test-type }}.xml
+            uv run pytest tests/ -m "unit and slow" -v --cov=src/tracertm --cov-append --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=junit-${{ matrix.test-type }}-slow.xml
+          elif [ "${{ matrix.test-type }}" = "integration" ]; then
+            uv run pytest tests/ -m "integration and not slow" -v --junitxml=junit-${{ matrix.test-type }}.xml
+            uv run pytest tests/ -m "integration and slow" -v --junitxml=junit-${{ matrix.test-type }}-slow.xml
+          elif [ "${{ matrix.test-type }}" = "e2e" ]; then
+            uv run pytest tests/ -m "e2e" -v --junitxml=junit-${{ matrix.test-type }}.xml
+          elif [ "${{ matrix.test-type }}" = "property" ]; then
+            uv run pytest tests/test_property_based.py -v --junitxml=junit-${{ matrix.test-type }}.xml
+          fi
 
       # Generate test summary
       - name: Generate test summary
@@ -126,10 +116,6 @@ jobs:
             echo "| ⚠️ Errors | $ERRORS |" >> $GITHUB_STEP_SUMMARY
             echo "| ⏭️ Skipped | $SKIPPED |" >> $GITHUB_STEP_SUMMARY
 
-            if [ "${{ env.FLAKY_TEST_DETECTED }}" = "true" ]; then
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "⚠️ **Flaky test detected** - Tests passed after ${{ steps.test-run.outputs.total_attempts }} attempts" >> $GITHUB_STEP_SUMMARY
-            fi
           fi
 
       - name: Upload coverage
@@ -193,6 +179,8 @@ jobs:
 
       - name: Set up Python
         uses: actions/setup-python@v5
+        with:
+          cache: 'pip'
         with:
           python-version: "3.12"
 
@@ -275,4 +263,3 @@ jobs:
             coverage.xml
             junit-parallel.xml
           retention-days: 30
-

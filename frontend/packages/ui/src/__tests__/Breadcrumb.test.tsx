@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { createRef } from 'react';
-import { describe, expect, it } from 'vitest';
+import * as Vitest from 'vitest';
 
 import {
   Breadcrumb,
@@ -12,8 +12,8 @@ import {
   BreadcrumbSeparator,
 } from '../components/Breadcrumb';
 
-describe('Breadcrumb', () => {
-  it('renders as nav element with aria-label', () => {
+Vitest.describe('Breadcrumb component', () => {
+  Vitest.it('renders as nav element with aria-label', () => {
     render(
       <Breadcrumb>
         <BreadcrumbList>
@@ -24,10 +24,10 @@ describe('Breadcrumb', () => {
       </Breadcrumb>,
     );
     const nav = screen.getByLabelText('breadcrumb');
-    expect(nav.tagName).toBe('NAV');
+    Vitest.expect(nav.tagName).toBe('NAV');
   });
 
-  it('forwards ref', () => {
+  Vitest.it('forwards ref', () => {
     const ref = createRef<HTMLElement>();
     render(
       <Breadcrumb ref={ref}>
@@ -38,12 +38,12 @@ describe('Breadcrumb', () => {
         </BreadcrumbList>
       </Breadcrumb>,
     );
-    expect(ref.current).toBeInstanceOf(HTMLElement);
+    Vitest.expect(ref.current).toBeInstanceOf(HTMLElement);
   });
 });
 
-describe('BreadcrumbList', () => {
-  it('renders as ol element', () => {
+Vitest.describe('BreadcrumbList component', () => {
+  Vitest.it('renders as ol element', () => {
     render(
       <Breadcrumb>
         <BreadcrumbList>
@@ -53,10 +53,10 @@ describe('BreadcrumbList', () => {
         </BreadcrumbList>
       </Breadcrumb>,
     );
-    expect(screen.getByRole('list')).toBeInTheDocument();
+    Vitest.expect(screen.getByRole('list')).toBeInTheDocument();
   });
 
-  it('applies custom className', () => {
+  Vitest.it('applies custom className', () => {
     render(
       <Breadcrumb>
         <BreadcrumbList className='custom-list'>
@@ -66,12 +66,12 @@ describe('BreadcrumbList', () => {
         </BreadcrumbList>
       </Breadcrumb>,
     );
-    expect(screen.getByRole('list').className).toContain('custom-list');
+    Vitest.expect(screen.getByRole('list').className).toContain('custom-list');
   });
 });
 
-describe('BreadcrumbItem', () => {
-  it('renders as li element', () => {
+Vitest.describe('BreadcrumbItem component', () => {
+  Vitest.it('renders as li element', () => {
     render(
       <Breadcrumb>
         <BreadcrumbList>
@@ -81,12 +81,12 @@ describe('BreadcrumbItem', () => {
         </BreadcrumbList>
       </Breadcrumb>,
     );
-    expect(screen.getByRole('listitem')).toBeInTheDocument();
+    Vitest.expect(screen.getByRole('listitem')).toBeInTheDocument();
   });
 });
 
-describe('BreadcrumbLink', () => {
-  it('renders as anchor by default', () => {
+Vitest.describe('BreadcrumbLink component', () => {
+  Vitest.it('renders as anchor by default', () => {
     render(
       <Breadcrumb>
         <BreadcrumbList>
@@ -97,10 +97,10 @@ describe('BreadcrumbLink', () => {
       </Breadcrumb>,
     );
     const link = screen.getByRole('link', { name: 'Home' });
-    expect(link).toHaveAttribute('href', '/home');
+    Vitest.expect(link).toHaveAttribute('href', '/home');
   });
 
-  it('renders as child component when asChild is true', () => {
+  Vitest.it('renders as child component when asChild is true', () => {
     render(
       <Breadcrumb>
         <BreadcrumbList>
@@ -112,12 +112,12 @@ describe('BreadcrumbLink', () => {
         </BreadcrumbList>
       </Breadcrumb>,
     );
-    expect(screen.getByTestId('custom-link')).toBeInTheDocument();
+    Vitest.expect(screen.getByTestId('custom-link')).toBeInTheDocument();
   });
 });
 
-describe('BreadcrumbPage', () => {
-  it('renders with aria-current=page', () => {
+Vitest.describe('BreadcrumbPage component', () => {
+  Vitest.it('renders with aria-current=page', () => {
     render(
       <Breadcrumb>
         <BreadcrumbList>
@@ -128,13 +128,13 @@ describe('BreadcrumbPage', () => {
       </Breadcrumb>,
     );
     const page = screen.getByText('Current Page');
-    expect(page).toHaveAttribute('aria-current', 'page');
-    expect(page).toHaveAttribute('aria-disabled', 'true');
+    Vitest.expect(page).toHaveAttribute('aria-current', 'page');
+    Vitest.expect(page).toHaveAttribute('aria-disabled', 'true');
   });
 });
 
-describe('BreadcrumbSeparator', () => {
-  it('renders with aria-hidden', () => {
+Vitest.describe('BreadcrumbSeparator component', () => {
+  Vitest.it('renders with aria-hidden', () => {
     const { container } = render(
       <Breadcrumb>
         <BreadcrumbList>
@@ -149,10 +149,10 @@ describe('BreadcrumbSeparator', () => {
       </Breadcrumb>,
     );
     const separator = container.querySelector("[aria-hidden='true']");
-    expect(separator).toBeInTheDocument();
+    Vitest.expect(separator).toBeInTheDocument();
   });
 
-  it('renders custom separator content', () => {
+  Vitest.it('renders custom separator content', () => {
     render(
       <Breadcrumb>
         <BreadcrumbList>
@@ -160,12 +160,12 @@ describe('BreadcrumbSeparator', () => {
         </BreadcrumbList>
       </Breadcrumb>,
     );
-    expect(screen.getByText('/')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('/')).toBeInTheDocument();
   });
 });
 
-describe('BreadcrumbEllipsis', () => {
-  it('renders with aria-hidden', () => {
+Vitest.describe('BreadcrumbEllipsis component', () => {
+  Vitest.it('renders with aria-hidden', () => {
     const { container } = render(
       <Breadcrumb>
         <BreadcrumbList>
@@ -176,10 +176,10 @@ describe('BreadcrumbEllipsis', () => {
       </Breadcrumb>,
     );
     const ellipsis = container.querySelector("[aria-hidden='true']");
-    expect(ellipsis).toBeInTheDocument();
+    Vitest.expect(ellipsis).toBeInTheDocument();
   });
 
-  it('has sr-only text for accessibility', () => {
+  Vitest.it('has sr-only text for accessibility', () => {
     render(
       <Breadcrumb>
         <BreadcrumbList>
@@ -189,6 +189,6 @@ describe('BreadcrumbEllipsis', () => {
         </BreadcrumbList>
       </Breadcrumb>,
     );
-    expect(screen.getByText('More')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('More')).toBeInTheDocument();
   });
 });

@@ -150,3 +150,17 @@ __pycache__/
 *.pyc
 *.pyo
 .pytest_cache/
+
+
+# AI tool artifacts
+.claude/
+.codex/
+.cursor/
+.gemini/
+.kittify/
+.kilocode/
+.github/prompts/
+.github/copilot-instructions.md
+.claudeignore
+.llmignore
+worktrees/

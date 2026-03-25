@@ -1,10 +1,10 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { createRef } from 'react';
-import { describe, expect, it } from 'vitest';
+import * as Vitest from 'vitest';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/Tabs';
 
-describe('Tabs', () => {
+Vitest.describe('Tabs component', () => {
   const renderTabs = () =>
     render(
       <Tabs defaultValue='tab1'>
@@ -17,23 +17,23 @@ describe('Tabs', () => {
       </Tabs>,
     );
 
-  it('renders tab triggers', () => {
+  Vitest.it('renders tab triggers', () => {
     renderTabs();
-    expect(screen.getByRole('tab', { name: 'Tab 1' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Tab 2' })).toBeInTheDocument();
+    Vitest.expect(screen.getByRole('tab', { name: 'Tab 1' })).toBeInTheDocument();
+    Vitest.expect(screen.getByRole('tab', { name: 'Tab 2' })).toBeInTheDocument();
   });
 
-  it('renders the tablist', () => {
+  Vitest.it('renders the tablist', () => {
     renderTabs();
-    expect(screen.getByRole('tablist')).toBeInTheDocument();
+    Vitest.expect(screen.getByRole('tablist')).toBeInTheDocument();
   });
 
-  it('shows the default tab content', () => {
+  Vitest.it('shows the default tab content', () => {
     renderTabs();
-    expect(screen.getByText('Content 1')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Content 1')).toBeInTheDocument();
   });
 
-  it('renders second tab content when set as default', () => {
+  Vitest.it('renders second tab content when set as default', () => {
     render(
       <Tabs defaultValue='tab2'>
         <TabsList>
@@ -44,28 +44,31 @@ describe('Tabs', () => {
         <TabsContent value='tab2'>Content 2</TabsContent>
       </Tabs>,
     );
-    expect(screen.getByText('Content 2')).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Tab 2' })).toHaveAttribute('data-state', 'active');
+    Vitest.expect(screen.getByText('Content 2')).toBeInTheDocument();
+    Vitest.expect(screen.getByRole('tab', { name: 'Tab 2' })).toHaveAttribute(
+      'data-state',
+      'active',
+    );
   });
 
-  it('marks the active tab with data-state=active', () => {
+  Vitest.it('marks the active tab with data-state=active', () => {
     renderTabs();
     const tab1 = screen.getByRole('tab', { name: 'Tab 1' });
-    expect(tab1).toHaveAttribute('data-state', 'active');
+    Vitest.expect(tab1).toHaveAttribute('data-state', 'active');
   });
 
-  it('marks inactive tab with data-state=inactive', () => {
+  Vitest.it('marks inactive tab with data-state=inactive', () => {
     renderTabs();
     const tab2 = screen.getByRole('tab', { name: 'Tab 2' });
-    expect(tab2).toHaveAttribute('data-state', 'inactive');
+    Vitest.expect(tab2).toHaveAttribute('data-state', 'inactive');
   });
 
-  it('renders tabpanel for active content', () => {
+  Vitest.it('renders tabpanel for active content', () => {
     renderTabs();
-    expect(screen.getByRole('tabpanel')).toBeInTheDocument();
+    Vitest.expect(screen.getByRole('tabpanel')).toBeInTheDocument();
   });
 
-  it('renders controlled tabs with value prop', () => {
+  Vitest.it('renders controlled tabs with value prop', () => {
     render(
       <Tabs value='tab2'>
         <TabsList>
@@ -76,13 +79,16 @@ describe('Tabs', () => {
         <TabsContent value='tab2'>Content 2</TabsContent>
       </Tabs>,
     );
-    expect(screen.getByText('Content 2')).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Tab 2' })).toHaveAttribute('data-state', 'active');
+    Vitest.expect(screen.getByText('Content 2')).toBeInTheDocument();
+    Vitest.expect(screen.getByRole('tab', { name: 'Tab 2' })).toHaveAttribute(
+      'data-state',
+      'active',
+    );
   });
 });
 
-describe('TabsList', () => {
-  it('forwards ref', () => {
+Vitest.describe('TabsList component', () => {
+  Vitest.it('forwards ref', () => {
     const ref = createRef<HTMLDivElement>();
     render(
       <Tabs defaultValue='t1'>
@@ -91,10 +97,10 @@ describe('TabsList', () => {
         </TabsList>
       </Tabs>,
     );
-    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    Vitest.expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
 
-  it('applies custom className', () => {
+  Vitest.it('applies custom className', () => {
     render(
       <Tabs defaultValue='t1'>
         <TabsList className='custom-tabslist'>
@@ -102,12 +108,12 @@ describe('TabsList', () => {
         </TabsList>
       </Tabs>,
     );
-    expect(screen.getByRole('tablist').className).toContain('custom-tabslist');
+    Vitest.expect(screen.getByRole('tablist').className).toContain('custom-tabslist');
   });
 });
 
-describe('TabsTrigger', () => {
-  it('can be disabled', () => {
+Vitest.describe('TabsTrigger component', () => {
+  Vitest.it('can be disabled', () => {
     render(
       <Tabs defaultValue='t1'>
         <TabsList>
@@ -117,12 +123,12 @@ describe('TabsTrigger', () => {
         </TabsList>
       </Tabs>,
     );
-    expect(screen.getByRole('tab', { name: 'Disabled Tab' })).toBeDisabled();
+    Vitest.expect(screen.getByRole('tab', { name: 'Disabled Tab' })).toBeDisabled();
   });
 });
 
-describe('TabsContent', () => {
-  it('forwards ref', () => {
+Vitest.describe('TabsContent component', () => {
+  Vitest.it('forwards ref', () => {
     const ref = createRef<HTMLDivElement>();
     render(
       <Tabs defaultValue='t1'>
@@ -134,10 +140,10 @@ describe('TabsContent', () => {
         </TabsContent>
       </Tabs>,
     );
-    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    Vitest.expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
 
-  it('applies custom className', () => {
+  Vitest.it('applies custom className', () => {
     render(
       <Tabs defaultValue='t1'>
         <TabsList>
@@ -148,6 +154,6 @@ describe('TabsContent', () => {
         </TabsContent>
       </Tabs>,
     );
-    expect(screen.getByRole('tabpanel').className).toContain('custom-content');
+    Vitest.expect(screen.getByRole('tabpanel').className).toContain('custom-content');
   });
 });

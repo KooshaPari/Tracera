@@ -32,7 +32,7 @@
     "dev": "tsc --watch",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
-    "format": "biome format --write src"
+    "format": "bun x oxfmt src"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

@@ -82,6 +82,8 @@ jobs:
       - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
+          cache: 'pip'
+        with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install uv

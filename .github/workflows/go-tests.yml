@@ -58,7 +58,7 @@ jobs:
           go test -v -short -race -coverprofile=unit-coverage.out -covermode=atomic \
             -tags=unit \
             ./... \
-            -run 'Test(Models|Validation|Util)' || true
+            -run 'Test(Models|Validation|Util)'
 
           # Run actual unit tests (those that don't require external services)
           go test -v -short -race -coverprofile=unit-coverage.out -covermode=atomic \

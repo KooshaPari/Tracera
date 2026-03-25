@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { createRef } from 'react';
-import { describe, expect, it } from 'vitest';
+import * as Vitest from 'vitest';
 
 import {
   Accordion,
@@ -9,7 +9,7 @@ import {
   AccordionTrigger,
 } from '../components/Accordion';
 
-describe('Accordion', () => {
+Vitest.describe('Accordion component', () => {
   const renderAccordion = () =>
     render(
       <Accordion type='single' collapsible>
@@ -24,32 +24,32 @@ describe('Accordion', () => {
       </Accordion>,
     );
 
-  it('renders accordion triggers', () => {
+  Vitest.it('renders accordion triggers', () => {
     renderAccordion();
-    expect(screen.getByText('Section 1')).toBeInTheDocument();
-    expect(screen.getByText('Section 2')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Section 1')).toBeInTheDocument();
+    Vitest.expect(screen.getByText('Section 2')).toBeInTheDocument();
   });
 
-  it('hides content by default (data-state=closed)', () => {
+  Vitest.it('hides content by default (data-state=closed)', () => {
     renderAccordion();
     const trigger = screen.getByText('Section 1').closest('button');
-    expect(trigger).toHaveAttribute('data-state', 'closed');
+    Vitest.expect(trigger).toHaveAttribute('data-state', 'closed');
   });
 
-  it('shows content when trigger is clicked', () => {
+  Vitest.it('shows content when trigger is clicked', () => {
     renderAccordion();
     fireEvent.click(screen.getByText('Section 1'));
-    expect(screen.getByText('Content 1')).toBeVisible();
+    Vitest.expect(screen.getByText('Content 1')).toBeVisible();
   });
 
-  it('updates trigger data-state to open when clicked', () => {
+  Vitest.it('updates trigger data-state to open when clicked', () => {
     renderAccordion();
     fireEvent.click(screen.getByText('Section 1'));
     const trigger = screen.getByText('Section 1').closest('button');
-    expect(trigger).toHaveAttribute('data-state', 'open');
+    Vitest.expect(trigger).toHaveAttribute('data-state', 'open');
   });
 
-  it('supports default open value', () => {
+  Vitest.it('supports default open value', () => {
     render(
       <Accordion type='single' defaultValue='item-1'>
         <AccordionItem value='item-1'>
@@ -58,12 +58,12 @@ describe('Accordion', () => {
         </AccordionItem>
       </Accordion>,
     );
-    expect(screen.getByText('Open by default')).toBeVisible();
+    Vitest.expect(screen.getByText('Open by default')).toBeVisible();
   });
 });
 
-describe('AccordionItem', () => {
-  it('forwards ref', () => {
+Vitest.describe('AccordionItem component', () => {
+  Vitest.it('forwards ref', () => {
     const ref = createRef<HTMLDivElement>();
     render(
       <Accordion type='single' collapsible>
@@ -73,10 +73,10 @@ describe('AccordionItem', () => {
         </AccordionItem>
       </Accordion>,
     );
-    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    Vitest.expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
 
-  it('applies custom className', () => {
+  Vitest.it('applies custom className', () => {
     render(
       <Accordion type='single' collapsible>
         <AccordionItem className='custom-item' value='item-1' data-testid='accordion-item'>
@@ -85,12 +85,12 @@ describe('AccordionItem', () => {
         </AccordionItem>
       </Accordion>,
     );
-    expect(screen.getByTestId('accordion-item').className).toContain('custom-item');
+    Vitest.expect(screen.getByTestId('accordion-item').className).toContain('custom-item');
   });
 });
 
-describe('AccordionTrigger', () => {
-  it('renders as a button', () => {
+Vitest.describe('AccordionTrigger component', () => {
+  Vitest.it('renders as a button', () => {
     render(
       <Accordion type='single' collapsible>
         <AccordionItem value='item-1'>
@@ -99,6 +99,6 @@ describe('AccordionTrigger', () => {
         </AccordionItem>
       </Accordion>,
     );
-    expect(screen.getByRole('button', { name: /click me/i })).toBeInTheDocument();
+    Vitest.expect(screen.getByRole('button', { name: /click me/i })).toBeInTheDocument();
   });
 });

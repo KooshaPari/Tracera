@@ -58,7 +58,6 @@ const BreadcrumbPage = React.forwardRef<HTMLSpanElement, React.ComponentPropsWit
   ({ className, ...props }, ref) => (
     <span
       ref={ref}
-      role='link'
       aria-disabled='true'
       aria-current='page'
       className={cn('font-normal text-foreground', className)}
@@ -68,7 +67,11 @@ const BreadcrumbPage = React.forwardRef<HTMLSpanElement, React.ComponentPropsWit
 );
 BreadcrumbPage.displayName = 'BreadcrumbPage';
 
-const BreadcrumbSeparator = ({ children, className, ...props }: React.ComponentProps<'li'>) => (
+const BreadcrumbSeparator = ({
+  children,
+  className,
+  ...props
+}: React.ComponentProps<'li'>): JSX.Element => (
   <li
     role='presentation'
     aria-hidden='true'
@@ -80,7 +83,7 @@ const BreadcrumbSeparator = ({ children, className, ...props }: React.ComponentP
 );
 BreadcrumbSeparator.displayName = 'BreadcrumbSeparator';
 
-const BreadcrumbEllipsis = ({ className, ...props }: React.ComponentProps<'span'>) => (
+const BreadcrumbEllipsis = ({ className, ...props }: React.ComponentProps<'span'>): JSX.Element => (
   <span
     role='presentation'
     aria-hidden='true'

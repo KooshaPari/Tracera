@@ -1,20 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
-// Use vi.hoisted so the mock fns are available inside the hoisted vi.mock factory
-const { mockGET, mockPOST } = vi.hoisted(() => ({
-  mockGET: vi.fn(),
-  mockPOST: vi.fn(),
-}));
-
-vi.mock('openapi-fetch', () => ({
-  default: vi.fn(() => ({
-    GET: mockGET,
-    POST: mockPOST,
-  })),
-}));
-
-// Must import AFTER vi.mock so the mock takes effect at module load time
 import createClient from 'openapi-fetch';
+import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest/globals';
 
 import {
   api,
@@ -26,6 +11,19 @@ import {
   getProject,
   getProjects,
 } from '../api-client';
+
+// Use vi.hoisted so the mock fns are available inside the hoisted vi.mock factory
+const { mockGET, mockPOST } = vi.hoisted(() => ({
+  mockGET: vi.fn(),
+  mockPOST: vi.fn(),
+}));
+
+vi.mock(import('openapi-fetch'), () => ({
+  default: vi.fn(() => ({
+    GET: mockGET,
+    POST: mockPOST,
+  })),
+}));
 
 // ---------------------------------------------------------------------------
 // Test data fixtures
@@ -81,8 +79,8 @@ describe('API Client Configuration', () => {
   });
 
   it('should expose GET and POST methods on the api object', () => {
-    expect(typeof api.GET).toBe('function');
-    expect(typeof api.POST).toBe('function');
+    expectTypeOf(api.GET).toBeFunction();
+    expectTypeOf(api.POST).toBeFunction();
   });
 });
 
@@ -90,7 +88,7 @@ describe('API Client Configuration', () => {
 // Tests: getProjects
 // ---------------------------------------------------------------------------
 
-describe('getProjects', () => {
+describe('getProjects()', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -139,7 +137,7 @@ describe('getProjects', () => {
 // Tests: getProject
 // ---------------------------------------------------------------------------
 
-describe('getProject', () => {
+describe('getProject()', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -191,7 +189,7 @@ describe('getProject', () => {
 // Tests: createProject
 // ---------------------------------------------------------------------------
 
-describe('createProject', () => {
+describe('createProject()', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -248,7 +246,7 @@ describe('createProject', () => {
 // Tests: getItems
 // ---------------------------------------------------------------------------
 
-describe('getItems', () => {
+describe('getItems()', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -290,7 +288,7 @@ describe('getItems', () => {
 // Tests: createItem
 // ---------------------------------------------------------------------------
 
-describe('createItem', () => {
+describe('createItem()', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -341,7 +339,7 @@ describe('createItem', () => {
 // Tests: getLinks
 // ---------------------------------------------------------------------------
 
-describe('getLinks', () => {
+describe('getLinks()', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -375,7 +373,7 @@ describe('getLinks', () => {
 // Tests: createLink
 // ---------------------------------------------------------------------------
 
-describe('createLink', () => {
+describe('createLink()', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

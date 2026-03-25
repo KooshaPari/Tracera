@@ -10,16 +10,22 @@ const HTTP_UNAUTHORIZED = Number('401');
 const REFRESH_INTERVAL_MINUTES = Number('20');
 const SECONDS_PER_MINUTE = Number('60');
 const MILLISECONDS_PER_SECOND = Number('1000');
+const BODY_PREVIEW_LIMIT = Number('150');
 const REFRESH_INTERVAL_MS = REFRESH_INTERVAL_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
 
-// SSR-safe storage that only accesses localStorage on the client
-const noopStorage = {
-  getItem: (_key: string) => null,
-  removeItem: (_key: string) => {},
-  setItem: (_key: string, _value: string) => {},
+interface StorageAdapter {
+  getItem: (key: string) => string | null;
+  removeItem: (key: string) => void;
+  setItem: (key: string, value: string) => void;
+}
+
+const noopStorage: StorageAdapter = {
+  getItem: (_key: string): string | null => null,
+  removeItem: (_key: string): void => {},
+  setItem: (_key: string, _value: string): void => {},
 };
 
-const getStorage = () => {
+const getStorage = (): StorageAdapter => {
   // Check if we're in a browser environment with proper localStorage
   if (
     typeof globalThis.window === 'undefined' ||
@@ -227,15 +233,15 @@ const fetchJson = async (
 const createSetterActions = (
   set: StoreSetter,
 ): Pick<AuthStateActions, 'setAccount' | 'setToken' | 'setUser'> => ({
-  setAccount: (account) => {
+  setAccount: (account): void => {
     set({ account });
   },
-  setToken: (token) => {
+  setToken: (token): void => {
     const normalizedToken = normalizeToken(token);
     persistToken(normalizedToken);
     set({ token: normalizedToken });
   },
-  setUser: (user) => {
+  setUser: (user): void => {
     set({
       isAuthenticated: Boolean(user),
       user,
@@ -247,7 +253,7 @@ const createAuthKitActions = (
   set: StoreSetter,
   get: StoreGetter,
 ): Pick<AuthStateActions, 'loginWithCode' | 'redirectToAuthKit'> => ({
-  loginWithCode: async (code, state) => {
+  loginWithCode: async (code, state): Promise<void> => {
     set({ isLoading: true });
     try {
       if (!code || !state) {
@@ -294,7 +300,7 @@ const createAuthKitActions = (
       set({ isLoading: false });
     }
   },
-  redirectToAuthKit: async (screenHint?: string) => {
+  redirectToAuthKit: async (screenHint?: string): Promise<void> => {
     set({ isLoading: true });
     try {
       const params = screenHint ? `?screen_hint=${encodeURIComponent(screenHint)}` : '';
@@ -313,13 +319,14 @@ const createAuthKitActions = (
       }
 
       if (!isRecordObject(data)) {
-        const typeHint = data === undefined ? 'undefined (JSON parse failed or empty body)' : typeof data;
-        const bodyPreview =
-          typeof data === 'string'
-            ? data.slice(0, 150)
-            : data !== null && typeof data === 'object'
-              ? JSON.stringify(data).slice(0, 150)
-              : String(data);
+        const typeHint =
+          data === undefined ? 'undefined (JSON parse failed or empty body)' : typeof data;
+        let bodyPreview = String(data);
+        if (typeof data === 'string') {
+          bodyPreview = data.slice(0, BODY_PREVIEW_LIMIT);
+        } else if (data !== null && typeof data === 'object') {
+          bodyPreview = JSON.stringify(data).slice(0, BODY_PREVIEW_LIMIT);
+        }
         logger.error('AuthKit authorize: invalid response shape', {
           type: typeHint,
           bodyPreview,
@@ -331,7 +338,10 @@ const createAuthKitActions = (
         );
       }
 
-      const authorizationUrl = readStringField(data as Record<string, unknown>, 'authorization_url');
+      const authorizationUrl = readStringField(
+        data as Record<string, unknown>,
+        'authorization_url',
+      );
       if (!authorizationUrl) {
         throw new Error('No authorization URL in response');
       }
@@ -356,7 +366,7 @@ const createLogoutAction = (
   set: StoreSetter,
   get: StoreGetter,
 ): Pick<AuthStateActions, 'logout'> => ({
-  logout: async () => {
+  logout: async (): Promise<void> => {
     try {
       get().stopAutoRefresh();
       await fetchJson('/api/v1/auth/logout', {
@@ -390,7 +400,7 @@ const createSessionActions = (
   set: StoreSetter,
   get: StoreGetter,
 ): Pick<AuthStateActions, 'refreshToken' | 'switchAccount' | 'validateSession'> => ({
-  refreshToken: async () => {
+  refreshToken: async (): Promise<void> => {
     try {
       const currentRefreshToken = get().authKitRefreshToken;
       if (!currentRefreshToken) {
@@ -410,22 +420,25 @@ const createSessionActions = (
         return;
       }
 
+      const parsed = parseRefreshResponse(data);
+      if (parsed?.token) {
+        get().setToken(parsed.token);
+      }
       if (isRecordObject(data)) {
-        const newAccessToken = readStringField(data as Record<string, unknown>, 'access_token');
-        const newRefreshToken = readStringField(data as Record<string, unknown>, 'refresh_token');
-        if (newAccessToken) {
-          get().setToken(newAccessToken);
-        }
+        const newRefreshToken = readStringField(data, 'refresh_token');
         if (newRefreshToken) {
           set({ authKitRefreshToken: newRefreshToken });
         }
+      }
+      if (parsed?.user) {
+        get().setUser(parsed.user);
       }
     } catch (error) {
       logger.error('Token refresh failed:', error);
       await get().logout();
     }
   },
-  switchAccount: async (accountId: string) => {
+  switchAccount: async (accountId: string): Promise<void> => {
     if (!get().user) {
       throw new Error('Not authenticated');
     }
@@ -450,7 +463,7 @@ const createSessionActions = (
       throw error;
     }
   },
-  validateSession: async () => {
+  validateSession: async (): Promise<boolean> => {
     try {
       const token = normalizeToken(get().token);
       if (!token) {
@@ -496,7 +509,7 @@ const createProfileActions = (
   set: StoreSetter,
   get: StoreGetter,
 ): Pick<AuthStateActions, 'updateProfile'> => ({
-  updateProfile: (updates) => {
+  updateProfile: (updates): void => {
     const currentUser = get().user;
     if (currentUser) {
       set({ user: { ...currentUser, ...updates } });
@@ -508,7 +521,7 @@ const createAutoRefreshActions = (
   set: StoreSetter,
   get: StoreGetter,
 ): Pick<AuthStateActions, 'initializeAutoRefresh' | 'stopAutoRefresh'> => ({
-  initializeAutoRefresh: () => {
+  initializeAutoRefresh: (): void => {
     get().stopAutoRefresh();
 
     const timer = setInterval(() => {
@@ -521,7 +534,7 @@ const createAutoRefreshActions = (
 
     set({ refreshTimer: timer });
   },
-  stopAutoRefresh: () => {
+  stopAutoRefresh: (): void => {
     const timer = get().refreshTimer;
     if (timer) {
       clearInterval(timer);

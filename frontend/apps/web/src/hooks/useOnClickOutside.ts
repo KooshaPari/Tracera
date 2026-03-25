@@ -1,13 +1,17 @@
 import { useCallback, useEffect } from 'react';
 
-export const useOnClickOutside = <T extends HTMLElement = HTMLElement>(
-  ref: React.RefObject<T>,
+const isNodeTarget = (target: EventTarget | null): target is Node => target instanceof Node;
+
+export const useOnClickOutside = <ElementType extends HTMLElement = HTMLElement>(
+  ref: React.RefObject<ElementType | null>,
   handler: (event: MouseEvent | TouchEvent) => void,
 ): void => {
   const listener = useCallback(
-    (event: MouseEvent | TouchEvent) => {
-      const el = ref?.current;
-      if (!el || el.contains(event.target as Node)) {
+    (event: MouseEvent | TouchEvent): void => {
+      const element = ref.current;
+      const { target } = event;
+
+      if (element === null || !isNodeTarget(target) || element.contains(target)) {
         return;
       }
 
@@ -16,15 +20,15 @@ export const useOnClickOutside = <T extends HTMLElement = HTMLElement>(
     [handler, ref],
   );
 
-  useEffect(() => {
+  useEffect((): (() => void) => {
     if (typeof document === 'undefined') {
-      return;
+      return () => {};
     }
 
     document.addEventListener('mousedown', listener);
     document.addEventListener('touchstart', listener);
 
-    return () => {
+    return (): void => {
       document.removeEventListener('mousedown', listener);
       document.removeEventListener('touchstart', listener);
     };

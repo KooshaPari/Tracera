@@ -1,62 +1,62 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { createRef } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import * as Vitest from 'vitest';
 
 import { Input } from '../components/Input';
 
-describe('Input', () => {
-  it('renders an input element', () => {
+Vitest.describe('Input component', () => {
+  Vitest.it('renders an input element', () => {
     render(<Input />);
-    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    Vitest.expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 
-  it('accepts and displays a value', () => {
+  Vitest.it('accepts and displays a value', () => {
     render(<Input defaultValue='hello' />);
-    expect(screen.getByRole('textbox')).toHaveValue('hello');
+    Vitest.expect(screen.getByRole('textbox')).toHaveValue('hello');
   });
 
-  it('handles onChange events', () => {
-    const handleChange = vi.fn();
+  Vitest.it('handles onChange events', () => {
+    const handleChange = Vitest.vi.fn();
     render(<Input onChange={handleChange} />);
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'test' } });
-    expect(handleChange).toHaveBeenCalledTimes(1);
+    Vitest.expect(handleChange).toHaveBeenCalledTimes(1);
   });
 
-  it('renders with placeholder', () => {
+  Vitest.it('renders with placeholder', () => {
     render(<Input placeholder='Enter text...' />);
-    expect(screen.getByPlaceholderText('Enter text...')).toBeInTheDocument();
+    Vitest.expect(screen.getByPlaceholderText('Enter text...')).toBeInTheDocument();
   });
 
-  it('can be disabled', () => {
+  Vitest.it('can be disabled', () => {
     render(<Input disabled />);
-    expect(screen.getByRole('textbox')).toBeDisabled();
+    Vitest.expect(screen.getByRole('textbox')).toBeDisabled();
   });
 
-  it('forwards ref', () => {
+  Vitest.it('forwards ref', () => {
     const ref = createRef<HTMLInputElement>();
     render(<Input ref={ref} />);
-    expect(ref.current).toBeInstanceOf(HTMLInputElement);
+    Vitest.expect(ref.current).toBeInstanceOf(HTMLInputElement);
   });
 
-  it('applies custom className', () => {
+  Vitest.it('applies custom className', () => {
     render(<Input className='custom-input' />);
-    expect(screen.getByRole('textbox').className).toContain('custom-input');
+    Vitest.expect(screen.getByRole('textbox').className).toContain('custom-input');
   });
 
-  it('supports different input types', () => {
+  Vitest.it('supports different input types', () => {
     const { container } = render(<Input type='password' />);
     const input = container.querySelector('input');
-    expect(input).toHaveAttribute('type', 'password');
+    Vitest.expect(input).toHaveAttribute('type', 'password');
   });
 
-  it('supports type=email', () => {
+  Vitest.it('supports type=email', () => {
     const { container } = render(<Input type='email' />);
     const input = container.querySelector('input');
-    expect(input).toHaveAttribute('type', 'email');
+    Vitest.expect(input).toHaveAttribute('type', 'email');
   });
 
-  it('passes through additional HTML attributes', () => {
+  Vitest.it('passes through additional HTML attributes', () => {
     render(<Input data-testid='my-input' name='username' />);
-    expect(screen.getByTestId('my-input')).toHaveAttribute('name', 'username');
+    Vitest.expect(screen.getByTestId('my-input')).toHaveAttribute('name', 'username');
   });
 });
