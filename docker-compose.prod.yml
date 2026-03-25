@@ -1,4 +1,3 @@
-version: '3.8'
 
 # Production-like Docker Compose deployment for local testing
 # Usage: docker-compose -f docker-compose.prod.yml up
