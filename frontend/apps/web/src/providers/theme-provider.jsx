@@ -8,16 +8,8 @@ const resolveInitialTheme = () => {
     return stored;
   }
 
-  if (
-    typeof globalThis !== 'undefined' &&
-    'matchMedia' in globalThis &&
-    typeof globalThis.matchMedia === 'function' &&
-    globalThis.matchMedia('(prefers-color-scheme: dark)').matches
-  ) {
-    return 'dark';
-  }
-
-  return 'light';
+  // Default to dark theme for geist-style aesthetic
+  return 'dark';
 };
 
 const applyThemeToDom = (theme) => {
