@@ -108,7 +108,7 @@ export const SidebarView = ({
   );
 
   const navClassName = cn(
-    'relative flex h-full max-h-screen flex-col border-r border-white/0 bg-[linear-gradient(155deg,rgba(2,6,23,0.65),rgba(2,6,23,0.35)_55%,rgba(15,23,42,0.25))] backdrop-blur-2xl shadow-[1px_0_0_rgba(15,23,42,0.6)] shrink-0 overflow-x-auto overflow-y-auto box-border',
+    'geist-sidebar relative flex h-full max-h-screen flex-col shrink-0 overflow-x-auto overflow-y-auto box-border',
     isResizing ? 'transition-none' : 'transition-all duration-300 ease-in-out',
     isCollapsed ? 'w-20 min-w-[5rem] max-w-[5rem]' : undefined,
   );
