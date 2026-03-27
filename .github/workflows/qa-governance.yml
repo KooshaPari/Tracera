@@ -24,35 +24,7 @@ jobs:
           if [[ -f "scripts/validate-quality-schema.py" && -f "schemas/quality-governance.schema.json" ]]; then
             python3 scripts/validate-quality-schema.py .claude/quality.json
           else
-            python3 - <<'PY'
-import json
-import sys
-
-path = ".claude/quality.json"
-data = json.load(open(path, "r", encoding="utf-8"))
-required = {
-    "version", "project", "stacks", "coverage_threshold", "line_length",
-    "test_pyramid", "traceability", "criticality_tier", "governance",
-}
-missing = sorted(required - set(data.keys()))
-if missing:
-    print(f"quality schema validation failed: missing top-level keys: {','.join(missing)}")
-    sys.exit(2)
-gov = data.get("governance")
-if not isinstance(gov, dict):
-    print("quality schema validation failed: governance must be an object")
-    sys.exit(2)
-for k in (
-    "delivery_model", "probabilistic", "reliability", "rolling_wave",
-    "assurance_case", "privacy_preserving", "playbooks",
-    "artifact_quality", "debt_registry", "onchain", "formal",
-    "toolchains", "health",
-):
-    if k not in gov:
-        print(f"quality schema validation failed: governance.{k} missing")
-        sys.exit(2)
-print("quality schema validation passed")
-PY
+            python3 .github/scripts/validate-quality-schema-inline.py
           fi
 
       - name: Verify FR source onboarding contract
@@ -86,50 +58,7 @@ PY
           if [[ -f "scripts/qa-smart-contract-gate.py" ]]; then
             python3 scripts/qa-smart-contract-gate.py --enforce-by-policy
           else
-            python3 - <<'PY'
-import json, os, re, pathlib, datetime, sys
-root = pathlib.Path(".")
-q = root / ".claude/quality.json"
-fr = "FUNCTIONAL_REQUIREMENTS.md"
-if q.exists():
-    try:
-        fr = json.loads(q.read_text(encoding="utf-8")).get("traceability", {}).get("fr_source", fr)
-    except Exception:
-        pass
-fr_path = root / fr
-out = root / ".claude/verification/smart-contract-gate.json"
-out.parent.mkdir(parents=True, exist_ok=True)
-if not fr_path.exists():
-    payload = {
-        "generated_at": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "status": "not_applicable",
-        "pass": True,
-        "reason": f"missing_fr_source:{fr}",
-        "fr_source": fr,
-        "total_frs": 0,
-        "covered_frs": 0,
-        "fr_coverage_percent": 0.0,
-        "orphan_frs": [],
-        "orphan_tests": [],
-    }
-else:
-    text = fr_path.read_text(encoding="utf-8", errors="ignore")
-    fr_ids = sorted(set(re.findall(r"\\bFR-[A-Z]+-[0-9]+\\b", text)))
-    payload = {
-        "generated_at": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "status": "advisory",
-        "pass": True,
-        "reason": "fallback_advisory",
-        "fr_source": fr,
-        "total_frs": len(fr_ids),
-        "covered_frs": 0,
-        "fr_coverage_percent": 0.0,
-        "orphan_frs": fr_ids,
-        "orphan_tests": [],
-    }
-out.write_text(json.dumps(payload, indent=2) + "\\n", encoding="utf-8")
-print("smart-contract fallback report generated:", out)
-PY
+            python3 .github/scripts/smart-contract-gate-inline.py
           fi
 
       - name: Install N4/N5 toolchains (critical profile)
