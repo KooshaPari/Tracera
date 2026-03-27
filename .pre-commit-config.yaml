@@ -126,6 +126,23 @@ repos:
         language: system
         pass_filenames: false
 
+  # Block new TODO/FIXME comments — open a GitHub Issue instead
+  - repo: local
+    hooks:
+      - id: no-new-todos
+        name: No new TODO/FIXME
+        entry: bash -c 'git diff --cached --unified=0 | grep "^\+" | grep -E "TODO|FIXME" && echo "ERROR: New TODO/FIXME detected — open a GitHub Issue instead" && exit 1 || exit 0'
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
+  # Markdownlint — enforce consistent Markdown formatting in docs
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.43.0
+    hooks:
+      - id: markdownlint
+        args: ["--ignore", "node_modules", "--ignore", ".archive"]
+
   # Block new linter suppressions (fast)
   - repo: local
     hooks:
