@@ -6,6 +6,10 @@ const config = {
   plugins: [require('tailwindcss-animate')],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Geist', 'system-ui', 'sans-serif'],
+        mono: ['Geist Mono', 'ui-monospace', 'monospace'],
+      },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',

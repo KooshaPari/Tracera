@@ -11,6 +11,10 @@ import {
   CardHeader,
   CardTitle,
   Progress,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@tracertm/ui';
 
 interface FeatureCardProps {
@@ -35,6 +39,9 @@ export function FeatureCard({ feature, onClick, className }: FeatureCardProps) {
   const passRate = total > 0 ? (passed / total) * 100 : 0;
 
   return (
+    <TooltipProvider delayDuration={400}>
+      <Tooltip>
+        <TooltipTrigger asChild>
     <Card
       className={`hover:bg-muted/30 hover:border-primary/30 cursor-pointer transition-all duration-200 hover:shadow-md ${className}`}
       onClick={onClick}
@@ -113,5 +120,44 @@ export function FeatureCard({ feature, onClick, className }: FeatureCardProps) {
         </Button>
       </CardFooter>
     </Card>
+        </TooltipTrigger>
+        <TooltipContent
+          side='top'
+          className='max-w-xs space-y-2 p-3 text-left'
+          sideOffset={8}
+        >
+          <p className='text-xs font-bold'>{feature.name}</p>
+          {feature.asA && (
+            <p className='text-muted-foreground text-[11px] italic'>
+              As a {feature.asA}, I want {feature.iWant}
+            </p>
+          )}
+          <div className='flex gap-3 text-[10px]'>
+            <span className='flex items-center gap-1 text-green-600'>
+              <CheckCircle2 className='h-3 w-3' /> {passed} pass
+            </span>
+            {failed > 0 && (
+              <span className='flex items-center gap-1 text-red-500'>
+                <XCircle className='h-3 w-3' /> {failed} fail
+              </span>
+            )}
+            {pending > 0 && (
+              <span className='flex items-center gap-1'>
+                <ListTodo className='h-3 w-3' /> {pending} pending
+              </span>
+            )}
+          </div>
+          {feature.tags && feature.tags.length > 0 && (
+            <div className='flex flex-wrap gap-1'>
+              {feature.tags.map((tag) => (
+                <span key={tag} className='bg-muted rounded px-1.5 py-0.5 text-[10px] font-medium'>
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
