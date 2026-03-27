@@ -96,7 +96,7 @@ class MCPBenchmark:
             name=name,
             optimized=optimized,
             duration_ms=avg_duration,
-            memory_mb=0.0,  # TODO: Measure actual memory
+            memory_mb=0.0,  # tracked: https://github.com/KooshaPari/trace/issues/232
             token_count=int(avg_tokens),
             throughput=throughput,
             metadata={"iterations": iterations},
