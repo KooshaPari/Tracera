@@ -68,13 +68,18 @@ jobs:
   daily-vuln-check:
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule'
+    permissions:
+      issues: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Check for new vulnerabilities
         run: |
           echo "Checking for new CVEs..."
-          
+
           # This creates a GitHub issue for new vulnerabilities
           gh issue create \
+            --repo "${{ github.repository }}" \
             --title "Weekly Security Scan - $(date +%Y-%m-%d)" \
             --body "Automated security scan completed. Check Dependabot alerts and security reports." \
             --label "security,automated" || echo "Issue creation skipped"

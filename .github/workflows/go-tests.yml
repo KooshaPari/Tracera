@@ -36,7 +36,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: backend/go.sum
+          cache-dependency-path: backend/tests/go.sum
 
       - name: Cache Go modules
         uses: actions/cache@v3
@@ -47,13 +47,17 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Verify dependencies
-        working-directory: backend
+        working-directory: backend/tests
+        env:
+          GOTOOLCHAIN: local
         run: |
           go mod download
           go mod verify
 
       - name: Run unit tests
         working-directory: backend/tests
+        env:
+          GOTOOLCHAIN: local
         run: |
           go test -v -short -race -coverprofile=unit-coverage.out -covermode=atomic \
             -tags=unit \
@@ -139,7 +143,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: backend/go.sum
+          cache-dependency-path: backend/tests/go.sum
 
       - name: Cache Go modules
         uses: actions/cache@v3
@@ -150,7 +154,9 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Verify dependencies
-        working-directory: backend
+        working-directory: backend/tests
+        env:
+          GOTOOLCHAIN: local
         run: |
           go mod download
           go mod verify
@@ -184,6 +190,7 @@ jobs:
           REDIS_URL: ${{ env.REDIS_URL }}
           NATS_URL: ${{ env.NATS_URL }}
           TEST_DATABASE_URL: postgresql://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}?sslmode=disable
+          GOTOOLCHAIN: local
         run: |
           go test -v -race -coverprofile=integration-coverage.out -covermode=atomic \
             -tags=integration \
@@ -243,7 +250,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: backend/go.sum
+          cache-dependency-path: backend/tests/go.sum
 
       - name: Cache Go modules
         uses: actions/cache@v3
@@ -254,7 +261,9 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Verify dependencies
-        working-directory: backend
+        working-directory: backend/tests
+        env:
+          GOTOOLCHAIN: local
         run: |
           go mod download
           go mod verify
@@ -284,6 +293,7 @@ jobs:
           DB_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
           DB_NAME: ${{ env.POSTGRES_DB }}
           TEST_DATABASE_URL: postgresql://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}?sslmode=disable
+          GOTOOLCHAIN: local
         run: |
           go test -v -race -coverprofile=api-coverage.out -covermode=atomic \
             -tags=api \
@@ -329,7 +339,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: backend/go.sum
+          cache-dependency-path: backend/tests/go.sum
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -373,6 +383,7 @@ jobs:
           REDIS_URL: redis://localhost:6379
           NATS_URL: nats://localhost:4222
           TEST_DATABASE_URL: postgresql://tracertm:tracertm_password@localhost:5432/tracertm?sslmode=disable
+          GOTOOLCHAIN: local
         run: |
           go test -v -race -coverprofile=e2e-coverage.out -covermode=atomic \
             -tags=e2e \
@@ -429,7 +440,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: backend/go.sum
+          cache-dependency-path: backend/tests/go.sum
 
       - name: Cache Go modules
         uses: actions/cache@v3
@@ -440,13 +451,17 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Verify dependencies
-        working-directory: backend
+        working-directory: backend/tests
+        env:
+          GOTOOLCHAIN: local
         run: |
           go mod download
           go mod verify
 
       - name: Run security tests
         working-directory: backend/tests
+        env:
+          GOTOOLCHAIN: local
         run: |
           go test -v -race -coverprofile=security-coverage.out -covermode=atomic \
             -tags=security \
