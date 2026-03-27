@@ -258,7 +258,7 @@ async def create_session_checkpoint(
 
     logger.info("Activity %s: Creating checkpoint %s", activity_info.activity_id, checkpoint_id)
 
-    # TODO: Implement actual checkpoint storage to S3/MinIO
+    # tracked: https://github.com/KooshaPari/trace/issues/223
     # For now, simulate the checkpoint creation
     s3_key = f"checkpoints/{session_id}/{checkpoint_id}.json"
 

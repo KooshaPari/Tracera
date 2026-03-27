@@ -218,7 +218,7 @@ function cpuForceLayout<T extends Record<string, unknown>>(
 
 /**
  * WebGPU-accelerated force-directed layout
- * TODO: Implement compute shaders for Fruchterman-Reingold
+ * tracked: https://github.com/KooshaPari/trace/issues/226
  *
  * @see docs/architecture/gpu-force-layout.md for implementation guide
  */
@@ -229,7 +229,7 @@ async function webgpuForceLayout<T extends Record<string, unknown>>(
     onProgress?: GPUForceLayoutOptions['onProgress'] | undefined;
   },
 ): Promise<Map<string, { x: number; y: number }>> {
-  // TODO: Implement WebGPU compute shaders
+  // tracked: https://github.com/KooshaPari/trace/issues/226
   // For now, fall back to CPU
   logger.warn('WebGPU implementation not yet available, falling back to CPU');
   return cpuForceLayout(nodes, edges, options);
@@ -241,7 +241,7 @@ async function webgpuForceLayout<T extends Record<string, unknown>>(
 
 /**
  * WebGL GPGPU force-directed layout
- * TODO: Implement fragment shader-based GPGPU
+ * tracked: https://github.com/KooshaPari/trace/issues/226
  *
  * @see docs/architecture/gpu-force-layout.md for implementation guide
  */
@@ -252,7 +252,7 @@ async function webglForceLayout<T extends Record<string, unknown>>(
     onProgress?: GPUForceLayoutOptions['onProgress'] | undefined;
   },
 ): Promise<Map<string, { x: number; y: number }>> {
-  // TODO: Implement WebGL GPGPU
+  // tracked: https://github.com/KooshaPari/trace/issues/226
   // For now, fall back to CPU
   logger.warn('WebGL implementation not yet available, falling back to CPU');
   return cpuForceLayout(nodes, edges, options);

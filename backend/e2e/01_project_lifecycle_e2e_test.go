@@ -52,7 +52,7 @@ func setupE2EServer(t *testing.T) *testServer {
 	require.NoError(t, err)
 	require.NoError(t, pool.Ping(ctx))
 
-	// TODO: Start actual backend server with this DB
+	// tracked: https://github.com/KooshaPari/trace/issues/228
 	// For now, mock URL
 	serverURL := "http://localhost:8080"
 

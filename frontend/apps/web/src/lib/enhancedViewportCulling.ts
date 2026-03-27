@@ -362,7 +362,7 @@ export function cullEdgesEnhancedWithRTree(
     // Calculate distance from viewport center to edge midpoint
     // Note: We need node positions here - caller should pass them
     // For now, skip distance-based LOD and just return visible edges
-    // TODO: Extend spatial index to store edge midpoints for distance calc
+    // tracked: https://github.com/KooshaPari/trace/issues/229
 
     // For now, apply default culling level
     const level = levels[0];

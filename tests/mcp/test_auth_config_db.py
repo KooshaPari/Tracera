@@ -11,7 +11,7 @@ class TestAuthTools:
     @pytest.mark.asyncio
     async def test_auth_status_returns_mode(self) -> None:
         """Test that auth status returns the current auth mode."""
-        # TODO: Implement when auth module is available
+        # tracked: https://github.com/KooshaPari/trace/issues/231
 
     @pytest.mark.asyncio
     async def test_auth_validate_token(self) -> None:

@@ -328,7 +328,7 @@ export * from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
 // MSW TEMPORARILY DISABLED DUE TO GRAPHQL ESM/COMMONJS IMPORT ISSUE
 // See: CRITICAL_BLOCKER_MSW_GRAPHQL.md
-// TODO: Re-enable after fixing graphql import or replacing MSW
+// tracked: https://github.com/KooshaPari/trace/issues/224
 // Start MSW server before all tests
 // BeforeAll(() => {
 //   Try {

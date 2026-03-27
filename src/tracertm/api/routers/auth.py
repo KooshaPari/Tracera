@@ -373,7 +373,7 @@ async def get_current_user(
                 "profilePictureUrl": user_data.get("profile_picture_url"),
             },
             claims=claims,
-            # TODO (Task B4): Add account lookup from database if needed
+            # tracked: https://github.com/KooshaPari/trace/issues/222
             # For now, extract organization from JWT claims if available
             account={
                 "id": claims.get("org_id"),

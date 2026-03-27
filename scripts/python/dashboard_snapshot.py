@@ -399,7 +399,7 @@ def main() -> int:
 
     if args.email:
         pass
-        # TODO: Implement SMTP sending
+        # tracked: https://github.com/KooshaPari/trace/issues/230
 
     return 0
 

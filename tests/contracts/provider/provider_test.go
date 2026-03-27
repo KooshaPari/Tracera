@@ -213,7 +213,7 @@ func setupUserExists(setup bool, state provider.State) (provider.StateResponse, 
 	if setup {
 		// Create test user in database
 		log.Println("Setting up: user exists")
-		// TODO: Create user with email "user@example.com"
+		// tracked: https://github.com/KooshaPari/trace/issues/234
 	} else {
 		// Cleanup
 		log.Println("Cleaning up: user exists")

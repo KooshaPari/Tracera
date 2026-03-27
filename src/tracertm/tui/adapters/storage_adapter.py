@@ -135,7 +135,7 @@ class StorageAdapter:
         item_storage = project_storage.get_item_storage(project)
 
         # Get items from SQLite
-        # TODO: Merge with items parsed from Markdown files
+        # tracked: https://github.com/KooshaPari/trace/issues/219
         # This would scan the markdown directories and parse frontmatter
         # For now, return SQLite items only
         return item_storage.list_items(

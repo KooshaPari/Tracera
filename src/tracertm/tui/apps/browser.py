@@ -222,7 +222,7 @@ if TEXTUAL_AVAILABLE:
 
         def on_input_changed(self, _event: Input.Changed) -> None:
             """Handle filter input change."""
-            # TODO: Implement filtering
+            # tracked: https://github.com/KooshaPari/trace/issues/220
 
         def action_refresh(self) -> None:
             """Refresh tree."""

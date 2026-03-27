@@ -90,7 +90,7 @@ export function CommentsTab({ item, className }: CommentsTabProps) {
 
     setIsSubmitting(true);
     try {
-      // TODO: Implement actual comment submission
+      // tracked: https://github.com/KooshaPari/trace/issues/227
       await new Promise((resolve) => setTimeout(resolve, 500));
       toast.success('Comment added successfully');
       setNewComment('');

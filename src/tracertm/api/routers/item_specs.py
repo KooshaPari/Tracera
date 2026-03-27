@@ -416,7 +416,7 @@ async def create_requirement_spec(
         raise HTTPException(status_code=400, detail="Request body required")
 
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
@@ -449,7 +449,7 @@ async def get_requirement_spec(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -480,7 +480,7 @@ async def get_requirement_spec_by_item(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -519,7 +519,7 @@ async def list_requirement_specs(
         HTTPException: On database errors
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -555,7 +555,7 @@ async def update_requirement_spec(
         raise HTTPException(status_code=400, detail="Request body required")
 
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -585,7 +585,7 @@ async def delete_requirement_spec(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -622,7 +622,7 @@ async def analyze_requirement_quality(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -659,7 +659,7 @@ async def analyze_requirement_impact(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -700,7 +700,7 @@ async def verify_requirement(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -731,7 +731,7 @@ async def get_unverified_requirements(
         HTTPException: On database errors
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -762,7 +762,7 @@ async def get_high_risk_requirements(
         HTTPException: On database errors
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -802,7 +802,7 @@ async def create_test_spec(
         raise HTTPException(status_code=400, detail="Request body required")
 
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
@@ -835,7 +835,7 @@ async def get_test_spec(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -866,7 +866,7 @@ async def get_test_spec_by_item(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -903,7 +903,7 @@ async def list_test_specs(
         HTTPException: On database errors
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -939,7 +939,7 @@ async def update_test_spec(
         raise HTTPException(status_code=400, detail="Request body required")
 
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -969,7 +969,7 @@ async def delete_test_spec(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1014,7 +1014,7 @@ async def record_test_run(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1050,7 +1050,7 @@ async def quarantine_test(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1083,7 +1083,7 @@ async def unquarantine_test(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1118,7 +1118,7 @@ async def get_flaky_tests(
         HTTPException: On database errors
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -1153,7 +1153,7 @@ async def get_test_health_report(
         HTTPException: On database errors
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -1193,7 +1193,7 @@ async def create_epic_spec(
         raise HTTPException(status_code=400, detail="Request body required")
 
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
@@ -1226,7 +1226,7 @@ async def get_epic_spec(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1261,7 +1261,7 @@ async def list_epic_specs(
         HTTPException: On database errors
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -1297,7 +1297,7 @@ async def update_epic_spec(
         raise HTTPException(status_code=400, detail="Request body required")
 
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1327,7 +1327,7 @@ async def delete_epic_spec(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1367,7 +1367,7 @@ async def create_user_story_spec(
         raise HTTPException(status_code=400, detail="Request body required")
 
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
@@ -1400,7 +1400,7 @@ async def get_user_story_spec(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1435,7 +1435,7 @@ async def list_user_story_specs(
         HTTPException: On database errors
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -1471,7 +1471,7 @@ async def update_user_story_spec(
         raise HTTPException(status_code=400, detail="Request body required")
 
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1501,7 +1501,7 @@ async def delete_user_story_spec(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1541,7 +1541,7 @@ async def create_task_spec(
         raise HTTPException(status_code=400, detail="Request body required")
 
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
@@ -1574,7 +1574,7 @@ async def get_task_spec(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1609,7 +1609,7 @@ async def list_task_specs(
         HTTPException: On database errors
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -1645,7 +1645,7 @@ async def update_task_spec(
         raise HTTPException(status_code=400, detail="Request body required")
 
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1675,7 +1675,7 @@ async def delete_task_spec(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1715,7 +1715,7 @@ async def create_defect_spec(
         raise HTTPException(status_code=400, detail="Request body required")
 
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
@@ -1748,7 +1748,7 @@ async def get_defect_spec(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1785,7 +1785,7 @@ async def list_defect_specs(
         HTTPException: On database errors
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -1821,7 +1821,7 @@ async def update_defect_spec(
         raise HTTPException(status_code=400, detail="Request body required")
 
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1851,7 +1851,7 @@ async def delete_defect_spec(
         HTTPException: If spec not found (404)
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1882,7 +1882,7 @@ async def get_critical_defects(
         HTTPException: On database errors
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -1922,7 +1922,7 @@ async def get_item_spec_stats(
         HTTPException: On database errors
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -1951,7 +1951,7 @@ async def get_requirement_quality_stats(
         HTTPException: On database errors
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -1980,7 +1980,7 @@ async def get_test_health_stats(
         HTTPException: On database errors
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -2009,7 +2009,7 @@ async def get_defect_metrics(
         HTTPException: On database errors
     """
     try:
-        # TODO: Implement service layer
+        # tracked: https://github.com/KooshaPari/trace/issues/217
         raise HTTPException(status_code=501, detail="Service implementation pending")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
