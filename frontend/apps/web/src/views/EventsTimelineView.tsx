@@ -1,9 +1,12 @@
+import { useNavigate } from '@tanstack/react-router';
 import {
   ArrowRight,
   Calendar,
   Clock,
   Edit,
+  ExternalLink,
   Folder,
+  GitCommit,
   History,
   Link2,
   Plus,
@@ -11,7 +14,7 @@ import {
   User,
   Zap,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import {
@@ -34,6 +37,8 @@ interface Event {
   timestamp: Date;
   user: string;
   projectId?: string;
+  itemId?: string;
+  commitHash?: string;
 }
 
 const eventConfigs = {
@@ -50,13 +55,16 @@ const eventConfigs = {
 export function EventsTimelineView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
+  const navigate = useNavigate();
 
   // Mock events - replace with actual API call (stable reference for hook deps)
   const events = useMemo<Event[]>(
     () => [
       {
+        commitHash: 'a1b2c3d',
         description: 'New security requirement initialized in Project Alpha.',
         id: '1',
+        itemId: 'req-auth-001',
         projectId: 'alpha-1',
         timestamp: new Date(),
         title: 'User Authentication',
@@ -64,8 +72,10 @@ export function EventsTimelineView() {
         user: 'Admin',
       },
       {
+        commitHash: 'e4f5g6h',
         description: "Connected 'Auth Logic' to 'Security Spec v1'.",
         id: '2',
+        itemId: 'link-001',
         projectId: 'alpha-1',
         timestamp: new Date(Date.now() - 3_600_000),
         title: 'Traceability Link',
@@ -73,8 +83,10 @@ export function EventsTimelineView() {
         user: 'Jane Doe',
       },
       {
+        commitHash: 'i7j8k9l',
         description: "Field 'user_id' updated to UUID for higher integrity.",
         id: '3',
+        itemId: 'schema-db-001',
         projectId: 'beta-2',
         timestamp: new Date(Date.now() - 86_400_000),
         title: 'Database Schema',
@@ -83,6 +95,15 @@ export function EventsTimelineView() {
       },
     ],
     [],
+  );
+
+  const handleEventClick = useCallback(
+    (event: Event) => {
+      if (event.itemId) {
+        void navigate({ to: '/items/$itemId', params: { itemId: event.itemId } });
+      }
+    },
+    [navigate],
   );
 
   const filteredEvents = useMemo(
@@ -151,7 +172,18 @@ export function EventsTimelineView() {
           filteredEvents.map((event) => {
             const config = eventConfigs[event.type];
             return (
-              <div key={event.id} className='group relative pl-12'>
+              <div
+                key={event.id}
+                className='group relative pl-12'
+                role='button'
+                tabIndex={0}
+                onClick={() => {
+                  handleEventClick(event);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') handleEventClick(event);
+                }}
+              >
                 {/* Timeline Node */}
                 <div
                   className={cn(
@@ -163,7 +195,7 @@ export function EventsTimelineView() {
                   <config.icon className='h-5 w-5 text-white' />
                 </div>
 
-                <Card className='bg-card/50 group-hover:bg-card border-none p-6 shadow-sm transition-all group-hover:shadow-md'>
+                <Card className='bg-card/50 group-hover:bg-card hover:border-primary/20 cursor-pointer border-none p-6 shadow-sm transition-all group-hover:shadow-md'>
                   <div className='flex flex-col justify-between gap-4 md:flex-row md:items-start'>
                     <div className='flex-1 space-y-2'>
                       <div className='flex flex-wrap items-center gap-2'>
@@ -177,6 +209,12 @@ export function EventsTimelineView() {
                         {event.projectId && (
                           <span className='text-primary bg-primary/5 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase'>
                             {event.projectId}
+                          </span>
+                        )}
+                        {event.commitHash && (
+                          <span className='text-muted-foreground bg-muted/40 flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[9px] font-bold'>
+                            <GitCommit className='h-2.5 w-2.5' />
+                            {event.commitHash}
                           </span>
                         )}
                       </div>
@@ -212,8 +250,13 @@ export function EventsTimelineView() {
                       variant='ghost'
                       size='xs'
                       className='group/btn gap-1 text-[9px] font-black uppercase'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEventClick(event);
+                      }}
                     >
                       View Context{' '}
+                      <ExternalLink className='h-2.5 w-2.5 opacity-60 transition-opacity group-hover/btn:opacity-100' />
                       <ArrowRight className='h-2.5 w-2.5 transition-transform group-hover/btn:translate-x-1' />
                     </Button>
                   </div>
