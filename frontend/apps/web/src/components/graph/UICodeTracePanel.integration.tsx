@@ -342,7 +342,7 @@ export function ErrorHandlingExample() {
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: wire up when API is available
+      // tracked: https://github.com/KooshaPari/trace/issues/225
       // Const trace = await api.traces.getUICodeTrace({ componentId });
       // SetTraceChain(trace);
       undefined;

@@ -334,7 +334,7 @@ class TraceFileWatcher:
         # 4. Update modified links
 
         logger.info("Parsed %s links from %s", len(links), path.name)
-        # TODO: Implement full link synchronization
+        # tracked: https://github.com/KooshaPari/trace/issues/218
 
     def _handle_project_change(self, path: Path, event_type: str) -> None:
         """Handle change to project.yaml file.

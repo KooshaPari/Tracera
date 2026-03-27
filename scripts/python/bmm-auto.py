@@ -335,7 +335,7 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
             for _i, _opt in enumerate(options, 1):
                 pass
         return input("Your answer: ")
-        # TODO: Send response back to workflow
+        # tracked: https://github.com/KooshaPari/trace/issues/233
 
     def _handle_checkpoint(self, _section: str, _content: str, _next_step: str) -> None:
         """Handle checkpoint approval."""
