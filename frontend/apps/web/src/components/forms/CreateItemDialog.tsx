@@ -93,13 +93,13 @@ export function CreateItemDialog({
 
         // Build CreateItemInput with required fields
         const itemInput = {
-          description: (formData.description as string | undefined) ?? '',
-          priority: (formData.priority as string) ?? 'medium',
+          description: (formData['description'] as string | undefined) ?? '',
+          priority: (formData['priority'] as string) ?? 'medium',
           projectId,
-          status: (formData.status as string) ?? 'draft',
-          title: (formData.name ?? formData.title) as string,
+          status: (formData['status'] as string) ?? 'draft',
+          title: (formData['name'] ?? formData['title']) as string,
           type: (selectedType ?? 'item') as CreateItemInput['type'],
-          view: (formData.view as string) ?? defaultView,
+          view: (formData['view'] as string) ?? defaultView,
           ...formData,
         } as CreateItemInput;
 

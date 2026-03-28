@@ -366,7 +366,7 @@ export const ITEM_TYPE_CONFIGS: Record<string, ItemTypeConfig> = {
  * Falls back to generic config if type not found
  */
 export function getItemTypeConfig(type: string): ItemTypeConfig {
-  return ITEM_TYPE_CONFIGS[type] ?? ITEM_TYPE_CONFIGS.generic!;
+  return ITEM_TYPE_CONFIGS[type] ?? ITEM_TYPE_CONFIGS['generic']!;
 }
 
 /**

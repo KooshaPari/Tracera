@@ -218,7 +218,6 @@ const buildGraphCacheStore = (set: StoreSetter, get: StoreGetter): GraphCacheSto
 };
 
 const useGraphCacheStore = create<GraphCacheStoreState>()(
-  // @ts-expect-error Zustand immer middleware incompatible with exactOptionalPropertyTypes
   immer<GraphCacheStoreState>((set, get) => buildGraphCacheStore(set, get)),
 );
 

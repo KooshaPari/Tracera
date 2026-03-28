@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import * as specificationsApi from '@/hooks/useSpecifications.api';
 import * as queryUtils from './query-utils';
+import type { MutationResult } from './query-utils';
 
 type FetchScenarioActivitiesResult = Awaited<
   ReturnType<typeof specificationsApi.fetchScenarioActivities>

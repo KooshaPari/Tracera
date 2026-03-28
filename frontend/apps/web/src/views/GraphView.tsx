@@ -118,33 +118,33 @@ const toLinkType = (value: string): Link['type'] =>
 
 const normalizeGraph = (graph: SafeRecord): GraphOption => ({
   ...graph,
-  id: asString(graph.id),
-  name: asString(graph.name),
-  graphType: asString(graph.graphType),
+  id: asString(graph['id']),
+  name: asString(graph['name']),
+  graphType: asString(graph['graphType']),
 });
 
 const normalizeNode = (node: SafeRecord): NormalizedNode =>
   ({
     ...node,
-    id: asString(node.id),
-    title: asString(node.title),
-    type: asString(node.item_type) || asString(node.itemType) || asString(node.view),
-    view: asString(node.view),
+    id: asString(node['id']),
+    title: asString(node['title']),
+    type: asString(node['item_type']) || asString(node['itemType']) || asString(node['view']),
+    view: asString(node['view']),
   }) as NormalizedNode;
 
 const normalizeLink = (link: SafeRecord): NormalizedLink =>
   ({
     ...link,
-    id: asString(link.id),
-    sourceId: asString(link.source_item_id) || asString(link.sourceId),
-    targetId: asString(link.target_item_id) || asString(link.targetId),
-    type: asString(link.link_type) || asString(link.type),
+    id: asString(link['id']),
+    sourceId: asString(link['source_item_id']) || asString(link['sourceId']),
+    targetId: asString(link['target_item_id']) || asString(link['targetId']),
+    type: asString(link['link_type']) || asString(link['type']),
   }) as NormalizedLink;
 
 const toItem = (node: NormalizedNode, projectId: string): Item => {
-  const description = asOptionalString(node.description);
-  const parentId = asOptionalString(node.parentId);
-  const owner = asOptionalString(node.owner);
+  const description = asOptionalString(node['description']);
+  const parentId = asOptionalString(node['parentId']);
+  const owner = asOptionalString(node['owner']);
 
   return {
     id: node.id,
@@ -156,8 +156,8 @@ const toItem = (node: NormalizedNode, projectId: string): Item => {
     priority: DEFAULT_ITEM_PRIORITY,
     metadata: node,
     version: DEFAULT_VERSION,
-    createdAt: asString(node.createdAt, DEFAULT_TIMESTAMP),
-    updatedAt: asString(node.updatedAt, DEFAULT_TIMESTAMP),
+    createdAt: asString(node['createdAt'], DEFAULT_TIMESTAMP),
+    updatedAt: asString(node['updatedAt'], DEFAULT_TIMESTAMP),
     ...(description !== undefined ? { description } : {}),
     ...(parentId !== undefined ? { parentId } : {}),
     ...(owner !== undefined ? { owner } : {}),
@@ -165,7 +165,7 @@ const toItem = (node: NormalizedNode, projectId: string): Item => {
 };
 
 const toLink = (link: NormalizedLink, projectId: string): Link => {
-  const description = asOptionalString(link.description);
+  const description = asOptionalString(link['description']);
 
   return {
     id:
@@ -177,8 +177,8 @@ const toLink = (link: NormalizedLink, projectId: string): Link => {
     targetId: link.targetId,
     type: toLinkType(link.type),
     metadata: link,
-    createdAt: asString(link.createdAt, DEFAULT_TIMESTAMP),
-    updatedAt: asString(link.updatedAt, DEFAULT_TIMESTAMP),
+    createdAt: asString(link['createdAt'], DEFAULT_TIMESTAMP),
+    updatedAt: asString(link['updatedAt'], DEFAULT_TIMESTAMP),
     version: DEFAULT_VERSION,
     ...(description !== undefined ? { description } : {}),
   };

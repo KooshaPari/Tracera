@@ -291,8 +291,8 @@ class BaseLRUCache<T> {
 
 const cacheFactory = (maxEntries?: number, maxMemory?: number): BaseLRUCache<GraphCacheValue> =>
   new BaseLRUCache({
-    maxEntries,
-    maxMemory,
+    ...(maxEntries !== undefined && { maxEntries }),
+    ...(maxMemory !== undefined && { maxMemory }),
   });
 
 export const graphCache = new Map<string, GraphCacheEntry>();

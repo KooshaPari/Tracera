@@ -5,7 +5,9 @@ import { createRequire } from 'node:module';
 import { afterEach, beforeEach } from 'vitest';
 import { expect } from 'vitest';
 
-expect.extend({ toHaveNoViolations });
+// jest-axe exports toHaveNoViolations as { toHaveNoViolations: matcher } — spread directly
+// Cast needed because jest-axe types reference Jest's matcher types, not Vitest's
+expect.extend(toHaveNoViolations as unknown as Parameters<typeof expect.extend>[0]);
 
 // Setup localStorage mock BEFORE any tests run
 const localStorageMock = (() => {
