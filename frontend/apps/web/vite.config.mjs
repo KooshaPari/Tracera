@@ -74,8 +74,8 @@ export default defineConfig({
     chunkSizeWarningLimit: 6000, // Lazy-loaded vendor chunks (graph, api-docs) are expected to be large
     // Minify JS and CSS - can be 'terser', 'esbuild', or false
     minify: 'esbuild',
-    // Lightning CSS for faster CSS minification (Vite Performance Guide)
-    cssMinify: 'lightningcss',
+    // CSS minification handled by @tailwindcss/vite plugin
+    cssMinify: true,
     // Target modern browsers for better minification and tree-shaking
     target: 'esnext',
     // Disable CSS code splitting for better caching
@@ -125,11 +125,8 @@ export default defineConfig({
     },
   },
   css: {
-    // Lightning CSS for transform (nesting, autoprefix) and minify; replaces PostCSS (Vite Performance Guide)
-    lightningcss: {
-      // Targets derived from build.target "esnext" by default; override here if needed
-    },
-    transformer: 'lightningcss',
+    // @tailwindcss/vite handles CSS transformation; do not set transformer to lightningcss
+    // as it conflicts with the tailwindcss plugin in Vite 8 + rolldown
   },
   optimizeDeps: {
     // Exclude files that shouldn't be pre-bundled
@@ -327,6 +324,14 @@ export default defineConfig({
       {
         find: /^prop-types$/,
         replacement: path.resolve(__dirname, './src/lib/prop-types-shim.ts'),
+      },
+      // prop-types-real: used by the shim to import the actual package without circular alias resolution
+      {
+        find: 'prop-types-real',
+        replacement: path.resolve(
+          __dirname,
+          '../../node_modules/prop-types/index.js',
+        ),
       },
       // Internal: shim imports the real package via this alias to avoid circular dependency
       {
