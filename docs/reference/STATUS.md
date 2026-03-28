@@ -1,42 +1,12 @@
-# TraceRTM Project Status
+# Archived Status
 
-**Last Updated**: 2025-11-30
-**Overall Progress**: Phase 1-3 Complete, Production-Ready Foundation
-**Version**: 0.3.0-alpha
+This file is historical documentation inside `trace`.
 
----
+Use the canonical repo worklog for live status:
 
-## Executive Summary
+- `/Users/kooshapari/CodeProjects/Phenotype/repos/trace/worklog.md`
 
-TraceRTM is a **hybrid, agent-native requirements traceability system** with multiple interfaces:
-- Backend API (Go + Echo + SQLC)
-- Web UI (React 19 + TypeScript)
-- Desktop App (Tauri + Rust)
-- CLI/TUI (Python + Textual)
-
-**Current State**: Foundation complete with production-grade infrastructure, advanced features, and web interface partially implemented.
-
----
-
-## Technology Stack (Verified)
-
-| Component | Technology | Status |
-|-----------|-----------|--------|
-| **Backend API** | Go 1.23 + Echo framework | ✅ Production-ready |
-| **Database** | PostgreSQL 14+ (pgx driver) | ✅ Production-ready |
-| **Query Builder** | SQLC (type-safe SQL) | ✅ Implemented |
-| **Graph Database** | Neo4j | ✅ Integrated |
-| **Web UI** | React 19 + TypeScript + Vite + TailwindCSS | 🚧 In progress |
-| **Desktop App** | Tauri 2 (Rust) + React | ✅ Scaffolded |
-| **CLI/TUI** | Python 3.12 + Typer + Textual + Rich | ✅ Production-ready |
-| **Search** | MeiliSearch | ✅ Integrated |
-| **Caching** | Redis 7+ | ✅ Production-ready |
-| **Messaging** | NATS 2.9+ | ✅ Production-ready |
-| **Auth** | WorkOS AuthKit | ✅ Implemented |
-
----
-
-## Phase Status
+The status snapshot is retained only as provenance for the older TraceRTM status lane.
 
 ### ✅ Phase 1: Backend + CLI Foundation (Complete)
 

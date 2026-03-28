@@ -85,7 +85,7 @@ export function initializeCache() {
     enableIndexedDB: true,
     enableServiceWorker: true,
     defaultTTL: 5 * 60 * 1000, // 5 minutes
-    enableLogging: process.env.NODE_ENV === 'development',
+    enableLogging: process.env["NODE_ENV"] === 'development',
   });
 }
 

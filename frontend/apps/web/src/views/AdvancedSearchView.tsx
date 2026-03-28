@@ -180,8 +180,8 @@ const mapAdvancedSearchResult = (value: unknown): AdvancedSearchResultRow | null
     return null;
   }
 
-  const id = value.id;
-  const type = value.type;
+  const id = value["id"];
+  const type = value["type"];
 
   if (typeof id !== 'string' || typeof type !== 'string') {
     return null;
@@ -189,26 +189,26 @@ const mapAdvancedSearchResult = (value: unknown): AdvancedSearchResultRow | null
 
   const mapped: AdvancedSearchResultRow = { id, type };
 
-  if (typeof value.description === 'string') {
-    mapped.description = value.description;
+  if (typeof value["description"] === 'string') {
+    mapped.description = value["description"];
   }
-  if (typeof value.name === 'string') {
-    mapped.name = value.name;
+  if (typeof value["name"] === 'string') {
+    mapped.name = value["name"];
   }
-  if (typeof value.project_id === 'string') {
-    mapped.project_id = value.project_id;
+  if (typeof value["project_id"] === 'string') {
+    mapped.project_id = value["project_id"];
   }
-  if (typeof value.status === 'string') {
-    mapped.status = value.status;
+  if (typeof value["status"] === 'string') {
+    mapped.status = value["status"];
   }
-  if (typeof value.title === 'string') {
-    mapped.title = value.title;
+  if (typeof value["title"] === 'string') {
+    mapped.title = value["title"];
   }
-  if (typeof value.view === 'string') {
-    mapped.view = value.view;
+  if (typeof value["view"] === 'string') {
+    mapped.view = value["view"];
   }
-  if (typeof value.view_type === 'string') {
-    mapped.view_type = value.view_type;
+  if (typeof value["view_type"] === 'string') {
+    mapped.view_type = value["view_type"];
   }
 
   return mapped;
@@ -219,16 +219,16 @@ const mapAdvancedSearchResponse = (value: unknown): AdvancedSearchResponse => {
     throw new Error('Invalid search response format');
   }
 
-  const resultsRaw = Array.isArray(value.results) ? value.results : [];
+  const resultsRaw = Array.isArray(value["results"]) ? value["results"] : [];
   const results = resultsRaw
     .map((entry) => mapAdvancedSearchResult(entry))
     .filter((entry): entry is AdvancedSearchResultRow => entry !== null);
-  const total = typeof value.total === 'number' ? value.total : 0;
+  const total = typeof value["total"] === 'number' ? value["total"] : 0;
 
   return {
-    filters: mapAdvancedFilters(value.filters),
-    project_id: typeof value.project_id === 'string' ? value.project_id : 'all',
-    query: typeof value.query === 'string' ? value.query : null,
+    filters: mapAdvancedFilters(value["filters"]),
+    project_id: typeof value["project_id"] === 'string' ? value["project_id"] : 'all',
+    query: typeof value["query"] === 'string' ? value["query"] : null,
     results,
     total,
   };
@@ -519,7 +519,7 @@ export function AdvancedSearchView(): JSX.Element {
   const handleFilterChange = React.useCallback(
     (key: keyof AdvancedFilters, value: string): void => {
       setFilters((previousFilters) => {
-        if (value === 'all' || value.length === 0) {
+        if (value === 'all' || value["length"] === 0) {
           const { [key]: _removedFilter, ...remainingFilters } = previousFilters;
           return remainingFilters;
         }

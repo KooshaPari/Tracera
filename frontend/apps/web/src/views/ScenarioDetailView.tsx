@@ -170,7 +170,7 @@ export function ScenarioDetailView(): React.JSX.Element {
     offset: (page - 1) * pageSize,
   });
   const activities = useMemo(
-    () => activityData?.activities ?? [],
+    () => (activityData?.activities ?? []) as readonly ScenarioActivity[],
     [activityData?.activities],
   );
   const totalActivities = activityData?.total ?? 0;

@@ -94,9 +94,9 @@ function parseSearchFilters(search: unknown): SearchFilters {
     return {};
   }
   return {
-    action: readNonEmptyString(search.action),
-    project: readNonEmptyString(search.project),
-    type: readNonEmptyString(search.type),
+    action: readNonEmptyString(search["action"]),
+    project: readNonEmptyString(search["project"]),
+    type: readNonEmptyString(search["type"]),
   };
 }
 

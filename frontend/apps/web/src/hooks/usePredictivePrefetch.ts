@@ -211,7 +211,7 @@ export function usePredictivePrefetch({
         try {
           undefined;
         } catch (error) {
-          if (process.env.NODE_ENV === 'development') {
+          if (process.env["NODE_ENV"] === 'development') {
             logger.warn('[usePredictivePrefetch] Prefetch failed:', error);
           }
         }

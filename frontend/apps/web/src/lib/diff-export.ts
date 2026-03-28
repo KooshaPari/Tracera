@@ -110,12 +110,12 @@ function exportAsCSV(
       escapeCSVField(item.type),
       'modified',
       item.significance,
-      String(item.fieldChanges?.length || 0),
+      String(item["fieldChanges"]?.length || 0),
     );
 
     // Add field changes if requested
-    if (options.includeFieldChanges && item.fieldChanges) {
-      item.fieldChanges.forEach((change) => {
+    if (options.includeFieldChanges && item["fieldChanges"]) {
+      item["fieldChanges"].forEach((change) => {
         rows.push(
           `"${item.itemId}",,${escapeCSVField(change.field)},${change.changeType}`,
           `Old Value,${escapeCSVField(formatValue(change.oldValue))}`,
@@ -203,11 +203,11 @@ function exportAsMarkdown(
       lines.push(`- **Type**: ${item.type}`);
       lines.push(`- **Significance**: ${item.significance}`);
 
-      if (options.includeFieldChanges && item.fieldChanges) {
+      if (options.includeFieldChanges && item["fieldChanges"]) {
         lines.push('');
         lines.push('#### Field Changes');
         lines.push('');
-        item.fieldChanges.forEach((change) => {
+        item["fieldChanges"].forEach((change) => {
           lines.push(`**${change.field}** (${change.changeType})`);
           lines.push(`- Old: \`${formatValue(change.oldValue)}\``);
           lines.push(`- New: \`${formatValue(change.newValue)}\``);
@@ -454,10 +454,10 @@ function exportAsHTML(
             <strong>Significance:</strong> <span class="significance sig-${item.significance}">${item.significance}</span>
           </p>
           ${
-            options.includeFieldChanges && item.fieldChanges
+            options.includeFieldChanges && item["fieldChanges"]
               ? `
             <h4>Field Changes</h4>
-            ${item.fieldChanges
+            ${item["fieldChanges"]
               .map(
                 (change) => `
               <div class="field-change">
@@ -510,8 +510,8 @@ function serializeItem(item: DiffItem, options: DiffExportOptions): unknown {
     significance: item.significance,
   };
 
-  if (options.includeFieldChanges && item.fieldChanges) {
-    serialized.fieldChanges = item.fieldChanges.map((change) => ({
+  if (options.includeFieldChanges && item["fieldChanges"]) {
+    serialized.fieldChanges = item["fieldChanges"].map((change) => ({
       field: change.field,
       changeType: change.changeType,
       oldValue: change.oldValue,

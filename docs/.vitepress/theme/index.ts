@@ -1,3 +1,7 @@
-import PhenoDocsTheme from '@phenodocs-theme'
+// Using default VitePress theme
+import DefaultTheme from 'vitepress/theme'
+import './style.css'
 
-export default PhenoDocsTheme
+export default {
+  extends: DefaultTheme,
+}

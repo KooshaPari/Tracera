@@ -1,43 +1,12 @@
-# Feature Integration & Code Cleanup - Executive Summary
+# Archived Summary
 
-## Completion Status: ✅ COMPLETE
+This file is historical documentation inside `trace`.
 
-All 6 feature integration and code cleanup tasks successfully completed.
+Use the canonical repo worklog for live status:
 
-## Key Achievements
+- `/Users/kooshapari/CodeProjects/Phenotype/repos/trace/worklog.md`
 
-### 1. Type System Consolidation ✅
-- **Link Interface Enhanced**: Added `updatedAt` and `version` fields
-  - Path: `/frontend/packages/types/src/index.ts`
-  - Enables versioning and audit trails for all links
-
-- **Perspective Types Unified**: Single canonical `PerspectiveType`
-  - Path: `/frontend/packages/types/src/canonical.ts`
-  - 11 perspectives: product, business, technical, ui, security, performance, test, operations, data, compliance, all
-  - Eliminates duplicate type definitions
-
-### 2. Component Inventory & Documentation ✅
-- **Comprehensive Audit Created**: 35 graph components categorized
-  - Path: `/frontend/apps/web/src/components/graph/COMPONENT_AUDIT.md`
-  - 6 active views with integration guides
-  - 11 advanced components with integration priorities
-  - 5 exploratory components assessed for integration/removal
-  - Zero dead code identified
-
-### 3. Temporal Features Integrated ✅
-- **New Route**: `/projects/$projectId/temporal`
-  - Path: `/frontend/apps/web/src/routes/projects.$projectId.temporal.tsx`
-  - TemporalNavigator: Version/branch navigation
-  - ProgressDashboard: Milestone and sprint tracking
-  - Ready for API integration
-
-### 4. Equivalence Management Integrated ✅
-- **New Route**: `/projects/$projectId/equivalence`
-  - Path: `/frontend/apps/web/src/routes/projects.$projectId.equivalence.tsx`
-
-- **New Component**: EquivalenceManager
-  - Path: `/frontend/apps/web/src/components/EquivalenceManager.tsx`
-  - Export equivalence data to JSON/CSV
+The report snapshot is retained only as provenance for the older integration/cleanup lane.
   - Import with conflict resolution
   - View and manage equivalence relationships
 

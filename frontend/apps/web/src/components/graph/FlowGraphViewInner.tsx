@@ -938,9 +938,9 @@ function FlowGraphViewInnerComponent({
     cacheStats: useMemo(() => {
       const stats = getCacheStats();
       return {
-        grouping: toPerformanceCacheStats(stats.groupings, 'graph-groupings-store'),
-        layout: toPerformanceCacheStats(stats.layouts, 'graph-layouts-store'),
-        search: toPerformanceCacheStats(stats.searches, 'graph-search-store'),
+        grouping: toPerformanceCacheStats(stats.grouping, 'graph-groupings-store'),
+        layout: toPerformanceCacheStats(stats.layout, 'graph-layouts-store'),
+        search: toPerformanceCacheStats(stats.search, 'graph-search-store'),
       };
     }, [getCacheStats]),
     edges: links,

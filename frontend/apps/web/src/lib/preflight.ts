@@ -253,7 +253,7 @@ const revealItem = (name: string): void => {
   const item = document.querySelector(`[data-check="${name}"]`) as HTMLElement | null;
   if (item) {
     item.style.display = 'flex';
-    item.dataset.active = 'true';
+    item.dataset["active"] = 'true';
   }
 };
 
@@ -335,7 +335,7 @@ const getStatusLabel = (update: PreflightUpdate): string => {
 
 const setElementState = (element: Element, state: PreflightState): void => {
   if (element instanceof HTMLElement) {
-    element.dataset.state = state;
+    element.dataset["state"] = state;
   }
 };
 
@@ -429,7 +429,7 @@ const updateInfraStatus = (map: Record<string, InfraStatus>): void => {
 
   const entries = [...list.querySelectorAll('[data-infra]')];
   entries.forEach((entry) => {
-    const key = entry instanceof HTMLElement ? entry.dataset.infra || '' : '';
+    const key = entry instanceof HTMLElement ? entry.dataset["infra"] || '' : '';
     const status = (map[key] || 'unknown') as InfraStatus;
     const display = getInfraDisplay(status);
     const dot = entry.querySelector('[data-infra-status]') as HTMLElement | null;
@@ -547,19 +547,19 @@ const fetchPythonInfra = async (baseUrl: string): Promise<Record<string, InfraSt
     const integration = data.integration || {};
     const databaseStatus = normalizeInfraStatus(components['database']?.status);
     if (databaseStatus) {
-      status.database = databaseStatus;
+      status["database"] = databaseStatus;
     }
     const redisStatus = normalizeInfraStatus(components['redis']?.status);
     if (redisStatus) {
-      status.redis = redisStatus;
+      status["redis"] = redisStatus;
     }
     const natsStatus = normalizeInfraStatus(components['nats']?.status);
     if (natsStatus) {
-      status.nats = natsStatus;
+      status["nats"] = natsStatus;
     }
     const goStatus = normalizeInfraStatus(integration['go_backend']?.status);
     if (goStatus) {
-      status.go_backend = goStatus;
+      status["go_backend"] = goStatus;
     }
   } catch {
     return status;

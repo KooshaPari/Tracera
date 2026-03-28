@@ -1,43 +1,12 @@
-# BMM Automation Script - Complete Summary
+# Archived Summary
 
-## What Was Created
+This file is historical documentation inside `trace`.
 
-A comprehensive automation system for BMad Method workflows that can:
+Use the canonical repo worklog for live status:
 
-✅ **Auto-initialize** BMM projects  
-✅ **Run workflows** interactively or automatically  
-✅ **Execute in parallel** for faster completion  
-✅ **Handle user interaction** in real-time  
-✅ **Track progress** automatically  
-✅ **Work across projects** (portable)  
-✅ **Support multiple CLIs** (auggie/claude)  
+- `/Users/kooshapari/CodeProjects/Phenotype/repos/trace/worklog.md`
 
-## Files Created
-
-### 1. `scripts/python/bmm-auto.py` (632 lines)
-**Main automation script**
-
-**Key Features:**
-- Workflow orchestration engine
-- Parallel execution support
-- Real-time streaming JSON processing
-- Interactive and automated modes
-- Status tracking and updates
-- Cross-CLI compatibility (auggie/claude)
-
-**Core Classes:**
-- `BMMAutomation`: Main orchestrator
-- `WorkflowTask`: Workflow representation
-- `WorkflowStatus`: Execution state enum
-
-**Key Methods:**
-- `run_init()`: Initialize BMM project
-- `run_workflow_sequence()`: Execute multiple workflows
-- `_run_parallel_workflows()`: Parallel execution
-- `_process_streaming_message()`: Handle real-time JSON
-- `show_status()`: Display progress
-
-### 2. `scripts/docs/README.md` (266 lines)
+The original BMM automation summary is retained only as provenance for the parked script/docs lane.
 **Comprehensive documentation**
 
 **Sections:**
@@ -292,4 +261,3 @@ For questions or issues:
 2. Review ARCHITECTURE.md for technical details
 3. See QUICKSTART.md for common tasks
 4. Consult BMad documentation: `.bmad/bmm/docs/`
-

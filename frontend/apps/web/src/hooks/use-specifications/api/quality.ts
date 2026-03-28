@@ -52,6 +52,7 @@ async function fetchQualityReports(projectId: string): Promise<QualityReport[]> 
       }
     } catch (error) {
       logger.warn(`Failed to fetch quality for item ${itemId}:`, error);
+      return undefined;
     }
   });
 

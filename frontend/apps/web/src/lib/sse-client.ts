@@ -103,12 +103,12 @@ export class SSEClient {
    * EventSource doesn't support custom headers, so we need to pass auth in URL or use cookies
    */
   private buildUrlWithAuth(url: string, headers?: Record<string, string>): string {
-    if (!headers?.Authorization) {
+    if (!headers?.["Authorization"]) {
       return url;
     }
 
     // Extract bearer token from Authorization header
-    const token = headers.Authorization.replace('Bearer ', '');
+    const token = headers["Authorization"].replace('Bearer ', '');
     const separator = url.includes('?') ? '&' : '?';
     return `${url}${separator}token=${encodeURIComponent(token)}`;
   }

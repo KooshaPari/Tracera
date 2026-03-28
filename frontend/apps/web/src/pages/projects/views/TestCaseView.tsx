@@ -194,7 +194,7 @@ export const TestCaseView = ({ projectId }: TestCaseViewProps) => {
               <CheckCircle className='h-4 w-4 text-green-500' />
               Approved
             </div>
-            <div className='mt-2 text-2xl font-bold'>{stats.byStatus?.approved ?? 0}</div>
+            <div className='mt-2 text-2xl font-bold'>{stats.byStatus?.["approved"] ?? 0}</div>
           </div>
           <div className='bg-card rounded-lg border p-4'>
             <div className='text-muted-foreground flex items-center gap-2 text-sm'>
@@ -202,7 +202,7 @@ export const TestCaseView = ({ projectId }: TestCaseViewProps) => {
               Automated
             </div>
             <div className='mt-2 text-2xl font-bold'>
-              {stats.byAutomationStatus?.automated ?? 0}
+              {stats.byAutomationStatus?.["automated"] ?? 0}
             </div>
           </div>
           <div className='bg-card rounded-lg border p-4'>

@@ -20,8 +20,8 @@ const ARROW_DELTAS: Record<string, { rowDelta: number; colDelta: number }> = {
 };
 
 function readCellPosition(target: HTMLElement): CellPosition | undefined {
-  const rowAttr = target.dataset.rowIndex;
-  const colAttr = target.dataset.colIndex;
+  const rowAttr = target.dataset["rowIndex"];
+  const colAttr = target.dataset["colIndex"];
   if (rowAttr === undefined || colAttr === undefined) {
     return undefined;
   }

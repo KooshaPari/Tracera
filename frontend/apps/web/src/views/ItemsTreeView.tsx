@@ -108,11 +108,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function readOptionalString(value: unknown): string | undefined {
-  return typeof value === 'string' && value.trim().length > 0 ? value : undefined;
+  return typeof value === 'string' && value["trim"]().length > 0 ? value : undefined;
 }
 
 function hasText(value: string | undefined): value is string {
-  return value !== undefined && value.trim().length > 0;
+  return value !== undefined && value["trim"]().length > 0;
 }
 
 function isItem(value: unknown): value is Item {
@@ -121,19 +121,19 @@ function isItem(value: unknown): value is Item {
   }
 
   return (
-    typeof value.id === 'string' &&
-    typeof value.title === 'string' &&
-    typeof value.type === 'string' &&
-    typeof value.status === 'string'
+    typeof value["id"] === 'string' &&
+    typeof value["title"] === 'string' &&
+    typeof value["type"] === 'string' &&
+    typeof value["status"] === 'string'
   );
 }
 
 function extractItems(data: unknown): Item[] {
-  if (!isRecord(data) || !Array.isArray(data.items)) {
+  if (!isRecord(data) || !Array.isArray(data["items"])) {
     return [];
   }
 
-  return data.items.filter((entry): entry is Item => isItem(entry));
+  return data["items"].filter((entry): entry is Item => isItem(entry));
 }
 
 function isProjectOption(value: unknown): value is ProjectOption {
@@ -141,7 +141,7 @@ function isProjectOption(value: unknown): value is ProjectOption {
     return false;
   }
 
-  return typeof value.id === 'string' && typeof value.name === 'string';
+  return typeof value["id"] === 'string' && typeof value["name"] === 'string';
 }
 
 function extractProjectOptions(data: unknown): ProjectOption[] {
@@ -149,7 +149,7 @@ function extractProjectOptions(data: unknown): ProjectOption[] {
     return [];
   }
 
-  return data.filter((entry): entry is ProjectOption => isProjectOption(entry));
+  return data["filter"]((entry): entry is ProjectOption => isProjectOption(entry));
 }
 
 function parseSearchFilters(searchParams: unknown): SearchFilters {
@@ -158,8 +158,8 @@ function parseSearchFilters(searchParams: unknown): SearchFilters {
   }
 
   return {
-    projectFilter: readOptionalString(searchParams.project),
-    typeFilter: readOptionalString(searchParams.type),
+    projectFilter: readOptionalString(searchParams["project"]),
+    typeFilter: readOptionalString(searchParams["type"]),
   };
 }
 

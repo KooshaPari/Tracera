@@ -66,8 +66,8 @@ export function extractValidationErrors(error: unknown): Record<string, string[]
   }
 
   // Format 1: { errors: { field: ["error1", "error2"] } }
-  if ('errors' in data && typeof data.errors === 'object' && data.errors !== null) {
-    return data.errors as Record<string, string[]>;
+  if ('errors' in data && typeof data["errors"] === 'object' && data["errors"] !== null) {
+    return data["errors"] as Record<string, string[]>;
   }
 
   // Format 2: { field: ["error1", "error2"] }

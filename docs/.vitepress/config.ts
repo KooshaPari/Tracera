@@ -1,46 +1,32 @@
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: 'trace',
-  description: 'trace documentation',
+  title: 'Trace',
+  description: 'Project documentation',
   srcDir: 'site',
-  lastUpdated: true,
-  cleanUrls: true,
   ignoreDeadLinks: true,
-
-  vite: {
-    resolve: {
-      alias: {
-        '@phenodocs-theme': phenodocsTheme,
-      },
-    },
-    server: {
-      fs: {
-        allow: [phenodocsRoot],
-      },
+  cleanUrls: true,
+  markdown: {
+    lineNumbers: true,
+    theme: {
+      light: 'github-light',
+      dark: 'github-dark',
     },
   },
   themeConfig: {
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Wiki', link: '/wiki/' },
-      { text: 'Development Guide', link: '/development/' },
-      { text: 'Document Index', link: '/index/' },
-      { text: 'API', link: '/api/' },
-      { text: 'Roadmap', link: '/roadmap/' }
+      { text: 'Getting Started', link: '/01-getting-started' },
+      { text: 'Architecture', link: '/02-architecture' },
     ],
-    sidebar: {
-      '/wiki/': [{ text: 'Wiki (User Guides)', items: [{ text: 'Overview', link: '/wiki/' }] }],
-      '/development/': [{ text: 'Development Guide', items: [{ text: 'Overview', link: '/development/' }] }],
-      '/index/': [{ text: 'Document Index', items: [{ text: 'Overview', link: '/index/' }, { text: 'Raw/All', link: '/index/raw-all' }, { text: 'Planning', link: '/index/planning' }, { text: 'Specs', link: '/index/specs' }, { text: 'Research', link: '/index/research' }, { text: 'Worklogs', link: '/index/worklogs' }, { text: 'Other', link: '/index/other' }] }],
-      '/api/': [{ text: 'API', items: [{ text: 'Overview', link: '/api/' }] }],
-      '/roadmap/': [{ text: 'Roadmap', items: [{ text: 'Overview', link: '/roadmap/' }] }],
-      '/': [{ text: 'Quick Links', items: [{ text: 'Wiki', link: '/wiki/' }, { text: 'Development Guide', link: '/development/' }, { text: 'Document Index', link: '/index/' }, { text: 'API', link: '/api/' }, { text: 'Roadmap', link: '/roadmap/' }] }]
-    },
+    sidebar: [
+      { text: 'Overview', link: '/' },
+      { text: 'Getting Started', link: '/01-getting-started' },
+      { text: 'Architecture', link: '/02-architecture' },
+      { text: 'Guides', link: '/04-guides' },
+      { text: 'API Reference', link: '/06-api-reference' },
+    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/KooshaPari/trace' }],
     search: { provider: 'local' },
-    socialLinks: [{ icon: 'github', link: 'https://github.com/kooshapari/trace' }]
-  }
+  },
 })

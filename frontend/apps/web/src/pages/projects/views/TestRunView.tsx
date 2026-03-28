@@ -99,14 +99,14 @@ export function TestRunView({ projectId }: TestRunViewProps) {
               <CheckCircle className='h-4 w-4 text-green-500' />
               Passed
             </div>
-            <div className='mt-2 text-2xl font-bold'>{stats.byStatus?.passed ?? 0}</div>
+            <div className='mt-2 text-2xl font-bold'>{stats.byStatus?.["passed"] ?? 0}</div>
           </div>
           <div className='bg-card rounded-lg border p-4'>
             <div className='text-muted-foreground flex items-center gap-2 text-sm'>
               <XCircle className='h-4 w-4 text-red-500' />
               Failed
             </div>
-            <div className='mt-2 text-2xl font-bold'>{stats.byStatus?.failed ?? 0}</div>
+            <div className='mt-2 text-2xl font-bold'>{stats.byStatus?.["failed"] ?? 0}</div>
           </div>
           <div className='bg-card rounded-lg border p-4'>
             <div className='text-muted-foreground flex items-center gap-2 text-sm'>

@@ -118,46 +118,46 @@ const toLinkType = (value: string): Link['type'] =>
 
 const normalizeGraph = (graph: SafeRecord): GraphOption => ({
   ...graph,
-  id: asString(graph.id),
-  name: asString(graph.name),
-  graphType: asString(graph.graphType),
+  id: asString(graph["id"]),
+  name: asString(graph["name"]),
+  graphType: asString(graph["graphType"]),
 });
 
 const normalizeNode = (node: SafeRecord): NormalizedNode =>
   ({
     ...node,
-    id: asString(node.id),
-    title: asString(node.title),
-    type: asString(node.item_type) || asString(node.itemType) || asString(node.view),
-    view: asString(node.view),
+    id: asString(node["id"]),
+    title: asString(node["title"]),
+    type: asString(node["item_type"]) || asString(node["itemType"]) || asString(node["view"]),
+    view: asString(node["view"]),
   }) as NormalizedNode;
 
 const normalizeLink = (link: SafeRecord): NormalizedLink =>
   ({
     ...link,
-    id: asString(link.id),
-    sourceId: asString(link.source_item_id) || asString(link.sourceId),
-    targetId: asString(link.target_item_id) || asString(link.targetId),
-    type: asString(link.link_type) || asString(link.type),
+    id: asString(link["id"]),
+    sourceId: asString(link["source_item_id"]) || asString(link["sourceId"]),
+    targetId: asString(link["target_item_id"]) || asString(link["targetId"]),
+    type: asString(link["link_type"]) || asString(link["type"]),
   }) as NormalizedLink;
 
 const toItem = (node: NormalizedNode, projectId: string): Item => {
-  const description = asOptionalString(node.description);
-  const parentId = asOptionalString(node.parentId);
-  const owner = asOptionalString(node.owner);
+  const description = asOptionalString(node["description"]);
+  const parentId = asOptionalString(node["parentId"]);
+  const owner = asOptionalString(node["owner"]);
 
   return {
-    id: node.id,
+    id: node["id"],
     projectId,
-    view: toViewType(node.view),
-    type: node.type.length > 0 ? node.type : DEFAULT_ITEM_TYPE,
-    title: node.title.length > 0 ? node.title : DEFAULT_ITEM_TITLE,
+    view: toViewType(node["view"]),
+    type: node["type"].length > 0 ? node["type"] : DEFAULT_ITEM_TYPE,
+    title: node["title"].length > 0 ? node["title"] : DEFAULT_ITEM_TITLE,
     status: DEFAULT_ITEM_STATUS,
     priority: DEFAULT_ITEM_PRIORITY,
     metadata: node,
     version: DEFAULT_VERSION,
-    createdAt: asString(node.createdAt, DEFAULT_TIMESTAMP),
-    updatedAt: asString(node.updatedAt, DEFAULT_TIMESTAMP),
+    createdAt: asString(node["createdAt"], DEFAULT_TIMESTAMP),
+    updatedAt: asString(node["updatedAt"], DEFAULT_TIMESTAMP),
     ...(description !== undefined ? { description } : {}),
     ...(parentId !== undefined ? { parentId } : {}),
     ...(owner !== undefined ? { owner } : {}),
@@ -165,20 +165,20 @@ const toItem = (node: NormalizedNode, projectId: string): Item => {
 };
 
 const toLink = (link: NormalizedLink, projectId: string): Link => {
-  const description = asOptionalString(link.description);
+  const description = asOptionalString(link["description"]);
 
   return {
     id:
-      link.id.length > 0
-        ? link.id
-        : `${link.sourceId}:${link.targetId}:${toLinkType(asString(link.type, DEFAULT_LINK_TYPE))}`,
+      link["id"].length > 0
+        ? link["id"]
+        : `${link["sourceId"]}:${link["targetId"]}:${toLinkType(asString(link["type"], DEFAULT_LINK_TYPE))}`,
     projectId,
-    sourceId: link.sourceId,
-    targetId: link.targetId,
-    type: toLinkType(link.type),
+    sourceId: link["sourceId"],
+    targetId: link["targetId"],
+    type: toLinkType(link["type"]),
     metadata: link,
-    createdAt: asString(link.createdAt, DEFAULT_TIMESTAMP),
-    updatedAt: asString(link.updatedAt, DEFAULT_TIMESTAMP),
+    createdAt: asString(link["createdAt"], DEFAULT_TIMESTAMP),
+    updatedAt: asString(link["updatedAt"], DEFAULT_TIMESTAMP),
     version: DEFAULT_VERSION,
     ...(description !== undefined ? { description } : {}),
   };
@@ -202,7 +202,7 @@ export function GraphView({ projectId }: GraphViewProps): JSX.Element {
       return;
     }
     if (selectedGraphId !== undefined && selectedGraphId.length > 0) {
-      return graphs.find((graph) => graph.id === selectedGraphId);
+      return graphs.find((graph) => graph["id"] === selectedGraphId);
     }
     return graphs[0];
   }, [graphs, selectedGraphId]);
@@ -213,7 +213,7 @@ export function GraphView({ projectId }: GraphViewProps): JSX.Element {
   );
 
   const mappingGraph = useMemo(
-    () => graphs.find((graph) => graph.graphType === 'mapping'),
+    () => graphs.find((graph) => graph["graphType"] === 'mapping'),
     [graphs],
   );
 
@@ -243,7 +243,7 @@ export function GraphView({ projectId }: GraphViewProps): JSX.Element {
     const itemIds = new Set(items.map((item) => item.id));
     const overlayLinks = mappingLinks
       .map((link) => toLink(normalizeLink(link), projectId))
-      .filter((link) => itemIds.has(link.sourceId) && itemIds.has(link.targetId));
+      .filter((link) => itemIds.has(link["sourceId"]) && itemIds.has(link["targetId"]));
 
     return [...baseLinks, ...overlayLinks];
   }, [graphData, mappingData, overlayMapping, items, projectId]);
@@ -260,8 +260,8 @@ export function GraphView({ projectId }: GraphViewProps): JSX.Element {
             </SelectTrigger>
             <SelectContent>
               {graphs.map((graph) => (
-                <SelectItem key={graph.id} value={graph.id}>
-                  {graph.name} ({graph.graphType})
+                <SelectItem key={graph["id"]} value={graph["id"]}>
+                  {graph["name"]} ({graph["graphType"]})
                 </SelectItem>
               ))}
             </SelectContent>

@@ -57,18 +57,18 @@ async function fetchGitHubRepos(
     page: data['page'],
     perPage: data['per_page'],
     repos: repos.map((repo) => ({
-      defaultBranch: repo.default_branch,
-      description: repo.description,
-      fullName: repo.full_name,
-      htmlUrl: repo.html_url,
-      id: repo.id,
-      name: repo.name,
+      defaultBranch: repo["default_branch"],
+      description: repo["description"],
+      fullName: repo["full_name"],
+      htmlUrl: repo["html_url"],
+      id: repo["id"],
+      name: repo["name"],
       owner: {
         avatarUrl: (repo['owner'] as { avatar_url?: string } | undefined)?.avatar_url,
         login: (repo['owner'] as { login?: string } | undefined)?.login,
       },
       private: repo['private'],
-      updatedAt: repo.updated_at,
+      updatedAt: repo["updated_at"],
     })) as TracerTypes.GitHubRepo[],
   };
 }
@@ -101,14 +101,14 @@ async function fetchGitHubIssues(
     issues: issues.map((issue) => ({
       assignees: (issue['assignees'] as string[] | undefined) ?? [],
       body: issue['body'],
-      createdAt: issue.created_at,
-      htmlUrl: issue.html_url,
-      id: issue.id,
+      createdAt: issue["created_at"],
+      htmlUrl: issue["html_url"],
+      id: issue["id"],
       labels: (issue['labels'] as string[] | undefined) ?? [],
-      number: issue.number,
+      number: issue["number"],
       state: issue['state'],
-      title: issue.title,
-      updatedAt: issue.updated_at,
+      title: issue["title"],
+      updatedAt: issue["updated_at"],
       user: {
         avatarUrl: (issue['user'] as { avatar_url?: string } | undefined)?.avatar_url,
         login: (issue['user'] as { login?: string } | undefined)?.login,
@@ -143,13 +143,13 @@ async function fetchGitHubProjects(
   return {
     projects: projects.map((project) => ({
       closed: project['closed'],
-      createdAt: project.created_at,
-      description: project.description,
-      id: project.id,
+      createdAt: project["created_at"],
+      description: project["description"],
+      id: project["id"],
       public: project['public'],
-      title: project.title,
-      updatedAt: project.updated_at,
-      url: project.url,
+      title: project["title"],
+      updatedAt: project["updated_at"],
+      url: project["url"],
     })) as TracerTypes.GitHubProject[],
   };
 }
@@ -167,11 +167,11 @@ async function fetchLinearTeams(credentialId: string): Promise<LinearTeamsRespon
   return {
     teams: teams.map((team) => ({
       color: team['color'],
-      description: team.description,
+      description: team["description"],
       icon: team['icon'],
-      id: team.id,
-      key: team.key,
-      name: team.name,
+      id: team["id"],
+      key: team["key"],
+      name: team["name"],
     })) as TracerTypes.LinearTeam[],
   };
 }
@@ -198,16 +198,16 @@ async function fetchLinearIssues(
   return {
     issues: issues.map((issue) => ({
       assignee: issue['assignee'],
-      createdAt: issue.created_at,
-      description: issue.description,
-      id: issue.id,
-      identifier: issue.identifier,
+      createdAt: issue["created_at"],
+      description: issue["description"],
+      id: issue["id"],
+      identifier: issue["identifier"],
       labels: (issue['labels'] as string[] | undefined) ?? [],
-      priority: issue.priority,
+      priority: issue["priority"],
       state: issue['state'],
-      title: issue.title,
-      updatedAt: issue.updated_at,
-      url: issue.url,
+      title: issue["title"],
+      updatedAt: issue["updated_at"],
+      url: issue["url"],
     })) as TracerTypes.LinearIssue[],
   };
 }
@@ -231,14 +231,14 @@ async function fetchLinearProjects(
   const projects = (data['projects'] as Record<string, unknown>[] | undefined) ?? [];
   return {
     projects: projects.map((project) => ({
-      description: project.description,
-      id: project.id,
-      name: project.name,
+      description: project["description"],
+      id: project["id"],
+      name: project["name"],
       progress: project['progress'],
-      startDate: project.start_date,
+      startDate: project["start_date"],
       state: project['state'],
-      targetDate: project.target_date,
-      url: project.url,
+      targetDate: project["target_date"],
+      url: project["url"],
     })) as TracerTypes.LinearProject[],
   };
 }
