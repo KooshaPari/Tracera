@@ -182,7 +182,7 @@ export function useTableKeyboardNavigation({
   // Setup event listeners
   useEffect(() => {
     const container = containerId
-      ? document.querySelector(`#${containerId}`)
+      ? (document.querySelector(`#${containerId}`) as HTMLElement | null)
       : containerRef.current;
 
     if (!container) {

@@ -59,7 +59,7 @@ export function getReturnTo(
       return DEFAULT_RETURN_TO;
     }
   } else if (typeof searchParams === 'object' && searchParams !== null) {
-    const returnToValue = (searchParams as Record<string, unknown>).returnTo;
+    const returnToValue = (searchParams as Record<string, unknown>)['returnTo'];
     if (typeof returnToValue === 'string') {
       returnTo = returnToValue;
     }

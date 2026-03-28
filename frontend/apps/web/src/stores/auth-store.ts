@@ -554,7 +554,6 @@ const buildAuthStore = (set: StoreSetter, get: StoreGetter): AuthState => ({
 });
 
 export const useAuthStore = create<AuthState>()(
-  // @ts-expect-error Zustand persist middleware incompatible with exactOptionalPropertyTypes
   persist<AuthState>((set, get) => buildAuthStore(set, get), {
     name: 'tracertm-auth-store',
     partialize: (state: AuthState) =>

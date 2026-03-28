@@ -94,7 +94,7 @@ const useWorkflowSchedules = (projectId: string): ReturnType<typeof useQuery> =>
     refetchInterval: REFRESH_SCHEDULES_INTERVAL_MS,
   });
 
-const useBootstrapWorkflowSchedules = (): ReturnType<typeof useMutation> => {
+const useBootstrapWorkflowSchedules = (): ReturnType<typeof useMutation<any, any, any, any>> => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (projectId: string) => {
@@ -117,7 +117,7 @@ const useBootstrapWorkflowSchedules = (): ReturnType<typeof useMutation> => {
   });
 };
 
-const useDeleteWorkflowSchedule = (): ReturnType<typeof useMutation> => {
+const useDeleteWorkflowSchedule = (): ReturnType<typeof useMutation<any, any, any, any>> => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ projectId, cronId }: { projectId: string; cronId: string }) => {
