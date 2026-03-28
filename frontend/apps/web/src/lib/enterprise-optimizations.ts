@@ -208,16 +208,8 @@ interface EnterpriseState {
 }
 
 export const useEnterpriseStore = create<EnterpriseState>()(
-  // @ts-expect-error Zustand v5 persist middleware is incompatible with exactOptionalPropertyTypes
   persist(
-    (
-      set: (
-        fn:
-          | EnterpriseState
-          | Partial<EnterpriseState>
-          | ((state: EnterpriseState) => EnterpriseState | Partial<EnterpriseState>),
-      ) => void,
-    ) => ({
+    (set) => ({
       // Initial state
       preferences: {
         theme: 'system',

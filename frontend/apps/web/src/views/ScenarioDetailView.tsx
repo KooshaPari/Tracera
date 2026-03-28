@@ -235,7 +235,7 @@ export function ScenarioDetailView(): React.JSX.Element {
       <GherkinViewer content={scenario.gherkinText} height='220px' />
 
       <ScenarioActivityCard
-        activities={activities}
+        activities={activities as readonly ScenarioActivity[]}
         page={page}
         pageSize={pageSize}
         progressStyle={progressStyle}

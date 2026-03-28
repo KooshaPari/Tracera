@@ -32,6 +32,15 @@ declare global {
   }
 }
 
+// Re-export types for packages without proper 'exports' field (bundler resolution workaround)
+declare module 'prop-types' {
+  export * from '@types/prop-types/index.d.ts';
+}
+
+declare module 'react-is' {
+  export * from '@types/react-is/index.d.ts';
+}
+
 // Module declarations
 declare module '*.svg' {
   import React from 'react';

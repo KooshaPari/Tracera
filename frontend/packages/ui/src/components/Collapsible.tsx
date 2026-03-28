@@ -21,7 +21,7 @@ const Collapsible = React.forwardRef<HTMLDivElement, CollapsibleProps>(
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
           return React.cloneElement(child as React.ReactElement<CollapsibleChildProps>, {
-            onOpenChange,
+            ...(onOpenChange !== undefined && { onOpenChange }),
             open,
           });
         }

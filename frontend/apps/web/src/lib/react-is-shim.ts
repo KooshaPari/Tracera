@@ -1,4 +1,4 @@
-import * as ReactIsNamespace from 'react-is/index.js';
+import * as ReactIsNamespace from 'react-is';
 
 const ReactIs = ReactIsNamespace as any;
 

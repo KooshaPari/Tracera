@@ -74,12 +74,12 @@ export function validateOpenAPISpec(spec: unknown): spec is OpenAPISpec {
   const candidate = spec as Record<string, unknown>;
 
   // Check required fields
-  if (!candidate.openapi || !candidate.info || !candidate.paths) {
+  if (!candidate['openapi'] || !candidate['info'] || !candidate['paths']) {
     return false;
   }
 
   // Check OpenAPI version
-  if (typeof candidate.openapi === 'string' && !candidate.openapi.startsWith('3.')) {
+  if (typeof candidate['openapi'] === 'string' && !candidate['openapi'].startsWith('3.')) {
     logger.warn('Only OpenAPI 3.x is fully supported');
   }
 
@@ -155,13 +155,13 @@ export function getSupportedAuthTypes(
     if (!scheme || typeof scheme !== 'object') return;
 
     const schemeObj = scheme as Record<string, unknown>;
-    if (schemeObj.type === 'http' && schemeObj.scheme === 'bearer') {
+    if (schemeObj['type'] === 'http' && schemeObj['scheme'] === 'bearer') {
       authTypes.push('bearer');
-    } else if (schemeObj.type === 'http' && schemeObj.scheme === 'basic') {
+    } else if (schemeObj['type'] === 'http' && schemeObj['scheme'] === 'basic') {
       authTypes.push('basic');
-    } else if (schemeObj.type === 'apiKey') {
+    } else if (schemeObj['type'] === 'apiKey') {
       authTypes.push('apiKey');
-    } else if (schemeObj.type === 'oauth2') {
+    } else if (schemeObj['type'] === 'oauth2') {
       authTypes.push('oauth2');
     }
   });
@@ -235,7 +235,7 @@ function generateJavaScriptExample(method: string, url: string, authToken?: stri
   };
 
   if (authToken) {
-    headers.Authorization = `Bearer ${authToken}`;
+    headers['Authorization'] = `Bearer ${authToken}`;
   }
 
   let example = `fetch('${url}', {
@@ -299,7 +299,7 @@ function generateTypeScriptExample(method: string, url: string, authToken?: stri
   };
 
   if (authToken) {
-    headers.Authorization = `Bearer ${authToken}`;
+    headers['Authorization'] = `Bearer ${authToken}`;
   }
 
   let example = `interface ApiResponse {
@@ -357,7 +357,7 @@ export function getEndpointByOperationId(
         typeof operation === 'object' &&
         operation !== null &&
         'operationId' in operation &&
-        (operation as Record<string, unknown>).operationId === operationId
+        (operation as Record<string, unknown>)['operationId'] === operationId
       ) {
         return { path, method, operation };
       }
@@ -411,16 +411,16 @@ export function getResponseExamples(operation: unknown): ResponseExamples {
     if (!response || typeof response !== 'object') return;
 
     const responseObj = response as Record<string, unknown>;
-    const content = responseObj.content as Record<string, unknown> | undefined;
+    const content = responseObj['content'] as Record<string, unknown> | undefined;
     if (!content) return;
 
     const jsonContent = content['application/json'] as Record<string, unknown> | undefined;
     if (!jsonContent) return;
 
-    if (jsonContent.example) {
-      examples[status] = jsonContent.example;
-    } else if (jsonContent.examples && typeof jsonContent.examples === 'object') {
-      const examplesObj = jsonContent.examples as Record<string, unknown>;
+    if (jsonContent['example']) {
+      examples[status] = jsonContent['example'];
+    } else if (jsonContent['examples'] && typeof jsonContent['examples'] === 'object') {
+      const examplesObj = jsonContent['examples'] as Record<string, unknown>;
       const firstExample = Object.values(examplesObj)[0];
       if (firstExample) {
         examples[status] = firstExample;

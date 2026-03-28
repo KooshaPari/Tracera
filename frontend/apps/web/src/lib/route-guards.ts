@@ -124,6 +124,6 @@ export async function requireAdmin(options?: Pick<RouteGuardOptions, 'redirectTo
  * ```
  */
 export function checkAuth(): RouteGuardState {
-  const { isAuthenticated, user, account } = useAuthStore.getState();
-  return { isAuthenticated, user, account };
+  const { isAuthenticated, user, account, token } = useAuthStore.getState();
+  return { isAuthenticated, user, account, token };
 }

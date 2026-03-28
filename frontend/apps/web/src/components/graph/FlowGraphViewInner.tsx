@@ -86,18 +86,18 @@ interface EdgeStyleCacheEntry {
 const edgeStyleCache = new Map<LinkType, EdgeStyleCacheEntry>();
 
 interface StoreCacheStatsBlock {
-  count: number;
-  hitRate: number;
+  totalEntries: number;
+  hitRatio: number;
 }
 
 const toPerformanceCacheStats = (
   statsBlock: StoreCacheStatsBlock,
   backendType: string,
 ): CacheStatistics => {
-  const normalizedHitRatio = Number.isFinite(statsBlock.hitRate)
-    ? Math.min(Math.max(statsBlock.hitRate, 0), 1)
+  const normalizedHitRatio = Number.isFinite(statsBlock.hitRatio)
+    ? Math.min(Math.max(statsBlock.hitRatio, 0), 1)
     : 0;
-  const totalEntries = Number.isFinite(statsBlock.count) ? Math.max(statsBlock.count, 0) : 0;
+  const totalEntries = Number.isFinite(statsBlock.totalEntries) ? Math.max(statsBlock.totalEntries, 0) : 0;
   const totalHits = Math.round(totalEntries * normalizedHitRatio);
 
   return {
@@ -938,9 +938,9 @@ function FlowGraphViewInnerComponent({
     cacheStats: useMemo(() => {
       const stats = getCacheStats();
       return {
-        grouping: toPerformanceCacheStats(stats.groupings, 'graph-groupings-store'),
-        layout: toPerformanceCacheStats(stats.layouts, 'graph-layouts-store'),
-        search: toPerformanceCacheStats(stats.searches, 'graph-search-store'),
+        grouping: toPerformanceCacheStats(stats.grouping, 'graph-groupings-store'),
+        layout: toPerformanceCacheStats(stats.layout, 'graph-layouts-store'),
+        search: toPerformanceCacheStats(stats.search, 'graph-search-store'),
       };
     }, [getCacheStats]),
     edges: links,

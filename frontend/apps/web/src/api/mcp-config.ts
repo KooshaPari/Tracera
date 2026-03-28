@@ -21,7 +21,7 @@ const MCP_CONFIG_ENDPOINT = `${API_BASE_URL}/api/v1/mcp/config`;
  * No Authorization headers needed - backend validates via cookies
  */
 
-let cachedConfig;
+let cachedConfig: McpConfig | undefined;
 
 const createEnvConfig = (baseUrl: string): McpConfig => ({
   auth_mode: 'env',

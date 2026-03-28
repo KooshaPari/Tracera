@@ -289,7 +289,7 @@ export class CacheManager {
    * Get aggregated statistics
    */
   async getStats(): Promise<{
-    overall: typeof this.stats & { hitRatio: number };
+    overall: { totalRequests: number; memoryHits: number; indexedDBHits: number; serviceWorkerHits: number; misses: number; hitRatio: number };
     memory: CacheStatistics | null;
     indexedDB: CacheStatistics | null;
     serviceWorker: CacheStatistics | null;
