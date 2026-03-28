@@ -1,515 +1,312 @@
-# TracerTM — Architecture Decision Records
+# ADR — TracerTM
 
 **Project**: TracerTM (Requirements Traceability Matrix)
-**Document Version**: 1.0
+**Version**: 1.0
 **Last Updated**: 2026-03-27
-**Status**: Active
-
-This document collects all architecture decisions made for TracerTM. Each ADR has a status
-(`Proposed`, `Accepted`, `Deprecated`, `Superseded`) and traces to one or more PRD features.
-
-Individual extended ADR documents live in `docs/adr/`.
 
 ---
 
-## ADR Index
-
-| ID      | Title                                    | Status   | PRD Feature  |
-|---------|------------------------------------------|----------|--------------|
-| ADR-001 | Polyglot Backend Architecture            | Accepted | All          |
-| ADR-002 | Echo v4 as Go HTTP Framework             | Accepted | F1, F3, F9   |
-| ADR-003 | PostgreSQL + Neo4j + Redis Persistence   | Accepted | F1–F12       |
-| ADR-004 | NATS JetStream for Messaging             | Accepted | F8, F10      |
-| ADR-005 | TanStack Router + React 19 Frontend      | Accepted | F3, F6, F8   |
-| ADR-006 | Geist Design System                      | Accepted | F3, F6, F8   |
-| ADR-007 | FastMCP 2.14 for MCP Protocol            | Accepted | F2, F7       |
-| ADR-008 | WebSocket for Real-Time Collaboration    | Accepted | F8           |
-| ADR-009 | JWT + OAuth2/OIDC Authentication         | Accepted | F9           |
-| ADR-010 | SLSA Provenance and Attestation          | Accepted | F12          |
-| ADR-011 | Caddy as Unified Gateway                 | Accepted | All          |
-| ADR-012 | Prometheus + Loki + Jaeger Observability | Accepted | F13          |
-| ADR-013 | Process Compose for Local Orchestration  | Accepted | Dev          |
-| ADR-014 | Layered Transformation Migration         | Accepted | All          |
-| ADR-015 | Tach for Architecture Boundary Enforcement | Accepted | Dev        |
-
----
-
-## ADR-001: Polyglot Backend Architecture
+## ADR-001: Polyglot Backend Architecture (Python + Go)
 
 **Status**: Accepted
-**Date**: 2026-01-28
-**PRD Traces**: All features
 
-### Context
+**Context**:
+TracerTM requires two distinct execution profiles under one system: a Python-native ML/analysis layer
+(FR-RTM-010 through FR-RTM-013) with access to rich AI/ML libraries, and a high-throughput API
+gateway layer capable of handling real-time WebSocket connections and hundreds of concurrent
+requirement linkage queries.
 
-TracerTM requires high throughput for core API workloads, graph traversal performance, and
-specialized data analysis pipelines. No single language excels at all three.
+**Decision**:
+Run two backend services in parallel:
+- `backend/` (Go, Echo v4): primary REST/WebSocket API gateway, authentication, real-time
+  collaboration, and traceability graph queries via Neo4j.
+- `src/` (Python 3.13, FastAPI + uvicorn): analysis engine, LLM-backed requirement inference,
+  compliance report generation, CLI tooling.
 
-### Decision
+Both services share a PostgreSQL database schema (managed by Alembic migrations). The Go service
+handles hot paths; the Python service handles compute-intensive or ML-dependent tasks.
 
-Use a polyglot backend:
-- **Go** (`backend/`): Core API server, business logic, RBAC, webhook ingestion.
-  Primary runtime: Echo v4 over HTTP/2.
-- **Python** (`src/`): Data analysis pipelines, CLI/TUI tooling, MCP server (FastMCP),
-  background enrichment jobs.
-
-Both services share the same PostgreSQL and Neo4j instances and communicate via NATS
-JetStream for async work.
-
-### Rationale
-
-- Go provides sub-millisecond latency for synchronous API calls.
-- Python provides mature data science libraries (pandas, networkx) for graph analytics.
-- NATS decouples services without shared memory.
-
-### Consequences
-
-- Two separate build pipelines (go build, uv/pip).
-- Two Dockerfiles; process-compose manages both in local dev.
-- Shared schema owned by Go migrations (Atlas); Python reads via SQLAlchemy.
+**Consequences**:
+- (+) Go service sustains <2s matrix load for 1000+ requirements (FR-RTM-003).
+- (+) Python service uses native Pydantic + SQLAlchemy for domain modelling without FFI overhead.
+- (-) Two build pipelines, two Docker images, two language runtime environments to maintain.
+- (-) Shared schema requires coordination; Alembic migrations must be applied before Go binary start.
 
 ---
 
-## ADR-002: Echo v4 as Go HTTP Framework
+## ADR-002: Neo4j for Graph-Based Dependency Analysis
 
 **Status**: Accepted
-**Date**: 2026-01-28
-**PRD Traces**: Feature 1, Feature 3, Feature 9
 
-### Context
+**Context**:
+Requirement dependency chains (FR-DEP-001 through FR-DEP-006) require traversal of directed graphs
+where nodes are requirements and edges represent blocking/optional/related relationships. Relational
+databases require recursive CTEs that become expensive beyond ~500 dependencies; pure in-memory
+graphs do not persist or scale across services.
 
-Go HTTP framework choice affects routing ergonomics, middleware composability, and
-WebSocket integration.
+**Decision**:
+Use Neo4j (community edition) as a dedicated graph store, accessed via the official
+`neo4j-go-driver/v5` from the Go service. Requirement nodes and linkage edges are written to Neo4j
+in parallel with the authoritative PostgreSQL record. Dependency path queries (impact analysis,
+circular detection) execute as Cypher traversals.
 
-### Decision
-
-Use `github.com/labstack/echo/v4`. Gorilla Mux retained for legacy route groups during
-transition.
-
-### Rationale
-
-- Echo provides built-in middleware (CORS, JWT, rate-limit, request ID).
-- WebSocket upgrade via gorilla/websocket integrates cleanly into Echo handlers.
-- Group-scoped middleware simplifies RBAC enforcement per route prefix.
-
-### Consequences
-
-- Gorilla Mux routes to be migrated to Echo groups incrementally.
-- All new handlers must use Echo context (`echo.Context`).
+**Consequences**:
+- (+) Cypher `MATCH p=(a)-[*1..10]->(b)` traversals are O(edges traversed), not O(rows scanned).
+- (+) Circular dependency detection (FR-RTM-002) is a single Cypher query.
+- (-) Dual-write to PostgreSQL + Neo4j introduces eventual consistency window; the Go service
+  compensates with a write barrier before returning the API response.
+- (-) Neo4j community edition is single-instance; HA requires Enterprise license.
 
 ---
 
-## ADR-003: PostgreSQL + Neo4j + Redis Persistence
+## ADR-003: PostgreSQL as Authoritative Relational Store with Alembic Migrations
 
 **Status**: Accepted
-**Date**: 2026-01-28
-**PRD Traces**: Features 1–12
 
-### Context
+**Context**:
+Requirements, users, projects, linkages, and audit events must survive restarts, support point-in-time
+recovery, and be queryable by multiple services. ACID semantics are required for requirement status
+transitions (FR-RTM-006) and compliance audit trails (FR-COMP-001 through FR-COMP-004).
 
-TracerTM manages three distinct data shapes: relational (requirements, users, projects),
-graph (dependency DAGs, impact paths), and ephemeral (session caches, WebSocket state).
+**Decision**:
+PostgreSQL (v16+) is the single authoritative store. Schema is managed by Alembic (Python migration
+tool); migration scripts live in `alembic/versions/`. The Go service connects via `pgx/v5` with a
+connection pool; the Python service connects via `asyncpg` through SQLAlchemy async.
 
-### Decision
+Raw SQL queries for read-heavy paths use `queries.sql` (PGXC naming convention). PostgreSQL-native
+features used: generated columns, `tstzrange` for time-bounded audits, `jsonb` for requirement
+metadata blobs, `pg_notify` for CDC-style event fanout.
 
-Three-tier persistence:
-- **PostgreSQL 17** (`pgx/v5`): Source of truth for all domain entities. Migrations via
-  Atlas HCL (`backend/atlas.hcl`).
-- **Neo4j 5.0** (`neo4j-go-driver/v5`): Graph store for requirement dependency DAGs,
-  impact analysis traversals, and critical path queries.
-- **Redis 7** (`go-redis`): Session cache, WebSocket presence, distributed rate-limit
-  counters.
-
-### Rationale
-
-- Relational integrity (foreign keys, transactions) required for audit logs and RBAC.
-- Cypher queries over Neo4j outperform recursive CTEs for deep graph traversal (>5 hops).
-- Redis provides sub-millisecond latency for presence and rate-limit checks.
-
-### Consequences
-
-- Three infrastructure dependencies for local dev (managed by process-compose).
-- Neo4j and PostgreSQL must be kept in sync; dual-write on requirement create/update.
-- Schema migrations are Go-owned; Python services must not perform DDL.
+**Consequences**:
+- (+) Single migration tool (Alembic) controls schema evolution; no schema drift between services.
+- (+) `jsonb` allows forward-compatible requirement metadata without schema churn.
+- (-) Alembic is Python-native; Go migrations must be applied via `make migrate` before service
+  start, adding a deployment sequencing constraint.
 
 ---
 
-## ADR-004: NATS JetStream for Messaging
+## ADR-004: Redis for Caching, Session State, and Rate Limiting
 
 **Status**: Accepted
-**Date**: 2026-02-01
-**PRD Traces**: Feature 8, Feature 10
 
-### Context
+**Context**:
+Real-time collaboration (FR-COLLAB-001 through FR-COLLAB-004) and live dashboard views
+(FR-OBS-001) need fast shared state that does not require round-trips to PostgreSQL. API
+rate-limiting must be enforced across Go service replicas without a central coordinator.
 
-Async workloads (webhook ingestion, CI/CD result ingestion, coverage aggregation) must be
-decoupled from synchronous API handlers. A message bus is required.
+**Decision**:
+Redis (accessed via `go-redis` from Go, `aioredis` from Python) serves three roles:
+1. Session token store: JWT refresh tokens cached with TTL equal to token expiry.
+2. Dashboard/matrix cache: rendered matrix rows cached for up to 60 s; invalidated on requirement
+   write-through.
+3. Rate-limit counters: sliding-window counters per `(user_id, endpoint)` stored as Redis HLLs for
+   sub-millisecond increments.
 
-### Decision
+`alicebob/miniredis/v2` is used in Go tests to replace Redis without network I/O.
 
-Use **NATS JetStream** (`nats.go v1.48`). Subjects follow the convention
-`tracertm.<service>.<entity>.<action>` (e.g., `tracertm.backend.requirement.created`).
-
-### Rationale
-
-- NATS is lightweight (<10 MB binary) and embeds well for local dev.
-- JetStream persistence guarantees at-least-once delivery across restarts.
-- Python consumers use `nats-py` for background workers.
-
-### Consequences
-
-- NATS becomes a required infrastructure dependency (non-optional).
-- All async consumers must implement idempotent handlers (duplicate message safe).
-- Dead-letter subject: `tracertm.dlq.*` for failed messages.
+**Consequences**:
+- (+) Cache hit on RTM matrix load reduces P95 latency from ~1.8 s to ~120 ms for 1000-row matrices.
+- (+) Rate-limiting is consistent across replicas with no external coordinator.
+- (-) Session state in Redis is non-durable; a Redis restart invalidates all active sessions.
+  Mitigation: Go service falls back to PostgreSQL session lookup on Redis miss.
 
 ---
 
-## ADR-005: TanStack Router + React 19 Frontend
+## ADR-005: NATS for Asynchronous Event Fanout
 
 **Status**: Accepted
-**Date**: 2026-01-30
-**PRD Traces**: Feature 3, Feature 6, Feature 8
 
-### Context
+**Context**:
+Multiple subsystems need to react to requirement changes without tight coupling: the observability
+pipeline (Prometheus counters), the compliance audit logger, and the WebSocket broadcast relay.
+Synchronous HTTP calls between services would introduce latency spikes and coupling.
 
-Frontend requirements include complex nested routing (project → requirement → lens), type-safe
-data fetching, and real-time collaborative views.
+**Decision**:
+NATS.io (accessed via `nats.go`) is used as a lightweight pub/sub bus. The Go service publishes
+`requirement.changed`, `linkage.created`, and `project.status` events on named subjects. Consumers
+include: the Python analytics service (via `nats.py` client), the WebSocket relay (in-process Go),
+and the audit writer (in-process Go).
 
-### Decision
+NATS JetStream is not required for current durability needs; at-most-once delivery is acceptable
+because downstream consumers are idempotent or reconstruct state from PostgreSQL on startup.
 
-- **React 19** with concurrent features and server components where applicable.
-- **TanStack Router v1** for type-safe file-based routing.
-- **TanStack Query v5** for server-state management.
-- **Zustand** for ephemeral client state (WebSocket presence, optimistic updates).
-- **Vite 8** build toolchain.
-
-### Rationale
-
-- TanStack Router provides full type inference for route parameters and search params.
-- React 19 concurrent rendering improves perceived performance for large RTM matrices.
-- Zustand is minimal and avoids Redux boilerplate for local UI state.
-
-### Consequences
-
-- All routes must be declared under `frontend/apps/` following TanStack Router file
-  conventions.
-- Server-state (requirements, coverage) fetched via TanStack Query; never stored in Zustand.
+**Consequences**:
+- (+) Decouples Python analytics startup from Go API hot path.
+- (+) WebSocket broadcast latency is <50 ms after requirement write (FR-COLLAB-002).
+- (-) At-most-once delivery means events may be dropped during NATS restart. Acceptable because
+  affected consumers (Prometheus counters, audit writer) reconcile from PostgreSQL on startup.
 
 ---
 
-## ADR-006: Geist Design System
+## ADR-006: gRPC + Protobuf for Cross-Service Contract Enforcement
 
 **Status**: Accepted
-**Date**: 2026-02-05
-**PRD Traces**: Feature 3, Feature 6, Feature 8
 
-### Context
+**Context**:
+The Go and Python services share data models (requirement schema, linkage records, audit events).
+REST JSON payloads offer no compile-time contract guarantees. Schema drift between Go structs and
+Python Pydantic models caused silent bugs during early development.
 
-TracerTM requires a cohesive, dark-mode-first design language. Custom component libraries
-are out of scope.
+**Decision**:
+Define all shared data contracts as Protobuf v3 schemas in `proto/`. Use `buf` (buf.build toolchain,
+`buf.yaml` + `buf.gen.yaml`) to generate Go stubs (`grpc/v2`) and Python stubs (`grpcio`). The Go
+service exposes a gRPC server on an internal port; the Python service calls it for requirement reads
+to avoid direct DB contention on analytics paths.
 
-### Decision
+The external-facing public API remains REST/JSON (Echo v4 for Go, FastAPI for Python) because client
+tooling (browsers, CLI) cannot speak gRPC directly.
 
-Use **Geist** (`geist v1.7`) as the base design system. Supplement with Radix UI primitives
-for accessible components not covered by Geist.
-
-### Rationale
-
-- Geist provides a professional, monochrome-first aesthetic aligned with developer tooling.
-- Radix UI offers headless, accessible primitives (dialogs, tooltips, popovers).
-- No custom CSS component library to maintain.
-
-### Consequences
-
-- All new UI components must use Geist tokens and Radix primitives.
-- Plain HTML forms are prohibited; every input must use a component from Geist or Radix.
+**Consequences**:
+- (+) Protobuf schema is the single source of truth for cross-service types; `buf lint` enforces
+  backward compatibility.
+- (+) gRPC streaming enables streaming requirement exports without buffering full result sets.
+- (-) buf codegen adds a build step; Go and Python stub files must be regenerated after schema
+  changes and committed (`proto/gen/`).
 
 ---
 
-## ADR-007: FastMCP 2.14 for MCP Protocol
+## ADR-007: S3-Compatible Object Storage (MinIO / AWS S3) for Artifact and Evidence Storage
 
 **Status**: Accepted
-**Date**: 2026-02-10
-**PRD Traces**: Feature 2 (Multi-Lens), Feature 7 (Spec Verification)
 
-### Context
+**Context**:
+Compliance audit artifacts (FR-COMP-003), evidence bundles (test reports, Playwright screenshots),
+and requirement export archives may be large binary blobs. Storing binaries in PostgreSQL degrades
+query performance; serving them from application memory limits scalability.
 
-AI agents (Claude, Gemini, Codex) must consume TracerTM data programmatically. The MCP
-(Model Context Protocol) provides a standard interface for tool-calling.
+**Decision**:
+Use an S3-compatible backend for blob storage. In development, MinIO (`minio-go/v7`) runs as a
+native process. In production, AWS S3 (`aws-sdk-go-v2/service/s3`) is targeted. The Go service
+abstracts both via the `S3Manager` interface in `pkg/storage/`. Upload/download presigned URLs are
+returned to clients; blobs never transit the application tier.
 
-### Decision
-
-Implement a Python MCP server using **FastMCP 2.14** (`src/` service). Tools exposed:
-- `get_requirement(id)`: fetch requirement with all links.
-- `get_coverage_matrix(project_id)`: return RTM coverage summary.
-- `run_spec_verification(project_id)`: trigger and return spec verification report.
-- `link_requirement_to_code(req_id, file_path, start_line, end_line)`: create code link.
-
-### Rationale
-
-- FastMCP abstracts the MCP wire protocol; tool functions are plain Python.
-- Python chosen for MCP layer because LLM ecosystem libraries are Python-native.
-- Decoupled from Go API — MCP server calls Go REST API internally.
-
-### Consequences
-
-- MCP server is a separate Python process, not embedded in Go.
-- MCP tools must be kept in sync with Go API contract changes.
-- Tool function signatures must be fully type-annotated (pydantic models).
+**Consequences**:
+- (+) Artifact uploads are non-blocking; the Go handler returns a presigned URL immediately.
+- (+) MinIO is fully compatible with AWS S3 API; switching requires only an endpoint + credential
+  environment variable change.
+- (-) Local dev requires MinIO process running (added to `docker-compose.yml` and process-compose).
 
 ---
 
-## ADR-008: WebSocket for Real-Time Collaboration
+## ADR-008: Prometheus + Loki + Jaeger Observability Stack
 
 **Status**: Accepted
-**Date**: 2026-02-01
-**PRD Traces**: Feature 8
 
-### Context
+**Context**:
+FR-OBS-001 through FR-OBS-004 require real-time metrics dashboards, structured log aggregation, and
+distributed trace correlation across Go and Python services. A homogeneous vendor-agnostic
+observability stack is preferred over a paid SaaS.
 
-Multiple users editing requirements simultaneously requires real-time propagation of changes
-without polling.
+**Decision**:
+- **Metrics**: Prometheus scrapes `/metrics` from both services (Go uses `prometheus/client_golang`;
+  Python uses `prometheus-fastapi-instrumentator`). Grafana provides dashboards.
+- **Logs**: Structured logs (Go: `slog` JSON; Python: `structlog` JSON) are shipped to Loki via
+  Promtail. Log queries use LogQL.
+- **Traces**: Both services emit OpenTelemetry spans. Jaeger collects and stores traces. Trace IDs
+  are propagated in HTTP headers (`traceparent`) and NATS message metadata.
 
-### Decision
+Sentry (`getsentry/sentry-go`) is used for error capture and alerting on unhandled panics.
 
-Use **WebSocket** via `gorilla/websocket` on the Go backend. Hub pattern: per-project
-connection pool. Events published to NATS; hub fans out to connected clients.
-
-### Rationale
-
-- WebSocket provides bidirectional full-duplex channel, eliminating polling.
-- NATS fan-out decouples write path (API handler) from broadcast path (WebSocket hub).
-- Conflict resolution: last-write-wins for field-level updates; explicit UI prompt for
-  structural changes (new links, status transitions).
-
-### Consequences
-
-- WebSocket connections must authenticate via JWT on upgrade handshake.
-- Connection state tracked in Redis (presence map).
-- Graceful reconnect with exponential backoff required on frontend.
+**Consequences**:
+- (+) Full OSS stack; zero per-request cost at any volume.
+- (+) Trace IDs link Jaeger spans to Loki log lines for end-to-end debugging.
+- (-) Prometheus + Loki + Jaeger + Grafana = four additional runtime processes in dev. Managed via
+  `docker-compose.yml` and `process-compose` profiles.
 
 ---
 
-## ADR-009: JWT + OAuth2/OIDC Authentication
+## ADR-009: React + TypeScript Frontend with Bun as Package Manager
 
 **Status**: Accepted
-**Date**: 2026-01-28
-**PRD Traces**: Feature 9
 
-### Context
+**Context**:
+TracerTM requires a rich UI with a live RTM matrix (FR-RTM-003), dependency graph visualization
+(FR-DEP-004), real-time collaboration cursors (FR-COLLAB-001), and compliance dashboards
+(FR-COMP-004). The frontend must support >1000 matrix rows without jank.
 
-TracerTM must support both direct user login and federated identity (GitHub, Google).
-API clients (agents, CI/CD systems) require token-based auth.
+**Decision**:
+- React 19 (concurrent mode) for component architecture.
+- TypeScript (strict mode) for type safety.
+- Bun as the package manager and bundler (`bun.lock` is the lockfile); `bunfig.toml` for config.
+- Radix UI primitives + Tailwind CSS for accessible, composable components.
+- React Query for server state; Zustand for local UI state.
+- Virtualized row rendering (`@tanstack/react-virtual`) for the RTM matrix to handle 1000+ rows
+  at <16 ms frame budget.
 
-### Decision
-
-- **JWT** (`golang-jwt/jwt/v5`): Access tokens (15-min TTL) and refresh tokens (7-day TTL).
-- **OAuth2/OIDC**: GitHub and Google as identity providers. Tokens exchanged for internal
-  JWTs.
-- **Vault** (`hashicorp/vault/api`): JWT signing keys stored in Vault; rotated quarterly.
-
-### Rationale
-
-- JWTs are stateless, suitable for horizontal scaling.
-- Vault centralizes secret management and key rotation.
-- OIDC providers reduce password management burden.
-
-### Consequences
-
-- Vault is a required runtime dependency (fails loudly if unavailable).
-- All API endpoints must validate JWT on every request (no session cookies for API clients).
-- Refresh token rotation must be atomic (database transaction).
+**Consequences**:
+- (+) Virtual rendering eliminates DOM node count issues for large matrices.
+- (+) Bun install is 5-10x faster than npm; cold CI installs drop from ~40 s to ~6 s.
+- (-) Bun's module resolution differs from Node.js in edge cases; a small number of CJS-only
+  packages require `--bun` shim or replacement.
 
 ---
 
-## ADR-010: SLSA Provenance and Attestation
+## ADR-010: HashiCorp Vault for Secrets Management
 
 **Status**: Accepted
-**Date**: 2026-02-15
-**PRD Traces**: Feature 12
 
-### Context
+**Context**:
+TracerTM handles provider API keys, database credentials, and JWT signing secrets. Hardcoding
+credentials in environment files is unacceptable for production; a secrets management system
+with audit logging is required (FR-COMP-001).
 
-Compliance teams require verifiable build provenance for audit trails.
+**Decision**:
+HashiCorp Vault (`hashicorp/vault/api v1.22.0`) is used as the secrets backend. The Go service
+fetches secrets at startup via the AppRole auth method; secrets are renewed before lease expiry.
+In development, a dev-mode Vault instance (started via `process-compose`) is pre-seeded by the
+`scripts/seed-vault.sh` script. The Python service reads secrets via the `hvac` client.
 
-### Decision
-
-All CI/CD builds generate **SLSA Level 3 attestations** via `sigstore/cosign`. Attestations
-are attached to container images and stored in OCI registry alongside images. SBOM generated
-via `syft` on each release.
-
-### Rationale
-
-- SLSA Level 3 satisfies SOC2 and ISO 27001 build integrity requirements.
-- Cosign is OSS and integrates with GitHub Actions without paid services.
-
-### Consequences
-
-- Release pipeline must include `cosign sign` and `cosign attest` steps.
-- Container registry must support OCI artifact referrers.
-- Attestation verification is a gate in production deployment workflow.
+**Consequences**:
+- (+) Credential rotation does not require application redeployment; Vault leases handle expiry.
+- (+) Vault audit log provides a tamper-evident record of all secret accesses (FR-COMP-001).
+- (-) Vault adds a critical runtime dependency; Go service hard-fails at startup if Vault is
+  unreachable (consistent with the project's explicit-failure stance in CLAUDE.md).
 
 ---
 
-## ADR-011: Caddy as Unified Gateway
+## ADR-011: Gorilla Mux + Echo v4 Dual Routing Strategy
 
 **Status**: Accepted
-**Date**: 2026-01-30
-**PRD Traces**: All
 
-### Context
+**Context**:
+The Go backend was initially developed with `gorilla/mux v1.8.1`. As middleware needs (JWT
+validation, rate-limiting, CORS) grew, Echo v4's built-in middleware ecosystem reduced boilerplate.
+A full migration was deferred due to endpoint volume (~80 handlers).
 
-Local development requires routing `localhost:4000` to multiple backend services (Go API,
-Python API, Vite HMR, VitePress docs). Production requires TLS termination and routing.
+**Decision**:
+Maintain both routers during a transition period:
+- Echo v4 (`labstack/echo/v4 v4.15.0`) handles all new endpoints and is the primary router.
+- Gorilla Mux (`gorilla/mux v1.8.1`) handles legacy endpoints not yet migrated.
+Echo's `Any` handler mounts the Mux router as a fallback catch-all.
 
-### Decision
+Target: complete migration to Echo v4 before v1.0 GA; remove Gorilla Mux dependency.
 
-Use **Caddy 2** as the reverse proxy and unified gateway in both dev and production.
-Config: `Taskfile.gateway.yml` and `Makefile.gateway`.
-
-### Rationale
-
-- Caddy provides automatic HTTPS (ACME) in production.
-- Caddy's Caddyfile is simpler than Nginx for multi-upstream routing.
-- Single gateway means all services share one port (4000) in dev.
-
-### Consequences
-
-- All service URLs in frontend are relative paths (`/api/`, `/python-api/`).
-- Caddy config must be updated when new services are added.
+**Consequences**:
+- (+) New features are developed exclusively on Echo with full middleware support.
+- (-) Two routers in the same process create potential middleware ordering ambiguity. Mitigated by
+  explicit middleware registration order and integration tests covering all legacy routes.
 
 ---
 
-## ADR-012: Prometheus + Loki + Jaeger Observability
+## ADR-012: Typer CLI for Agent-Native Automation
 
 **Status**: Accepted
-**Date**: 2026-02-01
-**PRD Traces**: Feature 13
 
-### Context
+**Context**:
+FR-CLI-001 through FR-CLI-006 specify a rich CLI for requirement import/export, spec verification,
+and batch operations. The CLI must be scriptable by AI agents and support JSON output for
+machine-readable pipelines.
 
-Production requires metrics (SLA tracking), centralized logs (debugging), and distributed
-tracing (latency attribution across Go and Python services).
+**Decision**:
+Use Typer (`typer>=0.21.1`) with Rich (`rich>=14.3.1`) for the Python CLI layer. All commands
+support `--output json | table | csv` via a shared output formatter. The CLI connects to the Go
+backend REST API rather than the database directly, ensuring consistent validation and authorization.
 
-### Decision
+`pydantic-settings` manages CLI config from environment variables, `.env` files, and explicit flags
+in priority order.
 
-Three-pillar observability:
-- **Prometheus**: metrics scrape from Go (`/metrics`) and Python services.
-- **Loki + Promtail**: log aggregation from all process-compose services.
-- **Jaeger**: distributed tracing via OpenTelemetry SDK in Go and Python.
-- **Grafana**: unified dashboard consuming all three.
-
-All configured via `docker-compose.yml` for production; native processes in dev.
-
-### Rationale
-
-- Full OSS stack; no SaaS dependency.
-- OpenTelemetry provides vendor-neutral instrumentation.
-- Grafana unifies all three data sources in one UI.
-
-### Consequences
-
-- Go backend must instrument all handlers with OTel spans.
-- Python services must propagate trace context via `opentelemetry-sdk`.
-- Grafana dashboards defined as code (JSON provisioning in `config/grafana/`).
-
----
-
-## ADR-013: Process Compose for Local Orchestration
-
-**Status**: Accepted
-**Date**: 2026-01-28
-**PRD Traces**: Dev experience
-
-### Context
-
-TracerTM has 10+ services (Go backend, Python backend, frontend, Caddy, PostgreSQL, Neo4j,
-Redis, NATS, Prometheus, Grafana, Jaeger). Docker Compose imposes container overhead in dev.
-
-### Decision
-
-Use **process-compose** as the native local orchestrator. Config: `process-compose.yml`.
-Services run as native OS processes (not containers). Accessed via TUI dashboard
-(`task dev:tui`) and CLI (`process-compose process list --port 18080`).
-
-### Rationale
-
-- Native processes start in <1 second vs 10+ seconds for Docker containers.
-- Hot reload (Air, uvicorn --reload, Vite HMR) works without volume mounts.
-- process-compose CLI allows per-service restart without stopping the full stack.
-
-### Consequences
-
-- All service dependencies (Postgres, Neo4j, Redis, NATS) must be installed natively.
-- `Brewfile.dev` provides the canonical native dependency list.
-- CI uses Docker Compose; local dev uses process-compose.
-
----
-
-## ADR-014: Layered Transformation Migration Strategy
-
-**Status**: Accepted
-**Date**: 2026-01-28
-**PRD Traces**: All
-
-### Context
-
-TracerTM was initially a CRUD-only system. Upgrading to the full specification-driven,
-graph-backed, MCP-native system must not break existing data or workflows.
-
-### Decision
-
-Use **layered transformation** (not a full rewrite):
-1. Preserve existing PostgreSQL schema; add new tables via Atlas migrations.
-2. Add Neo4j as a complementary store; populate from existing PostgreSQL data.
-3. Introduce MCP server alongside existing REST API.
-4. Migrate frontend views progressively (matrix view first, graph view second).
-
-### Rationale
-
-- Preserves existing data and in-flight work.
-- Each layer is independently testable.
-- Risk is reduced by incremental rollout.
-
-### Consequences
-
-- Migration scripts must be idempotent (safe to re-run).
-- Neo4j sync job must handle PostgreSQL as source of truth for conflict resolution.
-- Legacy CRUD API routes remain until all consumers migrate to new endpoints.
-
----
-
-## ADR-015: Tach for Architecture Boundary Enforcement
-
-**Status**: Accepted
-**Date**: 2026-02-10
-**PRD Traces**: Dev experience
-
-### Context
-
-Python codebase (`src/`) has multiple modules (API, MCP server, analysis, CLI). Without
-enforcement, imports will cross layer boundaries (e.g., CLI importing database models
-directly).
-
-### Decision
-
-Use **tach** (`tach.toml`) to declare and enforce Python module dependency boundaries.
-Layering: `cli` → `application` → `domain`; `api` → `application` → `domain`.
-`domain` imports nothing from `application` or `cli`.
-
-### Rationale
-
-- Tach runs in CI as a quality gate (`task lint`).
-- Boundary violations are caught before review, not after merge.
-- Mirrors hexagonal architecture from Go backend.
-
-### Consequences
-
-- All new Python modules must declare their layer in `tach.toml`.
-- Cross-layer imports are compile-time errors in CI.
-- `tach check` must pass as part of every PR.
-
----
-
-*For extended decision context and alternatives considered, see individual ADR files in
-`docs/adr/`.*
+**Consequences**:
+- (+) Typer generates `--help` documentation automatically; agent tooling can introspect commands.
+- (+) `--output json` enables pipe-safe agent pipelines: `tracertm list --output json | jq ...`.
+- (-) CLI depends on the Go backend being reachable; offline / local-only mode is not supported.
+  Hard failure with actionable error message is emitted when the backend is unreachable.
