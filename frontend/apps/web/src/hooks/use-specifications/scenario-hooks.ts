@@ -110,7 +110,7 @@ const useCreateScenario = (): queryUtils.MutationResult<
   });
 };
 
-const useUpdateScenario = (): MutationResult<
+const useUpdateScenario = (): queryUtils.MutationResult<
   UpdateScenarioResult,
   { id: string; data: specificationsApi.UpdateScenarioData }
 > => {

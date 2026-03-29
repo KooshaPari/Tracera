@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
 
 import type { TestCase, TestCaseStats, TestCaseStatus } from '@tracertm/types';
 
@@ -61,7 +61,7 @@ function useTestCase(id: string): ReturnType<typeof useQuery<TestCase, Error>> {
   });
 }
 
-function useCreateTestCase(): ReturnType<typeof useMutation> {
+function useCreateTestCase(): UseMutationResult<{ id: string; testCaseNumber: string }, unknown, CreateTestCaseData, unknown> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: CreateTestCaseData) => testCasesApi.createTestCase(data),
@@ -71,7 +71,7 @@ function useCreateTestCase(): ReturnType<typeof useMutation> {
   });
 }
 
-function useUpdateTestCase(): ReturnType<typeof useMutation> {
+function useUpdateTestCase(): UseMutationResult<{ id: string; version: number }, unknown, UseUpdateTestCaseInput, unknown> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, data }: UseUpdateTestCaseInput) =>
@@ -85,7 +85,7 @@ function useUpdateTestCase(): ReturnType<typeof useMutation> {
   });
 }
 
-function useTransitionTestCaseStatus(): ReturnType<typeof useMutation> {
+function useTransitionTestCaseStatus(): UseMutationResult<{ id: string; status: string; version: number }, unknown, UseTestCaseStatusInput, unknown> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, newStatus, reason }: UseTestCaseStatusInput) =>

@@ -59,7 +59,7 @@ const useCreateFeature = (): queryUtils.MutationResult<
   });
 };
 
-const useUpdateFeature = (): MutationResult<
+const useUpdateFeature = (): queryUtils.MutationResult<
   UpdateFeatureResult,
   { id: string; data: specificationsApi.UpdateFeatureData }
 > => {
