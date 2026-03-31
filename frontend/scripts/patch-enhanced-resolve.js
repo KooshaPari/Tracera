@@ -72,7 +72,8 @@ for (const file of cachedFiles) {
       'runCallbacks(callbacks, /** @type {Error} */ (err), undefined)',
       'runCallbacks(callbacks, /** @type {Error} */ (_err), undefined)',
     )
-    .replace('throw err;', 'throw _err;');
+    .replace('throw err;', 'throw _err;')
+    .replace(/} catch \(err\) \{/g, '} catch (_err) {');
 
   if (updated !== source) {
     fs.writeFileSync(file, updated, 'utf8');

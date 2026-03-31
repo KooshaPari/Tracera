@@ -24,15 +24,16 @@ export default defineConfig({
   },
   renderer: {
     build: {
-      cssMinify: 'lightningcss',
+      // CSS minification handled by @tailwindcss/vite plugin
+      cssMinify: true,
       outDir: path.resolve(__dirname, 'dist/renderer'),
       rollupOptions: {
         input: path.resolve(__dirname, '../web/index.html'),
       },
     },
     css: {
-      lightningcss: {},
-      transformer: 'lightningcss',
+      // @tailwindcss/vite handles CSS transformation; do not set transformer to lightningcss
+      // as it conflicts with the tailwindcss plugin in Vite 8 + rolldown
     },
     plugins: [tailwindcss(), react()],
     resolve: {
