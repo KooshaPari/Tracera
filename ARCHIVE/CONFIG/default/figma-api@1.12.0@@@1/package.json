@@ -22,7 +22,7 @@
   "license": "MIT",
   "dependencies": {
     "@types/node": "^22.8.7",
-    "axios": "^0.27.2"
+    "axios": "^1.14.1"
   },
   "devDependencies": {
     "browserify": "^17.0.1",
