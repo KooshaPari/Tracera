@@ -44,7 +44,7 @@
         "eslint": "8.47.0",
         "memory-streams": "0.1.0",
         "semver": "7.5.4",
-        "tar-fs": "2.1.1",
+        "tar-fs": "2.1.4",
         "ts-node": "10.9.1",
         "tsc-watch": "4.5.0",
         "typedoc": "0.24.8",

@@ -21,7 +21,7 @@
     "test": "grunt nodeunit"
   },
   "devDependencies": {
-    "grunt": "~0.4.1",
+    "grunt": "~1.6.1",
     "grunt-cli": "^1.5.0",
     "grunt-contrib-jshint": "~0.6.4",
     "grunt-contrib-nodeunit": "~0.2.0",
