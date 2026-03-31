@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Release Drafter** - Automated release notes generation via GitHub Actions (#262)
+  - `.github/release-drafter.yml` config with categories: breaking, feat, fix, docs, chore
+  - `.github/workflows/release-drafter.yml` triggered on push to main and PR events
+
+### Changed
+- Bumped `google.golang.org/grpc` dependency (#277)
+- Bumped Go modules group (4 updates across 5 directories) (#276)
+- Bumped npm/yarn group (15 updates across 43 directories) (#275)
+- Bumped uv/Python group (7 updates) (#274)
+
 ## [2.0.0] - 2026-02-23
 
 ### Added
