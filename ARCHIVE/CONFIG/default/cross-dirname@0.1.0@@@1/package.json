@@ -46,7 +46,7 @@
   "devDependencies": {
     "chai": "^4.3.6",
     "cross-dirname": "^0.0.6",
-    "esbuild": "^0.14.49",
+    "esbuild": "^0.27.4",
     "esm": "^3.2.25",
     "mocha": "^10.0.0",
     "mocha-headless-chrome": "^4.0.0",
