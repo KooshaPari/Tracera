@@ -29,7 +29,7 @@
     "eslint-config-shouldjs": "^1.0.2",
     "mocha": "^3.5.0",
     "mocha-better-spec-reporter": "^3.1.0",
-    "rollup": "0.34.7"
+    "rollup": "2.80.0"
   },
   "dependencies": {
     "should-type": "^1.4.0"

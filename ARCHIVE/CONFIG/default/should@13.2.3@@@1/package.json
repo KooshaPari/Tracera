@@ -30,7 +30,7 @@
     "mocha": "^4.0.1",
     "mocha-better-spec-reporter": "latest",
     "prettier": "^1.7.4",
-    "rollup": "^0.53.0",
+    "rollup": "^4.60.1",
     "rollup-plugin-node-resolve": "^3.0.0",
     "tslint": "^5.8.0",
     "typescript": "^2.5.3",
