@@ -2,7 +2,7 @@
 # FastMCP 3.0.0b1 (beta) with all features
 
 # Core MCP Framework
-fastmcp==3.0.0b1
+fastmcp==3.2.0
 mcp==1.25.0
 
 # CLI Framework
