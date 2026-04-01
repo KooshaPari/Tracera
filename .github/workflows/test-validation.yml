@@ -16,7 +16,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           cache: 'npm'
-        with:
           node-version: '20'
 
       - uses: actions/setup-go@v4
@@ -40,7 +39,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           cache: 'npm'
-        with:
           node-version: '20'
 
       - name: Install bun
@@ -81,7 +79,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           cache: 'npm'
-        with:
           node-version: '20'
 
       - name: Install bun

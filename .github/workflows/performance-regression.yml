@@ -119,8 +119,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          cache: 'pip'
-        with:
+          cache: "pip"
           python-version: '3.11'
 
       - name: Set up Go
@@ -247,8 +246,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          cache: 'pip'
-        with:
+          cache: "pip"
           python-version: '3.11'
 
       - name: Set up Go
@@ -350,8 +348,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          cache: 'pip'
-        with:
+          cache: "pip"
           python-version: '3.11'
 
       - name: Install dependencies
