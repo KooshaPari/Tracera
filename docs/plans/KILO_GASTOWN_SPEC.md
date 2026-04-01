@@ -27,8 +27,16 @@ Beads are the fundamental work unit in Kilo Gastown.
 |------|---------|
 | `issue` | Task or feature work |
 | `convoy` | Collaborative work branch tracker |
+| `merge_request` | Review and merge workflow |
+| `escalation` | Blocked issues requiring intervention |
 
 **Bead Lifecycle**:
+```
+open → in_progress → in_review → closed
+         ↓
+      escalation (if blocked)
+```
+
 1. `open` - Available for assignment
 2. `in_progress` - Agent is actively working
 3. `in_review` - Submitted for merge/review
@@ -126,8 +134,23 @@ If stuck after a few attempts at the same problem:
 
 Agents do not merge their own branches. The Refinery system handles:
 - Pull request creation
-- Merge execution
+- Merge execution  
 - Branch cleanup after successful merge
+
+### Merge Mode Types
+
+| Mode | Behavior |
+|------|----------|
+| `squash` | Squash all commits into one before merge |
+| `merge` | Preserve commit history with merge commit |
+| `rebase` | Rebase and fast-forward when possible |
+
+### Ready-to-Land
+
+Convoys can be marked `ready_to_land: true` when:
+- All beads in the convoy are `closed`
+- Quality gates pass
+- Review is complete
 
 **Important**: Do NOT use `gh pr create`, `git merge`, or equivalent commands.
 
@@ -152,6 +175,31 @@ Agents do not merge their own branches. The Refinery system handles:
 
 ---
 
+## Progress Tracking
+
+### gt_list_convoys
+
+View all convoys and their status for progress tracking:
+
+```bash
+gt_list_convoys
+```
+
+This command displays:
+- Active convoys in the rig
+- Number of beads per convoy
+- Completion status
+- Ready-to-land indicators
+
+### Monitoring Dashboard
+
+Track progress via:
+- **Jaeger** (`http://localhost:16686`) - Distributed tracing
+- **Grafana** (`http://localhost:3000`) - Metrics dashboards
+- **gt_status** - Real-time agent status updates
+
+---
+
 ## Integration with TracerTM
 
 This rig implements TracerTM, an agent-native requirements traceability system. The methodology ensures:
@@ -161,10 +209,29 @@ This rig implements TracerTM, an agent-native requirements traceability system. 
 - **Coordination**: Agents communicate via mail and nudges
 - **Quality**: Pre-submission gates prevent regressions
 
+### Trace-Specific Bead Types
+
+| Type | Purpose |
+|------|---------|
+| `issue` | Task or feature work |
+| `convoy` | Collaborative work branch tracker |
+| `merge_request` | Review and merge workflow |
+| `escalation` | Blocked issues requiring intervention |
+
+### Methodology Application to Trace Repo
+
+1. **Convoy-based Development**: Related trace work items are grouped into convoys (e.g., `convoy/methodology-trace/a8883763/head`)
+2. **Parallel Agent Work**: Multiple polecat agents process beads within a convoy simultaneously
+3. **Delegation Chain**: Use `gt_sling_batch` to distribute multiple trace analysis beads to specialized agents
+4. **Quality Gates**: All trace analysis must pass `task quality` before merge
+5. **Tracing Integration**: Each bead represents traceable work against TracerTM requirements
+
 ---
 
 ## References
 
-- AGENTS.md - Agent handbook with development commands
-- docs/plans/ - Implementation plans and specifications
-- Taskfile.yml - Task automation definitions
+- `AGENTS.md` - Agent handbook with development commands
+- `GEMINI.md` - Multi-actor coordination and governance rules
+- `claude.md` - Context management and delegation strategy
+- `docs/plans/` - Implementation plans and specifications
+- `Taskfile.yml` - Task automation definitions
