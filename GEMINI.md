@@ -1,45 +1,92 @@
-# Gemini Actor Governance
+# GEMINI.md - Development Guidelines for TracerTM
 
-This document defines the rules and best practices for Gemini agents (and other high-capacity LLM actors) operating in this shared workspace.
+## Project Overview
 
-## Multi-Actor Coordination
+TracerTM is an agent-native, multi-view requirements traceability and project management system. It provides defense-in-depth project governance, linking requirements to code, tests, and deployments across multiple architectural lenses.
 
-To prevent conflicts between multiple root agents, subagents, and human users, follow these rules:
+## Key Files
 
-1.  **Command Debouncing**: Use the `Makefile` or `Taskfile.yml` targets for high-impact tasks (linting, testing, validation). These are wrapped in `smart-command.sh` which uses lock files in `.process-compose/locks/`.
-    *   `make lint` / `task lint`
-    *   `make test` / `task test`
-    *   `make quality` / `task quality`
-    *   `make validate` / `task validate`
+- `README.md` - Project overview and usage
+- `AGENTS.md` - Kilo Gastown integration and agent handbook
+- `pyproject.toml` - Python package config, pytest/ruff settings
+- `Taskfile.yml` - Task automation
+- `src/tracertm/` - Python services & CLI
+- `frontend/` - React/TypeScript SPA
 
-2.  **Shared Service Management**:
-    *   **NEVER** force-kill processes (e.g., `pkill`, `killall`) unless absolutely necessary.
-    *   **Always** check `process-compose` status first: `make dev-status`.
-    *   **Assume** services are on hot-reload. Restarts should be done via `make dev-restart SERVICE=name`.
-    *   Infrastructure services (Postgres, Redis, NATS, Neo4j) are shared. Do not stop them unless you are the only actor.
+## Development Commands
 
-3.  **Resource Awareness**:
-    *   Be mindful of CPU and Memory usage when running parallel tasks.
-    *   Limit concurrent subagents to 50 (system-wide limit).
+```bash
+# Python (Primary)
+task install        # Install dependencies (or: uv sync)
+pytest              # Run tests (or: task test)
+pytest -m unit      # Unit tests only
+pytest -m integration  # Integration tests
+ruff check . && ruff format .  # Lint & format
+ty check src/       # Type checking
+task quality        # Full quality gates
 
-4.  **Logging**:
-    *   Logs are consolidated in `.process-compose/process-compose.log`.
-    *   Read specific service logs using `process-compose process logs <name> --port 18080`.
+# Frontend
+cd frontend
+bun run dev         # Start dev server
+bun run build       # Production build
+bun run lint        # ESLint
+bun run typecheck   # TypeScript check
+bun test            # Vitest tests
 
-## Documentation First
+# Go Backend
+go test ./...
+go build ./...
+golangci-lint run
 
-*   **Documentation Organization**: Follow the strict structure defined in `AGENTS.md`.
-*   **No Code in Plans**: Planner personas (Architect, PM, etc.) must NEVER write implementation code.
-*   **DAG-based Planning**: Use phased WBS and Directed Acyclic Graphs for complex implementation plans.
+# All Services
+task dev:tui        # Start all services with interactive TUI
+task dev            # Standard dev mode
+```
+
+## Architecture Principles
+
+- **Multi-Service Architecture** - Go backend, Python services, React frontend
+- **Observability-First** - Prometheus, Loki, Jaeger integration
+- **Agent-Native** - Built-in support for AI-assisted analysis
+- **Defense in Depth** - Multiple quality gates and governance layers
+
+## Kilo Gastown Integration
+
+This repository is a **rig** in Kilo Gastown.
+
+- **Rig ID**: `9614f3ef-45c8-4bdc-bdf2-906899b5f052`
+- **Town**: `78a8d430-a206-4a25-96c0-5cd9f5caf984`
+- **Worktree Branch**: `convoy/methodology-trace/a8883763/head`
+
+### Work Delegation
+
+Use `gt_sling` and `gt_sling_batch` for delegating work to other agents:
+
+```bash
+gt_sling <bead_id> <agent_id>  # Delegate single bead
+gt_sling_batch <bead_ids> <agent_id>  # Delegate multiple beads
+```
+
+## Agent Behavior Guidelines
+
+When working in this repository as a Gemini agent:
+
+1. **GUPP Principle**: Work is on your hook — execute immediately
+2. **Commit Frequently**: Push after every meaningful unit of work
+3. **Checkpoint**: Call gt_checkpoint after significant milestones
+4. **No Destructive Ops**: Never force push, hard reset, or merge to main
+5. **Pre-Submission Gates**: Run `task quality` before considering work complete
+
+## Communication
+
+- Check mail periodically with gt_mail_check
+- Use gt_mail_send for coordination with other agents
+- Keep messages concise and actionable
+- Use gt_status for meaningful phase transitions
 
 ## Quality Standards
 
-*   **Opinionated Quality**: Follow the strict styling and linting rules.
-*   **Fix Properly**: Do not use `nolint` or `ignore` comments. Extract helper functions or constants instead.
-*   **Preserve Coverage**: Ensure all changes maintain or improve existing test coverage.
-
-## See Also
-
-*   `CLAUDE.md`: General context management and delegation strategy.
-*   `AGENTS.md`: Detailed documentation organization and linting governance.
-*   `SHARED_ACTOR_GOVERNANCE.md`: Master coordination rules for all actors.
+- **Opinionated Quality**: Follow the strict styling and linting rules
+- **Fix Properly**: Do not use `nolint` or `ignore` comments
+- **Preserve Coverage**: Ensure all changes maintain or improve existing test coverage
+- **CI Completeness**: Fix all CI failures before merging
