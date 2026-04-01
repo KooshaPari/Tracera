@@ -13,6 +13,9 @@ on:
       - '.github/workflows/go-tests.yml'
   workflow_dispatch:
 
+
+permissions:
+  contents: read
 env:
   GO_VERSION: '1.23.0'
   POSTGRES_DB: tracertm_test
@@ -39,7 +42,7 @@ jobs:
           cache-dependency-path: backend/tests/go.sum
 
       - name: Cache Go modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -146,7 +149,7 @@ jobs:
           cache-dependency-path: backend/tests/go.sum
 
       - name: Cache Go modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -253,7 +256,7 @@ jobs:
           cache-dependency-path: backend/tests/go.sum
 
       - name: Cache Go modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -443,7 +446,7 @@ jobs:
           cache-dependency-path: backend/tests/go.sum
 
       - name: Cache Go modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}

@@ -32,12 +32,15 @@ on:
       - 'scripts/shell/check-naming-explosion-*.sh'
       - 'frontend/scripts/check-naming-explosion.sh'
 
+
+permissions:
+  contents: read
 jobs:
   check-naming:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 

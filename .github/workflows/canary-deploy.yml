@@ -29,6 +29,9 @@ on:
         type: boolean
         default: false
 
+
+permissions:
+  contents: read
 env:
   NAMESPACE: tracertm
   PROMETHEUS_URL: http://prometheus.tracertm.svc.cluster.local:9090

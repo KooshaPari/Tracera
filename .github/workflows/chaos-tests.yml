@@ -20,6 +20,9 @@ on:
       - 'tests/chaos/**'
       - '.github/workflows/chaos-tests.yml'
 
+
+permissions:
+  contents: read
 env:
   PYTHON_VERSION: '3.12'
   RECOVERY_TIME_TARGET: 30
@@ -83,7 +86,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           cache: 'pip'
-        with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install uv
@@ -197,7 +199,7 @@ jobs:
 
       - name: Notify on failure
         if: failure()
-        uses: 8398a7/action-slack@v3
+        uses: 8398a7/action-slack@v4
         with:
           status: ${{ job.status }}
           text: 'Chaos Engineering tests failed! System may not meet resilience SLA.'

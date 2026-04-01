@@ -20,6 +20,9 @@ on:
       - 'backend/internal/handlers/**'
   workflow_dispatch: # Allow manual triggering
 
+
+permissions:
+  contents: read
 jobs:
   generate-and-validate:
     name: Generate and Validate OpenAPI Spec

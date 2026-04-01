@@ -36,6 +36,9 @@ on:
   schedule:
     - cron: '0 2 * * 1' # Weekly on Monday at 2 AM UTC
 
+
+permissions:
+  contents: read
 env:
   BASE_URL: http://localhost:4000
   TEST_ENV: ci
@@ -120,7 +123,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           cache: 'pip'
-        with:
           python-version: '3.11'
 
       - name: Set up Go
@@ -248,7 +250,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           cache: 'pip'
-        with:
           python-version: '3.11'
 
       - name: Set up Go
@@ -351,7 +352,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           cache: 'pip'
-        with:
           python-version: '3.11'
 
       - name: Install dependencies
