@@ -23,16 +23,16 @@
     "electron-updater": "^6.6.2"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.18",
+    "@tailwindcss/vite": "^4.2.2",
     "@types/node": "^22.9.0",
-    "@vitest/coverage-v8": "^4.0.14",
-    "electron": "^39.2.4",
+    "@vitest/coverage-v8": "^4.0.18",
+    "electron": "^39.8.5",
     "electron-builder": "^26.0.12",
     "electron-vite": "^4.0.1",
-    "tailwindcss": "^4.1.17",
+    "tailwindcss": "^4.2.2",
     "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1",
     "vite": "^7.2.4",
-    "vitest": "^4.0.14"
+    "vitest": "^4.0.18"
   },
   "build": {
     "appId": "com.tracertm.desktop",

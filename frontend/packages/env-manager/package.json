@@ -36,9 +36,9 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "@vitest/coverage-v8": "^4.0.14",
+    "@vitest/coverage-v8": "^4.0.18",
     "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1",
-    "vitest": "^4.0.14"
+    "vitest": "^4.0.18"
   },
   "peerDependencies": {
     "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1"
