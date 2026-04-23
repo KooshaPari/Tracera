@@ -34,8 +34,8 @@ func setupE2ETest(t *testing.T) *E2EContext {
 	// Start PostgreSQL container
 	postgresContainer, postgresURL := startPostgresContainer(t, ctx)
 
-	// Start Redis container
-	redisContainer, redisURL := startRedisContainer(t, ctx)
+	// Start Dragonfly container
+	dragonflyContainer, redisURL := startDragonflyContainer(t, ctx)
 
 	// Start Meilisearch container
 	meilisearchContainer, meilisearchURL := startMeilisearchContainer(t, ctx)
@@ -58,14 +58,14 @@ func setupE2ETest(t *testing.T) *E2EContext {
 		ctx:            ctx,
 		containers: []testcontainers.Container{
 			postgresContainer,
-			redisContainer,
+			dragonflyContainer,
 			meilisearchContainer,
 		},
 		Cleanup: func() {
 			server.Close()
 			for _, container := range []testcontainers.Container{
 				postgresContainer,
-				redisContainer,
+				dragonflyContainer,
 				meilisearchContainer,
 			} {
 				if err := container.Terminate(ctx); err != nil {
@@ -118,12 +118,12 @@ func startPostgresContainer(t *testing.T, ctx context.Context) (testcontainers.C
 	return container, connStr
 }
 
-// startRedisContainer starts a Redis container for testing
-func startRedisContainer(t *testing.T, ctx context.Context) (testcontainers.Container, string) {
+// startDragonflyContainer starts a Dragonfly Redis-compatible container for testing
+func startDragonflyContainer(t *testing.T, ctx context.Context) (testcontainers.Container, string) {
 	req := testcontainers.ContainerRequest{
-		Image:        "redis:7-alpine",
+		Image:        "docker.dragonflydb.io/dragonflydb/dragonfly:latest",
 		ExposedPorts: []string{"6379/tcp"},
-		WaitingFor:   wait.ForLog("Ready to accept connections").WithStartupTimeout(30 * time.Second),
+		WaitingFor:   wait.ForListeningPort("6379/tcp").WithStartupTimeout(30 * time.Second),
 	}
 
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
@@ -131,7 +131,7 @@ func startRedisContainer(t *testing.T, ctx context.Context) (testcontainers.Cont
 		Started:          true,
 	})
 	if err != nil {
-		t.Fatalf("Failed to start Redis container: %v", err)
+		t.Fatalf("Failed to start Dragonfly container: %v", err)
 	}
 
 	host, err := container.Host(ctx)

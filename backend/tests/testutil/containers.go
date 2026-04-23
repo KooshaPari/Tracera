@@ -62,27 +62,23 @@ func PostgresContainer(ctx context.Context) (testcontainers.Container, string, e
 	return container, connString, nil
 }
 
-// RedisContainer starts a Redis container for testing.
+// DragonflyContainer starts a Dragonfly Redis-compatible container for testing.
 // Returns the container instance and connection address.
 // The container will be automatically cleaned up when the context is cancelled.
 //
 // Example:
 //
 //	ctx := context.Background()
-//	container, addr, err := RedisContainer(ctx)
+//	container, addr, err := DragonflyContainer(ctx)
 //	if err != nil {
 //	    log.Fatal(err)
 //	}
 //	defer container.Terminate(ctx)
-func RedisContainer(ctx context.Context) (testcontainers.Container, string, error) {
+func DragonflyContainer(ctx context.Context) (testcontainers.Container, string, error) {
 	req := testcontainers.ContainerRequest{
-		Image:        "redis:7-alpine",
+		Image:        "docker.dragonflydb.io/dragonflydb/dragonfly:latest",
 		ExposedPorts: []string{"6379/tcp"},
-		WaitingFor: wait.ForAll(
-			wait.ForLog("Ready to accept connections").
-				WithStartupTimeout(30*time.Second),
-			wait.ForListeningPort("6379/tcp"),
-		),
+		WaitingFor:   wait.ForListeningPort("6379/tcp").WithStartupTimeout(30 * time.Second),
 	}
 
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
@@ -90,7 +86,7 @@ func RedisContainer(ctx context.Context) (testcontainers.Container, string, erro
 		Started:          true,
 	})
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to start redis container: %w", err)
+		return nil, "", fmt.Errorf("failed to start dragonfly container: %w", err)
 	}
 
 	host, err := container.Host(ctx)

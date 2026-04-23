@@ -1,6 +1,6 @@
 """OpenTelemetry tracing setup for TraceRTM Python backend.
 
-Provides distributed tracing with OTLP export to Jaeger/Tempo.
+Provides distributed tracing with OTLP export to the shared Phenotype collector.
 """
 
 import logging
@@ -61,7 +61,7 @@ def init_tracing(
         service_name: Name of the service for tracing
         service_version: Version of the service
         environment: Deployment environment (development, staging, production)
-        otlp_endpoint: OTLP collector endpoint (defaults to localhost:4317)
+        otlp_endpoint: OTLP collector endpoint (defaults to the Phenotype gRPC collector)
 
     Returns:
         Configured tracer instance
@@ -90,7 +90,11 @@ def init_tracing(
 
         # Get configuration from environment with fallbacks
         environment = environment or os.getenv("TRACING_ENVIRONMENT", "development")
-        otlp_endpoint = otlp_endpoint or os.getenv("OTLP_ENDPOINT") or os.getenv("JAEGER_ENDPOINT", "127.0.0.1:4317")
+        otlp_endpoint = (
+            otlp_endpoint
+            or os.getenv("PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT")
+            or "127.0.0.1:4317"
+        )
 
         logger.info(
             "Initializing distributed tracing (service: %s, env: %s, endpoint: %s)",
@@ -118,7 +122,7 @@ def init_tracing(
         try:
             otlp_exporter = OTLPSpanExporter(
                 endpoint=otlp_endpoint,
-                insecure=True,  # Use insecure for local development
+                insecure=True,  # Use insecure for native local development
             )
 
             # Create tracer provider with batch span processor

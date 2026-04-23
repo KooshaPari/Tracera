@@ -30,14 +30,13 @@ services:
     mem_limit: 512m
     cpus: '1'
 
-  redis:
-    image: redis:7-alpine
-    container_name: tracertm-redis
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_password}
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+    container_name: tracertm-dragonfly
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - dragonfly_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -197,6 +196,28 @@ services:
     mem_limit: 256m
     cpus: '0.5'
 
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tracertm-tempo
+    command: ["-config.file=/etc/tempo.yaml"]
+    ports:
+      - "3200:3200"
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./deploy/monitoring/tempo-local.yaml:/etc/tempo.yaml:ro
+      - tempo_data:/tmp/tempo
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3200/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+    networks:
+      - tracertm
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: '1'
+
   grafana:
     image: grafana/grafana:10.2
     container_name: tracertm-grafana
@@ -204,6 +225,7 @@ services:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
       GF_SERVER_HTTP_PORT: 3000
+      PHENO_OBSERVABILITY_TEMPO_URL: http://tempo:3200
     ports:
       - "3000:3000"
     volumes:
@@ -213,6 +235,7 @@ services:
     depends_on:
       - prometheus
       - loki
+      - tempo
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
       interval: 10s
@@ -236,11 +259,13 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
+      dragonfly:
         condition: service_healthy
       nats:
         condition: service_healthy
       temporal:
+        condition: service_healthy
+      tempo:
         condition: service_healthy
     environment:
       PORT: 8080
@@ -248,7 +273,7 @@ services:
       ENV: production
       GIN_MODE: release
       DATABASE_URL: postgres://tracertm:${DB_PASSWORD:-tracertm_password}@postgres:5432/tracertm?sslmode=disable
-      REDIS_URL: redis://:${REDIS_PASSWORD:-redis_password}@redis:6379
+      REDIS_URL: redis://dragonfly:6379
       NATS_URL: nats://nats:4222
       TEMPORAL_HOST: temporal:7233
       PYTHON_BACKEND_URL: http://python-backend:8000
@@ -259,7 +284,8 @@ services:
       WORKOS_AUTHKIT_DOMAIN: ${WORKOS_AUTHKIT_DOMAIN:-}
       CORS_ALLOWED_ORIGINS: http://localhost,http://localhost:3000,http://localhost:5173
       TRACING_ENABLED: "true"
-      JAEGER_ENDPOINT: jaeger:4317
+      TRACING_ENVIRONMENT: production
+      PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT: tempo:4317
     ports:
       - "8080:8080"
       - "9090:9090"
@@ -282,23 +308,26 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
+      dragonfly:
         condition: service_healthy
       nats:
         condition: service_healthy
       temporal:
         condition: service_healthy
+      tempo:
+        condition: service_healthy
     environment:
       PYTHONUNBUFFERED: "1"
       DATABASE_URL: postgresql+asyncpg://tracertm:${DB_PASSWORD:-tracertm_password}@postgres:5432/tracertm
-      REDIS_URL: redis://:${REDIS_PASSWORD:-redis_password}@redis:6379
+      REDIS_URL: redis://dragonfly:6379
       NATS_URL: nats://nats:4222
       TEMPORAL_HOST: temporal:7233
       PYTHON_GRPC_PORT: 9092
       GO_BACKEND_URL: http://go-backend:8080
       LOG_LEVEL: INFO
       TRACING_ENABLED: "true"
-      OTLP_ENDPOINT: jaeger:4317
+      TRACING_ENVIRONMENT: production
+      PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT: tempo:4317
     ports:
       - "8000:8000"
       - "9092:9092"
@@ -337,24 +366,6 @@ services:
   # Observability
   #############################################################################
 
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    container_name: tracertm-jaeger
-    ports:
-      - "16686:16686"
-      - "4317:4317"
-      - "4318:4318"
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:16686"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - tracertm
-    restart: unless-stopped
-    mem_limit: 256m
-    cpus: '0.5'
-
 networks:
   tracertm:
     driver: bridge
@@ -362,7 +373,7 @@ networks:
 volumes:
   postgres_data:
     driver: local
-  redis_data:
+  dragonfly_data:
     driver: local
   nats_data:
     driver: local
@@ -373,6 +384,8 @@ volumes:
   prometheus_data:
     driver: local
   loki_data:
+    driver: local
+  tempo_data:
     driver: local
   grafana_data:
     driver: local

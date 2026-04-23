@@ -5,9 +5,10 @@ Functional Requirements: FR-COLLAB-004
 
 from typing import cast
 
-from fastapi import HTTPException, Request
+from fastapi import Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tracertm.api.deps import get_db
 from tracertm.config.github_app import get_github_app_config
 from tracertm.repositories.github_app_repository import GitHubAppInstallationRepository
 
@@ -171,7 +172,7 @@ async def process_installation_event(
 
 async def github_app_webhook(
     request: Request,
-    db: AsyncSession,
+    db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     """Handle GitHub App webhook events.
 

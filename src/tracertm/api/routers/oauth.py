@@ -46,7 +46,7 @@ def ensure_project_access(project_id: str, claims: dict[str, object] | None) -> 
     Note: This function should be imported from main.py or moved to a shared module.
     For now, we import it from the parent scope.
     """
-    from tracertm.api.main import ensure_project_access as _ensure_project_access
+    from tracertm.api.security import ensure_project_access as _ensure_project_access
 
     _ensure_project_access(project_id, claims)
 
@@ -368,3 +368,16 @@ async def delete_credential(
     await repo.delete(credential_id)
 
     return {"success": True, "deleted_id": credential_id}
+
+
+@router.get("/stats")
+async def get_integration_stats(
+    request: Request,
+    project_id: str,
+    claims: Annotated[dict[str, object], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> dict[str, object]:
+    """Get integration statistics for a project."""
+    from tracertm.api.handlers.integrations import get_integration_stats_handler
+
+    return await get_integration_stats_handler(request, project_id, claims, db)

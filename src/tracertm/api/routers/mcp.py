@@ -15,6 +15,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 from typing import TYPE_CHECKING, Annotated, Any, cast
 
 if TYPE_CHECKING:
@@ -293,6 +294,22 @@ async def _get_prompt(params: dict[str, Any]) -> dict[str, Any]:
 # =============================================================================
 # Endpoints
 # =============================================================================
+
+
+@router.get("/config")
+async def mcp_config() -> dict[str, Any]:
+    """Return MCP configuration for frontend clients."""
+    base_url = (
+        os.getenv("TRACERTM_MCP_BASE_URL")
+        or os.getenv("MCP_BASE_URL")
+        or os.getenv("FASTMCP_SERVER_BASE_URL")
+    )
+    auth_mode = (os.getenv("TRACERTM_MCP_AUTH_MODE") or "oauth").lower().strip()
+    return {
+        "mcp_base_url": base_url,
+        "auth_mode": auth_mode,
+        "requires_auth": auth_mode not in {"disabled", "none", "off"},
+    }
 
 
 @router.options("/messages")

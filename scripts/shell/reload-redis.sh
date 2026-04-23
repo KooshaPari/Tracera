@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Redis doesn't support config file reload; restart via process-compose if possible.
+# Redis-compatible runtime config reload. Dragonfly is the default runtime and does not use
+# config/redis.conf; when Redis fallback is selected, restart via process-compose if possible.
 
 set -euo pipefail
 
-SERVICE="redis"
+SERVICE="${REDIS_COMPAT_PROCESS:-dragonfly}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
 if command -v process-compose >/dev/null 2>&1; then
@@ -11,5 +12,5 @@ if command -v process-compose >/dev/null 2>&1; then
   exit 0
 fi
 
-echo "[redis] reload failed: process-compose not available for restart." >&2
+echo "[redis-compatible] reload failed: process-compose not available for restart." >&2
 exit 1

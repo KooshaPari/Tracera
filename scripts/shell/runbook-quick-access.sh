@@ -166,7 +166,7 @@ network_quick_check() {
     echo ""
 
     echo "1. Inter-service connectivity:"
-    services=("postgres" "redis" "frontend")
+    services=("postgres" "dragonfly" "frontend")
     for service in "${services[@]}"; do
         if docker-compose exec -T backend ping -c 1 -W 2 "$service" > /dev/null 2>&1; then
             echo -e "${GREEN}✓${NC} Can reach $service"
@@ -193,10 +193,10 @@ network_quick_check() {
         echo -e "${RED}✗${NC} PostgreSQL port not accessible"
     fi
 
-    if docker-compose exec -T backend nc -zv redis 6379 2>&1 | grep -q succeeded; then
-        echo -e "${GREEN}✓${NC} Redis port accessible"
+    if docker-compose exec -T backend nc -zv dragonfly 6379 2>&1 | grep -q succeeded; then
+        echo -e "${GREEN}✓${NC} Dragonfly port accessible"
     else
-        echo -e "${RED}✗${NC} Redis port not accessible"
+        echo -e "${RED}✗${NC} Dragonfly port not accessible"
     fi
 
     echo ""
@@ -229,10 +229,10 @@ auth_quick_check() {
     fi
 
     echo ""
-    echo "3. Session store (Redis):"
-    if docker-compose exec -T redis redis-cli ping > /dev/null 2>&1; then
+    echo "3. Session store (Dragonfly):"
+    if docker-compose exec -T dragonfly redis-cli ping > /dev/null 2>&1; then
         echo -e "${GREEN}✓ Session store accessible${NC}"
-        SESSION_COUNT=$(docker-compose exec -T redis redis-cli KEYS "session:*" | wc -l)
+        SESSION_COUNT=$(docker-compose exec -T dragonfly redis-cli KEYS "session:*" | wc -l)
         echo "  Active sessions: $SESSION_COUNT"
     else
         echo -e "${RED}✗ Session store not accessible${NC}"
@@ -256,7 +256,7 @@ cache_quick_check() {
     echo ""
 
     echo "1. Cache connectivity:"
-    if docker-compose exec -T redis redis-cli ping > /dev/null 2>&1; then
+    if docker-compose exec -T dragonfly redis-cli ping > /dev/null 2>&1; then
         echo -e "${GREEN}✓ Cache accessible${NC}"
     else
         echo -e "${RED}✗ Cache not accessible${NC}"
@@ -266,10 +266,10 @@ cache_quick_check() {
 
     echo ""
     echo "2. Cache statistics:"
-    docker-compose exec -T redis redis-cli INFO stats | grep -E "keyspace_hits|keyspace_misses"
+    docker-compose exec -T dragonfly redis-cli INFO stats | grep -E "keyspace_hits|keyspace_misses"
 
-    HITS=$(docker-compose exec -T redis redis-cli INFO stats | grep keyspace_hits: | cut -d: -f2 | tr -d '\r')
-    MISSES=$(docker-compose exec -T redis redis-cli INFO stats | grep keyspace_misses: | cut -d: -f2 | tr -d '\r')
+    HITS=$(docker-compose exec -T dragonfly redis-cli INFO stats | grep keyspace_hits: | cut -d: -f2 | tr -d '\r')
+    MISSES=$(docker-compose exec -T dragonfly redis-cli INFO stats | grep keyspace_misses: | cut -d: -f2 | tr -d '\r')
 
     if [ -n "$HITS" ] && [ -n "$MISSES" ]; then
         TOTAL=$((HITS + MISSES))
@@ -281,15 +281,15 @@ cache_quick_check() {
 
     echo ""
     echo "3. Memory usage:"
-    docker-compose exec -T redis redis-cli INFO memory | grep -E "used_memory_human|maxmemory"
+    docker-compose exec -T dragonfly redis-cli INFO memory | grep -E "used_memory_human|maxmemory"
 
     echo ""
     echo "4. Key count:"
-    docker-compose exec -T redis redis-cli DBSIZE
+    docker-compose exec -T dragonfly redis-cli DBSIZE
 
     echo ""
     echo "5. Eviction policy:"
-    docker-compose exec -T redis redis-cli CONFIG GET maxmemory-policy
+    docker-compose exec -T dragonfly redis-cli CONFIG GET maxmemory-policy
 
     echo ""
     echo -e "${BLUE}Full runbook: docs/runbooks/cache-invalidation-issues.md${NC}"

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Check if Loki and Promtail are installed and provide installation instructions
+# Check if Loki and Grafana Alloy are installed and provide installation instructions
 
 set -e
 
@@ -8,11 +8,11 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo "Checking Loki and Promtail installation..."
+echo "Checking Loki and Grafana Alloy installation..."
 echo ""
 
 LOKI_INSTALLED=false
-PROMTAIL_INSTALLED=false
+ALLOY_INSTALLED=false
 
 # Check Loki
 if command -v loki &> /dev/null; then
@@ -23,24 +23,34 @@ else
     echo -e "${RED}✗${NC} Loki is not installed"
 fi
 
-# Check Promtail
-if command -v promtail &> /dev/null; then
-    PROMTAIL_VERSION=$(promtail --version 2>&1 | head -n 1)
-    echo -e "${GREEN}✓${NC} Promtail is installed: $PROMTAIL_VERSION"
-    PROMTAIL_INSTALLED=true
-else
-    echo -e "${RED}✗${NC} Promtail is not installed"
+# Check Grafana Alloy. Another command named "alloy" may exist, so verify the
+# Grafana Alloy run flags instead of trusting the binary name.
+for candidate in "${GRAFANA_ALLOY_BIN:-}" alloy grafana-alloy "$HOME/.local/bin/grafana-alloy"; do
+    [ -z "$candidate" ] && continue
+    if command -v "$candidate" &> /dev/null && "$candidate" run --help 2>&1 | grep -q -- "--server.http.listen-addr"; then
+        ALLOY_VERSION=$("$candidate" --version 2>&1 | head -n 1)
+        echo -e "${GREEN}✓${NC} Grafana Alloy is installed: $ALLOY_VERSION"
+        ALLOY_INSTALLED=true
+        break
+    fi
+done
+
+if [ "$ALLOY_INSTALLED" = false ]; then
+    echo -e "${RED}✗${NC} Grafana Alloy is not installed or is shadowed by another alloy binary"
 fi
 
 echo ""
 
 # Provide installation instructions if needed
-if [ "$LOKI_INSTALLED" = false ] || [ "$PROMTAIL_INSTALLED" = false ]; then
+if [ "$LOKI_INSTALLED" = false ] || [ "$ALLOY_INSTALLED" = false ]; then
     echo -e "${YELLOW}Installation Instructions:${NC}"
     echo ""
     echo "On macOS (Homebrew):"
     echo "  brew install grafana/grafana/loki"
-    echo "  brew install grafana/grafana/promtail"
+    echo "  brew install grafana-alloy"
+    echo "  # If alloy-analyzer or another binary owns the alloy command:"
+    echo "  # install the official Grafana Alloy release as grafana-alloy"
+    echo "  export GRAFANA_ALLOY_BIN=/path/to/grafana-alloy"
     echo ""
     echo "On Linux:"
     echo "  # Download Loki"
@@ -49,11 +59,8 @@ if [ "$LOKI_INSTALLED" = false ] || [ "$PROMTAIL_INSTALLED" = false ]; then
     echo "  chmod a+x loki-linux-amd64"
     echo "  sudo mv loki-linux-amd64 /usr/local/bin/loki"
     echo ""
-    echo "  # Download Promtail"
-    echo "  curl -O -L https://github.com/grafana/loki/releases/download/v2.9.3/promtail-linux-amd64.zip"
-    echo "  unzip promtail-linux-amd64.zip"
-    echo "  chmod a+x promtail-linux-amd64"
-    echo "  sudo mv promtail-linux-amd64 /usr/local/bin/promtail"
+    echo "  # Install Alloy using Grafana's package instructions:"
+    echo "  # https://grafana.com/docs/alloy/latest/set-up/install/linux/"
     echo ""
     exit 1
 else

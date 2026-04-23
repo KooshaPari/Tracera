@@ -103,11 +103,12 @@ test_memory_exhaustion() {
     # Test 1: Check memory limits
     log_info "  Test 1: Verifying container memory limits..."
 
-    BACKEND_MEMORY=$(docker inspect trace-backend-1 | jq -r '.[0].HostConfig.Memory')
+    OBSERVABILITY_BACKEND_CONTAINER="${OBSERVABILITY_BACKEND_CONTAINER:-alloy-1}"
+    BACKEND_MEMORY=$(docker inspect "$OBSERVABILITY_BACKEND_CONTAINER" | jq -r '.[0].HostConfig.Memory')
     if [ "$BACKEND_MEMORY" != "0" ] && [ "$BACKEND_MEMORY" != "null" ]; then
-        log_info "    ✓ Backend memory limit set: $(echo $BACKEND_MEMORY / 1024 / 1024 | bc)MB"
+        log_info "    ✓ Observability backend memory limit set: $(echo $BACKEND_MEMORY / 1024 / 1024 | bc)MB"
     else
-        log_warn "    Backend has no memory limit"
+        log_warn "    Observability backend has no memory limit"
     fi
 
     # Test 2: Check current memory usage
@@ -145,7 +146,7 @@ test_network_partitions() {
     # Test 1: Inter-service connectivity
     log_info "  Test 1: Testing inter-service connectivity..."
 
-    services=("postgres" "redis" "frontend")
+    services=("postgres" "dragonfly" "frontend")
     for service in "${services[@]}"; do
         if docker-compose exec -T backend ping -c 3 -W 5 "$service" > /dev/null 2>&1; then
             log_info "    ✓ Can reach $service"
@@ -175,10 +176,10 @@ test_network_partitions() {
         return 1
     fi
 
-    if docker-compose exec -T backend nc -zv redis 6379 2>&1 | grep -q succeeded; then
-        log_info "    ✓ Redis port accessible"
+    if docker-compose exec -T backend nc -zv dragonfly 6379 2>&1 | grep -q succeeded; then
+        log_info "    ✓ Dragonfly port accessible"
     else
-        log_error "    Redis port not accessible"
+        log_error "    Dragonfly port not accessible"
         return 1
     fi
 
@@ -216,8 +217,8 @@ test_authentication_failures() {
 
     # Test 4: Session storage
     log_info "  Test 4: Checking session storage..."
-    if docker-compose exec -T redis redis-cli ping > /dev/null 2>&1; then
-        log_info "    ✓ Session store (Redis) accessible"
+    if docker-compose exec -T dragonfly redis-cli ping > /dev/null 2>&1; then
+        log_info "    ✓ Session store (Dragonfly) accessible"
     else
         log_error "    Session store not accessible"
         return 1
@@ -231,7 +232,7 @@ test_cache_invalidation() {
 
     # Test 1: Cache connectivity
     log_info "  Test 1: Testing cache connectivity..."
-    if docker-compose exec -T redis redis-cli ping > /dev/null 2>&1; then
+    if docker-compose exec -T dragonfly redis-cli ping > /dev/null 2>&1; then
         log_info "    ✓ Cache accessible"
     else
         log_error "    Cache not accessible"
@@ -240,8 +241,8 @@ test_cache_invalidation() {
 
     # Test 2: Cache statistics
     log_info "  Test 2: Checking cache statistics..."
-    HITS=$(docker-compose exec -T redis redis-cli INFO stats | grep keyspace_hits: | cut -d: -f2 | tr -d '\r')
-    MISSES=$(docker-compose exec -T redis redis-cli INFO stats | grep keyspace_misses: | cut -d: -f2 | tr -d '\r')
+    HITS=$(docker-compose exec -T dragonfly redis-cli INFO stats | grep keyspace_hits: | cut -d: -f2 | tr -d '\r')
+    MISSES=$(docker-compose exec -T dragonfly redis-cli INFO stats | grep keyspace_misses: | cut -d: -f2 | tr -d '\r')
 
     if [ -n "$HITS" ] && [ -n "$MISSES" ]; then
         TOTAL=$((HITS + MISSES))
@@ -255,12 +256,12 @@ test_cache_invalidation() {
 
     # Test 3: Cache memory usage
     log_info "  Test 3: Checking cache memory..."
-    MEMORY=$(docker-compose exec -T redis redis-cli INFO memory | grep used_memory_human: | cut -d: -f2 | tr -d '\r')
+    MEMORY=$(docker-compose exec -T dragonfly redis-cli INFO memory | grep used_memory_human: | cut -d: -f2 | tr -d '\r')
     log_info "    Cache memory usage: $MEMORY"
 
     # Test 4: Eviction policy
     log_info "  Test 4: Checking eviction policy..."
-    POLICY=$(docker-compose exec -T redis redis-cli CONFIG GET maxmemory-policy | tail -1 | tr -d '\r')
+    POLICY=$(docker-compose exec -T dragonfly redis-cli CONFIG GET maxmemory-policy | tail -1 | tr -d '\r')
     log_info "    Eviction policy: $POLICY"
 
     log_info "  ✓ Cache invalidation tests passed"

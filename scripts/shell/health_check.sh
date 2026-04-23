@@ -116,8 +116,8 @@ echo ""
 check_pods "postgres" "PostgreSQL" || ((ERRORS++))
 check_service "postgres-service" "PostgreSQL" || ((ERRORS++))
 
-check_pods "redis" "Redis" || ((ERRORS++))
-check_service "redis-service" "Redis" || ((ERRORS++))
+check_pods "redis" "Cache runtime" || ((ERRORS++))
+check_service "redis-service" "Cache runtime" || ((ERRORS++))
 
 check_pods "nats" "NATS" || ((ERRORS++))
 check_service "nats-service" "NATS" || ((ERRORS++))

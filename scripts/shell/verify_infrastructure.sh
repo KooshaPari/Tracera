@@ -57,14 +57,14 @@ else
     exit 1
 fi
 
-# Check Redis (optional)
+# Check cache runtime (optional)
 echo ""
-echo "3. Checking Redis (optional)..."
-if brew services list | grep -q "redis.*started"; then
-    echo -e "   ${GREEN}✅ Redis is running${NC}"
+echo "3. Checking cache runtime (optional)..."
+if brew services list | grep -Eq "(redis|dragonfly).*started"; then
+    echo -e "   ${GREEN}✅ Cache runtime is running${NC}"
 else
-    echo -e "   ${YELLOW}⚠️  Redis is not running (optional service)${NC}"
-    echo "   To start: brew services start redis"
+    echo -e "   ${YELLOW}⚠️  Cache runtime is not running (optional service)${NC}"
+    echo "   To start: bash scripts/shell/redis-if-not-running.sh"
 fi
 
 # Check NATS (optional)
