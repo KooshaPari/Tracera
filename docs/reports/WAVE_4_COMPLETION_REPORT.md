@@ -1,3 +1,5 @@
+> Historical note: this document preserves the pre-Phenotype observability stack. The active org path is the shared collector, Grafana Alloy, and Grafana Tempo. Treat Jaeger and Promtail references below as legacy context only.
+
 # Waves 1-4 Final Quality Campaign Report
 
 **Date:** 2026-02-06
@@ -148,7 +150,7 @@ Type annotation coverage: 96 functions
 - Python type coverage: 100% (96 new annotations, 0 mypy errors)
 - Go tests: 342 added (agents, search, storage packages)
 - OpenTelemetry: 27 tests (Go + Python distributed tracing)
-- Jaeger distributed tracing: Fully configured and validated
+- Shared collector tracing: Fully configured and validated
 - TypeScript coverage gaps: 868 tests identified and prioritized
 
 **Quality Impact:** +6.5 points (89.0 → 95.5)
@@ -229,7 +231,7 @@ Documented: 240 (100%)
 - NATS health checks operational
 - MinIO health checks with latency tracking
 - OpenTelemetry: Go + Python fully instrumented (97 tests)
-- Jaeger distributed tracing deployed
+- Shared collector tracing deployed
 - Prometheus metrics exposed
 - Error aggregation pipeline (frontend → backend)
 - Frontend error boundary capturing all boundary errors
@@ -433,7 +435,7 @@ Distribution: 70.1% / 20% / 9.9% ✓ BALANCED
 
 - OTEL_GO_SETUP.md (600+ lines)
 - OTEL_PYTHON_SETUP.md (400+ lines)
-- JAEGER_SETUP.md (2,500+ lines)
+- JAEGER_SETUP.md (2,500+ lines, legacy archive)
 - OBSERVABILITY_STACK.md (1,000+ lines)
 - CI_COVERAGE_REGRESSION.md (661 lines)
 - And 13 more guides
@@ -441,7 +443,7 @@ Distribution: 70.1% / 20% / 9.9% ✓ BALANCED
 ### Quick References (8 files)
 
 - OTEL_QUICK_REFERENCE.md
-- JAEGER_QUICK_REFERENCE.md
+- JAEGER_QUICK_REFERENCE.md (legacy archive)
 - TEST_PYRAMID_VERIFICATION.md
 - ERROR_AGGREGATION_QUICK_REF.md
 - And 4 more quick refs
@@ -502,7 +504,7 @@ Overall:   81.3% (up from 62.7%)
 - ✅ Integration test coverage
 - ✅ Error aggregation pipeline
 - ✅ OpenTelemetry instrumentation
-- ✅ Distributed tracing (Jaeger)
+- ✅ Distributed tracing (OpenTelemetry)
 
 ### Production-Ready (minor gaps in backlog)
 - 🟡 TypeScript: 97/100 (animation edge cases)

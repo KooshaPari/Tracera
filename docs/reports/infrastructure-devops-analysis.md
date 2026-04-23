@@ -1,3 +1,5 @@
+> Historical note: this document preserves the pre-Phenotype observability stack. The active org path is the shared collector, Grafana Alloy, and Grafana Tempo. Treat Jaeger and Promtail references below as legacy context only.
+
 # Infrastructure & DevOps Performance Analysis
 
 **Analysis Date:** 2026-02-01
@@ -571,11 +573,11 @@ groups:
 **Recommendation:** Add OpenTelemetry
 ```yaml
 # Add to docker-compose.yml
-jaeger:
-  image: jaegertracing/all-in-one:latest
+tempo:
+  image: grafana/tempo:latest
   ports:
-    - "16686:16686"  # UI
-    - "14268:14268"  # HTTP collector
+    - "3200:3200"    # Query UI
+    - "4317:4317"    # OTLP gRPC
 ```
 
 #### 3. Missing Log Aggregation (P1)
@@ -664,7 +666,7 @@ promtail:
 - Optimize health check timings
 
 **Day 3-5:**
-- Implement distributed tracing (Jaeger)
+- Implement distributed tracing (Tempo-backed OTLP)
 - Set up log aggregation (Loki + Promtail)
 - Create Grafana dashboards for new metrics
 

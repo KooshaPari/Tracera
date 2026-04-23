@@ -1,4 +1,9 @@
+> Historical note: this document preserves the pre-Phenotype observability stack. The active org path is the shared collector, Grafana Alloy, and Grafana Tempo. Treat Jaeger and Promtail references below as legacy context only.
+
 # APM Integration Summary
+
+> Historical summary only. The active Phenotype path now uses the shared collector,
+> Grafana Alloy, Loki, and Grafana Tempo. The Jaeger details below are legacy.
 
 **Task #82 - Application Performance Monitoring Integration** ✅ **COMPLETE**
 
@@ -6,7 +11,7 @@
 
 Comprehensive Application Performance Monitoring (APM) solution for TraceRTM using:
 - **OpenTelemetry** for instrumentation
-- **Jaeger** for distributed tracing
+- **Shared Phenotype collector + Tempo** for distributed tracing
 - **Grafana** for visualization
 
 ## Quick Start
@@ -16,7 +21,7 @@ Comprehensive Application Performance Monitoring (APM) solution for TraceRTM usi
 Add to your `.env`:
 ```bash
 TRACING_ENABLED=true
-JAEGER_ENDPOINT=localhost:4317
+PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT=localhost:4317
 TRACING_ENVIRONMENT=development
 ```
 
@@ -40,7 +45,7 @@ make dev-tui
 
 ### 4. Access APM Tools
 
-- **Jaeger UI**: http://localhost:16686 - Search and view traces
+- **Legacy Jaeger UI**: http://localhost:16686 - Search and view traces
 - **Grafana Dashboards**: http://localhost:3001
   - APM Performance (response times, throughput, cache metrics)
   - Distributed Tracing (trace analysis, error rates)
@@ -115,7 +120,7 @@ Two pre-configured dashboards:
 - `backend/internal/tracing/database.go`
 
 ### Configuration
-- `monitoring/grafana/provisioning/datasources/jaeger.yml`
+- `deploy/monitoring/grafana/provisioning/datasources/tempo.yml` (current)
 - Updated `.env.example` with tracing variables
 
 ### Dashboards
@@ -142,7 +147,7 @@ bash scripts/verify-apm-integration.sh
 This checks:
 - Environment configuration
 - Python and Go modules
-- Jaeger configuration
+- Legacy Jaeger configuration
 - Grafana dashboards
 - Documentation
 - Dependencies
@@ -157,7 +162,7 @@ Minimal overhead:
 
 Optimizations:
 - Batch span processing (5-second intervals)
-- Async export to Jaeger
+- Async export to legacy Jaeger
 - Configurable sampling rates
 - Efficient OTLP protocol
 
@@ -222,7 +227,7 @@ Comprehensive documentation provided:
    ```
 
 4. **View Results**:
-   - Jaeger: http://localhost:16686
+   - Legacy Jaeger UI: http://localhost:16686
    - Grafana: http://localhost:3001
 
 ### Recommended Enhancements:
