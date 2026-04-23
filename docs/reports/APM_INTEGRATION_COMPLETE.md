@@ -1,3 +1,5 @@
+> Historical note: this document preserves the pre-Phenotype observability stack. The active org path is the shared collector, Grafana Alloy, and Grafana Tempo. Treat Jaeger and Promtail references below as legacy context only.
+
 # APM Integration Completion Report
 
 **Task**: #82 - Phase 2 Observability - APM Integration
@@ -6,7 +8,7 @@
 
 ## Summary
 
-Successfully integrated comprehensive Application Performance Monitoring (APM) into TraceRTM using OpenTelemetry, Jaeger, and Grafana. The implementation provides distributed tracing, performance metrics, and database instrumentation for both Go and Python backends.
+Successfully integrated comprehensive Application Performance Monitoring (APM) into TraceRTM using OpenTelemetry, a legacy Jaeger path, and Grafana. The implementation provides distributed tracing, performance metrics, and database instrumentation for both Go and Python backends.
 
 ## What Was Implemented
 
@@ -20,7 +22,7 @@ Successfully integrated comprehensive Application Performance Monitoring (APM) i
   - `instrumentation.py` - Automatic instrumentation for FastAPI, SQLAlchemy, HTTP clients, Redis
 
 #### Key Features
-- Distributed tracing with OTLP export to Jaeger
+- Distributed tracing with OTLP export to the legacy Jaeger path
 - Automatic FastAPI request/response tracing
 - SQLAlchemy database query instrumentation
 - HTTP client request tracing (httpx, requests)
@@ -76,7 +78,7 @@ Already present in `backend/go.mod`:
 
 ### 4. Infrastructure
 
-#### Jaeger Configuration
+#### Legacy Jaeger Configuration
 - **Process Compose**: Already configured in `process-compose.yaml`
   - Service: `jaeger`
   - Ports: 16686 (UI), 4317 (OTLP gRPC), 4318 (OTLP HTTP)
@@ -86,7 +88,7 @@ Already present in `backend/go.mod`:
 Added to `.env.example`:
 ```bash
 TRACING_ENABLED=true
-JAEGER_ENDPOINT=localhost:4317
+PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT=localhost:4317
 OTLP_ENDPOINT=localhost:4317
 TRACING_ENVIRONMENT=development
 ```
@@ -114,10 +116,10 @@ TRACING_ENVIRONMENT=development
   5. Database Query Duration
   6. External API Call Duration
 
-#### Jaeger Data Source
+#### Legacy Jaeger Data Source
 - **File**: `monitoring/grafana/provisioning/datasources/jaeger.yml`
 - **Configuration**:
-  - URL: http://localhost:16686
+  - URL: http://localhost:16686 (legacy trace UI)
   - Traces-to-metrics correlation with Prometheus
   - Node graph enabled
 
@@ -143,7 +145,7 @@ TRACING_ENVIRONMENT=development
   - Code examples (Go and Python)
   - Common patterns
   - Prometheus queries
-  - Jaeger search tips
+  - Legacy Jaeger search tips
   - Troubleshooting commands
 
 #### README Updates
@@ -159,7 +161,7 @@ TRACING_ENVIRONMENT=development
 Add to `.env`:
 ```bash
 TRACING_ENABLED=true
-JAEGER_ENDPOINT=localhost:4317
+PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT=localhost:4317
 TRACING_ENVIRONMENT=development
 ```
 
@@ -244,7 +246,7 @@ To verify the integration:
    ```
 
 3. **View Traces in Jaeger**:
-   - Open http://localhost:16686
+   - Open the legacy Jaeger UI at http://localhost:16686
    - Select service: `tracertm-backend` or `tracertm-python-backend`
    - Click "Find Traces"
 
@@ -352,11 +354,11 @@ To verify the integration:
 
 ### External Links
 - [OpenTelemetry Docs](https://opentelemetry.io/docs/)
-- [Jaeger Documentation](https://www.jaegertracing.io/docs/)
+- [Jaeger Documentation](https://www.jaegertracing.io/docs/) (legacy reference)
 - [Grafana Dashboards](https://grafana.com/docs/grafana/latest/dashboards/)
 
 ### Access Points
-- Jaeger UI: http://localhost:16686
+- Legacy Jaeger UI: http://localhost:16686
 - Grafana: http://localhost:3001
 - Prometheus: http://localhost:9090
 
