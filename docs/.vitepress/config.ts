@@ -1,8 +1,12 @@
 import { defineConfig } from 'vitepress'
 import { createSiteMeta } from './site-meta.mjs'
 
-const repoName = process.env.GITHUB_REPOSITORY?.split('/').at(-1) ?? 'trace'
-const base = process.env.GITHUB_ACTIONS === 'true' ? `/${repoName}/` : '/'
+function getProductionBase() {
+  const repo = process.env.GITHUB_REPOSITORY?.split('/').pop()
+  return repo ? `/${repo}/` : '/'
+}
+
+const base = process.env.GITHUB_ACTIONS === 'true' ? getProductionBase() : '/'
 const siteMeta = createSiteMeta({ base })
 
 export default defineConfig({
