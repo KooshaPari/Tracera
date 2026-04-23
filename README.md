@@ -153,7 +153,7 @@ npm run docs:build
 GitHub Pages:
 
 - Workflow: `.github/workflows/vitepress-pages.yml`
-- URL convention: `https://<owner>.github.io/trace/`
+- URL convention: `https://<owner>.github.io/<repo>/`
 
 ---
 
