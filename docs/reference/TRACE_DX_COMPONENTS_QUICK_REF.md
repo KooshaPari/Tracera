@@ -1,3 +1,5 @@
+> Historical note: this document preserves the pre-Phenotype observability stack. The active org path is the shared collector, Grafana Alloy, and Grafana Tempo. Treat Jaeger and Promtail references below as legacy context only.
+
 # Trace Project-Specific DX Components - Quick Reference
 
 **Source:** `docs/research/TRACE_PROJECT_SPECIFIC_DX_COMPONENTS.md` (1,904 lines)

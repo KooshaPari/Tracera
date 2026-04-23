@@ -247,7 +247,7 @@ curl -X POST http://localhost:4000/api/v1/notifications \
 
 | Issue | Solution |
 |-------|----------|
-| Not receiving events | Check Redis connection, verify user_id |
+| Not receiving events | Check NATS connection, verify user_id |
 | Connection drops | Check firewall, increase ping interval |
 | Cache not updating | Verify queryClient configuration |
 | Auth errors | Check token validity, query parameter format |
@@ -257,5 +257,5 @@ curl -X POST http://localhost:4000/api/v1/notifications \
 1. **Limit notifications**: Use pagination and cleanup
 2. **Index frequently**: Ensure DB indexes on `user_id`, `created_at`
 3. **Buffer size**: Adjust channel buffer if events are dropped
-4. **Connection pooling**: Redis client manages this automatically
-5. **Horizontal scaling**: Redis pub/sub enables multi-instance deployment
+4. **Connection pooling**: NATS client manages this automatically
+5. **Horizontal scaling**: NATS-backed fan-out enables multi-instance deployment

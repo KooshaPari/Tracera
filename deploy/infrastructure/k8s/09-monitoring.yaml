@@ -85,11 +85,11 @@ data:
           labels:
             component: 'backend-python'
 
-      - job_name: 'redis'
+      - job_name: 'dragonfly'
         static_configs:
-        - targets: ['redis-exporter-service:9121']
+        - targets: ['dragonfly-exporter-service:9121']
           labels:
-            component: 'redis'
+            component: 'cache'
 
       - job_name: 'nats'
         static_configs:

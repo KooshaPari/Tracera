@@ -194,7 +194,7 @@ ip link show | grep docker
 sudo ip netns list
 
 # Get container PID
-PID=$(docker inspect -f '{{.State.Pid}}' trace-backend-1)
+PID=$(docker inspect -f '{{.State.Pid}}' alloy-1)
 
 # Check container network namespace
 sudo nsenter -t $PID -n ip addr

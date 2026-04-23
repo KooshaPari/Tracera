@@ -13,7 +13,7 @@ OpenTelemetry is an open-source observability framework that standardizes the co
 - **Distributed Tracing**: Track requests across service boundaries
 - **Automatic Instrumentation**: Zero-code instrumentation for common frameworks
 - **Standardized Context Propagation**: W3C Trace Context for cross-service correlation
-- **OTLP Export**: Protocol for sending telemetry to backends (Jaeger, Tempo, etc.)
+- **OTLP Export**: Protocol for sending telemetry to collector backends (Tempo, etc.)
 
 ## Architecture
 
@@ -55,9 +55,9 @@ OpenTelemetry is an open-source observability framework that standardizes the co
 └─────────────────────────────────────────────────────────────┘
                         ↓
         ┌───────────────────────────────┐
-        │ OTLP Collector / Backend       │
-        │ (Jaeger, Tempo, etc.)         │
-        │ Listens on 127.0.0.1:4317     │
+        │ Grafana Alloy / Shared Collector│
+        │ Tempo / Loki / Prometheus      │
+        │ OTLP gRPC on 127.0.0.1:4317    │
         └───────────────────────────────┘
 ```
 
@@ -139,10 +139,14 @@ The tracing setup is controlled by the following environment variables:
 | Variable | Description | Default | Example |
 |----------|-------------|---------|---------|
 | `TRACING_ENABLED` | Enable/disable distributed tracing | `false` | `true` |
-| `OTLP_ENDPOINT` | OTLP collector endpoint | `127.0.0.1:4317` | `jaeger:4317` |
+| `PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT` | Shared collector endpoint | `127.0.0.1:4317` | `otel-collector:4317` |
+| `OTLP_ENDPOINT` | Legacy collector endpoint fallback | `127.0.0.1:4317` | `otel-collector:4317` |
 | `TRACING_ENVIRONMENT` | Deployment environment | `development` | `production`, `staging` |
 | `SERVICE_NAME` | Service name for tracing | `tracertm-python-backend` | Custom name |
 | `SERVICE_VERSION` | Service version | `1.0.0` | `0.2.0` |
+
+> Primary setup uses `PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT`; `OTLP_ENDPOINT` remains only for
+> older environment files that have not been normalized yet.
 
 ### Configuration in Development
 
@@ -151,7 +155,7 @@ Create a `.env` file in the project root:
 ```bash
 # .env
 TRACING_ENABLED=true
-OTLP_ENDPOINT=127.0.0.1:4317
+PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT=127.0.0.1:4317
 TRACING_ENVIRONMENT=development
 SERVICE_NAME=tracertm-python-backend
 SERVICE_VERSION=0.2.0
@@ -164,7 +168,7 @@ Set environment variables in your deployment environment:
 **Docker:**
 ```dockerfile
 ENV TRACING_ENABLED=true
-ENV OTLP_ENDPOINT=jaeger-collector:4317
+ENV PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT=otel-collector:4317
 ENV TRACING_ENVIRONMENT=production
 ```
 
@@ -176,7 +180,7 @@ metadata:
   name: tracertm-config
 data:
   TRACING_ENABLED: "true"
-  OTLP_ENDPOINT: "jaeger-collector:4317"
+  PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT: "otel-collector:4317"
   TRACING_ENVIRONMENT: "production"
 ```
 
@@ -186,33 +190,24 @@ services:
   python-backend:
     environment:
       TRACING_ENABLED: "true"
-      OTLP_ENDPOINT: "jaeger:4317"
+      PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT: "otel-collector:4317"
       TRACING_ENVIRONMENT: "development"
 ```
 
 ## Backend Setup
 
-### Jaeger
+### Shared Phenotype Collector
 
-Jaeger is the recommended distributed tracing backend for local development and small deployments.
+The shared Phenotype collector is the recommended distributed tracing path for local development
+and org-level deployments.
 
-**Start Jaeger with Docker:**
+**Start the shared stack:**
 ```bash
-docker run -d \
-  --name jaeger \
-  -p 5775:5775/udp \
-  -p 6831:6831/udp \
-  -p 6832:6832/udp \
-  -p 5778:5778 \
-  -p 16686:16686 \
-  -p 14268:14268 \
-  -p 14250:14250 \
-  -p 9411:9411 \
-  jaegertracing/all-in-one
+make dev
 ```
 
-**Access Jaeger UI:**
-- URL: `http://localhost:16686`
+**Access Grafana:**
+- URL: `http://localhost:3000`
 
 ### Grafana Tempo
 
@@ -258,7 +253,7 @@ if tracing_enabled:
         service_name="tracertm-python-backend",
         service_version="1.0.0",
         environment=os.getenv("TRACING_ENVIRONMENT", "development"),
-        otlp_endpoint=os.getenv("OTLP_ENDPOINT", "127.0.0.1:4317"),
+        otlp_endpoint=os.getenv("PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT", "127.0.0.1:4317"),
     )
 
     # 2. Instrument FastAPI for automatic HTTP spans
@@ -322,10 +317,10 @@ async def analyze_data(data: dict) -> dict:
 ```bash
 # Set environment variable
 export TRACING_ENABLED=true
-export OTLP_ENDPOINT=127.0.0.1:4317
+export PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT=127.0.0.1:4317
 
-# Start Jaeger (in another terminal)
-docker run -d -p 16686:16686 -p 4317:4317 jaegertracing/all-in-one
+# Start the shared org stack in another terminal
+make dev
 
 # Run the backend
 python -m uvicorn src.tracertm.api.main:app --reload
@@ -333,8 +328,8 @@ python -m uvicorn src.tracertm.api.main:app --reload
 # Make a request
 curl http://localhost:8000/health
 
-# View traces in Jaeger UI
-# http://localhost:16686
+# View traces in Grafana
+# http://localhost:3000
 ```
 
 ### Example 2: Production Deployment with Tempo
@@ -350,7 +345,7 @@ services:
   python-backend:
     environment:
       TRACING_ENABLED: "true"
-      OTLP_ENDPOINT: "tempo:4317"
+      PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT: "tempo:4317"
       TRACING_ENVIRONMENT: "production"
 ```
 
@@ -431,14 +426,12 @@ Spans automatically include the following attributes:
 2. Check environment variables:
    ```bash
    echo $TRACING_ENABLED
-   echo $OTLP_ENDPOINT
+   echo $PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT
    ```
 
-3. Verify backend is running:
+3. Verify the shared collector stack is running:
    ```bash
-   docker ps | grep jaeger
-   # or for Tempo
-   docker ps | grep tempo
+   docker ps | grep -E 'alloy|tempo|grafana'
    ```
 
 4. Check application logs for errors:
@@ -548,7 +541,7 @@ The Python backend automatically integrates with the Go backend via W3C Trace Co
 2. Python backend receives the trace context (W3C `traceparent` header)
 3. Python creates child spans under the same trace ID
 4. Both services export to the same OTLP backend
-5. Traces are automatically correlated in Jaeger/Tempo UI
+5. Traces are automatically correlated in Grafana/Tempo UI
 
 **Example distributed trace (Go → Python):**
 
@@ -586,7 +579,7 @@ Trace ID: a4fb4a1d1a96d312516023370d5f7f8f
 
 - [OpenTelemetry Python Documentation](https://opentelemetry.io/docs/instrumentation/python/)
 - [OTLP Exporter Documentation](https://opentelemetry.io/docs/reference/specification/otlp/)
-- [Jaeger Documentation](https://www.jaegertracing.io/docs/)
+- [OpenTelemetry Documentation](https://opentelemetry.io/docs/)
 - [Grafana Tempo Documentation](https://grafana.com/docs/tempo/latest/)
 
 ### Configuration Files
@@ -600,9 +593,9 @@ Trace ID: a4fb4a1d1a96d312516023370d5f7f8f
 
 1. ✅ **Install dependencies** - `pip install 'tracertm[observability]'`
 2. ✅ **Verify installation** - Run `python -m tracertm.observability.verify_traces`
-3. **Start backend** - `docker run -d -p 16686:16686 -p 4317:4317 jaegertracing/all-in-one`
+3. **Start backend** - `make dev`
 4. **Enable tracing** - Set `TRACING_ENABLED=true`
-5. **View traces** - Open `http://localhost:16686`
+5. **View traces** - Open `http://localhost:3000`
 
 ### Advanced Topics
 

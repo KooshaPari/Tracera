@@ -694,13 +694,13 @@ loki:
     - ./loki-config.yml:/etc/loki/local-config.yaml
     - loki_data:/loki
 
-promtail:
-  image: grafana/promtail:latest
+alloy:
+  image: grafana/alloy:latest
   volumes:
     - /var/log:/var/log
-    - ./promtail-config.yml:/etc/promtail/config.yml
+    - ./alloy-local.alloy:/etc/alloy/config.alloy
     - /var/lib/docker/containers:/var/lib/docker/containers:ro
-  command: -config.file=/etc/promtail/config.yml
+  command: run --server.http.listen-addr=0.0.0.0:12345 /etc/alloy/config.alloy
 ```
 
 ### Log Rotation
