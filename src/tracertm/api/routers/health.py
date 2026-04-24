@@ -55,7 +55,7 @@ async def metrics() -> Response:
     )
 
 
-@router.get("/ready")
+@router.get("/ready", response_model=None)
 async def readiness_check(
     db: Annotated[AsyncSession, Depends(get_db)],
     cache: Annotated[CacheService, Depends(get_cache_service)],
@@ -99,7 +99,7 @@ async def readiness_check(
     return body
 
 
-@router.get("/api/v1/health")
+@router.get("/api/v1/health", response_model=None)
 async def api_health_check(
     request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],

@@ -1,3 +1,5 @@
+> Historical note: this document preserves the pre-Phenotype observability stack. The active org path is the shared collector, Grafana Alloy, and Grafana Tempo. Treat Jaeger and Promtail references below as legacy context only.
+
 # Backend Consolidation Roadmap - Hybrid Architecture Strategy
 
 **Date**: January 30, 2026

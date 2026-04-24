@@ -247,15 +247,15 @@ groups:
 
       - alert: CacheUnavailable
         expr: |
-          up{job="redis"} == 0
+          up{job="cache"} == 0
         for: 1m
         labels:
           severity: critical
           team: backend
           slo: availability
         annotations:
-          summary: "Cache (Redis) is unavailable"
-          description: "Redis service is unreachable on {{ $labels.instance }}"
+          summary: "Cache is unavailable"
+          description: "Cache service is unreachable on {{ $labels.instance }}"
           runbook_url: "https://wiki.example.com/runbooks/cache-unavailable"
           mttr_target: "2m"
 

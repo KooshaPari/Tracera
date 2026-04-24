@@ -1,6 +1,8 @@
 # Application Performance Monitoring (APM) Integration Guide
 
-This guide explains how to use the integrated APM solution in TraceRTM, powered by OpenTelemetry, Jaeger, and Grafana.
+This guide explains how to use the integrated APM solution in TraceRTM, powered by
+OpenTelemetry, the shared Phenotype collector, Grafana Alloy, Tempo, Loki, Prometheus,
+and Grafana.
 
 ## Overview
 
@@ -18,7 +20,7 @@ TraceRTM includes a comprehensive APM solution that provides:
 │ Go Backend   │────▶│              │
 │ (Echo/HTTP)  │     │              │
 └──────────────┘     │              │
-                     │   Jaeger     │──────▶ Grafana Dashboards
+                     │   Alloy      │──────▶ Tempo / Loki / Prometheus
 ┌──────────────┐     │   (OTLP)     │
 │ Python       │────▶│              │
 │ Backend      │     │              │
@@ -44,9 +46,9 @@ Add to your `.env` file:
 # Enable distributed tracing
 TRACING_ENABLED=true
 
-# Jaeger endpoint (default: localhost:4317)
-JAEGER_ENDPOINT=localhost:4317
-OTLP_ENDPOINT=localhost:4317
+# Shared Phenotype collector endpoint
+PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT=127.0.0.1:4317
+OTLP_ENDPOINT=127.0.0.1:4317
 
 # Environment name
 TRACING_ENVIRONMENT=development
@@ -63,9 +65,9 @@ make dev-tui
 ```
 
 This starts:
-- Jaeger (UI: http://localhost:16686)
+- Tempo (http://localhost:3200)
 - Prometheus (http://localhost:9090)
-- Grafana (http://localhost:3001)
+- Grafana (http://localhost:3000)
 
 ### 3. Access APM Dashboards
 
@@ -78,7 +80,7 @@ This starts:
    - **Distributed Tracing**: Trace analysis, error rates, top endpoints
    - **Infrastructure**: Database, Redis, system metrics
 
-3. **Jaeger UI**: http://localhost:16686
+3. **Grafana/Tempo**: http://localhost:3000
    - Search traces by service, operation, tags
    - View detailed trace timelines
    - Analyze service dependencies
@@ -310,16 +312,17 @@ OpenTelemetry adds minimal overhead:
 Tracing uses:
 - Sampling (configurable)
 - Batch span processing (5-second intervals)
-- Async export to Jaeger
+- Async export through the shared collector to Tempo
 
 ## Troubleshooting
 
 ### Traces Not Appearing
 
-1. **Check Jaeger is running**:
+1. **Confirm the shared trace path is up**:
    ```bash
-   curl http://localhost:16686
+   curl http://localhost:3000
    ```
+   Then open Grafana's trace search and verify the Tempo datasource is available.
 
 2. **Verify tracing is enabled**:
    ```bash
@@ -441,6 +444,6 @@ default:
 ## Support
 
 For issues or questions:
-- Check Jaeger UI: http://localhost:16686
-- View Grafana dashboards: http://localhost:3001
+- View Grafana dashboards and trace search: http://localhost:3000
+- Query Tempo traces in Grafana
 - Review backend logs in `.process-compose/logs/`

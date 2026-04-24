@@ -94,8 +94,8 @@ graph TD
 
 #### Check Request Tracing
 ```bash
-# View distributed traces in Jaeger
-open http://localhost:16686
+# View distributed traces in Grafana
+open http://localhost:3000/explore
 
 # Look for:
 # - Long-duration spans

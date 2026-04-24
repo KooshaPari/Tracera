@@ -3,6 +3,9 @@ package nats
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
+	"time"
 
 	natslib "github.com/nats-io/nats.go"
 )
@@ -45,6 +48,12 @@ const (
 	EventTypeProjectCreated = "project.created"
 	EventTypeProjectUpdated = "project.updated"
 	EventTypeProjectDeleted = "project.deleted"
+)
+
+const (
+	notificationStreamName = "TRACERTM_NOTIFICATIONS"
+	notificationSubject    = "tracertm.notifications"
+	notificationMaxAge     = 24 * time.Hour
 )
 
 // Event represents a domain event
@@ -126,6 +135,105 @@ func (ep *EventPublisher) publishEvent(event Event) error {
 	}
 
 	return nil
+}
+
+// PublishNotification publishes a user notification event through JetStream.
+func (ep *EventPublisher) PublishNotification(userID string, data interface{}) error {
+	if userID == "" {
+		return fmt.Errorf("notification user ID is required")
+	}
+	if ep == nil || ep.conn == nil {
+		return fmt.Errorf("NATS event publisher is not configured")
+	}
+
+	js, err := ep.notificationJetStream()
+	if err != nil {
+		return err
+	}
+
+	payload, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("failed to marshal notification event: %w", err)
+	}
+
+	subject := fmt.Sprintf("%s.%s", notificationSubject, sanitizeSubjectToken(userID))
+	if _, err := js.Publish(subject, payload); err != nil {
+		return fmt.Errorf("failed to publish notification event: %w", err)
+	}
+
+	return nil
+}
+
+// SubscribeNotifications subscribes to all notification events for this process.
+func (ep *EventPublisher) SubscribeNotifications(handler func(userID string, data []byte)) (func() error, error) {
+	if ep == nil || ep.conn == nil {
+		return nil, fmt.Errorf("NATS event publisher is not configured")
+	}
+	if handler == nil {
+		return nil, fmt.Errorf("notification handler is required")
+	}
+
+	js, err := ep.notificationJetStream()
+	if err != nil {
+		return nil, err
+	}
+
+	subject := notificationSubject + ".>"
+	durable := notificationDurableName()
+	sub, err := js.Subscribe(subject, func(msg *natslib.Msg) {
+		userID := notificationUserID(msg.Subject)
+		handler(userID, msg.Data)
+		if err := msg.Ack(); err != nil {
+			// Ack failures are surfaced through NATS redelivery; keep handler non-blocking.
+			return
+		}
+	}, natslib.Durable(durable), natslib.ManualAck())
+	if err != nil {
+		return nil, fmt.Errorf("failed to subscribe to notification events: %w", err)
+	}
+
+	return sub.Unsubscribe, nil
+}
+
+func (ep *EventPublisher) notificationJetStream() (natslib.JetStreamContext, error) {
+	js, err := ep.conn.JetStream()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create JetStream context: %w", err)
+	}
+
+	cfg := &natslib.StreamConfig{
+		Name:      notificationStreamName,
+		Subjects:  []string{notificationSubject + ".>"},
+		Retention: natslib.InterestPolicy,
+		Storage:   natslib.FileStorage,
+		MaxAge:    notificationMaxAge,
+		Replicas:  1,
+	}
+	if _, err := js.AddStream(cfg); err != nil {
+		if _, updateErr := js.UpdateStream(cfg); updateErr != nil {
+			return nil, fmt.Errorf("failed to ensure notification stream: %w", updateErr)
+		}
+	}
+
+	return js, nil
+}
+
+func notificationDurableName() string {
+	host, err := os.Hostname()
+	if err != nil || host == "" {
+		host = "local"
+	}
+	return sanitizeSubjectToken(fmt.Sprintf("notification-service-%s-%d", host, os.Getpid()))
+}
+
+func notificationUserID(subject string) string {
+	prefix := notificationSubject + "."
+	return strings.TrimPrefix(subject, prefix)
+}
+
+func sanitizeSubjectToken(value string) string {
+	replacer := strings.NewReplacer(".", "_", ">", "_", "*", "_", " ", "_")
+	return replacer.Replace(value)
 }
 
 // Close closes the NATS connection

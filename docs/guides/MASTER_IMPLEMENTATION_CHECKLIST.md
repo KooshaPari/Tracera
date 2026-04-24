@@ -1,3 +1,5 @@
+> Historical note: this document preserves the pre-Phenotype observability stack. The active org path is the shared collector, Grafana Alloy, and Grafana Tempo. Treat Jaeger and Promtail references below as legacy context only.
+
 # Master Implementation Checklist - All Phases
 
 ## Phase 1: AI Foundation (Weeks 1-2, 80 hours)

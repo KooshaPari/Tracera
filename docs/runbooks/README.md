@@ -90,9 +90,9 @@ make db-test
 ```
 
 ### Monitoring Access
-- **Grafana**: http://localhost:3001
+- **Grafana**: http://localhost:3000
 - **Prometheus**: http://localhost:9090
-- **Jaeger**: http://localhost:16686
+- **Tempo / Explore**: http://localhost:3000/explore
 
 ### Quick Recovery Commands
 ```bash

@@ -76,7 +76,7 @@ spec:
         - name: DATABASE_URL
           value: "postgres://$(DATABASE_USER):$(DATABASE_PASSWORD)@postgres-service:5432/$(DATABASE_NAME)?sslmode=disable"
         - name: REDIS_URL
-          value: "redis://redis-service:6379"
+          value: "redis://dragonfly-service:6379"
         - name: NATS_URL
           value: "nats://nats-service:4222"
         - name: GO_BACKEND_URL
@@ -165,18 +165,18 @@ spec:
           limits:
             memory: "64Mi"
             cpu: "100m"
-      - name: wait-for-redis
+      - name: wait-for-cache
         image: busybox:1.36
         command:
         - sh
         - -c
         - |
-          echo "Waiting for Redis..."
-          until nc -z redis-service 6379; do
-            echo "Redis is unavailable - sleeping"
+          echo "Waiting for Dragonfly-compatible cache..."
+          until nc -z dragonfly-service 6379; do
+            echo "Cache is unavailable - sleeping"
             sleep 2
           done
-          echo "Redis is up - executing command"
+          echo "Cache is up - executing command"
         resources:
           requests:
             memory: "32Mi"

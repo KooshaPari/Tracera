@@ -34,10 +34,10 @@ func DefaultTestConfig() *TestConfig {
 
 // TestEnvironment manages all test infrastructure containers and connections
 type TestEnvironment struct {
-	PostgresContainer testcontainers.Container
-	RedisContainer    testcontainers.Container
-	Neo4jContainer    testcontainers.Container
-	NATSContainer     testcontainers.Container
+	PostgresContainer  testcontainers.Container
+	DragonflyContainer testcontainers.Container
+	Neo4jContainer     testcontainers.Container
+	NATSContainer      testcontainers.Container
 
 	PostgresPool *pgxpool.Pool
 	NATSConn     *nats.Conn
@@ -87,16 +87,16 @@ func NewTestEnvironment(ctx context.Context) (*TestEnvironment, error) {
 		return nil
 	})
 
-	// Start Redis
-	redisContainer, redisURL, err := RedisContainer(ctx)
+	// Start Dragonfly
+	dragonflyContainer, redisURL, err := DragonflyContainer(ctx)
 	if err != nil {
 		env.Cleanup(ctx)
-		return nil, fmt.Errorf("failed to start redis: %w", err)
+		return nil, fmt.Errorf("failed to start dragonfly: %w", err)
 	}
-	env.RedisContainer = redisContainer
+	env.DragonflyContainer = dragonflyContainer
 	env.Config.RedisURL = redisURL
 	env.addCleanup(func(ctx context.Context) error {
-		return redisContainer.Terminate(ctx)
+		return dragonflyContainer.Terminate(ctx)
 	})
 
 	// Start Neo4j

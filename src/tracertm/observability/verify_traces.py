@@ -45,7 +45,10 @@ async def verify_tracing_setup() -> dict[str, Any]:
 
         # Initialize with environment variables or defaults
         service_name = os.getenv("SERVICE_NAME", "tracertm-verification")
-        otlp_endpoint = os.getenv("OTLP_ENDPOINT", "127.0.0.1:4317")
+        otlp_endpoint = os.getenv(
+            "PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT",
+            "127.0.0.1:4317",
+        )
         environment = os.getenv("TRACING_ENVIRONMENT", "development")
 
         logger.info("Configuration:")
@@ -137,7 +140,7 @@ async def verify_instrumentation_packages() -> dict[str, Any]:
         "sqlalchemy": False,
         "httpx": False,
         "requests": False,
-        "redis": False,
+        "redis_compatible_cache": False,
     }
 
     for name, pkg in [
@@ -145,7 +148,7 @@ async def verify_instrumentation_packages() -> dict[str, Any]:
         ("sqlalchemy", "opentelemetry.instrumentation.sqlalchemy"),
         ("httpx", "opentelemetry.instrumentation.httpx"),
         ("requests", "opentelemetry.instrumentation.requests"),
-        ("redis", "opentelemetry.instrumentation.redis"),
+        ("redis_compatible_cache", "opentelemetry.instrumentation.redis"),
     ]:
         spec = importlib.util.find_spec(pkg)
         packages[name] = spec is not None

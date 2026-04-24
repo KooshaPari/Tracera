@@ -101,13 +101,13 @@ print(f'% Memory: {process.memory_percent():.2f}%')
 #### Check Historical Memory Usage
 ```bash
 # Query Prometheus for memory trends
-curl -s 'http://localhost:9090/api/v1/query_range?query=container_memory_usage_bytes{name="trace-backend-1"}&start='$(date -u -d '1 hour ago' +%s)'&end='$(date -u +%s)'&step=60' | jq
+curl -s 'http://localhost:9090/api/v1/query_range?query=container_memory_usage_bytes{name="alloy-1"}&start='$(date -u -d '1 hour ago' +%s)'&end='$(date -u +%s)'&step=60' | jq
 
 # Check for OOM events
-docker inspect trace-backend-1 | jq '.[0].State.OOMKilled'
+docker inspect alloy-1 | jq '.[0].State.OOMKilled'
 
 # View container restart count
-docker inspect trace-backend-1 | jq '.[0].RestartCount'
+docker inspect alloy-1 | jq '.[0].RestartCount'
 ```
 
 ### 2. Profile Memory Usage
@@ -259,7 +259,7 @@ docker-compose exec redis redis-cli INFO stats | grep expired
 
 ```bash
 # Check current limits
-docker inspect trace-backend-1 | jq '.[0].HostConfig.Memory'
+docker inspect alloy-1 | jq '.[0].HostConfig.Memory'
 
 # Increase memory limit in docker-compose.yml
 # Before:
@@ -280,7 +280,7 @@ docker inspect trace-backend-1 | jq '.[0].HostConfig.Memory'
 docker-compose up -d backend
 
 # Verify new limits
-docker inspect trace-backend-1 | jq '.[0].HostConfig.Memory'
+docker inspect alloy-1 | jq '.[0].HostConfig.Memory'
 ```
 
 ### Scenario 2: Memory Leak in Application Code
@@ -523,7 +523,7 @@ print(f'Memory: {psutil.Process(os.getpid()).memory_info().rss / 1024 / 1024:.2f
 ### 3. Check for OOM Events
 ```bash
 # Should return false
-docker inspect trace-backend-1 | jq '.[0].State.OOMKilled'
+docker inspect alloy-1 | jq '.[0].State.OOMKilled'
 
 # Check system logs for OOM killer
 dmesg | grep -i "out of memory"

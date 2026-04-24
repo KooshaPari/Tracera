@@ -57,6 +57,14 @@ install_homebrew_services() {
   brew bundle --file=Brewfile.dev
   echo "✅ Homebrew packages installed"
 
+  if ! command -v grafana-alloy >/dev/null 2>&1 && \
+     ! { [ -x "$HOME/.local/bin/grafana-alloy" ] && "$HOME/.local/bin/grafana-alloy" run --help >/dev/null 2>&1; }; then
+    echo "⚠️  Grafana Alloy is required for the local log and trace collector."
+    echo "   Try: brew install grafana-alloy"
+    echo "   If alloy-analyzer owns the alloy command, install the official release as:"
+    echo "   $HOME/.local/bin/grafana-alloy"
+  fi
+
   # Install exporters (not available in Homebrew)
   echo ""
   echo "📊 Installing Prometheus exporters..."
@@ -71,9 +79,13 @@ install_apt_services() {
   sudo apt-get install -y \
     postgresql-17 \
     postgresql-client-17 \
-    redis-server \
     prometheus \
     grafana
+
+  if ! command -v dragonfly &> /dev/null; then
+    echo "⚠️  Dragonfly is required for the default cache runtime."
+    echo "   Install Dragonfly from https://www.dragonflydb.io/docs/getting-started or use Docker."
+  fi
 
   # Neo4j (from official repo)
   wget -O - https://debian.neo4j.com/neotechnology.gpg.key | sudo apt-key add -
@@ -118,7 +130,10 @@ case $PKG_MGR in
   scoop)
     echo "📦 Installing via Scoop..."
     scoop bucket add extras
-    scoop install postgresql redis prometheus grafana caddy
+    scoop install postgresql dragonfly prometheus grafana caddy || {
+      echo "⚠️  Dragonfly could not be installed via Scoop."
+      echo "   Use Docker or the official Dragonfly release for the default cache runtime."
+    }
     install_process_compose
     ;;
   *)
@@ -165,6 +180,8 @@ mkdir -p .process-compose/logs
 mkdir -p .prometheus
 mkdir -p .grafana
 mkdir -p .temporal
+mkdir -p .alloy/data
+mkdir -p .dragonfly
 
 # Verify installation
 echo ""
@@ -173,7 +190,13 @@ echo "✅ Verifying installation..."
 MISSING=""
 command -v process-compose >/dev/null || MISSING="$MISSING process-compose"
 command -v postgres >/dev/null || MISSING="$MISSING postgres"
-command -v redis-server >/dev/null || MISSING="$MISSING redis-server"
+if ! command -v dragonfly >/dev/null 2>&1 && ! command -v docker >/dev/null 2>&1; then
+  MISSING="$MISSING dragonfly-or-docker"
+fi
+if ! command -v grafana-alloy >/dev/null 2>&1 && \
+   ! { [ -x "$HOME/.local/bin/grafana-alloy" ] && "$HOME/.local/bin/grafana-alloy" run --help >/dev/null 2>&1; }; then
+  MISSING="$MISSING grafana-alloy"
+fi
 command -v caddy >/dev/null || MISSING="$MISSING caddy"
 command -v prometheus >/dev/null || MISSING="$MISSING prometheus"
 command -v grafana-server >/dev/null || MISSING="$MISSING grafana-server"

@@ -1,121 +1,18 @@
-# Task #78: Distributed Tracing with Jaeger - Completion Report
+> Historical note: this report captures the original tracing rollout only. The
+> live tracing path now uses the shared collector, Grafana Alloy, and Grafana
+> Tempo.
 
-**Status**: ✅ COMPLETED
-**Date**: 2026-02-01
-**Task**: Phase 2 Observability - Distributed Tracing Setup (Jaeger)
+# Task #78: Distributed Tracing Completion Report
 
-## Summary
+This report is preserved for historical context. The Jaeger-backed workflow it
+describes has been superseded by the Tempo-backed observability stack.
 
-Successfully implemented distributed tracing using OpenTelemetry and Jaeger for the TraceRTM Go backend. This enables comprehensive observability across all services and critical operations.
+## Historical Summary
 
-## What Was Implemented
-
-### 1. OpenTelemetry SDK Integration
-
-**Files Created:**
-- `backend/internal/tracing/tracer.go` - Tracer initialization and lifecycle management
-- `backend/internal/tracing/helpers.go` - Helper functions for creating custom spans
-- `backend/internal/tracing/middleware.go` - Echo middleware for HTTP auto-instrumentation
-- `backend/internal/tracing/examples.go` - Usage examples and patterns
-
-**Features:**
-- OTLP/gRPC exporter for Jaeger
-- Batch span processor for efficiency
-- W3C Trace Context propagation
-- Configurable sampling (100% in dev, adjustable for prod)
-- Resource attributes (service name, version, environment)
-
-### 2. Configuration
-
-**Environment Variables:**
-```env
-TRACING_ENABLED=true
-JAEGER_ENDPOINT=localhost:4317
-TRACING_ENVIRONMENT=development
-```
-
-**Config Structure:**
-```go
-type Config struct {
-    // ... other fields
-    JaegerEndpoint     string
-    TracingEnabled     bool
-    TracingEnvironment string
-}
-```
-
-### 3. Infrastructure Integration
-
-**Modified Files:**
-- `backend/internal/config/config.go` - Added tracing configuration
-- `backend/internal/infrastructure/infrastructure.go` - Integrated tracer provider
-- `backend/internal/server/server.go` - Added tracing middleware
-
-**Features:**
-- Optional initialization (enabled via `TRACING_ENABLED`)
-- Graceful shutdown with span flushing
-- Lifecycle management in infrastructure layer
-
-### 4. HTTP Auto-Instrumentation
-
-**Implementation:**
-```go
-// Echo middleware automatically traces all HTTP requests
-s.echo.Use(tracing.Middleware())
-```
-
-**Captured Data:**
-- HTTP method and path
-- Request/response headers
-- Status code
-- Duration
-- Error information
-
-### 5. Custom Span Helpers
-
-Created helper functions for common operations:
-
-**Database Operations:**
-```go
-ctx, span := tracing.DatabaseSpan(ctx, "SELECT", "users")
-defer span.End()
-```
-
-**Cache Operations:**
-```go
-ctx, span := tracing.CacheSpan(ctx, "GET", "user:123")
-defer span.End()
-```
-
-**NATS Messaging:**
-```go
-ctx, span := tracing.NATSSpan(ctx, "PUBLISH", "user.created")
-defer span.End()
-```
-
-**Graph Database:**
-```go
-ctx, span := tracing.GraphSpan(ctx, "QUERY", cypherQuery)
-defer span.End()
-```
-
-**AI Agents:**
-```go
-ctx, span := tracing.AIAgentSpan(ctx, "code-gen", "generate")
-defer span.End()
-```
-
-### 6. Process Orchestration
-
-**Added to `process-compose.yaml`:**
-```yaml
-jaeger:
-  command: "bash scripts/jaeger-if-not-running.sh"
-  ports:
-    - 16686 (UI)
-    - 4317 (OTLP gRPC)
-    - 4318 (OTLP HTTP)
-```
+- OpenTelemetry SDK integration was added for Go backend tracing.
+- HTTP auto-instrumentation and custom span helpers were implemented.
+- The original environment variables and process orchestration have since been
+  replaced by the shared collector contract.
 
 **Created Script:**
 - `scripts/jaeger-if-not-running.sh` - Wrapper to avoid port conflicts
@@ -232,7 +129,7 @@ func (s *Service) CreateProject(ctx context.Context, p *Project) error {
 
 ## Access Points
 
-### Jaeger UI
+### Legacy Jaeger UI
 - **URL**: http://localhost:16686
 - **Service**: tracertm-backend
 - **Features**: Service map, trace timeline, search, comparison
@@ -253,7 +150,7 @@ go build -o /tmp/test-tracing ./internal/tracing/...
 ### Integration Test
 1. Start services: `make dev`
 2. Make HTTP request: `curl http://localhost:8080/api/v1/health`
-3. View trace in Jaeger: http://localhost:16686
+3. View trace in the legacy Jaeger UI: http://localhost:16686
 
 ## Benefits
 
@@ -319,13 +216,13 @@ go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0
 ## Validation Checklist
 
 - ✅ OpenTelemetry SDK installed
-- ✅ Jaeger integration configured
+- ✅ Legacy Jaeger integration configured
 - ✅ Tracer initialization implemented
 - ✅ Infrastructure integration complete
 - ✅ HTTP middleware enabled
 - ✅ Custom span helpers created
 - ✅ process-compose.yaml updated
-- ✅ Jaeger startup script created
+- ✅ Legacy Jaeger startup script created
 - ✅ Environment configuration added
 - ✅ Documentation written
 - ✅ Examples provided
@@ -334,7 +231,7 @@ go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0
 ## References
 
 - [OpenTelemetry Go Docs](https://opentelemetry.io/docs/instrumentation/go/)
-- [Jaeger Documentation](https://www.jaegertracing.io/docs/)
+- [Jaeger Documentation](https://www.jaegertracing.io/docs/) (legacy reference)
 - [OTLP Specification](https://opentelemetry.io/docs/reference/specification/protocol/otlp/)
 - [W3C Trace Context](https://www.w3.org/TR/trace-context/)
 
@@ -349,7 +246,7 @@ Distributed tracing is now fully implemented and ready for use. The system provi
 5. **Integrated deployment** via process-compose
 
 Developers can now:
-- View traces in Jaeger UI
+- View traces in the legacy Jaeger UI
 - Add custom spans to any operation
 - Debug performance issues across services
 - Understand request flow through the system

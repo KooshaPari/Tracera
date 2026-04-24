@@ -1,3 +1,5 @@
+> Historical note: this document preserves the pre-Phenotype observability stack. The active org path is the shared collector, Grafana Alloy, and Grafana Tempo. Treat Jaeger and Promtail references below as legacy context only.
+
 # Waves 1-3 Executive Summary: Quality Campaign Results
 
 **Date:** 2026-02-06
@@ -47,7 +49,7 @@ Successfully executed a multi-wave quality improvement campaign using 33 paralle
 - Python 100% type coverage (96 annotations, 0 mypy errors)
 - 342 Go tests (agents, search, storage packages)
 - OpenTelemetry Go + Python (97 tests total)
-- Jaeger distributed tracing configured
+- OpenTelemetry distributed tracing configured
 - TypeScript coverage gaps analyzed (868 tests identified)
 
 **Impact:** +6.2 points overall, Python → 100%, Health → 100%
@@ -82,8 +84,8 @@ Successfully executed a multi-wave quality improvement campaign using 33 paralle
 ### Setup Guides (12 files)
 - OTEL_GO_SETUP.md (600+ lines)
 - OTEL_PYTHON_SETUP.md (400+ lines)
-- JAEGER_SETUP.md (2,500+ lines)
-- JAEGER_VERIFICATION.md (1,500+ lines)
+- JAEGER_SETUP.md (2,500+ lines, legacy archive)
+- JAEGER_VERIFICATION.md (1,500+ lines, legacy archive)
 - OBSERVABILITY_STACK.md (1,000+ lines)
 - CI_COVERAGE_REGRESSION.md (661 lines)
 - CI_PERF_REGRESSION.md (397 lines)
@@ -102,7 +104,7 @@ Successfully executed a multi-wave quality improvement campaign using 33 paralle
 
 ### Quick References (8 files)
 - OTEL_QUICK_REFERENCE.md
-- JAEGER_QUICK_REFERENCE.md
+- JAEGER_QUICK_REFERENCE.md (legacy archive)
 - TEST_PYRAMID_VERIFICATION.md
 - COVERAGE_BASELINE_DELIVERY.md
 - Plus 4 more quick refs
@@ -207,7 +209,7 @@ Successfully executed a multi-wave quality improvement campaign using 33 paralle
 ## Production Readiness Status
 
 ### Operational Systems ✅
-- ✅ Distributed tracing (OTLP + Jaeger)
+- ✅ Distributed tracing (OTLP + shared collector)
 - ✅ Health monitoring (5 checks: Postgres, Redis, NATS, MinIO, Temporal)
 - ✅ Error aggregation (frontend → backend logging)
 - ✅ CI regression gates (coverage + performance)

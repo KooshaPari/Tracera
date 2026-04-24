@@ -14,8 +14,8 @@ environment:
   - "GO_ENV=development"
   - "LOG_FORMAT=json"
 
-# Stack: postgres, redis, neo4j, nats | temporal, prometheus | exporters |
-# go-backend, python-backend, frontend | caddy, grafana
+# Stack: postgres, dragonfly, neo4j, nats | temporal, prometheus | exporters |
+# alloy, go-backend, python-backend, frontend | caddy, grafana
 # Optional (not in file): MinIO (S3), temporal-worker
 
 # Config / hot reload:
@@ -50,8 +50,9 @@ processes:
       - "PGDATA=/opt/homebrew/var/postgresql@17"
       - "PGPORT=5432"
 
-  redis:
-    # Wrapper: skip start if already running (avoids 6379 already in use)
+  dragonfly:
+    # Preferred Redis-compatible cache, session, and rate-limit service.
+    # Set REDIS_COMPAT_PROVIDER=redis only for explicit Redis compatibility testing.
     command: "bash scripts/shell/redis-if-not-running.sh"
     availability:
       restart: on_failure
@@ -66,6 +67,7 @@ processes:
       failure_threshold: 2
     environment:
       - "REDIS_CONFIG_PATH=./config/redis.conf"
+      - "REDIS_COMPAT_PROVIDER=${REDIS_COMPAT_PROVIDER:-dragonfly}"
 
   neo4j:
     # Use wrapper so we don't fail with "already running" when brew or previous run has neo4j up
@@ -198,25 +200,6 @@ processes:
   # Layer 3: Exporters & Log Aggregation
   #############################################################################
 
-  jaeger:
-    # All-in-one Jaeger deployment for local development
-    # Ports: 16686 (UI), 4317 (OTLP gRPC), 4318 (OTLP HTTP), 14268 (collector HTTP)
-    command: "bash scripts/shell/jaeger-if-not-running.sh"
-    working_dir: "."
-    availability:
-      restart: on_failure
-      max_restarts: 3
-    readiness_probe:
-      exec:
-        command: "bash scripts/shell/readiness-jaeger.sh"
-      initial_delay_seconds: 5
-      period_seconds: 5
-      timeout_seconds: 3
-      success_threshold: 1
-      failure_threshold: 2
-    environment:
-      - "COLLECTOR_OTLP_ENABLED=true"
-
   loki:
     # Wrapper: skip start if already running (avoids address already in use)
     command: "bash scripts/shell/loki-if-not-running.sh"
@@ -237,9 +220,9 @@ processes:
       success_threshold: 1
       failure_threshold: 5
 
-  promtail:
-    # Wrapper: skip start if already running (avoids address already in use)
-    command: "bash scripts/shell/promtail-if-not-running.sh"
+  alloy:
+    # Grafana Alloy handles local log and trace collection.
+    command: "bash scripts/shell/alloy-if-not-running.sh"
     working_dir: "."
     depends_on:
       loki:
@@ -250,9 +233,9 @@ processes:
     readiness_probe:
       http_get:
         host: localhost
-        port: 9080
-        path: /ready
-      initial_delay_seconds: 10
+        port: 12345
+        path: /-/ready
+      initial_delay_seconds: 5
       period_seconds: 5
       timeout_seconds: 3
       success_threshold: 1
@@ -278,10 +261,10 @@ processes:
       failure_threshold: 2
 
   redis-exporter:
-    # Wrapper: skip start if port 9121 already in use (avoids "address already in use" on restart)
+    # redis_exporter speaks the Redis protocol and scrapes Dragonfly's Redis-compatible endpoint.
     command: "bash scripts/shell/redis-exporter-if-not-running.sh"
     depends_on:
-      redis:
+      dragonfly:
         condition: process_healthy
     readiness_probe:
       http_get:
@@ -310,8 +293,8 @@ processes:
 
   #############################################################################
   # Layer 4: Application Services
-  # go-backend only starts after postgres, redis, nats, temporal, jaeger are healthy.
-  # python-backend only starts after postgres, redis, nats, temporal, jaeger are healthy.
+  # go-backend only starts after postgres, dragonfly, nats, temporal, and alloy are healthy.
+  # python-backend only starts after postgres, dragonfly, nats, temporal, and alloy are healthy.
   # caddy only starts after go-backend, python-backend, frontend are healthy.
   # If go-backend/caddy show "skipped" or stay pending: check infra health and
   # that `air` is in PATH (go install github.com/air-verse/air → $HOME/go/bin).
@@ -323,13 +306,13 @@ processes:
     depends_on:
       postgres:
         condition: process_healthy
-      redis:
+      dragonfly:
         condition: process_healthy
       nats:
         condition: process_healthy
       temporal:
         condition: process_healthy
-      jaeger:
+      alloy:
         condition: process_healthy
     availability:
       restart: on_failure
@@ -372,7 +355,7 @@ processes:
       - "PYTHON_BACKEND_URL=http://localhost:8000"
       - "PYTHON_BACKEND_GRPC_ADDR=127.0.0.1:9092"
       - "TRACING_ENABLED=true"
-      - "JAEGER_ENDPOINT=127.0.0.1:4317"
+      - "PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT=${PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT:-127.0.0.1:4317}"
       - "TRACING_ENVIRONMENT=development"
       - "PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
@@ -382,13 +365,13 @@ processes:
     depends_on:
       postgres:
         condition: process_healthy
-      redis:
+      dragonfly:
         condition: process_healthy
       nats:
         condition: process_healthy
       temporal:
         condition: process_healthy
-      jaeger:
+      alloy:
         condition: process_healthy
     availability:
       restart: on_failure
@@ -423,7 +406,7 @@ processes:
       - "OPENAI_API_KEY=${OPENAI_API_KEY:-}"
       - "ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}"
       - "TRACING_ENABLED=true"
-      - "OTLP_ENDPOINT=127.0.0.1:4317"
+      - "PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT=${PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT:-127.0.0.1:4317}"
       - "TRACING_ENVIRONMENT=development"
 
   frontend:
@@ -546,6 +529,7 @@ processes:
       - "GF_SERVER_HTTP_PORT=3000"
       - "GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}"
       - "GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}"
+      - "PHENO_OBSERVABILITY_TEMPO_URL=${PHENO_OBSERVABILITY_TEMPO_URL:-http://127.0.0.1:3200}"
       - "GF_INSTALL_PLUGINS=redis-datasource"
 
   #############################################################################
@@ -565,11 +549,11 @@ processes:
       - "WATCH_DEBOUNCE_MS=60000"
       - "WATCH_HOLD_ON_MISSING=1"
 
-  redis-reloader:
+  dragonfly-reloader:
     command: "bash scripts/shell/run-with-config-watch.sh ./config/redis.conf -- bash scripts/shell/reload-redis.sh"
     working_dir: "."
     depends_on:
-      redis:
+      dragonfly:
         condition: process_healthy
     availability:
       restart: on_failure

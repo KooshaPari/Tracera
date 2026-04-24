@@ -36,7 +36,7 @@ func TestFullEnvironment(t *testing.T) {
 	t.Run("verify_config", func(t *testing.T) {
 		testutil.AssertNotNil(t, env.Config, "config should be initialized")
 		testutil.AssertNotEqual(t, "", env.Config.PostgresURL, "postgres URL should be set")
-		testutil.AssertNotEqual(t, "", env.Config.RedisURL, "redis URL should be set")
+		testutil.AssertNotEqual(t, "", env.Config.RedisURL, "dragonfly-compatible URL should be set")
 		testutil.AssertNotEqual(t, "", env.Config.Neo4jURL, "neo4j URL should be set")
 		testutil.AssertNotEqual(t, "", env.Config.NATSURL, "nats URL should be set")
 	})
@@ -72,7 +72,7 @@ func TestMinimalEnvironment(t *testing.T) {
 	// Only PostgreSQL services are available
 	testutil.AssertNotNil(t, env.PostgresPool, "postgres pool should be initialized")
 	testutil.AssertNil(t, env.NATSConn, "nats should not be initialized")
-	testutil.AssertNil(t, env.RedisContainer, "redis should not be started")
+	testutil.AssertNil(t, env.DragonflyContainer, "dragonfly should not be started")
 	testutil.AssertNil(t, env.Neo4jContainer, "neo4j should not be started")
 
 	// Run tests with PostgreSQL only

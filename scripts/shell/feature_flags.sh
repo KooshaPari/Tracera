@@ -44,7 +44,7 @@ show_usage() {
     echo "Common Flags:"
     echo "  - nats_events              - Enable NATS event publishing"
     echo "  - cross_backend_calls      - Enable HTTP delegation"
-    echo "  - shared_cache             - Enable Redis caching"
+    echo "  - shared_cache             - Enable Redis-compatible cache"
     echo "  - python_spec_analytics    - Use Python spec analytics service"
     echo "  - go_graph_analysis        - Use Go graph analysis service"
     echo "  - enhanced_logging         - Enable enhanced logging"
@@ -59,7 +59,7 @@ get_flag() {
     local result=$(redis-cli -u "$REDIS_URL" GET "${FLAG_PREFIX}${flag_name}" 2>&1)
 
     if [ $? -ne 0 ]; then
-        echo -e "${RED}Error connecting to Redis${NC}"
+        echo -e "${RED}Error connecting to Redis-compatible cache${NC}"
         return 1
     fi
 
@@ -103,14 +103,15 @@ list_flags() {
     echo "Feature Flags:"
     echo "----------------------------------------------------------------------"
 
-    local keys=$(redis-cli -u "$REDIS_URL" KEYS "${FLAG_PREFIX}*" 2>&1)
+    local keys
+    keys=$(redis-cli -u "$REDIS_URL" --scan --pattern "${FLAG_PREFIX}*" 2>&1)
 
     if [ $? -ne 0 ]; then
-        echo -e "${RED}Error connecting to Redis${NC}"
+        echo -e "${RED}Error connecting to Redis-compatible cache${NC}"
         return 1
     fi
 
-    if [ -z "$keys" ] || [ "$keys" = "(empty array)" ]; then
+    if [ -z "$keys" ]; then
         echo -e "${YELLOW}No feature flags set${NC}"
         return 0
     fi

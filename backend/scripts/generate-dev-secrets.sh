@@ -85,16 +85,18 @@ SUPABASE_ANON_KEY=your_local_anon_key_here
 SUPABASE_SERVICE_ROLE_KEY=your_local_service_role_key_here
 
 # ============================================================================
-# REDIS CONFIGURATION
+# DRAGONFLY REDIS-COMPATIBLE CONFIGURATION
 # ============================================================================
-# Redis local development (assumes redis-server running locally)
-# To start Redis:
-#   - macOS: brew services start redis
-#   - Docker: docker run -p 6379:6379 redis:latest
+# Dragonfly local development (Redis-compatible protocol on port 6379)
+# To start Dragonfly:
+#   - Native/process-compose: REDIS_COMPAT_PROVIDER=dragonfly
+#   - Docker: docker run -p 6379:6379 docker.dragonflydb.io/dragonflydb/dragonfly:latest
+# Redis remains an explicit fallback only: REDIS_COMPAT_PROVIDER=redis
 REDIS_URL=redis://localhost:6379
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_DB=0
+REDIS_COMPAT_PROVIDER=dragonfly
 
 # ============================================================================
 # NATS CONFIGURATION
@@ -193,7 +195,7 @@ LOG_FORMAT=json
 #
 # Option 2: Individual services
 #   - PostgreSQL: docker run -p 5432:5432 -e POSTGRES_PASSWORD=password postgres:15
-#   - Redis:      docker run -p 6379:6379 redis:latest
+#   - Dragonfly:  docker run -p 6379:6379 docker.dragonflydb.io/dragonflydb/dragonfly:latest
 #   - NATS:       docker run -p 4222:4222 nats:latest
 #   - Neo4j:      docker run -p 7687:7687 -e NEO4J_AUTH=neo4j/password neo4j:latest
 #   - MinIO:      docker run -p 9000:9000 -p 9001:9001 minio/minio:latest

@@ -16,7 +16,7 @@ OpenTelemetry (OTel) provides distributed tracing for the TraceRTM backend, enab
 
 1. **Tracer Provider** (`internal/tracing/tracer.go`)
    - Initializes OpenTelemetry SDK
-   - Configures OTLP/gRPC exporter for Jaeger
+   - Configures OTLP/gRPC export to the shared Phenotype collector
    - Sets up batch span processor
    - Manages tracer lifecycle
 
@@ -42,18 +42,21 @@ OpenTelemetry (OTel) provides distributed tracing for the TraceRTM backend, enab
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `JAEGER_ENDPOINT` | `127.0.0.1:4317` | OTLP/gRPC endpoint for Jaeger |
+| `PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT` | `127.0.0.1:4317` | Shared Phenotype OTLP/gRPC collector |
 | `TRACING_ENVIRONMENT` | `development` | Deployment environment label |
+
+> Legacy compatibility only: older configs may still read legacy OTLP variable names, but the
+> current setup should use `PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT` and the shared collector path.
 
 ### Example Configuration
 
 ```bash
-# Development (local Jaeger)
-JAEGER_ENDPOINT=127.0.0.1:4317
+# Development (shared Phenotype collector)
+PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT=127.0.0.1:4317
 TRACING_ENVIRONMENT=development
 
-# Production (remote Jaeger)
-JAEGER_ENDPOINT=jaeger.production.svc.cluster.local:4317
+# Production (shared collector)
+PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT=otel-collector.production.svc.cluster.local:4317
 TRACING_ENVIRONMENT=production
 ```
 
@@ -324,13 +327,13 @@ defer span.End()
 
 ## Verifying Traces Are Generated
 
-### 1. Check Jaeger UI
+### 1. Check Grafana traces
 
-With local Jaeger running (`docker run -d -p 6831:6831/udp -p 16686:16686 jaegertracing/all-in-one`):
+With the shared collector stack running (`make dev`):
 
-1. Open http://localhost:16686
-2. Select "tracertm-backend" from the service dropdown
-3. Click "Find Traces"
+1. Open Grafana at http://localhost:3000
+2. Open the Tempo-backed trace search / Explore view
+3. Select "tracertm-backend" from the service dropdown
 4. You should see traces from your HTTP and gRPC requests
 
 ### 2. Check Application Logs
@@ -338,7 +341,7 @@ With local Jaeger running (`docker run -d -p 6831:6831/udp -p 16686:16686 jaeger
 Look for initialization messages:
 
 ```
-🔍 Initializing distributed tracing (Jaeger endpoint: 127.0.0.1:4317, env: development)
+🔍 Initializing distributed tracing (shared collector endpoint: 127.0.0.1:4317, env: development)
 ✅ Distributed tracing initialized successfully
 ```
 
@@ -360,7 +363,7 @@ If using grpcurl:
 grpcurl -plaintext localhost:9091 tracertm.v1.GraphService/AnalyzeImpact
 ```
 
-You should see corresponding traces in Jaeger.
+You should see corresponding traces in Grafana.
 
 ## Performance Considerations
 
@@ -399,26 +402,27 @@ Adjust for your load:
 
 ## Troubleshooting
 
-### Traces Not Appearing in Jaeger
+### Traces Not Appearing in Grafana
 
-1. **Verify Jaeger is running:**
+1. **Verify Grafana and the shared collector are running:**
    ```bash
-   curl http://localhost:16686
+   curl http://localhost:3000
+   nc -zv 127.0.0.1 4317
    ```
 
 2. **Check endpoint configuration:**
    ```bash
-   echo $JAEGER_ENDPOINT  # Should be 127.0.0.1:4317
+   echo $PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT  # Should be 127.0.0.1:4317
    ```
 
 3. **Check application logs for errors:**
    ```bash
-   grep -i "tracer\|otel\|jaeger" /path/to/logs/
+   grep -i "tracer\|otel\|collector" /path/to/logs/
    ```
 
 4. **Verify gRPC connectivity:**
    ```bash
-   grpcurl -plaintext -d '{}' localhost:4317 list
+   nc -zv 127.0.0.1 4317
    ```
 
 ### High Memory Usage
@@ -507,7 +511,7 @@ tracing.AddEvent(span, "sync.started",
 ## Related Documentation
 
 - [OpenTelemetry Go Documentation](https://opentelemetry.io/docs/languages/go/)
-- [Jaeger Documentation](https://www.jaegertracing.io/docs/)
+- [OpenTelemetry Documentation](https://opentelemetry.io/docs/)
 - [W3C Trace Context](https://www.w3.org/TR/trace-context/)
 - [OTEL Semantic Conventions](https://opentelemetry.io/docs/reference/specification/protocol/exporter/)
 
@@ -516,6 +520,6 @@ tracing.AddEvent(span, "sync.started",
 For issues or questions about tracing:
 
 1. Check the application logs for OTel initialization messages
-2. Verify Jaeger connectivity with `grpcurl`
-3. Review existing spans in Jaeger UI to understand trace structure
+2. Verify collector connectivity with `grpcurl`
+3. Review existing spans in Grafana to understand trace structure
 4. Check this guide's troubleshooting section

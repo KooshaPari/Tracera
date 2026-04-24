@@ -21,10 +21,10 @@
       "icon": "external link",
       "tags": [],
       "targetBlank": true,
-      "title": "Jaeger UI",
-      "tooltip": "Open Jaeger UI",
+      "title": "Trace UI",
+      "tooltip": "Open trace UI",
       "type": "link",
-      "url": "http://localhost:16686"
+      "url": "http://localhost:3000"
     }
   ],
   "panels": [
@@ -483,7 +483,7 @@
   "refresh": "10s",
   "schemaVersion": 27,
   "style": "dark",
-  "tags": ["tracing", "distributed", "jaeger", "tracertm"],
+  "tags": ["tracing", "distributed", "tracertm"],
   "templating": {
     "list": []
   },

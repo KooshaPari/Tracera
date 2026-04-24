@@ -9,26 +9,26 @@ pip install 'tracertm[observability]'
 # 2. Verify
 python -m tracertm.observability.verify_traces
 
-# 3. Start backend (Jaeger)
-docker run -d -p 16686:16686 -p 4317:4317 jaegertracing/all-in-one
+# 3. Start the local stack
+GRAFANA_ALLOY_BIN="$HOME/.local/bin/grafana-alloy" make dev
 
 # 4. Enable in .env
 echo "TRACING_ENABLED=true" >> .env
-echo "OTLP_ENDPOINT=127.0.0.1:4317" >> .env
+echo "PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT=127.0.0.1:4317" >> .env
 
 # 5. Run app
 python -m uvicorn src.tracertm.api.main:app --reload
 
 # 6. Make request and view traces
 curl http://localhost:8000/health
-# Open: http://localhost:16686
+# Open Grafana: http://localhost:3000
 ```
 
 ## Environment Variables
 
 ```bash
 TRACING_ENABLED=true                          # Enable/disable tracing
-OTLP_ENDPOINT=127.0.0.1:4317                 # OTLP collector endpoint
+PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT=127.0.0.1:4317  # Shared collector endpoint
 TRACING_ENVIRONMENT=development               # Environment name
 SERVICE_NAME=tracertm-python-backend          # Service identifier
 SERVICE_VERSION=1.0.0                         # Service version
@@ -89,17 +89,12 @@ span.set_attribute("operation.duration_ms", duration)
 
 ## Backends
 
-### Jaeger (Local Development)
+### Shared Phenotype Collector
 
 ```bash
-# Start
-docker run -d \
-  -p 16686:16686 \
-  -p 4317:4317 \
-  jaegertracing/all-in-one
-
-# Access UI
-# http://localhost:16686
+cd /Users/kooshapari/CodeProjects/Phenotype/repos/PhenoObservability/deployments/org-observability-stack
+./scripts/verify-native-setup.sh
+./scripts/dev-up.sh
 ```
 
 ### Grafana Tempo (Production)
@@ -116,7 +111,7 @@ services:
   python-backend:
     environment:
       TRACING_ENABLED: "true"
-      OTLP_ENDPOINT: "tempo:4317"
+      PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT: "tempo:4317"
 ```
 
 ## Troubleshooting
@@ -173,7 +168,7 @@ nc -zv 127.0.0.1 4317
 curl http://localhost:8000/docs
 
 # Export traces (if backend supports)
-curl http://localhost:16686/api/traces
+curl http://localhost:3200/ready
 
 # Check application traces logs
 grep -i "tracing" .process-compose/logs/python-backend.log
@@ -183,5 +178,4 @@ grep -i "tracing" .process-compose/logs/python-backend.log
 
 - **Main docs**: [OTEL_PYTHON_SETUP.md](../guides/OTEL_PYTHON_SETUP.md)
 - **OpenTelemetry**: https://opentelemetry.io/docs/
-- **Jaeger**: https://www.jaegertracing.io/docs/
 - **Tempo**: https://grafana.com/docs/tempo/latest/

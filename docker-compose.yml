@@ -55,7 +55,7 @@ services:
       - DB_USER=${DB_USER:-tracertm}
       - DB_PASSWORD=${DB_PASSWORD:-tracertm_password}
       - DB_NAME=${DB_NAME:-tracertm}
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://dragonfly:6379
       - NATS_URL=nats://nats:4222
       - PORT=8080
       - GIN_MODE=release
@@ -63,7 +63,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
+      dragonfly:
         condition: service_healthy
       nats:
         condition: service_healthy
@@ -87,7 +87,7 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql+asyncpg://${DB_USER:-tracertm}:${DB_PASSWORD:-tracertm_password}@postgres:5432/${DB_NAME:-tracertm}
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://dragonfly:6379
       - NATS_URL=nats://nats:4222
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - GO_BACKEND_URL=http://go-backend:8080
@@ -96,7 +96,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
+      dragonfly:
         condition: service_healthy
       nats:
         condition: service_healthy
@@ -146,16 +146,14 @@ services:
       - tracertm
     restart: unless-stopped
 
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: tracertm-redis
+  # Redis-compatible cache
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+    container_name: tracertm-dragonfly
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
-      - ./config/redis.conf:/usr/local/etc/redis/redis.conf:ro
-    command: redis-server /usr/local/etc/redis/redis.conf
+      - dragonfly_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -170,11 +168,11 @@ services:
     image: oliver006/redis_exporter:latest
     container_name: tracertm-redis-exporter
     environment:
-      REDIS_ADDR: redis://redis:6379
+      REDIS_ADDR: redis://dragonfly:6379
     ports:
       - "9121:9121"
     depends_on:
-      redis:
+      dragonfly:
         condition: service_healthy
     networks:
       - tracertm
@@ -240,7 +238,7 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:
+  dragonfly_data:
   nats_data:
   prometheus_data:
   grafana_data:

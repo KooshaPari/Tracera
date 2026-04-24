@@ -20,8 +20,8 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9187']
 
-  # Redis
-  - job_name: 'redis'
+  # Cache runtime
+  - job_name: 'cache'
     static_configs:
       - targets: ['localhost:9121']
 
