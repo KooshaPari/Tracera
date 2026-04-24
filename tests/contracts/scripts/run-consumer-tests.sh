@@ -25,8 +25,9 @@ echo ""
 echo "Running consumer tests..."
 cd "$FRONTEND_DIR"
 
-# Run all consumer contract tests
-bun run vitest run tests/contracts/consumer --reporter=verbose
+# Run all consumer contract tests through the web package script so Vitest
+# receives the repo-relative contract test path.
+bun run test:contracts -- --reporter=verbose
 
 # Check if pacts were generated
 PACT_COUNT=$(find "$CONTRACTS_DIR/pacts" -name "*.json" 2>/dev/null | wc -l)
