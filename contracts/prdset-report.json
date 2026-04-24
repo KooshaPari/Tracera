@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-02-14T09:54:02Z",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace",
+  "docs": [
+    {
+      "doc": "PRD.md",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/PRD.md",
+      "exists": false
+    },
+    {
+      "doc": "ADR.md",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/ADR.md",
+      "exists": false
+    },
+    {
+      "doc": "FUNCTIONAL_REQUIREMENTS.md",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/FUNCTIONAL_REQUIREMENTS.md",
+      "exists": false
+    },
+    {
+      "doc": "PLAN.md",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/PLAN.md",
+      "exists": false
+    },
+    {
+      "doc": "USER_JOURNEYS.md",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/USER_JOURNEYS.md",
+      "exists": false
+    },
+    {
+      "doc": "RISK_REGISTER.md",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/RISK_REGISTER.md",
+      "exists": false
+    },
+    {
+      "doc": "VERIFICATION_POLICY.md",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/VERIFICATION_POLICY.md",
+      "exists": true
+    },
+    {
+      "doc": "RELEASE_CONTRACT.md",
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/RELEASE_CONTRACT.md",
+      "exists": false
+    }
+  ],
+  "item_count": 0,
+  "items": []
+}
