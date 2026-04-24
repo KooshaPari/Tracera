@@ -3,8 +3,22 @@ name: Comprehensive Test Validation
 on:
   push:
     branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'Makefile'
+      - 'package.json'
+      - 'bun.lock'
+      - 'uv.lock'
   pull_request:
     branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'Makefile'
+      - 'package.json'
+      - 'bun.lock'
+      - 'uv.lock'
 
 jobs:
   setup-test-users:

@@ -3,8 +3,38 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'infra/**'
+      - 'scripts/**'
+      - 'docker/**'
+      - 'docker-compose*.yml'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'go.mod'
+      - 'go.sum'
+      - 'package.json'
+      - 'bun.lock'
   pull_request:
     branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'infra/**'
+      - 'scripts/**'
+      - 'docker/**'
+      - 'docker-compose*.yml'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'go.mod'
+      - 'go.sum'
+      - 'package.json'
+      - 'bun.lock'
   release:
     types: [ published ]
 
