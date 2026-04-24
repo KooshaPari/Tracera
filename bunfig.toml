@@ -1,0 +1,53 @@
+# Bun configuration for TraceRTM Root
+# https://bun.sh/docs/runtime/bunfig
+
+[install]
+# Use workspaces from package.json
+auto = true
+
+# Registry configuration
+registry = "https://registry.npmjs.org/"
+
+# Cache configuration - enable for faster installs
+cache = "default"
+
+# Lockfile - freeze in CI
+frozen = false
+
+# Install options
+production = false
+optional = true
+dev = true
+peer = true
+
+# Always install exact versions for reproducibility
+exact = true
+
+[install.scopes]
+# Add scoped registries if needed
+# "@myorg" = { url = "https://registry.myorg.com/", token = "$NPM_TOKEN" }
+
+[run]
+# Shell to use for scripts
+shell = "bun"
+
+# Enable bun shell for better performance
+bun = true
+
+[test]
+# Test runner configuration
+coverage = false
+bail = false
+
+# Test timeout in milliseconds
+timeout = 10000
+
+[define]
+# Environment variable replacements at build time
+# "process.env.NODE_ENV" = "production"
+
+[loader]
+# Custom loaders for file types
+".svg" = "text"
+".graphql" = "text"
+".gql" = "text"

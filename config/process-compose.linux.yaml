@@ -1,0 +1,19 @@
+version: "0.5"
+
+processes:
+  postgres:
+    command: "postgres -D /var/lib/postgresql/17/main"
+    environment:
+      - "PGDATA=/var/lib/postgresql/17/main"
+
+  redis:
+    command: "redis-server /etc/redis/redis.conf"
+
+  neo4j:
+    command: "/usr/share/neo4j/bin/neo4j console"
+
+  prometheus:
+    command: "prometheus --config.file=deploy/monitoring/prometheus.yml --storage.tsdb.path=.prometheus --web.console.libraries=/usr/share/prometheus/console_libraries --web.console.templates=/usr/share/prometheus/consoles --web.enable-lifecycle"
+
+  grafana:
+    command: "grafana server --config deploy/monitoring/grafana.ini --homepath /usr/share/grafana"

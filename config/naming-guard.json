@@ -1,0 +1,148 @@
+{
+  "forbidden_words": [
+    "new",
+    "improved",
+    "enhanced",
+    "updated",
+    "fixed",
+    "refactored",
+    "modified",
+    "revised",
+    "copy",
+    "backup",
+    "old",
+    "draft",
+    "final",
+    "latest",
+    "temp",
+    "tmp",
+    "wip",
+    "legacy",
+    "deprecated",
+    "duplicate",
+    "alternate",
+    "iteration",
+    "replacement",
+    "variant"
+  ],
+  "forbidden_identifier_words": [
+    "temp",
+    "tmp",
+    "old",
+    "copy",
+    "backup",
+    "draft",
+    "final",
+    "latest",
+    "deprecated",
+    "duplicate",
+    "alternate",
+    "iteration",
+    "replacement",
+    "variant"
+  ],
+  "check_directories": true,
+  "check_identifiers": false,
+  "max_filename_length": 120,
+  "max_dirname_length": 80,
+  "max_identifier_length": 48,
+  "max_path_depth": 12,
+  "search": {
+    "go": [
+      "backend"
+    ],
+    "python": [
+      "src/tracertm",
+      "tests"
+    ],
+    "frontend": [
+      "frontend/apps",
+      "frontend/packages"
+    ]
+  },
+  "extensions": {
+    "go": [
+      ".go"
+    ],
+    "python": [
+      ".py"
+    ],
+    "frontend": [
+      ".ts",
+      ".tsx",
+      ".js",
+      ".jsx"
+    ]
+  },
+  "exclude_path_patterns": {
+    "common": [
+      "node_modules",
+      "ARCHIVE",
+      "__pycache__",
+      "migrations",
+      "dist",
+      "coverage",
+      "storybook-static",
+      "docs",
+      "CONFIG",
+      "test-results",
+      "openapi",
+      "proto",
+      ".git"
+    ],
+    "go": [
+      "vendor",
+      "temporal",
+      "template"
+    ],
+    "python": [
+      "src/tracertm/v1"
+    ],
+    "frontend": [
+      "temporal",
+      "/template",
+      "TEMPLATE",
+      "__tests__"
+    ]
+  },
+  "domain_exceptions": {
+    "go": [
+      "backup",
+      "benchmark"
+    ],
+    "python": [
+      "backup",
+      "benchmark",
+      "test_final_(gap_|edge_)?coverage\\.py$",
+      "test_.*_(batch|part)[0-9]+\\.py$"
+    ],
+    "frontend": [
+      "benchmark",
+      "Enhanced(GraphView|ErrorState)\\.tsx$",
+      "enhanced(Renderers|ViewportCulling)\\.ts$"
+    ]
+  },
+  "identifier_exceptions": {
+    "go": [
+      "backup",
+      "benchmark"
+    ],
+    "python": [
+      "backup",
+      "benchmark"
+    ],
+    "frontend": [
+      "backup",
+      "benchmark"
+    ]
+  },
+  "identifier_exclude_path_patterns": {
+    "common": [
+      "tests",
+      "/tests/"
+    ],
+    "go": [],
+    "python": [],
+    "frontend": []
+  }
+}

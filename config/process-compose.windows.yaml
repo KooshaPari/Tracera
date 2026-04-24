@@ -1,0 +1,38 @@
+version: "0.5"
+
+shell:
+  shell_command: "powershell"
+  shell_argument: "-Command"
+
+processes:
+  postgres:
+    command: "pg_ctl -D C:\\ProgramData\\PostgreSQL\\17\\data start"
+    environment:
+      - "PGDATA=C:\\ProgramData\\PostgreSQL\\17\\data"
+
+  redis:
+    command: "redis-server C:\\Program Files\\Redis\\redis.conf"
+
+  neo4j:
+    command: "C:\\Program Files\\Neo4j\\bin\\neo4j.bat console"
+
+  nats:
+    command: "nats-server.exe -js -m 8222 -p 4222"
+
+  temporal:
+    command: "temporal.exe server start-dev --db-filename .temporal/temporal.db"
+
+  prometheus:
+    command: "prometheus.exe --config.file=deploy/monitoring/prometheus.yml --storage.tsdb.path=.prometheus --web.enable-lifecycle"
+
+  grafana:
+    command: "grafana-server.exe --config deploy/monitoring/grafana.ini --homepath C:\\Program Files\\GrafanaLabs\\grafana"
+
+  go-backend:
+    command: "air.exe"
+
+  python-backend:
+    command: ".venv\\Scripts\\python.exe -m uvicorn tracertm.api.main:app --reload --host 0.0.0.0 --port 8000"
+
+  caddy:
+    command: "caddy.exe run --config config/Caddyfile.dev --adapter caddyfile"
