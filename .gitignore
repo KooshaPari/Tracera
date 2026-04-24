@@ -124,3 +124,7 @@ artifacts/
 temp/
 vault.test
 violation-summary.txt
+# Compiled Go backend binaries (produced by `make build`)
+backend/tracertm-backend
+backend/tracertm-setup
+backend/*.test
