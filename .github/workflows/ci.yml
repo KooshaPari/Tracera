@@ -3,8 +3,38 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'infra/**'
+      - 'scripts/**'
+      - 'docker/**'
+      - 'docker-compose*.yml'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'go.mod'
+      - 'go.sum'
+      - 'package.json'
+      - 'bun.lock'
   pull_request:
     branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'infra/**'
+      - 'scripts/**'
+      - 'docker/**'
+      - 'docker-compose*.yml'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'go.mod'
+      - 'go.sum'
+      - 'package.json'
+      - 'bun.lock'
   release:
     types: [ published ]
 
@@ -722,44 +752,41 @@ jobs:
           # Extract coverage from vitest output or coverage-final.json
           if [ -f "coverage/coverage-final.json" ]; then
             node << 'EOF'
-            const fs = require('fs');
-            const coverage = JSON.parse(fs.readFileSync('coverage/coverage-final.json', 'utf8'));
+          const fs = require('fs');
+          const coverage = JSON.parse(fs.readFileSync('coverage/coverage-final.json', 'utf8'));
 
-            // Calculate per-file coverage
-            const fileCoverage = {};
-            let totalLines = 0, coveredLines = 0;
+          const fileCoverage = {};
+          let totalLines = 0;
+          let coveredLines = 0;
 
-            Object.entries(coverage).forEach(([file, stats]) => {
-              if (stats.l) {
-                const lines = Object.values(stats.l);
-                const covered = lines.filter(v => v > 0).length;
-                const total = lines.length;
-                if (total > 0) {
-                  fileCoverage[file] = Math.round((covered / total) * 100 * 100) / 100;
-                  totalLines += total;
-                  coveredLines += covered;
-                }
+          Object.entries(coverage).forEach(([file, stats]) => {
+            if (stats.l) {
+              const lines = Object.values(stats.l);
+              const covered = lines.filter((v) => v > 0).length;
+              const total = lines.length;
+              if (total > 0) {
+                fileCoverage[file] = Math.round((covered / total) * 100 * 100) / 100;
+                totalLines += total;
+                coveredLines += covered;
               }
-            });
-
-            // Write simple format for comparison
-            const fs2 = require('fs');
-            let output = '';
-            Object.entries(fileCoverage)
-              .sort(([a], [b]) => a.localeCompare(b))
-              .forEach(([file, cov]) => {
-                output += `${file}|${cov}\n`;
-              });
-            fs2.writeFileSync('coverage-by-file.txt', output);
-
-            // Write summary
-            if (totalLines > 0) {
-              const totalCov = Math.round((coveredLines / totalLines) * 100 * 100) / 100;
-              fs2.appendFileSync('coverage-by-file.txt', `TOTAL|${totalCov}\n`);
             }
+          });
 
-            console.log('Frontend coverage data extracted');
-            EOF
+          let output = '';
+          Object.entries(fileCoverage)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .forEach(([file, cov]) => {
+              output += `${file}|${cov}\n`;
+            });
+          fs.writeFileSync('coverage-by-file.txt', output);
+
+          if (totalLines > 0) {
+            const totalCov = Math.round((coveredLines / totalLines) * 100 * 100) / 100;
+            fs.appendFileSync('coverage-by-file.txt', `TOTAL|${totalCov}\n`);
+          }
+
+          console.log('Frontend coverage data extracted');
+          EOF
           else
             echo "Warning: coverage-final.json not found"
           fi
@@ -1414,24 +1441,26 @@ jobs:
     name: IaC Deploy (Pulumi dev)
     runs-on: ubuntu-latest
     needs: [docker-build]
-    # Only run when a Pulumi access token is configured; otherwise skip gracefully.
-    if: ${{ secrets.PULUMI_ACCESS_TOKEN != '' }}
 
     permissions:
       contents: read
+    env:
+      PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
     - name: Install Pulumi Node.js dependencies
+      if: env.PULUMI_ACCESS_TOKEN != ''
       working-directory: infra
       run: bun install
 
     - name: Pulumi up (dev)
+      if: env.PULUMI_ACCESS_TOKEN != ''
       uses: pulumi/actions@v5
       env:
-        PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        PULUMI_ACCESS_TOKEN: ${{ env.PULUMI_ACCESS_TOKEN }}
       with:
         command: up
         stack-name: dev
