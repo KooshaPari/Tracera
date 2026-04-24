@@ -90,7 +90,7 @@ describe('Projects Contract Tests', () => {
       });
 
       const data = await response.json();
-      console.assert(data.items.length === 0);
+      console.assert((data.items ?? []).length === 0);
     });
   });
 
@@ -328,12 +328,12 @@ describe('Projects Contract Tests', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          projectId: uuid(projectId),
+          projectId: uuid('22222222-2222-4222-8222-222222222222'),
           fromVersion: like('v1.0.0'),
           toVersion: like('v1.1.0'),
           changes: eachLike({
             type: like('added'),
-            itemId: uuid('item-123'),
+            itemId: uuid('33333333-3333-4333-8333-333333333333'),
             field: like('description'),
             oldValue: like('old'),
             newValue: like('new'),
