@@ -12,13 +12,13 @@ This document describes the Server-Sent Events (SSE) implementation for real-tim
 
 The notification service handles:
 - **CRUD operations** for notifications
-- **Redis pub/sub** for broadcasting events across multiple server instances
+- **NATS JetStream** for broadcasting events across multiple server instances
 - **In-memory subscription management** for SSE connections
 - **Event broadcasting** to connected clients
 
 Key features:
 - Thread-safe subscription management
-- Redis pub/sub for horizontal scaling
+- NATS-backed notification fan-out for horizontal scaling
 - Automatic cleanup of expired notifications
 - Support for multiple event types (notification, read, read_all, delete)
 
@@ -165,9 +165,9 @@ SSE connections are authenticated using:
 
 ### Horizontal Scaling
 
-- **Redis pub/sub** enables broadcasting across multiple server instances
+- **NATS JetStream** enables broadcasting across multiple server instances
 - Each instance maintains its own SSE connections
-- Events published to Redis are received by all instances
+- Events published to NATS are received by all instances
 - Each instance broadcasts to its local subscribers only
 
 ### Performance
@@ -341,7 +341,7 @@ Unit tests are located in:
 
 - [Server-Sent Events Specification](https://html.spec.whatwg.org/multipage/server-sent-events.html)
 - [EventSource API](https://developer.mozilla.org/en-US/docs/Web/API/EventSource)
-- [Redis Pub/Sub](https://redis.io/topics/pubsub)
+- [NATS JetStream](https://docs.nats.io/nats-concepts/jetstream)
 - [GORM Auto-Migration](https://gorm.io/docs/migration.html)
 
 ## Task Completion
@@ -349,11 +349,11 @@ Unit tests are located in:
 ✅ **Task #83: Phase 2 Real-Time - SSE Notifications Implementation**
 
 Implemented:
-1. ✅ Go backend notification service with Redis pub/sub
+1. ✅ Go backend notification service with NATS-backed fan-out
 2. ✅ SSE endpoint with streaming response
 3. ✅ Frontend SSE client with exponential backoff reconnection
 4. ✅ React hook with automatic cache updates
 5. ✅ Database table auto-migration
 6. ✅ Authentication via query parameter
 7. ✅ Keep-alive ping mechanism
-8. ✅ Multi-server scaling support via Redis
+8. ✅ Multi-server scaling support via NATS

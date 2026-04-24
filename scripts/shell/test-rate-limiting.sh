@@ -1,7 +1,7 @@
 #!/bin/bash
 # Test Rate Limiting Implementation
 # ==================================
-# Verifies rate limiting is working correctly with Redis backend
+# Verifies rate limiting is working correctly with the Redis-compatible runtime
 
 set -e
 
@@ -23,14 +23,14 @@ echo ""
 # Check prerequisites
 echo "Checking prerequisites..."
 
-# Check if Redis is running
+# Check if the Redis-compatible runtime is running
 if ! redis-cli ping > /dev/null 2>&1; then
-    echo -e "${RED}✗ Redis is not running${NC}"
-    echo "  Start Redis with: docker-compose up -d redis"
+    echo -e "${RED}✗ Redis-compatible runtime is not running${NC}"
+    echo "  Start it with: bash scripts/shell/redis-if-not-running.sh"
     echo "  Or: make dev"
     exit 1
 fi
-echo -e "${GREEN}✓ Redis is running${NC}"
+echo -e "${GREEN}✓ Redis-compatible runtime is running${NC}"
 
 # Check if backend is running
 if ! curl -s "${API_URL}/health" > /dev/null 2>&1; then

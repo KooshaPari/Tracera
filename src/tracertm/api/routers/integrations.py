@@ -50,7 +50,7 @@ router = APIRouter(prefix="/api/v1/integrations", tags=["integrations"])
 def ensure_project_access_fn(project_id: str | None, claims: dict[str, Any] | None) -> None:
     """Check project access (injected from main)."""
     # This will be injected by main.py via dependency
-    from tracertm.api.main import check_project_access, is_system_admin
+    from tracertm.api.security import check_project_access, is_system_admin
 
     if not project_id:
         return
@@ -62,7 +62,7 @@ def ensure_project_access_fn(project_id: str | None, claims: dict[str, Any] | No
 
 def ensure_credential_access_fn(credential: object, claims: dict[str, Any]) -> None:
     """Check credential access (injected from main)."""
-    from tracertm.api.main import ensure_credential_access
+    from tracertm.api.security import ensure_credential_access
 
     ensure_credential_access(credential, claims)
 

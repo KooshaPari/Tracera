@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Start redis_exporter only if port 9121 is not in use (avoids "address already in use"
-# when exporter was started by a previous process-compose run or another process).
+# Start redis_exporter for the Redis-compatible endpoint only if port 9121 is not in use.
 
 set -e
 REDIS_EXPORTER_PORT="${REDIS_EXPORTER_PORT:-9121}"

@@ -40,10 +40,10 @@ type Config struct {
 	NATSUserJWT      string
 	NATSUserNkeySeed string
 
-	// Redis
+	// Redis-compatible cache
 	RedisURL string
 
-	// Upstash Redis (REST API fallback)
+	// Upstash Redis-compatible REST API fallback
 	UpstashRedisRestURL   string
 	UpstashRedisRestToken string
 
@@ -72,7 +72,7 @@ type Config struct {
 	Embeddings EmbeddingsConfig
 
 	// Tracing
-	JaegerEndpoint     string
+	CollectorEndpoint  string
 	TracingEnabled     bool
 	TracingEnvironment string
 
@@ -145,7 +145,7 @@ func LoadConfig() *Config {
 		PythonBackendGRPCAddr: getEnv("PYTHON_BACKEND_GRPC_ADDR", "127.0.0.1:9092"),
 		ServiceToken:          getEnv("SERVICE_TOKEN", ""),
 
-		JaegerEndpoint:     getEnv("JAEGER_ENDPOINT", "127.0.0.1:4317"),
+		CollectorEndpoint:  getEnv("PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT", getEnv("OTLP_ENDPOINT", "127.0.0.1:4317")),
 		TracingEnabled:     getEnvBool("TRACING_ENABLED", true),
 		TracingEnvironment: getEnv("TRACING_ENVIRONMENT", "development"),
 

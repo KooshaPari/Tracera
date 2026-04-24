@@ -1,6 +1,9 @@
+> Historical note: this document preserves the pre-Phenotype observability stack. The active org path is the shared collector, Grafana Alloy, and Grafana Tempo. Treat Jaeger and Promtail references below as legacy context only.
+
 # TraceRTM Observability Stack
 
-Complete overview of the observability infrastructure including metrics (Prometheus), logs (structured), and traces (Jaeger).
+Complete overview of the observability infrastructure including metrics (Prometheus), logs
+(Loki), and traces through Grafana Alloy, the shared Phenotype collector, and Tempo.
 
 ## Overview
 
@@ -11,7 +14,7 @@ The TraceRTM observability stack provides three pillars of observability:
 │                    Observability Stack                          │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  METRICS (Prometheus)        LOGS (Structured)   TRACES (Jaeger)│
+│  METRICS (Prometheus)        LOGS (Loki)         TRACES (Tempo) │
 │  ├─ Request count           ├─ Application logs  ├─ Request flow│
 │  ├─ Response latency        ├─ Error logs        ├─ Latency     │
 │  ├─ Error rate              ├─ Debug logs        ├─ Dependencies│
@@ -20,9 +23,9 @@ The TraceRTM observability stack provides three pillars of observability:
 │  └─ Custom metrics          (Timestamps, IDs, stack traces)     │
 │                                                                 │
 │  Visualized in:             Collected by:        Visualized in: │
-│  ├─ Grafana (3000)          ├─ Application       ├─ Jaeger (16686)
-│  ├─ Prometheus (9090)       └─ Structured        └─ Via trace IDs
-│  └─ Exporters (9113, etc)      logging                         │
+│  ├─ Grafana (3000)          ├─ Application       ├─ Tempo (3200)
+│  ├─ Prometheus (9090)       ├─ Grafana Alloy     └─ Via trace IDs
+│  └─ Exporters (9113, etc)   └─ Structured logging               │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -84,7 +87,7 @@ Application          Structured Logs      Log Aggregation
 - Docker: Logs to stdout (managed by docker-compose)
 - Access: `docker logs <container>`
 
-### Traces (Jaeger)
+### Traces (Tempo)
 
 **Purpose:** Track request flow across service boundaries
 - End-to-end request journey
@@ -95,18 +98,20 @@ Application          Structured Logs      Log Aggregation
 
 **Stack:**
 ```
-Application          OTLP             Jaeger              Jaeger UI
+Application          OTLP             Alloy/Tempo         Grafana
     │                 │                  │                   │
     ├─ Spans          │           Collector/Storage      Visualization
     │  (OTLP/gRPC)    │                  │
     ├─ Go             │                  │
     └─ Python:8000    ├─ Port 4317      │
                       │ (gRPC)           │
-                      └─ Port 4318 (HTTP)└─ Port 16686
+                      └─ Port 4318 (HTTP)└─ Grafana trace search
 ```
 
 **Services:**
-- **Jaeger All-in-One** (port 16686): Collector, storage, and UI
+- **Grafana Alloy**: OTLP ingress, normalization, and routing
+- **Shared Phenotype Collector**: The org-level trace entrypoint used by both backends
+- **Tempo** (port 3200): Trace storage and query backend
 - **OTLP/gRPC** (port 4317): Trace protocol
 - **OTLP/HTTP** (port 4318): Alternative protocol
 
@@ -117,14 +122,14 @@ Application          OTLP             Jaeger              Jaeger UI
 **Tracing:**
 ```go
 // File: internal/tracing/tracer.go
-tp, err := tracing.InitTracer(ctx, "localhost:4317", "development")
+tp, err := tracing.InitTracer(ctx, "127.0.0.1:4317", "development")
 ```
 
 **Configuration:**
 - Service: `tracertm-backend`
 - Version: `1.0.0`
-- Environment: From `JAEGER_ENVIRONMENT` env var
-- OTLP endpoint: From `JAEGER_ENDPOINT` (default: `127.0.0.1:4317`)
+- Environment: From `TRACING_ENVIRONMENT` env var
+- OTLP endpoint: From `PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT` (default: `127.0.0.1:4317`)
 - Sampling: 100% (development)
 - Processor: Batch (efficient for high throughput)
 
@@ -143,7 +148,7 @@ tp, err := tracing.InitTracer(ctx, "localhost:4317", "development")
 # File: observability/tracing.py
 tracer = init_tracing(
     service_name="tracertm-python-backend",
-    otlp_endpoint="localhost:4317"
+    otlp_endpoint="127.0.0.1:4317"
 )
 ```
 
@@ -151,7 +156,7 @@ tracer = init_tracing(
 - Service: `tracertm-python-backend`
 - Version: `1.0.0`
 - Environment: From `TRACING_ENVIRONMENT` env var
-- OTLP endpoint: From `OTLP_ENDPOINT` or `JAEGER_ENDPOINT` (default: `127.0.0.1:4317`)
+- OTLP endpoint: From `PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT` (default: `127.0.0.1:4317`)
 - **Must enable:** `TRACING_ENABLED=true`
 - Sampling: 100% (development)
 - Processor: Batch (efficient for high throughput)
@@ -174,17 +179,23 @@ async def my_function():
 
 ## Docker Compose Integration
 
-All observability components are configured in `docker-compose.yml`:
+All observability components are configured in the shared org stack:
 
 ```yaml
 services:
   # Tracing
-  jaeger:
-    image: jaegertracing/all-in-one:latest
+  alloy:
+    image: grafana/alloy:latest
     ports:
       - "4317:4317"    # OTLP gRPC
       - "4318:4318"    # OTLP HTTP
-      - "16686:16686"  # UI
+    depends_on:
+      - tempo
+
+  tempo:
+    image: grafana/tempo:latest
+    ports:
+      - "3200:3200"    # Tempo query API
 
   # Metrics
   prometheus:
@@ -222,10 +233,9 @@ services:
 
 | Component | URL | Purpose |
 |-----------|-----|---------|
-| Jaeger UI | http://localhost:16686 | View traces |
+| Grafana | http://localhost:3000 | View traces and dashboards |
 | Prometheus | http://localhost:9090 | Query metrics |
-| Grafana | http://localhost:3000 | Visualize metrics |
-| Jaeger API | http://localhost:14268 | Programmatic access |
+| Tempo | http://localhost:3200 | Trace backend |
 
 ## Example Workflows
 
@@ -235,7 +245,7 @@ services:
    - Check latency p95, p99
    - Identify which endpoint is slow
 
-2. **Drill down to trace** (Jaeger):
+2. **Drill down to trace** (Grafana/Tempo):
    - Find that endpoint's traces
    - Sort by duration
    - View slowest trace
@@ -251,7 +261,7 @@ services:
    - `docker logs tracertm-go-backend | grep ERROR`
    - Find error message and trace ID
 
-2. **View trace in Jaeger**:
+2. **View trace in Grafana**:
    - Search by trace ID
    - Find span with error
    - View error attributes and logs
@@ -276,7 +286,7 @@ services:
 3. **On alert**:
    - Check Grafana dashboard
    - Drill into Prometheus for details
-   - Use Jaeger to find problematic traces
+   - Use Grafana trace search to inspect Tempo-backed traces
 
 ## Best Practices
 
@@ -349,9 +359,9 @@ For production, plan for:
 
 ## Troubleshooting
 
-### "No traces appear in Jaeger"
-1. Check `JAEGER_ENDPOINT` and `OTLP_ENDPOINT` are correct
-2. Verify backends can reach Jaeger: `docker exec <backend> nc -zv jaeger 4317`
+### "No traces appear in Grafana"
+1. Check `PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT` is correct
+2. Verify backends can reach the shared collector endpoint
 3. Check backend logs for tracing errors: `docker logs <backend> | grep -i trac`
 4. Generate a test request: `curl http://localhost:8080/api/v1/health`
 
@@ -368,11 +378,11 @@ For production, plan for:
 ## Related Documentation
 
 - **Setup Guides:**
-  - [Jaeger Setup Guide](./JAEGER_SETUP.md)
-  - [Jaeger Verification Guide](./JAEGER_VERIFICATION.md)
+  - [OpenTelemetry Go Setup](./OTEL_GO_SETUP.md)
+  - [OpenTelemetry Python Setup](./OTEL_PYTHON_SETUP.md)
 
 - **Quick References:**
-  - [Jaeger Quick Reference](../reference/JAEGER_QUICK_REFERENCE.md)
+  - [Distributed Tracing Quick Reference](../reference/TRACING_QUICK_REFERENCE.md)
 
 - **Configuration:**
   - Go tracing: `backend/internal/tracing/tracer.go`
@@ -385,6 +395,6 @@ For production, plan for:
 The TraceRTM observability stack provides:
 - **Metrics** via Prometheus for quantitative measurement
 - **Logs** via structured logging for detailed context
-- **Traces** via Jaeger for distributed request tracking
+- **Traces** via Grafana Alloy and Tempo for distributed request tracking
 
 Together, these provide complete visibility into application behavior and performance.

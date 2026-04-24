@@ -1,8 +1,10 @@
 """FastAPI routes for execution system (QA Integration executions, artifacts, config)."""
 
+from pathlib import Path
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.deps import auth_guard, get_db
@@ -21,14 +23,14 @@ from tracertm.schemas.execution import (
 from tracertm.services.execution.execution_service import ExecutionService
 from tracertm.services.recording.vhs_service import VHSExecutionService
 
-router = APIRouter(prefix="/projects/{project_id}/executions", tags=["Executions"])
+router = APIRouter(prefix="/projects/{project_id}", tags=["Executions"])
 
 # =============================================================================
 # Execution CRUD
 # =============================================================================
 
 
-@router.post("", response_model=ExecutionResponse, status_code=201)
+@router.post("/executions", response_model=ExecutionResponse, status_code=201)
 async def create_execution(
     project_id: str,
     execution_create: ExecutionCreate,
@@ -56,7 +58,7 @@ async def create_execution(
     return response
 
 
-@router.get("", response_model=ExecutionListResponse)
+@router.get("/executions", response_model=ExecutionListResponse)
 async def list_executions(
     project_id: str,
     status: Annotated[str | None, Query(description="Filter by status")] = None,
@@ -91,7 +93,7 @@ async def list_executions(
     )
 
 
-@router.get("/{execution_id}", response_model=ExecutionResponse)
+@router.get("/executions/{execution_id}", response_model=ExecutionResponse)
 async def get_execution(
     project_id: str,
     execution_id: str,
@@ -119,7 +121,7 @@ async def get_execution(
 # =============================================================================
 
 
-@router.post("/{execution_id}/start", response_model=ExecutionResponse, status_code=202)
+@router.post("/executions/{execution_id}/start", response_model=ExecutionResponse, status_code=202)
 async def start_execution(
     project_id: str,
     execution_id: str,
@@ -158,7 +160,7 @@ async def start_execution(
     return response
 
 
-@router.post("/{execution_id}/complete", response_model=ExecutionResponse)
+@router.post("/executions/{execution_id}/complete", response_model=ExecutionResponse)
 async def complete_execution(
     project_id: str,
     execution_id: str,
@@ -197,7 +199,7 @@ async def complete_execution(
 # =============================================================================
 
 
-@router.get("/{execution_id}/artifacts", response_model=ExecutionArtifactListResponse)
+@router.get("/executions/{execution_id}/artifacts", response_model=ExecutionArtifactListResponse)
 async def list_artifacts(
     project_id: str,
     execution_id: str,
@@ -222,7 +224,7 @@ async def list_artifacts(
 
 
 @router.post(
-    "/{execution_id}/artifacts",
+    "/executions/{execution_id}/artifacts",
     response_model=ExecutionArtifactResponse,
     status_code=201,
 )
@@ -261,7 +263,7 @@ async def add_artifact(
 
 
 @router.get(
-    "/../execution-config",
+    "/execution-config",
     response_model=ExecutionEnvironmentConfigResponse,
     tags=["Execution Config"],
 )
@@ -280,7 +282,7 @@ async def get_execution_config(
 
 
 @router.put(
-    "/../execution-config",
+    "/execution-config",
     response_model=ExecutionEnvironmentConfigResponse,
     tags=["Execution Config"],
 )
@@ -307,8 +309,44 @@ async def update_execution_config(
 # =============================================================================
 
 
+@router.get(
+    "/executions/{execution_id}/artifacts/{artifact_id}/download",
+    tags=["Execution Artifacts"],
+)
+async def download_artifact(
+    project_id: str,
+    execution_id: str,
+    artifact_id: str,
+    _claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> FileResponse:
+    """Download an artifact file."""
+    service = ExecutionService(db)
+    execution = await service.get(execution_id)
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    if execution.project_id != project_id:
+        raise HTTPException(status_code=404, detail="Execution not found")
+
+    artifacts = await service.list_artifacts(execution_id)
+    artifact_obj = next((artifact for artifact in artifacts if artifact.id == artifact_id), None)
+    if not artifact_obj:
+        raise HTTPException(status_code=404, detail="Artifact not found")
+
+    path_str = artifact_obj.file_path
+    path = Path(path_str)
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Artifact file not found")
+
+    return FileResponse(
+        path_str,
+        media_type=artifact_obj.mime_type or "application/octet-stream",
+        filename=path.name,
+    )
+
+
 @router.post(
-    "/../vhs/generate-tape",
+    "/vhs/generate-tape",
     status_code=202,
     tags=["VHS Recording"],
 )

@@ -316,10 +316,10 @@ def _default_port_for_url(url: str) -> int | None:
 
 
 def build_api_checks() -> list[PreflightCheck]:
-    """Build api checks."""
+    """Build API checks for the current cache, database, messaging, and storage runtime."""
     return [
         PreflightCheck("database", os.getenv("DATABASE_URL"), required=True, kind="tcp"),
-        PreflightCheck("redis", os.getenv("REDIS_URL"), required=True, kind="tcp"),
+        PreflightCheck("cache", os.getenv("REDIS_URL"), required=True, kind="tcp"),
         PreflightCheck("nats", os.getenv("NATS_URL"), required=True, kind="tcp"),
         PreflightCheck("neo4j", os.getenv("NEO4J_URI"), required=True, kind="tcp"),
         PreflightCheck("go-backend", os.getenv("GO_BACKEND_URL"), required=False, kind="http"),
@@ -345,7 +345,7 @@ def build_mcp_checks() -> list[PreflightCheck]:
     """Build mcp checks."""
     return [
         PreflightCheck("database", os.getenv("DATABASE_URL"), required=True, kind="tcp"),
-        PreflightCheck("redis", os.getenv("REDIS_URL"), required=True, kind="tcp"),
+        PreflightCheck("cache", os.getenv("REDIS_URL"), required=True, kind="tcp"),
         PreflightCheck("nats", os.getenv("NATS_URL"), required=True, kind="tcp"),
         PreflightCheck("neo4j", os.getenv("NEO4J_URI"), required=True, kind="tcp"),
         PreflightCheck("go-backend", os.getenv("GO_BACKEND_URL"), required=False, kind="http"),
@@ -376,11 +376,11 @@ def build_dev_start_checks() -> list[PreflightCheck]:
     """Preflight for 'rtm dev start' / 'rtm dev restart': only infra we don't start.
 
     These commands start Go backend, Python API, etc. So we only check that
-    PostgreSQL, Redis, NATS, and Neo4j are reachable (typically via brew/docker).
+    PostgreSQL, the cache runtime, NATS, and Neo4j are reachable (typically via brew/docker).
     """
     return [
         PreflightCheck("database", os.getenv("DATABASE_URL"), required=True, kind="tcp"),
-        PreflightCheck("redis", os.getenv("REDIS_URL"), required=True, kind="tcp"),
+        PreflightCheck("cache", os.getenv("REDIS_URL"), required=True, kind="tcp"),
         PreflightCheck("nats", os.getenv("NATS_URL"), required=True, kind="tcp"),
         PreflightCheck("neo4j", os.getenv("NEO4J_URI"), required=True, kind="tcp"),
     ]
@@ -390,7 +390,7 @@ def build_cli_checks() -> list[PreflightCheck]:
     """Full CLI preflight for commands that assume backends are already running."""
     return [
         PreflightCheck("database", os.getenv("DATABASE_URL"), required=True, kind="tcp"),
-        PreflightCheck("redis", os.getenv("REDIS_URL"), required=True, kind="tcp"),
+        PreflightCheck("cache", os.getenv("REDIS_URL"), required=True, kind="tcp"),
         PreflightCheck("nats", os.getenv("NATS_URL"), required=True, kind="tcp"),
         PreflightCheck("neo4j", os.getenv("NEO4J_URI"), required=True, kind="tcp"),
         PreflightCheck("go-backend", os.getenv("GO_BACKEND_URL"), required=False, kind="http"),

@@ -1,6 +1,5 @@
 """Item management API endpoints for TraceRTM.
 
-Implements:
 - Item listing (with filtering, pagination, view resolution)
 - Item CRUD operations (Create, Read, Update, Delete)
 - Bulk operations (bulk update)
@@ -49,7 +48,7 @@ def ensure_project_access(project_id: str, claims: dict[str, object] | None) -> 
     Note: This function should be imported from main.py or moved to a shared module.
     For now, we import it from the parent scope.
     """
-    from tracertm.api.main import ensure_project_access as _ensure_project_access
+    from tracertm.api.security import ensure_project_access as _ensure_project_access
 
     _ensure_project_access(project_id, claims)
 
@@ -60,7 +59,7 @@ def ensure_write_permission(claims: dict[str, object] | None, action: str) -> No
     Note: This function should be imported from main.py or moved to a shared module.
     For now, we import it from the parent scope.
     """
-    from tracertm.api.main import ensure_write_permission as _ensure_write_permission
+    from tracertm.api.security import ensure_write_permission as _ensure_write_permission
 
     _ensure_write_permission(claims, action=action)
 
@@ -71,7 +70,7 @@ async def _maybe_await(result: object) -> object:
     Note: This function should be imported from main.py or moved to a shared module.
     For now, we import it from the parent scope.
     """
-    from tracertm.api.main import _maybe_await as _maybe_await_impl
+    from tracertm.api.security import _maybe_await as _maybe_await_impl
 
     return await _maybe_await_impl(result)
 
@@ -193,15 +192,15 @@ async def _list_items_impl(
 @router.get("")
 async def list_items(
     request: Request,
+    claims: Annotated[dict[str, object], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    cache: Annotated[CacheService, Depends(get_cache_service)],
     project_id: str | None = None,
     view: str | None = None,
     status: str | None = None,
     parent_id: str | None = None,
     skip: int = 0,
     limit: int = 100,
-    claims: Annotated[dict[str, object], Depends(auth_guard)] = Depends(auth_guard),
-    db: Annotated[AsyncSession, Depends(get_db)] = Depends(get_db),
-    cache: Annotated[CacheService, Depends(get_cache_service)] = Depends(get_cache_service),
 ) -> dict[str, object]:
     """List items in a project. Returns empty list on any backend error so callers (e.g. home loader) do not get 500.
 
@@ -465,65 +464,4 @@ async def bulk_update_items_endpoint(
         "updated": total,
         "new_status": payload.new_status,
         "preview": False,
-    }
-
-
-@router.get("/summary")
-async def summarize_items_endpoint(
-    request: Request,
-    project_id: str,
-    view: str,
-    claims: Annotated[dict[str, object], Depends(auth_guard)],
-    db: Annotated[AsyncSession, Depends(get_db)],
-) -> dict[str, object]:
-    """Summarize items in a view (counts by status + samples)."""
-    enforce_rate_limit(request, claims)
-    ensure_project_access(project_id, claims)
-
-    view_upper = view.upper()
-
-    status_counts = (
-        await db.execute(
-            select(Item.status, func.count(Item.id))
-            .where(
-                Item.project_id == project_id,
-                Item.view == view_upper,
-                Item.deleted_at.is_(None),
-            )
-            .group_by(Item.status),
-        )
-    ).all()
-
-    samples = (
-        (
-            await db.execute(
-                select(Item)
-                .where(
-                    Item.project_id == project_id,
-                    Item.view == view_upper,
-                    Item.deleted_at.is_(None),
-                )
-                .order_by(Item.updated_at.desc())
-                .limit(5),
-            )
-        )
-        .scalars()
-        .all()
-    )
-
-    return {
-        "project_id": project_id,
-        "view": view_upper,
-        "status_counts": {str(row[0]): int(row[1]) for row in status_counts},
-        "total": sum(int(row[1]) for row in status_counts),
-        "samples": [
-            {
-                "id": str(item.id),
-                "external_id": getattr(item, "external_id", None),
-                "title": item.title,
-                "status": item.status,
-                "updated_at": item.updated_at.isoformat() if item.updated_at else None,
-            }
-            for item in samples
-        ],
     }

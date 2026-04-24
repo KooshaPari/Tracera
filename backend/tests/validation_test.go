@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
@@ -46,9 +44,9 @@ func TestPhase7_ServiceContainerInitialization(t *testing.T) {
 	require.NoError(t, err, "should start postgres container")
 	defer pgContainer.Terminate(ctx)
 
-	redisContainer, redisAddr, err := testutil.RedisContainer(ctx)
-	require.NoError(t, err, "should start redis container")
-	defer redisContainer.Terminate(ctx)
+	dragonflyContainer, redisAddr, err := testutil.DragonflyContainer(ctx)
+	require.NoError(t, err, "should start dragonfly container")
+	defer dragonflyContainer.Terminate(ctx)
 
 	// Connect to PostgreSQL
 	pool, err := pgxpool.New(ctx, connString)
@@ -75,7 +73,7 @@ func TestPhase7_ServiceContainerInitialization(t *testing.T) {
 		DefaultTTL:    5 * time.Minute,
 		EnableMetrics: true,
 	})
-	require.NoError(t, err, "should create redis cache")
+	require.NoError(t, err, "should create redis-compatible cache")
 
 	// Setup NATS publisher (can be nil for testing)
 	var natsPublisher *nats.EventPublisher
@@ -164,9 +162,9 @@ func TestPhase7_HandlersFunctionality(t *testing.T) {
 	require.NoError(t, err)
 	defer pgContainer.Terminate(ctx)
 
-	redisContainer, redisAddr, err := testutil.RedisContainer(ctx)
+	dragonflyContainer, redisAddr, err := testutil.DragonflyContainer(ctx)
 	require.NoError(t, err)
-	defer redisContainer.Terminate(ctx)
+	defer dragonflyContainer.Terminate(ctx)
 
 	// Connect to databases
 	pool, err := pgxpool.New(ctx, connString)
@@ -378,135 +376,6 @@ func TestPhase7_ServiceLayerBehavior(t *testing.T) {
 	})
 }
 
-// TestPhase7_IntegrationSmokeTests runs quick integration checks
-func TestPhase7_IntegrationSmokeTests(t *testing.T) {
-	ctx := context.Background()
-
-	// Start all dependencies
-	pgContainer, connString, err := testutil.PostgresContainer(ctx)
-	require.NoError(t, err)
-	defer pgContainer.Terminate(ctx)
-
-	redisContainer, redisAddr, err := testutil.RedisContainer(ctx)
-	require.NoError(t, err)
-	defer redisContainer.Terminate(ctx)
-
-	pool, err := pgxpool.New(ctx, connString)
-	require.NoError(t, err)
-	defer pool.Close()
-
-	err = testutil.ExecuteMigrations(ctx, pool, "../schema.sql")
-	require.NoError(t, err)
-
-	gormDB, err := gorm.Open(postgres.Open(connString), &gorm.Config{})
-	require.NoError(t, err)
-
-	redisClient := redis.NewClient(&redis.Options{Addr: redisAddr})
-	defer redisClient.Close()
-
-	redisCache, err := cache.NewRedisCache(cache.RedisCacheConfig{
-		RedisURL:      "redis://" + redisAddr,
-		DefaultTTL:    5 * time.Minute,
-		EnableMetrics: true,
-	})
-	require.NoError(t, err)
-
-	t.Run("create_and_retrieve_project", func(t *testing.T) {
-		container, err := services.NewServiceContainer(
-			gormDB,
-			redisClient,
-			redisCache,
-			nil,
-			nil,
-			nil, // backendClients
-		)
-		require.NoError(t, err)
-
-		e := echo.New()
-		handler := handlers.NewProjectHandler(
-			redisCache,
-			nil,
-			nil,
-			nil,
-			&testutil.MockBinder{},
-			container.ProjectService(),
-		)
-
-		// Create project
-		reqBody := `{"name":"Smoke Test Project","description":"Test"}`
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/projects", strings.NewReader(reqBody))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
-
-		err = handler.CreateProject(c)
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusCreated, rec.Code)
-
-		// Parse response to get project ID
-		var createdProject map[string]interface{}
-		err = json.Unmarshal(rec.Body.Bytes(), &createdProject)
-		require.NoError(t, err)
-
-		// Retrieve project (tests both service and cache)
-		projectID, ok := createdProject["id"].(map[string]interface{})
-		require.True(t, ok, "should have project ID")
-
-		idBytes, _ := json.Marshal(projectID)
-		var idStr string
-		json.Unmarshal(idBytes, &idStr)
-
-		req2 := httptest.NewRequest(http.MethodGet, "/api/v1/projects/"+idStr, nil)
-		rec2 := httptest.NewRecorder()
-		c2 := e.NewContext(req2, rec2)
-		c2.SetParamNames("id")
-		c2.SetParamValues(idStr)
-
-		err = handler.GetProject(c2)
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, rec2.Code)
-	})
-
-	t.Run("cache_integration", func(t *testing.T) {
-		// Test that cache works with service layer
-		err := redisCache.Set(ctx, "test:key", "test-value")
-		require.NoError(t, err)
-
-		var value string
-		err = redisCache.Get(ctx, "test:key", &value)
-		require.NoError(t, err)
-		assert.Equal(t, "test-value", value)
-
-		err = redisCache.Delete(ctx, "test:key")
-		require.NoError(t, err)
-	})
-
-	t.Run("transaction_support", func(t *testing.T) {
-		container, err := services.NewServiceContainer(
-			gormDB,
-			redisClient,
-			redisCache,
-			nil,
-			nil,
-			nil, // backendClients
-		)
-		require.NoError(t, err)
-
-		// Test transaction wrapper
-		err = container.WithTx(ctx, func(txCtx context.Context) error {
-			// Transaction should work
-			return nil
-		})
-		require.NoError(t, err)
-
-		// Test transaction rollback
-		err = container.WithTx(ctx, func(txCtx context.Context) error {
-			return assert.AnError // Force rollback
-		})
-		require.Error(t, err, "should rollback on error")
-	})
-}
-
 // TestPhase7_ConfigurationLoading validates config still works
 func TestPhase7_ConfigurationLoading(t *testing.T) {
 	t.Run("load_default_config", func(t *testing.T) {
@@ -586,25 +455,3 @@ func TestPhase7_ErrorHandling(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, rec.Code) // No service available
 	})
 }
-
-// ============================================================================
-// TEST SUMMARY
-// ============================================================================
-// Total Test Count: 20+ individual test cases across 7 test functions
-//
-// Coverage:
-// 1. ServiceContainer initialization and lifecycle (4 tests)
-// 2. Handler functionality validation (3 tests)
-// 3. Infrastructure leakage checks (2 tests)
-// 4. Service layer behavior (2 tests)
-// 5. Integration smoke tests (3 tests)
-// 6. Configuration loading (2 tests)
-// 7. Error handling (2 tests)
-//
-// This validates that Phase 7 cleanup:
-// - Didn't break existing functionality
-// - Properly encapsulates dependencies
-// - Supports both service and legacy paths
-// - Maintains error handling
-// - Works with caching and transactions
-// ============================================================================

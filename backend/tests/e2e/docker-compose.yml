@@ -26,13 +26,14 @@ services:
     networks:
       - e2e-network
 
-  redis:
-    image: redis:7-alpine
-    container_name: trace-e2e-redis
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+    container_name: trace-e2e-dragonfly
     ports:
-      - "6380:6379"  # Avoid conflict with local redis on 6379
+      - "6380:6379"  # Avoid conflict with local Redis-compatible runtime on 6379
     volumes:
-      - redis_data:/data
+      - dragonfly_data:/data
+    command: ["--dir", "/data"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -95,7 +96,7 @@ services:
 volumes:
   postgres_data:
     driver: local
-  redis_data:
+  dragonfly_data:
     driver: local
   meilisearch_data:
     driver: local

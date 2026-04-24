@@ -32,7 +32,7 @@ from tracertm.services.encryption_service import EncryptionService
 
 def ensure_project_access(project_id: str | None, claims: dict[str, Any] | None) -> None:
     """Check project access using injected helper when available. System admins bypass checks."""
-    from tracertm.api.main import check_project_access, is_system_admin
+    from tracertm.api.security import check_project_access, is_system_admin
 
     if not project_id:
         return

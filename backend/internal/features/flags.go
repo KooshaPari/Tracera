@@ -90,20 +90,26 @@ func (fs *FlagStore) DeleteFlag(ctx context.Context, flagName string) error {
 // ListFlags returns all feature flags and their values
 func (fs *FlagStore) ListFlags(ctx context.Context) (map[string]bool, error) {
 	pattern := flagPrefix + "*"
-	keys, err := fs.redis.Keys(ctx, pattern).Result()
-	if err != nil {
-		return nil, err
-	}
-
 	flags := make(map[string]bool)
-	for _, key := range keys {
-		val, err := fs.redis.Get(ctx, key).Result()
+	var cursor uint64
+	for {
+		keys, nextCursor, err := fs.redis.Scan(ctx, cursor, pattern, 100).Result()
 		if err != nil {
-			continue
+			return nil, err
 		}
-		// Remove prefix from key
-		flagName := key[len(flagPrefix):]
-		flags[flagName] = val == flagValueTrue
+		for _, key := range keys {
+			val, err := fs.redis.Get(ctx, key).Result()
+			if err != nil {
+				continue
+			}
+			// Remove prefix from key
+			flagName := key[len(flagPrefix):]
+			flags[flagName] = val == flagValueTrue
+		}
+		if nextCursor == 0 {
+			break
+		}
+		cursor = nextCursor
 	}
 
 	return flags, nil

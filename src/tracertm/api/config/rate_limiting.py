@@ -54,7 +54,7 @@ def should_bypass_for_user(request: Request, claims: dict[str, Any] | None) -> b
     Returns:
         True if user should bypass rate limiting
     """
-    from tracertm.api.main import get_client_ip, is_whitelisted
+    from tracertm.api.security import get_client_ip, is_whitelisted
 
     # Check if IP is whitelisted
     client_ip = get_client_ip(request) if inspect.signature(get_client_ip).parameters else get_client_ip()
@@ -79,7 +79,7 @@ def get_rate_limit_key(request: Request, claims: dict[str, Any] | None) -> str:
     """
     from typing import Any, cast
 
-    from tracertm.api.main import get_client_ip
+    from tracertm.api.security import get_client_ip
 
     key: str | None = cast("str | None", claims.get("sub")) if claims else None
     client_ip = get_client_ip(request) if inspect.signature(get_client_ip).parameters else get_client_ip()
@@ -95,7 +95,7 @@ def get_resolved_limit(request: Request) -> int | None:
     Returns:
         Integer limit or None if not specified
     """
-    from tracertm.api.main import get_endpoint_limit
+    from tracertm.api.security import get_endpoint_limit
 
     limit_info = get_endpoint_limit(request.method, request.url.path)
     resolved_limit: int | None = None
@@ -124,7 +124,7 @@ def check_rate_limit(
     Returns:
         True if request is allowed
     """
-    from tracertm.api.main import RateLimiter
+    from tracertm.api.security import RateLimiter
 
     limiter_class = RateLimiter
     limiter = limiter_class()
@@ -153,7 +153,7 @@ def raise_rate_limit_error(key: str, request: Request) -> None:
     Raises:
         HTTPException: 429 Too Many Requests
     """
-    from tracertm.api.main import RateLimiter
+    from tracertm.api.security import RateLimiter
 
     limiter_class = RateLimiter
     limiter = limiter_class()

@@ -139,7 +139,8 @@ backend/build-errors.log
 .prometheus/
 .grafana/
 .loki/
-.promtail/
+.alloy/
+.dragonfly/
 
 # Brewfile lock
 Brewfile.lock.json

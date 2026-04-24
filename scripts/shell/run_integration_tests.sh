@@ -15,9 +15,13 @@ echo -e "${GREEN}========================================${NC}"
 DOCKER_COMPOSE_FILE="docker-compose.test.yml"
 WAIT_TIME=10
 
-# Check if docker-compose.test.yml exists
-if [ ! -f "$DOCKER_COMPOSE_FILE" ]; then
-    echo -e "${YELLOW}Warning: $DOCKER_COMPOSE_FILE not found${NC}"
+# Check if docker-compose.test.yml exists and still matches the Dragonfly layout
+if [ ! -f "$DOCKER_COMPOSE_FILE" ] || ! grep -q '^  dragonfly:' "$DOCKER_COMPOSE_FILE"; then
+    if [ -f "$DOCKER_COMPOSE_FILE" ]; then
+        echo -e "${YELLOW}Warning: $DOCKER_COMPOSE_FILE is stale or missing Dragonfly${NC}"
+    else
+        echo -e "${YELLOW}Warning: $DOCKER_COMPOSE_FILE not found${NC}"
+    fi
     echo -e "${YELLOW}Creating minimal test configuration...${NC}"
 
     cat > "$DOCKER_COMPOSE_FILE" << 'EOF'
@@ -38,8 +42,8 @@ services:
       timeout: 5s
       retries: 5
 
-  redis:
-    image: redis:7-alpine
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
     ports:
       - "6380:6379"
     healthcheck:
@@ -100,7 +104,7 @@ docker-compose -f "$DOCKER_COMPOSE_FILE" up -d
 
 # Wait for services to be healthy
 wait_for_service postgres
-wait_for_service redis
+wait_for_service dragonfly
 wait_for_service nats
 
 echo -e "${GREEN}All services are ready!${NC}"

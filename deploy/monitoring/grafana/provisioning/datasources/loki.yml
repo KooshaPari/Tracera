@@ -10,7 +10,9 @@ datasources:
     jsonData:
       maxLines: 1000
       derivedFields:
-        # Extract trace ID from logs for correlation with Jaeger
+        # Extract trace ID from logs for correlation with the shared trace UI
         - matcherRegex: "trace_id[=:]\\s*([a-f0-9]+)"
+          datasourceUid: shared-traces
           name: TraceID
-          url: 'http://localhost:16686/trace/$${__value.raw}'
+          url: '$${__value.raw}'
+          urlDisplayLabel: View Trace

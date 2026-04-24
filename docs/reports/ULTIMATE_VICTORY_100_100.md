@@ -1,3 +1,5 @@
+> Historical note: this document preserves the pre-Phenotype observability stack. The active org path is the shared collector, Grafana Alloy, and Grafana Tempo. Treat Jaeger and Promtail references below as legacy context only.
+
 # 🏆 ULTIMATE VICTORY: 100/100 PRODUCTION PERFECTION 🏆
 
 **Date:** 2026-02-06 18:30

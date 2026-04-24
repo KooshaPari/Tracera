@@ -296,7 +296,7 @@ func initTracing(ctx context.Context, cfg *config.Config) (*tracing.TracerProvid
 		slog.Info("ℹ️  Distributed tracing is disabled")
 		return nil, nil
 	}
-	tracerProvider, err := tracing.InitTracer(ctx, cfg.JaegerEndpoint, cfg.TracingEnvironment)
+	tracerProvider, err := tracing.InitTracer(ctx, cfg.CollectorEndpoint, cfg.TracingEnvironment)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize tracing (required service): %w", err)
 	}

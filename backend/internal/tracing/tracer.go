@@ -34,11 +34,11 @@ type TracerProvider struct {
 	provider *sdktrace.TracerProvider
 }
 
-// InitTracer initializes the OpenTelemetry tracer with Jaeger exporter
-func InitTracer(ctx context.Context, jaegerEndpoint string, environment string) (*TracerProvider, error) {
+// InitTracer initializes the OpenTelemetry tracer with the shared OTLP collector.
+func InitTracer(ctx context.Context, collectorEndpoint string, environment string) (*TracerProvider, error) {
 	// Set default endpoint if not provided
-	if jaegerEndpoint == "" {
-		jaegerEndpoint = "127.0.0.1:4317"
+	if collectorEndpoint == "" {
+		collectorEndpoint = "127.0.0.1:4317"
 	}
 
 	// Set default environment if not provided
@@ -46,13 +46,18 @@ func InitTracer(ctx context.Context, jaegerEndpoint string, environment string) 
 		environment = "development"
 	}
 
-	slog.Info("🔍 Initializing distributed tracing (Jaeger endpoint , env )", "detail", jaegerEndpoint, "detail", environment)
+	slog.Info(
+		"🔍 Initializing distributed tracing",
+		"collector_endpoint",
+		collectorEndpoint,
+		"environment",
+		environment,
+	)
 
-	// Create OTLP/gRPC exporter for Jaeger
-	// Jaeger supports OTLP protocol on port 4317
+	// Create OTLP/gRPC exporter for the shared collector.
 	exporter, err := otlptracegrpc.New(ctx,
-		otlptracegrpc.WithEndpoint(jaegerEndpoint),
-		otlptracegrpc.WithInsecure(), // Use insecure for local development
+		otlptracegrpc.WithEndpoint(collectorEndpoint),
+		otlptracegrpc.WithInsecure(), // Use insecure for native local development
 		otlptracegrpc.WithDialOption(grpc.WithTransportCredentials(insecure.NewCredentials())),
 		otlptracegrpc.WithTimeout(otlpExportTimeout),
 	)

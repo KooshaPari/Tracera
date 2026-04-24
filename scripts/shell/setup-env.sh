@@ -52,8 +52,8 @@ if ! command -v psql &> /dev/null; then
     print_warning "PostgreSQL not found. Install via: brew install postgresql"
 fi
 
-if ! command -v redis-server &> /dev/null; then
-    print_warning "Redis not found. Install via: brew install redis"
+if ! command -v dragonfly &> /dev/null && ! command -v docker &> /dev/null; then
+    print_warning "Dragonfly not found. Install Dragonfly or Docker for the default cache runtime"
 fi
 
 if ! command -v nats-server &> /dev/null; then
@@ -175,8 +175,8 @@ echo "  Terminal 1 - PostgreSQL:"
 echo "    pg_ctl -D /usr/local/var/postgres start"
 echo "    (or it may already be running as a service)"
 echo ""
-echo "  Terminal 2 - Redis:"
-echo "    redis-server"
+echo "  Terminal 2 - Dragonfly:"
+echo "    bash scripts/shell/redis-if-not-running.sh"
 echo ""
 echo "  Terminal 3 - NATS:"
 echo "    nats-server -js"

@@ -38,7 +38,7 @@ TracerTM is a comprehensive requirements traceability matrix (RTM) system design
 - ⚡ **Real-Time Sync**: WebSocket-based live updates across all management interfaces.
 - 📊 **Graph Visualization**: Interactive dependency graphs and impact analysis powered by Neo4j.
 - 🛡 **Hardened Governance**: SLSA provenance, signed attestations, and automated quality gates.
-- 📈 **Full Observability**: Integrated metrics (Prometheus), logs (Loki), and tracing (Jaeger).
+- 📈 **Full Observability**: Integrated metrics (Prometheus), logs (Loki), and tracing through the shared Phenotype OTLP collector.
 
 ---
 
@@ -49,7 +49,7 @@ TracerTM uses a high-performance, polyglot architecture:
 - **Backend (Go)**: High-performance API server managing core business logic and integrations.
 - **Python Services**: Specialized services for data analysis, CLI/TUI tools, and background processing.
 - **Frontend (React/TS)**: Modern SPA with TanStack Router, Zustand, and interactive visualizations.
-- **Persistence**: PostgreSQL (Relational), Neo4j (Graph), Redis (Cache), and NATS (Messaging).
+- **Persistence**: PostgreSQL (Relational), Neo4j (Graph), Dragonfly (Redis-compatible cache), and NATS (Messaging).
 
 ---
 
@@ -57,7 +57,7 @@ TracerTM uses a high-performance, polyglot architecture:
 
 ### Prerequisites
 - Go 1.21+, Python 3.11+, Node.js/Bun
-- PostgreSQL 17+, Redis 7+, Neo4j 5.0+, NATS 2.9+
+- PostgreSQL 17+, Dragonfly latest, Neo4j 5.0+, NATS 2.9+
 - [Task](https://taskfile.dev/) (Task runner) and [Process Compose](https://github.com/F_S_A/process-compose)
 
 ### Quick Start (Native Environment)
@@ -80,10 +80,13 @@ task dev:tui
 
 ## 📊 Observability & APM
 
-TracerTM includes enterprise-grade monitoring out of the box:
+TracerTM includes enterprise-grade monitoring out of the box. The current
+local trace path is the shared Phenotype collector contract through Grafana
+Alloy and Tempo. Legacy Jaeger references are kept only in archival docs and
+compatibility-only flags.
 - **Metrics**: http://localhost:3000 (Grafana) / http://localhost:9090 (Prometheus)
-- **Tracing**: http://localhost:16686 (Jaeger UI) - Track requests across Go and Python.
-- **Logs**: Centralized log aggregation via Loki and Promtail.
+- **Tracing**: http://localhost:3000 (Grafana/Tempo) - Track requests across Go and Python.
+- **Logs**: Centralized log aggregation via Grafana Alloy and Loki.
 
 ---
 

@@ -10,9 +10,9 @@ Quick reference for Application Performance Monitoring in TraceRTM.
 # Enable/disable tracing
 TRACING_ENABLED=true
 
-# Jaeger OTLP endpoint
-JAEGER_ENDPOINT=localhost:4317
-OTLP_ENDPOINT=localhost:4317
+# Shared Phenotype OTLP endpoint
+PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT=127.0.0.1:4317
+OTLP_ENDPOINT=127.0.0.1:4317
 
 # Environment name
 TRACING_ENVIRONMENT=development
@@ -22,8 +22,8 @@ TRACING_ENVIRONMENT=development
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| Jaeger UI | http://localhost:16686 | View traces, search, analyze |
-| Grafana | http://localhost:3001 | Dashboards, metrics |
+| Grafana | http://localhost:3000 | Dashboards, traces, metrics, logs |
+| Tempo | http://localhost:3200 | Trace backend |
 | Prometheus | http://localhost:9090 | Raw metrics data |
 
 ## Go Backend
@@ -162,13 +162,13 @@ histogram_quantile(0.95,
 ) > 100
 ```
 
-## Jaeger Search Tips
+## Trace Search Tips
 
 ### Find Slow Requests
 
 1. Select service: `tracertm-backend` or `tracertm-python-backend`
 2. Set min duration: `500ms`
-3. Click "Find Traces"
+3. Open the trace view in Grafana and inspect the matching spans
 
 ### Search by Tag
 
@@ -202,15 +202,16 @@ Click "System Architecture" tab to view service dependencies.
 ## Troubleshooting Commands
 
 ```bash
-# Check Jaeger is running
-curl http://localhost:16686
+# Check the shared collector path
+curl -fsS http://localhost:12345/-/ready
+curl -fsS http://localhost:3000/api/health
 
 # View backend logs with tracing info
 tail -f .process-compose/logs/go-backend.log | grep -i tracing
 tail -f .process-compose/logs/python-backend.log | grep -i tracing
 
-# Restart Jaeger
-process-compose process restart jaeger
+# Restart Alloy
+process-compose process restart alloy
 
 # Check trace export rate (Prometheus)
 curl -s http://localhost:9090/api/v1/query?query=rate(otelcol_receiver_accepted_spans[1m])
@@ -244,7 +245,7 @@ curl -s http://localhost:9090/api/v1/query?query=rate(otelcol_receiver_accepted_
 
 | Issue | Solution |
 |-------|----------|
-| No traces in Jaeger | Check `TRACING_ENABLED=true` and Jaeger is running |
+| No traces in Grafana | Check `TRACING_ENABLED=true` and Alloy is running |
 | High latency | Reduce sampling rate or increase batch timeout |
 | Missing DB traces | Ensure instrumentation is called on engine |
 | Broken trace chains | Check context propagation across boundaries |

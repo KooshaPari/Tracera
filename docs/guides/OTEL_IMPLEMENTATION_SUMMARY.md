@@ -1,10 +1,15 @@
+> Historical note: this document preserves the pre-Phenotype observability stack. The active org path is the shared collector, Grafana Alloy, and Grafana Tempo. Treat Jaeger and Promtail references below as legacy context only.
+
 # OpenTelemetry Python Backend Implementation Summary
+
+> Historical record only. The active tracing path now uses the shared Phenotype
+> collector and Grafana Tempo. Jaeger is mentioned here only as legacy context.
 
 ## Executive Summary
 
 ✅ **OpenTelemetry instrumentation for the Python backend has been successfully implemented and verified.**
 
-The implementation provides comprehensive distributed tracing, automatic instrumentation of FastAPI, SQLAlchemy, and HTTP clients, with OTLP export to backends like Jaeger and Grafana Tempo.
+The implementation provides comprehensive distributed tracing, automatic instrumentation of FastAPI, SQLAlchemy, and HTTP clients, with OTLP export to backends like the legacy Jaeger stack and Grafana Tempo.
 
 **Status:**
 - ✅ Core tracing infrastructure implemented
@@ -305,8 +310,8 @@ pip install 'tracertm[observability]'
 # 2. Verify installation
 python -m tracertm.observability.verify_traces
 
-# 3. Start OTLP backend (Jaeger)
-docker run -d -p 16686:16686 -p 4317:4317 jaegertracing/all-in-one
+# 3. Start the Tempo-backed observability stack
+docker compose up -d tempo alloy
 
 # 4. Enable tracing
 export TRACING_ENABLED=true
@@ -314,8 +319,8 @@ export TRACING_ENABLED=true
 # 5. Run application
 python -m uvicorn src.tracertm.api.main:app --reload
 
-# 6. View traces in Jaeger UI
-# http://localhost:16686
+# 6. View traces in Grafana
+# http://localhost:3000
 ```
 
 ### Example 2: Custom Instrumentation
@@ -392,7 +397,7 @@ services:
    - Quick start commands
    - Environment variables
    - Custom spans examples
-   - Backend setup (Jaeger, Tempo)
+   - Backend setup (legacy Jaeger, Tempo)
    - Troubleshooting table
    - Code locations
 
@@ -483,7 +488,7 @@ Trace ID: a4fb4a1d1a96d312...
 
 ### Short-term (Operations)
 
-1. Choose backend: Jaeger (dev) or Tempo (production)
+1. Choose backend: legacy Jaeger (dev) or Tempo (production)
 2. Configure endpoint: `OTLP_ENDPOINT=your-backend:4317`
 3. Deploy with tracing enabled
 4. Monitor traces in visualization backend
@@ -508,7 +513,7 @@ Trace ID: a4fb4a1d1a96d312...
 ### External Resources
 - [OpenTelemetry Python](https://opentelemetry.io/docs/instrumentation/python/)
 - [OTLP Specification](https://opentelemetry.io/docs/reference/specification/otlp/)
-- [Jaeger Documentation](https://www.jaegertracing.io/docs/)
+- [Jaeger Documentation](https://www.jaegertracing.io/docs/) (legacy reference)
 - [Grafana Tempo](https://grafana.com/docs/tempo/latest/)
 
 ### Troubleshooting
@@ -524,7 +529,7 @@ OpenTelemetry instrumentation is **production-ready** with:
 
 - ✅ Comprehensive span generation
 - ✅ Automatic framework instrumentation
-- ✅ OTLP export to Jaeger/Tempo
+- ✅ OTLP export to legacy Jaeger/Tempo
 - ✅ W3C distributed tracing support
 - ✅ Complete documentation
 - ✅ 27/27 integration tests passing

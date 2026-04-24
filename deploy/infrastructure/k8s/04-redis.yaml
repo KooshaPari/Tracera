@@ -1,123 +1,54 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis-service
+  name: dragonfly-service
   namespace: tracertm
   labels:
     app.kubernetes.io/name: tracertm
     app.kubernetes.io/component: cache
 spec:
-  clusterIP: None  # Headless service for StatefulSet
+  type: ClusterIP
   selector:
-    app: redis
+    app: dragonfly
   ports:
-    - name: redis
+    - name: cache
       port: 6379
       targetPort: 6379
       protocol: TCP
 
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: redis-config
-  namespace: tracertm
-  labels:
-    app.kubernetes.io/name: tracertm
-    app.kubernetes.io/component: cache
-data:
-  redis.conf: |
-    # Network
-    bind 0.0.0.0
-    port 6379
-    tcp-backlog 511
-    timeout 0
-    tcp-keepalive 300
-
-    # General
-    daemonize no
-    supervised no
-    pidfile /var/run/redis_6379.pid
-    loglevel notice
-    logfile ""
-    databases 16
-
-    # Snapshotting (persistence)
-    save 900 1
-    save 300 10
-    save 60 10000
-    stop-writes-on-bgsave-error yes
-    rdbcompression yes
-    rdbchecksum yes
-    dbfilename dump.rdb
-    dir /data
-
-    # Replication
-    replica-serve-stale-data yes
-    replica-read-only yes
-
-    # Security
-    # requirepass CHANGE_ME_IN_PRODUCTION
-
-    # Memory Management
-    maxmemory 512mb
-    maxmemory-policy allkeys-lru
-    maxmemory-samples 5
-
-    # Append Only File (AOF)
-    appendonly yes
-    appendfilename "appendonly.aof"
-    appendfsync everysec
-    no-appendfsync-on-rewrite no
-    auto-aof-rewrite-percentage 100
-    auto-aof-rewrite-min-size 64mb
-
-    # Slow log
-    slowlog-log-slower-than 10000
-    slowlog-max-len 128
-
-    # Latency monitor
-    latency-monitor-threshold 100
-
----
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: redis
+  name: dragonfly
   namespace: tracertm
   labels:
     app.kubernetes.io/name: tracertm
     app.kubernetes.io/component: cache
 spec:
-  serviceName: redis-service
+  serviceName: dragonfly-service
   replicas: 1
   selector:
     matchLabels:
-      app: redis
+      app: dragonfly
   template:
     metadata:
       labels:
-        app: redis
+        app: dragonfly
         app.kubernetes.io/name: tracertm
         app.kubernetes.io/component: cache
     spec:
       containers:
-      - name: redis
-        image: redis:7-alpine
+      - name: dragonfly
+        image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
         imagePullPolicy: IfNotPresent
-        command:
-        - redis-server
-        - /etc/redis/redis.conf
         ports:
-        - name: redis
+        - name: cache
           containerPort: 6379
           protocol: TCP
         volumeMounts:
-        - name: redis-storage
+        - name: dragonfly-storage
           mountPath: /data
-        - name: redis-config
-          mountPath: /etc/redis
-          readOnly: true
         resources:
           requests:
             memory: "512Mi"
@@ -126,20 +57,16 @@ spec:
             memory: "1Gi"
             cpu: "500m"
         livenessProbe:
-          exec:
-            command:
-            - redis-cli
-            - ping
+          tcpSocket:
+            port: 6379
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
           successThreshold: 1
           failureThreshold: 3
         readinessProbe:
-          exec:
-            command:
-            - redis-cli
-            - ping
+          tcpSocket:
+            port: 6379
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 3
@@ -152,15 +79,11 @@ spec:
           capabilities:
             drop:
             - ALL
-      volumes:
-      - name: redis-config
-        configMap:
-          name: redis-config
       securityContext:
         fsGroup: 999
   volumeClaimTemplates:
   - metadata:
-      name: redis-storage
+      name: dragonfly-storage
       labels:
         app.kubernetes.io/name: tracertm
         app.kubernetes.io/component: cache
@@ -173,18 +96,17 @@ spec:
       # storageClassName: fast-ssd
 
 ---
-# Redis Exporter for Prometheus monitoring (optional)
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis-exporter-service
+  name: dragonfly-exporter-service
   namespace: tracertm
   labels:
     app.kubernetes.io/name: tracertm
     app.kubernetes.io/component: monitoring
 spec:
   selector:
-    app: redis-exporter
+    app: dragonfly-exporter
   ports:
     - name: metrics
       port: 9121
@@ -195,7 +117,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis-exporter
+  name: dragonfly-exporter
   namespace: tracertm
   labels:
     app.kubernetes.io/name: tracertm
@@ -204,14 +126,14 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: redis-exporter
+      app: dragonfly-exporter
   template:
     metadata:
       labels:
-        app: redis-exporter
+        app: dragonfly-exporter
     spec:
       containers:
-      - name: redis-exporter
+      - name: dragonfly-exporter
         image: oliver006/redis_exporter:latest
         imagePullPolicy: IfNotPresent
         ports:
@@ -219,7 +141,7 @@ spec:
           containerPort: 9121
         env:
         - name: REDIS_ADDR
-          value: redis-service:6379
+          value: redis://dragonfly-service:6379
         resources:
           requests:
             memory: "64Mi"

@@ -388,7 +388,7 @@ func (sc *ServiceContainer) NotificationService() *NotificationService {
 	defer sc.mu.Unlock()
 
 	if sc.notificationService == nil {
-		sc.notificationService = NewNotificationService(sc.db, sc.redis)
+		sc.notificationService = NewNotificationService(sc.db, newNotificationEventBus(sc.natsPublisher))
 		sc.notificationServiceInitialized = true
 	}
 	return sc.notificationService
@@ -471,7 +471,11 @@ func (sc *ServiceContainer) HealthCheck(ctx context.Context) error {
 
 // Close releases all resources held by the service container
 func (sc *ServiceContainer) Close() error {
-	// Services are stateless, no cleanup needed
-	// The underlying infrastructure (DB, Redis, etc.) should be closed separately
+	if sc.notificationService != nil {
+		if err := sc.notificationService.Close(); err != nil {
+			return err
+		}
+	}
+	// The underlying infrastructure (DB, Redis, NATS, etc.) is closed separately.
 	return nil
 }

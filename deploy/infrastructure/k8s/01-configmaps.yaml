@@ -12,8 +12,8 @@ data:
   DATABASE_PORT: "5432"
   DATABASE_NAME: tracertm
 
-  # Redis Configuration
-  REDIS_HOST: redis-service
+  # Redis-compatible cache configuration
+  REDIS_HOST: dragonfly-service
   REDIS_PORT: "6379"
 
   # NATS Configuration

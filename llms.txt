@@ -22,7 +22,7 @@ TracerTM is a high-assurance RTM system that links requirements to code, tests, 
 ## Performance & Observability
 - **Gateway**: `http://localhost:4000` (Unified URL).
 - **Grafana**: `http://localhost:3000`.
-- **Jaeger**: `http://localhost:16686`.
+- **Tracing**: shared Phenotype OTLP collector contract via the Alloy-backed local stack.
 
 ## Agent Guidelines
 - All PRs require signed SLSA attestations.

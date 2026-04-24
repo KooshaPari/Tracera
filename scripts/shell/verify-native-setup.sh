@@ -28,6 +28,12 @@ warn() {
   echo -e "${YELLOW}⚠${NC} $1"
 }
 
+ensure_runtime_dir() {
+  local dir="$1"
+  mkdir -p "$dir"
+  pass "$dir exists"
+}
+
 # Test 1: Verify Process Compose installation
 echo "📋 Checking Process Compose installation..."
 if command -v process-compose &> /dev/null; then
@@ -43,13 +49,25 @@ echo ""
 
 # Test 2: Verify required services
 echo "📋 Checking required service binaries..."
-for cmd in postgres redis-server neo4j nats-server temporal caddy prometheus grafana-server; do
+for cmd in postgres neo4j nats-server temporal caddy prometheus grafana-server loki; do
   if command -v $cmd &> /dev/null; then
     pass "$cmd found"
   else
     fail "$cmd not found"
   fi
 done
+if command -v dragonfly &> /dev/null || command -v docker &> /dev/null; then
+  pass "Cache runtime path found"
+else
+  fail "Dragonfly not found - install Dragonfly or Docker for the default cache runtime"
+fi
+if command -v grafana-alloy &> /dev/null; then
+  pass "Grafana Alloy found"
+elif [ -x "$HOME/.local/bin/grafana-alloy" ] && "$HOME/.local/bin/grafana-alloy" run --help >/dev/null 2>&1; then
+  pass "Grafana Alloy found at $HOME/.local/bin/grafana-alloy"
+else
+  fail "Grafana Alloy not found - install grafana-alloy or $HOME/.local/bin/grafana-alloy"
+fi
 
 # Check exporters (may be in ~/.local/bin)
 echo ""
@@ -76,7 +94,10 @@ echo ""
 
 # Test 4: Verify working directories
 echo "📋 Checking working directories..."
-for dir in .process-compose/logs .temporal .prometheus .grafana deploy/monitoring/datasources deploy/monitoring/dashboards; do
+for dir in .process-compose/logs .temporal .prometheus .grafana .alloy/data .dragonfly; do
+  ensure_runtime_dir "$dir"
+done
+for dir in deploy/monitoring/grafana/provisioning/datasources deploy/monitoring/dashboards; do
   if [ -d "$dir" ]; then
     pass "$dir exists"
   else
@@ -88,7 +109,7 @@ echo ""
 # Test 5: Check if services are currently running
 echo "📋 Checking if services are already running..."
 POSTGRES_RUNNING=false
-REDIS_RUNNING=false
+REDIS_COMPAT_RUNNING=false
 
 if pg_isready -h localhost -p 5432 -U tracertm &> /dev/null; then
   pass "PostgreSQL is running"
@@ -98,10 +119,10 @@ else
 fi
 
 if redis-cli -h localhost -p 6379 ping &> /dev/null; then
-  pass "Redis is running"
-  REDIS_RUNNING=true
+  pass "Cache endpoint is running"
+  REDIS_COMPAT_RUNNING=true
 else
-  warn "Redis not running (will be started)"
+  warn "Cache endpoint not running (Dragonfly will be started)"
 fi
 echo ""
 

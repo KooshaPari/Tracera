@@ -1,8 +1,12 @@
-# Jaeger & OpenTelemetry Quick Reference
+> Historical note: this document preserves the pre-Phenotype observability stack. The active org path is the shared collector, Grafana Alloy, and Grafana Tempo. Treat Jaeger and Promtail references below as legacy context only.
+
+# Legacy Jaeger Compatibility Quick Reference
 
 **Last Updated:** 2026-02-05
 
-Distributed tracing is implemented with OpenTelemetry (OTEL) and exported to Jaeger. Both backends send traces over OTLP gRPC.
+This file exists for compatibility with older Tracera-recovered references only.
+The current tracing path is documented in `TRACING_QUICK_REFERENCE.md` and uses the
+shared Phenotype collector, Grafana Alloy, and Grafana Tempo.
 
 ---
 
@@ -10,8 +14,8 @@ Distributed tracing is implemented with OpenTelemetry (OTEL) and exported to Jae
 
 - **SDK:** `go.opentelemetry.io/otel` + `otel/sdk` + `otel/exporters/otlp/otlptrace/otlptracegrpc`
 - **HTTP instrumentation:** Echo middleware via `go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho`
-- **Export:** OTLP gRPC to Jaeger (default `127.0.0.1:4317`)
-- **Config:** `TRACING_ENABLED`, `JAEGER_ENDPOINT`, `TRACING_ENVIRONMENT`
+- **Export:** OTLP gRPC to `PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT` (default `127.0.0.1:4317`)
+- **Config:** `TRACING_ENABLED`, `PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT`, `TRACING_ENVIRONMENT`
 - **Code:** `backend/internal/tracing/` (tracer.go, middleware.go), `backend/internal/infrastructure/infrastructure.go` (initTracing)
 
 ---
@@ -20,30 +24,23 @@ Distributed tracing is implemented with OpenTelemetry (OTEL) and exported to Jae
 
 - **SDK:** `opentelemetry-api`, `opentelemetry-sdk`, `opentelemetry-exporter-otlp-proto-grpc`
 - **FastAPI instrumentation:** `opentelemetry-instrumentation-fastapi` (FastAPIInstrumentor)
-- **Export:** OTLP gRPC to Jaeger (default `127.0.0.1:4317`)
-- **Config:** `TRACING_ENABLED`, `OTLP_ENDPOINT` (or `JAEGER_ENDPOINT`), `TRACING_ENVIRONMENT`
+- **Export:** OTLP gRPC to `PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT` (default `127.0.0.1:4317`)
+- **Config:** `TRACING_ENABLED`, `PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT`, `TRACING_ENVIRONMENT`
 - **Code:** `src/tracertm/observability/tracing.py`, `instrumentation.py`; `src/tracertm/api/main.py` (init on startup)
 - **Propagation:** W3C Trace Context for cross-service traces (aligned with Go).
 
 ---
 
-## 3. Jaeger Export Config
+## 3. Historical Notes
 
-| Item        | Value |
-|------------|--------|
-| **UI**     | http://localhost:16686 |
-| **OTLP gRPC** | `127.0.0.1:4317` (used by both backends) |
-| **OTLP HTTP**  | `127.0.0.1:4318` (optional) |
-| **Start**  | `make dev` / process-compose runs `jaeger-if-not-running.sh` |
-| **Install** | `brew install jaegertracing/jaeger/jaeger` (or `jaeger-all-in-one`) |
-
-Backends depend on Jaeger being healthy before start (`depends_on: jaeger: process_healthy` in `config/process-compose.yaml`).
+The remaining Jaeger-specific material below is retained only as historical context.
+The current tracing path is the shared collector, Grafana Alloy, and Grafana Tempo.
 
 ---
 
-## 4. Verify: Traces visible in Jaeger
+## 4. Verify: Traces visible in Grafana
 
-1. **Start stack (including Jaeger):**
+1. **Start stack (including shared collector):**
    ```bash
    make dev
    ```
@@ -60,10 +57,10 @@ Backends depend on Jaeger being healthy before start (`depends_on: jaeger: proce
    curl -s http://localhost:8000/api/v1/health
    ```
 
-3. **Open Jaeger UI:** http://localhost:16686
+3. **Open Grafana UI:** http://localhost:3000
 
 4. **Search:**
    - **Service:** `tracertm-backend` (Go) or `tracertm-python-backend` (Python)
-   - Click **Find Traces**. You should see spans for `/health` and `/api/v1/health`.
+   - Use Grafana's trace view to inspect spans for `/health` and `/api/v1/health`.
 
 5. **Optional:** Trigger a request that crosses backends (e.g. Go calling Python) to see a single trace with spans from both services (W3C propagation).

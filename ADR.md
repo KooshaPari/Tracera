@@ -85,7 +85,7 @@ metadata blobs, `pg_notify` for CDC-style event fanout.
 
 ---
 
-## ADR-004: Redis for Caching, Session State, and Rate Limiting
+## ADR-004: Dragonfly for Redis-Compatible Caching, Session State, and Rate Limiting
 
 **Status**: Accepted
 
@@ -95,20 +95,22 @@ Real-time collaboration (FR-COLLAB-001 through FR-COLLAB-004) and live dashboard
 rate-limiting must be enforced across Go service replicas without a central coordinator.
 
 **Decision**:
-Redis (accessed via `go-redis` from Go, `aioredis` from Python) serves three roles:
+Dragonfly is the preferred Redis-compatible runtime. Existing Redis protocol clients
+(`go-redis` from Go and `redis.asyncio` from Python) serve three roles through `REDIS_URL`:
 1. Session token store: JWT refresh tokens cached with TTL equal to token expiry.
 2. Dashboard/matrix cache: rendered matrix rows cached for up to 60 s; invalidated on requirement
    write-through.
 3. Rate-limit counters: sliding-window counters per `(user_id, endpoint)` stored as Redis HLLs for
    sub-millisecond increments.
 
-`alicebob/miniredis/v2` is used in Go tests to replace Redis without network I/O.
+Redis remains an explicit fallback for compatibility testing. `alicebob/miniredis/v2` is used in
+Go tests to replace the Redis protocol service without network I/O.
 
 **Consequences**:
 - (+) Cache hit on RTM matrix load reduces P95 latency from ~1.8 s to ~120 ms for 1000-row matrices.
 - (+) Rate-limiting is consistent across replicas with no external coordinator.
-- (-) Session state in Redis is non-durable; a Redis restart invalidates all active sessions.
-  Mitigation: Go service falls back to PostgreSQL session lookup on Redis miss.
+- (-) Session state in the Redis-compatible runtime is non-durable; a restart invalidates active
+  cache/session entries. Mitigation: Go service falls back to PostgreSQL session lookup on miss.
 
 ---
 
@@ -201,9 +203,10 @@ observability stack is preferred over a paid SaaS.
 - **Metrics**: Prometheus scrapes `/metrics` from both services (Go uses `prometheus/client_golang`;
   Python uses `prometheus-fastapi-instrumentator`). Grafana provides dashboards.
 - **Logs**: Structured logs (Go: `slog` JSON; Python: `structlog` JSON) are shipped to Loki via
-  Promtail. Log queries use LogQL.
-- **Traces**: Both services emit OpenTelemetry spans. Jaeger collects and stores traces. Trace IDs
-  are propagated in HTTP headers (`traceparent`) and NATS message metadata.
+  Grafana Alloy. Log queries use LogQL.
+- **Traces**: Both services emit OpenTelemetry spans to Grafana Alloy. Alloy forwards traces to
+  Jaeger for local storage and inspection. Trace IDs are propagated in HTTP headers
+  (`traceparent`) and NATS message metadata.
 
 Sentry (`getsentry/sentry-go`) is used for error capture and alerting on unhandled panics.
 

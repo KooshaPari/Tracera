@@ -66,28 +66,6 @@ start_postgres() {
     fi
 }
 
-start_redis() {
-    print_info "Starting Redis..."
-
-    # Check if already running
-    if redis-cli ping &> /dev/null; then
-        print_success "Redis is already running"
-        return 0
-    fi
-
-    # Start Redis in background
-    redis-server --daemonize yes
-
-    sleep 1
-
-    if redis-cli ping &> /dev/null; then
-        print_success "Redis started"
-    else
-        print_error "Failed to start Redis"
-        exit 1
-    fi
-}
-
 start_nats() {
     print_info "Starting NATS..."
 
@@ -369,9 +347,24 @@ start_frontend() {
 }
 
 start_all_deps() {
-    print_info "Starting all dependencies (PostgreSQL, Redis, NATS)..."
+    print_info "Starting all dependencies (PostgreSQL, Dragonfly, NATS)..."
     start_postgres
-    start_redis
+    print_info "Starting Dragonfly cache runtime..."
+
+    if redis-cli ping &> /dev/null; then
+        print_success "Cache runtime is already running"
+    else
+        REDIS_COMPAT_PROVIDER=dragonfly bash "$SCRIPT_DIR/redis-if-not-running.sh" &
+        DRAGONFLY_PID=$!
+        sleep 3
+
+        if redis-cli ping &> /dev/null; then
+            print_success "Dragonfly started (PID: $DRAGONFLY_PID)"
+        else
+            print_error "Failed to start Dragonfly"
+            exit 1
+        fi
+    fi
     start_nats
     print_success "All dependencies started"
     echo ""
@@ -381,65 +374,13 @@ start_all_deps() {
     echo "  Terminal 3: ./scripts/start-services.sh frontend"
 }
 
-# Install and start all infra via Homebrew (for rtm dev start preflight)
-brew_infra() {
-    print_info "Installing and starting TraceRTM infra via Homebrew..."
-
-    if ! command -v brew &> /dev/null; then
-        print_error "Homebrew required. Install from https://brew.sh"
-        exit 1
-    fi
-
-    # Tap for MinIO
-    brew tap minio/minio 2>/dev/null || true
-
-    # Install PostgreSQL (try @17 then @14 then default)
-    for pg in postgresql@17 postgresql@14 postgresql; do
-        if brew list "$pg" &> /dev/null; then break; fi
-        print_info "Installing $pg (brew install $pg)..."
-        brew install "$pg" 2>/dev/null && break || true
-    done
-    for formula in redis nats-server neo4j temporal minio; do
-        if ! brew list "$formula" &> /dev/null; then
-            print_info "Installing $formula (brew install $formula)..."
-            brew install "$formula" || { print_warning "Install failed for $formula"; continue; }
-        fi
-    done
-
-    print_info "Starting services (brew services start)..."
-    brew services start postgresql@17 2>/dev/null || brew services start postgresql@14 2>/dev/null || brew services start postgresql 2>/dev/null || true
-    brew services start redis 2>/dev/null || true
-    brew services start nats-server 2>/dev/null || true
-    brew services start neo4j 2>/dev/null || true
-    brew services start temporal 2>/dev/null || true
-    brew services start minio 2>/dev/null || true
-
-    print_success "Homebrew services started. Waiting for ports..."
-    for i in $(seq 1 30); do
-        sleep 0.5
-        pg_ok=0; redis_ok=0; nats_ok=0; neo4j_ok=0
-        pg_isready -q 2>/dev/null && pg_ok=1
-        redis-cli ping &> /dev/null && redis_ok=1
-        lsof -Pi :4222 -sTCP:LISTEN -t &> /dev/null && nats_ok=1
-        lsof -Pi :7687 -sTCP:LISTEN -t &> /dev/null && neo4j_ok=1
-        if [ "$pg_ok" = 1 ] && [ "$redis_ok" = 1 ] && [ "$nats_ok" = 1 ] && [ "$neo4j_ok" = 1 ]; then
-            print_success "PostgreSQL, Redis, NATS, Neo4j are ready."
-            break
-        fi
-    done
-
-    echo ""
-    print_info "Ensure .env at repo root has: REDIS_URL=redis://localhost:6379, NATS_URL=nats://localhost:4222, NEO4J_URI=neo4j://localhost:7687, TEMPORAL_HOST=localhost:7233, TEMPORAL_NAMESPACE=default"
-    print_info "Then run: rtm dev start -q"
-}
-
 stop_all() {
     print_info "Stopping all services..."
 
-    # Stop Redis
+    # Stop cache runtime
     if redis-cli ping &> /dev/null; then
         redis-cli shutdown
-        print_success "Redis stopped"
+        print_success "Cache runtime stopped"
     fi
 
     # Stop NATS
@@ -463,7 +404,7 @@ show_usage() {
     echo ""
     echo "Services:"
     echo "  postgres          - Start PostgreSQL database"
-    echo "  redis             - Start Redis cache"
+    echo "  dragonfly         - Start Dragonfly cache runtime"
     echo "  nats              - Start NATS message broker"
     echo "  neo4j             - Start Neo4j graph DB (port 7687, Homebrew)"
     echo "  minio             - Start MinIO S3-compatible storage (port 9000, Homebrew)"
@@ -472,7 +413,7 @@ show_usage() {
     echo "  go-backend        - Start Go backend (port 8080)"
     echo "  python-backend   - Start Python backend (port 8000)"
     echo "  frontend         - Start frontend web app (port 3000)"
-    echo "  deps              - Start all dependencies (PostgreSQL, Redis, NATS)"
+    echo "  deps              - Start all dependencies (PostgreSQL, Dragonfly, NATS)"
     echo "  stop              - Stop all services"
     echo ""
     echo "Examples:"
@@ -496,8 +437,21 @@ case $SERVICE in
     postgres)
         start_postgres
         ;;
-    redis)
-        start_redis
+    dragonfly)
+        print_info "Starting Dragonfly cache runtime..."
+        if redis-cli ping &> /dev/null; then
+            print_success "Cache runtime is already running"
+        else
+            REDIS_COMPAT_PROVIDER=dragonfly bash "$SCRIPT_DIR/redis-if-not-running.sh" &
+            DRAGONFLY_PID=$!
+            sleep 3
+            if redis-cli ping &> /dev/null; then
+                print_success "Dragonfly started (PID: $DRAGONFLY_PID)"
+            else
+                print_error "Failed to start Dragonfly"
+                exit 1
+            fi
+        fi
         ;;
     nats)
         start_nats
@@ -506,7 +460,7 @@ case $SERVICE in
         start_neo4j
         ;;
     brew-infra)
-        brew_infra
+        bash "$SCRIPT_DIR/brew-infra.sh"
         ;;
     minio)
         start_minio

@@ -1,7 +1,9 @@
 # Core databases
 brew "postgresql@17"
-brew "redis"
 brew "neo4j"
+
+# Dragonfly is the default Redis-compatible runtime. Install the native binary
+# from Dragonfly docs or let scripts/shell/redis-if-not-running.sh use Docker.
 
 # Message broker
 brew "nats-server"
@@ -15,6 +17,10 @@ brew "caddy"
 # Monitoring stack
 brew "prometheus"
 brew "grafana"
+# Grafana Alloy conflicts with alloy-analyzer because both own an `alloy` binary.
+# If `brew install grafana-alloy` is unavailable in your environment, install the
+# official Grafana release binary as `~/.local/bin/grafana-alloy`.
+# brew "grafana-alloy"
 
 # Exporters
 brew "node_exporter"

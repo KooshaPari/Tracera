@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -10,7 +9,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -30,7 +28,6 @@ const (
 
 const (
 	notificationBufferSize = 100
-	notificationRetryDelay = 1 * time.Second
 )
 
 // Notification represents a user notification
@@ -54,24 +51,29 @@ type NotificationEvent struct {
 	Timestamp    int64        `json:"timestamp"`
 }
 
+type notificationEventBus interface {
+	PublishNotification(ctx context.Context, userID string, event *NotificationEvent) error
+	SubscribeNotifications(ctx context.Context, handler func(*NotificationEvent)) (func() error, error)
+}
+
 // NotificationService handles notification creation and broadcasting
 type NotificationService struct {
 	db          *gorm.DB
-	redis       *redis.Client
+	eventBus    notificationEventBus
 	pubSubMu    sync.RWMutex
 	subscribers map[string]map[string]chan *NotificationEvent // userID -> subscriberID -> channel
+	unsubscribe func() error
 }
 
 // NewNotificationService creates a new notification service
-func NewNotificationService(db *gorm.DB, redisClient *redis.Client) *NotificationService {
+func NewNotificationService(db *gorm.DB, eventBus notificationEventBus) *NotificationService {
 	ns := &NotificationService{
 		db:          db,
-		redis:       redisClient,
+		eventBus:    eventBus,
 		subscribers: make(map[string]map[string]chan *NotificationEvent),
 	}
 
-	// Start Redis pub/sub listener
-	go ns.startRedisPubSubListener()
+	ns.startEventBusListener(context.Background())
 
 	return ns
 }
@@ -100,7 +102,7 @@ func (ns *NotificationService) Create(
 		return nil, fmt.Errorf("failed to create notification: %w", err)
 	}
 
-	// Broadcast via Redis pub/sub
+	// Broadcast through NATS so every backend instance can fan out to local SSE subscribers.
 	if err := ns.broadcastNotification(ctx, notification); err != nil {
 		slog.Error("Warning: Failed to broadcast notification", "error", err)
 	}
@@ -253,7 +255,7 @@ func (ns *NotificationService) Unsubscribe(userID, subscriberID string) {
 	}
 }
 
-// broadcastNotification broadcasts a notification via Redis pub/sub
+// broadcastNotification broadcasts a notification through the configured event bus
 func (ns *NotificationService) broadcastNotification(ctx context.Context, notification *Notification) error {
 	event := &NotificationEvent{
 		Type:         "notification",
@@ -265,63 +267,37 @@ func (ns *NotificationService) broadcastNotification(ctx context.Context, notifi
 	return ns.broadcastEvent(ctx, notification.UserID, event)
 }
 
-// broadcastEvent broadcasts an event via Redis pub/sub
+// broadcastEvent broadcasts an event through NATS and to local subscribers
 func (ns *NotificationService) broadcastEvent(ctx context.Context, userID string, event *NotificationEvent) error {
-	if ns.redis == nil {
-		// Fallback to local broadcasting only
+	if ns.eventBus == nil {
 		ns.broadcastToLocalSubscribers(userID, event)
 		return nil
 	}
 
-	data, err := json.Marshal(event)
-	if err != nil {
-		return fmt.Errorf("failed to marshal notification event: %w", err)
-	}
-
-	channel := "notifications:" + userID
-	if err := ns.redis.Publish(ctx, channel, data).Err(); err != nil {
-		return fmt.Errorf("failed to publish to Redis: %w", err)
+	if err := ns.eventBus.PublishNotification(ctx, userID, event); err != nil {
+		return fmt.Errorf("failed to publish notification event: %w", err)
 	}
 
 	return nil
 }
 
-// startRedisPubSubListener starts listening to Redis pub/sub for notifications
-func (ns *NotificationService) startRedisPubSubListener() {
-	if ns.redis == nil {
-		slog.Warn("Redis not configured, skipping pub/sub listener")
+// startEventBusListener starts listening for notification events from NATS.
+func (ns *NotificationService) startEventBusListener(ctx context.Context) {
+	if ns.eventBus == nil {
+		slog.Warn("NATS notification bus not configured, using local-only notifications")
 		return
 	}
 
-	ctx := context.Background()
-
-	// Subscribe to notification pattern (all user channels)
-	pubsub := ns.redis.PSubscribe(ctx, "notifications:*")
-	defer func() {
-		if err := pubsub.Close(); err != nil {
-			slog.Warn("failed to close pubsub", "error", err)
-		}
-	}()
-
-	slog.Info("Notification service: Redis pub/sub listener started")
-
-	for {
-		msg, err := pubsub.ReceiveMessage(ctx)
-		if err != nil {
-			slog.Error("Error receiving Redis message", "error", err)
-			time.Sleep(notificationRetryDelay)
-			continue
-		}
-
-		var event NotificationEvent
-		if err := json.Unmarshal([]byte(msg.Payload), &event); err != nil {
-			slog.Error("Error unmarshaling notification event", "error", err)
-			continue
-		}
-
-		// Broadcast to local subscribers
-		ns.broadcastToLocalSubscribers(event.UserID, &event)
+	unsubscribe, err := ns.eventBus.SubscribeNotifications(ctx, func(event *NotificationEvent) {
+		ns.broadcastToLocalSubscribers(event.UserID, event)
+	})
+	if err != nil {
+		slog.Error("failed to subscribe to NATS notification events", "error", err)
+		return
 	}
+
+	ns.unsubscribe = unsubscribe
+	slog.Info("Notification service: NATS notification listener started")
 }
 
 // broadcastToLocalSubscribers broadcasts to local SSE subscribers
@@ -359,5 +335,17 @@ func (ns *NotificationService) CleanupExpired(ctx context.Context) error {
 		slog.Info("Cleaned up expired notifications", "value", result.RowsAffected)
 	}
 
+	return nil
+}
+
+// Close releases notification event-bus subscriptions.
+func (ns *NotificationService) Close() error {
+	if ns.unsubscribe == nil {
+		return nil
+	}
+	if err := ns.unsubscribe(); err != nil {
+		return fmt.Errorf("failed to unsubscribe from notification events: %w", err)
+	}
+	ns.unsubscribe = nil
 	return nil
 }

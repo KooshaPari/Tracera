@@ -1,121 +1,21 @@
+> Historical note: this document now records the old APM rollout only. The live
+> tracing path uses the shared collector, Grafana Alloy, Loki, and Grafana
+> Tempo.
+
 # APM Integration Summary
 
-**Task #82 - Application Performance Monitoring Integration** ✅ **COMPLETE**
+This is an archival summary of the original observability rollout. Use the
+current observability guides for active setup and troubleshooting.
 
-## What Was Delivered
+## Historical Record
 
-Comprehensive Application Performance Monitoring (APM) solution for TraceRTM using:
-- **OpenTelemetry** for instrumentation
-- **Jaeger** for distributed tracing
-- **Grafana** for visualization
-
-## Quick Start
-
-### 1. Enable Tracing
-
-Add to your `.env`:
-```bash
-TRACING_ENABLED=true
-JAEGER_ENDPOINT=localhost:4317
-TRACING_ENVIRONMENT=development
-```
-
-### 2. Install Dependencies
-
-```bash
-# Python backend
-cd src && pip install -e ".[observability]"
-
-# Go backend (already installed)
-cd backend && go mod download
-```
-
-### 3. Start Services
-
-```bash
-make dev
-# or
-make dev-tui
-```
-
-### 4. Access APM Tools
-
-- **Jaeger UI**: http://localhost:16686 - Search and view traces
-- **Grafana Dashboards**: http://localhost:3001
-  - APM Performance (response times, throughput, cache metrics)
-  - Distributed Tracing (trace analysis, error rates)
-
-## Key Features
-
-### ✅ Distributed Tracing
-- Automatic HTTP request/response tracing
-- Cross-service trace propagation (W3C Trace Context)
-- Database query tracing with performance metrics
-- External API call monitoring
-- Custom span creation for business logic
-
-### ✅ Performance Metrics
-- Response time percentiles (p50, p95, p99)
-- Request throughput and success rates
-- Database operation rates and latency
-- Cache hit rates and latency
-- External API call performance
-
-### ✅ Instrumentation
-
-**Python Backend**:
-```python
-# Automatic - already configured
-# FastAPI, SQLAlchemy, HTTP clients, Redis
-
-# Custom tracing
-from tracertm.observability import trace_method
-
-@trace_method(span_name="process_data")
-async def process_data(data: dict) -> Result:
-    return result
-```
-
-**Go Backend**:
-```go
-// Automatic HTTP tracing - already configured
-
-// Database tracing
-import "github.com/kooshapari/tracertm-backend/internal/tracing"
-
-ctx, dbSpan := tracing.StartDBSpan(ctx, tracing.dbOperationSelect, "items")
-defer dbSpan.End()
-dbSpan.SetQuery("SELECT * FROM items WHERE id = $1")
-```
-
-### ✅ Grafana Dashboards
-
-Two pre-configured dashboards:
-
-1. **APM Performance**:
-   - API response times by backend
-   - Request rates by endpoint
-   - Success rate gauges
-   - Database operations
-   - Cache performance
-
-2. **Distributed Tracing**:
-   - Trace collection rates
-   - Span duration percentiles
-   - Error rates
-   - Top endpoints
-   - Database and external API performance
-
-## Files Created
-
-### Source Code
-- `src/tracertm/observability/__init__.py`
-- `src/tracertm/observability/tracing.py`
-- `src/tracertm/observability/instrumentation.py`
-- `backend/internal/tracing/database.go`
+- OpenTelemetry instrumentation was added for Go and Python.
+- The earlier Jaeger-based trace viewer has been replaced by Tempo.
+- Grafana dashboards and structured logging were added as part of the broader
+  observability rollout.
 
 ### Configuration
-- `monitoring/grafana/provisioning/datasources/jaeger.yml`
+- `deploy/monitoring/grafana/provisioning/datasources/tempo.yml` (current)
 - Updated `.env.example` with tracing variables
 
 ### Dashboards
@@ -142,7 +42,7 @@ bash scripts/verify-apm-integration.sh
 This checks:
 - Environment configuration
 - Python and Go modules
-- Jaeger configuration
+- Legacy Jaeger configuration
 - Grafana dashboards
 - Documentation
 - Dependencies
@@ -157,7 +57,7 @@ Minimal overhead:
 
 Optimizations:
 - Batch span processing (5-second intervals)
-- Async export to Jaeger
+- Async export to legacy Jaeger
 - Configurable sampling rates
 - Efficient OTLP protocol
 
@@ -222,7 +122,7 @@ Comprehensive documentation provided:
    ```
 
 4. **View Results**:
-   - Jaeger: http://localhost:16686
+   - Legacy Jaeger UI: http://localhost:16686
    - Grafana: http://localhost:3001
 
 ### Recommended Enhancements:

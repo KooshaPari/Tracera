@@ -212,10 +212,10 @@ docker-compose exec redis redis-cli --scan --pattern "cache:*" | xargs docker-co
 curl 'http://localhost:9090/api/v1/query?query=up'
 
 # View traces
-open http://localhost:16686
+open http://localhost:3000/explore
 
 # Grafana dashboards
-open http://localhost:3001
+open http://localhost:3000
 ```
 
 ## Escalation Path
@@ -283,7 +283,7 @@ Prevention: [Follow-up tasks]
 - **Runbooks**: `docs/runbooks/`
 - **Monitoring**: http://localhost:3001 (Grafana)
 - **Metrics**: http://localhost:9090 (Prometheus)
-- **Traces**: http://localhost:16686 (Jaeger)
+- **Traces**: shared Phenotype tracing via Grafana Tempo
 - **Deployment Guide**: `docs/guides/DEPLOYMENT_GUIDE.md`
 - **Architecture**: `docs/01-getting-started/README.md`
 

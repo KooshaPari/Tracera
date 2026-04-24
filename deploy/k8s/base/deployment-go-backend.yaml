@@ -107,8 +107,10 @@ spec:
           value: "http://python-backend:8000"
         - name: TRACING_ENABLED
           value: "true"
-        - name: JAEGER_ENDPOINT
-          value: "jaeger:4317"
+        - name: TRACING_ENVIRONMENT
+          value: "production"
+        - name: PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT
+          value: "tempo:4317"
 
         # Resource Requests & Limits
         resources:
