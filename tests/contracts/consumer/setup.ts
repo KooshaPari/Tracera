@@ -4,10 +4,15 @@
  * Configures Pact mock server for consumer contract tests.
  */
 
-import { Pact, MatchersV3 } from '@pact-foundation/pact';
+import { PactV2 as Pact, MatchersV3 } from '@pact-foundation/pact';
 import path from 'path';
 
-const { like, eachLike, regex, integer, decimal, iso8601DateTime, uuid } = MatchersV3;
+const { like, eachLike, regex, integer, decimal, uuid } = MatchersV3;
+const iso8601DateTime = () =>
+  regex({
+    generate: '2024-01-01T00:00:00.000Z',
+    matcher: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z$',
+  });
 
 // Export matchers for use in tests
 export { like, eachLike, regex, integer, decimal, iso8601DateTime, uuid };
@@ -171,7 +176,7 @@ export const providerStates = {
  */
 export const testData = {
   user: {
-    id: uuid('user-123'),
+    id: uuid('11111111-1111-4111-8111-111111111111'),
     email: like('user@example.com'),
     name: like('Test User'),
     createdAt: iso8601DateTime(),
@@ -179,7 +184,7 @@ export const testData = {
   },
 
   project: {
-    id: uuid('project-123'),
+    id: uuid('22222222-2222-4222-8222-222222222222'),
     name: like('Test Project'),
     description: like('Test project description'),
     status: like('active'),
@@ -188,8 +193,8 @@ export const testData = {
   },
 
   item: {
-    id: uuid('item-123'),
-    projectId: uuid('project-123'),
+    id: uuid('33333333-3333-4333-8333-333333333333'),
+    projectId: uuid('22222222-2222-4222-8222-222222222222'),
     type: like('requirement'),
     title: like('Test Item'),
     description: like('Test item description'),
@@ -199,9 +204,9 @@ export const testData = {
   },
 
   link: {
-    id: uuid('link-123'),
-    sourceId: uuid('item-123'),
-    targetId: uuid('item-456'),
+    id: uuid('77777777-7777-4777-8777-777777777777'),
+    sourceId: uuid('33333333-3333-4333-8333-333333333333'),
+    targetId: uuid('44444444-4444-4444-8444-444444444444'),
     linkType: like('implements'),
     createdAt: iso8601DateTime(),
     updatedAt: iso8601DateTime(),

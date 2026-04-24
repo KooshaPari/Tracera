@@ -52,7 +52,7 @@ describe('Authentication Contract Tests', () => {
           refreshToken: like('refresh-token-abc123'),
           expiresAt: iso8601DateTime(),
           user: {
-            id: uuid('user-123'),
+            id: uuid('11111111-1111-4111-8111-111111111111'),
             email: like('user@example.com'),
             name: like('Test User'),
             role: like('user'),
@@ -192,7 +192,7 @@ describe('Authentication Contract Tests', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          id: uuid('user-123'),
+          id: uuid('11111111-1111-4111-8111-111111111111'),
           email: like('user@example.com'),
           name: like('Test User'),
           role: like('user'),
@@ -308,7 +308,7 @@ describe('Authentication Contract Tests', () => {
         },
         willRespondWith: standardResponse({
           valid: like(true),
-          userId: uuid('user-123'),
+          userId: uuid('11111111-1111-4111-8111-111111111111'),
           expiresAt: iso8601DateTime(),
         }),
       });

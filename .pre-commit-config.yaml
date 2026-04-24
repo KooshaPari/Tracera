@@ -131,7 +131,14 @@ repos:
     hooks:
       - id: no-new-todos
         name: No new TODO/FIXME
-        entry: bash -c 'git diff --cached --unified=0 | grep "^\+" | grep -E "TODO|FIXME" && echo "ERROR: New TODO/FIXME detected — open a GitHub Issue instead" && exit 1 || exit 0'
+        entry: bash
+        args:
+          - -c
+          - |
+            if git diff --cached --unified=0 | grep "^\+" | grep -E "TODO|FIXME"; then
+              echo "ERROR: New TODO/FIXME detected - open a GitHub Issue instead"
+              exit 1
+            fi
         language: system
         pass_filenames: false
         stages: [pre-commit]

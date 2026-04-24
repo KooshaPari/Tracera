@@ -5,7 +5,7 @@ export function createSiteMeta({ base = '/' } = {}) {
     description: 'trace documentation',
     themeConfig: {
       nav: [
-        { text: 'Home', link: base || '/' },
+        { text: 'Home', link: '/' },
         { text: 'Wiki', link: '/wiki/' },
         { text: 'Development Guide', link: '/development/' },
         { text: 'Document Index', link: '/index/' },

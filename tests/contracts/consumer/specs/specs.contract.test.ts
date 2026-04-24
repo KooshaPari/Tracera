@@ -47,7 +47,7 @@ describe('Specifications Contract Tests', () => {
           },
         },
         willRespondWith: standardResponse({
-          id: uuid('spec-123'),
+          id: uuid('ffffffff-ffff-4fff-8fff-ffffffffffff'),
           text: like('The system SHALL provide user authentication'),
           analysis: {
             earsPattern: like('Ubiquitous'),

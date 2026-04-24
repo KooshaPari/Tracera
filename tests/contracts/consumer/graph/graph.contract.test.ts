@@ -47,7 +47,7 @@ describe('Graph Analysis Contract Tests', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          projectId: uuid('project-123'),
+          projectId: uuid('22222222-2222-4222-8222-222222222222'),
           metrics: {
             nodeCount: integer(50),
             edgeCount: integer(120),
@@ -84,9 +84,9 @@ describe('Graph Analysis Contract Tests', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          projectId: uuid('project-123'),
+          projectId: uuid('22222222-2222-4222-8222-222222222222'),
           centrality: eachLike({
-            nodeId: uuid('item-123'),
+            nodeId: uuid('33333333-3333-4333-8333-333333333333'),
             degree: integer(5),
             betweenness: decimal(0.15),
             closeness: decimal(0.22),
@@ -120,9 +120,9 @@ describe('Graph Analysis Contract Tests', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          projectId: uuid('project-123'),
+          projectId: uuid('22222222-2222-4222-8222-222222222222'),
           cycles: eachLike({
-            nodes: eachLike(uuid('item-123')),
+            nodes: eachLike(uuid('33333333-3333-4333-8333-333333333333')),
             length: integer(3),
           }),
           hasCycles: like(true),
@@ -155,9 +155,9 @@ describe('Graph Analysis Contract Tests', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          from: uuid('item-123'),
-          to: uuid('item-456'),
-          path: eachLike(uuid('item-123')),
+          from: uuid('33333333-3333-4333-8333-333333333333'),
+          to: uuid('44444444-4444-4444-8444-444444444444'),
+          path: eachLike(uuid('33333333-3333-4333-8333-333333333333')),
           length: integer(3),
           exists: like(true),
         }),
@@ -187,8 +187,8 @@ describe('Graph Analysis Contract Tests', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          from: uuid('item-123'),
-          to: uuid('item-999'),
+          from: uuid('33333333-3333-4333-8333-333333333333'),
+          to: uuid('66666666-6666-4666-8666-666666666666'),
           path: [],
           exists: like(false),
         }),
@@ -219,9 +219,9 @@ describe('Graph Analysis Contract Tests', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          itemId: uuid('item-123'),
+          itemId: uuid('33333333-3333-4333-8333-333333333333'),
           dependencies: eachLike({
-            id: uuid('item-456'),
+            id: uuid('44444444-4444-4444-8444-444444444444'),
             type: like('depends-on'),
             depth: integer(1),
           }),
@@ -254,9 +254,9 @@ describe('Graph Analysis Contract Tests', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          itemId: uuid('item-123'),
+          itemId: uuid('33333333-3333-4333-8333-333333333333'),
           dependents: eachLike({
-            id: uuid('item-789'),
+            id: uuid('55555555-5555-4555-8555-555555555555'),
             type: like('implemented-by'),
             depth: integer(1),
           }),
@@ -289,11 +289,11 @@ describe('Graph Analysis Contract Tests', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          itemId: uuid('item-123'),
+          itemId: uuid('33333333-3333-4333-8333-333333333333'),
           impactedItems: eachLike({
-            id: uuid('item-789'),
+            id: uuid('55555555-5555-4555-8555-555555555555'),
             impactLevel: like('high'),
-            path: eachLike(uuid('item-456')),
+            path: eachLike(uuid('44444444-4444-4444-8444-444444444444')),
           }),
           summary: {
             high: integer(3),
@@ -328,7 +328,7 @@ describe('Graph Analysis Contract Tests', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          projectId: uuid('project-123'),
+          projectId: uuid('22222222-2222-4222-8222-222222222222'),
           coverage: {
             overall: decimal(0.85),
             byType: {
@@ -338,7 +338,7 @@ describe('Graph Analysis Contract Tests', () => {
             },
           },
           uncoveredItems: eachLike({
-            id: uuid('item-789'),
+            id: uuid('55555555-5555-4555-8555-555555555555'),
             type: like('requirement'),
             title: like('Uncovered Requirement'),
           }),
