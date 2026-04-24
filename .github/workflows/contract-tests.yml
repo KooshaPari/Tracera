@@ -22,6 +22,7 @@ env:
   TEST_DB_USER: postgres
   TEST_DB_PASSWORD: postgres
   TEST_DB_NAME: tracertm_test
+  DB_DIRECT_URL: postgres://postgres:postgres@localhost:5432/tracertm_test?sslmode=disable
 
 jobs:
   consumer-tests:
@@ -115,7 +116,7 @@ jobs:
           ./scripts/run-provider-tests.sh
 
       - name: Publish verification results
-        if: always()
+        if: always() && hashFiles('backend/test-results/*.xml') != ''
         uses: dorny/test-reporter@v1
         with:
           name: Provider Verification Tests
