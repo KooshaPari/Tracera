@@ -126,9 +126,126 @@ category: ai
 
 ---
 
-**Total Story Points:** 26 points (3 FRs)
+## FR-TRAC-004: Alerting System
+
+---
+id: FR-TRAC-004
+title: Alerting System
+status: draft
+priority: P1
+category: ops
+---
+
+### User Story
+
+**As a** platform engineer,  
+**I want** to receive actionable alerts for failing trace or governance conditions,  
+**So that** I can respond before issues affect users.
+
+### Acceptance Criteria
+
+- [ ] **AC-1**: Alert rules can be configured by threshold and condition
+- [ ] **AC-2**: Alerts can notify Slack, email, or PagerDuty
+- [ ] **AC-3**: Alert noise is deduplicated within a suppression window
+- [ ] **AC-4**: Alert history is queryable from the UI and API
+- [ ] **AC-5**: Alerts include requirement, trace, and deployment context
+
+### Story Points
+
+**8 points**
+
+### Work Packages
+
+| WP ID | Description | Owner | Points |
+|-------|-------------|-------|--------|
+| WP-TRAC-004-1 | Alert rule model | @dev-1 | 3 |
+| WP-TRAC-004-2 | Notification adapters | @dev-2 | 3 |
+| WP-TRAC-004-3 | Alert history UI | @dev-3 | 2 |
+
+---
+
+## FR-TRAC-005: Historical Search
+
+---
+id: FR-TRAC-005
+title: Historical Search
+status: draft
+priority: P1
+category: core
+---
+
+### User Story
+
+**As a** developer,  
+**I want** to search historical traces, requirements, and linked events across time,  
+**So that** I can understand regressions and long-lived changes.
+
+### Acceptance Criteria
+
+- [ ] **AC-1**: Search supports trace ID, requirement ID, file path, and commit SHA
+- [ ] **AC-2**: Search results can be filtered by date range and project
+- [ ] **AC-3**: Historical search is indexed for sub-second response on common queries
+- [ ] **AC-4**: Search preserves audit-safe access control boundaries
+- [ ] **AC-5**: Users can export historical search results
+
+### Story Points
+
+**5 points**
+
+### Work Packages
+
+| WP ID | Description | Owner | Points |
+|-------|-------------|-------|--------|
+| WP-TRAC-005-1 | Historical index model | @dev-4 | 2 |
+| WP-TRAC-005-2 | Search API filters | @dev-1 | 2 |
+| WP-TRAC-005-3 | Export pipeline | @dev-2 | 1 |
+
+---
+
+## FR-TRAC-006: Custom Dashboards
+
+---
+id: FR-TRAC-006
+title: Custom Dashboards
+status: draft
+priority: P2
+category: frontend
+---
+
+### User Story
+
+**As a** team lead,  
+**I want** configurable dashboards for traceability, quality, and observability signals,  
+**So that** I can monitor the health of the system at a glance.
+
+### Acceptance Criteria
+
+- [ ] **AC-1**: Dashboards can compose widgets from saved queries
+- [ ] **AC-2**: Dashboard layouts are persistable per project and user
+- [ ] **AC-3**: Widgets support coverage, latency, and alert summaries
+- [ ] **AC-4**: Dashboards can be shared with read-only links
+- [ ] **AC-5**: Dashboard definitions are exportable and importable
+
+### Story Points
+
+**3 points**
+
+### Work Packages
+
+| WP ID | Description | Owner | Points |
+|-------|-------------|-------|--------|
+| WP-TRAC-006-1 | Dashboard schema | @dev-3 | 1 |
+| WP-TRAC-006-2 | Widget renderer | @dev-4 | 1 |
+| WP-TRAC-006-3 | Share/import flow | @dev-2 | 1 |
+
+---
+
+**Total Story Points:** 42 points (6 FRs)
 
 **Sprint Allocation:**
 - Sprint 1: FR-TRAC-001 (5 pts)
 - Sprint 2: FR-TRAC-002 (8 pts)
 - Sprint 3-4: FR-TRAC-003 (13 pts)
+- Sprint 5: FR-TRAC-004 (8 pts)
+- Sprint 6: FR-TRAC-005 (5 pts)
+- Sprint 7: FR-TRAC-006 (3 pts)
