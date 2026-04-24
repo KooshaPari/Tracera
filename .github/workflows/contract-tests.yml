@@ -68,6 +68,7 @@ jobs:
     name: Provider Contract Verification
     runs-on: ubuntu-latest
     needs: consumer-tests
+    if: github.event_name != 'pull_request'
 
     services:
       postgres:
