@@ -3,8 +3,22 @@ name: Comprehensive Test Validation
 on:
   push:
     branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'Makefile'
+      - 'package.json'
+      - 'bun.lock'
+      - 'uv.lock'
   pull_request:
     branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'Makefile'
+      - 'package.json'
+      - 'bun.lock'
+      - 'uv.lock'
 
 jobs:
   setup-test-users:
@@ -16,7 +30,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           cache: 'npm'
-        with:
           node-version: '20'
 
       - uses: actions/setup-go@v4
@@ -40,7 +53,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           cache: 'npm'
-        with:
           node-version: '20'
 
       - name: Install bun
@@ -81,7 +93,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           cache: 'npm'
-        with:
           node-version: '20'
 
       - name: Install bun
@@ -204,10 +215,10 @@ jobs:
 
           | Suite | Status |
           |-------|--------|
-          | Frontend E2E (Playwright) | ${{ job.test-frontend-e2e.status }} |
-          | Frontend API (Vitest) | ${{ job.test-frontend-api.status }} |
-          | Backend Go | ${{ job.test-backend-go.status }} |
-          | Backend Python | ${{ job.test-backend-python.status }} |
+          | Frontend E2E (Playwright) | ${{ needs.test-frontend-e2e.result }} |
+          | Frontend API (Vitest) | ${{ needs.test-frontend-api.result }} |
+          | Backend Go | ${{ needs.test-backend-go.result }} |
+          | Backend Python | ${{ needs.test-backend-python.result }} |
 
           ## Artifacts
 
