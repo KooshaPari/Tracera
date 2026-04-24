@@ -1,0 +1,126 @@
+# Tracera .gitignore
+# ==========================================================================
+# Python
+# ==========================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+*.egg-info/
+*.egg
+.eggs/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.hypothesis/
+pip-log.txt
+pip-delete-this-directory.txt
+alembic/versions/__pycache__/
+alembic/versions/*.pyc
+
+# ==========================================================================
+# Node / TypeScript / Frontend
+# ==========================================================================
+node_modules/
+.next/
+.turbo/
+.cache/
+.parcel-cache/
+.vite/
+*.tsbuildinfo
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.log
+.yarn/install-state.gz
+.pnpm-store/
+.eslintcache
+.stylelintcache
+out/
+
+# ==========================================================================
+# Build artifacts (language-agnostic)
+# ==========================================================================
+dist/
+build/
+target/
+
+# ==========================================================================
+# Go
+# ==========================================================================
+# vendor/ - intentionally NOT ignored; Tracera backend may commit vendor
+*.test
+*.out
+
+# ==========================================================================
+# IDE / Editor / OS
+# ==========================================================================
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+*.bak
+*.tmp
+*~
+.serena/
+
+# ==========================================================================
+# Logs
+# ==========================================================================
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================================================================
+# Environment / secrets
+# ==========================================================================
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+
+# ==========================================================================
+# CI / coverage artifacts
+# ==========================================================================
+coverage/
+.nyc_output/
+lcov.info
+junit.xml
+*.lcov
+
+# ==========================================================================
+# Framework-specific
+# ==========================================================================
+.streamlit/secrets.toml
+.jupyter/
+.ipynb_checkpoints/
+
+# ==========================================================================
+# Tracera-specific
+# ==========================================================================
+artifacts/
+temp/
+vault.test
+violation-summary.txt

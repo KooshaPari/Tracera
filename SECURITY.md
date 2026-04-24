@@ -1,52 +1,38 @@
-# Security Policy - Tracera
+# Security Policy 🔐
 
 ## Supported Versions
 
-| Version | Supported |
-|---------|-----------|
-| Latest  | ✅ |
-| Previous| ⚠️ Best effort |
+We provide security updates for the following versions of **TracerTM**:
 
-## Reporting Vulnerabilities
+| Version | Supported          |
+| ------- | ------------------ |
+| v1.0.x  | :white_check_mark: |
+| < v1.0  | :x:                |
 
-Email: security@phenotype.io
+## Reporting a Vulnerability
 
-Please include:
-- Description of vulnerability
-- Steps to reproduce
-- Affected versions
-- Suggested fix (if known)
+We take the security of **TracerTM** seriously. If you discover a security vulnerability, please do NOT open a public issue. Instead, report it privately.
 
-## Security Measures
+Please report any security concerns directly to the maintainers at [kooshapari@gmail.com](mailto:kooshapari@gmail.com).
 
-### Authentication
-- Method: [OAuth/API Keys/etc]
-- Token expiration: [Duration]
+### What to include in your report
+- A detailed description of the vulnerability.
+- Steps to reproduce (proof of concept).
+- Potential impact on the system or user data.
+- Any suggested fixes or mitigations.
 
-### Authorization
-- RBAC: [Yes/No]
-- Permission levels: [List]
+We will acknowledge your report within 48 hours and provide a timeline for resolution.
 
-### Data Protection
-- Encryption at rest: [Method]
-- Encryption in transit: TLS 1.3
-- PII handling: [Policy]
+## Hardening & Governance Measures
 
-### Audit Logging
-- All access logged: [Yes/No]
-- Log retention: [Duration]
+**TracerTM** is designed for high-assurance environments:
 
-## Dependencies
+- **SLSA Provenance**: All builds produce tamper-evident quality records and attestations.
+- **Signed Quality Gates**: Every quality check (Ruff, Go vet, golangci-lint, TSC) must be signed to pass.
+- **Rekor Integration**: All attestations are logged to a transparency ledger for auditability.
+- **Boundary Enforcement**: `tach` Architectural boundaries prevent unintended dependency leakage.
+- **Credential Isolation**: All secrets are managed via HashiCorp Vault in production environments.
+- **Audit Trails**: Full traceability of system decisions via WebSocket-synced RTM updates.
 
-Security scanning via:
-- Snyk (FR-SEC-001)
-- Dependabot alerts
-- CI/CD security gates
-
-## Compliance
-
-- [ ] SOC 2
-- [ ] GDPR (if applicable)
-- [ ] HIPAA (if applicable)
-
-Last Updated: 2026-04-04
+---
+Thank you for helping keep the traceability ecosystem secure!

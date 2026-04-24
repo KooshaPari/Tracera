@@ -56,8 +56,8 @@ Deliver production-grade distributed tracing that is:
 
 | Platform | Ingestion Latency | Storage | AI Features | Open Source | Cost/Million Spans |
 |----------|-------------------|---------|-------------|-------------|-------------------|
-| **Jaeger** | 2-5ms | Cassandra/ES | ❌ | ✅ | $250 |
-| **Zipkin** | 3-7ms | MySQL/Cassandra | ❌ | ✅ | $310 |
+| **Legacy tracing baseline** | 2-5ms | Cassandra/ES | ❌ | ✅ | $250 |
+| **Legacy collector baseline** | 3-7ms | MySQL/Cassandra | ❌ | ✅ | $310 |
 | **AWS X-Ray** | 1-3ms | Proprietary | ✅ | ❌ | $500 |
 | **Datadog APM** | 1-2ms | Proprietary | ✅ | ❌ | $800 |
 | **New Relic** | 1-2ms | Proprietary | ✅ | ❌ | $750 |
@@ -74,14 +74,14 @@ Ingestion Latency Comparison (p99):
 Tracera:    ████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ <1ms
 X-Ray:      █████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 1-3ms
 Datadog:    █████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 1-2ms
-Jaeger:     ███████████████████████░░░░░░░░░░░░░░░░░░░░░ 2-5ms
-Zipkin:     █████████████████████████████████░░░░░░░░░ 3-7ms
+Legacy baseline: ███████████████████████░░░░░░░░░░░░░░░░░░░░░ 2-5ms
+Legacy collector: █████████████████████████████████░░░░░░░░░ 3-7ms
 ────────────────────────────────────────────────────────
 ```
 
 ### 1.3 Detailed Platform Analysis
 
-#### Jaeger (Uber)
+#### Legacy tracing baseline (Uber)
 
 The reference open-source tracing platform, battle-tested at Uber scale.
 
@@ -101,7 +101,7 @@ The reference open-source tracing platform, battle-tested at Uber scale.
 **Architecture**:
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ Jaeger Architecture                                      │
+│ Legacy tracing baseline Architecture                    │
 ├─────────────────────────────────────────────────────────┤
 │                                                          │
 │  Clients → Agent → Collector → Storage → Query → UI   │
@@ -116,14 +116,14 @@ The reference open-source tracing platform, battle-tested at Uber scale.
 
 **Performance Characteristics**:
 
-| Metric | Jaeger | Tracera | Improvement |
+| Metric | Legacy baseline | Tracera | Improvement |
 |--------|--------|---------|-------------|
 | Ingestion p99 | 5ms | 1ms | 5x |
 | Query latency | 200ms | 45ms | 4.4x |
 | Throughput | 50K/s | 500K/s | 10x |
 | Storage/1M spans | 250MB | 180MB | 1.4x |
 
-#### Zipkin (Twitter)
+#### Legacy collector baseline
 
 The original open-source distributed tracing system.
 
@@ -141,7 +141,7 @@ The original open-source distributed tracing system.
 
 **Comparison with Modern Systems**:
 
-| Feature | Zipkin | Jaeger | Tracera |
+| Feature | Legacy collector | Legacy baseline | Tracera |
 |---------|--------|--------|---------|
 | OpenTelemetry native | ❌ | ✅ | ✅ |
 | Dependency graph | ❌ | ✅ | ✅ |
@@ -601,15 +601,15 @@ wrk -t16 -c1000 -d60s \
 
 | System | p50 | p99 | Throughput | CPU |
 |--------|-----|-----|------------|-----|
-| Jaeger | 3ms | 5ms | 50K/s | 60% |
-| Zipkin | 5ms | 7ms | 30K/s | 55% |
+| Legacy baseline | 3ms | 5ms | 50K/s | 60% |
+| Legacy collector | 5ms | 7ms | 30K/s | 55% |
 | Tempo | 2ms | 4ms | 100K/s | 45% |
 | SigNoz | 2ms | 4ms | 100K/s | 50% |
 | **Tracera** | **0.5ms** | **1ms** | **500K/s** | **40%** |
 
 ### 6.3 Query Performance
 
-| Query Type | Jaeger | SigNoz | Tracera | Improvement |
+| Query Type | Legacy baseline | SigNoz | Tracera | Improvement |
 |------------|--------|--------|---------|-------------|
 | Trace by ID | 50ms | 30ms | 15ms | 3.3x |
 | Service traces | 200ms | 100ms | 45ms | 4.4x |
@@ -628,7 +628,7 @@ wrk -t16 -c1000 -d60s \
 
 ### 6.5 Resource Efficiency
 
-| Resource | Jaeger | SigNoz | Tracera | Savings |
+| Resource | Legacy baseline | SigNoz | Tracera | Savings |
 |----------|--------|--------|---------|---------|
 | RAM (1M spans/day) | 16GB | 8GB | 4GB | 75% |
 | CPU (ingestion) | 4 cores | 2 cores | 1 core | 75% |
@@ -928,7 +928,7 @@ try {
 
 ### 11.2 Scaling Costs
 
-| Spans/day | Jaeger | Datadog | Tracera | Savings |
+| Spans/day | Legacy baseline | Datadog | Tracera | Savings |
 |-------------|--------|---------|---------|---------|
 | 1M | $250 | $800 | $130 | 84% |
 | 5M | $1,250 | $3,500 | $450 | 87% |
@@ -973,8 +973,8 @@ try {
 
 ```
 [1] OpenTelemetry Specification - https://opentelemetry.io/docs
-[2] Jaeger Tracing - https://www.jaegertracing.io
-[3] Zipkin - https://zipkin.io
+[2] Legacy tracing baseline - archived reference
+[3] Legacy collector baseline - archived reference
 [4] ClickHouse - https://clickhouse.com
 [5] SigNoz - https://signoz.io
 [6] Grafana Tempo - https://grafana.com/oss/tempo
