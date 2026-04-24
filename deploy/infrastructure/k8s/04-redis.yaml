@@ -1,0 +1,158 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dragonfly-service
+  namespace: tracertm
+  labels:
+    app.kubernetes.io/name: tracertm
+    app.kubernetes.io/component: cache
+spec:
+  type: ClusterIP
+  selector:
+    app: dragonfly
+  ports:
+    - name: cache
+      port: 6379
+      targetPort: 6379
+      protocol: TCP
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dragonfly
+  namespace: tracertm
+  labels:
+    app.kubernetes.io/name: tracertm
+    app.kubernetes.io/component: cache
+spec:
+  serviceName: dragonfly-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dragonfly
+  template:
+    metadata:
+      labels:
+        app: dragonfly
+        app.kubernetes.io/name: tracertm
+        app.kubernetes.io/component: cache
+    spec:
+      containers:
+      - name: dragonfly
+        image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: cache
+          containerPort: 6379
+          protocol: TCP
+        volumeMounts:
+        - name: dragonfly-storage
+          mountPath: /data
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 999
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      securityContext:
+        fsGroup: 999
+  volumeClaimTemplates:
+  - metadata:
+      name: dragonfly-storage
+      labels:
+        app.kubernetes.io/name: tracertm
+        app.kubernetes.io/component: cache
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+      # storageClassName: fast-ssd
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dragonfly-exporter-service
+  namespace: tracertm
+  labels:
+    app.kubernetes.io/name: tracertm
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    app: dragonfly-exporter
+  ports:
+    - name: metrics
+      port: 9121
+      targetPort: 9121
+      protocol: TCP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dragonfly-exporter
+  namespace: tracertm
+  labels:
+    app.kubernetes.io/name: tracertm
+    app.kubernetes.io/component: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dragonfly-exporter
+  template:
+    metadata:
+      labels:
+        app: dragonfly-exporter
+    spec:
+      containers:
+      - name: dragonfly-exporter
+        image: oliver006/redis_exporter:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: metrics
+          containerPort: 9121
+        env:
+        - name: REDIS_ADDR
+          value: redis://dragonfly-service:6379
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 59000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL

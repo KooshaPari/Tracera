@@ -1,0 +1,115 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracertm-api
+  labels:
+    app: tracertm-api
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8000
+    targetPort: http
+    protocol: TCP
+  selector:
+    app: tracertm-api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracertm-api-canary
+  labels:
+    app: tracertm-api
+    deployment: canary
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8000
+    targetPort: http
+    protocol: TCP
+  selector:
+    app: tracertm-api
+    version: canary
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracertm-api-stable
+  labels:
+    app: tracertm-api
+    deployment: stable
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8000
+    targetPort: http
+    protocol: TCP
+  selector:
+    app: tracertm-api
+    version: stable
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracertm-backend
+  labels:
+    app: tracertm-backend
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8080
+    targetPort: http
+    protocol: TCP
+  - name: grpc
+    port: 9091
+    targetPort: grpc
+    protocol: TCP
+  selector:
+    app: tracertm-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracertm-backend-canary
+  labels:
+    app: tracertm-backend
+    deployment: canary
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8080
+    targetPort: http
+    protocol: TCP
+  - name: grpc
+    port: 9091
+    targetPort: grpc
+    protocol: TCP
+  selector:
+    app: tracertm-backend
+    version: canary
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracertm-backend-stable
+  labels:
+    app: tracertm-backend
+    deployment: stable
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8080
+    targetPort: http
+    protocol: TCP
+  - name: grpc
+    port: 9091
+    targetPort: grpc
+    protocol: TCP
+  selector:
+    app: tracertm-backend
+    version: stable

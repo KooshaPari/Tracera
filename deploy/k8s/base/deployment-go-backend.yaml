@@ -1,0 +1,256 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-backend
+  labels:
+    app: go-backend
+    version: v1
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: go-backend
+  template:
+    metadata:
+      labels:
+        app: go-backend
+        version: v1
+    spec:
+      # Service Account for RBAC
+      serviceAccountName: go-backend
+
+      # Pod disruption budget for high availability
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - go-backend
+              topologyKey: kubernetes.io/hostname
+
+      containers:
+      - name: go-backend
+        image: tracertm/backend:latest
+        imagePullPolicy: IfNotPresent
+
+        # Ports
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 9090
+          name: grpc
+          protocol: TCP
+
+        # Environment Variables
+        env:
+        - name: PORT
+          value: "8080"
+        - name: GRPC_PORT
+          value: "9090"
+        - name: ENV
+          value: "production"
+        - name: GIN_MODE
+          value: "release"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: tracertm-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: tracertm-secrets
+              key: redis-url
+        - name: NATS_URL
+          value: "nats://nats:4222"
+        - name: TEMPORAL_HOST
+          value: "temporal:7233"
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: tracertm-secrets
+              key: jwt-secret
+        - name: CSRF_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: tracertm-secrets
+              key: csrf-secret
+        - name: WORKOS_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: tracertm-secrets
+              key: workos-client-id
+              optional: true
+        - name: WORKOS_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: tracertm-secrets
+              key: workos-api-key
+              optional: true
+        - name: CORS_ALLOWED_ORIGINS
+          valueFrom:
+            configMapKeyRef:
+              name: tracertm-config
+              key: cors-origins
+        - name: PYTHON_BACKEND_URL
+          value: "http://python-backend:8000"
+        - name: TRACING_ENABLED
+          value: "true"
+        - name: PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT
+          value: "tracera-collector:4317"
+
+        # Resource Requests & Limits
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 2000m
+            memory: 1Gi
+
+        # Probes
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 8080
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 0
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 30
+
+        # Security Context
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+
+        # Volume Mounts
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/cache
+
+      # Volumes
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: cache
+        emptyDir: {}
+
+      # Pod-level security context
+      securityContext:
+        fsGroup: 1000
+        supplementalGroups:
+        - 1000
+
+      # Restart policy
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-backend
+  labels:
+    app: go-backend
+spec:
+  type: ClusterIP
+  selector:
+    app: go-backend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  - name: grpc
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: go-backend-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: go-backend
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 2
+        periodSeconds: 30
+      selectPolicy: Max
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: go-backend-pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: go-backend

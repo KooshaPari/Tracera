@@ -1,0 +1,117 @@
+# Security Scanning Workflow
+
+name: Security Scans
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly on Monday
+  workflow_dispatch:
+
+jobs:
+  # Run on every push/PR
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # npm audit for frontend
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=moderate --json > npm-audit.json || true
+        continue-on-error: true
+
+      # pip-audit for Python
+      - name: Run pip-audit
+        run: |
+          pip install pip-audit
+          pip-audit --format=json > pip-audit.json || true
+        continue-on-error: true
+
+      # Trivy for container/vulnerability scanning
+      - name: Run Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          format: 'json'
+          output: 'trivy.json'
+        continue-on-error: true
+
+      # Upload security reports
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            npm-audit.json
+            pip-audit.json
+            trivy.json
+
+      # Create GitHub Security Advisory
+      - name: Check for critical vulnerabilities
+        run: |
+          echo "=== Security Scan Summary ==="
+          echo "Review security reports at: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          
+          # Check npm audit results
+          if [ -f npm-audit.json ]; then
+            CRITICAL=$(cat npm-audit.json | jq '.metadata.vulnerabilities.critical // 0')
+            if [ "$CRITICAL" -gt 0 ]; then
+              echo "::warning::npm: $CRITICAL critical vulnerabilities found"
+            fi
+          fi
+
+  # Daily vulnerability check
+  daily-vuln-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    permissions:
+      issues: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Check for new vulnerabilities
+        run: |
+          echo "Checking for new CVEs..."
+
+          # This creates a GitHub issue for new vulnerabilities
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Weekly Security Scan - $(date +%Y-%m-%d)" \
+            --body "Automated security scan completed. Check Dependabot alerts and security reports." \
+            --label "security,automated" || echo "Issue creation skipped"
+
+  # CodeQL Analysis
+  codeql:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript, python, go
+      
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript,python,go"
+
+  # Dependency review (blocks risky PRs)
+  dependency-review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-fail
+          approve-licenses: false

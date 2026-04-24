@@ -1,0 +1,608 @@
+# ==============================================================================
+# SLO-Based Alerting Rules
+# ==============================================================================
+#
+# Service Level Objectives (SLOs):
+# - Latency: P95 < 500ms, P99 < 1s
+# - Error Rate: < 1%
+# - Availability: > 99.9% uptime
+#
+# Alert Priority:
+# - critical: Immediate action required (PagerDuty)
+# - warning: Investigation needed (Slack)
+# - info: Awareness only (logging)
+#
+# Detection Time Target: < 5 minutes
+# False Positive Target: < 1%
+#
+# ==============================================================================
+
+groups:
+  # ============================================================================
+  # Latency SLO Violations
+  # ============================================================================
+  - name: slo_latency
+    interval: 30s
+    rules:
+      # P95 latency violation (warning)
+      - alert: SLOLatencyP95Violation
+        expr: |
+          (
+            histogram_quantile(0.95,
+              sum by (job, le) (rate(http_request_duration_seconds_bucket[5m]))
+            ) > 0.5
+          ) and (
+            histogram_quantile(0.95,
+              sum by (job, le) (rate(http_request_duration_seconds_bucket[5m]))
+            ) < 1.0
+          )
+        for: 5m
+        labels:
+          severity: warning
+          slo: latency
+          slo_target: "p95_500ms"
+          team: backend
+          alert_channel: slack
+        annotations:
+          summary: "SLO violation: P95 latency >500ms but <1s"
+          description: |
+            Service {{ $labels.job }} P95 latency is {{ $value | humanizeDuration }}, exceeding SLO target of 500ms.
+
+            **Current**: {{ $value | humanizeDuration }}
+            **Target**: 500ms
+            **Impact**: User experience degradation
+
+            **Runbook**: https://docs.tracertm.com/runbooks/latency-p95-violation
+          dashboard_url: "http://localhost:3000/d/backend-performance"
+          mttr_target: "5m"
+
+      # P95 latency critical violation
+      - alert: SLOLatencyP95Critical
+        expr: |
+          histogram_quantile(0.95,
+            sum by (job, le) (rate(http_request_duration_seconds_bucket[5m]))
+          ) > 1.0
+        for: 2m
+        labels:
+          severity: critical
+          slo: latency
+          slo_target: "p95_500ms"
+          team: backend
+          alert_channel: pagerduty
+        annotations:
+          summary: "CRITICAL SLO violation: P95 latency >1s"
+          description: |
+            Service {{ $labels.job }} P95 latency is {{ $value | humanizeDuration }}, severely exceeding SLO.
+
+            **Current**: {{ $value | humanizeDuration }}
+            **SLO Target**: 500ms
+            **Critical Threshold**: 1s
+            **Impact**: Severe user experience issues
+
+            **Immediate Actions**:
+            1. Check service health: `make dev-status`
+            2. Check database connections
+            3. Review recent deployments
+            4. Scale if needed: `make dev-scale SERVICE=go-backend REPLICAS=3`
+
+            **Runbook**: https://docs.tracertm.com/runbooks/latency-p95-critical
+          dashboard_url: "http://localhost:3000/d/backend-performance"
+          pagerduty_severity: "critical"
+          mttr_target: "2m"
+
+      # P99 latency violation
+      - alert: SLOLatencyP99Violation
+        expr: |
+          histogram_quantile(0.99,
+            sum by (job, le) (rate(http_request_duration_seconds_bucket[5m]))
+          ) > 1.0
+        for: 3m
+        labels:
+          severity: warning
+          slo: latency
+          slo_target: "p99_1s"
+          team: backend
+          alert_channel: slack
+        annotations:
+          summary: "SLO violation: P99 latency >1s"
+          description: |
+            Service {{ $labels.job }} P99 latency is {{ $value | humanizeDuration }}, exceeding SLO.
+
+            **Current**: {{ $value | humanizeDuration }}
+            **Target**: 1s
+            **Affected**: Top 1% of requests
+
+            **Investigation Steps**:
+            - Check slow query logs: `make dev-logs-follow SERVICE=postgres`
+            - Review cache hit rate
+            - Check for database lock contention
+
+            **Runbook**: https://docs.tracertm.com/runbooks/latency-p99-violation
+          dashboard_url: "http://localhost:3000/d/backend-performance"
+
+      # Latency spike detection (anomaly)
+      - alert: SLOLatencySpike
+        expr: |
+          (
+            histogram_quantile(0.95,
+              sum by (job, le) (rate(http_request_duration_seconds_bucket[5m]))
+            )
+            /
+            histogram_quantile(0.95,
+              sum by (job, le) (rate(http_request_duration_seconds_bucket[1h] offset 1h))
+            )
+          ) > 2
+        for: 3m
+        labels:
+          severity: warning
+          slo: latency
+          alert_channel: slack
+        annotations:
+          summary: "Latency spike detected: 2x increase"
+          description: |
+            Service {{ $labels.job }} experiencing latency spike.
+
+            **Current vs 1h ago**: {{ $value }}x increase
+            **Threshold**: 2x
+
+            Possible causes:
+            - Sudden traffic increase
+            - Database performance issue
+            - External API slowdown
+            - Memory/CPU saturation
+
+            **Runbook**: https://docs.tracertm.com/runbooks/latency-spike
+          dashboard_url: "http://localhost:3000/d/backend-performance"
+
+  # ============================================================================
+  # Error Rate SLO Violations
+  # ============================================================================
+  - name: slo_error_rate
+    interval: 30s
+    rules:
+      # Error rate warning (approaching SLO)
+      - alert: SLOErrorRateApproaching
+        expr: |
+          (
+            sum by (job) (rate(http_requests_total{status=~"5.."}[5m]))
+            /
+            sum by (job) (rate(http_requests_total[5m]))
+          ) > 0.005 and (
+            sum by (job) (rate(http_requests_total{status=~"5.."}[5m]))
+            /
+            sum by (job) (rate(http_requests_total[5m]))
+          ) <= 0.01
+        for: 3m
+        labels:
+          severity: info
+          slo: error_rate
+          slo_target: "1_percent"
+          team: backend
+          alert_channel: slack
+        annotations:
+          summary: "Error rate approaching SLO threshold (>0.5%)"
+          description: |
+            Service {{ $labels.job }} error rate is {{ $value | humanizePercentage }}, approaching 1% SLO.
+
+            **Current**: {{ $value | humanizePercentage }}
+            **Warning Threshold**: 0.5%
+            **SLO Target**: <1%
+
+            **Action**: Monitor closely, investigate if continues to rise.
+
+            **Runbook**: https://docs.tracertm.com/runbooks/error-rate-approaching
+
+      # Error rate SLO violation
+      - alert: SLOErrorRateViolation
+        expr: |
+          (
+            sum by (job) (rate(http_requests_total{status=~"5.."}[5m]))
+            /
+            sum by (job) (rate(http_requests_total[5m]))
+          ) > 0.01 and (
+            sum by (job) (rate(http_requests_total{status=~"5.."}[5m]))
+            /
+            sum by (job) (rate(http_requests_total[5m]))
+          ) <= 0.05
+        for: 2m
+        labels:
+          severity: warning
+          slo: error_rate
+          slo_target: "1_percent"
+          team: backend
+          alert_channel: slack
+        annotations:
+          summary: "SLO violation: Error rate >1%"
+          description: |
+            Service {{ $labels.job }} error rate is {{ $value | humanizePercentage }}, violating SLO.
+
+            **Current**: {{ $value | humanizePercentage }}
+            **SLO Target**: <1%
+            **Impact**: Error budget consumed
+
+            **Investigation**:
+            1. Check error logs: `make dev-logs-follow SERVICE={{ $labels.job }}`
+            2. Review recent changes
+            3. Check downstream dependencies
+
+            **Runbook**: https://docs.tracertm.com/runbooks/error-rate-violation
+          dashboard_url: "http://localhost:3000/d/backend-performance"
+          mttr_target: "3m"
+
+      # Critical error rate
+      - alert: SLOErrorRateCritical
+        expr: |
+          (
+            sum by (job) (rate(http_requests_total{status=~"5.."}[5m]))
+            /
+            sum by (job) (rate(http_requests_total[5m]))
+          ) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+          slo: error_rate
+          slo_target: "1_percent"
+          team: backend
+          alert_channel: pagerduty
+        annotations:
+          summary: "CRITICAL: Error rate >5%"
+          description: |
+            Service {{ $labels.job }} error rate is {{ $value | humanizePercentage }}, critically high.
+
+            **Current**: {{ $value | humanizePercentage }}
+            **SLO Target**: <1%
+            **Critical Threshold**: >5%
+            **Impact**: Service severely degraded
+
+            **Immediate Actions**:
+            1. Check service status: `make dev-status`
+            2. Review logs for root cause: `make dev-logs SERVICE={{ $labels.job }}`
+            3. Consider rollback if recent deployment
+            4. Page on-call engineer
+
+            **Runbook**: https://docs.tracertm.com/runbooks/error-rate-critical
+          dashboard_url: "http://localhost:3000/d/backend-performance"
+          pagerduty_severity: "critical"
+          mttr_target: "1m"
+
+      # Error rate spike (anomaly detection)
+      - alert: SLOErrorRateSpike
+        expr: |
+          (
+            (sum by (job) (rate(http_requests_total{status=~"5.."}[5m])) / sum by (job) (rate(http_requests_total[5m])))
+            /
+            (sum by (job) (rate(http_requests_total{status=~"5.."}[1h] offset 1h)) / sum by (job) (rate(http_requests_total[1h] offset 1h)) + 0.0001)
+          ) > 5
+        for: 2m
+        labels:
+          severity: warning
+          slo: error_rate
+          alert_channel: slack
+        annotations:
+          summary: "Error rate spike: 5x increase"
+          description: |
+            Service {{ $labels.job }} error rate spiked {{ $value }}x compared to 1 hour ago.
+
+            **Multiplier**: {{ $value }}x
+            **Threshold**: 5x
+
+            Investigate:
+            - Recent deployments
+            - Dependency failures
+            - Database connectivity
+            - Upstream service issues
+
+            **Runbook**: https://docs.tracertm.com/runbooks/error-spike
+
+  # ============================================================================
+  # Availability SLO Violations
+  # ============================================================================
+  - name: slo_availability
+    interval: 15s
+    rules:
+      # Service down (immediate)
+      - alert: SLOServiceDown
+        expr: up{job=~"go-backend|python-backend"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          slo: availability
+          slo_target: "99_9_percent"
+          team: backend
+          alert_channel: pagerduty
+        annotations:
+          summary: "CRITICAL: Service {{ $labels.job }} is DOWN"
+          description: |
+            Service {{ $labels.job }} at {{ $labels.instance }} is unreachable.
+
+            **Status**: DOWN
+            **Duration**: {{ $value }}
+            **SLO Impact**: Direct availability violation
+
+            **Immediate Actions**:
+            1. Check process status: `make dev-status`
+            2. Restart service: `make dev-restart SERVICE={{ $labels.job }}`
+            3. Check logs: `make dev-logs-follow SERVICE={{ $labels.job }}`
+            4. Verify dependencies (DB, Redis, etc.)
+
+            **Runbook**: https://docs.tracertm.com/runbooks/service-down
+          dashboard_url: "http://localhost:3000/d/infrastructure-health"
+          pagerduty_severity: "critical"
+          mttr_target: "30s"
+
+      # Service flapping
+      - alert: SLOServiceFlapping
+        expr: |
+          changes(up{job=~"go-backend|python-backend"}[10m]) > 4
+        for: 5m
+        labels:
+          severity: warning
+          slo: availability
+          team: backend
+          alert_channel: slack
+        annotations:
+          summary: "Service {{ $labels.job }} is flapping"
+          description: |
+            Service {{ $labels.job }} restarted {{ $value }} times in 10 minutes.
+
+            **Restart Count**: {{ $value }}
+            **Threshold**: 4 restarts
+            **Impact**: Intermittent availability issues
+
+            Possible causes:
+            - Memory leaks (OOM kills)
+            - Crash loops
+            - Health check failures
+            - Dependency issues
+
+            **Runbook**: https://docs.tracertm.com/runbooks/service-flapping
+          dashboard_url: "http://localhost:3000/d/infrastructure-health"
+
+      # Availability SLO burn rate (fast)
+      - alert: SLOAvailabilityFastBurn
+        expr: |
+          (
+            1 - (sum by (job) (rate(http_requests_total{status!~"5.."}[1h])) / sum by (job) (rate(http_requests_total[1h])))
+          ) > 0.001  # 0.1% error = 99.9% availability
+        for: 5m
+        labels:
+          severity: critical
+          slo: availability
+          slo_target: "99_9_percent"
+          team: backend
+          alert_channel: pagerduty
+        annotations:
+          summary: "Fast burn: Availability SLO at risk"
+          description: |
+            Service {{ $labels.job }} burning availability error budget rapidly.
+
+            **Current Availability**: {{ humanize1024 (1 - $value) }}%
+            **SLO Target**: 99.9%
+            **Burn Rate**: High (1h window)
+
+            At this rate, monthly error budget will be exhausted soon.
+
+            **Runbook**: https://docs.tracertm.com/runbooks/availability-fast-burn
+          dashboard_url: "http://localhost:3000/d/slo-dashboard"
+          pagerduty_severity: "high"
+
+  # ============================================================================
+  # Performance Anomaly Detection
+  # ============================================================================
+  - name: slo_anomaly_detection
+    interval: 1m
+    rules:
+      # Latency standard deviation spike
+      - alert: SLOLatencyAnomalyStdDev
+        expr: |
+          (
+            stddev_over_time(
+              histogram_quantile(0.95,
+                sum by (job, le) (rate(http_request_duration_seconds_bucket[5m]))
+              )[15m:]
+            ) > 0.2
+          )
+          and
+          (
+            histogram_quantile(0.95,
+              sum by (job, le) (rate(http_request_duration_seconds_bucket[5m]))
+            ) > 0.5
+          )
+        for: 5m
+        labels:
+          severity: warning
+          slo: latency
+          alert_type: anomaly
+          team: backend
+          alert_channel: slack
+        annotations:
+          summary: "Latency anomaly: High variance detected"
+          description: |
+            Service {{ $labels.job }} latency showing high variance (stddev: {{ $value }}).
+
+            **Standard Deviation**: {{ $value }}s
+            **Threshold**: 0.2s
+            **Indication**: Inconsistent performance, investigate for:
+            - Intermittent slow queries
+            - Garbage collection pauses
+            - Network issues
+            - Resource contention
+
+            **Runbook**: https://docs.tracertm.com/runbooks/latency-anomaly
+
+      # Traffic pattern anomaly
+      - alert: SLOTrafficAnomalyDrop
+        expr: |
+          (
+            sum by (job) (rate(http_requests_total[5m]))
+            /
+            avg_over_time(sum by (job) (rate(http_requests_total[5m]))[1h:5m])
+          ) < 0.5
+        for: 10m
+        labels:
+          severity: warning
+          alert_type: anomaly
+          team: backend
+          alert_channel: slack
+        annotations:
+          summary: "Traffic anomaly: 50% drop detected"
+          description: |
+            Service {{ $labels.job }} traffic dropped to {{ $value | humanizePercentage }} of normal.
+
+            **Current vs Average**: {{ $value | humanizePercentage }}
+            **Threshold**: 50%
+            **Duration**: 10+ minutes
+
+            Possible causes:
+            - Upstream service issue
+            - Load balancer misconfiguration
+            - Network partition
+            - Client-side errors preventing requests
+
+            **Runbook**: https://docs.tracertm.com/runbooks/traffic-drop
+
+      # Database connection pool saturation
+      - alert: SLODatabasePoolSaturation
+        expr: |
+          (
+            pg_stat_database_numbackends{datname="tracertm"}
+            /
+            pg_settings_max_connections
+          ) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          slo: availability
+          team: backend
+          alert_channel: slack
+        annotations:
+          summary: "Database connection pool >80% used"
+          description: |
+            PostgreSQL connection pool at {{ $value | humanizePercentage }} capacity.
+
+            **Current**: {{ $value | humanizePercentage }}
+            **Threshold**: 80%
+            **Impact**: Risk of connection exhaustion
+
+            **Actions**:
+            1. Check for connection leaks
+            2. Review slow queries holding connections
+            3. Consider increasing max_connections
+            4. Implement connection pooling (PgBouncer)
+
+            **Runbook**: https://docs.tracertm.com/runbooks/db-pool-saturation
+          dashboard_url: "http://localhost:3000/d/infrastructure-health"
+
+  # ============================================================================
+  # Web Vitals SLO Violations
+  # ============================================================================
+  - name: slo_web_vitals
+    interval: 1m
+    rules:
+      # LCP (Largest Contentful Paint) poor
+      - alert: SLOWebVitalsLCPPoor
+        expr: |
+          histogram_quantile(0.75,
+            sum by (page, le) (rate(tracertm_webvitals_lcp_seconds_bucket{rating="poor"}[10m]))
+          ) > 4
+        for: 10m
+        labels:
+          severity: warning
+          slo: user_experience
+          metric: LCP
+          team: frontend
+          alert_channel: slack
+        annotations:
+          summary: "Poor LCP (>4s) affecting 75th percentile users"
+          description: |
+            Page {{ $labels.page }} has poor LCP: {{ $value }}s
+
+            **Current P75**: {{ $value }}s
+            **Good Threshold**: <2.5s
+            **Poor Threshold**: >4s
+            **Impact**: Users see slow content loading
+
+            **Investigation**:
+            - Check image optimization
+            - Review render-blocking resources
+            - Analyze bundle size
+            - Check server response times
+
+            **Runbook**: https://docs.tracertm.com/runbooks/lcp-poor
+          dashboard_url: "http://localhost:3000/d/frontend-performance"
+
+      # CLS (Cumulative Layout Shift) poor
+      - alert: SLOWebVitalsCLSPoor
+        expr: |
+          histogram_quantile(0.75,
+            sum by (page, le) (rate(tracertm_webvitals_cls_score_bucket{rating="poor"}[10m]))
+          ) > 0.25
+        for: 10m
+        labels:
+          severity: warning
+          slo: user_experience
+          metric: CLS
+          team: frontend
+          alert_channel: slack
+        annotations:
+          summary: "Poor CLS (>0.25) causing layout shifts"
+          description: |
+            Page {{ $labels.page }} has poor CLS: {{ $value }}
+
+            **Current P75**: {{ $value }}
+            **Good Threshold**: <0.1
+            **Poor Threshold**: >0.25
+            **Impact**: Jarring layout shifts for users
+
+            **Common Causes**:
+            - Images without dimensions
+            - Dynamic content injection
+            - Web fonts loading
+            - Ads/embeds
+
+            **Runbook**: https://docs.tracertm.com/runbooks/cls-poor
+          dashboard_url: "http://localhost:3000/d/frontend-performance"
+
+# ==============================================================================
+# Alertmanager Routing Configuration
+# ==============================================================================
+#
+# Add to alertmanager.yml:
+#
+# route:
+#   group_by: ['alertname', 'job']
+#   group_wait: 10s
+#   group_interval: 5m
+#   repeat_interval: 12h
+#   receiver: 'default'
+#   routes:
+#     - match:
+#         alert_channel: pagerduty
+#       receiver: 'pagerduty'
+#       continue: true
+#     - match:
+#         alert_channel: slack
+#       receiver: 'slack'
+#     - match:
+#         severity: critical
+#       receiver: 'pagerduty'
+#       continue: true
+#
+# receivers:
+#   - name: 'default'
+#     webhook_configs:
+#       - url: 'http://localhost:8080/api/v1/alerts'
+#
+#   - name: 'slack'
+#     slack_configs:
+#       - api_url: '${SLACK_WEBHOOK_URL}'
+#         channel: '#alerts'
+#         title: '{{ .GroupLabels.alertname }}'
+#         text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+#
+#   - name: 'pagerduty'
+#     pagerduty_configs:
+#       - service_key: '${PAGERDUTY_SERVICE_KEY}'
+#         description: '{{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}'
+#
+# ==============================================================================

@@ -1,0 +1,56 @@
+name: Contracts & SDKs
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Add GOPATH/bin to PATH
+        run: echo "$HOME/go/bin" >> $GITHUB_PATH
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.1.38'
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v2
+        with:
+          version: 'latest'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          cache: 'pip'
+        with:
+          python-version: '3.12'
+
+      - name: Cache uv dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      - name: Install frontend dependencies
+        run: cd frontend && bun install
+
+      - name: Check generated contracts
+        run: bash scripts/shell/check-generated-contracts.sh

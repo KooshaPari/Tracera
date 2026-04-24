@@ -1,0 +1,265 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # Matrix strategy for parallel test execution by type
+  test-matrix:
+    name: Tests (${{ matrix.test-type }}, Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false  # Continue running other tests even if one fails
+      matrix:
+        python-version: ["3.11", "3.12"]
+        test-type: [unit, integration, e2e]
+        include:
+          # Property-based tests run only on Python 3.12
+          - python-version: "3.12"
+            test-type: property
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: tracertm_test
+          POSTGRES_USER: tracertm
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v2
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          cache: 'pip'
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache uv dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      # Run fast tests first (unit tests)
+      - name: Run ${{ matrix.test-type }} tests (fast first)
+        id: test-run
+        env:
+          DATABASE_URL: postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test
+          REDIS_URL: redis://localhost:6379
+          PYTHONPATH: ${{ github.workspace }}/src
+        run: |
+          if [ "${{ matrix.test-type }}" = "unit" ]; then
+            # Unit tests: Fast tests first, then slow tests
+            uv run pytest tests/ -m "unit and not slow" -v --cov=src/tracertm --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=junit-${{ matrix.test-type }}.xml
+            uv run pytest tests/ -m "unit and slow" -v --cov=src/tracertm --cov-append --cov-report=xml --cov-report=html --cov-report=term-missing --junitxml=junit-${{ matrix.test-type }}-slow.xml
+          elif [ "${{ matrix.test-type }}" = "integration" ]; then
+            uv run pytest tests/ -m "integration and not slow" -v --junitxml=junit-${{ matrix.test-type }}.xml
+            uv run pytest tests/ -m "integration and slow" -v --junitxml=junit-${{ matrix.test-type }}-slow.xml
+          elif [ "${{ matrix.test-type }}" = "e2e" ]; then
+            uv run pytest tests/ -m "e2e" -v --junitxml=junit-${{ matrix.test-type }}.xml
+          elif [ "${{ matrix.test-type }}" = "property" ]; then
+            uv run pytest tests/test_property_based.py -v --junitxml=junit-${{ matrix.test-type }}.xml
+          fi
+
+      # Generate test summary
+      - name: Generate test summary
+        if: always()
+        run: |
+          echo "## Test Summary: ${{ matrix.test-type }} (Python ${{ matrix.python-version }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f junit-${{ matrix.test-type }}.xml ]; then
+            # Extract test counts from JUnit XML
+            TOTAL=$(grep -oP 'tests="\K[0-9]+' junit-${{ matrix.test-type }}.xml | head -1 || echo "0")
+            FAILURES=$(grep -oP 'failures="\K[0-9]+' junit-${{ matrix.test-type }}.xml | head -1 || echo "0")
+            ERRORS=$(grep -oP 'errors="\K[0-9]+' junit-${{ matrix.test-type }}.xml | head -1 || echo "0")
+            SKIPPED=$(grep -oP 'skipped="\K[0-9]+' junit-${{ matrix.test-type }}.xml | head -1 || echo "0")
+            PASSED=$((TOTAL - FAILURES - ERRORS - SKIPPED))
+
+            echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Tests | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+            echo "| ❌ Failed | $FAILURES |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⚠️ Errors | $ERRORS |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⏭️ Skipped | $SKIPPED |" >> $GITHUB_STEP_SUMMARY
+
+          fi
+
+      - name: Upload coverage
+        if: matrix.test-type == 'unit'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          flags: ${{ matrix.test-type }}-python${{ matrix.python-version }}
+          name: codecov-${{ matrix.test-type }}-${{ matrix.python-version }}
+          fail_ci_if_error: false
+
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.test-type }}-py${{ matrix.python-version }}
+          path: |
+            .pytest_cache/
+            htmlcov/
+            coverage.xml
+            junit-*.xml
+          retention-days: 30
+
+  # Comprehensive parallel test run (all tests)
+  test-parallel:
+    name: All Tests (Parallel)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: tracertm_test
+          POSTGRES_USER: tracertm
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v2
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          cache: 'pip'
+        with:
+          python-version: "3.12"
+
+      - name: Cache uv dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      # Run all tests in parallel with pytest-xdist
+      - name: Run all tests in parallel
+        env:
+          DATABASE_URL: postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test
+          REDIS_URL: redis://localhost:6379
+          PYTHONPATH: ${{ github.workspace }}/src
+        run: |
+          uv run pytest tests/ -n auto -v \
+            --cov=src/tracertm \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term-missing \
+            --cov-fail-under=90 \
+            --junitxml=junit-parallel.xml \
+            --maxfail=10
+
+      # Generate comprehensive test summary
+      - name: Generate comprehensive test summary
+        if: always()
+        run: |
+          echo "## Comprehensive Test Summary (Parallel Execution)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f junit-parallel.xml ]; then
+            TOTAL=$(grep -oP 'tests="\K[0-9]+' junit-parallel.xml | head -1 || echo "0")
+            FAILURES=$(grep -oP 'failures="\K[0-9]+' junit-parallel.xml | head -1 || echo "0")
+            ERRORS=$(grep -oP 'errors="\K[0-9]+' junit-parallel.xml | head -1 || echo "0")
+            SKIPPED=$(grep -oP 'skipped="\K[0-9]+' junit-parallel.xml | head -1 || echo "0")
+            PASSED=$((TOTAL - FAILURES - ERRORS - SKIPPED))
+            TIME=$(grep -oP 'time="\K[0-9.]+' junit-parallel.xml | head -1 || echo "0")
+
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Tests | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+            echo "| ❌ Failed | $FAILURES |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⚠️ Errors | $ERRORS |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⏭️ Skipped | $SKIPPED |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⏱️ Duration | ${TIME}s |" >> $GITHUB_STEP_SUMMARY
+
+            if [ "$FAILURES" -gt 0 ] || [ "$ERRORS" -gt 0 ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "### Failed Tests" >> $GITHUB_STEP_SUMMARY
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+              grep -A 5 'failure\|error' junit-parallel.xml | head -50 >> $GITHUB_STEP_SUMMARY || true
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          flags: parallel-all
+          name: codecov-parallel
+          fail_ci_if_error: false
+
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-parallel-all
+          path: |
+            .pytest_cache/
+            htmlcov/
+            coverage.xml
+            junit-parallel.xml
+          retention-days: 30

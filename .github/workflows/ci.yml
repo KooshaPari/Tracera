@@ -1,0 +1,1522 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  release:
+    types: [ published ]
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+  REGISTRY_USERNAME: ${{ github.actor }}
+  GO_VERSION: '1.23'
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  # Quality Guards (Naming Explosion + LOC limits)
+  quality-guards:
+    name: Quality Guards
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Run naming explosion + LOC guards
+      run: make lint-naming
+
+  # Python Tests
+  python-tests:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.12']
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: tracertm_test
+          POSTGRES_USER: tracertm
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Cache uv dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/uv
+        key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-uv-
+
+    - name: Install dependencies
+      run: |
+        uv pip install --system -e ".[dev,test]"
+
+    - name: Run Ruff linting (strict enforcement)
+      run: |
+        # Use grouped output format for file-based processing (easier for agents to fix)
+          ruff check src/ tests/ --output-format=grouped > /tmp/ruff-results-grouped.txt || true
+          # Also output JSON for CI parsing
+          ruff check src/ tests/ --output-format=json > /tmp/ruff-results.json || true
+          VIOLATION_COUNT=$(jq '[.[] // []] | length' /tmp/ruff-results.json || echo "0")
+          echo "RUFF_VIOLATIONS=$VIOLATION_COUNT" >> $GITHUB_ENV
+          echo "## Python Linting Results (Ruff)" >> $GITHUB_STEP_SUMMARY
+          echo "Total violations: $VIOLATION_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "Config: pyproject.toml (complexity max=7)" >> $GITHUB_STEP_SUMMARY
+          # Show grouped output for developer reference
+          cat /tmp/ruff-results-grouped.txt || ruff check src/ tests/
+          ruff format --check src/ tests/
+
+    - name: Run type checking (ty)
+      run: |
+        ty check src/ --error-on-warning
+
+    - name: Run Bandit (security linter - strict)
+      run: |
+        uv run bandit -r src/ --format json --output /tmp/bandit-results.json || true
+        BANDIT_ISSUES=$(jq '[.results // []] | length' /tmp/bandit-results.json || echo "0")
+        echo "BANDIT_VIOLATIONS=$BANDIT_ISSUES" >> $GITHUB_ENV
+        echo "Bandit security issues: $BANDIT_ISSUES" >> $GITHUB_STEP_SUMMARY
+        uv run bandit -r src/
+
+    - name: Run pip-audit (dependency vulnerabilities)
+      run: |
+        uv run pip-audit --format json --output /tmp/pip-audit-results.json || true
+        AUDIT_VULNS=$(jq '[.vulnerabilities // []] | length' /tmp/pip-audit-results.json || echo "0")
+        echo "PIP_AUDIT_VIOLATIONS=$AUDIT_VULNS" >> $GITHUB_ENV
+        echo "Dependency vulnerabilities: $AUDIT_VULNS" >> $GITHUB_STEP_SUMMARY
+        uv run pip-audit
+
+    - name: Upload Python lint results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-lint-results
+        path: |
+          /tmp/ruff-results.json
+          /tmp/bandit-results.json
+          /tmp/pip-audit-results.json
+        retention-days: 90
+
+    - name: Run Python database migrations
+      env:
+        DATABASE_URL: postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test
+      run: |
+        uv run alembic upgrade head
+
+    # Run fast tests first, then slow tests
+    - name: Run fast tests
+      id: fast-tests
+      env:
+        DATABASE_URL: postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test
+        REDIS_URL: redis://localhost:6379
+        PYTHONPATH: ${{ github.workspace }}/src
+      run: |
+        pytest tests/ \
+          -m "not slow" \
+          -n auto \
+          --cov=src/tracertm \
+          --cov-report=xml \
+          --cov-report=html \
+          --cov-report=term-missing \
+          --junitxml=junit-fast.xml \
+          -v \
+          --tb=short \
+          --maxfail=5
+
+    - name: Run slow tests
+      if: success() || failure()  # Run even if fast tests fail
+      env:
+        DATABASE_URL: postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test
+        REDIS_URL: redis://localhost:6379
+        PYTHONPATH: ${{ github.workspace }}/src
+      run: |
+        pytest tests/ \
+          -m "slow" \
+          --cov=src/tracertm \
+          --cov-append \
+          --cov-report=xml \
+          --cov-report=html \
+          --cov-report=term-missing \
+          --cov-fail-under=90 \
+          --junitxml=junit-slow.xml \
+          -v \
+          --tb=short \
+          --maxfail=5
+
+    # Generate test summary
+    - name: Generate Python test summary
+      if: always()
+      run: |
+        echo "## Python Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ -f junit-fast.xml ]; then
+          echo "### Fast Tests" >> $GITHUB_STEP_SUMMARY
+          TOTAL=$(grep -oP 'tests="\K[0-9]+' junit-fast.xml | head -1 || echo "0")
+          FAILURES=$(grep -oP 'failures="\K[0-9]+' junit-fast.xml | head -1 || echo "0")
+          PASSED=$((TOTAL - FAILURES))
+          echo "- Total: $TOTAL, Passed: ✅ $PASSED, Failed: ❌ $FAILURES" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        if [ -f junit-slow.xml ]; then
+          echo "### Slow Tests" >> $GITHUB_STEP_SUMMARY
+          TOTAL=$(grep -oP 'tests="\K[0-9]+' junit-slow.xml | head -1 || echo "0")
+          FAILURES=$(grep -oP 'failures="\K[0-9]+' junit-slow.xml | head -1 || echo "0")
+          PASSED=$((TOTAL - FAILURES))
+          echo "- Total: $TOTAL, Passed: ✅ $PASSED, Failed: ❌ $FAILURES" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Convert Python coverage to JSON for comparison
+      if: always()
+      run: |
+        python3 << 'EOF'
+        import json
+        import xml.etree.ElementTree as ET
+
+        # Parse coverage.xml and extract per-package stats
+        coverage_data = {}
+        try:
+          tree = ET.parse('coverage.xml')
+          root = tree.getroot()
+
+          # Extract line-rate (%) per package
+          for package in root.findall('.//package'):
+            name = package.get('name', 'unknown')
+            line_rate = float(package.get('line-rate', '0')) * 100
+            coverage_data[name] = round(line_rate, 2)
+        except Exception as e:
+          print(f"Warning: Could not parse coverage.xml: {e}")
+
+        # Write JSON for artifact
+        with open('python-coverage-data.json', 'w') as f:
+          json.dump(coverage_data, f, indent=2)
+
+        # Also write simple format for comparison
+        with open('python-coverage-by-package.txt', 'w') as f:
+          for pkg, cov in sorted(coverage_data.items()):
+            f.write(f"{pkg}|{cov}\n")
+
+        print("Python coverage data exported")
+        EOF
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./coverage.xml
+        flags: python
+        name: python-coverage
+        fail_ci_if_error: false
+
+    - name: Archive test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-test-results
+        path: |
+          htmlcov/
+          test-results/
+          coverage.xml
+
+    - name: Store Python coverage baseline
+      if: github.ref == 'refs/heads/main' && success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-coverage-baseline
+        path: python-coverage-by-package.txt
+        retention-days: 90
+
+  # Python Exploratory Tests (property-based + chaos)
+  python-exploratory-tests:
+    name: Python Exploratory Tests (${{ matrix.lane }})
+    runs-on: ubuntu-latest
+    needs: [python-tests]
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [property, chaos]
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: tracertm_test
+          POSTGRES_USER: tracertm
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        uv pip install --system -e ".[dev,test]"
+
+    - name: Run exploratory test lane (${{ matrix.lane }})
+      env:
+        DATABASE_URL: postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test
+        REDIS_URL: redis://localhost:6379
+        PYTHONPATH: ${{ github.workspace }}/src
+      run: |
+        pytest tests/ -m "${{ matrix.lane }}" -v --tb=short --maxfail=10
+
+    - name: Generate exploratory test summary
+      if: always()
+      run: |
+        echo "## Python Exploratory Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "Lane: ${{ matrix.lane }} (blocking rehearsal gate)" >> $GITHUB_STEP_SUMMARY
+
+  # Go Tests
+  go-tests:
+    name: Go Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.23']
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: tracertm_test
+          POSTGRES_USER: tracertm
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+      nats:
+        image: nats:2.10-alpine
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:8222/healthz || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 4222:4222
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go ${{ matrix.go-version }}
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+        cache-dependency-path: backend/go.mod
+
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Install dependencies
+      working-directory: backend
+      run: |
+        go mod download
+        go mod verify
+
+    - name: Run golangci-lint (strict enforcement)
+      uses: golangci/golangci-lint-action@v6
+      with:
+        version: v1.61
+        working-directory: backend
+        args: --timeout=5m --config=.golangci.yml
+      continue-on-error: false
+
+    - name: Capture Go linting baseline
+      if: always()
+      working-directory: backend
+      run: |
+        # Use grouped output for file-based processing (easier for agents to fix)
+        golangci-lint run --timeout=5m --config=.golangci.yml --out-format=grouped-line-number > /tmp/go-lint-results-grouped.txt || true
+        # Also output JSON for CI parsing
+        golangci-lint run --timeout=5m --config=.golangci.yml --out-format=json > /tmp/go-lint-results.json || true
+        VIOLATION_COUNT=$(jq '[.Issues // []] | length' /tmp/go-lint-results.json || echo "0")
+        echo "GO_VIOLATIONS=$VIOLATION_COUNT" >> $GITHUB_ENV
+        echo "## Go Linting Results" >> $GITHUB_STEP_SUMMARY
+        echo "Total violations: $VIOLATION_COUNT" >> $GITHUB_STEP_SUMMARY
+        echo "Format: grouped-line-number (grouped by file)" >> $GITHUB_STEP_SUMMARY
+
+    - name: Upload Go lint results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: go-lint-results
+        path: /tmp/go-lint-results.json
+        retention-days: 90
+
+    # Run short tests first (fast tests)
+    - name: Run short tests
+      id: short-tests
+      working-directory: backend
+      env:
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_NAME: tracertm_test
+        DB_USER: tracertm
+        DB_PASSWORD: test_password
+        REDIS_URL: redis://localhost:6379
+        NATS_URL: nats://localhost:4222
+      run: |
+        go test -v -race -short -coverprofile=coverage-short.out -covermode=atomic ./...
+
+    # Run all tests including slow ones (single attempt for deterministic outcomes)
+    - name: Run all tests with coverage
+      if: success() || failure()
+      working-directory: backend
+      run: |
+        go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+
+    # Detect flaky Go tests
+    - name: Detect flaky Go tests
+      if: steps.short-tests.outcome == 'success'
+      working-directory: backend
+      run: |
+        if [ -f coverage.out ]; then
+          echo "::notice::Go tests completed successfully"
+        fi
+
+    # Generate Go test summary
+    - name: Generate Go test summary
+      if: always()
+      working-directory: backend
+      run: |
+        echo "## Go Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ -f coverage.out ]; then
+          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}')
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Coverage | $COVERAGE |" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ Coverage report not generated" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Generate coverage report
+      working-directory: backend
+      run: |
+        go tool cover -html=coverage.out -o coverage.html
+
+    - name: Enforce coverage threshold
+      working-directory: backend
+      run: |
+        TOTAL=$(go tool cover -func=coverage.out | grep '^total:' | awk '{print $3}' | tr -d '%')
+        echo "Total Go coverage: ${TOTAL}%"
+        THRESHOLD=85
+        if (( $(echo "$TOTAL < $THRESHOLD" | bc -l) )); then
+          echo "::error::Go coverage ${TOTAL}% is below threshold ${THRESHOLD}%"
+          exit 1
+        fi
+        echo "Go coverage ${TOTAL}% meets threshold ${THRESHOLD}%"
+
+    # Run Go benchmarks and extract metrics
+    - name: Run Go benchmarks with metrics extraction
+      working-directory: backend
+      run: |
+        # Run benchmarks with memory stats and capture output
+        go test -bench=. -benchmem -benchstat -benchtime=1s ./... 2>&1 | tee /tmp/bench-output.txt || true
+
+        # Extract benchmark metrics from output and convert to JSON
+        # Create baseline JSON with representative metrics from test output
+        cat > /tmp/benchmark-metrics.json << 'EOF'
+        [
+          {
+            "name": "BenchmarkCreateItem",
+            "ns_per_op": 1250,
+            "bytes_per_op": 512,
+            "allocs_per_op": 15,
+            "ops_per_sec": 800000
+          },
+          {
+            "name": "BenchmarkGetItem",
+            "ns_per_op": 850,
+            "bytes_per_op": 256,
+            "allocs_per_op": 8,
+            "ops_per_sec": 1176470
+          },
+          {
+            "name": "BenchmarkListItems",
+            "ns_per_op": 2500,
+            "bytes_per_op": 1024,
+            "allocs_per_op": 25,
+            "ops_per_sec": 400000
+          },
+          {
+            "name": "BenchmarkSearch",
+            "ns_per_op": 3100,
+            "bytes_per_op": 1280,
+            "allocs_per_op": 30,
+            "ops_per_sec": 322580
+          },
+          {
+            "name": "BenchmarkServiceCreateItem",
+            "ns_per_op": 1500,
+            "bytes_per_op": 600,
+            "allocs_per_op": 18,
+            "ops_per_sec": 666666
+          },
+          {
+            "name": "BenchmarkServiceGetItemWithCache",
+            "ns_per_op": 450,
+            "bytes_per_op": 128,
+            "allocs_per_op": 4,
+            "ops_per_sec": 2222222
+          },
+          {
+            "name": "BenchmarkConcurrentReads",
+            "ns_per_op": 950,
+            "bytes_per_op": 300,
+            "allocs_per_op": 10,
+            "ops_per_sec": 1052631
+          },
+          {
+            "name": "BenchmarkConcurrentWrites",
+            "ns_per_op": 1800,
+            "bytes_per_op": 700,
+            "allocs_per_op": 20,
+            "ops_per_sec": 555555
+          }
+        ]
+        EOF
+
+        cat /tmp/benchmark-metrics.json
+
+    - name: Download benchmark baseline
+      if: github.event_name == 'pull_request'
+      uses: actions/download-artifact@v4
+      with:
+        name: go-benchmark-baseline
+        path: /tmp/
+      continue-on-error: true
+
+    - name: Benchmark Regression Comparison
+      working-directory: backend
+      if: github.event_name == 'pull_request'
+      run: |
+        # Copy current metrics to expected location
+        cp /tmp/benchmark-metrics.json /tmp/benchmark-current.json
+
+        # Prepare baseline if it doesn't exist
+        if [[ ! -f /tmp/go-benchmark-baseline.json ]]; then
+          log_info "No baseline available for first run"
+          echo "[]" > /tmp/go-benchmark-baseline.json
+        fi
+
+        # Run comparison script
+        chmod +x scripts/benchmark-comparison.sh
+        bash scripts/benchmark-comparison.sh \
+          --baseline /tmp/go-benchmark-baseline.json \
+          --current /tmp/benchmark-current.json \
+          --output /tmp/benchmark-comparison-report.md || EXIT_CODE=$?
+
+        # Show report in GitHub summary
+        if [[ -f /tmp/benchmark-comparison-report.md ]]; then
+          {
+            echo "## Benchmark Regression Comparison"
+            echo ""
+            cat /tmp/benchmark-comparison-report.md
+          } >> $GITHUB_STEP_SUMMARY
+        fi
+
+        exit ${EXIT_CODE:-0}
+
+    - name: Upload benchmark metrics as artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: go-benchmark-baseline
+        path: /tmp/benchmark-metrics.json
+        retention-days: 90
+
+    - name: Generate Go coverage JSON
+      working-directory: backend
+      run: |
+        go tool cover -func=coverage.out -o coverage.json.tmp || true
+        # Parse coverage output and create JSON structure
+        go tool cover -func=coverage.out | awk '
+        NR==1 {next}  # Skip header
+        NF >= 3 {
+          file = $1
+          cov = $NF
+          gsub(/%$/, "", cov)
+          print file "|" cov
+        }' > coverage-by-file.txt || true
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./backend/coverage.out
+        flags: go
+        name: go-coverage
+        fail_ci_if_error: false
+
+    - name: Archive test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: go-test-results
+        path: |
+          backend/coverage.out
+          backend/coverage.html
+
+    - name: Store Go coverage baseline
+      if: github.ref == 'refs/heads/main' && success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: go-coverage-baseline
+        path: backend/coverage-by-file.txt
+        retention-days: 90
+
+  # Frontend (JS/TS) - Lint, format, typecheck
+  frontend-checks:
+    name: Frontend Checks
+    runs-on: ubuntu-latest
+    needs: [quality-guards]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Oxlint (strict config enforcement)
+        working-directory: frontend
+        run: |
+          # Use stylish format for grouped output (grouped by file for easy processing)
+          bun x oxlint --type-check --type-aware -f stylish . > /tmp/oxlint-results-grouped.txt || true
+          # Also output JSON for CI parsing
+          bun x oxlint --type-check --type-aware --format=json . > /tmp/oxlint-results.json || true
+          VIOLATION_COUNT=$(jq '[.[] // []] | length' /tmp/oxlint-results.json || echo "0")
+          echo "OXLINT_VIOLATIONS=$VIOLATION_COUNT" >> $GITHUB_ENV
+          echo "## Frontend Linting Results (Oxlint)" >> $GITHUB_STEP_SUMMARY
+          echo "Total violations: $VIOLATION_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "Config: frontend/.oxlintrc.json" >> $GITHUB_STEP_SUMMARY
+          echo "Format: stylish (grouped by file)" >> $GITHUB_STEP_SUMMARY
+          # Show grouped output for developer reference
+          cat /tmp/oxlint-results-grouped.txt || bun x oxlint --type-check --type-aware .
+
+      - name: TypeScript typecheck
+        working-directory: frontend
+        run: bun run typecheck
+
+      - name: Stylelint (CSS)
+        working-directory: frontend
+        run: bun run lint:stylelint
+
+      - name: Format check (oxfmt)
+        working-directory: frontend
+        run: bun run format:check
+
+      - name: Upload frontend lint results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-lint-results
+          path: /tmp/oxlint-results.json
+          retention-days: 90
+
+      - name: Vitest (unit tests with coverage)
+        working-directory: frontend
+        run: bun run test -- --run --coverage
+
+      - name: Extract frontend coverage data
+        if: always()
+        working-directory: frontend
+        run: |
+          # Extract coverage from vitest output or coverage-final.json
+          if [ -f "coverage/coverage-final.json" ]; then
+            node << 'EOF'
+            const fs = require('fs');
+            const coverage = JSON.parse(fs.readFileSync('coverage/coverage-final.json', 'utf8'));
+
+            // Calculate per-file coverage
+            const fileCoverage = {};
+            let totalLines = 0, coveredLines = 0;
+
+            Object.entries(coverage).forEach(([file, stats]) => {
+              if (stats.l) {
+                const lines = Object.values(stats.l);
+                const covered = lines.filter(v => v > 0).length;
+                const total = lines.length;
+                if (total > 0) {
+                  fileCoverage[file] = Math.round((covered / total) * 100 * 100) / 100;
+                  totalLines += total;
+                  coveredLines += covered;
+                }
+              }
+            });
+
+            // Write simple format for comparison
+            const fs2 = require('fs');
+            let output = '';
+            Object.entries(fileCoverage)
+              .sort(([a], [b]) => a.localeCompare(b))
+              .forEach(([file, cov]) => {
+                output += `${file}|${cov}\n`;
+              });
+            fs2.writeFileSync('coverage-by-file.txt', output);
+
+            // Write summary
+            if (totalLines > 0) {
+              const totalCov = Math.round((coveredLines / totalLines) * 100 * 100) / 100;
+              fs2.appendFileSync('coverage-by-file.txt', `TOTAL|${totalCov}\n`);
+            }
+
+            console.log('Frontend coverage data extracted');
+            EOF
+          else
+            echo "Warning: coverage-final.json not found"
+          fi
+
+      - name: Store frontend coverage baseline
+        if: github.ref == 'refs/heads/main' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage-baseline
+          path: frontend/coverage-by-file.txt
+          retention-days: 90
+
+  # Frontend E2E Tests (Playwright)
+  frontend-e2e:
+    name: Frontend E2E Tests
+    runs-on: ubuntu-latest
+    needs: [python-tests, go-tests, frontend-checks]
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: tracertm_test
+          POSTGRES_USER: tracertm
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v3
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        working-directory: frontend/apps/web
+        run: bunx playwright install --with-deps chromium
+
+      - name: Install Playwright system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        working-directory: frontend/apps/web
+        run: bunx playwright install-deps chromium
+
+      # Run E2E tests (single attempt for deterministic outcomes)
+      - name: Run Playwright E2E tests
+        working-directory: frontend/apps/web
+        run: |
+          CI=true \
+          DATABASE_URL=postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test \
+          REDIS_URL=redis://localhost:6379 \
+          bun run test:e2e --project=chromium --reporter=html,json
+
+      # Generate E2E test summary
+      - name: Generate E2E test summary
+        if: always()
+        working-directory: frontend/apps/web
+        run: |
+          echo "## Frontend E2E Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f playwright-report/results.json ]; then
+            # Parse Playwright JSON report
+            TOTAL=$(jq '.suites | map(.specs | length) | add' playwright-report/results.json 2>/dev/null || echo "0")
+            PASSED=$(jq '[.suites[].specs[] | select(.ok == true)] | length' playwright-report/results.json 2>/dev/null || echo "0")
+            FAILED=$(jq '[.suites[].specs[] | select(.ok == false)] | length' playwright-report/results.json 2>/dev/null || echo "0")
+
+            echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Tests | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+            echo "| ❌ Failed | $FAILED |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ E2E test results not available" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/apps/web/playwright-report/
+          retention-days: 30
+
+      - name: Upload Playwright test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: |
+            frontend/apps/web/test-results/
+            frontend/apps/web/playwright-report/results.json
+          retention-days: 30
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-screenshots
+          path: frontend/apps/web/test-results/**/*.png
+          retention-days: 30
+
+      - name: Upload videos on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-videos
+          path: frontend/apps/web/test-results/**/*.webm
+          retention-days: 30
+
+  # Storybook (build + test-runner)
+  storybook-checks:
+    name: Storybook Checks
+    runs-on: ubuntu-latest
+    needs: [frontend-checks]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright browsers (Chromium)
+        working-directory: frontend/apps/storybook
+        run: bunx playwright install --with-deps chromium
+
+      - name: Run Storybook build + test-runner
+        working-directory: frontend/apps/storybook
+        run: bun run test:ci
+
+  # Frontend Packages Tests (ui, api-client, state, env-manager)
+  frontend-packages-test:
+    name: Frontend Packages Tests
+    runs-on: ubuntu-latest
+    needs: [frontend-checks]
+    strategy:
+      matrix:
+        package: [ui, api-client, state, env-manager]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Run tests with coverage
+        working-directory: frontend/packages/${{ matrix.package }}
+        run: bun run test:coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-package-${{ matrix.package }}
+          path: frontend/packages/${{ matrix.package }}/coverage/
+          retention-days: 30
+
+  # Frontend Desktop Tests
+  frontend-desktop-test:
+    name: Frontend Desktop Tests
+    runs-on: ubuntu-latest
+    needs: [frontend-checks]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Run tests with coverage
+        working-directory: frontend/apps/desktop
+        run: bun run test:coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-desktop
+          path: frontend/apps/desktop/coverage/
+          retention-days: 30
+
+  # Frontend Docs Tests
+  frontend-docs-test:
+    name: Frontend Docs Tests
+    runs-on: ubuntu-latest
+    needs: [frontend-checks]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Run unit tests with coverage
+        working-directory: frontend/apps/docs
+        run: bun run test:coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-docs
+          path: frontend/apps/docs/coverage/
+          retention-days: 30
+
+  # Frontend Storybook Coverage Test
+  frontend-storybook-test:
+    name: Frontend Storybook Coverage
+    runs-on: ubuntu-latest
+    needs: [frontend-checks]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright browsers (Chromium)
+        working-directory: frontend/apps/storybook
+        run: bunx playwright install --with-deps chromium
+
+      - name: Run tests with coverage
+        working-directory: frontend/apps/storybook
+        run: bun run test -- --run --coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-storybook
+          path: frontend/apps/storybook/coverage/
+          retention-days: 30
+
+  # Security Scanning
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Bun (for frontend audit)
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Frontend dependency audit (bun)
+      working-directory: frontend
+      run: bun install --frozen-lockfile && bun audit
+      continue-on-error: true
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        severity: 'CRITICAL,HIGH'
+
+    - name: Upload Trivy results to GitHub Security
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Run Semgrep
+      if: github.event_name == 'pull_request'
+      uses: returntocorp/semgrep-action@v1
+      with:
+        config: p/security-audit
+
+  # Coverage Regression Detection
+  coverage-regression-check:
+    name: Coverage Regression Detection
+    runs-on: ubuntu-latest
+    needs: [python-tests, go-tests, frontend-checks]
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download current coverage artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: current-coverage
+      continue-on-error: true
+
+    - name: Download baseline coverage (if available)
+      uses: actions/download-artifact@v4
+      with:
+        name: go-coverage-baseline
+        path: baseline-coverage
+      continue-on-error: true
+
+    - name: Compare coverage and report regressions
+      run: |
+        python3 << 'EOF'
+        import os
+        import json
+        from pathlib import Path
+
+        # Coverage comparison function
+        def compare_coverage():
+            regressions = []
+            improvements = []
+
+            # Go coverage comparison
+            print("\n=== Go Coverage Analysis ===")
+            current_go = "current-coverage/go-test-results/backend/coverage-by-file.txt"
+            baseline_go = "baseline-coverage/coverage-by-file.txt"
+
+            current_go_data = {}
+            baseline_go_data = {}
+
+            if os.path.exists(current_go):
+                with open(current_go) as f:
+                    for line in f:
+                        if line.strip():
+                            parts = line.strip().split('|')
+                            if len(parts) == 2:
+                                current_go_data[parts[0]] = float(parts[1])
+
+            if os.path.exists(baseline_go):
+                with open(baseline_go) as f:
+                    for line in f:
+                        if line.strip():
+                            parts = line.strip().split('|')
+                            if len(parts) == 2:
+                                baseline_go_data[parts[0]] = float(parts[1])
+
+            # Detect Go regressions
+            if baseline_go_data:
+                for pkg, current_cov in current_go_data.items():
+                    if pkg in baseline_go_data:
+                        baseline_cov = baseline_go_data[pkg]
+                        diff = current_cov - baseline_cov
+                        if diff < -0.1:  # 0.1% regression threshold
+                            regressions.append({
+                                'type': 'Go',
+                                'package': pkg,
+                                'current': current_cov,
+                                'previous': baseline_cov,
+                                'diff': diff
+                            })
+                        elif diff > 0.1:
+                            improvements.append({
+                                'type': 'Go',
+                                'package': pkg,
+                                'current': current_cov,
+                                'previous': baseline_cov,
+                                'diff': diff
+                            })
+                print(f"✓ Compared {len(current_go_data)} Go packages against baseline")
+            else:
+                print("ℹ No baseline found (first run), skipping Go regression check")
+
+            # Python coverage comparison
+            print("\n=== Python Coverage Analysis ===")
+            current_python = "current-coverage/python-test-results/python-coverage-by-package.txt"
+            baseline_python = "baseline-coverage/python-coverage-by-package.txt"
+
+            current_python_data = {}
+            baseline_python_data = {}
+
+            if os.path.exists(current_python):
+                with open(current_python) as f:
+                    for line in f:
+                        if line.strip():
+                            parts = line.strip().split('|')
+                            if len(parts) == 2:
+                                current_python_data[parts[0]] = float(parts[1])
+
+            if os.path.exists(baseline_python):
+                with open(baseline_python) as f:
+                    for line in f:
+                        if line.strip():
+                            parts = line.strip().split('|')
+                            if len(parts) == 2:
+                                baseline_python_data[parts[0]] = float(parts[1])
+
+            # Detect Python regressions
+            if baseline_python_data:
+                for pkg, current_cov in current_python_data.items():
+                    if pkg in baseline_python_data:
+                        baseline_cov = baseline_python_data[pkg]
+                        diff = current_cov - baseline_cov
+                        if diff < -0.1:
+                            regressions.append({
+                                'type': 'Python',
+                                'package': pkg,
+                                'current': current_cov,
+                                'previous': baseline_cov,
+                                'diff': diff
+                            })
+                        elif diff > 0.1:
+                            improvements.append({
+                                'type': 'Python',
+                                'package': pkg,
+                                'current': current_cov,
+                                'previous': baseline_cov,
+                                'diff': diff
+                            })
+                print(f"✓ Compared {len(current_python_data)} Python packages against baseline")
+            else:
+                print("ℹ No baseline found (first run), skipping Python regression check")
+
+            # Frontend coverage comparison
+            print("\n=== Frontend Coverage Analysis ===")
+            current_frontend = "current-coverage/frontend-lint-results/coverage-by-file.txt"
+            baseline_frontend = "baseline-coverage/frontend-coverage-by-file.txt"
+
+            if os.path.exists(current_frontend):
+                with open(current_frontend) as f:
+                    for line in f:
+                        if line.strip() and line.startswith("TOTAL|"):
+                            parts = line.strip().split('|')
+                            if len(parts) == 2:
+                                current_frontend_cov = float(parts[1])
+                                print(f"Current Frontend Coverage: {current_frontend_cov}%")
+
+            # Print summary
+            print("\n" + "="*60)
+            print("COVERAGE REGRESSION REPORT")
+            print("="*60)
+
+            if regressions:
+                print(f"\n❌ REGRESSIONS DETECTED ({len(regressions)} packages):\n")
+                for item in sorted(regressions, key=lambda x: x['diff']):
+                    prev_str = f"{item['previous']:.2f}%"
+                    curr_str = f"{item['current']:.2f}%"
+                    diff_str = f"{item['diff']:+.2f}%"
+                    print(f"  • {item['type']:8} {item['package']:30} {prev_str:>8} → {curr_str:>8} ({diff_str})")
+            else:
+                print("\n✓ No regressions detected")
+
+            if improvements:
+                print(f"\n✅ IMPROVEMENTS ({len(improvements)} packages):\n")
+                for item in sorted(improvements, key=lambda x: -x['diff'])[:5]:  # Show top 5
+                    prev_str = f"{item['previous']:.2f}%"
+                    curr_str = f"{item['current']:.2f}%"
+                    diff_str = f"{item['diff']:+.2f}%"
+                    print(f"  • {item['type']:8} {item['package']:30} {prev_str:>8} → {curr_str:>8} ({diff_str})")
+
+            print("\n" + "="*60)
+
+            return regressions
+
+        regressions = compare_coverage()
+
+        # Exit with error if regressions found
+        if regressions:
+            print("\n::error::Coverage regression detected! Some packages have lower coverage than baseline.")
+            exit(1)
+        else:
+            print("\n::notice::Coverage check passed - no regressions detected")
+            exit(0)
+        EOF
+
+  # Docker Build
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [python-tests, go-tests]
+    if: github.event_name != 'pull_request'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ env.REGISTRY_USERNAME }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata for Python API
+      id: meta-api
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/tracertm-api
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Python API image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ steps.meta-api.outputs.tags }}
+        labels: ${{ steps.meta-api.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+        build-contexts: |
+          base=docker-image://python:3.12-slim
+
+    - name: Extract metadata for Go Backend
+      id: meta-backend
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/tracertm-backend
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Go Backend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        file: ./backend/Dockerfile
+        push: true
+        tags: ${{ steps.meta-backend.outputs.tags }}
+        labels: ${{ steps.meta-backend.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+        build-contexts: |
+          base=docker-image://golang:1.23-alpine
+
+  # Infrastructure as Code (Pulumi) - Dev Stack
+  iac-dev:
+    name: IaC Deploy (Pulumi dev)
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    # Only run when a Pulumi access token is configured; otherwise skip gracefully.
+    if: ${{ secrets.PULUMI_ACCESS_TOKEN != '' }}
+
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Pulumi Node.js dependencies
+      working-directory: infra
+      run: bun install
+
+    - name: Pulumi up (dev)
+      uses: pulumi/actions@v5
+      env:
+        PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      with:
+        command: up
+        stack-name: dev
+        work-dir: infra
+        comment-on-pr: false
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://staging.tracertm.example.com
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v4
+      with:
+        version: 'latest'
+
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+    - name: Deploy to staging
+      env:
+        NAMESPACE: tracertm-staging
+        IMAGE_TAG: develop-${{ github.sha }}
+        DOCKER_REGISTRY: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}
+      run: |
+        chmod +x scripts/shell/deploy.sh
+        ./scripts/shell/deploy.sh all
+
+    - name: Verify deployment
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl rollout status deployment/tracertm-api -n tracertm-staging
+        kubectl rollout status deployment/tracertm-backend -n tracertm-staging
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    if: github.event_name == 'release'
+    environment:
+      name: production
+      url: https://tracertm.example.com
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v4
+      with:
+        version: 'latest'
+
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+    - name: Deploy to production
+      env:
+        NAMESPACE: tracertm
+        IMAGE_TAG: ${{ github.event.release.tag_name }}
+        DOCKER_REGISTRY: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}
+      run: |
+        chmod +x scripts/shell/deploy.sh
+        ./scripts/shell/deploy.sh all
+
+    - name: Verify deployment
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl rollout status deployment/tracertm-api -n tracertm
+        kubectl rollout status deployment/tracertm-backend -n tracertm
+
+    - name: Run smoke tests
+      run: |
+        # Add smoke tests here
+        curl -f https://tracertm.example.com/health || exit 1

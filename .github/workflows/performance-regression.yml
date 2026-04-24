@@ -1,0 +1,397 @@
+name: Performance Regression Testing
+
+on:
+  # Run on PR to main/master
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'backend/**'
+      - 'src/**'
+      - 'tests/load/**'
+      - '.github/workflows/performance-regression.yml'
+
+  # Run on push to main (establish baseline)
+  push:
+    branches: [main, master]
+    paths:
+      - 'backend/**'
+      - 'src/**'
+
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Test type to run'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - load
+          - stress
+          - spike
+          - all
+
+  # Scheduled runs for regular performance monitoring
+  schedule:
+    - cron: '0 2 * * 1' # Weekly on Monday at 2 AM UTC
+
+env:
+  BASE_URL: http://localhost:4000
+  TEST_ENV: ci
+  K6_VERSION: '0.48.0'
+
+jobs:
+  # =============================================================================
+  # Setup and Environment Preparation
+  # =============================================================================
+  setup:
+    name: Setup Test Environment
+    runs-on: ubuntu-latest
+    outputs:
+      baseline_exists: ${{ steps.check_baseline.outputs.exists }}
+      test_type: ${{ steps.determine_test.outputs.type }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for performance baseline
+        id: check_baseline
+        run: |
+          if [ -f "tests/load/.baseline/smoke-baseline.json" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Determine test type
+        id: determine_test
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "type=${{ github.event.inputs.test_type }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "type=load" >> $GITHUB_OUTPUT
+          else
+            echo "type=smoke" >> $GITHUB_OUTPUT
+          fi
+
+  # =============================================================================
+  # Smoke Test (Quick Performance Check)
+  # =============================================================================
+  smoke-test:
+    name: Smoke Test - Quick Performance Check
+    runs-on: ubuntu-latest
+    needs: setup
+    if: |
+      needs.setup.outputs.test_type == 'smoke' ||
+      needs.setup.outputs.test_type == 'all'
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: tracertm
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: tracertm
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          cache: 'pip'
+        with:
+          python-version: '3.11'
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Install Python dependencies
+        run: |
+          pip install uv
+          uv sync
+
+      - name: Run database migrations
+        run: |
+          uv run alembic upgrade head
+        env:
+          DATABASE_URL: postgresql://tracertm:testpass@localhost:5432/tracertm
+
+      - name: Build Go backend
+        run: |
+          cd backend
+          go build -o api ./cmd/api
+
+      - name: Start backend services
+        run: |
+          # Start Go API in background
+          cd backend
+          ./api &
+          echo $! > api.pid
+
+          # Wait for API to be ready
+          timeout 30 bash -c 'until curl -f http://localhost:8080/health; do sleep 1; done'
+        env:
+          DATABASE_URL: postgresql://tracertm:testpass@localhost:5432/tracertm
+          REDIS_URL: redis://localhost:6379
+
+      - name: Run smoke test
+        run: |
+          k6 run \
+            --out json=smoke-test-results.json \
+            --summary-export=smoke-test-summary.json \
+            tests/load/k6/scenarios/smoke.js
+        env:
+          BASE_URL: http://localhost:8080
+
+      - name: Compare with baseline
+        if: needs.setup.outputs.baseline_exists == 'true'
+        run: |
+          python tests/load/scripts/compare-performance.py \
+            --baseline tests/load/.baseline/smoke-baseline.json \
+            --current smoke-test-summary.json \
+            --threshold 10
+
+      - name: Save as new baseline (on main branch)
+        if: github.ref == 'refs/heads/main' && success()
+        run: |
+          mkdir -p tests/load/.baseline
+          cp smoke-test-summary.json tests/load/.baseline/smoke-baseline.json
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-results
+          path: |
+            smoke-test-results.json
+            smoke-test-summary.json
+
+      - name: Stop backend services
+        if: always()
+        run: |
+          if [ -f backend/api.pid ]; then
+            kill $(cat backend/api.pid) || true
+          fi
+
+  # =============================================================================
+  # Load Test (Standard Performance Validation)
+  # =============================================================================
+  load-test:
+    name: Load Test - Standard Performance Validation
+    runs-on: ubuntu-latest
+    needs: setup
+    if: |
+      needs.setup.outputs.test_type == 'load' ||
+      needs.setup.outputs.test_type == 'all'
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: tracertm
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: tracertm
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          cache: 'pip'
+        with:
+          python-version: '3.11'
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Install dependencies and setup
+        run: |
+          pip install uv
+          uv sync
+          uv run alembic upgrade head
+        env:
+          DATABASE_URL: postgresql://tracertm:testpass@localhost:5432/tracertm
+
+      - name: Build and start services
+        run: |
+          cd backend
+          go build -o api ./cmd/api
+          ./api &
+          echo $! > api.pid
+          timeout 30 bash -c 'until curl -f http://localhost:8080/health; do sleep 1; done'
+        env:
+          DATABASE_URL: postgresql://tracertm:testpass@localhost:5432/tracertm
+          REDIS_URL: redis://localhost:6379
+
+      - name: Run load test
+        run: |
+          k6 run \
+            --out json=load-test-results.json \
+            --summary-export=load-test-summary.json \
+            tests/load/k6/scenarios/load.js
+        env:
+          BASE_URL: http://localhost:8080
+
+      - name: Compare with baseline
+        if: needs.setup.outputs.baseline_exists == 'true'
+        run: |
+          python tests/load/scripts/compare-performance.py \
+            --baseline tests/load/.baseline/load-baseline.json \
+            --current load-test-summary.json \
+            --threshold 15
+
+      - name: Save as new baseline (on main branch)
+        if: github.ref == 'refs/heads/main' && success()
+        run: |
+          mkdir -p tests/load/.baseline
+          cp load-test-summary.json tests/load/.baseline/load-baseline.json
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results
+          path: |
+            load-test-results.json
+            load-test-summary.json
+
+      - name: Stop services
+        if: always()
+        run: |
+          [ -f backend/api.pid ] && kill $(cat backend/api.pid) || true
+
+  # =============================================================================
+  # Performance Report
+  # =============================================================================
+  report:
+    name: Generate Performance Report
+    runs-on: ubuntu-latest
+    needs: [smoke-test, load-test]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download smoke test results
+        if: needs.smoke-test.result != 'skipped'
+        uses: actions/download-artifact@v4
+        with:
+          name: smoke-test-results
+          path: results/smoke
+
+      - name: Download load test results
+        if: needs.load-test.result != 'skipped'
+        uses: actions/download-artifact@v4
+        with:
+          name: load-test-results
+          path: results/load
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          cache: 'pip'
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install jinja2 matplotlib pandas
+
+      - name: Generate performance report
+        run: |
+          python tests/load/scripts/generate-report.py \
+            --results-dir results \
+            --output performance-report.html
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: performance-report.html
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = JSON.parse(fs.readFileSync('results/smoke/smoke-test-summary.json', 'utf8'));
+
+            const comment = `
+            ## Performance Test Results
+
+            ### Smoke Test
+            - **Total Requests**: ${summary.metrics.http_reqs.count}
+            - **P95 Latency**: ${summary.metrics.http_req_duration.p95.toFixed(2)}ms
+            - **Error Rate**: ${(summary.metrics.http_req_failed.rate * 100).toFixed(2)}%
+
+            [Full Report](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

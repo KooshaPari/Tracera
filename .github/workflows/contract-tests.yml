@@ -1,0 +1,207 @@
+name: Contract Tests
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+env:
+  TEST_DB_HOST: localhost
+  TEST_DB_PORT: 5432
+  TEST_DB_USER: postgres
+  TEST_DB_PASSWORD: postgres
+  TEST_DB_NAME: tracertm_test
+
+jobs:
+  consumer-tests:
+    name: Consumer Contract Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend/apps/web
+          bun install
+
+      - name: Run consumer contract tests
+        run: |
+          cd tests/contracts
+          ./scripts/shell/run-consumer-tests.sh
+
+      - name: Upload pact files
+        uses: actions/upload-artifact@v4
+        with:
+          name: pacts
+          path: tests/contracts/pacts/*.json
+          retention-days: 7
+
+      - name: Publish test results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Consumer Contract Tests
+          path: 'frontend/apps/web/test-results/*.xml'
+          reporter: jest-junit
+          fail-on-error: true
+
+  provider-tests:
+    name: Provider Contract Verification
+    runs-on: ubuntu-latest
+    needs: consumer-tests
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tracertm_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache-dependency-path: backend/go.sum
+
+      - name: Download pact files
+        uses: actions/download-artifact@v4
+        with:
+          name: pacts
+          path: tests/contracts/pacts
+
+      - name: Install Pact CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/pact-foundation/pact-ruby-standalone/master/install.sh | bash
+          echo "$HOME/.pact/bin" >> $GITHUB_PATH
+
+      - name: Setup test database
+        run: |
+          cd backend
+          # Run migrations
+          go run cmd/migrate/main.go up
+
+      - name: Run provider verification
+        run: |
+          cd tests/contracts
+          ./scripts/shell/run-provider-tests.sh
+
+      - name: Publish verification results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Provider Verification Tests
+          path: 'backend/test-results/*.xml'
+          reporter: golang-junit
+          fail-on-error: true
+
+  publish-contracts:
+    name: Publish Contracts to Broker
+    runs-on: ubuntu-latest
+    needs: [consumer-tests, provider-tests]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download pact files
+        uses: actions/download-artifact@v4
+        with:
+          name: pacts
+          path: tests/contracts/pacts
+
+      - name: Publish to Pact Broker
+        if: env.PACT_BROKER_BASE_URL != ''
+        env:
+          PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
+          PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
+        run: |
+          # Install Pact CLI
+          curl -fsSL https://raw.githubusercontent.com/pact-foundation/pact-ruby-standalone/master/install.sh | bash
+
+          # Get version from git
+          VERSION=$(git describe --tags --always)
+          BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+          # Publish pacts
+          $HOME/.pact/bin/pact-broker publish \
+            tests/contracts/pacts \
+            --consumer-app-version=$VERSION \
+            --branch=$BRANCH \
+            --broker-base-url=$PACT_BROKER_BASE_URL \
+            --broker-token=$PACT_BROKER_TOKEN
+
+      - name: Create contract version tag
+        if: env.PACT_BROKER_BASE_URL != ''
+        run: |
+          VERSION=$(git describe --tags --always)
+          mkdir -p tests/contracts/versions/$VERSION
+          cp tests/contracts/pacts/*.json tests/contracts/versions/$VERSION/
+
+          # Commit versioned contracts
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add tests/contracts/versions/
+          git commit -m "chore: version contracts for $VERSION" || true
+          git push || true
+
+  coverage-report:
+    name: Contract Coverage Report
+    runs-on: ubuntu-latest
+    needs: [consumer-tests, provider-tests]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download pact files
+        uses: actions/download-artifact@v4
+        with:
+          name: pacts
+          path: tests/contracts/pacts
+
+      - name: Generate coverage report
+        run: |
+          cd tests/contracts
+          ./scripts/shell/generate-coverage-report.sh
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-coverage-report
+          path: tests/contracts/docs/coverage.md
+          retention-days: 30
+
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const coverage = fs.readFileSync('tests/contracts/docs/coverage.md', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 📋 Contract Test Coverage\n\n${coverage}`
+            });

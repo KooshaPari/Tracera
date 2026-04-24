@@ -1,0 +1,62 @@
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+otelcol.receiver.otlp "local" {
+  grpc {
+    endpoint = "127.0.0.1:4319"
+  }
+
+  output {
+    traces = [otelcol.processor.batch.traces.input]
+  }
+}
+
+otelcol.processor.batch "traces" {
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "127.0.0.1:4317"
+
+    tls {
+      insecure = true
+    }
+  }
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://127.0.0.1:3100/loki/api/v1/push"
+  }
+}
+
+local.file_match "process_compose" {
+  path_targets = [
+    {
+      "__path__"      = ".process-compose/logs/*.log",
+      "repo"          = "tracera",
+      "log_source"    = "process-compose",
+      "service_group" = "local-dev",
+    },
+  ]
+}
+
+loki.source.file "process_compose" {
+  targets    = local.file_match.process_compose.targets
+  forward_to = [loki.process.local.receiver]
+}
+
+loki.process "local" {
+  stage.static_labels {
+    values = {
+      repo = "tracera",
+    }
+  }
+
+  forward_to = [loki.write.local.receiver]
+}

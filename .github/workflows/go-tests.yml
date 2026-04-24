@@ -1,0 +1,556 @@
+name: Go Backend Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/go-tests.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/go-tests.yml'
+  workflow_dispatch:
+
+env:
+  GO_VERSION: '1.23.0'
+  POSTGRES_DB: tracertm_test
+  POSTGRES_USER: tracertm_test
+  POSTGRES_PASSWORD: test_password
+  REDIS_URL: redis://localhost:6379
+  NATS_URL: nats://localhost:4222
+
+jobs:
+  # Unit tests - Fast, no external dependencies
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/tests/go.sum
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Verify dependencies
+        working-directory: backend/tests
+        env:
+          GOTOOLCHAIN: local
+        run: |
+          go mod download
+          go mod verify
+
+      - name: Run unit tests
+        working-directory: backend/tests
+        env:
+          GOTOOLCHAIN: local
+        run: |
+          go test -v -short -race -coverprofile=unit-coverage.out -covermode=atomic \
+            -tags=unit \
+            ./... \
+            -run 'Test(Models|Validation|Util)'
+
+          # Run actual unit tests (those that don't require external services)
+          go test -v -short -race -coverprofile=unit-coverage.out -covermode=atomic \
+            -count=1 \
+            $(go list ./... | grep -v integration | grep -v security)
+
+      - name: Generate unit coverage report
+        working-directory: backend/tests
+        run: |
+          go tool cover -func=unit-coverage.out > unit-coverage.txt
+          cat unit-coverage.txt
+
+      - name: Upload unit coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./backend/tests/unit-coverage.out
+          flags: unit
+          name: unit-tests
+          fail_ci_if_error: false
+
+      - name: Upload unit coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-coverage
+          path: |
+            backend/tests/unit-coverage.out
+            backend/tests/unit-coverage.txt
+          retention-days: 7
+
+  # Integration tests - Require PostgreSQL, Redis, NATS
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      nats:
+        image: nats:2.10-alpine
+        ports:
+          - 4222:4222
+          - 8222:8222
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:8222/healthz || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/tests/go.sum
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Verify dependencies
+        working-directory: backend/tests
+        env:
+          GOTOOLCHAIN: local
+        run: |
+          go mod download
+          go mod verify
+
+      - name: Set up database schema
+        working-directory: backend
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: ${{ env.POSTGRES_USER }}
+          DB_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          DB_NAME: ${{ env.POSTGRES_DB }}
+        run: |
+          # Install psql client
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+          # Apply schema if exists
+          if [ -f schema.sql ]; then
+            PGPASSWORD=$DB_PASSWORD psql -h localhost -U $DB_USER -d $DB_NAME -f schema.sql
+          fi
+
+      - name: Run integration tests
+        working-directory: backend/tests
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: ${{ env.POSTGRES_USER }}
+          DB_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          DB_NAME: ${{ env.POSTGRES_DB }}
+          REDIS_URL: ${{ env.REDIS_URL }}
+          NATS_URL: ${{ env.NATS_URL }}
+          TEST_DATABASE_URL: postgresql://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}?sslmode=disable
+          GOTOOLCHAIN: local
+        run: |
+          go test -v -race -coverprofile=integration-coverage.out -covermode=atomic \
+            -tags=integration \
+            -count=1 \
+            ./integration/...
+
+      - name: Generate integration coverage report
+        working-directory: backend/tests
+        run: |
+          go tool cover -func=integration-coverage.out > integration-coverage.txt
+          cat integration-coverage.txt
+
+      - name: Upload integration coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./backend/tests/integration-coverage.out
+          flags: integration
+          name: integration-tests
+          fail_ci_if_error: false
+
+      - name: Upload integration coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-coverage
+          path: |
+            backend/tests/integration-coverage.out
+            backend/tests/integration-coverage.txt
+          retention-days: 7
+
+  # API tests - Require database
+  api-tests:
+    name: API Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/tests/go.sum
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Verify dependencies
+        working-directory: backend/tests
+        env:
+          GOTOOLCHAIN: local
+        run: |
+          go mod download
+          go mod verify
+
+      - name: Set up database schema
+        working-directory: backend
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: ${{ env.POSTGRES_USER }}
+          DB_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          DB_NAME: ${{ env.POSTGRES_DB }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+          if [ -f schema.sql ]; then
+            PGPASSWORD=$DB_PASSWORD psql -h localhost -U $DB_USER -d $DB_NAME -f schema.sql
+          fi
+
+      - name: Run API tests
+        working-directory: backend/tests
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: ${{ env.POSTGRES_USER }}
+          DB_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          DB_NAME: ${{ env.POSTGRES_DB }}
+          TEST_DATABASE_URL: postgresql://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}?sslmode=disable
+          GOTOOLCHAIN: local
+        run: |
+          go test -v -race -coverprofile=api-coverage.out -covermode=atomic \
+            -tags=api \
+            -count=1 \
+            -run 'Test.*Handler' \
+            .
+
+      - name: Generate API coverage report
+        working-directory: backend/tests
+        run: |
+          go tool cover -func=api-coverage.out > api-coverage.txt
+          cat api-coverage.txt
+
+      - name: Upload API coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./backend/tests/api-coverage.out
+          flags: api
+          name: api-tests
+          fail_ci_if_error: false
+
+      - name: Upload API coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-coverage
+          path: |
+            backend/tests/api-coverage.out
+            backend/tests/api-coverage.txt
+          retention-days: 7
+
+  # E2E tests - Full docker-compose setup
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/tests/go.sum
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Start infrastructure with docker-compose
+        run: |
+          docker-compose -f docker-compose.yml up -d postgres redis nats
+
+          # Wait for services to be healthy
+          echo "Waiting for services to be healthy..."
+          timeout 60 bash -c 'until docker-compose ps | grep -q "healthy"; do sleep 2; done'
+
+          # Show service status
+          docker-compose ps
+
+      - name: Verify services are running
+        run: |
+          # Check PostgreSQL
+          docker-compose exec -T postgres pg_isready -U tracertm || exit 1
+
+          # Check Redis
+          docker-compose exec -T redis redis-cli ping || exit 1
+
+          # Check NATS
+          curl -f http://localhost:8222/healthz || exit 1
+
+      - name: Set up database schema
+        run: |
+          if [ -f backend/schema.sql ]; then
+            docker-compose exec -T postgres psql -U tracertm -d tracertm -f /docker-entrypoint-initdb.d/schema.sql || true
+          fi
+
+      - name: Run E2E tests
+        working-directory: backend/tests
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: tracertm
+          DB_PASSWORD: tracertm_password
+          DB_NAME: tracertm
+          REDIS_URL: redis://localhost:6379
+          NATS_URL: nats://localhost:4222
+          TEST_DATABASE_URL: postgresql://tracertm:tracertm_password@localhost:5432/tracertm?sslmode=disable
+          GOTOOLCHAIN: local
+        run: |
+          go test -v -race -coverprofile=e2e-coverage.out -covermode=atomic \
+            -tags=e2e \
+            -count=1 \
+            -timeout=15m \
+            .
+
+      - name: Generate E2E coverage report
+        working-directory: backend/tests
+        run: |
+          go tool cover -func=e2e-coverage.out > e2e-coverage.txt
+          cat e2e-coverage.txt
+
+      - name: Show docker-compose logs on failure
+        if: failure()
+        run: |
+          docker-compose logs postgres
+          docker-compose logs redis
+          docker-compose logs nats
+
+      - name: Stop docker-compose
+        if: always()
+        run: docker-compose down -v
+
+      - name: Upload E2E coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./backend/tests/e2e-coverage.out
+          flags: e2e
+          name: e2e-tests
+          fail_ci_if_error: false
+
+      - name: Upload E2E coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-coverage
+          path: |
+            backend/tests/e2e-coverage.out
+            backend/tests/e2e-coverage.txt
+          retention-days: 7
+
+  # Security tests
+  security-tests:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/tests/go.sum
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Verify dependencies
+        working-directory: backend/tests
+        env:
+          GOTOOLCHAIN: local
+        run: |
+          go mod download
+          go mod verify
+
+      - name: Run security tests
+        working-directory: backend/tests
+        env:
+          GOTOOLCHAIN: local
+        run: |
+          go test -v -race -coverprofile=security-coverage.out -covermode=atomic \
+            -tags=security \
+            -count=1 \
+            ./security/...
+
+      - name: Generate security coverage report
+        working-directory: backend/tests
+        run: |
+          go tool cover -func=security-coverage.out > security-coverage.txt
+          cat security-coverage.txt
+
+      - name: Upload security coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./backend/tests/security-coverage.out
+          flags: security
+          name: security-tests
+          fail_ci_if_error: false
+
+      - name: Upload security coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-coverage
+          path: |
+            backend/tests/security-coverage.out
+            backend/tests/security-coverage.txt
+          retention-days: 7
+
+  # Aggregate coverage and report
+  coverage-report:
+    name: Coverage Report
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, api-tests, e2e-tests, security-tests]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Download all coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: coverage-artifacts
+
+      - name: Merge coverage reports
+        run: |
+          # Combine all coverage files
+          mkdir -p merged-coverage
+
+          # Copy all .out files
+          find coverage-artifacts -name "*.out" -exec cp {} merged-coverage/ \;
+
+          # List coverage files
+          ls -la merged-coverage/
+
+      - name: Upload merged coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./merged-coverage
+          flags: all
+          name: merged-coverage
+          fail_ci_if_error: false
+
+      - name: Generate final coverage summary
+        run: |
+          echo "## Coverage Summary" > coverage-summary.md
+          echo "" >> coverage-summary.md
+
+          for file in coverage-artifacts/*/*.txt; do
+            if [ -f "$file" ]; then
+              echo "### $(basename $(dirname $file))" >> coverage-summary.md
+              tail -1 "$file" >> coverage-summary.md
+              echo "" >> coverage-summary.md
+            fi
+          done
+
+          cat coverage-summary.md
+
+      - name: Upload coverage summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-summary
+          path: coverage-summary.md
+          retention-days: 30

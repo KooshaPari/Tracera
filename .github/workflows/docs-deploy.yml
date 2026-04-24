@@ -1,0 +1,330 @@
+name: Deploy Documentation Site
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/apps/docs/**'
+      - 'docs/**'
+      - 'backend/**/*.go'
+      - '.github/workflows/docs-deploy.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'frontend/apps/docs/**'
+      - 'docs/**'
+      - 'backend/**/*.go'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'preview'
+        type: choice
+        options:
+          - preview
+          - production
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_DOCS_PROJECT_ID }}
+  NODE_VERSION: '20'
+
+jobs:
+  # Generate OpenAPI spec from backend
+  generate-openapi:
+    name: Generate OpenAPI Specification
+    runs-on: ubuntu-latest
+    outputs:
+      spec-generated: ${{ steps.check-spec.outputs.generated }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+          cache-dependency-path: backend/go.sum
+
+      - name: Install swag
+        run: go install github.com/swaggo/swag/cmd/swag@latest
+
+      - name: Generate OpenAPI spec
+        working-directory: backend
+        run: |
+          swag init \
+            --generalInfo main.go \
+            --dir ./ \
+            --output ./docs \
+            --parseDependency \
+            --parseInternal \
+            --parseDepth 2 \
+            --instanceName "tracertm"
+
+      - name: Validate OpenAPI spec
+        run: |
+          npm install -g @apidevtools/swagger-cli
+          swagger-cli validate backend/docs/swagger.json
+
+      - name: Copy spec to docs public directory
+        run: |
+          mkdir -p frontend/apps/docs/public/api
+          cp backend/docs/swagger.json frontend/apps/docs/public/api/openapi.json
+          cp backend/docs/swagger.yaml frontend/apps/docs/public/api/openapi.yaml
+
+      - name: Check if spec changed
+        id: check-spec
+        run: |
+          if git diff --quiet HEAD -- frontend/apps/docs/public/api/; then
+            echo "generated=false" >> $GITHUB_OUTPUT
+          else
+            echo "generated=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload OpenAPI spec
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-spec
+          path: |
+            frontend/apps/docs/public/api/openapi.json
+            frontend/apps/docs/public/api/openapi.yaml
+          retention-days: 7
+
+  # Build and test the docs site
+  build-docs:
+    name: Build Documentation Site
+    runs-on: ubuntu-latest
+    needs: generate-openapi
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Download OpenAPI spec
+        uses: actions/download-artifact@v4
+        with:
+          name: openapi-spec
+          path: frontend/apps/docs/public/api
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Generate TypeScript types from OpenAPI
+        working-directory: frontend/apps/docs
+        run: |
+          if [ -f "scripts/generate-types.ts" ]; then
+            bun run scripts/generate-types.ts
+          fi
+
+      - name: Build documentation site
+        working-directory: frontend/apps/docs
+        run: bun run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://api.tracertm.com' }}
+          NEXT_PUBLIC_DOCS_URL: ${{ secrets.NEXT_PUBLIC_DOCS_URL || 'https://docs.tracertm.com' }}
+
+      - name: Run type check
+        working-directory: frontend/apps/docs
+        run: bun run typecheck
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-build
+          path: frontend/apps/docs/.next
+          retention-days: 7
+
+  # Deploy preview for PRs
+  deploy-preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    needs: [generate-openapi, build-docs]
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'preview')
+    environment:
+      name: preview
+      url: ${{ steps.deploy.outputs.preview-url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Download OpenAPI spec
+        uses: actions/download-artifact@v4
+        with:
+          name: openapi-spec
+          path: frontend/apps/docs/public/api
+
+      - name: Install Vercel CLI
+        run: bun install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        working-directory: frontend/apps/docs
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        working-directory: frontend/apps/docs
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://api.tracertm.com' }}
+
+      - name: Deploy to Vercel Preview
+        id: deploy
+        working-directory: frontend/apps/docs
+        run: |
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "preview-url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "Deployed to: $DEPLOYMENT_URL"
+
+      - name: Comment PR with Preview URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = '${{ steps.deploy.outputs.preview-url }}';
+            const comment = `## 📚 Documentation Preview Deployed!
+
+            Preview URL: ${previewUrl}
+
+            ### What's included:
+            - ✅ Updated OpenAPI specification
+            - ✅ API reference documentation
+            - ✅ User guides and tutorials
+
+            This preview will be available until the PR is closed.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Deploy to production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [generate-openapi, build-docs]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment:
+      name: production
+      url: https://docs.tracertm.com
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Download OpenAPI spec
+        uses: actions/download-artifact@v4
+        with:
+          name: openapi-spec
+          path: frontend/apps/docs/public/api
+
+      - name: Install Vercel CLI
+        run: bun install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        working-directory: frontend/apps/docs
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        working-directory: frontend/apps/docs
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://api.tracertm.com' }}
+          NEXT_PUBLIC_DOCS_URL: https://docs.tracertm.com
+
+      - name: Deploy to Vercel Production
+        id: deploy
+        working-directory: frontend/apps/docs
+        run: |
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "production-url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "Deployed to: $DEPLOYMENT_URL"
+
+      - name: Create deployment summary
+        run: |
+          echo "# 🚀 Documentation Deployed to Production" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment URL:** https://docs.tracertm.com" >> $GITHUB_STEP_SUMMARY
+          echo "**Vercel URL:** ${{ steps.deploy.outputs.production-url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Deployed Components:" >> $GITHUB_STEP_SUMMARY
+          echo "- OpenAPI Specification (updated: ${{ needs.generate-openapi.outputs.spec-generated }})" >> $GITHUB_STEP_SUMMARY
+          echo "- API Reference Documentation" >> $GITHUB_STEP_SUMMARY
+          echo "- User Guides" >> $GITHUB_STEP_SUMMARY
+          echo "- Getting Started Guides" >> $GITHUB_STEP_SUMMARY
+
+  # Validate deployment
+  validate-deployment:
+    name: Validate Deployment
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Wait for deployment to propagate
+        run: sleep 30
+
+      - name: Check site accessibility
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://docs.tracertm.com)
+          if [ "$response" != "200" ]; then
+            echo "Site returned HTTP $response"
+            exit 1
+          fi
+          echo "Site is accessible (HTTP $response)"
+
+      - name: Verify OpenAPI spec availability
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://docs.tracertm.com/api/openapi.json)
+          if [ "$response" != "200" ]; then
+            echo "OpenAPI spec not accessible (HTTP $response)"
+            exit 1
+          fi
+          echo "OpenAPI spec is accessible (HTTP $response)"
+
+      - name: Check critical pages
+        run: |
+          pages=(
+            "/"
+            "/docs"
+            "/api-reference"
+          )
+
+          for page in "${pages[@]}"; do
+            response=$(curl -s -o /dev/null -w "%{http_code}" "https://docs.tracertm.com$page")
+            if [ "$response" != "200" ] && [ "$response" != "308" ]; then
+              echo "Page $page returned HTTP $response"
+              exit 1
+            fi
+            echo "Page $page is accessible (HTTP $response)"
+          done
+
+      - name: Validate deployment summary
+        run: |
+          echo "# ✅ Deployment Validation Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All checks passed successfully!" >> $GITHUB_STEP_SUMMARY
