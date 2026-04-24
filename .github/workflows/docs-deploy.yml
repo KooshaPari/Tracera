@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - 'frontend/apps/docs/**'
-      - 'docs/**'
       - 'backend/**/*.go'
       - '.github/workflows/docs-deploy.yml'
   pull_request:
@@ -14,8 +13,8 @@ on:
       - main
     paths:
       - 'frontend/apps/docs/**'
-      - 'docs/**'
       - 'backend/**/*.go'
+      - '.github/workflows/docs-deploy.yml'
   workflow_dispatch:
     inputs:
       environment:
