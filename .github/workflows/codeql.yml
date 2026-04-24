@@ -1,17 +1,20 @@
-name: "CodeQL"
-on: [push, pull_request]
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '17 4 * * 1'
+
 jobs:
   analyze:
-    name: Analyze
-    runs-on: ubuntu-latest
+    uses: KooshaPari/phenoShared/.github/workflows/reusable/codeql.yml@30358ce629168f0e1ec3699706cb73d1f77cb751
     permissions:
-      actions: read
       contents: read
+      actions: read
       security-events: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+    with:
+      languages: '["actions"]'
+      build-mode: 'none'
