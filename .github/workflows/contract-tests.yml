@@ -3,8 +3,18 @@ name: Contract Tests
 on:
   pull_request:
     branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - 'frontend/apps/web/**'
+      - 'tests/contracts/**'
+      - '.github/workflows/contract-tests.yml'
   push:
     branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - 'frontend/apps/web/**'
+      - 'tests/contracts/**'
+      - '.github/workflows/contract-tests.yml'
 
 env:
   TEST_DB_HOST: localhost
@@ -35,7 +45,7 @@ jobs:
       - name: Run consumer contract tests
         run: |
           cd tests/contracts
-          ./scripts/shell/run-consumer-tests.sh
+          ./scripts/run-consumer-tests.sh
 
       - name: Upload pact files
         uses: actions/upload-artifact@v4
@@ -102,7 +112,7 @@ jobs:
       - name: Run provider verification
         run: |
           cd tests/contracts
-          ./scripts/shell/run-provider-tests.sh
+          ./scripts/run-provider-tests.sh
 
       - name: Publish verification results
         if: always()
@@ -182,7 +192,7 @@ jobs:
       - name: Generate coverage report
         run: |
           cd tests/contracts
-          ./scripts/shell/generate-coverage-report.sh
+          ./scripts/generate-coverage-report.sh
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4

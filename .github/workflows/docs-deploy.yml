@@ -37,7 +37,7 @@ jobs:
     name: Generate OpenAPI Specification
     runs-on: ubuntu-latest
     outputs:
-      spec-generated: ${{ steps.check-spec.outputs.generated }}
+      spec-generated: ${{ steps.check-spec.outputs.generated || steps.scope.outputs.generated }}
 
     steps:
       - name: Checkout repository
@@ -45,7 +45,28 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check docs app scope
+        id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          elif [[ -n "${{ github.event.before }}" ]]; then
+            base="${{ github.event.before }}"
+          else
+            base="HEAD~1"
+          fi
+          changed="$(git diff --name-only "$base"...HEAD || true)"
+          if echo "$changed" | grep -Eq '^(backend/|frontend/apps/docs/)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "generated=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set up Go
+        if: steps.scope.outputs.run == 'true'
         uses: actions/setup-go@v5
         with:
           go-version: '1.23'
@@ -53,9 +74,11 @@ jobs:
           cache-dependency-path: backend/go.sum
 
       - name: Install swag
+        if: steps.scope.outputs.run == 'true'
         run: go install github.com/swaggo/swag/cmd/swag@latest
 
       - name: Generate OpenAPI spec
+        if: steps.scope.outputs.run == 'true'
         working-directory: backend
         run: |
           swag init \
@@ -68,11 +91,13 @@ jobs:
             --instanceName "tracertm"
 
       - name: Validate OpenAPI spec
+        if: steps.scope.outputs.run == 'true'
         run: |
           npm install -g @apidevtools/swagger-cli
           swagger-cli validate backend/docs/swagger.json
 
       - name: Copy spec to docs public directory
+        if: steps.scope.outputs.run == 'true'
         run: |
           mkdir -p frontend/apps/docs/public/api
           cp backend/docs/swagger.json frontend/apps/docs/public/api/openapi.json
@@ -80,6 +105,7 @@ jobs:
 
       - name: Check if spec changed
         id: check-spec
+        if: steps.scope.outputs.run == 'true'
         run: |
           if git diff --quiet HEAD -- frontend/apps/docs/public/api/; then
             echo "generated=false" >> $GITHUB_OUTPUT
@@ -88,6 +114,7 @@ jobs:
           fi
 
       - name: Upload OpenAPI spec
+        if: steps.scope.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: openapi-spec
@@ -101,6 +128,7 @@ jobs:
     name: Build Documentation Site
     runs-on: ubuntu-latest
     needs: generate-openapi
+    if: needs.generate-openapi.outputs.spec-generated == 'true'
 
     steps:
       - name: Checkout repository
