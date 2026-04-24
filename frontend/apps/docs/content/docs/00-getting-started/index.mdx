@@ -1,0 +1,71 @@
+---
+title: Getting Started
+description: Get started with TraceRTM in minutes
+---
+
+# Getting Started with TraceRTM
+
+Welcome to TraceRTM! This guide will help you get up and running with the platform.
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- Python 3.12 or higher
+- Node.js 20 or higher
+- PostgreSQL 14 or higher (or SQLite for development)
+- Bun package manager (for frontend development)
+
+## Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/tracertm.git
+cd tracertm
+```
+
+### 2. Backend Setup
+
+```bash
+# Install dependencies with uv
+uv install
+
+# Set up environment variables
+cp .env.example .env
+
+# Run database migrations
+alembic upgrade head
+
+# Start the backend server
+uvicorn src.tracertm.api.main:app --reload
+```
+
+The API will be available at `http://localhost:8000`.
+
+### 3. Frontend Setup
+
+```bash
+cd frontend
+bun install
+
+# Start the development server
+cd apps/web
+bun run dev
+```
+
+The web app will be available at `http://localhost:3000`.
+
+## Next Steps
+
+- [CLI Tutorial](/docs/00-getting-started/cli-tutorial): Learn how to use the CLI
+- [Contributing Guide](/docs/00-getting-started/contributing): How to contribute
+- [Architecture Overview](/docs/01-architecture): Understand the system design
+
+## Quick Links
+
+| Resource                                              | Description                        |
+| ----------------------------------------------------- | ---------------------------------- |
+| [API Documentation](http://localhost:8000/docs)       | Interactive API docs               |
+| [CLI Tutorial](/docs/00-getting-started/cli-tutorial) | Command-line interface guide       |
+| [MCP Tools](/docs/02-guides/mcp-tools)                | Model Context Protocol integration |

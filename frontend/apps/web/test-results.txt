@@ -1,0 +1,118 @@
+
+> @tracertm/web@0.1.0 test
+> vitest
+
+
+[1m[46m RUN [49m[22m [36mv4.0.14 [39m[90m/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web[39m
+
+(node:1342) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1345) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1340) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1348) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1344) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1341) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1346) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1343) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1347) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1644) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1648) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1643) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1646) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1645) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1647) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1640) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1642) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1641) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1661) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1663) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1664) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1662) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1667) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1668) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1665) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1670) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1666) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 27 [49m[22m[31m⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/api/endpoints.test.ts[2m [ src/__tests__/api/endpoints.test.ts ][22m
+[41m[1m FAIL [22m[49m src/__tests__/a11y/components.test.tsx[2m [ src/__tests__/a11y/components.test.tsx ][22m
+[41m[1m FAIL [22m[49m src/__tests__/a11y/forms.test.tsx[2m [ src/__tests__/a11y/forms.test.tsx ][22m
+[41m[1m FAIL [22m[49m src/__tests__/a11y/navigation.test.tsx[2m [ src/__tests__/a11y/navigation.test.tsx ][22m
+[41m[1m FAIL [22m[49m src/__tests__/a11y/pages.test.tsx[2m [ src/__tests__/a11y/pages.test.tsx ][22m
+[41m[1m FAIL [22m[49m src/__tests__/components/CreateItemForm.test.tsx[2m [ src/__tests__/components/CreateItemForm.test.tsx ][22m
+[41m[1m FAIL [22m[49m src/__tests__/components/CreateProjectForm.test.tsx[2m [ src/__tests__/components/CreateProjectForm.test.tsx ][22m
+[41m[1m FAIL [22m[49m src/__tests__/hooks/useAuth.test.ts[2m [ src/__tests__/hooks/useAuth.test.ts ][22m
+[41m[1m FAIL [22m[49m src/__tests__/hooks/useGraph.test.ts[2m [ src/__tests__/hooks/useGraph.test.ts ][22m
+[41m[1m FAIL [22m[49m src/__tests__/hooks/useItems.test.ts[2m [ src/__tests__/hooks/useItems.test.ts ][22m
+[41m[1m FAIL [22m[49m src/__tests__/hooks/useLinks.test.ts[2m [ src/__tests__/hooks/useLinks.test.ts ][22m
+[41m[1m FAIL [22m[49m src/__tests__/hooks/useProjects.test.ts[2m [ src/__tests__/hooks/useProjects.test.ts ][22m
+[41m[1m FAIL [22m[49m src/__tests__/hooks/useSearch.test.ts[2m [ src/__tests__/hooks/useSearch.test.ts ][22m
+[41m[1m FAIL [22m[49m src/__tests__/integration/item-crud.test.tsx[2m [ src/__tests__/integration/item-crud.test.tsx ][22m
+[41m[1m FAIL [22m[49m src/__tests__/integration/search-flow.test.tsx[2m [ src/__tests__/integration/search-flow.test.tsx ][22m
+[41m[1m FAIL [22m[49m src/__tests__/security/auth.test.tsx[2m [ src/__tests__/security/auth.test.tsx ][22m
+[41m[1m FAIL [22m[49m src/__tests__/security/csp.test.ts[2m [ src/__tests__/security/csp.test.ts ][22m
+[41m[1m FAIL [22m[49m src/__tests__/security/headers.test.ts[2m [ src/__tests__/security/headers.test.ts ][22m
+[41m[1m FAIL [22m[49m src/__tests__/security/input-validation.test.tsx[2m [ src/__tests__/security/input-validation.test.tsx ][22m
+[41m[1m FAIL [22m[49m src/__tests__/security/sanitization.test.ts[2m [ src/__tests__/security/sanitization.test.ts ][22m
+[41m[1m FAIL [22m[49m src/__tests__/security/xss.test.tsx[2m [ src/__tests__/security/xss.test.tsx ][22m
+[41m[1m FAIL [22m[49m src/__tests__/stores/authStore.test.ts[2m [ src/__tests__/stores/authStore.test.ts ][22m
+[41m[1m FAIL [22m[49m src/__tests__/stores/itemsStore.test.ts[2m [ src/__tests__/stores/itemsStore.test.ts ][22m
+[41m[1m FAIL [22m[49m src/__tests__/stores/projectStore.test.ts[2m [ src/__tests__/stores/projectStore.test.ts ][22m
+[41m[1m FAIL [22m[49m src/__tests__/stores/uiStore.test.ts[2m [ src/__tests__/stores/uiStore.test.ts ][22m
+[41m[1m FAIL [22m[49m src/__tests__/stores/websocketStore.test.ts[2m [ src/__tests__/stores/websocketStore.test.ts ][22m
+[41m[1m FAIL [22m[49m src/__tests__/utils/api.test.ts[2m [ src/__tests__/utils/api.test.ts ][22m
+[31m[1mTypeError[22m: localStorage.getItem is not a function[39m
+[90m [2m❯[22m CookieStore.getCookieStoreIndex node_modules/.pnpm/msw@2.12.3_typescript@5.9.3/node_modules/msw/lib/core/utils/cookieStore.mjs:[2m35:40[22m[39m
+[90m [2m❯[22m new CookieStore node_modules/.pnpm/msw@2.12.3_typescript@5.9.3/node_modules/msw/lib/core/utils/cookieStore.mjs:[2m21:34[22m[39m
+[90m [2m❯[22m node_modules/.pnpm/msw@2.12.3_typescript@5.9.3/node_modules/msw/lib/core/utils/cookieStore.mjs:[2m70:21[22m[39m
+[36m [2m❯[22m src/__tests__/mocks/server.ts:[2m5:1[22m[39m
+    [90m  3| [39m */[39m
+    [90m  4| [39m
+    [90m  5| [39m[35mimport[39m { setupServer } [35mfrom[39m [32m'msw/node'[39m
+    [90m   | [39m[31m^[39m
+    [90m  6| [39m[35mimport[39m { handlers } [35mfrom[39m [32m'./handlers'[39m
+    [90m  7| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/27]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m27 failed[39m[22m[90m (27)[39m
+[2m      Tests [22m [2mno tests[22m
+[2m   Start at [22m 02:33:20
+[2m   Duration [22m 14.55s[2m (transform 335ms, setup 0ms, import 0ms, tests 0ms, environment 67.97s)[22m
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web
+npm error workspace @tracertm/web@0.1.0
+npm error location /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web
+npm error command failed
+npm error command sh -c vitest

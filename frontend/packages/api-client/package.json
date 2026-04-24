@@ -1,0 +1,28 @@
+{
+  "name": "@tracertm/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/api-client.ts",
+  "types": "./src/api-client.ts",
+  "exports": {
+    ".": "./src/api-client.ts"
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
+    "generate": "openapi-typescript http://localhost:4000/openapi.json -o ./src/generated/schema.d.ts",
+    "test": "vitest --run",
+    "test:coverage": "vitest --run --coverage"
+  },
+  "dependencies": {
+    "@tracertm/types": "workspace:*",
+    "openapi-fetch": "^0.15.0"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.14",
+    "openapi-typescript": "^7.4.0",
+    "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1",
+    "vitest": "^4.0.14"
+  }
+}

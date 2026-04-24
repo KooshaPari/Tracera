@@ -1,0 +1,497 @@
+---
+title: Development Guide
+description: Developer guide for contributing to TraceRTM
+---
+
+# Development Guide
+
+Complete guide for developers working on TraceRTM.
+
+## Setup
+
+### Prerequisites
+
+Install required tools:
+
+- **Python 3.12+** - Use [uv](https://github.com/astral-sh/uv) for fast package management
+- **Node.js 20+** - Use [bun](https://bun.sh) for frontend
+- **Docker** - For infrastructure services
+- **Git** - Version control
+
+### Initial Setup
+
+```bash
+# Clone repository
+git clone https://github.com/yourusername/tracertm.git
+cd tracertm
+
+# Backend setup
+uv sync
+
+# Frontend setup
+cd frontend
+bun install
+
+# Start infrastructure
+docker-compose up -d postgres redis nats
+```
+
+## Project Structure
+
+```
+trace/
+├── src/tracertm/              # Backend Python code
+│   ├── api/                   # FastAPI routes
+│   │   ├── routers/           # API endpoints
+│   │   └── main.py            # FastAPI app
+│   ├── services/              # Business logic
+│   ├── repositories/          # Data access layer
+│   ├── models/                # SQLAlchemy models
+│   ├── schemas/               # Pydantic schemas
+│   ├── cli/                   # CLI commands
+│   ├── mcp/                   # MCP server tools
+│   └── config/                # Configuration
+├── frontend/
+│   ├── apps/
+│   │   ├── web/               # Main web app
+│   │   └── docs/              # Documentation site
+│   └── packages/
+│       └── types/             # Shared TypeScript types
+├── tests/                     # Python tests
+│   ├── unit/                  # Unit tests
+│   └── integration/           # Integration tests
+├── docs/                      # Documentation source
+├── alembic/                   # Database migrations
+└── scripts/                   # Utility scripts
+```
+
+## Development Workflow
+
+### 1. Create Feature Branch
+
+```bash
+git checkout -b feature/my-feature
+```
+
+### 2. Make Changes
+
+Follow TDD (Test-Driven Development):
+
+```python
+# 1. Write test first (tests/unit/test_feature.py)
+async def test_create_item():
+    item = await service.create_item({"title": "Test"})
+    assert item.title == "Test"
+
+# 2. Implement feature (src/tracertm/services/item_service.py)
+async def create_item(self, data: dict) -> Item:
+    return await self.repository.create(data)
+
+# 3. Run tests
+pytest tests/unit/test_feature.py
+```
+
+### 3. Code Quality
+
+Run checks before committing:
+
+```bash
+# Backend
+ruff check .              # Linting
+ruff format .             # Formatting
+ty check src/ --error-on-warning  # Type checking
+pytest                    # Tests
+
+# Frontend
+cd frontend/apps/web
+bun run lint             # ESLint
+bun run typecheck        # TypeScript
+bun test                 # Vitest
+```
+
+### 4. Commit Changes
+
+Use conventional commits:
+
+```bash
+git add .
+git commit -m "feat: add item creation endpoint"
+
+# Commit types:
+# feat: New feature
+# fix: Bug fix
+# docs: Documentation
+# style: Formatting
+# refactor: Code restructuring
+# test: Adding tests
+# chore: Maintenance
+```
+
+### 5. Push and Create PR
+
+```bash
+git push origin feature/my-feature
+# Create PR on GitHub
+```
+
+## Backend Development
+
+### Adding a New API Endpoint
+
+1. **Define schema** (`src/tracertm/schemas/item.py`):
+
+```python
+from pydantic import BaseModel
+
+class ItemCreate(BaseModel):
+    title: str
+    description: str | None = None
+
+class ItemResponse(BaseModel):
+    id: str
+    title: str
+    description: str | None
+    created_at: datetime
+```
+
+2. **Create repository method** (`src/tracertm/repositories/item_repository.py`):
+
+```python
+class ItemRepository:
+    async def create(self, data: ItemCreate) -> Item:
+        item = Item(**data.model_dump())
+        self.session.add(item)
+        await self.session.commit()
+        return item
+```
+
+3. **Add service method** (`src/tracertm/services/item_service.py`):
+
+```python
+class ItemService:
+    async def create(self, data: ItemCreate) -> ItemResponse:
+        item = await self.repository.create(data)
+        return ItemResponse.model_validate(item)
+```
+
+4. **Create endpoint** (`src/tracertm/api/routers/items.py`):
+
+```python
+@router.post("/", response_model=ItemResponse)
+async def create_item(
+    data: ItemCreate,
+    service: ItemService = Depends(),
+):
+    """Create a new item."""
+    return await service.create(data)
+```
+
+5. **Write tests** (`tests/unit/test_items.py`):
+
+```python
+async def test_create_item():
+    response = await client.post("/items/", json={
+        "title": "Test Item"
+    })
+    assert response.status_code == 200
+    assert response.json()["title"] == "Test Item"
+```
+
+### Database Migrations
+
+Create migration when models change:
+
+```bash
+# Generate migration
+alembic revision --autogenerate -m "Add items table"
+
+# Review migration file
+cat alembic/versions/xxx_add_items_table.py
+
+# Apply migration
+alembic upgrade head
+```
+
+### Adding CLI Commands
+
+1. **Create command file** (`src/tracertm/cli/commands/items.py`):
+
+```python
+import typer
+from rich.console import Console
+
+app = typer.Typer(help="Item management commands")
+console = Console()
+
+@app.command()
+def create(title: str):
+    """Create a new item."""
+    # Implementation
+    console.print(f"[green]Created:[/green] {title}")
+```
+
+2. **Register in main CLI** (`src/tracertm/cli/app.py`):
+
+```python
+from .commands import items
+
+app.add_typer(items.app, name="items")
+```
+
+### Adding MCP Tools
+
+1. **Define tool** (`src/tracertm/mcp/tools/items.py`):
+
+```python
+@tool()
+async def create_item(title: str, description: str = "") -> dict:
+    """Create a new item in the current project."""
+    service = ItemService()
+    item = await service.create({
+        "title": title,
+        "description": description
+    })
+    return {"id": item.id, "title": item.title}
+```
+
+2. **Register tool** (`src/tracertm/mcp/server.py`):
+
+```python
+from .tools import items
+
+server.register_tool(items.create_item)
+```
+
+## Frontend Development
+
+### Adding a New Page
+
+1. **Create route file** (`src/routes/items.index.tsx`):
+
+```tsx
+import { createFileRoute } from '@tanstack/react-router';
+import { ItemsView } from '@/views/ItemsView';
+
+export const Route = createFileRoute('/items/')({
+  component: ItemsView,
+});
+```
+
+2. **Create view component** (`src/views/ItemsView.tsx`):
+
+```tsx
+export function ItemsView() {
+  const { data: items, isLoading } = useItems();
+
+  if (isLoading) return <LoadingSpinner />;
+
+  return (
+    <div className='container mx-auto p-6'>
+      <h1 className='text-2xl font-bold mb-4'>Items</h1>
+      <ItemsList items={items} />
+    </div>
+  );
+}
+```
+
+3. **Create hook** (`src/hooks/useItems.ts`):
+
+```tsx
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/api/client';
+
+export function useItems() {
+  return useQuery({
+    queryKey: ['items'],
+    queryFn: () => api.items.list(),
+  });
+}
+```
+
+### Adding UI Components
+
+1. **Create component** (`src/components/ItemCard.tsx`):
+
+```tsx
+interface ItemCardProps {
+  item: Item;
+  onDelete?: (id: string) => void;
+}
+
+export function ItemCard({ item, onDelete }: ItemCardProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{item.title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p>{item.description}</p>
+      </CardContent>
+      <CardFooter>
+        <Button variant='destructive' onClick={() => onDelete?.(item.id)}>
+          Delete
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+```
+
+2. **Add tests** (`src/__tests__/components/ItemCard.test.tsx`):
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { ItemCard } from '@/components/ItemCard';
+
+test('renders item card', () => {
+  const item = { id: '1', title: 'Test Item' };
+  render(<ItemCard item={item} />);
+  expect(screen.getByText('Test Item')).toBeInTheDocument();
+});
+```
+
+## Testing
+
+### Unit Tests (Backend)
+
+```python
+# tests/unit/test_item_service.py
+import pytest
+from tracertm.services import ItemService
+
+@pytest.fixture
+def service(mock_repository):
+    return ItemService(mock_repository)
+
+async def test_create_item(service):
+    item = await service.create({"title": "Test"})
+    assert item.title == "Test"
+```
+
+### Integration Tests (Backend)
+
+```python
+# tests/integration/test_items_api.py
+from httpx import AsyncClient
+
+async def test_create_item_endpoint(client: AsyncClient):
+    response = await client.post("/items/", json={
+        "title": "Test Item"
+    })
+    assert response.status_code == 200
+    assert response.json()["title"] == "Test Item"
+```
+
+### Unit Tests (Frontend)
+
+```tsx
+// src/__tests__/components/ItemCard.test.tsx
+import { render, screen } from '@testing-library/react';
+import { ItemCard } from '@/components/ItemCard';
+
+test('renders item title', () => {
+  render(<ItemCard item={{ id: '1', title: 'Test' }} />);
+  expect(screen.getByText('Test')).toBeInTheDocument();
+});
+```
+
+### E2E Tests (Frontend)
+
+```typescript
+// e2e/items.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('creates new item', async ({ page }) => {
+  await page.goto('/items');
+  await page.click('button:has-text("New Item")');
+  await page.fill('input[name="title"]', 'Test Item');
+  await page.click('button[type="submit"]');
+  await expect(page.locator('text=Test Item')).toBeVisible();
+});
+```
+
+## Debugging
+
+### Backend Debugging
+
+Use VSCode debugger with `launch.json`:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: FastAPI",
+      "type": "python",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["src.tracertm.api.main:app", "--reload"],
+      "jinja": true,
+      "justMyCode": false
+    }
+  ]
+}
+```
+
+### Frontend Debugging
+
+Use browser DevTools or VSCode debugger.
+
+## Performance Profiling
+
+### Backend Profiling
+
+```python
+from pyinstrument import Profiler
+
+profiler = Profiler()
+profiler.start()
+
+# Code to profile
+result = await slow_operation()
+
+profiler.stop()
+profiler.print()
+```
+
+### Frontend Profiling
+
+Use React DevTools Profiler:
+
+```tsx
+import { Profiler } from 'react';
+
+<Profiler id='ItemsList' onRender={onRenderCallback}>
+  <ItemsList items={items} />
+</Profiler>;
+```
+
+## Best Practices
+
+### Backend
+
+1. **Type hints everywhere** - Use Python type hints
+2. **Async/await** - Use async for I/O operations
+3. **Dependency injection** - Use FastAPI dependencies
+4. **Repository pattern** - Separate data access
+5. **Service layer** - Business logic isolation
+6. **Error handling** - Use custom exceptions
+7. **Logging** - Use structured logging
+8. **Testing** - Aim for 80%+ coverage
+
+### Frontend
+
+1. **TypeScript strict mode** - Enable all strict checks
+2. **Component composition** - Small, focused components
+3. **Custom hooks** - Extract reusable logic
+4. **Error boundaries** - Handle errors gracefully
+5. **Loading states** - Always show feedback
+6. **Accessibility** - Follow WCAG 2.1 AA
+7. **Performance** - Lazy loading, memoization
+8. **Testing** - Unit + integration + E2E
+
+## Related Documentation
+
+- [Architecture Overview](/01-architecture)
+- [API Reference](/03-api-reference)
+- [Deployment Guide](/02-guides/deployment)

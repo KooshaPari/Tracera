@@ -1,0 +1,19 @@
+{
+  "projectToken": "chroma_xxxxxxxxxxxxxxxx",
+  "buildScriptName": "storybook:build",
+  "autoAcceptChanges": true,
+  "ignoreLastBuildOnBranch": ["main", "master"],
+  "exitZeroOnChanges": true,
+  "skip": false,
+  "onlyChanged": true,
+  "traceChanged": "expand",
+  "uploadMetadata": true,
+  "preserveMissing": false,
+  "junitReport": "junit-report.xml",
+  "externals": ["node_modules/**", ".next/**", ".storybook/**", "storybook-static/**"],
+  "logFile": "chromatic.log",
+  "allowConsoleErrors": false,
+  "allowConsoleWarnings": true,
+  "diagnostics": false,
+  "dry": false
+}

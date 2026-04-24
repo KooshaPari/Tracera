@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@atoms/types": ["../../packages/types/src/types.ts"],
+      "@tracertm/types": ["../../packages/types/src/types.ts"],
+      "@repo/types": ["../../packages/types/src/types.ts"]
+    },
+    "jsx": "react-jsx",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["vitest", "vitest/globals"]
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "src/**/*.stories.*",
+    "src/**/*.example.*",
+    "src/**/*.integration.*",
+    "src/**/*.gen.*",
+    "src/**/*.generated.*",
+    "src/routeTree.gen.ts",
+    "src/api/schema.ts"
+  ]
+}

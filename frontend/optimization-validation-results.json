@@ -1,0 +1,193 @@
+{
+  "timestamp": "2026-01-31T01:53:39.952Z",
+  "overallSuccess": false,
+  "checks": [
+    {
+      "category": "Packages",
+      "check": "Workspaces configured",
+      "pass": true,
+      "details": "Found workspaces"
+    },
+    {
+      "category": "Packages",
+      "check": "Bun package manager",
+      "pass": true,
+      "details": "bun@1.1.38"
+    },
+    {
+      "category": "Packages",
+      "check": "Lock file exists",
+      "pass": true,
+      "details": "bun.lock found"
+    },
+    {
+      "category": "Packages",
+      "check": "node_modules size < 400MB",
+      "pass": false,
+      "details": "2000MB"
+    },
+    {
+      "category": "Build",
+      "check": "Turbo cache configured",
+      "pass": {
+        "build": {
+          "dependsOn": ["^build"],
+          "inputs": [
+            "src/**",
+            "public/**",
+            "package.json",
+            "tsconfig.json",
+            "vite.config.*",
+            "next.config.*",
+            "!**/*.md",
+            "!**/*.test.*",
+            "!**/*.spec.*"
+          ],
+          "outputs": [
+            "dist/**",
+            ".next/**",
+            "!.next/cache/**",
+            "storybook-static/**",
+            "out/**",
+            ".tsbuildinfo"
+          ],
+          "outputLogs": "hash-only",
+          "env": ["NODE_ENV", "VITE_*", "NEXT_PUBLIC_*"]
+        },
+        "build:fast": {
+          "dependsOn": [],
+          "inputs": [
+            "src/**",
+            "public/**",
+            "package.json",
+            "vite.config.*",
+            "!**/*.md",
+            "!**/*.test.*",
+            "!**/*.spec.*"
+          ],
+          "outputs": ["dist/**"],
+          "outputLogs": "hash-only",
+          "env": ["NODE_ENV", "VITE_*", "NEXT_PUBLIC_*"]
+        },
+        "build:clean": {
+          "cache": false,
+          "dependsOn": []
+        },
+        "dev": {
+          "cache": false,
+          "persistent": true,
+          "outputLogs": "new-only"
+        },
+        "test": {
+          "inputs": [
+            "src/**",
+            "__tests__/**",
+            "*.test.*",
+            "*.spec.*",
+            "vitest.config.*",
+            "jest.config.*",
+            "playwright.config.*"
+          ],
+          "outputs": ["coverage/**", "test-results/**", "playwright-report/**"],
+          "dependsOn": [],
+          "outputLogs": "new-only"
+        },
+        "test:unit": {
+          "inputs": ["src/**", "__tests__/**", "*.test.*", "*.spec.*", "vitest.config.*"],
+          "outputs": ["coverage/**"],
+          "dependsOn": [],
+          "outputLogs": "new-only"
+        },
+        "test:e2e": {
+          "inputs": ["e2e/**", "playwright.config.*"],
+          "outputs": ["test-results/**", "playwright-report/**"],
+          "dependsOn": ["build"],
+          "outputLogs": "new-only",
+          "cache": false
+        },
+        "typecheck": {
+          "inputs": ["src/**", "package.json", "tsconfig.json"],
+          "outputs": [],
+          "dependsOn": [],
+          "outputLogs": "hash-only"
+        },
+        "lint": {
+          "inputs": ["src/**", ".biome.json", "biome.json", ".eslintrc*", "package.json"],
+          "outputs": [".eslintcache", ".biomecache"],
+          "dependsOn": [],
+          "outputLogs": "hash-only"
+        },
+        "lint:fix": {
+          "cache": false,
+          "outputs": []
+        },
+        "format": {
+          "cache": false,
+          "outputs": []
+        },
+        "clean": {
+          "cache": false
+        },
+        "generate:types": {
+          "inputs": ["public/specs/**", "openapi.json", "package.json"],
+          "outputs": ["src/api/schema.ts", "src/generated/**"],
+          "outputLogs": "hash-only"
+        }
+      },
+      "details": "Cache enabled"
+    },
+    {
+      "category": "Build",
+      "check": "Parallel builds",
+      "pass": true,
+      "details": "Turbo handles parallelization"
+    },
+    {
+      "category": "Build",
+      "check": "SWC compiler enabled",
+      "pass": false,
+      "details": "Using babel"
+    },
+    {
+      "category": "Code",
+      "check": "Virtual scrolling for tables",
+      "pass": true,
+      "details": "Implemented"
+    },
+    {
+      "category": "Code",
+      "check": "Memoization in graph view",
+      "pass": false,
+      "details": "Not found"
+    },
+    {
+      "category": "Tests",
+      "check": "Vitest configuration",
+      "pass": true,
+      "details": "Found config"
+    },
+    {
+      "category": "Tests",
+      "check": "Playwright configuration",
+      "pass": true,
+      "details": "Found config"
+    },
+    {
+      "category": "Tests",
+      "check": "Unit tests present",
+      "pass": true,
+      "details": "Found 159 test files"
+    },
+    {
+      "category": "Tests",
+      "check": "E2E tests present",
+      "pass": true,
+      "details": "Found 34 spec files"
+    }
+  ],
+  "summary": {
+    "total": 13,
+    "passed": 10,
+    "failed": 3
+  }
+}

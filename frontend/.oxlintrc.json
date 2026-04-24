@@ -1,0 +1,57 @@
+{
+  "$schema": "https://oxc.rs/schema.json",
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.turbo/**",
+    "**/routeTree.gen.ts",
+    "**/api/*.gen.ts",
+    "**/*.generated.*",
+    "**/public/mockServiceWorker.js"
+  ],
+  "plugins": [
+    "eslint",
+    "typescript",
+    "unicorn",
+    "oxc",
+    "react",
+    "react-perf",
+    "import",
+    "jsx-a11y",
+    "promise",
+    "vitest",
+    "react-hooks",
+    "jsdoc"
+  ],
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2022": true,
+    "builtin": true
+  },
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "warn",
+    "style": "warn",
+    "restriction": "warn",
+    "perf": "warn",
+    "nursery": "warn"
+  },
+  "settings": {
+    "react": {
+      "version": "19.2.0"
+    }
+  },
+  "rules": {
+    "import/no-default-export": "off",
+    "typescript/no-explicit-any": "off",
+    "eslint/no-magic-numbers": "off",
+    "eslint/max-lines-per-function": "off",
+    "eslint/max-statements": "off",
+    "eslint/no-console": "off",
+    "react-perf/jsx-no-new-object-as-prop": "off",
+    "react-perf/jsx-no-new-array-as-prop": "off",
+    "react-perf/jsx-no-new-function-as-prop": "off"
+  }
+}

@@ -128,3 +128,10 @@ violation-summary.txt
 backend/tracertm-backend
 backend/tracertm-setup
 backend/*.test
+
+# Frontend build/lint artifacts (large, regenerable)
+frontend/linting-baseline.txt
+frontend/linting-after-fix.txt
+frontend/dependency-analysis.json
+frontend/apps/*/storybook-static/
+frontend/packages/*/storybook-static/

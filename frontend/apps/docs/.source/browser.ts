@@ -1,0 +1,12 @@
+// @ts-nocheck
+import { browser } from 'fumadocs-mdx/runtime/browser';
+import type * as Config from '../source.config';
+
+const create = browser<typeof Config, import("fumadocs-mdx/runtime/types").InternalTypeConfig & {
+  DocData: {
+  }
+}>();
+const browserCollections = {
+  docs: create.doc("docs", {"index.mdx": () => import("../content/docs/index.mdx?collection=docs"), "00-getting-started/quick-start.mdx": () => import("../content/docs/00-getting-started/quick-start.mdx?collection=docs"), "00-getting-started/index.mdx": () => import("../content/docs/00-getting-started/index.mdx?collection=docs"), "00-getting-started/contributing.mdx": () => import("../content/docs/00-getting-started/contributing.mdx?collection=docs"), "00-getting-started/cli-tutorial.mdx": () => import("../content/docs/00-getting-started/cli-tutorial.mdx?collection=docs"), "00-getting-started/onboarding.mdx": () => import("../content/docs/00-getting-started/onboarding.mdx?collection=docs"), "02-guides/database.mdx": () => import("../content/docs/02-guides/database.mdx?collection=docs"), "02-guides/index.mdx": () => import("../content/docs/02-guides/index.mdx?collection=docs"), "02-guides/testing.mdx": () => import("../content/docs/02-guides/testing.mdx?collection=docs"), "02-guides/config-precedence.mdx": () => import("../content/docs/02-guides/config-precedence.mdx?collection=docs"), "02-guides/migration.mdx": () => import("../content/docs/02-guides/migration.mdx?collection=docs"), "02-guides/deployment.mdx": () => import("../content/docs/02-guides/deployment.mdx?collection=docs"), "02-guides/mcp-tools.mdx": () => import("../content/docs/02-guides/mcp-tools.mdx?collection=docs"), "02-guides/development.mdx": () => import("../content/docs/02-guides/development.mdx?collection=docs"), "01-architecture/backend-architecture.mdx": () => import("../content/docs/01-architecture/backend-architecture.mdx?collection=docs"), "01-architecture/index.mdx": () => import("../content/docs/01-architecture/index.mdx?collection=docs"), "01-architecture/frontend-architecture.mdx": () => import("../content/docs/01-architecture/frontend-architecture.mdx?collection=docs"), "01-architecture/cli-architecture.mdx": () => import("../content/docs/01-architecture/cli-architecture.mdx?collection=docs"), "03-api-reference/01-auth.mdx": () => import("../content/docs/03-api-reference/01-auth.mdx?collection=docs"), "03-api-reference/index.mdx": () => import("../content/docs/03-api-reference/index.mdx?collection=docs"), }),
+};
+export default browserCollections;
