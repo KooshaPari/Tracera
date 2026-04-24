@@ -25,7 +25,7 @@ jobs:
           base="${{ github.event.before }}"
         fi
         changed="$(git diff --name-only "$base"...HEAD || true)"
-        code_changed="$(echo "$changed" | grep -Ev '^tests/contracts/' || true)"
+        code_changed="$(echo "$changed" | grep -Ev '^(tests/contracts/|frontend/apps/web/vitest\.contract\.config\.ts$)' || true)"
         if echo "$code_changed" | grep -Eq '^(src/|tests/|backend/|frontend/|requirements|pyproject.toml|uv.lock|go.mod|go.sum|Dockerfile|docker-compose)'; then
           echo "code=true" >> "$GITHUB_OUTPUT"
         else
