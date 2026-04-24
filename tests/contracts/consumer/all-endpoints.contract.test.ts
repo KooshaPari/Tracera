@@ -72,7 +72,7 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
         },
         willRespondWith: standardResponse({
           docs: eachLike({
-            id: uuid('doc-123'),
+            id: uuid('88888888-8888-4888-8888-888888888888'),
             title: like('API Documentation'),
             content: like('Documentation content'),
           }),
@@ -94,7 +94,7 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
         },
         willRespondWith: standardResponse({
           results: eachLike({
-            id: uuid('doc-123'),
+            id: uuid('88888888-8888-4888-8888-888888888888'),
             title: like('Authentication Guide'),
             excerpt: like('Guide to authentication...'),
             score: decimal(0.95),
@@ -115,7 +115,7 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
           path: '/api/v1/docs/doc-123',
         },
         willRespondWith: standardResponse({
-          id: uuid('doc-123'),
+          id: uuid('88888888-8888-4888-8888-888888888888'),
           title: like('API Guide'),
           content: like('Full documentation content'),
           createdAt: iso8601DateTime(),
@@ -139,11 +139,11 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
           headers: withAuth(),
         },
         willRespondWith: paginatedResponse([{
-          id: uuid('journey-123'),
+          id: uuid('99999999-9999-4999-8999-999999999999'),
           name: like('User Authentication Journey'),
           description: like('Journey description'),
           steps: eachLike({
-            id: uuid('step-123'),
+            id: uuid('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
             name: like('Login Step'),
             order: integer(1),
           }),
@@ -170,7 +170,7 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
           },
         },
         willRespondWith: standardResponse({
-          id: uuid('journey-123'),
+          id: uuid('99999999-9999-4999-8999-999999999999'),
           name: like('New Journey'),
         }, 201),
       });
@@ -202,9 +202,9 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
           headers: withAuth(),
         },
         willRespondWith: paginatedResponse([{
-          id: uuid('equiv-123'),
-          sourceId: uuid('item-123'),
-          targetId: uuid('item-456'),
+          id: uuid('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'),
+          sourceId: uuid('33333333-3333-4333-8333-333333333333'),
+          targetId: uuid('44444444-4444-4444-8444-444444444444'),
           confidence: decimal(0.92),
           status: like('pending'),
         }]),
@@ -226,7 +226,7 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          id: uuid('equiv-123'),
+          id: uuid('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'),
           status: like('confirmed'),
         }),
       });
@@ -248,7 +248,7 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          id: uuid('equiv-123'),
+          id: uuid('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'),
           status: like('rejected'),
         }),
       });
@@ -333,7 +333,7 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
         },
         willRespondWith: standardResponse({
           concepts: eachLike({
-            id: uuid('concept-123'),
+            id: uuid('cccccccc-cccc-4ccc-8ccc-cccccccccccc'),
             name: like('Authentication'),
             projections: integer(5),
           }),
@@ -356,11 +356,11 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          id: uuid('concept-123'),
+          id: uuid('cccccccc-cccc-4ccc-8ccc-cccccccccccc'),
           name: like('Authentication'),
           description: like('User authentication concept'),
           projections: eachLike({
-            id: uuid('proj-123'),
+            id: uuid('22222222-2222-4222-8222-222222222222'),
             type: like('requirement'),
           }),
         }),
@@ -382,10 +382,10 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          conceptId: uuid('concept-123'),
+          conceptId: uuid('cccccccc-cccc-4ccc-8ccc-cccccccccccc'),
           projections: eachLike({
-            id: uuid('proj-123'),
-            itemId: uuid('item-123'),
+            id: uuid('22222222-2222-4222-8222-222222222222'),
+            itemId: uuid('33333333-3333-4333-8333-333333333333'),
             type: like('requirement'),
           }),
         }),
@@ -413,7 +413,7 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
           headers: withAuth(),
         },
         willRespondWith: paginatedResponse([{
-          id: uuid('op-123'),
+          id: uuid('dddddddd-dddd-4ddd-8ddd-dddddddddddd'),
           type: like('analysis'),
           status: like('in_progress'),
           participants: integer(3),
@@ -440,8 +440,8 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
           },
         },
         willRespondWith: standardResponse({
-          operationId: uuid('op-123'),
-          agentId: uuid('agent-456'),
+          operationId: uuid('dddddddd-dddd-4ddd-8ddd-dddddddddddd'),
+          agentId: uuid('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'),
           assigned: like(true),
         }),
       });
@@ -470,7 +470,7 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          id: uuid('op-123'),
+          id: uuid('dddddddd-dddd-4ddd-8ddd-dddddddddddd'),
           status: like('in_progress'),
           progress: decimal(0.65),
           participantsComplete: integer(2),
@@ -494,9 +494,9 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          id: uuid('op-123'),
+          id: uuid('dddddddd-dddd-4ddd-8ddd-dddddddddddd'),
           results: eachLike({
-            agentId: uuid('agent-456'),
+            agentId: uuid('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'),
             data: like({}),
           }),
         }),
@@ -518,7 +518,7 @@ describe('Complete API Contract Tests - 100% Coverage', () => {
           headers: withAuth(),
         },
         willRespondWith: standardResponse({
-          id: uuid('op-123'),
+          id: uuid('dddddddd-dddd-4ddd-8ddd-dddddddddddd'),
           status: like('completed'),
           completedAt: iso8601DateTime(),
         }),

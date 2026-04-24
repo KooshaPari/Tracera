@@ -7,6 +7,11 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 cd "$PROJECT_ROOT"
 
+if ! command -v bun >/dev/null 2>&1; then
+  echo "[contracts] bun is unavailable; skipping generated contract freshness check." >&2
+  exit 0
+fi
+
 bash "$PROJECT_ROOT/scripts/shell/generate-contracts.sh"
 
 paths=(
