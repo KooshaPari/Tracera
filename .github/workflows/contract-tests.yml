@@ -55,7 +55,7 @@ jobs:
           retention-days: 7
 
       - name: Publish test results
-        if: always()
+        if: always() && hashFiles('frontend/apps/web/test-results/*.xml') != ''
         uses: dorny/test-reporter@v1
         with:
           name: Consumer Contract Tests
