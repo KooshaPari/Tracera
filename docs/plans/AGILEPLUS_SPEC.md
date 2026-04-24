@@ -175,7 +175,7 @@ AgilePlus provides CLI commands for spec management:
 Create a new specification:
 
 ```bash
-cd /Users/kooshapari/CodeProjects/Phenotype/repos/AgilePlus
+cd $AGILEPLUS_CLI
 agileplus specify <feature-id> [--title "Title"] [--template default|experimental]
 ```
 
@@ -330,8 +330,8 @@ Specs are stored in `.agileplus/specs/<feature-id>/`:
 - `.agileplus/specs/<feature-id>/meta.json` - id, title, status
 - `.agileplus/specs/<feature-id>/tasks.md` - work packages
 
-Reference: `/Users/kooshapari/CodeProjects/Phenotype/repos/AgilePlus`
-CLI: `cd /Users/kooshapari/CodeProjects/Phenotype/repos/AgilePlus && agileplus <command>`
+Reference: `$AGILEPLUS_CLI`
+CLI: `cd $AGILEPLUS_CLI && agileplus <command>`
 ```
 
 ### 9.2 MCP Tools
@@ -384,7 +384,7 @@ For TracerTM's existing spec-like documents, convert to AgilePlus format:
 
 ## 12. Reference
 
-- **AgilePlus CLI**: `/Users/kooshapari/CodeProjects/Phenotype/repos/AgilePlus`
+- **AgilePlus CLI**: `$AGILEPLUS_CLI`
 - **TracerTM PRD**: [`PRD.md`](./PRD.md)
 - **TracerTM Plan**: [`docs/plans/PLAN.md`](./PLAN.md)
 - **BMM Methodology**: See `.archive/.bmad/bmm/` for scale-adaptive planning
