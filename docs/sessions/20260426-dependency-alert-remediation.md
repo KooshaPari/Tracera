@@ -171,6 +171,19 @@ repo cleanup.
 - **Excluded:** re-adding password auth, mocking WorkOS in production code,
   changing protected route policy, and broad load/stress data-model cleanup.
 
+## SIZE-CI-PROFILES-SCHEMA-GUARD: Profile Constraint Startup Schema Safety
+
+- **Scope:** Go profile startup helper for the temporary email uniqueness
+  constraint used around `AutoMigrate`.
+- **Reason:** after the k6 auth lane merged, performance smoke startup failed
+  before k6 because the helper tried to alter `tracertm.profiles` even though
+  CI/Alembic creates `profiles` in `public` and no `tracertm` schema exists.
+- **Action:** guard the temporary profile email constraint add/drop by checking
+  that the target schema/table exists, and tolerate missing schemas without
+  hiding other migration errors.
+- **Excluded:** redesigning profile schema ownership, changing AuthKit adapter
+  behavior, and changing Alembic profile migrations.
+
 ## Validation Targets
 
 ```bash
