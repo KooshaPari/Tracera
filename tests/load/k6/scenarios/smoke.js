@@ -249,9 +249,10 @@ export default function (data) {
 
     const headers = getAuthHeaders(authData);
     const searchQuery = generateSearchQuery({ limit: 20, projectId: smokeProjectId });
+    const searchProjectId = searchQuery.projectId || smokeProjectId;
 
     const searchResponse = http.get(
-      `${API_BASE_URL}/search?q=${encodeURIComponent(searchQuery.query)}&limit=${searchQuery.limit}&project_id=${smokeProjectId}`,
+      `${API_BASE_URL}/search?q=${encodeURIComponent(searchQuery.query)}&limit=${searchQuery.limit}&project_id=${searchProjectId}`,
       {
         headers,
         tags: { name: 'search_items' },

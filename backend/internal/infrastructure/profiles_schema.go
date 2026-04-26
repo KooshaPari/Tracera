@@ -3,6 +3,7 @@ package infrastructure
 
 import (
 	"fmt"
+	"log/slog"
 
 	"gorm.io/gorm"
 
@@ -36,7 +37,15 @@ func migrateAuthProfilesSchema(gormDB *gorm.DB) error {
 		return fmt.Errorf("failed to auto-migrate profiles: %w", err)
 	}
 	for _, schema := range []string{"public", "tracertm"} {
-		_ = dropProfileEmailConstraint(gormDB, schema)
+		if err := dropProfileEmailConstraint(gormDB, schema); err != nil {
+			slog.Debug(
+				"profile email constraint cleanup failed",
+				"schema",
+				schema,
+				"error",
+				err,
+			)
+		}
 	}
 	return nil
 }

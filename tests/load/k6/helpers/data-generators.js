@@ -5,7 +5,10 @@
  * to simulate production-like load patterns.
  */
 
-import { randomString, randomIntBetween } from 'k6';
+import {
+  randomString,
+  randomIntBetween,
+} from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
 // Realistic data pools for generation
 const ITEM_TYPES = ['requirement', 'feature', 'task', 'bug', 'epic', 'story'];
@@ -240,6 +243,7 @@ export function generateSearchQuery(options = {}) {
     order: options.order || randomChoice(['asc', 'desc']),
     limit: options.limit || randomIntBetween(10, 100),
     offset: options.offset || 0,
+    projectId: options.projectId,
   };
 }
 

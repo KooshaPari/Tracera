@@ -143,6 +143,7 @@ function readCsrfToken(response) {
 }
 
 function failCsrfTokenRequest(response) {
+  const debugCsrf = __ENV.K6_DEBUG_CSRF === 'true' || __ENV.K6_DEBUG_CSRF === '1';
   const body = response && response.body ? String(response.body).slice(0, 500) : '';
   const headers = response && response.headers ? response.headers : {};
   const details = [
@@ -150,8 +151,10 @@ function failCsrfTokenRequest(response) {
     `contentType=${headers['Content-Type'] || ''}`,
     `retryAfter=${headers['Retry-After'] || ''}`,
     `rateLimit=${headers['X-RateLimit-Remaining'] || ''}/${headers['X-RateLimit-Limit'] || ''}`,
-    `setCookie=${headers['Set-Cookie'] ? String(headers['Set-Cookie']).slice(0, 160) : ''}`,
-    `body=${body}`,
+    `setCookie=${debugCsrf && headers['Set-Cookie']
+      ? String(headers['Set-Cookie']).slice(0, 160)
+      : '[REDACTED]'}`,
+    `body=${debugCsrf ? body : '[REDACTED]'}`,
   ].join(' ');
   console.error(`CSRF token request failed: ${details}`);
   fail('Failed to retrieve CSRF token');
@@ -213,6 +216,10 @@ export function getAuthHeaders(authData) {
 
 export function updateCsrfFromResponse(authData, response) {
   if (!authData || !response) {
+    return authData;
+  }
+
+  if (response.status < 200 || response.status >= 400) {
     return authData;
   }
 

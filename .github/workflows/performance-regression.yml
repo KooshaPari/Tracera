@@ -42,6 +42,8 @@ env:
   BASE_URL: http://localhost:4000
   TEST_ENV: ci
   K6_VERSION: '0.48.0'
+  RATE_LIMIT_API_RPM: "10000"
+  RATE_LIMIT_AUTH_RPM: "10000"
 
 jobs:
   # =============================================================================
@@ -205,8 +207,6 @@ jobs:
           WORKOS_API_KEY: sk_test_ci_performance
           WORKOS_AUTHKIT_DOMAIN: http://localhost:4000
           CSRF_SECRET: ci-csrf-secret-at-least-32-bytes
-          RATE_LIMIT_API_RPM: "10000"
-          RATE_LIMIT_AUTH_RPM: "10000"
           TRACING_ENABLED: "false"
 
       - name: Run smoke test
@@ -368,8 +368,6 @@ jobs:
           WORKOS_API_KEY: sk_test_ci_performance
           WORKOS_AUTHKIT_DOMAIN: http://localhost:4000
           CSRF_SECRET: ci-csrf-secret-at-least-32-bytes
-          RATE_LIMIT_API_RPM: "10000"
-          RATE_LIMIT_AUTH_RPM: "10000"
           TRACING_ENABLED: "false"
 
       - name: Run load test
