@@ -120,13 +120,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           cache: 'pip'
-        with:
           python-version: '3.11'
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.25.7'
 
       - name: Install k6
         run: |
@@ -248,13 +247,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           cache: 'pip'
-        with:
           python-version: '3.11'
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.25.7'
 
       - name: Install k6
         run: |
@@ -351,7 +349,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           cache: 'pip'
-        with:
           python-version: '3.11'
 
       - name: Install dependencies

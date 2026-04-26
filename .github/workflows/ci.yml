@@ -41,7 +41,7 @@ on:
 env:
   DOCKER_REGISTRY: ghcr.io
   REGISTRY_USERNAME: ${{ github.actor }}
-  GO_VERSION: '1.23'
+  GO_VERSION: '1.25.7'
   PYTHON_VERSION: '3.13'
 
 jobs:
@@ -366,7 +366,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['1.23']
+        go-version: ['1.25.7']
 
     services:
       postgres:
@@ -428,9 +428,9 @@ jobs:
         go mod verify
 
     - name: Run golangci-lint (strict enforcement)
-      uses: golangci/golangci-lint-action@v6
+      uses: golangci/golangci-lint-action@v9
       with:
-        version: v1.61
+        version: latest
         working-directory: backend
         args: --timeout=5m --config=.golangci.yml
       continue-on-error: false
