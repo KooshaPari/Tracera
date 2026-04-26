@@ -17,8 +17,8 @@ The post-v54 window resolved the largest remaining hygiene fronts: the **pheno w
 | Badge coverage | 84.3% | 84.3% | — |
 | Broken links | ~5,000 | ~5,000 | — |
 | Dependabot alerts | 87 | 87 | — |
-| Cargo-deny advisories | 29 | **27** | -2 (W-93 final) |
-| FocalPoint state | Xcode unblocked | templates-registry 2-line fix in flight | progress |
+| Cargo-deny advisories | 29 | **27 → ~14** | -2 (W-93 final); ~-13 post-`5c4030c` (W-94 pending) |
+| FocalPoint state | Xcode unblocked | templates-registry LANDED (`5c4030c`); 19 → ~6 advisories | RESOLVED |
 | cliproxyapi | 23 user-blocked | 23 user-blocked | — |
 | pheno workspace | dirty (4 pending commits) | **clean, all on origin** | RESOLVED |
 | Civis | conflict | **squash-resolved** | RESOLVED |
@@ -45,3 +45,15 @@ The post-v54 window resolved the largest remaining hygiene fronts: the **pheno w
 ## Takeaway
 
 Day closed with **pheno + Civis fronts fully resolved**, cargo-deny final at **27**, and 53 repos pushed. Only blocker requiring human is **pack-gc sandbox permission**; everything else is queued and agent-actionable.
+
+## Post-Write Update
+
+Templates-registry 2-line axum migration **landed mid-write** as commit `5c4030c` — slightly outperformed the in-flight estimate.
+
+- Cleared **13 advisories** (vs. estimated 11)
+- FocalPoint dropped **19 → 6** advisories
+- Org-wide cargo-deny projected: **27 → ~14** (-72% vs. W-92 baseline of 50)
+- Final 6 FocalPoint advisories all flow through `reqwest 0.11`; **reqwest 0.12 follow-up** scoping in flight
+- **W-94 snapshot agent in flight**; will confirm exact post-fix counts and replace the `~` placeholders in the counters table
+
+The "templates-registry 2-line fix in flight" line in the v55 body and the Tomorrow Priorities item should be read as superseded by this addendum.
