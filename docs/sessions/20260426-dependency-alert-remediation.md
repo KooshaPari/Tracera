@@ -125,6 +125,22 @@ repo cleanup.
   stacks, auth-seeding k6 scenarios, frontend performance, and broader runtime
   compose consolidation.
 
+## SIZE-CI-NOTIFICATIONS-RLS-MIGRATION: Notification Startup Schema Ownership
+
+- **Scope:** Go backend notification startup schema checks and the Alembic
+  notification expiration column.
+- **Reason:** after the runtime service lane, performance smoke reached backend
+  infrastructure initialization and failed because GORM tried to alter
+  `notifications.user_id` from Alembic's `VARCHAR(255)` to `TEXT` while RLS
+  policies depended on that column.
+- **Action:** stop broad GORM `AutoMigrate` against an existing Alembic-owned
+  `notifications` table, align Go notification GORM tags with Alembic types,
+  add only the missing `expires_at` column/index additively, and add Alembic
+  revision `060_add_notification_expiration` as the canonical schema owner for
+  that column.
+- **Excluded:** dropping/recreating RLS policies, changing notification policy
+  semantics, broad GORM/Alembic ownership redesign, and k6 auth/data seeding.
+
 ## Validation Targets
 
 ```bash

@@ -32,15 +32,15 @@ const (
 
 // Notification represents a user notification
 type Notification struct {
-	ID        string           `json:"id" gorm:"primaryKey"`
-	UserID    string           `json:"user_id" gorm:"index"`
-	Type      NotificationType `json:"type"`
-	Title     string           `json:"title"`
-	Message   string           `json:"message"`
-	Link      *string          `json:"link,omitempty"`
-	ReadAt    *time.Time       `json:"read_at,omitempty"`
-	CreatedAt time.Time        `json:"created_at" gorm:"index"`
-	ExpiresAt *time.Time       `json:"expires_at,omitempty" gorm:"index"`
+	ID        string           `json:"id" gorm:"primaryKey;type:varchar(36)"`
+	UserID    string           `json:"user_id" gorm:"type:varchar(255);not null;index"`
+	Type      NotificationType `json:"type" gorm:"type:varchar(50);not null;default:info"`
+	Title     string           `json:"title" gorm:"type:varchar(255);not null"`
+	Message   string           `json:"message" gorm:"type:text;not null"`
+	Link      *string          `json:"link,omitempty" gorm:"type:varchar(500)"`
+	ReadAt    *time.Time       `json:"read_at,omitempty" gorm:"type:timestamptz"`
+	CreatedAt time.Time        `json:"created_at" gorm:"type:timestamptz;not null;default:now();index"`
+	ExpiresAt *time.Time       `json:"expires_at,omitempty" gorm:"type:timestamptz;index"`
 }
 
 // NotificationEvent represents a notification event for broadcasting
