@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/agent_session.py
-# hypothesis_version: 6.151.4
-
-[255, 1024, 'SET NULL', 'agent_sessions', 'project_id', 'projects.id', 'session_id']

@@ -1,0 +1,18 @@
+domain: webapp
+layers:
+  commons:
+    name: template-commons
+    version: ">=0.1.0"
+  language_primary:
+    name: template-lang-typescript
+    version: ">=0.1.0"
+  language_optional:
+    - name: template-lang-python
+      version: ">=0.1.0"
+features:
+  - web_ui
+  - http_api
+  - docs
+defaults:
+  quality_profile: strict
+  governance_mode: standard

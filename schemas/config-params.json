@@ -1,0 +1,82 @@
+# Parameterization Schema
+
+JSON Schema for PhenoKits parameterizable configurations.
+
+## Overview
+
+Configs in `configs/` support parameterization via `{{VARIABLE}}` syntax.
+Parameters are validated against these schemas before use.
+
+## Parameter Types
+
+### Required Parameters
+Must be provided by the consuming project:
+- `{{PROJECT_NAME}}` - Project identifier
+- `{{ORG_NAME}}` - Organization name
+- `{{GITHUB_REPO}}` - GitHub repository path
+
+### Optional Parameters
+Have defaults, can be overridden:
+- `{{RUST_VERSION}}` - Rust version (default: 1.75)
+- `{{NODE_VERSION}}` - Node version (default: 20)
+- `{{GOLANG_VERSION}}` - Go version (default: 1.22)
+- `{{LOG_LEVEL}}` - Log level (default: info)
+- `{{ENVIRONMENT}}` - Environment (default: development)
+
+### Secret Parameters
+Must come from secret manager:
+- `{{SECRET:NAME}}` - Reference to secret
+- `{{API_KEY:PROVIDER}}` - API key reference
+- `{{DB_PASSWORD}}` - Database password
+
+## Schema Files
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "object",
+      "required": ["name", "org"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "org": {
+          "type": "string",
+          "pattern": "^[A-Z][a-zA-Z]+$"
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "rust": { "type": "string", "default": "1.75" },
+        "node": { "type": "string", "default": "20" },
+        "go": { "type": "string", "default": "1.22" },
+        "python": { "type": "string", "default": "3.12" }
+      }
+    },
+    "secrets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^SECRET:[A-Z_]+$"
+      }
+    }
+  }
+}
+```
+
+## Usage
+
+```bash
+# Validate a parameterized config
+pheno-kits validate --config configs/tooling/ruff.toml
+
+# Apply parameters
+pheno-kits apply --config configs/cicd/ci.yml \
+  --vars project.name=myapp,org=MyOrg
+```

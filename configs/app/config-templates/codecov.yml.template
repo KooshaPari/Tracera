@@ -1,0 +1,70 @@
+# Codecov configuration template
+# Usage: Copy to your project root as codecov.yml
+# Adjust coverage thresholds as needed for your project
+
+codecov:
+  require_ci_to_pass: yes
+  notify:
+    wait_for_ci: yes
+    after_n_builds: 2
+
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+  status:
+    project:
+      default:
+        target: 85%
+        threshold: 2%
+        if_ci_failed: error
+        only_pulls: true
+        paths:
+          - "src/"
+          - "**/src/"
+    patch:
+      default:
+        target: 85%
+        threshold: 2%
+        if_ci_failed: error
+        only_pulls: true
+        paths:
+          - "src/"
+          - "**/src/"
+    changes: true
+
+comment:
+  layout: "reach, diff, flags, files, footer"
+  behavior: default
+  require_changes: true
+  require_base: yes
+  require_head: yes
+
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: no
+      macro: no
+
+ignore:
+  - "tests/**/*"
+  - "test/**/*"
+  - "**/tests/**"
+  - "**/test/**"
+  - "**/__tests__/**"
+  - "**/*.test.*"
+  - "**/*.spec.*"
+  - "vendor/**/*"
+  - "node_modules/**/*"
+  - "target/**/*"
+  - "dist/**/*"
+  - "build/**/*"
+  - "examples/**/*"
+  - "docs/**/*"
+  - ".github/**/*"
+  - "scripts/**/*"
+  - "*.config.*"
+  - "**/conftest.py"
+  - "**/fixtures/**/*"

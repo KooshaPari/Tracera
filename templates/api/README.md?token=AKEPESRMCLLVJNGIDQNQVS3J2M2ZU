@@ -1,0 +1,16 @@
+# template-domain-service-api
+
+Domain template layer for service APIs. Composes shared commons and language layers.
+
+## Layer Contract
+
+- layer_type: domain
+- layer_name: template-domain-service-api
+- versioning: semver
+
+## Composition
+
+- base: template-commons
+- language layers:
+  - template-lang-go (primary)
+  - template-lang-python (secondary, optional)

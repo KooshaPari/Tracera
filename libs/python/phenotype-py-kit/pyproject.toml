@@ -1,0 +1,39 @@
+[project]
+name = "phenotype-py-kit"
+version = "0.1.0"
+description = "Shared Python utilities for Phenotype projects - settings, logging, testing, and FastAPI app factory"
+readme = "README.md"
+authors = [{ name = "Phenotype Team" }]
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.11.7",
+    "pydantic-settings>=2.6.1",
+    "structlog>=24.4.0",
+    "fastapi>=0.128.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
+    "pytest-cov>=7.0.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.8.4,<0.9.0"]
+build-backend = "uv_build"
+
+[tool.ruff.lint.isort]
+known-first-party = ["phenotype_kit"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = ["-v", "--tb=short", "--strict-markers", "--strict-config"]
+markers = [
+    "unit: marks tests as unit tests (fast, no external dependencies)",
+    "integration: marks tests as integration tests (requires external services)",
+]
+asyncio_mode = "auto"

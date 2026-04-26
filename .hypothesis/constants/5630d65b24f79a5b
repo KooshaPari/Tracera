@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/agent_coordination_service.py
-# hypothesis_version: 6.148.7
-
-[100, '1970-01-01T00:00:00', 'active', 'agent', 'agent_registered', 'concurrent_activity', 'conflict', 'conflict_resolved', 'conflict_type', 'data', 'entity_id', 'entity_type', 'event_type', 'last_write_wins', 'loser', 'name', 'priority_based', 'strategy', 'timestamp', 'type', 'unknown', 'winner']

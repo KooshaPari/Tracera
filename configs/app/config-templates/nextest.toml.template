@@ -1,0 +1,43 @@
+# nextest configuration template
+# Usage: Copy to your project root as nextest.toml or .config/nextest.toml
+# See: https://nexte.st/book/configuration.html
+
+[profile.default]
+# Retry failed tests once
+retries = 1
+# Mark tests as slow after 60 seconds
+slow-timeout = "60s"
+# Mark tests as leaky if they take >10x the median time
+leak-timeout = "10x"
+# Don't fail tests on warnings
+fail-fast = false
+
+[profile.ci]
+# CI profile - optimized for CI environments
+retries = 2
+slow-timeout = "120s"
+# Output format for CI
+status-level = "fail"
+final-status-level = "flaky"
+# JUnit XML output for CI integration
+junit = { path = "junit.xml" }
+
+[profile.coverage]
+# Profile optimized for coverage runs
+# Store profiling data for coverage tools
+retries = 0
+slow-timeout = "180s"
+# Don't fail fast to capture all coverage
+fail-fast = false
+
+# Test groups for resource-intensive tests
+[[profile.default.overrides]]
+# Long-running tests
+filter = 'test(~long)'
+slow-timeout = "300s"
+retries = 0
+
+[[profile.default.overrides]]
+# Tests that should only run once
+filter = 'test(~no_retry)'
+retries = 0

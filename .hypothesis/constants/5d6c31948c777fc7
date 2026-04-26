@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/cache_service.py
-# hypothesis_version: 6.151.4
-
-[100, 120, 180, 300, 600, ':', 'CacheService', 'CacheService | None', 'ancestors', 'descendants', 'evictions', 'graph', 'graph_full', 'hits', 'impact', 'items', 'links', 'memory', 'misses', 'prefix', 'project', 'projects', 'search', 'system', 'ttl', 'used_memory', 'utf-8']

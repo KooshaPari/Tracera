@@ -1,0 +1,4 @@
+positions:
+  ? path: /Users/kooshapari/CodeProjects/Phenotype/repos/Tracera/.process-compose/logs/caddy-access.log
+    labels: '{log_source="process-compose", repo="tracera", service_group="local-dev"}'
+  : "3619999"

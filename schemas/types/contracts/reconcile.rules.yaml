@@ -1,0 +1,200 @@
+version: 1
+
+# Reconciliation Modes
+modes:
+  smart:
+    create_missing: true
+    update_template_owned_if_unchanged: true
+    create_conflict_sidecar: true
+    sidecar_suffix: .template.new
+  overwrite:
+    create_missing: true
+    replace_template_owned: true
+  skip:
+    report_only: true
+
+# File Ownership and Management
+ownership:
+  template_owned:
+    - contracts/**
+    - docs/**
+    - scripts/**
+  protected:
+    - README.md
+    - .github/workflows/ci.yml
+    - Taskfile.yml
+
+# Required Governance Files
+governance:
+  required_files:
+    - path: AGENTS.md
+      template: templates/AGENTS.md
+      check: diff
+      description: "Agent activity and decision log"
+    - path: CLAUDE.md
+      template: templates/CLAUDE.md
+      check: diff
+      description: "Workspace rules and governance guidelines"
+    - path: SECURITY.md
+      check: exists
+      description: "Security policy and incident procedures"
+    - path: .gitignore
+      check: exists
+      description: "Version control ignore patterns"
+
+# CI/CD Workflow Requirements
+ci_workflows:
+  required:
+    - name: policy-gate
+      source: phenotypeActions/actions/policy-gate
+      check: uses_composite_action
+      trigger: pull_request
+      description: "Validates PR policies and naming conventions"
+    - name: lint-test
+      source: phenotypeActions/actions/lint-test
+      check: uses_composite_action
+      trigger: pull_request
+      description: "Language-aware linting and test execution"
+  optional:
+    - name: security-scan
+      source: phenotypeActions/actions/security-scan
+      check: uses_composite_action
+      trigger: pull_request
+      description: "Dependency and code security scanning"
+    - name: build
+      trigger: push
+      branches:
+        - main
+      description: "Build and artifact generation"
+
+# Logging Schema Enforcement
+logging:
+  schema:
+    required_fields:
+      - timestamp
+      - level
+      - message
+      - service
+    format: json
+    timestamp_format: RFC3339
+    level_values:
+      - debug
+      - info
+      - warn
+      - error
+      - fatal
+    example:
+      timestamp: "2026-03-01T10:30:45Z"
+      level: "info"
+      message: "Operation completed successfully"
+      service: "reconcile-service"
+      trace_id: "optional"
+      span_id: "optional"
+
+# Code Quality Standards
+code_quality:
+  max_function_lines: 40
+  min_coverage: 80
+  lint_zero_errors: true
+  lint_max_warnings: 10
+  standards:
+    go:
+      min_coverage: 80
+      linters:
+        - vet
+        - golangci-lint
+      format: gofmt
+    python:
+      min_coverage: 80
+      linters:
+        - ruff
+      test_framework: pytest
+    typescript:
+      min_coverage: 80
+      linters:
+        - biome
+      test_framework: vitest
+    rust:
+      min_coverage: 80
+      clippy: enabled
+      test_framework: cargo nextest
+
+# Branch and Commit Discipline
+branch_discipline:
+  canonical:
+    - main
+    - staging
+  protected_branches:
+    - main
+    - staging
+  require_pr_reviews: 1
+  require_status_checks: true
+  enforce_admin: true
+  dismiss_stale_reviews: true
+
+# Commit Message Standards
+commit_messages:
+  format: conventional
+  types:
+    - feat
+    - fix
+    - refactor
+    - docs
+    - test
+    - chore
+    - style
+    - perf
+  max_subject_length: 50
+  require_body: true
+  body_wrap_length: 72
+  footer_references:
+    - Fixes
+    - Relates to
+    - Breaking change
+
+# Directory Structure Contracts
+directory_structure:
+  required_dirs:
+    - contracts/
+    - docs/
+    - scripts/
+    - .github/workflows/
+  standard_files:
+    - README.md
+    - SECURITY.md
+    - AGENTS.md
+    - CLAUDE.md
+    - Taskfile.yml
+    - .gitignore
+
+# Dependency Management
+dependencies:
+  vulnerability_check: enabled
+  outdated_check: enabled
+  max_outdated_age_days: 30
+  require_lock_files: true
+
+# Documentation Requirements
+documentation:
+  readme:
+    required: true
+    min_sections:
+      - Overview
+      - Installation
+      - Usage
+      - Contributing
+      - License
+  api_docs:
+    required: false
+    when_applicable: "if package exports public API"
+  architecture_docs:
+    required: false
+    when_applicable: "if repo has significant complexity"
+
+# Enforcement Levels
+enforcement:
+  governance: strict
+  code_quality: moderate
+  documentation: moderate
+  security: strict
+  dependencies: moderate

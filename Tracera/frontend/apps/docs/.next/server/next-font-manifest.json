@@ -1,0 +1,16 @@
+{
+  "app": {
+    "[project]/Tracera/frontend/apps/docs/app/_not-found/page": [
+      "static/media/83afe278b6a6bb3c.p.3a6ba036.woff2"
+    ],
+    "[project]/Tracera/frontend/apps/docs/app/docs/[[...slug]]/page": [
+      "static/media/83afe278b6a6bb3c.p.3a6ba036.woff2"
+    ],
+    "[project]/Tracera/frontend/apps/docs/app/page": [
+      "static/media/83afe278b6a6bb3c.p.3a6ba036.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": false,
+  "pages": {},
+  "pagesUsingSizeAdjust": false
+}

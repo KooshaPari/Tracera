@@ -1,0 +1,31 @@
+# clippy.toml template for Rust projects
+# See: https://doc.rust-lang.org/clippy/
+
+# Allow disabled lints
+avoid-breaking-exported-api = false
+
+# Allow unused imports in tests
+allow-tests = true
+
+# Allow module inception (nesting a module named the same as its parent)
+allow-module-inception = false
+
+# Type complexity limit (default is 250)
+type-complexity-threshold = 500
+
+# Cognitive complexity limit
+cognitive-complexity-threshold = 30
+
+# Disallowed methods (uncomment to enable)
+# [disallowed-methods]
+# "alloc::format" = "Use String::from or format! instead"
+# "std::env::var" = "Use env! or std::env::var_os for compile-time access"
+
+# Disallowed types (uncomment to enable)
+# [disallowed-types]
+# "std::fs::File" = "Use our custom wrapper instead"
+
+# Warnings that can be enabled for stricter code
+#too-many-arguments-threshold = 8
+#single-char-binding-names-threshold = 4
+#too-large-for-stack = 200

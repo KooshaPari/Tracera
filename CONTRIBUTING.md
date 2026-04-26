@@ -1,58 +1,47 @@
-# Contributing to TracerTM 🚀
+# Contributing to template-commons
 
-Thank you for your interest in contributing to **TracerTM**! We are building a world-class requirements traceability system, and your contributions are essential.
+Thank you for your interest in contributing to template-commons.
 
-## 📋 Code of Conduct
+## Layer Contract
 
-By participating, you agree to uphold a professional and respectful environment for all contributors.
+- **layer_type**: commons
+- **layer_name**: template-commons
+- **versioning**: semver
 
-## 🛠️ Development Setup
+## Development Setup
 
-TracerTM is a polyglot system (Go, Python, TypeScript). We use `Task` and `Process Compose` for unified orchestration.
+```bash
+# Clone the repository
+git clone https://github.com/Phenotype-Enterprise/template-commons
+cd template-commons
 
-1. **Clone and Install**:
-   ```bash
-   git clone https://github.com/kooshapari/tracertm.git
-   cd tracertm
-   task install
-   ```
+# Install dependencies (if any)
+pip install -e .
 
-2. **Database Setup**:
-   ```bash
-   task db:migrate
-   ```
+# Run checks before release
+task check
+```
 
-3. **Start Development Environment**:
-   ```bash
-   task dev:tui  # Interactive TUI dashboard
-   ```
+## Making Changes
 
-## 🧪 Testing & Quality Standards
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/my-feature`
+3. Make your changes following the layer contract
+4. Run `task check` to verify compliance
+5. Update version following semver
+6. Update CHANGELOG.md
+7. Create PR with description of changes
 
-This project operates at a **critical** quality tier. All PRs must pass the following:
+## Versioning Policy
 
-- **Backend (Go)**: `go test ./...` and `golangci-lint` must be green.
-- **Backend (Python)**: `pytest` and `ruff` (lint/format) must be green.
-- **Frontend**: `bun test` and TypeScript type-checking must pass.
-- **Architecture**: `tach` boundary checks must be satisfied.
-- **Security**: `govulncheck` and `bandit` must report zero vulnerabilities.
+- Follow Semantic Versioning (semver)
+- Patch version for bug fixes
+- Minor version for backwards-compatible additions
+- Major version for breaking changes
 
-## 📜 Coding Guidelines
+## Release Process
 
-- **Traceability First**: Every significant feature should be linked to a requirement in the RTM.
-- **Observability**: Add structured logging and OpenTelemetry spans to new logic.
-- **Hardening**: Follow the patterns defined in `VERIFICATION_POLICY.md` for quality gate compliance.
-
-## 🚀 Pull Request Process
-
-1. **Branching**: Use `feature/` or `fix/` prefixes.
-2. **Attestation**: Your PR will trigger automated quality gates that generate signed SLSA attestations.
-3. **Disputes**: If you believe a quality gate decision is incorrect, refer to the workflow in `VERIFICATION_POLICY.md`.
-4. **Review**: All PRs require at least one approval from a maintainer.
-
-## ⚖️ License
-
-By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).
-
----
-Thank you for helping us build the future of traceability!
+1. Update CHANGELOG.md with version and date
+2. Create git tag: `git tag v*.*.*`
+3. Push tag: `git push origin --tags`
+4. CI will publish to package registry

@@ -1,0 +1,130 @@
+name: Branch Protection Audit
+
+on:
+  pull_request_target:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * 1"
+
+jobs:
+  branch-protection-audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      administration: read
+    steps:
+      - name: Verify base branch target is main
+        if: github.event_name == 'pull_request_target'
+        run: |
+          if [ "${{ github.event.pull_request.base.ref }}" != "main" ]; then
+            echo "::error::Branch protection policy requires PR target to be 'main'."
+            exit 1
+          fi
+
+      - name: Audit main branch protection settings
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          # Template repos may not have strict branch protection
+          IS_TEMPLATE_REPO=false
+          if [ "${{ github.repository }}" == "KooshaPari/template-commons" ]; then
+            IS_TEMPLATE_REPO=true
+          fi
+
+          EXPECTED_CHECKS=$(jq -c -n '["policy-gate", "validate"] | map(ascii_downcase) | unique | sort')
+          EXPECTED_FORCE_PUSHES="false"
+          EXPECTED_DELETIONS="false"
+          EXPECTED_LINEAR_HISTORY="true"
+          EXPECTED_CONVERSATION_RESOLUTION="true"
+          EXPECTED_ENFORCE_ADMINS="true"
+          EXPECTED_STRICT_REQUIRED_CHECKS="true"
+
+          api_error_file=$(mktemp)
+          if ! payload=$(gh api "repos/${GITHUB_REPOSITORY}/branches/main/protection" -H "Accept: application/vnd.github+json" 2>"$api_error_file"); then
+            status=$?
+            api_error_msg=$(cat "$api_error_file" || true)
+            rm -f "$api_error_file"
+
+            echo "::error::Failed to fetch branch protection settings for 'main' (exit $status)."
+            if printf '%s\n' "$api_error_msg" | grep -qi '404'; then
+              echo "::error::Branch protection is not enabled on 'main', or endpoint is unavailable for this repository."
+            elif printf '%s\n' "$api_error_msg" | grep -qi '403'; then
+              echo "::error::Token lacks 'administration: read'. This workflow requires administration read access."
+            else
+              echo "::error::GitHub API error: ${api_error_msg}"
+            fi
+            exit $status
+          fi
+          rm -f "$api_error_file"
+
+          protected=$(echo "$payload" | jq -r '.protected // false')
+          checks=$(echo "$payload" | jq -r '([.required_status_checks.contexts // [], (.required_status_checks.checks // [] | map(.context // empty))] | flatten | unique | sort | join(","))')
+          required_reviews=$(echo "$payload" | jq -r '.required_pull_request_reviews.required_approving_review_count // 0')
+          force_pushes=$(echo "$payload" | jq -r '.allow_force_pushes.enabled // false')
+          deletions=$(echo "$payload" | jq -r '.allow_deletions.enabled // false')
+          linear_history=$(echo "$payload" | jq -r '.required_linear_history.enabled // false')
+          conversation_resolution=$(echo "$payload" | jq -r '.required_conversation_resolution.enabled // false')
+          enforce_admins=$(echo "$payload" | jq -r '.enforce_admins.enabled // false')
+          strict_required_checks=$(echo "$payload" | jq -r '.required_status_checks.strict // false')
+
+          check_passed=1
+          checks_list="$checks"
+
+          # Skip status checks validation for template-commons (it's a template repo)
+          if [ "$IS_TEMPLATE_REPO" == "true" ]; then
+            echo "Skipping status checks validation for template-commons repo."
+          else
+            if [ -z "$actual_checks" ] || [ "$actual_checks" = "null" ] || [ "$actual_checks" = "[]" ]; then
+              echo "::error::main branch protection checks are not configured for 'main'."
+              check_passed=0
+            fi
+
+            if ! echo "$actual_checks" | jq -e --argjson expected "$EXPECTED_CHECKS" '. == $expected' >/dev/null; then
+              echo "::error::Expected required checks: $EXPECTED_CHECKS"
+              echo "::error::Found required checks: $actual_checks"
+              check_passed=0
+            fi
+          fi
+
+          if [ "$required_reviews" -ne 0 ]; then
+            echo "::error::Expected exactly 0 required approving reviews, found $required_reviews"
+            check_passed=0
+          fi
+
+          if [ "$force_pushes" != "$EXPECTED_FORCE_PUSHES" ]; then
+            echo "::error::Expected allow_force_pushes=$EXPECTED_FORCE_PUSHES but found $force_pushes"
+            check_passed=0
+          fi
+
+          if [ "$deletions" != "$EXPECTED_DELETIONS" ]; then
+            echo "::error::Expected allow_deletions=$EXPECTED_DELETIONS but found $deletions"
+            check_passed=0
+          fi
+
+          if [ "$linear_history" != "$EXPECTED_LINEAR_HISTORY" ]; then
+            echo "::error::Expected required_linear_history=$EXPECTED_LINEAR_HISTORY but found $linear_history"
+            check_passed=0
+          fi
+
+          if [ "$conversation_resolution" != "$EXPECTED_CONVERSATION_RESOLUTION" ]; then
+            echo "::error::Expected required_conversation_resolution=$EXPECTED_CONVERSATION_RESOLUTION but found $conversation_resolution"
+            check_passed=0
+          fi
+
+          if [ "$enforce_admins" != "$EXPECTED_ENFORCE_ADMINS" ]; then
+            echo "::error::Expected enforce_admins=$EXPECTED_ENFORCE_ADMINS but found $enforce_admins"
+            check_passed=0
+          fi
+
+          if [ "$strict_required_checks" != "$EXPECTED_STRICT_REQUIRED_CHECKS" ]; then
+            echo "::error::Expected required_status_checks.strict=$EXPECTED_STRICT_REQUIRED_CHECKS but found $strict_required_checks"
+            check_passed=0
+          fi
+
+          if [ "$check_passed" != "1" ]; then
+            exit 1
+          fi
+
+          echo "Branch-protection audit passed for main."

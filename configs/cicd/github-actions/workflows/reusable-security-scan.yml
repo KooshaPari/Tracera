@@ -1,0 +1,150 @@
+name: Security Scanning
+
+on:
+  workflow_call:
+    inputs:
+      language:
+        required: true
+        type: string
+        description: 'Programming language (python, javascript, rust, go)'
+      scan-bandit:
+        required: false
+        type: boolean
+        default: true
+        description: 'Enable Bandit for Python'
+      scan-semgrep:
+        required: false
+        type: boolean
+        default: true
+        description: 'Enable Semgrep'
+      scan-pip-audit:
+        required: false
+        type: boolean
+        default: true
+        description: 'Enable pip-audit for Python'
+      scan-npm-audit:
+        required: false
+        type: boolean
+        default: true
+        description: 'Enable npm audit for Node.js'
+      scan-cargo-audit:
+        required: false
+        type: boolean
+        default: true
+        description: 'Enable cargo-audit for Rust'
+    secrets:
+      SEMGREP_APP_TOKEN:
+        required: false
+
+jobs:
+  bandit:
+    if: ${{ inputs.language == 'python' && inputs.scan-bandit }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --dev || pip install bandit[toml]
+      - name: Run Bandit
+        run: |
+          if [ -f "pyproject.toml" ]; then
+            uv run bandit -c pyproject.toml -r src/ || bandit -r src/
+          else
+            uv run bandit -r src/ || bandit -r src/
+          fi
+
+  pip-audit:
+    if: ${{ inputs.language == 'python' && inputs.scan-pip-audit }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+      - name: Install pip-audit
+        run: uv pip install pip-audit || pip install pip-audit
+      - name: Run pip-audit
+        run: |
+          if [ -f "requirements.txt" ]; then
+            pip-audit -r requirements.txt --desc
+          elif [ -f "pyproject.toml" ]; then
+            uv run pip-audit || pip-audit
+          fi
+        continue-on-error: true
+
+  npm-audit:
+    if: ${{ inputs.language == 'javascript' && inputs.scan-npm-audit }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install
+      - name: Run npm audit
+        run: bun audit
+        continue-on-error: true
+
+  cargo-audit:
+    if: ${{ inputs.language == 'rust' && inputs.scan-cargo-audit }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+      - name: Run cargo-audit
+        run: cargo audit
+
+  semgrep:
+    if: ${{ inputs.scan-semgrep }}
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Semgrep
+        run: |
+          if [ -f ".semgrep.yml" ]; then
+            semgrep --config=.semgrep.yml --error --strict src/
+          elif [ -f ".semgrep.yaml" ]; then
+            semgrep --config=.semgrep.yaml --error --strict src/
+          else
+            semgrep --config=auto --error src/
+          fi
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        continue-on-error: true
+
+  trivy-fs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+        continue-on-error: true
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true

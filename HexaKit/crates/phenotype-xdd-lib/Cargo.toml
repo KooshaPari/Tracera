@@ -1,0 +1,9 @@
+[package]
+name = "phenotype-xdd-lib"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+
+[dev-dependencies]

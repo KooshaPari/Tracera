@@ -1,0 +1,69 @@
+# Hexagonal Architecture Template for Rust
+
+Modern hexagonal architecture template using Rust with Axum, SQLx, and Tokio.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Adapters Layer                        │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐       │
+│  │   Axum HTTP │  │   SQLx DB   │  │   Logger    │       │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘       │
+└─────────┼────────────────┼────────────────┼─────────────┘
+          │                │                │
+          ▼                ▼                ▼
+┌─────────────────────────────────────────────────────────┐
+│                 Application Layer                        │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐       │
+│  │   Use Cases │  │   DTOs      │  │   Ports     │       │
+│  └─────────────┘  └─────────────┘  └─────────────┘       │
+└─────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────┐
+│                   Domain Layer                           │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐       │
+│  │   Entities  │  │   Services  │  │   Errors    │       │
+│  └─────────────┘  └─────────────┘  └─────────────┘       │
+└─────────────────────────────────────────────────────────┘
+```
+
+## Stack
+
+- **HTTP**: Axum 0.7 (hyper-based, ergonomic middleware)
+- **Database**: SQLx 0.8 (async, compile-time checked SQL)
+- **Runtime**: Tokio (async runtime)
+- **Errors**: thiserror (custom error types)
+- **Observability**: tracing (structured logging)
+- **Testing**: tokio-test, sqlx-test
+
+## Usage
+
+```bash
+cargo new my-project --template hexagon/templates/rust
+cd my-project
+cargo run
+```
+
+## Project Structure
+
+```
+src/
+├── domain/           # Core business logic
+│   ├── entities/     # Domain entities
+│   ├── ports/        # Domain ports (traits)
+│   └── services/     # Domain services
+├── application/      # Use cases
+│   ├── ports/        # Application ports
+│   └── use_cases/    # Business operations
+└── infrastructure/   # External concerns
+    ├── adapters/     # Adapter implementations
+    │   ├── persistence/  # Database adapters
+    │   └── web/          # HTTP handlers
+    └── config/       # Configuration
+```
+
+## License
+
+MIT

@@ -1,0 +1,32 @@
+# Reusable Codespell Workflow
+# Usage in your project:
+#   jobs:
+#     codespell:
+#       uses: KooshaPari/template-commons/.github/workflows/reusable-codespell.yml@main
+
+name: Reusable Codespell
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  codespell:
+    name: Check for spelling errors
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Annotate locations with typos
+        if: hashFiles('.codespellrc') != '' || hashFiles('.codespellignore') != ''
+        uses: codespell-project/codespell-problem-matcher@b80729f885d32f78a716c2f107b4db1025001c42
+
+      - name: Codespell
+        uses: codespell-project/actions-codespell@8f01853be192eb0f849a5c7d721450e7a467c579
+        with:
+          ignore_words_file: .codespellignore
+          only_check_diff: true

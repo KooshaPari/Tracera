@@ -1,0 +1,114 @@
+[linters]
+enabled = [
+    "ruff",
+    "black",
+    "isort",
+    "mypy",
+    "bandit",
+    "safety",
+    "yamllint",
+    "markdownlint",
+    "pydocstyle",
+    "docformatter",
+    "interrogate",
+    "vulture",
+    "radon",
+    "pyupgrade"
+]
+
+[linters.ruff]
+command = "ruff check"
+fix_command = "ruff check --fix"
+output_format = "github"
+target_version = "py311"
+line_length = 88
+
+[linters.black]
+command = "black --check"
+fix_command = "black"
+target_version = "py311"
+line_length = 88
+
+[linters.isort]
+command = "isort --check-only"
+fix_command = "isort"
+profile = "black"
+multi_line_output = 3
+line_length = 88
+
+[linters.mypy]
+command = "mypy"
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+
+[linters.bandit]
+command = "bandit -r src -f json"
+exclude_dirs = ["tests", "test"]
+output_format = "json"
+
+[linters.safety]
+command = "safety check --json --file safety_report.json"
+check_authored = true
+check_only = false
+
+[linters.yamllint]
+command = "yamllint"
+extends = "default"
+rules.line_length.max = 88
+rules.indentation.indent_sequences = true
+
+[linters.markdownlint]
+command = "markdownlint"
+config = ".markdownlint.json"
+extensions = ["md", "markdown"]
+
+[linters.pydocstyle]
+command = "pydocstyle"
+convention = "google"
+add_ignore = ["D100", "D104", "D107"]
+match = "(?!test_).*\\.py"
+
+[linters.docformatter]
+command = "docformatter --check"
+wrap = 88
+blank_after_summary = false
+
+[linters.interrogate]
+command = "interrogate"
+fail_under = 80
+ignore_init_method = true
+ignore_init_module = false
+ignore_magic = false
+ignore_nested_functions = false
+ignore_private = true
+ignore_property_decorators = true
+ignore_module = false
+
+[linters.vulture]
+command = "vulture"
+min_confidence = 80
+paths = ["src"]
+exclude = ["tests/*"]
+
+[linters.radon]
+command = "radon cc -nb -a"
+max_complexity = 10
+min_a = 0
+show_closures = false
+
+[linters.pyupgrade]
+command = "pyupgrade --py37-plus --keep-runtime-typing"
+
+[workflow]
+staged_files_command = "git diff --cached --name-only --diff-filter=AM"
+staged_py_files_command = 'git diff --cached --name-only --diff-filter=AM -- "*.py" "*.pyi"'
+parallel_linters = true
+max_parallel_jobs = 4
+timeout = 300
+
+[reporting]
+format = "github"
+fail_on_error = true
+show_diff = true
+verbose = false

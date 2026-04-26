@@ -1,0 +1,81 @@
+# Cargo deny configuration template
+# Usage: Copy to your project root as deny.toml
+# See: https://embarkstudios.github.io/cargo-deny/
+
+# This section is considered when running `cargo deny check advisories`
+[advisories]
+version = 2
+# The path where the advisory database is cloned/fetched
+# Default: ~/.cargo/advisory-db
+db-path = ".cargo/advisory-db"
+# The URL(s) of the advisory databases to use
+# Default: https://github.com/rustsec/advisory-db
+db-urls = ["https://github.com/rustsec/advisory-db"]
+# The lint level for crates that have been yanked from their source registry
+# Default: Warn
+yanked = "deny"
+# The lint level for crates that are marked as deprecated
+# Default: Warn
+deprecated = "warn"
+# The lint level for crates that are marked as unmaintained
+# Default: Warn
+unmaintained = "warn"
+# The lint level for crates where the source is a git repository
+# Default: Allow
+git-fetch-with-cli = true
+
+# This section is considered when running `cargo deny check bans`
+[bans]
+# Lint level for when multiple versions of the same crate are detected
+# Default: Warn
+multiple-versions = "warn"
+# The graph highlighting used when creating dotgraphs for crates
+# Default: None
+# Options: LowestVersion, simplest_path, all
+highlight = "all"
+# The default lint level for crates that are marked as allowed
+# Default: Allow
+allow-wildcard-paths = true
+# Lint level for crates that have been marked as yanked
+# Default: Warn
+wildcards = "warn"
+# Certain crates/versions that will be banned
+# deny = [
+#     { name = "crate-name", version = "<0.1.0" },
+# ]
+
+# This section is considered when running `cargo deny check licenses`
+[licenses]
+version = 2
+# List of explicitly allowed licenses
+# See: https://spdx.org/licenses/
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-DFS-2016",
+    "MPL-2.0",
+]
+# The confidence threshold for detecting a license from license files
+# [0.0, 1.0] - 1.0 = must match exactly
+# Default: 0.8
+confidence-threshold = 0.8
+# Allow 1 or more licenses on a per-crate basis
+# exceptions = [
+#     { allow = ["Zlib"], name = "adler32", version = "*" },
+# ]
+
+# This section is considered when running `cargo deny check sources`
+[sources]
+# Lint level for crate sources that aren't explicitly allowed
+# Default: Warn
+unknown-registry = "warn"
+unknown-git = "warn"
+# List of allowed registries
+# Default: crates.io
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+# List of allowed git repositories
+# allow-git = []

@@ -1,0 +1,70 @@
+# Hexagonal Architecture Template for Zig
+
+Modern hexagonal architecture template using Zig with explicit allocator management and zero-cost abstractions.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Adapters Layer                        │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐       │
+│  │   HTTP      │  │   SQLite    │  │   Logger    │       │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘       │
+└─────────┼────────────────┼────────────────┼─────────────┘
+          │                │                │
+          ▼                ▼                ▼
+┌─────────────────────────────────────────────────────────┐
+│                 Application Layer                        │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐       │
+│  │   Use Cases │  │   DTOs      │  │   Ports     │       │
+│  └─────────────┘  └─────────────┘  └─────────────┘       │
+└─────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────┐
+│                   Domain Layer                           │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐       │
+│  │   Entities  │  │   Services  │  │   Errors    │       │
+│  └─────────────┘  └─────────────┘  └─────────────┘       │
+└─────────────────────────────────────────────────────────┘
+```
+
+## Stack
+
+- **HTTP**: Custom TCP + HTTP parser (Zig stdlib)
+- **Database**: SQLite (c.zig bindings)
+- **Runtime**: Zig async (experimental) or blocking
+- **Errors**: Zig error unions + explicit error handling
+- **Memory**: Explicit allocator pattern (gpa, arena, fixed)
+- **Testing: Zig built-in test runner
+
+## Usage
+
+```bash
+zig init-exe
+# Copy hexagon/templates/zig/src/ to your project
+cd my-project
+zig build run
+```
+
+## Project Structure
+
+```
+src/
+├── main.zig          # Entry point
+├── domain/           # Core business logic
+│   ├── entity.zig    # Domain entities
+│   ├── ports.zig     # Domain ports (interfaces)
+│   └── errors.zig    # Domain errors
+├── application/      # Use cases
+│   ├── ports.zig     # Application ports
+│   └── use_cases.zig # Business operations
+└── infrastructure/   # External concerns
+    ├── http.zig      # HTTP adapter
+    ├── sqlite.zig    # Database adapter
+    └── config.zig    # Configuration
+```
+
+## License
+
+MIT

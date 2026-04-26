@@ -1,0 +1,114 @@
+# Security-focused Pre-commit Configuration
+# Enhanced security scanning and validation
+
+repos:
+  # Pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-added-large-files
+        args: ['--maxkb=51200']  # 50MB limit
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+
+  # Ruff linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.3
+    hooks:
+      - id: ruff
+        args: ['--fix', '--exit-non-zero-on-fix']
+      - id: ruff-format
+
+  # MyPy type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-all]
+        args: ['--strict', '--ignore-missing-imports']
+
+  # Bandit security scanning
+  - repo: https://github.com/pycqa/bandit
+    rev: 1.7.8
+    hooks:
+      - id: bandit
+        args: ['-r', '.', '-f', 'json', '-o', 'bandit-report.json']
+        exclude: 'tests/'
+
+  # Safety dependency vulnerability scanning
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.2
+    hooks:
+      - id: python-safety-dependencies-check
+
+  # Pip-audit dependency security audit
+  - repo: https://github.com/pypa/pip-audit
+    rev: v2.7.0
+    hooks:
+      - id: pip-audit
+        args: ['--desc', '--format=json', '--output=pip-audit-report.json']
+
+  # Detect secrets
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+
+  # Semgrep SAST
+  - repo: https://github.com/returntocorp/semgrep
+    rev: v1.62.0
+    hooks:
+      - id: semgrep
+        args: ['--config=auto', '--severity=ERROR', '--severity=WARNING']
+
+  # Trivy container vulnerability scanner
+  - repo: https://github.com/aquasecurity/trivy
+    rev: v0.45.0
+    hooks:
+      - id: trivy
+        args: ['fs', '--security-checks', 'vuln,secret', '--format', 'json', '--output', 'trivy-report.json']
+
+  # Presidio PII detection
+  - repo: local
+    hooks:
+      - id: presidio-analyze
+        name: Presidio PII analysis
+        entry: python
+        args: ['scripts/presidio_analyze.py']
+        language: system
+        files: \.(py|md|txt)$
+
+  # Security headers check
+  - repo: local
+    hooks:
+      - id: security-headers-check
+        name: Security headers check
+        entry: python
+        args: ['scripts/security_headers_check.py']
+        language: system
+        files: \.(py|yaml|yml)$
+
+  # Dependency license check
+  - repo: local
+    hooks:
+      - id: license-check
+        name: License compliance check
+        entry: python
+        args: ['scripts/license_check.py']
+        language: system
+        files: requirements.*\.txt$
+
+  # SBOM generation
+  - repo: local
+    hooks:
+      - id: sbom-generation
+        name: SBOM generation
+        entry: python
+        args: ['scripts/sbom_generation.py']
+        language: system
+        files: requirements.*\.txt$

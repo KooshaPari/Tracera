@@ -1,0 +1,34 @@
+# rust-toolchain.toml template
+# See: https://rust-lang.github.io/rustup/concepts/toolchains.html
+
+[toolchain]
+# Stable channel is recommended for most projects
+# Use "1.80.0" for specific version pinning
+channel = "stable"
+
+# Install additional components
+components = [
+    "rustfmt",    # Code formatting
+    "clippy",     # Linting
+    "rust-src",   # Source files for debugging
+    "rust-analysis",  # IDE support
+]
+
+# Target triples to install (optional)
+# Uncomment for cross-compilation support
+# targets = [
+#     "x86_64-unknown-linux-gnu",
+#     "aarch64-unknown-linux-gnu",
+#     "x86_64-apple-darwin",
+#     "aarch64-apple-darwin",
+#     "x86_64-pc-windows-gnu",
+# ]
+
+# Profile to install (default, minimal, or complete)
+profile = "default"
+
+# Override specific settings for CI
+# [toolchain]
+# channel = "nightly"
+# components = ["rustfmt", "clippy", "rust-src", "llvm-tools-preview"]
+# profile = "default"

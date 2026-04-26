@@ -1,0 +1,45 @@
+# Reusable Cargo Deny Workflow
+# Usage in your project:
+#   jobs:
+#     cargo-deny:
+#       uses: KooshaPari/template-commons/.github/workflows/reusable-cargo-deny.yml@main
+
+name: Reusable Cargo Deny
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: 'Working directory for cargo commands'
+        required: false
+        type: string
+        default: '.'
+      deny-check:
+        description: 'Checks to run (bans, advisories, licenses, sources)'
+        required: false
+        type: string
+        default: 'bans advisories licenses sources'
+
+permissions:
+  contents: read
+
+jobs:
+  cargo-deny:
+    name: Cargo Deny
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run cargo-deny
+        uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          rust-version: stable
+          manifest-path: ${{ inputs.working-directory }}/Cargo.toml
+          args: check ${{ inputs.deny-check }}
