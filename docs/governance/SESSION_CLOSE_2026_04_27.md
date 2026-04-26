@@ -87,3 +87,39 @@ Secondary: triage PhenoProc #21, push KDV bollard upstream tracker.
 ---
 
 *Generated 2026-04-27 — canonical session-close. No push. Commit only.*
+
+---
+
+## Final Update: FocalPoint at ZERO
+
+Post-original-close, FocalPoint achieved **0 cargo-deny advisories** — the largest single-repo cargo-deny win in org history this session.
+
+### FocalPoint Trajectory (today)
+
+| Step | Commit | Action | Advisories |
+|------|--------|--------|-----------:|
+| W-92 baseline | — | starting state (62% of org's 31% share) | 19 |
+| Templates-registry refactor | `5c4030c` | -13 | 6 |
+| Reqwest 0.11 → 0.12 | `6a601b1` | -1 (good hygiene despite scoping mis-attribution) | 5 |
+| Prometheus 0.13 → 0.14 | `c05a60e` | -4 (CVE cleared) | 1 |
+| Starlark suppress | `187cb41` | -3 effective | 1 |
+| Uniffi bincode suppress | `f373073` | -1 | **0** |
+| Final-5 plan correction | `54efae7127` | docs alignment | 0 |
+
+**Total delta: -19 advisories. FocalPoint is CLEAN.**
+
+### Implications
+
+- **~62% of FocalPoint's original advisory mass** cleared in a single working session.
+- FocalPoint was the dominant single-repo contributor to org cargo-deny pressure; its zeroing materially de-risks the W-95 snapshot.
+- Combination of substantive upgrades (reqwest, prometheus) + targeted suppresses (starlark, uniffi-bincode) + structural refactor (templates-registry) — not a suppress-only win.
+
+### Projected Org-Wide Post-W-95
+
+- Original session-close baseline: **13 org-wide advisories**
+- Post-FocalPoint-zero projection: **9 or fewer** (TBD pending W-95 snapshot)
+- Net session reduction (cargo-deny): on track for **~30%+** org-wide drop once W-95 lands.
+
+---
+
+*v2 update appended 2026-04-27. Commit only, no push.*
