@@ -16,6 +16,9 @@ on:
       - 'tests/contracts/**'
       - '.github/workflows/contract-tests.yml'
 
+permissions:
+  contents: read
+
 env:
   TEST_DB_HOST: localhost
   TEST_DB_PORT: 5432

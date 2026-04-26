@@ -13,6 +13,9 @@ on:
       - '.github/workflows/go-tests.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
   GO_VERSION: '1.25.7'
   POSTGRES_DB: tracertm_test

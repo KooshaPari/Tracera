@@ -20,6 +20,9 @@ on:
       - "frontend/apps/web/.storybook/**"
       - "frontend/apps/web/package.json"
 
+permissions:
+  contents: read
+
 concurrency:
   group: chromatic-${{ github.ref }}
   cancel-in-progress: true

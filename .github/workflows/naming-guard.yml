@@ -34,6 +34,9 @@ on:
       - 'scripts/shell/check-naming-explosion-*.sh'
       - 'frontend/scripts/check-naming-explosion.sh'
 
+permissions:
+  contents: read
+
 jobs:
   check-naming:
     runs-on: ubuntu-latest
