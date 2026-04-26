@@ -88,12 +88,12 @@ cmd_enable() {
   # gh api repos/${OWNER}/HeliosLab/pages -X POST \
   #   -F build_type=workflow -f source[branch]=main -f source[path]=/
 
-  # KDesktopVirt -- NO Pages-deploy workflow exists.
-  # Action required BEFORE enabling Pages:
-  #   1. Add VitePress config + docs/package.json (currently raw .md only).
-  #   2. Scaffold .github/workflows/deploy-pages.yml (template:
-  #      thegent/templates/vitepress-full/.github/workflows/).
-  #   3. Then run:
+  # KDesktopVirt -- READY (scaffolded 2026-04-26).
+  #   VitePress config:    KDesktopVirt/docs/.vitepress/config.ts
+  #   docs root:           KDesktopVirt/docs/index.md
+  #   package.json:        KDesktopVirt/package.json (vitepress ^1.5.0)
+  #   Pages workflow:      KDesktopVirt/.github/workflows/pages-deploy.yml
+  # Once the scaffold commit is pushed to origin/main, enable Pages:
   # gh api repos/${OWNER}/KDesktopVirt/pages -X POST \
   #   -F build_type=workflow -f source[branch]=main -f source[path]=/
 
