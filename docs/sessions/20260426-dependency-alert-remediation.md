@@ -194,8 +194,10 @@ repo cleanup.
   options object.
 - **Action:** raise API/auth rate limits only inside the CI performance backend
   jobs, make CSRF token extraction tolerant of body-vs-cookie token placement
-  while logging failed status/body evidence, and normalize null search options
-  to an empty object.
+  while logging failed status/body evidence, carry rotated CSRF tokens forward
+  after each k6 request, replace fragile k6 `randomItem` usage with a local
+  random-choice helper, normalize null search options to an empty object, and
+  align the Go project model with Alembic's `project_metadata` column.
 - **Excluded:** changing production rate-limit defaults, changing protected route
   policy, or rewriting load/stress scenario auth flows.
 

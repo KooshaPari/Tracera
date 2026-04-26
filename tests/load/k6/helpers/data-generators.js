@@ -5,7 +5,7 @@
  * to simulate production-like load patterns.
  */
 
-import { randomString, randomIntBetween, randomItem } from 'k6';
+import { randomString, randomIntBetween } from 'k6';
 
 // Realistic data pools for generation
 const ITEM_TYPES = ['requirement', 'feature', 'task', 'bug', 'epic', 'story'];
@@ -41,6 +41,10 @@ const BUG_DESCRIPTIONS = [
   'Export fails for datasets over 10k records',
 ];
 
+function randomChoice(values) {
+  return values[randomIntBetween(0, values.length - 1)];
+}
+
 /**
  * Generate a random item (requirement, feature, task, etc.)
  *
@@ -48,22 +52,22 @@ const BUG_DESCRIPTIONS = [
  * @returns {Object} - Generated item
  */
 export function generateItem(options = {}) {
-  const type = options.type || randomItem(ITEM_TYPES);
+  const type = options.type || randomChoice(ITEM_TYPES);
   const projectId = options.projectId || randomIntBetween(1, 100);
 
   let title, description;
 
   switch (type) {
     case 'requirement':
-      title = `${randomItem(REQUIREMENT_PREFIXES)} ${randomString(20)}`;
+      title = `${randomChoice(REQUIREMENT_PREFIXES)} ${randomString(20)}`;
       description = `Detailed requirement: ${randomString(100)}`;
       break;
     case 'feature':
-      title = randomItem(FEATURE_NAMES);
+      title = randomChoice(FEATURE_NAMES);
       description = `Feature implementation for ${randomString(50)}`;
       break;
     case 'bug':
-      title = `Bug: ${randomItem(BUG_DESCRIPTIONS)}`;
+      title = `Bug: ${randomChoice(BUG_DESCRIPTIONS)}`;
       description = `Steps to reproduce: ${randomString(80)}`;
       break;
     default:
@@ -76,13 +80,13 @@ export function generateItem(options = {}) {
     type: type,
     title: title,
     description: description,
-    status: options.status || randomItem(ITEM_STATUSES),
-    priority: options.priority || randomItem(PRIORITIES),
+    status: options.status || randomChoice(ITEM_STATUSES),
+    priority: options.priority || randomChoice(PRIORITIES),
     tags: generateTags(options.tagCount || randomIntBetween(1, 4)),
     metadata: {
       created_by: `user_${randomIntBetween(1, 1000)}`,
       estimated_hours: randomIntBetween(1, 40),
-      complexity: randomItem(['low', 'medium', 'high']),
+      complexity: randomChoice(['low', 'medium', 'high']),
     },
   };
 }
@@ -112,7 +116,7 @@ export function generateLink(options = {}) {
   return {
     source_id: options.sourceId || randomIntBetween(1, 10000),
     target_id: options.targetId || randomIntBetween(1, 10000),
-    link_type: options.linkType || randomItem(['depends_on', 'blocks', 'relates_to', 'implements', 'tests']),
+    link_type: options.linkType || randomChoice(['depends_on', 'blocks', 'relates_to', 'implements', 'tests']),
     metadata: {
       created_at: new Date().toISOString(),
       strength: randomIntBetween(1, 10),
@@ -136,8 +140,8 @@ export function generateTestCase(options = {}) {
       { step: 2, action: `Click on ${randomString(15)}`, expected: `Modal appears` },
       { step: 3, action: `Enter ${randomString(10)}`, expected: `Data is saved` },
     ],
-    priority: options.priority || randomItem(PRIORITIES),
-    status: options.status || randomItem(['passed', 'failed', 'skipped', 'pending']),
+    priority: options.priority || randomChoice(PRIORITIES),
+    status: options.status || randomChoice(['passed', 'failed', 'skipped', 'pending']),
     automated: options.automated !== undefined ? options.automated : randomIntBetween(0, 1) === 1,
     tags: generateTags(2),
   };
@@ -152,12 +156,12 @@ export function generateTestCase(options = {}) {
 export function generateGraphNode(options = {}) {
   return {
     id: options.id || `node_${randomString(10)}`,
-    type: options.type || randomItem(['requirement', 'feature', 'component', 'service', 'database']),
+    type: options.type || randomChoice(['requirement', 'feature', 'component', 'service', 'database']),
     label: options.label || randomString(30),
     metadata: {
       weight: randomIntBetween(1, 100),
       layer: randomIntBetween(1, 5),
-      status: randomItem(ITEM_STATUSES),
+      status: randomChoice(ITEM_STATUSES),
     },
     position: options.position || {
       x: randomIntBetween(0, 1000),
@@ -196,7 +200,7 @@ export function generateGraph(nodeCount = 100, edgeCount = 150) {
       id: `edge_${i}`,
       source: `node_${sourceIdx}`,
       target: `node_${targetIdx}`,
-      type: randomItem(['depends_on', 'contains', 'implements', 'tests']),
+      type: randomChoice(['depends_on', 'contains', 'implements', 'tests']),
       weight: randomIntBetween(1, 10),
     });
   }
@@ -225,15 +229,15 @@ export function generateSearchQuery(options = {}) {
   ];
 
   return {
-    query: options.query || randomItem(queries),
+    query: options.query || randomChoice(queries),
     filters: {
-      type: options.type || (randomIntBetween(0, 1) === 1 ? randomItem(ITEM_TYPES) : undefined),
-      status: options.status || (randomIntBetween(0, 1) === 1 ? randomItem(ITEM_STATUSES) : undefined),
-      priority: options.priority || (randomIntBetween(0, 1) === 1 ? randomItem(PRIORITIES) : undefined),
+      type: options.type || (randomIntBetween(0, 1) === 1 ? randomChoice(ITEM_TYPES) : undefined),
+      status: options.status || (randomIntBetween(0, 1) === 1 ? randomChoice(ITEM_STATUSES) : undefined),
+      priority: options.priority || (randomIntBetween(0, 1) === 1 ? randomChoice(PRIORITIES) : undefined),
       tags: randomIntBetween(0, 1) === 1 ? generateTags(randomIntBetween(1, 2)) : undefined,
     },
-    sort: options.sort || randomItem(['created_at', 'updated_at', 'priority', 'title']),
-    order: options.order || randomItem(['asc', 'desc']),
+    sort: options.sort || randomChoice(['created_at', 'updated_at', 'priority', 'title']),
+    order: options.order || randomChoice(['asc', 'desc']),
     limit: options.limit || randomIntBetween(10, 100),
     offset: options.offset || 0,
   };
@@ -268,7 +272,7 @@ export function generateWebSocketMessage(options = {}) {
   const messageTypes = ['item_created', 'item_updated', 'item_deleted', 'link_created', 'notification'];
 
   return {
-    type: options.type || randomItem(messageTypes),
+    type: options.type || randomChoice(messageTypes),
     payload: options.payload || {
       item_id: randomIntBetween(1, 10000),
       timestamp: new Date().toISOString(),

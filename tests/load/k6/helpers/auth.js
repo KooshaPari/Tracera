@@ -144,7 +144,16 @@ function readCsrfToken(response) {
 
 function failCsrfTokenRequest(response) {
   const body = response && response.body ? String(response.body).slice(0, 500) : '';
-  console.error(`CSRF token request failed: status=${response.status} body=${body}`);
+  const headers = response && response.headers ? response.headers : {};
+  const details = [
+    `status=${response.status}`,
+    `contentType=${headers['Content-Type'] || ''}`,
+    `retryAfter=${headers['Retry-After'] || ''}`,
+    `rateLimit=${headers['X-RateLimit-Remaining'] || ''}/${headers['X-RateLimit-Limit'] || ''}`,
+    `setCookie=${headers['Set-Cookie'] ? String(headers['Set-Cookie']).slice(0, 160) : ''}`,
+    `body=${body}`,
+  ].join(' ');
+  console.error(`CSRF token request failed: ${details}`);
   fail('Failed to retrieve CSRF token');
 }
 
@@ -200,6 +209,25 @@ export function getAuthHeaders(authData) {
   }
 
   return headers;
+}
+
+export function updateCsrfFromResponse(authData, response) {
+  if (!authData || !response) {
+    return authData;
+  }
+
+  const csrfToken = readCsrfToken(response);
+  const csrfCookie = extractCookie(response, 'csrf_token');
+
+  if (csrfToken) {
+    authData.csrfToken = csrfToken;
+  }
+
+  if (csrfCookie) {
+    authData.csrfCookie = csrfCookie;
+  }
+
+  return authData;
 }
 
 /**
@@ -259,6 +287,7 @@ export default {
   getTestUser,
   authenticate,
   getAuthHeaders,
+  updateCsrfFromResponse,
   verifyAuth,
   logout,
   setupTestUsers,
