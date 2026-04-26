@@ -327,21 +327,21 @@ jobs:
     needs: [smoke-test, load-test]
     if: |
       always() &&
-      (needs.smoke-test.result == 'success' || needs.load-test.result == 'success')
+      (needs['smoke-test'].result == 'success' || needs['load-test'].result == 'success')
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Download smoke test results
-        if: needs.smoke-test.result == 'success'
+        if: needs['smoke-test'].result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: smoke-test-results
           path: results/smoke
 
       - name: Download load test results
-        if: needs.load-test.result == 'success'
+        if: needs['load-test'].result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: load-test-results
