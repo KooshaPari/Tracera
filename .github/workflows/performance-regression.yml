@@ -151,7 +151,7 @@ jobs:
       - name: Build Go backend
         run: |
           cd backend
-          go build -o api ./cmd/api
+          go build -o api .
 
       - name: Start backend services
         run: |
@@ -275,7 +275,7 @@ jobs:
       - name: Build and start services
         run: |
           cd backend
-          go build -o api ./cmd/api
+          go build -o api .
           ./api &
           echo $! > api.pid
           timeout 30 bash -c 'until curl -f http://localhost:8080/health; do sleep 1; done'
