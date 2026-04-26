@@ -226,3 +226,58 @@ git fsck --full --strict 2>&1 | grep -E "^(missing|broken)" | sort | uniq -c
 ```
 
 Expected outcome: most of the 323 broken-link entries collapse once unreachable parent trees are pruned. Residual missing objects (true history holes) require either (a) `git replace --graft` workaround or (b) `git filter-repo` to surgically excise broken commits — both destructive, both require user grant.
+
+## Recheck 2026-04-26: current branch push trap
+
+Scope: parent `/Users/kooshapari/CodeProjects/Phenotype/repos` checkout only. Child repo code was not touched.
+
+### Current state
+
+- Branch: `chore/gitignore-worktrees-2026-04-26`
+- Upstream: `origin/chore/gitignore-worktrees-2026-04-26`
+- Remote `origin`: `git@github.com:KooshaPari/Tracera.git`
+- Remote `pheno`: `https://github.com/KooshaPari/phenoShared.git`
+- Ahead state: `HEAD` is 7 commits ahead of `origin/chore/gitignore-worktrees-2026-04-26`
+- Pack config: `pack.windowMemory=100m`, `pack.packSizeLimit=100m`, `pack.threads=1`
+- Object DB: `23381` loose objects, `53` packs, `3.83 GiB` packed, `497 MiB` loose, `4777` prune-packable, `0` garbage
+- Working tree: multiple parent-root docs/lock files were already modified by other agents; not part of this fix.
+
+### Read-only validation run
+
+```bash
+git status --short --branch --ignore-submodules=all
+git remote -v
+git count-objects -vH
+git fsck --full --no-dangling
+git rev-list --objects --missing=print origin/chore/gitignore-worktrees-2026-04-26..HEAD
+printf '%s\n^%s\n' HEAD origin/chore/gitignore-worktrees-2026-04-26 | git pack-objects --stdout --revs > /tmp/repos-current-branch-push.pack
+git index-pack --strict /tmp/repos-current-branch-push.pack
+GIT_TRACE_PACKET=1 GIT_TRACE=1 git push --porcelain --dry-run origin HEAD:refs/heads/chore/gitignore-worktrees-2026-04-26
+```
+
+### Findings
+
+- `git fsck --full --no-dangling` still exits `18`, with historical missing tree/blob links and a poisoned commit-graph (`git commit-graph verify` also fails with many `Could not read ... from object database for commit-graph` entries).
+- The current 7-commit delta does not show missing objects: `git rev-list --objects --missing=print origin/...HEAD` emitted no `?missing` lines.
+- A push-pack simulation for only the current branch delta succeeded: `/tmp/repos-current-branch-push.pack` was 26 KiB and `git index-pack --strict` accepted it.
+- A push dry-run to `origin` succeeded and advertised exactly `0af145b27b..cfea6a9177` for `refs/heads/chore/gitignore-worktrees-2026-04-26`.
+
+### Non-destructive fix applied
+
+`.git/objects/info/packs` contained three stale `.tmp-47107-pack-*.pack` references that did not exist under `.git/objects/pack`. Ran:
+
+```bash
+git update-server-info
+```
+
+Result: `.git/objects/info/packs` was regenerated with only existing `pack-*.pack` entries. This does not repair missing historical objects or the stale commit-graph, but it removes a local stale-pack advertisement without deleting objects.
+
+### Safest next action
+
+For the current branch only, the least risky next publish command is:
+
+```bash
+git push --porcelain origin HEAD:refs/heads/chore/gitignore-worktrees-2026-04-26
+```
+
+Do not run `git gc`, `git prune`, `git gc --prune`, `git reflog expire`, branch deletion, or commit-graph removal without an explicit user-approved recovery window. The broad object store remains unhealthy; the current branch delta appears publishable.
