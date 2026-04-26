@@ -68,21 +68,25 @@ fi
 # Generate client from Go API
 if [ -f "$OPENAPI_DIR/go-api.json" ]; then
     echo "Generating Python client from Go API..."
-
-    # Remove old client if it exists
-    rm -rf "$OUTPUT_DIR/go_api_client"
-
-    # Generate client
-    openapi-python-client generate \
-        --path "$OPENAPI_DIR/go-api.json" \
-        --output-path "$OUTPUT_DIR/go_api_client" \
-        --overwrite
-
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✓ Go API client generated${NC}"
-        echo "  Output: $OUTPUT_DIR/go_api_client"
+    if jq -e '.swagger == "2.0"' "$OPENAPI_DIR/go-api.json" >/dev/null 2>&1; then
+        echo -e "${YELLOW}Skipping Go Python client: Swagger 2.0 input requires conversion to OpenAPI 3.x first.${NC}"
     else
-        echo -e "${RED}✗ Failed to generate Go API client${NC}"
+
+        # Remove old client if it exists
+        rm -rf "$OUTPUT_DIR/go_api_client"
+
+        # Generate client
+        openapi-python-client generate \
+            --path "$OPENAPI_DIR/go-api.json" \
+            --output-path "$OUTPUT_DIR/go_api_client" \
+            --overwrite
+
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✓ Go API client generated${NC}"
+            echo "  Output: $OUTPUT_DIR/go_api_client"
+        else
+            echo -e "${RED}✗ Failed to generate Go API client${NC}"
+        fi
     fi
 fi
 
