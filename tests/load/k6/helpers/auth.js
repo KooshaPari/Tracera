@@ -12,6 +12,7 @@ import { SharedArray } from 'k6/data';
 // Base configuration
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:4000';
 const API_BASE_URL = `${BASE_URL}/api/v1`;
+const AUTH_MODE = __ENV.K6_AUTH_MODE || (__ENV.TEST_ENV === 'ci' ? 'csrf-only' : 'workos-password');
 
 // Load test users from environment or use default test users
 const TEST_USERS = new SharedArray('users', function () {
@@ -47,22 +48,24 @@ export function getTestUser() {
  * @returns {Object} - { token, sessionId, userId }
  */
 export function authenticate(user) {
+  if (AUTH_MODE === 'csrf-only') {
+    return getCsrfOnlySession();
+  }
+
   // Step 1: Get CSRF token
-  const csrfResponse = http.get(`${API_BASE_URL}/auth/csrf`, {
-    tags: { name: 'auth_get_csrf' },
-  });
+  const csrfResponse = getCsrfTokenResponse();
 
   const csrfCheck = check(csrfResponse, {
     'CSRF token retrieved': (r) => r.status === 200,
-    'CSRF token in response': (r) => r.json('csrf_token') !== undefined,
+    'CSRF token in response': (r) => r.json('token') !== undefined,
   });
 
   if (!csrfCheck) {
     fail('Failed to retrieve CSRF token');
   }
 
-  const csrfToken = csrfResponse.json('csrf_token');
-  const sessionCookie = csrfResponse.cookies['session'][0].value;
+  const csrfToken = csrfResponse.json('token');
+  const csrfCookie = extractCookie(csrfResponse, 'csrf_token');
 
   // Step 2: Authenticate with WorkOS (or mock auth endpoint)
   const authPayload = JSON.stringify({
@@ -77,7 +80,7 @@ export function authenticate(user) {
       headers: {
         'Content-Type': 'application/json',
         'X-CSRF-Token': csrfToken,
-        'Cookie': `session=${sessionCookie}`,
+        'Cookie': `csrf_token=${csrfCookie}`,
       },
       tags: { name: 'auth_login' },
     }
@@ -106,9 +109,47 @@ export function authenticate(user) {
 
   return {
     token: authToken,
-    sessionId: sessionCookie,
+    sessionId: csrfCookie,
     userId: authResponse.json('user_id') || authResponse.json('user.id'),
     csrfToken: csrfToken,
+    csrfCookie: csrfCookie,
+    mode: AUTH_MODE,
+  };
+}
+
+function getCsrfTokenResponse() {
+  return http.get(`${API_BASE_URL}/csrf-token`, {
+    tags: { name: 'auth_get_csrf' },
+  });
+}
+
+function extractCookie(response, name) {
+  const cookie = response.cookies[name];
+  return cookie && cookie.length > 0 ? cookie[0].value : undefined;
+}
+
+function getCsrfOnlySession() {
+  const csrfResponse = getCsrfTokenResponse();
+
+  const csrfCheck = check(csrfResponse, {
+    'CSRF token retrieved': (r) => r.status === 200,
+    'CSRF token in response': (r) => r.json('token') !== undefined,
+  });
+
+  if (!csrfCheck) {
+    fail('Failed to retrieve CSRF token');
+  }
+
+  const csrfToken = csrfResponse.json('token');
+  const csrfCookie = extractCookie(csrfResponse, 'csrf_token');
+
+  return {
+    token: undefined,
+    sessionId: undefined,
+    userId: 'ci-performance-user',
+    csrfToken: csrfToken,
+    csrfCookie: csrfCookie,
+    mode: AUTH_MODE,
   };
 }
 
@@ -124,15 +165,17 @@ export function getAuthHeaders(authData) {
     'Accept': 'application/json',
   };
 
-  if (authData.token) {
+  if (authData && authData.token) {
     headers['Authorization'] = `Bearer ${authData.token}`;
   }
 
-  if (authData.csrfToken) {
+  if (authData && authData.csrfToken) {
     headers['X-CSRF-Token'] = authData.csrfToken;
   }
 
-  if (authData.sessionId) {
+  if (authData && authData.csrfCookie) {
+    headers['Cookie'] = `csrf_token=${authData.csrfCookie}`;
+  } else if (authData && authData.sessionId) {
     headers['Cookie'] = `session=${authData.sessionId}`;
   }
 
