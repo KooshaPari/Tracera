@@ -9,14 +9,38 @@ repo cleanup.
 
 - **Cap:** one runtime/test dependency surface per PR unless alerts share the
   same lockfile.
-- **Current size:** one Tracera PR branch; GitPython `uv.lock` hotfix in scope;
-  broader Python lower-bound cleanup, Go Docker module alerts, frontend alerts,
-  and archived npm snapshots are out of this patch.
-- **Stop rule:** merge a PR that updates GitPython to the patched lockfile
-  version and fixes the invalid project metadata required for `uv lock`.
+- **Current size:** GitPython `uv.lock` hotfix is merged; CI Python compatibility
+  is the next bounded task because the hotfix PR exposed workflow pins below the
+  repository's `requires-python = ">=3.13"` contract.
+- **Stop rule:** keep each PR to one dependency/runtime surface and leave broader
+  CI, Go, frontend, and archive cleanup as explicit follow-up lanes.
 - **Spillover:** create separate WBS items for Python lower-bound cleanup, Go
   Docker module investigation, frontend package bumps, and archive manifest
   quarantine.
+
+## SIZE-CI-PYTHON-313: Python CI Compatibility
+
+- **Scope:** PR-triggered Python workflow setup and local Python type-tool
+  version alignment.
+- **Reason:** `CI/CD Pipeline / Python Tests (3.12)` failed because workflows
+  installed the project on Python 3.12 while `pyproject.toml` requires Python
+  3.13 or newer.
+- **Included:** `.github/workflows/ci.yml`, `quality.yml`, `tests.yml`,
+  `pre-commit.yml`, `test-pyramid.yml`, `contracts.yml`, `chaos-tests.yml`,
+  `architecture.yml`, `dependabot-auto-merge.yml`, `test-validation.yml`,
+  `test.yml`, `ci-cd.yml`, and `[tool.ty.environment]`.
+- **Excluded:** Go toolchain/race failures, old action-version upgrades,
+  shellcheck cleanups, `requirements.txt` workflow migration, contract
+  `scripts/.venv` repair, and archive dependency manifests.
+
+## SIZE-CI-GO-TOOLCHAIN: Deferred Go CI Lane
+
+- **Scope:** reusable workflow/toolchain ownership, not this Python PR.
+- **Current evidence:** the Go failure used Go 1.23 wrappers while logs resolved
+  a Go 1.25.7 target, then failed golangci-lint/covdata/race-test steps.
+- **Next action:** inspect the reusable workflow owner and align `go version`,
+  `GOTOOLCHAIN`, golangci-lint, coverage, and race-test execution under one
+  source of truth.
 
 ## Alert Buckets
 
@@ -24,7 +48,9 @@ repo cleanup.
 |---|---|---|
 | GitPython | `uv.lock` | Patch in this lane. |
 | Other Python | `pyproject.toml`, `uv.lock` | Separate Python dependency cleanup lane. |
+| Python CI | `.github/workflows/*.yml`, `pyproject.toml` | Align PR-triggered Python setup to 3.13. |
 | Go Docker module | `backend/**/go.mod` | Defer until a published fixed module tag or replacement module path is confirmed. |
+| Go CI toolchain | reusable workflow / Go wrappers | Separate toolchain lane. |
 | Frontend npm | `frontend/**` | Separate frontend dependency lane. |
 | Archived npm snapshots | `ARCHIVE/CONFIG/default/**/package.json` | Separate archive quarantine task. |
 
@@ -33,5 +59,8 @@ repo cleanup.
 ```bash
 uv lock --locked
 uv run python -m compileall -q src
+actionlint -shellcheck= -ignore 'the runner of ".*" action is too old' \
+  -ignore 'input "webhook_url" is not defined' \
+  -ignore '"needs" section should not be empty' .github/workflows/<changed>.yml
 git diff --check
 ```
