@@ -7,8 +7,47 @@ on:
     branches: [main, develop]
 
 jobs:
+  changes:
+    name: Detect Changed Areas
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: filter
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          elif [[ -n "${{ github.event.before }}" ]]; then
+            base="${{ github.event.before }}"
+          else
+            base="HEAD~1"
+          fi
+          git fetch --no-tags --depth=1 origin "$base" || true
+          changed="$(git diff --name-only "$base"...HEAD || true)"
+
+          if echo "$changed" | grep -Eq '^(backend/|go\.mod|go\.sum)'; then
+            echo "backend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "backend=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if echo "$changed" | grep -Eq '^(frontend/|package\.json|bun\.lock)'; then
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "frontend=false" >> "$GITHUB_OUTPUT"
+          fi
+
   backend-tests:
     name: Backend Tests (Go)
+    needs: [changes]
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -89,6 +128,8 @@ jobs:
 
   frontend-tests:
     name: Frontend Tests (TypeScript)
+    needs: [changes]
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
