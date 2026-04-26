@@ -1,0 +1,142 @@
+# Reusable TypeScript CI Workflow
+# Usage: uses: KooshaPari/template-commons/.github/workflows/reusable-typescript-ci.yml@main
+
+name: Reusable TypeScript CI
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: 'Node.js version to use'
+        type: string
+        default: '20'
+      package-manager:
+        description: 'Package manager (npm, yarn, bun)'
+        type: string
+        default: 'bun'
+      working-directory:
+        description: 'Working directory for commands'
+        type: string
+        default: '.'
+      run-typecheck:
+        description: 'Run TypeScript type checking'
+        type: boolean
+        default: true
+      run-tests:
+        description: 'Run tests'
+        type: boolean
+        default: true
+      run-build:
+        description: 'Run build'
+        type: boolean
+        default: true
+    secrets:
+      codecov-token:
+        description: 'Codecov token for coverage upload'
+        required: false
+
+env:
+  NODE_ENV: test
+
+jobs:
+  quality:
+    name: TypeScript Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        if: inputs.package-manager == 'bun'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node.js
+        if: inputs.package-manager != 'bun'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: ${{ inputs.package-manager }}
+
+      - name: Install dependencies (bun)
+        if: inputs.package-manager == 'bun'
+        working-directory: ${{ inputs.working-directory }}
+        run: bun install
+
+      - name: Install dependencies (npm/yarn)
+        if: inputs.package-manager != 'bun'
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          if [ "${{ inputs.package-manager }}" = "yarn" ]; then
+            yarn install --frozen-lockfile
+          else
+            npm ci
+          fi
+
+      - name: Lint
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          if [ "${{ inputs.package-manager }}" = "bun" ]; then
+            bun run lint
+          elif [ "${{ inputs.package-manager }}" = "yarn" ]; then
+            yarn lint
+          else
+            npm run lint
+          fi
+
+      - name: Format check
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          if [ "${{ inputs.package-manager }}" = "bun" ]; then
+            bun run format --check || true
+          elif [ "${{ inputs.package-manager }}" = "yarn" ]; then
+            yarn format --check || true
+          else
+            npm run format --check || true
+          fi
+
+      - name: Type check
+        if: inputs.run-typecheck
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          if [ "${{ inputs.package-manager }}" = "bun" ]; then
+            bun run typecheck
+          elif [ "${{ inputs.package-manager }}" = "yarn" ]; then
+            yarn typecheck
+          else
+            npm run typecheck
+          fi
+
+      - name: Test with coverage
+        if: inputs.run-tests
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          if [ "${{ inputs.package-manager }}" = "bun" ]; then
+            bun run test -- --coverage
+          elif [ "${{ inputs.package-manager }}" = "yarn" ]; then
+            yarn test --coverage
+          else
+            npm run test -- --coverage
+          fi
+
+      - name: Upload coverage to Codecov
+        if: inputs.run-tests && secrets.codecov-token != ''
+        uses: codecov/codecov-action@v4
+        with:
+          files: ${{ inputs.working-directory }}/coverage/lcov.info
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.codecov-token }}
+
+      - name: Build
+        if: inputs.run-build
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          if [ "${{ inputs.package-manager }}" = "bun" ]; then
+            bun run build
+          elif [ "${{ inputs.package-manager }}" = "yarn" ]; then
+            yarn build
+          else
+            npm run build
+          fi

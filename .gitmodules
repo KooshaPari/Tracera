@@ -1,0 +1,3 @@
+[submodule "HexaKit"]
+	path = HexaKit
+	url = https://github.com/KooshaPari/HexaKit.git

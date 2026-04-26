@@ -1,0 +1,32 @@
+name: Reusable Branch Protection Audit
+
+on:
+  workflow_call:
+
+jobs:
+  branch-protection-audit:
+    runs-on: ubuntu-latest
+    permissions:
+      administration: read
+      contents: read
+    steps:
+      - name: Check branch protection contract
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          protection=$(curl -sS -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/branches/main/protection")
+
+          echo "${protection}" | jq -e '
+            .required_status_checks.strict == true and
+            (.required_status_checks.contexts | index("policy-gate") != null) and
+            (.required_status_checks.contexts | index("validate") != null) and
+            .required_linear_history.enabled == true and
+            .required_pull_request_reviews.required_approving_review_count == 0 and
+            .required_pull_request_reviews.require_code_owner_reviews == false and
+            .required_pull_request_reviews.dismiss_stale_reviews == true
+          '

@@ -1,0 +1,99 @@
+name: Rust Template CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hexagonal-rust/**'
+      - '.github/workflows/rust-template.yml'
+  pull_request:
+    paths:
+      - 'hexagonal-rust/**'
+      - '.github/workflows/rust-template.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: './hexagonal-rust -> target'
+
+      - name: Check formatting
+        working-directory: hexagonal-rust
+        run: cargo fmt --all -- --check
+
+      - name: Clippy linting
+        working-directory: hexagonal-rust
+        run: cargo clippy -- -D warnings
+
+      - name: Run tests
+        working-directory: hexagonal-rust
+        run: cargo test --all --all-features --verbose
+
+      - name: Check documentation
+        working-directory: hexagonal-rust
+        run: cargo doc --all --no-deps
+
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Build
+        working-directory: hexagonal-rust
+        run: cargo build --all --verbose
+
+      - name: Build with all features
+        working-directory: hexagonal-rust
+        run: cargo build --all --all-features --verbose
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Run cargo-audit
+        uses: rustsec/audit-check@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  rustsec:
+    name: RustSec
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Run cargo-deny
+        uses: cargo-bins/cargo-deny-action@v1
+        with:
+          command: check advisories
+          working-directory: hexagonal-rust

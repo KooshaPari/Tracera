@@ -1,5 +1,0 @@
-# Deployment snapshots and backups
-# This directory stores:
-# - snapshots/: Deployment snapshots for rollback
-# - backups/: Pre-rollback backups
-# - *-stable-version.txt: Version markers for stable deployments

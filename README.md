@@ -1,219 +1,115 @@
-![Build Status](https://github.com/Phenotype-Enterprise/trace/actions/workflows/quality-gate.yml/badge.svg)
-![Security Audit](https://github.com/Phenotype-Enterprise/trace/actions/workflows/security-guard.yml/badge.svg)
-![Policy Compliance](https://github.com/Phenotype-Enterprise/trace/actions/workflows/policy-gate.yml/badge.svg)
+# PhenoKits
 
-# TracerTM 🚀
+**Multi-category artifact platform for the Phenotype software organization.**
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/kooshapari/tracertm)](https://goreportcard.com/report/github.com/kooshapari/tracertm)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+## Overview
 
-**Agent-native requirements traceability and project management dashboard.**
+PhenoKits organizes artifacts into 12 distinct categories, each with clear mutability rules and agent interaction patterns.
 
-TracerTM is a modern requirements traceability matrix (RTM) and project management system designed for agent-driven development workflows. It provides a unified dashboard and control plane for linking requirements to code, tests, and deployments—built on a Go backend with a TypeScript/React Turbo frontend.
+## Categories
 
----
+| # | Category | Purpose | Mutability |
+|---|----------|---------|------------|
+| 1 | [`templates/`](templates/) | Scaffolding for new projects | Editable |
+| 2 | [`configs/`](configs/) | Parameterized configs | Parameters only |
+| 3 | [`libs/`](libs/) | Multi-language libraries | Import/extend |
+| 4 | [`secrets/`](secrets/) | Secret management patterns | Locked |
+| 5 | [`governance/`](governance/) | ADRs, RFCs, standards | Varies |
+| 6 | [`security/`](security/) | Scanning, policies, hardening | Locked |
+| 7 | [`observability/`](observability/) | Logging, metrics, tracing | Configurable |
+| 8 | [`docs/`](docs/) | API docs, runbooks, guides | Editable |
+| 9 | [`scripts/`](scripts/) | Build, release, quality scripts | Executable |
+| 10 | [`schemas/`](schemas/) | Type definitions, API specs | Locked |
+| 11 | [`policies/`](policies/) | OPA, GitHub, compliance | Enforced |
+| 12 | [`credentials/`](credentials/) | Auth configs, patterns | Locked |
 
-## 📋 Table of Contents
+## Quick Reference
 
-- [Key Features](#-key-features)
-- [Architecture](#-architecture)
-- [Getting Started](#-getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Quick Start](#quick-start)
-- [Project Structure](#-project-structure)
-- [Development](#-development)
-- [Testing & Quality](#-testing--quality)
-- [Documentation](#-documentation)
-- [Contributing](#-contributing)
-- [License](#-license)
+### Agent Interaction Matrix
 
----
+| Category | Agent Reads | Agent Writes | Agent Enforces |
+|----------|-------------|--------------|----------------|
+| Templates | Yes | Yes (instantiation) | No |
+| Configs | Yes | Parameters only | Yes (validation) |
+| Libs | Yes | No | No |
+| Secrets | Yes | No | No |
+| Governance | Yes | Yes (ADRs) | No |
+| Security | Yes | Yes | Yes (scanning) |
+| Observability | Yes | Yes | Yes (monitoring) |
+| Docs | Yes | Yes | No |
+| Scripts | Yes | Yes | No |
+| Schemas | Yes | Yes (code gen) | Yes (type checking) |
+| Policies | Yes | Yes | Yes (OPA, gates) |
+| Credentials | Yes | No | Yes (rotation) |
 
-## ✨ Key Features
+## Directory Structure
 
-- 🔍 **Multi-View Traceability**: Navigate projects through requirements, code, tests, and deployment lenses.
-- 🤖 **Agent-Native Design**: Built-in support for AI-assisted analysis and automated traceability maintenance.
-- ⚡ **Real-Time Updates**: Live synchronization across dashboard and backend.
-- 📊 **Interactive Visualization**: Dependency graphs and impact analysis for requirements and code.
-- 🛡 **Hardened Governance**: SLSA provenance, signed attestations, and automated quality gates.
-- 📈 **Integrated Observability**: Metrics (Prometheus), logs (Loki), and tracing through Phenotype OTLP collector.
+```
+PhenoKits/
+├── templates/           # 1. Scaffolding
+│   ├── hexagonal/      # Hexagonal architecture templates
+│   ├── clean-rust/     # Clean architecture Rust template
+│   └── phenotype-api/  # Phenotype API template
+├── configs/            # 2. Parameterized configs
+│   ├── tooling/        # Linters, formatters
+│   ├── cicd/           # CI/CD pipelines
+│   ├── infra/          # Docker, Kubernetes
+│   └── observability/  # Prometheus, Grafana
+├── libs/               # 3. Libraries
+│   ├── rust/          # Canonical Rust cores
+│   ├── python/        # Python bindings
+│   ├── typescript/    # TypeScript bindings
+│   └── go/            # Go bindings
+├── secrets/            # 4. Secret management
+├── governance/         # 5. ADRs, RFCs, standards
+├── security/           # 6. Security configs
+├── observability/      # 7. Logging, metrics
+├── docs/               # 8. Documentation
+├── scripts/            # 9. Automation scripts
+├── schemas/            # 10. Type definitions
+├── policies/           # 11. Enforcement policies
+└── credentials/        # 12. Auth configs
+```
 
----
+## Quick Start
 
-## 🏗 Architecture
-
-TracerTM uses a polyglot architecture optimized for requirements traceability:
-
-**Backend (Go 1.25)**
-- High-performance API server managing core business logic, data persistence, and integrations.
-- RESTful API with JWT authentication.
-- PostgreSQL for structured data, Redis for caching.
-- S3-compatible storage integration (AWS SDK v2).
-
-**Frontend (TypeScript/React 19 + Turbo)**
-- Modern React application with TanStack Router for client-side routing.
-- Turbo monorepo with multiple workspace apps (web dashboard, documentation, Storybook, desktop).
-- Tailwind CSS + Geist design system for consistent UI.
-- Build tooling: Vite, Bun, Turbo with oxlint/oxfmt for code quality.
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- **Go 1.25+** (for backend)
-- **Node.js 22+ / Bun 1.1+** (for frontend)
-- **PostgreSQL 14+** (for data storage)
-- **Redis 6+** (for caching)
-
-### Quick Start
-
-#### Backend (Go API)
+### For Agents
 
 ```bash
-cd backend
-go build -o tracertm ./cmd/api
-./tracertm
+# 1. Clone PhenoKits
+git clone https://github.com/KooshaPari/PhenoKits.git
+cd PhenoKits
+
+# 2. Read agent patterns
+cat docs/AGENT_PATTERNS.md
+
+# 3. Apply a config
+python3 scripts/utility/parameterize.py \
+    configs/params.example.json \
+    configs/cicd/github-actions/ci.yml
+
+# 4. Scaffold a project
+pheno new --template hexagonal-rust --name my-service --org MyOrg
 ```
 
-The API server starts on `http://localhost:8080`.
-
-#### Frontend (TypeScript/React)
+### For Developers
 
 ```bash
-cd frontend
-bun install
-bun run dev
+# 1. Apply org configs
+cp -r configs/tooling/pre-commit/* .git/hooks/
+
+# 2. Set up CI
+cp configs/cicd/github-actions/* .github/workflows/
+
+# 3. Configure observability
+cp configs/observability/prometheus.yml ./
 ```
 
-The web dashboard opens on `http://localhost:3000`.
+## Related
 
----
-
-## 📁 Project Structure
-
-```
-.
-├── backend/                   # Go API server
-│   ├── cmd/                   # CLI entry points
-│   ├── internal/              # Business logic (unexported)
-│   ├── pkg/                   # Reusable packages
-│   ├── configs/               # Configuration templates
-│   ├── tests/                 # Integration & E2E tests
-│   ├── e2e/                   # End-to-end test scenarios
-│   ├── benchmarks/            # Performance benchmarks
-│   └── go.mod                 # Go module definition
-│
-├── frontend/                  # TypeScript/React dashboard
-│   ├── apps/                  # Turbo workspace apps
-│   │   ├── web/               # Main React dashboard
-│   │   ├── docs/              # VitePress documentation
-│   │   ├── storybook/         # Component library showcase
-│   │   └── desktop/           # Electron desktop app
-│   ├── packages/              # Shared packages
-│   ├── tsconfig.json          # TypeScript configuration
-│   ├── package.json           # Root workspace config
-│   └── turbo.json             # Turbo build orchestration
-│
-└── .github/workflows/         # CI/CD pipelines
-```
-
----
-
-## 🔧 Development
-
-### Backend Commands
-
-```bash
-cd backend
-
-# Run tests
-go test ./...
-
-# Run with hot-reload (requires air or similar)
-go run ./cmd/api
-
-# Build release binary
-go build -ldflags="-X main.Version=$(git describe --tags)" -o tracertm ./cmd/api
-```
-
-### Frontend Commands
-
-```bash
-cd frontend
-
-# Development server with hot reload
-bun run dev
-
-# Type checking
-bun run typecheck
-
-# Linting with oxlint
-bun run lint
-
-# Format with oxfmt
-bun run format
-
-# Build all apps
-bun run build
-
-# Run tests
-bun run test
-```
-
----
-
-## ✅ Testing & Quality
-
-### Backend Testing
-```bash
-cd backend
-go test -v -cover ./...
-```
-
-### Frontend Testing
-```bash
-cd frontend
-bun run test
-bun run quality  # Full lint + type + format + build + test
-```
-
-### Quality Gates
-Both backend and frontend enforce strict quality standards:
-- **Linting**: clippy (Rust-based backend checks), oxlint (frontend)
-- **Type Safety**: Go strict typing, TypeScript strict mode
-- **Code Coverage**: Minimum 80% target
-- **Security**: SAST, dependency scanning, secret detection
-
----
-
-## 📚 Documentation
-
-- **API Documentation**: See `backend/README.md`
-- **Frontend Architecture**: See `frontend/README.md`
-- **Design System**: `frontend/apps/storybook/`
-- **Contributing**: See `CONTRIBUTING.md`
-
----
-
-## 🤝 Contributing
-
-TracerTM welcomes contributions. Please:
-
-1. Check [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Commit with clear messages and reference any related issues.
-4. Push and open a pull request.
-5. Ensure all quality checks pass (CI/CD pipeline).
-
----
-
-## 📄 License
-
-Licensed under the MIT License. See [LICENSE](LICENSE) for details.
-
----
-
-**Built with 🛠 for agent-driven development**
+- [RESTRUCTURING_PLAN.md](docs/RESTRUCTURING_PLAN.md) - Full restructuring plan
+- [RESTRUCTURING_ADR.md](docs/RESTRUCTURING_ADR.md) - Decision record
+- [AGENT_PATTERNS.md](docs/AGENT_PATTERNS.md) - Agent consumption patterns
+- [HexaKit/](HexaKit/) - Template CLI and registry
+- [PhenoKit](https://github.com/KooshaPari/PhenoKit) - Core SDK
+- [PhenoSpecs](https://github.com/KooshaPari/PhenoSpecs) - Specifications

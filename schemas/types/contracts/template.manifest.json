@@ -1,0 +1,20 @@
+{
+  "layer_type": "commons",
+  "layer_name": "template-commons",
+  "version": "0.1.0",
+  "depends_on": [],
+  "owned_paths": [
+    "contracts/**",
+    "docs/**",
+    "scripts/**"
+  ],
+  "protected_paths": [
+    "README.md",
+    ".github/workflows/ci.yml",
+    "Taskfile.yml"
+  ],
+  "generated_files": [
+    "contracts/template.manifest.json",
+    "contracts/reconcile.rules.yaml"
+  ]
+}

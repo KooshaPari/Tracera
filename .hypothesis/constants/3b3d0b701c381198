@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/external_link.py
-# hypothesis_version: 6.151.4
-
-[200, 255, 'CASCADE', 'extend_existing', 'external_links', 'item_id', 'items.id', 'project_id', 'projects.id']

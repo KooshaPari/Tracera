@@ -1,0 +1,118 @@
+# Reusable Rust CI Workflow
+# Usage in your project:
+#   jobs:
+#     ci:
+#       uses: KooshaPari/template-commons/.github/workflows/reusable-rust-ci.yml@main
+#       with:
+#         crate-name: my-crate
+#         rust-version: stable
+
+name: Reusable Rust CI
+
+on:
+  workflow_call:
+    inputs:
+      crate-name:
+        description: 'Name of the crate to build'
+        required: true
+        type: string
+      rust-version:
+        description: 'Rust version to use'
+        required: false
+        type: string
+        default: 'stable'
+      runs-on:
+        description: 'Runner to use'
+        required: false
+        type: string
+        default: 'ubuntu-latest'
+      enable-coverage:
+        description: 'Enable coverage reporting'
+        required: false
+        type: boolean
+        default: true
+      enable-security:
+        description: 'Enable security audit'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  quality:
+    name: Quality Checks
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@nextest
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: .
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run clippy
+        run: cargo clippy --workspace --all-features -- -D warnings
+
+      - name: Build
+        run: cargo build --workspace --verbose
+
+      - name: Test with nextest
+        run: cargo nextest run --workspace --all-targets
+
+      - name: Check documentation
+        run: cargo test --doc --workspace
+
+  coverage:
+    name: Code Coverage
+    runs-on: ${{ inputs.runs-on }}
+    if: ${{ inputs.enable-coverage }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@llvm-cov
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Generate coverage
+        run: cargo llvm-cov --workspace --lcov --output-path lcov.info
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./lcov.info
+        continue-on-error: true
+
+  security:
+    name: Security Audit
+    runs-on: ${{ inputs.runs-on }}
+    if: ${{ inputs.enable-security }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run cargo audit
+        uses: rustsec/audit-check@v1.4.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Check for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          extra_args: --only-verified
+        continue-on-error: true

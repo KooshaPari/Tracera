@@ -1,0 +1,292 @@
+# Comprehensive Pre-commit Configuration
+# Restored from atoms_mcp-old massive simplification
+# This is the FULL configuration that was lost
+
+repos:
+  # Pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-added-large-files
+        args: ['--maxkb=51200']  # 50MB limit
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-xml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-docstring-first
+      - id: check-ast
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: check-json
+      - id: check-yaml
+      - id: check-toml
+      - id: check-xml
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: name-tests-test
+      - id: requirements-txt-fixer
+      - id: fix-byte-order-marker
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-xml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-docstring-first
+      - id: check-ast
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: check-json
+      - id: check-yaml
+      - id: check-toml
+      - id: check-xml
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: name-tests-test
+      - id: requirements-txt-fixer
+      - id: fix-byte-order-marker
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+
+  # Black code formatting
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        language_version: python3
+        args: ['--line-length=100', '--target-version=py311']
+
+  # isort import sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ['--profile', 'black', '--line-length=100']
+
+  # MyPy type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-all]
+        args: ['--strict', '--ignore-missing-imports']
+
+  # Ruff linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.3
+    hooks:
+      - id: ruff
+        args: ['--fix', '--exit-non-zero-on-fix']
+      - id: ruff-format
+
+  # Bandit security scanning
+  - repo: https://github.com/pycqa/bandit
+    rev: 1.7.8
+    hooks:
+      - id: bandit
+        args: ['-r', '.', '-f', 'json', '-o', 'bandit-report.json']
+        exclude: 'tests/'
+
+  # Prospector comprehensive analysis
+  - repo: https://github.com/PyCQA/prospector
+    rev: 1.10.3
+    hooks:
+      - id: prospector
+        args: ['--strictness=veryhigh', '--doc-warnings']
+
+  # Radon complexity analysis
+  - repo: https://github.com/rubik/radon
+    rev: 6.0.1
+    hooks:
+      - id: radon-cc
+        args: ['--min=B', '--show-complexity']
+      - id: radon-mi
+        args: ['--min=B']
+
+  # Vulture dead code detection
+  - repo: https://github.com/jendrikseipp/vulture
+    rev: v2.11
+    hooks:
+      - id: vulture
+        args: ['--min-confidence=80']
+
+  # Pyupgrade Python syntax upgrader
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.2
+    hooks:
+      - id: pyupgrade
+        args: ['--py311-plus']
+
+  # Docformatter docstring formatting
+  - repo: https://github.com/pycqa/docformatter
+    rev: v1.7.5
+    hooks:
+      - id: docformatter
+        args: ['--wrap-summaries=100', '--wrap-descriptions=100']
+
+  # Pydocstyle docstring style checking
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        args: ['--convention=google']
+
+  # Interrogate documentation coverage
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.5.0
+    hooks:
+      - id: interrogate
+        args: ['--fail-under=80', '--ignore-init-module', '--ignore-init-method']
+
+  # Pip-audit dependency security audit
+  - repo: https://github.com/pypa/pip-audit
+    rev: v2.7.0
+    hooks:
+      - id: pip-audit
+        args: ['--desc', '--format=json', '--output=pip-audit-report.json']
+
+  # Safety dependency vulnerability scanning
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.2
+    hooks:
+      - id: python-safety-dependencies-check
+
+  # Markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.38.0
+    hooks:
+      - id: markdownlint
+        args: ['--fix']
+
+  # YAML linting
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: ['-d', 'relaxed']
+
+  # Shell script linting
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+
+  # Dockerfile linting
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        args: ['--ignore', 'DL3008', '--ignore', 'DL3009']
+
+  # File cleanup hooks
+  - repo: local
+    hooks:
+      - id: remove-tabs
+        name: Remove tabs
+        entry: sed
+        args: ['-i', 's/\t/    /g']
+        language: system
+        files: \.py$
+
+      - id: remove-trailing-spaces
+        name: Remove trailing spaces
+        entry: sed
+        args: ['-i', 's/[[:space:]]*$//']
+        language: system
+        files: \.(py|md|yaml|yml|json|toml)$
+
+      - id: fix-line-endings
+        name: Fix line endings
+        entry: dos2unix
+        language: system
+        files: \.(py|md|yaml|yml|json|toml|sh)$
+
+      - id: remove-empty-lines
+        name: Remove empty lines at end of file
+        entry: sed
+        args: ['-i', '-e', ':a', '-e', '/^\s*$/N;ba', '-e', 's/\n*$//']
+        language: system
+        files: \.(py|md|yaml|yml|json|toml)$
+
+  # Architecture fitness hooks (custom)
+  - repo: local
+    hooks:
+      - id: architecture-fitness
+        name: Architecture fitness check
+        entry: python
+        args: ['scripts/architecture_fitness_check.py']
+        language: system
+        files: \.py$
+        pass_filenames: false
+
+      - id: file-size-check
+        name: File size check
+        entry: python
+        args: ['scripts/file_size_check.py', '--max-lines=500']
+        language: system
+        files: \.py$
+
+      - id: import-boundary-check
+        name: Import boundary check
+        entry: python
+        args: ['scripts/import_boundary_check.py']
+        language: system
+        files: \.py$
+
+      - id: dependency-direction-check
+        name: Dependency direction check
+        entry: python
+        args: ['scripts/dependency_direction_check.py']
+        language: system
+        files: \.py$
+
+      - id: naming-convention-check
+        name: Naming convention check
+        entry: python
+        args: ['scripts/naming_convention_check.py']
+        language: system
+        files: \.py$
+
+      - id: cyclomatic-complexity-check
+        name: Cyclomatic complexity check
+        entry: python
+        args: ['scripts/cyclomatic_complexity_check.py', '--max-complexity=10']
+        language: system
+        files: \.py$
+
+      - id: test-coverage-check
+        name: Test coverage check
+        entry: python
+        args: ['scripts/test_coverage_check.py', '--min-coverage=80']
+        language: system
+        files: \.py$
+
+      - id: config-validation-check
+        name: Config validation check
+        entry: python
+        args: ['scripts/config_validation_check.py']
+        language: system
+        files: \.(yaml|yml|json|toml)$
+
+      - id: dependency-security-audit
+        name: Dependency security audit
+        entry: python
+        args: ['scripts/dependency_security_audit.py']
+        language: system
+        files: requirements.*\.txt$
+
+      - id: comprehensive-report
+        name: Comprehensive quality report
+        entry: python
+        args: ['scripts/comprehensive_quality_report.py']
+        language: system
+        pass_filenames: false

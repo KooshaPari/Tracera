@@ -1,0 +1,33 @@
+[workspace]
+members = [
+    "templates",
+    "template-domain",
+    "template-program-ops",
+    "HexaKit",
+    "libs/rust",
+    "libs/go",
+    "libs/python",
+    "libs/typescript",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+
+# PhenoKits - 12-Category Artifact Organization
+#
+# Categories:
+# 1. templates/    - Scaffolding for new projects
+# 2. configs/      - Parameterized configs (tooling, CI/CD, infra)
+# 3. libs/         - Multi-language libraries
+# 4. secrets/      - Secret management patterns
+# 5. governance/   - ADRs, RFCs, standards
+# 6. security/     - Scanning, policies, hardening
+# 7. observability/ - Logging, metrics, tracing, alerting
+# 8. docs/         - API docs, runbooks, guides
+# 9. scripts/      - Build, release, quality scripts
+# 10. schemas/      - Type definitions, API specs
+# 11. policies/     - OPA, GitHub, compliance
+# 12. credentials/  - Auth configs, patterns

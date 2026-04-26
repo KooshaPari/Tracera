@@ -1,0 +1,28 @@
+name: CI
+
+# NOTE: Billable runs disabled - use pre-commit/pre-push hooks for validation
+# Uncomment below to re-enable when GitHub Actions minutes are available
+# on:
+#   pull_request:
+#   push:
+#     branches: [main]
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * *"  # Weekly dry-run for audit purposes only
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    # DISABLED: if: false  # Uncomment when billing is available
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate manifest and reconcile rules
+        run: |
+          test -f contracts/template.manifest.json
+          test -f contracts/reconcile.rules.yaml
+          bash scripts/scaffold-smoke.sh

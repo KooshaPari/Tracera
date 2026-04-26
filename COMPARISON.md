@@ -2,69 +2,53 @@
 
 ## Feature Comparison
 
-This document compares **TracerTM (trace)** with similar tools in the requirements traceability and project management space.
+This document compares **template-commons** with similar tools in the project template and scaffolding space.
 
 | Repository | Purpose | Key Features | Language/Framework | Maturity | Comparison |
 |------------|---------|--------------|-------------------|----------|------------|
-| **TracerTM (this repo)** | Requirements traceability | Multi-view, Agent-native, Real-time sync, Graph visualization | Go/Python/React | Stable | RTM system |
-| [Jira](https://www.atlassian.com/software/jira) | Project tracking | Issues, Workflows, Boards | Java | Stable | Enterprise standard |
-| [Linear](https://linear.app) | Issue tracking | Speed, Design, GitHub sync | TypeScript | Stable | Modern issue tracking |
-| [Azure DevOps](https://learn.microsoft.com/en-us/azure/devops/) | DevOps platform | Boards, Pipelines, Repos | Various | Stable | Microsoft ecosystem |
-| [OpenProject](https://github.com/opf/openproject) | Project management | Gantt, Wiki, Forums | Ruby | Stable | Open source PM |
-| [Redmine](https://github.com/redmine/redmine) | Project management | Issues, Time tracking, Wiki | Ruby | Stable | Classic open source |
-| [Meistertask](https://www.meistertask.com) | Task management | Boards, Automations, Integrations | Node.js | Stable | Visual task mgmt |
+| **template-commons (this repo)** | Shared template primitives | Cross-domain, Semver versioning, Layer contract | Various | Stable | Template foundation |
+| [Yeoman](https://github.com/yeoman/yo) | Scaffolding tool | Generators, npm packages | JavaScript | Stable | Industry standard |
+| [Cookiecutter](https://github.com/cookiecutter/cookiecutter) | Project templates | Jinja2, CLI, Git integration | Python | Stable | Python ecosystem |
+| [Plop](https://github.com/plopjs/plop) | Generator framework | Micro-generators, Prompts | JavaScript | Stable | Lightweight generators |
+| [Hygen](https://github.com/jondot/hygen) | Code generator | Markdown-driven, Templates | JavaScript | Stable | Markdown-based |
+| [copier](https://github.com/copier-org/copier) | Template system | Updates, YAML config, Python | Python | Stable | Smart updating |
 
 ## Detailed Feature Comparison
 
-### Traceability
+### Template Features
 
-| Feature | TracerTM | Jira | Linear | Azure DevOps |
-|---------|----------|------|--------|--------------|
-| Requirements Trace | ✅ | ✅ | ❌ | ✅ |
-| Multi-View | ✅ (Code, API, DB, Deploy, Docs) | ❌ | ❌ | ❌ |
-| Impact Analysis | ✅ | ✅ | ❌ | ✅ |
-| Trace Matrix | ✅ | ✅ | ❌ | ✅ |
-| Agent-Native | ✅ | ❌ | ❌ | ❌ |
+| Feature | template-commons | Yeoman | Cookiecutter | copier |
+|---------|------------------|--------|--------------|--------|
+| Layer Contract | ✅ | ❌ | ❌ | ❌ |
+| Semver Versioning | ✅ | ❌ | ❌ | ❌ |
+| Cross-domain | ✅ | ❌ | ❌ | ❌ |
+| Template Primitives | ✅ | ✅ | ✅ | ✅ |
 
-### Architecture
+### Versioning & Updates
 
-| Component | TracerTM | Jira | Linear |
-|-----------|----------|------|--------|
-| Backend | Go | Java | TypeScript |
-| Frontend | React/TS | React | React |
-| Graph DB | Neo4j | Proprietary | ❌ |
-| Cache | Redis | Proprietary | Redis |
-| Messaging | NATS | Proprietary | Azure |
+| Feature | template-commons | Yeoman | copier | Hygen |
+|---------|------------------|--------|--------|-------|
+| Version Tracking | ✅ (semver) | ❌ | ✅ | ❌ |
+| Auto Updates | ❌ | ❌ | ✅ | ❌ |
+| Changelog | ✅ | ❌ | ❌ | ❌ |
+| Layer Contract | ✅ | ❌ | ❌ | ❌ |
 
-### Observability
+## Layer Contract
 
-| Feature | TracerTM | Azure DevOps |
-|---------|----------|--------------|
-| Prometheus | ✅ | ✅ |
-| Loki (Logs) | ✅ | ✅ |
-| Jaeger (Traces) | ✅ | ✅ |
-| Graphana | ✅ | ✅ |
-
-## Unique Value Proposition
-
-TracerTM provides:
-
-1. **Multi-View Traceability**: Code, API, DB, deployment, docs lenses
-2. **Agent-Native Design**: AI-assisted analysis and automated maintenance
-3. **Graph Visualization**: Neo4j-powered dependency graphs
-4. **Hardened Governance**: SLSA provenance, signed attestations
-
-## Quick Start
-
-```bash
-task install        # Install dependencies
-task db:migrate     # Run migrations
-task dev:tui        # Start with TUI dashboard
-# Access: http://localhost:4000
+```yaml
+layer_type: commons
+layer_name: template-commons
+versioning: semver
 ```
+
+## Usage
+
+1. Consume via pinned version in downstream domain templates
+2. Run `task check` before release
+3. Publish version + changelog for contract-affecting changes
 
 ## References
 
-- Jira: [atlassian/jira](https://www.atlassian.com/software/jira)
-- Linear: [linearapp/linear](https://github.com/linearapp/linear)
-- Azure DevOps: [Microsoft/azure-devops-yaml-schema](https://learn.microsoft.com/en-us/azure/devops/)
+- Yeoman: [yeoman/yo](https://github.com/yeoman/yo)
+- Cookiecutter: [cookiecutter/cookiecutter](https://github.com/cookiecutter/cookiecutter)
+- copier: [copier-org/copier](https://github.com/copier-org/copier)

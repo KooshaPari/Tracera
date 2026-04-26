@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/schemas/item_spec.py
-# hypothesis_version: 6.151.4
-
-[100, 255, 'accessibility', 'blocked', 'completeness', 'complex', 'consistency', 'contract', 'correctness', 'critical', 'e2e', 'error', 'event_driven', 'expired', 'failed', 'feasibility', 'flaky', 'fuzz', 'hard', 'high', 'integration', 'low', 'medium', 'minimal', 'mutation', 'necessity', 'optimizable', 'optional', 'passed', 'pending', 'performance', 'property', 'security', 'singularity', 'skipped', 'soft', 'state_driven', 'task', 'timeout', 'todo', 'traceability', 'ubiquitous', 'unambiguity', 'unit', 'unverified', 'unwanted', 'verifiability', 'verified']

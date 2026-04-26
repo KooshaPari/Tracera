@@ -1,0 +1,17 @@
+{
+  "project": {
+    "name": "example-project",
+    "org": "MyOrg",
+    "github_repo": "KooshaPari/example-project"
+  },
+  "runtime": {
+    "rust": "1.75",
+    "node": "20",
+    "go": "1.22",
+    "python": "3.12"
+  },
+  "secrets": [
+    "SECRET:GITHUB_TOKEN",
+    "SECRET:NPM_TOKEN"
+  ]
+}

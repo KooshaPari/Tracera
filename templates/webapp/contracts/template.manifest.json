@@ -1,0 +1,24 @@
+{
+  "layer_type": "domain",
+  "layer_name": "template-domain-webapp",
+  "version": "0.1.0",
+  "depends_on": [
+    {"layer": "template-commons", "version": ">=0.1.0"},
+    {"layer": "template-lang-typescript", "version": ">=0.1.0"}
+  ],
+  "supported_languages": ["typescript", "python"],
+  "owned_paths": [
+    "templates/domain/**",
+    "contracts/**",
+    "docs/**",
+    "scripts/**"
+  ],
+  "protected_paths": [
+    "README.md",
+    ".github/workflows/ci.yml",
+    "Taskfile.yml"
+  ],
+  "generated_files": [
+    "templates/domain/webapp.compose.yaml"
+  ]
+}

@@ -1,3 +1,0 @@
-# Wiki (User Guides)
-
-<CategorySwitcher />

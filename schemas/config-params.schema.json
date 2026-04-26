@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PhenoKits Config Parameters",
+  "description": "Schema for PhenoKits parameterizable configurations",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "object",
+      "required": ["name", "org", "github_repo"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Project identifier (kebab-case)"
+        },
+        "org": {
+          "type": "string",
+          "pattern": "^[A-Z][a-zA-Z]+$",
+          "description": "Organization name (PascalCase)"
+        },
+        "github_repo": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+/[A-Za-z0-9_-]+$",
+          "description": "GitHub repository path"
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "rust": {
+          "type": "string",
+          "default": "1.75",
+          "description": "Rust version"
+        },
+        "node": {
+          "type": "string",
+          "default": "20",
+          "description": "Node.js version"
+        },
+        "go": {
+          "type": "string",
+          "default": "1.22",
+          "description": "Go version"
+        },
+        "python": {
+          "type": "string",
+          "default": "3.12",
+          "description": "Python version"
+        }
+      }
+    },
+    "secrets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^SECRET:[A-Z_]+$"
+      },
+      "description": "Required secret references"
+    }
+  }
+}

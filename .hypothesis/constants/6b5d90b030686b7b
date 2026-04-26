@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/repositories/webhook_repository.py
-# hypothesis_version: 6.151.4
-
-[200, 'POST', 'bulk_results', 'by_provider', 'by_status', 'custom', 'failed_requests', 'project_id', 'successful_requests', 'test_result_submit', 'test_run_complete', 'test_run_start', 'total', 'total_requests']

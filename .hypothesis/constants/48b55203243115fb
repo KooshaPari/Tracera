@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/utils/figma.py
-# hypothesis_version: 6.148.7
-
-['/', '^[a-zA-Z0-9]+$', '^\\d+:\\d+$', 'design', 'figma.com', 'figma_file_key', 'figma_node_id', 'figma_url', 'file', 'http://', 'https://', 'node-id']

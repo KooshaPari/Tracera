@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/storage/conflict_resolver.py
-# hypothesis_version: 6.148.7
-
-['%Y%m%d_%H%M%S', '%Y-%m-%d %H:%M', '.tracertm', 'EntityVersion', 'VectorClock', 'added', 'backup_path', 'by_entity_type', 'by_status', 'client_id', 'conflict.json', 'conflict_id', 'conflicts', 'content_hash', 'data', 'detected_at', 'entity_id', 'entity_type', 'failed', 'id', 'item', 'last_write_wins', 'link', 'local.json', 'local_version', 'local_wins', 'manual', 'merged_by', 'metadata', 'modified', 'parent_version', 'project', 'remote.json', 'remote_version', 'remote_wins', 'removed', 'resolution_strategy', 'resolved_at', 'resolved_auto', 'resolved_manual', 'resolved_version', 'status', 'timestamp', 'total', 'unresolved', 'user', 'vector_clock', 'version', 'w']

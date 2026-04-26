@@ -1,0 +1,52 @@
+name: CodeQL Analysis
+
+on:
+  workflow_call:
+    inputs:
+      language:
+        required: true
+        type: string
+        description: 'Primary language (python, javascript, go, ruby)'
+      build-mode:
+        required: false
+        type: string
+        default: 'none'
+        description: 'Build mode for compiled languages'
+
+jobs:
+  analyze:
+    name: CodeQL Analysis (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: ${{ inputs.language }}
+            build-mode: ${{ inputs.build-mode }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: security-extended,security-and-quality
+
+      - name: Build (if required)
+        if: matrix.build-mode == 'manual'
+        shell: bash
+        run: |
+          echo 'Manual build mode - add custom build commands here'
+          exit 0
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"

@@ -1,6 +1,0 @@
-# Development CLI dependencies
-click>=8.1.0
-psycopg2-binary>=2.9.0
-redis>=5.0.0
-neo4j>=5.14.0
-python-dotenv>=1.0.0

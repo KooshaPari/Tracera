@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/project_backup_service.py
-# hypothesis_version: 6.148.7
-
-['1.0', 'FEATURE', 'agent_id', 'agents', 'backup_date', 'data', 'description', 'entity_id', 'entity_type', 'event_type', 'events', 'feature', 'id', 'is_template', 'items', 'links', 'medium', 'metadata', 'name', 'owner', 'parent_id', 'priority', 'project', 'related_to', 'restored-project', 'restored_from_backup', 'source_id', 'status', 'target_id', 'template_name', 'timestamp', 'title', 'todo', 'type', 'version', 'view']

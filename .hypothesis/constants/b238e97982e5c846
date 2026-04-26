@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/github_project.py
-# hypothesis_version: 6.151.4
-
-[255, 'CASCADE', 'Project', 'github_project_id', 'github_projects', 'github_repo_id', 'project_id', 'projects.id']

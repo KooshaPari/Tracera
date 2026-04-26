@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <LangVersion>12</LangVersion>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>Hexagonal Architecture C# Template following xDD best practices</Description>
+    <PackageTags>hexagonal;architecture;ports;adapters;ddd;clean</PackageTags>
+    <PackageProjectUrl>https://github.com/phenotype</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/phenotype/hexagonal-csharp</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Company>Phenotype</Company>
+    <Product>Hexagonal C# Template</Product>
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Domain Layer - No external dependencies -->
+    <!-- Only System.* namespaces allowed -->
+  </ItemGroup>
+
+  <!-- Application Layer - References Domain only -->
+  <ItemGroup>
+    <ProjectReference Include="..\src\Domain\Domain.csproj" />
+  </ItemGroup>
+
+  <!-- Infrastructure Layer - External dependencies -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.*" />
+    <PackageReference Include="StackExchange.Redis" Version="2.7.*" />
+    <PackageReference Include="Confluent.Kafka" Version="2.3.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="*.Tests" />
+  </ItemGroup>
+
+</Project>

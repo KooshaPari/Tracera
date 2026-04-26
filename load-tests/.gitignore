@@ -1,8 +1,0 @@
-# k6 output files
-*.json
-
-# Reports
-report.html
-
-# Test data
-test-data/
