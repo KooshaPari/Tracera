@@ -115,3 +115,50 @@ APFS-shared-volume quirk — actual freeing reflected in Avail.)
 
 **Follow-up:** install `cargo-cache` (`cargo install cargo-cache`) so future
 LOW-risk prunes can reclaim ~1–2 GB of registry cache.
+
+---
+
+## Round-2 Prune 2026-04-27
+
+End-of-day audit (commit 3cff48f50a) flagged `/tmp` regrowth from 0 → 11 GB
+across 30+ subsequent agent dispatches. Round-1 named clones (`thegent_check`,
+`thegent_fix`, `_readme-fix`) — previously deferred — pruned this round.
+
+**Disk delta (root volume):**
+
+| Stage  | Used | Avail |
+|--------|------|-------|
+| BEFORE | 23Gi | 31Gi  |
+| AFTER  | 23Gi | 39Gi  |
+| Delta  | 0Gi  | +8Gi  |
+
+**`/private/tmp` delta:** 11 GB → 3.8 GB (-7.2 GB).
+
+**Top consumers identified:**
+
+| Path                                  | Size  | Disposition |
+|---------------------------------------|-------|-------------|
+| `tracera-gitpython-hotfix`            | 2.3G  | KEPT — active `gh` PID 81880 cwd |
+| `tracera-369b`                        | 1.5G  | KEPT — only 24min old |
+| `helios-cli-group`                    | 1.0G  | pruned (51min) |
+| `tracera-ci-python-313.lGD0Vv`        | 752M  | pruned (136min) |
+| `phenokits-clean-20260426-193911`     | 738M  | pruned (563min) |
+| `thegent-readme-fix` / `thegent_fix` / `thegent_check` | 1.7G | pruned (633/552/553min) — **Round-1 deferred items** |
+| `PhenoProc`                           | 571M  | pruned (1322min) |
+| `gdk-pr`                              | 244M  | pruned (551min) |
+| `cliproxyapi-check`                   | 214M  | pruned (531min) |
+| `phenoShared-pr110/107/pr111`         | 405M  | pruned |
+| `helios-cli-fork` / `helios-router-work` | 299M | pruned |
+| `agentapi-pr` / `agentapi_fix` / `agentapi_check` / `agentapi.git` | 435M | pruned |
+| `landing-bootstrap-build`             | 146M  | pruned (1168min) |
+| `phenoshared-errors-interface.b3Frzq` | 155M  | pruned (445min) |
+| `Parpoura` / `PhenoHandbook` / `PhenoLang` / `PhenoSpecs` / `McpKit` / `MCPForge` | ~280M total | pruned (>1300min stale) |
+| Misc (`tracertm-perf*`, `pheno-fix`, `pheno-test-infra-isolated`, `phenoShared-{minfix,readonly}-check-target`, `agileplus-readme-fix`, `AgilePlus-fix`, `agilep_fix`, `tokn-test`, `phenokits-codex-model-policy`, `hexakit-pr`, `phenoshared-config-fix.sfywQe`) | ~600M | pruned |
+
+**Method:** All prunes verified `lsof +D <dir>` → 0 handles AND `mtime > 30min`.
+Active gh process on `tracera-gitpython-hotfix` correctly held the dir.
+
+**Pattern confirmed:** `feedback_agent_tmp_cleanup.md` — agents continue to
+create named clones without `trap 'rm -rf $DIR' EXIT`. Round-2 in <12h after
+Round-1's 12 GB reclaim. **Periodic loop sweep every ~10 dispatches** is the
+only working mitigation until the trap-on-mktemp mandate lands.
