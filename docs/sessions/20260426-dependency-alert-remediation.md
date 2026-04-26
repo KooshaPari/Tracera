@@ -96,6 +96,16 @@ repo cleanup.
 - **Excluded:** renaming historical revision IDs, rebuilding the migration graph,
   and fixing downstream migration/runtime failures after revision 030.
 
+## SIZE-CI-PERF-BACKEND-ENTRYPOINT: Performance Backend Build Target
+
+- **Scope:** `performance-regression.yml` Go build target only.
+- **Reason:** after migrations completed, smoke failed at
+  `go build -o api ./cmd/api` because `backend/cmd/api` does not exist.
+- **Action:** build the backend module root with `go build -o api .`, matching
+  `backend/Taskfile.yml` and `backend/Dockerfile`.
+- **Excluded:** startup dependency services, preflight policy, k6 auth/data
+  behavior, and stale README command examples.
+
 ## Validation Targets
 
 ```bash
