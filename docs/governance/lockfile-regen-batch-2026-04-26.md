@@ -4,8 +4,10 @@
 
 **Constraint:** Read-only planning artifact. Execution requires a separate worktree pass with disk + FD pre-flight (df -h ≥30Gi, ulimit -n ≥4096).
 
-**Total alerts addressable by lockfile regen:** 205
-**Repos in scope:** 8
+**Total alerts addressable by lockfile regen:** 226 (was 205 + agentapi-plusplus 21)
+**Repos in scope:** 9 (added agentapi-plusplus 2026-04-27 nightly recheck)
+
+**agentapi-plusplus addition:** 21 alerts, 4 HIGH (lodash/flatted/minimatch/serialize-javascript in `chat/pnpm-lock.yaml`). All transitive npm — straight `pnpm install --lockfile-only` regen.
 
 ---
 
