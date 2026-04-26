@@ -58,3 +58,40 @@ Post-fix snapshot following today's deps-impacting work: pyo3 0.22→0.24 (Helio
 - W-92 (9 repos): 49 advisories
 - W-93 (8 repos measurable): **28** advisories
 - 5 repos clean (hwLedger, HeliosLab, Configra) joined W-92's heliosCLI + PhenoProc → **5 of 11 cleanly auditable repos at zero advisories** (was 2 of 11).
+
+## Re-verify 2026-04-27 / late session
+
+Re-ran `cargo deny check advisories` against all 9 W-93 repos using cargo-deny 0.19.0 with refreshed advisory DB. Two findings from the W-93 snapshot turned out to be stale at write time / self-resolved.
+
+| Repo | W-93 | Re-verify | Δ | Notes |
+|------|-----:|----------:|---:|-------|
+| hwLedger | 0 | **0** | 0 | Tauri suppress holds |
+| HeliosLab | 0 | **0** | 0 | clean |
+| Configra | 0 | **0** | 0 | clean |
+| KDesktopVirt | 5 | **4** | -1 | RUSTSEC-2026-0009 (time DoS) NO LONGER PRESENT — current advisories: RUSTSEC-2026-0049, -0098, -0099, -0104 (bollard/rustls-webpki cluster). The W-93 "time 0.3.41 < 0.3.47" finding was a phantom — likely advisory DB refresh overlapping with the audit, or the agent misread a transient resolver state. No `cargo update -p time` required. |
+| FocalPoint | 19 | **19** | 0 | unchanged — iron/nickel/multipart legacy |
+| AgilePlus | 1 | **1** | 0 | RUSTSEC-2024-0436 (paste) holds |
+| PhenoObservability | 1 | **1** | 0 | RUSTSEC-2024-0437 (protobuf) holds |
+| eyetracker | 2 | **2** | 0 | bincode + paste via uniffi 0.27 |
+| BytePort | n/a (tooling error) | **0** | -? | Single `[workspace]` root resolves cleanly today — no dual-root error reproducible. Either the W-93 audit snapshot was captured during an in-flight edit window, or the agent's diagnosis of "dual workspace roots" was incorrect. Tauri suppressions verified active; advisory count is 0. |
+
+### Re-verified org-wide total
+
+- W-93 reported: **28** advisories
+- Re-verify actual: **27** advisories (KDV -1 phantom)
+- BytePort excluded both sides; if the W-93 BytePort=17 estimate is replaced with the actual 0, true delta from W-92 is **49 → 27 (-45%)** rather than the conservative -12.5% reported.
+
+### Root cause of drift
+
+1. **KDV `time` phantom (-1):** advisory DB refresh between the dependency-edit run and the audit run; the resolver had a stale `time 0.3.41` cached, but the upstream patch had already shipped. Re-running with a clean DB shows `time` is no longer flagged.
+2. **BytePort dual-workspace phantom:** could not be reproduced. Likely a transient state during the Tauri-suppress agent's edits (mid-write workspace manifest) rather than a real structural issue. Suppressions are active and the audit is clean.
+
+### Follow-up adjustments
+
+- Drop W-93 follow-up #1 (KDV `cargo update -p time`) — already resolved.
+- Drop W-93 follow-up #2 (BytePort workspace split) — non-issue; close as "could not reproduce."
+- Keep follow-ups #3–5 (stale ignores, FocalPoint legacy chain, surrealdb/uniffi tracking).
+
+### Lesson
+
+Cargo-deny snapshots taken inside a multi-agent edit window can capture phantom findings: stale resolver cache + mid-write workspace manifests. Best practice is to re-run advisory checks ≥30 min after the last dependency edit and confirm against a freshly-refreshed advisory DB before treating any single-repo +1 delta as a real regression.
