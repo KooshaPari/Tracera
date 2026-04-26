@@ -49,10 +49,7 @@ The Round-34 LEGACY badge agent likely ran `git -C <dir> remote -v` and assumed 
 
 ## Follow-up Items
 
-1. **phenoSDK GitHub state** — the local `/repos/phenoSDK/` directory exists and has its own `.git/`, but `gh api repos/KooshaPari/phenoSDK` returns `404 Not Found`. The repo was deleted or renamed on GitHub. Decide:
-   - Was it merged into another repo (e.g., `phenoShared`)? Confirm and archive locally.
-   - Was it deleted in error? Restore from local clone if `.git/` has unique commits.
-   - Action: run `git -C phenoSDK log --oneline -20 && git -C phenoSDK remote -v` and reconcile.
+1. **phenoSDK GitHub state** — RESOLVED 2026-04-26. Reconcile (commit `7c673c6dea`, `docs/org-audit-2026-04/phenoSDK_reconcile_2026_04_26.md`) confirmed phenoSDK was consolidated into `AuthKit` and the GitHub repo was hard-deleted. The local working copy was an orphan with no remote to push to. Action taken: moved `repos/phenoSDK/` → `repos/.archive/phenoSDK-orphan-2026-04-26/` and `repos/phenoSDK-wtrees/` → `repos/.archive/phenoSDK-wtrees-orphan-2026-04-26/` (preserves branches + reflog for audit). Do NOT recreate the GitHub repo.
 
 2. **Scaffold README dirs hygiene** — consider relocating `PhenoContracts/`, `PhenoEvents/`, `PhenoKit/`, `PhenoSchema/` from `/repos` top-level to `/repos/docs/concepts/` to reduce noise in repo listings. They are not code; they are conceptual scaffolds.
 
