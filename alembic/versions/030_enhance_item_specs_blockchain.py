@@ -22,6 +22,14 @@ depends_on = None
 
 def upgrade() -> None:
     """Add blockchain/NFT-like fields to all spec tables."""
+    op.alter_column(
+        "alembic_version",
+        "version_num",
+        existing_type=sa.String(32),
+        type_=sa.String(128),
+        existing_nullable=False,
+    )
+
     bind = op.get_bind()
     inspector = sa.inspect(bind)
 
