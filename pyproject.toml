@@ -673,7 +673,6 @@ max-statements = 50
     "A002",
     "TRY004",
     "RUF006",
-    "RUF067",
     "PLC0415",
     "PLW0603",
 ]
@@ -833,7 +832,6 @@ max-statements = 50
     "INP001",
     "ERA001",
     "BLE001",
-    "RUF067",
     "A002",
     "DTZ005",
     "PLR0915",
@@ -859,7 +857,6 @@ max-statements = 50
     "B909",
     "E722",
     "FURB101",
-    "RUF067",
     "S102",
     "BLE001",
 ]
@@ -867,7 +864,6 @@ max-statements = 50
     "INP001",
     "ANN401",
     "BLE001",
-    "RUF067",
     "A002",
     "DTZ005",
     "PTH118",

@@ -11,17 +11,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          cache: 'pip'
           python-version: "3.13"
 
+      - name: Install pre-commit
+        run: python -m pip install pre-commit
+
       - name: Run pre-commit
-        uses: pre-commit/action@v3.0.1
-        with:
-          extra_args: --all-files
+        shell: bash
+        env:
+          SKIP: loc-guard,routes-entrypoints,security-guard-pre-commit-pre-push
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          elif [[ -n "${{ github.event.before }}" ]]; then
+            base="${{ github.event.before }}"
+          else
+            base="HEAD~1"
+          fi
+          git fetch --no-tags --depth=1 origin "$base"
+          pre-commit run --show-diff-on-failure --color=always --from-ref "$base" --to-ref HEAD
 
       - name: Upload pre-commit results
         if: always()

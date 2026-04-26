@@ -10,7 +10,7 @@ NC='\033[0m' # No Color
 
 # Script directory and project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Directories
 OPENAPI_DIR="$PROJECT_ROOT/openapi"
@@ -59,16 +59,20 @@ fi
 # Generate types from Go API
 if [ -f "$OPENAPI_DIR/go-api.json" ]; then
     echo "Generating types from Go API..."
-    bunx openapi-typescript "$OPENAPI_DIR/go-api.json" \
-        --output "$OUTPUT_DIR/go-api.ts" \
-        --export-type \
-        --path-params-as-types
-
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✓ Go API types generated${NC}"
-        echo "  Output: $OUTPUT_DIR/go-api.ts"
+    if jq -e '.swagger == "2.0"' "$OPENAPI_DIR/go-api.json" >/dev/null 2>&1; then
+        echo -e "${YELLOW}Skipping Go TypeScript types: Swagger 2.0 input requires conversion to OpenAPI 3.x first.${NC}"
     else
-        echo -e "${RED}✗ Failed to generate Go API types${NC}"
+        bunx openapi-typescript "$OPENAPI_DIR/go-api.json" \
+            --output "$OUTPUT_DIR/go-api.ts" \
+            --export-type \
+            --path-params-as-types
+
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✓ Go API types generated${NC}"
+            echo "  Output: $OUTPUT_DIR/go-api.ts"
+        else
+            echo -e "${RED}✗ Failed to generate Go API types${NC}"
+        fi
     fi
 fi
 

@@ -45,10 +45,6 @@ depends_on = [
 ]
 
 [[modules]]
-path = "tracertm.cli"
-depends_on = []
-
-[[modules]]
 path = "tracertm.database"
 depends_on = [
     "tracertm.models",
@@ -123,7 +119,7 @@ depends_on = [
     "tracertm.services",
     "tracertm.storage",
     "tracertm.core"
-, "tracertm.cli"]
+]
 
 [[modules]]
 path = "tracertm.tui"

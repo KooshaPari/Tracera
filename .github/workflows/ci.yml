@@ -45,6 +45,52 @@ env:
   PYTHON_VERSION: '3.13'
 
 jobs:
+  detect-changes:
+    name: Detect Changed Areas
+    runs-on: ubuntu-latest
+    outputs:
+      python: ${{ steps.filter.outputs.python }}
+      go: ${{ steps.filter.outputs.go }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - id: filter
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          base="${{ github.event.pull_request.base.sha }}"
+        elif [[ -n "${{ github.event.before }}" ]]; then
+          base="${{ github.event.before }}"
+        else
+          base="HEAD~1"
+        fi
+        git fetch --no-tags --depth=1 origin "$base" || true
+        changed="$(git diff --name-only "$base"...HEAD || true)"
+
+        python_changed="$(echo "$changed" | grep -Ev '^tests/contracts/' || true)"
+        if echo "$python_changed" | grep -Eq '^(src/|tests/|conftest\.py|uv\.lock$)'; then
+          echo "python=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "python=false" >> "$GITHUB_OUTPUT"
+        fi
+
+        if echo "$changed" | grep -Eq '^(backend/|go\.mod$|go\.sum$)'; then
+          echo "go=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "go=false" >> "$GITHUB_OUTPUT"
+        fi
+
+        if echo "$changed" | grep -Eq '^(frontend/|package\.json$|bun\.lockb?$)'; then
+          echo "frontend=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "frontend=false" >> "$GITHUB_OUTPUT"
+        fi
+
   # Quality Guards (Naming Explosion + LOC limits)
   quality-guards:
     name: Quality Guards
@@ -58,6 +104,8 @@ jobs:
   # Python Tests
   python-tests:
     name: Python Tests
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.python == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -296,7 +344,8 @@ jobs:
   python-exploratory-tests:
     name: Python Exploratory Tests (${{ matrix.lane }})
     runs-on: ubuntu-latest
-    needs: [python-tests]
+    needs: [detect-changes, python-tests]
+    if: needs.detect-changes.outputs.python == 'true' && needs.python-tests.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -363,6 +412,8 @@ jobs:
   # Go Tests
   go-tests:
     name: Go Tests
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.go == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -688,7 +739,8 @@ jobs:
   frontend-checks:
     name: Frontend Checks
     runs-on: ubuntu-latest
-    needs: [quality-guards]
+    needs: [quality-guards, detect-changes]
+    if: needs.detect-changes.outputs.frontend == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

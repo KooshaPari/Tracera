@@ -94,14 +94,14 @@ jobs:
         if: steps.scope.outputs.run == 'true'
         run: |
           npm install -g @apidevtools/swagger-cli
-          swagger-cli validate backend/docs/swagger.json
+          swagger-cli validate backend/docs/tracertm_swagger.json
 
       - name: Copy spec to docs public directory
         if: steps.scope.outputs.run == 'true'
         run: |
           mkdir -p frontend/apps/docs/public/api
-          cp backend/docs/swagger.json frontend/apps/docs/public/api/openapi.json
-          cp backend/docs/swagger.yaml frontend/apps/docs/public/api/openapi.yaml
+          cp backend/docs/tracertm_swagger.json frontend/apps/docs/public/api/openapi.json
+          cp backend/docs/tracertm_swagger.yaml frontend/apps/docs/public/api/openapi.yaml
 
       - name: Check if spec changed
         id: check-spec
