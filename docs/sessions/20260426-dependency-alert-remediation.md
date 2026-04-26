@@ -117,7 +117,9 @@ repo cleanup.
 - **Action:** add NATS and Neo4j service containers, provide CI-safe WorkOS/S3/
   Temporal environment values, disable tracing, and use lightweight local TCP
   listeners for S3 and Temporal because current startup only preflights those
-  endpoints and does not initialize real S3 or Temporal clients.
+  endpoints and does not initialize real S3 or Temporal clients. Bind those
+  placeholders through `127.0.0.1` and wait for them before launching the API so
+  Go preflight does not race Python startup or resolve `localhost` to IPv6.
 - **Excluded:** changing backend preflight policy, adding real MinIO/Temporal
   stacks, auth-seeding k6 scenarios, frontend performance, and broader runtime
   compose consolidation.

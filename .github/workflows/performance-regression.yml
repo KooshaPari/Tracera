@@ -178,6 +178,8 @@ jobs:
           echo $! > s3-placeholder.pid
           python -m http.server 7233 >/tmp/tracertm-temporal-placeholder.log 2>&1 &
           echo $! > temporal-placeholder.pid
+          timeout 15 bash -c 'until curl -fsS http://127.0.0.1:9000 >/dev/null; do sleep 1; done'
+          timeout 15 bash -c 'until curl -fsS http://127.0.0.1:7233 >/dev/null; do sleep 1; done'
 
           # Start Go API in background
           cd backend
@@ -193,11 +195,11 @@ jobs:
           NEO4J_URI: neo4j://localhost:7687
           NEO4J_USER: neo4j
           NEO4J_PASSWORD: testpassword
-          S3_ENDPOINT: http://localhost:9000
+          S3_ENDPOINT: http://127.0.0.1:9000
           S3_ACCESS_KEY_ID: minioadmin
           S3_SECRET_ACCESS_KEY: minioadmin
           S3_BUCKET: tracertm-performance
-          TEMPORAL_HOST: localhost:7233
+          TEMPORAL_HOST: 127.0.0.1:7233
           TEMPORAL_NAMESPACE: default
           WORKOS_CLIENT_ID: client_ci_performance
           WORKOS_API_KEY: sk_test_ci_performance
@@ -337,6 +339,8 @@ jobs:
           echo $! > s3-placeholder.pid
           python -m http.server 7233 >/tmp/tracertm-temporal-placeholder.log 2>&1 &
           echo $! > temporal-placeholder.pid
+          timeout 15 bash -c 'until curl -fsS http://127.0.0.1:9000 >/dev/null; do sleep 1; done'
+          timeout 15 bash -c 'until curl -fsS http://127.0.0.1:7233 >/dev/null; do sleep 1; done'
 
           cd backend
           go build -o api .
@@ -350,11 +354,11 @@ jobs:
           NEO4J_URI: neo4j://localhost:7687
           NEO4J_USER: neo4j
           NEO4J_PASSWORD: testpassword
-          S3_ENDPOINT: http://localhost:9000
+          S3_ENDPOINT: http://127.0.0.1:9000
           S3_ACCESS_KEY_ID: minioadmin
           S3_SECRET_ACCESS_KEY: minioadmin
           S3_BUCKET: tracertm-performance
-          TEMPORAL_HOST: localhost:7233
+          TEMPORAL_HOST: 127.0.0.1:7233
           TEMPORAL_NAMESPACE: default
           WORKOS_CLIENT_ID: client_ci_performance
           WORKOS_API_KEY: sk_test_ci_performance
