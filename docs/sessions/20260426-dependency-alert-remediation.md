@@ -82,6 +82,18 @@ repo cleanup.
 - **Excluded:** backend migration redesign, making pgvector optional, k6 scenario
   behavior, and unrelated smoke/load runtime failures after migrations succeed.
 
+## SIZE-CI-ALEMBIC-VERSION-WIDTH: Migration Revision Width
+
+- **Scope:** Alembic revision table compatibility for existing long revision IDs.
+- **Reason:** after the pgvector image fix, performance smoke migrations reached
+  revision `030_enhance_item_specs_blockchain` and failed because Alembic's
+  default `alembic_version.version_num VARCHAR(32)` cannot store that 35-character
+  revision ID.
+- **Action:** widen `alembic_version.version_num` to `VARCHAR(128)` at the start
+  of revision 030 before Alembic updates the version table to that revision.
+- **Excluded:** renaming historical revision IDs, rebuilding the migration graph,
+  and fixing downstream migration/runtime failures after revision 030.
+
 ## Validation Targets
 
 ```bash
