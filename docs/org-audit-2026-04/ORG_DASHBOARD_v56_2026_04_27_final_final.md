@@ -25,7 +25,7 @@ with 7 local-only repos and 2 partial-push repos still needing provenance review
 | SBOMs generated | 132 | **132** | unchanged |
 | Cargo-deny org advisories | 13 | **8 (W-95)** | post-FocalPoint-zero snapshot |
 | FocalPoint advisories | 5 | **0** | zero-advisory invariant established |
-| Open PRs | 1-2 | **1 true open** | Tracera #374 |
+| Open PRs | 1-2 | **0 true open** | queue drained after Tracera #374 |
 | Disk free (`/`) | 39 GiB | **34 GiB live check** | still above 30 GiB floor |
 | Pack corruption | gc-blocked | **still blocked** | parent `/repos` push remains unsafe |
 
@@ -34,9 +34,9 @@ with 7 local-only repos and 2 partial-push repos still needing provenance review
 - **FocalPoint cargo-deny is clean.** Live check returned `advisories ok`.
 - **W-95 org snapshot is 8 advisories.** This is the post-FocalPoint-zero baseline
   for the next cargo-deny wave.
-- **PR inventory is down to one true open PR.**
+- **PR inventory is down to zero true open PRs.**
   - KDesktopVirt #9: merged after targeted Rust validation and inherited-gate attribution.
-  - Tracera #374: `MERGEABLE`, `BLOCKED`, `CHANGES_REQUESTED`.
+  - Tracera #374: merged after review-fix commits and inherited-gate attribution.
 - **Push count corrected to 49 repos.** The earlier dashboard language should be
   read as superseded by `today_pushes_final_count_2026_04_27.md`.
 
@@ -66,9 +66,7 @@ feature/API drift. eyetracker was the smaller no-downstream lane and is now land
 1. **Do not push `/repos` canonical yet.** The parent checkout is still on the
    Tracera remote and has pack-corruption/gc cleanup pending. This blocks safe
    push/PR for this dashboard doc from the parent repo.
-2. **Tracera #374** is review-blocked by `CHANGES_REQUESTED`; follow-up review
-   fixes are pushed, but remaining CI failures need final attribution.
-3. **FocalPoint working tree is dirty** with generated FFI/SBOM artifacts from
+2. **FocalPoint working tree is dirty** with generated FFI/SBOM artifacts from
    prior work; leave untouched.
 
 ## References
