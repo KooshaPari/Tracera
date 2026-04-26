@@ -106,3 +106,38 @@ Sequence:
 Same migration pattern probably applies to other Phenotype repos still on
 reqwest 0.11. Worth a follow-up sweep: `rg 'reqwest = .*"0\.11"' --type toml`
 across `repos/`.
+
+## Correction 2026-04-27
+
+The scoping prediction above was **wrong on the advisory delta**. Apply agent
+(commit `6a601b1`) verified the actual outcome:
+
+- **Predicted:** clear 6 advisories tied to reqwest 0.11.
+- **Actual delta:** **0** advisories cleared by the reqwest bump.
+- **Why:** reqwest was already resolving to `0.12.28` via the transitive
+  graph. The `templates-registry` `0.11` declaration was a **phantom**
+  (zero source uses, dedup'd to 0.12.28 by Cargo). Only `focus-plugin-sdk`
+  had a real `0.11` pin, and it too co-existed with 0.12.28 transitively
+  rather than pulling a duplicate 0.11 tree into the lockfile in a way
+  cargo-audit was flagging.
+- **Real culprits behind the 6 remaining advisories:** `paste`,
+  `derivative`, `protobuf`, `fxhash`, `bincode` — none of which are reqwest
+  transitives. These were cleared via separate commits:
+  - `c05a60e` — prometheus dep update (paste/protobuf/fxhash path)
+  - `187cb41` — starlark suppression (derivative path)
+  - `f373073` — uniffi suppression (bincode path)
+- **Why the bump still landed:** dependency hygiene and future-proofing.
+  reqwest `0.11` is unmaintained upstream; `0.12` is the actively
+  maintained line. Two-line change, zero source edits, no regressions —
+  worth keeping even though the advisory math was wrong.
+
+### Lesson
+
+Scoping docs that predict a **specific advisory delta** must verify the
+prediction against the actual `cargo audit` diff before claiming success.
+The fix here is hygiene-positive but advisory-neutral; the proposal
+conflated "reqwest 0.11 is referenced" with "reqwest 0.11 is the cause
+of the 6 advisories", which `cargo tree -i` would have falsified in
+under a minute.
+
+Cross-reference: `feedback_scoping_doc_verify_then_fix.md` (memory).
