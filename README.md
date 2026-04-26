@@ -160,12 +160,6 @@ We welcome community contributions! Please see **[CONTRIBUTING.md](CONTRIBUTING.
 
 ---
 
-## 📜 License
+## License
 
-Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
-
----
-
-<p align="center">
-  Built with ❤️ by the community
-</p>
+MIT — see [LICENSE](./LICENSE).
