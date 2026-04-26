@@ -90,7 +90,9 @@ repo cleanup.
   default `alembic_version.version_num VARCHAR(32)` cannot store that 35-character
   revision ID.
 - **Action:** widen `alembic_version.version_num` to `VARCHAR(128)` at the start
-  of revision 030 before Alembic updates the version table to that revision.
+  of revision 030 before Alembic updates the version table to that revision, and
+  include `alembic/**` in the performance workflow path filters so migration
+  changes exercise the smoke path.
 - **Excluded:** renaming historical revision IDs, rebuilding the migration graph,
   and fixing downstream migration/runtime failures after revision 030.
 
