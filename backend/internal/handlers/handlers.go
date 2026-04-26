@@ -161,6 +161,7 @@ func (handler *ProjectHandler) CreateProject(c echo.Context) error {
 	}
 
 	project := &models.Project{
+		ID:          uuid.NewString(),
 		Name:        req.Name,
 		Description: req.Description,
 		Metadata:    metadata,
