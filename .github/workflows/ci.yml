@@ -72,19 +72,20 @@ jobs:
         git fetch --no-tags --depth=1 origin "$base" || true
         changed="$(git diff --name-only "$base"...HEAD || true)"
 
-        if echo "$changed" | grep -Eq '^(src/|tests/|pyproject\.toml|uv\.lock)'; then
+        python_changed="$(echo "$changed" | grep -Ev '^tests/contracts/' || true)"
+        if echo "$python_changed" | grep -Eq '^(src/|tests/|conftest\.py|uv\.lock$)'; then
           echo "python=true" >> "$GITHUB_OUTPUT"
         else
           echo "python=false" >> "$GITHUB_OUTPUT"
         fi
 
-        if echo "$changed" | grep -Eq '^(backend/|go\.mod|go\.sum)'; then
+        if echo "$changed" | grep -Eq '^(backend/|go\.mod$|go\.sum$)'; then
           echo "go=true" >> "$GITHUB_OUTPUT"
         else
           echo "go=false" >> "$GITHUB_OUTPUT"
         fi
 
-        if echo "$changed" | grep -Eq '^(frontend/|package\.json|bun\.lock)'; then
+        if echo "$changed" | grep -Eq '^(frontend/|package\.json$|bun\.lockb?$)'; then
           echo "frontend=true" >> "$GITHUB_OUTPUT"
         else
           echo "frontend=false" >> "$GITHUB_OUTPUT"
