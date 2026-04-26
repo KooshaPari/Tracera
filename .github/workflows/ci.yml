@@ -42,7 +42,7 @@ env:
   DOCKER_REGISTRY: ghcr.io
   REGISTRY_USERNAME: ${{ github.actor }}
   GO_VERSION: '1.23'
-  PYTHON_VERSION: '3.12'
+  PYTHON_VERSION: '3.13'
 
 jobs:
   # Quality Guards (Naming Explosion + LOC limits)
@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.12']
+        python-version: ['3.13']
 
     services:
       postgres:
@@ -331,10 +331,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Python 3.12
+    - name: Set up Python 3.13
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.13'
         cache: 'pip'
 
     - name: Install uv
@@ -1415,7 +1415,7 @@ jobs:
         cache-to: type=gha,mode=max
         platforms: linux/amd64,linux/arm64
         build-contexts: |
-          base=docker-image://python:3.12-slim
+          base=docker-image://python:3.13-slim
 
     - name: Extract metadata for Go Backend
       id: meta-backend

@@ -21,17 +21,16 @@ jobs:
         uses: actions/setup-python@v5
         with:
           cache: 'pip'
-        with:
-          python-version: "3.12"
+          python-version: "3.13"
 
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --extra dev
 
       - name: Check architecture
-        run: tach check
+        run: uv run --extra dev tach check
 
       - name: Generate architecture diagram
-        run: tach show --mermaid > architecture.md
+        run: uv run --extra dev tach show --mermaid > architecture.md
 
       - name: Upload architecture diagram
         uses: actions/upload-artifact@v4
@@ -52,4 +51,3 @@ jobs:
               repo: context.repo.repo,
               body: '## Architecture Diagram\n\n' + diagram
             });
-
