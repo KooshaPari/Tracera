@@ -164,10 +164,10 @@ repo cleanup.
   The backend now exposes `/api/v1/csrf-token`, returns `{ "token": ... }`,
   and removed password login in favor of AuthKit.
 - **Action:** add CI `csrf-only` k6 auth mode that prepares CSRF headers/cookie
-  without reintroducing password login, set required CI auth/CSRF environment
-  values in the performance workflow, guard smoke iterations when session
-  preparation fails, and create a real smoke project before item creation so
-  item CRUD uses a valid UUID project ID.
+  without reintroducing password login, set the required CI CSRF secret in the
+  performance workflow, guard smoke iterations when session preparation fails,
+  and create a real smoke project before item creation so item CRUD uses a
+  valid UUID project ID.
 - **Excluded:** re-adding password auth, mocking WorkOS in production code,
   changing protected route policy, and broad load/stress data-model cleanup.
 

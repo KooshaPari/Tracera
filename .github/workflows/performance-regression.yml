@@ -204,8 +204,6 @@ jobs:
           WORKOS_CLIENT_ID: client_ci_performance
           WORKOS_API_KEY: sk_test_ci_performance
           WORKOS_AUTHKIT_DOMAIN: http://localhost:4000
-          WORKOS_REDIRECT_URI: http://localhost:8080/api/v1/auth/authkit/callback
-          AUTHKIT_JWT_SECRET: ci-authkit-jwt-secret-at-least-32-bytes
           CSRF_SECRET: ci-csrf-secret-at-least-32-bytes
           TRACING_ENABLED: "false"
 
@@ -367,8 +365,6 @@ jobs:
           WORKOS_CLIENT_ID: client_ci_performance
           WORKOS_API_KEY: sk_test_ci_performance
           WORKOS_AUTHKIT_DOMAIN: http://localhost:4000
-          WORKOS_REDIRECT_URI: http://localhost:8080/api/v1/auth/authkit/callback
-          AUTHKIT_JWT_SECRET: ci-authkit-jwt-secret-at-least-32-bytes
           CSRF_SECRET: ci-csrf-secret-at-least-32-bytes
           TRACING_ENABLED: "false"
 
