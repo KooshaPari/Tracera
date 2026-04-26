@@ -154,6 +154,23 @@ repo cleanup.
 - **Excluded:** fixing older internal DB migration warnings, changing health
   check semantics, redesigning the task queue, and k6 scenario behavior.
 
+## SIZE-CI-K6-CSRF-SMOKE: Performance k6 Auth Harness Drift
+
+- **Scope:** k6 performance helper auth/session setup and smoke scenario
+  project fixture creation.
+- **Reason:** after the agent task table fix, performance smoke reached a live
+  backend, `/health` returned OK, and k6 failed because the helper still called
+  removed/stale auth endpoints (`/api/v1/auth/csrf`, `/api/v1/auth/login`).
+  The backend now exposes `/api/v1/csrf-token`, returns `{ "token": ... }`,
+  and removed password login in favor of AuthKit.
+- **Action:** add CI `csrf-only` k6 auth mode that prepares CSRF headers/cookie
+  without reintroducing password login, set required CI auth/CSRF environment
+  values in the performance workflow, guard smoke iterations when session
+  preparation fails, and create a real smoke project before item creation so
+  item CRUD uses a valid UUID project ID.
+- **Excluded:** re-adding password auth, mocking WorkOS in production code,
+  changing protected route policy, and broad load/stress data-model cleanup.
+
 ## Validation Targets
 
 ```bash

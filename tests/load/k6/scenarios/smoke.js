@@ -90,7 +90,7 @@ export default function (data) {
       authDuration.add(Date.now() - startAuth);
 
       check(authData, {
-        'Authentication successful': (d) => d.token !== undefined,
+        'Request session prepared': (d) => d.token !== undefined || d.csrfToken !== undefined,
       });
     } catch (error) {
       console.error(`Authentication failed: ${error}`);
@@ -98,6 +98,10 @@ export default function (data) {
       return; // Skip rest of test if auth fails
     }
   });
+
+  if (!authData || (!authData.token && !authData.csrfToken)) {
+    return;
+  }
 
   sleep(1);
 
@@ -140,9 +144,37 @@ export default function (data) {
   // Group: Items CRUD
   group('Items Operations', () => {
     const headers = getAuthHeaders(authData);
+    const projectResponse = http.post(
+      `${API_BASE_URL}/projects`,
+      JSON.stringify({
+        name: `Smoke Project ${__VU}-${__ITER}`,
+        description: 'CI smoke test project',
+        metadata: { source: 'k6-smoke' },
+      }),
+      {
+        headers,
+        tags: { name: 'create_project_for_item' },
+      }
+    );
+
+    requestCounter.add(1);
+    apiResponseTime.add(projectResponse.timings.duration);
+
+    const projectCheck = check(projectResponse, {
+      'Project created for item': (r) => r.status === 200 || r.status === 201,
+      'Project create response time OK': (r) => r.timings.duration < 500,
+    });
+
+    if (!projectCheck) {
+      errorRate.add(1);
+      return;
+    }
+
+    const createdProject = projectResponse.json();
+    const projectId = createdProject.id || createdProject.project_id;
 
     // Create a new item
-    const newItem = generateItem({ projectId: 1 });
+    const newItem = generateItem({ projectId: projectId, priority: 2 });
     const createResponse = http.post(
       `${API_BASE_URL}/items`,
       JSON.stringify(newItem),
