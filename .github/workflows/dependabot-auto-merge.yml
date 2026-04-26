@@ -48,8 +48,6 @@ jobs:
         if: contains(steps.metadata.outputs.dependency-names, 'npm') || contains(steps.metadata.outputs.dependency-names, 'node')
         uses: actions/setup-node@v4
         with:
-          cache: 'npm'
-        with:
           node-version: '20'
           cache: 'bun'
 
@@ -57,9 +55,7 @@ jobs:
         if: contains(steps.metadata.outputs.dependency-names, 'python')
         uses: actions/setup-python@v5
         with:
-          cache: 'pip'
-        with:
-          python-version: '3.12'
+          python-version: '3.13'
           cache: 'pip'
 
       - name: Set up Go

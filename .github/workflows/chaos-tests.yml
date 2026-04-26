@@ -21,7 +21,7 @@ on:
       - '.github/workflows/chaos-tests.yml'
 
 env:
-  PYTHON_VERSION: '3.12'
+  PYTHON_VERSION: '3.13'
   RECOVERY_TIME_TARGET: 30
 
 jobs:
@@ -83,7 +83,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           cache: 'pip'
-        with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install uv
