@@ -28,7 +28,7 @@ func migrateAuthProfilesSchema(gormDB *gorm.DB) error {
 	END $$`).Error
 
 	for _, schema := range []string{"public", "tracertm"} {
-		_ = gormDB.Exec(fmt.Sprintf(`DO $$
+		if err := gormDB.Exec(fmt.Sprintf(`DO $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint c
@@ -40,7 +40,9 @@ BEGIN
   END IF;
 EXCEPTION
   WHEN undefined_table THEN NULL;
-END $$`, schema, schema)).Error
+END $$`, schema, schema)).Error; err != nil {
+			return fmt.Errorf("failed to prepare %s.profiles email uniqueness for automigrate: %w", schema, err)
+		}
 	}
 	if err := gormDB.AutoMigrate(&models.Profile{}); err != nil {
 		return fmt.Errorf("failed to auto-migrate profiles: %w", err)
