@@ -25,11 +25,24 @@ Checked three secondary targets per disk-constrained dispatch plan (25Gi availab
 | Open Issues | 0 |
 | Open PRs | 0 |
 | Dependabot Alerts | Not accessible via API |
+| Stack | Polyglot (Rust + Go) |
+
+### Manual Audit Results
+
+**Rust (`cargo audit`)**:
+- Warnings: 1 (RUSTSEC-2024-0413: gtk-rs GTK3 bindings unmaintained)
+  - Crate: atk 0.18.2
+  - Path: atk → gtk → wry → tauri-runtime-wry → tauri → tauri-plugin-os → app 0.1.0
+  - Severity: Warning (non-blocking, upstream lib no longer maintained)
+  - Action: Monitor for replacement or plan gtk-rs removal
+
+**Go (`govulncheck ./...`)**:
+- Result: No vulnerabilities found
 
 **Action Items**:
-- Verify Dependabot is enabled in GitHub settings
-- Re-run alerts query once enabled
-- Monitor for ecosystem-specific deps (Node.js, Go, Python, Rust depending on stack)
+- Evaluate GTK dependency replacement (non-blocking)
+- Verify Dependabot is enabled in GitHub settings for future tracking
+- Keep Go deps current via `go mod tidy && go mod update`
 
 ---
 
@@ -42,16 +55,25 @@ Checked three secondary targets per disk-constrained dispatch plan (25Gi availab
 | Open Issues | 46 |
 | Open PRs | 0 (dependency-related) |
 | Dependabot Alerts | Not accessible via API |
+| Stack | Rust monorepo (704 dependencies) |
 
-**Note**: 46 open issues may include security-related items. Should audit manually:
-```bash
-gh issue list -R KooshaPari/AgilePlus --state open --search label:security
-```
+### Manual Audit Results
+
+**Rust (`cargo audit --deny warnings`)**:
+- Warnings: 1 (RUSTSEC-2024-0436: paste crate unmaintained)
+  - Crate: paste 1.0.15
+  - Path: paste → utoipa-axum 0.2.0 → agileplus-api 0.1.1 → agileplus-contract-tests 0.1.1
+  - Severity: Warning (unmaintained upstream)
+  - Action: Evaluate `paste` replacement or plan macro approach refactor
+  - Note: utoipa-axum 0.2.0 may have newer versions with updated dependencies
+
+**Dependencies Scanned**: 704 total crate dependencies
 
 **Action Items**:
-- Enable Dependabot in GitHub settings
-- Re-check for security-labeled issues
-- Triage and merge low-risk patches when alerts appear
+- Review `utoipa-axum` for newer version (check upstream)
+- Evaluate alternatives to `paste` crate for macro generation
+- Enable Dependabot in GitHub settings for ongoing monitoring
+- Triage 46 open issues for security-labeled items
 
 ---
 
@@ -64,13 +86,26 @@ gh issue list -R KooshaPari/AgilePlus --state open --search label:security
 | Open Issues | 0 |
 | Open PRs | 0 |
 | Dependabot Alerts | Not accessible via API |
+| Stack | Rust + Swift (Tauri desktop app) |
+
+### Manual Audit Results
+
+**Rust (`cargo audit`)**:
+- Warnings: 1 (RUSTSEC-2024-0413: gtk-rs GTK3 bindings unmaintained)
+  - Crate: atk 0.18.2
+  - Path: atk → gtk → wry → tauri-runtime-wry → tauri → tauri-plugin-shell → hwledger-tauri 0.0.1
+  - Severity: Warning (upstream GUI lib no longer maintained)
+  - Action: Monitor for GTK replacement or evaluate alternative GUI frameworks
+  - Impact: Desktop app rendering layer
+
+**Dependencies Scanned**: 947 total crate dependencies
+
+**Swift**: No native Dependabot; require manual Package.swift review (not automated)
 
 **Action Items**:
-- Verify Dependabot is enabled
-- Re-run alerts once enabled
-- Given Rust/Swift stack (WP21 blocked on codesign), watch for:
-  - Cargo deps (high-impact)
-  - Swift Package Manager (iOS dev prereqs)
+- Plan GTK replacement strategy (note: shared with BytePort)
+- Enable Dependabot in GitHub settings for ongoing Rust tracking
+- Manual Swift Package Manager audit when WP21 unblocks (codesign prereq)
 
 ---
 
@@ -126,16 +161,26 @@ Per original directive:
 
 ## Residuals & Tracking
 
-**Current State (2026-04-26 06:00 UTC)**:
-- No actionable alerts queued
-- 46 open issues in AgilePlus need manual triage
-- Disk: 25Gi (tight); do not run concurrent cargo builds
+**Current State (2026-04-26 06:10 UTC)**:
+
+| Finding | Severity | Repo | Type | Action |
+|---------|----------|------|------|--------|
+| gtk-rs (atk 0.18.2) unmaintained | Warning | BytePort, hwLedger | Transitive (wry → tauri) | Monitor for replacement |
+| paste crate (1.0.15) unmaintained | Warning | AgilePlus | Transitive (utoipa-axum) | Evaluate version update or replacement |
+| 46 open issues | TBD | AgilePlus | Requires manual triage | Review for security labels |
+
+**Disk Status**: 25Gi (tight); no cargo builds initiated
+
+**No actionable HIGH/CRITICAL vulnerabilities** — all findings are warnings on unmaintained upstream libraries.
 
 **Follow-Up**:
-1. Enable Dependabot on all three repos
-2. Re-run sweep query in 24 hours
-3. Commit next batch of merged PRs with provenance tracking
-4. Archive this doc in `docs/governance/dependabot/tier1-secondary-2026-04-26/` once complete
+1. Enable Dependabot on all three repos via GitHub Settings
+2. Re-run sweep query in 24–48 hours post-enablement
+3. Evaluate GTK dependency replacement strategy (shared concern: BytePort + hwLedger)
+4. Triage AgilePlus open issues for security-labeled items
+5. Monitor utoipa-axum for version updates (AgilePlus)
+6. Commit next batch of merged PRs with provenance tracking
+7. Archive this doc in `docs/governance/dependabot/tier1-secondary-2026-04-26/` once complete
 
 ---
 
