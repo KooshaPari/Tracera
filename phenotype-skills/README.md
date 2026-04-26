@@ -81,3 +81,7 @@ phenotype-skills/
 - **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 
 For details on testing, spec traceability, and quality gates, see [AGENTS.md](AGENTS.md).
+
+## License
+
+MIT — see [LICENSE](./LICENSE).
