@@ -211,6 +211,8 @@ export function generateGraph(nodeCount = 100, edgeCount = 150) {
  * @returns {Object} - Search query parameters
  */
 export function generateSearchQuery(options = {}) {
+  options = options || {};
+
   const queries = [
     'performance optimization',
     'authentication flow',

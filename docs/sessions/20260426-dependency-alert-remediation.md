@@ -184,6 +184,21 @@ repo cleanup.
 - **Excluded:** redesigning profile schema ownership, changing AuthKit adapter
   behavior, and changing Alembic profile migrations.
 
+## SIZE-CI-K6-SMOKE-RATE-DATA: Performance Smoke Runtime Determinism
+
+- **Scope:** performance workflow runtime env and k6 helper data/auth guards.
+- **Reason:** after profile schema startup was guarded, performance smoke reached
+  k6 execution and exposed two deterministic smoke harness blockers: CSRF token
+  setup could be rate-limited by the default `/api/v1/*` limiter during the
+  local CI ramp, and `generateSearchQuery` could crash when called with a null
+  options object.
+- **Action:** raise API/auth rate limits only inside the CI performance backend
+  jobs, make CSRF token extraction tolerant of body-vs-cookie token placement
+  while logging failed status/body evidence, and normalize null search options
+  to an empty object.
+- **Excluded:** changing production rate-limit defaults, changing protected route
+  policy, or rewriting load/stress scenario auth flows.
+
 ## Validation Targets
 
 ```bash

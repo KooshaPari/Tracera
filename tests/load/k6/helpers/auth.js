@@ -57,14 +57,14 @@ export function authenticate(user) {
 
   const csrfCheck = check(csrfResponse, {
     'CSRF token retrieved': (r) => r.status === 200,
-    'CSRF token in response': (r) => r.json('token') !== undefined,
+    'CSRF token in response': (r) => readCsrfToken(r) !== undefined,
   });
 
   if (!csrfCheck) {
-    fail('Failed to retrieve CSRF token');
+    failCsrfTokenRequest(csrfResponse);
   }
 
-  const csrfToken = csrfResponse.json('token');
+  const csrfToken = readCsrfToken(csrfResponse);
   const csrfCookie = extractCookie(csrfResponse, 'csrf_token');
 
   // Step 2: Authenticate with WorkOS (or mock auth endpoint)
@@ -123,9 +123,29 @@ function getCsrfTokenResponse() {
   });
 }
 
+function readJsonField(response, field) {
+  try {
+    return response.json(field);
+  } catch {
+    return undefined;
+  }
+}
+
 function extractCookie(response, name) {
   const cookie = response.cookies[name];
   return cookie && cookie.length > 0 ? cookie[0].value : undefined;
+}
+
+function readCsrfToken(response) {
+  return readJsonField(response, 'token') ||
+    readJsonField(response, 'csrf_token') ||
+    extractCookie(response, 'csrf_token');
+}
+
+function failCsrfTokenRequest(response) {
+  const body = response && response.body ? String(response.body).slice(0, 500) : '';
+  console.error(`CSRF token request failed: status=${response.status} body=${body}`);
+  fail('Failed to retrieve CSRF token');
 }
 
 function getCsrfOnlySession() {
@@ -133,14 +153,14 @@ function getCsrfOnlySession() {
 
   const csrfCheck = check(csrfResponse, {
     'CSRF token retrieved': (r) => r.status === 200,
-    'CSRF token in response': (r) => r.json('token') !== undefined,
+    'CSRF token in response': (r) => readCsrfToken(r) !== undefined,
   });
 
   if (!csrfCheck) {
-    fail('Failed to retrieve CSRF token');
+    failCsrfTokenRequest(csrfResponse);
   }
 
-  const csrfToken = csrfResponse.json('token');
+  const csrfToken = readCsrfToken(csrfResponse);
   const csrfCookie = extractCookie(csrfResponse, 'csrf_token');
 
   return {
