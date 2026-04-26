@@ -199,7 +199,9 @@ repo cleanup.
   random-choice helper, normalize null search options to an empty object, and
   align the Go project model with Alembic's `project_metadata` column. The
   project API also assigns UUIDs before service validation because validation
-  runs before GORM `BeforeCreate` hooks.
+  runs before GORM `BeforeCreate` hooks. The performance report PR comment now
+  accepts both k6 percentile key shapes (`p(95)` and `p95`) so a successful
+  smoke run is not failed by post-processing.
 - **Excluded:** changing production rate-limit defaults, changing protected route
   policy, or rewriting load/stress scenario auth flows.
 
