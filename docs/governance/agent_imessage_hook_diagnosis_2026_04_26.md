@@ -130,3 +130,19 @@ log that grows linearly with agent activity.
 - `/Users/kooshapari/CodeProjects/Phenotype/repos/agent-user-status/src/agent_user_status/agent_imessage_status.py` (lines 63-152: signal aggregation)
 - `/Users/kooshapari/CodeProjects/Phenotype/repos/agent-user-status/src/agent_user_status/agent_imessage_core.py` (lines 19-23: STATE_DIR, log paths)
 - `~/.local/share/agent-imessage/state/action_events.jsonl` (11 MB, the offender)
+
+## Stopgap Executed 2026-04-26: action_events.jsonl truncated to last 500 lines
+
+Applied stopgap to restore sub-second hook latency without modifying hook scripts.
+
+**Log path:** `~/.local/share/agent-imessage/state/action_events.jsonl`
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Size   | 12,022,445 B (~11.5 MB) | 748,288 B (~730 KB) |
+| Lines  | 11,712 | 500 |
+| Last entry | 2026-04-26T11:36:08Z | 2026-04-26T11:36:08Z (preserved) |
+
+**Backup:** `~/.local/share/agent-imessage/state/action_events.jsonl.bak-2026-04-26` (12,023,958 B)
+
+**Expected effect:** `agent_imessage_learning.py:28` `read_text().splitlines()[-limit:]` now reads ~730 KB instead of ~11.5 MB → idle hook latency drops from 12.07s back to sub-second. Long-term fix (reverse-tail seek, rotation, or trim-on-write) still required; this stopgap will re-degrade as the file regrows.
