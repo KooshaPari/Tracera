@@ -83,3 +83,35 @@ Agent-driven `mktemp -d` and ad-hoc `/private/tmp/<name>` clones are not being c
 ## Out-of-Scope
 
 This audit is read-only. Each prune is a separate dispatch.
+
+## Prune Executed 2026-04-26: LOW-risk batch — reclaimed ~12 GiB
+
+**Disk delta (root volume):**
+
+| Stage  | Used  | Avail |
+|--------|-------|-------|
+| BEFORE | 23Gi  | 24Gi  |
+| AFTER  | 23Gi  | 36Gi  |
+| Delta  | 0Gi   | +12Gi |
+
+(Avail jumped because purgeable / tmp space was reclaimed; `Used` figure is an
+APFS-shared-volume quirk — actual freeing reflected in Avail.)
+
+**Per-item delta:**
+
+| Item                                              | Before | Status   |
+|---------------------------------------------------|--------|----------|
+| `/private/tmp/audit_*` (committed audit clones)   | ~2.4 GB | removed |
+| `/private/tmp/tracera-fresh-compare.*` (mktemp)   | 2.5 GB  | removed |
+| `/private/tmp/tracera-recovery-pr.*` (mktemp)     | 1.6 GB  | removed |
+| `/private/tmp/phenokits-*.*` (mktemp clones)      | ~2.5 GB | removed |
+| `cargo cache --autoclean`                         | n/a     | SKIPPED — `cargo-cache` not installed |
+| `go clean -cache`                                 | ~3.5 GB | executed (exit 0) |
+
+**Not executed (deferred to MEDIUM-risk dispatch):**
+
+- `/private/tmp/thegent_check`, `_fix`, `_readme-fix` — verify clean first
+- `/private/tmp/tracera-gitpython-hotfix` (non-mktemp) — verify clean first
+
+**Follow-up:** install `cargo-cache` (`cargo install cargo-cache`) so future
+LOW-risk prunes can reclaim ~1–2 GB of registry cache.
