@@ -106,6 +106,25 @@ repo cleanup.
 - **Excluded:** startup dependency services, preflight policy, k6 auth/data
   behavior, and stale README command examples.
 
+## SIZE-CI-PERF-RUNTIME-SERVICES: Performance Backend Startup Dependencies
+
+- **Scope:** `performance-regression.yml` smoke/load backend startup services
+  and CI-only preflight environment.
+- **Reason:** after the backend entrypoint fix, smoke built the Go backend and
+  then failed during startup preflight because CI only provided Postgres and
+  Redis while the backend requires NATS, Neo4j, S3 endpoint/env, Temporal
+  host/env, WorkOS env, and disabled tracing when no collector is present.
+- **Action:** add NATS and Neo4j service containers, provide CI-safe WorkOS/S3/
+  Temporal environment values, disable tracing, and use lightweight local TCP
+  listeners for S3 and Temporal because current startup only preflights those
+  endpoints and does not initialize real S3 or Temporal clients. Bind those
+  placeholders through `127.0.0.1` and wait for them before launching the API so
+  Go preflight does not race Python startup or resolve `localhost` to IPv6; keep
+  Temporal in URL form (`tcp://127.0.0.1:7233`) so Go URL parsing accepts it.
+- **Excluded:** changing backend preflight policy, adding real MinIO/Temporal
+  stacks, auth-seeding k6 scenarios, frontend performance, and broader runtime
+  compose consolidation.
+
 ## Validation Targets
 
 ```bash
