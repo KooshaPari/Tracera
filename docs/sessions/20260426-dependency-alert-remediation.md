@@ -141,6 +141,19 @@ repo cleanup.
 - **Excluded:** dropping/recreating RLS policies, changing notification policy
   semantics, broad GORM/Alembic ownership redesign, and k6 auth/data seeding.
 
+## SIZE-CI-AGENT-TASKS-ALEMBIC: Agent Task Persistence Table
+
+- **Scope:** Alembic ownership for the Go agent task queue persistence table.
+- **Reason:** after the notification schema fix, performance smoke reached the
+  infrastructure health loop and failed because `VerifyTaskBackendPersistence`
+  inserts into `agent_tasks`, but the CI pre-start Alembic migration path did
+  not create that table.
+- **Action:** add Alembic revision `061_add_agent_tasks` mirroring the existing
+  backend raw SQL migration for `agent_tasks` and its indexes so CI databases
+  created by Alembic match the Go runtime's durable task queue expectations.
+- **Excluded:** fixing older internal DB migration warnings, changing health
+  check semantics, redesigning the task queue, and k6 scenario behavior.
+
 ## Validation Targets
 
 ```bash
