@@ -430,7 +430,7 @@ jobs:
     - name: Run golangci-lint (strict enforcement)
       uses: golangci/golangci-lint-action@v9
       with:
-        version: latest
+        version: v2.1.0
         working-directory: backend
         args: --timeout=5m --config=.golangci.yml
       continue-on-error: false
@@ -439,16 +439,16 @@ jobs:
       if: always()
       working-directory: backend
       run: |
-        # Use grouped output for file-based processing (easier for agents to fix)
-        golangci-lint run --timeout=5m --config=.golangci.yml --out-format=grouped-line-number > /tmp/go-lint-results-grouped.txt || true
+        # Use text output for file-based processing (easier for agents to fix)
+        golangci-lint run --timeout=5m --config=.golangci.yml --output.text.path=/tmp/go-lint-results-grouped.txt || true
         # Also output JSON for CI parsing
-        golangci-lint run --timeout=5m --config=.golangci.yml --out-format=json > /tmp/go-lint-results.json || true
+        golangci-lint run --timeout=5m --config=.golangci.yml --output.json.path=/tmp/go-lint-results.json || true
         VIOLATION_COUNT=$(jq '[.Issues // []] | length' /tmp/go-lint-results.json || echo "0")
         echo "GO_VIOLATIONS=$VIOLATION_COUNT" >> "$GITHUB_ENV"
         {
           echo "## Go Linting Results"
           echo "Total violations: $VIOLATION_COUNT"
-          echo "Format: grouped-line-number (grouped by file)"
+          echo "Format: text (grouped by file)"
         } >> "$GITHUB_STEP_SUMMARY"
 
     - name: Upload Go lint results
