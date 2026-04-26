@@ -17,13 +17,15 @@ The post-v54 window resolved the largest remaining hygiene fronts: the **pheno w
 | Badge coverage | 84.3% | 84.3% | — |
 | Broken links | ~5,000 | ~5,000 | — |
 | Dependabot alerts | 87 | 87 | — |
-| Cargo-deny advisories | 29 | **27 → ~14** | -2 (W-93 final); ~-13 post-`5c4030c` (W-94 pending) |
-| FocalPoint state | Xcode unblocked | templates-registry LANDED (`5c4030c`); 19 → ~6 advisories | RESOLVED |
+| Cargo-deny advisories | 29 | **13 (W-94 confirmed)** | -16 since v54; **-74% vs W-92 baseline of 50** |
+| FocalPoint state | Xcode unblocked | templates-registry + reqwest 0.12 (`6a601b1`); 19 → **5 advisories** | RESOLVED (5 residual: paste/derivative/protobuf/fxhash/bincode — NOT reqwest) |
 | cliproxyapi | 23 user-blocked | 23 user-blocked | — |
-| pheno workspace | dirty (4 pending commits) | **clean, all on origin** | RESOLVED |
+| pheno workspace | dirty (4 pending commits) | **clean, all on origin**; **11/21 SBOMs bootstrapped** | RESOLVED |
+| SBOMs (org total) | 121 | **132** | +11 (pheno bootstrap) |
 | Civis | conflict | **squash-resolved** | RESOLVED |
-| Disk free | ~36 GiB | **32 GiB** | -4 GiB |
-| Pack corruption | gc-blocked | **gc-blocked (sandbox)** | needs user |
+| Disk free | ~36 GiB | **39 GiB** | +3 GiB (/tmp creep round-2: 11 GB → 3.8 GB) |
+| Pack corruption | gc-blocked | **fsck artifact (real growth +5 objects, not 217)** | re-classified |
+| Evalora | n/a | **DELETED from KooshaPari (confirmed)** | NEW BLOCKER — blocks pheno full audit + cache-adapter cargo metadata |
 
 ## Critical User-Action Queue
 
@@ -57,3 +59,14 @@ Templates-registry 2-line axum migration **landed mid-write** as commit `5c4030c
 - **W-94 snapshot agent in flight**; will confirm exact post-fix counts and replace the `~` placeholders in the counters table
 
 The "templates-registry 2-line fix in flight" line in the v55 body and the Tomorrow Priorities item should be read as superseded by this addendum.
+
+## Post-Final-Addendum Update
+
+Late-late wave delivered confirmed numbers and a few surprises beyond the prior addendum's projections:
+
+- **W-94 cargo-deny snapshot CONFIRMED at 13** (not the projected ~14). Org W-92 → W-94: **50 → 13 (-74%)**.
+- **FocalPoint final: 19 → 5 advisories** (templates-registry refactor exceeded prediction). reqwest 0.11→0.12 applied (`6a601b1`), but agent caught a scoping error: **the 5 residual advisories are NOT reqwest-related** — they are paste/derivative/protobuf/fxhash/bincode.
+- **pheno SBOM bootstrap: 11/21** SBOMs landed; **org total now 132 SBOMs across 7 workspaces** (was 121).
+- **/tmp creep round-2 prune: 11 GB → 3.8 GB** (-7.2 GB reclaimed). Disk free now **39 GiB** (was 32 GiB at v55-write).
+- **Pack corruption re-classified**: the reported 217-object regression was an **fsck line-count artifact**; real growth is **+5 unique objects**. New memory `feedback_fsck_line_count_artifact` in flight to lock in the diagnostic pattern.
+- **Evalora investigation: DELETED from KooshaPari (confirmed)**. New blocker: blocks pheno full audit + cache-adapter cargo metadata resolution. Added to counters table.
