@@ -33,7 +33,6 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          cache: 'pip'
           python-version: "3.13"
 
       - name: Run test pyramid verification

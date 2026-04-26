@@ -24,13 +24,13 @@ jobs:
           python-version: "3.13"
 
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --extra dev
 
       - name: Check architecture
-        run: uv run tach check
+        run: uv run --extra dev tach check
 
       - name: Generate architecture diagram
-        run: uv run tach show --mermaid > architecture.md
+        run: uv run --extra dev tach show --mermaid > architecture.md
 
       - name: Upload architecture diagram
         uses: actions/upload-artifact@v4
