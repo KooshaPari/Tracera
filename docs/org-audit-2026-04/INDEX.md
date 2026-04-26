@@ -6,6 +6,12 @@ Central reference for organization-wide audits and status reports.
 
 ## Primary Dashboard
 
+- **[ORG_DASHBOARD_v56_2026_04_27_final_final.md](./ORG_DASHBOARD_v56_2026_04_27_final_final.md)** — Latest final-final closeout
+  - Corrected pushed-repo count: 49 verified
+  - FocalPoint zero-advisory closeout and W-95 = 8 baseline
+  - W-96 next-target scope: KDesktopVirt bollard + eyetracker uniffi
+  - Last updated: 2026-04-27
+
 - **[ORG_DASHBOARD_2026_04_25.md](./ORG_DASHBOARD_2026_04_25.md)** — Single-page master inventory
   - 162 repos catalogued by collection
   - High-velocity analysis (30-day commits)
@@ -51,10 +57,10 @@ Central reference for organization-wide audits and status reports.
 ## Navigation
 
 For quick access:
-1. **Start here**: ORG_DASHBOARD_2026_04_25.md (overview)
+1. **Start here**: ORG_DASHBOARD_v56_2026_04_27_final_final.md (latest closeout)
 2. **Deep dive**: FINAL_STATUS_2026_04_24_v14.md (30-repo review)
 3. **Issue tracking**: issue_pr_triage_2026_04_25.md (GitHub triage)
 
 ---
 
-**Last Updated**: 2026-04-25 | **Maintainer**: Org Dashboard System
+**Last Updated**: 2026-04-27 | **Maintainer**: Org Dashboard System
