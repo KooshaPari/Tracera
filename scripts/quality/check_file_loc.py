@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 from fnmatch import fnmatch
 from pathlib import Path
 
@@ -82,7 +83,9 @@ def load_allowlist(path: Path) -> dict[str, int]:
     return allowlist
 
 
-def should_exclude(path: Path, exclude_dirs: list[str], exclude_paths: set[str], exclude_patterns: list[str]) -> bool:
+def should_exclude(
+    path: Path, exclude_dirs: list[str], exclude_paths: set[str], exclude_patterns: list[str]
+) -> bool:
     """Should exclude."""
     path_str = str(path)
     if path_str in exclude_paths:
@@ -122,11 +125,16 @@ def main() -> int:
     parser.add_argument("--config", default=str(DEFAULT_CONFIG_PATH))
     parser.add_argument("--max-loc", type=int, default=None)
     parser.add_argument("--allowlist", default=None)
+    parser.add_argument(
+        "files", nargs="*", help="Optional files to check instead of configured roots"
+    )
     args = parser.parse_args()
 
     config = load_config(Path(args.config))
     max_loc = args.max_loc or int(os.getenv("MAX_LOC", config.get("max_loc", DEFAULT_MAX_LOC)))
-    allowlist_path = args.allowlist or os.getenv("ALLOWLIST_FILE", config.get("allowlist_file", str(DEFAULT_ALLOWLIST)))
+    allowlist_path = args.allowlist or os.getenv(
+        "ALLOWLIST_FILE", config.get("allowlist_file", str(DEFAULT_ALLOWLIST))
+    )
     allowlist = load_allowlist(Path(allowlist_path))
 
     roots = [Path(p) for p in config.get("search_dirs", [])]
@@ -135,8 +143,21 @@ def main() -> int:
     exclude_patterns = list(config.get("exclude_patterns", []))
     extensions = set(config.get("extensions", []))
 
+    files = [Path(file) for file in args.files]
+    if files:
+        candidates = [
+            path
+            for path in files
+            if path.exists()
+            and path.is_file()
+            and path.suffix in extensions
+            and not should_exclude(path, exclude_dirs, exclude_paths, exclude_patterns)
+        ]
+    else:
+        candidates = iter_files(roots, extensions, exclude_dirs, exclude_paths, exclude_patterns)
+
     violations: list[str] = []
-    for path in iter_files(roots, extensions, exclude_dirs, exclude_paths, exclude_patterns):
+    for path in candidates:
         try:
             lines = sum(1 for _ in path.open("r", encoding="utf-8", errors="ignore"))
         except OSError:
@@ -150,8 +171,10 @@ def main() -> int:
             violations.append(f"{lines}:{rel_path}")
 
     if violations:
+        sys.stderr.write(f"{RED}File length guard failed:{NC}\n")
         for entry in sorted(violations, key=lambda v: int(v.split(":", 1)[0]), reverse=True):
-            _count, _rest = entry.split(":", 1)
+            count, rest = entry.split(":", 1)
+            sys.stderr.write(f"{YELLOW}{count} LOC{NC}: {rest}\n")
         return 1
 
     return 0

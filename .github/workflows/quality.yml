@@ -15,6 +15,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install UV
         uses: astral-sh/setup-uv@v2
@@ -41,12 +43,46 @@ jobs:
       - name: Install pytest-xdist for parallelization
         run: uv pip install pytest-xdist
 
-      - name: Ruff format check
+      - name: Detect changed Python files
+        id: changed-python
+        shell: bash
         run: |
-          uv run ruff format --check .
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" != "pull_request" ]]; then
+            echo "has_python=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          base="${{ github.event.pull_request.base.sha }}"
+          git fetch --no-tags --depth=1 origin "$base"
+          mapfile -t python_files < <(git diff --name-only "$base"...HEAD -- '*.py')
+          if (( ${#python_files[@]} == 0 )); then
+            echo "has_python=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_python=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Ruff format check
+        if: github.event_name != 'pull_request' || steps.changed-python.outputs.has_python == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            git fetch --no-tags --depth=1 origin "$base"
+            mapfile -t python_files < <(git diff --name-only "$base"...HEAD -- '*.py')
+            if (( ${#python_files[@]} == 0 )); then
+              echo "No changed Python files to format-check" >> $GITHUB_STEP_SUMMARY
+              exit 0
+            fi
+            uv run ruff format --check "${python_files[@]}"
+          else
+            uv run ruff format --check .
+          fi
           echo "✅ Format check passed" >> $GITHUB_STEP_SUMMARY
 
       - name: Ruff lint (strict complexity enforcement)
+        if: github.event_name != 'pull_request' || steps.changed-python.outputs.has_python == 'true'
         run: |
           # Use grouped output format for file-based processing (easier for agents to fix)
           uv run ruff check . --output-format=grouped > /tmp/quality-ruff-results-grouped.txt || true
@@ -61,18 +97,22 @@ jobs:
           cat /tmp/quality-ruff-results-grouped.txt || uv run ruff check .
 
       - name: Check for unused imports (pycln)
+        if: github.event_name != 'pull_request' || steps.changed-python.outputs.has_python == 'true'
         run: uv run pycln --check src/
 
       - name: Type check (ty - strict mode)
+        if: github.event_name != 'pull_request' || steps.changed-python.outputs.has_python == 'true'
         run: |
           uv run ty check src/ --error-on-warning
 
       - name: Architecture check (tach)
+        if: github.event_name != 'pull_request' || steps.changed-python.outputs.has_python == 'true'
         run: |
           uv run tach check
           echo "✅ Architecture boundaries validated" >> $GITHUB_STEP_SUMMARY
 
       - name: Security scan (Bandit - high severity)
+        if: github.event_name != 'pull_request' || steps.changed-python.outputs.has_python == 'true'
         run: |
           uv run bandit -r src/ -l high -i high --format json --output /tmp/quality-bandit-results.json || true
           BANDIT_HIGH=$(jq '[.results // []] | length' /tmp/quality-bandit-results.json || echo "0")
@@ -80,10 +120,13 @@ jobs:
           uv run bandit -r src/ -l high -i high
 
       - name: Install Semgrep (binary; project does not depend on semgrep package)
+        if: github.event_name != 'pull_request' || steps.changed-python.outputs.has_python == 'true'
         run: pip install semgrep
       - name: Security scan (Semgrep - community rules)
+        if: github.event_name != 'pull_request' || steps.changed-python.outputs.has_python == 'true'
         run: semgrep --config=p/security-audit src/
       - name: Security scan (Semgrep - project rules)
+        if: github.event_name != 'pull_request' || steps.changed-python.outputs.has_python == 'true'
         run: |
           if [ -f .semgrep.yml ]; then
             semgrep --config=.semgrep.yml src/
@@ -92,6 +135,7 @@ jobs:
           fi
 
       - name: Docstring coverage
+        if: github.event_name != 'pull_request' || steps.changed-python.outputs.has_python == 'true'
         run: |
           uv run interrogate -vv --fail-under=85 src/
           echo "✅ Docstring coverage ≥85%" >> $GITHUB_STEP_SUMMARY

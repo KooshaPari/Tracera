@@ -14,7 +14,12 @@
 import http from 'k6/http';
 import { check, sleep, group } from 'k6';
 import { Rate, Trend, Counter } from 'k6/metrics';
-import { authenticate, getAuthHeaders, getTestUser } from '../helpers/auth.js';
+import {
+  authenticate,
+  getAuthHeaders,
+  getTestUser,
+  updateCsrfFromResponse,
+} from '../helpers/auth.js';
 import { generateItem, generateSearchQuery } from '../helpers/data-generators.js';
 
 // Custom metrics
@@ -79,6 +84,7 @@ export function setup() {
 // Main test function - runs for each VU iteration
 export default function (data) {
   let authData;
+  let smokeProjectId;
 
   // Group: Authentication
   group('Authentication', () => {
@@ -120,6 +126,7 @@ export default function (data) {
 
     requestCounter.add(1);
     apiResponseTime.add(projectsResponse.timings.duration);
+    updateCsrfFromResponse(authData, projectsResponse);
 
     const projectsCheck = check(projectsResponse, {
       'Projects loaded': (r) => r.status === 200,
@@ -159,6 +166,7 @@ export default function (data) {
 
     requestCounter.add(1);
     apiResponseTime.add(projectResponse.timings.duration);
+    updateCsrfFromResponse(authData, projectResponse);
 
     const projectCheck = check(projectResponse, {
       'Project created for item': (r) => r.status === 200 || r.status === 201,
@@ -166,26 +174,31 @@ export default function (data) {
     });
 
     if (!projectCheck) {
+      const body = projectResponse.body ? String(projectResponse.body).slice(0, 500) : '';
+      console.error(`Project fixture creation failed: status=${projectResponse.status} body=${body}`);
       errorRate.add(1);
       return;
     }
 
     const createdProject = projectResponse.json();
     const projectId = createdProject.id || createdProject.project_id;
+    smokeProjectId = projectId;
 
     // Create a new item
+    const itemHeaders = getAuthHeaders(authData);
     const newItem = generateItem({ projectId: projectId, priority: 2 });
     const createResponse = http.post(
       `${API_BASE_URL}/items`,
       JSON.stringify(newItem),
       {
-        headers,
+        headers: itemHeaders,
         tags: { name: 'create_item' },
       }
     );
 
     requestCounter.add(1);
     apiResponseTime.add(createResponse.timings.duration);
+    updateCsrfFromResponse(authData, createResponse);
 
     const createCheck = check(createResponse, {
       'Item created': (r) => r.status === 200 || r.status === 201,
@@ -203,16 +216,18 @@ export default function (data) {
     sleep(0.5);
 
     // Get the created item
+    const getHeaders = getAuthHeaders(authData);
     const getResponse = http.get(
       `${API_BASE_URL}/items/${itemId}`,
       {
-        headers,
+        headers: getHeaders,
         tags: { name: 'get_item' },
       }
     );
 
     requestCounter.add(1);
     apiResponseTime.add(getResponse.timings.duration);
+    updateCsrfFromResponse(authData, getResponse);
 
     const getCheck = check(getResponse, {
       'Item retrieved': (r) => r.status === 200,
@@ -228,11 +243,16 @@ export default function (data) {
 
   // Group: Search
   group('Search Operations', () => {
+    if (!smokeProjectId) {
+      return;
+    }
+
     const headers = getAuthHeaders(authData);
-    const searchQuery = generateSearchQuery({ limit: 20 });
+    const searchQuery = generateSearchQuery({ limit: 20, projectId: smokeProjectId });
+    const searchProjectId = searchQuery.projectId || smokeProjectId;
 
     const searchResponse = http.get(
-      `${API_BASE_URL}/search?q=${encodeURIComponent(searchQuery.query)}&limit=${searchQuery.limit}`,
+      `${API_BASE_URL}/search?q=${encodeURIComponent(searchQuery.query)}&limit=${searchQuery.limit}&project_id=${searchProjectId}`,
       {
         headers,
         tags: { name: 'search_items' },
@@ -241,6 +261,7 @@ export default function (data) {
 
     requestCounter.add(1);
     apiResponseTime.add(searchResponse.timings.duration);
+    updateCsrfFromResponse(authData, searchResponse);
 
     const searchCheck = check(searchResponse, {
       'Search completed': (r) => r.status === 200,

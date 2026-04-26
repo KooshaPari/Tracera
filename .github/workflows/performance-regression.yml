@@ -42,6 +42,13 @@ env:
   BASE_URL: http://localhost:4000
   TEST_ENV: ci
   K6_VERSION: '0.48.0'
+  RATE_LIMIT_API_RPM: "10000"
+  RATE_LIMIT_AUTH_RPM: "10000"
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
 
 jobs:
   # =============================================================================
@@ -204,8 +211,6 @@ jobs:
           WORKOS_CLIENT_ID: client_ci_performance
           WORKOS_API_KEY: sk_test_ci_performance
           WORKOS_AUTHKIT_DOMAIN: http://localhost:4000
-          WORKOS_REDIRECT_URI: http://localhost:8080/api/v1/auth/authkit/callback
-          AUTHKIT_JWT_SECRET: ci-authkit-jwt-secret-at-least-32-bytes
           CSRF_SECRET: ci-csrf-secret-at-least-32-bytes
           TRACING_ENABLED: "false"
 
@@ -367,8 +372,6 @@ jobs:
           WORKOS_CLIENT_ID: client_ci_performance
           WORKOS_API_KEY: sk_test_ci_performance
           WORKOS_AUTHKIT_DOMAIN: http://localhost:4000
-          WORKOS_REDIRECT_URI: http://localhost:8080/api/v1/auth/authkit/callback
-          AUTHKIT_JWT_SECRET: ci-authkit-jwt-secret-at-least-32-bytes
           CSRF_SECRET: ci-csrf-secret-at-least-32-bytes
           TRACING_ENABLED: "false"
 
@@ -470,21 +473,33 @@ jobs:
           script: |
             const fs = require('fs');
             const summary = JSON.parse(fs.readFileSync('results/smoke/smoke-test-summary.json', 'utf8'));
+            const metricValue = (metric, ...keys) => {
+              for (const key of keys) {
+                if (summary.metrics[metric] && summary.metrics[metric][key] !== undefined) {
+                  return summary.metrics[metric][key];
+                }
+              }
+              return 0;
+            };
 
             const comment = `
             ## Performance Test Results
 
             ### Smoke Test
-            - **Total Requests**: ${summary.metrics.http_reqs.count}
-            - **P95 Latency**: ${summary.metrics.http_req_duration.p95.toFixed(2)}ms
-            - **Error Rate**: ${(summary.metrics.http_req_failed.rate * 100).toFixed(2)}%
+            - **Total Requests**: ${metricValue('http_reqs', 'count')}
+            - **P95 Latency**: ${metricValue('http_req_duration', 'p(95)', 'p95').toFixed(2)}ms
+            - **Error Rate**: ${(metricValue('http_req_failed', 'rate') * 100).toFixed(2)}%
 
             [Full Report](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
             `;
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+            try {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (error) {
+              core.warning(`Unable to comment performance results: ${error.message}`);
+            }
