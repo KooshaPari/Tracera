@@ -119,7 +119,8 @@ repo cleanup.
   listeners for S3 and Temporal because current startup only preflights those
   endpoints and does not initialize real S3 or Temporal clients. Bind those
   placeholders through `127.0.0.1` and wait for them before launching the API so
-  Go preflight does not race Python startup or resolve `localhost` to IPv6.
+  Go preflight does not race Python startup or resolve `localhost` to IPv6; keep
+  Temporal in URL form (`tcp://127.0.0.1:7233`) so Go URL parsing accepts it.
 - **Excluded:** changing backend preflight policy, adding real MinIO/Temporal
   stacks, auth-seeding k6 scenarios, frontend performance, and broader runtime
   compose consolidation.

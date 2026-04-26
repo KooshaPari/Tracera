@@ -199,7 +199,7 @@ jobs:
           S3_ACCESS_KEY_ID: minioadmin
           S3_SECRET_ACCESS_KEY: minioadmin
           S3_BUCKET: tracertm-performance
-          TEMPORAL_HOST: 127.0.0.1:7233
+          TEMPORAL_HOST: tcp://127.0.0.1:7233
           TEMPORAL_NAMESPACE: default
           WORKOS_CLIENT_ID: client_ci_performance
           WORKOS_API_KEY: sk_test_ci_performance
@@ -358,7 +358,7 @@ jobs:
           S3_ACCESS_KEY_ID: minioadmin
           S3_SECRET_ACCESS_KEY: minioadmin
           S3_BUCKET: tracertm-performance
-          TEMPORAL_HOST: 127.0.0.1:7233
+          TEMPORAL_HOST: tcp://127.0.0.1:7233
           TEMPORAL_NAMESPACE: default
           WORKOS_CLIENT_ID: client_ci_performance
           WORKOS_API_KEY: sk_test_ci_performance
