@@ -58,6 +58,18 @@ repo cleanup.
 | Frontend npm | `frontend/**` | Separate frontend dependency lane. |
 | Archived npm snapshots | `ARCHIVE/CONFIG/default/**/package.json` | Separate archive quarantine task. |
 
+## SIZE-CI-PERF-REPORT-ARTIFACTS: Performance Report Guard
+
+- **Scope:** `performance-regression.yml` report fan-in behavior only.
+- **Reason:** after the Go toolchain fix, `Generate Performance Report` failed
+  while downloading `smoke-test-results` even though the producing smoke job had
+  failed before uploading that artifact.
+- **Action:** run the report fan-in only when at least one performance producer
+  succeeded, download artifacts only from successful producers, and only post the
+  PR smoke summary comment when the smoke summary file exists.
+- **Excluded:** fixing the underlying smoke/load runtime failures, k6 scenario
+  behavior, backend startup, and report rendering semantics.
+
 ## Validation Targets
 
 ```bash
