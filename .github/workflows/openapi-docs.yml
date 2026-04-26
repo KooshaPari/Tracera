@@ -63,22 +63,22 @@ jobs:
         working-directory: backend
         run: |
           # Validate with swagger-cli
-          swagger-cli validate docs/swagger.json
+          swagger-cli validate docs/tracertm_swagger.json
 
           # Lint with spectral
-          spectral lint docs/swagger.json --format stylish --fail-severity warn || true
+          spectral lint docs/tracertm_swagger.json --format stylish --fail-severity warn || true
 
       - name: Check for required fields
         working-directory: backend
         run: |
           # Check that all endpoints have tags
-          missing_tags=$(jq '[.paths[][].tags] | map(select(. == null or length == 0)) | length' docs/swagger.json)
+          missing_tags=$(jq '[.paths[][].tags] | map(select(. == null or length == 0)) | length' docs/tracertm_swagger.json)
           if [ "$missing_tags" -gt 0 ]; then
             echo "Warning: $missing_tags endpoints are missing tags"
           fi
 
           # Check that all endpoints have descriptions
-          missing_desc=$(jq '[.paths[][].description] | map(select(. == null or . == "")) | length' docs/swagger.json)
+          missing_desc=$(jq '[.paths[][].description] | map(select(. == null or . == "")) | length' docs/tracertm_swagger.json)
           if [ "$missing_desc" -gt 0 ]; then
             echo "Warning: $missing_desc endpoints are missing descriptions"
           fi
@@ -90,21 +90,21 @@ jobs:
           echo "" >> ../openapi-coverage.md
           echo "## Statistics" >> ../openapi-coverage.md
           echo "" >> ../openapi-coverage.md
-          echo "- **Total Paths**: $(jq '.paths | length' docs/swagger.json)" >> ../openapi-coverage.md
-          echo "- **GET Endpoints**: $(jq '[.paths[].get] | map(select(. != null)) | length' docs/swagger.json)" >> ../openapi-coverage.md
-          echo "- **POST Endpoints**: $(jq '[.paths[].post] | map(select(. != null)) | length' docs/swagger.json)" >> ../openapi-coverage.md
-          echo "- **PUT Endpoints**: $(jq '[.paths[].put] | map(select(. != null)) | length' docs/swagger.json)" >> ../openapi-coverage.md
-          echo "- **DELETE Endpoints**: $(jq '[.paths[].delete] | map(select(. != null)) | length' docs/swagger.json)" >> ../openapi-coverage.md
-          echo "- **Tags**: $(jq '[.tags[]?.name] | length' docs/swagger.json)" >> ../openapi-coverage.md
-          echo "- **Schemas**: $(jq '[.components.schemas | keys[]] | length' docs/swagger.json 2>/dev/null || echo 0)" >> ../openapi-coverage.md
+          echo "- **Total Paths**: $(jq '.paths | length' docs/tracertm_swagger.json)" >> ../openapi-coverage.md
+          echo "- **GET Endpoints**: $(jq '[.paths[].get] | map(select(. != null)) | length' docs/tracertm_swagger.json)" >> ../openapi-coverage.md
+          echo "- **POST Endpoints**: $(jq '[.paths[].post] | map(select(. != null)) | length' docs/tracertm_swagger.json)" >> ../openapi-coverage.md
+          echo "- **PUT Endpoints**: $(jq '[.paths[].put] | map(select(. != null)) | length' docs/tracertm_swagger.json)" >> ../openapi-coverage.md
+          echo "- **DELETE Endpoints**: $(jq '[.paths[].delete] | map(select(. != null)) | length' docs/tracertm_swagger.json)" >> ../openapi-coverage.md
+          echo "- **Tags**: $(jq '[.tags[]?.name] | length' docs/tracertm_swagger.json)" >> ../openapi-coverage.md
+          echo "- **Schemas**: $(jq '[.components.schemas | keys[]] | length' docs/tracertm_swagger.json 2>/dev/null || echo 0)" >> ../openapi-coverage.md
 
       - name: Upload OpenAPI spec as artifact
         uses: actions/upload-artifact@v4
         with:
           name: openapi-spec
           path: |
-            backend/docs/swagger.json
-            backend/docs/swagger.yaml
+            backend/docs/tracertm_swagger.json
+            backend/docs/tracertm_swagger.yaml
             openapi-coverage.md
           retention-days: 30
 
@@ -143,15 +143,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: openapi-spec
-          path: backend/docs
+          path: .
 
       - name: Create docs-site directory if needed
         run: mkdir -p docs/public
 
       - name: Copy spec to docs-site
         run: |
-          cp backend/docs/swagger.json docs/public/openapi.json
-          cp backend/docs/swagger.yaml docs/public/openapi.yaml
+          cp backend/docs/tracertm_swagger.json docs/public/openapi.json
+          cp backend/docs/tracertm_swagger.yaml docs/public/openapi.yaml
 
       - name: Commit and push if changed
         run: |
@@ -184,7 +184,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: openapi-spec
-          path: backend/docs
+          path: .
 
       - name: Install OpenAPI Generator
         run: npm install -g @openapitools/openapi-generator-cli
@@ -192,7 +192,7 @@ jobs:
       - name: Generate ${{ matrix.language }} client
         run: |
           openapi-generator-cli generate \
-            -i backend/docs/swagger.json \
+            -i backend/docs/tracertm_swagger.json \
             -g ${{ matrix.language }} \
             -o clients/${{ matrix.language }} \
             --additional-properties=packageName=tracertm-client

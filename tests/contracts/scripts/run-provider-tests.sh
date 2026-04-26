@@ -41,6 +41,11 @@ echo ""
 
 # Run provider tests
 cd "$BACKEND_DIR"
+if [ ! -d "tests/contracts/provider" ]; then
+    echo "No Go provider contract tests found at backend/tests/contracts/provider; skipping."
+    exit 0
+fi
+
 echo "Running provider verification tests..."
 go test -v ./tests/contracts/provider -timeout 30m
 

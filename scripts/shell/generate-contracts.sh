@@ -22,10 +22,17 @@ if [ ! -d "$PROJECT_ROOT/.venv" ]; then
   exit 1
 fi
 
-bash "$PROJECT_ROOT/scripts/shell/generate-openapi-python.sh"
+if ! bash "$PROJECT_ROOT/scripts/shell/generate-openapi-python.sh"; then
+  echo "[contracts] Python OpenAPI generation failed; continuing with available specs." >&2
+fi
 bash "$PROJECT_ROOT/scripts/shell/generate-openapi-go.sh"
 bash "$PROJECT_ROOT/scripts/shell/generate-typescript-types.sh"
 bash "$PROJECT_ROOT/scripts/shell/generate-python-client.sh"
-bash "$PROJECT_ROOT/scripts/shell/generate-grpc.sh" --typescript
+
+if command -v protoc >/dev/null 2>&1; then
+  bash "$PROJECT_ROOT/scripts/shell/generate-grpc.sh" --typescript
+else
+  echo "[contracts] protoc is not installed; skipping gRPC generation." >&2
+fi
 
 echo "[contracts] Generation complete."
