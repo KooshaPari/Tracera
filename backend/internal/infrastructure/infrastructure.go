@@ -18,7 +18,6 @@ import (
 	"github.com/kooshapari/tracertm-backend/internal/cliproxy"
 	"github.com/kooshapari/tracertm-backend/internal/config"
 	"github.com/kooshapari/tracertm-backend/internal/graph"
-	"github.com/kooshapari/tracertm-backend/internal/models"
 	"github.com/kooshapari/tracertm-backend/internal/nats"
 	"github.com/kooshapari/tracertm-backend/internal/repository"
 	"github.com/kooshapari/tracertm-backend/internal/tracing"
@@ -172,69 +171,11 @@ func initGorm(databaseURL string) (*gorm.DB, error) {
 }
 
 func migrateAuthProfiles(gormDB *gorm.DB) error {
-	// One-time migration: old schema had workos_id NOT NULL; GORM model uses workos_user_id only.
-	// Try RENAME; if workos_user_id already exists (both columns), DROP workos_id instead.
-	// To run manually: psql $DATABASE_URL -f migrations/20260131_profiles_workos_id.sql
-	_ = gormDB.Exec(`DO $$ BEGIN
-		IF EXISTS (SELECT 1 FROM information_schema.columns
-			WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'workos_id') THEN
-			BEGIN
-				ALTER TABLE public.profiles RENAME COLUMN workos_id TO workos_user_id;
-			EXCEPTION
-				WHEN duplicate_column THEN
-					ALTER TABLE public.profiles DROP COLUMN workos_id;
-				WHEN undefined_column THEN
-					NULL;
-			END;
-		END IF;
-	END $$`).Error
-
-	// Migrate auth profile table (WorkOS profiles); schema owned by GORM, not Alembic.
-	// GORM may try to DROP constraint uni_profiles_email (without IF EXISTS).
-	// Ensure it exists in both schemas so DROP succeeds regardless of search_path.
-	// Only ADD if missing to avoid PostgreSQL "relation already exists" (which GORM logs even when EXCEPTION swallows it).
-	for _, schema := range []string{"public", "tracertm"} {
-		_ = gormDB.Exec(fmt.Sprintf(`DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint c
-    JOIN pg_class t ON t.oid = c.conrelid
-    JOIN pg_namespace n ON n.oid = t.relnamespace
-    WHERE n.nspname = '%s' AND t.relname = 'profiles' AND c.conname = 'uni_profiles_email'
-  ) THEN
-    ALTER TABLE %s.profiles ADD CONSTRAINT uni_profiles_email UNIQUE (email);
-  END IF;
-EXCEPTION
-  WHEN undefined_table THEN NULL;
-END $$`, schema, schema)).Error
-	}
-	if err := gormDB.AutoMigrate(&models.Profile{}); err != nil {
-		return fmt.Errorf("failed to auto-migrate profiles: %w", err)
-	}
-	for _, schema := range []string{"public", "tracertm"} {
-		_ = gormDB.Exec("ALTER TABLE " + schema + ".profiles DROP CONSTRAINT IF EXISTS uni_profiles_email").Error
-	}
-	return nil
+	return migrateAuthProfilesSchema(gormDB)
 }
 
 func migrateNotifications(gormDB *gorm.DB) error {
-	// Migrate notifications table (for SSE notifications)
-	// Import services package to access Notification model
-	type Notification struct {
-		ID        string `gorm:"primaryKey"`
-		UserID    string `gorm:"index"`
-		Type      string
-		Title     string
-		Message   string
-		Link      *string
-		ReadAt    *time.Time
-		CreatedAt time.Time  `gorm:"index"`
-		ExpiresAt *time.Time `gorm:"index"`
-	}
-	if err := gormDB.AutoMigrate(&Notification{}); err != nil {
-		return fmt.Errorf("failed to auto-migrate notifications: %w", err)
-	}
-	return nil
+	return migrateNotificationsSchema(gormDB)
 }
 
 func initRepositories(infra *Infrastructure, gormDB *gorm.DB) {
