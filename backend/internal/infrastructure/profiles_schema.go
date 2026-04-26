@@ -51,7 +51,12 @@ func migrateAuthProfilesSchema(gormDB *gorm.DB) error {
 }
 
 func prepareProfileEmailConstraint(gormDB *gorm.DB, schema string) error {
-	err := gormDB.Exec(fmt.Sprintf(`DO $$
+	schemaName, err := profileSchemaIdentifier(schema)
+	if err != nil {
+		return err
+	}
+
+	err = gormDB.Exec(fmt.Sprintf(`DO $$
 BEGIN
   IF EXISTS (
     SELECT 1 FROM information_schema.tables
@@ -67,7 +72,7 @@ BEGIN
 EXCEPTION
   WHEN undefined_table THEN NULL;
   WHEN invalid_schema_name THEN NULL;
-END $$`, schema, schema, schema)).Error
+END $$`, schemaName, schemaName, schemaName)).Error
 	if err != nil {
 		return fmt.Errorf("failed to prepare %s.profiles email uniqueness for automigrate: %w", schema, err)
 	}
@@ -75,6 +80,11 @@ END $$`, schema, schema, schema)).Error
 }
 
 func dropProfileEmailConstraint(gormDB *gorm.DB, schema string) error {
+	schemaName, err := profileSchemaIdentifier(schema)
+	if err != nil {
+		return err
+	}
+
 	return gormDB.Exec(fmt.Sprintf(`DO $$
 BEGIN
   IF EXISTS (
@@ -86,5 +96,14 @@ BEGIN
 EXCEPTION
   WHEN undefined_table THEN NULL;
   WHEN invalid_schema_name THEN NULL;
-END $$`, schema, schema)).Error
+END $$`, schemaName, schemaName)).Error
+}
+
+func profileSchemaIdentifier(schema string) (string, error) {
+	switch schema {
+	case "public", "tracertm":
+		return schema, nil
+	default:
+		return "", fmt.Errorf("unsupported profiles schema %q", schema)
+	}
 }
