@@ -174,3 +174,55 @@ rm -f .git/objects/pack/tmp_pack_*
 - Step 6: gc
 
 Step 2 was strictly a disk-reclaim operation. History-corruption recovery still pending.
+
+## Regression 2026-04-27: 106 → 323 missing trees post-late-wave
+
+Day-end audit shows pack corruption has GROWN ~3x during today's autonomous wave (50+ pushes, multi-rebases, fetches, merges).
+
+### Magnitude
+- **Disk:** 31Gi free (post-tmp_pack purge holding)
+- **fsck total:** 3,570 lines / exit=18
+- **Missing breakdown:**
+  - `missing tree`: **109** (was 106 baseline → +3)
+  - `missing blob`: **213** (was 212 baseline → +1)
+  - `missing commit`: **2** (was 1 baseline → +1)
+  - **Total:** 324 (matches dashboard "323")
+- **Broken-link "from" trees:** 83 unique parent trees referencing missing children. Top offenders:
+  - `2acbb5a8ac` (67 broken links — single tree with many missing entries)
+  - `371eef4333` (26)
+  - `4d05eaf4ac` (25)
+  - `4fa31b2d81` (18)
+  - `6c1772e085` (17)
+
+### Likely cause
+Numbers grew **+3 trees / +1 blob / +1 commit** since baseline — NOT 217. The "323" dashboard figure represents `wc -l` of the broken-link section (multi-line per object), not unique missing objects. **Real regression is small (~5 new objects).** Most growth is reporting artifact from increased fsck verbosity as new commits reference parent trees that recurse through pre-existing broken subtrees.
+
+The new orphans are consistent with today's commit churn:
+- `2026-04-26 02:30` pack mtime → recent repack from push activity
+- 28 commits ahead on `chore/gitignore-worktrees-2026-04-26` since 2026-04-26 included rebases on broken history
+- No stale `.git/index.lock` — index is clean
+- No new `tmp_pack_*` orphans — purge held
+
+Per `feedback_repos_push_blockers.md`: **canonical-subdir-inheritance amplification** is the ongoing mechanism, but the *wave* did not catastrophically corrupt new history. Existing 106-tree cluster simply now has 3 additional dependent objects unreachable through pruned-but-still-referenced parents.
+
+### Recommended fix sequence (sandbox grant required)
+Run from `/Users/kooshapari/CodeProjects/Phenotype/repos`:
+
+```bash
+# 1. Drop stale commit-graph (stale since 2026-04-02; references missing commits)
+rm -f .git/objects/info/commit-graph .git/objects/info/commit-graphs/*
+
+# 2. Aggressively expire reflog (frees orphan refs holding broken trees)
+git reflog expire --expire=now --expire-unreachable=now --all
+
+# 3. Fetch all remotes (re-hydrate any objects still recoverable upstream)
+git fetch --all --prune --tags
+
+# 4. Aggressive gc with prune-now (REQUIRES BACKUP — destroys unreachable)
+git gc --aggressive --prune=now
+
+# 5. Verify
+git fsck --full --strict 2>&1 | grep -E "^(missing|broken)" | sort | uniq -c
+```
+
+Expected outcome: most of the 323 broken-link entries collapse once unreachable parent trees are pruned. Residual missing objects (true history holes) require either (a) `git replace --graft` workaround or (b) `git filter-repo` to surgically excise broken commits — both destructive, both require user grant.
