@@ -29,7 +29,7 @@
     "eslint-config-shouldjs": "^1.0.2",
     "mocha": "latest",
     "mocha-better-spec-reporter": "latest",
-    "rollup": "0.34.7"
+    "rollup": "2.80.0"
   },
   "files": [
     "cjs/*",
