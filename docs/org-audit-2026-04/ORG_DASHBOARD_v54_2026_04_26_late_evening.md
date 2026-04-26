@@ -108,3 +108,39 @@ Carry-over from v53 plus newly escalated items:
 ---
 
 **Generated**: 2026-04-26 late evening | **Supersedes**: ORG_DASHBOARD_v53_2026_04_26.md | **Scope**: post-restart full delta + session-close
+
+---
+
+## Post-v54 Addendum (final session capture, ~30min after v54 freeze)
+
+This addendum captures deltas that landed after v54 was written. v54 + this section = canonical session record (no v55 needed).
+
+### Pushes (post-v54)
+- **AgilePlus PR #413** — spec/013 cancelled marker landed.
+- **FocalPoint** — non-FF rebase pushed (jsonwebtoken bump + Tier-2 CVE sweep).
+- **KDV** — non-FF rebase pushed (jsonwebtoken bump + Tier-2 CVE sweep).
+- **pheno workspace** — `e27ba2b` (9 phantom gitlinks cleared) + `2721e0ef3` (cache-adapter merge).
+- **heliosCLI** — `b29c6f9` (dismiss alerts #51/#52 + ignore-file cleanup).
+- **agent-imessage stopgap** — `37c15cf89e` (log 11.5MB → 730KB; root-cause still in 418d2eb881 backlog).
+- **Round-8 retry** + KDV/FP non-FF rebase = 3 additional pushes.
+
+**Pushed-repo count this session (cumulative)**: 31 (v54 baseline) + 8 (post-v54) = **39 pushes**.
+
+### Numerical corrections
+- **W-93 cargo-deny re-verify**: actual org total is **27 advisories** (not 29). vs W-92 baseline of 50 → **-46% (-23 advisories)**. v54's "-12.5%" delta was stale.
+- **SBOMs**: 121 total (round-1 114 + round-2 7).
+- **Org-pages**: corrected to **2/9 live** (memory entry was aspirational, now reconciled).
+
+### New artifacts
+- **FocalPoint 19-advisory triage doc** — templates-registry refactor identified as 41% leverage point (single change clears 8/19).
+- **User-decisions runbook** refreshed: 16 items (4 resolved, 9 newly added, 3 carry-over).
+- **Memory entries codified**: `feedback_fork_aware_readme` (verify upstream identity before describing forks), `reference_archived_repos_locked` extended.
+
+### Final canonical numbers
+- **Pushes**: 39 | **Releases**: 2 (AgilePlus v0.2.1, observably-macros 0.1.1)
+- **Cargo-deny org**: 50 → **27 (-46%)**
+- **Dependabot**: 121 → 87 (-28%)
+- **Badges**: 50% → 84.3% | **Broken links**: 12,397 → ~5,000
+
+### Takeaway
+Post-v54 wave was cleanup + correction: rebases unblocked FocalPoint/KDV non-FF state, numerical recalibration (cargo-deny -46% not -12.5%, org-pages 2/9 not 9/9), and one stopgap (agent-imessage log truncation pending real fix). Memory now reconciled with reality.

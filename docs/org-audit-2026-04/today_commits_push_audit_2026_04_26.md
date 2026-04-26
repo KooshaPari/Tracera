@@ -108,3 +108,81 @@ git push origin main
 - Tier B should run sequentially or in a smaller parallel batch with conflict detection.
 - Do NOT attempt `artifacts` or `phench` — they will fail or push to wrong remote.
 - AgentMCP and Civis detached HEADs are deliberate per their runbooks.
+
+---
+
+## Refresh 2026-04-26 late evening (post-restart, post-Round-8/9a)
+
+**Re-audit method:** Same script, all subdirs of `/repos`.
+**Repos with today commits this pass:** 56 (up from 53)
+**Skipped per policy:** AtomsBot + chatta (archived), AgentMCP (detached), artifacts + phench (Tracera-canonical inheritance, today=57 each).
+**Counted scope:** 49 repos.
+
+### Refreshed Summary
+
+| Bucket | Count | Notes |
+|---|---:|---|
+| Repos with today commits (counted) | 49 | excludes archived/detached/Tracera-canonical |
+| Fully pushed (ahead=0, behind=0) | 42 | all today commits on origin |
+| Pushable FF (ahead>0, behind=0) | 4 | clean push — Round-9 Tier A |
+| Diverged (behind>0) | 3 | rebase-then-push — Round-9 Tier B |
+| No upstream set | 2 | HeliosLab, PhenoMCP — branch creation needed |
+
+### Tier A — Pushable (clean fast-forward)
+
+| Repo | Branch | Ahead | Today | Notes |
+|---|---|---:|---:|---|
+| AgilePlus | spec/013-cancelled | 2 | 6 | feature branch — push to origin or PR. main ahead also includes 2b3909f chore(deny) + 282a8d5 spec(013). |
+| Civis | main | 8 | 8 | NOT detached anymore — clean ahead-only on main. Includes YANKED js-sys/wasm-bindgen patch + cargo-deny baseline + governance scaffolding. |
+| heliosCLI | fix/deps-handlebars-critical-2026-04-26 | 1 | 9 | tip ahead-only; rest of today commits already pushed. |
+| pheno | main | 3 | 7 | clean fast-forward. |
+
+**Tier A total: 4 repos, 14 unpushed commits.**
+
+### Tier B — Diverged (rebase-then-push)
+
+| Repo | Branch | Ahead | Behind | Today | Notes |
+|---|---|---:|---:|---:|---|
+| argis-extensions | main | 24 | 11 | 1 | wide divergence, mostly older. |
+| GDK | main | 6 | 8 | 2 | divergence persisted from earlier audit. |
+| helios-cli | main | 7 | 13 | 1 | divergence widened (was 11) — additional upstream commits landed. |
+
+**Tier B total: 3 repos, 4 today commits (plus older ahead set).**
+
+### No-Upstream
+
+| Repo | Branch | Today | Action |
+|---|---|---:|---|
+| HeliosLab | chore/gitignore-worktrees-2026-04-26 | 3 | `git push -u origin <branch>` to create remote branch |
+| PhenoMCP | main | 1 | local main has no tracking — verify origin/main and re-set upstream |
+
+### Delta vs Earlier Audit (commit 5c7b9b1bbd)
+
+| Repo | Earlier Status | Refresh Status | Delta |
+|---|---|---|---|
+| AtomsBot | Tier A (ahead=11, 1 today) | SKIP (archived) | clarified — archived, not pushable |
+| chatta | Tier A (ahead=17, 1 today) | SKIP (archived) | clarified — archived, not pushable |
+| FocalPoint | Tier A | PUSHED (ahead=0) | resolved Round-7/8 |
+| HeliosLab | Tier A | NO_UPSTREAM (3 today now) | branch never pushed; +1 today commit |
+| KDesktopVirt | Tier A | PUSHED | resolved |
+| PhenoMCP | Tier A | NO_UPSTREAM | tracking lost |
+| AgilePlus | Tier B (ahead=2 behind=4) | Tier A (ahead=2 behind=0) | rebased clean |
+| heliosCLI | Tier A (ahead=2) | Tier A (ahead=1) | partial push landed |
+| Civis | DETACHED (9 today) | Tier A on main (8 today) | detached resolved, 1 commit reconciled |
+| BytePort | not flagged | PUSHED (6 today) | new push wave |
+| DevHex/Httpora/nanovms | — | PUSHED | Round-7a confirmed |
+| HeliosLab | Tier A (2 today) | NO_UPSTREAM (3 today) | feature-branch progression |
+
+### Round-9 Targets
+
+**Tier A push (parallel-safe):** AgilePlus, Civis, heliosCLI, pheno (4 pushes, 14 commits).
+**Tier B rebase-then-push (sequential, conflict-prone):** argis-extensions, GDK, helios-cli (3 repos).
+**No-upstream (set tracking):** HeliosLab (push -u feature branch), PhenoMCP (re-establish main tracking).
+
+**Total Round-9 actionable: 9 repos.**
+
+### Skipped (unchanged)
+
+- **Archived:** AtomsBot, chatta (push will fail — repos locked).
+- **Detached HEAD:** AgentMCP (deliberate per runbook).
+- **Canonical-Tracera inheritance:** artifacts, phench (origin=Tracera, sit inside parent monorepo gitlink — not pushable from these dirs).
