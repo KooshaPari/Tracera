@@ -201,7 +201,8 @@ repo cleanup.
   project API also assigns UUIDs before service validation because validation
   runs before GORM `BeforeCreate` hooks. The performance report PR comment now
   accepts both k6 percentile key shapes (`p(95)` and `p95`) so a successful
-  smoke run is not failed by post-processing.
+  smoke run is not failed by post-processing, and PR comment posting is
+  permissioned but non-fatal when GitHub still denies the integration token.
 - **Excluded:** changing production rate-limit defaults, changing protected route
   policy, or rewriting load/stress scenario auth flows.
 
