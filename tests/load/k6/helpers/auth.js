@@ -57,14 +57,14 @@ export function authenticate(user) {
 
   const csrfCheck = check(csrfResponse, {
     'CSRF token retrieved': (r) => r.status === 200,
-    'CSRF token in response': (r) => r.json('token') !== undefined,
+    'CSRF token in response': (r) => readCsrfToken(r) !== undefined,
   });
 
   if (!csrfCheck) {
-    fail('Failed to retrieve CSRF token');
+    failCsrfTokenRequest(csrfResponse);
   }
 
-  const csrfToken = csrfResponse.json('token');
+  const csrfToken = readCsrfToken(csrfResponse);
   const csrfCookie = extractCookie(csrfResponse, 'csrf_token');
 
   // Step 2: Authenticate with WorkOS (or mock auth endpoint)
@@ -123,9 +123,41 @@ function getCsrfTokenResponse() {
   });
 }
 
+function readJsonField(response, field) {
+  try {
+    return response.json(field);
+  } catch {
+    return undefined;
+  }
+}
+
 function extractCookie(response, name) {
   const cookie = response.cookies[name];
   return cookie && cookie.length > 0 ? cookie[0].value : undefined;
+}
+
+function readCsrfToken(response) {
+  return readJsonField(response, 'token') ||
+    readJsonField(response, 'csrf_token') ||
+    extractCookie(response, 'csrf_token');
+}
+
+function failCsrfTokenRequest(response) {
+  const debugCsrf = __ENV.K6_DEBUG_CSRF === 'true' || __ENV.K6_DEBUG_CSRF === '1';
+  const body = response && response.body ? String(response.body).slice(0, 500) : '';
+  const headers = response && response.headers ? response.headers : {};
+  const details = [
+    `status=${response.status}`,
+    `contentType=${headers['Content-Type'] || ''}`,
+    `retryAfter=${headers['Retry-After'] || ''}`,
+    `rateLimit=${headers['X-RateLimit-Remaining'] || ''}/${headers['X-RateLimit-Limit'] || ''}`,
+    `setCookie=${debugCsrf && headers['Set-Cookie']
+      ? String(headers['Set-Cookie']).slice(0, 160)
+      : '[REDACTED]'}`,
+    `body=${debugCsrf ? body : '[REDACTED]'}`,
+  ].join(' ');
+  console.error(`CSRF token request failed: ${details}`);
+  fail('Failed to retrieve CSRF token');
 }
 
 function getCsrfOnlySession() {
@@ -133,14 +165,14 @@ function getCsrfOnlySession() {
 
   const csrfCheck = check(csrfResponse, {
     'CSRF token retrieved': (r) => r.status === 200,
-    'CSRF token in response': (r) => r.json('token') !== undefined,
+    'CSRF token in response': (r) => readCsrfToken(r) !== undefined,
   });
 
   if (!csrfCheck) {
-    fail('Failed to retrieve CSRF token');
+    failCsrfTokenRequest(csrfResponse);
   }
 
-  const csrfToken = csrfResponse.json('token');
+  const csrfToken = readCsrfToken(csrfResponse);
   const csrfCookie = extractCookie(csrfResponse, 'csrf_token');
 
   return {
@@ -180,6 +212,29 @@ export function getAuthHeaders(authData) {
   }
 
   return headers;
+}
+
+export function updateCsrfFromResponse(authData, response) {
+  if (!authData || !response) {
+    return authData;
+  }
+
+  if (response.status < 200 || response.status >= 400) {
+    return authData;
+  }
+
+  const csrfToken = readCsrfToken(response);
+  const csrfCookie = extractCookie(response, 'csrf_token');
+
+  if (csrfToken) {
+    authData.csrfToken = csrfToken;
+  }
+
+  if (csrfCookie) {
+    authData.csrfCookie = csrfCookie;
+  }
+
+  return authData;
 }
 
 /**
@@ -239,6 +294,7 @@ export default {
   getTestUser,
   authenticate,
   getAuthHeaders,
+  updateCsrfFromResponse,
   verifyAuth,
   logout,
   setupTestUsers,

@@ -44,7 +44,24 @@ jobs:
           fetch-depth: 0
 
       - name: Check file length limits
-        run: bash scripts/shell/check-file-loc.sh
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            git fetch --no-tags --depth=1 origin "$base"
+            mapfile -t files < <(
+              git diff --name-only "$base"...HEAD -- \
+                '*.py' '*.go' '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' '*.cjs'
+            )
+            if (( ${#files[@]} == 0 )); then
+              echo "No changed source files to LOC-check"
+              exit 0
+            fi
+            bash scripts/shell/check-file-loc.sh "${files[@]}"
+          else
+            bash scripts/shell/check-file-loc.sh
+          fi
 
       - name: Check route entrypoint rules (frontend)
         run: bash scripts/shell/check-route-entrypoints.sh

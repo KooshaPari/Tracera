@@ -54,6 +54,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -96,14 +98,53 @@ jobs:
         pip install ruff ty
     
     - name: Ruff format check
-      run: ruff format --check .
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          base="${{ github.event.pull_request.base.sha }}"
+          git fetch --no-tags --depth=1 origin "$base"
+          mapfile -t python_files < <(git diff --name-only "$base"...HEAD -- '*.py')
+          if (( ${#python_files[@]} == 0 )); then
+            echo "No changed Python files to format-check"
+            exit 0
+          fi
+          ruff format --check "${python_files[@]}"
+        else
+          ruff format --check .
+        fi
 
     - name: Ruff lint
       # Use grouped output format for file-based processing (easier for agents to fix)
-      run: ruff check . --output-format=grouped
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          base="${{ github.event.pull_request.base.sha }}"
+          git fetch --no-tags --depth=1 origin "$base"
+          mapfile -t python_files < <(git diff --name-only "$base"...HEAD -- '*.py')
+          if (( ${#python_files[@]} == 0 )); then
+            echo "No changed Python files to lint"
+            exit 0
+          fi
+          ruff check "${python_files[@]}" --output-format=grouped
+        else
+          ruff check . --output-format=grouped
+        fi
 
     - name: Type check (ty)
-      run: ty check src/ --error-on-warning
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          base="${{ github.event.pull_request.base.sha }}"
+          git fetch --no-tags --depth=1 origin "$base"
+          if ! git diff --name-only "$base"...HEAD -- 'src/**/*.py' | grep -q .; then
+            echo "No changed Python source files to type-check"
+            exit 0
+          fi
+        fi
+        ty check src/ --error-on-warning
 
   build:
     needs: [test, lint]

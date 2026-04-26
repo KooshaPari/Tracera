@@ -164,12 +164,47 @@ repo cleanup.
   The backend now exposes `/api/v1/csrf-token`, returns `{ "token": ... }`,
   and removed password login in favor of AuthKit.
 - **Action:** add CI `csrf-only` k6 auth mode that prepares CSRF headers/cookie
-  without reintroducing password login, set required CI auth/CSRF environment
-  values in the performance workflow, guard smoke iterations when session
-  preparation fails, and create a real smoke project before item creation so
-  item CRUD uses a valid UUID project ID.
+  without reintroducing password login, set the required CI CSRF secret in the
+  performance workflow, guard smoke iterations when session preparation fails,
+  and create a real smoke project before item creation so item CRUD uses a
+  valid UUID project ID.
 - **Excluded:** re-adding password auth, mocking WorkOS in production code,
   changing protected route policy, and broad load/stress data-model cleanup.
+
+## SIZE-CI-PROFILES-SCHEMA-GUARD: Profile Constraint Startup Schema Safety
+
+- **Scope:** Go profile startup helper for the temporary email uniqueness
+  constraint used around `AutoMigrate`.
+- **Reason:** after the k6 auth lane merged, performance smoke startup failed
+  before k6 because the helper tried to alter `tracertm.profiles` even though
+  CI/Alembic creates `profiles` in `public` and no `tracertm` schema exists.
+- **Action:** guard the temporary profile email constraint add/drop by checking
+  that the target schema/table exists, and tolerate missing schemas without
+  hiding other migration errors.
+- **Excluded:** redesigning profile schema ownership, changing AuthKit adapter
+  behavior, and changing Alembic profile migrations.
+
+## SIZE-CI-K6-SMOKE-RATE-DATA: Performance Smoke Runtime Determinism
+
+- **Scope:** performance workflow runtime env and k6 helper data/auth guards.
+- **Reason:** after profile schema startup was guarded, performance smoke reached
+  k6 execution and exposed two deterministic smoke harness blockers: CSRF token
+  setup could be rate-limited by the default `/api/v1/*` limiter during the
+  local CI ramp, and `generateSearchQuery` could crash when called with a null
+  options object.
+- **Action:** raise API/auth rate limits only inside the CI performance backend
+  jobs, make CSRF token extraction tolerant of body-vs-cookie token placement
+  while logging failed status/body evidence, carry rotated CSRF tokens forward
+  after each k6 request, replace fragile k6 `randomItem` usage with a local
+  random-choice helper, normalize null search options to an empty object, and
+  align the Go project model with Alembic's `project_metadata` column. The
+  project API also assigns UUIDs before service validation because validation
+  runs before GORM `BeforeCreate` hooks. The performance report PR comment now
+  accepts both k6 percentile key shapes (`p(95)` and `p95`) so a successful
+  smoke run is not failed by post-processing, and PR comment posting is
+  permissioned but non-fatal when GitHub still denies the integration token.
+- **Excluded:** changing production rate-limit defaults, changing protected route
+  policy, or rewriting load/stress scenario auth flows.
 
 ## Validation Targets
 
