@@ -38,6 +38,10 @@ on:
   release:
     types: [ published ]
 
+permissions:
+  contents: read
+  security-events: write
+
 env:
   DOCKER_REGISTRY: ghcr.io
   REGISTRY_USERNAME: ${{ github.actor }}

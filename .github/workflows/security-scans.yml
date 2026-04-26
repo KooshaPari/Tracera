@@ -11,6 +11,10 @@ on:
     - cron: '0 6 * * 1'  # Weekly on Monday
   workflow_dispatch:
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   # Run on every push/PR
   scan:

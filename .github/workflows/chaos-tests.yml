@@ -20,6 +20,9 @@ on:
       - 'tests/chaos/**'
       - '.github/workflows/chaos-tests.yml'
 
+permissions:
+  contents: read
+
 env:
   PYTHON_VERSION: '3.13'
   RECOVERY_TIME_TARGET: 30

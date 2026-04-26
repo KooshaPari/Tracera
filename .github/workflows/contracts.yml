@@ -32,6 +32,9 @@ on:
       - 'uv.lock'
       - 'bun.lock'
 
+permissions:
+  contents: read
+
 jobs:
   contracts:
     runs-on: ubuntu-latest

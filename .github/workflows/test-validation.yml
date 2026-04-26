@@ -20,6 +20,9 @@ on:
       - 'bun.lock'
       - 'uv.lock'
 
+permissions:
+  contents: read
+
 jobs:
   setup-test-users:
     runs-on: ubuntu-latest
