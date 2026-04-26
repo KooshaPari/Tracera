@@ -1,5 +1,11 @@
 # Session PR Queue Status — 2026-04-26 (Complete Audit v2)
 
+> Supersession note: this file is retained as the 2026-04-26 session audit
+> record. It is not the current queue state. The latest queue-drain
+> reconciliation is `pr-status-sweep-2026-04-27.md`: KooshaPari fleet open PRs
+> are zero, and the later PhenoProc #21, eyetracker #3, KDesktopVirt #9, and
+> Tracera #374 queue entries are merged.
+
 **Audit Date:** 2026-04-26 (Evening pass)  
 **Session:** pre-extract/tracera-sprawl-commit  
 **Total PRs Audited:** 16  

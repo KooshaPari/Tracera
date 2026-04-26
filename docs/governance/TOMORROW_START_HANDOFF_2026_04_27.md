@@ -8,21 +8,29 @@
 
 ## FIRST 5 MINUTES — Mechanical State Checks
 
-Run these four commands in order. Treat each as a gate.
+Run these commands in order. Treat each as a gate.
 
 ```bash
-# 1. Disk floor (expect ~39 GiB free; if <30 GiB, run /tmp prune BEFORE dispatch)
+# 1. Disk floor (latest live check: 29 GiB free; if <30 GiB, run /tmp prune BEFORE dispatch)
 df -h /
 
-# 2. PhenoProc PR #21 — gating signal for pheno workspace full audit
+# 2. PR queue regression check (expect [] after latest drain)
+gh pr list -R KooshaPari/PhenoProc --state open --json number,title,url
+gh pr list -R KooshaPari/eyetracker --state open --json number,title,url
+gh pr list -R KooshaPari/KDesktopVirt --state open --json number,title,url
+gh pr list -R KooshaPari/Tracera --state open --json number,title,url
+
+# 3. PhenoProc PR #21 — should be MERGED; pheno workspace is unblocked for inclusion
 gh pr view 21 -R KooshaPari/PhenoProc --json state,mergeable
-#    OPEN  -> still blocked, do NOT start full pheno cargo-deny audit
-#    MERGED -> pheno workspace UNBLOCKED for cargo-deny inclusion (W-96 work)
+#    MERGED -> pheno workspace UNBLOCKED for cargo-deny inclusion
+#    OPEN   -> stale doc or regression; re-audit before cargo work
 
-# 3. Canonical /repos branch state (expect ahead 9-15; NOT pushable due to Tracera origin trap)
-git -C /Users/kooshapari/CodeProjects/Phenotype/repos status --short --branch
+# 4. Canonical /repos branch state; ignore submodules because AgilePlus can break plain status.
+git -C /Users/kooshapari/CodeProjects/Phenotype/repos status --short --branch --ignore-submodules
+git -C /Users/kooshapari/CodeProjects/Phenotype/repos remote -v
+#    origin currently points at KooshaPari/Tracera.git; do NOT push /repos canonical.
 
-# 4. FocalPoint zero-advisory invariant (expect "advisories ok")
+# 5. FocalPoint zero-advisory invariant (expect "advisories ok")
 cd /Users/kooshapari/CodeProjects/Phenotype/repos/FocalPoint && \
   cargo deny check advisories 2>&1 | tail -3
 ```
@@ -30,7 +38,8 @@ cd /Users/kooshapari/CodeProjects/Phenotype/repos/FocalPoint && \
 **Failure modes:**
 - `df -h` <30 GiB -> dispatch prune sweep on `/private/tmp` first; do NOT start cargo agents.
 - FocalPoint advisories regressed -> stop, treat as P0 regression, identify the dep that drifted.
-- `/repos` shows non-canonical branch -> revert to `chore/gitignore-worktrees-2026-04-26`.
+- `/repos` shows non-canonical branch or Tracera `origin` -> do not push; fix the
+  parent remote trap only after pack cleanup is understood.
 
 ---
 
@@ -40,20 +49,21 @@ cd /Users/kooshapari/CodeProjects/Phenotype/repos/FocalPoint && \
 - **Why:** 109 unique missing trees in `/repos` parent .git; blocks pushes and `git fsck` cleanliness.
 - **Blocker:** Bash sandbox refuses `rm -f .git/objects/info/commit-graph` and `git gc --aggressive --prune=now` on the parent.
 - **Action:** Request explicit user permission grant for those two commands; once granted, run gc -> fsck -> rebase -> push.
-- **Reference:** `pack_corruption_diagnosis_2026_04_26.md`, `feedback_repos_push_blockers.md`.
+- **Reference:** `pack_corruption_diagnosis_2026_04_26.md`, `canonical_commit_strategy_2026_04_27.md`.
 
 ### Lane B — Address canonical-subdir-inheritance trap (Option C)
 - **Why:** /repos canonical subdirs inherit parent remote; common foot-gun (Tracera origin clash, etc.).
 - **Action:** Create new `phenotype-org-governance` GitHub repo; migrate `/repos/docs/governance/`, `/repos/worklogs/`, root governance markdown into it as its own git repo.
-- **Reference:** `feedback_canonical_subdir_inheritance.md`. Long-term fix to several recurring classes of bugs.
+- **Reference:** `nested_workspaces.md`, `canonical_commit_strategy_2026_04_27.md`. Long-term fix to several recurring classes of bugs.
 
-### Lane C — Continue cargo-deny W-96 (default if no decision needed)
+### Lane C — Continue cargo-deny W-96 from the post-drain baseline
 - **Why:** FocalPoint at zero; org-wide W-95 = 8 advisories. Direct, mechanical, agent-parallelizable.
-- **Targets (priority order):**
-  - **KDesktopVirt** — 4 bollard advisories (rustls-webpki cluster; bollard release upstream pending).
-  - **AgilePlus** — 1 utoipa-axum advisory.
-  - **eyetracker** — 2 bincode/paste advisories.
-- **Goal:** 8 -> 4 or fewer.
+- **Completed in latest queue drain:**
+  - **KDesktopVirt #9** — bollard 0.20 lane landed.
+  - **eyetracker #3** — UniFFI 0.31 lane landed.
+  - **Tracera #374** — performance smoke startup unblock landed.
+- **Next action:** take a fresh cargo-deny snapshot before choosing the next
+  advisory target; do not reuse the pre-merge 8-advisory breakdown as current.
 - **Pattern:** Use FocalPoint W-93..W-95 commits as template (templates-registry refactor was the model that retired iron/nickel/multipart/typemap).
 
 **Recommended default if user is asleep:** Lane C. Lane A and B both need user keystrokes / confirmations.
@@ -76,9 +86,9 @@ cd /Users/kooshapari/CodeProjects/Phenotype/repos/FocalPoint && \
 
 Read in this order if context is needed:
 
-1. `ORG_DASHBOARD_v55_2026_04_27_session_close.md` — final-final addendum / latest snapshot.
+1. `../org-audit-2026-04/ORG_DASHBOARD_v56_2026_04_27_final_final.md` — latest dashboard snapshot.
 2. `user_decisions_runbook_2026_04_26.md` — 16 items, refreshed v2 by `5876b6178d`.
-3. `session_2026_04_27_full_digest.md` — memory load-first entry.
+3. `pr-status-sweep-2026-04-27.md` — zero-open-PR fleet sweep.
 
 Predecessor close artifacts:
 - `SESSION_CLOSE_2026_04_27.md`
@@ -100,4 +110,10 @@ Predecessor close artifacts:
 
 ## Quick reorientation (one-paragraph)
 
-Yesterday closed FocalPoint to zero advisories and W-95 org-wide to 8. PhenoProc PR #21 is OPEN and gates full pheno workspace audit. /repos canonical still has 109 missing trees (gc blocked by sandbox). Disk healthy at 39 GiB. Default to Lane C (cargo-deny W-96) if no user input. If user is awake, prompt for Lane A (gc permission) or Lane B (org-governance repo) decision first.
+Yesterday closed FocalPoint to zero advisories, then the latest queue drain
+landed PhenoProc #21, eyetracker #3, KDesktopVirt #9, and Tracera #374. The
+KooshaPari fleet open-PR queue is zero. /repos canonical still has 109 missing
+trees and the parent remote still points at Tracera, so do not push from the
+parent checkout. Disk is currently near the floor at 29 GiB free; prune before
+dispatching cargo work, then take a fresh cargo-deny snapshot before choosing
+the next W-96 target.

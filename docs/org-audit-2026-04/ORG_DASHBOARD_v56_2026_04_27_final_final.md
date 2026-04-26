@@ -6,9 +6,9 @@
 
 ## Executive Delta
 
-v56 is the final-final reconciliation pass over the late v55 closeout. It locks in
-the corrected push count, records the FocalPoint zero-advisory finish, updates the
-open-PR state, and captures the two scoped W-96 next targets.
+v56 is the final-final reconciliation pass over the late v55 closeout. It locks
+in the corrected push count, records the FocalPoint zero-advisory finish, updates
+the open-PR state, and captures the post-drain cargo-deny follow-up posture.
 
 The biggest correction is that the earlier 53-58 pushed-repo estimates were high.
 The definitive audit counted **49 repos pushed today** from canonical checkouts,
@@ -25,9 +25,9 @@ with 7 local-only repos and 2 partial-push repos still needing provenance review
 | SBOMs generated | 132 | **132** | unchanged |
 | Cargo-deny org advisories | 13 | **8 (W-95)** | post-FocalPoint-zero snapshot |
 | FocalPoint advisories | 5 | **0** | zero-advisory invariant established |
-| Open PRs | 1-2 | **0 true open** | queue drained after Tracera #374 |
-| Disk free (`/`) | 39 GiB | **34 GiB live check** | still above 30 GiB floor |
-| Pack corruption | gc-blocked | **still blocked** | parent `/repos` push remains unsafe |
+| Open PRs | 1-2 | **0 true open** | queue drained after PhenoProc #21, eyetracker #3, KDesktopVirt #9, Tracera #374 |
+| Disk free (`/`) | 39 GiB | **29 GiB live check** | below 30 GiB cargo dispatch floor |
+| Pack corruption / remote trap | gc-blocked | **still blocked** | parent `/repos` origin still points at Tracera; push remains unsafe |
 
 ## Verified Closeout Items
 
@@ -35,21 +35,24 @@ with 7 local-only repos and 2 partial-push repos still needing provenance review
 - **W-95 org snapshot is 8 advisories.** This is the post-FocalPoint-zero baseline
   for the next cargo-deny wave.
 - **PR inventory is down to zero true open PRs.**
+  - PhenoProc #21: merged; Evalora dead-reference gate cleared.
+  - eyetracker #3: merged after scoped UniFFI 0.31 bump.
   - KDesktopVirt #9: merged after targeted Rust validation and inherited-gate attribution.
   - Tracera #374: merged after review-fix commits and inherited-gate attribution.
 - **Push count corrected to 49 repos.** The earlier dashboard language should be
-  read as superseded by `today_pushes_final_count_2026_04_27.md`.
+  read as superseded by
+  [today_pushes_final_count_2026_04_27.md](../governance/today_pushes_final_count_2026_04_27.md).
 
-## W-96 Next Targets
+## W-96 Completed Queue-Drain Targets
 
 | Target | Advisory leverage | Current disposition |
 |---|---:|---|
 | KDesktopVirt `bollard` cluster | 4 / 8 | PR #9 merged; `cargo check --workspace`, `cargo test --lib`, and gate attribution completed |
 | eyetracker `uniffi` cluster | 2 / 8 | PR #3 merged; bump limited to `crates/eyetracker-ffi/Cargo.toml` |
 
-These two targets cover 6 of the 8 W-95 residual advisories. KDesktopVirt is the
-higher-leverage but higher-risk target because `bollard 0.16 -> 0.20` includes
-feature/API drift. eyetracker was the smaller no-downstream lane and is now landed.
+These two targets covered 6 of the 8 W-95 residual advisories before merge.
+Because both landed, the next cargo-deny action should be a fresh org snapshot
+before choosing another W-96 target.
 
 ## Superseded Claims
 

@@ -13,7 +13,7 @@
 | Total commits on origin (today, all repos) | **3,962** | `git log --since="2026-04-26 00:00:00" --remotes` summed across all subdirs |
 | PRs opened today | **3** | Civis #253, AgilePlus #413, PhenoProc #21 |
 | PRs merged today | **2** | Civis #253 (10:03Z), AgilePlus #413 (11:49Z) |
-| PRs still OPEN | **1** | PhenoProc #21 |
+| PRs open after latest drain | **0** | queue drained after PhenoProc #21, eyetracker #3, KDesktopVirt #9, Tracera #374 |
 | Memory entries (feedback_*.md) | **28** | `~/.claude/projects/.../memory/feedback_*.md` |
 | cargo-deny org advisories (W-94) | **13** | down from W-93=27 (**-51.9%**) over the day |
 | FocalPoint advisories | **5** | down from 19 (-14, templates-registry refactor) |
@@ -26,11 +26,11 @@
 
 | Resource | State |
 |---|---|
-| Disk free (`/`) | **39 Gi free** / 926 Gi total (38% used) — healthy, well above 30 Gi dispatch floor |
+| Disk free (`/`) | **29 Gi free** / 926 Gi total (45% used) — below 30 Gi dispatch floor; prune before cargo dispatch |
 | FD ulimit | unlimited (kern.maxfiles 122,880) |
 | `/private/tmp` | **3.8 GB** — within bounds (post agent-cleanup discipline R31) |
 | Active background agents | 0 (session-close idle, intentional) |
-| Pack corruption (/repos parent) | re-surfaced — gc deferred to tomorrow |
+| Pack corruption (/repos parent) | re-surfaced — gc deferred; parent remote still points at Tracera |
 
 ## SBOM Coverage (Pheno workspace)
 
@@ -62,27 +62,29 @@
 | # | Item | Owner | Blocker |
 |---|---|---|---|
 | 1 | OpenAI API key rotation | user | secrets refresh |
-| 2 | KDesktopVirt bollard / rustls-webpki cluster | upstream | bollard release pending |
+| 2 | KDesktopVirt bollard / rustls-webpki cluster | completed | KDesktopVirt #9 merged |
 | 3 | cliproxyapi 23 residual errors | user | upstream type bindings |
 | 4 | OCI compute mesh + CF DNS token | user | provider auth |
 | 5 | Apple Developer prereqs (hwLedger WP21 codesign) | user | account-level |
-| 6 | pheno workspace cargo-deny inclusion | infra | Evalora submodule 404 |
+| 6 | pheno workspace cargo-deny inclusion | infra | PhenoProc #21 merged; needs fresh snapshot |
 | 7 | /repos pack corruption gc | maintainer | safe ordering: gc → rebase → fsck |
-| 8 | PhenoProc PR #21 merge | reviewer | open |
+| 8 | /repos parent remote trap | maintainer | origin still points at Tracera; do not push parent |
 
 **Total open user-decision items: 8**
 
 ## Tomorrow's #1 Priority
 
-**Resolve `/repos` pack corruption + complete cargo-deny W-95 sweep.**
+**Resolve `/repos` pack corruption/remote trap + refresh cargo-deny W-96.**
 
-Sequence (per `feedback_repos_push_blockers.md`):
+Sequence (per `pack_corruption_diagnosis_2026_04_26.md` and
+`canonical_commit_strategy_2026_04_27.md`):
 1. `git gc --aggressive` on `/repos` parent (clears 10+ missing trees)
 2. Rebase to clear ddf7e59b duplicate config
 3. `git fsck` re-verify
-4. Snapshot pheno workspace once Evalora submodule remote is restored (target: org-wide W-95 ≤ 10 advisories)
+4. Snapshot pheno workspace now that PhenoProc #21 has landed; do not reuse the pre-merge W-95 count as current
 
-Secondary: triage PhenoProc #21, push KDV bollard upstream tracker.
+Secondary: disk prune before dispatch, then choose the next advisory target after
+KDesktopVirt #9 and eyetracker #3 are reflected in the snapshot.
 
 ---
 
@@ -123,3 +125,17 @@ Post-original-close, FocalPoint achieved **0 cargo-deny advisories** — the lar
 ---
 
 *v2 update appended 2026-04-27. Commit only, no push.*
+
+---
+
+## Final Queue-Drain Update
+
+The later queue drain supersedes the original close counts:
+
+- PhenoProc #21 merged; the Evalora dead-reference gate is cleared.
+- eyetracker #3 merged; the UniFFI 0.31 lane is landed.
+- KDesktopVirt #9 merged; the bollard 0.20 lane is landed.
+- Tracera #374 merged; the performance smoke startup unblock is landed.
+- Fleet PR queue is now zero open PRs.
+- Parent `/repos` is still not push-safe: `origin` points at Tracera and pack
+  corruption cleanup remains pending.
