@@ -48,19 +48,43 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed Python test scope
+        id: python-scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          elif [[ -n "${{ github.event.before }}" ]]; then
+            base="${{ github.event.before }}"
+          else
+            base="HEAD~1"
+          fi
+          git fetch --no-tags --depth=1 origin "$base"
+          if git diff --name-only "$base"...HEAD | grep -Eq '^(src/|tests/|conftest\.py)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "No Python test-scope changes; skipping Python ${{ matrix.test-type }} tests."
+          fi
 
       - name: Install UV
+        if: steps.python-scope.outputs.run == 'true'
         uses: astral-sh/setup-uv@v2
         with:
           version: "latest"
 
       - name: Set up Python
+        if: steps.python-scope.outputs.run == 'true'
         uses: actions/setup-python@v5
         with:
-          cache: 'pip'
           python-version: ${{ matrix.python-version }}
 
       - name: Cache uv dependencies
+        if: steps.python-scope.outputs.run == 'true'
         uses: actions/cache@v3
         with:
           path: ~/.cache/uv
@@ -69,10 +93,12 @@ jobs:
             ${{ runner.os }}-uv-
 
       - name: Install dependencies
+        if: steps.python-scope.outputs.run == 'true'
         run: uv sync --all-groups
 
       # Run fast tests first (unit tests)
       - name: Run ${{ matrix.test-type }} tests (fast first)
+        if: steps.python-scope.outputs.run == 'true'
         id: test-run
         env:
           DATABASE_URL: postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test
@@ -118,7 +144,7 @@ jobs:
           fi
 
       - name: Upload coverage
-        if: matrix.test-type == 'unit'
+        if: steps.python-scope.outputs.run == 'true' && matrix.test-type == 'unit'
         uses: codecov/codecov-action@v3
         with:
           files: ./coverage.xml
@@ -127,7 +153,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Archive test results
-        if: always()
+        if: always() && steps.python-scope.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.test-type }}-py${{ matrix.python-version }}
@@ -170,19 +196,43 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed Python test scope
+        id: python-scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          elif [[ -n "${{ github.event.before }}" ]]; then
+            base="${{ github.event.before }}"
+          else
+            base="HEAD~1"
+          fi
+          git fetch --no-tags --depth=1 origin "$base"
+          if git diff --name-only "$base"...HEAD | grep -Eq '^(src/|tests/|conftest\.py)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "No Python test-scope changes; skipping all-tests matrix."
+          fi
 
       - name: Install UV
+        if: steps.python-scope.outputs.run == 'true'
         uses: astral-sh/setup-uv@v2
         with:
           version: "latest"
 
       - name: Set up Python
+        if: steps.python-scope.outputs.run == 'true'
         uses: actions/setup-python@v5
         with:
-          cache: 'pip'
           python-version: "3.13"
 
       - name: Cache uv dependencies
+        if: steps.python-scope.outputs.run == 'true'
         uses: actions/cache@v3
         with:
           path: ~/.cache/uv
@@ -191,10 +241,12 @@ jobs:
             ${{ runner.os }}-uv-
 
       - name: Install dependencies
+        if: steps.python-scope.outputs.run == 'true'
         run: uv sync --all-groups
 
       # Run all tests in parallel with pytest-xdist
       - name: Run all tests in parallel
+        if: steps.python-scope.outputs.run == 'true'
         env:
           DATABASE_URL: postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test
           REDIS_URL: redis://localhost:6379
@@ -243,6 +295,7 @@ jobs:
           fi
 
       - name: Upload coverage
+        if: steps.python-scope.outputs.run == 'true'
         uses: codecov/codecov-action@v3
         with:
           files: ./coverage.xml
@@ -251,7 +304,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Archive test results
-        if: always()
+        if: always() && steps.python-scope.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: test-results-parallel-all
