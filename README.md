@@ -8,9 +8,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**Agent-native, multi-view requirements traceability and project management system.**
+**Agent-native requirements traceability and project management dashboard.**
 
-TracerTM is a comprehensive requirements traceability matrix (RTM) system designed for modern software development workflows. It provides a "Defense in Depth" approach to project governance, linking requirements to code, tests, and deployments across multiple architectural lenses.
+TracerTM is a modern requirements traceability matrix (RTM) and project management system designed for agent-driven development workflows. It provides a unified dashboard and control plane for linking requirements to code, tests, and deployments—built on a Go backend with a TypeScript/React Turbo frontend.
 
 ---
 
@@ -21,11 +21,10 @@ TracerTM is a comprehensive requirements traceability matrix (RTM) system design
 - [Getting Started](#-getting-started)
   - [Prerequisites](#prerequisites)
   - [Quick Start](#quick-start)
-- [Observability & APM](#-observability--apm)
-- [Governance & Hardening](#-governance--hardening)
+- [Project Structure](#-project-structure)
+- [Development](#-development)
 - [Testing & Quality](#-testing--quality)
 - [Documentation](#-documentation)
-- [Docs Deploy](#-docs-deploy)
 - [Contributing](#-contributing)
 - [License](#-license)
 
@@ -33,142 +32,188 @@ TracerTM is a comprehensive requirements traceability matrix (RTM) system design
 
 ## ✨ Key Features
 
-- 🔍 **Multi-View Traceability**: View projects through code, API, database, deployment, and documentation lenses.
+- 🔍 **Multi-View Traceability**: Navigate projects through requirements, code, tests, and deployment lenses.
 - 🤖 **Agent-Native Design**: Built-in support for AI-assisted analysis and automated traceability maintenance.
-- ⚡ **Real-Time Sync**: WebSocket-based live updates across all management interfaces.
-- 📊 **Graph Visualization**: Interactive dependency graphs and impact analysis powered by Neo4j.
+- ⚡ **Real-Time Updates**: Live synchronization across dashboard and backend.
+- 📊 **Interactive Visualization**: Dependency graphs and impact analysis for requirements and code.
 - 🛡 **Hardened Governance**: SLSA provenance, signed attestations, and automated quality gates.
-- 📈 **Full Observability**: Integrated metrics (Prometheus), logs (Loki), and tracing through the shared Phenotype OTLP collector.
+- 📈 **Integrated Observability**: Metrics (Prometheus), logs (Loki), and tracing through Phenotype OTLP collector.
 
 ---
 
 ## 🏗 Architecture
 
-TracerTM uses a high-performance, polyglot architecture:
+TracerTM uses a polyglot architecture optimized for requirements traceability:
 
-- **Backend (Go)**: High-performance API server managing core business logic and integrations.
-- **Python Services**: Specialized services for data analysis, CLI/TUI tools, and background processing.
-- **Frontend (React/TS)**: Modern SPA with TanStack Router, Zustand, and interactive visualizations.
-- **Persistence**: PostgreSQL (Relational), Neo4j (Graph), Dragonfly (Redis-compatible cache), and NATS (Messaging).
+**Backend (Go 1.25)**
+- High-performance API server managing core business logic, data persistence, and integrations.
+- RESTful API with JWT authentication.
+- PostgreSQL for structured data, Redis for caching.
+- S3-compatible storage integration (AWS SDK v2).
+
+**Frontend (TypeScript/React 19 + Turbo)**
+- Modern React application with TanStack Router for client-side routing.
+- Turbo monorepo with multiple workspace apps (web dashboard, documentation, Storybook, desktop).
+- Tailwind CSS + Geist design system for consistent UI.
+- Build tooling: Vite, Bun, Turbo with oxlint/oxfmt for code quality.
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Go 1.21+, Python 3.11+, Node.js/Bun
-- PostgreSQL 17+, Dragonfly latest, Neo4j 5.0+, NATS 2.9+
-- [Task](https://taskfile.dev/) (Task runner) and [Process Compose](https://github.com/F_S_A/process-compose)
 
-### Quick Start (Native Environment)
+- **Go 1.25+** (for backend)
+- **Node.js 22+ / Bun 1.1+** (for frontend)
+- **PostgreSQL 14+** (for data storage)
+- **Redis 6+** (for caching)
+
+### Quick Start
+
+#### Backend (Go API)
 
 ```bash
-# 1. Install all dependencies
-task install
+cd backend
+go build -o tracertm ./cmd/api
+./tracertm
+```
 
-# 2. Run database migrations
-task db:migrate
+The API server starts on `http://localhost:8080`.
 
-# 3. Start all services with interactive TUI dashboard
-task dev:tui
+#### Frontend (TypeScript/React)
 
-# 4. Access the Unified Gateway
-# http://localhost:4000 (Frontend, API, and Docs)
+```bash
+cd frontend
+bun install
+bun run dev
+```
+
+The web dashboard opens on `http://localhost:3000`.
+
+---
+
+## 📁 Project Structure
+
+```
+.
+├── backend/                   # Go API server
+│   ├── cmd/                   # CLI entry points
+│   ├── internal/              # Business logic (unexported)
+│   ├── pkg/                   # Reusable packages
+│   ├── configs/               # Configuration templates
+│   ├── tests/                 # Integration & E2E tests
+│   ├── e2e/                   # End-to-end test scenarios
+│   ├── benchmarks/            # Performance benchmarks
+│   └── go.mod                 # Go module definition
+│
+├── frontend/                  # TypeScript/React dashboard
+│   ├── apps/                  # Turbo workspace apps
+│   │   ├── web/               # Main React dashboard
+│   │   ├── docs/              # VitePress documentation
+│   │   ├── storybook/         # Component library showcase
+│   │   └── desktop/           # Electron desktop app
+│   ├── packages/              # Shared packages
+│   ├── tsconfig.json          # TypeScript configuration
+│   ├── package.json           # Root workspace config
+│   └── turbo.json             # Turbo build orchestration
+│
+└── .github/workflows/         # CI/CD pipelines
 ```
 
 ---
 
-## 📊 Observability & APM
+## 🔧 Development
 
-TracerTM includes enterprise-grade monitoring out of the box. The current
-local trace path is the shared Phenotype collector contract through Grafana
-Alloy and Tempo. Legacy Jaeger references are kept only in archival docs and
-compatibility-only flags.
-- **Metrics**: http://localhost:3000 (Grafana) / http://localhost:9090 (Prometheus)
-- **Tracing**: http://localhost:3000 (Grafana/Tempo) - Track requests across Go and Python.
-- **Logs**: Centralized log aggregation via Grafana Alloy and Loki.
+### Backend Commands
+
+```bash
+cd backend
+
+# Run tests
+go test ./...
+
+# Run with hot-reload (requires air or similar)
+go run ./cmd/api
+
+# Build release binary
+go build -ldflags="-X main.Version=$(git describe --tags)" -o tracertm ./cmd/api
+```
+
+### Frontend Commands
+
+```bash
+cd frontend
+
+# Development server with hot reload
+bun run dev
+
+# Type checking
+bun run typecheck
+
+# Linting with oxlint
+bun run lint
+
+# Format with oxfmt
+bun run format
+
+# Build all apps
+bun run build
+
+# Run tests
+bun run test
+```
 
 ---
 
-## 🛡 Governance & Hardening
+## ✅ Testing & Quality
 
-TracerTM operates at a **critical** quality tier:
-1. **Automated Quality Gates**: Ruff, Go build/vet, golangci-lint, TSC, and Tach boundaries.
-2. **Provenance**: All builds generate SLSA attestations with digital signatures.
-3. **Verification Policy**: Defined dispute workflows for quality gate decisions in `VERIFICATION_POLICY.md`.
-4. **Security Scanning**: Automated `govulncheck`, `bandit`, and security audits.
+### Backend Testing
+```bash
+cd backend
+go test -v -cover ./...
+```
 
-### Review-Traceability Rule
+### Frontend Testing
+```bash
+cd frontend
+bun run test
+bun run quality  # Full lint + type + format + build + test
+```
 
-- PR review comments that block requirements, API contracts, or architecture are treated as traceability events.
-- For each closed PR in a stacked flow, record at least one of:
-  - resolved comment thread, or
-  - explicit follow-up PR reference with dependency order and trace matrix impact.
-- PRD references and trace entries should include review-thread outcomes before promoting to `beta/rc`.
-
----
-
-## 🧪 Testing & Quality
-
-We maintain a rigorous multi-layer testing strategy:
-- **Unit & Integration**: `go test ./...` and `pytest tests/`
-- **Frontend**: `bun test` and E2E via Playwright.
-- **Complexity Audit**: Automated tracking of code complexity (Radon) and naming conventions.
-- **Path Protection**: Architectural boundary enforcement via `tach`.
+### Quality Gates
+Both backend and frontend enforce strict quality standards:
+- **Linting**: clippy (Rust-based backend checks), oxlint (frontend)
+- **Type Safety**: Go strict typing, TypeScript strict mode
+- **Code Coverage**: Minimum 80% target
+- **Security**: SAST, dependency scanning, secret detection
 
 ---
 
 ## 📚 Documentation
 
-- **[Docsets](./docs/docsets/)** — Role-specific technical docsets.
-  - [Developer (Internal)](./docs/docsets/developer/internal/)
-  - [Developer (External)](./docs/docsets/developer/external/)
-  - [Technical User](./docs/docsets/user/)
-  - [Agent Operator](./docs/docsets/agent/)
-- **[First Run Checklist](./docs/checklists/FIRST_RUN_CHECKLIST.md)** — New clone setup.
-- **[Changelog Process](./docs/guides/CHANGELOG_PROCESS.md)** — How entries are added and released.
-- **[Changelog Entry Template](./docs/reference/CHANGELOG_ENTRY_TEMPLATE.md)** — Copy/paste snippet for new entries.
-- **[Project Setup Style](./docs/guides/PROJECT_SETUP_STYLE.md)** — Standardized repo command/process baseline.
-- **[API Documentation](http://localhost:4000/docs)** — Interactive API explorer.
-- **[Architecture Overview](./docs/reference/ARCHITECTURE_LAYERS.md)** — Deep dive into internals.
-- **[Verification Policy](VERIFICATION_POLICY.md)** — Quality standards and dispute workflows.
-
-### Documentation Hub
-
-For a unified view of all Kush ecosystem projects, visit the [Docs Hub](../docs-hub/index.md).
-
----
-
-## 🚢 Docs Deploy
-
-Local VitePress docs site:
-
-```bash
-cd docs
-npm install
-npm run docs:dev
-npm run docs:build
-```
-
-GitHub Pages:
-
-- Workflow: `.github/workflows/vitepress-pages.yml`
-- URL convention: `https://<owner>.github.io/<repo>/`
+- **API Documentation**: See `backend/README.md`
+- **Frontend Architecture**: See `frontend/README.md`
+- **Design System**: `frontend/apps/storybook/`
+- **Contributing**: See `CONTRIBUTING.md`
 
 ---
 
 ## 🤝 Contributing
 
-We welcome community contributions! Please see **[CONTRIBUTING.md](CONTRIBUTING.md)** (coming soon) for details on our development workflow and quality requirements.
+TracerTM welcomes contributions. Please:
+
+1. Check [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit with clear messages and reference any related issues.
+4. Push and open a pull request.
+5. Ensure all quality checks pass (CI/CD pipeline).
 
 ---
 
-## 📜 License
+## 📄 License
 
-Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
+Licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-<p align="center">
-  Built with ❤️ by the community
-</p>
+**Built with 🛠 for agent-driven development**
