@@ -70,6 +70,18 @@ repo cleanup.
 - **Excluded:** fixing the underlying smoke/load runtime failures, k6 scenario
   behavior, backend startup, and report rendering semantics.
 
+## SIZE-CI-PERF-PGVECTOR: Performance Database Image
+
+- **Scope:** `performance-regression.yml` Postgres service images only.
+- **Reason:** `Smoke Test - Quick Performance Check` failed during migrations
+  because the hosted `postgres:17` image does not include the `vector` extension
+  required by `backend/schema.sql`.
+- **Action:** use `pgvector/pgvector:pg17` for smoke and load performance
+  database services, matching the repository's existing pgvector test-compose
+  pattern while preserving PostgreSQL 17.
+- **Excluded:** backend migration redesign, making pgvector optional, k6 scenario
+  behavior, and unrelated smoke/load runtime failures after migrations succeed.
+
 ## Validation Targets
 
 ```bash
