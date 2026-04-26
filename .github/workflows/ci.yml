@@ -101,10 +101,10 @@ jobs:
     - name: Install uv
       run: |
         curl -LsSf https://astral.sh/uv/install.sh | sh
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
     - name: Cache uv dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cache/uv
         key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
@@ -118,17 +118,19 @@ jobs:
     - name: Run Ruff linting (strict enforcement)
       run: |
         # Use grouped output format for file-based processing (easier for agents to fix)
-          ruff check src/ tests/ --output-format=grouped > /tmp/ruff-results-grouped.txt || true
-          # Also output JSON for CI parsing
-          ruff check src/ tests/ --output-format=json > /tmp/ruff-results.json || true
-          VIOLATION_COUNT=$(jq '[.[] // []] | length' /tmp/ruff-results.json || echo "0")
-          echo "RUFF_VIOLATIONS=$VIOLATION_COUNT" >> $GITHUB_ENV
-          echo "## Python Linting Results (Ruff)" >> $GITHUB_STEP_SUMMARY
-          echo "Total violations: $VIOLATION_COUNT" >> $GITHUB_STEP_SUMMARY
-          echo "Config: pyproject.toml (complexity max=7)" >> $GITHUB_STEP_SUMMARY
-          # Show grouped output for developer reference
-          cat /tmp/ruff-results-grouped.txt || ruff check src/ tests/
-          ruff format --check src/ tests/
+        ruff check src/ tests/ --output-format=grouped > /tmp/ruff-results-grouped.txt || true
+        # Also output JSON for CI parsing
+        ruff check src/ tests/ --output-format=json > /tmp/ruff-results.json || true
+        VIOLATION_COUNT=$(jq '[.[] // []] | length' /tmp/ruff-results.json || echo "0")
+        echo "RUFF_VIOLATIONS=$VIOLATION_COUNT" >> "$GITHUB_ENV"
+        {
+          echo "## Python Linting Results (Ruff)"
+          echo "Total violations: $VIOLATION_COUNT"
+          echo "Config: pyproject.toml (complexity max=7)"
+        } >> "$GITHUB_STEP_SUMMARY"
+        # Show grouped output for developer reference
+        cat /tmp/ruff-results-grouped.txt || ruff check src/ tests/
+        ruff format --check src/ tests/
 
     - name: Run type checking (ty)
       run: |
@@ -138,16 +140,16 @@ jobs:
       run: |
         uv run bandit -r src/ --format json --output /tmp/bandit-results.json || true
         BANDIT_ISSUES=$(jq '[.results // []] | length' /tmp/bandit-results.json || echo "0")
-        echo "BANDIT_VIOLATIONS=$BANDIT_ISSUES" >> $GITHUB_ENV
-        echo "Bandit security issues: $BANDIT_ISSUES" >> $GITHUB_STEP_SUMMARY
+        echo "BANDIT_VIOLATIONS=$BANDIT_ISSUES" >> "$GITHUB_ENV"
+        echo "Bandit security issues: $BANDIT_ISSUES" >> "$GITHUB_STEP_SUMMARY"
         uv run bandit -r src/
 
     - name: Run pip-audit (dependency vulnerabilities)
       run: |
         uv run pip-audit --format json --output /tmp/pip-audit-results.json || true
         AUDIT_VULNS=$(jq '[.vulnerabilities // []] | length' /tmp/pip-audit-results.json || echo "0")
-        echo "PIP_AUDIT_VIOLATIONS=$AUDIT_VULNS" >> $GITHUB_ENV
-        echo "Dependency vulnerabilities: $AUDIT_VULNS" >> $GITHUB_STEP_SUMMARY
+        echo "PIP_AUDIT_VIOLATIONS=$AUDIT_VULNS" >> "$GITHUB_ENV"
+        echo "Dependency vulnerabilities: $AUDIT_VULNS" >> "$GITHUB_STEP_SUMMARY"
         uv run pip-audit
 
     - name: Upload Python lint results
@@ -211,24 +213,24 @@ jobs:
     - name: Generate Python test summary
       if: always()
       run: |
-        echo "## Python Test Results" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Python Test Results" >> "$GITHUB_STEP_SUMMARY"
+        echo "" >> "$GITHUB_STEP_SUMMARY"
 
         if [ -f junit-fast.xml ]; then
-          echo "### Fast Tests" >> $GITHUB_STEP_SUMMARY
+          echo "### Fast Tests" >> "$GITHUB_STEP_SUMMARY"
           TOTAL=$(grep -oP 'tests="\K[0-9]+' junit-fast.xml | head -1 || echo "0")
           FAILURES=$(grep -oP 'failures="\K[0-9]+' junit-fast.xml | head -1 || echo "0")
           PASSED=$((TOTAL - FAILURES))
-          echo "- Total: $TOTAL, Passed: ✅ $PASSED, Failed: ❌ $FAILURES" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Total: $TOTAL, Passed: ✅ $PASSED, Failed: ❌ $FAILURES" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
         fi
 
         if [ -f junit-slow.xml ]; then
-          echo "### Slow Tests" >> $GITHUB_STEP_SUMMARY
+          echo "### Slow Tests" >> "$GITHUB_STEP_SUMMARY"
           TOTAL=$(grep -oP 'tests="\K[0-9]+' junit-slow.xml | head -1 || echo "0")
           FAILURES=$(grep -oP 'failures="\K[0-9]+' junit-slow.xml | head -1 || echo "0")
           PASSED=$((TOTAL - FAILURES))
-          echo "- Total: $TOTAL, Passed: ✅ $PASSED, Failed: ❌ $FAILURES" >> $GITHUB_STEP_SUMMARY
+          echo "- Total: $TOTAL, Passed: ✅ $PASSED, Failed: ❌ $FAILURES" >> "$GITHUB_STEP_SUMMARY"
         fi
 
     - name: Convert Python coverage to JSON for comparison
@@ -338,7 +340,7 @@ jobs:
     - name: Install uv
       run: |
         curl -LsSf https://astral.sh/uv/install.sh | sh
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
     - name: Install dependencies
       run: |
@@ -355,8 +357,8 @@ jobs:
     - name: Generate exploratory test summary
       if: always()
       run: |
-        echo "## Python Exploratory Test Results" >> $GITHUB_STEP_SUMMARY
-        echo "Lane: ${{ matrix.lane }} (blocking rehearsal gate)" >> $GITHUB_STEP_SUMMARY
+        echo "## Python Exploratory Test Results" >> "$GITHUB_STEP_SUMMARY"
+        echo "Lane: ${{ matrix.lane }} (blocking rehearsal gate)" >> "$GITHUB_STEP_SUMMARY"
 
   # Go Tests
   go-tests:
@@ -412,7 +414,7 @@ jobs:
         cache-dependency-path: backend/go.mod
 
     - name: Cache Go modules
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -442,10 +444,12 @@ jobs:
         # Also output JSON for CI parsing
         golangci-lint run --timeout=5m --config=.golangci.yml --out-format=json > /tmp/go-lint-results.json || true
         VIOLATION_COUNT=$(jq '[.Issues // []] | length' /tmp/go-lint-results.json || echo "0")
-        echo "GO_VIOLATIONS=$VIOLATION_COUNT" >> $GITHUB_ENV
-        echo "## Go Linting Results" >> $GITHUB_STEP_SUMMARY
-        echo "Total violations: $VIOLATION_COUNT" >> $GITHUB_STEP_SUMMARY
-        echo "Format: grouped-line-number (grouped by file)" >> $GITHUB_STEP_SUMMARY
+        echo "GO_VIOLATIONS=$VIOLATION_COUNT" >> "$GITHUB_ENV"
+        {
+          echo "## Go Linting Results"
+          echo "Total violations: $VIOLATION_COUNT"
+          echo "Format: grouped-line-number (grouped by file)"
+        } >> "$GITHUB_STEP_SUMMARY"
 
     - name: Upload Go lint results
       if: always()
@@ -491,18 +495,19 @@ jobs:
       if: always()
       working-directory: backend
       run: |
-        echo "## Go Test Results" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-
-        if [ -f coverage.out ]; then
-          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}')
-          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Coverage | $COVERAGE |" >> $GITHUB_STEP_SUMMARY
-          echo "| Status | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "⚠️ Coverage report not generated" >> $GITHUB_STEP_SUMMARY
-        fi
+        {
+          echo "## Go Test Results"
+          echo ""
+          if [ -f coverage.out ]; then
+            COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}')
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+            echo "| Coverage | $COVERAGE |"
+            echo "| Status | ✅ Passed |"
+          else
+            echo "⚠️ Coverage report not generated"
+          fi
+        } >> "$GITHUB_STEP_SUMMARY"
 
     - name: Generate coverage report
       working-directory: backend
@@ -627,10 +632,10 @@ jobs:
             echo "## Benchmark Regression Comparison"
             echo ""
             cat /tmp/benchmark-comparison-report.md
-          } >> $GITHUB_STEP_SUMMARY
+          } >> "$GITHUB_STEP_SUMMARY"
         fi
 
-        exit ${EXIT_CODE:-0}
+        exit "${EXIT_CODE:-0}"
 
     - name: Upload benchmark metrics as artifact
       if: always()
@@ -694,7 +699,7 @@ jobs:
           bun-version: latest
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -713,11 +718,13 @@ jobs:
           # Also output JSON for CI parsing
           bun x oxlint --type-check --type-aware --format=json . > /tmp/oxlint-results.json || true
           VIOLATION_COUNT=$(jq '[.[] // []] | length' /tmp/oxlint-results.json || echo "0")
-          echo "OXLINT_VIOLATIONS=$VIOLATION_COUNT" >> $GITHUB_ENV
-          echo "## Frontend Linting Results (Oxlint)" >> $GITHUB_STEP_SUMMARY
-          echo "Total violations: $VIOLATION_COUNT" >> $GITHUB_STEP_SUMMARY
-          echo "Config: frontend/.oxlintrc.json" >> $GITHUB_STEP_SUMMARY
-          echo "Format: stylish (grouped by file)" >> $GITHUB_STEP_SUMMARY
+          echo "OXLINT_VIOLATIONS=$VIOLATION_COUNT" >> "$GITHUB_ENV"
+          {
+            echo "## Frontend Linting Results (Oxlint)"
+            echo "Total violations: $VIOLATION_COUNT"
+            echo "Config: frontend/.oxlintrc.json"
+            echo "Format: stylish (grouped by file)"
+          } >> "$GITHUB_STEP_SUMMARY"
           # Show grouped output for developer reference
           cat /tmp/oxlint-results-grouped.txt || bun x oxlint --type-check --type-aware .
 
@@ -841,7 +848,7 @@ jobs:
           bun-version: latest
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -853,7 +860,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
@@ -885,23 +892,24 @@ jobs:
         if: always()
         working-directory: frontend/apps/web
         run: |
-          echo "## Frontend E2E Test Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Frontend E2E Test Results"
+            echo ""
+            if [ -f playwright-report/results.json ]; then
+              # Parse Playwright JSON report
+              TOTAL=$(jq '.suites | map(.specs | length) | add' playwright-report/results.json 2>/dev/null || echo "0")
+              PASSED=$(jq '[.suites[].specs[] | select(.ok == true)] | length' playwright-report/results.json 2>/dev/null || echo "0")
+              FAILED=$(jq '[.suites[].specs[] | select(.ok == false)] | length' playwright-report/results.json 2>/dev/null || echo "0")
 
-          if [ -f playwright-report/results.json ]; then
-            # Parse Playwright JSON report
-            TOTAL=$(jq '.suites | map(.specs | length) | add' playwright-report/results.json 2>/dev/null || echo "0")
-            PASSED=$(jq '[.suites[].specs[] | select(.ok == true)] | length' playwright-report/results.json 2>/dev/null || echo "0")
-            FAILED=$(jq '[.suites[].specs[] | select(.ok == false)] | length' playwright-report/results.json 2>/dev/null || echo "0")
-
-            echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Total Tests | $TOTAL |" >> $GITHUB_STEP_SUMMARY
-            echo "| ✅ Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
-            echo "| ❌ Failed | $FAILED |" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ E2E test results not available" >> $GITHUB_STEP_SUMMARY
-          fi
+              echo "| Metric | Count |"
+              echo "|--------|-------|"
+              echo "| Total Tests | $TOTAL |"
+              echo "| ✅ Passed | $PASSED |"
+              echo "| ❌ Failed | $FAILED |"
+            else
+              echo "⚠️ E2E test results not available"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload Playwright report
         if: always()
@@ -952,7 +960,7 @@ jobs:
           bun-version: latest
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -989,7 +997,7 @@ jobs:
           bun-version: latest
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -1027,7 +1035,7 @@ jobs:
           bun-version: latest
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -1065,7 +1073,7 @@ jobs:
           bun-version: latest
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -1103,7 +1111,7 @@ jobs:
           bun-version: latest
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
