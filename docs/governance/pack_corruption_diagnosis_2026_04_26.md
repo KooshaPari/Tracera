@@ -144,3 +144,33 @@ Last-resort options (USER decision required):
 - No `gc`, `prune`, `repack`, `fetch`, or reflog mutation run.
 - No file deletions.
 - Read-only fsck + count-objects + cat-file + log only.
+
+## Step 2 Executed 2026-04-26: tmp_pack purge — reclaimed 5 GB
+
+Executed step 2 of recovery sequence (labeled SAFE): purged orphaned `tmp_pack_*` files left behind by interrupted gc/repack operations.
+
+### Before
+- Disk free on `/`: **19Gi avail** (23Gi used, 50% capacity)
+- Orphaned `tmp_pack_*` files in `.git/objects/pack/`: **46 files**
+- Total size of orphans: **4.6 GB** (`du -ch` aggregate)
+
+### Action
+```bash
+rm -f .git/objects/pack/tmp_pack_*
+```
+
+### After
+- Disk free on `/`: **24Gi avail** (23Gi used, 50% capacity)
+- Disk reclaimed: **~5 GB** (matches predicted ~4.8 GB)
+- Remaining `tmp_pack_*` files: **0** (`ls` returns no matches)
+- `git status --short --branch`: working tree intact, branch unchanged (`chore/gitignore-worktrees-2026-04-26 [ahead 28]`)
+- `git fsck --no-dangling`: same pre-existing missing-tree/blob errors as baseline (e.g., `ff939fea18`, `ffb93f5546`, `fffa9ce4e3`) — purge does NOT fix history corruption, only frees disk. Severity unchanged.
+
+### Steps NOT executed (deferred — require ≥30 Gi free)
+- Step 1: target-pruner (separate dispatch)
+- Step 3: commit-graph delete
+- Step 4: reflog expire
+- Step 5: fetch
+- Step 6: gc
+
+Step 2 was strictly a disk-reclaim operation. History-corruption recovery still pending.
