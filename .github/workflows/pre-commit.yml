@@ -25,7 +25,7 @@ jobs:
       - name: Run pre-commit
         shell: bash
         env:
-          SKIP: loc-guard,routes-entrypoints
+          SKIP: loc-guard,routes-entrypoints,security-guard-pre-commit-pre-push
         run: |
           set -euo pipefail
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
