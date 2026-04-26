@@ -45,3 +45,32 @@ Note: FocalPoint does **NOT** depend on ratatui. The RUSTSEC-2024-0436 (paste) c
 Execute step 1 (prometheus) immediately as standalone PR — clears the only real CVE with low risk. Then attempt step 2 (uniffi) on its own branch with Swift binding regen verification; fall back to suppression if iOS build breaks. Step 3 is the deterministic floor — guarantees cargo-deny green within 25 min wall-clock regardless of uniffi outcome.
 
 **Final state target:** 1 advisory cleared (CVE), 0–1 suppressed-with-justification for bincode, 3 suppressed-with-justification for starlark cluster. cargo-deny: green.
+
+---
+
+## Update 2026-04-27 (post-application)
+
+Post-application reconciliation. Several scoping claims were incorrect, but the realized fix path still landed close to the planned floor.
+
+| Plan step | Outcome | Commit | Advisories impact |
+|-----------|---------|--------|-------------------|
+| 1. prometheus 0.13 → 0.14 (`default-features = false`) | **APPLIED — correct as scoped** | `c05a60e` | Cleared 4 advisories (best-case path; protobuf CVE plus transitive cluster). |
+| 2. uniffi 0.28 → 0.31 | **DEFERRED** — HIGH iOS-FFI risk; Swift binding regen + UAT prerequisite. Suppress recommended pending iOS UAT. | `97e1198f82` | 1 advisory (RUSTSEC-2025-0141 bincode) remains, deferred to iOS UAT cycle. |
+| 3a. starlark 0.13 → 0.15 bump | **IMPOSSIBLE** — scoping doc was wrong: starlark 0.15 is **not published** on crates.io; 0.13.0 is the latest release. Suppress is the only viable option. | n/a | n/a |
+| 3b. starlark cluster suppress (paste, derivative, fxhash) | **APPLIED — as fallback floor** | `187cb41` | 3 advisories suppressed-with-justification (Tauri-pattern). |
+
+### Corrections to original scoping
+
+- **Starlark 0.15 does not exist.** Plan step 2 (Cluster A discussion line "starlark is at latest published version 0.13.0") was correct; any "bump to 0.15" framing elsewhere in agent context was wrong. Suppress is the only path.
+- **uniffi 0.31 risk re-rated MEDIUM → HIGH** after iOS-FFI surface inspection. Deferred behind explicit iOS UAT gate rather than executed speculatively.
+
+### Final state — FocalPoint cargo-deny
+
+- **Before final-5 plan:** 19 advisories.
+- **After application:** **1 advisory remaining** (RUSTSEC-2025-0141 bincode via uniffi 0.28).
+- **Reduction:** 19 → 1 = **95% reduction**. Remaining 1 is the iOS-UAT-deferred uniffi bump; effectively at the actionable floor for today.
+
+### Follow-ups
+
+- **BytePort `frontend/web/src-tauri`** has its own Cargo workspace and needs an independent `deny.toml` with matching Tauri-pattern suppressions; not covered by FocalPoint's manifest. Track as separate sub-manifest scoping task.
+- **uniffi 0.28 → 0.31** remains queued behind iOS UAT; revisit when iOS binding regen + on-device smoke test capacity is available.
