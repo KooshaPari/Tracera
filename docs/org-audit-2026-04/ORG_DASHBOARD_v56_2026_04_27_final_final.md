@@ -25,7 +25,7 @@ with 7 local-only repos and 2 partial-push repos still needing provenance review
 | SBOMs generated | 132 | **132** | unchanged |
 | Cargo-deny org advisories | 13 | **8 (W-95)** | post-FocalPoint-zero snapshot |
 | FocalPoint advisories | 5 | **0** | zero-advisory invariant established |
-| Open PRs | 1-2 | **2 true open** | PhenoProc #21, Tracera #374 |
+| Open PRs | 1-2 | **1 true open** | Tracera #374 |
 | Disk free (`/`) | 39 GiB | **34 GiB live check** | still above 30 GiB floor |
 | Pack corruption | gc-blocked | **still blocked** | parent `/repos` push remains unsafe |
 
@@ -34,8 +34,8 @@ with 7 local-only repos and 2 partial-push repos still needing provenance review
 - **FocalPoint cargo-deny is clean.** Live check returned `advisories ok`.
 - **W-95 org snapshot is 8 advisories.** This is the post-FocalPoint-zero baseline
   for the next cargo-deny wave.
-- **PR inventory is down to two true open PRs.**
-  - PhenoProc #21: `MERGEABLE`, `UNSTABLE`, no review block.
+- **PR inventory is down to one true open PR.**
+  - KDesktopVirt #9: merged after targeted Rust validation and inherited-gate attribution.
   - Tracera #374: `MERGEABLE`, `BLOCKED`, `CHANGES_REQUESTED`.
 - **Push count corrected to 49 repos.** The earlier dashboard language should be
   read as superseded by `today_pushes_final_count_2026_04_27.md`.
@@ -44,12 +44,12 @@ with 7 local-only repos and 2 partial-push repos still needing provenance review
 
 | Target | Advisory leverage | Current disposition |
 |---|---:|---|
-| KDesktopVirt `bollard` cluster | 4 / 8 | scoped in `docs/changes/2026-04-27-kdv-bollard-cluster/proposal.md`; compile-driven migration required |
-| eyetracker `uniffi` cluster | 2 / 8 | scoped in `docs/changes/2026-04-27-eyetracker-uniffi-cluster/proposal.md`; bump favored because bindings are scaffolding-only |
+| KDesktopVirt `bollard` cluster | 4 / 8 | PR #9 merged; `cargo check --workspace`, `cargo test --lib`, and gate attribution completed |
+| eyetracker `uniffi` cluster | 2 / 8 | PR #3 merged; bump limited to `crates/eyetracker-ffi/Cargo.toml` |
 
 These two targets cover 6 of the 8 W-95 residual advisories. KDesktopVirt is the
 higher-leverage but higher-risk target because `bollard 0.16 -> 0.20` includes
-feature/API drift. eyetracker is smaller and has no live Swift/Kotlin consumer.
+feature/API drift. eyetracker was the smaller no-downstream lane and is now landed.
 
 ## Superseded Claims
 
@@ -66,10 +66,9 @@ feature/API drift. eyetracker is smaller and has no live Swift/Kotlin consumer.
 1. **Do not push `/repos` canonical yet.** The parent checkout is still on the
    Tracera remote and has pack-corruption/gc cleanup pending. This blocks safe
    push/PR for this dashboard doc from the parent repo.
-2. **PhenoProc #21** is mergeable but `UNSTABLE`; merge is a PR-queue action, not
-   part of this dashboard-only ownership slice.
-3. **Tracera #374** is review-blocked by `CHANGES_REQUESTED`.
-4. **FocalPoint working tree is dirty** with generated FFI/SBOM artifacts from
+2. **Tracera #374** is review-blocked by `CHANGES_REQUESTED`; follow-up review
+   fixes are pushed, but remaining CI failures need final attribution.
+3. **FocalPoint working tree is dirty** with generated FFI/SBOM artifacts from
    prior work; leave untouched.
 
 ## References
