@@ -35,12 +35,16 @@ repo cleanup.
 
 ## SIZE-CI-GO-TOOLCHAIN: Deferred Go CI Lane
 
-- **Scope:** reusable workflow/toolchain ownership, not this Python PR.
+- **Scope:** active Tracera Go workflow pins and toolchain ownership.
 - **Current evidence:** the Go failure used Go 1.23 wrappers while logs resolved
   a Go 1.25.7 target, then failed golangci-lint/covdata/race-test steps.
-- **Next action:** inspect the reusable workflow owner and align `go version`,
-  `GOTOOLCHAIN`, golangci-lint, coverage, and race-test execution under one
-  source of truth.
+- **Action:** align PR-triggered Go workflow setup to the backend `go 1.25.7`
+  module contract, remove `GOTOOLCHAIN: local` overrides from Go test wrappers,
+  and move the strict golangci-lint action to the current Go-1.25-capable line.
+- **Included:** `ci.yml`, `go-tests.yml`, `test.yml`, `test-validation.yml`,
+  `test-pyramid.yml`, `benchmarks.yml`, and `performance-regression.yml`.
+- **Excluded:** Go race-test code failures, coverage artifact semantics, stale
+  non-PR docs/schema/contract helper pins, and broader workflow action upgrades.
 
 ## Alert Buckets
 

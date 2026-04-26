@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 env:
-  GO_VERSION: '1.23.0'
+  GO_VERSION: '1.25.7'
   POSTGRES_DB: tracertm_test
   POSTGRES_USER: tracertm_test
   POSTGRES_PASSWORD: test_password
@@ -48,16 +48,12 @@ jobs:
 
       - name: Verify dependencies
         working-directory: backend/tests
-        env:
-          GOTOOLCHAIN: local
         run: |
           go mod download
           go mod verify
 
       - name: Run unit tests
         working-directory: backend/tests
-        env:
-          GOTOOLCHAIN: local
         run: |
           go test -v -short -race -coverprofile=unit-coverage.out -covermode=atomic \
             -tags=unit \
@@ -155,8 +151,6 @@ jobs:
 
       - name: Verify dependencies
         working-directory: backend/tests
-        env:
-          GOTOOLCHAIN: local
         run: |
           go mod download
           go mod verify
@@ -190,7 +184,6 @@ jobs:
           REDIS_URL: ${{ env.REDIS_URL }}
           NATS_URL: ${{ env.NATS_URL }}
           TEST_DATABASE_URL: postgresql://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}?sslmode=disable
-          GOTOOLCHAIN: local
         run: |
           go test -v -race -coverprofile=integration-coverage.out -covermode=atomic \
             -tags=integration \
@@ -262,8 +255,6 @@ jobs:
 
       - name: Verify dependencies
         working-directory: backend/tests
-        env:
-          GOTOOLCHAIN: local
         run: |
           go mod download
           go mod verify
@@ -293,7 +284,6 @@ jobs:
           DB_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
           DB_NAME: ${{ env.POSTGRES_DB }}
           TEST_DATABASE_URL: postgresql://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}?sslmode=disable
-          GOTOOLCHAIN: local
         run: |
           go test -v -race -coverprofile=api-coverage.out -covermode=atomic \
             -tags=api \
@@ -383,7 +373,6 @@ jobs:
           REDIS_URL: redis://localhost:6379
           NATS_URL: nats://localhost:4222
           TEST_DATABASE_URL: postgresql://tracertm:tracertm_password@localhost:5432/tracertm?sslmode=disable
-          GOTOOLCHAIN: local
         run: |
           go test -v -race -coverprofile=e2e-coverage.out -covermode=atomic \
             -tags=e2e \
@@ -452,16 +441,12 @@ jobs:
 
       - name: Verify dependencies
         working-directory: backend/tests
-        env:
-          GOTOOLCHAIN: local
         run: |
           go mod download
           go mod verify
 
       - name: Run security tests
         working-directory: backend/tests
-        env:
-          GOTOOLCHAIN: local
         run: |
           go test -v -race -coverprofile=security-coverage.out -covermode=atomic \
             -tags=security \
