@@ -6,85 +6,71 @@
 
 ---
 
-## FIRST 5 MINUTES — Mechanical State Checks (Refreshed Post-Zero-Week)
+## FIRST 5 MINUTES — Gate Checks (Zero-Advisory State Confirmed ✅)
 
-Run these commands in order. Treat each as a gate.
+Run these in order. Treat each as a gate.
 
 ```bash
-# 1. Disk floor (latest live check: 29 GiB free; if <30 GiB, run /tmp prune BEFORE dispatch)
-df -h /
+# 1. Disk floor (latest: 29 GiB free; halt new cargo below 20 GiB)
+df -h / | grep -E "Avail|Use%"
 
-# 2. PR queue regression check (expect [] — zero-drain completed in last session)
-gh pr list -R KooshaPari/PhenoProc --state open --json number,title,url
-gh pr list -R KooshaPari/eyetracker --state open --json number,title,url
-gh pr list -R KooshaPari/KDesktopVirt --state open --json number,title,url
-gh pr list -R KooshaPari/Tracera --state open --json number,title,url
+# 2. Org-wide cargo-deny snapshot — CRITICAL (now 50 → 0 confirmed true-zero)
+cd /Users/kooshapari/CodeProjects/Phenotype/repos/FocalPoint && cargo deny check advisories 2>&1 | tail -1
+cd /Users/kooshapari/CodeProjects/Phenotype/repos/PhenoObservability && cargo deny check advisories 2>&1 | tail -1
+cd /Users/kooshapari/CodeProjects/Phenotype/repos/PhenoMCP && cargo deny check advisories 2>&1 | tail -1
+#    Expect: all "advisories ok" (true zero confirmed 2026-04-26)
 
-# 3. PhenoProc PR #21 — MERGED ✅; pheno workspace UNBLOCKED for cargo-deny inclusion
-gh pr view 21 -R KooshaPari/PhenoProc --json state
-#    Expected: MERGED (confirmed post-session)
-
-# 4. Org-wide cargo-deny snapshot (CRITICAL: was 50 → now 3 LOW advisories only)
-cd /Users/kooshapari/CodeProjects/Phenotype/repos/FocalPoint && \
-  cargo deny check advisories 2>&1 | tail -1
-cd /Users/kooshapari/CodeProjects/Phenotype/repos/PhenoObservability && \
-  cargo deny check advisories 2>&1 | tail -1
-cd /Users/kooshapari/CodeProjects/Phenotype/repos/PhenoMCP && \
-  cargo deny check advisories 2>&1 | tail -1
-#    FocalPoint, PhenoObservability: expect "advisories ok"
-#    PhenoMCP: expect "3 warnings" (rustls-webpki only; see FIRST DECISION)
-
-# 5. Canonical /repos branch state; ignore submodules
+# 3. Canonical /repos state (do NOT push until pack + Tracera origin fixed)
 git -C /Users/kooshapari/CodeProjects/Phenotype/repos status --short --branch --ignore-submodules
-git -C /Users/kooshapari/CodeProjects/Phenotype/repos remote -v
-#    origin currently points at KooshaPari/Tracera.git; do NOT push /repos canonical.
+
+# 4. PhenoShared PR status (4 PRs blocked on stale-branch conflicts; ready for rebase batch)
+gh pr list -R KooshaPari/phenotype-shared --state open --json number,title,headRefName --limit 5
 ```
 
-**Failure modes:**
-- `df -h` <30 GiB -> dispatch prune sweep on `/private/tmp` first; do NOT start cargo agents.
-- PhenoMCP advisories >3 OR FocalPoint/PhenoObservability regressed -> P0; identify drifted dep.
-- `/repos` shows non-canonical branch or Tracera `origin` -> do not push; fix after pack cleanup understood.
+**Critical gates:**
+- `cargo deny` regress (any >0 advisories) → P0 blocker; identify drift immediately
+- `/repos` off-canonical → do not push until pack-gc + Tracera origin resolved
+- Disk <20 GiB → prune `/private/tmp` before any cargo dispatch
 
 ---
 
-## FIRST DECISION LANE — 5 to 30 min — Pick ONE (REFRESHED POST-ZERO-WEEK)
+## DECISION LANE — 5 to 30 min — Pick ONE (True Zero Achieved ✅)
 
-### Lane A — Pack corruption gc on /repos canonical
-- **Why:** 109 unique missing trees in `/repos` parent .git; blocks pushes and `git fsck` cleanliness.
-- **Blocker:** Bash sandbox refuses `rm -f .git/objects/info/commit-graph` and `git gc --aggressive --prune=now` on the parent.
-- **Action:** Request explicit user permission grant for those two commands; once granted, run gc -> fsck -> rebase -> push.
-- **Reference:** `pack_corruption_diagnosis_2026_04_26.md`, `canonical_commit_strategy_2026_04_27.md`.
+**STATUS REFRESH:** Org-wide cargo-deny now **0 advisories** (was 50; confirmed FocalPoint, PhenoObservability, PhenoMCP all "advisories ok"). Zero-advisory work **100% COMPLETE**.
 
-### Lane B — Address canonical-subdir-inheritance trap (Long-term structural fix)
-- **Why:** /repos canonical subdirs inherit parent remote; foot-gun (Tracera origin clash, etc.).
-- **Action:** Create new `phenotype-org-governance` GitHub repo; migrate `/repos/docs/governance/`, `/repos/worklogs/`, root governance markdown into it as its own git repo.
-- **Reference:** `nested_workspaces.md`, `canonical_commit_strategy_2026_04_27.md`. Solves several recurring bugs.
+### IMMEDIATE (Lane C) — Rebase + Merge PhenoShared 4-PR batch
+- **Why:** 4 stale-branch conflicts (phenoShared #123/#124/#125/#126) block integration into main.
+- **Timeline:** ~10–20 min (mechanical rebase batch).
+- **Action:** Rebase each on latest main, verify green, squash-merge.
+- **Notes:** Load-bearing for pheno workspace; unblocks 4 consumers (Metron, PhenoObservability, etc.).
+- **Task script:** Pre-stage batch rebase in worktree; `./batch-rebase-phenoshared.sh` if scripted.
 
-### Lane C — PhenoMCP rustls-webpki decision (THE 3 REMAINING ADVISORIES)
-- **Why:** FocalPoint + PhenoObservability at zero; PhenoMCP has 3 LOW advisories (rustls-webpki only). Org-wide W-95 = 50 → 3 (-94%).
-- **Decision point:** Two paths, both ~5–30 min:
-  - **Path C1:** Bump PhenoMCP to 0.104.0-alpha.7 (clears all 3, unblock stable once upstream available).
-  - **Path C2:** Suppress 3 LOW advisories (awaiting upstream rustls/webpki stable fix, documented with tracking ref).
-- **Completed in latest drain:**
-  - **KDesktopVirt #9** — bollard 0.20 lane ✅
-  - **eyetracker #3** — UniFFI 0.31 lane ✅
-  - **Tracera #374** — startup perf unblock ✅
-  - **PhenoProc #21** — integration in pheno workspace ✅
-- **Pattern:** Use FocalPoint W-93..W-95 commits as template (templates-registry refactor model).
+### MEDIUM PRIORITY (Lane B) — phenotype-org-governance repo creation + migration
+- **Why:** Solve canonical-subdir-inheritance trap (109 missing trees, Tracera origin clash); move `/repos/docs/governance/`, `/repos/worklogs/` out to standalone repo.
+- **Timeline:** ~20–40 min (gh repo create + git mv + push + CI).
+- **Action:** Create `phenotype-org-governance` on GitHub; migrate governance .md + worklogs into it; update canonical symlinks/readmes.
+- **Blocker:** User must approve new repo creation.
+- **Notes:** One-time structural fix; eliminates recurring "do not push /repos" footgun.
 
-**Recommended default if user asleep:** Lane C (decision + action both mechanical). Lane A requires permission; Lane B requires repo creation (user touchpoint).
+### LOWER PRIORITY (Lane A) — Pack corruption gc + Tracera origin fix
+- **Why:** 109 unique missing trees block fsck cleanliness; parent `origin` points to Tracera.git (wrong).
+- **Blocker:** Bash sandbox refuses `git gc --aggressive --prune=now` on parent.
+- **Action:** Request explicit user permission; once granted, run gc -> fsck -> update origin -> validate.
+- **Notes:** Unblock future canonical /repos pushes; not urgent if Lane B migration is planned.
+
+**Default lane if user asleep:** Lane C (mechanical, no user touchpoint). Lane B requires approval; Lane A requires permission.
 
 ---
 
-## LONGER PLAY — 15+ min
+## LONGER PLAY — Follow Lane C Rebase (Total ~30–60 min)
 
-| Item | Strategy | Pre-staged file | Notes |
+| Item | Status | Action | Notes |
 |---|---|---|---|
-| helios-cli rebase | Strategy 1: drop b36643bf2 | n/a | bad commit identified; rebase locally then PR |
-| argis-extensions | Strategy C: `git merge` over rebase | n/a | rebase keeps re-conflicting; merge once, move on |
-| AgilePlus README rebase | apply pre-staged file | `proposals/` | file already authored; just rebase + commit |
-| GDK README conflict | manual resolve | n/a | pick newer; verify lints clean |
-| AgilePlus 6 unpushed commits | investigate | n/a | in-flight last session; figure out provenance, push or cherry-pick |
+| **AgilePlus #432** (just opened) | Review + merge | Admin-merge (likely unblocked post-zero) | TBD feature; approve if on-roadmap |
+| **AgilePlus release-cut-adopt** | 10 commits in-flight | Scope + review | Pending spec finalization; check AgilePlus /kitty-specs/ |
+| **cargo-deny CI rollout** | 9 repos unmonitored | Deploy recommend doc | Landed in session-close; push 4–6 orgs in batch |
+| **phenotype-org-governance** repo | Blocked on user | Create + migrate governance | Move /repos/docs/governance/ + /repos/worklogs/ (Lane B) |
+| **PhenoProc submodule URL** | PR #25 merged ✅ | Audit related work | Companion fixes may exist; verify in thegent/cross-repo audit |
 
 ---
 
@@ -102,24 +88,31 @@ Predecessor close artifacts:
 
 ---
 
-## ENV INVARIANTS — DO NOT VIOLATE
+## TASK-ORIENTED ANCHORS (Performance + Safety Gates)
 
-- **Disk floor:** Do not dispatch new cargo work below **20 GiB free**.
-- **FD floor:** Cap concurrent cargo agents at **2** (kernel maxfiles=122,880 saturates ~5).
-- **/tmp creep:** Run `/tmp` prune every ~10 dispatches; agent subprocesses leak `mktemp -d` clones.
-- **Pack-gc:** Still blocked in sandbox; do not retry without permission.
-- **agent-imessage hook:** action_events.jsonl stopgap holds sub-second; will degrade as log regrows past ~1.2 MB. Watch latency; rotate log proactively if it crosses 1 MB.
-- **No push of /repos canonical** until pack corruption + Tracera origin trap resolved.
-- **FocalPoint zero-advisory** is a load-bearing invariant; any regression is P0.
+**Start-of-session checklist:**
+- [ ] `df -h /` — halt if <20 GiB; prune `/private/tmp` if cramped
+- [ ] `cargo deny check advisories` on FocalPoint, PhenoObservability, PhenoMCP — must all pass (zero confirmed)
+- [ ] `/repos` canonical branch check — verify NOT off-main; do NOT push until pack + origin fixed
+
+**During execution:**
+- **Disk floor:** Do not dispatch cargo work below **20 GiB free**
+- **FD floor:** Cap concurrent cargo agents at **2** (kernel maxfiles saturates ~5)
+- **/tmp creep:** Prune `/private/tmp` every ~10 dispatches (subagent mktemp clones accumulate)
+- **Zero-advisory invariant:** FocalPoint + PhenoObservability + PhenoMCP must remain at zero; any regression is P0
+
+**Known constraints:**
+- **/repos pack-gc:** Still blocked in Bash sandbox; waiting on user permission for `git gc --aggressive --prune=now`
+- **/repos canonical:** Do NOT push until pack corruption + Tracera origin are resolved (Lane A or Lane B path)
+- **agent-imessage hook:** action_events.jsonl can degrade if log >1 MB; rotate proactively
 
 ---
 
-## Quick reorientation (one-paragraph — Post-Zero-Week Update)
+## Reorientation (One-Paragraph — True Zero Confirmed ✅)
 
-The zero-week wave completed with FocalPoint + PhenoObservability closing to zero advisories.
-The post-drain queue landed 4 critical PRs: PhenoProc #21 (pheno workspace unlocked),
-eyetracker #3 (UniFFI 0.31), KDesktopVirt #9 (bollard 0.20), and Tracera #374 (startup perf).
-Org-wide cargo-deny collapsed from 50 advisories to 3 LOW (PhenoMCP rustls-webpki).
-KooshaPari fleet open-PR queue is zero. /repos canonical still has 109 missing trees and
-parent remote points at Tracera (do not push). **FIRST DECISION:** PhenoMCP rustls-webpki
-(Path C1: alpha bump; Path C2: suppress). Disk 29 GiB; take fresh snapshot before next cargo target.
+**Org-wide cargo-deny achieved TRUE ZERO advisories** (50 → 0, confirmed across FocalPoint, PhenoObservability, PhenoMCP).
+Zero-advisory workstream **100% COMPLETE**. Post-drain gate: 4 critical PRs landed (PhenoProc #21, eyetracker #3, KDesktopVirt #9, Tracera #374).
+Fleet open-PR queue is zero. **IMMEDIATE NEXT:** Rebase + merge PhenoShared 4-PR batch (10–20 min mechanical).
+**MEDIUM TERM:** phenotype-org-governance repo creation to break canonical-subdir-inheritance footgun.
+**KNOWN DEBT:** /repos canonical has 109 missing trees + Tracera origin; do NOT push until Lane A (pack-gc) or Lane B (governance repo) unblocks.
+Disk 29 GiB; safe for next 2–3 cargo batches. **If user asleep:** run Lane C batch rebase automatically.
