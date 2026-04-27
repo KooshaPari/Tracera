@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm /Users/kooshapari/CodeProjects/Phenotype/repos/.git/index.lock)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'docs\\(org-audit\\): Wave-73 final status v28 *)",
+      "Bash(git commit -m 'docs\\(org-audit\\): v50 delta summary — session-end state *)",
+      "Bash(rm -f .git/index.lock)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

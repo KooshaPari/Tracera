@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "project": "Phenotype org perpetual loop",
+  "qualityGates": [
+    "Use live GitHub or local repo state before acting.",
+    "Preserve dirty worktrees and avoid parent repos/ pushes.",
+    "Close stale semantic PRs; merge small cleanly rebasable PRs.",
+    "Prefer focused validation commands over broad destructive sweeps.",
+    "If disk drops below 10 GiB free, pause implementation work and prune stale target directories only when no cargo/rustc processes are active."
+  ],
+  "stories": [
+    {
+      "id": "LOOP-001",
+      "title": "Harvest safe fleet PRs",
+      "description": "Survey KooshaPari org PRs, merge small safe dependency/governance PRs, close stale superseded semantic PRs, and record blocked PRs with exact reasons. Do not touch archived/blocklisted repos unless the PR is clearly dependency-only and mergeable.",
+      "acceptanceCriteria": [
+        "Live PR list checked with gh or GitHub app.",
+        "Only safe mergeable PRs merged or stale superseded PRs closed.",
+        "Blocked PRs are reported with repo, PR number, and blocker.",
+        "No parent repos/ push attempted."
+      ],
+      "status": "open",
+      "dependsOn": []
+    },
+    {
+      "id": "LOOP-002",
+      "title": "Resume AgilePlus P0 test triage",
+      "description": "Resume the AgilePlus pre-push failure lane from the interrupted session. Focus first on the duplicate /api/v1/stream route panic in agileplus-api integration tests. Preserve current dirty spec edits and avoid broad formatting.",
+      "acceptanceCriteria": [
+        "AgilePlus scoped instructions and dirty state reviewed.",
+        "Duplicate route ownership evidence captured.",
+        "Narrow fix or clear no-op conclusion produced.",
+        "Focused cargo test/check command run or exact blocker recorded."
+      ],
+      "status": "done",
+      "dependsOn": [],
+      "startedAt": "2026-04-26T10:40:01.470265+00:00",
+      "completedAt": "2026-04-26T10:41:26.849479+00:00",
+      "updatedAt": "2026-04-26T10:41:26.849035+00:00"
+    },
+    {
+      "id": "LOOP-003",
+      "title": "Watch scheduled post-lockfile Dependabot surfacing",
+      "description": "Check whether the newly committed Cargo.lock and dependabot.yml changes have generated new PRs. Merge clean dependency updates and document repos that still have visibility gaps.",
+      "acceptanceCriteria": [
+        "Recent Dependabot PRs checked across lockfile-committed repos.",
+        "Clean dependency PRs merged when safe.",
+        "Visibility gaps documented with repo and ecosystem path.",
+        "No unrelated source rewrites."
+      ],
+      "status": "open",
+      "dependsOn": []
+    },
+    {
+      "id": "LOOP-004",
+      "title": "Maintain pause and status protocol",
+      "description": "Respect the 4:30 AM MST pause checkpoint and the existing iMessage notification. If the checkpoint is reached or STOP exists, stop cleanly and leave a concise status summary.",
+      "acceptanceCriteria": [
+        "STOP file checked before any new cycle.",
+        "4:30 AM MST pause checkpoint respected if reached.",
+        "A concise status summary is appended to the activity log.",
+        "No child agents left running."
+      ],
+      "status": "open",
+      "dependsOn": []
+    }
+  ]
+}
