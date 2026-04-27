@@ -1,21 +1,26 @@
 # dispatch-mcp Setup & Registration
 
 **Date:** 2026-04-27  
-**Status:** Scaffolded (ready for integration)
+**Status:** Integrated locally through Claude Code settings
 
 ## Summary
 
-`dispatch-mcp` is a FastMCP server that wraps the `dispatch-worker` CLI tool, enabling Claude Code sessions to delegate reasoning tasks to cheap tiers (Kimi, Minimax, Codex-5, Codex-Mini) and Opus without shell-outs.
+`dispatch-mcp` is a FastMCP server that lets Claude Code sessions delegate
+reasoning tasks through the local OmniRoute endpoint at
+`http://localhost:20128/v1`.
 
-This unblocks the "5000000000x" ask: use `dispatch(prompt="...", tier="kimi")` directly as an MCP tool instead of spawning shell processes.
+This unblocks the "5000000000x" ask: launch Claude normally, then use typed MCP
+tools such as `dispatch_worker` or `dispatch_main` instead of ad hoc shelling to
+model CLIs.
 
 ## Location
 
 ```
 repos/dispatch-mcp/
+├── server.py              (live OmniRoute MCP entry point)
 ├── src/dispatch_mcp/
 │   ├── __init__.py
-│   └── server.py          (main MCP entry point, ~160 LOC)
+│   └── server.py          (older dispatch-worker package entry point)
 ├── pyproject.toml         (FastMCP, pydantic)
 ├── README.md
 └── .gitignore
@@ -23,116 +28,83 @@ repos/dispatch-mcp/
 
 ## Installation & Setup
 
-### 1. Install dispatch-mcp locally
+### 1. Verify OmniRoute is running
 
 ```bash
-cd ~/CodeProjects/Phenotype/repos/dispatch-mcp
-pip install -e .
+curl -s http://localhost:20128/v1/models
 ```
 
-Verify entry point works:
+Expected model IDs include `Worker`, `Main`, `FreeTier`, and `Codeman`.
 
-```bash
-dispatch-mcp --help
-# Should print MCP server info or error if dispatch-worker is missing
-```
+### 2. Verify Claude Code registration
 
-### 2. Ensure dispatch-worker is in PATH
-
-The server requires `dispatch-worker` binary at runtime. Verify:
-
-```bash
-which dispatch-worker
-# Should return path like ~/CodeProjects/Phenotype/repos/thegent/bin/dispatch-worker
-
-# If missing, ensure thegent/bin is in your shell PATH:
-export PATH="$HOME/CodeProjects/Phenotype/repos/thegent/bin:$PATH"
-```
-
-### 3. Register in Claude Code
-
-Add to `~/.claude/settings.json`:
+`~/.claude/settings.json` should contain:
 
 ```json
 {
   "mcpServers": {
     "dispatch": {
-      "command": "dispatch-mcp"
+      "command": "python3",
+      "args": [
+        "/Users/kooshapari/CodeProjects/Phenotype/repos/dispatch-mcp/server.py"
+      ],
+      "env": {
+        "OMNIROUTE_URL": "http://localhost:20128/v1"
+      }
     }
   }
 }
 ```
 
-**OR** use the interactive skill:
+### 3. Launch Claude Code
+
+Use the normal Claude Code session path:
 
 ```bash
-/update-config
-# Select "Add MCP server"
-# Name: dispatch
-# Command: dispatch-mcp
-# Port/socket: leave blank (uses stdio)
+cd ~/CodeProjects/Phenotype/repos
+claude --permission-mode auto --dangerously-skip-permissions --resume
 ```
 
-### 4. Test Registration
+### 4. Test dispatch
 
-Restart Claude Code (or reload MCP servers), then:
+Ask Claude to call `dispatch_health`, then route a tiny worker prompt through
+`dispatch_worker`.
 
-```bash
-# In Claude Code, ask the agent to:
-# "Run dispatch(prompt='Hello', tier='kimi')"
-```
-
-Expected response: MCP tool call to `dispatch` with those parameters.
+Directly setting `ANTHROPIC_BASE_URL=http://localhost:20128` is not the current
+recommended path. Claude Code can reach the service, but the primary transport
+expects Anthropic-shaped responses while OmniRoute currently returns OpenAI-style
+chat completions.
 
 ## MCP Tools Exposed
 
-### `dispatch(prompt: str, tier: str = "kimi", cwd: str? = None) -> dict`
+### `dispatch_worker(prompt: str, cwd: str? = None, max_tokens: int = 4096) -> str`
 
-Route a prompt to a cheap-tier agent.
+Route to OmniRoute `Worker`.
 
-**Parameters:**
-- `prompt` (required) — The text to send
-- `tier` (default "kimi") — One of: `kimi`, `minimax`, `codex_5`, `codex_mini`
-- `cwd` (optional) — Working directory for dispatch (defaults to `~`)
+### `dispatch_main(prompt: str, cwd: str? = None, max_tokens: int = 4096) -> str`
 
-**Returns:** JSON dict with:
-```json
-{
-  "text": "response from agent",
-  "model": "...",
-  "tokens": { "input": N, "output": M },
-  "cost_usd": 0.002,
-  ...
-}
-```
+Route to OmniRoute `Main`.
 
-Or on error:
-```json
-{
-  "error": "reason",
-  "stderr": "..."
-}
-```
+### `dispatch_codeman(prompt: str, cwd: str? = None, max_tokens: int = 4096) -> str`
 
-### `dispatch_opus(prompt: str, cwd: str? = None) -> dict`
+Route to OmniRoute `Codeman`.
 
-Route to Opus tier for high-quality reasoning.
+### `dispatch_freetier(prompt: str, cwd: str? = None, max_tokens: int = 4096) -> str`
 
-**Parameters:**
-- `prompt` (required)
-- `cwd` (optional)
+Route to OmniRoute `FreeTier`.
 
-**Returns:** Same as `dispatch`
+### `dispatch_custom(prompt: str, model: str, cwd: str? = None, max_tokens: int = 4096) -> str`
+
+Route to any OmniRoute model ID.
 
 ### `dispatch_health() -> dict`
 
-Check if `dispatch-worker` is available in PATH.
+Check whether OmniRoute is reachable.
 
 **Returns:**
 ```json
 {
-  "available": true,
-  "message": "dispatch-worker is available"
+  "OK: OmniRoute reachable at http://localhost:20128/v1, 200 models exposed."
 }
 ```
 
@@ -141,15 +113,14 @@ Check if `dispatch-worker` is available in PATH.
 **Architecture:**
 - **Language:** Python 3.11+
 - **Framework:** FastMCP (same as cheap-llm-mcp)
-- **Wrapper:** Single file (`server.py`, ~160 LOC)
-- **Execution:** Async subprocess calls via `asyncio.to_thread`
+- **Wrapper:** Root `server.py`
+- **Execution:** HTTP POST to OmniRoute `/chat/completions`
 
 **How it works:**
-1. MCP tool call received (e.g., `dispatch(prompt="...", tier="kimi")`)
-2. Server calls `dispatch-worker --tier kimi` with prompt via stdin
-3. Captures stdout/stderr asynchronously (300s timeout)
-4. Parses JSON response (or raw text fallback)
-5. Returns result to Claude Code
+1. MCP tool call received, such as `dispatch_worker(prompt="...")`.
+2. Server posts an OpenAI-compatible chat completion request to OmniRoute.
+3. OmniRoute resolves the requested combo or model ID.
+4. Server returns assistant text plus the routed model ID.
 
 **No breaking changes:** Existing `dispatch-worker` CLI continues to work as-is.
 
@@ -179,36 +150,25 @@ Check if `dispatch-worker` is available in PATH.
 
 ## Troubleshooting
 
-### "dispatch-worker not found in PATH"
+### "OmniRoute unreachable"
 
 ```bash
-export PATH="$HOME/CodeProjects/Phenotype/repos/thegent/bin:$PATH"
-# Add to ~/.zshrc or ~/.bashrc for persistence
+curl -s http://localhost:20128/v1/models
 ```
 
-### "dispatch-mcp command not found"
-
-Re-install:
-```bash
-cd ~/CodeProjects/Phenotype/repos/dispatch-mcp
-pip install -e .
-```
+Start OmniRoute before launching Claude Code if the endpoint is down.
 
 ### MCP server fails to start
 
 Check logs:
 ```bash
-dispatch-mcp 2>&1 | head -20
-```
-
-Ensure Python >=3.11:
-```bash
 python3 --version
+python3 -m py_compile server.py
 ```
 
 ## Related Documents
 
-- **dispatch-worker:** [unknown location — likely in thegent/bin or similar]
+- **OmniRoute state:** `~/.config/omniroute/`
 - **cheap-llm-mcp:** `repos/cheap-llm-mcp/` (similar MCP pattern for LLM completions)
 - **MCP Registry:** https://modelcontextprotocol.io
 - **FastMCP Docs:** https://github.com/jlowin/fastmcp
