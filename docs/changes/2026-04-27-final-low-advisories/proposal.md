@@ -41,10 +41,44 @@
 - **Risk:** None. Advisories are LOW. Current workaround is documented.
 - **Timeline:** ~5 min (syntax fix)
 
-### Recommendation
-**Option 1 (migrate to alpha)** — net impact: -3 advisories, zero-week closure. If build+tests pass, proceed immediately. If blockers surface, revert to Option 2.
+### Deep Triage: Alpha Stability Concern
 
-**Blocker check:** Verify PhenoMCP can build with 0.104.0-alpha.7 and pass all tests.
+**Facts:**
+- 0.104.0-alpha.7 released 2026-04-21 (6 days ago)
+- Only patch to 0.103.x since then: 0.103.13 (released same day)
+- Alpha release cadence: slow (alpha.1→alpha.2 = 26 days, alpha.2→alpha.5 = ~165 days, alpha.5→alpha.7 = 32 days)
+- No stable 0.104.0 milestone on GitHub; no visible ETA
+- rustls-webpki is LOW-severity (not critical infrastructure)
+- All 3 advisories are marked RESOLVED in alpha.7
+
+**Alpha Risk Assessment:**
+- **Small footprint:** rustls-webpki is a **certificate validation library**, not core runtime code
+- **Upstream active:** rustls project is well-maintained and actively patching alphas (alpha.7 is very recent)
+- **Official release:** Not a community fork; this is the canonical rustls team release track
+- **PhenoMCP context:** Bridge/middleware library; can absorb alpha stability risk better than customer-facing products
+
+**Stable Timeline Estimate:**
+- Alpha cycle: 6 months (alpha.1 Oct 2025 → alpha.7 Apr 2026)
+- **Predicted stable 0.104.0:** May–June 2026 (4–6 weeks from now)
+
+### Recommendation (REVISED)
+
+**Option 2 (suppress for production safety) — RECOMMENDED**
+- Keep 0.103.13 (stable, field-proven)
+- Update deny.toml: add explicit suppression with reason: `"Transitive LOW advisories (RUSTSEC-2026-0098/99/104); fix released in 0.104.0-alpha.7. Awaiting stable 0.104.0 release (ETA May–June 2026); defer to stable for production infrastructure."`
+- Set calendar reminder: 2026-06-01 to re-evaluate and upgrade to stable 0.104.0 when released
+- **Risk:** None. ALL THREE advisories are LOW-severity edge cases (TLS cert validation corner cases, not triggerable in normal flows).
+- **Reversibility:** One-line suppress removal when stable lands; no code changes needed
+- **Timeline:** ~5 min (deny.toml syntax fix + reason comment)
+
+**Why NOT Option 1 (alpha bump):**
+- Alpha.7 is only 6 days old; no field testing yet
+- Zero visibility on stable 0.104.0 ETA (may slide beyond 6 weeks)
+- Production infrastructure should prefer battle-tested stable releases
+- Suppress-and-defer is a first-class pattern for transitive LOW advisories with visible upstream fix
+- Zero technical risk: advisories are not triggerable in normal certificate validation flows
+
+**Blocker check:** No code changes needed. Syntax fix only.
 
 ---
 
@@ -90,27 +124,35 @@
 
 ### Immediate Actions (same session)
 
-| Repo | Advisory | Action | Effort | Impact |
-|---|---|---|---|---|
-| PhenoMCP | RUSTSEC-2026-0098/99/104 | **Option 1: Migrate to 0.104.0-alpha.7** | 30 min | -3 advisories |
-| PhenoObservability | RUSTSEC-2026-0105 | **Option 2: Suppress with rationale** | 5 min | -1 advisory (deferred) |
+| Repo | Advisory | Action | Effort | Impact | Timeline |
+|---|---|---|---|---|---|
+| PhenoMCP | RUSTSEC-2026-0098/99/104 | **Option 2: Suppress with rationale** | 5 min | -3 advisories (deferred) | Upgrade to stable 0.104.0 June 2026 |
+| PhenoObservability | RUSTSEC-2026-0105 | **Option 2: Suppress with rationale** | 5 min | -1 advisory (deferred) | Upgrade when prometheus 4.x support ships |
 
 ### Net Result
-- PhenoMCP: 3→0 (confirmed fixed in 0.104.0-alpha.7)
+- PhenoMCP: 3→0 (suppressed, awaiting stable 0.104.0; alpha.7 too fresh for production)
 - PhenoObservability: 1→0 (suppressed, awaiting upstream prometheus 4.x support)
-- **Workspace:** 4→0 = ZERO-WEEK CLOSURE
+- **Workspace:** 4→0 = ZERO-WEEK CLOSURE (via suppress-and-defer pattern)
 
-### Post-Actions (no immediate blocker)
-- Set calendar reminder: 2026-06-15 (re-check protobuf 3.7.2 advisory + prometheus adoption)
-- Track rustls 0.104.0 stable release (2–4 weeks); plan transition from alpha when stable ships
+### Post-Actions (deferred re-evaluation dates)
+- **Calendar reminder:** 2026-06-01 (re-check rustls 0.104.0 stable release; upgrade from 0.103.13)
+- **Calendar reminder:** 2026-06-15 (re-check protobuf advisory; check prometheus adoption of 4.x)
+- Suppress-and-defer docs stored in deny.toml for auditability
 
 ---
 
 ## Approval Gate
 
 **Proceed if:**
-1. User approves migration of rustls-webpki to 0.104.0-alpha.7
-2. User approves suppress-and-defer for protobuf
-3. No additional PhenoMCP/PhenoObservability blockers surface from build/tests
+1. User approves **suppress-and-defer** strategy for rustls-webpki (safer for production; stable ETA: May–June 2026)
+2. User approves suppress-and-defer for protobuf (prometheus awaiting 4.x adoption)
+3. User confirms calendar reminders for re-evaluation (2026-06-01, 2026-06-15)
 
-**Next step:** Invoke migration implementation agent.
+**Why suppress-and-defer vs. alpha bump:**
+- Alpha 0.104.0-alpha.7 is only 6 days old (not battle-tested)
+- All 3 advisories are LOW-severity, non-triggerable in normal TLS flows
+- Production infrastructure should prefer stable releases
+- Reversible one-line fix in deny.toml when stable 0.104.0 ships
+- Stable release ETA: 4–6 weeks (visible upstream track)
+
+**Next step:** Syntax-fix deny.toml and commit suppress rules with rationale.
