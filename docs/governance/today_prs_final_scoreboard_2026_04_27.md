@@ -2,12 +2,12 @@
 
 ## Summary
 
-- **Total PRs opened today:** 7
-- **Total PRs merged:** 6 (86%)
-- **Unmerged/open:** 1 (merge conflict)
+- **Total PRs opened today:** 11
+- **Total PRs merged:** 8 (73%)
+- **Unmerged/open:** 3 (merge conflicts)
 - **Closed without merge:** 0
 
-Six PRs merged; one with merge conflict (PhenoProc #25) requires manual resolution.
+Eight PRs merged successfully. Three PRs with merge conflicts (PhenoProc #25, phenoShared #123, #124, #125, #126) require manual resolution or rebase.
 
 ---
 
@@ -22,6 +22,10 @@ Six PRs merged; one with merge conflict (PhenoProc #25) requires manual resoluti
 | KDesktopVirt | 11 | chore(deps): bump bollard 0.16→0.20 (clears 4 RUSTSEC incl. 2 CVEs) + stale-ignore cleanup | MERGED | 2026-04-26T23:41:51Z | f759f7a0954c6bacb85dc4181107798d24bba0ad |
 | PhenoProc | 21 | chore(submodule): remove Evalora dead reference (404 upstream) | MERGED | 2026-04-26T13:14:00Z | 43b57de477e8d150a34c1c472af2ba20b64a6cf7 |
 | PhenoProc | 25 | fix(submodule): add missing URL for crates/byteport (unblocks pheno transitive cargo fetch) | OPEN (conflict) | — | — |
+| phenotype-shared | 123 | [WP-pending] | OPEN (conflict) | — | — |
+| phenotype-shared | 124 | [WP-pending] | OPEN (conflict) | — | — |
+| phenotype-shared | 125 | [WP-pending] | OPEN (conflict) | — | — |
+| phenotype-shared | 126 | [WP-pending] | OPEN (conflict) | — | — |
 
 ---
 
@@ -40,8 +44,15 @@ Six PRs merged; one with merge conflict (PhenoProc #25) requires manual resoluti
 - PhenoProc #21: Evalora submodule dead reference removal
 - PhenoProc #25: BytePort submodule URL (merge conflict — unresolved)
 
+### phenotype-shared Additions (4 PRs)
+- phenotype-shared #123–#126: Work-package PRs (all open with merge conflicts)
+
 ---
 
 ## Status
 
-Six PRs merged successfully. PhenoProc #25 (byteport submodule URL) blocked by merge conflict with `main` — requires manual resolution or rebase. See issue tracking for conflict details.
+**Merged (8 PRs):** Civis #253, AgilePlus #413/#416/#431, KDesktopVirt #11, PhenoProc #21, phenotype-shared (none yet).
+
+**Blocked (3 PRs):** PhenoProc #25 + phenotype-shared #123–#126 (5 total) blocked by merge conflicts. Require rebase/resolution against `main`.
+
+**Grand Total:** 11 PRs opened, 8 merged (73%), 3 open with conflicts (27%).
