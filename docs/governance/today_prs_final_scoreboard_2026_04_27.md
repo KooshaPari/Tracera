@@ -1,0 +1,45 @@
+# PR Scoreboard — 2026-04-26 to 2026-04-27
+
+## Summary
+
+- **Total PRs opened today:** 6
+- **Total PRs merged:** 6 (100%)
+- **Unmerged/open:** 0
+- **Closed without merge:** 0
+
+All PRs successfully merged. No outstanding work.
+
+---
+
+## PR Details
+
+| Repo | PR# | Title | State | Merged At | Commit |
+|------|-----|-------|-------|-----------|--------|
+| Civis | 253 | round-7a: post-rebase reconcile (READMEs upstream-canonical) | MERGED | 2026-04-26T10:03:44Z | 39e9cc83fc1db1e9c9110c266a18b92e847b298f |
+| AgilePlus | 413 | spec(013): mark phenotype-infrakit-stabilization CANCELLED | MERGED | 2026-04-26T11:49:25Z | 11789d9f835167644ca8e3863ad5524cddecf7d4 |
+| AgilePlus | 416 | chore(deny): remove stale RUSTSEC-2025-0134 rustls-pemfile ignore | MERGED | 2026-04-26T13:14:00Z | c8e922c13cefbe50251bac2edcd1e2235c310ec7 |
+| AgilePlus | 431 | chore(deps): remove dead utoipa-axum dep (clears RUSTSEC-2024-0436) | MERGED | 2026-04-27T03:08:53Z | bf4b1e7338cf59207ed019863d838dc052367fbd |
+| KDesktopVirt | 11 | chore(deps): bump bollard 0.16→0.20 (clears 4 RUSTSEC incl. 2 CVEs) + stale-ignore cleanup | MERGED | 2026-04-26T23:41:51Z | f759f7a0954c6bacb85dc4181107798d24bba0ad |
+| PhenoProc | 21 | chore(submodule): remove Evalora dead reference (404 upstream) | MERGED | 2026-04-26T13:14:00Z | 43b57de477e8d150a34c1c472af2ba20b64a6cf7 |
+
+---
+
+## Categories
+
+### Dependency & Security (4 PRs)
+- AgilePlus #416: Denied stale RUSTSEC-2025-0134 rustls-pemfile
+- AgilePlus #431: Removed utoipa-axum (RUSTSEC-2024-0436)
+- KDesktopVirt #11: Bollard 0.16→0.20 (4 RUSTSEC, 2 CVEs)
+
+### Spec & Planning (1 PR)
+- AgilePlus #413: Spec cancellation (phenotype-infrakit-stabilization)
+
+### Maintenance & Cleanup (2 PRs)
+- Civis #253: README post-rebase reconcile
+- PhenoProc #21: Evalora submodule dead reference removal
+
+---
+
+## Status
+
+All PRs verified merged. No blocking issues or reversions detected. Day's integration work complete.
