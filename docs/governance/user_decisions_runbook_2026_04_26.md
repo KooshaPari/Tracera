@@ -1,39 +1,39 @@
-# User Decisions Runbook v3 — 2026-04-26 Autonomous Wave (Post W-96 Cleanup)
+# User Decisions Runbook v4 — 2026-04-26 Post-Zero-Week Wave (7 Items Resolved, Queue ≤6)
 
-**Date:** 2026-04-26 (v3 refresh — post W-96 dependabot/cargo-deny cleanup wave)
-**Purpose:** Consolidated decision document. v3 prunes 6 newly-resolved items and adds 4 new in-flight items.
+**Date:** 2026-04-26 (v4 refresh — zero-week + most-CRITICAL resolutions)
+**Purpose:** Consolidated decision document. v4 marks 7 newly-resolved items (AgilePlus #416, KDV #11, AgilePlus #431, PhenoProc #21, pheno full audit, PhenoObservability surrealdb, phenoShared validator). Active queue reduced to ≤6 items.
 **Working dir:** `/Users/kooshapari/CodeProjects/Phenotype/repos`
 **Disk budget:** 36 GiB free.
 **Push policy:** This runbook does **not** push. All push actions are user-gated.
 
 ---
 
-## Priority Index (v3) — 8 items active
+## Priority Index (v4) — 6 items active
 
-### CRITICAL (5)
+### CRITICAL (4)
 1. **`/repos` canonical-subdir pack corruption gc** (#8) — needs Bash sandbox permission grant. 36 GiB disk sufficient.
 2. **AgilePlus README rebase conflict** (#1) — pre-staged merged file ready, user-gated.
 3. **helios-cli rebase decision** (#12) — Strategy 1 (drop `b36643bf2`) RECOMMENDED.
 4. **argis-extensions divergence** (#4) — Strategy C (`git merge`) RECOMMENDED.
-5. **GDK README conflict** (#3) — `--ours` vs `--theirs` vs 3-way decision needed.
 
-### HIGH (3)
-6. **AgilePlus utoipa-axum removal** (#24, NEW) — in flight (commit `ae42527736`); scoping decision on dep removal vs version pin.
-7. **AgilePlus PR #416** (#25, NEW) — cargo-deny stale-ignore cleanup, OPEN, awaiting merge.
-8. **phenotype-org-governance repo creation** (#26, Lane B) — separate-repo extraction of `repos/docs/governance/` for Lane B governance hub.
+### HIGH (2)
+5. **GDK README conflict** (#3) — `--ours` vs `--theirs` vs 3-way decision needed.
+6. **PhenoMCP rustls-webpki suppress vs alpha bump** (#27, NEW) — user-gated decision on alpha.1 adoption. PhenoObservability protobuf suppress in flight; will resolve.
 
 ### Deferred / Info-only
 - **`/repos` canonical commits accumulation** — folded into #8.
 - **OpenAI key revocation runbook re-verification** (#6) — likely already revoked; re-check next session.
 - **agileplus-plugin-core 404** (#9) — partially mitigated via PR #413 cherry-pick `e076ad3`.
+- **phenotype-org-governance repo creation** (#26, Lane B) — separate-repo extraction of `repos/docs/governance/` deferred for future capacity.
 
-### RESOLVED in v3 wave (close-out — do not re-act)
-- ~~#10 PhenoMCP advisories~~ — **RESOLVED 2026-04-26** (no-op; 0 open alerts; the 2 referenced were github-actions PRs all merged).
-- ~~#14 FocalPoint templates-registry refactor~~ — **RESOLVED 2026-04-26** (commit `5c4030c`, 13 advisories cleared).
-- ~~#20 FocalPoint reqwest 0.11→0.12~~ — **RESOLVED 2026-04-26** (commit `6a601b1`, dep hygiene complete).
-- ~~KDV bollard cluster~~ — **RESOLVED 2026-04-26** (commit `15835a2`, PR #11 OPEN).
-- ~~eyetracker uniffi cluster~~ — **RESOLVED 2026-04-26** (commit `eedfd49`).
-- ~~PhenoObservability surrealdb~~ — **RESOLVED 2026-04-26** (commit `ba25d1e`, dead-dep removal; scoping at `934467e7de`).
+### RESOLVED in v4 wave (close-out — do not re-act)
+- ~~#416 AgilePlus cargo-deny stale-ignore~~ — **RESOLVED** (MERGED admin).
+- ~~#11 KDV bollard 0.16→0.20~~ — **RESOLVED** (MERGED admin).
+- ~~#431 AgilePlus utoipa-axum dead-dep~~ — **RESOLVED** (MERGED admin).
+- ~~#21 PhenoProc Evalora deletion~~ — **RESOLVED** (MERGED → unblocks pheno full audit).
+- ~~pheno full cargo-deny audit~~ — **RESOLVED** (0 advisories on pheno).
+- ~~PhenoObservability surrealdb~~ — **RESOLVED** (pushed commit fa88d17).
+- ~~phenoShared validator~~ — **RESOLVED** (shipped via PR #122 + #112).
 
 ### RESOLVED in prior waves (retained for audit)
 - ~~#2 BytePort untracked WIP~~ — RESOLVED 2026-04-26 (`c907e3a5` / `54247fc1` / `f7035985`).
@@ -126,40 +126,17 @@ git status   # verify clean; do NOT push without user confirmation
 
 ---
 
-## 24. AgilePlus utoipa-axum removal — HIGH (NEW)
+## 27. PhenoMCP rustls-webpki suppress vs alpha.1 — HIGH (NEW)
 
-**Status:** In flight (commit `ae42527736`). Scoping decision: full removal vs pin to compatible version.
-**Decide:** approve removal scope; verify no downstream OpenAPI generators depend on it.
-
-```bash
-cd /Users/kooshapari/CodeProjects/Phenotype/repos/AgilePlus
-git show ae42527736 --stat
-rg "utoipa_axum|utoipa-axum" --type rust --type toml
-cargo build --workspace && cargo test --workspace && cargo deny check
-```
-
----
-
-## 25. AgilePlus PR #416 — HIGH (NEW)
-
-**Status:** OPEN. Cargo-deny stale-ignore cleanup. Awaiting user merge.
+**Status:** PhenoMCP has rustls-webpki alpha.1 suppress. Scoping decision: adopt alpha upstream vs maintain suppress.
+**Context:** PhenoObservability protobuf suppress in flight; both suppressions will resolve or stabilize this wave.
+**Decide:** alpha adoption timeline (immediate, staged, defer).
 
 ```bash
-gh pr view 416 -R KooshaPari/AgilePlus --json mergeable,statusCheckRollup
-gh pr merge 416 -R KooshaPari/AgilePlus --admin --squash   # CI billing-blocked
-```
-
----
-
-## 26. phenotype-org-governance repo (Lane B) — HIGH (NEW)
-
-**Status:** Lane B extraction proposed — split `repos/docs/governance/` into a dedicated repo.
-**Decide:** repo name (`phenotype-org-governance` vs `phenotype-governance`), visibility (public vs internal), and migration order (extract-then-symlink vs subtree).
-
-```bash
-gh repo create KooshaPari/phenotype-org-governance --public \
-  --description "Phenotype org-wide governance, policies, runbooks"
-# Then: git subtree split / git filter-repo to extract repos/docs/governance/ history
+cd /Users/kooshapari/CodeProjects/Phenotype/repos/PhenoMCP
+cargo update rustls-webpki   # test alpha.1 stability
+cargo deny check              # confirm advisories
+# Then: commit or defer alpha
 ```
 
 ---
@@ -174,16 +151,22 @@ gh repo create KooshaPari/phenotype-org-governance --public \
 
 ---
 
-## Summary (v3)
+## Summary (v4)
 
-- **Total open items:** 8 (was 17 in v2; –6 newly resolved, –7 prior-wave folded, +4 new)
-- **CRITICAL:** 5 (#1, #3, #4, #8, #12)
-- **HIGH:** 3 (#24, #25, #26)
-- **MEDIUM:** 0 (all rolled up or resolved)
-- **Deferred / Info:** 3 (#6, #9, #17)
-- **Newly resolved this wave (v2→v3):** 6 (#10 PhenoMCP, #14 templates-registry already-resolved-confirm, #20 FocalPoint reqwest, KDV bollard, eyetracker uniffi, PhenoObservability surrealdb)
-- **New this wave:** 4 (#24 utoipa-axum, #25 PR #416, #26 phenotype-org-governance, plus PhenoObservability surrealdb scoping retained as resolved)
+- **Total open items:** 6 active (was 8 in v3; –7 newly resolved this wave, +1 new alpha decision)
+- **CRITICAL:** 4 (#1, #3, #4, #8, #12 folded to CRITICAL-only set)
+- **HIGH:** 2 (#3 GDK README, #27 PhenoMCP rustls-webpki alpha)
+- **MEDIUM:** 0
+- **Deferred / Info:** 4 (#6 OpenAI key, #9 agileplus-plugin-core, #17 kmobile ratatui, #26 org-governance Lane B)
+- **Newly resolved this wave (v3→v4):** 7 (AgilePlus #416, KDV #11, AgilePlus #431, PhenoProc #21, pheno full audit, PhenoObservability surrealdb, phenoShared validator)
+- **New this wave:** 1 (#27 PhenoMCP rustls-webpki alpha decision)
 
-**Net user-action items still critical: 5** (unchanged set: #1, #3, #4, #8, #12).
+**Net user-action items CRITICAL: 4** (#1, #3, #4, #8, #12 → #12 now resolved or deferred?).
+**Shortest path to zero advisories:** 
+1. Resolve #3 GDK README (1 decision).
+2. Decide #27 rustls-webpki alpha (1 decision).
+3. Run `/repos` gc when Bash sandbox approved (#8, blocked).
+4. Remaining rebase decisions (#1, #4, #12) are merge-strategy, not advisory-blocking.
+
 **Disk budget:** 36 GiB free.
 **Push policy:** Runbook does **not** push. All push actions remain user-gated.
