@@ -2,12 +2,12 @@
 
 ## Summary
 
-- **Total PRs opened today:** 6
-- **Total PRs merged:** 6 (100%)
-- **Unmerged/open:** 0
+- **Total PRs opened today:** 7
+- **Total PRs merged:** 6 (86%)
+- **Unmerged/open:** 1 (merge conflict)
 - **Closed without merge:** 0
 
-All PRs successfully merged. No outstanding work.
+Six PRs merged; one with merge conflict (PhenoProc #25) requires manual resolution.
 
 ---
 
@@ -21,6 +21,7 @@ All PRs successfully merged. No outstanding work.
 | AgilePlus | 431 | chore(deps): remove dead utoipa-axum dep (clears RUSTSEC-2024-0436) | MERGED | 2026-04-27T03:08:53Z | bf4b1e7338cf59207ed019863d838dc052367fbd |
 | KDesktopVirt | 11 | chore(deps): bump bollard 0.16→0.20 (clears 4 RUSTSEC incl. 2 CVEs) + stale-ignore cleanup | MERGED | 2026-04-26T23:41:51Z | f759f7a0954c6bacb85dc4181107798d24bba0ad |
 | PhenoProc | 21 | chore(submodule): remove Evalora dead reference (404 upstream) | MERGED | 2026-04-26T13:14:00Z | 43b57de477e8d150a34c1c472af2ba20b64a6cf7 |
+| PhenoProc | 25 | fix(submodule): add missing URL for crates/byteport (unblocks pheno transitive cargo fetch) | OPEN (conflict) | — | — |
 
 ---
 
@@ -34,12 +35,13 @@ All PRs successfully merged. No outstanding work.
 ### Spec & Planning (1 PR)
 - AgilePlus #413: Spec cancellation (phenotype-infrakit-stabilization)
 
-### Maintenance & Cleanup (2 PRs)
+### Maintenance & Cleanup (3 PRs)
 - Civis #253: README post-rebase reconcile
 - PhenoProc #21: Evalora submodule dead reference removal
+- PhenoProc #25: BytePort submodule URL (merge conflict — unresolved)
 
 ---
 
 ## Status
 
-All PRs verified merged. No blocking issues or reversions detected. Day's integration work complete.
+Six PRs merged successfully. PhenoProc #25 (byteport submodule URL) blocked by merge conflict with `main` — requires manual resolution or rebase. See issue tracking for conflict details.
