@@ -4,7 +4,44 @@ MCP bridge that lets Claude Code delegate sub-work through local OmniRoute.
 
 ## Current Local Path
 
-Claude Code is already configured to start this MCP server from `~/.claude/settings.json`:
+Claude Code has two OmniRoute paths on this machine:
+
+1. Primary Claude Code transport through OmniRoute's Anthropic-compatible
+   gateway.
+2. The `dispatch` MCP bridge for explicit side-task delegation from a normal
+   Claude Code session.
+
+OmniRoute itself documents Claude Code support through the dashboard CLI Tools
+page. The installed OmniRoute app writes this shape into
+`~/.claude/settings.json`:
+
+```json
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "http://localhost:20128/v1",
+    "ANTHROPIC_AUTH_TOKEN": "your-omniroute-api-key",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "cc/claude-opus-4-6",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "cc/claude-sonnet-4-6",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "cc/claude-haiku-4-5-20251001"
+  }
+}
+```
+
+Use `ANTHROPIC_AUTH_TOKEN`, not `ANTHROPIC_API_KEY`, for this path. Claude Code
+prefixes `ANTHROPIC_AUTH_TOKEN` with `Bearer` for the `Authorization` header.
+
+For one-off launches without changing global settings, export the same values
+in the shell:
+
+```bash
+cd ~/CodeProjects/Phenotype/repos
+ANTHROPIC_BASE_URL=http://localhost:20128/v1 \
+ANTHROPIC_AUTH_TOKEN=your-omniroute-api-key \
+ANTHROPIC_MODEL=Worker \
+claude --permission-mode auto --dangerously-skip-permissions --resume
+```
+
+The MCP delegation path is also configured from `~/.claude/settings.json`:
 
 ```json
 {
@@ -22,7 +59,7 @@ Claude Code is already configured to start this MCP server from `~/.claude/setti
 }
 ```
 
-That means the simple launch path is just normal Claude Code:
+That means the simple MCP-backed launch path is also just normal Claude Code:
 
 ```bash
 cd ~/CodeProjects/Phenotype/repos
@@ -30,8 +67,8 @@ claude --permission-mode auto --dangerously-skip-permissions --resume
 ```
 
 Inside Claude, use the `dispatch` MCP tools for OmniRoute-backed worker calls.
-This keeps Claude Code's own primary Anthropic transport unchanged while
-delegating side tasks through OmniRoute.
+This is useful when the primary session should stay on a Claude subscription or
+when you want typed, explicit fan-out to OmniRoute combos.
 
 ## OmniRoute Health
 
@@ -69,16 +106,16 @@ the current OmniRoute setup.
 
 ## Direct Claude Transport
 
-Do not rely on this as the default path right now:
+OmniRoute supports Claude Code as a first-class CLI integration. Prefer the
+dashboard one-click setup at `http://localhost:20128/dashboard/cli-tools` so the
+real API key is written safely and the base URL/model env vars are consistent.
 
-```bash
-ANTHROPIC_BASE_URL=http://localhost:20128 ANTHROPIC_API_KEY=local claude --model Worker
-```
+If a direct launch returns a malformed-response error, check these first:
 
-Claude Code reaches the local service, but current responses are OpenAI-style
-and Claude reports a malformed Anthropic response. Use the MCP dispatch bridge
-until OmniRoute has a Claude/Anthropic-compatible transport mode for primary
-Claude Code sessions.
+- `ANTHROPIC_BASE_URL` includes `/v1`
+- `ANTHROPIC_AUTH_TOKEN` is set to an OmniRoute endpoint API key
+- `ANTHROPIC_MODEL` or `--model` names an exposed OmniRoute model/combo
+- OmniRoute is running and `curl -s http://localhost:20128/v1/models` works
 
 ## Development
 

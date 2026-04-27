@@ -13,6 +13,10 @@ This unblocks the "5000000000x" ask: launch Claude normally, then use typed MCP
 tools such as `dispatch_worker` or `dispatch_main` instead of ad hoc shelling to
 model CLIs.
 
+OmniRoute also supports Claude Code as a primary Anthropic-compatible transport.
+The dispatch bridge is therefore an optional delegation layer, not the only
+supported Claude Code integration.
+
 ## Location
 
 ```
@@ -36,7 +40,38 @@ curl -s http://localhost:20128/v1/models
 
 Expected model IDs include `Worker`, `Main`, `FreeTier`, and `Codeman`.
 
-### 2. Verify Claude Code registration
+### 2. Configure direct Claude Code transport when desired
+
+The OmniRoute dashboard exposes a CLI Tools page for one-click Claude Code
+configuration. The installed route writes these environment values into
+`~/.claude/settings.json`:
+
+```json
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "http://localhost:20128/v1",
+    "ANTHROPIC_AUTH_TOKEN": "your-omniroute-api-key",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "cc/claude-opus-4-6",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "cc/claude-sonnet-4-6",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "cc/claude-haiku-4-5-20251001"
+  }
+}
+```
+
+For temporary shell-only routing:
+
+```bash
+cd ~/CodeProjects/Phenotype/repos
+ANTHROPIC_BASE_URL=http://localhost:20128/v1 \
+ANTHROPIC_AUTH_TOKEN=your-omniroute-api-key \
+ANTHROPIC_MODEL=Worker \
+claude --permission-mode auto --dangerously-skip-permissions --resume
+```
+
+Use `ANTHROPIC_AUTH_TOKEN` for OmniRoute endpoint keys. `ANTHROPIC_API_KEY`
+sends an `X-Api-Key` header and is not the dashboard-generated Claude Code path.
+
+### 3. Verify MCP dispatch registration
 
 `~/.claude/settings.json` should contain:
 
@@ -56,7 +91,7 @@ Expected model IDs include `Worker`, `Main`, `FreeTier`, and `Codeman`.
 }
 ```
 
-### 3. Launch Claude Code
+### 4. Launch Claude Code for MCP delegation
 
 Use the normal Claude Code session path:
 
@@ -65,15 +100,14 @@ cd ~/CodeProjects/Phenotype/repos
 claude --permission-mode auto --dangerously-skip-permissions --resume
 ```
 
-### 4. Test dispatch
+### 5. Test dispatch
 
 Ask Claude to call `dispatch_health`, then route a tiny worker prompt through
 `dispatch_worker`.
 
-Directly setting `ANTHROPIC_BASE_URL=http://localhost:20128` is not the current
-recommended path. Claude Code can reach the service, but the primary transport
-expects Anthropic-shaped responses while OmniRoute currently returns OpenAI-style
-chat completions.
+If direct Claude Code transport fails with a malformed-response error, first
+verify the base URL includes `/v1`, `ANTHROPIC_AUTH_TOKEN` is set to a real
+OmniRoute endpoint key, and the selected model/combo appears in `/v1/models`.
 
 ## MCP Tools Exposed
 
@@ -145,8 +179,10 @@ Check whether OmniRoute is reachable.
 
 1. **Add tool for debug mode:** `dispatch_debug(prompt, tier)` to expose `--debug` flag
 2. **Cost tracking:** Integrate with cheap-llm-mcp ledger if dispatch-worker supports it
-3. **Timeout tuning:** Make 300s timeout configurable via settings.json
-4. **Concurrency limits:** Add queuing if dispatch-worker has rate limits
+3. **Direct transport smoke:** Add a redacted helper that validates Claude Code
+   direct routing without logging endpoint keys
+4. **Timeout tuning:** Make 300s timeout configurable via settings.json
+5. **Concurrency limits:** Add queuing if dispatch-worker has rate limits
 
 ## Troubleshooting
 
