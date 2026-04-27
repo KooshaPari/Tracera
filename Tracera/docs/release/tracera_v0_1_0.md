@@ -136,10 +136,10 @@ Users on prior versions should:
 
 ## Support & Documentation
 
-- **Architecture**: `docs/architecture/`
-- **Operations**: `docs/operations/getting-started.md`
-- **API Reference**: `docs/api/` (gRPC + HTTP endpoints)
-- **Troubleshooting**: `docs/troubleshooting/`
+- **Release notes**: `docs/release/tracera_v0_1_0.md`
+- **Project overview**: `README.md`
+- **Operational guidance**: `README.md` deployment and quick-start sections
+- **Troubleshooting**: `README.md` quality and deployment sections
 
 ## Contributors
 

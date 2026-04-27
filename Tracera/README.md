@@ -39,8 +39,8 @@ Tracera transforms raw telemetry from your services into actionable insights. Th
 git clone https://github.com/KooshaPari/Tracera.git
 cd Tracera
 
-# Review the observability architecture
-cat docs/ARCHITECTURE.md
+# Review the current shipped documentation
+cat docs/release/tracera_v0_1_0.md
 
 # Start the full observability stack
 docker-compose -f .process-compose/docker-compose.yml up -d
@@ -85,10 +85,8 @@ Tracera/
 │   ├── integration/               # End-to-end tracing validation
 │   └── fixtures/                  # Pre-built telemetry samples
 └── docs/
-    ├── ARCHITECTURE.md            # System design and components
-    ├── INSTRUMENTATION.md         # How to add tracing to services
-    ├── ALERTS.md                  # Alert rules and thresholds
-    └── TROUBLESHOOTING.md         # Common issues and solutions
+    └── release/
+        └── tracera_v0_1_0.md      # Shipped v0.1.0 release documentation
 ```
 
 ## Related Phenotype Projects
