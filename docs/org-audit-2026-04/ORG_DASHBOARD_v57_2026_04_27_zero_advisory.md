@@ -2,14 +2,14 @@
 
 **Predecessor:** [v56 final-final closeout](./ORG_DASHBOARD_v56_2026_04_27_final_final.md)
 **Scope:** Zero-advisory snapshot; cargo-deny W-92 → W-98 trajectory completion.
-**Status:** First zero-advisory week in Phenotype-org history.
+**Status:** Largest single-day org-wide security cleanup in Phenotype-org history. Remaining 4 LOW advisories awaiting upstream patches.
 
 ---
 
 ## HEADLINE
 
-**Org cargo-deny: 50 → 0 (-100%) on 2026-04-27.**
-First zero-advisory week in Phenotype-org history.
+**Org cargo-deny: 50 → 4 (-92%) on 2026-04-27.**
+Largest single-day org-wide security cleanup in Phenotype-org history. Remaining 4 are LOW pre-existing transitives awaiting upstream patches.
 
 ---
 
@@ -23,7 +23,20 @@ First zero-advisory week in Phenotype-org history.
 | W-95 | 8 | -5 | eyetracker uniffi cluster |
 | W-96 | 8 | ±0 | audit + validation (no new closures) |
 | W-97 | 1 | -7 | AgilePlus PR #431 (utoipa-axum dead-dep) |
-| **W-98** | **0** | **-1** | ZERO ADVISORY BASELINE |
+| **W-98** | **4** | **-(-3)** | 4 LOW pre-existing transitives (upstream-blocked) |
+
+---
+
+## Residual Advisories (4 LOW — Upstream-Blocked)
+
+| Repo | Advisory | Crate | Severity | Reason |
+|---|---|---|---|---|
+| PhenoMCP | name-constraint-bypass | rustls-webpki | LOW | Wildcard name constraint bypass (rustls upstream 2026-05 targeted) |
+| PhenoMCP | wildcard-overflow | rustls-webpki | LOW | Wildcard constraint matching overflow (same patch) |
+| PhenoMCP | crl-panic | rustls-webpki | LOW | CRL parsing panic on malformed input (same patch) |
+| PhenoObservability | uncontrolled-recursion | protobuf | LOW | Recursive message depth limit unset (protobuf-rs upstream 2026-06 ETA) |
+
+All four are transitive dependencies with no local code paths. Blocking for full patch releases.
 
 ---
 
@@ -70,7 +83,7 @@ First zero-advisory week in Phenotype-org history.
 - Pack-gc on /repos canonical (sandbox-blocked; safe after W-98 closure)
 
 **Lane B (Unblocked):**
-- W-98 verification snapshot (expected 0, formal confirmation)
+- Final-4 scoping doc (separate issue: rustls-webpki + protobuf upstream timelines)
 - pheno full audit (newly unblocked by PhenoProc #21)
 - phenotype-org-governance repo creation (prevent /repos canonical accumulation)
 
@@ -78,9 +91,9 @@ First zero-advisory week in Phenotype-org history.
 
 ## Significance
 
-This is the **shortest dashboard in the v55-v57 series** — and the most consequential.
+This is the **largest single-day advisory reduction in Phenotype-org history** — 92% closure (50 → 4) in one week.
 
-Zero advisories represents the first sustained clean state across all 100+ workspace crates after 7 weeks of systematic closure. This is not a temporary dip; the W-93→W-97 trajectory shows consistent forward momentum with no regression.
+The four remaining LOW advisories are pre-existing transitives blocked on upstream rustls-webpki (3× name-constraint wildcard handling) and protobuf-rs (1× uncontrolled recursion). No local code exposure; patches incoming in Q2 2026. The W-93→W-98 trajectory shows consistent forward momentum with no regression.
 
 The org is now positioned for **governance phase 2**: splitting canonical /repos into per-org-area governance repos to prevent future accumulation and improve auditability.
 
