@@ -1,0 +1,286 @@
+name: Full Quality Check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday at midnight
+
+jobs:
+  comprehensive-test:
+    name: Comprehensive Testing
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.13"]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Verify documentation fingerprints
+      run: python scripts/checks/verify_pheno_docs.py
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Install all dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ruff black isort mypy bandit[toml] pytest pytest-cov pytest-asyncio safety
+
+        # Install all kits
+        for kit in *-kit mcp-QA pydevkit; do
+          if [ -d "$kit" ]; then
+            cd "$kit"
+            if [ -f requirements.txt ]; then
+              pip install -r requirements.txt
+            fi
+            if [ -f requirements-dev.txt ]; then
+              pip install -r requirements-dev.txt
+            fi
+            if [ -f setup.py ] || [ -f pyproject.toml ]; then
+              pip install -e . || true
+            fi
+            cd ..
+          fi
+        done
+
+    - name: Run comprehensive linting
+      run: |
+        echo "=== Ruff Linting ==="
+        ruff check . --statistics
+
+        echo "=== Black Formatting ==="
+        black --check .
+
+        echo "=== Import Sorting ==="
+        isort --check-only . --profile black
+
+    - name: Run type checking
+      run: |
+        echo "=== MyPy Type Checking ==="
+        for kit in *-kit mcp-QA pydevkit; do
+          if [ -d "$kit" ]; then
+            echo "Type checking $kit..."
+            mypy "$kit" --ignore-missing-imports || true
+          fi
+        done
+      continue-on-error: true
+
+    - name: Run security scans
+      run: |
+        echo "=== Bandit Security Scan ==="
+        bandit -r . -ll
+
+        echo "=== Safety Dependency Check ==="
+        for kit in *-kit mcp-QA pydevkit; do
+          if [ -d "$kit" ] && [ -f "$kit/requirements.txt" ]; then
+            echo "Checking $kit dependencies..."
+            safety check -r "$kit/requirements.txt" || true
+          fi
+        done
+      continue-on-error: true
+
+    - name: Run all tests
+      run: |
+        echo "=== Running Tests ==="
+        for kit in *-kit mcp-QA pydevkit; do
+          if [ -d "$kit/tests" ]; then
+            echo "Testing $kit..."
+            cd "$kit"
+            pytest --cov --cov-report=xml --cov-report=term-missing || true
+            cd ..
+          fi
+        done
+
+    - name: Generate coverage report
+      run: |
+        pip install coverage[toml]
+        # Combine coverage from all kits
+        coverage combine *-kit/.coverage mcp-QA/.coverage pydevkit/.coverage 2>/dev/null || true
+        coverage report || true
+        coverage xml || true
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./coverage.xml
+        flags: comprehensive
+        fail_ci_if_error: false
+
+  documentation-check:
+    name: Documentation Quality
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check README files
+      run: |
+        echo "Checking for README files in all kits..."
+        for kit in *-kit mcp-QA pydevkit; do
+          if [ -d "$kit" ]; then
+            if [ ! -f "$kit/README.md" ]; then
+              echo "⚠️  Missing README.md in $kit"
+            else
+              echo "✅ $kit has README.md"
+            fi
+          fi
+        done
+
+    - name: Check for __init__.py files
+      run: |
+        echo "Checking for __init__.py files..."
+        for kit in *-kit mcp-QA pydevkit; do
+          if [ -d "$kit" ]; then
+            # Find Python package directories without __init__.py
+            find "$kit" -type d -name "[!._]*" | while read dir; do
+              if [ -n "$(find "$dir" -maxdepth 1 -name "*.py" -not -name "__*")" ]; then
+                if [ ! -f "$dir/__init__.py" ]; then
+                  echo "⚠️  Missing __init__.py in $dir"
+                fi
+              fi
+            done
+          fi
+        done
+
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+
+    - name: Audit dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pip-audit safety
+
+        echo "=== pip-audit for security vulnerabilities ==="
+        for kit in *-kit mcp-QA pydevkit; do
+          if [ -f "$kit/requirements.txt" ]; then
+            echo "Auditing $kit..."
+            pip-audit -r "$kit/requirements.txt" || true
+          fi
+        done
+
+        echo "=== Safety check for known vulnerabilities ==="
+        for kit in *-kit mcp-QA pydevkit; do
+          if [ -f "$kit/requirements.txt" ]; then
+            echo "Safety checking $kit..."
+            safety check -r "$kit/requirements.txt" --json || true
+          fi
+        done
+      continue-on-error: true
+
+  code-quality-metrics:
+    name: Code Quality Metrics
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+
+    - name: Install analysis tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install radon vulture pylint xenon mccabe
+
+    - name: Calculate code complexity
+      run: |
+        echo "=== Cyclomatic Complexity (radon) ==="
+        for kit in *-kit mcp-QA pydevkit; do
+          if [ -d "$kit" ]; then
+            echo "Analyzing $kit..."
+            radon cc "$kit" -a -s || true
+            echo ""
+          fi
+        done
+      continue-on-error: true
+
+    - name: Maintainability Index
+      run: |
+        echo "=== Maintainability Index (radon) ==="
+        for kit in *-kit mcp-QA pydevkit; do
+          if [ -d "$kit" ]; then
+            echo "Analyzing $kit..."
+            radon mi "$kit" -s || true
+            echo ""
+          fi
+        done
+      continue-on-error: true
+
+    - name: Complexity Threshold Check
+      run: |
+        echo "=== Complexity Threshold Check (xenon) ==="
+        for kit in *-kit mcp-QA pydevkit; do
+          if [ -d "$kit" ]; then
+            echo "Checking $kit..."
+            xenon "$kit" --max-absolute B --max-modules A --max-average A || true
+            echo ""
+          fi
+        done
+      continue-on-error: true
+
+    - name: Check for dead code
+      run: |
+        echo "=== Dead Code Detection (vulture) ==="
+        for kit in *-kit mcp-QA pydevkit; do
+          if [ -d "$kit" ]; then
+            echo "Checking $kit..."
+            vulture "$kit" --min-confidence 80 || true
+            echo ""
+          fi
+        done
+      continue-on-error: true
+
+    - name: Pylint Analysis
+      run: |
+        echo "=== Pylint Comprehensive Analysis ==="
+        for kit in *-kit mcp-QA pydevkit; do
+          if [ -d "$kit" ]; then
+            echo "Analyzing $kit..."
+            pylint "$kit" --exit-zero --score=yes --reports=yes || true
+            echo ""
+          fi
+        done
+      continue-on-error: true
+
+    - name: Generate quality report
+      run: |
+        echo "=== Code Quality Summary ==="
+        echo "Total Python files:"
+        find *-kit mcp-QA pydevkit -name "*.py" | wc -l
+
+        echo ""
+        echo "Total lines of code:"
+        find *-kit mcp-QA pydevkit -name "*.py" -exec wc -l {} + | tail -1
+
+        echo ""
+        echo "Kits with tests:"
+        for kit in *-kit mcp-QA pydevkit; do
+          if [ -d "$kit/tests" ]; then
+            echo "  ✅ $kit"
+          else
+            echo "  ❌ $kit (no tests directory)"
+          fi
+        done
+
+        echo ""
+        echo "Average Complexity Metrics:"
+        radon cc *-kit mcp-QA pydevkit -a --total-average 2>/dev/null || echo "No data"

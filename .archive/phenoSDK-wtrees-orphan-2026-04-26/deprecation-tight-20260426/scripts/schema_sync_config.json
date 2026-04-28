@@ -1,0 +1,19 @@
+{
+  "sync_modes": {
+    "full": "Complete database synchronization",
+    "incremental": "Incremental updates only",
+    "dry_run": "Preview changes without execution"
+  },
+  "validation_rules": {
+    "check_constraints": true,
+    "foreign_keys": true,
+    "data_integrity": true,
+    "performance_impact": true
+  },
+  "excluded_tables": [
+    "*_temp",
+    "*_backup",
+    "test_*"
+  ],
+  "backup_before_sync": true
+}

@@ -1,0 +1,551 @@
+groups:
+  # ============================================================================
+  # API & Service Health Alerts (MTTR < 5 minutes)
+  # ============================================================================
+  - name: api_alerts
+    interval: 30s
+    rules:
+      - alert: HighAPILatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 2m
+        labels:
+          severity: warning
+          team: backend
+          slo: latency
+        annotations:
+          summary: "High API latency (P95 >1s)"
+          description: "API P95 latency is {{ $value | humanizeDuration }} on {{ $labels.job }}"
+          runbook_url: "https://wiki.example.com/runbooks/high-api-latency"
+          mttr_target: "5m"
+
+      - alert: CriticalAPILatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 5
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+          slo: latency
+        annotations:
+          summary: "CRITICAL: Very high API latency (P95 >5s)"
+          description: "API P95 latency is {{ $value | humanizeDuration }} on {{ $labels.job }}"
+          runbook_url: "https://wiki.example.com/runbooks/critical-api-latency"
+          mttr_target: "2m"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          team: backend
+          slo: availability
+        annotations:
+          summary: "High error rate (>5%)"
+          description: "Error rate is {{ $value | humanizePercentage }} on {{ $labels.job }}"
+          runbook_url: "https://wiki.example.com/runbooks/high-error-rate"
+          mttr_target: "5m"
+
+      - alert: CriticalErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.20
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+          slo: availability
+        annotations:
+          summary: "CRITICAL: Very high error rate (>20%)"
+          description: "Error rate is {{ $value | humanizePercentage }} on {{ $labels.job }}"
+          runbook_url: "https://wiki.example.com/runbooks/critical-error-rate"
+          mttr_target: "2m"
+
+      - alert: ServiceDown
+        expr: up{job=~"go-backend|python-backend|frontend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+          slo: availability
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} at {{ $labels.instance }} is unreachable"
+          runbook_url: "https://wiki.example.com/runbooks/service-down"
+          mttr_target: "1m"
+
+      - alert: ServiceSlowResponses
+        expr: |
+          histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 3m
+        labels:
+          severity: warning
+          team: backend
+          slo: latency
+        annotations:
+          summary: "Service has slow response times (P99 >2s)"
+          description: "P99 latency is {{ $value | humanizeDuration }} on {{ $labels.job }}"
+          runbook_url: "https://wiki.example.com/runbooks/slow-responses"
+
+  # ============================================================================
+  # Database Alerts (MTTR < 5 minutes)
+  # ============================================================================
+  - name: database_alerts
+    interval: 30s
+    rules:
+      - alert: DatabaseConnectionPoolExhausted
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          team: backend
+          slo: availability
+        annotations:
+          summary: "Database connection pool >80% used"
+          description: "{{ $value | humanizePercentage }} of connections in use ({{ $labels.instance }})"
+          runbook_url: "https://wiki.example.com/runbooks/db-connection-pool-exhaustion"
+          mttr_target: "5m"
+
+      - alert: DatabaseConnectionPoolCritical
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.95
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+          slo: availability
+        annotations:
+          summary: "Database connection pool CRITICAL (>95% used)"
+          description: "{{ $value | humanizePercentage }} of connections in use on {{ $labels.instance }}"
+          runbook_url: "https://wiki.example.com/runbooks/db-connection-pool-critical"
+          mttr_target: "2m"
+
+      - alert: HighDatabaseLatency
+        expr: |
+          histogram_quantile(0.95, rate(pg_stat_statements_query_time_seconds_bucket[5m])) > 1
+        for: 3m
+        labels:
+          severity: warning
+          team: backend
+          slo: latency
+        annotations:
+          summary: "High database query latency (P95 >1s)"
+          description: "Database P95 latency is {{ $value | humanizeDuration }}"
+          runbook_url: "https://wiki.example.com/runbooks/high-db-latency"
+
+      - alert: DatabaseSlowQueries
+        expr: |
+          rate(pg_stat_statements_calls_total{query=~"SELECT.*|UPDATE.*|DELETE.*"}[5m]) > 0 and
+          rate(pg_stat_statements_query_time_seconds_total[5m]) / rate(pg_stat_statements_calls_total[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+          slo: latency
+        annotations:
+          summary: "Database slow queries detected"
+          description: "Average query time is {{ $value | humanizeDuration }}"
+          runbook_url: "https://wiki.example.com/runbooks/slow-queries"
+
+      - alert: DatabaseHighLoad
+        expr: |
+          pg_stat_database_xact_rollback > 0 and
+          rate(pg_stat_database_xact_rollback[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          team: backend
+          slo: availability
+        annotations:
+          summary: "Database experiencing transaction rollbacks"
+          description: "Rollback rate is {{ $value }} transactions/sec"
+          runbook_url: "https://wiki.example.com/runbooks/db-rollbacks"
+
+  # ============================================================================
+  # Memory & Resource Alerts (MTTR < 5 minutes)
+  # ============================================================================
+  - name: resource_alerts
+    interval: 30s
+    rules:
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes / 1024 / 1024 > 1024
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+          slo: availability
+        annotations:
+          summary: "Process using >1GB memory"
+          description: "Process {{ $labels.job }} on {{ $labels.instance }} is using {{ $value | humanize }}MB"
+          runbook_url: "https://wiki.example.com/runbooks/high-memory"
+          mttr_target: "5m"
+
+      - alert: CriticalMemoryUsage
+        expr: process_resident_memory_bytes / 1024 / 1024 > 2048
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+          slo: availability
+        annotations:
+          summary: "Process using >2GB memory (CRITICAL)"
+          description: "Process {{ $labels.job }} on {{ $labels.instance }} is using {{ $value | humanize }}MB"
+          runbook_url: "https://wiki.example.com/runbooks/critical-memory"
+          mttr_target: "2m"
+
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+          slo: availability
+        annotations:
+          summary: "Process CPU >80%"
+          description: "Process {{ $labels.job }} CPU usage is {{ $value | humanizePercentage }}"
+          runbook_url: "https://wiki.example.com/runbooks/high-cpu"
+
+      - alert: CriticalCPUUsage
+        expr: rate(process_cpu_seconds_total[5m]) > 0.95
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+          slo: availability
+        annotations:
+          summary: "Process CPU >95% (CRITICAL)"
+          description: "Process {{ $labels.job }} CPU usage is {{ $value | humanizePercentage }}"
+          runbook_url: "https://wiki.example.com/runbooks/critical-cpu"
+          mttr_target: "2m"
+
+      - alert: DiskSpaceLow
+        expr: node_filesystem_avail_bytes / node_filesystem_size_bytes < 0.1
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+          slo: availability
+        annotations:
+          summary: "Low disk space (<10%)"
+          description: "Filesystem {{ $labels.device }} on {{ $labels.instance }} has {{ $value | humanizePercentage }} space remaining"
+          runbook_url: "https://wiki.example.com/runbooks/low-disk-space"
+
+  # ============================================================================
+  # Cache & Performance Alerts
+  # ============================================================================
+  - name: cache_alerts
+    interval: 30s
+    rules:
+      - alert: LowCacheHitRatio
+        expr: |
+          sum(rate(tracertm_cache_hits_total[10m])) by (cache_type) /
+          (sum(rate(tracertm_cache_hits_total[10m])) by (cache_type) +
+           sum(rate(tracertm_cache_misses_total[10m])) by (cache_type)) < 0.5
+        for: 10m
+        labels:
+          severity: info
+          team: backend
+        annotations:
+          summary: "Low cache hit ratio for {{ $labels.cache_type }}"
+          description: "Cache hit ratio is {{ $value | humanizePercentage }} (threshold: >50%)"
+          runbook_url: "https://wiki.example.com/runbooks/low-cache-hit-ratio"
+
+      - alert: CacheUnavailable
+        expr: |
+          up{job="cache"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+          slo: availability
+        annotations:
+          summary: "Cache is unavailable"
+          description: "Cache service is unreachable on {{ $labels.instance }}"
+          runbook_url: "https://wiki.example.com/runbooks/cache-unavailable"
+          mttr_target: "2m"
+
+  # ============================================================================
+  # Message Queue & Async Alerts
+  # ============================================================================
+  - name: messaging_alerts
+    interval: 30s
+    rules:
+      - alert: MessageQueueHigh
+        expr: |
+          rate(tracertm_message_queue_size[5m]) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Message queue size increasing rapidly"
+          description: "Queue {{ $labels.subject }} has {{ $value | humanize }} messages queued"
+          runbook_url: "https://wiki.example.com/runbooks/high-queue-size"
+
+      - alert: MessageConsumerLag
+        expr: |
+          rate(tracertm_messages_published_total[5m]) -
+          rate(tracertm_messages_consumed_total[5m]) > 500
+        for: 3m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Message consumer lag detected"
+          description: "Consumer lag is {{ $value }} messages/sec"
+          runbook_url: "https://wiki.example.com/runbooks/consumer-lag"
+
+  # ============================================================================
+  # Infrastructure & System Alerts
+  # ============================================================================
+  - name: infrastructure_alerts
+    interval: 30s
+    rules:
+      - alert: PrometheusDown
+        expr: up{job="prometheus"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infra
+          slo: monitoring
+        annotations:
+          summary: "Prometheus monitoring is down"
+          description: "Prometheus instance at {{ $labels.instance }} is unreachable"
+          runbook_url: "https://wiki.example.com/runbooks/prometheus-down"
+
+      - alert: AlertmanagerDown
+        expr: up{job="alertmanager"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infra
+          slo: monitoring
+        annotations:
+          summary: "Alertmanager is down"
+          description: "Alertmanager instance at {{ $labels.instance }} is unreachable"
+          runbook_url: "https://wiki.example.com/runbooks/alertmanager-down"
+
+      - alert: NodeUnreachable
+        expr: up{job="node"} == 0
+        for: 1m
+        labels:
+          severity: warning
+          team: infra
+        annotations:
+          summary: "Node exporter is unreachable"
+          description: "Node exporter on {{ $labels.instance }} is not responding"
+          runbook_url: "https://wiki.example.com/runbooks/node-unreachable"
+
+  # ============================================================================
+  # Workflow & Task Execution Alerts
+  # ============================================================================
+  - name: workflow_alerts
+    interval: 30s
+    rules:
+      - alert: NoActiveAgents
+        expr: tracertm_active_agents == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+          slo: availability
+        annotations:
+          summary: "No active agents in the system"
+          description: "Agent coordination system has no active agents"
+          runbook_url: "https://wiki.example.com/runbooks/no-active-agents"
+          mttr_target: "1m"
+
+      - alert: LowAgentCount
+        expr: tracertm_active_agents < 2
+        for: 3m
+        labels:
+          severity: warning
+          team: backend
+          slo: availability
+        annotations:
+          summary: "Low number of active agents"
+          description: "Only {{ $value }} agents active (expected: >= 3)"
+          runbook_url: "https://wiki.example.com/runbooks/low-agent-count"
+
+      - alert: HighTaskErrorRate
+        expr: |
+          100 * sum(rate(tracertm_tasks_completed_total{status="failure"}[5m])) by (agent_type) /
+          sum(rate(tracertm_tasks_completed_total[5m])) by (agent_type) > 20
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+          slo: availability
+        annotations:
+          summary: "High task error rate for {{ $labels.agent_type }}"
+          description: "Error rate is {{ $value | humanizePercentage }}"
+          runbook_url: "https://wiki.example.com/runbooks/high-task-error-rate"
+
+      - alert: AgentHeartbeatFailure
+        expr: rate(tracertm_agent_heartbeats_total[5m]) == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+          slo: availability
+        annotations:
+          summary: "No agent heartbeats received"
+          description: "No heartbeats from agents for 2 minutes"
+          runbook_url: "https://wiki.example.com/runbooks/agent-heartbeat-failure"
+          mttr_target: "2m"
+
+  # ============================================================================
+  # SLO Monitoring (Technical SLIs)
+  # ============================================================================
+  - name: slo_alerts
+    interval: 60s
+    rules:
+      - alert: AvailabilitySLOWarning
+        expr: |
+          (1 - (sum(rate(http_requests_total{status=~"5.."}[30m])) /
+                 sum(rate(http_requests_total[30m])))) < 0.95
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+          slo: availability
+          slo_target: "99.9%"
+        annotations:
+          summary: "Availability SLO at risk (current: <95%)"
+          description: "System availability is {{ $value | humanizePercentage }} (target: >99.9%)"
+          runbook_url: "https://wiki.example.com/runbooks/slo-availability"
+
+      - alert: LatencySLOWarning
+        expr: |
+          histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[30m])) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+          slo: latency
+          slo_target: "500ms"
+        annotations:
+          summary: "Latency SLO at risk (P95 >500ms)"
+          description: "P95 latency is {{ $value | humanizeDuration }} (target: <500ms)"
+          runbook_url: "https://wiki.example.com/runbooks/slo-latency"
+
+  # ============================================================================
+  # Automated Rollback Triggers
+  # ============================================================================
+  - name: rollback_triggers
+    interval: 30s
+    rules:
+      - alert: RollbackTrigger_ErrorRate
+        expr: |
+          100 * rate(http_requests_total{status=~"5.."}[5m]) /
+          rate(http_requests_total[5m]) > 5
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+          rollback: auto
+          trigger_type: error_rate
+        annotations:
+          summary: "ROLLBACK TRIGGER: Error rate >5% for 2 minutes"
+          description: "Error rate is {{ $value | humanizePercentage }} - triggering automatic rollback"
+          runbook_url: "https://wiki.example.com/runbooks/auto-rollback-error-rate"
+          action: "automatic_rollback"
+
+      - alert: RollbackTrigger_Latency
+        expr: |
+          histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) /
+          histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[1h] offset 1d)) > 2
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+          rollback: auto
+          trigger_type: latency
+        annotations:
+          summary: "ROLLBACK TRIGGER: Latency >2x baseline for 2 minutes"
+          description: "Current P95 latency is {{ $value }}x baseline - triggering automatic rollback"
+          runbook_url: "https://wiki.example.com/runbooks/auto-rollback-latency"
+          action: "automatic_rollback"
+
+      - alert: RollbackTrigger_ServiceDown
+        expr: |
+          up{job=~"go-backend|python-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+          rollback: auto
+          trigger_type: service_failure
+        annotations:
+          summary: "ROLLBACK TRIGGER: Critical service {{ $labels.job }} down"
+          description: "Service {{ $labels.job }} has been down for 1 minute - triggering automatic rollback"
+          runbook_url: "https://wiki.example.com/runbooks/auto-rollback-service-down"
+          action: "automatic_rollback"
+
+      - alert: RollbackTrigger_DatabaseFailure
+        expr: |
+          up{job="postgresql"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+          rollback: auto
+          trigger_type: database_failure
+        annotations:
+          summary: "ROLLBACK TRIGGER: Database unavailable"
+          description: "PostgreSQL has been unavailable for 1 minute - triggering automatic rollback"
+          runbook_url: "https://wiki.example.com/runbooks/auto-rollback-database"
+          action: "automatic_rollback"
+
+      - alert: RollbackTrigger_CascadingFailures
+        expr: |
+          count(ALERTS{severity="critical",alertstate="firing"}) > 3
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+          rollback: auto
+          trigger_type: cascading_failures
+        annotations:
+          summary: "ROLLBACK TRIGGER: Multiple critical alerts firing"
+          description: "{{ $value }} critical alerts are firing simultaneously - triggering automatic rollback"
+          runbook_url: "https://wiki.example.com/runbooks/auto-rollback-cascading"
+          action: "automatic_rollback"
+
+  # ============================================================================
+  # Rollback Success Monitoring
+  # ============================================================================
+  - name: rollback_monitoring
+    interval: 30s
+    rules:
+      - alert: RollbackInProgress
+        expr: |
+          tracertm_rollback_in_progress == 1
+        for: 1m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Automated rollback in progress"
+          description: "System rollback started at {{ $labels.start_time }} - reason: {{ $labels.reason }}"
+          runbook_url: "https://wiki.example.com/runbooks/rollback-monitoring"
+
+      - alert: RollbackFailed
+        expr: |
+          tracertm_rollback_status{status="failed"} == 1
+        for: 0m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "CRITICAL: Automated rollback failed"
+          description: "Rollback failed for component {{ $labels.component }} - manual intervention required"
+          runbook_url: "https://wiki.example.com/runbooks/rollback-failed"
+          action: "page_oncall"
+
+      - alert: RollbackTooSlow
+        expr: |
+          tracertm_rollback_duration_seconds > 120
+        for: 0m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Rollback exceeding 2-minute target"
+          description: "Rollback taking {{ $value | humanizeDuration }} (target: <2 minutes)"
+          runbook_url: "https://wiki.example.com/runbooks/slow-rollback"

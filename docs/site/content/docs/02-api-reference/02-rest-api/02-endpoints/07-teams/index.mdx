@@ -1,0 +1,653 @@
+---
+title: Teams API
+description: Complete API reference for managing teams, team members, and team permissions in TraceRTM
+---
+
+# Teams API
+
+Teams group users together for easier permission management and collaboration. Assign teams to projects to grant all team members appropriate access.
+
+## Endpoints Overview
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/v1/teams` | List teams |
+| `POST` | `/v1/teams` | Create team |
+| `GET` | `/v1/teams/{team_id}` | Get team |
+| `PATCH` | `/v1/teams/{team_id}` | Update team |
+| `DELETE` | `/v1/teams/{team_id}` | Delete team |
+| `GET` | `/v1/teams/{team_id}/members` | List team members |
+| `POST` | `/v1/teams/{team_id}/members` | Add member |
+| `DELETE` | `/v1/teams/{team_id}/members/{user_id}` | Remove member |
+| `GET` | `/v1/teams/{team_id}/projects` | List team projects |
+
+---
+
+## The Team Object
+
+```json
+{
+  "id": "team_engineering",
+  "name": "Engineering Team",
+  "description": "Software development and testing team",
+  "slug": "engineering",
+  "visibility": "visible",
+  "default_project_role": "editor",
+  "settings": {
+    "allow_self_join": false,
+    "require_approval": true,
+    "notifications": {
+      "new_member": true,
+      "project_assignment": true
+    }
+  },
+  "member_count": 15,
+  "project_count": 5,
+  "created_by": "user_admin123",
+  "created_at": "2024-01-15T10:00:00Z",
+  "updated_at": "2024-11-20T14:00:00Z"
+}
+```
+
+### Team Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique team identifier (prefix: `team_`) |
+| `name` | string | Team name |
+| `description` | string | Team description |
+| `slug` | string | URL-friendly identifier |
+| `visibility` | string | `visible`, `hidden` |
+| `default_project_role` | string | Default role when added to projects |
+| `settings` | object | Team settings |
+| `member_count` | integer | Number of members |
+| `project_count` | integer | Number of assigned projects |
+| `created_by` | string | Creator user ID |
+| `created_at` | string | Creation timestamp |
+| `updated_at` | string | Last update timestamp |
+
+### Team Member Roles
+
+| Role | Description |
+|------|-------------|
+| `owner` | Full team control, can delete team |
+| `admin` | Manage members and settings |
+| `member` | Standard team member |
+
+---
+
+## List Teams
+
+Retrieve teams in your organization.
+
+```http
+GET /v1/teams
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `visibility` | string | — | Filter by visibility |
+| `search` | string | — | Search team name |
+| `member_id` | string | — | Teams containing user |
+| `project_id` | string | — | Teams assigned to project |
+| `sort` | string | `name` | Sort field |
+| `limit` | integer | 20 | Results per page |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/teams?limit=20" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "team_engineering",
+      "name": "Engineering Team",
+      "description": "Software development team",
+      "member_count": 15,
+      "project_count": 5,
+      "created_at": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "team_qa",
+      "name": "QA Team",
+      "description": "Quality assurance team",
+      "member_count": 8,
+      "project_count": 5,
+      "created_at": "2024-02-01T10:00:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 10,
+    "limit": 20,
+    "has_next": false
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# List all teams
+teams = client.teams.list()
+
+for team in teams.data:
+    print(f"{team.name}: {team.member_count} members")
+
+# Find teams for a user
+my_teams = client.teams.list(member_id="user_abc123")
+
+# Teams on a project
+project_teams = client.teams.list(project_id="proj_abc123")
+```
+
+#### TypeScript
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// List all teams
+const teams = await client.teams.list();
+
+teams.data.forEach(team => {
+  console.log(`${team.name}: ${team.memberCount} members`);
+});
+```
+
+---
+
+## Create Team
+
+Create a new team.
+
+```http
+POST /v1/teams
+```
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Team name |
+| `description` | string | No | Team description |
+| `slug` | string | No | URL slug (auto-generated if omitted) |
+| `visibility` | string | No | `visible` (default), `hidden` |
+| `default_project_role` | string | No | Default project role |
+| `settings` | object | No | Team settings |
+| `members` | array | No | Initial member user IDs |
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/teams" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Safety Team",
+    "description": "Functional safety and compliance",
+    "slug": "safety",
+    "default_project_role": "reviewer",
+    "settings": {
+      "allow_self_join": false,
+      "require_approval": true
+    },
+    "members": ["user_safety1", "user_safety2"]
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "team_safety",
+    "name": "Safety Team",
+    "description": "Functional safety and compliance",
+    "slug": "safety",
+    "visibility": "visible",
+    "default_project_role": "reviewer",
+    "settings": {
+      "allow_self_join": false,
+      "require_approval": true
+    },
+    "member_count": 2,
+    "project_count": 0,
+    "created_by": "user_admin123",
+    "created_at": "2024-12-08T10:00:00Z"
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+team = client.teams.create(
+    name="Safety Team",
+    description="Functional safety and compliance",
+    default_project_role="reviewer",
+    members=["user_safety1", "user_safety2"]
+)
+
+print(f"Created team: {team.id}")
+```
+
+#### TypeScript
+
+```typescript
+const team = await client.teams.create({
+  name: 'Safety Team',
+  description: 'Functional safety and compliance',
+  defaultProjectRole: 'reviewer',
+  members: ['user_safety1', 'user_safety2']
+});
+
+console.log(`Created team: ${team.id}`);
+```
+
+---
+
+## Get Team
+
+Retrieve a team by ID.
+
+```http
+GET /v1/teams/{team_id}
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `include` | string | — | Include: `members`, `projects` |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/teams/team_engineering?include=members,projects" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "team_engineering",
+    "name": "Engineering Team",
+    "description": "Software development team",
+    "member_count": 15,
+    "project_count": 5,
+    "members": [
+      {
+        "user_id": "user_abc123",
+        "name": "Jane Engineer",
+        "email": "jane@company.com",
+        "role": "admin",
+        "joined_at": "2024-01-15T10:00:00Z"
+      }
+    ],
+    "projects": [
+      {
+        "id": "proj_abc123",
+        "name": "Vehicle Control System",
+        "role": "editor"
+      }
+    ],
+    "created_at": "2024-01-15T10:00:00Z"
+  }
+}
+```
+
+---
+
+## Update Team
+
+Update team settings.
+
+```http
+PATCH /v1/teams/{team_id}
+```
+
+### Request Body
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Team name |
+| `description` | string | Team description |
+| `visibility` | string | Visibility setting |
+| `default_project_role` | string | Default project role |
+| `settings` | object | Team settings |
+
+### Request
+
+```bash
+curl -X PATCH "https://api.tracertm.dev/v1/teams/team_engineering" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Updated description",
+    "default_project_role": "editor"
+  }'
+```
+
+---
+
+## Delete Team
+
+Delete a team. Members are not deleted but lose team-based permissions.
+
+```http
+DELETE /v1/teams/{team_id}
+```
+
+### Request
+
+```bash
+curl -X DELETE "https://api.tracertm.dev/v1/teams/team_obsolete" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "team_obsolete",
+    "deleted": true,
+    "deleted_at": "2024-12-08T10:00:00Z",
+    "members_affected": 8
+  }
+}
+```
+
+---
+
+## List Team Members
+
+Get all members of a team.
+
+```http
+GET /v1/teams/{team_id}/members
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `role` | string | — | Filter by team role |
+| `search` | string | — | Search by name/email |
+| `sort` | string | `name` | Sort field |
+| `limit` | integer | 50 | Results per page |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/teams/team_engineering/members" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "user_id": "user_abc123",
+      "name": "Jane Engineer",
+      "email": "jane@company.com",
+      "avatar_url": "https://...",
+      "role": "admin",
+      "joined_at": "2024-01-15T10:00:00Z"
+    },
+    {
+      "user_id": "user_def456",
+      "name": "John Developer",
+      "email": "john@company.com",
+      "avatar_url": "https://...",
+      "role": "member",
+      "joined_at": "2024-02-01T10:00:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 15,
+    "limit": 50,
+    "has_next": false
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+members = client.teams.list_members("team_engineering")
+
+for member in members.data:
+    print(f"{member.name} ({member.role})")
+```
+
+---
+
+## Add Team Member
+
+Add a user to a team.
+
+```http
+POST /v1/teams/{team_id}/members
+```
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `user_id` | string | Yes | User to add |
+| `role` | string | No | Team role (default: `member`) |
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/teams/team_engineering/members" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "user_newmember",
+    "role": "member"
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "user_id": "user_newmember",
+    "team_id": "team_engineering",
+    "role": "member",
+    "joined_at": "2024-12-08T10:00:00Z",
+    "added_by": "user_admin123"
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+member = client.teams.add_member(
+    "team_engineering",
+    user_id="user_newmember",
+    role="member"
+)
+
+print(f"Added {member.user_id} to team")
+```
+
+#### TypeScript
+
+```typescript
+const member = await client.teams.addMember('team_engineering', {
+  userId: 'user_newmember',
+  role: 'member'
+});
+
+console.log(`Added ${member.userId} to team`);
+```
+
+---
+
+## Remove Team Member
+
+Remove a user from a team.
+
+```http
+DELETE /v1/teams/{team_id}/members/{user_id}
+```
+
+### Request
+
+```bash
+curl -X DELETE "https://api.tracertm.dev/v1/teams/team_engineering/members/user_leaving" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "user_id": "user_leaving",
+    "team_id": "team_engineering",
+    "removed": true,
+    "removed_at": "2024-12-08T10:00:00Z"
+  }
+}
+```
+
+---
+
+## List Team Projects
+
+Get all projects assigned to a team.
+
+```http
+GET /v1/teams/{team_id}/projects
+```
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/teams/team_engineering/projects" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "proj_abc123",
+      "name": "Vehicle Control System",
+      "key": "VCS",
+      "role": "editor",
+      "assigned_at": "2024-01-20T10:00:00Z"
+    },
+    {
+      "id": "proj_def456",
+      "name": "Medical Device",
+      "key": "MDF",
+      "role": "viewer",
+      "assigned_at": "2024-03-15T10:00:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 5,
+    "has_next": false
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+projects = client.teams.list_projects("team_engineering")
+
+for proj in projects.data:
+    print(f"{proj.name}: {proj.role}")
+```
+
+---
+
+## Error Responses
+
+### Team Not Found
+
+```json
+{
+  "error": {
+    "code": "TEAM_NOT_FOUND",
+    "message": "Team 'team_invalid' not found",
+    "status": 404
+  }
+}
+```
+
+### User Already Member
+
+```json
+{
+  "error": {
+    "code": "USER_ALREADY_MEMBER",
+    "message": "User is already a member of this team",
+    "status": 409,
+    "details": {
+      "user_id": "user_existing",
+      "joined_at": "2024-01-15T10:00:00Z"
+    }
+  }
+}
+```
+
+### Cannot Remove Last Owner
+
+```json
+{
+  "error": {
+    "code": "CANNOT_REMOVE_LAST_OWNER",
+    "message": "Cannot remove the last owner from the team",
+    "status": 422,
+    "details": {
+      "suggestion": "Assign another owner before removing this user"
+    }
+  }
+}
+```
+
+---
+
+## Related Documentation
+
+- [Users API](/docs/api-reference/rest-api/endpoints/users) - User management
+- [Projects API](/docs/api-reference/rest-api/endpoints/projects) - Project access
+- [Authentication](/docs/api-reference/authentication) - Auth methods

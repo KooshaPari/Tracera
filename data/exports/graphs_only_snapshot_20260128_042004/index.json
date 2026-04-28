@@ -1,0 +1,31 @@
+{
+  "exported_at_utc": "20260128_042004",
+  "format": "graphs_only",
+  "project_count": 6,
+  "projects": [
+    {
+      "id": "proj_teamsync_001",
+      "name": "TeamSync - Collaboration Platform"
+    },
+    {
+      "id": "proj_creditpulse_001",
+      "name": "CreditPulse - Personal Finance Platform"
+    },
+    {
+      "id": "proj_staynest_001",
+      "name": "StayNest - Property Rental Marketplace"
+    },
+    {
+      "id": "proj_swiftride_001",
+      "name": "SwiftRide - Ride-sharing Platform"
+    },
+    {
+      "id": "proj_soundwave_001",
+      "name": "SoundWave - Music Streaming Service"
+    },
+    {
+      "id": "proj_todo_graph_001",
+      "name": "ToDo CRUD Feature Graph"
+    }
+  ]
+}

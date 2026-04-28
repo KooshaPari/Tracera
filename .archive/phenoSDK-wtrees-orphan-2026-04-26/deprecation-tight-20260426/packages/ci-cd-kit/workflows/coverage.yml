@@ -1,0 +1,89 @@
+name: Coverage Gate
+
+on:
+  workflow_call:
+    inputs:
+      python_version:
+        description: 'Python version to use'
+        required: false
+        default: '3.13'
+        type: string
+      coverage_threshold:
+        description: 'Coverage threshold percentage'
+        required: false
+        default: '80'
+        type: string
+      use_uv:
+        description: 'Use uv package manager'
+        required: false
+        default: 'true'
+        type: boolean
+    outputs:
+      coverage_xml_path:
+        description: 'Path to coverage XML file'
+        value: ${{ steps.upload-coverage.outputs.artifact-path }}
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python_version }}
+
+    - name: Install uv
+      if: ${{ inputs.use_uv }}
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Install dependencies
+      if: ${{ inputs.use_uv }}
+      run: |
+        uv sync --all-extras
+
+    - name: Install dependencies (pip)
+      if: ${{ !inputs.use_uv }}
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+        pip install pytest pytest-cov coverage
+
+    - name: Run tests with coverage
+      if: ${{ inputs.use_uv }}
+      run: |
+        uv run pytest --cov=. --cov-report=term --cov-report=xml --cov-report=html
+
+    - name: Run tests with coverage (pip)
+      if: ${{ !inputs.use_uv }}
+      run: |
+        pytest --cov=. --cov-report=term --cov-report=xml --cov-report=html
+
+    - name: Check coverage threshold
+      if: ${{ inputs.use_uv }}
+      run: |
+        uv run coverage report --fail-under=${{ inputs.coverage_threshold }}
+
+    - name: Check coverage threshold (pip)
+      if: ${{ !inputs.use_uv }}
+      run: |
+        coverage report --fail-under=${{ inputs.coverage_threshold }}
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
+
+    - name: Archive coverage HTML report
+      id: upload-coverage
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: htmlcov/

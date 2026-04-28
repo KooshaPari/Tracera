@@ -1,0 +1,66 @@
+# Pheno-SDK — LLM Summary
+
+> Use this condensed reference for reasoning about Pheno-SDK. Full docs live under `docs/`.
+
+## Project Overview
+- Modular toolkit of Python packages for architecture, data, observability, automation, UI, and MCP integrations.
+- Async-first, type-annotated, production-ready patterns with unified documentation.
+- Documentation hub: `docs/index.md`
+
+## Key Guides
+- Getting started: `docs/guides/getting-started.md`
+- Operations playbook: `docs/guides/operations.md`
+- Contributor workflow: `docs/guides/contributing.md`
+- Architecture & patterns: `docs/concepts/architecture.md`, `docs/concepts/patterns.md`
+- Testing strategy: `docs/concepts/testing-quality.md`
+
+## Kit Index (see `docs/kits/<kit>.md`)
+- `adapter-kit`: DI container, registries, repositories.
+- `api-gateway-kit`: Circuit breaker, retries, rate limiting, CORS middleware.
+- `authkit-client`: OAuth client, token/session management, FastAPI middleware.
+- `build-analyzer-kit`: Parse build logs, normalize issues, generate reports.
+- `cli-builder-kit`: Declarative async CLI framework with argument schemas.
+- `config-kit`: Typed config models, multi-source loading, hot reload.
+- `db-kit`: Async database facade, RLS, multi-tenancy, caching, adapters.
+- `deploy-kit`: Pheno vendoring, platform config generation, CLI + API.
+- `domain-kit`: DDD primitives (value objects, aggregates, events).
+- `event-kit`: Event bus, event store, webhook orchestration.
+- `filewatch-kit`: Async filesystem watchers with filters and debounce.
+- `mcp-sdk-kit`: MCP workflow monitoring, agent metrics, performance tuning.
+- `mcp-infra-sdk`: Launchers, TUIs, logging, config for MCP servers.
+- `mcp-QA`: Shared QA framework (OAuth automation, test runner, reporters, TUI).
+- `multi-cloud-deploy-kit`: YAML-driven deploys across multiple platforms.
+- `observability-kit`: Structured logging, metrics, tracing, middleware.
+- `orchestrator-kit`: Multi-agent orchestration with dependency graphs.
+- `process-monitor-sdk`: Process lifecycle + health monitoring with TUI/API.
+- `pydevkit`: Zero-dependency utility toolbox (HTTP, config, security, data structures).
+- `resource-management-kit`: Budgeting/quota tracking with predictive analytics.
+- `storage-kit`: Unified storage client (S3/GCS/Azure/local/memory).
+- `stream-kit`: WebSocket/SSE manager with channels, middleware, buffering.
+- `tui-kit`: Textual widget library, layouts, theming, stream capture.
+- `vector-kit`: Embeddings, vector stores, semantic search pipelines.
+- `workflow-kit`: Sagas, sequential workflows, scheduler, state machine.
+
+## Cross-Cutting Concepts
+- Dependency injection via adapter-kit container across services.
+- Config flows built with config-kit models injected into business logic.
+- Observability pillar: logging, metrics, tracing via observability-kit.
+- Multi-tenancy context shared by db-kit, storage-kit, vector-kit.
+- Testing pyramid: unit → contract → integration → smoke (see testing guide).
+
+## Typical Stack Example
+1. Load config with `config-kit` → register in adapter-kit container.
+2. Wire persistence using `db-kit` and `storage-kit`.
+3. Add observability middleware from `observability-kit` to FastAPI.
+4. Expose APIs behind `api-gateway-kit`; emit events through `event-kit` and `stream-kit`.
+5. Coordinate background work using `workflow-kit` or `orchestrator-kit`.
+6. Monitor processes with `process-monitor-sdk` and dashboards from `tui-kit`.
+7. Manage deployments via `deploy-kit`/`multi-cloud-deploy-kit`.
+
+## Quick Commands
+- Tests: `pytest`
+- Lint/type: `ruff check .`, `mypy`
+- Vendoring: `pheno-vendor setup`
+- Workflow scheduler: see `workflow-kit`
+
+Keep documentation synchronized with code changes—update the relevant kit manual and concept guide when APIs or patterns evolve.

@@ -1,0 +1,369 @@
+---
+title: "Artifacts API"
+description: "Create, read, update, and delete artifacts (items) in TraceRTM projects"
+keywords: [artifacts, items, requirements, test cases, api, crud]
+---
+
+# Artifacts API
+
+The Artifacts API (also called Items API) allows you to manage requirements, test cases, design documents, and other traceable artifacts in your TraceRTM projects.
+
+## Base Endpoint
+
+```
+/api/v1/items
+```
+
+## List Items
+
+Retrieve a list of items from a project.
+
+### Endpoint
+
+```
+GET /api/v1/items
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project ID to list items from |
+| `skip` | integer | No | Number of items to skip (default: 0) |
+| `limit` | integer | No | Maximum items to return (default: 100, max: 1000) |
+
+### Request Example
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/items?project_id=proj_123&skip=0&limit=50" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+### Response
+
+```json
+{
+  "total": 150,
+  "items": [
+    {
+      "id": "item_abc123",
+      "title": "User Authentication Requirement",
+      "view": "requirements",
+      "status": "active",
+      "created_at": "2025-01-15T10:30:00Z",
+      "updated_at": "2025-01-20T14:22:00Z"
+    },
+    {
+      "id": "item_def456",
+      "title": "Login Test Case",
+      "view": "test-cases",
+      "status": "draft",
+      "created_at": "2025-01-16T09:15:00Z",
+      "updated_at": "2025-01-18T11:45:00Z"
+    }
+  ]
+}
+```
+
+### Python Example
+
+```python
+from tracertm import TraceRTM
+
+client = TraceRTM(api_key="rtm_live_abc123...")
+
+# List items with pagination
+items = client.items.list(
+    project_id="proj_123",
+    skip=0,
+    limit=50
+)
+
+for item in items:
+    print(f"{item.id}: {item.title} ({item.status})")
+```
+
+## Get Item
+
+Retrieve a specific item by ID.
+
+### Endpoint
+
+```
+GET /api/v1/items/{item_id}
+```
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `item_id` | string | Yes | Item ID |
+
+### Request Example
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/items/item_abc123" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+### Response
+
+```json
+{
+  "id": "item_abc123",
+  "title": "User Authentication Requirement",
+  "description": "System must support OAuth 2.0 authentication",
+  "view": "requirements",
+  "status": "active",
+  "project_id": "proj_123",
+  "metadata": {
+    "priority": "high",
+    "component": "auth-service"
+  },
+  "created_at": "2025-01-15T10:30:00Z",
+  "updated_at": "2025-01-20T14:22:00Z"
+}
+```
+
+### Python Example
+
+```python
+item = client.items.get("item_abc123")
+print(f"Title: {item.title}")
+print(f"Status: {item.status}")
+print(f"Description: {item.description}")
+```
+
+## Create Item
+
+Create a new item in a project.
+
+### Endpoint
+
+```
+POST /api/v1/items
+```
+
+### Request Body
+
+```json
+{
+  "title": "New Requirement",
+  "view": "requirements",
+  "description": "Optional description",
+  "status": "draft",
+  "project_id": "proj_123",
+  "metadata": {
+    "priority": "medium",
+    "component": "api"
+  }
+}
+```
+
+### Request Example
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/items" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "New Requirement",
+    "view": "requirements",
+    "description": "System must support rate limiting",
+    "status": "draft",
+    "project_id": "proj_123"
+  }'
+```
+
+### Response
+
+```json
+{
+  "id": "item_new_xyz789",
+  "title": "New Requirement",
+  "view": "REQUIREMENTS",
+  "status": "created",
+  "created_at": "2025-01-20T15:30:00Z"
+}
+```
+
+### Python Example
+
+```python
+new_item = client.items.create(
+    title="New Requirement",
+    view="requirements",
+    description="System must support rate limiting",
+    status="draft",
+    project_id="proj_123",
+    metadata={
+        "priority": "high",
+        "component": "api"
+    }
+)
+
+print(f"Created item: {new_item.id}")
+```
+
+## Delete Item
+
+Delete an item from a project.
+
+### Endpoint
+
+```
+DELETE /api/v1/items/{item_id}
+```
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `item_id` | string | Yes | Item ID to delete |
+
+### Request Example
+
+```bash
+curl -X DELETE "https://api.tracertm.dev/v1/items/item_abc123" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Response
+
+```json
+{
+  "status": "deleted",
+  "id": "item_abc123"
+}
+```
+
+### Python Example
+
+```python
+result = client.items.delete("item_abc123")
+print(f"Item {result['id']} deleted")
+```
+
+## Item Views
+
+Items belong to different views (categories):
+
+| View | Description |
+|------|-------------|
+| `requirements` | System requirements |
+| `test-cases` | Test cases and test plans |
+| `design` | Design documents and specifications |
+| `code` | Code artifacts and implementations |
+| `documentation` | Documentation and user guides |
+
+## Item Status
+
+Items can have different statuses:
+
+| Status | Description |
+|--------|-------------|
+| `draft` | Work in progress |
+| `active` | Active and current |
+| `review` | Under review |
+| `approved` | Approved and finalized |
+| `deprecated` | No longer valid |
+
+## Error Responses
+
+### Item Not Found
+
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "Item not found"
+  }
+}
+```
+
+### Invalid Request
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Invalid request parameters",
+    "details": [
+      {
+        "field": "title",
+        "message": "Title is required"
+      }
+    ]
+  }
+}
+```
+
+### Permission Denied
+
+```json
+{
+  "error": {
+    "code": "forbidden",
+    "message": "Insufficient permissions to delete item"
+  }
+}
+```
+
+## Best Practices
+
+### 1. Use Pagination
+
+Always use pagination for large lists:
+
+```python
+# ✅ Good: Paginated requests
+items = []
+skip = 0
+limit = 100
+
+while True:
+    batch = client.items.list(project_id="proj_123", skip=skip, limit=limit)
+    items.extend(batch)
+    
+    if len(batch) < limit:
+        break
+    
+    skip += limit
+```
+
+### 2. Handle Errors
+
+Implement proper error handling:
+
+```python
+try:
+    item = client.items.get("item_abc123")
+except NotFoundError:
+    print("Item not found")
+except PermissionError:
+    print("Insufficient permissions")
+except APIError as e:
+    print(f"API error: {e}")
+```
+
+### 3. Batch Operations
+
+Use batch endpoints when available:
+
+```python
+# Create multiple items at once
+items = client.items.batch_create([
+    {"title": "Item 1", "view": "requirements"},
+    {"title": "Item 2", "view": "requirements"},
+    {"title": "Item 3", "view": "test-cases"}
+])
+```
+
+## Related Documentation
+
+- [Projects API](./01-projects) - Project management
+- [Links API](./04-relationships) - Create traceability links
+- [Workflows API](./03-workflows) - Manage item status workflows
+- [Search API](./06-search) - Search items

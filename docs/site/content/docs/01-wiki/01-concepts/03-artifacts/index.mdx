@@ -1,0 +1,382 @@
+---
+title: "Artifacts"
+description: "Understanding the 16 artifact types in TraceRTM and how they form a complete traceability graph"
+---
+
+# Artifacts
+
+Artifacts are the building blocks of traceability in TraceRTM. Each artifact represents a discrete unit of work, documentation, or verification that can be linked to other artifacts to form a complete traceability graph.
+
+## What is an Artifact?
+
+An artifact is any traceable item in your development lifecycle:
+
+| Artifact | Example | Purpose |
+|----------|---------|---------|
+| Requirement | "Users can login" | What to build |
+| Design | Architecture diagram | How to build it |
+| Code | `auth_handler.py` | The implementation |
+| Test | `test_login_success` | Verification |
+| Documentation | User guide | Knowledge transfer |
+
+## The 16 Artifact Views
+
+TraceRTM supports 16 built-in artifact types, organized into logical categories:
+
+### Requirements & Planning
+
+| Type | ID | Description |
+|------|-----|-------------|
+| Feature | `FEATURE` | User-facing capabilities |
+| Story | `STORY` | User stories / use cases |
+| Epic | `EPIC` | Large feature groupings |
+| Task | `TASK` | Work items / subtasks |
+
+### Design & Architecture
+
+| Type | ID | Description |
+|------|-----|-------------|
+| Architecture | `ARCHITECTURE` | System architecture |
+| Design | `DESIGN` | Detailed design docs |
+| Wireframe | `WIREFRAME` | UI/UX mockups |
+| Database | `DATABASE` | Schema definitions |
+| API | `API` | API specifications |
+
+### Implementation
+
+| Type | ID | Description |
+|------|-----|-------------|
+| Code | `CODE` | Source code modules |
+| Component | `COMPONENT` | Reusable components |
+
+### Verification
+
+| Type | ID | Description |
+|------|-----|-------------|
+| Test | `TEST` | Test cases |
+| TestSuite | `TESTSUITE` | Test collections |
+
+### Documentation & Support
+
+| Type | ID | Description |
+|------|-----|-------------|
+| Documentation | `DOC` | User/technical docs |
+| Glossary | `GLOSSARY` | Term definitions |
+| Custom | `CUSTOM` | User-defined types |
+
+## Artifact Structure
+
+Every artifact in TraceRTM shares a common structure:
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# Create an artifact
+feature = client.create_item(
+    # Required fields
+    title="User Authentication",
+    item_type="feature",
+
+    # Optional metadata
+    description="Allow users to securely log in to the system",
+    status="draft",
+    priority="high",
+
+    # Custom metadata
+    metadata={
+        "sprint": "Sprint-5",
+        "story_points": 8,
+        "assigned_to": "alice@company.com",
+        "tags": ["security", "mvp"],
+        "acceptance_criteria": [
+            "Email/password login",
+            "OAuth2 support",
+            "Remember me option"
+        ]
+    }
+)
+```
+
+### Common Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | auto | Unique identifier |
+| `title` | string | yes | Human-readable name |
+| `item_type` | string | yes | Artifact type |
+| `description` | string | no | Detailed description |
+| `status` | string | no | Workflow state |
+| `priority` | string | no | Importance level |
+| `created_at` | datetime | auto | Creation timestamp |
+| `updated_at` | datetime | auto | Last modified |
+| `created_by` | string | auto | Creator identity |
+| `metadata` | object | no | Custom fields |
+
+## Artifact Hierarchies
+
+Artifacts can be organized hierarchically:
+
+```
+EPIC
+├── FEATURE
+│   ├── STORY
+│   │   ├── TASK
+│   │   └── TASK
+│   └── STORY
+└── FEATURE
+```
+
+Configure hierarchies in your project:
+
+```yaml
+# .tracertm/config.yaml
+hierarchy:
+  epic:
+    children: [feature]
+    max_depth: 1
+
+  feature:
+    parent: epic
+    children: [story]
+
+  story:
+    parent: feature
+    children: [task]
+
+  task:
+    parent: story
+    terminal: true  # No children
+```
+
+### Working with Hierarchies
+
+```python
+# Create parent-child relationships
+epic = client.create_item(title="Auth System", item_type="epic")
+
+feature = client.create_item(
+    title="Login Feature",
+    item_type="feature",
+    parent_id=epic.id  # Links automatically
+)
+
+# Get children
+children = client.get_children(epic.id)
+# Returns: [feature]
+
+# Get full tree
+tree = client.get_tree(epic.id, depth=3)
+# Returns nested structure
+```
+
+## Artifact Types in Detail
+
+### Requirements
+
+Requirements define **what** the system should do:
+
+```python
+# System requirement (high-level)
+sys_req = client.create_item(
+    title="System shall support 10,000 concurrent users",
+    item_type="requirement",
+    metadata={
+        "level": "system",
+        "priority": "high",
+        "verification_method": "performance_test"
+    }
+)
+
+# Software requirement (derived)
+sw_req = client.create_item(
+    title="Login API shall respond within 200ms",
+    item_type="requirement",
+    metadata={
+        "level": "software",
+        "derives_from": sys_req.id
+    }
+)
+```
+
+### Design
+
+Design artifacts document **how** to build the system:
+
+```python
+# Architecture document
+arch = client.create_item(
+    title="Authentication Architecture",
+    item_type="architecture",
+    metadata={
+        "diagram_url": "https://...",
+        "components": ["Auth Service", "Token Store", "SSO Gateway"],
+        "patterns": ["OAuth2", "JWT"]
+    }
+)
+
+# Link to requirements it realizes
+client.create_link(arch.id, sys_req.id, "realizes")
+```
+
+### Code
+
+Code artifacts track implementation:
+
+```python
+# Module-level tracking
+code = client.create_item(
+    title="Authentication Handler",
+    item_type="code",
+    metadata={
+        "file_path": "src/auth/handler.py",
+        "language": "python",
+        "lines_of_code": 250,
+        "complexity": "medium"
+    }
+)
+
+# Link to design it implements
+client.create_link(code.id, arch.id, "implements")
+```
+
+### Tests
+
+Test artifacts verify the system works:
+
+```python
+# Test case
+test = client.create_item(
+    title="Test valid login credentials",
+    item_type="test",
+    metadata={
+        "test_type": "integration",
+        "automated": True,
+        "file_path": "tests/test_auth.py::test_login_valid",
+        "expected_result": "Returns 200 with JWT token"
+    }
+)
+
+# Link to requirement it verifies
+client.create_link(test.id, sw_req.id, "verifies")
+```
+
+## CLI Operations
+
+```bash
+# List all artifacts
+tracertm list
+
+# List by type
+tracertm list --type feature
+
+# Create artifact
+tracertm create feature "User Authentication" \
+  --description "Login functionality" \
+  --priority high
+
+# Get artifact details
+tracertm get FEAT-001
+
+# Update artifact
+tracertm update FEAT-001 --status in_progress
+
+# Delete artifact
+tracertm delete FEAT-001
+
+# Search artifacts
+tracertm search "authentication" --type feature,code
+```
+
+## Querying Artifacts
+
+```python
+# Filter by type and status
+features = client.list_items(
+    item_type="feature",
+    status="in_progress",
+    priority="high"
+)
+
+# Filter by metadata
+sprint_items = client.list_items(
+    metadata={"sprint": "Sprint-5"}
+)
+
+# Full-text search
+results = client.search_items(
+    query="authentication",
+    types=["feature", "code", "test"]
+)
+
+# Pagination
+page1 = client.list_items(limit=50, offset=0)
+page2 = client.list_items(limit=50, offset=50)
+```
+
+## Best Practices
+
+### 1. Use Consistent Naming
+
+```
+✓ FEAT-001: User Authentication
+✓ TEST-042: Test Login Valid Credentials
+✓ CODE-015: auth_handler.py
+
+✗ login thing
+✗ test 1
+✗ some code
+```
+
+### 2. Include Sufficient Metadata
+
+```python
+# Good: Rich metadata for queries and reporting
+client.create_item(
+    title="User Login",
+    item_type="feature",
+    metadata={
+        "sprint": "Sprint-5",
+        "story_points": 5,
+        "priority": "high",
+        "assigned_to": "alice",
+        "tags": ["auth", "security", "mvp"]
+    }
+)
+
+# Bad: Minimal metadata
+client.create_item(
+    title="Login",
+    item_type="feature"
+)
+```
+
+### 3. Link at Creation Time
+
+```python
+# Good: Link immediately
+test = client.create_item(title="Test Login", item_type="test")
+client.create_link(test.id, feature.id, "tests")
+
+# Bad: Create now, link "later"
+test = client.create_item(title="Test Login", item_type="test")
+# TODO: Add link to feature  <- Never happens
+```
+
+### 4. Use Appropriate Granularity
+
+```
+✓ Good: Feature-level for requirements, module-level for code
+✗ Too fine: Function-level tracking for everything
+✗ Too coarse: System-level only
+```
+
+## Related Topics
+
+- [Requirements](/docs/wiki/concepts/artifacts/requirements) - Requirement artifacts
+- [Design](/docs/wiki/concepts/artifacts/design) - Design artifacts
+- [Test Cases](/docs/wiki/concepts/artifacts/test-cases) - Test artifacts
+- [Code](/docs/wiki/concepts/artifacts/code) - Code artifacts
+- [Custom Artifacts](/docs/wiki/concepts/artifacts/custom) - Define your own types
+

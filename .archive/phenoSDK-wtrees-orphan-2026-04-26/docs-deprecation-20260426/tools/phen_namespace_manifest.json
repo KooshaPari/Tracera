@@ -1,0 +1,60 @@
+{
+  "pyproject.toml": {
+    "packages": [
+      {
+        "line": "packages = [\"src/pheno\"]",
+        "verify": "Ensure packaging stays pointed at src/pheno while layers move."
+      }
+    ],
+    "coverage_source": [
+      {
+        "line": "source = [\"src/pheno\"]",
+        "verify": "Coverage config continues to include only src/pheno."
+      }
+    ]
+  },
+  "pytest.ini": {
+    "cov_target": [
+      {
+        "line": "--cov=src/pheno",
+        "verify": "Keep pytest coverage target on src/pheno."
+      }
+    ]
+  },
+  "makefiles/ci.mk": {
+    "cov_target": [
+      {
+        "line": "--cov=src/pheno",
+        "verify": "CI scripts should still run coverage against pheno namespace."
+      }
+    ]
+  },
+  "scripts/run_tests.sh": {
+    "coverage": [
+      {
+        "line": "coverage run --source=src/pheno",
+        "verify": "Test runner should not reference deprecated phen namespace."
+      }
+    ]
+  },
+  "docs": {
+    "search": {
+      "find": "src/pheno",
+      "notes": "Audit documentation when moving modules to keep paths current."
+    }
+  },
+  "tools/simplify_docstrings.py": {
+    "pattern": [
+      {
+        "line": "python tools/simplify_docstrings.py src/pheno/",
+        "verify": "Helper script invocation remains accurate while directories shift."
+      }
+    ]
+  },
+  "src": {
+    "import_root": {
+      "find": "from pheno",
+      "notes": "Use codemod checks to ensure import tree stays within pheno.*."
+    }
+  }
+}

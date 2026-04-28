@@ -1,0 +1,659 @@
+---
+title: "Webhooks"
+description: "Real-time event notifications and webhook integrations"
+---
+
+# Webhooks
+
+Webhooks allow your application to receive real-time notifications when events occur in TraceRTM. Instead of polling the API, webhooks push event data to your specified endpoint.
+
+## Overview
+
+When an event occurs (e.g., item created, link updated), TraceRTM sends an HTTP POST request to your configured webhook URL with event details.
+
+<Callout type="info">
+  **Benefits of Webhooks**
+
+  - Real-time notifications
+  - Reduced API polling
+  - Lower latency
+  - Event-driven architecture
+</Callout>
+
+## Quick Start
+
+<Steps>
+
+### Create a Webhook Endpoint
+
+Create an HTTP endpoint to receive webhook events:
+
+```javascript
+// Express.js example
+app.post('/webhooks/tracertm', async (req, res) => {
+  const event = req.body;
+
+  // Verify webhook signature
+  const isValid = verifySignature(
+    req.headers['x-tracertm-signature'],
+    req.body,
+    process.env.WEBHOOK_SECRET
+  );
+
+  if (!isValid) {
+    return res.status(401).send('Invalid signature');
+  }
+
+  // Process event
+  console.log('Event received:', event.type);
+
+  // Return 200 to acknowledge receipt
+  res.status(200).send('OK');
+});
+```
+
+### Register the Webhook
+
+Configure your webhook in the TraceRTM dashboard:
+
+1. Go to **Settings → Webhooks**
+2. Click **Add Webhook**
+3. Enter your endpoint URL
+4. Select events to subscribe to
+5. Save and copy the webhook secret
+
+### Test Your Webhook
+
+Send a test event to verify setup:
+
+```bash
+# Dashboard: Settings → Webhooks → Test Webhook
+```
+
+</Steps>
+
+## Supported Events
+
+TraceRTM supports webhooks for the following events:
+
+### Item Events
+
+| Event | Description |
+|-------|-------------|
+| `item.created` | New item created |
+| `item.updated` | Item modified |
+| `item.deleted` | Item deleted |
+| `item.status_changed` | Item status updated |
+
+### Link Events
+
+| Event | Description |
+|-------|-------------|
+| `link.created` | New link created |
+| `link.deleted` | Link removed |
+| `link.validated` | Link validation completed |
+
+### Project Events
+
+| Event | Description |
+|-------|-------------|
+| `project.created` | New project created |
+| `project.updated` | Project modified |
+| `project.deleted` | Project deleted |
+
+### Analysis Events
+
+| Event | Description |
+|-------|-------------|
+| `analysis.impact_complete` | Impact analysis finished |
+| `analysis.cycles_detected` | Circular dependencies found |
+
+## Event Payload
+
+All webhook events follow a consistent structure:
+
+```json
+{
+  "id": "evt_1234567890",
+  "type": "item.created",
+  "created": 1640995200,
+  "data": {
+    "object": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "New Requirement",
+      "view": "requirement",
+      "status": "draft",
+      "project_id": "abc-123",
+      "created_at": "2025-12-02T20:00:00Z",
+      "updated_at": "2025-12-02T20:00:00Z"
+    },
+    "previous_attributes": null
+  },
+  "api_version": "v1"
+}
+```
+
+### Payload Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique event identifier |
+| `type` | string | Event type |
+| `created` | integer | Unix timestamp of event |
+| `data.object` | object | The affected resource |
+| `data.previous_attributes` | object | Previous state (for update events) |
+| `api_version` | string | API version |
+
+## Event Examples
+
+### Item Created
+
+```json
+{
+  "id": "evt_item_created_001",
+  "type": "item.created",
+  "created": 1640995200,
+  "data": {
+    "object": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "User Authentication Module",
+      "description": "Implement user authentication with OAuth 2.0",
+      "view": "requirement",
+      "status": "draft",
+      "project_id": "proj_123",
+      "created_at": "2025-12-02T20:00:00Z",
+      "updated_at": "2025-12-02T20:00:00Z"
+    }
+  },
+  "api_version": "v1"
+}
+```
+
+### Item Updated
+
+```json
+{
+  "id": "evt_item_updated_002",
+  "type": "item.updated",
+  "created": 1640995300,
+  "data": {
+    "object": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "User Authentication Module",
+      "status": "in_progress",
+      "updated_at": "2025-12-02T20:05:00Z"
+    },
+    "previous_attributes": {
+      "status": "draft",
+      "updated_at": "2025-12-02T20:00:00Z"
+    }
+  },
+  "api_version": "v1"
+}
+```
+
+### Link Created
+
+```json
+{
+  "id": "evt_link_created_003",
+  "type": "link.created",
+  "created": 1640995400,
+  "data": {
+    "object": {
+      "id": "link_123",
+      "source_id": "item_req_001",
+      "target_id": "item_test_001",
+      "type": "tests",
+      "created_at": "2025-12-02T20:10:00Z"
+    }
+  },
+  "api_version": "v1"
+}
+```
+
+## Security
+
+### Webhook Signatures
+
+Every webhook includes a signature header for verification:
+
+```
+X-TraceRTM-Signature: t=1640995200,v1=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce8e108d8bd
+```
+
+### Verifying Signatures
+
+Verify webhook authenticity to prevent spoofing:
+
+<Tabs items={["JavaScript", "Python", "Go"]}>
+
+<Tab value="JavaScript">
+
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhookSignature(signature, payload, secret) {
+  const parts = signature.split(',');
+  const timestamp = parts[0].split('=')[1];
+  const hash = parts[1].split('=')[1];
+
+  // Construct signed payload
+  const signedPayload = `${timestamp}.${JSON.stringify(payload)}`;
+
+  // Compute expected signature
+  const expectedHash = crypto
+    .createHmac('sha256', secret)
+    .update(signedPayload)
+    .digest('hex');
+
+  // Compare signatures
+  return crypto.timingSafeEqual(
+    Buffer.from(hash),
+    Buffer.from(expectedHash)
+  );
+}
+```
+
+</Tab>
+
+<Tab value="Python">
+
+```python
+import hmac
+import hashlib
+import json
+
+def verify_webhook_signature(signature: str, payload: dict, secret: str) -> bool:
+    parts = signature.split(',')
+    timestamp = parts[0].split('=')[1]
+    hash_value = parts[1].split('=')[1]
+
+    # Construct signed payload
+    signed_payload = f"{timestamp}.{json.dumps(payload)}"
+
+    # Compute expected signature
+    expected_hash = hmac.new(
+        secret.encode(),
+        signed_payload.encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    # Compare signatures (timing-safe)
+    return hmac.compare_digest(hash_value, expected_hash)
+```
+
+</Tab>
+
+<Tab value="Go">
+
+```go
+package main
+
+import (
+    "crypto/hmac"
+    "crypto/sha256"
+    "encoding/hex"
+    "encoding/json"
+    "strings"
+)
+
+func verifyWebhookSignature(signature string, payload []byte, secret string) bool {
+    parts := strings.Split(signature, ",")
+    timestamp := strings.Split(parts[0], "=")[1]
+    hash := strings.Split(parts[1], "=")[1]
+
+    // Construct signed payload
+    signedPayload := timestamp + "." + string(payload)
+
+    // Compute expected signature
+    h := hmac.New(sha256.New, []byte(secret))
+    h.Write([]byte(signedPayload))
+    expectedHash := hex.EncodeToString(h.Sum(nil))
+
+    // Compare signatures
+    return hmac.Equal([]byte(hash), []byte(expectedHash))
+}
+```
+
+</Tab>
+
+</Tabs>
+
+### Timestamp Validation
+
+Prevent replay attacks by checking the timestamp:
+
+```javascript
+function isTimestampValid(timestamp, toleranceSeconds = 300) {
+  const now = Math.floor(Date.now() / 1000);
+  const diff = Math.abs(now - parseInt(timestamp));
+  return diff <= toleranceSeconds;
+}
+```
+
+## Best Practices
+
+<Callout type="warning">
+  **Production Best Practices**
+
+  - ✅ Return 200 status quickly (< 5 seconds)
+  - ✅ Process events asynchronously
+  - ✅ Verify webhook signatures
+  - ✅ Implement idempotency
+  - ✅ Log all webhook events
+  - ✅ Handle retries gracefully
+  - ✅ Monitor webhook failures
+</Callout>
+
+### Respond Quickly
+
+Return a 200 status within 5 seconds to prevent retries:
+
+```javascript
+app.post('/webhooks/tracertm', async (req, res) => {
+  // Acknowledge receipt immediately
+  res.status(200).send('OK');
+
+  // Process asynchronously
+  processWebhookAsync(req.body);
+});
+
+async function processWebhookAsync(event) {
+  try {
+    // Your processing logic here
+    await handleEvent(event);
+  } catch (error) {
+    console.error('Webhook processing error:', error);
+  }
+}
+```
+
+### Implement Idempotency
+
+Handle duplicate events gracefully:
+
+```javascript
+const processedEvents = new Set();
+
+async function processWebhook(event) {
+  // Check if already processed
+  if (processedEvents.has(event.id)) {
+    console.log('Event already processed:', event.id);
+    return;
+  }
+
+  // Process event
+  await handleEvent(event);
+
+  // Mark as processed
+  processedEvents.add(event.id);
+}
+```
+
+### Handle Failures
+
+Implement exponential backoff for failures:
+
+```javascript
+async function processWithRetry(event, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      await handleEvent(event);
+      return;
+    } catch (error) {
+      const delay = Math.pow(2, i) * 1000; // Exponential backoff
+      console.log(`Retry ${i + 1} in ${delay}ms`);
+      await sleep(delay);
+    }
+  }
+
+  // Log failure after all retries
+  console.error('Failed to process webhook after retries:', event.id);
+}
+```
+
+## Retry Logic
+
+TraceRTM automatically retries failed webhook deliveries:
+
+- **Retry Schedule**: 1m, 5m, 30m, 2h, 6h, 12h
+- **Max Retries**: 6 attempts
+- **Timeout**: 5 seconds per attempt
+- **Disable After**: 3 consecutive failures (manual re-enable required)
+
+### Retry Headers
+
+Retried webhooks include additional headers:
+
+```
+X-TraceRTM-Delivery: 550e8400-e29b-41d4-a716-446655440000
+X-TraceRTM-Retry-Count: 2
+```
+
+## Testing Webhooks
+
+### Local Testing with ngrok
+
+Test webhooks locally using ngrok:
+
+```bash
+# Install ngrok
+brew install ngrok
+
+# Start your local server
+node server.js
+
+# Expose to internet
+ngrok http 3000
+
+# Use ngrok URL as webhook endpoint
+https://abc123.ngrok.io/webhooks/tracertm
+```
+
+### Webhook Testing Tools
+
+- **RequestBin**: Capture and inspect webhooks
+- **Webhook.site**: Free webhook testing service
+- **Postman**: Test webhook payloads manually
+
+### Send Test Events
+
+Trigger test events from the dashboard:
+
+1. Go to **Settings → Webhooks**
+2. Select your webhook
+3. Click **Send Test Event**
+4. Choose event type
+5. View delivery logs
+
+## Monitoring
+
+### Webhook Dashboard
+
+Monitor webhook health in the dashboard:
+
+- **Delivery Success Rate**: Percentage of successful deliveries
+- **Average Response Time**: Endpoint performance
+- **Recent Deliveries**: Last 100 webhook attempts
+- **Failed Deliveries**: Events requiring attention
+
+### Webhook Logs
+
+View detailed logs for debugging:
+
+```json
+{
+  "id": "delivery_123",
+  "webhook_id": "webhook_abc",
+  "event_id": "evt_001",
+  "url": "https://yourapp.com/webhooks",
+  "status": 200,
+  "response_time_ms": 145,
+  "attempts": 1,
+  "created_at": "2025-12-02T20:00:00Z"
+}
+```
+
+## Troubleshooting
+
+### Common Issues
+
+<Accordion>
+
+<AccordionItem title="Webhook not receiving events">
+
+**Possible causes:**
+
+- Webhook URL is incorrect or unreachable
+- Firewall blocking incoming requests
+- SSL certificate issues (for HTTPS endpoints)
+- Webhook disabled after failures
+
+**Solutions:**
+
+- Verify URL is publicly accessible
+- Check firewall settings
+- Ensure valid SSL certificate
+- Re-enable webhook in dashboard
+
+</AccordionItem>
+
+<AccordionItem title="Signature verification failing">
+
+**Possible causes:**
+
+- Incorrect webhook secret
+- Timestamp too old (replay attack protection)
+- Payload modified
+
+**Solutions:**
+
+- Verify webhook secret matches dashboard
+- Check timestamp tolerance
+- Inspect raw request payload
+
+</AccordionItem>
+
+<AccordionItem title="Duplicate events received">
+
+**Possible causes:**
+
+- Retries due to timeout or 5xx errors
+- Network issues
+
+**Solutions:**
+
+- Implement idempotency using event ID
+- Return 200 status within 5 seconds
+- Process events asynchronously
+
+</AccordionItem>
+
+</Accordion>
+
+## Rate Limits
+
+Webhooks have separate rate limits:
+
+- **Delivery Rate**: 100 webhooks/second per endpoint
+- **Retry Rate**: 10 retries/minute per endpoint
+
+Exceeding limits results in delayed delivery.
+
+## Example Integration
+
+Complete webhook integration example:
+
+```javascript
+const express = require('express');
+const crypto = require('crypto');
+
+const app = express();
+app.use(express.json());
+
+const WEBHOOK_SECRET = process.env.TRACERTM_WEBHOOK_SECRET;
+
+app.post('/webhooks/tracertm', async (req, res) => {
+  // Verify signature
+  const signature = req.headers['x-tracertm-signature'];
+  const isValid = verifySignature(signature, req.body, WEBHOOK_SECRET);
+
+  if (!isValid) {
+    return res.status(401).send('Invalid signature');
+  }
+
+  // Acknowledge receipt
+  res.status(200).send('OK');
+
+  // Process asynchronously
+  const event = req.body;
+
+  switch (event.type) {
+    case 'item.created':
+      await handleItemCreated(event.data.object);
+      break;
+    case 'item.updated':
+      await handleItemUpdated(event.data.object, event.data.previous_attributes);
+      break;
+    case 'link.created':
+      await handleLinkCreated(event.data.object);
+      break;
+    default:
+      console.log('Unhandled event type:', event.type);
+  }
+});
+
+function verifySignature(signature, payload, secret) {
+  const parts = signature.split(',');
+  const timestamp = parts[0].split('=')[1];
+  const hash = parts[1].split('=')[1];
+
+  const signedPayload = `${timestamp}.${JSON.stringify(payload)}`;
+  const expectedHash = crypto
+    .createHmac('sha256', secret)
+    .update(signedPayload)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(hash),
+    Buffer.from(expectedHash)
+  );
+}
+
+async function handleItemCreated(item) {
+  console.log('New item created:', item.id);
+  // Your logic here
+}
+
+async function handleItemUpdated(item, previous) {
+  console.log('Item updated:', item.id);
+  console.log('Previous state:', previous);
+  // Your logic here
+}
+
+async function handleLinkCreated(link) {
+  console.log('New link created:', link.id);
+  // Your logic here
+}
+
+app.listen(3000, () => {
+  console.log('Webhook server listening on port 3000');
+});
+```
+
+## Next Steps
+
+<Cards>
+  <Card title="REST API" href="/docs/api/rest-api">
+    Explore the REST API
+  </Card>
+
+  <Card title="Authentication" href="/docs/api/authentication">
+    Set up authentication
+  </Card>
+
+  <Card title="SDKs" href="/docs/sdk">
+    Use official SDKs
+  </Card>
+</Cards>

@@ -1,0 +1,232 @@
+name: Code Quality Gates
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+concurrency:
+  group: quality-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gates:
+    name: Quality Gate Validation
+    runs-on: ubuntu-latest
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PYTHONPATH: .
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full git history for analysis
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[quality,test]"
+          pip install prospector[with_everything] radon xenon
+
+      - name: Clean workspace artifacts
+        run: |
+          python scripts/cleanup_workspace.py --verbose
+
+      - name: Run Ruff linting
+        run: |
+          ruff check . --output-format=json --output-file=ruff_report.json || true
+          ruff check . --output-format=concise
+
+      - name: Run MyPy type checking
+        run: |
+          mypy . --json-report mypy_report --show-error-codes || true
+          mypy . --show-error-codes
+
+      - name: Run Prospector analysis
+        run: |
+          prospector --profile prospector.yaml --output-format=json --output-file=prospector_report.json || true
+          prospector --profile prospector.yaml --output-format=text
+
+      - name: Docstring formatting check
+        run: |
+          docformatter --check --recursive src/
+
+      - name: Docstring style (pydocstyle)
+        run: |
+          pydocstyle src/
+
+      - name: Code complexity analysis
+        run: |
+          # Radon complexity analysis
+          radon cc src/ --min B --show-complexity --json > radon_complexity.json || true
+          radon cc src/ --min B --show-complexity
+
+          # Xenon complexity monitoring
+          xenon --max-absolute B --max-modules B --max-average B src/ || true
+
+      - name: Maintainability index
+        run: |
+          radon mi src/ --min B --show --json > radon_maintainability.json || true
+          radon mi src/ --min B --show
+
+      - name: Import analysis
+        run: |
+          radon graph src/ --json > radon_imports.json || true
+          cyclonedx-bom -o bom.xml || true
+
+      - name: Dependency vulnerability audit
+        run: |
+          pip-audit --format json --output pip-audit.json
+
+      - name: Dependency license report
+        run: |
+          pip-licenses --format=json --output-file pip-licenses.json
+
+      - name: Documentation coverage
+        run: |
+          interrogate -v --fail-under 80 src/
+
+      - name: Lint Markdown documents
+        run: |
+          npx --yes markdownlint-cli2 "**/*.md" "#node_modules"
+          bash scripts/checks/run_markdown_link_check.sh
+
+      - name: Run tests with coverage
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+        run: |
+          pytest --cov=src/pheno --cov-report=term-missing --cov-report=xml
+
+      - name: Documentation doctests
+        run: |
+          pytest --doctest-modules --doctest-glob="*.md" docs src
+
+      - name: Generate quality report
+        run: |
+          mkdir -p reports
+          python scripts/analyze_complexity.py > reports/complexity_analysis.txt
+
+          cat > reports/quality_summary.md << EOF
+          # Code Quality Report
+
+          Generated: $(date)
+          Commit: ${{ github.sha }}
+
+          ## Quality Metrics
+
+          ### Ruff Issues
+          \`\`\`json
+          $(cat ruff_report.json 2>/dev/null || echo "{}")
+          \`\`\`
+
+          ### MyPy Issues
+          \`\`\`json
+          $(cat mypy_report/report.json 2>/dev/null || echo "{}")
+          \`\`\`
+
+          ### Prospector Issues
+          \`\`\`json
+          $(cat prospector_report.json 2>/dev/null || echo "{}")
+          \`\`\`
+
+          ### Complexity Analysis
+          \`\`\`json
+          $(cat radon_complexity.json 2>/dev/null || echo "{}")
+          \`\`\`
+
+          ### Maintainability Index
+          \`\`\`json
+          $(cat radon_maintainability.json 2>/dev/null || echo "{}")
+          \`\`\`
+
+          EOF
+
+      - name: Upload quality reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-reports
+          path: |
+            reports/
+            ruff_report.json
+            mypy_report/
+            prospector_report.json
+            radon_*.json
+            bom.xml
+            pip-audit.json
+            pip-licenses.json
+            coverage.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          flags: quality
+          fail_ci_if_error: true
+
+      - name: Quality gate validation
+        run: |
+          python scripts/validate_quality_gates.py || {
+            echo "Quality gates failed!"
+            echo "Check the uploaded artifacts for detailed reports."
+            exit 1
+          }
+
+      - name: SonarCloud analysis
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  quality-score:
+    name: Quality Score Calculation
+    runs-on: ubuntu-latest
+    needs: quality-gates
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download reports
+        uses: actions/download-artifact@v4
+        with:
+          name: quality-reports
+          path: reports/
+
+      - name: Calculate quality score
+        run: |
+          python scripts/calculate_quality_score.py reports/ > quality_score.txt
+          cat quality_score.txt
+
+      - name: Upload score
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-score
+          path: quality_score.txt
+
+      - name: PR Comment with Score
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = './quality_score.txt';
+
+            if (fs.existsSync(path)) {
+              const score = fs.readFileSync(path, 'utf8');
+
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '## 📊 Quality Score\\n\\n' + score
+              });
+            }

@@ -1,0 +1,368 @@
+---
+title: "Version Requirements"
+description: "Go version requirements and compatibility for the TraceRTM SDK"
+---
+
+# Version Requirements
+
+The TraceRTM Go SDK requires specific Go versions and is tested across multiple versions for compatibility.
+
+## Minimum Requirements
+
+| Requirement | Version |
+|------------|---------|
+| Go | 1.21+ |
+| Operating System | Linux, macOS, Windows |
+| Architecture | amd64, arm64 |
+
+---
+
+## Go Version Compatibility
+
+### Supported Versions
+
+| Go Version | SDK Support | Status |
+|------------|-------------|--------|
+| 1.24 | Full | Current |
+| 1.23 | Full | Supported |
+| 1.22 | Full | Supported |
+| 1.21 | Full | Minimum |
+| 1.20 | Limited | Deprecated |
+| < 1.20 | None | Unsupported |
+
+### Feature Requirements
+
+The SDK uses features from Go 1.21+:
+
+```go
+// Go 1.21+ features used
+package main
+
+import (
+    "context"
+    "log/slog"  // Structured logging (Go 1.21+)
+    "maps"      // Maps package (Go 1.21+)
+    "slices"    // Slices package (Go 1.21+)
+)
+```
+
+---
+
+## Check Your Version
+
+### Verify Go Installation
+
+```bash
+go version
+```
+
+Output:
+```
+go version go1.22.0 darwin/arm64
+```
+
+### Verify SDK Requirements
+
+```bash
+go mod graph | grep tracertm
+```
+
+### Check go.mod
+
+```go
+// go.mod
+module myproject
+
+go 1.21  // SDK minimum requirement
+```
+
+---
+
+## Upgrade Go
+
+### Using Official Installer
+
+Download from [golang.org/dl](https://golang.org/dl/):
+
+```bash
+# Download and install
+# macOS/Linux
+rm -rf /usr/local/go
+tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
+```
+
+### Using Homebrew (macOS)
+
+```bash
+brew update
+brew upgrade go
+```
+
+### Using Chocolatey (Windows)
+
+```powershell
+choco upgrade golang
+```
+
+### Using gvm
+
+```bash
+gvm install go1.22
+gvm use go1.22 --default
+```
+
+### Using asdf
+
+```bash
+asdf install golang 1.22.0
+asdf global golang 1.22.0
+```
+
+---
+
+## SDK Version Compatibility
+
+### Semantic Versioning
+
+The SDK follows semantic versioning (semver):
+
+```
+v{MAJOR}.{MINOR}.{PATCH}
+v1.2.3
+```
+
+| Component | Meaning |
+|-----------|---------|
+| MAJOR | Breaking changes |
+| MINOR | New features, backward compatible |
+| PATCH | Bug fixes, backward compatible |
+
+### Version History
+
+| SDK Version | Go Requirement | Release Date | Notes |
+|-------------|---------------|--------------|-------|
+| v1.0.0 | Go 1.21+ | 2024-01 | Initial release |
+| v1.1.0 | Go 1.21+ | 2024-03 | Added iterator pattern |
+| v1.2.0 | Go 1.21+ | 2024-06 | Added bulk operations |
+| v1.3.0 | Go 1.22+ | 2024-09 | Uses range over func |
+| v2.0.0 | Go 1.22+ | 2025-01 | Major refactor |
+
+### Choosing SDK Version
+
+```bash
+# For Go 1.21
+go get github.com/tracertm/tracertm-go@v1.2
+
+# For Go 1.22+
+go get github.com/tracertm/tracertm-go@v1.3
+```
+
+---
+
+## Operating System Support
+
+### Linux
+
+```bash
+# Check GOOS/GOARCH
+go env GOOS GOARCH
+```
+
+Supported distributions:
+- Ubuntu 20.04+
+- Debian 10+
+- CentOS 8+
+- Alpine 3.14+
+- Amazon Linux 2+
+
+### macOS
+
+Supported versions:
+- macOS 11 (Big Sur)+
+- macOS 12 (Monterey)+
+- macOS 13 (Ventura)+
+- macOS 14 (Sonoma)+
+
+### Windows
+
+Supported versions:
+- Windows 10+
+- Windows Server 2019+
+
+---
+
+## Architecture Support
+
+### Supported Architectures
+
+| Architecture | Status | Notes |
+|-------------|--------|-------|
+| amd64 | Full | Primary development platform |
+| arm64 | Full | Apple Silicon, AWS Graviton |
+| arm | Partial | Raspberry Pi, embedded |
+| 386 | Partial | Legacy 32-bit |
+
+### Cross-Compilation
+
+```bash
+# Build for Linux AMD64
+GOOS=linux GOARCH=amd64 go build -o myapp-linux-amd64
+
+# Build for macOS ARM64
+GOOS=darwin GOARCH=arm64 go build -o myapp-darwin-arm64
+
+# Build for Windows AMD64
+GOOS=windows GOARCH=amd64 go build -o myapp-windows-amd64.exe
+```
+
+---
+
+## CGO Requirements
+
+The SDK is **pure Go** and does not require CGO:
+
+```bash
+# Build without CGO
+CGO_ENABLED=0 go build -o myapp
+```
+
+Benefits:
+- Fully static binaries
+- No C compiler needed
+- Easier cross-compilation
+- Smaller container images
+
+---
+
+## Docker Base Images
+
+### Recommended Images
+
+```dockerfile
+# Alpine (smallest)
+FROM golang:1.22-alpine AS builder
+
+# Debian (most compatible)
+FROM golang:1.22-bookworm AS builder
+
+# Distroless (secure runtime)
+FROM gcr.io/distroless/static:nonroot
+```
+
+### Multi-Stage Build
+
+```dockerfile
+# Build stage
+FROM golang:1.22-alpine AS builder
+
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 go build -o /app/myapp
+
+# Runtime stage
+FROM alpine:3.19
+COPY --from=builder /app/myapp /usr/local/bin/
+ENTRYPOINT ["myapp"]
+```
+
+---
+
+## Troubleshooting
+
+### Version Too Old
+
+```
+# Your Go version is older than go1.21; upgrade at https://golang.org/dl/
+```
+
+**Solution**: Upgrade Go to 1.21 or higher.
+
+### Module Requires Newer Go
+
+```
+go: module requires Go >= 1.22 (running on go1.21)
+```
+
+**Solution**: Either upgrade Go or use an older SDK version:
+
+```bash
+go get github.com/tracertm/tracertm-go@v1.2
+```
+
+### Type Errors
+
+If you see type errors with generics:
+
+```
+./main.go:15:2: syntax error: unexpected [, expecting semicolon or newline
+```
+
+**Solution**: Ensure Go 1.21+ (generics require Go 1.18+, but SDK uses 1.21+ features).
+
+### Missing Standard Library
+
+```
+cannot find package "log/slog"
+```
+
+**Solution**: Upgrade to Go 1.21+ which includes `log/slog`.
+
+---
+
+## Best Practices
+
+### 1. Use Go 1.22+
+
+Take advantage of latest features:
+
+```go
+// Go 1.22+ range over integers
+for i := range 10 {
+    fmt.Println(i)
+}
+```
+
+### 2. Keep Go Updated
+
+Regular updates ensure:
+- Security patches
+- Performance improvements
+- New language features
+
+### 3. CI/CD Matrix Testing
+
+```yaml
+# .github/workflows/test.yml
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: ['1.21', '1.22', '1.23']
+    steps:
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+```
+
+### 4. Document Requirements
+
+```go
+// go.mod
+module myproject
+
+go 1.21
+
+require github.com/tracertm/tracertm-go v1.2.3
+```
+
+---
+
+## Related Documentation
+
+- [Installation](/docs/api-reference/sdks/go/installation) - Full installation guide
+- [Go Get](/docs/api-reference/sdks/go/go-get) - Package management
+- [Quick Start](/docs/api-reference/sdks/go/quickstart) - Get started

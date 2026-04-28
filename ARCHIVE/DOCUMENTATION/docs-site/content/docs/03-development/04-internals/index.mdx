@@ -1,0 +1,956 @@
+---
+title: "Internals"
+description: "Deep dive into TraceRTM's internal architecture, data flow, state management, and core services"
+---
+
+# TraceRTM Internals
+
+This section provides detailed documentation of TraceRTM's internal architecture, explaining how data flows through the system, how state is managed, and how core services are implemented.
+
+## Request Lifecycle
+
+Understanding how a request flows through TraceRTM:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          Request Lifecycle                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Client Request                                                              │
+│       │                                                                      │
+│       ▼                                                                      │
+│  ┌─────────────────┐                                                        │
+│  │   Middleware    │ ─── Authentication, CORS, Request ID, Logging          │
+│  └────────┬────────┘                                                        │
+│           │                                                                  │
+│           ▼                                                                  │
+│  ┌─────────────────┐                                                        │
+│  │     Router      │ ─── Route matching, path parameter extraction          │
+│  └────────┬────────┘                                                        │
+│           │                                                                  │
+│           ▼                                                                  │
+│  ┌─────────────────┐                                                        │
+│  │   Dependency    │ ─── Session creation, service injection                │
+│  │   Injection     │                                                        │
+│  └────────┬────────┘                                                        │
+│           │                                                                  │
+│           ▼                                                                  │
+│  ┌─────────────────┐                                                        │
+│  │    Endpoint     │ ─── Request validation, business logic call            │
+│  │    Handler      │                                                        │
+│  └────────┬────────┘                                                        │
+│           │                                                                  │
+│           ▼                                                                  │
+│  ┌─────────────────┐                                                        │
+│  │    Service      │ ─── Business logic, orchestration                      │
+│  │    Layer        │                                                        │
+│  └────────┬────────┘                                                        │
+│           │                                                                  │
+│           ▼                                                                  │
+│  ┌─────────────────┐                                                        │
+│  │   Repository    │ ─── Data access, query building                        │
+│  │    Layer        │                                                        │
+│  └────────┬────────┘                                                        │
+│           │                                                                  │
+│           ▼                                                                  │
+│  ┌─────────────────┐                                                        │
+│  │    Database     │ ─── PostgreSQL, Neo4j, Redis                           │
+│  └─────────────────┘                                                        │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Request Flow Example
+
+```python
+# 1. Request arrives at endpoint
+@router.post("/projects/{project_id}/items")
+async def create_item(
+    project_id: str,
+    data: ItemCreate,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    service: Annotated[ItemService, Depends(get_item_service)],
+    user: Annotated[User, Depends(get_current_user)],
+) -> ItemResponse:
+    # 2. Service handles business logic
+    item = await service.create_item(
+        session=session,
+        project_id=project_id,
+        data=data,
+        created_by=user.id,
+    )
+
+    # 3. Response serialization
+    return ItemResponse.model_validate(item)
+
+
+# Service layer implementation
+class ItemService:
+    async def create_item(
+        self,
+        session: AsyncSession,
+        project_id: str,
+        data: ItemCreate,
+        created_by: str,
+    ) -> Item:
+        # Validate project exists
+        project = await self.project_repo.get(session, project_id)
+        if not project:
+            raise NotFoundError(f"Project {project_id} not found")
+
+        # Create item entity
+        item = Item(
+            id=generate_id("item"),
+            project_id=project_id,
+            title=data.title,
+            item_type=data.item_type,
+            description=data.description,
+            status="draft",
+            created_by=created_by,
+        )
+
+        # Persist via repository
+        item = await self.item_repo.create(session, item)
+
+        # Record event
+        await self.event_repo.create(session, Event(
+            entity_type="item",
+            entity_id=item.id,
+            event_type="created",
+            data={"item": item.to_dict()},
+            user_id=created_by,
+        ))
+
+        # Invalidate cache
+        await self.cache.invalidate(f"project:{project_id}:items")
+
+        return item
+```
+
+## Data Flow
+
+### Write Operations
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           Write Operation Flow                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  API Request ────► Validation ────► Service ────► Repository                │
+│                         │              │              │                      │
+│                         ▼              ▼              ▼                      │
+│                    Schema          Business       Database                   │
+│                  Validation         Logic          Query                     │
+│                         │              │              │                      │
+│                         │              │              ▼                      │
+│                         │              │         Transaction                 │
+│                         │              │              │                      │
+│                         │              ▼              │                      │
+│                         │         Event Store ◄──────┤                      │
+│                         │              │              │                      │
+│                         │              ▼              │                      │
+│                         │         Cache Invalidation  │                      │
+│                         │              │              │                      │
+│                         ▼              ▼              ▼                      │
+│                    Response ◄─── Serialization ◄─── Commit                  │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Read Operations
+
+```python
+# Read flow with caching
+class ItemService:
+    async def get_item(
+        self,
+        session: AsyncSession,
+        item_id: str,
+    ) -> Item | None:
+        # 1. Check L1 cache (in-memory)
+        cached = self.l1_cache.get(f"item:{item_id}")
+        if cached:
+            return cached
+
+        # 2. Check L2 cache (Redis)
+        cached = await self.redis.get(f"item:{item_id}")
+        if cached:
+            item = Item.model_validate_json(cached)
+            self.l1_cache.set(f"item:{item_id}", item, ttl=60)
+            return item
+
+        # 3. Query database
+        item = await self.item_repo.get(session, item_id)
+
+        if item:
+            # 4. Populate caches
+            await self.redis.set(
+                f"item:{item_id}",
+                item.model_dump_json(),
+                ex=300,  # 5 minute TTL
+            )
+            self.l1_cache.set(f"item:{item_id}", item, ttl=60)
+
+        return item
+```
+
+## State Management
+
+### Backend State
+
+TraceRTM uses several state management patterns:
+
+```python
+# 1. Database State - Source of truth
+class Item(Base):
+    __tablename__ = "items"
+
+    id: Mapped[str] = mapped_column(primary_key=True)
+    title: Mapped[str]
+    status: Mapped[str]
+    version: Mapped[int] = mapped_column(default=1)  # Optimistic locking
+
+    __mapper_args__ = {"version_id_col": version}
+
+
+# 2. Session State - Request-scoped
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session_maker() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+
+
+# 3. Cache State - Ephemeral
+class CacheManager:
+    def __init__(self, redis: Redis):
+        self.redis = redis
+        self.l1_cache = TTLCache(maxsize=1000, ttl=60)
+
+    async def get(self, key: str) -> Any | None:
+        # L1 first
+        if key in self.l1_cache:
+            return self.l1_cache[key]
+
+        # L2 fallback
+        value = await self.redis.get(key)
+        if value:
+            self.l1_cache[key] = value
+        return value
+
+    async def invalidate(self, pattern: str):
+        # Clear L1
+        keys_to_delete = [k for k in self.l1_cache if fnmatch(k, pattern)]
+        for key in keys_to_delete:
+            del self.l1_cache[key]
+
+        # Clear L2
+        async for key in self.redis.scan_iter(pattern):
+            await self.redis.delete(key)
+```
+
+### Frontend State
+
+The React frontend uses TanStack Query for server state:
+
+```typescript
+// Server state with TanStack Query
+export function useItems(projectId: string) {
+  return useQuery({
+    queryKey: ['items', projectId],
+    queryFn: () => api.getItems(projectId),
+    staleTime: 1000 * 60,  // 1 minute
+    gcTime: 1000 * 60 * 5, // 5 minutes
+  })
+}
+
+// Mutations with optimistic updates
+export function useCreateItem() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: ItemCreate) => api.createItem(data),
+    onMutate: async (newItem) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['items'] })
+
+      // Snapshot previous value
+      const previous = queryClient.getQueryData(['items', newItem.projectId])
+
+      // Optimistically update
+      queryClient.setQueryData(['items', newItem.projectId], (old: Item[]) => [
+        ...old,
+        { ...newItem, id: 'temp-' + Date.now(), status: 'creating' },
+      ])
+
+      return { previous }
+    },
+    onError: (err, newItem, context) => {
+      // Rollback on error
+      queryClient.setQueryData(
+        ['items', newItem.projectId],
+        context?.previous
+      )
+    },
+    onSettled: (data, err, newItem) => {
+      // Refetch after mutation
+      queryClient.invalidateQueries({ queryKey: ['items', newItem.projectId] })
+    },
+  })
+}
+```
+
+## Core Services
+
+### ItemService
+
+Handles all item-related operations:
+
+```python
+class ItemService:
+    """Service for managing traceability items."""
+
+    def __init__(
+        self,
+        item_repo: ItemRepository,
+        link_repo: LinkRepository,
+        event_repo: EventRepository,
+        graph_service: GraphService,
+        cache: CacheManager,
+    ):
+        self.item_repo = item_repo
+        self.link_repo = link_repo
+        self.event_repo = event_repo
+        self.graph_service = graph_service
+        self.cache = cache
+
+    async def create_item(
+        self,
+        session: AsyncSession,
+        project_id: str,
+        data: ItemCreate,
+        created_by: str,
+    ) -> Item:
+        """Create a new item with full event tracking."""
+        ...
+
+    async def update_item(
+        self,
+        session: AsyncSession,
+        item_id: str,
+        data: ItemUpdate,
+        updated_by: str,
+    ) -> Item:
+        """Update item with optimistic locking and change tracking."""
+        item = await self.item_repo.get(session, item_id)
+        if not item:
+            raise NotFoundError(f"Item {item_id} not found")
+
+        # Store previous state for event
+        previous_state = item.to_dict()
+
+        # Apply updates
+        for field, value in data.model_dump(exclude_unset=True).items():
+            setattr(item, field, value)
+
+        # Save (version auto-increments)
+        item = await self.item_repo.update(session, item)
+
+        # Record change event
+        await self.event_repo.create(session, Event(
+            entity_type="item",
+            entity_id=item.id,
+            event_type="updated",
+            data={
+                "previous": previous_state,
+                "current": item.to_dict(),
+                "changes": data.model_dump(exclude_unset=True),
+            },
+            user_id=updated_by,
+        ))
+
+        # Sync to graph database
+        await self.graph_service.sync_item(item)
+
+        # Invalidate caches
+        await self.cache.invalidate(f"item:{item_id}")
+        await self.cache.invalidate(f"project:{item.project_id}:items")
+
+        return item
+
+    async def get_item_with_links(
+        self,
+        session: AsyncSession,
+        item_id: str,
+    ) -> ItemWithLinks:
+        """Get item with all its relationships."""
+        item = await self.item_repo.get(session, item_id)
+        if not item:
+            raise NotFoundError(f"Item {item_id} not found")
+
+        # Get outgoing links
+        outgoing = await self.link_repo.get_by_source(session, item_id)
+
+        # Get incoming links
+        incoming = await self.link_repo.get_by_target(session, item_id)
+
+        return ItemWithLinks(
+            item=item,
+            outgoing_links=outgoing,
+            incoming_links=incoming,
+        )
+```
+
+### LinkService
+
+Manages traceability relationships:
+
+```python
+class LinkService:
+    """Service for managing traceability links."""
+
+    async def create_link(
+        self,
+        session: AsyncSession,
+        source_id: str,
+        target_id: str,
+        link_type: LinkType,
+        created_by: str,
+        metadata: dict | None = None,
+    ) -> Link:
+        """Create a link between two items."""
+        # Validate both items exist
+        source = await self.item_repo.get(session, source_id)
+        target = await self.item_repo.get(session, target_id)
+
+        if not source or not target:
+            raise NotFoundError("Source or target item not found")
+
+        # Validate link type compatibility
+        if not self._is_valid_link(source.item_type, target.item_type, link_type):
+            raise ValidationError(
+                f"Cannot create {link_type} link from {source.item_type} "
+                f"to {target.item_type}"
+            )
+
+        # Check for cycles (if link type doesn't allow cycles)
+        if link_type in ACYCLIC_LINK_TYPES:
+            if await self._would_create_cycle(session, source_id, target_id):
+                raise ValidationError("Link would create a cycle")
+
+        # Create link
+        link = Link(
+            id=generate_id("link"),
+            source_id=source_id,
+            target_id=target_id,
+            link_type=link_type,
+            metadata=metadata or {},
+            created_by=created_by,
+        )
+
+        link = await self.link_repo.create(session, link)
+
+        # Sync to graph database
+        await self.graph_service.create_relationship(
+            source_id, target_id, link_type
+        )
+
+        return link
+
+    async def _would_create_cycle(
+        self,
+        session: AsyncSession,
+        source_id: str,
+        target_id: str,
+    ) -> bool:
+        """Check if adding a link would create a cycle."""
+        # Use graph database for efficient cycle detection
+        return await self.graph_service.path_exists(target_id, source_id)
+```
+
+### SyncService
+
+Handles local-remote synchronization:
+
+```python
+class SyncService:
+    """Service for synchronizing local and remote state."""
+
+    async def sync(
+        self,
+        session: AsyncSession,
+        project_id: str,
+        agent_id: str | None = None,
+    ) -> SyncResult:
+        """Perform bidirectional sync."""
+        # 1. Get local changes since last sync
+        local_changes = await self._get_local_changes(session, project_id)
+
+        # 2. Get remote changes since last sync
+        remote_changes = await self._get_remote_changes(project_id)
+
+        # 3. Detect conflicts
+        conflicts = self._detect_conflicts(local_changes, remote_changes)
+
+        # 4. Resolve conflicts (auto or manual)
+        resolved = await self._resolve_conflicts(conflicts)
+
+        # 5. Apply remote changes locally
+        applied_remote = await self._apply_remote_changes(
+            session, remote_changes, resolved
+        )
+
+        # 6. Push local changes to remote
+        pushed_local = await self._push_local_changes(local_changes, resolved)
+
+        # 7. Update sync state
+        await self._update_sync_state(session, project_id)
+
+        return SyncResult(
+            pulled=len(applied_remote),
+            pushed=len(pushed_local),
+            conflicts=len(conflicts),
+            resolved=len(resolved),
+        )
+
+    def _detect_conflicts(
+        self,
+        local: list[Change],
+        remote: list[Change],
+    ) -> list[Conflict]:
+        """Detect conflicting changes to same entities."""
+        conflicts = []
+
+        local_by_entity = {c.entity_id: c for c in local}
+
+        for remote_change in remote:
+            if remote_change.entity_id in local_by_entity:
+                local_change = local_by_entity[remote_change.entity_id]
+
+                # Check if changes affect same fields
+                overlapping_fields = (
+                    set(local_change.changed_fields) &
+                    set(remote_change.changed_fields)
+                )
+
+                if overlapping_fields:
+                    conflicts.append(Conflict(
+                        entity_id=remote_change.entity_id,
+                        local_change=local_change,
+                        remote_change=remote_change,
+                        overlapping_fields=overlapping_fields,
+                    ))
+
+        return conflicts
+```
+
+### GraphService
+
+Neo4j integration for graph operations:
+
+```python
+class GraphService:
+    """Service for graph database operations."""
+
+    def __init__(self, driver: AsyncDriver):
+        self.driver = driver
+
+    async def get_impact(
+        self,
+        item_id: str,
+        depth: int = 3,
+        link_types: list[str] | None = None,
+    ) -> ImpactAnalysis:
+        """Analyze impact of changes to an item."""
+        query = """
+        MATCH path = (start:Item {id: $item_id})-[r*1..$depth]->(affected:Item)
+        WHERE ALL(rel IN r WHERE type(rel) IN $link_types OR $link_types IS NULL)
+        RETURN affected, length(path) as distance,
+               [rel IN r | type(rel)] as path_types
+        ORDER BY distance
+        """
+
+        async with self.driver.session() as session:
+            result = await session.run(
+                query,
+                item_id=item_id,
+                depth=depth,
+                link_types=link_types,
+            )
+
+            affected_items = []
+            async for record in result:
+                affected_items.append(AffectedItem(
+                    item=record["affected"],
+                    distance=record["distance"],
+                    path_types=record["path_types"],
+                ))
+
+        return ImpactAnalysis(
+            source_id=item_id,
+            affected=affected_items,
+            total_affected=len(affected_items),
+        )
+
+    async def get_coverage(
+        self,
+        project_id: str,
+        source_type: str = "feature",
+        target_type: str = "test",
+    ) -> CoverageResult:
+        """Calculate traceability coverage."""
+        query = """
+        MATCH (project:Project {id: $project_id})
+        MATCH (source:Item {project_id: $project_id, item_type: $source_type})
+        OPTIONAL MATCH (source)-[:TESTED_BY|IMPLEMENTED_BY*1..2]->(target:Item {item_type: $target_type})
+        WITH source, count(DISTINCT target) as target_count
+        RETURN
+            count(source) as total,
+            sum(CASE WHEN target_count > 0 THEN 1 ELSE 0 END) as covered
+        """
+
+        async with self.driver.session() as session:
+            result = await session.run(
+                query,
+                project_id=project_id,
+                source_type=source_type,
+                target_type=target_type,
+            )
+            record = await result.single()
+
+            total = record["total"]
+            covered = record["covered"]
+
+            return CoverageResult(
+                total=total,
+                covered=covered,
+                percentage=(covered / total * 100) if total > 0 else 0,
+            )
+```
+
+## Caching Strategy
+
+### Cache Layers
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           Cache Architecture                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  L1: In-Memory Cache (per instance)                                         │
+│  ├─ TTL: 60 seconds                                                         │
+│  ├─ Size: 1000 entries (LRU eviction)                                       │
+│  └─ Use: Hot data, frequent reads                                           │
+│                                                                              │
+│  L2: Redis Cache (shared)                                                   │
+│  ├─ TTL: 5 minutes (configurable)                                           │
+│  ├─ Size: Unlimited (memory-based eviction)                                 │
+│  └─ Use: Cross-instance sharing, session data                               │
+│                                                                              │
+│  L3: Database Query Cache                                                   │
+│  ├─ TTL: Query-specific                                                     │
+│  └─ Use: Expensive aggregations, reports                                    │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Cache Keys
+
+```python
+# Cache key patterns
+CACHE_KEYS = {
+    # Entity caching
+    "item": "item:{item_id}",
+    "project": "project:{project_id}",
+    "link": "link:{link_id}",
+
+    # List caching
+    "project_items": "project:{project_id}:items",
+    "item_links": "item:{item_id}:links",
+
+    # Computed values
+    "coverage": "project:{project_id}:coverage:{source_type}:{target_type}",
+    "impact": "item:{item_id}:impact:{depth}",
+
+    # Session data
+    "user_session": "session:{session_id}",
+    "agent_lock": "lock:agent:{agent_id}:{item_id}",
+}
+```
+
+### Cache Invalidation
+
+```python
+class CacheInvalidator:
+    """Handles cache invalidation across all layers."""
+
+    INVALIDATION_RULES = {
+        "item.created": [
+            "project:{project_id}:items",
+            "project:{project_id}:coverage:*",
+        ],
+        "item.updated": [
+            "item:{item_id}",
+            "item:{item_id}:*",
+            "project:{project_id}:coverage:*",
+        ],
+        "item.deleted": [
+            "item:{item_id}",
+            "item:{item_id}:*",
+            "project:{project_id}:items",
+            "project:{project_id}:coverage:*",
+        ],
+        "link.created": [
+            "item:{source_id}:links",
+            "item:{target_id}:links",
+            "item:{source_id}:impact:*",
+            "item:{target_id}:impact:*",
+            "project:{project_id}:coverage:*",
+        ],
+    }
+
+    async def invalidate_for_event(
+        self,
+        event_type: str,
+        context: dict,
+    ):
+        """Invalidate caches based on event type."""
+        patterns = self.INVALIDATION_RULES.get(event_type, [])
+
+        for pattern in patterns:
+            # Substitute context values
+            key_pattern = pattern.format(**context)
+            await self.cache.invalidate(key_pattern)
+```
+
+## Event System
+
+### Event Types
+
+```python
+from enum import Enum
+
+class EventType(str, Enum):
+    # Item events
+    ITEM_CREATED = "item.created"
+    ITEM_UPDATED = "item.updated"
+    ITEM_DELETED = "item.deleted"
+    ITEM_STATUS_CHANGED = "item.status_changed"
+
+    # Link events
+    LINK_CREATED = "link.created"
+    LINK_DELETED = "link.deleted"
+
+    # Project events
+    PROJECT_CREATED = "project.created"
+    PROJECT_UPDATED = "project.updated"
+
+    # Sync events
+    SYNC_STARTED = "sync.started"
+    SYNC_COMPLETED = "sync.completed"
+    SYNC_CONFLICT = "sync.conflict"
+
+    # Agent events
+    AGENT_REGISTERED = "agent.registered"
+    AGENT_LOCK_ACQUIRED = "agent.lock_acquired"
+    AGENT_LOCK_RELEASED = "agent.lock_released"
+```
+
+### Event Processing
+
+```python
+class EventProcessor:
+    """Processes events for side effects."""
+
+    def __init__(self):
+        self.handlers: dict[EventType, list[Callable]] = defaultdict(list)
+
+    def on(self, event_type: EventType):
+        """Decorator to register event handler."""
+        def decorator(handler: Callable):
+            self.handlers[event_type].append(handler)
+            return handler
+        return decorator
+
+    async def process(self, event: Event):
+        """Process an event through all registered handlers."""
+        handlers = self.handlers.get(event.event_type, [])
+
+        for handler in handlers:
+            try:
+                await handler(event)
+            except Exception as e:
+                logger.error(f"Event handler failed: {e}", exc_info=True)
+
+
+# Register handlers
+event_processor = EventProcessor()
+
+@event_processor.on(EventType.ITEM_UPDATED)
+async def invalidate_item_cache(event: Event):
+    await cache.invalidate(f"item:{event.entity_id}")
+
+@event_processor.on(EventType.LINK_CREATED)
+async def update_graph(event: Event):
+    await graph_service.create_relationship(
+        event.data["source_id"],
+        event.data["target_id"],
+        event.data["link_type"],
+    )
+
+@event_processor.on(EventType.ITEM_STATUS_CHANGED)
+async def notify_subscribers(event: Event):
+    await notification_service.send(
+        channel=f"item:{event.entity_id}",
+        message={"type": "status_changed", "data": event.data},
+    )
+```
+
+## Search Engine
+
+### Full-Text Search
+
+```python
+class SearchService:
+    """Full-text and semantic search service."""
+
+    async def search(
+        self,
+        project_id: str,
+        query: str,
+        item_types: list[str] | None = None,
+        limit: int = 20,
+    ) -> list[SearchResult]:
+        """Perform full-text search across items."""
+        # Build PostgreSQL full-text search query
+        sql = """
+        SELECT
+            id, title, description, item_type,
+            ts_rank(search_vector, plainto_tsquery('english', :query)) as rank
+        FROM items
+        WHERE project_id = :project_id
+          AND search_vector @@ plainto_tsquery('english', :query)
+          AND (:item_types IS NULL OR item_type = ANY(:item_types))
+        ORDER BY rank DESC
+        LIMIT :limit
+        """
+
+        async with self.session() as session:
+            result = await session.execute(
+                text(sql),
+                {
+                    "project_id": project_id,
+                    "query": query,
+                    "item_types": item_types,
+                    "limit": limit,
+                },
+            )
+
+            return [
+                SearchResult(
+                    item_id=row.id,
+                    title=row.title,
+                    snippet=self._create_snippet(row.description, query),
+                    item_type=row.item_type,
+                    score=row.rank,
+                )
+                for row in result
+            ]
+```
+
+### Search Index Updates
+
+```python
+# Automatic search vector update via PostgreSQL trigger
+"""
+CREATE OR REPLACE FUNCTION items_search_vector_update()
+RETURNS trigger AS $$
+BEGIN
+    NEW.search_vector :=
+        setweight(to_tsvector('english', coalesce(NEW.title, '')), 'A') ||
+        setweight(to_tsvector('english', coalesce(NEW.description, '')), 'B') ||
+        setweight(to_tsvector('english', coalesce(NEW.metadata::text, '')), 'C');
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER items_search_vector_trigger
+    BEFORE INSERT OR UPDATE ON items
+    FOR EACH ROW EXECUTE FUNCTION items_search_vector_update();
+"""
+```
+
+## Background Jobs
+
+### Job Queue
+
+```python
+from arq import create_pool
+from arq.connections import RedisSettings
+
+# Job definitions
+async def sync_project_job(ctx, project_id: str):
+    """Background job to sync a project."""
+    async with get_session() as session:
+        sync_service = ctx["sync_service"]
+        result = await sync_service.sync(session, project_id)
+        return result.to_dict()
+
+async def generate_report_job(ctx, project_id: str, report_type: str):
+    """Background job to generate reports."""
+    async with get_session() as session:
+        report_service = ctx["report_service"]
+        report = await report_service.generate(session, project_id, report_type)
+        return report.url
+
+# Worker settings
+class WorkerSettings:
+    redis_settings = RedisSettings(host="localhost", port=6379)
+    functions = [sync_project_job, generate_report_job]
+    max_jobs = 10
+    job_timeout = 300  # 5 minutes
+```
+
+### Scheduled Tasks
+
+```python
+# Periodic tasks
+async def cleanup_old_events():
+    """Remove events older than retention period."""
+    async with get_session() as session:
+        cutoff = datetime.now() - timedelta(days=90)
+        await session.execute(
+            delete(Event).where(Event.created_at < cutoff)
+        )
+        await session.commit()
+
+async def refresh_materialized_views():
+    """Refresh coverage and statistics views."""
+    async with get_session() as session:
+        await session.execute(text("REFRESH MATERIALIZED VIEW coverage_stats"))
+        await session.commit()
+
+# Schedule configuration
+SCHEDULED_TASKS = {
+    "cleanup_events": {
+        "function": cleanup_old_events,
+        "cron": "0 2 * * *",  # Daily at 2 AM
+    },
+    "refresh_views": {
+        "function": refresh_materialized_views,
+        "cron": "*/15 * * * *",  # Every 15 minutes
+    },
+}
+```
+
+## Related Documentation
+
+- [Architecture Overview](/docs/development/architecture) - High-level architecture
+- [Database Schema](/docs/development/architecture/database) - Database design
+- [Services Reference](/docs/development/internals/services) - Detailed service documentation
+- [Caching Guide](/docs/development/internals/caching) - Cache configuration
+- [Search Implementation](/docs/development/internals/search) - Search engine details
+

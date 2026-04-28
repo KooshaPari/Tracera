@@ -1,0 +1,82 @@
+name: Code Quality Gates
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  quality:
+    name: Quality Suite
+    runs-on: ubuntu-latest
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PYTHONPATH: .:zen-mcp-server:zen-mcp-server/src
+      PRE_COMMIT_COLOR: "always"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[quality,test]"
+
+      - name: Clean workspace artifacts
+        run: |
+          python scripts/cleanup_workspace.py --verbose
+
+      - name: Ruff lint
+        run: |
+          ruff check .
+
+      - name: MyPy static typing
+        run: |
+          mypy .
+
+      - name: Prospector quality analysis
+        run: |
+          prospector --profile prospector.yaml
+
+      - name: Radon complexity analysis
+        run: |
+          python scripts/analyze_complexity.py --json
+
+      - name: Docstring formatting check
+        run: |
+          docformatter --check --recursive src/
+
+      - name: Docstring style (pydocstyle)
+        run: |
+          pydocstyle src/
+
+      - name: Documentation coverage
+        run: |
+          interrogate -v --fail-under 80 src/
+
+      - name: Documentation doctests
+        run: |
+          pytest --doctest-modules --doctest-glob="*.md" docs src
+
+      - name: Run tests with coverage
+        run: |
+          pytest --cov=src/pheno --cov-report=xml --cov-report=term-missing
+
+      - name: Dependency vulnerability audit
+        run: |
+          pip-audit --format json --output pip-audit-report.json
+
+      - name: Dependency license report
+        run: |
+          pip-licenses --format=json --output-file pip-licenses.json
+
+      - name: Pre-commit (full)
+        run: |
+          pre-commit run --all-files --show-diff-on-failure

@@ -1,0 +1,507 @@
+---
+title: "API Reference"
+description: "Complete API reference for the TraceRTM Python SDK"
+---
+
+# API Reference
+
+Complete reference for all classes, methods, and types in the TraceRTM Python SDK.
+
+## Client
+
+### TraceRTMClient
+
+The main client for interacting with the TraceRTM API.
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(
+    api_key="rtm_live_sk_...",      # Optional: defaults to TRACERTM_API_KEY env var
+    base_url="https://api.tracertm.dev/v1",  # Optional: API base URL
+    timeout=30.0,                     # Optional: request timeout in seconds
+    max_retries=3,                    # Optional: max retry attempts
+    headers={"X-Custom": "value"}     # Optional: custom headers
+)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `api_key` | `str` | `None` | API key (reads from env if not provided) |
+| `base_url` | `str` | `https://api.tracertm.dev/v1` | API base URL |
+| `timeout` | `float` | `30.0` | Request timeout in seconds |
+| `max_retries` | `int` | `3` | Maximum retry attempts for failed requests |
+| `headers` | `dict` | `None` | Additional HTTP headers |
+
+---
+
+## Projects
+
+### client.projects.list()
+
+List all projects accessible to the authenticated user.
+
+```python
+result = client.projects.list(
+    limit=20,           # Optional: max results per page
+    offset=0,           # Optional: pagination offset
+    sort="name",        # Optional: sort field
+    order="asc"         # Optional: sort order (asc/desc)
+)
+```
+
+**Returns:** `PaginatedResult[Project]`
+
+### client.projects.get()
+
+Get a specific project by ID.
+
+```python
+project = client.projects.get("proj_abc123")
+```
+
+**Returns:** `Project`
+
+### client.projects.create()
+
+Create a new project.
+
+```python
+project = client.projects.create(
+    name="My Project",           # Required
+    key="PROJ",                  # Required: unique project key
+    description="Description",   # Optional
+    workflow_id="wf_default"     # Optional: workflow to use
+)
+```
+
+**Returns:** `Project`
+
+### client.projects.update()
+
+Update an existing project.
+
+```python
+project = client.projects.update(
+    "proj_abc123",
+    name="Updated Name",
+    description="Updated description"
+)
+```
+
+**Returns:** `Project`
+
+### client.projects.delete()
+
+Delete a project.
+
+```python
+client.projects.delete("proj_abc123")
+```
+
+**Returns:** `None`
+
+---
+
+## Items
+
+### client.items.list()
+
+List items with filtering and pagination.
+
+```python
+result = client.items.list(
+    project_id="proj_abc123",    # Required
+    type="requirement",          # Optional: filter by type
+    status="approved",           # Optional: filter by status
+    assignee_id="user_123",      # Optional: filter by assignee
+    created_after="2025-01-01",  # Optional: date filter
+    created_before="2025-12-31", # Optional: date filter
+    search="authentication",     # Optional: text search
+    tags=["security", "auth"],   # Optional: filter by tags
+    limit=50,                    # Optional: max results
+    offset=0,                    # Optional: pagination offset
+    sort="created_at",           # Optional: sort field
+    order="desc",                # Optional: sort order
+    include=["links", "history"] # Optional: include related data
+)
+```
+
+**Returns:** `PaginatedResult[Item]`
+
+### client.items.get()
+
+Get a specific item by ID.
+
+```python
+item = client.items.get(
+    "item_abc123",
+    include=["links", "history", "artifacts"]  # Optional
+)
+```
+
+**Returns:** `Item`
+
+### client.items.create()
+
+Create a new item.
+
+```python
+item = client.items.create(
+    project_id="proj_abc123",        # Required
+    type="requirement",              # Required
+    title="User Authentication",     # Required
+    description="Description text",  # Optional
+    status="draft",                  # Optional
+    priority="high",                 # Optional
+    assignee_id="user_123",          # Optional
+    due_date="2025-06-01",           # Optional
+    tags=["security", "auth"],       # Optional
+    fields={                         # Optional: custom fields
+        "acceptance_criteria": "...",
+        "business_value": 8
+    }
+)
+```
+
+**Returns:** `Item`
+
+### client.items.update()
+
+Update an existing item.
+
+```python
+item = client.items.update(
+    "item_abc123",
+    title="Updated Title",
+    description="Updated description",
+    priority="critical"
+)
+```
+
+**Returns:** `Item`
+
+### client.items.delete()
+
+Delete an item.
+
+```python
+client.items.delete("item_abc123")
+```
+
+**Returns:** `None`
+
+### client.items.bulk_create()
+
+Create multiple items at once.
+
+```python
+results = client.items.bulk_create([
+    {"project_id": "proj_abc", "type": "requirement", "title": "Req 1"},
+    {"project_id": "proj_abc", "type": "requirement", "title": "Req 2"},
+    {"project_id": "proj_abc", "type": "requirement", "title": "Req 3"}
+])
+```
+
+**Returns:** `list[BulkResult]`
+
+### client.items.bulk_update()
+
+Update multiple items at once.
+
+```python
+results = client.items.bulk_update([
+    {"id": "item_1", "status": "approved"},
+    {"id": "item_2", "status": "approved"},
+    {"id": "item_3", "status": "approved"}
+])
+```
+
+**Returns:** `list[BulkResult]`
+
+### client.items.bulk_delete()
+
+Delete multiple items.
+
+```python
+results = client.items.bulk_delete(["item_1", "item_2", "item_3"])
+```
+
+**Returns:** `list[BulkResult]`
+
+---
+
+## Links
+
+### client.links.list()
+
+List links with filtering.
+
+```python
+result = client.links.list(
+    project_id="proj_abc123",     # Optional
+    source_id="item_abc",         # Optional
+    target_id="item_xyz",         # Optional
+    type="verified_by",           # Optional
+    limit=50,
+    offset=0
+)
+```
+
+**Returns:** `PaginatedResult[Link]`
+
+### client.links.get()
+
+Get a specific link.
+
+```python
+link = client.links.get("link_abc123")
+```
+
+**Returns:** `Link`
+
+### client.links.create()
+
+Create a new link between items.
+
+```python
+link = client.links.create(
+    source_id="item_req_001",     # Required
+    target_id="item_tc_001",      # Required
+    type="verified_by",           # Required
+    description="Optional desc"   # Optional
+)
+```
+
+**Returns:** `Link`
+
+### client.links.delete()
+
+Delete a link.
+
+```python
+client.links.delete("link_abc123")
+```
+
+**Returns:** `None`
+
+### client.links.bulk_create()
+
+Create multiple links.
+
+```python
+results = client.links.bulk_create([
+    {"source_id": "item_1", "target_id": "item_2", "type": "traces_to"},
+    {"source_id": "item_1", "target_id": "item_3", "type": "verified_by"}
+])
+```
+
+**Returns:** `list[BulkResult]`
+
+---
+
+## Search
+
+### client.search.items()
+
+Full-text search across items.
+
+```python
+result = client.search.items(
+    query="authentication login",
+    project_ids=["proj_abc"],     # Optional
+    types=["requirement"],        # Optional
+    statuses=["approved"],        # Optional
+    limit=20
+)
+```
+
+**Returns:** `SearchResult`
+
+### client.search.global_search()
+
+Search across all resource types.
+
+```python
+result = client.search.global_search(
+    query="authentication",
+    resource_types=["items", "projects"],
+    limit=20
+)
+```
+
+**Returns:** `GlobalSearchResult`
+
+---
+
+## Reports
+
+### client.reports.traceability_matrix()
+
+Generate a traceability matrix report.
+
+```python
+matrix = client.reports.traceability_matrix(
+    project_id="proj_abc123",
+    source_type="requirement",
+    target_type="test_case"
+)
+```
+
+**Returns:** `TraceabilityMatrix`
+
+### client.reports.coverage()
+
+Generate a coverage report.
+
+```python
+coverage = client.reports.coverage(
+    project_id="proj_abc123",
+    source_type="requirement",
+    target_type="test_case"
+)
+```
+
+**Returns:** `CoverageReport`
+
+---
+
+## Users
+
+### client.users.me()
+
+Get the current authenticated user.
+
+```python
+user = client.users.me()
+```
+
+**Returns:** `User`
+
+### client.users.list()
+
+List users in an organization.
+
+```python
+result = client.users.list(limit=50)
+```
+
+**Returns:** `PaginatedResult[User]`
+
+---
+
+## Webhooks
+
+### client.webhooks.list()
+
+List configured webhooks.
+
+```python
+result = client.webhooks.list(project_id="proj_abc123")
+```
+
+**Returns:** `PaginatedResult[Webhook]`
+
+### client.webhooks.create()
+
+Create a new webhook.
+
+```python
+webhook = client.webhooks.create(
+    project_id="proj_abc123",
+    url="https://api.example.com/webhook",
+    events=["item.created", "item.updated"],
+    secret="webhook_secret"
+)
+```
+
+**Returns:** `Webhook`
+
+### client.webhooks.delete()
+
+Delete a webhook.
+
+```python
+client.webhooks.delete("wh_abc123")
+```
+
+**Returns:** `None`
+
+---
+
+## Models
+
+### Project
+
+```python
+@dataclass
+class Project:
+    id: str
+    name: str
+    key: str
+    description: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+    owner_id: str
+    workflow_id: str
+    settings: dict
+```
+
+### Item
+
+```python
+@dataclass
+class Item:
+    id: str
+    project_id: str
+    type: str  # requirement, test_case, bug, etc.
+    title: str
+    description: Optional[str]
+    status: str
+    priority: Optional[str]
+    assignee_id: Optional[str]
+    due_date: Optional[date]
+    tags: list[str]
+    fields: dict
+    created_at: datetime
+    updated_at: datetime
+    created_by: str
+    links: Optional[list[Link]]  # When included
+    history: Optional[list[HistoryEntry]]  # When included
+```
+
+### Link
+
+```python
+@dataclass
+class Link:
+    id: str
+    source_id: str
+    target_id: str
+    type: str  # traces_to, verified_by, implements, etc.
+    description: Optional[str]
+    created_at: datetime
+    created_by: str
+```
+
+### PaginatedResult
+
+```python
+@dataclass
+class PaginatedResult[T]:
+    data: list[T]
+    total: int
+    limit: int
+    offset: int
+    has_more: bool
+```
+
+---
+
+## Related Documentation
+
+- [Client Methods](/docs/api-reference/sdks/python/client-methods) - Detailed method documentation
+- [Models](/docs/api-reference/sdks/python/models) - Data model reference
+- [Error Handling](/docs/api-reference/sdks/python/error-handling) - Exception types

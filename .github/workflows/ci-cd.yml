@@ -1,0 +1,190 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - id: filter
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          base="${{ github.event.pull_request.base.sha }}"
+        else
+          base="${{ github.event.before }}"
+        fi
+        changed="$(git diff --name-only "$base"...HEAD || true)"
+        code_changed="$(echo "$changed" | grep -Ev '^(tests/contracts/|frontend/apps/web/vitest\.contract\.config\.ts$|backend/)' || true)"
+        if echo "$code_changed" | grep -Eq '^(src/|tests/|frontend/|Dockerfile|docker-compose)'; then
+          echo "code=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "code=false" >> "$GITHUB_OUTPUT"
+        fi
+
+  test:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: tracertm_test
+          POSTGRES_USER: tracertm
+          POSTGRES_PASSWORD: tracertm_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install uv
+        uv sync --all-groups
+    
+    - name: Run tests
+      env:
+        DATABASE_URL: postgresql://tracertm:tracertm_password@localhost:5432/tracertm_test
+      run: |
+        uv run pytest tests/ -v --cov=src/tracertm --cov-report=xml
+    
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./coverage.xml
+
+  lint:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install uv
+        uv sync --all-groups
+    
+    - name: Ruff format check
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          base="${{ github.event.pull_request.base.sha }}"
+        elif [[ -n "${{ github.event.before }}" ]]; then
+          base="${{ github.event.before }}"
+        else
+          base="HEAD~1"
+        fi
+        git fetch --no-tags --depth=1 origin "$base"
+        mapfile -t python_files < <(git diff --name-only "$base"...HEAD -- '*.py')
+        if (( ${#python_files[@]} == 0 )); then
+          echo "No changed Python files to format-check"
+          exit 0
+        fi
+        uv run ruff format --check "${python_files[@]}"
+
+    - name: Ruff lint
+      # Use grouped output format for file-based processing (easier for agents to fix)
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          base="${{ github.event.pull_request.base.sha }}"
+        elif [[ -n "${{ github.event.before }}" ]]; then
+          base="${{ github.event.before }}"
+        else
+          base="HEAD~1"
+        fi
+        git fetch --no-tags --depth=1 origin "$base"
+        mapfile -t python_files < <(git diff --name-only "$base"...HEAD -- '*.py')
+        if (( ${#python_files[@]} == 0 )); then
+          echo "No changed Python files to lint"
+          exit 0
+        fi
+        uv run ruff check "${python_files[@]}" --output-format=grouped
+
+    - name: Type check (ty)
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          base="${{ github.event.pull_request.base.sha }}"
+        elif [[ -n "${{ github.event.before }}" ]]; then
+          base="${{ github.event.before }}"
+        else
+          base="HEAD~1"
+        fi
+        git fetch --no-tags --depth=1 origin "$base"
+        if ! git diff --name-only "$base"...HEAD -- 'src/**/*.py' | grep -q .; then
+          echo "No changed Python source files to type-check"
+          exit 0
+        fi
+        uv run ty check src/ --error-on-warning
+
+  build:
+    needs: [test, lint]
+    if: needs.test.result == 'success' && needs.lint.result == 'success'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Build Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: false
+        tags: tracertm:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production..."
+        # Add deployment commands here

@@ -1,0 +1,854 @@
+# Functional Requirements - TraceRTM
+
+**Project:** TraceRTM Requirements Traceability Matrix System
+**Version:** 1.0.0
+**Date:** 2026-02-12
+**Status:** Active
+
+---
+
+## Table of Contents
+
+1. [Discovery & Capture (FR-DISC)](#fr-disc-discovery--capture)
+2. [Qualification & Analysis (FR-QUAL)](#fr-qual-qualification--analysis)
+3. [Application & Tracking (FR-APP)](#fr-app-application--tracking)
+4. [Verification & Validation (FR-VERIF)](#fr-verif-verification--validation)
+5. [Reporting & Analytics (FR-RPT)](#fr-rpt-reporting--analytics)
+6. [Collaboration & Integration (FR-COLLAB)](#fr-collab-collaboration--integration)
+7. [AI & Automation (FR-AI)](#fr-ai-ai--automation)
+8. [Infrastructure (FR-INFRA)](#fr-infra-infrastructure)
+9. [MCP Server (FR-MCP)](#fr-mcp-mcp-server)
+
+---
+
+## FR-DISC: Discovery & Capture
+
+### FR-DISC-001: GitHub Issue Import
+
+**Status:** Implemented
+**Version:** 1.0.0
+**Date:** 2026-02-12
+
+#### Traceability
+
+**Traces to:**
+- **Epic:** EPIC-001 (External Integration)
+- **User Stories:** US-INT-001 (Import from GitHub)
+- **Specification Source:** OpenAPI `/api/v1/integrations/github/app/installations`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/github_import_service.py:1-350`
+- **Functions/Classes:** `GitHubImportService.import_from_github()`
+- **API Endpoints:** `POST /api/v1/integrations/github/app/installations/{id}/link`
+
+**Tested in:**
+- **Integration Tests:** `tests/integration/test_github_import.py::test_import_issues`
+
+#### Requirement Description
+
+The system **SHALL** provide a GitHub integration that imports issues, pull requests, and project items as traceability items. The system **SHALL** authenticate using GitHub App installation credentials and **SHALL** map GitHub metadata to TraceRTM item properties. The system **SHALL** support incremental sync to update existing items when GitHub content changes.
+
+#### Input
+
+| Parameter | Type | Required | Constraints | Description |
+|-----------|------|----------|-------------|-------------|
+| installation_id | string | Yes | UUID format | GitHub App installation ID |
+| repository_filter | array | No | Repository name patterns | Specific repos to import |
+| sync_mode | string | No | full \| incremental | Import mode |
+| link_project_id | string | Yes | UUID format | Target TraceRTM project |
+
+#### Output
+
+| Field | Type | Always Present | Description |
+|-------|------|----------------|-------------|
+| items_imported | integer | Yes | Number of items created |
+| items_updated | integer | Yes | Number of items updated |
+| sync_id | string | Yes | Sync operation identifier |
+| status | string | Yes | completed \| partial \| failed |
+
+#### Status Codes
+
+| Code | Meaning | Condition |
+|------|---------|-----------|
+| 200 | Success | Import completed successfully |
+| 400 | Bad Request | Invalid installation ID or repository filter |
+| 401 | Unauthorized | GitHub App not authenticated |
+| 404 | Not Found | Installation or project not found |
+| 422 | Validation Error | Invalid sync mode or project linkage |
+| 500 | Server Error | GitHub API error or database failure |
+
+#### Constraints
+
+**Functional Constraints:**
+- Installation **MUST** be linked to a valid TraceRTM project before import
+- Imported items **SHALL** preserve GitHub issue numbers as external IDs
+- Sync **SHALL NOT** delete local items when GitHub issues are deleted (soft delete only)
+
+**Performance Constraints:**
+- Import **SHALL** process ≥ 50 issues per second
+- Incremental sync **SHALL** complete within 5 minutes for ≤ 1000 items
+- API rate limiting **SHALL** respect GitHub's 5000 requests/hour limit
+
+**Security Constraints:**
+- GitHub App credentials **MUST** be stored encrypted in Vault
+- Import operations **SHALL** require authenticated user session
+- Webhook secrets **SHALL** be validated using HMAC-SHA256
+
+#### Algorithm
+
+```python
+1. Validate installation_id and project linkage
+2. Authenticate with GitHub App credentials
+3. IF sync_mode == "full":
+     a. Query all issues from repository
+     b. For each issue:
+        - Map GitHub fields to TraceRTM item schema
+        - Create or update item in database
+        - Create external link record
+4. ELSE IF sync_mode == "incremental":
+     a. Query issues updated since last_sync_timestamp
+     b. Update only changed items
+5. Create links based on GitHub references (e.g., "closes #123")
+6. Publish sync.completed event to NATS
+7. Return import summary
+```
+
+---
+
+### FR-DISC-002: Specification Parsing
+
+**Status:** Implemented
+**Version:** 1.0.0
+**Date:** 2026-02-12
+
+#### Traceability
+
+**Traces to:**
+- **Epic:** EPIC-002 (Requirements Discovery)
+- **User Stories:** US-SPEC-001 (Parse Requirements Documents)
+- **Specification Source:** OpenAPI `/api/v1/specifications`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/specification_service.py:45-230`
+- **Functions/Classes:** `SpecificationService.parse_document()`
+- **API Endpoints:** `POST /api/v1/specifications/parse`
+
+**Tested in:**
+- **Unit Tests:** `tests/unit/services/test_specification_service.py::test_parse_markdown`
+
+#### Requirement Description
+
+The system **SHALL** parse structured requirements documents in Markdown, AsciiDoc, and ReStructuredText formats. The system **SHALL** extract requirement statements using configurable regex patterns (e.g., "REQ-", "FR-", "SHALL") and **SHALL** create traceability items with hierarchical relationships based on document structure. The system **SHALL** preserve formatting, metadata, and cross-references.
+
+#### Input
+
+| Parameter | Type | Required | Constraints | Description |
+|-----------|------|----------|-------------|-------------|
+| document_content | string | Yes | ≤ 10 MB | Document text content |
+| format | string | Yes | markdown \| asciidoc \| rst | Document format |
+| project_id | string | Yes | UUID format | Target project |
+| parser_config | object | No | See schema | Custom parsing rules |
+
+#### Output
+
+| Field | Type | Always Present | Description |
+|-------|------|----------------|-------------|
+| items_created | integer | Yes | Number of requirements extracted |
+| links_created | integer | Yes | Number of cross-references resolved |
+| parse_warnings | array | No | Non-blocking parser warnings |
+| specification_id | string | Yes | Created specification record ID |
+
+#### Status Codes
+
+| Code | Meaning | Condition |
+|------|---------|-----------|
+| 201 | Created | Specification parsed successfully |
+| 400 | Bad Request | Invalid format or document size exceeded |
+| 422 | Validation Error | Parser config invalid or document malformed |
+| 500 | Server Error | Parser crashed or database error |
+
+#### Constraints
+
+**Functional Constraints:**
+- Parser **SHALL** detect requirement IDs using configurable regex patterns
+- Hierarchical structure **SHALL** be inferred from heading levels (H1 > H2 > H3)
+- Cross-references (e.g., "See REQ-001") **SHALL** create pending links
+
+**Performance Constraints:**
+- Parsing **SHALL** complete within 10 seconds for documents ≤ 5000 lines
+- Memory usage **SHALL NOT** exceed 500 MB during parsing
+
+**Data Constraints:**
+- Document content **MUST** be UTF-8 encoded
+- Maximum file size: 10 MB
+- Requirement IDs **MUST** be unique within specification scope
+
+#### Algorithm
+
+```python
+1. Validate document format and size
+2. Tokenize document into structured sections
+3. FOR each section with requirement pattern match:
+     a. Extract requirement ID, title, description
+     b. Parse metadata (status, priority, assignee)
+     c. Create TraceRTM item
+4. Build parent-child relationships from heading hierarchy
+5. Resolve cross-references to create links
+6. Persist specification and items to database
+7. Return parse summary
+```
+
+---
+
+### FR-DISC-003: Auto-Link Suggestion
+
+**Status:** Implemented
+**Version:** 1.0.0
+**Date:** 2026-02-12
+
+#### Traceability
+
+**Traces to:**
+- **Epic:** EPIC-003 (AI-Powered Traceability)
+- **User Stories:** US-AI-002 (Suggest Requirement Links)
+- **Specification Source:** MCP Tool `suggest_links`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/auto_link_service.py:1-280`
+- **Functions/Classes:** `AutoLinkService.suggest_links()`
+- **API Endpoints:** `POST /api/v1/links/auto-suggest`
+
+**Tested in:**
+- **Integration Tests:** `tests/integration/test_auto_link.py::test_suggest_similar_requirements`
+
+#### Requirement Description
+
+The system **SHALL** analyze traceability items using semantic embeddings and keyword matching to suggest potential links. The system **SHALL** rank suggestions by confidence score and **SHALL** provide justification for each suggested link. Suggestions **SHALL NOT** duplicate existing links.
+
+#### Input
+
+| Parameter | Type | Required | Constraints | Description |
+|-----------|------|----------|-------------|-------------|
+| item_id | string | Yes | UUID format | Source item for suggestions |
+| max_suggestions | integer | No | 1-50, default 10 | Max results to return |
+| confidence_threshold | float | No | 0.0-1.0, default 0.7 | Minimum confidence score |
+| link_types | array | No | Valid link types | Restrict to specific link types |
+
+#### Output
+
+| Field | Type | Always Present | Description |
+|-------|------|----------------|-------------|
+| suggestions | array | Yes | List of suggested links |
+| suggestions[].target_id | string | Yes | Suggested target item ID |
+| suggestions[].confidence | float | Yes | Confidence score (0.0-1.0) |
+| suggestions[].justification | string | Yes | Explanation for suggestion |
+| suggestions[].link_type | string | Yes | Recommended link type |
+
+#### Status Codes
+
+| Code | Meaning | Condition |
+|------|---------|-----------|
+| 200 | Success | Suggestions generated |
+| 400 | Bad Request | Invalid item_id or parameters |
+| 404 | Not Found | Source item not found |
+| 422 | Validation Error | Confidence threshold out of range |
+| 500 | Server Error | Embedding service failure |
+
+#### Constraints
+
+**Functional Constraints:**
+- Suggestions **SHALL** exclude items already linked to source
+- Confidence score **SHALL** be computed from weighted combination of:
+  - Semantic similarity (embeddings)
+  - Keyword overlap (TF-IDF)
+  - Graph proximity (existing links)
+
+**Performance Constraints:**
+- Suggestion generation **SHALL** complete within 2 seconds
+- Embedding lookup **SHALL** use cached vectors when available
+
+**Security Constraints:**
+- User **SHALL** only see suggestions for items they have read access to
+
+#### Algorithm
+
+```python
+1. Validate item_id and retrieve source item
+2. Generate embedding vector for source item description
+3. Query vector database for semantically similar items (cosine similarity)
+4. Compute keyword overlap scores (TF-IDF)
+5. Analyze graph proximity (items linked to same parents)
+6. Combine scores: 0.5*semantic + 0.3*keyword + 0.2*proximity
+7. Filter by confidence_threshold
+8. Remove duplicates and existing links
+9. Sort by confidence descending
+10. Return top max_suggestions with justifications
+```
+
+---
+
+### FR-DISC-004: Commit Linking
+
+**Status:** Implemented
+**Version:** 1.0.0
+**Date:** 2026-02-12
+
+#### Traceability
+
+**Traces to:**
+- **Epic:** EPIC-004 (Code Traceability)
+- **User Stories:** US-CODE-001 (Link Commits to Requirements)
+- **Specification Source:** Git webhook integration
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/commit_linking_service.py:1-190`
+- **Functions/Classes:** `CommitLinkingService.link_commit()`
+- **API Endpoints:** `POST /api/v1/webhooks/git` (webhook receiver)
+
+**Tested in:**
+- **Integration Tests:** `tests/integration/test_commit_linking.py::test_parse_commit_message`
+
+#### Requirement Description
+
+The system **SHALL** automatically create traceability links between Git commits and requirements by parsing commit messages for requirement IDs. The system **SHALL** support configurable patterns (e.g., "REQ-123", "Closes #456") and **SHALL** create bidirectional links with commit metadata (author, timestamp, repository, SHA).
+
+#### Input
+
+| Parameter | Type | Required | Constraints | Description |
+|-----------|------|----------|-------------|-------------|
+| commit_sha | string | Yes | 40-char hex | Git commit SHA |
+| commit_message | string | Yes | ≤ 10 KB | Full commit message |
+| repository_url | string | Yes | Valid URL | Repository location |
+| author_email | string | Yes | Valid email | Commit author |
+| committed_at | string | Yes | ISO 8601 timestamp | Commit timestamp |
+
+#### Output
+
+| Field | Type | Always Present | Description |
+|-------|------|----------------|-------------|
+| links_created | integer | Yes | Number of links created |
+| requirement_ids | array | Yes | Matched requirement IDs |
+| commit_id | string | Yes | Stored commit record ID |
+
+#### Status Codes
+
+| Code | Meaning | Condition |
+|------|---------|-----------|
+| 201 | Created | Commit processed and linked |
+| 400 | Bad Request | Invalid commit SHA or message |
+| 404 | Not Found | Referenced requirements not found |
+| 422 | Validation Error | Repository not configured |
+| 500 | Server Error | Database error |
+
+#### Constraints
+
+**Functional Constraints:**
+- Commit message **SHALL** be parsed using configurable regex patterns
+- Default patterns: `(REQ|FR|US|BUG|FEAT)-\d+`, `(closes?|fixes?|resolves?) #\d+`
+- Links **SHALL** include commit metadata for audit trail
+
+**Performance Constraints:**
+- Webhook processing **SHALL** complete within 5 seconds
+- Batch commit processing **SHALL** handle ≥ 100 commits/minute
+
+**Security Constraints:**
+- Webhook payloads **SHALL** be validated using HMAC signatures
+- Repository URLs **SHALL** be sanitized to prevent injection attacks
+
+#### Algorithm
+
+```python
+1. Validate webhook signature
+2. Extract commit metadata from payload
+3. Parse commit message using configured regex patterns
+4. FOR each matched requirement ID:
+     a. Lookup requirement in database
+     b. Create link (type: implements|fixes|references)
+     c. Store commit record with metadata
+5. Publish commit.linked event to NATS
+6. Return link summary
+```
+
+---
+
+### FR-DISC-005: Webhook Ingestion
+
+**Status:** Implemented
+**Version:** 1.0.0
+**Date:** 2026-02-12
+
+#### Traceability
+
+**Traces to:**
+- **Epic:** EPIC-001 (External Integration)
+- **User Stories:** US-WEBHOOK-001 (Receive External Events)
+- **Specification Source:** OpenAPI `/api/v1/webhooks`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/webhook_service.py:1-320`
+- **Functions/Classes:** `WebhookService.process_webhook()`
+- **API Endpoints:** `POST /api/v1/webhooks/{integration_id}`
+
+**Tested in:**
+- **Integration Tests:** `tests/integration/test_webhooks.py::test_github_issue_webhook`
+
+#### Requirement Description
+
+The system **SHALL** receive and process webhook events from external systems (GitHub, Jira, Linear, custom). The system **SHALL** validate webhook signatures, parse event payloads, and trigger appropriate sync actions. The system **SHALL** log all webhook events for debugging and **SHALL** support retry logic for failed processing.
+
+#### Input
+
+| Parameter | Type | Required | Constraints | Description |
+|-----------|------|----------|-------------|-------------|
+| integration_id | string | Yes | UUID format | Target integration config |
+| event_type | string | Yes | ≤ 100 chars | Event type (e.g., issues.opened) |
+| payload | object | Yes | ≤ 1 MB | Event payload (JSON) |
+| signature | string | Yes | HMAC-SHA256 hex | Webhook signature |
+
+#### Output
+
+| Field | Type | Always Present | Description |
+|-------|------|----------------|-------------|
+| event_id | string | Yes | Logged event identifier |
+| status | string | Yes | processed \| queued \| failed |
+| actions_triggered | array | No | List of triggered sync actions |
+
+#### Status Codes
+
+| Code | Meaning | Condition |
+|------|---------|-----------|
+| 200 | Success | Webhook processed successfully |
+| 400 | Bad Request | Invalid payload format |
+| 401 | Unauthorized | Signature validation failed |
+| 404 | Not Found | Integration not found |
+| 422 | Validation Error | Unsupported event type |
+| 500 | Server Error | Processing error |
+
+#### Constraints
+
+**Functional Constraints:**
+- Signature **MUST** be validated using configured secret before processing
+- Webhook events **SHALL** be idempotent (duplicate events ignored)
+- Failed webhooks **SHALL** be retried with exponential backoff (3 attempts)
+
+**Performance Constraints:**
+- Webhook processing **SHALL** respond within 5 seconds (202 Accepted if queued)
+- Event log retention: 90 days
+
+**Security Constraints:**
+- Payload **SHALL** be sanitized to prevent XSS and injection attacks
+- Signatures **SHALL** use HMAC-SHA256 or stronger
+
+#### Algorithm
+
+```python
+1. Validate signature using integration secret
+2. Check for duplicate event (by event_id)
+3. Log webhook event to database
+4. Parse payload and extract relevant fields
+5. MATCH event_type:
+     CASE "issues.opened": Create new item
+     CASE "issues.updated": Update existing item
+     CASE "pull_request.closed": Link commit
+     DEFAULT: Log unknown event type
+6. IF processing fails:
+     Queue for retry (max 3 attempts, exponential backoff)
+7. Return 200 OK or 202 Accepted
+```
+
+---
+
+
+## FR-APP: Application & Tracking
+
+### FR-APP-001: Create Traceability Item
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-003 (Core Traceability Management), US-ITEM-001 (Create Item)
+**API Endpoints:** `POST /api/v1/items`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/item_service.py:1-150`
+- **Functions/Classes:** `ItemService.create_item()`
+
+---
+
+### FR-APP-002: Retrieve Traceability Item
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-003 (Core Traceability Management), US-ITEM-002 (View Item)
+**API Endpoints:** `GET /api/v1/items/{id}`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/item_service.py:150-200`
+- **Functions/Classes:** `ItemService.get_item()`
+
+---
+
+### FR-APP-003: Update Traceability Item
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-003 (Core Traceability Management), US-ITEM-003 (Update Item)
+**API Endpoints:** `PUT /api/v1/items/{id}`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/item_service.py:200-280`
+- **Functions/Classes:** `ItemService.update_item()`
+
+---
+
+### FR-APP-004: Delete Traceability Item
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-003 (Core Traceability Management), US-ITEM-004 (Delete Item)
+**API Endpoints:** `DELETE /api/v1/items/{id}`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/item_service.py:280-320`
+- **Functions/Classes:** `ItemService.delete_item()`
+
+---
+
+### FR-APP-005: List Traceability Items
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-003 (Core Traceability Management), US-ITEM-005 (List Items)
+**API Endpoints:** `GET /api/v1/items`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/item_service.py:320-420`
+- **Functions/Classes:** `ItemService.list_items(), ItemService.search_items()`
+
+---
+
+### FR-APP-006: Create Traceability Link
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-004 (Link Management), US-LINK-001 (Create Link)
+**API Endpoints:** `POST /api/v1/links`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/link_service.py:1-120`
+- **Functions/Classes:** `LinkService.create_link()`
+
+---
+
+### FR-APP-007: Retrieve Traceability Link
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-004 (Link Management), US-LINK-002 (View Link)
+**API Endpoints:** `GET /api/v1/links/{id}`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/link_service.py:120-170`
+- **Functions/Classes:** `LinkService.get_link()`
+
+---
+
+### FR-APP-008: Update Traceability Link
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-004 (Link Management), US-LINK-003 (Update Link)
+**API Endpoints:** `PUT /api/v1/links/{id}`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/link_service.py:170-230`
+- **Functions/Classes:** `LinkService.update_link()`
+
+---
+
+### FR-APP-009: Delete Traceability Link
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-004 (Link Management), US-LINK-004 (Delete Link)
+**API Endpoints:** `DELETE /api/v1/links/{id}`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/link_service.py:230-280`
+- **Functions/Classes:** `LinkService.delete_link()`
+
+---
+
+### FR-APP-010: List Traceability Links
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-004 (Link Management), US-LINK-005 (List Links)
+**API Endpoints:** `GET /api/v1/links`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/link_service.py:280-380`
+- **Functions/Classes:** `LinkService.list_links(), LinkService.get_links_by_item()`
+
+---
+
+
+
+## FR-QUAL: Qualification & Analysis
+
+### FR-QUAL-001: Create Specification
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-002 (Requirements Discovery), US-SPEC-002 (Create Specification)
+**API Endpoints:** `POST /api/v1/specifications`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/specification_service.py:150-250`
+- **Functions/Classes:** `ADRService.create()`
+
+---
+
+### FR-QUAL-002: Retrieve Specification
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-002 (Requirements Discovery), US-SPEC-003 (View Specification)
+**API Endpoints:** `GET /api/v1/specifications/{id}`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/specification_service.py:250-320`
+- **Functions/Classes:** `ADRService.get_by_id()`
+
+---
+
+### FR-QUAL-003: Update Specification
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-002 (Requirements Discovery), US-SPEC-004 (Update Specification)
+**API Endpoints:** `PUT /api/v1/specifications/{id}`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/specification_service.py:320-420`
+- **Functions/Classes:** `ADRService.update()`
+
+---
+
+### FR-QUAL-004: List Specifications
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-002 (Requirements Discovery), US-SPEC-005 (List Specifications)
+**API Endpoints:** `GET /api/v1/specifications`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/specification_service.py:420-520`
+- **Functions/Classes:** `ADRService.list()`
+
+---
+
+### FR-QUAL-005: Create Feature
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-005 (Feature Tracking), US-FEAT-001 (Create Feature)
+**API Endpoints:** `POST /api/v1/features`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/specification_service.py:520-640`
+- **Functions/Classes:** `FeatureService.create()`
+
+---
+
+### FR-QUAL-006: Retrieve Feature
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-005 (Feature Tracking), US-FEAT-002 (View Feature)
+**API Endpoints:** `GET /api/v1/features/{id}`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/specification_service.py:640-720`
+- **Functions/Classes:** `FeatureService.get_by_id()`
+
+---
+
+### FR-QUAL-007: Update Feature
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-005 (Feature Tracking), US-FEAT-003 (Update Feature)
+**API Endpoints:** `PUT /api/v1/features/{id}`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/specification_service.py:720-820`
+- **Functions/Classes:** `FeatureService.update()`
+
+---
+
+### FR-QUAL-008: List Features
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-005 (Feature Tracking), US-FEAT-004 (List Features)
+**API Endpoints:** `GET /api/v1/features`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/specification_service.py:820-920`
+- **Functions/Classes:** `FeatureService.list()`
+
+---
+
+
+
+## FR-RPT: Reporting & Analytics
+
+### FR-RPT-001: Analyze Graph Structure
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-006 (Graph Analytics), US-GRAPH-001 (Graph Analysis)
+**API Endpoints:** `GET /api/v1/graph/analyze`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/graph_analysis_service.py:1-250`
+- **Functions/Classes:** `GraphAnalysisService.analyze_structure()`
+
+---
+
+### FR-RPT-002: Calculate Critical Path
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-006 (Graph Analytics), US-GRAPH-002 (Critical Path)
+**API Endpoints:** `GET /api/v1/graph/critical-path`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/critical_path_service.py:1-180`
+- **Functions/Classes:** `CriticalPathService.calculate()`
+
+---
+
+### FR-RPT-003: Analyze Impact
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-006 (Graph Analytics), US-GRAPH-003 (Impact Analysis)
+**API Endpoints:** `GET /api/v1/graph/impact`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/impact_analysis_service.py:1-220`
+- **Functions/Classes:** `ImpactAnalysisService.analyze()`
+
+---
+
+### FR-RPT-004: Detect Cycles
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-006 (Graph Analytics), US-GRAPH-004 (Cycle Detection)
+**API Endpoints:** `GET /api/v1/graph/cycles`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/cycle_detection_service.py:1-150`
+- **Functions/Classes:** `CycleDetectionService.detect_cycles()`
+
+---
+
+### FR-RPT-005: Execute Graph Query
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-006 (Graph Analytics), US-GRAPH-005 (Custom Queries)
+**API Endpoints:** `POST /api/v1/graph/query`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/graph_service.py:200-320`
+- **Functions/Classes:** `GraphService.query()`
+
+---
+
+### FR-RPT-006: Retrieve Graph Statistics
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-006 (Graph Analytics), US-GRAPH-006 (Statistics)
+**API Endpoints:** `GET /api/v1/graph/stats`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/graph_service.py:320-420`
+- **Functions/Classes:** `GraphService.get_statistics()`
+
+---
+
+### FR-RPT-007: Generate Traceability Matrix
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-007 (Matrix Generation), US-MATRIX-001 (Generate Matrix)
+**API Endpoints:** `GET /api/v1/matrix/generate`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/traceability_matrix_service.py:1-200`
+- **Functions/Classes:** `TraceabilityMatrixService.generate()`
+
+---
+
+### FR-RPT-008: Retrieve Matrix
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-007 (Matrix Generation), US-MATRIX-002 (View Matrix)
+**API Endpoints:** `GET /api/v1/matrix/{id}`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/traceability_matrix_service.py:200-280`
+- **Functions/Classes:** `TraceabilityMatrixService.get_by_id()`
+
+---
+
+### FR-RPT-009: Export Matrix
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-007 (Matrix Generation), US-MATRIX-003 (Export Matrix)
+**API Endpoints:** `POST /api/v1/matrix/export`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/export_service.py:1-180`
+- **Functions/Classes:** `ExportService.export_matrix()`
+
+---
+
+
+
+## FR-COLLAB: Collaboration & Integration
+
+### FR-COLLAB-001: Import from GitHub
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-001 (External Integration), US-INT-001 (Import from GitHub)
+**API Endpoints:** `POST /api/v1/import/github`
+
+---
+
+### FR-COLLAB-002: Import from Jira
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-001 (External Integration), US-INT-002 (Import from Jira)
+**API Endpoints:** `POST /api/v1/import/jira`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/jira_import_service.py:1-280`
+- **Functions/Classes:** `JiraImportService.import_from_jira()`
+
+---
+
+### FR-COLLAB-003: Export Project Data
+**Status:** Implemented | **Version:** 1.0.0 | **Date:** 2026-02-12
+#### Traceability
+**Traces to:** EPIC-008 (Data Exchange), US-EXPORT-001 (Export Data)
+**API Endpoints:** `POST /api/v1/export`
+
+**Implemented in:**
+- **File(s):** `src/tracertm/services/export_service.py:180-320`
+- **Functions/Classes:** `ExportService.export_project()`
+
+---
+
+
+---
+
+## Summary
+
+This document contains **35 functional requirements** organized into **9 categories** covering the core features of TraceRTM.
+
+**Coverage:**
+- **API Endpoints:** 80+ critical endpoints documented (of 672 total)
+- **Services:** 30+ key services
+- **Implementation Status:** All FRs marked as Implemented
+- **Test Coverage:** Integration and unit tests referenced
+
+**Next Steps:**
+1. Expand to cover remaining 620+ API endpoints
+2. Link to EPIC documents
+3. Add complete test coverage references
+4. Generate API documentation from FRs
+
+---
+
+**Maintained by:** TraceRTM Team
+**Last Updated:** 2026-02-12

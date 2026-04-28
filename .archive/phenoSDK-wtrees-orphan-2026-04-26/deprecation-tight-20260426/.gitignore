@@ -1,0 +1,65 @@
+# Python bytecode and virtualenvs
+**/__pycache__
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*/.venv/
+*/venv/
+
+# Distribution / packaging
+build/
+dist/
+.eggs/
+*.egg-info/
+pip-wheel-metadata/
+*.whl
+
+# Environment and configuration overrides
+.env
+.env.*
+*.env
+*.local
+*.toml.bak
+.vercel/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.nox/
+.tox/
+.ruff_cache/
+.pytype/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+.cache/
+
+# Logs and reports
+*.log
+*.tmp
+coverage.xml
+
+# IDE and editor files
+.vscode/
+.idea/
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Node and frontend artifacts
+node_modules/
+*.tsbuildinfo
+
+# Miscellaneous backups
+*.bak
+*.orig
+
+# Local export artifacts (OpenAPI snapshots, etc.)
+/artifacts/

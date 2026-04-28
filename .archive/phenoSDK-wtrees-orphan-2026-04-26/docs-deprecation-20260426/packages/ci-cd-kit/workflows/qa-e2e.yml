@@ -1,0 +1,55 @@
+name: QA Dashboard E2E
+
+on:
+  workflow_call:
+    inputs:
+      project_name:
+        description: 'Project name for QA reporting'
+        required: false
+        default: 'Dashboard'
+        type: string
+      python_version:
+        description: 'Python version to use'
+        required: false
+        default: '3.11'
+        type: string
+      requirements_files:
+        description: 'Requirements files to install'
+        required: false
+        default: 'requirements.txt,requirements-dev.txt'
+        type: string
+      e2e_script_path:
+        description: 'Path to E2E test script'
+        required: false
+        default: 'scripts/qa_dashboard_e2e.py'
+        type: string
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+          cache: 'pip'
+          cache-dependency-path: |
+            ${{ inputs.requirements_files }}
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          IFS=',' read -ra FILES <<< "${{ inputs.requirements_files }}"
+          for file in "${FILES[@]}"; do
+            if [ -f "$file" ]; then
+              pip install -r "$file"
+            fi
+          done
+          pip install playwright fastapi uvicorn[standard] requests
+          python -m playwright install --with-deps chromium
+
+      - name: Run QA Dashboard E2E
+        run: |
+          python ${{ inputs.e2e_script_path }}

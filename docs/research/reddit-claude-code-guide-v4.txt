@@ -1,0 +1,30 @@
+# The Complete Guide to Claude Code V4
+# Source: Reddit r/ClaudeAI - TheDecipherist
+# URL: https://www.reddit.com/r/ClaudeAI/comments/1qquxle/the_complete_guide_to_claude_code_v4_the/
+
+## V4: The January 2026 Revolution
+
+Claude Code 2.1.x shipped 1,096+ commits in January alone. This isn't an incremental update - it's a fundamental shift in how Claude Code manages context, delegates work, and scales.
+
+## What's New in V4:
+
+**Part 9: MCP Tool Search**
+- 85% context reduction with lazy loading
+
+**Part 10: Custom Agents**
+- Automatic delegation to specialists
+
+**Part 11: Session Teleportation**
+- Move sessions between devices
+
+**Part 12: Background Tasks**
+- Parallel agent execution
+
+**Part 13: New Commands & Shortcuts**
+- /config search, /stats filtering, custom keybindings
+
+## TL;DR:
+
+MCP Tool Search reduces context overhead by 85% (77K -> 8.7K tokens) by lazy-loading tools on-demand. Custom Agents let you create specialists that Claude invokes automatically - each with isolated context windows. Session Teleportation lets you move work between terminal and claude.ai/code seamlessly. Background Tasks enable parallel agent execution with Ctrl+B. And the new Setup hook automates repository initialization.
+
+[Full extracted content available - see file for complete guide with all 13 parts]

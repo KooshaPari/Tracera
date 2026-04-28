@@ -1,0 +1,35 @@
+{
+  "tables": {
+    "workspaces": [
+      {
+        "name": "id",
+        "data_type": "uuid",
+        "is_nullable": false,
+        "default": "gen_random_uuid()",
+        "udt_name": "uuid"
+      },
+      {
+        "name": "name",
+        "data_type": "text",
+        "is_nullable": false,
+        "default": null,
+        "udt_name": "text"
+      },
+      {
+        "name": "created_at",
+        "data_type": "timestamp with time zone",
+        "is_nullable": false,
+        "default": "now()",
+        "udt_name": "timestamptz"
+      },
+      {
+        "name": "archived_at",
+        "data_type": "timestamp with time zone",
+        "is_nullable": true,
+        "default": null,
+        "udt_name": "timestamptz"
+      }
+    ]
+  },
+  "enums": {}
+}

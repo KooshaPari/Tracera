@@ -1,0 +1,58 @@
+name: Cleanup Validation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 8 * * 1'  # Weekly on Monday
+
+jobs:
+  cleanup-validation:
+    name: Cleanup & Dead Code Validation
+    runs-on: ubuntu-latest
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PYTHONPATH: .:src
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+
+      - name: Install cleanup tools
+        run: |
+          pip install vulture unimport
+
+      - name: Run dead code detection
+        run: |
+          vulture . --min-confidence 80 > dead-code-report.txt
+
+      - name: Run unused imports detection
+        run: |
+          unimport --check . > unused-imports.txt
+
+      - name: Run cleanup validation
+        run: |
+          python scripts/validate_cleanup.py --json > cleanup-validation.json
+
+      - name: Upload cleanup artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cleanup-validation-results
+          path: |
+            dead-code-report.txt
+            unused-imports.txt
+            cleanup-validation.json

@@ -1,0 +1,1341 @@
+name: Quality Analytics Dashboard
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'Analytics scope'
+        required: true
+        default: 'repository'
+        type: choice
+        options:
+          - 'repository'
+          - 'package'
+          - 'workflow'
+      time_range:
+        description: 'Time range for analysis'
+        required: false
+        default: '30d'
+        type: choice
+        options:
+          - '7d'
+          - '30d'
+          - '90d'
+          - '1y'
+      include_dashboards:
+        description: 'Generate interactive dashboards'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  PYTHON_VERSION: "3.13"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  security-events: write
+
+jobs:
+  # ==========================================================================
+  # Phase 1: Data Collection
+  # ==========================================================================
+
+  data-collection:
+    name: "1. Quality Metrics Data Collection"
+    runs-on: ubuntu-latest
+    outputs:
+      scope: ${{ steps.setup.outputs.scope }}
+      time_range: ${{ steps.setup.outputs.time-range }}
+      collection-timestamp: ${{ steps.setup.outputs.collection-timestamp }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Setup analytics dependencies
+        id: setup
+        run: |
+          echo "collection-timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_OUTPUT
+          echo "scope=${{ github.event.inputs.scope || 'repository' }}" >> $GITHUB_OUTPUT
+          echo "time-range=${{ github.event.inputs.time_range || '30d' }}" >> $GITHUB_OUTPUT
+          
+          python -m pip install --upgrade pip
+          pip install pydantic requests pandas numpy matplotlib seaborn plotly dash
+          pip install jinja2 markdown pdfkit
+          pip install tabulate prettytable pyyaml
+
+      - name: Collect repository metrics
+        run: |
+          python -c "
+          import json
+          import os
+          from datetime import datetime, timedelta
+          import subprocess
+          import glob
+          
+          TIME_RANGE = '${{ steps.setup.outputs.time-range }}'
+          SCOPE = '${{ steps.setup.outputs.scope }}'
+          
+          # Calculate date range
+          if TIME_RANGE == '7d':
+            days_ago = 7
+          elif TIME_RANGE == '30d':
+            days_ago = 30
+          elif TIME_RANGE == '90d':
+            days_ago = 90
+          elif TIME_RANGE == '1y':
+            days_ago = 365
+          else:
+            days_ago = 30
+          
+          date_threshold = (datetime.now() - timedelta(days=days_ago)).isoformat()
+          
+          # Initialize metrics data structure
+          metrics = {
+            'collection_metadata': {
+              'timestamp': '${{ steps.setup.outputs.collection-timestamp }}',
+              'time_range': TIME_RANGE,
+              'scope': SCOPE,
+              'days_analyzed': days_ago,
+              'date_threshold': date_threshold,
+              'repository': '${{ github.repository }}',
+              'branch': '${{ github.ref_name }}',
+            },
+            'code_quality': {},
+            'security_metrics': {},
+            'performance_metrics': {},
+            'documentation_metrics': {},
+            'testing_metrics': {},
+            'dependency_metrics': {},
+            'workflow_metrics': {},
+            'overall_health': {}
+          }
+          
+          # Collect code quality metrics
+          print('Collecting code quality metrics...')
+          code_quality_jobs = ['code-quality', 'lint', 'format-check', 'complexity-analysis']
+          
+          # Collect workflow run data
+          try:
+            result = subprocess.run([
+              'gh', 'api', 'repos/${{ github.repository }}/actions/runs', 
+              '--limit', '50'
+            ], capture_output=True, text=True)
+            
+            if result.returncode == 0:
+              runs_data = json.loads(result.stdout)
+              
+              # Filter runs by date and analyze
+              analysis_timestamp = datetime.now().isoformat()
+              workflows_runs = []
+              security_issues = []
+              test_results = []
+              performance_issues = []
+              
+              for run in runs_data.get('workflow_runs', []):
+                run_date = run.get('created_at')
+                if run_date and run_date >= date_threshold:
+                  workflow_run = {
+                    'id': run.get('id'),
+                    'name': run.get('name'),
+                    'head_branch': run.get('head_branch'),
+                    'status': run.get('status'),
+                    'conclusion': run.get('conclusion'),
+                    'created_at': run.get('created_at'),
+                    'updated_at': run.get('updated_at'),
+                    'html_url': run.get('html_url'),
+                    'duration': run.get('run_duration'),
+                    'jobs': []
+                  }
+                  
+                  # Get workflow jobs
+                  jobs_result = subprocess.run([
+                    'gh', 'api', f'repos/${{ github.repository }}/actions/runs/{run[\"id\"]}/jobs'
+                  ], capture_output=True, text=True)
+                  
+                  if jobs_result.returncode == 0:
+                    jobs_data = json.loads(jobs_result.stdout)
+                    for job in jobs_data.get('jobs', []):
+                      workflow_run['jobs'].append({
+                        'name': job.get('name'),
+                        'status': job.get('status'),
+                        'conclusion': job.get('conclusion'),
+                        'started_at': job.get('started_at'),
+                        'completed_at': job.get('completed_at'),
+                        'duration': job.get('duration'),
+                      })
+                      
+                      # Aggregate metrics by job type
+                      job_name = job.get('name', '').lower()
+                      if 'security' in job_name:
+                        if job.get('conclusion') == 'failure':
+                          security_issues.append({
+                            'run_id': run.get('id'),
+                            'job_name': job.get('name'),
+                            'timestamp': job.get('started_at'),
+                            'failure': 'Security scan failed'
+                          })
+                      elif 'test' in job_name:
+                        status = 'passed' if job.get('conclusion') == 'success' else 'failed'
+                        test_results.append({
+                          'run_id': run.get('id'),
+                          'status': status,
+                          'timestamp': job.get('started_at'),
+                          'duration': job.get('duration'),
+                        })
+                  workflows_runs.append(workflow_run)
+              
+              metrics['workflow_metrics'] = {
+                'total_runs': len(workflows_runs),
+                'failed_runs': len([w for w in workflows_runs if w['conclusion'] == 'failure']),
+                'successful_runs': len([w for w in workflows_runs if w['conclusion'] == 'success']),
+                'security_issues': len(security_issues),
+                'test_results': test_results,
+                'average_duration': sum(r.get('duration', 0) for r in workflows_runs if r.get('duration')) / len([r for r in workflows_runs if r.get('duration')]) if workflows_runs else 0,
+                'recent_runs': workflows_runs[-10:]  # Last 10 runs
+              }
+            
+          except Exception as e:
+            print(f'Error collecting workflow data: {e}')
+          
+          # Collect code quality from different workflows
+          code_quality_files = glob.glob('**/*quality*.json', recursive=True)
+          complexity_files = glob.glob('**/*complexity*.json', recursive=True)
+          coverage_files = glob.glob('**/*coverage*.py')
+          
+          if code_quality_files:
+            print(f'Found {len(code_quality_files)} code quality files')
+            # Aggregate code quality results
+          
+          # Collect testing metrics
+          test_files = glob.glob('tests/**/*test*.py', recursive=True)
+          test_results = pytest_report_files = glob.glob('**/pytest-report*.json', recursive=True)
+          
+          metrics['testing_metrics'] = {
+            'total_test_files': len(test_files),
+            'discovered_tests': len([f for f in test_files if 'test_' in f]),
+            'test_results_found': len(test_results),
+            'coverage_reports': len(coverage_files),
+          }
+          
+          # Collect documentation metrics
+          doc_files = glob.glob('docs/**/*', recursive=True) + glob.glob('**/*.md', recursive=True)
+          metrics['documentation_metrics'] = {
+            'documentation_files': len(doc_files),
+            'markdown_files': len([f for f in doc_files if f.endswith('.md')]),
+            'has_readme': 'README.md' in doc_files,
+            '.has_changelog': 'CHANGELOG.md' in doc_files,
+          }
+          
+          # Collect dependency information
+          pyproject_files = glob.glob('**/pyproject.toml', recursive=True)
+          requirements_files = glob.glob('**/*requirements*.txt', recursive=True)
+          
+          dependencies = {}
+          for pyproject in pyproject_files:
+            # Parse pyproject.toml for dependencies
+            print(f'Processing dependencies from {pyproject}')
+          
+          metrics['dependency_metrics'] = {
+            'pyproject_files': len(pyproject_files),
+            'requirements_files': len(requirements_files),
+            'total_dependencies': sum(len(d.get('dependencies', {})) for d in dependencies.values()),
+          }
+          
+          # Calculate overall health score
+          health_score = 0
+          health_factors = 0
+          
+          if metrics['workflow_metrics'].get('successful_runs', 0) > 0:
+            success_rate = metrics['workflow_metrics']['successful_runs'] / metrics['workflow_metrics'].get('total_runs', 1)
+            health_score += min(success_rate * 100, 100)
+            health_factors += 1
+          
+          if metrics['testing_metrics']['total_test_files'] > 0:
+            test_coverage_metric = min((metrics['testing_metrics']['discovered_tests'] / metrics['testing_metrics']['total_test_files']) * 100, 100)
+            health_score += test_coverage_metric
+            health_factors += 1
+          
+          if metrics['documentation_metrics']['has_readme'] and metrics['documentation_metrics']['has_changelog']:
+            health_score += 100
+            health_factors += 1
+          
+          if metrics['dependency_metrics']['pyproject_files'] > 0:
+            health_score += 100
+            health_factors += 1
+          
+          metrics['overall_health'] = {
+            'score': round(health_score / max(health_factors, 1), 2),
+            'grade': 'A' if health_score >= 90 else 'B' if health_score >= 80 else 'C' if health_score >= 70 else 'D' if health_score >= 60 else 'F',
+            'factors_count': health_factors,
+            'last_calculated': datetime.now().isoformat(),
+          }
+          
+          # Save metrics data
+          with open('quality-metrics.json', 'w') as f:
+            json.dump(metrics, f, indent=2)
+          
+          print(f'Quality metrics collection completed at {datetime.now().isoformat()}')
+          print(f'  Overall Health Score: {metrics[\"overall_health\"][\"score\"]}/100')
+          print(f'  Grade: {metrics[\"overall_health\"][\"grade\"]}')
+          print(f'  Time Range: {TIME_RANGE}')
+          print(f'  Scope: {SCOPE}')
+          print(f'  Code Quality Files: {len(code_quality_files)}')
+          print(f'  Test Files: {len(test_files)}')
+          print(f'  Documentation Files: {len(doc_files)}')
+          print(f'  Workflow Runs Analyzed: {len(metrics[\"workflow_metrics\"].get(\"recent_runs\", []))}')
+          "
+
+      - name: Upload metrics data
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quality-metrics-data
+          path: |
+            quality-metrics.json
+          retention-days: 30
+
+  # ==========================================================================
+  # Phase 2: Data Analysis
+  # ==========================================================================
+
+  data-analysis:
+    name: "2. Analytics Processing and Analysis"
+    runs-on: ubuntu-latest
+    needs: data-collection
+    steps:
+      - name: Download metrics data
+        uses: actions/download-artifact@v4
+        with:
+          name: quality-metrics-data
+          path: metrics-artifacts/
+
+      - name: Analyze trends and patterns
+        run: |
+          python -c "
+          import json
+          import pandas as pd
+          from datetime import datetime, timedelta
+          import glob
+          
+          # Load collected metrics
+          try:
+            with open('metrics-artifacts/quality-metrics.json', 'r') as f:
+              metrics = json.load(f)
+          except FileNotFoundError:
+            print('No metrics data found, creating empty structure')
+            metrics = {'analytics': {'trends': {}}}
+          
+          # Perform trend analysis
+          analysis = {
+            'trends': {},
+            'patterns': {},
+            'improvements': [],
+            'recommendations': []
+          }
+          
+          # Analyze workflow success trends
+          workflows = metrics.get('workflow_metrics', {}).get('recent_runs', [])
+          if workflows:
+            successful_runs = [w for w in workflows if w.get('conclusion') == 'success']
+            success_rate = len(successful_runs) / len(workflows) if workflows else 0
+            
+            analysis['trends']['workflow_success_rate'] = {
+              'current': success_rate * 100,
+              'trend': 'improving' if success_rate > 0.8 else 'needs_attention',
+              'data_points': len(workflows)
+            }
+          
+          # Analyze test coverage trends
+          testing = metrics.get('testing_metrics', {})
+          if testing.get('total_test_files', 0) > 0:
+            test_ratio = testing.get('discovered_tests', 0) / testing.get('total_test_files', 1)
+            analysis['trends']['test_coverage'] = {
+              'current': test_ratio * 100,
+              'status': 'good' if test_ratio > 0.8 else 'needs_attention',
+              'total_files': testing.get('total_test_files', 0)
+            }
+          
+          # Analyze documentation completeness
+          docs = metrics.get('documentation_metrics', {})
+          completeness_score = 0
+          if docs.get('has_readme', False):
+            completeness_score += 50
+          if docs.get('has_changelog', False):
+            completeness_score += 25
+          if docs.get('markdown_files', 0) > 5:
+            completeness_score += 25
+          
+          analysis['trends']['documentation_completeness'] = {
+            'current': completeness_score,
+            'status': 'excellent' if completeness_score >= 90 else 'good' if completeness_score >= 70 else 'needs_improvement'
+          }
+          
+          # Identify patterns and improvements
+          overall_health = metrics.get('overall_health', {})
+          
+          # Generate recommendations
+          if overall_health.get('score', 0) < 80:
+            analysis['recommendations'].append('Focus on improving overall code quality and test coverage')
+          
+          if analysis['trends'].get('workflow_success_rate', {}).get('current', 0) < 90:
+            analysis['recommendations'].append('Address failing workflow runs to improve CI reliability')
+          
+          if testing.get('total_test_files', 0) < 10:
+            analysis['recommendations'].append('Increase test coverage with additional test files')
+          
+          if not docs.get('has_readme', False):
+            analysis['recommendations'].append('Add comprehensive README.md documentation')
+          
+          if not docs.get('has_changelog', False):
+            analysis['recommendations'].append('Maintain CHANGELOG.md for version history')
+          
+          # Calculate improvement priorities
+          priority_scores = []
+          for rec in analysis['recommendations']:
+            if 'test coverage' in rec.lower():
+              priority_scores.append((rec, 1))
+            elif 'code quality' in rec.lower():
+              priority_scores.append((rec, 1))
+            elif 'readme' in rec.lower():
+              priority_scores.append((rec, 2))
+            elif 'changelog' in rec.lower():
+              priority_scores.append((rec, 2))
+            else:
+              priority_scores.append((rec, 3))
+          
+          # Sort by priority
+          priority_scores.sort(key=lambda x: x[1])
+          analysis['prioritized_recommendations'] = [rec for rec, _ in priority_scores]
+          
+          # Save analysis results
+          with open('analytics-analysis.json', 'w') as f:
+            json.dump(analysis, f, indent=2)
+          
+          # Generate summary report
+          with open('analytics-summary.md', 'w') as f:
+            f.write('# Quality Analytics Report\\n\\n')
+            f.write(f'**Generated:** {datetime.now().isoformat()}\\n')
+            f.write(f'**Overall Health Score:** {overall_health.get(\"score\", \"N/A\")}/100\\n')
+            f.write(f'**Grade:** {overall_health.get(\"grade\", \"N/A\")}\\n\\n')
+            
+            if analysis['trends']:
+              f.write('## Trend Analysis\\n\\n')
+              for trend_name, trend_data in analysis['trends'].items():
+                f.write(f'### {trend_name.replace(\"_\", \". \").title()}\\n')
+                f.write(f'- **Current:** {trend_data.get(\"current\", \"N/A\")}\\n')
+                if trend_data.get('status'):
+                  f.write(f'- **Status:** {trend_data[\"status\"]}\\n')
+                if trend_data.get('trend'):
+                  f.write(f'- **Trend:** {trend_data[\"trend\"]}\\n')
+                f.write('\\n')
+          
+          print('Analytics analysis completed')
+          print(f'  Overall Health Score: {overall_health.get(\"score\", \"N/A\")}')
+          print(f'  Recommendations Count: {len(analysis[\"recommendations\"])}')
+          print(f'  Trend Analysis Points: {len(analysis[\"trends\"])}')
+          for i, rec in enumerate(analysis['prioritized_recommendations'][:3], 1):
+            print(f'  Priority {i}: {rec}')
+          "
+
+      - name: Upload analysis results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: analytics-analysis-results
+          path: |
+            analytics-analysis.json
+            analytics-summary.md
+          retention-days: 30
+
+  # ==========================================================================
+  # Phase 3: Visualization Generation
+  # ==========================================================================
+
+  visualization:
+    name: "3. Analytics Visualization Generation"
+    runs-on: ubuntu-latest
+    needs: data-analysis
+    steps:
+      - name: Download analysis data
+        uses: actions/download-artifact@v4
+        with:
+          path: analysis-artifacts/
+
+      - name: Generate quality charts
+        run: |
+          python -c "
+          import matplotlib.pyplot as plt
+          import seaborn as sns
+          import pandas as pd
+          import json
+          from datetime import datetime
+          import os
+          
+          plt.style.use('seaborn-v0_8')
+          
+          try:
+            # Load metrics and analysis
+            with open('analysis-artifacts/quality-metrics.json', 'r') as f:
+              metrics = json.load(f)
+            with open('analysis-artifacts/analytics-analysis.json', 'r') as f:
+              analysis = json.load(f)
+          except FileNotFoundError:
+            print('No analysis data found, creating sample visualizations')
+            # Create sample data for demonstration
+            pass
+          
+          # Create dashboard visualizations
+          fig = plt.figure(figsize=(20, 15))
+          
+          # 1. Overall Health Score (Doughnut Chart)
+          ax1 = plt.subplot(2, 3, 1)
+          health_data = metrics.get('overall_health', {})
+          health_score = health_data.get('score', 0)
+          remaining = max(0, 100 - health_score)
+          
+          labels = ['Health Score', 'Remaining']
+          sizes = [health_score, remaining]
+          colors = ['#4CAF50', '#E0E0E0']
+          wedges, texts, autotexts = ax1.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+          ax1.set_title(f'Overall Health Score\\n{health_data.get(\"grade\", \"N/A\")} Grade', fontsize=14, fontweight='bold')
+          
+          # 2. Workflow Success Rate
+          ax2 = plt.subplot(2, 3, 2)
+          workflow_data = metrics.get('workflow_metrics', {})
+          successful = workflow_data.get('successful_runs', 0)
+          failed = workflow_data.get('failed_runs', 0)
+          
+          if workflow_data.get('total_runs', 0) > 0:
+            labels = ['Success', 'Failed']
+            sizes = [successful, failed]
+            colors = ['#4CAF50', '#F44336']
+            ax2.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+            ax2.set_title('Workflow Success Rate', fontsize=14, fontweight='bold')
+          
+          # 3. Project Structure
+          ax3 = plt.subplot(2, 3, 3)
+          testing_data = metrics.get('testing_metrics', {})
+          doc_data = metrics.get('documentation_metrics', {})
+          
+          categories = ['Tests', 'Documentation', 'Dependencies']
+          values = [
+            testing_data.get('total_test_files', 0),
+            doc_data.get('documentation_files', 0),
+            len(metrics.get('dependency_metrics', {}).get('pyproject_files', []))
+          ]
+          
+          bars = ax3.bar(categories, values, color=['#FF9800', '#2196F3', '#9C27B0'])
+          ax3.set_title('Project Structure Overview', fontsize=14, fontweight='bold')
+          ax3.set_ylabel('Count')
+          for bar in bars:
+            height = bar.get_height()
+            ax3.text(bar.get_x() + bar.get_width()/2., height,
+                   f'{int(height)}', ha='center', va='bottom')
+          
+          # 4. Timeline Chart (Recent Workflow Runs)
+          ax4 = plt.subplot(2, 3, 4)
+          recent_runs = metrics.get('workflow_metrics', {}).get('recent_runs', [])
+          if recent_runs:
+            run_dates = []
+            durations = []
+            for run in recent_runs:
+              try:
+                date_str = run.get('created_at', '')
+                if date_str:
+                  date = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                  run_dates.append(date)
+                  durations.append(run.get('duration', 0) / 60)  # Convert to minutes
+              except:
+                continue
+            
+            if run_dates and durations:
+              ax4.plot(range(len(run_dates)), durations, marker='o', linewidth=2, markersize=6)
+              ax4.set_title('Workflow Run Durations (Minutes)', fontsize=14, fontweight='bold')
+              ax4.set_xlabel('Recent Runs')
+              ax4.set_ylabel('Duration (minutes)')
+              ax4.grid(True, alpha=0.3)
+          
+          # 5. Quality Metrics Radar Chart
+          ax5 = plt.subplot(2, 3, 5, projection='polar')
+          
+          categories = ['Code Quality', 'Testing', 'Documentation', 'Security', 'Dependencies']
+          values = [
+            health_data.get('score', 0),
+            testing_data.get('discovered_tests', 0) / max(testing_data.get('total_test_files', 1), 1) * 100,
+            doc_data.get('has_readme', False) * 50 + (doc_data.get('has_changelog', False) * 25),
+            max(0, 100 - analysis.get('trends', {}).get('workflow_success_rate', {}).get('security_issues', 0)),
+            len(metrics.get('dependency_metrics', {}).get('pyproject_files', [])) * 10
+          ]
+          values = [min(v, 100) for v in values]
+          
+          angles = range(len(categories))
+          ax5.plot(angles, values, 'o-', linewidth=2, color='#2196F3')
+          ax5.fill(angles, values, alpha=0.25, color='#2196F3')
+          ax5.set_xticks(angles)
+          ax5.set_xticklabels(categories)
+          ax5.set_ylim(0, 100)
+          ax5.set_title('Quality Metrics Radar Chart', fontsize=14, fontweight='bold')
+          
+          # 6. Recommendations Word Cloud (simple bar chart)
+          ax6 = plt.subplot(2, 3, 6)
+          recommendations = analysis.get('recommendations', [])
+          if recommendations:
+            rec_lengths = [len(rec.split()) for rec in recommendations[:5]]  # Top 5 recommendations
+            rec_names = [rec[:20] + '...' if len(rec) > 20 else rec for rec in recommendations[:5]]
+            
+            bars = ax6.barh(range(len(rec_names)), rec_lengths, color='#FF5722')
+            ax6.set_yticks(range(len(rec_names)))
+            ax6.set_yticklabels(rec_names)
+            ax6.set_xlabel('Word Count')
+            ax6.set_title('Recommendations Complexity', fontsize=14, fontweight='bold')
+          
+          plt.tight_layout()
+          plt.savefig('quality-dashboard.png', dpi=300, bbox_inches='tight', facecolor='white')
+          plt.savefig('quality-dashboard.svg', format='svg', bbox_inches='tight', facecolor='white')
+          plt.close()
+          
+          print('Quality dashboard charts generated successfully')
+          print('  Files created: quality-dashboard.png, quality-dashboard.svg')
+          "
+          
+          # Generate additional visualizations
+          python -c "
+          import json
+          
+          with open('analysis-artifacts/quality-metrics.json', 'r') as f:
+            metrics = json.load(f)
+          
+          # Create percentage-based HTML dashboard
+          overall_health = metrics.get('overall_health', {})
+          workflow_metrics = metrics.get('workflow_metrics', {})
+          testing_metrics = metrics.get('testing_metrics', {})
+          doc_metrics = metrics.get('documentation_metrics', {})
+          
+          html_content = f'''
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Quality Analytics Dashboard</title>
+            <style>
+              body {{ font-family: Arial, sans-serif; margin: 20px; }}
+              .dashboard {{ max-width: 1200px; margin: 0 auto; }}
+              .metric-row {{ display: flex; gap: 20px; margin-bottom: 30px; }}
+              .metric-card {{ flex: 1; background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+              .metric-title {{ font-size: 14px; color: #666; margin-bottom: 10px; }}
+              .metric-value {{ font-size: 32px; font-weight: bold; margin-bottom: 5px; }}
+              .metric-subtitle {{ font-size: 12px; color: #888; }}
+              .progress-bar {{ height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; margin: 10px 0; }}
+              .progress-fill {{ height: 100%; background: #4CAF50; transition: width 0.3s ease; }}
+              .badges {{ display: flex; gap: 10px; flex-wrap: wrap; }}
+              .badge {{ padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }}
+              .badge-success {{ background: #E8F5E8; color: #4CAF50; }}
+              .badge-warning {{ background: #FFF3E0; color: #FF9800; }}
+              .badge-danger {{ background: #FFEBEE; color: #F44336; }}
+            </style>
+          </head>
+          <body>
+            <div class=\"dashboard\">
+              <h1>Quality Analytics Dashboard</h1>
+              <p><small>Generated: {datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\")} | Repository: {{ metrics.get(\"collection_metadata\", {}).get(\"repository\", \"N/A\") }} | Branch: {{ metrics.get(\"collection_metadata\", {}).get(\"branch\", \"N/A\") }}</small></p>
+              
+              <div class=\"metric-row\">
+                <div class=\"metric-card\">
+                  <div class=\"metric-title\">Overall Health Score</div>
+                  <div class=\"metric-value\">{overall_health.get('score', 0)}</div>
+                  <div class=\"metric-subtitle\">out of 100</div>
+                  <div class=\"progress-bar\">
+                    <div class=\"progress-fill\" style=\"width: {overall_health.get('score', 0)}%\"></div>
+                  </div>
+                  <div><span class=\"badge badge-{ 'success' if overall_health.get('score', 0) >= 80 else 'warning' if overall_health.get('score', 0) >= 60 else 'danger' }\">{overall_health.get('grade', 'N/A')} Grade</span></div>
+                </div>
+                
+                <div class=\"metric-card\">
+                  <div class=\"metric-title\">Workflow Success Rate</div>
+                  <div class=\"metric-value\">
+                    {(workflow_metrics.get('successful_runs', 0) / max(workflow_metrics.get('total_runs', 1), 1) * 100):.1f}%
+                  </div>
+                  <div class=\"metric-subtitle\">
+                    {workflow_metrics.get('successful_runs', 0)} successful out of {workflow_metrics.get('total_runs', 0)} runs
+                  </div>
+                  <div class=\"progress-bar\">
+                    <div class=\"progress-fill\" style=\"width: {(workflow_metrics.get('successful_runs', 0) / max(workflow_metrics.get('total_runs', 1), 1) * 100)}%; background: {'#4CAF50' if workflow_metrics.get('successful_runs', 0) / max(workflow_metrics.get('total_runs', 1), 1) > 0.9 else '#FF9800'}\"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class=\"metric-row\">
+                <div class=\"metric-card\">
+                  <div class=\"metric-title\">Testing Coverage</div>
+                  <div class=\"metric-value\">{testing_metrics.get('discovered_tests', 0)}</div>
+                  <div class=\"metric-subtitle\">tests discovered</div>
+                  <div>
+                    <span class=\"badge badge-success\">{testing_metrics.get('total_test_files', 0)} test files</span>
+                    <span class=\"badge badge-warning\">{testing_metrics.get('coverage_reports', 0)} coverage reports</span>
+                  </div>
+                </div>
+                
+                <div class=\"metric-card\">
+                  <div class=\"metric-title\">Documentation</div>
+                  <div class=\"metric-value\">{doc_metrics.get('documentation_files', 0)}</div>
+                  <div class=\"metric-subtitle\">documentation files</div>
+                  <div>
+                    <span class=\"badge badge-{ 'success' if doc_metrics.get('has_readme', False) else 'danger' }\">README</span>
+                    <span class=\"badge badge-{ 'success' if doc_metrics.get('has_changelog', False) else 'danger' }\">CHANGELOG</span>
+                    <span class=\"badge badge-warning\">{doc_metrics.get('markdown_files', 0)} markdown files</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class=\"metrics\">
+                <h3>Recent Workflow Activity</h3>
+                <div class=\"badges\">
+          '''
+          
+          recent_runs = workflow_metrics.get('recent_runs', [])[:5]
+          for run in recent_runs:
+            status = 'success' if run.get('conclusion') == 'success' else 'failed' if run.get('conclusion') == 'failure' else 'running'
+            html_content += f'<span class=\"badge badge-{status}\">{run.get(\"name\", \"Unknown\")} - {status}</span>\n'
+          
+          html_content += '''
+                </div>
+              </div>
+            </div>
+          </body>
+          </html>
+          '''
+          
+          with open('quality-dashboard.html', 'w') as f:
+            f.write(html_content)
+          
+          print('HTML dashboard created: quality-dashboard.html')
+          "
+
+      - name: Upload visualizations
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: analytics-visualizations
+          path: |
+            quality-dashboard.png
+            quality-dashboard.svg
+            quality-dashboard.html
+          retention-days: 7
+
+  # ==========================================================================
+  # Phase 4: Interactive Dashboard Deployment
+  # ==========================================================================
+
+  dashboard-deployment:
+    name: "4. Interactive Dashboard Deployment"
+    runs-on: ubuntu-latest
+    needs: visualization
+    if: github.event.inputs.include_dashboards == 'true'
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Download visualizations
+        uses: actions/download-artifact@v4
+        with:
+          name: analytics-visualizations
+          path: ./docs/
+
+      - name: Upload to GitHub Pages
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs/
+
+      # Deployment step
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
+
+  # ==========================================================================
+  # Phase 5: Reporting and Alerts
+  # ==========================================================================
+
+  reporting:
+    name: "5. Analytics Reporting and Alerting"
+    runs-on: ubuntu-latest
+    needs: [data-analysis, visualization]
+    if: always()
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-artifacts/
+
+      - name: Generate comprehensive report
+        run: |
+          python -c "
+          import json
+          from datetime import datetime
+          
+          # Combine all reports
+          try:
+            with open('all-artifacts/quality-metrics.json', 'r') as f:
+              metrics = json.load(f)
+            with open('all-artifacts/analytics-analysis.json', 'r') as f:
+              analysis = json.load(f)
+          except FileNotFoundError as e:
+            print(f'Missing artifact: {e}')
+            return
+          
+          # Generate comprehensive markdown report
+          overall_health = metrics.get('overall_health', {})
+          collection_metadata = metrics.get('collection_metadata', {})
+          workflow_metrics = metrics.get('workflow_metrics', {})
+          testing_metrics = metrics.get('testing_metrics', {})
+          doc_metrics = metrics.get('documentation_metrics', {})
+          analysis_data = analysis.get('trends', {})
+          
+          report_md = f'''# Quality Analytics Comprehensive Report
+
+*Generated: {datetime.now().strftime(\"%Y-%m-%d %H:%M:%S UTC\")}*
+*Repository: {collection_metadata.get(\"repository\", \"N/A\")}*
+*Branch: {collection_metadata.get(\"branch\", \"N/A\")}*
+*Analysis Scope: {collection_metadata.get(\"scope\", \"N/A\")}*
+*Time Range: {collection_metadata.get(\"time_range\", \"N/A\")}*
+
+---
+
+## Executive Summary
+
+The project shows {overall_health.get(\"score\", 0)}/100 points overall quality score, achieving an **{overall_health.get(\"grade\", \"N/A\")}** grade. This assessment is based on comprehensive analysis of code quality, testing coverage, documentation completeness, workflow performance, and dependency management.
+
+### Key Metrics
+- **Overall Quality Score**: {overall_health.get(\"score\", 0)}/100 ({overall_health.get(\"grade\", \"N/A\")} grade)
+- **Workflow Success Rate**: {(workflow_metrics.get('successful_runs', 0) / max(workflow_metrics.get('total_runs', 1), 1) * 100):.1f}%
+- **Test Coverage**: {testing_metrics.get('discovered_tests', 0)} tests discovered
+- **Documentation**: {doc_metrics.get('documentation_files', 0)} files (README: {'✓' if doc_metrics.get('has_readme', False) else '✗'}, CHANGELOG: {'✓' if doc_metrics.get('has_changelog', False) else '✗'})
+
+---
+
+## Detailed Analysis
+
+### 1. Workflow Performance
+"""
+          if workflow_metrics:
+            success_rate = (workflow_metrics.get('successful_runs', 0) / max(workflow_metrics.get('total_runs', 1), 1)) * 100
+            total_runs = workflow_metrics.get('total_runs', 0)
+            failed_runs = workflow_metrics.get('failed_runs', 0)
+            avg_duration = workflow_metrics.get('average_duration', 0) / 60 if workflow_metrics.get('average_duration', 0) else 0  # Convert to minutes
+            
+            report_md += f"""
+- **Total Runs Analyzed**: {total_runs}
+- **Success Rate**: {success_rate:.1f}% ({workflow_metrics.get('successful_runs', 0)}/{total_runs})
+- **Failed Runs**: {failed_runs}
+- **Average Duration**: {avg_duration:.1f} minutes
+- **Security Issues**: {workflow_metrics.get('security_issues', 0)}
+
+"""
+          
+          report_md += f"""### 2. Testing and Quality Assurance
+"""
+          
+          if testing_metrics:
+            total_test_files = testing_metrics.get('total_test_files', 0)
+            discovered_tests = testing_metrics.get('discovered_tests', 0)
+            test_results = len(testing_metrics.get('test_results', []))
+            
+            report_md += f"""
+- **Total Test Files**: {total_test_files}
+- **Discovered Tests**: {discovered_tests}
+- **Test Ratio**: {(discovered_tests / max(total_test_files, 1)):.1%}
+- **Coverage Reports**: {testing_metrics.get('coverage_reports', 0)}
+- **Test Results Found**: {test_results}
+"""
+          
+          report_md += f"""
+### 3. Documentation Assessment
+"""
+          
+          if doc_metrics:
+            report_md += f"""
+- **Total Documentation Files**: {doc_metrics.get('documentation_files', 0)}
+- **Markdown Files**: {doc_metrics.get('markdown_files', 0)}
+- **README Present**: {'Yes' if doc_metrics.get('has_readme', False) else 'No'}
+- **CHANGELOG Present**: {'Yes' if doc_metrics.get('has_changelog', False) else 'No'}
+"""
+          
+          report_md += f"""
+### 4. Dependency Management
+"""
+          
+          dep_metrics = metrics.get('dependency_metrics', {})
+          if dep_metrics:
+            report_md += f"""
+- **PyProject Files**: {dep_metrics.get('pyproject_files', 0)}
+- **Requirements Files**: {dep_metrics.get('requirements_files', 0)}
+- **Total Dependencies**: {dep_metrics.get('total_dependencies', 0)}
+"""
+          
+          report_md += f"""
+
+---
+
+## Trend Analysis
+"""
+          
+          if analysis_data:
+            for trend_name, trend_data in analysis_data.items():
+              trend_title = trend_name.replace('_', ' ').title()
+              current = trend_data.get('current', 'N/A')
+              status = trend_data.get('status', 'Unknown')
+              trend_direction = trend_data.get('trend', 'Unknown')
+              
+              report_md += f"""
+### {trend_title}
+- **Current Value**: {current}
+- **Status**: {status}
+- **Trend**: {trend_direction}
+"""
+          
+          # Check for alerts
+          alerts = []
+          
+          if overall_health.get('score', 0) < 60:
+            alerts.append(f"❌ CRITICAL: Overall quality score ({overall_health.get('score', 0)}/100) is below acceptable threshold")
+          
+          if workflow_metrics.get('successful_runs', 0) / max(workflow_metrics.get('total_runs', 1), 1) < 0.8:
+            alerts.append(f"⚠️ WARNING: Workflow success rate is low ({(workflow_metrics.get('successful_runs', 0) / max(workflow_metrics.get('total_runs', 1), 1) * 100):.1f}%)")
+          
+          if not doc_metrics.get('has_readme', False):
+            alerts.append(f"❌ MISSING: README.md documentation is required")
+          
+          if not doc_metrics.get('has_changelog', False):
+            alerts.append(f"❌ MISSING: CHANGELOG.md documentation is required")
+          
+          if testing_metrics.get('total_test_files', 0) < 5:
+            alerts.append(f"⚠️ WARNING: Low test coverage ({testing_metrics.get('discovered_tests', 0)} tests)")
+          
+          report_md += f"""
+---
+
+## Alerts and Warnings
+"""
+          
+          if alerts:
+            for alert in alerts:
+              report_md += f"{alert}\n"
+          else:
+            report_md += "✅ No significant issues detected. All major quality metrics are within acceptable ranges.\n"
+          
+          # Recommendations
+          recommendations = analysis.get('recommendations', [])
+          prioritized_recommendations = analysis.get('prioritized_recommendations', [])
+          
+          report_md += f"""
+
+---
+
+## Recommendations
+
+### Immediate Priorities
+"""
+          
+          if prioritized_recommendations:
+            for i, rec in enumerate(prioritized_recommendations[:3], 1):
+              report_md += f"{i}. {rec}\n"
+          else:
+            report_md += "No immediate priorities identified based on current metrics.\n"
+          
+          report_md += f"""
+### Improvement Roadmap
+"""
+          
+          if recommendations:
+            for i, rec in enumerate(recommendations, 1):
+              report_md += f"{i}. {rec}\n"
+          else:
+            report_md += "Current state shows good quality metrics with no specific recommendations.\n"
+          
+          report_md += f"""
+---
+
+## Visualizations and Interactive Dashboard
+
+- **Static Dashboard**:
+  - PNG Image: [quality-dashboard.png](./quality-dashboard.png)
+  - SVG Vector: [quality-dashboard.svg](./quality-dashboard.svg)
+  - HTML Interactive: [quality-dashboard.html](./quality-dashboard.html)
+
+- **Historical Trends**: Charts show performance over the {collection_metadata.get('time_range', '30 days')} time period
+- **Comparative Analysis**: Radar charts identify strengths and weaknesses across quality dimensions
+- **Real-time Updates**: Dashboard is updated with each workflow run
+
+---
+
+## Appendix
+
+### Assessment Methodology
+
+The quality assessment was conducted using the following criteria:
+
+1. **Code Quality**: Automated linting, formatting, and complexity analysis
+2. **Testing Coverage**: Number and quality of tests, coverage reports
+3. **Documentation**: README, CHANGELOG, and general documentation completeness
+4. **Workflow Performance**: CI/CD success rates and duration metrics
+5. **Dependency Management**: Package dependency analysis and security
+
+### Data Sources
+
+- GitHub Actions workflow results
+- Automated code quality tools
+- Test coverage reports
+- Documentation analysis
+- Dependency scanning tools
+
+### Future Improvements
+
+Additional enhancements planned for the analytics system:
+
+- Real-time dashboard updates
+- Historical trend analysis
+- Team-based metrics and individual contributions
+- Integration with external monitoring tools
+- Automated quality gates and enforcement
+
+---
+
+*Report generated by GitHub Actions CI/CD Analytics Pipeline*
+          """
+          
+          with open('comprehensive-analytics-report.md', 'w') as f:
+            f.write(report_md)
+          
+          print(f'Comprehensive report generated successfully')
+          print(f'  Overall score: {overall_health.get(\"score\", 0)}/100')
+          print(f'  Grade: {overall_health.get(\"grade\", \"N/A\")}')
+          print(f'  Alerts generated: {len(alerts)}')
+          print(f'  Recommendations: {len(recommendations)}')
+          "
+
+      - name: Create GitHub issue with report
+        uses: actions/github-script@v7
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          script: |
+            const fs = require('fs');
+            try {
+              const reportContent = fs.readFileSync('comprehensive-analytics-report.md', 'utf8');
+              
+              const issueTitle = `Quality Analytics Report - ${new Date().toISOString().split('T')[0]}`;
+              const issueBody = `# Quality Analytics Report
+
+${reportContent}
+
+---
+
+*This issue was automatically created by the CI/CD analytics pipeline to document quality metrics for the development team. Please review the report and address any identified issues or recommendations.*
+              
+*Help us improve the project quality by addressing the recommendations in the report.*
+
+Labels: analytics, auto-generated, quality-metrics
+`;
+              
+              github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: issueTitle,
+                body: issueBody,
+                labels: ['analytics', 'auto-generated', 'quality-metrics', 'documentation']
+              });
+              
+            } catch (error) {
+              console.error('Error creating analytics issue:', error);
+            }
+
+      - name: Comment on PR with analytics summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            try {
+              const metrics = JSON.parse(fs.readFileSync('all-artifacts/quality-metrics.json', 'utf8'));
+              const analysis = JSON.parse(fs.readFileSync('all-artifacts/analytics-analysis.json', 'utf8'));
+              
+              const overallHealth = metrics.overall_health;
+              const collectionMetadata = metrics.collection_metadata;
+              
+              const comment = `📊 Quality Analytics Summary
+
+**Overall Quality Score:** ${overallHealth.score}/100 (${overallHealth.grade} grade)
+**Analysis Scope:** ${collectionMetadata.scope}
+**Time Range:** ${collectionMetadata.time_range}
+
+**Key Metrics:**
+• **Workflows:** ${(metrics.workflow_metrics.successful_runs / Math.max(metrics.workflow_metrics.total_runs, 1) * 100).toFixed(1)}% success rate
+• **Testing:** ${metrics.testing_metrics.discovered_tests} tests discovered
+• **Documentation:** ${metrics.documentation_files} files (README: ${metrics.documentation_metrics.has_readme ? '✅' : '❌'})
+
+**Trends:** ${Object.keys(analysis.trends).length} quality dimensions analyzed
+
+**Recommendations:** ${analysis.recommendations.length} areas for improvement
+
+The interactive dashboard is available at: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/workflows/analytics-dashboard.yml
+
+---
+*Generated by CI/CD analytics pipeline*
+`;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+              
+            } catch (error) {
+              console.error('Error creating analytics comment:', error);
+            }
+
+      - name: Upload comprehensive report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: comprehensive-analytics-report
+          path: |
+            comprehensive-analytics-report.md
+          retention-days: 90
+
+  # ==========================================================================
+  # Phase 6: Notification and Alerting
+  # ==========================================================================
+
+  notification:
+    name: "6. Analytics Notifications and Alerts"
+    runs-on: ubuntu-latest
+    needs: reporting
+    if: always()
+    steps:
+      - name: Check for quality alerts
+        run: |
+          python -c "
+          import json
+          from datetime import datetime
+          
+          alert_level = 'none'
+          alert_message = ''
+          
+          try:
+            with open('all-artifacts/quality-metrics.json', 'r') as f:
+              metrics = json.load(f)
+            
+            overall_health = metrics.get('overall_health', {})
+            workflow_metrics = metrics.get('workflow_metrics', {})
+            doc_metrics = metrics.get('documentation_metrics', {})
+            
+            # Check for critical alerts
+            if overall_health.get('score', 100) < 40:
+              alert_level = 'critical'
+              alert_message = f'CRITICAL: Overall quality score is critically low ({overall_health.get(\"score\", 0)}/100)'
+            elif overall_health.get('score', 100) < 60:
+              alert_level = 'warning'
+              alert_message = f'WARNING: Quality score below threshold ({overall_health.get(\"score\", 0)}/100)'
+            elif workflow_metrics.get('successful_runs', 0) / max(workflow_metrics.get('total_runs', 1), 1) < 0.5:
+              alert_level = 'warning'
+              alert_message = f'WARNING: Low workflow success rate ({workflow_metrics.get(\"successful_runs\", 0)}/{workflow_metrics.get(\"total_runs\", 0)})'
+            elif not doc_metrics.get('has_readme', False) and not doc_metrics.get('has_changelog', False):
+              alert_level = 'info'
+              alert_message = 'INFO: Missing fundamental documentation (README and CHANGELOG)'
+            else:
+              alert_level = 'info'
+              alert_message = 'Info: Quality metrics within acceptable ranges'
+            
+            # Create alert summary
+            alert_summary = {
+              'alert_level': alert_level,
+              'alert_message': alert_message,
+              'timestamp': datetime.now().isoformat(),
+              'overall_score': overall_health.get('score', 0),
+              'grade': overall_health.get('grade', 'N/A'),
+              'workflow_success': (workflow_metrics.get('successful_runs', 0) / max(workflow_metrics.get('total_runs', 1), 1)) * 100,
+              'documentation_quality': 100 if doc_metrics.get('has_readme', False) and doc_metrics.get('has_changelog', False) else 0,
+            }
+            
+            with open('alert-summary.json', 'w') as f:
+              json.dump(alert_summary, f, indent=2)
+            
+            print(f'Alert Level: {alert_level.upper()}')
+            print(f'Alert Message: {alert_message}')
+            print(f'Overall Score: {alert_summary[\"overall_score\"]}/100')
+            
+          except Exception as e:
+            print(f'Error generating alerts: {e}')
+            alert_summary = {'error': str(e)}
+            with open('alert-summary.json', 'w') as f:
+              json.dump(alert_summary, f, indent=2)
+          "
+
+      - name: Create alert badge (if needed)
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const fs = require('fs');
+            try {
+              const alertSummary = JSON.parse(fs.readFileSync('alert-summary.json', 'utf8'));
+              
+              if (alertSummary.alert_level && alertSummary.alert_level !== 'none') {
+                const badgeColor = alertSummary.alert_level === 'critical' ? 'red' : alertSummary.alert_level === 'warning' ? 'orange' : 'blue';
+                const badgeUrl = `https://img.shields.io/badge/Quality-${encodeURIComponent(alertSummary.alert_message.replace(/[^a-zA-Z0-9\s]/g, ''))}-${badgeColor}`;
+                console.log(`Badge URL: ${badgeUrl}`);
+                
+                // This would typically create a badge file or update README
+                const badgeMarkdown = `[![Quality](${badgeUrl})](./actions/runs/${context.runId})`;
+                console.log(`Markdown: ${badgeMarkdown}`);
+              }
+              
+            } catch (error) {
+              console.error('Error creating badge:', error);
+            }
+
+      - name: Upload alert summary
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: analytics-alerts
+          path: |
+            alert-summary.json
+          retention-days: 30
+
+  # ==========================================================================
+  # Phase 7: Final Status and Cleanup
+  # ==========================================================================
+
+  final-status:
+    name: "7. Final Analytics Status"
+    runs-on: ubuntu-latest
+    needs: notification
+    if: always()
+    steps:
+      - name: Download all analytics artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: final-analytics-artifacts/
+
+      - name: Generate final status
+        run: |
+          python -c "
+          import json
+          from datetime import datetime
+          
+          try:
+            # Load metrics and alerts
+            with open('final-analytics-artifacts/quality-metrics.json', 'r') as f:
+              metrics = json.load(f)
+            with open('final-analytics-artifacts/analytics-analysis.json', 'r') as f:
+              analysis = json.load(f)
+            with open('final-analytics-artifacts/alert-summary.json', 'r') as f:
+              alerts = json.load(f)
+          except FileNotFoundError as e:
+            print(f'Missing artifact: {e}')
+            # Continue with minimal status
+            return
+          
+          overall_health = metrics.get('overall_health', {})
+          collection_metadata = metrics.get('collection_metadata', {})
+          workflow_metrics = metrics.get('workflow_metrics', {})
+          
+          # Generate final status message
+          final_status = f'''
+🎯 ANALYTICS DASHBOARD COMPLETION SUMMARY
+========================================
+
+📊 Collection Results:
+├── Overall Health Score: {overall_health.get('score', 'N/A')}/100 ({overall_health.get('grade', 'N/A')})
+├── Analysis Scope: {collection_metadata.get('status', 'N/A')}
+├── Time Range: {collection_metadata.get('time_range', 'N/A')}
+├── Repository: {collection_metadata.get('repository', 'N/A')}
+└── Branch: {collection_metadata.get('branch', 'N/A')}
+
+🔧 Workflow Performance:
+├── Total Runs Analyzed: {workflow_metrics.get('total_runs', 'N/A')}
+├── Success Rate: {(workflow_metrics.get('successful_runs', 0) / max(workflow_metrics.get('total_runs', 1), 1) * 100):.1f}%
+├── Failed Runs: {workflow_metrics.get('failed_runs', 0)}
+└── Security Issues: {workflow_metrics.get('security_issues', 0)}
+
+📈 Testing & Quality:
+├── Test Files Found: {metrics.get('testing_metrics', {}).get('total_test_files', 0)}
+├── Tests Discovered: {metrics.get('testing_metrics', {}).get('discovered_tests', 0)}
+├── Documentation Files: {metrics.get('documentation_metrics', {}).get('documentation_files', 0)}
+├── README Present: {'Yes' if metrics.get('documentation_metrics', {}).get('has_readme', False) else 'No'}
+└── CHANGELOG Present: {'Yes' if metrics.get('documentation_metrics', {}).get('has_changelog', False) else 'No'}
+
+🎨 Generated Artifacts:
+├── Quality Charts: PNG & SVG visualizations
+├── Interactive HTML Dashboard
+├── Comprehensive Markdown Report
+├── JSON Data Export (metrics & analysis)
+└── Alert Summary & Recommendations
+
+📊 Trend Analysis: {len(analysis.get('trends', {}))} quality dimensions analyzed
+
+⚠️ Alert Level: {alerts.get('alert_level', 'none').upper()}
+└── Alert Message: {alerts.get('alert_message', 'No alerts')}
+
+🚀 Dashboard Deployment: {'Completed' if '${{ github.event.inputs.include_dashboards }}' == 'true' else 'Skipped'}
+
+📅 Completion Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
+
+🎉 Quality analytics pipeline completed successfully!
+          '''
+          
+          print(final_status)
+          
+          # Save status summary
+          status_summary = {
+            'metrics': metrics,
+            'analysis': analysis,
+            'alerts': alerts,
+            'artifacts': {
+              'dashboard_charts': True,
+              'interactive_dashboard': True,
+              'comprehensive_report': True,
+              'json_exports': True,
+              'alert_system': True,
+            },
+            'completion_time': datetime.now().isoformat(),
+            'overall_assessment': {
+              'score': overall_health.get('score', 0),
+              'grade': overall_health.get('grade', 'N/A'),
+              'alert_level': alerts.get('alert_level', 'none'),
+              'workflow_success': (workflow_metrics.get('successful_runs', 0) / max(workflow_metrics.get('total_runs', 1), 1)) * 100,
+            }
+          }
+          
+          with open('analytics-final-status.json', 'w') as f:
+            json.dump(status_summary, f, indent=2, default=str)
+          "
+
+      - name: Upload final status
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: analytics-final-status
+          path: |
+            analytics-final-status.json
+            final-status-summary.txt
+          retention-days: 7

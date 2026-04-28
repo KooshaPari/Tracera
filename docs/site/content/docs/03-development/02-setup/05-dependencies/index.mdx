@@ -1,0 +1,294 @@
+---
+title: "Dependencies"
+description: "Managing dependencies."
+---
+
+## Overview
+
+TracerTM uses multiple package managers for different components of the system. Proper dependency management ensures reproducible builds, security, and maintainability.
+
+## Dependency Management Tools
+
+**Frontend & Docs (Node.js):**
+```bash
+npm - Node package manager
+npm install      # Install dependencies
+npm update       # Update to latest compatible versions
+npm audit        # Check for security vulnerabilities
+```
+
+**Python Components:**
+```bash
+Poetry - Python dependency management
+poetry install   # Install from lock file
+poetry add pkg   # Add new dependency
+poetry update    # Update dependencies
+poetry check     # Verify lock file integrity
+```
+
+**Go Components (if applicable):**
+```bash
+go mod download  # Download modules
+go mod tidy      # Clean up unused dependencies
+go mod verify    # Verify checksums
+```
+
+## Python Dependencies (Poetry)
+
+### Installation
+
+```bash
+# Install all dependencies including dev
+poetry install
+
+# Install only production dependencies
+poetry install --no-dev
+
+# Install and update lock file
+poetry install --sync
+```
+
+### Managing Dependencies
+
+```bash
+# Add a new dependency
+poetry add requests
+
+# Add a dev dependency
+poetry add --group dev pytest
+
+# Update specific package
+poetry update django
+
+# Update all packages
+poetry update
+
+# Remove a dependency
+poetry remove requests
+
+# Show installed packages
+poetry show
+```
+
+### Lock File
+
+The `pyproject.toml` and `poetry.lock` files must be committed:
+- `pyproject.toml` - Specifies package requirements and constraints
+- `poetry.lock` - Locks exact versions for reproducible installs
+
+```bash
+# Never manually edit lock file, use Poetry commands
+poetry lock  # Regenerate lock file
+```
+
+## Node.js Dependencies (npm)
+
+### Installation
+
+```bash
+# Install from package-lock.json
+npm install
+
+# Install specific version
+npm install package-name@latest
+
+# Install globally
+npm install -g @tracertm/cli
+```
+
+### Managing Dependencies
+
+```bash
+# Add production dependency
+npm install package-name
+
+# Add dev dependency
+npm install --save-dev @types/node
+
+# Update package
+npm update package-name
+
+# Update all packages (respecting constraints)
+npm update
+
+# Remove package
+npm remove package-name
+
+# List installed packages
+npm list
+```
+
+### Lock File
+
+The `package-lock.json` must be committed:
+- Ensures all developers and CI use identical versions
+- Prevents "works on my machine" issues
+
+```bash
+# Don't manually edit package-lock.json
+npm install  # Regenerates if needed
+```
+
+## Security Audits
+
+### Python Security
+
+```bash
+# Check for vulnerabilities
+poetry check
+
+# Show known vulnerabilities
+poetry show --outdated
+
+# Update vulnerable packages
+poetry update
+
+# Use safety tool for detailed reports
+pip install safety
+safety check
+```
+
+### Node.js Security
+
+```bash
+# Audit for vulnerabilities
+npm audit
+
+# Auto-fix vulnerabilities where possible
+npm audit fix
+
+# Auto-fix major versions
+npm audit fix --force
+
+# Check for audit issues in CI
+npm audit --audit-level=moderate
+```
+
+## Dependency Pinning
+
+Always pin versions for reproducibility:
+
+**Python (pyproject.toml):**
+```toml
+[tool.poetry.dependencies]
+python = "^3.9"          # Compatible with 3.9+
+django = "4.2.*"         # Patch-only updates
+requests = "2.31.0"      # Exact version
+```
+
+**Node.js (package.json):**
+```json
+{
+  "dependencies": {
+    "express": "^4.18.0",      // ^: compatible with 4.x.x
+    "lodash": "~4.17.21"       // ~: patch updates only
+  }
+}
+```
+
+## Installing Local Dependencies
+
+Sometimes you need to install from local files:
+
+```bash
+# Python from local path
+poetry add ./local-package
+
+# Node.js from local path
+npm install ./local-package
+
+# From git repository
+poetry add git+https://github.com/org/repo.git
+npm install github:org/repo
+```
+
+## Verification
+
+After installing dependencies:
+
+```bash
+# Verify Python dependencies
+poetry check
+python -m pip check
+
+# Verify Node.js dependencies
+npm audit
+npm ls
+
+# Verify Go modules
+go mod verify
+```
+
+## Updating Dependencies
+
+### Scheduled Updates
+
+Regularly update dependencies:
+
+```bash
+# Monthly update check
+poetry update --dry-run
+npm outdated
+
+# Review updates
+poetry show --outdated
+npm outdated
+```
+
+### Safe Update Process
+
+1. Create feature branch: `git checkout -b deps/update-2024-q1`
+2. Run security audit: `npm audit` or `poetry check`
+3. Update specific package: `npm update package-name`
+4. Test thoroughly: `npm test`, `poetry run pytest`
+5. Review changes: `git diff package-lock.json`
+6. Create PR with description of updated packages
+
+## Common Issues
+
+### Dependency Conflicts
+
+```bash
+# Python: Check for conflicts
+poetry lock --no-update
+
+# Node.js: Resolve peer dependencies
+npm install --legacy-peer-deps  # If needed for compatibility
+```
+
+### Version Mismatch
+
+```bash
+# Reset to lock file versions
+poetry install --sync
+npm ci  # Clean install from lock file
+
+# Regenerate lock file
+poetry lock
+npm install
+```
+
+### Large Dependency Trees
+
+```bash
+# Analyze dependency tree
+npm ls
+poetry show --tree
+
+# Find duplicate packages
+npm dedupe
+
+# Remove unused dependencies
+poetry export --without-hashes | grep unused
+```
+
+## Best Practices
+
+- Always commit lock files to version control
+- Pin major versions, allow patch updates
+- Run security audits regularly (weekly minimum)
+- Review dependency changelogs before updating
+- Test thoroughly after dependency updates
+- Document any version constraints and why
+- Keep dependencies up to date (don't skip versions)
+- Remove unused dependencies periodically

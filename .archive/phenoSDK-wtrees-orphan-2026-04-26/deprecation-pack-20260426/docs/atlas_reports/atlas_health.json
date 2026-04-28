@@ -1,0 +1,164 @@
+{
+  "project": "pheno-sdk",
+  "root": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk",
+  "adapter": "legacy_code_scanner",
+  "summary": {
+    "files_scanned": 964,
+    "lines_scanned": 154286,
+    "total_findings": 3250,
+    "findings_by_severity": {
+      "error": 116,
+      "warning": 533,
+      "info": 2601
+    },
+    "findings_by_type": {
+      "bad_imports": 2,
+      "security": 125,
+      "tdd": 219,
+      "over_engineering": 111,
+      "bad_import": 14,
+      "code_quality": 1907,
+      "complexity": 312,
+      "legacy_code": 1,
+      "hexagonal": 1,
+      "pythonic": 21,
+      "shims": 27,
+      "code_wastage": 310,
+      "performance": 131,
+      "lazy_import": 69
+    }
+  },
+  "metrics": {
+    "severity_counts": {
+      "warning": 533,
+      "error": 116
+    },
+    "type_counts": [
+      {
+        "name": "complexity",
+        "value": 254
+      },
+      {
+        "name": "security",
+        "value": 115
+      },
+      {
+        "name": "code_quality",
+        "value": 107
+      },
+      {
+        "name": "tdd",
+        "value": 96
+      },
+      {
+        "name": "over_engineering",
+        "value": 28
+      },
+      {
+        "name": "performance",
+        "value": 26
+      },
+      {
+        "name": "bad_import",
+        "value": 14
+      },
+      {
+        "name": "pythonic",
+        "value": 5
+      },
+      {
+        "name": "bad_imports",
+        "value": 2
+      },
+      {
+        "name": "hexagonal",
+        "value": 1
+      }
+    ],
+    "dir_counts": [
+      {
+        "name": "src",
+        "value": 418
+      },
+      {
+        "name": "tests",
+        "value": 123
+      },
+      {
+        "name": "scripts",
+        "value": 57
+      },
+      {
+        "name": "examples",
+        "value": 18
+      },
+      {
+        "name": "lib",
+        "value": 11
+      },
+      {
+        "name": "tools",
+        "value": 9
+      },
+      {
+        "name": "templates",
+        "value": 4
+      },
+      {
+        "name": "setup_all_projects.py",
+        "value": 2
+      }
+    ],
+    "area_counts": {
+      "tooling": 89,
+      "core": 256,
+      "tests": 137,
+      "application": 38,
+      "infrastructure": 129
+    },
+    "file_hotspots": [
+      {
+        "name": "tests/utils/factories.py",
+        "value": 15
+      },
+      {
+        "name": "tests/unit/mcp/qa/test_runner_base.py",
+        "value": 12
+      },
+      {
+        "name": "tests/test_container.py",
+        "value": 12
+      },
+      {
+        "name": "src/pheno/cli/app/commands/control_center.py",
+        "value": 12
+      },
+      {
+        "name": "tests/run_container_tests.py",
+        "value": 10
+      },
+      {
+        "name": "tests/unit/mcp/qa/test_widgets.py",
+        "value": 9
+      },
+      {
+        "name": "tests/run_config_tests.py",
+        "value": 7
+      },
+      {
+        "name": "scripts/legacy_code_scanner.py",
+        "value": 7
+      }
+    ],
+    "total_files": 964,
+    "total_lines": 154286,
+    "files_with_findings": 306,
+    "density": 0.004206473691715386,
+    "health_score": 0,
+    "health_label": "critical",
+    "autofix_ready": 2,
+    "filtered_severity": "warning"
+  },
+  "report": "======================================================================\n                         ATLAS HEALTH SUMMARY                         \n======================================================================\nRoot: /Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk\nHealth Score: 0/100 (critical)\nSeverity filter: >= warning\nFiles scanned: 964 | Lines scanned: 154286\nFiles with findings: 306 | Density: 0.0042 issues/line\n\nSeverity Distribution\n  Severity | Count |      % | Activity            \n  ---------+-------+--------+---------------------\n  ERROR    |   116 |  17.9% | ####................\n  WARNING  |   533 |  82.1% | ################....\n  INFO     |     0 |   0.0% | ....................\n\nTop Finding Types\n  Type             | Count\n  -----------------+------\n  complexity       |   254\n  security         |   115\n  code_quality     |   107\n  tdd              |    96\n  over_engineering |    28\n  performance      |    26\n  bad_import       |    14\n  pythonic         |     5\n  bad_imports      |     2\n  hexagonal        |     1\n\nDomain Breakdown\n  Area           | Count |      % | Activity            \n  ---------------+-------+--------+---------------------\n  domain         |     0 |   0.0% | ....................\n  application    |    38 |   5.9% | #...................\n  infrastructure |   129 |  19.9% | ####................\n  tooling        |    89 |  13.7% | ###.................\n  tests          |   137 |  21.1% | ####................\n  core           |   256 |  39.4% | ########............\n\nTop Directories by Findings\n  Directory             | Count\n  ----------------------+------\n  src                   |   418\n  tests                 |   123\n  scripts               |    57\n  examples              |    18\n  lib                   |    11\n  tools                 |     9\n  templates             |     4\n  setup_all_projects.py |     2\n\nHotspot Files\n  File                                         | Findings\n  ---------------------------------------------+---------\n  tests/utils/factories.py                     |       15\n  tests/unit/mcp/qa/test_runner_base.py        |       12\n  tests/test_container.py                      |       12\n  src/pheno/cli/app/commands/control_center.py |       12\n  tests/run_container_tests.py                 |       10\n  tests/unit/mcp/qa/test_widgets.py            |        9\n  tests/run_config_tests.py                    |        7\n  scripts/legacy_code_scanner.py               |        7\n\nAutofix Insights\n  Findings with autofix suggestions: 2\n  (dry run; use --apply-fixes to auto-apply supported remediations)\n\n======================================================================\n",
+  "status": "pheno-sdk :: health 0/100 (critical) \u00b7 errors=116, warnings=533, info=0"
+}

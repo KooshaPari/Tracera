@@ -1,0 +1,440 @@
+---
+title: "Standard Fields"
+description: "Built-in fields available on all TraceRTM artifacts"
+---
+
+# Standard Fields
+
+Every artifact in TraceRTM has a set of standard fields that provide core functionality for identification, lifecycle management, and governance. These fields are automatically managed and consistently available across all artifact types.
+
+## Core Fields
+
+### Identification Fields
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `id` | String | Unique identifier | `FEAT-001` |
+| `title` | String | Human-readable name | `User Authentication` |
+| `description` | Text | Detailed description (Markdown) | Full specification |
+| `item_type` | Enum | Artifact type | `feature`, `code`, `test` |
+| `project_id` | String | Parent project | `PROJ-001` |
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# Access standard fields
+item = client.get_item("FEAT-001")
+
+print(f"ID: {item.id}")
+print(f"Title: {item.title}")
+print(f"Type: {item.item_type}")
+print(f"Project: {item.project_id}")
+print(f"Description: {item.description[:100]}...")
+```
+
+### Lifecycle Fields
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `status` | Enum | Current workflow state | `draft`, `in_progress`, `done` |
+| `created_at` | DateTime | Creation timestamp | `2024-12-01T10:30:00Z` |
+| `updated_at` | DateTime | Last modification | `2024-12-05T14:22:00Z` |
+| `version` | Integer | Version number | `3` |
+
+```python
+# Lifecycle information
+print(f"Status: {item.status}")
+print(f"Created: {item.created_at}")
+print(f"Updated: {item.updated_at}")
+print(f"Version: {item.version}")
+
+# Filter by status
+active_items = client.list_items(
+    status=["draft", "in_progress"]
+)
+
+# Filter by date
+recent = client.list_items(
+    updated_after="2024-12-01"
+)
+```
+
+### Ownership Fields
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `created_by` | String | Creator user ID | `user@example.com` |
+| `updated_by` | String | Last modifier | `user@example.com` |
+| `owner` | String | Accountable person | `user@example.com` |
+| `assignee` | String | Current assignee | `user@example.com` |
+
+```python
+# Ownership information
+print(f"Created by: {item.created_by}")
+print(f"Owner: {item.owner}")
+print(f"Assignee: {item.assignee}")
+
+# Find items by owner
+my_items = client.list_items(
+    owner="user@example.com"
+)
+
+# Reassign
+client.update_item(
+    "FEAT-001",
+    assignee="newowner@example.com"
+)
+```
+
+## Priority and Classification
+
+### Priority Field
+
+Standard priority levels:
+
+| Value | Description | SLA |
+|-------|-------------|-----|
+| `critical` | System down, security issue | Immediate |
+| `high` | Major functionality blocked | 24 hours |
+| `medium` | Important but workaround exists | 1 week |
+| `low` | Nice to have, minor | Best effort |
+
+```python
+# Set priority
+client.create_item(
+    title="Security vulnerability",
+    item_type="bug",
+    priority="critical"
+)
+
+# Filter by priority
+critical_items = client.list_items(
+    priority=["critical", "high"]
+)
+
+# Sort by priority
+sorted_items = client.list_items(
+    sort_by="priority",
+    sort_order="desc"
+)
+```
+
+### Labels and Tags
+
+```python
+# Add labels
+client.create_item(
+    title="OAuth2 Integration",
+    item_type="feature",
+    labels=["security", "auth", "api"]
+)
+
+# Filter by labels
+security_items = client.list_items(
+    labels=["security"]
+)
+
+# Multiple labels (AND)
+auth_api_items = client.list_items(
+    labels=["security", "api"]  # Must have both
+)
+
+# Multiple labels (OR)
+auth_or_api = client.list_items(
+    labels_any=["security", "api"]  # Has any
+)
+```
+
+## Link Summary Fields
+
+### Automatic Counters
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `link_count` | Integer | Total links |
+| `incoming_links` | Integer | Links pointing to this item |
+| `outgoing_links` | Integer | Links from this item |
+
+```python
+# Link summary
+print(f"Total links: {item.link_count}")
+print(f"Incoming: {item.incoming_links}")
+print(f"Outgoing: {item.outgoing_links}")
+
+# Find orphan items (no links)
+orphans = client.list_items(
+    link_count=0
+)
+```
+
+### Coverage Indicators
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `has_tests` | Boolean | Has verifying tests |
+| `test_count` | Integer | Number of tests |
+| `has_code` | Boolean | Has implementing code |
+| `code_count` | Integer | Number of code modules |
+
+```python
+# Coverage info
+print(f"Has tests: {item.has_tests}")
+print(f"Test count: {item.test_count}")
+
+# Find untested items
+untested = client.list_items(
+    item_type="feature",
+    has_tests=False
+)
+```
+
+## CLI Usage
+
+```bash
+# View standard fields
+tracertm get FEAT-001
+
+# Output:
+# ID: FEAT-001
+# Title: User Authentication
+# Type: feature
+# Status: in_progress
+# Priority: high
+#
+# Created: 2024-12-01T10:30:00Z by user@example.com
+# Updated: 2024-12-05T14:22:00Z by user@example.com
+# Version: 3
+#
+# Owner: security@example.com
+# Assignee: dev@example.com
+#
+# Labels: security, auth, api
+# Links: 12 (5 incoming, 7 outgoing)
+
+# Filter by standard fields
+tracertm list --type feature --status in_progress
+tracertm list --priority critical,high
+tracertm list --owner user@example.com
+tracertm list --labels security
+tracertm list --created-after 2024-12-01
+
+# Update standard fields
+tracertm update FEAT-001 --status done
+tracertm update FEAT-001 --priority high
+tracertm update FEAT-001 --assignee newdev@example.com
+tracertm update FEAT-001 --labels "security,api,v2"
+```
+
+## Field Access in SDK
+
+### Direct Access
+
+```python
+# All standard fields are directly accessible
+item = client.get_item("FEAT-001")
+
+# Core identification
+item.id
+item.title
+item.description
+item.item_type
+item.project_id
+
+# Lifecycle
+item.status
+item.created_at
+item.updated_at
+item.version
+
+# Ownership
+item.created_by
+item.updated_by
+item.owner
+item.assignee
+
+# Classification
+item.priority
+item.labels
+
+# Links
+item.link_count
+item.has_tests
+item.has_code
+```
+
+### Dictionary Access
+
+```python
+# Access as dictionary
+data = item.to_dict()
+
+print(data["id"])
+print(data["status"])
+print(data["metadata"])  # Custom fields
+```
+
+## Default Values
+
+### Automatic Defaults
+
+| Field | Default Value |
+|-------|---------------|
+| `status` | First state in workflow (usually `draft`) |
+| `priority` | `medium` |
+| `version` | `1` |
+| `created_at` | Current timestamp |
+| `created_by` | Current user |
+| `labels` | Empty list |
+
+### Configurable Defaults
+
+```yaml
+# .tracertm/config.yaml
+defaults:
+  feature:
+    priority: medium
+    owner: product@example.com
+
+  bug:
+    priority: high
+    owner: engineering@example.com
+
+  test:
+    priority: medium
+    assignee: qa@example.com
+```
+
+## Field Constraints
+
+### System-Managed Fields
+
+These fields are read-only and managed by TraceRTM:
+
+- `id` - Auto-generated
+- `created_at` - Set on creation
+- `created_by` - Set on creation
+- `updated_at` - Updated automatically
+- `updated_by` - Updated automatically
+- `version` - Incremented automatically
+- `link_count` - Computed from links
+- `has_tests` - Computed from links
+- `has_code` - Computed from links
+
+### User-Editable Fields
+
+These fields can be modified:
+
+- `title` - Required, min 1 char
+- `description` - Optional, Markdown supported
+- `status` - Must be valid workflow state
+- `priority` - Must be valid enum value
+- `owner` - Valid user or email
+- `assignee` - Valid user or email
+- `labels` - Array of strings
+
+## Querying Standard Fields
+
+### Comparison Operators
+
+```python
+# Equality
+items = client.list_items(status="done")
+
+# In list
+items = client.list_items(
+    status=["draft", "in_progress"]  # OR
+)
+
+# Not equal
+items = client.list_items(
+    status__ne="archived"
+)
+
+# Greater/less than (dates, numbers)
+items = client.list_items(
+    created_at__gte="2024-12-01",
+    priority__in=["high", "critical"]
+)
+```
+
+### Sorting
+
+```python
+# Sort by standard fields
+items = client.list_items(
+    sort_by="updated_at",
+    sort_order="desc"  # Most recently updated first
+)
+
+items = client.list_items(
+    sort_by="priority",
+    sort_order="desc"  # Critical first
+)
+```
+
+### Pagination
+
+```python
+# Paginated results
+page1 = client.list_items(
+    limit=50,
+    offset=0
+)
+
+page2 = client.list_items(
+    limit=50,
+    offset=50
+)
+```
+
+## Best Practices
+
+### 1. Always Set Owner
+
+```python
+# Good: Clear accountability
+client.create_item(
+    title="New Feature",
+    item_type="feature",
+    owner="product@example.com"
+)
+
+# Avoid: No owner (harder to track)
+client.create_item(
+    title="New Feature",
+    item_type="feature"
+)
+```
+
+### 2. Use Meaningful Labels
+
+```python
+# Good: Specific, searchable labels
+labels=["security", "api-v2", "q1-2024"]
+
+# Avoid: Generic or redundant
+labels=["important", "feature", "todo"]
+```
+
+### 3. Leverage Computed Fields
+
+```python
+# Use computed fields for coverage reports
+untested = client.list_items(
+    item_type="feature",
+    has_tests=False,
+    status__ne="archived"
+)
+
+if untested:
+    print(f"Warning: {len(untested)} features without tests")
+```
+
+## Related Topics
+
+- [Custom Fields](/docs/wiki/concepts/metadata/custom-fields) - Define additional fields
+- [Validation](/docs/wiki/concepts/metadata/validation) - Field validation rules
+- [Search and Filter](/docs/wiki/concepts/metadata/search) - Advanced queries
+

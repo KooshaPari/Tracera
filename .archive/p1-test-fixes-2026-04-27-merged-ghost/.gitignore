@@ -1,0 +1,13 @@
+../*
+../.*
+!pyproject.toml
+# openapi.yaml is the committed API contract; do not ignore.
+!openapi.yaml
+
+# Environment configuration
+.env
+.env.local
+.env.*.local
+
+# AgilePlus runtime artifacts
+.agileplus/

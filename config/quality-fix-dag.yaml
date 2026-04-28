@@ -1,0 +1,22 @@
+# Fix agent DAG: checker -> fix command template.
+# Used by quality_fix_runner to spawn fix agents per checker.
+version: 1
+
+# Map checker (from log stem) to fix command. {log_path} is replaced.
+fix_jobs:
+  py-lint:
+    checker: ruff
+    command: "ruff check --fix ."
+    deps: []
+  py-type:
+    checker: mypy
+    command: "poe type-check"
+    deps: [py-lint]
+  go-lint:
+    checker: gofmt/vet
+    command: "task go:lint"
+    deps: []
+  fe-lint:
+    checker: oxlint
+    command: "bun run --cwd frontend lint"
+    deps: []

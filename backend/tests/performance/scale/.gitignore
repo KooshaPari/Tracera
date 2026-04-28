@@ -1,0 +1,20 @@
+# Performance test results
+performance-results/
+*.json
+*.html
+*.csv
+*.log
+*.txt
+
+# Monitoring data
+monitoring/
+
+# Process IDs
+.monitor.pid
+
+# Temporary files
+*.tmp
+*.temp
+
+# Keep example results for documentation
+!performance-results/.gitkeep

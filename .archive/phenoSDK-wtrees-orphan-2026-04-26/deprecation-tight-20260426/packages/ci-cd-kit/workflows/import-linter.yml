@@ -1,0 +1,90 @@
+name: Import Linter Gate
+
+on:
+  workflow_call:
+    inputs:
+      python_version:
+        description: 'Python version to use'
+        required: false
+        default: '3.13'
+        type: string
+      use_uv:
+        description: 'Use uv package manager'
+        required: false
+        default: 'true'
+        type: boolean
+      lint_command:
+        description: 'Import linting command to run'
+        required: false
+        default: 'lint-imports --verbose'
+        type: string
+    outputs:
+      violations_found:
+        description: 'Whether import violations were found'
+        value: ${{ steps.check-violations.outputs.violations-found }}
+
+jobs:
+  import-linter:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python_version }}
+
+    - name: Install uv
+      if: ${{ inputs.use_uv }}
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Install dependencies
+      if: ${{ inputs.use_uv }}
+      run: |
+        uv sync --all-extras
+
+    - name: Install dependencies (pip)
+      if: ${{ !inputs.use_uv }}
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+        pip install import-linter
+
+    - name: Run import linter
+      if: ${{ inputs.use_uv }}
+      run: |
+        uv run ${{ inputs.lint_command }}
+
+    - name: Run import linter (pip)
+      if: ${{ !inputs.use_uv }}
+      run: |
+        ${{ inputs.lint_command }}
+
+    - name: Check for violations
+      id: check-violations
+      run: |
+        # Fail CI if any import violations found
+        if ${{ inputs.use_uv && 'uv run' || '' }} ${{ inputs.lint_command }} | grep -i "violation"; then
+          echo "❌ Import linter violations found!"
+          echo "violations-found=true" >> $GITHUB_OUTPUT
+          exit 1
+        else
+          echo "✅ No import violations detected"
+          echo "violations-found=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Generate contract report
+      if: always()
+      run: |
+        ${{ inputs.use_uv && 'uv run' || '' }} ${{ inputs.lint_command }} > import-linter-report.txt
+
+    - name: Upload report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: import-linter-report
+        path: import-linter-report.txt

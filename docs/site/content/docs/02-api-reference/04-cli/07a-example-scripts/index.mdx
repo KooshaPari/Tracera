@@ -1,0 +1,149 @@
+---
+title: "Example Scripts"
+description: "Reusable CLI scripts."
+---
+
+## Overview
+
+This section provides production-ready CLI scripts that demonstrate common automation patterns. These examples can be integrated into CI/CD pipelines, deployment workflows, and scheduled tasks.
+
+## Bash Scripts
+
+### List Artifacts in Project
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Lists all artifacts in a specific project with formatted output
+# Usage: ./list-artifacts.sh <project-id>
+
+PROJECT_ID="${1:?Error: Project ID required}"
+
+trace artifacts list --project "$PROJECT_ID" | jq '{
+  id: .id,
+  name: .name,
+  type: .type,
+  created: .created_at
+}'
+```
+
+**Output:** JSON array of artifact objects with essential fields.
+
+### Filter Artifacts by Type
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Filter artifacts by specific type
+# Usage: ./filter-artifacts.sh <project-id> <type>
+
+PROJECT_ID="${1:?Error: Project ID required}"
+TYPE="${2:?Error: Type required (requirement|design|test|code|documentation)}"
+
+trace artifacts list --project "$PROJECT_ID" --type "$TYPE" | jq '.[] | select(.type == "'$TYPE'")'
+```
+
+**Supported types:** requirement, design, test, code, documentation
+
+### Batch Create Links
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Create traceability links between artifacts in bulk
+# Usage: ./create-links.sh <from-id> <to-id> <relationship-type>
+
+FROM_ID="${1:?Error: Source artifact ID required}"
+TO_ID="${2:?Error: Target artifact ID required}"
+RELATIONSHIP="${3:-traces}"  # Default relationship type
+
+trace links create --from "$FROM_ID" --to "$TO_ID" --relationship "$RELATIONSHIP"
+
+echo "Link created: $FROM_ID --[$RELATIONSHIP]--> $TO_ID"
+```
+
+## Python Scripts
+
+### Automated Traceability Report
+
+```python
+#!/usr/bin/env python3
+"""Generate traceability coverage report for a project."""
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+def run_trace_command(args):
+    """Execute trace CLI command and return JSON output."""
+    cmd = ['trace'] + args + ['--json']
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"Error: {result.stderr}", file=sys.stderr)
+        sys.exit(1)
+    return json.loads(result.stdout)
+
+def generate_report(project_id):
+    """Generate comprehensive traceability report."""
+    artifacts = run_trace_command(['artifacts', 'list', '--project', project_id])
+    links = run_trace_command(['links', 'list', '--project', project_id])
+
+    report = {
+        'project_id': project_id,
+        'total_artifacts': len(artifacts),
+        'total_links': len(links),
+        'artifacts_by_type': {},
+        'coverage_percentage': 0
+    }
+
+    # Group artifacts by type
+    for artifact in artifacts:
+        atype = artifact.get('type', 'unknown')
+        if atype not in report['artifacts_by_type']:
+            report['artifacts_by_type'][atype] = 0
+        report['artifacts_by_type'][atype] += 1
+
+    # Calculate coverage
+    linked_artifacts = set()
+    for link in links:
+        linked_artifacts.add(link.get('from_id'))
+        linked_artifacts.add(link.get('to_id'))
+
+    if len(artifacts) > 0:
+        report['coverage_percentage'] = (len(linked_artifacts) / len(artifacts)) * 100
+
+    return report
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print("Usage: generate-report.py <project-id>")
+        sys.exit(1)
+
+    report = generate_report(sys.argv[1])
+    print(json.dumps(report, indent=2))
+```
+
+## Integration Patterns
+
+### CI/CD Pipeline Integration
+
+Use these patterns to integrate TracerTM with your CI/CD pipeline:
+
+- **Pre-commit hooks:** Validate traceability before commits
+- **Build stages:** Generate reports as build artifacts
+- **Pull requests:** Check traceability coverage on PR branches
+- **Notifications:** Alert on coverage drops via Slack/Teams
+
+### Best Practices
+
+- Always use `set -euo pipefail` in Bash scripts for safety
+- Validate all required parameters before execution
+- Implement error handling and meaningful error messages
+- Log command execution for audit trails
+- Use JSON output format for reliable parsing
+- Test scripts in development environment first
+- Document expected inputs and outputs

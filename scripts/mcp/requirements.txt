@@ -1,0 +1,42 @@
+# BMM MCP Server & CLI - Requirements
+# FastMCP 3.0.0b1 (beta) with all features
+
+# Core MCP Framework
+fastmcp==3.2.0
+mcp==1.25.0
+
+# CLI Framework
+typer>=0.21.1
+rich>=14.3.1
+
+# Data Handling
+pyyaml>=6.0.1
+pydantic>=2.0.0
+
+# Async Support
+asyncio-mqtt>=0.16.0  # For async operations
+aiofiles>=23.0.0      # For async file operations
+
+# Optional: Storage Backends
+# Uncomment if using Redis storage
+# redis>=5.0.0
+# hiredis>=2.3.0
+
+# Optional: Authentication
+# Uncomment if using OAuth/JWT authentication
+# python-jose[cryptography]>=3.3.0
+# passlib[bcrypt]>=1.7.4
+
+# Optional: HTTP/SSE Transport
+# Uncomment if using remote MCP server
+# httpx>=0.27.0
+# sse-starlette>=2.0.0
+# uvicorn>=0.30.0
+
+# Development Dependencies (optional)
+# pytest>=8.0.0
+# pytest-asyncio>=0.23.0
+# pytest-cov>=4.1.0
+# black>=24.0.0
+# ruff>=0.3.0
+# mypy>=1.9.0

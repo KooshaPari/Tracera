@@ -1,0 +1,1299 @@
+---
+title: "API Endpoints Reference"
+description: "Complete reference for all TraceRTM REST API endpoints"
+---
+
+# API Endpoints Reference
+
+Complete documentation for all TraceRTM REST API endpoints with request/response formats, examples, and status codes.
+
+## Base URL
+
+All API endpoints are prefixed with `/api/v1`:
+
+```
+http://localhost:8000/api/v1
+```
+
+---
+
+## Health & System
+
+### Health Check
+
+Check API health and status.
+
+```http
+GET /health
+```
+
+**Response** (200 OK):
+
+```json
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "service": "TraceRTM API"
+}
+```
+
+**Status Codes:**
+- `200` - Service is healthy
+
+**Example:**
+
+```bash
+curl http://localhost:8000/health
+```
+
+---
+
+## Projects
+
+### List Projects
+
+Retrieve all projects with pagination support.
+
+```http
+GET /api/v1/projects
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `skip` | integer | 0 | Number of records to skip |
+| `limit` | integer | 100 | Maximum number of records to return |
+
+**Response** (200 OK):
+
+```json
+{
+  "total": 5,
+  "projects": [
+    {
+      "id": "proj_abc123",
+      "name": "Mobile App Project",
+      "description": "Requirements for mobile application",
+      "metadata": {
+        "team": "Engineering",
+        "status": "active"
+      }
+    }
+  ]
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `500` - Database not configured
+
+**Example:**
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/projects?skip=0&limit=10"
+```
+
+### Get Project
+
+Retrieve a specific project by ID.
+
+```http
+GET /api/v1/projects/{project_id}
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `project_id` | string | Project identifier |
+
+**Response** (200 OK):
+
+```json
+{
+  "id": "proj_abc123",
+  "name": "Mobile App Project",
+  "description": "Requirements for mobile application",
+  "metadata": {
+    "team": "Engineering",
+    "status": "active"
+  }
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `404` - Project not found
+- `500` - Database error
+
+**Example:**
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/projects/proj_abc123"
+```
+
+### Create Project
+
+Create a new project.
+
+```http
+POST /api/v1/projects
+```
+
+**Request Body:**
+
+```json
+{
+  "name": "New Project",
+  "description": "Project description",
+  "metadata": {
+    "team": "Engineering",
+    "priority": "high"
+  }
+}
+```
+
+**Request Schema:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Project name |
+| `description` | string | No | Project description |
+| `metadata` | object | No | Custom metadata |
+
+**Response** (200 OK):
+
+```json
+{
+  "id": "proj_xyz789",
+  "name": "New Project",
+  "description": "Project description",
+  "metadata": {
+    "team": "Engineering",
+    "priority": "high"
+  }
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `400` - Invalid request body
+- `500` - Database error
+
+**Example:**
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/projects" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "New Project",
+    "description": "Project description"
+  }'
+```
+
+### Update Project
+
+Update an existing project.
+
+```http
+PUT /api/v1/projects/{project_id}
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `project_id` | string | Project identifier |
+
+**Request Body:**
+
+```json
+{
+  "name": "Updated Project Name",
+  "description": "Updated description",
+  "metadata": {
+    "status": "in_progress"
+  }
+}
+```
+
+**Request Schema:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | No | Updated project name |
+| `description` | string | No | Updated description |
+| `metadata` | object | No | Updated metadata |
+
+**Response** (200 OK):
+
+```json
+{
+  "id": "proj_abc123",
+  "name": "Updated Project Name",
+  "description": "Updated description",
+  "metadata": {
+    "status": "in_progress"
+  }
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `404` - Project not found
+- `400` - Invalid request body
+- `500` - Database error
+
+**Example:**
+
+```bash
+curl -X PUT "http://localhost:8000/api/v1/projects/proj_abc123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Project Name"
+  }'
+```
+
+### Delete Project
+
+Delete a project and all associated items and links.
+
+```http
+DELETE /api/v1/projects/{project_id}
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `project_id` | string | Project identifier |
+
+**Response** (200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Project deleted successfully"
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `404` - Project not found
+- `500` - Database error
+
+**Example:**
+
+```bash
+curl -X DELETE "http://localhost:8000/api/v1/projects/proj_abc123"
+```
+
+---
+
+## Items
+
+### List Items
+
+Retrieve items in a project with pagination.
+
+```http
+GET /api/v1/items
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `project_id` | string | Yes | - | Project identifier |
+| `skip` | integer | No | 0 | Number of records to skip |
+| `limit` | integer | No | 100 | Maximum records to return |
+
+**Response** (200 OK):
+
+```json
+{
+  "total": 45,
+  "items": [
+    {
+      "id": "item_req001",
+      "title": "User Authentication",
+      "view": "FEATURE",
+      "status": "in_progress"
+    },
+    {
+      "id": "item_req002",
+      "title": "Dashboard UI",
+      "view": "FEATURE",
+      "status": "todo"
+    }
+  ]
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `400` - Missing project_id parameter
+- `500` - Database error
+
+**Example:**
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/items?project_id=proj_abc123&skip=0&limit=20"
+```
+
+### Get Item
+
+Retrieve a specific item by ID.
+
+```http
+GET /api/v1/items/{item_id}
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `item_id` | string | Item identifier |
+
+**Response** (200 OK):
+
+```json
+{
+  "id": "item_req001",
+  "title": "User Authentication",
+  "description": "Implement secure user authentication with OAuth2",
+  "view": "FEATURE",
+  "status": "in_progress",
+  "created_at": "2024-12-01T10:00:00Z",
+  "updated_at": "2024-12-06T15:30:00Z"
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `404` - Item not found
+- `500` - Database error
+
+**Example:**
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/items/item_req001"
+```
+
+---
+
+## Links
+
+### List Links
+
+Retrieve all links in a project.
+
+```http
+GET /api/v1/links
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `project_id` | string | Yes | - | Project identifier |
+| `skip` | integer | No | 0 | Number of records to skip |
+| `limit` | integer | No | 100 | Maximum records to return |
+
+**Response** (200 OK):
+
+```json
+{
+  "total": 23,
+  "links": [
+    {
+      "id": "link_001",
+      "source_id": "item_req001",
+      "target_id": "item_code001",
+      "type": "implements"
+    },
+    {
+      "id": "link_002",
+      "source_id": "item_req002",
+      "target_id": "item_test001",
+      "type": "tests"
+    }
+  ]
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `400` - Missing project_id parameter
+- `500` - Database error
+
+**Example:**
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/links?project_id=proj_abc123"
+```
+
+### Update Link
+
+Update an existing link.
+
+```http
+PUT /api/v1/links/{link_id}
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `link_id` | string | Link identifier |
+
+**Request Body:**
+
+```json
+{
+  "link_type": "verified_by",
+  "metadata": {
+    "confidence": "high",
+    "updated_by": "system"
+  }
+}
+```
+
+**Request Schema:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `link_type` | string | No | Updated link type |
+| `metadata` | object | No | Updated metadata |
+
+**Response** (200 OK):
+
+```json
+{
+  "id": "link_001",
+  "source_id": "item_req001",
+  "target_id": "item_code001",
+  "type": "verified_by",
+  "metadata": {
+    "confidence": "high",
+    "updated_by": "system"
+  }
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `404` - Link not found
+- `400` - Invalid request body
+- `500` - Database error
+
+**Example:**
+
+```bash
+curl -X PUT "http://localhost:8000/api/v1/links/link_001" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "link_type": "verified_by"
+  }'
+```
+
+---
+
+## Analysis
+
+### Impact Analysis
+
+Analyze the impact of changes to a specific item.
+
+```http
+GET /api/v1/analysis/impact/{item_id}
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `item_id` | string | Item identifier to analyze |
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project identifier |
+
+**Response** (200 OK):
+
+```json
+{
+  "root_item_id": "item_req001",
+  "total_affected": 15,
+  "max_depth": 3,
+  "affected_items": [
+    {
+      "id": "item_code001",
+      "depth": 1,
+      "impact_type": "direct"
+    },
+    {
+      "id": "item_test001",
+      "depth": 2,
+      "impact_type": "indirect"
+    }
+  ]
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `404` - Item not found
+- `400` - Missing project_id parameter
+- `500` - Database error
+
+**Example:**
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/analysis/impact/item_req001?project_id=proj_abc123"
+```
+
+### Cycle Detection
+
+Detect circular dependencies in the project's dependency graph.
+
+```http
+GET /api/v1/analysis/cycles/{project_id}
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `project_id` | string | Project identifier |
+
+**Response** (200 OK):
+
+```json
+{
+  "has_cycles": true,
+  "total_cycles": 2,
+  "severity": "high",
+  "affected_items": [
+    "item_req001",
+    "item_code001",
+    "item_test001"
+  ]
+}
+```
+
+**Response Fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `has_cycles` | boolean | Whether cycles were detected |
+| `total_cycles` | integer | Number of cycles found |
+| `severity` | string | Severity level (low, medium, high, critical) |
+| `affected_items` | array | List of item IDs involved in cycles |
+
+**Status Codes:**
+- `200` - Success
+- `404` - Project not found
+- `500` - Database error
+
+**Example:**
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/analysis/cycles/proj_abc123"
+```
+
+### Shortest Path
+
+Find the shortest path between two items in the dependency graph.
+
+```http
+GET /api/v1/analysis/shortest-path
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project identifier |
+| `source_id` | string | Yes | Source item ID |
+| `target_id` | string | Yes | Target item ID |
+
+**Response** (200 OK):
+
+```json
+{
+  "exists": true,
+  "distance": 3,
+  "path": [
+    "item_req001",
+    "item_code001",
+    "item_test001",
+    "item_req002"
+  ],
+  "link_types": [
+    "implements",
+    "tests",
+    "relates_to"
+  ]
+}
+```
+
+**Response Fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `exists` | boolean | Whether a path exists |
+| `distance` | integer | Number of hops in the path |
+| `path` | array | Ordered list of item IDs in the path |
+| `link_types` | array | Types of links connecting items |
+
+**Status Codes:**
+- `200` - Success
+- `400` - Missing required parameters
+- `404` - Items not found
+- `500` - Database error
+
+**Example:**
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/analysis/shortest-path?project_id=proj_abc123&source_id=item_req001&target_id=item_req002"
+```
+
+---
+
+## Search
+
+### Advanced Search
+
+Perform advanced search with filters and query strings.
+
+```http
+POST /api/v1/projects/{project_id}/search/advanced
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `project_id` | string | Project identifier |
+
+**Request Body:**
+
+```json
+{
+  "query": "authentication",
+  "filters": {
+    "view": "FEATURE",
+    "status": ["todo", "in_progress"],
+    "priority": "high",
+    "item_type": "requirement"
+  }
+}
+```
+
+**Request Schema:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `query` | string | No | Search query string |
+| `filters` | object | No | Filter criteria |
+
+**Filter Options:**
+
+| Filter | Type | Description |
+|--------|------|-------------|
+| `view` | string | Filter by view (FEATURE, CODE, TEST, etc.) |
+| `status` | string or array | Filter by status |
+| `priority` | string | Filter by priority |
+| `item_type` | string | Filter by item type |
+| `owner` | string | Filter by owner |
+| `created_after` | string | Filter by creation date |
+
+**Response** (200 OK):
+
+```json
+{
+  "project_id": "proj_abc123",
+  "query": "authentication",
+  "filters": {
+    "view": "FEATURE",
+    "status": ["todo", "in_progress"]
+  },
+  "results": [
+    {
+      "id": "item_req001",
+      "title": "User Authentication",
+      "view": "FEATURE",
+      "status": "in_progress",
+      "score": 0.95
+    }
+  ],
+  "total": 1
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `400` - Invalid request body
+- `404` - Project not found
+- `500` - Database error
+
+**Example:**
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/projects/proj_abc123/search/advanced" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "authentication",
+    "filters": {
+      "view": "FEATURE",
+      "status": ["todo", "in_progress"]
+    }
+  }'
+```
+
+---
+
+## Export/Import
+
+### Export Project
+
+Export project data in various formats.
+
+```http
+GET /api/v1/projects/{project_id}/export
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `project_id` | string | Project identifier |
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `format` | string | No | json | Export format (json, csv, markdown) |
+
+**Response** (200 OK) - JSON Format:
+
+```json
+{
+  "project": {
+    "id": "proj_abc123",
+    "name": "Mobile App Project"
+  },
+  "items": [
+    {
+      "id": "item_req001",
+      "title": "User Authentication",
+      "view": "FEATURE"
+    }
+  ],
+  "links": [
+    {
+      "id": "link_001",
+      "source_id": "item_req001",
+      "target_id": "item_code001",
+      "type": "implements"
+    }
+  ],
+  "metadata": {
+    "exported_at": "2024-12-06T15:00:00Z",
+    "format": "json",
+    "version": "1.0.0"
+  }
+}
+```
+
+**Response** (200 OK) - CSV Format:
+
+```csv
+id,title,view,status,type
+item_req001,User Authentication,FEATURE,in_progress,requirement
+item_req002,Dashboard UI,FEATURE,todo,requirement
+```
+
+**Response** (200 OK) - Markdown Format:
+
+```markdown
+# Mobile App Project
+
+## Items
+
+### item_req001: User Authentication
+- **View**: FEATURE
+- **Status**: in_progress
+- **Type**: requirement
+
+## Links
+
+- item_req001 -> item_code001 (implements)
+```
+
+**Status Codes:**
+- `200` - Success
+- `400` - Unsupported format
+- `404` - Project not found
+- `500` - Database error
+
+**Example:**
+
+```bash
+# Export as JSON
+curl -X GET "http://localhost:8000/api/v1/projects/proj_abc123/export?format=json"
+
+# Export as CSV
+curl -X GET "http://localhost:8000/api/v1/projects/proj_abc123/export?format=csv"
+
+# Export as Markdown
+curl -X GET "http://localhost:8000/api/v1/projects/proj_abc123/export?format=markdown"
+```
+
+### Import Project
+
+Import project data from various formats.
+
+```http
+POST /api/v1/projects/{project_id}/import
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `project_id` | string | Project identifier |
+
+**Request Body:**
+
+```json
+{
+  "format": "json",
+  "data": "{\"items\": [...], \"links\": [...]}"
+}
+```
+
+**Request Schema:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `format` | string | Yes | Import format (json, csv) |
+| `data` | string | Yes | Serialized data to import |
+
+**Response** (200 OK):
+
+```json
+{
+  "success": true,
+  "items_imported": 45,
+  "links_imported": 23,
+  "errors": [],
+  "warnings": [
+    "Duplicate item skipped: item_req001"
+  ]
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `400` - Invalid format or data
+- `404` - Project not found
+- `500` - Database error
+
+**Example:**
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/projects/proj_abc123/import" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "format": "json",
+    "data": "{\"items\": [{\"title\": \"New Item\", \"view\": \"FEATURE\"}]}"
+  }'
+```
+
+---
+
+## Sync
+
+### Get Sync Status
+
+Get synchronization status for a project.
+
+```http
+GET /api/v1/projects/{project_id}/sync/status
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `project_id` | string | Project identifier |
+
+**Response** (200 OK):
+
+```json
+{
+  "project_id": "proj_abc123",
+  "status": "synced",
+  "last_synced": "2024-12-06T15:00:00Z",
+  "pending_changes": 0
+}
+```
+
+**Response Fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `project_id` | string | Project identifier |
+| `status` | string | Sync status (synced, syncing, error, pending) |
+| `last_synced` | string or null | ISO 8601 timestamp of last sync |
+| `pending_changes` | integer | Number of pending changes |
+
+**Status Codes:**
+- `200` - Success
+- `404` - Project not found
+- `500` - Database error
+
+**Example:**
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/projects/proj_abc123/sync/status"
+```
+
+### Sync Project
+
+Execute synchronization for a project.
+
+```http
+POST /api/v1/projects/{project_id}/sync
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `project_id` | string | Project identifier |
+
+**Response** (200 OK):
+
+```json
+{
+  "project_id": "proj_abc123",
+  "status": "synced",
+  "result": {
+    "items_synced": 45,
+    "links_synced": 23,
+    "conflicts_resolved": 2,
+    "duration_ms": 1234
+  }
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `404` - Project not found
+- `500` - Database error
+
+**Example:**
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/projects/proj_abc123/sync"
+```
+
+---
+
+## Graph
+
+### Get Graph Neighbors
+
+Retrieve neighboring items in the dependency graph.
+
+```http
+GET /api/v1/projects/{project_id}/graph/neighbors
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `project_id` | string | Project identifier |
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `item_id` | string | Yes | - | Item identifier |
+| `direction` | string | No | both | Direction (in, out, both) |
+
+**Response** (200 OK):
+
+```json
+{
+  "project_id": "proj_abc123",
+  "item_id": "item_req001",
+  "direction": "both",
+  "neighbors": [
+    {
+      "id": "link_001",
+      "item_id": "item_code001",
+      "link_type": "implements",
+      "direction": "out"
+    },
+    {
+      "id": "link_002",
+      "item_id": "item_feature001",
+      "link_type": "parent_of",
+      "direction": "in"
+    }
+  ],
+  "total": 2
+}
+```
+
+**Direction Options:**
+
+| Value | Description |
+|-------|-------------|
+| `in` | Items that link TO this item |
+| `out` | Items that this item links TO |
+| `both` | All connected items (default) |
+
+**Status Codes:**
+- `200` - Success
+- `400` - Missing item_id parameter
+- `404` - Project or item not found
+- `500` - Database error
+
+**Example:**
+
+```bash
+# Get all neighbors
+curl -X GET "http://localhost:8000/api/v1/projects/proj_abc123/graph/neighbors?item_id=item_req001"
+
+# Get only outgoing links
+curl -X GET "http://localhost:8000/api/v1/projects/proj_abc123/graph/neighbors?item_id=item_req001&direction=out"
+
+# Get only incoming links
+curl -X GET "http://localhost:8000/api/v1/projects/proj_abc123/graph/neighbors?item_id=item_req001&direction=in"
+```
+
+---
+
+## Error Handling
+
+All endpoints return consistent error responses:
+
+```json
+{
+  "detail": "Error message describing what went wrong"
+}
+```
+
+### Common Errors
+
+**400 Bad Request:**
+
+```json
+{
+  "detail": "Unsupported format: xml. Supported formats: json, csv, markdown"
+}
+```
+
+**404 Not Found:**
+
+```json
+{
+  "detail": "Project not found"
+}
+```
+
+**500 Internal Server Error:**
+
+```json
+{
+  "detail": "Database not configured"
+}
+```
+
+---
+
+## Pagination
+
+List endpoints support pagination using `skip` and `limit` parameters:
+
+```http
+GET /api/v1/items?project_id=proj_abc123&skip=20&limit=10
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Max | Description |
+|-----------|------|---------|-----|-------------|
+| `skip` | integer | 0 | - | Number of records to skip |
+| `limit` | integer | 100 | 1000 | Maximum records to return |
+
+**Response includes total count:**
+
+```json
+{
+  "total": 145,
+  "items": [...]
+}
+```
+
+**Pagination Example:**
+
+```bash
+# Get first page (items 0-99)
+curl -X GET "http://localhost:8000/api/v1/items?project_id=proj_abc123&skip=0&limit=100"
+
+# Get second page (items 100-199)
+curl -X GET "http://localhost:8000/api/v1/items?project_id=proj_abc123&skip=100&limit=100"
+
+# Get specific range (items 50-74)
+curl -X GET "http://localhost:8000/api/v1/items?project_id=proj_abc123&skip=50&limit=25"
+```
+
+---
+
+## Best Practices
+
+### 1. Use Pagination for Large Datasets
+
+Always use `skip` and `limit` parameters when fetching large lists:
+
+```bash
+# Good: Paginated request
+curl -X GET "http://localhost:8000/api/v1/items?project_id=proj_abc123&limit=50"
+
+# Bad: Fetching all items at once
+curl -X GET "http://localhost:8000/api/v1/items?project_id=proj_abc123&limit=10000"
+```
+
+### 2. Handle Errors Gracefully
+
+Check HTTP status codes and parse error messages:
+
+```javascript
+try {
+  const response = await fetch('/api/v1/items?project_id=invalid');
+  if (!response.ok) {
+    const error = await response.json();
+    console.error('API Error:', error.detail);
+  }
+} catch (error) {
+  console.error('Network Error:', error);
+}
+```
+
+### 3. Use Filters to Reduce Response Size
+
+Apply filters in search endpoints to get only relevant data:
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/projects/proj_abc123/search/advanced" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filters": {
+      "view": "FEATURE",
+      "status": ["in_progress"]
+    }
+  }'
+```
+
+### 4. Cache Responses When Appropriate
+
+Cache relatively static data like project lists:
+
+```javascript
+// Cache project list for 5 minutes
+const cache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+async function getProjects() {
+  const cached = cache.get('projects');
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+
+  const response = await fetch('/api/v1/projects');
+  const data = await response.json();
+
+  cache.set('projects', { data, timestamp: Date.now() });
+  return data;
+}
+```
+
+### 5. Use Bulk Operations for Multiple Updates
+
+When possible, use batch operations instead of individual requests:
+
+```javascript
+// Good: Single batch request
+await client.batchUpdate([
+  { item_id: 'item_001', status: 'done' },
+  { item_id: 'item_002', status: 'done' },
+  { item_id: 'item_003', status: 'done' }
+]);
+
+// Bad: Multiple individual requests
+await client.updateItem('item_001', { status: 'done' });
+await client.updateItem('item_002', { status: 'done' });
+await client.updateItem('item_003', { status: 'done' });
+```
+
+---
+
+## Rate Limits
+
+API requests are rate-limited to ensure fair usage:
+
+- **Authenticated requests**: 1000 requests/hour
+- **Unauthenticated requests**: 100 requests/hour
+
+Rate limit headers are included in every response:
+
+```
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 945
+X-RateLimit-Reset: 1640995200
+```
+
+When rate limit is exceeded, you'll receive a `429 Too Many Requests` response:
+
+```json
+{
+  "detail": "Rate limit exceeded. Try again in 1234 seconds."
+}
+```
+
+---
+
+## Versioning
+
+The API uses URL-based versioning. The current version is `v1`:
+
+```
+http://localhost:8000/api/v1/...
+```
+
+Future versions will use incremented version numbers:
+
+```
+http://localhost:8000/api/v2/...
+```
+
+Older API versions will be maintained for at least 12 months after a new version is released.
+
+---
+
+## Next Steps
+
+- [Authentication Guide](/api/authentication) - Learn how to authenticate API requests
+- [Python Client](/docs/clients/python) - Use the official Python client library
+- [Webhooks](/api/webhooks) - Configure webhooks for real-time notifications
+- [Schema Reference](/docs/api/schemas) - Detailed schema documentation

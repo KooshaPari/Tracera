@@ -1,0 +1,17 @@
+---
+title: "Database Setup"
+description: "Provision Postgres locally."
+---
+
+## Steps
+- Start Postgres via Compose.
+- Apply migrations with the backend tooling.
+
+```bash
+docker compose up -d postgres
+make migrate
+```
+
+## Tips
+- Use separate databases per developer to avoid collisions.
+- Enable pg_stat_statements for tuning.

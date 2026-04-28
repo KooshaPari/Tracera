@@ -1,0 +1,608 @@
+{
+  "id": null,
+  "uid": "business-metrics",
+  "title": "TraceRTM Business Metrics",
+  "tags": [
+    "business",
+    "users",
+    "features"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 0,
+  "refresh": "1m",
+  "panels": [
+    {
+      "id": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "type": "stat",
+      "title": "Active Users (Last 24h)",
+      "targets": [
+        {
+          "expr": "count(count by (user_id) (increase(http_requests_total{job=\"go-backend\"}[24h])))",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "green",
+                "value": 50
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "type": "stat",
+      "title": "Total API Requests (Last 24h)",
+      "targets": [
+        {
+          "expr": "sum(increase(http_requests_total{job=\"go-backend\"}[24h]))",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0
+        }
+      }
+    },
+    {
+      "id": 3,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 8
+      },
+      "type": "piechart",
+      "title": "Feature Usage Distribution",
+      "targets": [
+        {
+          "expr": "sum by (feature) (increase(feature_usage_total[24h]))",
+          "legendFormat": "{{feature}}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "pieType": "pie",
+        "displayLabels": [
+          "name",
+          "percent"
+        ],
+        "legend": {
+          "show": true,
+          "placement": "right"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 8
+      },
+      "type": "graph",
+      "title": "Project Creation Rate",
+      "targets": [
+        {
+          "expr": "rate(projects_created_total[5m]) * 3600",
+          "legendFormat": "Projects/hour",
+          "refId": "A"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Projects/hour"
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "xaxis": {
+        "mode": "time"
+      },
+      "legend": {
+        "show": true,
+        "values": true,
+        "current": true
+      },
+      "tooltip": {
+        "shared": true,
+        "sort": 2
+      }
+    },
+    {
+      "id": 5,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 8
+      },
+      "type": "graph",
+      "title": "Item Creation Rate",
+      "targets": [
+        {
+          "expr": "rate(items_created_total{type=\"requirement\"}[5m]) * 3600",
+          "legendFormat": "Requirements/hour",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(items_created_total{type=\"test_case\"}[5m]) * 3600",
+          "legendFormat": "Test Cases/hour",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(items_created_total{type=\"defect\"}[5m]) * 3600",
+          "legendFormat": "Defects/hour",
+          "refId": "C"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Items/hour"
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "xaxis": {
+        "mode": "time"
+      },
+      "legend": {
+        "show": true,
+        "values": true,
+        "current": true
+      },
+      "tooltip": {
+        "shared": true,
+        "sort": 2
+      }
+    },
+    {
+      "id": 6,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "type": "graph",
+      "title": "Test Execution Rate",
+      "targets": [
+        {
+          "expr": "rate(test_executions_total{status=\"passed\"}[5m]) * 3600",
+          "legendFormat": "Passed/hour",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(test_executions_total{status=\"failed\"}[5m]) * 3600",
+          "legendFormat": "Failed/hour",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(test_executions_total{status=\"skipped\"}[5m]) * 3600",
+          "legendFormat": "Skipped/hour",
+          "refId": "C"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Tests/hour"
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "xaxis": {
+        "mode": "time"
+      },
+      "legend": {
+        "show": true,
+        "values": true,
+        "current": true
+      },
+      "tooltip": {
+        "shared": true,
+        "sort": 2
+      }
+    },
+    {
+      "id": 7,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "type": "stat",
+      "title": "Test Pass Rate (Last 24h)",
+      "targets": [
+        {
+          "expr": "sum(increase(test_executions_total{status=\"passed\"}[24h])) / sum(increase(test_executions_total[24h])) * 100",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 80
+              },
+              {
+                "color": "green",
+                "value": 95
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 24
+      },
+      "type": "graph",
+      "title": "Traceability Link Creation",
+      "targets": [
+        {
+          "expr": "rate(traceability_links_created_total[5m]) * 3600",
+          "legendFormat": "Links Created/hour",
+          "refId": "A"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Links/hour"
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "xaxis": {
+        "mode": "time"
+      },
+      "legend": {
+        "show": true,
+        "values": true,
+        "current": true
+      },
+      "tooltip": {
+        "shared": true,
+        "sort": 2
+      }
+    },
+    {
+      "id": 9,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 24
+      },
+      "type": "stat",
+      "title": "Total Projects",
+      "targets": [
+        {
+          "expr": "projects_total",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0
+        }
+      }
+    },
+    {
+      "id": 10,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 24
+      },
+      "type": "stat",
+      "title": "Coverage Percentage",
+      "targets": [
+        {
+          "expr": "avg(coverage_percentage)",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 60
+              },
+              {
+                "color": "green",
+                "value": 80
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 11,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 32
+      },
+      "type": "graph",
+      "title": "Integration Activity",
+      "targets": [
+        {
+          "expr": "rate(integration_sync_total{integration=\"jira\"}[5m]) * 3600",
+          "legendFormat": "Jira Syncs/hour",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(integration_sync_total{integration=\"github\"}[5m]) * 3600",
+          "legendFormat": "GitHub Syncs/hour",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(integration_sync_total{integration=\"figma\"}[5m]) * 3600",
+          "legendFormat": "Figma Syncs/hour",
+          "refId": "C"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Syncs/hour"
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "xaxis": {
+        "mode": "time"
+      },
+      "legend": {
+        "show": true,
+        "values": true,
+        "current": true
+      },
+      "tooltip": {
+        "shared": true,
+        "sort": 2
+      }
+    },
+    {
+      "id": 12,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 32
+      },
+      "type": "graph",
+      "title": "User Session Duration",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(user_session_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(user_session_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p95",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(user_session_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p99",
+          "refId": "C"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "s",
+          "label": "Duration"
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "xaxis": {
+        "mode": "time"
+      },
+      "legend": {
+        "show": true,
+        "values": true,
+        "current": true
+      },
+      "tooltip": {
+        "shared": true,
+        "sort": 2
+      }
+    },
+    {
+      "id": 13,
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "type": "table",
+      "title": "Top 10 Most Active Projects",
+      "targets": [
+        {
+          "expr": "topk(10, sum by (project_id, project_name) (increase(project_activity_total[24h])))",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "project_name": "Project",
+              "Value": "Activity Count (24h)"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "project",
+        "type": "query",
+        "query": "label_values(project_activity_total, project_name)",
+        "datasource": "Prometheus",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h"
+    ]
+  }
+}

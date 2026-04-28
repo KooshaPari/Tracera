@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/item.py
+# hypothesis_version: 6.148.7
+
+[255, 500, 'CASCADE', 'SET NULL', 'extend_existing', 'item_metadata', 'item_type', 'items', 'items.id', 'medium', 'metadata', 'project_id', 'projects.id', 'status', 'todo', 'type', 'version_id_col', 'view']

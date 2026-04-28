@@ -1,0 +1,180 @@
+---
+title: "Event System"
+description: "Event-driven architecture for TraceRTM"
+keywords: [events, event system, pubsub, messaging]
+---
+
+# Event System
+
+Event-driven architecture for decoupled communication between components.
+
+## Event Bus
+
+### Basic Event Bus
+
+```python
+from typing import Callable, Dict, List
+from collections import defaultdict
+
+class EventBus:
+    def __init__(self):
+        self._handlers: Dict[str, List[Callable]] = defaultdict(list)
+    
+    def subscribe(self, event_type: str, handler: Callable):
+        """Subscribe handler to event type."""
+        self._handlers[event_type].append(handler)
+    
+    def publish(self, event_type: str, data: dict):
+        """Publish event to all subscribers."""
+        for handler in self._handlers[event_type]:
+            handler(data)
+```
+
+## Event Types
+
+### Item Events
+
+```python
+# Item created
+event_bus.publish("item.created", {
+    "item_id": "item_123",
+    "project_id": "proj_123",
+    "title": "New Requirement"
+})
+
+# Item updated
+event_bus.publish("item.updated", {
+    "item_id": "item_123",
+    "changes": {"status": "active"}
+})
+
+# Item deleted
+event_bus.publish("item.deleted", {
+    "item_id": "item_123"
+})
+```
+
+### Link Events
+
+```python
+# Link created
+event_bus.publish("link.created", {
+    "link_id": "link_123",
+    "source_id": "item_req_001",
+    "target_id": "item_test_001",
+    "type": "verified_by"
+})
+```
+
+## Event Handlers
+
+### Subscribe to Events
+
+```python
+from tracertm.events import event_bus
+
+@event_bus.subscribe("item.created")
+async def handle_item_created(event: dict):
+    """Handle item creation."""
+    item_id = event["item_id"]
+    # Send notification
+    await notification_service.send(item_id)
+    # Update search index
+    await search_service.index_item(item_id)
+```
+
+### Async Handlers
+
+```python
+import asyncio
+
+async def handle_item_updated(event: dict):
+    """Async event handler."""
+    item_id = event["item_id"]
+    # Async operations
+    await cache_service.invalidate(f"item:{item_id}")
+    await webhook_service.notify(item_id)
+
+event_bus.subscribe("item.updated", handle_item_updated)
+```
+
+## Event Publishing
+
+### From Services
+
+```python
+class ItemService:
+    def __init__(self, event_bus: EventBus):
+        self.event_bus = event_bus
+    
+    async def create(self, data: dict) -> Item:
+        """Create item and publish event."""
+        item = await self.repo.create(data)
+        
+        # Publish event
+        await self.event_bus.publish("item.created", {
+            "item_id": item.id,
+            "project_id": item.project_id,
+            "title": item.title
+        })
+        
+        return item
+```
+
+## Event Middleware
+
+### Error Handling
+
+```python
+class ErrorHandlingMiddleware:
+    async def handle(self, event_type: str, data: dict, next_handler: Callable):
+        try:
+            await next_handler(data)
+        except Exception as e:
+            logger.error(
+                f"Error handling event {event_type}: {e}",
+                exc_info=True
+            )
+            # Don't re-raise - allow other handlers to process
+```
+
+### Retry Logic
+
+```python
+import asyncio
+
+async def retry_handler(handler: Callable, max_retries: int = 3):
+    """Retry handler on failure."""
+    for attempt in range(max_retries):
+        try:
+            return await handler()
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise
+            await asyncio.sleep(2 ** attempt)  # Exponential backoff
+```
+
+## Webhook Integration
+
+### Publish to Webhooks
+
+```python
+async def publish_to_webhooks(event_type: str, data: dict):
+    """Publish event to registered webhooks."""
+    webhooks = await webhook_service.get_for_event(event_type)
+    
+    for webhook in webhooks:
+        try:
+            await http_client.post(
+                webhook.url,
+                json={"event": event_type, "data": data},
+                headers={"X-Webhook-Signature": sign(data, webhook.secret)}
+            )
+        except Exception as e:
+            logger.error(f"Webhook delivery failed: {e}")
+```
+
+## Related Documentation
+
+- [Event Handlers](./05a-event-handlers) - Handler implementation
+- [Webhooks API](/docs/api-reference/rest-api/webhooks) - Webhook API

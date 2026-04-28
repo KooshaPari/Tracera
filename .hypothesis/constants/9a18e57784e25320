@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/advanced_analytics_service.py
+# hypothesis_version: 6.148.7
+
+[0.0, 100, 'agent_activity', 'agent_id', 'average_daily_events', 'by_status', 'by_view', 'complete', 'completion_rate', 'created_at', 'daily_events', 'date', 'days', 'dependency_metrics', 'description', 'description_coverage', 'done', 'generated_at', 'items_with_links', 'link_coverage', 'link_type', 'link_types', 'outgoing_links', 'project_id', 'project_metrics', 'quality_metrics', 'status', 'team_analytics', 'total_agents', 'total_events', 'total_items', 'total_links', 'trend_analysis', 'unknown', 'view']

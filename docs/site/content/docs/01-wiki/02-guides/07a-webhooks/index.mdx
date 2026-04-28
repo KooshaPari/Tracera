@@ -1,0 +1,592 @@
+---
+title: "Webhooks"
+description: "Real-time event notifications and integration with external systems"
+---
+
+# Webhooks
+
+Webhooks allow TracerTM to send real-time HTTP notifications to external systems when specific events occur. This enables seamless integration with CI/CD pipelines, issue trackers, notification systems, and custom applications.
+
+## Overview
+
+TracerTM's webhook system provides:
+
+- **Event-driven notifications** for all major entity changes
+- **Signature verification** for secure payload delivery
+- **Automatic retries** with exponential backoff
+- **Flexible filtering** to receive only relevant events
+- **Rate limiting** to protect downstream systems
+- **Delivery tracking** and debugging capabilities
+
+Webhooks are ideal for:
+- Triggering CI/CD builds when requirements change
+- Syncing traceability data with external tools (Jira, GitHub, Slack)
+- Sending notifications to team channels
+- Updating custom dashboards in real-time
+- Auditing and compliance logging
+
+## Supported Webhook Events
+
+TracerTM emits webhook events for the following operations:
+
+### Item Events
+
+| Event Type | Description | Triggered When |
+|------------|-------------|----------------|
+| `item_created` | New traceability item created | An item is added to a project |
+| `item_updated` | Existing item modified | Item metadata, status, or content changes |
+| `item_deleted` | Item removed (soft delete) | An item is marked as deleted |
+
+### Project Events
+
+| Event Type | Description | Triggered When |
+|------------|-------------|----------------|
+| `project_created` | New project initialized | A project is created |
+| `project_updated` | Project metadata changed | Project details are modified |
+
+### Link Events
+
+| Event Type | Description | Triggered When |
+|------------|-------------|----------------|
+| `link_created` | Traceability link established | Two items are linked |
+| `link_updated` | Link type or metadata changed | Link properties are modified |
+| `link_deleted` | Link removed | A traceability link is deleted |
+
+### Conflict Events
+
+| Event Type | Description | Triggered When |
+|------------|-------------|----------------|
+| `conflict_detected` | Data conflict identified | Concurrent modifications conflict |
+| `conflict_resolved` | Conflict resolution completed | A conflict is manually resolved |
+
+## Webhook Payload Format
+
+All webhook payloads follow a consistent JSON structure:
+
+```json
+{
+  "event_type": "item_created",
+  "event_id": "evt_1234567890",
+  "timestamp": "2025-01-15T10:30:45.123Z",
+  "resource_type": "item",
+  "resource_id": "item-abc123",
+  "action": "created",
+  "data": {
+    "id": "item-abc123",
+    "external_id": "REQ-001",
+    "title": "User authentication requirement",
+    "type": "requirement",
+    "status": "draft",
+    "project_id": "proj-xyz",
+    "created_at": "2025-01-15T10:30:45.123Z",
+    "updated_at": "2025-01-15T10:30:45.123Z"
+  },
+  "metadata": {
+    "user_id": "user-789",
+    "source": "api",
+    "request_id": "req-unique-id"
+  }
+}
+```
+
+### Payload Fields
+
+- **event_type**: Type of event (see table above)
+- **event_id**: Unique identifier for this event
+- **timestamp**: ISO 8601 timestamp when event occurred
+- **resource_type**: Entity type (item, project, link)
+- **resource_id**: Internal ID of affected resource
+- **action**: Action performed (created, updated, deleted)
+- **data**: Full resource data snapshot after the event
+- **metadata**: Additional context (user, source, request ID)
+
+### Example Payloads
+
+#### Item Updated Event
+
+```json
+{
+  "event_type": "item_updated",
+  "event_id": "evt_9876543210",
+  "timestamp": "2025-01-15T14:22:18.456Z",
+  "resource_type": "item",
+  "resource_id": "item-def456",
+  "action": "updated",
+  "data": {
+    "id": "item-def456",
+    "external_id": "TC-042",
+    "title": "Login test case",
+    "type": "test_case",
+    "status": "in_progress",
+    "changes": {
+      "status": {"old": "draft", "new": "in_progress"},
+      "owner": {"old": null, "new": "user-123"}
+    }
+  }
+}
+```
+
+#### Link Created Event
+
+```json
+{
+  "event_type": "link_created",
+  "event_id": "evt_5555555555",
+  "timestamp": "2025-01-15T16:45:30.789Z",
+  "resource_type": "link",
+  "resource_id": "link-ghi789",
+  "action": "created",
+  "data": {
+    "id": "link-ghi789",
+    "source_item_id": "item-abc123",
+    "target_item_id": "item-def456",
+    "link_type": "tests",
+    "created_at": "2025-01-15T16:45:30.789Z"
+  }
+}
+```
+
+## Setting Up Webhook Endpoints
+
+### Registering a Webhook
+
+Use the API to register a webhook endpoint:
+
+```python
+from tracertm.services.api_webhooks_service import APIWebhooksService
+
+# Initialize service
+webhook_service = APIWebhooksService()
+
+# Register webhook
+webhook = webhook_service.register_webhook(
+    url="https://api.example.com/tracertm/webhook",
+    events=["item_created", "item_updated"],
+    secret="your-webhook-secret-key"
+)
+
+print(f"Webhook ID: {webhook['id']}")
+print(f"Active: {webhook['active']}")
+```
+
+### Using the REST API
+
+```bash
+curl -X POST https://tracertm.example.com/api/webhooks \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://api.example.com/tracertm/webhook",
+    "events": ["item_created", "item_updated", "link_created"],
+    "secret": "your-webhook-secret-key"
+  }'
+```
+
+Response:
+
+```json
+{
+  "id": "wh_abc123def456",
+  "url": "https://api.example.com/tracertm/webhook",
+  "events": ["item_created", "item_updated", "link_created"],
+  "active": true,
+  "created_at": "2025-01-15T10:00:00.000Z",
+  "delivery_count": 0,
+  "last_triggered": null
+}
+```
+
+### Webhook Configuration Options
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `url` | string | Yes | HTTPS endpoint to receive webhooks |
+| `events` | array | Yes | List of event types to subscribe to |
+| `secret` | string | No | Secret key for signature verification |
+
+## Signature Verification
+
+Webhook payloads include an `X-TracerTM-Signature` header for verification.
+
+### Generating Signatures
+
+TracerTM signs each webhook payload using HMAC-SHA256:
+
+```python
+import hmac
+import hashlib
+
+def generate_signature(payload: bytes, secret: str) -> str:
+    """Generate webhook signature."""
+    return hmac.new(
+        secret.encode('utf-8'),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+```
+
+### Verifying Signatures (Endpoint Implementation)
+
+Your webhook endpoint should verify signatures:
+
+```python
+import hmac
+import hashlib
+from flask import request, abort
+
+@app.route('/webhook', methods=['POST'])
+def handle_webhook():
+    # Get signature from header
+    received_signature = request.headers.get('X-TracerTM-Signature')
+
+    # Get raw payload
+    payload = request.get_data()
+
+    # Compute expected signature
+    expected_signature = hmac.new(
+        WEBHOOK_SECRET.encode('utf-8'),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+
+    # Compare signatures (constant-time comparison)
+    if not hmac.compare_digest(received_signature, expected_signature):
+        abort(401, "Invalid signature")
+
+    # Process webhook
+    event = request.json
+    handle_event(event)
+
+    return '', 200
+```
+
+### Security Best Practices
+
+1. **Always verify signatures** to ensure requests are from TracerTM
+2. **Use HTTPS endpoints** to protect payloads in transit
+3. **Rotate secrets periodically** (update webhook registration)
+4. **Implement rate limiting** on your endpoint
+5. **Log suspicious requests** for security monitoring
+
+## Retry Policies
+
+TracerTM automatically retries failed webhook deliveries:
+
+### Retry Strategy
+
+- **Initial delivery**: Immediate attempt when event occurs
+- **Retry 1**: After 1 minute
+- **Retry 2**: After 5 minutes
+- **Retry 3**: After 15 minutes
+- **Retry 4**: After 1 hour
+- **Retry 5**: After 6 hours
+
+### Delivery Failures
+
+A webhook delivery is considered failed if:
+- HTTP status code is not 2xx
+- Request times out (30 seconds)
+- Network connection fails
+- SSL/TLS certificate validation fails
+
+### Disabling Failed Webhooks
+
+After 5 consecutive failures, webhooks are automatically disabled. Re-enable via API:
+
+```python
+# Re-enable webhook
+webhook_service.update_webhook(
+    webhook_id="wh_abc123def456",
+    active=True
+)
+```
+
+## Testing Webhooks Locally
+
+### Using ngrok for Local Development
+
+```bash
+# Start ngrok tunnel
+ngrok http 5000
+
+# Output:
+# Forwarding https://abc123.ngrok.io -> http://localhost:5000
+
+# Register webhook with ngrok URL
+curl -X POST http://localhost:8000/api/webhooks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://abc123.ngrok.io/webhook",
+    "events": ["item_created"],
+    "secret": "test-secret"
+  }'
+```
+
+### Simple Test Endpoint (Flask)
+
+```python
+from flask import Flask, request
+import hmac
+import hashlib
+
+app = Flask(__name__)
+WEBHOOK_SECRET = "test-secret"
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    # Verify signature
+    signature = request.headers.get('X-TracerTM-Signature')
+    payload = request.get_data()
+    expected = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+
+    if signature != expected:
+        return 'Invalid signature', 401
+
+    # Log event
+    event = request.json
+    print(f"Received: {event['event_type']}")
+    print(f"Resource: {event['resource_id']}")
+
+    return '', 200
+
+if __name__ == '__main__':
+    app.run(port=5000)
+```
+
+### Manual Webhook Triggering
+
+```python
+# Trigger webhook manually for testing
+webhook_service.trigger_webhook_event(
+    event_type="item_created",
+    resource_id="test-item-123",
+    resource_type="item",
+    action="created",
+    data={
+        "id": "test-item-123",
+        "title": "Test Item",
+        "type": "requirement"
+    }
+)
+```
+
+## Common Integration Patterns
+
+### Slack Notifications
+
+```python
+import requests
+
+def send_slack_notification(event):
+    """Send Slack message when items are created."""
+    if event['event_type'] == 'item_created':
+        item = event['data']
+
+        message = {
+            "text": f"New {item['type']} created: {item['title']}",
+            "attachments": [{
+                "color": "good",
+                "fields": [
+                    {"title": "ID", "value": item['external_id'], "short": True},
+                    {"title": "Status", "value": item['status'], "short": True}
+                ]
+            }]
+        }
+
+        requests.post(SLACK_WEBHOOK_URL, json=message)
+
+# In your webhook handler
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    event = request.json
+    send_slack_notification(event)
+    return '', 200
+```
+
+### GitHub Issue Sync
+
+```python
+from github import Github
+
+def sync_to_github(event):
+    """Create GitHub issue when requirement is created."""
+    if event['event_type'] == 'item_created' and event['data']['type'] == 'requirement':
+        item = event['data']
+
+        gh = Github(GITHUB_TOKEN)
+        repo = gh.get_repo("org/repo")
+
+        issue = repo.create_issue(
+            title=f"[{item['external_id']}] {item['title']}",
+            body=f"Synced from TracerTM\n\n{item['description']}",
+            labels=["tracertm", item['status']]
+        )
+
+        print(f"Created GitHub issue #{issue.number}")
+```
+
+### CI/CD Trigger
+
+```python
+import requests
+
+def trigger_build(event):
+    """Trigger Jenkins build when test cases are updated."""
+    if event['event_type'] == 'item_updated' and event['data']['type'] == 'test_case':
+        response = requests.post(
+            f"{JENKINS_URL}/job/test-suite/build",
+            auth=(JENKINS_USER, JENKINS_TOKEN),
+            params={"token": "BUILD_TOKEN"}
+        )
+
+        if response.status_code == 201:
+            print("Build triggered successfully")
+```
+
+## Debugging Webhook Issues
+
+### Viewing Webhook History
+
+```python
+# Get webhook delivery history
+events = webhook_service.get_webhook_events(
+    event_type="item_created",
+    limit=50
+)
+
+for event in events:
+    print(f"{event['timestamp']}: {event['event_type']} - {event['resource_id']}")
+```
+
+### Checking Webhook Status
+
+```python
+# Get webhook details
+webhook = webhook_service.webhooks.get("wh_abc123def456")
+
+print(f"Active: {webhook['active']}")
+print(f"Total deliveries: {webhook['delivery_count']}")
+print(f"Last triggered: {webhook['last_triggered']}")
+```
+
+### Common Issues
+
+#### Webhooks Not Firing
+
+- Verify webhook is active: `webhook['active'] == True`
+- Check event subscriptions match triggered events
+- Ensure events are actually occurring (check event log)
+
+#### Signature Verification Failures
+
+- Confirm secret matches on both sides
+- Check for whitespace in payload (use raw bytes)
+- Verify HMAC algorithm is SHA-256
+- Use constant-time comparison (`hmac.compare_digest`)
+
+#### Timeouts and Retries
+
+- Optimize endpoint response time (less than 30 seconds)
+- Return 200 status immediately, process async
+- Check firewall/network connectivity
+- Verify SSL certificate validity
+
+### Debug Logging
+
+Enable verbose logging to troubleshoot:
+
+```python
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger('tracertm.webhooks')
+
+# Logs will show:
+# - Webhook registration
+# - Event triggering
+# - Delivery attempts
+# - Retry scheduling
+# - Failure reasons
+```
+
+## API Reference
+
+### Register Webhook
+
+```python
+webhook_service.register_webhook(
+    url: str,
+    events: list[str],
+    secret: str | None = None
+) -> dict
+```
+
+### Unregister Webhook
+
+```python
+webhook_service.unregister_webhook(
+    webhook_id: str
+) -> dict
+```
+
+### Trigger Webhook Event
+
+```python
+webhook_service.trigger_webhook_event(
+    event_type: str,
+    resource_id: str,
+    resource_type: str,
+    action: str,
+    data: dict[str, Any]
+) -> dict
+```
+
+### Get Webhook Events
+
+```python
+webhook_service.get_webhook_events(
+    event_type: str | None = None,
+    limit: int = 100
+) -> list[dict]
+```
+
+## Rate Limiting
+
+Protect your webhook endpoints with rate limiting:
+
+```python
+# Set rate limit for API key
+webhook_service.set_rate_limit(
+    api_key="key_abc123",
+    requests_per_minute=60
+)
+
+# Check rate limit before processing
+limit_check = webhook_service.check_rate_limit(
+    api_key="key_abc123"
+)
+
+if not limit_check['allowed']:
+    print(f"Rate limit exceeded: {limit_check['reason']}")
+```
+
+## Best Practices
+
+1. **Idempotency**: Handle duplicate webhook deliveries gracefully
+2. **Async Processing**: Return 200 quickly, process in background
+3. **Monitoring**: Track delivery success rates and latencies
+4. **Filtering**: Subscribe only to needed events
+5. **Error Handling**: Log errors for debugging, don't crash
+6. **Versioning**: Design for payload schema changes
+7. **Security**: Always verify signatures, use HTTPS
+8. **Testing**: Test failure scenarios and retry logic
+
+## Next Steps
+
+- [External Integrations Guide](/docs/wiki/guides/integration-patterns)
+- [API Reference](/docs/api-reference)
+- [Event Sourcing](/docs/wiki/concepts/event-sourcing)

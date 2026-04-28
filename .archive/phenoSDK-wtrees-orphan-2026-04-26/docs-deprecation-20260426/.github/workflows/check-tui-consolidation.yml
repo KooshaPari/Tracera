@@ -1,0 +1,82 @@
+name: Check TUI Consolidation
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  check-tui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for duplicate TUI directories
+        run: |
+          echo "Checking for duplicate TUI implementations..."
+
+          # Check that tui_kit doesn't exist
+          if [ -d "tui_kit" ]; then
+            echo "❌ ERROR: tui_kit directory still exists. It should be removed."
+            exit 1
+          fi
+
+          # Check that empty TUI directories don't exist
+          if [ -d "authkit-client/authkit_client/tui" ]; then
+            echo "❌ ERROR: authkit-client/authkit_client/tui should be removed."
+            exit 1
+          fi
+
+          if [ -d "mcp-infra-sdk/mcp_infra/tui" ]; then
+            echo "❌ ERROR: mcp-infra-sdk/mcp_infra/tui should be removed."
+            exit 1
+          fi
+
+          echo "✅ No obsolete TUI directories found"
+
+      - name: Check TUI imports point to pheno.ui.tui
+        run: |
+          echo "Checking that application TUI modules reference pheno.ui.tui..."
+
+          # Check pheno_cli/tui mentions pheno.ui.tui
+          if ! grep -q "pheno.ui.tui" pheno_cli/pheno_cli/tui/__init__.py 2>/dev/null; then
+            echo "⚠️  WARNING: pheno_cli/tui should reference pheno.ui.tui in documentation"
+          fi
+
+          # Check mcp-QA/tui mentions pheno.ui.tui
+          if ! grep -q "pheno.ui.tui" mcp-QA/mcp_qa/tui/__init__.py 2>/dev/null; then
+            echo "⚠️  WARNING: mcp-QA/tui should reference pheno.ui.tui in documentation"
+          fi
+
+          echo "✅ TUI documentation checks passed"
+
+      - name: Verify pheno.ui.tui exists and is complete
+        run: |
+          echo "Verifying pheno.ui.tui structure..."
+
+          # Check main directories exist
+          for dir in widgets layouts themes core factories protocols utils; do
+            if [ ! -d "src/pheno/ui/tui/$dir" ]; then
+              echo "❌ ERROR: src/pheno/ui/tui/$dir is missing"
+              exit 1
+            fi
+          done
+
+          # Check __init__.py exists
+          if [ ! -f "src/pheno/ui/tui/__init__.py" ]; then
+            echo "❌ ERROR: src/pheno/ui/tui/__init__.py is missing"
+            exit 1
+          fi
+
+          echo "✅ pheno.ui.tui structure is complete"
+
+      - name: Summary
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "TUI Consolidation Status"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Canonical TUI: src/pheno/ui/tui/"
+          echo "✅ No obsolete TUI directories"
+          echo "✅ Application TUI references pheno.ui.tui"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

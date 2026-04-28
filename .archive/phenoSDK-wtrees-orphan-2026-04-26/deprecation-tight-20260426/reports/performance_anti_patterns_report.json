@@ -1,0 +1,2169 @@
+{
+  "summary": {
+    "total_issues": 178,
+    "severity_counts": {
+      "medium": 173,
+      "high": 5
+    },
+    "issue_types": {
+      "blocking_calls": 153,
+      "large_data_structures": 14,
+      "synchronous_operations": 5,
+      "n_plus_one_query": 1,
+      "inefficient_loops": 1,
+      "resource_leaks": 4
+    },
+    "impact_counts": {
+      "Medium - Can block execution and reduce responsiveness": 153,
+      "Medium - Can consume significant memory": 14,
+      "Medium - Can block execution and reduce throughput": 5,
+      "High - Can cause exponential database load": 1,
+      "Medium - Can significantly slow down execution": 1,
+      "High - Can cause resource exhaustion": 4
+    },
+    "files_affected": 30
+  },
+  "issues": [
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 21,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 22,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 23,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 24,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 36,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 37,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 38,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 41,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 47,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 54,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 55,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 56,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 59,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 65,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 69,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 74,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 75,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 76,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 79,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 85,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 89,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 93,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 94,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 95,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 98,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 116,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 120,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 124,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 128,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 129,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/hexagonal_cli_example.py",
+      "line": 130,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "src/pheno/database/platforms/neon/client.py",
+      "line": 23,
+      "column": 12,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "large_data_structures",
+      "severity": "medium",
+      "file": "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/idna/idnadata.py",
+      "line": 103,
+      "column": 16,
+      "message": "Large data structure detected",
+      "suggestion": "Consider using generators or lazy evaluation for large datasets",
+      "confidence": 0.7,
+      "impact": "Medium - Can consume significant memory"
+    },
+    {
+      "type": "synchronous_operations",
+      "severity": "medium",
+      "file": "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/requests/compat.py",
+      "line": 19,
+      "column": 23,
+      "message": "Synchronous I/O operation detected: urllib3_version.split",
+      "suggestion": "Consider using async/await for better concurrency",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce throughput"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/requests/certs.py",
+      "line": 17,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/certifi/__main__.py",
+      "line": 10,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/certifi/__main__.py",
+      "line": 12,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "large_data_structures",
+      "severity": "medium",
+      "file": "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/rich/_emoji_codes.py",
+      "line": 1,
+      "column": 8,
+      "message": "Large data structure detected",
+      "suggestion": "Consider using generators or lazy evaluation for large datasets",
+      "confidence": 0.7,
+      "impact": "Medium - Can consume significant memory"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/rich/default_styles.py",
+      "line": 193,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "large_data_structures",
+      "severity": "medium",
+      "file": "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/rich/default_styles.py",
+      "line": 5,
+      "column": 35,
+      "message": "Large data structure detected",
+      "suggestion": "Consider using generators or lazy evaluation for large datasets",
+      "confidence": 0.7,
+      "impact": "Medium - Can consume significant memory"
+    },
+    {
+      "type": "large_data_structures",
+      "severity": "medium",
+      "file": "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/rich/_palettes.py",
+      "line": 51,
+      "column": 4,
+      "message": "Large data structure detected",
+      "suggestion": "Consider using generators or lazy evaluation for large datasets",
+      "confidence": 0.7,
+      "impact": "Medium - Can consume significant memory"
+    },
+    {
+      "type": "large_data_structures",
+      "severity": "medium",
+      "file": "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/rich/_cell_widths.py",
+      "line": 3,
+      "column": 14,
+      "message": "Large data structure detected",
+      "suggestion": "Consider using generators or lazy evaluation for large datasets",
+      "confidence": 0.7,
+      "impact": "Medium - Can consume significant memory"
+    },
+    {
+      "type": "large_data_structures",
+      "severity": "medium",
+      "file": "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/pygments/lexers/_mapping.py",
+      "line": 4,
+      "column": 9,
+      "message": "Large data structure detected",
+      "suggestion": "Consider using generators or lazy evaluation for large datasets",
+      "confidence": 0.7,
+      "impact": "Medium - Can consume significant memory"
+    },
+    {
+      "type": "large_data_structures",
+      "severity": "medium",
+      "file": "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/packaging/licenses/_spdx.py",
+      "line": 17,
+      "column": 35,
+      "message": "Large data structure detected",
+      "suggestion": "Consider using generators or lazy evaluation for large datasets",
+      "confidence": 0.7,
+      "impact": "Medium - Can consume significant memory"
+    },
+    {
+      "type": "large_data_structures",
+      "severity": "medium",
+      "file": ".venv/lib/python3.13/site-packages/pip/_vendor/idna/idnadata.py",
+      "line": 103,
+      "column": 16,
+      "message": "Large data structure detected",
+      "suggestion": "Consider using generators or lazy evaluation for large datasets",
+      "confidence": 0.7,
+      "impact": "Medium - Can consume significant memory"
+    },
+    {
+      "type": "synchronous_operations",
+      "severity": "medium",
+      "file": ".venv/lib/python3.13/site-packages/pip/_vendor/requests/compat.py",
+      "line": 19,
+      "column": 23,
+      "message": "Synchronous I/O operation detected: urllib3_version.split",
+      "suggestion": "Consider using async/await for better concurrency",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce throughput"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": ".venv/lib/python3.13/site-packages/pip/_vendor/requests/certs.py",
+      "line": 17,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": ".venv/lib/python3.13/site-packages/pip/_vendor/certifi/__main__.py",
+      "line": 10,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": ".venv/lib/python3.13/site-packages/pip/_vendor/certifi/__main__.py",
+      "line": 12,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "large_data_structures",
+      "severity": "medium",
+      "file": ".venv/lib/python3.13/site-packages/pip/_vendor/rich/_emoji_codes.py",
+      "line": 1,
+      "column": 8,
+      "message": "Large data structure detected",
+      "suggestion": "Consider using generators or lazy evaluation for large datasets",
+      "confidence": 0.7,
+      "impact": "Medium - Can consume significant memory"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": ".venv/lib/python3.13/site-packages/pip/_vendor/rich/default_styles.py",
+      "line": 193,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "large_data_structures",
+      "severity": "medium",
+      "file": ".venv/lib/python3.13/site-packages/pip/_vendor/rich/default_styles.py",
+      "line": 5,
+      "column": 35,
+      "message": "Large data structure detected",
+      "suggestion": "Consider using generators or lazy evaluation for large datasets",
+      "confidence": 0.7,
+      "impact": "Medium - Can consume significant memory"
+    },
+    {
+      "type": "large_data_structures",
+      "severity": "medium",
+      "file": ".venv/lib/python3.13/site-packages/pip/_vendor/rich/_palettes.py",
+      "line": 51,
+      "column": 4,
+      "message": "Large data structure detected",
+      "suggestion": "Consider using generators or lazy evaluation for large datasets",
+      "confidence": 0.7,
+      "impact": "Medium - Can consume significant memory"
+    },
+    {
+      "type": "large_data_structures",
+      "severity": "medium",
+      "file": ".venv/lib/python3.13/site-packages/pip/_vendor/rich/_cell_widths.py",
+      "line": 3,
+      "column": 14,
+      "message": "Large data structure detected",
+      "suggestion": "Consider using generators or lazy evaluation for large datasets",
+      "confidence": 0.7,
+      "impact": "Medium - Can consume significant memory"
+    },
+    {
+      "type": "large_data_structures",
+      "severity": "medium",
+      "file": ".venv/lib/python3.13/site-packages/pip/_vendor/pygments/lexers/_mapping.py",
+      "line": 4,
+      "column": 9,
+      "message": "Large data structure detected",
+      "suggestion": "Consider using generators or lazy evaluation for large datasets",
+      "confidence": 0.7,
+      "impact": "Medium - Can consume significant memory"
+    },
+    {
+      "type": "large_data_structures",
+      "severity": "medium",
+      "file": ".venv/lib/python3.13/site-packages/pip/_vendor/packaging/licenses/_spdx.py",
+      "line": 17,
+      "column": 35,
+      "message": "Large data structure detected",
+      "suggestion": "Consider using generators or lazy evaluation for large datasets",
+      "confidence": 0.7,
+      "impact": "Medium - Can consume significant memory"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/basic_streaming_example.py",
+      "line": 38,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/basic_streaming_example.py",
+      "line": 39,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/basic_streaming_example.py",
+      "line": 40,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/basic_streaming_example.py",
+      "line": 41,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 190,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 191,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 192,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 193,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 194,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 195,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 196,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 197,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 198,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 199,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 200,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 201,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 202,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 203,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 204,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 205,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 206,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "synchronous_operations",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 76,
+      "column": 1,
+      "message": "Synchronous I/O operation detected: app.websocket",
+      "suggestion": "Consider using async/await for better concurrency",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce throughput"
+    },
+    {
+      "type": "synchronous_operations",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 89,
+      "column": 10,
+      "message": "Synchronous I/O operation detected: websocket.accept",
+      "suggestion": "Consider using async/await for better concurrency",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce throughput"
+    },
+    {
+      "type": "synchronous_operations",
+      "severity": "medium",
+      "file": "examples/stream/streaming_gateway_example.py",
+      "line": 93,
+      "column": 10,
+      "message": "Synchronous I/O operation detected: handle_websocket",
+      "suggestion": "Consider using async/await for better concurrency",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce throughput"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 91,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 92,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 93,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 98,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 231,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 232,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 233,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 234,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 278,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 279,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 280,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 281,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 298,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 299,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 300,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 301,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 302,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 303,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 304,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 313,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 314,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 42,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 43,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 64,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 71,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 79,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 198,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 206,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 214,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 227,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 228,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 250,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 259,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 260,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 261,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 262,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 288,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 291,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 292,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 293,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 294,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 295,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 296,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 307,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 308,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 309,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 310,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 311,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 124,
+      "column": 12,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 145,
+      "column": 12,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 175,
+      "column": 12,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 184,
+      "column": 12,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 245,
+      "column": 12,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 246,
+      "column": 12,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 247,
+      "column": 12,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 268,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 139,
+      "column": 16,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 149,
+      "column": 16,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 163,
+      "column": 20,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 160,
+      "column": 24,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/stack/temporal_workflow_example.py",
+      "line": 165,
+      "column": 20,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/events/basic_event_bus_example.py",
+      "line": 28,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/events/basic_event_bus_example.py",
+      "line": 45,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/events/basic_event_bus_example.py",
+      "line": 17,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/events/basic_event_bus_example.py",
+      "line": 21,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/events/basic_event_bus_example.py",
+      "line": 25,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/basic_gateway_example.py",
+      "line": 41,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/basic_gateway_example.py",
+      "line": 42,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/basic_gateway_example.py",
+      "line": 43,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/complete_gateway_example.py",
+      "line": 113,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/complete_gateway_example.py",
+      "line": 114,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/complete_gateway_example.py",
+      "line": 115,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/complete_gateway_example.py",
+      "line": 116,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/complete_gateway_example.py",
+      "line": 117,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/complete_gateway_example.py",
+      "line": 118,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/complete_gateway_example.py",
+      "line": 119,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/complete_gateway_example.py",
+      "line": 120,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/complete_gateway_example.py",
+      "line": 121,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/complete_gateway_example.py",
+      "line": 122,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/complete_gateway_example.py",
+      "line": 123,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/complete_gateway_example.py",
+      "line": 124,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/middleware_stack_example.py",
+      "line": 14,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/middleware_stack_example.py",
+      "line": 37,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/middleware_stack_example.py",
+      "line": 40,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/middleware_stack_example.py",
+      "line": 42,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/middleware_stack_example.py",
+      "line": 45,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/middleware_stack_example.py",
+      "line": 52,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/middleware_stack_example.py",
+      "line": 55,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/middleware_stack_example.py",
+      "line": 71,
+      "column": 4,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/middleware_stack_example.py",
+      "line": 49,
+      "column": 12,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/middleware_stack_example.py",
+      "line": 69,
+      "column": 8,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "blocking_calls",
+      "severity": "medium",
+      "file": "examples/gateway/middleware_stack_example.py",
+      "line": 51,
+      "column": 12,
+      "message": "Blocking call 'print' detected",
+      "suggestion": "Consider using async/await or threading for non-blocking operations",
+      "confidence": 0.8,
+      "impact": "Medium - Can block execution and reduce responsiveness"
+    },
+    {
+      "type": "n_plus_one_query",
+      "severity": "high",
+      "file": "tests/unit/application/test_user_use_cases.py",
+      "line": 147,
+      "column": 8,
+      "message": "Potential N+1 query problem detected in loop",
+      "suggestion": "Use eager loading or batch queries to reduce database calls",
+      "confidence": 0.8,
+      "impact": "High - Can cause exponential database load"
+    },
+    {
+      "type": "inefficient_loops",
+      "severity": "medium",
+      "file": "tests/unit/application/test_user_use_cases.py",
+      "line": 147,
+      "column": 8,
+      "message": "Loop contains expensive operations",
+      "suggestion": "Move expensive operations outside the loop or use caching",
+      "confidence": 0.7,
+      "impact": "Medium - Can significantly slow down execution"
+    },
+    {
+      "type": "resource_leaks",
+      "severity": "high",
+      "file": "tests/unit/application/test_user_use_cases.py",
+      "line": 53,
+      "column": 8,
+      "message": "Potential resource leak in with statement",
+      "suggestion": "Ensure all resources are properly closed and managed",
+      "confidence": 0.7,
+      "impact": "High - Can cause resource exhaustion"
+    },
+    {
+      "type": "resource_leaks",
+      "severity": "high",
+      "file": "tests/unit/application/test_user_use_cases.py",
+      "line": 90,
+      "column": 8,
+      "message": "Potential resource leak in with statement",
+      "suggestion": "Ensure all resources are properly closed and managed",
+      "confidence": 0.7,
+      "impact": "High - Can cause resource exhaustion"
+    },
+    {
+      "type": "resource_leaks",
+      "severity": "high",
+      "file": "tests/unit/application/test_user_use_cases.py",
+      "line": 111,
+      "column": 8,
+      "message": "Potential resource leak in with statement",
+      "suggestion": "Ensure all resources are properly closed and managed",
+      "confidence": 0.7,
+      "impact": "High - Can cause resource exhaustion"
+    },
+    {
+      "type": "resource_leaks",
+      "severity": "high",
+      "file": "tests/unit/application/test_user_use_cases.py",
+      "line": 186,
+      "column": 8,
+      "message": "Potential resource leak in with statement",
+      "suggestion": "Ensure all resources are properly closed and managed",
+      "confidence": 0.7,
+      "impact": "High - Can cause resource exhaustion"
+    }
+  ],
+  "files": {
+    "examples/hexagonal_cli_example.py": {
+      "issue_count": 31,
+      "severity_counts": {
+        "medium": 31
+      }
+    },
+    "src/pheno/database/platforms/neon/client.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/idna/idnadata.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/requests/compat.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/requests/certs.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/certifi/__main__.py": {
+      "issue_count": 2,
+      "severity_counts": {
+        "medium": 2
+      }
+    },
+    "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/rich/_emoji_codes.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/rich/default_styles.py": {
+      "issue_count": 2,
+      "severity_counts": {
+        "medium": 2
+      }
+    },
+    "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/rich/_palettes.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/rich/_cell_widths.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/pygments/lexers/_mapping.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    "build/.venv-phase4/lib/python3.13/site-packages/pip/_vendor/packaging/licenses/_spdx.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    ".venv/lib/python3.13/site-packages/pip/_vendor/idna/idnadata.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    ".venv/lib/python3.13/site-packages/pip/_vendor/requests/compat.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    ".venv/lib/python3.13/site-packages/pip/_vendor/requests/certs.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    ".venv/lib/python3.13/site-packages/pip/_vendor/certifi/__main__.py": {
+      "issue_count": 2,
+      "severity_counts": {
+        "medium": 2
+      }
+    },
+    ".venv/lib/python3.13/site-packages/pip/_vendor/rich/_emoji_codes.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    ".venv/lib/python3.13/site-packages/pip/_vendor/rich/default_styles.py": {
+      "issue_count": 2,
+      "severity_counts": {
+        "medium": 2
+      }
+    },
+    ".venv/lib/python3.13/site-packages/pip/_vendor/rich/_palettes.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    ".venv/lib/python3.13/site-packages/pip/_vendor/rich/_cell_widths.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    ".venv/lib/python3.13/site-packages/pip/_vendor/pygments/lexers/_mapping.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    ".venv/lib/python3.13/site-packages/pip/_vendor/packaging/licenses/_spdx.py": {
+      "issue_count": 1,
+      "severity_counts": {
+        "medium": 1
+      }
+    },
+    "examples/stream/basic_streaming_example.py": {
+      "issue_count": 4,
+      "severity_counts": {
+        "medium": 4
+      }
+    },
+    "examples/stream/streaming_gateway_example.py": {
+      "issue_count": 20,
+      "severity_counts": {
+        "medium": 20
+      }
+    },
+    "examples/stack/temporal_workflow_example.py": {
+      "issue_count": 61,
+      "severity_counts": {
+        "medium": 61
+      }
+    },
+    "examples/events/basic_event_bus_example.py": {
+      "issue_count": 5,
+      "severity_counts": {
+        "medium": 5
+      }
+    },
+    "examples/gateway/basic_gateway_example.py": {
+      "issue_count": 3,
+      "severity_counts": {
+        "medium": 3
+      }
+    },
+    "examples/gateway/complete_gateway_example.py": {
+      "issue_count": 12,
+      "severity_counts": {
+        "medium": 12
+      }
+    },
+    "examples/gateway/middleware_stack_example.py": {
+      "issue_count": 11,
+      "severity_counts": {
+        "medium": 11
+      }
+    },
+    "tests/unit/application/test_user_use_cases.py": {
+      "issue_count": 6,
+      "severity_counts": {
+        "high": 5,
+        "medium": 1
+      }
+    }
+  }
+}

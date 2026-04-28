@@ -1,0 +1,1068 @@
+---
+title: Services Layer
+description: Comprehensive guide to TraceRTM's 70+ services that power business logic, analysis, and integrations
+---
+
+# Services Layer
+
+The services layer is the heart of TraceRTM's business logic, providing a comprehensive suite of over 70 specialized services that handle everything from core item management to advanced graph analysis, agent coordination, and external integrations.
+
+## Architecture Overview
+
+### Design Principles
+
+The services layer follows these key architectural principles:
+
+1. **Separation of Concerns**: Each service has a single, well-defined responsibility
+2. **Dependency Injection**: Services receive database sessions and other dependencies via constructor injection
+3. **Repository Pattern**: Services use repositories to interact with the database, never directly accessing models
+4. **Event Sourcing**: Critical operations are logged through the EventRepository for audit trails
+5. **Optimistic Locking**: Update operations use version checking to prevent conflicts
+6. **Async-First**: Most services support async/await for high-performance I/O operations
+
+### Service Categories
+
+Services are organized into several functional categories:
+
+- **Core Services**: Essential item, link, and project operations
+- **Analysis Services**: Graph analysis, impact analysis, cycle detection
+- **Performance Services**: Caching, optimization, query tuning
+- **Integration Services**: Webhooks, external system integrations
+- **Agent Services**: Multi-agent coordination and monitoring
+- **Specialized Services**: Chaos mode, compliance, testing utilities
+- **Import/Export Services**: Data migration and format conversion
+- **Workflow Services**: Status transitions, automation
+
+## Core Services
+
+### ItemService
+
+The primary service for item lifecycle management.
+
+**Location**: `/src/tracertm/services/item_service.py`
+
+**Key Features**:
+- CRUD operations with optimistic locking
+- Hierarchical item management (parent/child relationships)
+- Status workflow validation
+- Bulk operations with preview
+- Progress calculation based on child items
+- Metadata management with merge/replace strategies
+
+**Example Usage**:
+
+```python
+from tracertm.services import ItemService
+from sqlalchemy.ext.asyncio import AsyncSession
+
+async def create_requirement(session: AsyncSession):
+    item_service = ItemService(session)
+
+    # Create item with optional links
+    item = await item_service.create_item(
+        project_id="proj_123",
+        title="User Authentication",
+        view="requirements",
+        item_type="functional",
+        agent_id="agent_001",
+        description="Implement OAuth2 authentication",
+        status="todo",
+        priority="high",
+        link_to=["item_456"],  # Link to related items
+        link_type="relates_to"
+    )
+
+    # Update with retry on conflict
+    updated = await item_service.update_item(
+        item_id=item.id,
+        agent_id="agent_001",
+        status="in_progress",
+        owner="john@example.com"
+    )
+
+    # Get progress based on children
+    progress = await item_service.get_item_progress(
+        item_id=item.id,
+        project_id="proj_123"
+    )
+    print(f"Progress: {progress['percentage']}%")
+```
+
+**Status Transitions**:
+```python
+# Valid status transitions enforced by ItemService
+STATUS_TRANSITIONS = {
+    "todo": ["in_progress", "blocked"],
+    "in_progress": ["done", "blocked", "todo"],
+    "blocked": ["todo", "in_progress"],
+    "done": ["todo"],  # Allow reopening
+}
+```
+
+### LinkService
+
+Manages traceability relationships between items.
+
+**Location**: `/src/tracertm/services/link_service.py`
+
+**Key Features**:
+- Create validated links between items
+- Prevent duplicate links
+- Cascade deletion handling
+- Link type validation
+- Metadata attachment
+
+**Link Types**:
+- `relates_to`: General relationship
+- `depends_on`: Dependency relationship (cycle-checked)
+- `implements`: Implementation link (e.g., code → requirement)
+- `tests`: Test coverage link
+- `derives_from`: Derivation relationship
+
+### ProjectService
+
+High-level project management operations.
+
+**Location**: Managed through repositories with service-layer coordination
+
+**Key Features**:
+- Project initialization and configuration
+- Cross-project querying
+- Project-level statistics
+- Backup and restore coordination
+
+## Analysis Services
+
+### ImpactAnalysisService
+
+Analyzes the downstream and upstream impact of item changes using BFS graph traversal.
+
+**Location**: `/src/tracertm/services/impact_analysis_service.py`
+
+**Algorithm**: O(V + E) BFS traversal where V = items, E = links
+
+**Example Usage**:
+
+```python
+from tracertm.services.impact_analysis_service import ImpactAnalysisService
+
+async def analyze_requirement_change(session: AsyncSession):
+    impact_service = ImpactAnalysisService(session)
+
+    # Analyze downstream impact
+    result = await impact_service.analyze_impact(
+        item_id="req_001",
+        max_depth=10,
+        link_types=["implements", "tests"]  # Optional filter
+    )
+
+    print(f"Total affected: {result.total_affected}")
+    print(f"Max depth: {result.max_depth_reached}")
+    print(f"Affected by view: {result.affected_by_view}")
+
+    # Analyze upstream dependencies
+    reverse_impact = await impact_service.analyze_reverse_impact(
+        item_id="req_001",
+        max_depth=10
+    )
+    print(f"Depends on {reverse_impact.total_affected} items")
+```
+
+**Output Structure**:
+```python
+@dataclass
+class ImpactAnalysisResult:
+    root_item_id: str
+    root_item_title: str
+    total_affected: int
+    max_depth_reached: int
+    affected_by_depth: dict[int, int]  # depth -> count
+    affected_by_view: dict[str, int]   # view -> count
+    affected_items: list[dict[str, Any]]
+    critical_paths: list[list[str]]     # Paths to leaf nodes
+```
+
+### CycleDetectionService
+
+Prevents circular dependencies in `depends_on` relationships using graph algorithms.
+
+**Location**: `/src/tracertm/services/cycle_detection_service.py`
+
+**Key Features**:
+- Pre-validation before link creation
+- Tarjan's algorithm for strongly connected components
+- Full cycle detection across project
+- Support for both sync and async contexts
+
+**Example Usage**:
+
+```python
+from tracertm.services.cycle_detection_service import CycleDetectionService
+
+async def validate_dependency(session: AsyncSession):
+    cycle_service = CycleDetectionService(session)
+
+    # Check if adding link would create cycle
+    would_cycle = cycle_service.has_cycle(
+        project_id="proj_123",
+        source_id="item_A",
+        target_id="item_B",
+        link_type="depends_on"
+    )
+
+    if would_cycle:
+        raise ValueError("Cannot create dependency - would create cycle")
+
+    # Detect all existing cycles
+    result = await cycle_service.detect_cycles_async(
+        project_id="proj_123",
+        link_types=["depends_on"]
+    )
+
+    if result.has_cycles:
+        print(f"Found {result.cycle_count} cycles:")
+        for cycle in result.cycles:
+            print(f"  Cycle: {' -> '.join(cycle)}")
+```
+
+### CriticalPathService
+
+Identifies critical paths through the project graph (longest paths affecting project timeline).
+
+**Location**: `/src/tracertm/services/critical_path_service.py`
+
+**Example Usage**:
+
+```python
+from tracertm.services.critical_path_service import CriticalPathService
+
+async def find_bottlenecks(session: AsyncSession):
+    critical_path = CriticalPathService(session)
+
+    result = await critical_path.calculate_critical_path(
+        project_id="proj_123",
+        start_item_id="epic_001"
+    )
+
+    print(f"Critical path length: {result.total_duration}")
+    print(f"Path: {' -> '.join(result.path)}")
+    print(f"Bottlenecks: {result.bottlenecks}")
+```
+
+### ShortestPathService
+
+Finds shortest paths between items using Dijkstra's algorithm.
+
+**Location**: `/src/tracertm/services/shortest_path_service.py`
+
+**Example Usage**:
+
+```python
+from tracertm.services.shortest_path_service import ShortestPathService
+
+async def trace_requirement_to_test(session: AsyncSession):
+    path_service = ShortestPathService(session)
+
+    path = await path_service.find_shortest_path(
+        project_id="proj_123",
+        source_id="req_001",
+        target_id="test_042",
+        max_depth=10
+    )
+
+    if path:
+        print(f"Traceability path ({len(path)} hops):")
+        for item_id in path:
+            print(f"  -> {item_id}")
+```
+
+## Performance Services
+
+### CacheService
+
+Redis-based caching layer for frequently accessed data.
+
+**Location**: `/src/tracertm/services/cache_service.py`
+
+**Key Features**:
+- TTL-based expiration
+- Key generation with MD5 hashing
+- Hit/miss statistics
+- Prefix-based cache invalidation
+- Graceful degradation when Redis unavailable
+
+**Example Usage**:
+
+```python
+from tracertm.services.cache_service import CacheService
+
+async def cached_query():
+    cache = CacheService(redis_url="redis://localhost:6379")
+
+    # Try cache first
+    key = "project:proj_123:items:view:requirements"
+    cached_items = await cache.get(key)
+
+    if cached_items:
+        return cached_items
+
+    # Cache miss - fetch from database
+    items = await fetch_items_from_db()
+
+    # Cache for 1 hour
+    await cache.set(key, items, ttl_seconds=3600)
+
+    return items
+
+async def invalidate_project_cache():
+    cache = CacheService()
+
+    # Clear all project-related cache
+    deleted = await cache.clear_prefix("project:proj_123")
+    print(f"Invalidated {deleted} cache entries")
+
+    # Get statistics
+    stats = await cache.get_stats()
+    print(f"Hit rate: {stats.hit_rate:.2f}%")
+```
+
+### QueryOptimizationService
+
+Optimizes database queries for better performance.
+
+**Location**: `/src/tracertm/services/query_optimization_service.py`
+
+**Key Features**:
+- Query analysis and recommendations
+- Index suggestions
+- Join optimization
+- N+1 query detection
+
+### PerformanceTuningService
+
+Runtime performance monitoring and tuning.
+
+**Location**: `/src/tracertm/services/performance_tuning_service.py`
+
+**Key Features**:
+- Slow query detection
+- Memory usage monitoring
+- Connection pool optimization
+- Profiling integration
+
+## Integration Services
+
+### ExternalIntegrationService
+
+Manages integrations with external systems (GitHub, Jira, Slack, etc.).
+
+**Location**: `/src/tracertm/services/external_integration_service.py`
+
+**Supported Integrations**:
+- `GITHUB`: GitHub issues and pull requests
+- `GITLAB`: GitLab issues and merge requests
+- `SLACK`: Slack notifications
+- `VSCODE`: VS Code extension
+- `JIRA`: Jira issue tracking
+- `CUSTOM`: Custom webhook integrations
+
+**Example Usage**:
+
+```python
+from tracertm.services.external_integration_service import (
+    ExternalIntegrationService,
+    IntegrationType
+)
+
+def setup_integrations():
+    integration_service = ExternalIntegrationService()
+
+    # Register GitHub integration
+    github = integration_service.register_integration(
+        name="github_main",
+        integration_type=IntegrationType.GITHUB,
+        config={
+            "repo": "owner/repo",
+            "token": "ghp_xxx",
+            "sync_interval": 3600
+        }
+    )
+
+    # Register Slack notifications
+    slack = integration_service.register_integration(
+        name="slack_alerts",
+        integration_type=IntegrationType.SLACK,
+        config={
+            "webhook_url": "https://hooks.slack.com/xxx",
+            "channel": "#tracertm-alerts"
+        }
+    )
+
+    # List all integrations
+    integrations = integration_service.list_integrations()
+
+    # Disable integration temporarily
+    integration_service.disable_integration("slack_alerts")
+```
+
+### ApiWebhooksService
+
+Webhook management for real-time event notifications.
+
+**Location**: `/src/tracertm/services/api_webhooks_service.py`
+
+**Key Features**:
+- Webhook registration and management
+- Event filtering
+- Retry logic with exponential backoff
+- Signature verification
+- Rate limiting
+
+**Example Usage**:
+
+```python
+from tracertm.services.api_webhooks_service import ApiWebhooksService
+
+async def setup_webhooks(session: AsyncSession):
+    webhook_service = ApiWebhooksService(session)
+
+    # Register webhook for item events
+    webhook = await webhook_service.register_webhook(
+        project_id="proj_123",
+        url="https://api.example.com/webhooks/tracertm",
+        events=["item_created", "item_updated", "item_deleted"],
+        secret="webhook_secret_key"
+    )
+
+    # Test webhook
+    await webhook_service.test_webhook(webhook.id)
+```
+
+### CommitLinkingService
+
+Links Git commits to TraceRTM items for code traceability.
+
+**Location**: `/src/tracertm/services/commit_linking_service.py`
+
+**Example Usage**:
+
+```python
+from tracertm.services.commit_linking_service import CommitLinkingService
+
+async def link_commits(session: AsyncSession):
+    commit_service = CommitLinkingService(session)
+
+    # Parse commit message for item references
+    commit_msg = "Fix authentication bug [REQ-123] [TEST-456]"
+
+    linked = await commit_service.link_commit_to_items(
+        project_id="proj_123",
+        commit_sha="abc123def456",
+        commit_message=commit_msg,
+        author="developer@example.com",
+        repository="github.com/owner/repo"
+    )
+
+    print(f"Linked commit to {len(linked)} items")
+```
+
+## Agent Services
+
+### AgentCoordinationService
+
+Coordinates multiple agents working on the same project, detecting and resolving conflicts.
+
+**Location**: `/src/tracertm/services/agent_coordination_service.py`
+
+**Key Features**:
+- Agent registration and lifecycle
+- Conflict detection between concurrent agents
+- Conflict resolution strategies
+- Agent activity monitoring
+
+**Example Usage**:
+
+```python
+from tracertm.services.agent_coordination_service import AgentCoordinationService
+
+async def coordinate_agents(session: AsyncSession):
+    coordination = AgentCoordinationService(session)
+
+    # Register agents
+    agent1 = await coordination.register_agent(
+        project_id="proj_123",
+        name="Developer Agent",
+        agent_type="human",
+        metadata={"user_id": "user_001"}
+    )
+
+    agent2 = await coordination.register_agent(
+        project_id="proj_123",
+        name="AI Assistant",
+        agent_type="ai",
+        metadata={"model": "gpt-4"}
+    )
+
+    # Detect conflicts
+    conflicts = await coordination.detect_conflicts(project_id="proj_123")
+
+    if conflicts:
+        for conflict in conflicts:
+            print(f"Conflict between {conflict.agent1_id} and {conflict.agent2_id}")
+            print(f"Type: {conflict.conflict_type}")
+            print(f"Entity: {conflict.entity_id}")
+
+            # Resolve conflict (various strategies available)
+            resolution = await coordination.resolve_conflict(
+                conflict=conflict,
+                strategy="last_write_wins"
+            )
+```
+
+### AgentMonitoringService
+
+Monitors agent health, performance, and activity.
+
+**Location**: `/src/tracertm/services/agent_monitoring_service.py`
+
+**Example Usage**:
+
+```python
+from tracertm.services.agent_monitoring_service import AgentMonitoringService
+
+async def monitor_agents(session: AsyncSession):
+    monitoring = AgentMonitoringService(session)
+
+    # Get agent health
+    health = await monitoring.get_agent_health(agent_id="agent_001")
+    print(f"Agent status: {health.status}")
+    print(f"Last heartbeat: {health.last_heartbeat}")
+    print(f"Error count: {health.error_count}")
+
+    # Get performance metrics
+    metrics = await monitoring.get_agent_metrics(
+        agent_id="agent_001",
+        timeframe="1h"
+    )
+    print(f"Operations/min: {metrics.operations_per_minute}")
+    print(f"Average latency: {metrics.avg_latency_ms}ms")
+```
+
+### AgentPerformanceService
+
+Tracks and optimizes agent performance.
+
+**Location**: `/src/tracertm/services/agent_performance_service.py`
+
+**Key Features**:
+- Operation timing and profiling
+- Throughput analysis
+- Resource usage tracking
+- Performance recommendations
+
+## Specialized Services
+
+### ChaosModeService
+
+Advanced testing and debugging utilities including chaos engineering features.
+
+**Location**: `/src/tracertm/services/chaos_mode_service.py`
+
+**Key Features**:
+- Zombie detection (orphaned/stale items)
+- Impact simulation
+- Random failure injection
+- Performance degradation simulation
+
+**Example Usage**:
+
+```python
+from tracertm.services.chaos_mode_service import ChaosModeService
+
+async def chaos_testing(session: AsyncSession):
+    chaos = ChaosModeService(session)
+
+    # Detect zombie items (orphaned and inactive)
+    zombies = await chaos.detect_zombies(
+        project_id="proj_123",
+        days_inactive=30
+    )
+
+    print(f"Found {zombies['zombie_count']} zombie items")
+    print(f"Zombie percentage: {zombies['zombie_percentage']:.2f}%")
+
+    for zombie in zombies['zombies']:
+        print(f"  {zombie['title']} - {zombie['days_inactive']} days inactive")
+
+    # Analyze impact of changes
+    impact = await chaos.analyze_impact(
+        project_id="proj_123",
+        item_id="item_001"
+    )
+```
+
+### SecurityComplianceService
+
+Security and compliance features including audit logging and access control.
+
+**Location**: `/src/tracertm/services/security_compliance_service.py`
+
+**Key Features**:
+- Audit trail generation
+- Compliance report generation
+- Access control validation
+- Data retention policies
+
+### BulkOperationService
+
+Handles bulk operations with preview, validation, and atomic execution.
+
+**Location**: `/src/tracertm/services/bulk_operation_service.py`
+
+**Key Features**:
+- Preview changes before execution
+- Batch validation
+- Atomic transactions
+- Progress tracking
+- Error handling with partial rollback
+
+**Example Usage**:
+
+```python
+from tracertm.services.bulk_operation_service import BulkOperationService
+
+def bulk_update_items(session: Session):
+    bulk_service = BulkOperationService(session)
+
+    # Preview bulk update
+    preview = bulk_service.bulk_update_preview(
+        project_id="proj_123",
+        filters={"view": "requirements", "status": "todo"},
+        updates={"status": "in_progress", "owner": "john@example.com"},
+        limit=5
+    )
+
+    print(f"Will update {preview['total_count']} items")
+    print(f"Estimated duration: {preview['estimated_duration_ms']}ms")
+    print(f"Warnings: {preview['warnings']}")
+
+    # Execute bulk update
+    result = bulk_service.bulk_update_items(
+        project_id="proj_123",
+        filters={"view": "requirements", "status": "todo"},
+        updates={"status": "in_progress"},
+        agent_id="agent_001"
+    )
+
+    print(f"Updated {result['items_updated']} items")
+```
+
+### ConcurrentOperationsService
+
+Handles concurrent operations with conflict detection and resolution.
+
+**Location**: `/src/tracertm/services/concurrent_operations_service.py`
+
+**Example Usage**:
+
+```python
+from tracertm.services.concurrent_operations_service import (
+    ConcurrentOperationsService
+)
+
+async def concurrent_updates(session: AsyncSession):
+    concurrent = ConcurrentOperationsService(session)
+
+    # Execute operations with conflict detection
+    await concurrent.execute_with_lock(
+        entity_id="item_001",
+        operation=lambda: update_item(item_id="item_001")
+    )
+```
+
+## Import/Export Services
+
+### ImportService
+
+Imports data from various formats.
+
+**Location**: `/src/tracertm/services/import_service.py`
+
+**Supported Formats**:
+- JSON
+- CSV
+- Excel
+- YAML
+
+### ExportService
+
+Exports project data to various formats.
+
+**Location**: `/src/tracertm/services/export_service.py`
+
+**Supported Formats**:
+- JSON (full project export)
+- CSV (tabular data)
+- Excel (multi-sheet workbooks)
+- PDF (reports)
+- Markdown (documentation)
+
+**Example Usage**:
+
+```python
+from tracertm.services.export_service import ExportService
+
+async def export_project(session: AsyncSession):
+    export_service = ExportService(session)
+
+    # Export to JSON
+    json_data = await export_service.export_project(
+        project_id="proj_123",
+        format="json",
+        include_deleted=False
+    )
+
+    # Export to CSV
+    csv_data = await export_service.export_items(
+        project_id="proj_123",
+        view="requirements",
+        format="csv"
+    )
+
+    # Export traceability matrix
+    matrix = await export_service.export_traceability_matrix(
+        project_id="proj_123",
+        source_view="requirements",
+        target_view="tests",
+        format="excel"
+    )
+```
+
+### GitHubImportService / JiraImportService
+
+Specialized importers for external systems.
+
+**Locations**:
+- `/src/tracertm/services/github_import_service.py`
+- `/src/tracertm/services/jira_import_service.py`
+
+**Example Usage**:
+
+```python
+from tracertm.services.github_import_service import GitHubImportService
+
+async def import_from_github(session: AsyncSession):
+    github = GitHubImportService(session)
+
+    result = await github.import_issues(
+        project_id="proj_123",
+        repo="owner/repo",
+        token="ghp_xxx",
+        view="requirements",
+        label_filter="enhancement"
+    )
+
+    print(f"Imported {result['imported_count']} issues")
+```
+
+## Workflow Services
+
+### StatusWorkflowService
+
+Manages status transitions and workflow automation.
+
+**Location**: `/src/tracertm/services/status_workflow_service.py`
+
+### ProgressService
+
+Tracks and calculates project progress.
+
+**Location**: `/src/tracertm/services/progress_service.py`
+
+**Example Usage**:
+
+```python
+from tracertm.services.progress_service import ProgressService
+
+async def track_progress(session: AsyncSession):
+    progress = ProgressService(session)
+
+    # Get project progress
+    project_progress = await progress.get_project_progress(
+        project_id="proj_123"
+    )
+
+    print(f"Overall: {project_progress.percentage}%")
+    print(f"By view:")
+    for view, pct in project_progress.by_view.items():
+        print(f"  {view}: {pct}%")
+```
+
+## Advanced Services
+
+### TraceabilityMatrixService
+
+Generates comprehensive traceability matrices showing coverage between views.
+
+**Location**: `/src/tracertm/services/traceability_matrix_service.py`
+
+### VisualizationService
+
+Generates visualizations of project data (graphs, charts, diagrams).
+
+**Location**: `/src/tracertm/services/visualization_service.py`
+
+### BenchmarkService
+
+Performance benchmarking and comparison tools.
+
+**Location**: `/src/tracertm/services/benchmark_service.py`
+
+### DocumentationService
+
+Automated documentation generation from project data.
+
+**Location**: `/src/tracertm/services/documentation_service.py`
+
+## Service Dependencies and Injection
+
+### Dependency Pattern
+
+Services follow a consistent dependency injection pattern:
+
+```python
+class MyService:
+    def __init__(self, session: AsyncSession):
+        self.session = session
+        # Initialize repositories
+        self.items = ItemRepository(session)
+        self.links = LinkRepository(session)
+        self.events = EventRepository(session)
+```
+
+### Service Composition
+
+Services can depend on other services:
+
+```python
+class CompositeService:
+    def __init__(self, session: AsyncSession):
+        self.session = session
+        # Compose with other services
+        self.item_service = ItemService(session)
+        self.impact_service = ImpactAnalysisService(session)
+        self.cache_service = CacheService()
+
+    async def complex_operation(self, item_id: str):
+        # Use multiple services
+        item = await self.item_service.get_item(item_id)
+        impact = await self.impact_service.analyze_impact(item_id)
+
+        # Cache the result
+        await self.cache_service.set(
+            f"impact:{item_id}",
+            impact,
+            ttl_seconds=300
+        )
+```
+
+### Testing with Mocks
+
+Services are designed to be easily testable with mock repositories:
+
+```python
+import pytest
+from unittest.mock import AsyncMock, MagicMock
+
+@pytest.fixture
+def mock_item_repository():
+    repo = AsyncMock()
+    repo.get_by_id.return_value = MagicMock(
+        id="item_001",
+        title="Test Item",
+        status="todo"
+    )
+    return repo
+
+async def test_item_service(mock_item_repository):
+    session = AsyncMock()
+
+    # Inject mock repository
+    service = ItemService(session)
+    service.items = mock_item_repository
+
+    item = await service.get_item("proj_123", "item_001")
+    assert item.title == "Test Item"
+
+    mock_item_repository.get_by_id.assert_called_once_with(
+        "item_001", "proj_123"
+    )
+```
+
+## Service Layer Best Practices
+
+### 1. Transaction Management
+
+Services should use transactions for multi-step operations:
+
+```python
+async def complex_operation(self, project_id: str):
+    async with self.session.begin():
+        # All operations in this block are atomic
+        item = await self.items.create(...)
+        link = await self.links.create(...)
+        await self.events.log(...)
+        # Automatically commits on success, rolls back on exception
+```
+
+### 2. Error Handling
+
+Services should raise meaningful exceptions:
+
+```python
+class ItemNotFoundError(Exception):
+    pass
+
+class InvalidStatusTransitionError(Exception):
+    pass
+
+async def update_status(self, item_id: str, new_status: str):
+    item = await self.items.get_by_id(item_id)
+    if not item:
+        raise ItemNotFoundError(f"Item {item_id} not found")
+
+    if not self._is_valid_transition(item.status, new_status):
+        raise InvalidStatusTransitionError(
+            f"Cannot transition from {item.status} to {new_status}"
+        )
+```
+
+### 3. Event Logging
+
+Log significant operations for audit trails:
+
+```python
+async def delete_item(self, item_id: str, agent_id: str):
+    item = await self.items.get_by_id(item_id)
+    await self.items.delete(item_id)
+
+    # Always log deletions
+    await self.events.log(
+        project_id=item.project_id,
+        event_type="item_deleted",
+        entity_type="item",
+        entity_id=item_id,
+        data={"title": item.title},
+        agent_id=agent_id
+    )
+```
+
+### 4. Optimistic Locking
+
+Use version checks for concurrent updates:
+
+```python
+async def update_item(self, item_id: str, **updates):
+    item = await self.items.get_by_id(item_id)
+
+    # Include version in update
+    updated = await self.items.update(
+        item_id=item_id,
+        expected_version=item.version,  # Prevents lost updates
+        **updates
+    )
+
+    return updated
+```
+
+### 5. Caching Strategy
+
+Cache expensive operations:
+
+```python
+async def get_traceability_matrix(self, project_id: str, ...):
+    cache_key = f"matrix:{project_id}:{source_view}:{target_view}"
+
+    # Try cache first
+    cached = await self.cache.get(cache_key)
+    if cached:
+        return cached
+
+    # Compute expensive matrix
+    matrix = await self._compute_matrix(...)
+
+    # Cache for 5 minutes
+    await self.cache.set(cache_key, matrix, ttl_seconds=300)
+
+    return matrix
+```
+
+## Complete Service Reference
+
+### Alphabetical Service List
+
+1. **AdvancedAnalyticsService** - Advanced analytics and metrics
+2. **AdvancedTraceabilityService** - Enhanced traceability features
+3. **AdvancedTraceabilityEnhancementsService** - Additional traceability utilities
+4. **AgentCoordinationService** - Multi-agent coordination
+5. **AgentMetricsService** - Agent performance metrics
+6. **AgentMonitoringService** - Agent health monitoring
+7. **AgentPerformanceService** - Agent optimization
+8. **ApiWebhooksService** - Webhook management
+9. **AutoLinkService** - Automatic link suggestion
+10. **BenchmarkService** - Performance benchmarking
+11. **BulkOperationService** - Bulk operations with preview
+12. **BulkService** - Simple bulk operations
+13. **CacheService** - Redis caching layer
+14. **ChaosModeService** - Chaos engineering and testing
+15. **CommitLinkingService** - Git commit traceability
+16. **ConcurrentOperationsService** - Concurrent operation handling
+17. **ConflictResolutionService** - Conflict detection and resolution
+18. **CriticalPathService** - Critical path analysis
+19. **CycleDetectionService** - Circular dependency detection
+20. **DocumentationService** - Auto-documentation generation
+21. **EventService** - Event handling
+22. **EventSourcingService** - Event sourcing implementation
+23. **ExportImportService** - Combined import/export
+24. **ExportService** - Data export
+25. **ExternalIntegrationService** - External system integration
+26. **GraphService** - Graph operations
+27. **ImpactAnalysisService** - Impact analysis
+28. **ImportService** - Data import
+29. **ItemService** - Core item operations
+30. **JiraImportService** - Jira integration
+31. **LinkService** - Link management
+32. **MaterializedViewService** - Materialized views
+33. **PerformanceOptimizationService** - Query optimization
+34. **PerformanceService** - Performance monitoring
+35. **PerformanceTuningService** - Runtime tuning
+36. **PluginService** - Plugin system
+37. **ProgressService** - Progress tracking
+38. **ProjectBackupService** - Project backup/restore
+39. **QueryOptimizationService** - Query analysis
+40. **QueryService** - Advanced querying
+41. **SearchService** - Full-text search
+42. **SecurityComplianceService** - Security and compliance
+43. **ShortestPathService** - Shortest path finding
+44. **StatelessIngestionService** - Stateless data ingestion
+45. **StatusWorkflowService** - Status workflows
+46. **SyncService** - Data synchronization
+47. **TraceabilityMatrixService** - Matrix generation
+48. **TraceabilityService** - Core traceability
+49. **TuiService** - Terminal UI support
+50. **VerificationService** - Data verification
+51. **ViewRegistryService** - View management
+52. **VisualizationService** - Data visualization
+
+And many more specialized services for specific use cases.
+
+## Next Steps
+
+- Learn about [Repositories](/docs/development/internals/repositories) that services depend on
+- Explore [API Endpoints](/docs/development/api) that expose service functionality
+- Understand [Event System](/docs/development/internals/events) for audit logging
+- Review [Testing Services](/docs/development/testing) for service testing patterns
+
+---
+
+For questions or contributions, see our [Developer Guide](/docs/development).

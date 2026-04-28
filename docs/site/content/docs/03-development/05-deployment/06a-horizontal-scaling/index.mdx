@@ -1,0 +1,139 @@
+---
+title: "Horizontal Scaling"
+description: "Scale TraceRTM horizontally by adding instances"
+keywords: [horizontal scaling, scale, replicas, instances]
+---
+
+# Horizontal Scaling
+
+Scale TraceRTM horizontally by adding more instances.
+
+## Kubernetes Scaling
+
+### Manual Scaling
+
+```bash
+# Scale deployment
+kubectl scale deployment tracertm-api --replicas=5
+
+# Check replicas
+kubectl get deployment tracertm-api
+```
+
+### Auto-Scaling
+
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: tracertm-api-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: tracertm-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+```
+
+## Docker Compose Scaling
+
+### Scale Services
+
+```bash
+# Scale API service
+docker-compose up -d --scale api=5
+
+# Check status
+docker-compose ps
+```
+
+## Requirements
+
+### Stateless Services
+
+Services must be stateless:
+
+```python
+# Good - no session state
+@router.get("/api/v1/items")
+async def list_items(db: AsyncSession = Depends(get_db)):
+    return await item_repo.list_all()
+
+# Bad - session state
+session_data = {}  # Won't work with multiple instances
+```
+
+### Shared State
+
+Use external storage for shared state:
+
+```python
+# Use Redis for shared cache
+redis_client = redis.from_url(REDIS_URL)
+
+# Use database for persistent state
+db = get_db()
+```
+
+## Load Balancing
+
+### Kubernetes Service
+
+```yaml
+apiVersion: v1
+kind: Service
+spec:
+  selector:
+    app: tracertm-api
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: LoadBalancer
+```
+
+### Load Balancer Algorithms
+
+- **Round Robin**: Distribute evenly
+- **Least Connections**: Route to least busy
+- **IP Hash**: Sticky sessions
+
+## Monitoring
+
+### Track Scaling
+
+```bash
+# Watch pods
+kubectl get pods -w
+
+# Check HPA status
+kubectl get hpa tracertm-api-hpa
+
+# View metrics
+kubectl top pods
+```
+
+## Best Practices
+
+1. **Start Small**: Begin with 2-3 replicas
+2. **Monitor**: Watch metrics before scaling
+3. **Test**: Test scaling behavior
+4. **Set Limits**: Configure min/max replicas
+
+## Related Documentation
+
+- [Scaling](./06-scaling) - Scaling overview
+- [Load Balancing](./06b-load-balancing) - Load balancer

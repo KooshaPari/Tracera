@@ -1,0 +1,27 @@
+name: tui_kit_guard
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+      - '**/*'
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Fail if top-level tui_kit contains files (except README)
+        run: |
+          if [ -d "tui_kit" ]; then
+            COUNT=$(find tui_kit -type f ! -name 'README.md' | wc -l | tr -d ' ')
+            if [ "$COUNT" -gt 0 ]; then
+              echo "Top-level tui_kit should be empty (except README). Found $COUNT files:" >&2
+              find tui_kit -type f ! -name 'README.md' >&2
+              exit 1
+            fi
+          fi
+          echo "Top-level tui_kit is clean."

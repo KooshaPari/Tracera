@@ -1,0 +1,209 @@
+{
+  "title": "TracerTM Backend Comparison",
+  "tags": [
+    "tracertm",
+    "backends",
+    "performance"
+  ],
+  "timezone": "browser",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Request Rate by Backend",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{job=\"go-backend\"}[5m])",
+          "legendFormat": "Go - {{method}} {{path}}"
+        },
+        {
+          "expr": "rate(http_requests_total{job=\"python-backend\"}[5m])",
+          "legendFormat": "Python - {{method}} {{path}}"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "id": 2,
+      "title": "Response Time (p50, p95, p99)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=\"go-backend\"}[5m]))",
+          "legendFormat": "Go p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"go-backend\"}[5m]))",
+          "legendFormat": "Go p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job=\"go-backend\"}[5m]))",
+          "legendFormat": "Go p99"
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=\"python-backend\"}[5m]))",
+          "legendFormat": "Python p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"python-backend\"}[5m]))",
+          "legendFormat": "Python p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job=\"python-backend\"}[5m]))",
+          "legendFormat": "Python p99"
+        }
+      ],
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "id": 3,
+      "title": "Error Rate by Backend",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{job=\"go-backend\",status=~\"5..\"}[5m])",
+          "legendFormat": "Go 5xx errors"
+        },
+        {
+          "expr": "rate(http_requests_total{job=\"python-backend\",status=~\"5..\"}[5m])",
+          "legendFormat": "Python 5xx errors"
+        },
+        {
+          "expr": "rate(http_requests_total{job=\"go-backend\",status=~\"4..\"}[5m])",
+          "legendFormat": "Go 4xx errors"
+        },
+        {
+          "expr": "rate(http_requests_total{job=\"python-backend\",status=~\"4..\"}[5m])",
+          "legendFormat": "Python 4xx errors"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "id": 4,
+      "title": "Nginx Cache Hit Rate",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(nginx_cache_hits_total[5m]) / (rate(nginx_cache_hits_total[5m]) + rate(nginx_cache_misses_total[5m]))",
+          "legendFormat": "Cache Hit Rate"
+        }
+      ],
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "id": 5,
+      "title": "WebSocket Connections",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "websocket_connections_active{job=\"go-backend\"}",
+          "legendFormat": "Active WebSocket Connections"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "id": 6,
+      "title": "CPU Usage by Backend",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(process_cpu_seconds_total{job=\"go-backend\"}[5m])",
+          "legendFormat": "Go CPU"
+        },
+        {
+          "expr": "rate(process_cpu_seconds_total{job=\"python-backend\"}[5m])",
+          "legendFormat": "Python CPU"
+        }
+      ],
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "id": 7,
+      "title": "Memory Usage by Backend",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "process_resident_memory_bytes{job=\"go-backend\"}",
+          "legendFormat": "Go Memory"
+        },
+        {
+          "expr": "process_resident_memory_bytes{job=\"python-backend\"}",
+          "legendFormat": "Python Memory"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "id": 8,
+      "title": "Database Connection Pool",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "db_connections_active{job=\"go-backend\"}",
+          "legendFormat": "Go Active Connections"
+        },
+        {
+          "expr": "db_connections_active{job=\"python-backend\"}",
+          "legendFormat": "Python Active Connections"
+        },
+        {
+          "expr": "db_connections_idle{job=\"go-backend\"}",
+          "legendFormat": "Go Idle Connections"
+        },
+        {
+          "expr": "db_connections_idle{job=\"python-backend\"}",
+          "legendFormat": "Python Idle Connections"
+        }
+      ],
+      "gridPos": {
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      }
+    }
+  ],
+  "refresh": "10s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "version": 1
+}

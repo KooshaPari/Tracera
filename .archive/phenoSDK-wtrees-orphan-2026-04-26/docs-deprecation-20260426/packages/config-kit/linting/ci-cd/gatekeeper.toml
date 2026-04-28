@@ -1,0 +1,93 @@
+# CI/CD Gatekeeper Configuration for config-kit
+# Defines quality gates that must pass before merging/merging
+
+[gates.linting]
+enabled = true
+required = ["ruff", "black", "isort", "mypy"]
+failure_threshold = 0
+
+[gates.security]
+enabled = true
+required = ["bandit", "safety"]
+failure_threshold = 0
+exclude_patterns = ["**/test_*.py", "**/tests/**"]
+
+[gates.documentation]
+enabled = true
+required = ["pydocstyle", "interrogate"]
+failure_threshold = 0
+minimum_coverage = 80
+exclude_patterns = ["**/test_*.py", "**/tests/**"]
+
+[gates.performance]
+enabled = false
+required = []
+failure_threshold = 0
+max_complexity = 10
+max_file_size = 50000
+
+[gates.test_coverage]
+enabled = true
+required_coverage = 80
+line_coverage = 80
+branch_coverage = 75
+function_coverage = 80
+exclude_patterns = ["**/test_*.py", "**/tests/**"]
+
+[gates.dependency_vulnerability]
+enabled = true
+fail_on_vulnerability = true
+severity_threshold = "medium"
+exclude_patterns = ["**/test_*.py", "**/tests/**"]
+
+[gates.code_patterns]
+enabled = true
+forbidden_patterns = [
+    "import (os\.system|subprocess\.call|subprocess\.run|subprocess\.Popen)",
+    "eval\(",
+    "exec\(",
+    "print\(",
+    "TODO: FIX ME",
+    "FIXME:",
+    "HACK:",
+    "PRAGMA: disable"
+]
+required_patterns = [
+    "assert ",
+    "raise ",
+    "import typing"
+]
+failure_threshold = 0
+
+[gates.license_compliance]
+enabled = true
+allowed_licenses = ["MIT", "Apache-2.0", "BSD-3-Clause", "PSF", "CC0-1.0"]
+blacklisted_packages = []
+failure_threshold = 0
+
+[gates.metrics]
+enabled = true
+max_lines_per_file = 500
+max_functions_per_file = 20
+max_arguments_per_function = 7
+max_depth_nesting = 4
+failure_threshold = 0
+
+[gates.git_checks]
+enabled = true
+no_merge_conflicts = true
+no_private_keys = true
+no_secrets = true
+failure_threshold = 0
+
+[reporting]
+format = "json"
+output_file = "quality_gate_report.json"
+email_on_failure = false
+slack_webhook = ""
+require_all_gates = false
+
+[environments]
+development = ["linting", "security"]
+staging = ["linting", "security", "documentation", "test_coverage", "dependency_vulnerability"]
+production = ["all"]

@@ -1,0 +1,127 @@
+{
+  "version": "1.0",
+  "predicate_type": "https://slsa.dev/provenance/v1",
+  "generated_at": "2026-02-14T09:05:00Z",
+  "project": {
+    "name": "trace",
+    "directory": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace",
+    "criticality_tier": "established"
+  },
+  "quality_gates": {
+    "ruff": {
+      "status": "pass",
+      "violations": 0
+    },
+    "ruff_format": {
+      "status": "pass",
+      "unformatted": 0
+    },
+    "go_build": {
+      "status": "pass"
+    },
+    "go_vet": {
+      "status": "pass"
+    },
+    "golangci_lint": {
+      "status": "pass",
+      "issues": 0
+    },
+    "tsc": {
+      "status": "pass",
+      "errors": 0
+    },
+    "tach": {
+      "status": "pass",
+      "violations": 0,
+      "modules": 17
+    },
+    "govulncheck": {
+      "status": "pass",
+      "vulnerabilities": 0
+    }
+  },
+  "baselines": {
+    "mypy_strict": {
+      "errors": 1256,
+      "files": 146
+    },
+    "bandit": {
+      "low_severity": 186
+    },
+    "oxlint": {
+      "errors": 4221,
+      "warnings": 2369
+    },
+    "go_coverage": {
+      "percentage": 32.5
+    }
+  },
+  "tests": {
+    "python": {
+      "collected": 1346,
+      "errors": 8,
+      "note": "pytest 8.2.2 INTERNALERROR bug"
+    },
+    "go": {
+      "failures": 2,
+      "note": "Redis perf needs running Redis; CSRF form data"
+    },
+    "typescript": {
+      "passed": 3100,
+      "failed": 793,
+      "total": 3939
+    }
+  },
+  "suppressions": {
+    "total": 727,
+    "breakdown": {
+      "python_noqa": 28,
+      "python_type_ignore": 662,
+      "python_pragma_no_cover": 1,
+      "go_nolint": 28,
+      "ts_eslint_disable": 1,
+      "ts_ts_annotations": 7
+    },
+    "note": "Majority from Python type:ignore in strict mode"
+  },
+  "methodology": {
+    "detected_test_types": {
+      "unit": true,
+      "integration": true,
+      "e2e": true,
+      "property_based": false,
+      "contract": false,
+      "mutation": false,
+      "security": true
+    },
+    "test_pyramid": {
+      "unit": "1346 Python + Go unit tests",
+      "integration": "Database, API integration tests present",
+      "e2e": "Frontend vitest E2E tests present",
+      "security": "Bandit, semgrep, govulncheck in baseline"
+    },
+    "notes": {
+      "property_based": "Not yet implemented - requires hypothesis/fast-check",
+      "contract": "Not yet implemented - requires Pact/Spring Cloud Contract",
+      "mutation": "Not yet implemented - requires mutmut/Stryker"
+    }
+  },
+  "security": {
+    "signed_attestation_present": true,
+    "slsa_provenance_present": true,
+    "signature_file": ".claude/verification/qa-attestation.sig",
+    "bundle_file": ".claude/verification/qa-attestation.bundle.json",
+    "verification_status": "placeholder",
+    "notes": "Placeholder signatures created. Requires cosign setup for cryptographic verification. See docs/guides/SUPPLY_CHAIN_SETUP.md"
+  },
+  "attestation_metadata": {
+    "generated_by": "qa-supply-chain-verifier",
+    "environment": "brownfield",
+    "session": "2026-02-14",
+    "compliance": {
+      "must_pass_checkers": "green",
+      "informational_baselines": "measured",
+      "suppression_policy": "documented"
+    }
+  }
+}

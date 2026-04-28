@@ -1,0 +1,237 @@
+# ============================================================================
+# Dev Container - Docker Build Ignore
+# Optimized for development environment build caching
+# ============================================================================
+
+# Git and version control
+.git
+.gitignore
+.gitattributes
+.gitkeep
+.gitmodules
+
+# CI/CD and deployment
+.github/
+.gitlab-ci.yml
+.travis.yml
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+README*
+CHANGELOG*
+LICENSE
+CONTRIBUTING*
+docs/
+doc/
+
+# IDE and editor configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.sublime-project
+.sublime-workspace
+*.iml
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Language-specific artifacts
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.a
+/bin/
+/pkg/
+vendor/
+go.work
+go.work.sum
+go.mod.tidy
+*.prof
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.venv*/
+venv*/
+ENV/
+env/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.hypothesis/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm
+.eslintcache
+.parcel-cache
+.next
+out/
+dist/
+build/
+
+# Testing artifacts
+*_test.go
+test/
+tests/
+testdata/
+coverage.out
+coverage.html
+coverage.xml
+test-results/
+junit.xml
+.mocha_output/
+cypress/videos/
+cypress/screenshots/
+
+# Environment configuration
+.env
+.env.local
+.env.*.local
+.env.*
+*.env
+.env.example
+
+# Temporary and log files
+tmp/
+temp/
+*.tmp
+*.log
+*.pid
+logs/
+.log/
+
+# Development tools
+.air.toml
+air-debug
+.air/
+.turbo/
+.turbopack/
+.next/
+
+# Build directories
+build/
+dist/
+bin/
+out/
+
+# Cache directories
+.cache/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.tox/
+.turbo/
+.eslintcache
+.parcel-cache
+.next
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+test.db
+test_functionality.db
+*.sqlite-wal
+*.sqlite-shm
+
+# Large archive files
+*.tar.gz
+*.tar.bz2
+*.zip
+*.7z
+*.rar
+
+# Misc
+ARCHIVE/
+.archive/
+DEMO_PROJECT/
+.demo/
+Thumbs.db
+
+# Lock files (deps managed by package managers in container)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lock
+uv.lock
+go.sum
+
+# Configuration files (not needed in containers)
+.pre-commit-config.yaml
+conftest.py
+mypy.ini
+pyproject.toml
+alembic.ini
+Makefile
+settings.yml
+tach.toml
+
+# Process composition
+process-compose.yaml
+process-compose.yml
+
+# Frontend specific exclusions
+storybook-static/
+.storybook/
+cypress/
+.playwright/
+.vitest/
+
+# IDE tools integration
+.bmad/
+.claude/
+.cursor/
+.codex/
+.augment/
+.factory/
+.gemini/
+.planning/
+.tracertm/
+
+# Platform files
+.vscode/
+
+# Workspace files
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Mac OS
+.AppleDouble
+.LSOverride
+.DS_Store
+
+# Windows
+Desktop.ini
+ehthumbs.db

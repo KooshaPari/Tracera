@@ -1,0 +1,103 @@
+---
+title: "Link Commands"
+description: "CLI commands for creating and managing traceability links"
+keywords: [cli, links, relationships, traceability, commands]
+---
+
+# Link Commands
+
+Commands for creating and managing traceability links between items.
+
+## List Links
+
+List all links in the current project.
+
+```bash
+trace link list
+```
+
+### Options
+
+```bash
+# Filter by link type
+trace link list --type verified_by
+
+# Filter by source item
+trace link list --source item_req_001
+
+# Filter by target item
+trace link list --target item_test_001
+
+# Output format
+trace link list --output json
+```
+
+## Get Link
+
+Get details for a specific link.
+
+```bash
+trace link get <link-id>
+```
+
+## Create Link
+
+Create a new traceability link.
+
+```bash
+trace link create \
+  --source item_req_001 \
+  --target item_test_001 \
+  --type verified_by \
+  --metadata '{"confidence": 0.95}'
+```
+
+### Required Options
+
+- `--source`: Source item ID
+- `--target`: Target item ID
+- `--type`: Link type (verified_by, implements, depends_on, etc.)
+
+### Optional Options
+
+- `--metadata`: JSON metadata object
+
+### Examples
+
+```bash
+# Create verified_by link
+trace link create \
+  --source item_req_001 \
+  --target item_test_001 \
+  --type verified_by
+
+# Create implements link
+trace link create \
+  --source item_design_001 \
+  --target item_req_001 \
+  --type implements \
+  --metadata '{"verified": true}'
+```
+
+## Update Link
+
+Update link properties.
+
+```bash
+trace link update <link-id> \
+  --type implements \
+  --metadata '{"confidence": 0.98}'
+```
+
+## Delete Link
+
+Delete a link.
+
+```bash
+trace link delete <link-id>
+```
+
+## Related Commands
+
+- [Item Commands](./03b-item-commands) - Manage items
+- [Workflow Commands](./03d-workflow-commands) - Status management

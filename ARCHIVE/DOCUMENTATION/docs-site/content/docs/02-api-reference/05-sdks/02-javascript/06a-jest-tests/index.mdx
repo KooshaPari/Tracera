@@ -1,0 +1,621 @@
+---
+title: "Jest Tests"
+description: "Testing TraceRTM JavaScript SDK integrations with Jest"
+---
+
+# Jest Tests
+
+Comprehensive guide to testing TraceRTM SDK integrations using Jest.
+
+## Setup
+
+### Installation
+
+```bash
+npm install --save-dev jest @types/jest ts-jest
+```
+
+### Configuration
+
+```javascript
+// jest.config.js
+module.exports = {
+  preset: "ts-jest",
+  testEnvironment: "node",
+  roots: ["<rootDir>/src", "<rootDir>/tests"],
+  testMatch: ["**/__tests__/**/*.ts", "**/*.test.ts", "**/*.spec.ts"],
+  moduleNameMapper: {
+    "^@/(.*)$": "<rootDir>/src/$1",
+  },
+  collectCoverageFrom: [
+    "src/**/*.ts",
+    "!src/**/*.d.ts",
+    "!src/**/__tests__/**",
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+  },
+  setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
+};
+```
+
+### Setup File
+
+```typescript
+// tests/setup.ts
+import { jest } from "@jest/globals";
+
+// Global test configuration
+jest.setTimeout(10000);
+
+// Mock environment variables
+process.env.TRACERTM_API_KEY = "rtm_test_sk_testkey123";
+
+// Global beforeEach
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+```
+
+---
+
+## Basic Testing
+
+### Testing a Service
+
+```typescript
+// src/services/project-service.ts
+import { TraceRTMClient, Project } from "@tracertm/sdk";
+
+export class ProjectService {
+  constructor(private client: TraceRTMClient) {}
+
+  async getProject(id: string): Promise<Project | null> {
+    try {
+      return await this.client.projects.get(id);
+    } catch (error) {
+      if (error.name === "NotFoundError") {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  async createProject(name: string, key: string): Promise<Project> {
+    return this.client.projects.create({ name, key });
+  }
+}
+```
+
+```typescript
+// tests/services/project-service.test.ts
+import { TraceRTMClient } from "@tracertm/sdk";
+import { ProjectService } from "../../src/services/project-service";
+
+// Mock the SDK
+jest.mock("@tracertm/sdk");
+
+describe("ProjectService", () => {
+  let mockClient: jest.Mocked<TraceRTMClient>;
+  let service: ProjectService;
+
+  beforeEach(() => {
+    // Create mock client
+    mockClient = {
+      projects: {
+        get: jest.fn(),
+        list: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+      },
+      items: {
+        get: jest.fn(),
+        list: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+      },
+    } as unknown as jest.Mocked<TraceRTMClient>;
+
+    service = new ProjectService(mockClient);
+  });
+
+  describe("getProject", () => {
+    it("should return project when found", async () => {
+      const mockProject = {
+        id: "proj_123",
+        name: "Test Project",
+        key: "TP",
+      };
+
+      mockClient.projects.get.mockResolvedValue(mockProject as any);
+
+      const result = await service.getProject("proj_123");
+
+      expect(mockClient.projects.get).toHaveBeenCalledWith("proj_123");
+      expect(result).toEqual(mockProject);
+    });
+
+    it("should return null when not found", async () => {
+      const error = new Error("Not found");
+      error.name = "NotFoundError";
+      mockClient.projects.get.mockRejectedValue(error);
+
+      const result = await service.getProject("invalid");
+
+      expect(result).toBeNull();
+    });
+
+    it("should throw other errors", async () => {
+      mockClient.projects.get.mockRejectedValue(new Error("Server error"));
+
+      await expect(service.getProject("proj_123")).rejects.toThrow("Server error");
+    });
+  });
+
+  describe("createProject", () => {
+    it("should create and return project", async () => {
+      const mockProject = {
+        id: "proj_new",
+        name: "New Project",
+        key: "NP",
+      };
+
+      mockClient.projects.create.mockResolvedValue(mockProject as any);
+
+      const result = await service.createProject("New Project", "NP");
+
+      expect(mockClient.projects.create).toHaveBeenCalledWith({
+        name: "New Project",
+        key: "NP",
+      });
+      expect(result).toEqual(mockProject);
+    });
+  });
+});
+```
+
+---
+
+## Mock Implementations
+
+### Full Mock Module
+
+```typescript
+// tests/__mocks__/@tracertm/sdk.ts
+export class TraceRTMClient {
+  constructor(public options: { apiKey: string }) {}
+
+  projects = {
+    get: jest.fn(),
+    list: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    getStats: jest.fn(),
+  };
+
+  items = {
+    get: jest.fn(),
+    list: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    bulkCreate: jest.fn(),
+    bulkUpdate: jest.fn(),
+    bulkDelete: jest.fn(),
+  };
+
+  links = {
+    get: jest.fn(),
+    list: jest.fn(),
+    create: jest.fn(),
+    delete: jest.fn(),
+    bulkCreate: jest.fn(),
+  };
+
+  reports = {
+    coverage: jest.fn(),
+    traceabilityMatrix: jest.fn(),
+    impactAnalysis: jest.fn(),
+    progress: jest.fn(),
+  };
+
+  search = {
+    items: jest.fn(),
+    suggest: jest.fn(),
+  };
+}
+
+// Error classes
+export class TraceRTMError extends Error {
+  constructor(message: string, public code: string) {
+    super(message);
+    this.name = "TraceRTMError";
+  }
+}
+
+export class NotFoundError extends TraceRTMError {
+  constructor(message: string = "Not found") {
+    super(message, "NOT_FOUND");
+    this.name = "NotFoundError";
+  }
+}
+
+export class ValidationError extends TraceRTMError {
+  constructor(message: string = "Validation failed", public details: any[] = []) {
+    super(message, "VALIDATION_ERROR");
+    this.name = "ValidationError";
+  }
+}
+
+export class RateLimitError extends TraceRTMError {
+  retryAfter: number = 60;
+
+  constructor(message: string = "Rate limited") {
+    super(message, "RATE_LIMITED");
+    this.name = "RateLimitError";
+  }
+}
+
+export class AuthenticationError extends TraceRTMError {
+  constructor(message: string = "Authentication failed") {
+    super(message, "AUTHENTICATION_ERROR");
+    this.name = "AuthenticationError";
+  }
+}
+```
+
+### Using the Mock
+
+```typescript
+// tests/example.test.ts
+import { TraceRTMClient, NotFoundError, ValidationError } from "@tracertm/sdk";
+
+jest.mock("@tracertm/sdk");
+
+describe("with mocked SDK", () => {
+  it("uses mocked methods", () => {
+    const client = new TraceRTMClient({ apiKey: "test" });
+
+    // All methods are jest mocks
+    expect(jest.isMockFunction(client.projects.get)).toBe(true);
+  });
+
+  it("can mock return values", async () => {
+    const client = new TraceRTMClient({ apiKey: "test" });
+
+    (client.projects.get as jest.Mock).mockResolvedValue({
+      id: "proj_123",
+      name: "Test",
+    });
+
+    const result = await client.projects.get("proj_123");
+
+    expect(result.name).toBe("Test");
+  });
+
+  it("can mock errors", async () => {
+    const client = new TraceRTMClient({ apiKey: "test" });
+
+    (client.projects.get as jest.Mock).mockRejectedValue(new NotFoundError());
+
+    await expect(client.projects.get("invalid")).rejects.toThrow(NotFoundError);
+  });
+});
+```
+
+---
+
+## Testing Patterns
+
+### Testing Async Functions
+
+```typescript
+describe("async operations", () => {
+  it("resolves with data", async () => {
+    mockClient.items.list.mockResolvedValue({
+      data: [{ id: "item_1", title: "Item 1" }],
+      total: 1,
+      hasMore: false,
+    });
+
+    const result = await service.listItems("proj_123");
+
+    expect(result).toHaveLength(1);
+  });
+
+  it("handles rejection", async () => {
+    mockClient.items.list.mockRejectedValue(new Error("Network error"));
+
+    await expect(service.listItems("proj_123")).rejects.toThrow("Network error");
+  });
+
+  it("handles multiple sequential calls", async () => {
+    mockClient.items.list
+      .mockResolvedValueOnce({ data: [{ id: "1" }], hasMore: true })
+      .mockResolvedValueOnce({ data: [{ id: "2" }], hasMore: false });
+
+    const result = await service.getAllItems("proj_123");
+
+    expect(mockClient.items.list).toHaveBeenCalledTimes(2);
+    expect(result).toHaveLength(2);
+  });
+});
+```
+
+### Testing with Timers
+
+```typescript
+describe("retry logic", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it("retries after delay", async () => {
+    mockClient.items.get
+      .mockRejectedValueOnce(new Error("Temporary error"))
+      .mockResolvedValueOnce({ id: "item_123" });
+
+    const promise = service.getItemWithRetry("item_123");
+
+    // Fast-forward time
+    jest.advanceTimersByTime(1000);
+
+    const result = await promise;
+
+    expect(mockClient.items.get).toHaveBeenCalledTimes(2);
+    expect(result.id).toBe("item_123");
+  });
+});
+```
+
+### Testing Concurrent Operations
+
+```typescript
+describe("concurrent operations", () => {
+  it("fetches multiple items in parallel", async () => {
+    mockClient.items.get
+      .mockResolvedValueOnce({ id: "item_1", title: "Item 1" })
+      .mockResolvedValueOnce({ id: "item_2", title: "Item 2" })
+      .mockResolvedValueOnce({ id: "item_3", title: "Item 3" });
+
+    const result = await service.getMultipleItems(["item_1", "item_2", "item_3"]);
+
+    expect(mockClient.items.get).toHaveBeenCalledTimes(3);
+    expect(result).toHaveLength(3);
+  });
+
+  it("handles partial failures", async () => {
+    mockClient.items.get
+      .mockResolvedValueOnce({ id: "item_1" })
+      .mockRejectedValueOnce(new NotFoundError())
+      .mockResolvedValueOnce({ id: "item_3" });
+
+    const result = await service.getMultipleItemsSafe(["item_1", "item_2", "item_3"]);
+
+    expect(result.succeeded).toHaveLength(2);
+    expect(result.failed).toHaveLength(1);
+  });
+});
+```
+
+---
+
+## Snapshot Testing
+
+### Response Snapshots
+
+```typescript
+describe("response formatting", () => {
+  it("formats project data correctly", async () => {
+    mockClient.projects.get.mockResolvedValue({
+      id: "proj_123",
+      name: "Test Project",
+      key: "TP",
+      description: "A test project",
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z",
+    });
+
+    const result = await service.getFormattedProject("proj_123");
+
+    expect(result).toMatchSnapshot();
+  });
+});
+```
+
+### Inline Snapshots
+
+```typescript
+it("formats error message", async () => {
+  mockClient.items.create.mockRejectedValue(
+    new ValidationError("Validation failed", [
+      { field: "title", message: "Required" },
+      { field: "type", message: "Invalid value" },
+    ])
+  );
+
+  try {
+    await service.createItem({});
+  } catch (error) {
+    expect(service.formatError(error)).toMatchInlineSnapshot(`
+      "Validation failed:
+        - title: Required
+        - type: Invalid value"
+    `);
+  }
+});
+```
+
+---
+
+## Test Utilities
+
+### Custom Matchers
+
+```typescript
+// tests/matchers.ts
+expect.extend({
+  toBeValidProject(received) {
+    const pass =
+      received &&
+      typeof received.id === "string" &&
+      typeof received.name === "string" &&
+      typeof received.key === "string";
+
+    return {
+      pass,
+      message: () =>
+        pass
+          ? `expected ${JSON.stringify(received)} not to be a valid project`
+          : `expected ${JSON.stringify(received)} to be a valid project`,
+    };
+  },
+
+  toBeValidItem(received) {
+    const pass =
+      received &&
+      typeof received.id === "string" &&
+      typeof received.projectId === "string" &&
+      typeof received.type === "string" &&
+      typeof received.title === "string";
+
+    return {
+      pass,
+      message: () =>
+        pass
+          ? `expected ${JSON.stringify(received)} not to be a valid item`
+          : `expected ${JSON.stringify(received)} to be a valid item`,
+    };
+  },
+});
+
+// Usage
+expect(result).toBeValidProject();
+expect(item).toBeValidItem();
+```
+
+### Test Helpers
+
+```typescript
+// tests/helpers.ts
+export function createMockProject(overrides = {}) {
+  return {
+    id: `proj_${Math.random().toString(36).slice(2)}`,
+    name: "Test Project",
+    key: "TP",
+    description: "A test project",
+    ownerId: "user_123",
+    settings: {},
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ...overrides,
+  };
+}
+
+export function createMockItem(overrides = {}) {
+  return {
+    id: `item_${Math.random().toString(36).slice(2)}`,
+    projectId: "proj_123",
+    type: "requirement",
+    title: "Test Item",
+    description: "A test item",
+    status: "draft",
+    statusCategory: "initial",
+    priority: "medium",
+    tags: [],
+    createdBy: "user_123",
+    fields: {},
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ...overrides,
+  };
+}
+
+export function createPaginatedResponse<T>(data: T[], options = {}) {
+  return {
+    data,
+    total: data.length,
+    limit: 100,
+    offset: 0,
+    hasMore: false,
+    ...options,
+  };
+}
+
+export async function expectToThrowAsync(fn: () => Promise<any>, ErrorClass: any) {
+  let error: any;
+  try {
+    await fn();
+  } catch (e) {
+    error = e;
+  }
+  expect(error).toBeInstanceOf(ErrorClass);
+  return error;
+}
+```
+
+---
+
+## Coverage Reports
+
+### Running with Coverage
+
+```bash
+# Generate coverage report
+npm test -- --coverage
+
+# Watch mode with coverage
+npm test -- --coverage --watchAll
+```
+
+### Coverage Configuration
+
+```javascript
+// jest.config.js
+module.exports = {
+  // ... other config
+  collectCoverage: true,
+  coverageDirectory: "coverage",
+  coverageReporters: ["text", "lcov", "html"],
+  collectCoverageFrom: [
+    "src/**/*.ts",
+    "!src/**/*.d.ts",
+    "!src/**/__tests__/**",
+    "!src/**/index.ts",
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+    "./src/services/": {
+      branches: 90,
+      functions: 90,
+      lines: 90,
+      statements: 90,
+    },
+  },
+};
+```
+
+---
+
+## Related Documentation
+
+- [Testing](/docs/api-reference/sdks/javascript/testing) - Testing overview
+- [Mocking](/docs/api-reference/sdks/javascript/mocking) - Mocking strategies
+- [Error Handling](/docs/api-reference/sdks/javascript/error-handling) - Error types

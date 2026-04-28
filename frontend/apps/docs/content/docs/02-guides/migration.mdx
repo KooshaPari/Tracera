@@ -1,0 +1,447 @@
+---
+title: Migration Guide
+description: Guide for migrating data from external systems to TraceRTM
+---
+
+# Migration Guide
+
+This guide covers migrating requirements, test cases, and traceability links from external systems into TraceRTM.
+
+## Supported Sources
+
+TraceRTM can import data from:
+
+- **Jira** - Issues, epics, sprints
+- **GitHub** - Issues, pull requests, projects
+- **Spreadsheets** - CSV, Excel files
+- **ReqIF** - Requirements Interchange Format
+- **Markdown/MDX** - Documentation files
+
+## Migration Process
+
+### 1. Prepare Source Data
+
+Export data from your current system:
+
+```bash
+# Jira
+jira export --project PROJ --output jira_export.json
+
+# GitHub
+gh issue list --json number,title,body,labels > github_export.json
+
+# Spreadsheet
+# Export as CSV from Excel/Google Sheets
+```
+
+### 2. Transform Data
+
+Map source fields to TraceRTM schema:
+
+```python
+# Example transformation
+def transform_jira_issue(issue):
+    return {
+        "title": issue["fields"]["summary"],
+        "description": issue["fields"]["description"],
+        "type": map_issue_type(issue["fields"]["issuetype"]["name"]),
+        "status": map_status(issue["fields"]["status"]["name"]),
+        "metadata": {
+            "jira_key": issue["key"],
+            "priority": issue["fields"]["priority"]["name"],
+            "assignee": issue["fields"]["assignee"]["displayName"],
+        }
+    }
+```
+
+### 3. Import Data
+
+Use the CLI to import:
+
+```bash
+# Import from Jira
+rtm ingest jira --file jira_export.json --project-id proj-123
+
+# Import from GitHub
+rtm ingest github --file github_export.json --project-id proj-123
+
+# Import from CSV
+rtm ingest csv --file requirements.csv --project-id proj-123
+```
+
+## Jira Migration
+
+### Export from Jira
+
+```bash
+# Using Jira CLI
+jira export \
+  --project PROJ \
+  --include-subtasks \
+  --include-links \
+  --output jira_export.json
+
+# Or use REST API
+curl -u user:token \
+  "https://your-domain.atlassian.net/rest/api/3/search?jql=project=PROJ" \
+  > jira_export.json
+```
+
+### Field Mapping
+
+| Jira Field  | TraceRTM Field    | Notes                           |
+| ----------- | ----------------- | ------------------------------- |
+| Summary     | title             | Direct mapping                  |
+| Description | description       | Converted from Atlassian format |
+| Issue Type  | type              | Maps to item types              |
+| Status      | status            | Maps to item statuses           |
+| Priority    | metadata.priority | Stored in metadata              |
+| Labels      | metadata.labels   | Array in metadata               |
+| Assignee    | metadata.assignee | User info in metadata           |
+
+### Import Command
+
+```bash
+rtm ingest jira \
+  --file jira_export.json \
+  --project-id proj-123 \
+  --type-mapping issue_type_mapping.json \
+  --link-mapping link_type_mapping.json
+```
+
+### Type Mapping File
+
+```json
+{
+  "Story": "user_story",
+  "Epic": "epic",
+  "Bug": "defect",
+  "Task": "task",
+  "Requirement": "requirement"
+}
+```
+
+## GitHub Migration
+
+### Export from GitHub
+
+```bash
+# Export issues
+gh issue list \
+  --repo owner/repo \
+  --json number,title,body,labels,state \
+  --limit 1000 \
+  > github_issues.json
+
+# Export pull requests
+gh pr list \
+  --repo owner/repo \
+  --json number,title,body,labels,state \
+  --limit 1000 \
+  > github_prs.json
+```
+
+### Field Mapping
+
+| GitHub Field | TraceRTM Field         | Notes                 |
+| ------------ | ---------------------- | --------------------- |
+| title        | title                  | Direct mapping        |
+| body         | description            | Markdown preserved    |
+| labels       | metadata.labels        | Converted to array    |
+| state        | status                 | Open/Closed mapped    |
+| number       | metadata.github_number | Original issue number |
+
+### Import Command
+
+```bash
+rtm ingest github \
+  --issues github_issues.json \
+  --prs github_prs.json \
+  --project-id proj-123 \
+  --link-prs-to-issues
+```
+
+## CSV/Excel Migration
+
+### Prepare CSV
+
+Create a CSV file with required columns:
+
+```csv
+title,description,type,status,priority,assignee
+User Login,As a user I want to login,user_story,active,high,john
+API Endpoint,Create login endpoint,task,active,high,jane
+Login Test,Test login functionality,test,active,medium,bob
+```
+
+### Import Command
+
+```bash
+rtm ingest csv \
+  --file requirements.csv \
+  --project-id proj-123 \
+  --column-mapping column_mapping.json
+```
+
+### Column Mapping
+
+```json
+{
+  "title": "title",
+  "description": "description",
+  "type": "type",
+  "status": "status",
+  "metadata": {
+    "priority": "priority",
+    "assignee": "assignee"
+  }
+}
+```
+
+## Markdown/MDX Migration
+
+### Source Files
+
+```markdown
+# Epic: User Authentication
+
+## User Story: User Login
+
+As a user, I want to login so that I can access my account.
+
+**Acceptance Criteria:**
+
+- User can enter username and password
+- Invalid credentials show error
+- Valid credentials redirect to dashboard
+
+## Task: Create Login API
+
+Create POST /api/auth/login endpoint
+
+**Dependencies:**
+
+- Database schema ready
+- JWT library installed
+```
+
+### Import Command
+
+```bash
+rtm ingest markdown \
+  --directory ./docs \
+  --project-id proj-123 \
+  --pattern "**/*.md" \
+  --extract-links
+```
+
+## Link Migration
+
+### Explicit Links
+
+Define links in a separate file:
+
+```json
+[
+  {
+    "source": "PROJ-123",
+    "target": "PROJ-456",
+    "link_type": "implements",
+    "metadata": {
+      "confidence": "high"
+    }
+  }
+]
+```
+
+### Heuristic Links
+
+Auto-detect links from references:
+
+```python
+# Detect links from issue references
+# "Implements PROJ-123" -> creates "implements" link
+# "Fixes PROJ-456" -> creates "fixes" link
+# "Related to PROJ-789" -> creates "related" link
+
+rtm ingest jira \
+  --file jira_export.json \
+  --project-id proj-123 \
+  --detect-links \
+  --link-patterns patterns.json
+```
+
+## Validation
+
+### Pre-Migration Check
+
+```bash
+# Validate source data
+rtm ingest validate \
+  --file jira_export.json \
+  --type jira
+
+# Shows:
+# - Missing required fields
+# - Invalid field values
+# - Duplicate entries
+# - Orphaned links
+```
+
+### Post-Migration Verification
+
+```bash
+# Check imported items
+rtm items list --project-id proj-123 --count
+
+# Verify links
+rtm links list --project-id proj-123 --validate
+
+# Generate migration report
+rtm ingest report --project-id proj-123
+```
+
+## Incremental Migration
+
+### Migrate in Batches
+
+```bash
+# Batch 1: Requirements
+rtm ingest csv \
+  --file requirements.csv \
+  --project-id proj-123 \
+  --batch 1
+
+# Batch 2: Test Cases
+rtm ingest csv \
+  --file test_cases.csv \
+  --project-id proj-123 \
+  --batch 2
+
+# Batch 3: Links
+rtm ingest links \
+  --file links.json \
+  --project-id proj-123
+```
+
+### Track Migration Progress
+
+```bash
+# View migration status
+rtm ingest status --project-id proj-123
+
+# Resume failed migration
+rtm ingest resume \
+  --project-id proj-123 \
+  --batch 2
+```
+
+## Custom Migration Scripts
+
+### Python Script Example
+
+```python
+from tracertm.api import TraceRTM
+import json
+
+# Initialize client
+rtm = TraceRTM(api_url="http://localhost:8000")
+
+# Load source data
+with open('jira_export.json') as f:
+    issues = json.load(f)
+
+# Transform and import
+for issue in issues:
+    item = transform_jira_issue(issue)
+    result = rtm.items.create(
+        project_id='proj-123',
+        data=item
+    )
+    print(f"Imported: {result['id']}")
+
+# Create links
+for issue in issues:
+    if 'issuelinks' in issue['fields']:
+        for link in issue['fields']['issuelinks']:
+            rtm.links.create(
+                source_id=issue['key'],
+                target_id=link['inwardIssue']['key'],
+                link_type=map_link_type(link['type']['name'])
+            )
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Invalid field values:**
+
+```bash
+# Check validation errors
+rtm ingest validate --file data.json --verbose
+```
+
+**Missing required fields:**
+
+```bash
+# Use default values
+rtm ingest csv \
+  --file data.csv \
+  --defaults defaults.json
+```
+
+**Duplicate entries:**
+
+```bash
+# Skip duplicates
+rtm ingest csv \
+  --file data.csv \
+  --skip-duplicates
+
+# Or update existing
+rtm ingest csv \
+  --file data.csv \
+  --update-existing
+```
+
+**Orphaned links:**
+
+```bash
+# Validate links after import
+rtm links validate --project-id proj-123 --fix
+```
+
+## Best Practices
+
+1. **Validate before import** - Run validation checks
+2. **Backup existing data** - Create backup before migration
+3. **Test with sample** - Import small batch first
+4. **Map fields carefully** - Review field mappings
+5. **Preserve metadata** - Keep original IDs and references
+6. **Verify links** - Check link integrity after import
+7. **Document mapping** - Keep field mapping documentation
+8. **Incremental import** - Import in batches
+9. **Monitor progress** - Track import status
+10. **Post-migration check** - Verify data completeness
+
+## Migration Checklist
+
+- [ ] Export data from source system
+- [ ] Create field mapping configuration
+- [ ] Validate source data
+- [ ] Backup TraceRTM database
+- [ ] Test import with sample data
+- [ ] Review imported sample data
+- [ ] Run full migration
+- [ ] Verify item counts match
+- [ ] Check link integrity
+- [ ] Validate metadata fields
+- [ ] Generate migration report
+- [ ] Train team on new system
+
+## Related Documentation
+
+- [CLI Tutorial](/00-getting-started/cli-tutorial)
+- [API Reference](/03-api-reference)
+- [Data Model](/01-architecture/backend-architecture)

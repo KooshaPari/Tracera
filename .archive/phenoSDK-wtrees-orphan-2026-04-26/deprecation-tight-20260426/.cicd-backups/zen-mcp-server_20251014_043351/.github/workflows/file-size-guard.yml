@@ -1,0 +1,44 @@
+name: File Size Guard
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  guard-large-files:
+    name: Block files >50MB in PRs
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect large files in PR changes (>50MB)
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -eo pipefail
+          echo "Comparing $BASE_SHA..$HEAD_SHA"
+          changed=$(git diff --name-only --diff-filter=AM "$BASE_SHA" "$HEAD_SHA")
+          [ -z "$changed" ] && echo "No added/modified files" && exit 0
+
+          threshold=$((50*1024*1024))
+          bad_files=()
+          while IFS= read -r f; do
+            [ -f "$f" ] || continue
+            size=$(python -c 'import os,sys;print(os.path.getsize(sys.argv[1]))' "$f")
+            if [ "$size" -gt "$threshold" ]; then
+              bad_files+=("$f: $size bytes")
+            fi
+          done <<< "$changed"
+
+          if [ ${#bad_files[@]} -gt 0 ]; then
+            echo "❌ The following files exceed 50MB:"
+            for bf in "${bad_files[@]}"; do echo "  - $bf"; done
+            echo "Use Git LFS for approved binaries or reduce artifact size."
+            exit 1
+          fi
+          echo "✅ No files >50MB detected in PR changes"

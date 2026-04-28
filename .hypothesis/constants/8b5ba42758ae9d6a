@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/performance_tuning_service.py
+# hypothesis_version: 6.148.7
+
+[100, 300, 1000, 'No metrics available', 'No metrics found', 'average', 'cache_config', 'cache_enabled', 'cache_ttl', 'count', 'enabled', 'error', 'max', 'max_size', 'metric_name', 'metric_types', 'metrics', 'metrics_collected', 'metrics_count', 'min', 'ms', 'name', 'query_time', 'recommendations', 'timestamp', 'total_metrics', 'ttl_seconds', 'unit', 'value']

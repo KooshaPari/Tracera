@@ -1,0 +1,79 @@
+name: QA Ingestion (Aegis)
+
+on:
+  workflow_call:
+    inputs:
+      project_name:
+        description: 'Project name for QA reporting'
+        required: false
+        default: 'Aegis'
+        type: string
+      python_version:
+        description: 'Python version to use'
+        required: false
+        default: '3.11'
+        type: string
+      test_path:
+        description: 'Path to test files'
+        required: false
+        default: 'tests/aegis_langgraph'
+        type: string
+      requirements_files:
+        description: 'Requirements files to install'
+        required: false
+        default: 'requirements.txt,requirements-dev.txt,requirements-langgraph.txt'
+        type: string
+    outputs:
+      qa_db_path:
+        description: 'Path to QA database artifact'
+        value: ${{ steps.upload-qa-db.outputs.artifact-path }}
+
+jobs:
+  qa-aegis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+          cache: 'pip'
+          cache-dependency-path: |
+            ${{ inputs.requirements_files }}
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          IFS=',' read -ra FILES <<< "${{ inputs.requirements_files }}"
+          for file in "${FILES[@]}"; do
+            if [ -f "$file" ]; then
+              pip install -r "$file"
+            fi
+          done
+          # LangGraph optional; tests avoid real runtime but install if available
+          if [ -f requirements-langgraph.txt ]; then pip install -r requirements-langgraph.txt || true; fi
+
+      - name: Run Aegis tests (JUnit)
+        run: |
+          mkdir -p reports
+          pytest -q ${{ inputs.test_path }} -k "not slow" \
+            --junitxml=reports/aegis-junit.xml || true
+
+      - name: Ingest QA results (Aegis)
+        run: |
+          python scripts/qa_ingest.py \
+            --project ${{ inputs.project_name }} \
+            --framework pytest \
+            --input reports/aegis-junit.xml \
+            --format junit \
+            --commit "${{ github.sha }}" \
+            --branch "${{ github.ref_name }}" \
+            --ci github
+
+      - name: Upload QA DB
+        id: upload-qa-db
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-db-${{ github.sha }}
+          path: dashboard/qa_data/qa.db
+          if-no-files-found: warn

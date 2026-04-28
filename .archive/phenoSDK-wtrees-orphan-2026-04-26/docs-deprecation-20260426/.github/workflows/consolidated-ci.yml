@@ -1,0 +1,866 @@
+name: Consolidated CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop, master]
+  pull_request:
+    branches: [main, develop, master]
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      run_full_quality:
+        description: 'Run full quality analysis'
+        required: false
+        default: false
+        type: boolean
+      run_security_scan:
+        description: 'Run comprehensive security scan'
+        required: false
+        default: false
+        type: boolean
+      run_performance_tests:
+        description: 'Run performance tests'
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly full analysis
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PYTHONPATH: .
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  # =============================================================================
+  # PHASE 1: PREPARATION AND ANALYSIS
+  # =============================================================================
+  
+  preparation:
+    name: Environment Preparation
+    runs-on: ubuntu-latest
+    outputs:
+      should-run-full-quality: ${{ steps.check.outputs.should-run-full-quality }}
+      should-run-security: ${{ steps.check.outputs.should-run-security }}
+      should-run-performance: ${{ steps.check.outputs.should-run-performance }}
+      should-run-tests: ${{ steps.check.outputs.should-run-tests }}
+      branch: ${{ steps.branch.outputs.branch }}
+      ref: ${{ steps.ref.outputs.ref }}
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup Python and cache
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: |
+            **/requirements*.txt
+            pyproject.toml
+            *.toml
+
+      - name: Checkout tool cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/pre-commit
+            ~/.cache/bandit
+            ~/.cache/vendoring
+            ~/.cache/black
+            ~/.cache/isort
+            ~/.cache/ruff
+          key: ${{ runner.os }}-tool-cache-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/requirements*.txt pyproject.toml *.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-tool-cache-${{ env.PYTHON_VERSION }}-
+            ${{ runner.os }}-tool-cache-
+
+      - name: Check workflow inputs and conditions
+        id: check
+        run: |
+          echo "should-run-full-quality=${{ github.event.inputs.run_full_quality || github.event_name == 'schedule' }}" >> $GITHUB_OUTPUT
+          echo "should-run-security=${{ github.event.inputs.run_security_scan || github.event_name == 'schedule' }}" >> $GITHUB_OUTPUT
+          echo "should-run-performance=${{ github.event.inputs.run_performance_tests || github.event_name == 'schedule' }}" >> $GITHUB_OUTPUT
+          echo "should-run-tests=${{ github.event_name == 'schedule' || contains(github.event.head_commit.message, '[ci:tests]') }}" >> $GITHUB_OUTPUT
+
+      - name: Git branch and ref detection
+        id: branch
+        run: |
+          echo "branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          echo "ref=${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Detect changed files (smart analysis)
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            src:
+              - 'src/**'
+            tests:
+              - 'tests/**'
+            docs:
+              - 'docs/**'
+            config:
+              - '*.toml'
+              - '*.yml'
+              - '*.yaml'
+              - '*.json'
+              - 'pyproject.toml'
+              - 'requirements*.txt'
+            workflows:
+              - '.github/workflows/**'
+            security:
+              - '**/secrets'
+              - '**/auth'
+              - '**/security'
+
+      - name: Export job summary
+        run: |
+          echo "## 🚀 CI Analysis Summary" >> $GITHUB_STEP_SUMMARY
+          echo "Branch: ${{ steps.branch.outputs.branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "Longest Running Jobs: TBD" >> $GITHUB_STEP_SUMMARY
+          echo "Total Jobs: TBD" >> $GITHUB_STEP_SUMMARY
+          echo "::notice::Workflow execution triggered"
+
+  # =============================================================================
+  # PHASE 2: PARALLEL CODE QUALITY ANALYSIS
+  # =============================================================================
+  
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    needs: preparation
+    if: needs.preparation.outputs.changed-files.src == 'true' || needs.preparation.outputs.changed-files.config == 'true' || github.event_name == 'schedule' || github.event.inputs.run_full_quality == 'true'
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PYTHONPATH: .:zen-mcp-server:zen-mcp-server/src
+      PRE_COMMIT_COLOR: "always"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[quality,test]"
+
+      - name: Clean workspace artifacts
+        run: |
+          python scripts/cleanup_workspace.py --verbose
+
+      - name: Ruff lint
+        run: |
+          ruff check .
+
+      - name: MyPy static typing
+        run: |
+          mypy .
+
+      - name: Prospector quality analysis
+        run: |
+          prospector --profile prospector.yaml
+
+      - name: Radon complexity analysis
+        run: |
+          python scripts/analyze_complexity.py --json
+
+      - name: Docstring formatting check
+        run: |
+          docformatter --check --recursive src/
+
+      - name: Docstring style (pydocstyle)
+        run: |
+          pydocstyle src/
+
+      - name: Documentation coverage
+        run: |
+          interrogate -v --fail-under 80 src/
+
+      - name: Documentation doctests
+        run: |
+          pytest --doctest-modules --doctest-glob="*.md" docs src
+
+      - name: Pre-commit (full)
+        run: |
+          pre-commit run --all-files --show-diff-on-failure
+
+  # =============================================================================
+  # PHASE 3: SECURITY SCANNING (PARALLEL EXECUTION)
+  # =============================================================================
+  
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+    needs: preparation
+    if: needs.preparation.outputs.should-run-security == 'true' || needs.preparation.outputs.changed-files.security == 'true' || github.event_name == 'schedule'
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit[toml] safety detect-secrets pip-audit semgrep trivy
+
+      - name: Run Bandit security scan
+        run: |
+          bandit -r src/ -f json -o bandit-report.json -ll || true
+
+      - name: Run Safety dependency check
+        run: |
+          safety check --json --output safety-report.json || true
+
+      - name: Run detect-secrets
+        run: |
+          detect-secrets scan --all-files --baseline .secrets.baseline || true
+
+      - name: Run pip-audit
+        run: |
+          pip-audit --format json --output pip-audit-report.json || true
+
+      - name: Run Semgrep SAST
+        run: |
+          semgrep --config=auto --json --output=semgrep-results.json || true
+
+      - name: vulnerability-analysis:
+        continue-on-error: true
+        run: |
+          echo "## Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "🔍 Bandit: $(cat bandit-report.json | jq '.results[] | length' 2>/dev/null || echo '0') issues found" >> $GITHUB_STEP_SUMMARY
+          echo "🛡️ Safety: $(cat safety-report.json | jq '.vulnerabilities | length' 2>/dev/null || echo '0') vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+          echo "🔐 Secrets: $(cat .secrets.baseline | jq '.results | length' 2>/dev/null || echo '0 secrets detected')" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # PHASE 4: MANAGED EXECUTION (DEPENDS ON PREPARATION)
+  # =============================================================================
+  
+  architecture-fitness:
+    name: Architecture Fitness Analysis
+    runs-on: ubuntu-latest
+    needs: preparation
+    if: needs.preparation.outputs.changed-files.src == 'true' || needs.preparation.outputs.changed-files.config == 'true' || github.event_name == 'schedule'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Run architecture fitness tests
+        run: |
+          python -m pytest architecture-fitness/ -v --cov=architecture --cov-report=xml --cov-report=term-missing
+
+  dependency-analysis:
+    name: Dependency Analysis
+    runs-on: ubuntu-latest
+    needs: preparation
+    if: needs.preparation.outputs.changed-files.config == 'true' || github.event_name == 'schedule'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Analyze dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipdeptree pydeps pip-licenses
+
+      - name: Generate dependency tree
+        run: |
+          pipdeptree --graphviz > dependency-graph.dot || true
+
+      - name: Generate dependency map
+        run: |
+          pydeps src/ --max-bacon=1 --show-deps --max-bacon=1 --show-deps || true
+
+      - name: Generate license report
+        run: |
+          pip-licenses --format=json --output-file license-report.json
+
+  # =============================================================================
+  # PHASE 5: TESTING (CONDITIONAL AND PARALLEL)
+  # =============================================================================
+
+  testing-unit:
+    name: Unit Testing
+    runs-on: ubuntu-latest
+    needs: preparation
+    if: needs.preparation.outputs.should-run-tests == 'true' || needs.preparation.outputs.changed-files.tests == 'true' || github.event_name == 'schedule'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+
+      - name: Run unit tests
+        run: |
+          pytest tests/unit/ --cov=src/pheno/unit --cov-report=xml --cov-report=term-missing -v
+
+      - name: Upload unit test coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: unit-coverage.xml
+
+  testing-integration:
+    name: Integration Testing
+    runs-on: ubuntu-latest
+    needs: preparation
+    if: needs.preparation.outputs.should-run-tests == 'true' || needs.preparation.outputs.changed-files.src == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+
+      - name: Run integration tests
+        run: |
+          pytest tests/integration/ --cov=src/pheno/integration --cov-report=xml --cov-report=term-missing -v
+
+      - name: Upload integration test coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: integration-coverage.xml
+
+  testing-e2e:
+    name: End-to-End Testing
+    runs-on: ubuntu-latest
+    needs: preparation
+    if: needs.preparation.outputs.should-run-performance == 'true' || github.event_name == 'schedule'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright pytest-playwright
+
+      - name: Install Playwright browsers
+        run: |
+          playwright install --with-deps
+
+      - name: Run E2E tests
+        run: |
+          pytest tests/e2e/ --report=xml --html=results.html -v
+
+      - name: Clean workspace
+        run: python scripts/cleanup_workspace.py --verbose
+
+      - name: Run Ruff linting
+        run: |
+          ruff check . --output-format=json --output-file=ruff_report.json || true
+          ruff check . --output-format=concise
+
+      - name: Run MyPy type checking
+        run: |
+          mypy . --json-report mypy_report --show-error-codes || true
+          mypy . --show-error-codes
+
+      - name: Run Black formatting check
+        run: black --check --diff .
+
+      - name: Run isort import sorting check
+        run: isort --check-only --diff .
+
+      - name: Run docformatter check
+        run: docformatter --check --recursive src/
+
+      - name: Run pydocstyle
+        run: pydocstyle src/ || true
+
+      - name: Upload quality reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quality-reports
+          path: |
+            ruff_report.json
+            mypy_report/
+            *.json
+
+  # =============================================================================
+  # PHASE 3: ARCHITECTURE AND DESIGN VALIDATION
+  # =============================================================================
+  
+  architecture-validation:
+    name: Architecture Validation
+    runs-on: ubuntu-latest
+    needs: preparation
+    if: needs.preparation.outputs.changed-files.src == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install radon xenon
+
+      - name: File size validation
+        run: |
+          python scripts/checks/check_file_size.py --max-lines 500 $(find src/ -name "*.py")
+
+      - name: Kit boundary validation
+        run: |
+          python scripts/checks/validate_kit_boundaries.py $(find src/pheno/ -name "*.py")
+
+      - name: Architecture compliance validation
+        run: |
+          python scripts/checks/validate_architecture.py --naming-conventions $(find src/ -name "*.py")
+
+      - name: Cyclomatic complexity analysis
+        run: |
+          radon cc src/ --min B -s --xml > complexity_report.xml || true
+          echo "Complexity analysis completed"
+
+      - name: Maintainability index
+        run: |
+          radon mi src/ --min B -s --json > maintainability_report.json || true
+
+      - name: Upload architecture reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: architecture-reports
+          path: |
+            complexity_report.xml
+            maintainability_report.json
+
+  # =============================================================================
+  # PHASE 4: SECURITY SCANNING
+  # =============================================================================
+  
+  security-scanning:
+    name: Security Analysis
+    runs-on: ubuntu-latest
+    needs: preparation
+    if: needs.preparation.outputs.should-run-security == 'true' || needs.preparation.outputs.changed-files.src == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety semgrep detect-secrets pip-audit
+
+      - name: Run Bandit security scan
+        run: |
+          bandit -r src/ -f json -o bandit-report.json || true
+
+      - name: Run Safety vulnerability scan
+        run: |
+          safety check --json --output safety-report.json || true
+
+      - name: Run Semgrep security scan
+        run: |
+          semgrep --config=auto . --json --output=semgrep-report.json || true
+
+      - name: Run pip-audit
+        run: |
+          pip-audit --format json --output pip-audit-report.json || true
+
+      - name: Run detect-secrets
+        run: |
+          detect-secrets scan --all-files --json . > detect-secrets.json || true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+            semgrep-report.json
+            pip-audit-report.json
+            detect-secrets.json
+
+  # =============================================================================
+  # PHASE 5: TESTING
+  # =============================================================================
+  
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: preparation
+    if: needs.preparation.outputs.changed-files.src == 'true' || needs.preparation.outputs.changed-files.tests == 'true'
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+
+      - name: Run tests with coverage
+        run: |
+          pytest --cov=src/pheno --cov-report=xml --cov-report=html --junitxml=test-results.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-py${{ matrix.python-version }}
+          path: |
+            test-results.xml
+            coverage.xml
+            htmlcov/
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [preparation, unit-tests]
+    if: needs.preparation.outputs.changed-files.src == 'true' || needs.preparation.outputs.changed-files.tests == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test,integration]"
+
+      - name: Run integration tests
+        run: |
+          pytest tests/integration/ -v --tb=short
+
+  # =============================================================================
+  # PHASE 6: DOCUMENTATION
+  # =============================================================================
+  
+  documentation:
+    name: Documentation Validation
+    runs-on: ubuntu-latest
+    needs: preparation
+    if: needs.preparation.outputs.changed-files.docs == 'true' || needs.preparation.outputs.changed-files.src == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install documentation tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install mkdocs mkdocs-material mkdocstrings[python]
+
+      - name: Validate documentation
+        run: |
+          python scripts/checks/verify_pheno_docs.py
+
+      - name: Check markdown links
+        run: |
+          bash scripts/checks/run_markdown_link_check.sh
+
+      - name: Build documentation
+        run: |
+          mkdocs build --clean
+
+  # =============================================================================
+  # PHASE 7: PERFORMANCE TESTING
+  # =============================================================================
+  
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: preparation
+    if: needs.preparation.outputs.should-run-performance == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install performance tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[performance]"
+
+      - name: Run performance benchmarks
+        run: |
+          pytest tests/performance/ --benchmark-only --benchmark-json=benchmark-results.json
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-results
+          path: benchmark-results.json
+
+  # =============================================================================
+  # PHASE 8: COMPREHENSIVE QUALITY ANALYSIS
+  # =============================================================================
+  
+  comprehensive-quality:
+    name: Comprehensive Quality Analysis
+    runs-on: ubuntu-latest
+    needs: [preparation, code-quality, architecture-validation, security-scanning, unit-tests]
+    if: needs.preparation.outputs.should-run-full-quality == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install quality tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[quality]"
+
+      - name: Download all reports
+        uses: actions/download-artifact@v4
+        with:
+          path: reports/
+
+      - name: Run comprehensive quality analysis
+        run: |
+          python scripts/comprehensive_quality_analyzer.py . --output reports/
+
+      - name: Calculate quality score
+        run: |
+          python scripts/calculate_quality_score.py reports/ > quality_score.txt
+
+      - name: Upload comprehensive reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: comprehensive-quality-reports
+          path: |
+            reports/
+            quality_score.txt
+
+  # =============================================================================
+  # PHASE 9: QUALITY GATES AND FINAL VALIDATION
+  # =============================================================================
+  
+  quality-gates:
+    name: Quality Gates Validation
+    runs-on: ubuntu-latest
+    needs: [code-quality, architecture-validation, security-scanning, unit-tests, comprehensive-quality]
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Download quality reports
+        uses: actions/download-artifact@v4
+        with:
+          path: reports/
+
+      - name: Validate quality gates
+        run: |
+          python scripts/validate_quality_gates.py || {
+            echo "Quality gates failed!"
+            exit 1
+          }
+
+      - name: Calculate final quality score
+        run: |
+          python scripts/calculate_quality_score.py reports/ > final_quality_score.txt
+          cat final_quality_score.txt
+
+      - name: Comment PR with quality score
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = './final_quality_score.txt';
+            
+            if (fs.existsSync(path)) {
+              const score = fs.readFileSync(path, 'utf8');
+              
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '## 📊 Quality Score Report\\n\\n' + score
+              });
+            }
+
+  # =============================================================================
+  # PHASE 10: DEPLOYMENT (if on main branch)
+  # =============================================================================
+  
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: [quality-gates]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Build package
+        run: |
+          python -m build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+
+  # =============================================================================
+  # PHASE 11: UNIFIED REPORTING AND ANALYTICS 
+  # =============================================================================
+  
+  unified-reporting:
+    name: Unified Reporting Dashboard
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan, architecture-fitness, dependency-analysis, testing-unit, testing-integration, testing-e2e, deploy]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Generate unified report
+        run: |
+          pip install reportlab jinja2
+          python scripts/generate_unified_report.py
+
+      - name: Upload unified report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-unified-report
+          path: |
+            ci-report.yaml
+            security-summary.json
+            coverage-summary.json
+            performance-metrics.json
+            dashboard.html
+
+      - name: Update GitHub status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'ci-report.yaml';
+            if (fs.existsSync(path)) {
+              const report = require('js-yaml').load(fs.readFileSync(path, 'utf8'));
+              for (const [jobName, result] of Object.entries(report.jobs || {})) {
+                const status = result.status || 'success';
+                const conclusion = result.conclusion || 'success';
+                await github.rest.repos.createCommitStatus({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  sha: context.sha,
+                  state: status === 'success' ? 'success' : 'failure',
+                  description: `${jobName}: ${result.outcome || 'completed'}`,
+                  context: `ci/${jobName}`,
+                  target_url: context.serverUrl + '/' + context.repo.owner + '/' + context.repo.repo + '/actions/runs/' + context.runId
+                });
+              }
+            }

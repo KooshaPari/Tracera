@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/agent_lock.py
+# hypothesis_version: 6.148.7
+
+[255, 'agent_id', 'agent_locks', 'agents.id', 'exclusive', 'idx_locks_item_agent', 'item_id', 'items.id', 'project_id', 'projects.id']

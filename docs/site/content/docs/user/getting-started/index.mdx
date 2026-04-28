@@ -1,0 +1,329 @@
+---
+title: Getting Started with TraceRTM
+description: Complete guide to installing TraceRTM and creating your first traceability matrix in 5 minutes
+keywords: [getting started, installation, quickstart, setup, tutorial]
+audience: user
+difficulty: beginner
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { CodeGroup } from 'fumadocs-ui/components/code-group';
+
+# Getting Started with TraceRTM
+
+Welcome to TraceRTM - the comprehensive requirements traceability management system that helps you maintain complete visibility across your entire product development lifecycle.
+
+<Callout type="info" title="What you'll learn">
+In this guide, you'll:
+- Install TraceRTM in under 5 minutes
+- Create your first project
+- Add requirements and test cases
+- Generate your first traceability matrix
+</Callout>
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+<Callout type="warn" title="System Requirements">
+- **Node.js** 18+ or **Bun** 1.0+
+- **Python** 3.11+ (for backend)
+- **PostgreSQL** 15+ or Docker
+- **Git** for version control
+- At least 4GB RAM available
+</Callout>
+
+## Installation
+
+<Tabs items={['Docker (Recommended)', 'Local Development', 'Cloud Deployment']}>
+  <Tab value="Docker (Recommended)">
+    The fastest way to get started is using Docker Compose:
+
+    <Steps>
+      <Step>
+        ### Clone the repository
+
+        ```bash
+        git clone https://github.com/your-org/tracertm.git
+        cd tracertm
+        ```
+      </Step>
+
+      <Step>
+        ### Configure environment
+
+        ```bash
+        cp .env.example .env
+        # Edit .env with your preferences
+        ```
+
+        <Callout type="tip">
+        Use `openssl rand -hex 32` to generate secure secret keys
+        </Callout>
+      </Step>
+
+      <Step>
+        ### Start services
+
+        ```bash
+        docker-compose up -d
+        ```
+
+        This will start:
+        - PostgreSQL database
+        - Redis cache
+        - Backend API (port 8000)
+        - Frontend UI (port 3000)
+        - Neo4j graph database (port 7687)
+      </Step>
+
+      <Step>
+        ### Verify installation
+
+        ```bash
+        curl http://localhost:8000/health
+        # Expected: {"status": "healthy", "version": "1.0.0"}
+        ```
+
+        Open http://localhost:3000 in your browser
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab value="Local Development">
+    For active development, run services locally:
+
+    <Steps>
+      <Step>
+        ### Install dependencies
+
+        <CodeGroup>
+          ```bash title="Backend (Python)"
+          cd src/backend
+          uv venv
+          source .venv/bin/activate
+          uv pip install -r requirements.txt
+          ```
+
+          ```bash title="Frontend (Bun)"
+          cd frontend
+          bun install
+          ```
+        </CodeGroup>
+      </Step>
+
+      <Step>
+        ### Setup database
+
+        ```bash
+        # Start PostgreSQL
+        docker-compose up -d postgres
+
+        # Run migrations
+        cd src/backend
+        alembic upgrade head
+        ```
+      </Step>
+
+      <Step>
+        ### Start development servers
+
+        <CodeGroup>
+          ```bash title="Backend"
+          cd src/backend
+          uvicorn src.main:app --reload --port 8000
+          ```
+
+          ```bash title="Frontend"
+          cd frontend
+          bun dev
+          ```
+        </CodeGroup>
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab value="Cloud Deployment">
+    Deploy to production with our one-click installers:
+
+    <Steps>
+      <Step>
+        ### Choose your platform
+
+        - **Vercel**: Frontend deployment
+        - **Railway/Render**: Backend + Database
+        - **Kubernetes**: Full cluster deployment
+      </Step>
+
+      <Step>
+        ### Configure secrets
+
+        Set these environment variables:
+        - `DATABASE_URL`: PostgreSQL connection string
+        - `REDIS_URL`: Redis connection string
+        - `JWT_SECRET`: Authentication secret
+        - `WORKOS_API_KEY`: WorkOS API key (if using)
+      </Step>
+
+      <Step>
+        ### Deploy
+
+        ```bash
+        # Using our CLI
+        tracertm deploy --platform vercel
+        ```
+
+        See [Deployment Guide](/docs/developer/deployment) for details
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## 5-Minute Quickstart
+
+Let's create your first traceability matrix!
+
+<Steps>
+  <Step>
+    ### Create a new project
+
+    Navigate to http://localhost:3000 and click **New Project**:
+
+    - **Name**: My First Project
+    - **Key**: MFP
+    - **Description**: Learning TraceRTM basics
+
+    <Callout type="info">
+    The project key (MFP) will prefix all items: MFP-REQ-1, MFP-TC-1, etc.
+    </Callout>
+  </Step>
+
+  <Step>
+    ### Add a business requirement
+
+    1. Click **Create Item** → **Business Requirement**
+    2. Fill in:
+       - **Title**: User login functionality
+       - **Description**: System shall allow users to authenticate
+       - **Priority**: High
+       - **Status**: Draft
+
+    This creates **MFP-BR-1**
+  </Step>
+
+  <Step>
+    ### Add functional requirements
+
+    Create three functional requirements linked to BR-1:
+
+    1. **MFP-FR-1**: Support email/password authentication
+    2. **MFP-FR-2**: Implement OAuth2 for social login
+    3. **MFP-FR-3**: Enforce password complexity rules
+
+    Link each to MFP-BR-1 using **satisfies** relationship
+  </Step>
+
+  <Step>
+    ### Add test cases
+
+    Create test cases for each functional requirement:
+
+    1. **MFP-TC-1**: Verify email login flow
+       - Links to: MFP-FR-1 (verifies)
+
+    2. **MFP-TC-2**: Verify Google OAuth flow
+       - Links to: MFP-FR-2 (verifies)
+
+    3. **MFP-TC-3**: Test password validation rules
+       - Links to: MFP-FR-3 (verifies)
+  </Step>
+
+  <Step>
+    ### Generate traceability matrix
+
+    Click **Views** → **Requirements Traceability Matrix**
+
+    You'll see:
+    - Complete forward trace: BR → FR → TC
+    - Complete backward trace: TC → FR → BR
+    - Coverage percentages for each requirement
+    - Gap analysis highlighting missing links
+
+    <Callout type="success" title="Congratulations!">
+    You've created your first traceability matrix! 🎉
+
+    You now have complete visibility from business requirements down to test cases.
+    </Callout>
+  </Step>
+</Steps>
+
+## Core Concepts Overview
+
+Before diving deeper, understand these key concepts:
+
+### The 16 Item Types
+
+TraceRTM supports 16 standardized item types following industry best practices:
+
+| **Category** | **Item Types** | **Purpose** |
+|--------------|----------------|-------------|
+| **Requirements** | Business Requirement (BR)<br/>Functional Requirement (FR)<br/>Non-Functional Requirement (NFR) | What the system should do |
+| **Design** | System Design (SD)<br/>Interface Design (ID)<br/>Database Design (DD) | How the system is built |
+| **Implementation** | Code Module (CM)<br/>Component (COMP)<br/>Service (SVC) | Actual code artifacts |
+| **Testing** | Test Case (TC)<br/>Test Suite (TS)<br/>Test Result (TR) | Verification activities |
+| **Quality** | Risk (RISK)<br/>Issue (ISS)<br/>Change Request (CR) | Quality management |
+| **Compliance** | Regulation (REG) | Regulatory requirements |
+
+See [Concepts → Item Types](/docs/user/concepts/item-types) for details.
+
+### Link Types
+
+TraceRTM supports 60+ relationship types organized into categories:
+
+- **Hierarchical**: parent/child, composition
+- **Traceability**: satisfies, verifies, implements
+- **Dependencies**: depends_on, blocks, related_to
+- **Evolution**: derives_from, refines, replaces
+
+See [Concepts → Link Types](/docs/user/concepts/link-types) for the complete list.
+
+### The 16 Views
+
+Each view provides unique insights:
+
+1. **Requirements Traceability Matrix** - Complete forward/backward trace
+2. **Test Coverage View** - Requirements vs test cases
+3. **Implementation Status** - Requirements to code mapping
+4. **Risk Impact Analysis** - Risk propagation through system
+5. **Change Impact Analysis** - What changes affect what
+
+See [Concepts → Views](/docs/user/concepts/views) for all 16 views.
+
+## What's Next?
+
+<Callout type="tip" title="Recommended Learning Path">
+1. **[Core Concepts](/docs/user/concepts)** - Deep dive into TraceRTM fundamentals
+2. **[User Guides](/docs/user/guides)** - Task-specific how-tos
+3. **[API Documentation](/api)** - Integrate with your tools
+4. **[SDK Guides](/docs/sdk)** - Build custom integrations
+</Callout>
+
+### Quick Links
+
+- [Creating Requirements](/docs/user/guides/creating-requirements) - Detailed requirement authoring
+- [Linking Items](/docs/user/guides/linking-items) - Best practices for traceability
+- [Generating Reports](/docs/user/guides/reports) - Export matrices and dashboards
+- [Team Collaboration](/docs/user/guides/teams) - Multi-user workflows
+
+## Getting Help
+
+- 📚 [FAQ](/docs/user/faq) - Common questions answered
+- 💬 [Community Discord](https://discord.gg/tracertm) - Chat with users
+- 🐛 [GitHub Issues](https://github.com/your-org/tracertm/issues) - Report bugs
+- 📧 [Support Email](mailto:support@tracertm.io) - Direct help
+
+<Callout type="info">
+**Enjoying TraceRTM?** Star us on [GitHub](https://github.com/your-org/tracertm) ⭐
+</Callout>

@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/cycle_detection_service.py
+# hypothesis_version: 6.148.7
+
+['Unknown', 'affected_by_depth', 'affected_by_view', 'affected_items', 'depends_on', 'depth', 'has_orphans', 'high', 'issue', 'item_id', 'item_title', 'item_type', 'link_id', 'max_depth_reached', 'missing_count', 'missing_dependencies', 'none', 'orphan_count', 'orphans', 'path', 'root_item_id', 'root_item_title', 'source_item_id', 'source_item_missing', 'status', 'target_item_id', 'target_item_missing', 'total_affected', 'view']

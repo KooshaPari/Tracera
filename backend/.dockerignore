@@ -1,0 +1,177 @@
+# ============================================================================
+# Backend Go Service - Docker Build Ignore
+# Optimized for faster Docker builds by excluding unnecessary files
+# ============================================================================
+
+# Git and version control
+.git
+.gitignore
+.gitattributes
+.gitkeep
+.gitmodules
+
+# CI/CD and deployment
+.github/
+.gitlab-ci.yml
+.travis.yml
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+README*
+CHANGELOG*
+LICENSE
+CONTRIBUTING*
+docs/
+doc/
+SQLC_MIGRATION_GUIDE.md
+
+# IDE and editor configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.sublime-project
+.sublime-workspace
+*.iml
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Go development and build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.a
+/bin/
+/pkg/
+/vendor/
+go.work
+go.work.sum
+go.mod.tidy
+*.prof
+
+# Testing artifacts
+*_test.go
+test/
+tests/
+testdata/
+coverage.out
+coverage.html
+coverage.xml
+.coverage
+.coverage.*
+htmlcov/
+test-results/
+junit.xml
+
+# Go module caching
+go.sum
+vendor/
+
+# Environment configuration
+.env
+.env.local
+.env.*.local
+.env.*
+*.env
+
+# Temporary and log files
+tmp/
+temp/
+*.tmp
+*.log
+*.pid
+logs/
+.log/
+
+# Development tools
+.air.toml
+tmp/
+air-debug
+.air/
+
+# Build directories
+build/
+dist/
+bin/
+out/
+
+# Cache directories
+.cache/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.tox/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+test.db
+test_functionality.db
+
+# Misc
+ARCHIVE/
+.archive/
+DEMO_PROJECT/
+.demo/
+*.tar.gz
+*.zip
+*.7z
+Thumbs.db
+
+# Python (if any utilities)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.venv*/
+venv*/
+ENV/
+env/
+
+# Lock files from other systems
+bun.lock
+package-lock.json
+uv.lock
+
+# Configuration
+.pre-commit-config.yaml
+conftest.py
+mypy.ini
+pyproject.toml
+alembic.ini
+Makefile
+settings.yml
+tach.toml
+
+# Process composition
+process-compose.yaml
+process-compose.yml
+
+# IDE tools integration
+.bmad/
+.claude/
+.cursor/
+.codex/
+.augment/
+.factory/
+.gemini/
+.planning/
+.tracertm/

@@ -1,0 +1,773 @@
+---
+title: "Docker Installation"
+description: "Complete guide to installing and running TraceRTM with Docker and Docker Compose"
+---
+
+# Docker Installation
+
+Run TraceRTM in containers for consistent, isolated deployments across any platform.
+
+## Overview
+
+Docker provides the fastest way to get TraceRTM running with all dependencies pre-configured. This guide covers everything from quick-start to production deployment.
+
+## Prerequisites
+
+Before proceeding, ensure you have:
+
+### Required Software
+
+- **Docker Engine**: 24.0.0 or later
+- **Docker Compose**: 2.20.0 or later
+- **Minimum System Resources**:
+  - 4GB RAM (8GB recommended for production)
+  - 10GB available disk space
+  - 2 CPU cores (4 cores recommended)
+
+### Verify Installation
+
+```bash
+# Check Docker version
+docker --version
+# Expected: Docker version 24.0.0 or higher
+
+# Check Docker Compose version
+docker compose version
+# Expected: Docker Compose version v2.20.0 or higher
+
+# Verify Docker is running
+docker ps
+```
+
+### Install Docker (if needed)
+
+**macOS/Windows**: [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+**Linux**:
+```bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker $USER
+```
+
+## Quick Start
+
+Get TraceRTM running in under 5 minutes:
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/tracertm/tracertm.git
+cd tracertm
+```
+
+### 2. Start All Services
+
+```bash
+# Start with default configuration
+docker compose up -d
+
+# View logs
+docker compose logs -f
+```
+
+### 3. Verify Services
+
+```bash
+# Check all containers are running
+docker compose ps
+
+# Expected output:
+# tracertm-postgres    running   0.0.0.0:5432->5432/tcp
+# tracertm-redis       running   0.0.0.0:6379->6379/tcp
+# tracertm-nats        running   0.0.0.0:4222->4222/tcp
+# tracertm-backend     running   0.0.0.0:8080->8080/tcp
+# tracertm-api         running   0.0.0.0:8000->8000/tcp
+```
+
+### 4. Access the Application
+
+- **API**: http://localhost:8000
+- **Backend**: http://localhost:8080
+- **API Docs**: http://localhost:8000/docs
+- **Grafana**: http://localhost:3000 (admin/admin)
+- **Prometheus**: http://localhost:9090
+
+## Docker Compose Configuration Explained
+
+### Base Configuration (docker-compose.yml)
+
+The main compose file defines the complete TraceRTM stack:
+
+```yaml
+version: '3.8'
+
+services:
+  # PostgreSQL Database - Primary data store
+  postgres:
+    image: postgres:15-alpine
+    container_name: tracertm-postgres
+    environment:
+      POSTGRES_DB: tracertm
+      POSTGRES_USER: tracertm
+      POSTGRES_PASSWORD: tracertm_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tracertm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache - Session and caching layer
+  redis:
+    image: redis:7-alpine
+    container_name: tracertm-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # NATS Message Broker - Event streaming
+  nats:
+    image: nats:2.10-alpine
+    container_name: tracertm-nats
+    ports:
+      - "4222:4222"  # Client connections
+      - "8222:8222"  # HTTP management
+    command: ["-js", "-m", "8222"]
+
+  # Go Backend Service - Core API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+
+  # Python API Service - Extended functionality
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    volumes:
+      - ./src:/app/src
+      - ./alembic:/app/alembic
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  tracertm-network:
+    driver: bridge
+```
+
+## Environment Variables Configuration
+
+### Create Environment File
+
+```bash
+# Copy template
+cp .env.template .env
+
+# Edit with your values
+nano .env
+```
+
+### Essential Variables
+
+```bash
+# Application
+APP_ENV=development
+APP_PORT=8080
+LOG_LEVEL=info
+
+# Database
+DATABASE_URL=postgresql://tracertm:tracertm_password@postgres:5432/tracertm
+DB_MAX_CONNECTIONS=25
+
+# Cache
+REDIS_URL=redis://redis:6379
+CACHE_TTL=1h
+
+# Message Queue
+NATS_URL=nats://nats:4222
+
+# Authentication (optional)
+JWT_SECRET=change-this-in-production
+WORKOS_API_KEY=your_key_here
+SUPABASE_URL=https://your-project.supabase.co
+```
+
+### Loading Environment Variables
+
+Docker Compose automatically loads `.env` files:
+
+```bash
+# Explicit env file
+docker compose --env-file .env.production up -d
+
+# Override specific variables
+DATABASE_URL=custom docker compose up -d
+```
+
+## Volume Mounts for Persistence
+
+### Understanding Volumes
+
+Volumes persist data beyond container lifecycle:
+
+```yaml
+volumes:
+  # Named volumes (managed by Docker)
+  postgres_data:       # Database data
+  redis_data:          # Cache data
+  prometheus_data:     # Metrics
+  grafana_data:        # Dashboards
+  neo4j_data:          # Graph data (if using Neo4j)
+```
+
+### Bind Mounts for Development
+
+Mount local directories for live code updates:
+
+```yaml
+services:
+  api:
+    volumes:
+      # Read-only source mounts
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./pyproject.toml:/app/pyproject.toml:ro
+
+      # Configuration files
+      - ./alembic:/app/alembic:ro
+```
+
+### Managing Volumes
+
+```bash
+# List volumes
+docker volume ls
+
+# Inspect volume
+docker volume inspect tracertm_postgres_data
+
+# Backup volume
+docker run --rm -v tracertm_postgres_data:/data -v $(pwd):/backup \
+  alpine tar czf /backup/postgres-backup.tar.gz -C /data .
+
+# Restore volume
+docker run --rm -v tracertm_postgres_data:/data -v $(pwd):/backup \
+  alpine tar xzf /backup/postgres-backup.tar.gz -C /data
+
+# Remove unused volumes
+docker volume prune
+```
+
+## Network Configuration
+
+### Default Network
+
+TraceRTM uses a bridge network for service communication:
+
+```yaml
+networks:
+  tracertm-network:
+    driver: bridge
+```
+
+### Service Discovery
+
+Services communicate using container names:
+
+```bash
+# From api container, connect to postgres:
+postgresql://tracertm:password@postgres:5432/tracertm
+#                                 ^^^^^^^^ container name, not localhost
+
+# From backend container, connect to redis:
+redis://redis:6379
+#        ^^^^^ container name
+```
+
+### Custom Networks
+
+```yaml
+networks:
+  tracertm-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+          gateway: 172.28.0.1
+
+services:
+  postgres:
+    networks:
+      tracertm-network:
+        ipv4_address: 172.28.0.10
+```
+
+### Port Mapping
+
+```yaml
+services:
+  api:
+    ports:
+      - "8000:8000"        # host:container
+      - "127.0.0.1:8001:8001"  # localhost only
+      - "8002-8004:8002-8004"  # port range
+```
+
+## Multi-Container Orchestration
+
+### Service Dependencies
+
+Control startup order with `depends_on`:
+
+```yaml
+services:
+  backend:
+    depends_on:
+      postgres:
+        condition: service_healthy  # Wait for health check
+      redis:
+        condition: service_started  # Wait for start
+```
+
+### Health Checks
+
+Ensure services are ready before connecting:
+
+```yaml
+healthcheck:
+  test: ["CMD-SHELL", "pg_isready -U tracertm"]
+  interval: 10s        # Check every 10 seconds
+  timeout: 5s          # Fail after 5 seconds
+  retries: 5           # Retry 5 times
+  start_period: 40s    # Grace period before checking
+```
+
+### Resource Limits
+
+Prevent resource exhaustion:
+
+```yaml
+services:
+  backend:
+    deploy:
+      resources:
+        limits:
+          cpus: '2'          # Max 2 CPU cores
+          memory: 1G         # Max 1GB RAM
+        reservations:
+          cpus: '1'          # Reserved cores
+          memory: 512M       # Reserved RAM
+```
+
+## Development vs Production Configurations
+
+### Development Setup (docker-compose.dev.yml)
+
+Optimized for local development with hot reload:
+
+```bash
+# Start development stack
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+**Features**:
+- Hot reload enabled
+- Debug logging
+- Development tools (Adminer, Redis Commander)
+- Source code mounted as volumes
+- Relaxed security settings
+
+```yaml
+services:
+  api:
+    environment:
+      LOG_LEVEL: DEBUG
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - ./src:/app/src:ro  # Live code updates
+    command: uvicorn tracertm.api.main:app --reload --log-level debug
+
+  # Development tools
+  adminer:
+    image: adminer:latest
+    ports:
+      - "8081:8080"  # Database UI at http://localhost:8081
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    ports:
+      - "8082:8081"  # Redis UI at http://localhost:8082
+```
+
+### Production Setup (docker-compose.prod.yml)
+
+Optimized for production with cloud services:
+
+```bash
+# Start production stack
+docker compose -f docker-compose.prod.yml up -d
+```
+
+**Features**:
+- Uses managed cloud services (Supabase, Upstash, Neo4j Aura)
+- Resource limits enforced
+- Automatic restart policies
+- Minimal logging
+- Security hardened
+
+```yaml
+services:
+  tracertm-backend:
+    environment:
+      ENV: production
+      LOG_LEVEL: info
+
+      # Cloud services
+      DB_DIRECT_URL: ${DB_DIRECT_URL}
+      UPSTASH_REDIS_REST_URL: ${UPSTASH_REDIS_REST_URL}
+      NEO4J_URI: ${NEO4J_URI}
+
+    restart: always
+
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+```
+
+### Local Infrastructure (docker-compose.local.yml)
+
+Full local stack with all services self-hosted:
+
+```bash
+# Start local infrastructure
+docker compose -f docker-compose.local.yml up -d
+```
+
+Includes:
+- PostgreSQL with pgvector
+- Redis
+- NATS
+- Neo4j (optional graph database)
+- Meilisearch (optional search engine)
+
+## Health Checks
+
+### Implementing Health Checks
+
+Each service should expose a health endpoint:
+
+```yaml
+services:
+  backend:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+```
+
+### Checking Service Health
+
+```bash
+# View health status
+docker compose ps
+
+# Inspect specific service
+docker inspect tracertm-backend | grep -A 10 Health
+
+# Watch logs for health check failures
+docker compose logs -f backend | grep health
+```
+
+### Health Endpoint Examples
+
+**Go Backend** (`/health`):
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-12-07T12:00:00Z",
+  "services": {
+    "database": "connected",
+    "redis": "connected",
+    "nats": "connected"
+  }
+}
+```
+
+**Python API** (`/docs`):
+FastAPI automatically provides `/health` via OpenAPI.
+
+## Troubleshooting Common Docker Issues
+
+### Services Won't Start
+
+```bash
+# Check logs for errors
+docker compose logs -f
+
+# Check specific service
+docker compose logs postgres
+
+# Verify port conflicts
+sudo lsof -i :5432
+# If port is in use, change mapping or stop conflicting service
+```
+
+### Database Connection Errors
+
+```bash
+# Verify database is ready
+docker compose exec postgres pg_isready -U tracertm
+
+# Check connection from API container
+docker compose exec api ping -c 3 postgres
+
+# View database logs
+docker compose logs postgres | tail -50
+
+# Reset database
+docker compose down -v  # WARNING: Deletes all data
+docker compose up -d
+```
+
+### Out of Memory Errors
+
+```bash
+# Check resource usage
+docker stats
+
+# Increase Docker memory (Docker Desktop)
+# Settings > Resources > Memory > 8GB
+
+# Add memory limits to services
+services:
+  postgres:
+    mem_limit: 1g
+```
+
+### Permission Denied Errors
+
+```bash
+# Fix volume permissions
+sudo chown -R $USER:$USER ./data
+
+# Run as non-root user
+services:
+  api:
+    user: "1000:1000"
+```
+
+### Network Issues
+
+```bash
+# Recreate network
+docker compose down
+docker network prune
+docker compose up -d
+
+# Check network connectivity
+docker compose exec api ping postgres
+docker compose exec api nc -zv postgres 5432
+```
+
+### Image Build Failures
+
+```bash
+# Clear build cache
+docker builder prune -af
+
+# Rebuild from scratch
+docker compose build --no-cache
+
+# Build specific service
+docker compose build api
+```
+
+### Logs Not Showing
+
+```bash
+# Increase log verbosity
+docker compose --verbose up
+
+# Check Docker daemon logs (Linux)
+sudo journalctl -u docker.service | tail -100
+
+# Check Docker Desktop logs (Mac/Windows)
+# Docker Desktop > Troubleshoot > View logs
+```
+
+## Updating and Maintenance
+
+### Updating TraceRTM
+
+```bash
+# Pull latest changes
+git pull origin main
+
+# Pull latest images
+docker compose pull
+
+# Rebuild and restart
+docker compose up -d --build
+
+# Remove old images
+docker image prune -f
+```
+
+### Updating Individual Services
+
+```bash
+# Update specific service
+docker compose pull postgres
+docker compose up -d postgres
+
+# Check for image updates
+docker compose images
+```
+
+### Database Migrations
+
+```bash
+# Run migrations
+docker compose exec api alembic upgrade head
+
+# Create new migration
+docker compose exec api alembic revision --autogenerate -m "Add new table"
+
+# Rollback migration
+docker compose exec api alembic downgrade -1
+```
+
+### Backup and Restore
+
+**Database Backup**:
+```bash
+# Backup PostgreSQL
+docker compose exec -T postgres pg_dump -U tracertm tracertm > backup.sql
+
+# Backup with compression
+docker compose exec -T postgres pg_dump -U tracertm tracertm | gzip > backup.sql.gz
+
+# Scheduled backups (Linux)
+# Add to crontab:
+# 0 2 * * * cd /path/to/tracertm && docker compose exec -T postgres pg_dump -U tracertm tracertm | gzip > backups/backup-$(date +\%Y\%m\%d).sql.gz
+```
+
+**Database Restore**:
+```bash
+# Restore from backup
+docker compose exec -T postgres psql -U tracertm tracertm < backup.sql
+
+# Restore compressed backup
+gunzip -c backup.sql.gz | docker compose exec -T postgres psql -U tracertm tracertm
+```
+
+### Monitoring Disk Usage
+
+```bash
+# Check Docker disk usage
+docker system df
+
+# Detailed view
+docker system df -v
+
+# Clean up unused resources
+docker system prune -a --volumes  # WARNING: Removes all unused data
+```
+
+### Log Rotation
+
+```bash
+# Configure log rotation in docker-compose.yml
+services:
+  api:
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+```
+
+## Advanced Topics
+
+### Using Neo4j for Graph Database
+
+```bash
+# Start with Neo4j
+docker compose -f docker-compose.yml -f docker-compose.neo4j.yml up -d
+
+# Access Neo4j Browser
+# http://localhost:7474
+# Username: neo4j
+# Password: password
+```
+
+### Multi-Stage Builds
+
+The Dockerfile uses multi-stage builds for smaller images:
+
+```dockerfile
+# Stage 1: Builder
+FROM golang:1.22-alpine AS builder
+# ... build application
+
+# Stage 2: Runtime
+FROM alpine:latest
+COPY --from=builder /build/tracertm-backend .
+# Smaller final image (~20MB vs ~800MB)
+```
+
+### Docker Compose Override Files
+
+Create `docker-compose.override.yml` for local customizations:
+
+```yaml
+# This file is automatically loaded with docker-compose.yml
+# Add your personal overrides here (gitignored by default)
+
+services:
+  api:
+    ports:
+      - "9000:8000"  # Use different port
+    environment:
+      LOG_LEVEL: DEBUG
+```
+
+## Next Steps
+
+After successful installation:
+
+1. **Configure Authentication**: [WorkOS Setup](/docs/development/authentication)
+2. **Initialize Database**: [Database Setup](/docs/development/database)
+3. **Quick Start Guide**: [5-Minute Tutorial](/docs/getting-started/quick-start)
+4. **API Documentation**: http://localhost:8000/docs
+
+## Additional Resources
+
+- [Docker Documentation](https://docs.docker.com/)
+- [Docker Compose Reference](https://docs.docker.com/compose/)
+- [Kubernetes Installation](/docs/getting-started/installation/kubernetes)
+- [Cloud Deployment](/docs/getting-started/installation/cloud)

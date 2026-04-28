@@ -1,0 +1,70 @@
+---
+title: Configuration Precedence
+description: Understanding TraceRTM configuration
+---
+
+# TraceRTM Config Precedence & Locations
+
+TraceRTM resolves configuration from multiple sources. This guide explains **where config lives** and **how precedence is applied**.
+
+## Precedence Order
+
+Highest → Lowest:
+
+1. **CLI flags** (per-command overrides)
+2. **Environment variables** (`TRACERTM_*`)
+3. **Repo project config** (`<repo>/.tracertm/project.yaml`)
+4. **User project config** (`~/.tracertm/projects/<project_id>/config.yaml`)
+5. **Global config** (`~/.tracertm/config.yaml`)
+
+Notes:
+
+- Repo project config is intended to be **git‑tracked** and shared.
+- User project config is for **per‑user overrides**.
+- Global config is the **fallback** for all projects.
+
+## Locations
+
+### Global (user)
+
+- `~/.tracertm/config.yaml`
+
+### Repo project (shared)
+
+- `<repo>/.tracertm/project.yaml`
+
+### User project (per‑project per‑user)
+
+- `~/.tracertm/projects/<project_id>/config.yaml`
+
+### Local state (ignored)
+
+- `<repo>/.tracertm/.gitignore` for db/tmp/cache files
+
+## Example: Repo Project Config
+
+```yaml
+project:
+  id: proj_123
+  name: Example Project
+  description: Shared repo config
+  remote:
+    api_url: https://api.tracertm.io
+
+sync:
+  enabled: true
+  conflict_strategy: last_write_wins
+```
+
+## How Resolution Works
+
+- CLI and env override everything.
+- If key exists in `project.yaml`, it is used for all users.
+- If a user sets a per‑project override in `~/.tracertm/projects/<project_id>/config.yaml`, it wins over the repo config.
+- If no project config is present, the global config applies.
+
+## Tips
+
+- Keep only **shared settings** in repo config (project ID, remote API).
+- Keep **secrets** or user‑specific tokens in `~/.tracertm/config.yaml`.
+- Prefer env vars in CI to avoid committing secrets.

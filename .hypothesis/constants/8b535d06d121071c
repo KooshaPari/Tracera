@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/database/connection.py
+# hypothesis_version: 6.148.7
+
+['SELECT 1', 'SELECT version()', 'checked_out', 'connected', 'error', 'pool_size', 'postgresql', 'postgresql://', 'sqlite://', 'status', 'tables', 'version']

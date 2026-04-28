@@ -1,0 +1,151 @@
+---
+title: Features
+description: Core features and capabilities of TraceRTM
+---
+
+# TraceRTM Features
+
+Comprehensive requirements traceability with multi-view architecture, intelligent linking, and agent-native interfaces.
+
+## 🎯 Core Capabilities
+
+| Icon | Feature | Description |
+|------|---------|-------------|
+| 📊 | **16 Professional Views** | Feature, Code, Test, API, Database, Architecture, and more - see your project from every angle |
+| 🔗 | **60+ Link Types** | Rich relationship modeling across 12 categories for complete traceability |
+| 🤖 | **Agent-Native** | Support for 1-1000 concurrent autonomous agents with CLI, Python API, and JSON/YAML |
+| ⏱️ | **Event Sourcing** | Complete audit trail and time-travel capabilities for compliance |
+| 🔄 | **Real-Time Collaboration** | WebSocket-based updates for seamless team collaboration |
+| 📈 | **Impact Analysis** | Understand change propagation across your entire project |
+
+## 🚀 Multi-View System
+
+TraceRTM's core strength is the **multi-view architecture** where items exist in different views but maintain a single source of truth.
+
+### CLI Interface
+
+Create items in different views:
+
+```bash
+# Create feature
+rtm item create "User Auth" --view FEATURE
+
+# Create implementation
+rtm item create "auth.py" --view CODE --type file
+
+# Create test
+rtm item create "test_auth.py" --view TEST --type test_case
+
+# Link them together
+rtm link create FEATURE-001 CODE-001 --type implements
+rtm link create TEST-001 CODE-001 --type tests
+```
+
+### Web UI
+
+Visual multi-view editor with:
+- ✨ Drag-and-drop item creation
+- ✨ Visual link builder
+- ✨ Real-time collaboration
+- ✨ Graph visualization
+
+## 🎬 Visual Demos
+
+### Creating Items: CLI vs Web UI
+
+**CLI Interface** - Perfect for automation and scripting:
+```bash
+# Create a feature
+rtm item create "User Auth" --view FEATURE
+
+# Create implementation
+rtm item create "auth.py" --view CODE --type file
+
+# Create test
+rtm item create "test_auth.py" --view TEST --type test_case
+
+# Link them together
+rtm link create FEATURE-001 CODE-001 --type implements
+rtm link create TEST-001 CODE-001 --type tests
+```
+
+**Web UI** - Visual interface with drag-and-drop:
+- 🎨 Drag items between views
+- 🔗 Visual link builder with preview
+- 👥 Real-time collaboration indicators
+- 📊 Live graph visualization
+
+> 💡 **Tip**: Both CLI and Web UI modify the same underlying data. Use CLI for automation, Web UI for visual exploration.
+
+## 🔗 Intelligent Linking
+
+Create rich relationships between items with 60+ link types:
+
+| Category | Link Types | Use Case |
+|----------|-----------|----------|
+| **Dependency** | depends-on, blocks, blocked-by | Track dependencies |
+| **Implementation** | implements, implemented-by | Link features to code |
+| **Testing** | tests, tested-by | Link tests to code |
+| **Documentation** | documents, documented-by | Link docs to items |
+| **Hierarchy** | parent, child, sibling | Organize items |
+| **Relationship** | relates-to, conflicts-with | General relationships |
+
+## 📋 Workflow: Feature to Code to Test
+
+### Step 1: Create Feature
+Define the requirement in FEATURE view:
+```bash
+rtm item create "User Authentication" --view FEATURE
+```
+
+### Step 2: Create Implementation
+Add code file in CODE view:
+```bash
+rtm item create "auth.py" --view CODE --type file
+```
+
+### Step 3: Create Test
+Add test case in TEST view:
+```bash
+rtm item create "test_auth.py" --view TEST --type test_case
+```
+
+### Step 4: Link Items
+Create relationships between items:
+```bash
+rtm link create FEATURE-001 CODE-001 --type implements
+rtm link create TEST-001 CODE-001 --type tests
+```
+
+### Step 5: View Traceability
+See complete traceability matrix:
+```bash
+rtm link show FEATURE-001
+rtm graph export --format matrix
+```
+
+## 🎨 16 Professional Views
+
+Each view provides a specialized perspective on your project:
+
+- **FEATURE** - Product features and epics
+- **CODE** - Source code files and modules
+- **TEST** - Test cases and test suites
+- **API** - API endpoints and schemas
+- **DATABASE** - Database tables and relationships
+- **ARCHITECTURE** - System architecture components
+- **INFRASTRUCTURE** - Infrastructure and deployment
+- **WIREFRAME** - UI/UX wireframes
+- **DATA_FLOW** - Data flow diagrams
+- **SECURITY** - Security requirements and threats
+- **PERFORMANCE** - Performance requirements
+- **MONITORING** - Monitoring and observability
+- **DOMAIN_MODEL** - Domain entities and relationships
+- **USER_JOURNEY** - User journeys and flows
+- **CONFIGURATION** - Configuration and settings
+- **DEPENDENCY** - External dependencies
+
+---
+
+**Next:** [API Reference](/docs/api-reference/)
+

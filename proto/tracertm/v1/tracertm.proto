@@ -1,0 +1,353 @@
+// TraceRTM gRPC Service Definitions
+// Phase 4: Inter-Service Communication
+//
+// This file defines the gRPC services for TraceRTM's unified infrastructure:
+// - GraphService: Provided by Go backend, consumed by Python
+// - AIService: Provided by Python backend, consumed by Go
+
+syntax = "proto3";
+
+package tracertm.v1;
+
+option go_package = "github.com/kooshapari/tracertm-backend/pkg/proto/tracertm/v1";
+
+// ============================================================================
+// GraphService - Provided by Go, Consumed by Python
+// ============================================================================
+
+// GraphService provides graph analysis and traversal operations
+service GraphService {
+  // AnalyzeImpact performs impact analysis for a given item
+  rpc AnalyzeImpact(AnalyzeImpactRequest) returns (AnalyzeImpactResponse);
+
+  // FindCycles detects circular dependencies in the graph
+  rpc FindCycles(FindCyclesRequest) returns (FindCyclesResponse);
+
+  // CalculatePath finds the shortest path between two items
+  rpc CalculatePath(CalculatePathRequest) returns (CalculatePathResponse);
+
+  // StreamGraphUpdates streams real-time graph changes
+  rpc StreamGraphUpdates(StreamGraphUpdatesRequest) returns (stream StreamGraphUpdatesResponse);
+}
+
+// Request to analyze impact of changes to an item
+message AnalyzeImpactRequest {
+  string item_id = 1;
+  string project_id = 2;
+  // Direction: "upstream" (what depends on this), "downstream" (what this depends on), "both"
+  string direction = 3;
+  int32 max_depth = 4; // Maximum traversal depth (0 = unlimited)
+  repeated string link_types = 5; // Filter by link types (empty = all types)
+}
+
+// Response containing impact analysis results
+message AnalyzeImpactResponse {
+  string item_id = 1;
+  repeated ImpactedItem impacted_items = 2;
+  int32 total_count = 3;
+  map<string, int32> items_by_type = 4; // Count of impacted items by type
+  map<string, int32> items_by_depth = 5; // Count of items at each depth level
+  repeated string critical_paths = 6; // IDs of items on critical paths
+}
+
+// An item impacted by changes
+message ImpactedItem {
+  string id = 1;
+  string type = 2;
+  string title = 3;
+  int32 depth = 4; // Distance from source item
+  string link_type = 5; // Type of link connecting to this item
+  double impact_score = 6; // Calculated impact score (0.0-1.0)
+}
+
+// Request to find circular dependencies
+message FindCyclesRequest {
+  string project_id = 1;
+  repeated string link_types = 2; // Filter by link types
+  int32 max_cycle_length = 3; // Maximum cycle size to detect
+}
+
+// Response containing detected cycles
+message FindCyclesResponse {
+  repeated Cycle cycles = 1;
+  int32 total_count = 2;
+  bool has_cycles = 3;
+}
+
+// A circular dependency in the graph
+message Cycle {
+  repeated string item_ids = 1; // Items forming the cycle (first == last)
+  repeated string link_types = 2; // Link types in the cycle
+  int32 length = 3; // Number of items in cycle
+  double severity = 4; // Severity score (0.0-1.0)
+}
+
+// Request to calculate shortest path
+message CalculatePathRequest {
+  string project_id = 1;
+  string source_item_id = 2;
+  string target_item_id = 3;
+  repeated string link_types = 4; // Filter by link types
+}
+
+// Response containing path information
+message CalculatePathResponse {
+  repeated string item_ids = 1; // Items in the path (source to target)
+  repeated string link_types = 2; // Link types connecting the path
+  int32 path_length = 3;
+  bool path_exists = 4;
+  double path_weight = 5; // Total weight/cost of path
+}
+
+// Request to stream graph updates
+message StreamGraphUpdatesRequest {
+  string project_id = 1;
+  repeated string event_types = 2; // Filter: "item_created", "item_updated", "link_created", etc.
+}
+
+// Real-time graph update event
+message StreamGraphUpdatesResponse {
+  string event_type = 1;
+  string item_id = 2;
+  string project_id = 3;
+  int64 timestamp = 4;
+  map<string, string> metadata = 5;
+}
+
+// ============================================================================
+// AIService - Provided by Python, Consumed by Go
+// ============================================================================
+
+// AIService provides AI-powered analysis and suggestions
+service AIService {
+  // AnalyzeRequirement performs NLP analysis on a requirement
+  rpc AnalyzeRequirement(AnalyzeRequirementRequest) returns (AnalyzeRequirementResponse);
+
+  // GenerateSuggestions streams AI-generated suggestions
+  rpc GenerateSuggestions(GenerateSuggestionsRequest) returns (stream GenerateSuggestionsResponse);
+
+  // DetectEquivalences finds semantically equivalent items
+  rpc DetectEquivalences(DetectEquivalencesRequest) returns (DetectEquivalencesResponse);
+
+  // ExtractEntities extracts named entities from text
+  rpc ExtractEntities(ExtractEntitiesRequest) returns (ExtractEntitiesResponse);
+}
+
+// ============================================================================
+// SpecAnalyticsService - Provided by Python, Consumed by Go
+// ============================================================================
+
+// SpecAnalyticsService provides requirement/spec analytics from the Python backend
+service SpecAnalyticsService {
+  // AnalyzeSpec performs a single spec analysis
+  rpc AnalyzeSpec(AnalyzeSpecRequest) returns (AnalyzeSpecResponse);
+
+  // BatchAnalyzeSpecs analyzes multiple specs in one call
+  rpc BatchAnalyzeSpecs(BatchAnalyzeSpecsRequest) returns (BatchAnalyzeSpecsResponse);
+
+  // ValidateISO29148 checks ISO 29148 compliance
+  rpc ValidateISO29148(ValidateISO29148Request) returns (ValidateISO29148Response);
+
+  // GetEARSPatterns extracts EARS patterns
+  rpc GetEARSPatterns(GetEARSPatternsRequest) returns (GetEARSPatternsResponse);
+}
+
+// Request to analyze a requirement
+message AnalyzeRequirementRequest {
+  string item_id = 1;
+  string text = 2;
+  string item_type = 3; // "requirement", "story", "task", etc.
+  string project_id = 4;
+}
+
+// Response containing requirement analysis
+message AnalyzeRequirementResponse {
+  string item_id = 1;
+  QualityMetrics quality = 2;
+  repeated string tags = 3; // Auto-generated tags
+  repeated string related_items = 4; // IDs of semantically related items
+  string sentiment = 5; // "positive", "neutral", "negative"
+  double confidence = 6; // Confidence score (0.0-1.0)
+  map<string, string> metadata = 7;
+}
+
+// Quality metrics for a requirement
+message QualityMetrics {
+  double completeness = 1; // 0.0-1.0
+  double clarity = 2; // 0.0-1.0
+  double testability = 3; // 0.0-1.0
+  double consistency = 4; // 0.0-1.0
+  repeated string issues = 5; // Detected quality issues
+  repeated string recommendations = 6; // Improvement recommendations
+}
+
+// Request for AI suggestions
+message GenerateSuggestionsRequest {
+  string context = 1; // Context for suggestions
+  string project_id = 2;
+  string suggestion_type = 3; // "links", "tags", "related_items", "improvements"
+  int32 max_suggestions = 4;
+}
+
+// A single AI-generated suggestion
+message GenerateSuggestionsResponse {
+  string type = 1;
+  string content = 2;
+  double confidence = 3;
+  map<string, string> metadata = 4;
+  string reasoning = 5; // Explanation for the suggestion
+}
+
+// Request to detect equivalences
+message DetectEquivalencesRequest {
+  string item_id = 1;
+  string text = 2;
+  string project_id = 3;
+  double similarity_threshold = 4; // Minimum similarity (0.0-1.0)
+}
+
+// Response containing detected equivalences
+message DetectEquivalencesResponse {
+  string item_id = 1;
+  repeated EquivalentItem equivalents = 2;
+  int32 total_count = 3;
+}
+
+// An equivalent item
+message EquivalentItem {
+  string id = 1;
+  string type = 2;
+  string title = 3;
+  double similarity_score = 4; // 0.0-1.0
+  repeated string matching_phrases = 5;
+}
+
+// Request to extract entities
+message ExtractEntitiesRequest {
+  string text = 1;
+  string item_id = 2;
+  repeated string entity_types = 3; // Filter: "person", "organization", "technology", etc.
+}
+
+// Response containing extracted entities
+message ExtractEntitiesResponse {
+  repeated Entity entities = 1;
+  int32 total_count = 2;
+}
+
+// Request to analyze a specification
+message AnalyzeSpecRequest {
+  string spec_id = 1;
+  string content = 2;
+  string project_id = 3;
+}
+
+// Response containing spec analysis
+message AnalyzeSpecResponse {
+  SpecAnalysisResult result = 1;
+}
+
+// Batch analyze request
+message BatchAnalyzeSpecsRequest {
+  repeated AnalyzeSpecRequest requests = 1;
+}
+
+// Batch analyze response
+message BatchAnalyzeSpecsResponse {
+  repeated SpecAnalysisResult results = 1;
+}
+
+// Validate ISO 29148 request
+message ValidateISO29148Request {
+  string spec_id = 1;
+  string content = 2;
+  string project_id = 3;
+}
+
+// Validate ISO 29148 response
+message ValidateISO29148Response {
+  bool compliant_with_iso = 1;
+  repeated string recommendations = 2;
+}
+
+// Get EARS patterns request
+message GetEARSPatternsRequest {
+  string spec_id = 1;
+  string content = 2;
+  string project_id = 3;
+}
+
+// Get EARS patterns response
+message GetEARSPatternsResponse {
+  repeated EARSPattern ears_patterns = 1;
+}
+
+// Spec analysis result
+message SpecAnalysisResult {
+  string spec_id = 1;
+  bool compliant_with_iso = 2;
+  repeated EARSPattern ears_patterns = 3;
+  ODCClassification odc_classification = 4;
+  FormalVerificationResult formal_verification = 5;
+  repeated string recommendations = 6;
+  double quality_score = 7;
+  string quality_grade = 8;
+}
+
+// EARSPattern represents an EARS (Easy Approach to Requirements Syntax) pattern match
+message EARSPattern {
+  string type = 1; // UBIQUITOUS, EVENT_DRIVEN, UNWANTED_BEHAVIOR, STATE_DRIVEN, OPTIONAL_FEATURE, etc.
+  bool matched = 2;
+  double confidence = 3;
+}
+
+// Formal verification result
+message FormalVerificationResult {
+  bool is_verifiable = 1;
+  string logical_formula = 2;
+  repeated string contradictions = 3;
+  repeated string ambiguities = 4;
+}
+
+// ODC classification result
+message ODCClassification {
+  string defect_type = 1;
+  string trigger = 2;
+  string impact = 3;
+  string qualifier = 4;
+  string age = 5;
+  string source = 6;
+  double confidence = 7;
+}
+
+// An extracted entity
+message Entity {
+  string text = 1;
+  string type = 2; // "person", "organization", "technology", "concept", etc.
+  double confidence = 3;
+  int32 start_pos = 4; // Character position in text
+  int32 end_pos = 5;
+}
+
+// ============================================================================
+// Common Types
+// ============================================================================
+
+// Standard error details
+message Error {
+  string code = 1;
+  string message = 2;
+  map<string, string> details = 3;
+}
+
+// Health check request/response
+message HealthCheckRequest {
+  string service = 1;
+}
+
+message HealthCheckResponse {
+  string status = 1; // "serving", "not_serving", "unknown"
+  string version = 2;
+  int64 uptime_seconds = 3;
+  map<string, string> metadata = 4;
+}

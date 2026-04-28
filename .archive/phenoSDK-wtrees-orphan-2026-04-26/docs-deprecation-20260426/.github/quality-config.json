@@ -1,0 +1,25 @@
+{
+  "quality_score_threshold": 80.0,
+  "coverage_threshold": 65.0,
+  "loc_threshold": 70000,
+  "complexity_threshold": 10,
+  "max_violations": 50,
+  "max_warnings": 100,
+  "max_errors": 10,
+  "enabled_checks": [
+    "pattern_detector",
+    "architectural_validator",
+    "performance_detector",
+    "security_scanner",
+    "code_smell_detector",
+    "integration_gates",
+    "atlas_health"
+  ],
+  "quality_gates": [
+    "coverage_gate",
+    "complexity_gate",
+    "security_gate",
+    "performance_gate",
+    "maintainability_gate"
+  ]
+}

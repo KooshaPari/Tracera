@@ -1,0 +1,14 @@
+{
+  "title": "SDK Documentation",
+  "description": "Language-specific SDK guides",
+  "icon": "Package",
+  "pages": [
+    "index",
+    "---Python SDK---",
+    "python",
+    "---JavaScript SDK---",
+    "javascript",
+    "---Go SDK---",
+    "go"
+  ]
+}

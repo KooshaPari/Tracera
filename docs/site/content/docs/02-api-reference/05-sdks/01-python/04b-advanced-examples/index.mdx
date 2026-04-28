@@ -1,0 +1,751 @@
+---
+title: "Advanced Examples"
+description: "Advanced patterns and workflows with the TraceRTM Python SDK"
+---
+
+# Advanced Examples
+
+Advanced patterns for complex traceability workflows, bulk operations, CI/CD integration, and enterprise scenarios.
+
+## Bulk Operations
+
+### Bulk Import Requirements
+
+```python
+import csv
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+def import_requirements_from_csv(filepath: str, project_id: str):
+    """Import requirements from a CSV file."""
+    requirements = []
+
+    with open(filepath, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            requirements.append({
+                "project_id": project_id,
+                "type": "requirement",
+                "title": row["title"],
+                "description": row.get("description", ""),
+                "priority": row.get("priority", "medium"),
+                "tags": row.get("tags", "").split(",") if row.get("tags") else []
+            })
+
+    # Bulk create in batches of 100
+    batch_size = 100
+    created_items = []
+
+    for i in range(0, len(requirements), batch_size):
+        batch = requirements[i:i + batch_size]
+        results = client.items.bulk_create(batch)
+
+        for result in results:
+            if result.success:
+                created_items.append(result.item)
+                print(f"Created: {result.item.title}")
+            else:
+                print(f"Failed: {result.error}")
+
+    return created_items
+
+# Usage
+items = import_requirements_from_csv("requirements.csv", "proj_abc123")
+print(f"Imported {len(items)} requirements")
+```
+
+### Bulk Status Updates
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+def approve_all_reviewed_items(project_id: str):
+    """Move all reviewed items to approved status."""
+    # Find all items in review
+    items_in_review = list(client.items.iterate(
+        project_id=project_id,
+        status="in_review"
+    ))
+
+    if not items_in_review:
+        print("No items in review")
+        return []
+
+    # Prepare bulk update
+    updates = [
+        {"id": item.id, "status": "approved"}
+        for item in items_in_review
+    ]
+
+    # Execute bulk update
+    results = client.items.bulk_update(updates)
+
+    approved = []
+    for result in results:
+        if result.success:
+            approved.append(result.item)
+        else:
+            print(f"Failed to approve {result.id}: {result.error}")
+
+    print(f"Approved {len(approved)} of {len(items_in_review)} items")
+    return approved
+```
+
+### Bulk Link Creation
+
+```python
+def create_traceability_links(mapping: dict[str, list[str]], link_type: str = "verified_by"):
+    """Create links from a mapping of source IDs to target IDs."""
+    links_to_create = []
+
+    for source_id, target_ids in mapping.items():
+        for target_id in target_ids:
+            links_to_create.append({
+                "source_id": source_id,
+                "target_id": target_id,
+                "type": link_type
+            })
+
+    results = client.links.bulk_create(links_to_create)
+
+    created = sum(1 for r in results if r.success)
+    print(f"Created {created} of {len(links_to_create)} links")
+
+    return results
+
+# Usage
+mapping = {
+    "item_req_001": ["item_tc_001", "item_tc_002"],
+    "item_req_002": ["item_tc_003"],
+    "item_req_003": ["item_tc_004", "item_tc_005", "item_tc_006"]
+}
+create_traceability_links(mapping)
+```
+
+---
+
+## Workflow Automation
+
+### Automated Workflow Transitions
+
+```python
+from tracertm import TraceRTMClient
+from tracertm.exceptions import ValidationError
+
+client = TraceRTMClient()
+
+def auto_transition_workflow(item_id: str, target_status: str):
+    """Automatically execute transitions to reach target status."""
+    item = client.items.get(item_id)
+
+    if item.status == target_status:
+        print(f"Item already at {target_status}")
+        return item
+
+    max_transitions = 10
+    transitions_made = 0
+
+    while item.status != target_status and transitions_made < max_transitions:
+        # Get available transitions
+        available = client.items.available_transitions(item.id)
+
+        # Find transition that moves toward target
+        next_transition = None
+        for t in available:
+            if t.to_state == target_status:
+                next_transition = t
+                break
+
+        if not next_transition:
+            # No direct path, take first available
+            if available:
+                next_transition = available[0]
+            else:
+                raise ValueError(f"No transitions available from {item.status}")
+
+        # Execute transition
+        try:
+            item = client.items.transition(
+                item.id,
+                transition=next_transition.name,
+                comment=f"Auto-transition toward {target_status}"
+            )
+            transitions_made += 1
+            print(f"Transitioned to: {item.status}")
+        except ValidationError as e:
+            print(f"Cannot transition: {e}")
+            break
+
+    return item
+```
+
+### Conditional Workflow Logic
+
+```python
+def process_item_by_rules(item_id: str, rules: dict):
+    """Apply business rules to determine workflow actions."""
+    item = client.items.get(item_id, include=["links"])
+
+    # Rule: Auto-approve if has test coverage
+    if rules.get("auto_approve_with_tests"):
+        test_links = [
+            link for link in (item.links or [])
+            if link.type == "verified_by"
+        ]
+        if test_links and item.status == "in_review":
+            client.items.transition(item.id, "approve")
+            print(f"Auto-approved {item.title} (has {len(test_links)} tests)")
+            return
+
+    # Rule: Flag high-priority items without assignee
+    if rules.get("flag_unassigned_high_priority"):
+        if item.priority == "high" and not item.assignee_id:
+            client.items.update(
+                item.id,
+                add_tags=["needs-assignment"]
+            )
+            print(f"Flagged {item.title} for assignment")
+
+    # Rule: Escalate overdue items
+    if rules.get("escalate_overdue"):
+        from datetime import date
+        if item.due_date and item.due_date < date.today():
+            if item.status not in ["done", "closed"]:
+                client.items.update(
+                    item.id,
+                    priority="critical",
+                    add_tags=["overdue"]
+                )
+                print(f"Escalated overdue item: {item.title}")
+```
+
+---
+
+## CI/CD Integration
+
+### GitHub Actions Integration
+
+```python
+#!/usr/bin/env python3
+"""CI/CD script for TraceRTM traceability verification."""
+
+import os
+import sys
+import json
+from tracertm import TraceRTMClient
+from tracertm.exceptions import TraceRTMError
+
+def verify_traceability(project_id: str, min_coverage: float = 80.0) -> bool:
+    """Verify traceability coverage meets minimum threshold."""
+    client = TraceRTMClient()
+
+    # Get coverage report
+    coverage = client.reports.coverage(
+        project_id=project_id,
+        source_type="requirement",
+        target_type="test_case"
+    )
+
+    print(f"Traceability Coverage Report")
+    print(f"=" * 40)
+    print(f"Coverage: {coverage.coverage_percent:.1f}%")
+    print(f"Covered Requirements: {coverage.covered_count}")
+    print(f"Uncovered Requirements: {coverage.uncovered_count}")
+
+    # Output for GitHub Actions
+    if os.environ.get("GITHUB_OUTPUT"):
+        with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+            f.write(f"coverage={coverage.coverage_percent:.1f}\n")
+            f.write(f"covered={coverage.covered_count}\n")
+            f.write(f"uncovered={coverage.uncovered_count}\n")
+
+    # List uncovered requirements
+    if coverage.uncovered_items:
+        print(f"\nUncovered Requirements:")
+        for item in coverage.uncovered_items[:10]:
+            print(f"  - [{item.id}] {item.title}")
+        if len(coverage.uncovered_items) > 10:
+            print(f"  ... and {len(coverage.uncovered_items) - 10} more")
+
+    # Check threshold
+    passed = coverage.coverage_percent >= min_coverage
+
+    if passed:
+        print(f"\nCoverage check PASSED ({coverage.coverage_percent:.1f}% >= {min_coverage}%)")
+    else:
+        print(f"\nCoverage check FAILED ({coverage.coverage_percent:.1f}% < {min_coverage}%)")
+
+    return passed
+
+def sync_test_results(project_id: str, results_file: str):
+    """Sync test execution results from pytest JSON report."""
+    client = TraceRTMClient()
+
+    with open(results_file) as f:
+        results = json.load(f)
+
+    # Map test results to TraceRTM items
+    for test in results.get("tests", []):
+        test_name = test["nodeid"]
+        outcome = test["outcome"]  # passed, failed, skipped
+
+        # Find corresponding test case by title or custom field
+        items = client.items.list(
+            project_id=project_id,
+            type="test_case",
+            search=test_name,
+            limit=1
+        )
+
+        if items.data:
+            test_case = items.data[0]
+
+            # Update test execution status
+            status_map = {
+                "passed": "passed",
+                "failed": "failed",
+                "skipped": "blocked"
+            }
+
+            client.items.update(
+                test_case.id,
+                fields={
+                    "last_execution_status": status_map.get(outcome, "unknown"),
+                    "last_execution_time": test.get("duration", 0),
+                    "last_execution_date": results.get("created")
+                }
+            )
+            print(f"Updated {test_case.title}: {outcome}")
+
+if __name__ == "__main__":
+    project_id = os.environ.get("TRACERTM_PROJECT_ID", "proj_abc123")
+    min_coverage = float(os.environ.get("MIN_COVERAGE", "80"))
+
+    try:
+        if not verify_traceability(project_id, min_coverage):
+            sys.exit(1)
+    except TraceRTMError as e:
+        print(f"Error: {e.message}")
+        sys.exit(1)
+```
+
+### Jenkins Pipeline Integration
+
+```python
+#!/usr/bin/env python3
+"""Jenkins integration for TraceRTM."""
+
+import os
+import sys
+from tracertm import TraceRTMClient
+
+def create_release_snapshot(project_id: str, version: str):
+    """Create a release snapshot for audit trail."""
+    client = TraceRTMClient()
+
+    # Get all items for the release
+    requirements = list(client.items.iterate(
+        project_id=project_id,
+        type="requirement",
+        status="approved"
+    ))
+
+    test_cases = list(client.items.iterate(
+        project_id=project_id,
+        type="test_case"
+    ))
+
+    # Generate traceability matrix
+    matrix = client.reports.traceability_matrix(
+        project_id=project_id,
+        source_type="requirement",
+        target_type="test_case"
+    )
+
+    # Create release report
+    report = {
+        "version": version,
+        "build_number": os.environ.get("BUILD_NUMBER"),
+        "git_commit": os.environ.get("GIT_COMMIT"),
+        "requirements_count": len(requirements),
+        "test_cases_count": len(test_cases),
+        "coverage_percent": matrix.summary.coverage_percent,
+        "uncovered_requirements": [
+            {"id": row.source.id, "title": row.source.title}
+            for row in matrix.rows
+            if not row.targets
+        ]
+    }
+
+    # Store as project artifact or send to external system
+    print(f"Release {version} Snapshot:")
+    print(f"  Requirements: {report['requirements_count']}")
+    print(f"  Test Cases: {report['test_cases_count']}")
+    print(f"  Coverage: {report['coverage_percent']:.1f}%")
+
+    return report
+```
+
+---
+
+## Reporting and Analytics
+
+### Custom Traceability Reports
+
+```python
+from tracertm import TraceRTMClient
+from datetime import datetime, timedelta
+
+client = TraceRTMClient()
+
+def generate_sprint_report(project_id: str, sprint_name: str):
+    """Generate comprehensive sprint traceability report."""
+    # Get sprint items by tag
+    sprint_items = list(client.items.iterate(
+        project_id=project_id,
+        tags=[f"sprint:{sprint_name}"]
+    ))
+
+    # Categorize items
+    report = {
+        "sprint": sprint_name,
+        "generated_at": datetime.now().isoformat(),
+        "summary": {
+            "total_items": len(sprint_items),
+            "by_type": {},
+            "by_status": {},
+            "by_priority": {}
+        },
+        "requirements": [],
+        "test_coverage": None
+    }
+
+    for item in sprint_items:
+        # Count by type
+        report["summary"]["by_type"][item.type] = \
+            report["summary"]["by_type"].get(item.type, 0) + 1
+
+        # Count by status
+        report["summary"]["by_status"][item.status] = \
+            report["summary"]["by_status"].get(item.status, 0) + 1
+
+        # Count by priority
+        if item.priority:
+            report["summary"]["by_priority"][item.priority] = \
+                report["summary"]["by_priority"].get(item.priority, 0) + 1
+
+        # Track requirements
+        if item.type == "requirement":
+            item_with_links = client.items.get(item.id, include=["links"])
+            test_links = [
+                l for l in (item_with_links.links or [])
+                if l.type == "verified_by"
+            ]
+            report["requirements"].append({
+                "id": item.id,
+                "title": item.title,
+                "status": item.status,
+                "test_count": len(test_links),
+                "covered": len(test_links) > 0
+            })
+
+    # Calculate test coverage
+    if report["requirements"]:
+        covered = sum(1 for r in report["requirements"] if r["covered"])
+        report["test_coverage"] = {
+            "covered": covered,
+            "total": len(report["requirements"]),
+            "percentage": (covered / len(report["requirements"])) * 100
+        }
+
+    return report
+
+def generate_compliance_report(project_id: str):
+    """Generate compliance-focused traceability report."""
+    matrix = client.reports.traceability_matrix(
+        project_id=project_id,
+        source_type="requirement",
+        target_type="test_case"
+    )
+
+    report = {
+        "generated_at": datetime.now().isoformat(),
+        "project_id": project_id,
+        "compliance_status": "PASS" if matrix.summary.coverage_percent >= 100 else "FAIL",
+        "coverage": {
+            "total_requirements": matrix.summary.total_sources,
+            "covered_requirements": matrix.summary.covered_sources,
+            "uncovered_requirements": matrix.summary.uncovered_sources,
+            "coverage_percent": matrix.summary.coverage_percent
+        },
+        "gaps": [],
+        "full_matrix": []
+    }
+
+    for row in matrix.rows:
+        entry = {
+            "requirement_id": row.source.id,
+            "requirement_title": row.source.title,
+            "requirement_status": row.source.status,
+            "test_cases": [
+                {"id": t.id, "title": t.title, "status": t.status}
+                for t in row.targets
+            ],
+            "test_count": row.link_count
+        }
+        report["full_matrix"].append(entry)
+
+        if row.link_count == 0:
+            report["gaps"].append({
+                "requirement_id": row.source.id,
+                "requirement_title": row.source.title,
+                "issue": "No test coverage"
+            })
+
+    return report
+```
+
+### Impact Analysis
+
+```python
+def analyze_change_impact(item_id: str, depth: int = 3):
+    """Analyze the impact of changing an item."""
+    client = TraceRTMClient()
+
+    visited = set()
+    impact_graph = {"nodes": [], "edges": []}
+
+    def traverse(current_id: str, current_depth: int):
+        if current_depth > depth or current_id in visited:
+            return
+
+        visited.add(current_id)
+        item = client.items.get(current_id, include=["links"])
+
+        impact_graph["nodes"].append({
+            "id": item.id,
+            "title": item.title,
+            "type": item.type,
+            "status": item.status,
+            "depth": current_depth
+        })
+
+        for link in item.links or []:
+            # Track both directions
+            related_id = link.target_id if link.source_id == current_id else link.source_id
+
+            impact_graph["edges"].append({
+                "source": current_id,
+                "target": related_id,
+                "type": link.type
+            })
+
+            traverse(related_id, current_depth + 1)
+
+    traverse(item_id, 0)
+
+    # Summarize impact
+    summary = {
+        "root_item": item_id,
+        "total_impacted": len(impact_graph["nodes"]) - 1,
+        "by_type": {},
+        "by_depth": {}
+    }
+
+    for node in impact_graph["nodes"]:
+        if node["id"] != item_id:
+            summary["by_type"][node["type"]] = summary["by_type"].get(node["type"], 0) + 1
+            depth_key = f"depth_{node['depth']}"
+            summary["by_depth"][depth_key] = summary["by_depth"].get(depth_key, 0) + 1
+
+    return {
+        "summary": summary,
+        "graph": impact_graph
+    }
+```
+
+---
+
+## Webhooks and Events
+
+### Webhook Handler
+
+```python
+from flask import Flask, request, jsonify
+from tracertm import TraceRTMClient
+from tracertm.webhooks import verify_signature
+import os
+
+app = Flask(__name__)
+client = TraceRTMClient()
+
+WEBHOOK_SECRET = os.environ["TRACERTM_WEBHOOK_SECRET"]
+
+@app.route("/webhooks/tracertm", methods=["POST"])
+def handle_webhook():
+    # Verify webhook signature
+    signature = request.headers.get("X-TraceRTM-Signature")
+    if not verify_signature(request.data, signature, WEBHOOK_SECRET):
+        return jsonify({"error": "Invalid signature"}), 401
+
+    event = request.json
+    event_type = event["type"]
+
+    handlers = {
+        "item.created": handle_item_created,
+        "item.updated": handle_item_updated,
+        "item.transitioned": handle_item_transitioned,
+        "link.created": handle_link_created,
+        "coverage.changed": handle_coverage_changed
+    }
+
+    handler = handlers.get(event_type)
+    if handler:
+        handler(event["data"])
+
+    return jsonify({"status": "ok"})
+
+def handle_item_created(data):
+    """Handle new item creation."""
+    item_id = data["item"]["id"]
+    item_type = data["item"]["type"]
+
+    # Auto-assign based on type
+    if item_type == "bug":
+        # Assign to QA team lead
+        client.items.update(item_id, assignee_id="user_qa_lead")
+
+    # Send notification
+    notify_team(f"New {item_type} created: {data['item']['title']}")
+
+def handle_item_transitioned(data):
+    """Handle workflow transitions."""
+    item = data["item"]
+    from_status = data["from_status"]
+    to_status = data["to_status"]
+
+    # Notify on important transitions
+    if to_status == "approved":
+        notify_stakeholders(f"Requirement approved: {item['title']}")
+    elif to_status == "failed":
+        notify_team(f"Test case failed: {item['title']}", urgent=True)
+
+def handle_coverage_changed(data):
+    """Handle coverage threshold changes."""
+    coverage = data["coverage_percent"]
+    threshold = 80.0
+
+    if coverage < threshold:
+        notify_team(
+            f"Coverage dropped below {threshold}%: {coverage:.1f}%",
+            urgent=True
+        )
+```
+
+---
+
+## Data Synchronization
+
+### External System Sync
+
+```python
+from tracertm import TraceRTMClient
+from typing import Any
+import hashlib
+import json
+
+client = TraceRTMClient()
+
+class JiraSyncManager:
+    """Sync TraceRTM items with Jira issues."""
+
+    def __init__(self, project_id: str, jira_client: Any):
+        self.project_id = project_id
+        self.jira = jira_client
+
+    def sync_requirement_to_jira(self, item_id: str) -> str:
+        """Push requirement to Jira as an Epic."""
+        item = client.items.get(item_id)
+
+        # Check if already synced
+        jira_key = item.fields.get("jira_key")
+
+        if jira_key:
+            # Update existing
+            self.jira.update_issue(jira_key, {
+                "summary": item.title,
+                "description": item.description,
+                "priority": self._map_priority(item.priority)
+            })
+        else:
+            # Create new
+            issue = self.jira.create_issue({
+                "project": "PROJ",
+                "issuetype": "Epic",
+                "summary": item.title,
+                "description": item.description,
+                "customfield_tracertm_id": item.id
+            })
+            jira_key = issue["key"]
+
+            # Store reference
+            client.items.update(
+                item_id,
+                fields={"jira_key": jira_key}
+            )
+
+        return jira_key
+
+    def sync_jira_to_requirement(self, jira_key: str) -> str:
+        """Pull Jira issue into TraceRTM."""
+        issue = self.jira.get_issue(jira_key)
+
+        # Find existing or create new
+        existing = client.items.list(
+            project_id=self.project_id,
+            search=f"jira_key:{jira_key}",
+            limit=1
+        )
+
+        item_data = {
+            "title": issue["fields"]["summary"],
+            "description": issue["fields"]["description"],
+            "priority": self._map_jira_priority(issue["fields"]["priority"]),
+            "fields": {
+                "jira_key": jira_key,
+                "jira_status": issue["fields"]["status"]["name"]
+            }
+        }
+
+        if existing.data:
+            item = client.items.update(existing.data[0].id, **item_data)
+        else:
+            item = client.items.create(
+                project_id=self.project_id,
+                type="requirement",
+                **item_data
+            )
+
+        return item.id
+
+    def _map_priority(self, tracertm_priority: str) -> str:
+        mapping = {"critical": "Highest", "high": "High", "medium": "Medium", "low": "Low"}
+        return mapping.get(tracertm_priority, "Medium")
+
+    def _map_jira_priority(self, jira_priority: dict) -> str:
+        name = jira_priority.get("name", "").lower()
+        mapping = {"highest": "critical", "high": "high", "medium": "medium", "low": "low", "lowest": "low"}
+        return mapping.get(name, "medium")
+```
+
+---
+
+## Related Documentation
+
+- [Basic Examples](/docs/api-reference/sdks/python/basic-examples) - Foundational patterns
+- [Async Client](/docs/api-reference/sdks/python/async) - Async operations
+- [Webhooks](/docs/api-reference/rest-api/webhooks) - Webhook configuration
+- [CI/CD Integration](/docs/wiki/examples/cicd-pipeline) - Pipeline setup

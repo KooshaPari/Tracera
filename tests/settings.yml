@@ -1,0 +1,43 @@
+# TraceRTM Configuration
+# This file defines default settings for the TraceRTM application.
+# Environment variables with TRACERTM_ prefix override these values.
+# See src/tracertm/config/settings.py for full documentation.
+
+# Project Settings
+current_project_id: null
+current_project_name: null
+
+# Display Preferences
+default_view: FEATURE  # Options: FEATURE, CODE, WIREFRAME, API, TEST, DATABASE, ROADMAP, PROGRESS
+output_format: table   # Options: table, json, yaml, csv
+
+# Performance Settings
+max_agents: 1000       # Maximum concurrent agents (1-10000)
+cache_ttl: 300         # Cache time-to-live in seconds (0-3600)
+batch_size: 100        # Batch operation size (1-1000)
+
+# Logging Configuration
+log_level: INFO        # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# Database Configuration
+database:
+  url: "sqlite:///tracertm.db"  # Use postgresql:// for production
+  echo: false                    # Enable SQLAlchemy echo mode
+  pool_size: 10                  # Connection pool size (1-100)
+  max_overflow: 20               # Max overflow connections (0-200)
+
+# Directory Paths
+# These are auto-created if they don't exist
+# data_dir: ~/.tracertm
+# config_dir: ~/.tracertm
+
+# Feature Flags
+enable_cache: true       # Enable caching layer
+enable_async: true       # Enable async operations
+enable_validation: true  # Enable strict validation
+
+# Development Settings (override in .env for local development)
+# TRACERTM_LOG_LEVEL=DEBUG
+# TRACERTM_DATABASE__URL=sqlite:///test.db
+# TRACERTM_ENABLE_CACHE=false

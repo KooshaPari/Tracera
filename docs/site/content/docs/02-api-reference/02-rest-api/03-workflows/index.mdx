@@ -1,0 +1,219 @@
+---
+title: "Workflows API"
+description: "Manage item status workflows and transitions in TraceRTM"
+keywords: [workflows, status, transitions, state machine, api]
+---
+
+# Workflows API
+
+Workflows define the allowed status transitions for items in your TraceRTM projects. Use the Workflows API to manage workflow definitions and transition item statuses.
+
+## Overview
+
+Workflows control:
+- **Status definitions**: Available statuses (draft, active, review, etc.)
+- **Transitions**: Allowed status changes
+- **Validation**: Rules for status transitions
+- **Automation**: Automatic actions on transitions
+
+## Workflow Structure
+
+A workflow defines states and transitions:
+
+```json
+{
+  "id": "workflow_standard",
+  "name": "Standard Workflow",
+  "states": ["draft", "active", "review", "approved"],
+  "transitions": [
+    {"from": "draft", "to": "active"},
+    {"from": "active", "to": "review"},
+    {"from": "review", "to": "approved"}
+  ]
+}
+```
+
+## List Workflows
+
+Get all workflows for a project.
+
+### Endpoint
+
+```
+GET /api/v1/workflows
+```
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | No | Filter by project |
+
+### Request Example
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/workflows?project_id=proj_123" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Response
+
+```json
+{
+  "workflows": [
+    {
+      "id": "workflow_standard",
+      "name": "Standard Workflow",
+      "states": ["draft", "active", "review", "approved"],
+      "project_id": "proj_123"
+    }
+  ]
+}
+```
+
+## Transition Item Status
+
+Transition an item to a new status according to workflow rules.
+
+### Endpoint
+
+```
+POST /api/v1/items/{item_id}/transition
+```
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `item_id` | string | Yes | Item ID to transition |
+
+### Request Body
+
+```json
+{
+  "to_status": "active",
+  "comment": "Ready for review"
+}
+```
+
+### Request Example
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/items/item_abc123/transition" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to_status": "active",
+    "comment": "Ready for review"
+  }'
+```
+
+### Response
+
+```json
+{
+  "item_id": "item_abc123",
+  "previous_status": "draft",
+  "new_status": "active",
+  "transitioned_at": "2025-01-20T10:30:00Z",
+  "transitioned_by": "user_123"
+}
+```
+
+### Python Example
+
+```python
+from tracertm import TraceRTM
+
+client = TraceRTM(api_key="rtm_live_abc123...")
+
+# Transition item status
+result = client.items.transition(
+    item_id="item_abc123",
+    to_status="active",
+    comment="Ready for review"
+)
+
+print(f"Transitioned from {result.previous_status} to {result.new_status}")
+```
+
+## Common Status Values
+
+| Status | Description | Typical Use |
+|--------|-------------|-------------|
+| `draft` | Work in progress | Initial state |
+| `active` | Currently active | In development |
+| `review` | Under review | Pending approval |
+| `approved` | Approved | Finalized |
+| `deprecated` | No longer valid | Superseded |
+| `archived` | Archived | Historical |
+
+## Workflow Validation
+
+The API validates transitions:
+
+- **Valid transition**: Transition is allowed by workflow
+- **Required fields**: All required fields are present
+- **Permissions**: User has permission to transition
+
+### Invalid Transition Error
+
+```json
+{
+  "error": {
+    "code": "invalid_transition",
+    "message": "Cannot transition from 'approved' to 'draft'",
+    "allowed_transitions": ["archived"]
+  }
+}
+```
+
+## Best Practices
+
+### 1. Check Allowed Transitions
+
+Before transitioning, check allowed transitions:
+
+```python
+# Get item current status
+item = client.items.get("item_abc123")
+current_status = item.status
+
+# Get workflow
+workflow = client.workflows.get(project_id="proj_123")
+
+# Check allowed transitions
+allowed = workflow.get_allowed_transitions(current_status)
+print(f"Can transition to: {allowed}")
+
+# Transition if allowed
+if "active" in allowed:
+    client.items.transition("item_abc123", "active")
+```
+
+### 2. Add Transition Comments
+
+Always include comments for audit trail:
+
+```python
+client.items.transition(
+    item_id="item_abc123",
+    to_status="active",
+    comment="All requirements met, ready for production"
+)
+```
+
+### 3. Handle Workflow Errors
+
+```python
+try:
+    result = client.items.transition("item_abc123", "active")
+except InvalidTransitionError as e:
+    print(f"Cannot transition: {e.message}")
+    print(f"Allowed transitions: {e.allowed_transitions}")
+```
+
+## Related Documentation
+
+- [Items API](./02-artifacts) - Manage items
+- [Projects API](./01-projects) - Project management

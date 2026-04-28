@@ -1,0 +1,44 @@
+{
+  "version": 2,
+  "name": "atoms-pheno-migration",
+  "builds": [
+    {
+      "src": "*.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "functions": {
+    "*.py": {
+      "runtime": "python3.11"
+    }
+  },
+  "regions": ["iad1"],
+  "git": {
+    "deploymentEnabled": {
+      "production": true,
+      "preview": true
+    }
+  },
+  "env": {
+    "PYTHON_VERSION": "3.11",
+    "ENVIRONMENT": "production"
+  },
+  "preview": {
+    "env": {
+      "PYTHON_VERSION": "3.11",
+      "ENVIRONMENT": "preview"
+    }
+  },
+  "development": {
+    "env": {
+      "PYTHON_VERSION": "3.11",
+      "ENVIRONMENT": "development"
+    }
+  }
+}

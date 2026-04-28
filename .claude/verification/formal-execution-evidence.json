@@ -1,0 +1,12 @@
+{
+  "schema_version": "1",
+  "generated_at": "2026-02-14T07:23:38Z",
+  "source_report": "",
+  "source_report_sha256": "",
+  "report_generated_at": "",
+  "status": "not_applicable",
+  "pass": true,
+  "error_count": 0,
+  "warning_count": 0,
+  "executors": {}
+}

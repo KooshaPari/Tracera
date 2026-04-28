@@ -1,0 +1,304 @@
+---
+title: "Filtering"
+description: "Filter API results by various criteria including status, view, dates, and metadata"
+keywords: [filtering, filters, query parameters, search, filter]
+---
+
+# Filtering
+
+TraceRTM API supports powerful filtering capabilities to narrow down results based on various criteria.
+
+## Filter Syntax
+
+Filters are applied using query parameters in GET requests:
+
+```
+GET /api/v1/items?status=active&view=requirements
+```
+
+## Common Filters
+
+### Status Filter
+
+Filter items by status:
+
+```bash
+# Active items only
+GET /api/v1/items?status=active
+
+# Multiple statuses
+GET /api/v1/items?status=active,draft
+```
+
+**Available statuses**: `draft`, `active`, `review`, `approved`, `deprecated`
+
+### View Filter
+
+Filter by item view (category):
+
+```bash
+# Requirements only
+GET /api/v1/items?view=requirements
+
+# Test cases only
+GET /api/v1/items?view=test-cases
+```
+
+**Available views**: `requirements`, `test-cases`, `design`, `code`, `documentation`
+
+### Date Filters
+
+Filter by creation or update dates:
+
+```bash
+# Created after date
+GET /api/v1/items?created_after=2025-01-01
+
+# Created before date
+GET /api/v1/items?created_before=2025-12-31
+
+# Updated after date
+GET /api/v1/items?updated_after=2025-01-15
+
+# Date range
+GET /api/v1/items?created_after=2025-01-01&created_before=2025-12-31
+```
+
+**Date format**: ISO 8601 (`YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ`)
+
+### Priority Filter
+
+Filter by priority (if metadata includes priority):
+
+```bash
+GET /api/v1/items?priority=high
+```
+
+**Available priorities**: `low`, `medium`, `high`, `critical`
+
+## Combining Filters
+
+Combine multiple filters:
+
+```bash
+# Active requirements created this year
+GET /api/v1/items?status=active&view=requirements&created_after=2025-01-01
+```
+
+### Python Example
+
+```python
+from tracertm import TraceRTM
+
+client = TraceRTM(api_key="rtm_live_abc123...")
+
+# Multiple filters
+items = client.items.list(
+    project_id="proj_123",
+    status="active",
+    view="requirements",
+    created_after="2025-01-01"
+)
+```
+
+## Metadata Filtering
+
+Filter by custom metadata fields:
+
+```bash
+# Filter by component
+GET /api/v1/items?metadata.component=api
+
+# Filter by owner
+GET /api/v1/items?metadata.owner=team-backend
+
+# Multiple metadata filters
+GET /api/v1/items?metadata.component=api&metadata.priority=high
+```
+
+### Python Example
+
+```python
+# Filter by metadata
+items = client.items.list(
+    project_id="proj_123",
+    metadata={
+        "component": "api",
+        "priority": "high",
+        "owner": "team-backend"
+    }
+)
+```
+
+## Link Type Filtering
+
+Filter links by type:
+
+```bash
+# Verified by links only
+GET /api/v1/links?link_type=verified_by
+
+# Multiple link types
+GET /api/v1/links?link_type=verified_by,implements
+```
+
+## Project Filtering
+
+Filter by project:
+
+```bash
+# Items in specific project
+GET /api/v1/items?project_id=proj_123
+```
+
+## Filter Operators
+
+### Equality
+
+```bash
+# Exact match
+GET /api/v1/items?status=active
+```
+
+### Not Equal
+
+```bash
+# Exclude status
+GET /api/v1/items?status!=draft
+```
+
+### In (Multiple Values)
+
+```bash
+# Multiple values
+GET /api/v1/items?status=active,draft,review
+```
+
+### Greater Than / Less Than
+
+```bash
+# Date comparisons
+GET /api/v1/items?created_after=2025-01-01
+GET /api/v1/items?created_before=2025-12-31
+```
+
+## Advanced Filtering Examples
+
+### Find High-Priority Active Requirements
+
+```python
+items = client.items.list(
+    project_id="proj_123",
+    status="active",
+    view="requirements",
+    metadata={"priority": "high"}
+)
+```
+
+### Recent Updates
+
+```python
+from datetime import datetime, timedelta
+
+week_ago = (datetime.now() - timedelta(days=7)).isoformat()
+
+items = client.items.list(
+    project_id="proj_123",
+    updated_after=week_ago
+)
+```
+
+### Items by Team
+
+```python
+items = client.items.list(
+    project_id="proj_123",
+    metadata={"team": "backend", "component": "api"}
+)
+```
+
+## Filter Performance
+
+### Indexed Fields
+
+These fields are indexed for fast filtering:
+- `status`
+- `view`
+- `project_id`
+- `created_at`
+- `updated_at`
+
+### Non-Indexed Fields
+
+Metadata fields may not be indexed. Use with caution on large datasets.
+
+## Best Practices
+
+### 1. Use Indexed Fields First
+
+Filter by indexed fields first:
+
+```python
+# ✅ Good: Indexed field first
+items = client.items.list(
+    project_id="proj_123",  # Indexed
+    status="active"  # Indexed
+)
+
+# Then filter metadata in application
+filtered = [item for item in items if item.metadata.get("priority") == "high"]
+```
+
+### 2. Combine with Pagination
+
+Always use pagination with filters:
+
+```python
+items = client.items.list(
+    project_id="proj_123",
+    status="active",
+    skip=0,
+    limit=50
+)
+```
+
+### 3. Cache Filtered Results
+
+Cache frequently used filtered queries:
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=100)
+def get_active_requirements(project_id):
+    return client.items.list(
+        project_id=project_id,
+        status="active",
+        view="requirements"
+    )
+```
+
+## Error Responses
+
+### Invalid Filter Value
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Invalid filter value",
+    "details": [
+      {
+        "field": "status",
+        "message": "Status must be one of: draft, active, review, approved, deprecated"
+      }
+    ]
+  }
+}
+```
+
+## Related Documentation
+
+- [Search API](./06-search) - Advanced search with filters
+- [Pagination API](./08-pagination) - Paginate filtered results
+- [Items API](./02-artifacts) - Item filtering examples

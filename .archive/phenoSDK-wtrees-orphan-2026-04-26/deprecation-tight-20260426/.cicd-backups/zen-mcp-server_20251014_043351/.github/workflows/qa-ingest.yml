@@ -1,0 +1,60 @@
+name: QA Ingest
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dashboard deps
+        working-directory: apps/dashboard
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Run Playwright (JUnit + JSON)
+        working-directory: apps/dashboard
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:5173
+        run: |
+          mkdir -p reports/playwright
+          npx playwright test --reporter=junit,json --output=reports/playwright
+
+      - name: Run LHCI
+        run: |
+          npx lhci autorun || true
+
+      - name: Build Playwright screenshot manifest
+        run: |
+          python -m pip install --upgrade pip
+          python scripts/build_playwright_manifest.py --out dashboard/qa_data/screenshot_manifest.json || true
+
+      - name: Ingest results into QA DB
+        run: |
+          python -m pip install fastapi uvicorn[standard]
+          python scripts/qa_ingest.py --project Dashboard --framework playwright --input apps/dashboard/reports/playwright/results.xml --format junit || true
+          python scripts/qa_ingest.py --project Dashboard --framework playwright --input apps/dashboard/reports/playwright/results.json --format playwright-json || true
+          python scripts/qa_ingest_lhci.py --project Dashboard --db dashboard/qa_data/qa.db --input .lighthouseci/*.json || true
+          # Axe (optional): if you export axe json files, enable the line below
+          # python scripts/qa_ingest_axe.py --project Dashboard --db dashboard/qa_data/qa.db --input apps/dashboard/reports/axe/*.json || true
+
+      - name: Upload QA DB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-db
+          path: dashboard/qa_data/qa.db

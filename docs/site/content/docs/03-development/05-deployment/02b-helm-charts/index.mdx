@@ -1,0 +1,163 @@
+---
+title: "Helm Charts"
+description: "Deploy TraceRTM using Helm charts"
+keywords: [helm, charts, kubernetes, deployment]
+---
+
+# Helm Charts
+
+Deploy TraceRTM using Helm charts for Kubernetes.
+
+## Chart Structure
+
+```
+tracertm/
+├── Chart.yaml
+├── values.yaml
+├── templates/
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   ├── ingress.yaml
+│   ├── configmap.yaml
+│   └── secret.yaml
+└── README.md
+```
+
+## Chart.yaml
+
+```yaml
+apiVersion: v2
+name: tracertm
+description: TraceRTM Requirements Traceability Management
+type: application
+version: 2.4.0
+appVersion: "2.4.0"
+```
+
+## values.yaml
+
+```yaml
+replicaCount: 3
+
+image:
+  repository: tracertm
+  tag: "2.4.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 80
+
+ingress:
+  enabled: true
+  host: api.tracertm.dev
+  tls:
+    enabled: true
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "500m"
+  limits:
+    memory: "2Gi"
+    cpu: "2000m"
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+database:
+  url: "postgresql://user:pass@db:5432/tracertm"
+
+redis:
+  url: "redis://redis:6379"
+```
+
+## Deployment Template
+
+```yaml
+# templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tracertm.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "tracertm.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "tracertm.name" . }}
+    spec:
+      containers:
+      - name: api
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        env:
+        - name: DATABASE_URL
+          value: {{ .Values.database.url | quote }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+```
+
+## Install Chart
+
+### Install
+
+```bash
+# Install from local chart
+helm install tracertm ./tracertm
+
+# Install with custom values
+helm install tracertm ./tracertm -f my-values.yaml
+
+# Install with set values
+helm install tracertm ./tracertm \
+  --set replicaCount=5 \
+  --set image.tag=2.4.1
+```
+
+### Upgrade
+
+```bash
+# Upgrade release
+helm upgrade tracertm ./tracertm
+
+# Upgrade with new values
+helm upgrade tracertm ./tracertm -f new-values.yaml
+```
+
+### Uninstall
+
+```bash
+helm uninstall tracertm
+```
+
+## Chart Repository
+
+### Package Chart
+
+```bash
+# Package chart
+helm package tracertm
+
+# Creates tracertm-2.4.0.tgz
+```
+
+### Add Repository
+
+```bash
+# Add chart repository
+helm repo add tracertm https://charts.tracertm.dev
+
+# Install from repository
+helm install tracertm tracertm/tracertm
+```
+
+## Related Documentation
+
+- [Kubernetes Deployment](./02-kubernetes) - K8s deployment
+- [K8s Manifests](./02a-k8s-manifests) - Manifest files

@@ -1,0 +1,15 @@
+{
+  "_comment": "PLACEHOLDER: Rekor bundle required for critical-tier project",
+  "setup_required": true,
+  "instructions": "See docs/guides/SUPPLY_CHAIN_SETUP.md",
+  "quick_start": [
+    "1. Install cosign: brew install sigstore/tap/cosign",
+    "2. Generate keys: cosign generate-key-pair",
+    "3. Sign and create bundle:",
+    "   cosign verify-blob --key cosign.pub \\",
+    "     --signature .claude/verification/qa-attestation.sig \\",
+    "     --bundle .claude/verification/qa-attestation.bundle.json \\",
+    "     .claude/verification/qa-attestation.json"
+  ],
+  "development_mode": "export QA_SUPPLY_CHAIN_FAIL_CLOSED=false"
+}

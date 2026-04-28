@@ -1,0 +1,107 @@
+---
+title: "Environment Variables"
+description: "Configure TraceRTM CLI using environment variables"
+keywords: [cli, environment variables, config, settings]
+---
+
+# Environment Variables
+
+Configure the TraceRTM CLI using environment variables instead of config files.
+
+## Available Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `TRACERTM_API_URL` | API endpoint URL | `https://api.tracertm.dev` |
+| `TRACERTM_API_KEY` | API key for authentication | `rtm_live_abc123...` |
+| `TRACERTM_PROJECT_ID` | Default project ID | `proj_123` |
+| `TRACERTM_OUTPUT_FORMAT` | Output format | `json`, `table`, `yaml` |
+| `TRACERTM_TIMEOUT` | Request timeout (seconds) | `30` |
+| `TRACERTM_VERBOSE` | Verbose output | `true`, `false` |
+
+## Setting Variables
+
+### macOS/Linux
+
+```bash
+# In ~/.bashrc or ~/.zshrc
+export TRACERTM_API_KEY="rtm_live_abc123..."
+export TRACERTM_API_URL="https://api.tracertm.dev"
+export TRACERTM_PROJECT_ID="proj_123"
+```
+
+### Windows (PowerShell)
+
+```powershell
+$env:TRACERTM_API_KEY="rtm_live_abc123..."
+$env:TRACERTM_API_URL="https://api.tracertm.dev"
+$env:TRACERTM_PROJECT_ID="proj_123"
+```
+
+### Windows (Command Prompt)
+
+```cmd
+set TRACERTM_API_KEY=rtm_live_abc123...
+set TRACERTM_API_URL=https://api.tracertm.dev
+set TRACERTM_PROJECT_ID=proj_123
+```
+
+## Precedence
+
+Environment variables override config file settings:
+
+1. Command-line flags (highest priority)
+2. Environment variables
+3. Config file (lowest priority)
+
+## Examples
+
+### Using in Scripts
+
+```bash
+#!/bin/bash
+
+export TRACERTM_API_KEY="rtm_live_abc123..."
+export TRACERTM_PROJECT_ID="proj_123"
+
+trace project list
+trace item list
+```
+
+### CI/CD Integration
+
+```yaml
+# GitHub Actions example
+env:
+  TRACERTM_API_KEY: ${{ secrets.TRACERTM_API_KEY }}
+  TRACERTM_API_URL: https://api.tracertm.dev
+
+steps:
+  - name: List projects
+    run: trace project list
+```
+
+## Security
+
+### Never Commit Secrets
+
+```bash
+# ❌ Bad: In .bashrc (committed to git)
+export TRACERTM_API_KEY="rtm_live_abc123..."
+
+# ✅ Good: In .bashrc.local (not in git)
+source ~/.bashrc.local
+```
+
+### Use Secret Management
+
+```bash
+# AWS Secrets Manager
+export TRACERTM_API_KEY=$(aws secretsmanager get-secret-value \
+  --secret-id tracertm/api-key --query SecretString --output text)
+```
+
+## Related Documentation
+
+- [Configuration](./02-configuration) - Config file settings
+- [Commands](../03-commands) - CLI commands

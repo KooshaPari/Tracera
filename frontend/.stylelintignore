@@ -1,0 +1,9 @@
+node_modules
+dist
+.next
+.turbo
+storybook-static
+**/*.gen.*
+*.min.css
+# Empty placeholder
+**/styles/globals.css

@@ -1,0 +1,27 @@
+---
+title: "LinkSummary"
+description: "Schema definition for LinkSummary"
+---
+
+# LinkSummary
+
+## Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `id` | string (uuid) | ✓ |  |
+| `source_id` | string (uuid) | ✓ | Source item ID |
+| `target_id` | string (uuid) | ✓ | Target item ID |
+| `type` | enum: `depends_on`, `implements`, `tests`, `derives_from` | ✓ | Type of relationship |
+
+## Example
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "source_id": "550e8400-e29b-41d4-a716-446655440000",
+  "target_id": "550e8400-e29b-41d4-a716-446655440000",
+  "type": "example"
+}
+```
+

@@ -1,0 +1,185 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TraceRTM Progress Tracking Schema",
+  "description": "JSON Schema for tracking progress of Functional Requirements and ADRs",
+  "definitions": {
+    "fr_progress": {
+      "type": "object",
+      "description": "Progress tracking for a single Functional Requirement",
+      "required": ["fr_id", "status", "completion", "progress_percent", "implementation_quality", "test_coverage", "last_updated", "last_verified"],
+      "properties": {
+        "fr_id": {
+          "type": "string",
+          "description": "Functional requirement identifier (e.g., FR-DISC-001)",
+          "pattern": "^FR-[A-Z]+-\\d+$"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Draft", "Accepted", "Implemented", "Deprecated"],
+          "description": "Current status of the requirement"
+        },
+        "completion": {
+          "type": "object",
+          "description": "Completion checklist for requirement lifecycle",
+          "required": ["designed", "implemented", "tested", "documented"],
+          "properties": {
+            "designed": {
+              "type": "boolean",
+              "description": "Architecture and design complete"
+            },
+            "implemented": {
+              "type": "boolean",
+              "description": "Code implementation complete"
+            },
+            "tested": {
+              "type": "boolean",
+              "description": "Test coverage exists"
+            },
+            "documented": {
+              "type": "boolean",
+              "description": "Documentation complete"
+            }
+          }
+        },
+        "progress_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Overall completion percentage (0-100)"
+        },
+        "implementation_quality": {
+          "type": "string",
+          "enum": ["Alpha", "Beta", "Production", "Deprecated"],
+          "description": "Implementation maturity level"
+        },
+        "test_coverage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Test coverage percentage (0-100)"
+        },
+        "last_updated": {
+          "type": "string",
+          "format": "date",
+          "description": "Last update date (YYYY-MM-DD)"
+        },
+        "last_verified": {
+          "type": "string",
+          "format": "date",
+          "description": "Last verification date (YYYY-MM-DD)"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes or observations"
+        },
+        "code_locations": {
+          "type": "array",
+          "description": "Implementation file paths and line ranges",
+          "items": {
+            "type": "string"
+          }
+        },
+        "test_locations": {
+          "type": "array",
+          "description": "Test file paths",
+          "items": {
+            "type": "string"
+          }
+        },
+        "epic": {
+          "type": "string",
+          "description": "Parent epic identifier"
+        },
+        "user_stories": {
+          "type": "array",
+          "description": "Related user story identifiers",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "adr_progress": {
+      "type": "object",
+      "description": "Progress tracking for an Architecture Decision Record",
+      "required": ["adr_id", "status", "implementation_status", "last_reviewed"],
+      "properties": {
+        "adr_id": {
+          "type": "string",
+          "description": "ADR identifier (e.g., ADR-0001)",
+          "pattern": "^ADR-\\d{4}$"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Proposed", "Accepted", "Rejected", "Deprecated", "Superseded"],
+          "description": "Decision status"
+        },
+        "implementation_status": {
+          "type": "string",
+          "enum": ["Not Started", "In Progress", "Partial", "Complete"],
+          "description": "Implementation progress"
+        },
+        "affected_components": {
+          "type": "array",
+          "description": "Components/modules affected by this decision",
+          "items": {
+            "type": "string"
+          }
+        },
+        "migration_complete": {
+          "type": "boolean",
+          "description": "Whether migration to new architecture is complete"
+        },
+        "last_reviewed": {
+          "type": "string",
+          "format": "date",
+          "description": "Last review date (YYYY-MM-DD)"
+        },
+        "superseded_by": {
+          "type": "string",
+          "description": "ADR ID that supersedes this decision",
+          "pattern": "^ADR-\\d{4}$"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Implementation notes or blockers"
+        }
+      }
+    },
+    "epic_progress": {
+      "type": "object",
+      "description": "Progress tracking for an Epic",
+      "required": ["epic_id", "title", "status", "completion_percent"],
+      "properties": {
+        "epic_id": {
+          "type": "string",
+          "description": "Epic identifier (e.g., E1.1)",
+          "pattern": "^E\\d+(\\.\\d+)?$"
+        },
+        "title": {
+          "type": "string",
+          "description": "Epic title"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Not Started", "In Progress", "Complete"],
+          "description": "Epic status"
+        },
+        "completion_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Completion percentage based on child FRs"
+        },
+        "frs_complete": {
+          "type": "integer",
+          "description": "Number of FRs complete"
+        },
+        "frs_total": {
+          "type": "integer",
+          "description": "Total number of FRs"
+        }
+      }
+    }
+  }
+}

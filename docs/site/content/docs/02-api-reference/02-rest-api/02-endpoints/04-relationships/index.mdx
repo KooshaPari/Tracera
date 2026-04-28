@@ -1,0 +1,838 @@
+---
+title: Relationships API
+description: Complete API reference for managing traceability links between items in TraceRTM
+---
+
+# Relationships API
+
+Links (relationships) establish traceability between items, enabling impact analysis, coverage tracking, and compliance reporting. This API manages the creation, querying, and analysis of traceability relationships.
+
+## Endpoints Overview
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/v1/projects/{project_id}/links` | List links |
+| `POST` | `/v1/projects/{project_id}/links` | Create link |
+| `GET` | `/v1/projects/{project_id}/links/{link_id}` | Get link |
+| `DELETE` | `/v1/projects/{project_id}/links/{link_id}` | Delete link |
+| `POST` | `/v1/projects/{project_id}/links/batch` | Batch create links |
+| `GET` | `/v1/projects/{project_id}/items/{item_id}/links` | Get item's links |
+| `GET` | `/v1/projects/{project_id}/trace` | Trace path between items |
+| `GET` | `/v1/projects/{project_id}/impact-analysis` | Impact analysis |
+
+---
+
+## The Link Object
+
+```json
+{
+  "id": "link_abc123xyz",
+  "project_id": "proj_abc123",
+  "source_id": "item_req_001",
+  "target_id": "item_tc_001",
+  "type": "verified_by",
+  "direction": "forward",
+  "status": "active",
+  "description": "Test case verifies timing requirement",
+  "metadata": {
+    "confidence": "high",
+    "verification_method": "test"
+  },
+  "created_by": "user_analyst123",
+  "created_at": "2024-03-15T10:30:00Z",
+  "updated_at": "2024-03-15T10:30:00Z"
+}
+```
+
+### Link Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique link identifier (prefix: `link_`) |
+| `project_id` | string | Parent project ID |
+| `source_id` | string | Source item ID |
+| `target_id` | string | Target item ID |
+| `type` | string | Relationship type |
+| `direction` | string | `forward`, `backward`, `bidirectional` |
+| `status` | string | `active`, `suspect`, `obsolete` |
+| `description` | string | Optional description |
+| `metadata` | object | Custom link data |
+| `created_by` | string | Creator user ID |
+| `created_at` | string | ISO 8601 creation timestamp |
+| `updated_at` | string | ISO 8601 last update timestamp |
+
+### Link Types
+
+| Type | Description | Example |
+|------|-------------|---------|
+| `satisfies` | Requirement satisfies parent requirement | Child req → Parent req |
+| `derives_from` | Item derived from another | Design → Requirement |
+| `implements` | Implementation of specification | Code → Design |
+| `verified_by` | Verified by test | Requirement → Test case |
+| `validates` | Test validates requirement | Test case → Requirement |
+| `traces_to` | General traceability | Any → Any |
+| `depends_on` | Dependency relationship | Item → Dependency |
+| `relates_to` | Related items | Item → Related item |
+| `duplicates` | Duplicate of another | Item → Original |
+| `blocks` | Blocks another item | Blocker → Blocked |
+
+### Link Status
+
+| Status | Description |
+|--------|-------------|
+| `active` | Link is current and valid |
+| `suspect` | Source or target changed; needs review |
+| `obsolete` | Link no longer valid |
+
+---
+
+## List Links
+
+Retrieve links in a project.
+
+```http
+GET /v1/projects/{project_id}/links
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `type` | string | — | Filter by link type |
+| `status` | string | `active` | Filter by status |
+| `source_id` | string | — | Filter by source item |
+| `target_id` | string | — | Filter by target item |
+| `source_type` | string | — | Filter by source item type |
+| `target_type` | string | — | Filter by target item type |
+| `created_after` | string | — | Created after ISO date |
+| `suspect_only` | boolean | false | Only suspect links |
+| `sort` | string | `created_at` | Sort field |
+| `order` | string | `desc` | Sort order |
+| `limit` | integer | 20 | Results per page (1-100) |
+| `cursor` | string | — | Pagination cursor |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/links?type=verified_by&limit=50" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "link_abc123xyz",
+      "source_id": "item_req_001",
+      "target_id": "item_tc_001",
+      "type": "verified_by",
+      "status": "active",
+      "source": {
+        "id": "item_req_001",
+        "item_number": "VCS-REQ-001",
+        "title": "Process sensor data within 10ms",
+        "type": "requirement"
+      },
+      "target": {
+        "id": "item_tc_001",
+        "item_number": "VCS-TC-001",
+        "title": "Sensor timing verification",
+        "type": "test_case"
+      },
+      "created_at": "2024-03-15T10:30:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 3400,
+    "limit": 50,
+    "has_next": true,
+    "next_cursor": "eyJpZCI6ImxpbmtfMDUwIn0"
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# List verification links
+links = client.links.list(
+    project_id="proj_abc123",
+    type="verified_by"
+)
+
+for link in links.data:
+    print(f"{link.source.item_number} → {link.target.item_number}")
+
+# Find suspect links
+suspect_links = client.links.list(
+    project_id="proj_abc123",
+    status="suspect"
+)
+
+print(f"Found {len(suspect_links.data)} suspect links to review")
+
+# Links from a specific requirement type to test cases
+links = client.links.list(
+    project_id="proj_abc123",
+    source_type="requirement",
+    target_type="test_case"
+)
+```
+
+#### TypeScript
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// List verification links
+const links = await client.links.list({
+  projectId: 'proj_abc123',
+  type: 'verified_by'
+});
+
+links.data.forEach(link => {
+  console.log(`${link.source.itemNumber} → ${link.target.itemNumber}`);
+});
+
+// Iterate all links
+for await (const link of client.links.iterate({
+  projectId: 'proj_abc123'
+})) {
+  console.log(`${link.type}: ${link.source.id} → ${link.target.id}`);
+}
+```
+
+#### Go
+
+```go
+links, err := client.Links.List(ctx, "proj_abc123", &tracertm.ListLinksRequest{
+    Type:   "verified_by",
+    Limit:  50,
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+for _, link := range links.Data {
+    fmt.Printf("%s → %s\n", link.Source.ItemNumber, link.Target.ItemNumber)
+}
+```
+
+---
+
+## Create Link
+
+Create a traceability link between items.
+
+```http
+POST /v1/projects/{project_id}/links
+```
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `source_id` | string | Yes | Source item ID |
+| `target_id` | string | Yes | Target item ID |
+| `type` | string | Yes | Relationship type |
+| `description` | string | No | Link description |
+| `metadata` | object | No | Custom link data |
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_abc123/links" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "source_id": "item_req_002",
+    "target_id": "item_tc_005",
+    "type": "verified_by",
+    "description": "Test case verifies error handling requirement",
+    "metadata": {
+      "confidence": "high",
+      "verification_method": "test"
+    }
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "link_new123xyz",
+    "project_id": "proj_abc123",
+    "source_id": "item_req_002",
+    "target_id": "item_tc_005",
+    "type": "verified_by",
+    "direction": "forward",
+    "status": "active",
+    "description": "Test case verifies error handling requirement",
+    "metadata": {
+      "confidence": "high",
+      "verification_method": "test"
+    },
+    "created_by": "user_analyst123",
+    "created_at": "2024-12-08T10:00:00Z"
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+link = client.links.create(
+    project_id="proj_abc123",
+    source_id="item_req_002",
+    target_id="item_tc_005",
+    type="verified_by",
+    description="Test verifies error handling",
+    metadata={"confidence": "high"}
+)
+
+print(f"Created link: {link.id}")
+```
+
+#### TypeScript
+
+```typescript
+const link = await client.links.create({
+  projectId: 'proj_abc123',
+  sourceId: 'item_req_002',
+  targetId: 'item_tc_005',
+  type: 'verified_by',
+  description: 'Test verifies error handling'
+});
+
+console.log(`Created link: ${link.id}`);
+```
+
+---
+
+## Get Link
+
+Retrieve a single link by ID.
+
+```http
+GET /v1/projects/{project_id}/links/{link_id}
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `include` | string | — | Include: `source`, `target`, `history` |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/links/link_abc123?include=source,target" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+---
+
+## Delete Link
+
+Remove a traceability link.
+
+```http
+DELETE /v1/projects/{project_id}/links/{link_id}
+```
+
+### Request
+
+```bash
+curl -X DELETE "https://api.tracertm.dev/v1/projects/proj_abc123/links/link_abc123" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "link_abc123",
+    "deleted": true,
+    "deleted_at": "2024-12-08T10:00:00Z"
+  }
+}
+```
+
+---
+
+## Batch Create Links
+
+Create multiple links in a single request.
+
+```http
+POST /v1/projects/{project_id}/links/batch
+```
+
+### Request Body
+
+```json
+{
+  "links": [
+    {
+      "source_id": "item_req_001",
+      "target_id": "item_tc_001",
+      "type": "verified_by"
+    },
+    {
+      "source_id": "item_req_001",
+      "target_id": "item_tc_002",
+      "type": "verified_by"
+    },
+    {
+      "source_id": "item_req_002",
+      "target_id": "item_design_001",
+      "type": "implements"
+    }
+  ]
+}
+```
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_abc123/links/batch" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "links": [
+      {"source_id": "item_req_001", "target_id": "item_tc_001", "type": "verified_by"},
+      {"source_id": "item_req_001", "target_id": "item_tc_002", "type": "verified_by"},
+      {"source_id": "item_req_002", "target_id": "item_tc_003", "type": "verified_by"}
+    ]
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "results": [
+      {"index": 0, "success": true, "id": "link_new001"},
+      {"index": 1, "success": true, "id": "link_new002"},
+      {"index": 2, "success": false, "error": {"code": "LINK_EXISTS", "message": "Link already exists"}}
+    ],
+    "summary": {
+      "total": 3,
+      "succeeded": 2,
+      "failed": 1
+    }
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+results = client.links.batch_create(
+    project_id="proj_abc123",
+    links=[
+        {"source_id": "item_req_001", "target_id": "item_tc_001", "type": "verified_by"},
+        {"source_id": "item_req_001", "target_id": "item_tc_002", "type": "verified_by"},
+        {"source_id": "item_req_002", "target_id": "item_tc_003", "type": "verified_by"}
+    ]
+)
+
+print(f"Created {results.summary.succeeded}/{results.summary.total} links")
+```
+
+---
+
+## Get Item Links
+
+Retrieve all links for a specific item.
+
+```http
+GET /v1/projects/{project_id}/items/{item_id}/links
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `direction` | string | `both` | `outgoing`, `incoming`, `both` |
+| `type` | string | — | Filter by link type |
+| `depth` | integer | 1 | Traversal depth (1-5) |
+| `status` | string | `active` | Filter by link status |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/items/item_req_001/links?direction=both&depth=2" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "item_id": "item_req_001",
+    "outgoing": [
+      {
+        "id": "link_001",
+        "type": "verified_by",
+        "target": {
+          "id": "item_tc_001",
+          "item_number": "VCS-TC-001",
+          "title": "Timing verification test",
+          "type": "test_case"
+        }
+      },
+      {
+        "id": "link_002",
+        "type": "implements",
+        "target": {
+          "id": "item_design_001",
+          "item_number": "VCS-DES-001",
+          "title": "Sensor processing design",
+          "type": "design"
+        }
+      }
+    ],
+    "incoming": [
+      {
+        "id": "link_003",
+        "type": "derives_from",
+        "source": {
+          "id": "item_req_parent",
+          "item_number": "VCS-REQ-000",
+          "title": "System performance requirements",
+          "type": "requirement"
+        }
+      }
+    ],
+    "statistics": {
+      "total_outgoing": 5,
+      "total_incoming": 2,
+      "by_type": {
+        "verified_by": 3,
+        "implements": 2,
+        "derives_from": 2
+      }
+    }
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+# Get all links for an item
+item_links = client.links.for_item(
+    project_id="proj_abc123",
+    item_id="item_req_001",
+    direction="both",
+    depth=2
+)
+
+print(f"Outgoing: {len(item_links.outgoing)}")
+print(f"Incoming: {len(item_links.incoming)}")
+
+# Just outgoing verification links
+verifications = client.links.for_item(
+    project_id="proj_abc123",
+    item_id="item_req_001",
+    direction="outgoing",
+    type="verified_by"
+)
+```
+
+---
+
+## Trace Path
+
+Find traceability paths between two items.
+
+```http
+GET /v1/projects/{project_id}/trace
+```
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `from` | string | Yes | Starting item ID |
+| `to` | string | Yes | Ending item ID |
+| `max_depth` | integer | No | Maximum path depth (default: 10) |
+| `link_types` | string | No | Comma-separated allowed link types |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/trace?from=item_req_001&to=item_tc_005&max_depth=5" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "from": "item_req_001",
+    "to": "item_tc_005",
+    "paths_found": 2,
+    "paths": [
+      {
+        "length": 2,
+        "path": [
+          {"item_id": "item_req_001", "item_number": "VCS-REQ-001"},
+          {"link_id": "link_001", "type": "verified_by"},
+          {"item_id": "item_tc_001", "item_number": "VCS-TC-001"},
+          {"link_id": "link_010", "type": "depends_on"},
+          {"item_id": "item_tc_005", "item_number": "VCS-TC-005"}
+        ]
+      },
+      {
+        "length": 3,
+        "path": [
+          {"item_id": "item_req_001", "item_number": "VCS-REQ-001"},
+          {"link_id": "link_002", "type": "implements"},
+          {"item_id": "item_design_001", "item_number": "VCS-DES-001"},
+          {"link_id": "link_011", "type": "verified_by"},
+          {"item_id": "item_tc_003", "item_number": "VCS-TC-003"},
+          {"link_id": "link_012", "type": "relates_to"},
+          {"item_id": "item_tc_005", "item_number": "VCS-TC-005"}
+        ]
+      }
+    ]
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+trace = client.links.trace(
+    project_id="proj_abc123",
+    from_item="item_req_001",
+    to_item="item_tc_005",
+    max_depth=5
+)
+
+print(f"Found {trace.paths_found} paths")
+for i, path in enumerate(trace.paths):
+    print(f"Path {i+1} (length {path.length}):")
+    for step in path.path:
+        if "item_id" in step:
+            print(f"  [{step['item_number']}]")
+        else:
+            print(f"  --{step['type']}-->")
+```
+
+---
+
+## Impact Analysis
+
+Analyze the impact of changing an item.
+
+```http
+GET /v1/projects/{project_id}/impact-analysis
+```
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `item_id` | string | Yes | Item to analyze |
+| `direction` | string | No | `upstream`, `downstream`, `both` (default) |
+| `depth` | integer | No | Analysis depth (default: 5) |
+| `include_suspect` | boolean | No | Include suspect links |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/impact-analysis?item_id=item_req_001&direction=downstream" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "source_item": {
+      "id": "item_req_001",
+      "item_number": "VCS-REQ-001",
+      "title": "Process sensor data within 10ms"
+    },
+    "analysis_direction": "downstream",
+    "depth_analyzed": 5,
+    "summary": {
+      "total_impacted": 25,
+      "by_type": {
+        "design": 3,
+        "test_case": 15,
+        "issue": 2,
+        "requirement": 5
+      },
+      "by_depth": {
+        "1": 8,
+        "2": 10,
+        "3": 5,
+        "4": 2
+      }
+    },
+    "impacted_items": [
+      {
+        "id": "item_design_001",
+        "item_number": "VCS-DES-001",
+        "title": "Sensor processing design",
+        "type": "design",
+        "depth": 1,
+        "link_path": ["verified_by"],
+        "impact_level": "high"
+      },
+      {
+        "id": "item_tc_001",
+        "item_number": "VCS-TC-001",
+        "title": "Timing verification",
+        "type": "test_case",
+        "depth": 1,
+        "link_path": ["verified_by"],
+        "impact_level": "high"
+      }
+    ],
+    "recommendations": [
+      {
+        "action": "review",
+        "item_count": 15,
+        "description": "Review linked test cases for impact"
+      },
+      {
+        "action": "retest",
+        "item_count": 15,
+        "description": "Consider re-executing affected tests"
+      }
+    ]
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+impact = client.links.impact_analysis(
+    project_id="proj_abc123",
+    item_id="item_req_001",
+    direction="downstream",
+    depth=5
+)
+
+print(f"Total impacted: {impact.summary.total_impacted}")
+print(f"By type: {impact.summary.by_type}")
+
+for item in impact.impacted_items:
+    print(f"  [{item.depth}] {item.item_number}: {item.title} ({item.impact_level})")
+```
+
+#### TypeScript
+
+```typescript
+const impact = await client.links.impactAnalysis({
+  projectId: 'proj_abc123',
+  itemId: 'item_req_001',
+  direction: 'downstream',
+  depth: 5
+});
+
+console.log(`Total impacted: ${impact.summary.totalImpacted}`);
+impact.impactedItems.forEach(item => {
+  console.log(`  [${item.depth}] ${item.itemNumber}: ${item.title}`);
+});
+```
+
+---
+
+## Link Validation
+
+The API enforces these link constraints:
+
+| Constraint | Description |
+|------------|-------------|
+| No self-links | Source and target must be different |
+| No duplicates | Same source/target/type combination |
+| Valid items | Both items must exist in project |
+| Cycle detection | Optional, configurable per project |
+
+---
+
+## Error Responses
+
+### Link Not Found
+
+```json
+{
+  "error": {
+    "code": "LINK_NOT_FOUND",
+    "message": "Link 'link_invalid' not found",
+    "status": 404
+  }
+}
+```
+
+### Duplicate Link
+
+```json
+{
+  "error": {
+    "code": "LINK_EXISTS",
+    "message": "A link of type 'verified_by' already exists between these items",
+    "status": 409,
+    "details": {
+      "existing_link_id": "link_existing123"
+    }
+  }
+}
+```
+
+### Cycle Detected
+
+```json
+{
+  "error": {
+    "code": "LINK_CYCLE_DETECTED",
+    "message": "Creating this link would create a cycle",
+    "status": 422,
+    "details": {
+      "cycle_path": ["item_req_001", "item_design_001", "item_req_002", "item_req_001"]
+    }
+  }
+}
+```
+
+---
+
+## Related Documentation
+
+- [Requirements API](/docs/api-reference/rest-api/endpoints/requirements) - Item management
+- [Tests API](/docs/api-reference/rest-api/endpoints/tests) - Test case management
+- [Reports API](/docs/api-reference/rest-api/endpoints/reports) - Traceability reports
+- [Filtering](/docs/api-reference/rest-api/filtering) - Query filtering

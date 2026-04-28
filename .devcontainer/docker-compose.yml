@@ -1,0 +1,189 @@
+
+services:
+  # Main workspace container
+  workspace:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tracertm-devcontainer
+    volumes:
+      # Bind mount source code
+      - ..:/workspace:cached
+      # Named volumes for caching (avoid permission issues)
+      - node_modules:/workspace/frontend/node_modules
+      - go-pkg:/go/pkg
+      - python-venv:/workspace/.venv
+    command: sleep infinity
+    networks:
+      - tracertm-dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    environment:
+      # Workspace environment
+      - DOCKER_BUILDKIT=1
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: tracertm-postgres-dev
+    environment:
+      POSTGRES_DB: tracertm
+      POSTGRES_USER: tracertm
+      POSTGRES_PASSWORD: tracertm_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tracertm"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tracertm-dev
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: tracertm-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - tracertm-dev
+    restart: unless-stopped
+
+  # Neo4j Graph Database
+  neo4j:
+    image: neo4j:5-community
+    container_name: tracertm-neo4j-dev
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      - NEO4J_dbms_memory_pagecache_size=512M
+      - NEO4J_dbms_memory_heap_max__size=1G
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:7474"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tracertm-dev
+    restart: unless-stopped
+
+  # NATS Message Broker
+  nats:
+    image: nats:latest
+    container_name: tracertm-nats-dev
+    ports:
+      - "4222:4222"  # Client connections
+      - "8222:8222"  # HTTP management
+      - "6222:6222"  # Cluster connections
+    command: ["-js", "-m", "8222"]
+    volumes:
+      - nats-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8222/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - tracertm-dev
+    restart: unless-stopped
+
+  # Temporal (optional - can be started separately)
+  temporal:
+    image: temporalio/auto-setup:latest
+    container_name: tracertm-temporal-dev
+    ports:
+      - "7233:7233"  # gRPC
+      - "8233:8233"  # HTTP
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=tracertm
+      - POSTGRES_PWD=tracertm_password
+      - POSTGRES_SEEDS=postgres
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - temporal-data:/etc/temporal
+    networks:
+      - tracertm-dev
+    restart: unless-stopped
+
+  # Prometheus (optional - for monitoring)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: tracertm-prometheus-dev
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    networks:
+      - tracertm-dev
+    restart: unless-stopped
+
+  # Grafana (optional - for monitoring)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: tracertm-grafana-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=redis-datasource
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../monitoring/dashboards:/etc/grafana/provisioning/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - tracertm-dev
+    restart: unless-stopped
+
+volumes:
+  # Cache volumes
+  node_modules:
+  go-pkg:
+  python-venv:
+
+  # Data volumes
+  postgres-data:
+  redis-data:
+  neo4j-data:
+  neo4j-logs:
+  nats-data:
+  temporal-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  tracertm-dev:
+    driver: bridge

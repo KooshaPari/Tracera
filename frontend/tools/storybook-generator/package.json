@@ -1,0 +1,32 @@
+{
+  "name": "@tracertm/storybook-generator",
+  "version": "1.0.0",
+  "description": "Auto-generate Storybook stories for TraceRTM components",
+  "keywords": [
+    "csf3",
+    "generator",
+    "react",
+    "storybook",
+    "tracertm",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "TraceRTM",
+  "bin": {
+    "generate-stories": "./generate-stories.ts"
+  },
+  "type": "module",
+  "main": "public-api.ts",
+  "scripts": {
+    "generate": "bun run generate-stories.ts"
+  },
+  "dependencies": {
+    "glob": "^11.0.0",
+    "ts-morph": "^24.0.0",
+    "yaml": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.3",
+    "typescript": "^5.9.3"
+  }
+}

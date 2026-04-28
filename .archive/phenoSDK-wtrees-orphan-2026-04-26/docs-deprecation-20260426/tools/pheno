@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+"""
+Thin shim for the shared pheno-sdk CLI entry point.
+"""
+
+from __future__ import annotations
+
+import runpy
+from importlib import util
+from pathlib import Path
+
+
+def main() -> None:
+    if util.find_spec("pheno") is not None:
+        runpy.run_module("pheno.__main__", run_name="__main__")
+        return
+
+    repo_root = Path(__file__).resolve().parents[2]
+    delegate = repo_root / "pheno-sdk" / "pheno"
+    runpy.run_path(str(delegate), run_name="__main__")
+
+
+if __name__ == "__main__":
+    main()

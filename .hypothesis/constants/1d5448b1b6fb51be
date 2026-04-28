@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/schemas/problem.py
+# hypothesis_version: 6.151.4
+
+[100, 500, '^(high|medium|low)$', 'awaiting_fix', 'by_design', 'cannot_reproduce', 'closed', 'critical', 'deferred', 'environmental', 'fishbone', 'five_whys', 'fmea', 'high', 'human', 'in_investigation', 'kepner_tregoe', 'known_error', 'low', 'medium', 'open', 'other', 'pareto', 'pending_workaround', 'permanent_fix', 'process', 'systematic', 'technology', 'workaround_only']

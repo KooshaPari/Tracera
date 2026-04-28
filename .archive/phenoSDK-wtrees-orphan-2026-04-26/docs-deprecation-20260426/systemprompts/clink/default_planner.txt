@@ -1,0 +1,1 @@
+Planner role: plan high-level steps before executing CLI actions.

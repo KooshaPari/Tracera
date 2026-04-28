@@ -1,0 +1,299 @@
+name: Prospector Quality Analysis
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"  # Weekly on Monday
+
+concurrency:
+  group: prospector-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prospector-scan:
+    name: Advanced Code Quality Analysis
+    runs-on: ubuntu-latest
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PYTHONPATH: .
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[quality,database]"
+          # Install additional analysis tools
+          pip install \
+            bandit==1.7.8 \
+            mccabe==0.7.0 \
+            pyflakes==3.1.0 \
+            pycodestyle==2.11.1 \
+            pep8-naming==0.13.3 \
+            flake8-bugbear==23.12.2 \
+            flake8-comprehensio==3.14.0 \
+            dlint==0.14.1 \
+            mypy==1.11.2
+
+      - name: Clean workspace artifacts
+        run: |
+          python scripts/cleanup_workspace.py --verbose
+
+      - name: Run Prospector analysis
+        run: |
+          python scripts/cleanup_workspace.py --verbose
+
+          # Run comprehensive Prospector analysis
+          prospector --profile prospector.yaml --strictness veryhigh --output-format=json --output-file=prospector-report.json || true
+          prospector --profile prospector.yaml --strictness veryhigh --output-format=html --output-file=prospector-report.html || true
+          prospector --profile prospector.yaml --strictness veryhigh --output-format=text --output-file=prospector-report.txt || true
+
+      - name: Run additional analysis tools
+        run: |
+          python scripts/cleanup_workspace.py --verbose
+
+          # Complexity analysis
+          radon cc src/ --min B --json --output-file=radon-complexity.json || true
+          radon mi src/ --json --output-file=radon-maintainability.json || true
+          radon raw src/ --json --output-file=radon-metrics.json || true
+
+          # Security analysis
+          bandit -r src/ -f json -o bandit-report.json || true
+
+          # Import analysis
+          pydeps --show-deps src/ --dot -o dependency-graph.dot || true
+
+          # Dead code detection
+          vulture src/ --min-confidence 60 --exclude "*_test.py,test_*,*_pb2.py" --output-file=vulture-report.txt || true
+
+      - name: Generate comprehensive quality report
+        run: |
+          python scripts/cleanup_workspace.py --verbose
+
+          # Custom analysis script
+          python << 'EOF'
+          import json
+          import os
+          from pathlib import Path
+
+          # Load Prospector results
+          prospector_data = {}
+          if Path("prospector-report.json").exists():
+              with open("prospector-report.json") as f:
+                  prospector_data = json.load(f)
+
+          # Load complexity data
+          complexity_data = {}
+          if Path("radon-complexity.json").exists():
+              with open("radon-complexity.json") as f:
+                  complexity_data = json.load(f)
+
+          # Calculate quality metrics
+          summary = {
+              "total_messages": prospector_data.get("messages", []),
+              "by_type": {},
+              "by_severity": {},
+              "by_path": {},
+              "complexity_metrics": {},
+              "maintainability_metrics": {}
+          }
+
+          # Analyze Prospector messages
+          for msg in prospector_data.get("messages", []):
+              msg_type = msg.get("type", "unknown")
+              severity = msg.get("source", "unknown").split(".")[-1]
+              location = msg.get("location", {}).get("path", "unknown")
+
+              if msg_type not in summary["by_type"]:
+                  summary["by_type"][msg_type] = 0
+              summary["by_type"][msg_type] += 1
+
+              if severity not in summary["by_severity"]:
+                  summary["by_severity"][severity] = 0
+              summary["by_severity"][severity] += 1
+
+              if location not in summary["by_path"]:
+                  summary["by_path"][location] = 0
+              summary["by_path"][location] += 1
+
+          # Analyze complexity
+          total_complexity = 0
+          max_complexity = 0
+          complex_files = []
+
+          for file_path, functions in complexity_data.items():
+              for func_name, metrics in functions.items():
+                  complexity = metrics.get("complexity", 0)
+                  total_complexity += complexity
+                  max_complexity = max(max_complexity, complexity)
+                  if complexity > 10:
+                      complex_files.append({"file": file_path, "function": func_name, "complexity": complexity})
+
+          summary["complexity_metrics"] = {
+              "total_complexity": total_complexity,
+              "max_complexity": max_complexity,
+              "complex_functions": len(complex_files),
+              "most_complex": sorted(complex_files, key=lambda x: x["complexity"], reverse=True)[:5]
+          }
+
+          # Generate quality score
+          total_messages = len(summary["total_messages"])
+          error_count = summary["by_severity"].get("error", 0)
+          warning_count = summary["by_severity"].get("warning", 0)
+
+          quality_score = max(0, 100 - (error_count * 10 + warning_count * 5))
+
+          summary.update({
+              "quality_score": quality_score,
+              "grade": "A" if quality_score >= 90 else "B" if quality_score >= 80 else "C" if quality_score >= 70 else "D",
+              "recommendations": self._generate_recommendations(summary, complex_files)
+          })
+
+          # Write analysis summary
+          with open("quality-analysis-summary.json", "w") as f:
+              json.dump(summary, f, indent=2)
+
+          print(f"Quality Analysis Complete: Score {quality_score}/100 (Grade {summary['grade']})")
+
+        def _generate_recommendations(self, analysis_data, complex_files):
+          recommendations = []
+
+          if analysis_data.get("quality_score", 100) < 80:
+              recommendations.append({"category": "overall", "message": "Overall code quality needs improvement - focus on critical issues first"})
+
+          if len(complex_files) > 0:
+              recommendations.append({
+                  "category": "complexity",
+                  "message": f"There are {len(complex_files)} highly complex functions - consider refactoring for better maintainability"
+              })
+
+          if analysis_data["by_type"].get("error", 0) > 0:
+              recommendations.append({
+                  "category": "errors",
+                  "message": f"Fix {analysis_data['by_type']['error']} error(s) - these should be top priority"
+              })
+
+          return recommendations
+          EOF
+
+      - name: Check quality gates
+        run: |
+          python scripts/cleanup_workspace.py --verbose
+
+          python << 'EOF'
+          import json
+          import sys
+          from pathlib import Path
+
+          # Load analysis results
+          if not Path("quality-analysis-summary.json").exists():
+              print("No quality analysis results found")
+              sys.exit(0)
+
+          with open("quality-analysis-summary.json") as f:
+              analysis = json.load(f)
+
+          quality_score = analysis.get("quality_score", 100)
+
+          # Quality gates
+          gates = {
+              "min_quality_score": 80,
+              "max_error_count": 5,
+              "max_warning_count": 20,
+              "max_complexity_functions": 10
+          }
+
+          violations = {}
+
+          # Check quality score gate
+          if quality_score < gates["min_quality_score"]:
+              violations["quality_score"] = f"Score {quality_score} below minimum {gates['min_quality_score']}"
+
+          # Check error count
+          error_count = analysis.get("by_severity", {}).get("error", 0)
+          if error_count > gates["max_error_count"]:
+              violations["error_count"] = f"{error_count} errors exceeds limit {gates['max_error_count']}"
+
+          # Check warning count
+          warning_count = analysis.get("by_severity", {}).get("warning", 0)
+          if warning_count > gates["max_warning_count"]:
+              violations["warning_count"] = f"{warning_count} warnings exceeds limit {gates['max_warning_count']}"
+
+          # Check complexity
+          complex_count = analysis.get("complexity_metrics", {}).get("complex_functions", 0)
+          if complex_count > gates["max_complexity_functions"]:
+              violations["complexity"] = f"{complex_count} complex functions exceeds limit {gates['max_complexity_functions']}"
+
+          # Print results
+          if violations:
+              print("🚫 QUALITY GATES FAILED")
+              for gate, message in violations.items():
+                  print(f"  ❌ {gate}: {message}")
+              sys.exit(1)
+          else:
+              print("✅ QUALITY GATES PASSED")
+
+          EOF
+
+      - name: Upload Prospector Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prospector-reports
+          path: |
+            prospector-report.json
+            prospector-report.html
+            prospector-report.txt
+            radon-*.json
+            bandit-report.json
+            dependency-graph.dot
+            vulture-report.txt
+            quality-analysis-summary.json
+
+      - name: Comment PR with Quality Summary
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = './quality-analysis-summary.json';
+
+            if (fs.existsSync(path)) {
+              const analysis = JSON.parse(fs.readFileSync(path, 'utf8'));
+
+              let comment = '## 🔍 Code Quality Analysis\\n\\n';
+              comment += `**Quality Score**: ${analysis.quality_score}/100 (Grade ${analysis.grade})\\n\\n`;
+              comment += `**Total Issues**: ${analysis.total_messages.length}\\n\\n`;
+
+              if (analysis.by_type.error > 0) {
+                comment += `**Errors**: ${analysis.by_type.error}\\n`;
+              }
+              if (analysis.by_type.warning > 0) {
+                comment += `**Warnings**: ${analysis.by_type.warning}\\n`;
+              }
+
+              if (analysis.complexity_metrics.complex_functions > 0) {
+                comment += `**Complex Functions**: ${analysis.complexity_metrics.complex_functions}\\n`;
+              }
+
+              if (analysis.recommendations && analysis.recommendations.length > 0) {
+                comment += '### Recommendations\\n';
+                for (const rec of analysis.recommendations.slice(0, 3)) {
+                  comment += `• **${rec.category}**: ${rec.message}\\n`;
+                }
+              }
+
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }

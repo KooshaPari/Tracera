@@ -1,0 +1,369 @@
+---
+title: "Creating Test Cases"
+description: "Define and manage test cases linked to requirements in TraceRTM"
+---
+
+# Creating Test Cases
+
+Test cases verify that your requirements are correctly implemented. TraceRTM tracks tests and their relationships to features, code, and other artifacts.
+
+## Test Artifact Types
+
+TraceRTM supports various test types:
+
+| Type | Description | Example |
+|------|-------------|---------|
+| `unit` | Tests individual functions/methods | `test_validate_email()` |
+| `integration` | Tests component interactions | `test_login_api_flow()` |
+| `e2e` | End-to-end user flows | `test_user_registration_journey()` |
+| `performance` | Load and stress tests | `test_login_under_load()` |
+| `security` | Security validation | `test_sql_injection_prevented()` |
+
+## Creating Test Cases
+
+### Using the CLI
+
+```bash
+# Create a basic test case
+tracertm create test "Validate email format"
+
+# Create with details
+tracertm create test "Login with valid credentials" \
+  --description "Verify user can login with correct email/password" \
+  --priority high \
+  --metadata '{"test_type": "integration", "automated": true}'
+
+# Output:
+# Created: TEST-001 "Login with valid credentials"
+```
+
+### Using Python SDK
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+test = client.create_item(
+    title="Login with valid credentials",
+    item_type="test",
+    description="Verify user can login with correct email/password",
+    priority="high",
+    metadata={
+        "test_type": "integration",
+        "automated": True,
+        "test_framework": "pytest",
+        "file_path": "tests/integration/test_auth.py::test_login_valid",
+        "expected_result": "User is authenticated and session is created"
+    }
+)
+
+print(f"Created: {test.id}")  # TEST-001
+```
+
+### Using Local Storage (Markdown)
+
+```markdown
+<!-- artifacts/tests/TEST-001.md -->
+---
+id: TEST-001
+title: Login with valid credentials
+type: test
+status: active
+priority: high
+owner: qa-team@example.com
+metadata:
+  test_type: integration
+  automated: true
+  test_framework: pytest
+  file_path: tests/integration/test_auth.py::test_login_valid
+---
+
+# Login with valid credentials
+
+## Objective
+
+Verify that users can successfully authenticate with valid credentials.
+
+## Prerequisites
+
+- Test user account exists
+- Authentication service is running
+- Database is seeded with test data
+
+## Test Steps
+
+1. Navigate to login page
+2. Enter valid email: test@example.com
+3. Enter valid password: TestPass123!
+4. Click "Login" button
+
+## Expected Results
+
+- User is redirected to dashboard
+- Session cookie is set
+- User profile is displayed in header
+- Audit log records successful login
+
+## Test Data
+
+| Field | Value |
+|-------|-------|
+| Email | test@example.com |
+| Password | TestPass123! |
+| Expected redirect | /dashboard |
+
+## Automation
+
+```python
+def test_login_valid(client, test_user):
+    response = client.post("/auth/login", json={
+        "email": test_user.email,
+        "password": "TestPass123!"
+    })
+    assert response.status_code == 200
+    assert "session_token" in response.json()
+```
+```
+
+## Linking Tests to Requirements
+
+The key to traceability is linking tests to the requirements they verify:
+
+### CLI
+
+```bash
+# Link test to feature
+tracertm link TEST-001 FEAT-001 --type tests
+
+# The reverse link is automatic:
+# FEAT-001 --verified_by--> TEST-001
+```
+
+### Python SDK
+
+```python
+# Create link
+client.create_link(
+    source_id="TEST-001",
+    target_id="FEAT-001",
+    link_type="tests",
+    metadata={"coverage": "partial"}
+)
+
+# Query tests for a feature
+tests = client.get_linked_items(
+    item_id="FEAT-001",
+    link_type="verified_by"
+)
+```
+
+### In Markdown (Local Storage)
+
+```markdown
+---
+id: TEST-001
+title: Login with valid credentials
+links:
+  - target: FEAT-001
+    type: tests
+    metadata:
+      coverage: full
+  - target: FEAT-002
+    type: tests
+    metadata:
+      coverage: partial
+---
+```
+
+## Test Suites
+
+Group related tests into suites:
+
+```bash
+# Create test suite
+tracertm create test "Authentication Test Suite" \
+  --metadata '{"is_suite": true}'
+
+# Add tests to suite
+tracertm link TEST-001 TEST-SUITE-001 --type child_of
+tracertm link TEST-002 TEST-SUITE-001 --type child_of
+tracertm link TEST-003 TEST-SUITE-001 --type child_of
+```
+
+Result:
+```
+TEST-SUITE-001: Authentication Test Suite
+├── TEST-001: Login with valid credentials
+├── TEST-002: Login with invalid password
+└── TEST-003: Login rate limiting
+```
+
+## Test States
+
+| State | Description |
+|-------|-------------|
+| `draft` | Test case being written |
+| `active` | Ready to execute |
+| `passed` | Last execution passed |
+| `failed` | Last execution failed |
+| `skipped` | Intentionally skipped |
+| `blocked` | Cannot run (dependency issue) |
+| `deprecated` | No longer valid |
+
+### Recording Test Results
+
+```bash
+# Mark test as passed
+tracertm transition TEST-001 passed --metadata '{"run_id": "run-123"}'
+
+# Mark test as failed
+tracertm transition TEST-001 failed \
+  --metadata '{"run_id": "run-123", "failure_reason": "Assertion error on line 42"}'
+```
+
+```python
+# Bulk update from test run
+client.bulk_update_items([
+    {"id": "TEST-001", "status": "passed"},
+    {"id": "TEST-002", "status": "passed"},
+    {"id": "TEST-003", "status": "failed", "metadata": {"failure": "timeout"}}
+])
+```
+
+## Test Coverage Analysis
+
+Check which requirements have tests:
+
+### CLI
+
+```bash
+# Show test coverage for features
+tracertm coverage --type feature
+
+# Output:
+# Feature Coverage Report
+# ──────────────────────────────────
+# FEAT-001: User Authentication    [3 tests] ✓ covered
+# FEAT-002: Password Reset         [1 test]  ✓ covered
+# FEAT-003: OAuth2 Login           [0 tests] ✗ missing
+# ──────────────────────────────────
+# Coverage: 66% (2/3 features have tests)
+```
+
+### Python SDK
+
+```python
+# Get coverage metrics
+coverage = client.get_test_coverage(project_id="proj-001")
+
+print(f"Features with tests: {coverage['features_covered']}")
+print(f"Features missing tests: {coverage['features_uncovered']}")
+print(f"Coverage percentage: {coverage['percentage']}%")
+
+# Get uncovered features
+uncovered = client.get_items(
+    item_type="feature",
+    has_no_links_of_type="verified_by"
+)
+```
+
+## Importing Tests from Code
+
+TraceRTM can discover tests from your codebase:
+
+```bash
+# Scan pytest tests
+tracertm scan tests/ --framework pytest
+
+# Scan with auto-linking (matches by naming convention)
+tracertm scan tests/ --framework pytest --auto-link
+
+# Example: test_FEAT_001_login.py links to FEAT-001
+```
+
+### Agent-Based Discovery
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(agent_id="test-scanner")
+
+# Register agent
+client.register_agent(
+    name="Test Scanner",
+    capabilities=["read_items", "create_items", "create_links"]
+)
+
+# Scan and create test artifacts
+import ast
+import os
+
+for root, dirs, files in os.walk("tests/"):
+    for file in files:
+        if file.startswith("test_") and file.endswith(".py"):
+            path = os.path.join(root, file)
+            with open(path) as f:
+                tree = ast.parse(f.read())
+
+            for node in ast.walk(tree):
+                if isinstance(node, ast.FunctionDef) and node.name.startswith("test_"):
+                    client.create_item(
+                        title=node.name.replace("_", " ").title(),
+                        item_type="test",
+                        metadata={
+                            "file_path": f"{path}::{node.name}",
+                            "automated": True
+                        }
+                    )
+```
+
+## Best Practices
+
+### 1. One Test, One Purpose
+
+Each test should verify one specific behavior:
+
+- Bad: `test_user_authentication()` (too broad)
+- Good: `test_login_with_valid_credentials()`
+- Good: `test_login_fails_with_wrong_password()`
+
+### 2. Link Tests Early
+
+Create links as soon as you write tests:
+
+```python
+# In your test file, use docstrings for traceability
+def test_login_valid():
+    """
+    Tests: FEAT-001
+    Priority: high
+    """
+    pass
+```
+
+### 3. Track Test Automation
+
+```yaml
+metadata:
+  automated: true
+  test_framework: pytest
+  ci_job: test-auth
+  last_run: "2024-12-07T10:00:00Z"
+  last_result: passed
+```
+
+### 4. Use Test Priorities
+
+Focus on critical paths first:
+
+```bash
+tracertm list --type test --priority critical --status failed
+```
+
+## Next Steps
+
+- [Establishing Traceability](/docs/getting-started/first-project/traceability) - Link tests to code
+- [Generating Reports](/docs/getting-started/first-project/reports) - Coverage reports
+- [Workflows](/docs/getting-started/core-concepts/workflows) - Test state management
+

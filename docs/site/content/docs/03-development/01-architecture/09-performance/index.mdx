@@ -1,0 +1,14 @@
+---
+title: "Performance"
+description: "Performance considerations."
+---
+
+## Role in the architecture
+- Cache hot queries; avoid N+1 patterns.
+- Measure p95/p99 latency and budget per hop.
+- Use async pipelines for heavy work.
+
+## Considerations
+- Throughput vs. latency trade-offs.
+- Failure domains and retry/backoff strategies.
+- Data model ownership and boundaries.

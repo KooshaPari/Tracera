@@ -1,0 +1,54 @@
+name: Import Linter Gate
+
+on:
+  push:
+    branches: [ main, develop, "refactor/**" ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  import-linter:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Install dependencies
+      run: |
+        uv sync --all-extras
+
+    - name: Run import linter
+      run: |
+        uv run lint-imports --verbose
+
+    - name: Check for violations
+      run: |
+        # Fail CI if any import violations found
+        if uv run lint-imports | grep -i "violation"; then
+          echo "❌ Import linter violations found!"
+          exit 1
+        else
+          echo "✅ No import violations detected"
+        fi
+
+    - name: Generate contract report
+      if: always()
+      run: |
+        uv run lint-imports --verbose > import-linter-report.txt
+
+    - name: Upload report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: import-linter-report
+        path: import-linter-report.txt

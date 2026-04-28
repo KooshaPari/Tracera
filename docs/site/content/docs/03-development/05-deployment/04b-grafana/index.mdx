@@ -1,0 +1,162 @@
+---
+title: "Grafana Dashboards"
+description: "Create Grafana dashboards for TraceRTM monitoring"
+keywords: [grafana, dashboards, visualization, monitoring]
+---
+
+# Grafana Dashboards
+
+Create Grafana dashboards to visualize TraceRTM metrics.
+
+## Grafana Setup
+
+### Docker Compose
+
+```yaml
+services:
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+
+volumes:
+  grafana_data:
+```
+
+## Data Source
+
+### Configure Prometheus
+
+1. Go to Configuration → Data Sources
+2. Add Prometheus data source
+3. URL: `http://prometheus:9090`
+4. Save & Test
+
+### Provision Data Source
+
+```yaml
+# grafana/provisioning/datasources/prometheus.yml
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+```
+
+## Dashboard Panels
+
+### Request Rate Panel
+
+```json
+{
+  "targets": [
+    {
+      "expr": "rate(http_requests_total[5m])",
+      "legendFormat": "{{method}} {{endpoint}}"
+    }
+  ],
+  "title": "Request Rate",
+  "type": "graph"
+}
+```
+
+### Error Rate Panel
+
+```json
+{
+  "targets": [
+    {
+      "expr": "rate(http_errors_total[5m]) / rate(http_requests_total[5m])",
+      "legendFormat": "Error Rate"
+    }
+  ],
+  "title": "Error Rate",
+  "type": "graph"
+}
+```
+
+### Latency Panel
+
+```json
+{
+  "targets": [
+    {
+      "expr": "histogram_quantile(0.95, http_request_duration_seconds_bucket)",
+      "legendFormat": "P95 Latency"
+    }
+  ],
+  "title": "P95 Latency",
+  "type": "graph"
+}
+```
+
+## Dashboard JSON
+
+### Complete Dashboard
+
+```json
+{
+  "dashboard": {
+    "title": "TraceRTM API Dashboard",
+    "panels": [
+      {
+        "title": "Request Rate",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[5m])"
+          }
+        ]
+      },
+      {
+        "title": "Error Rate",
+        "targets": [
+          {
+            "expr": "rate(http_errors_total[5m]) / rate(http_requests_total[5m])"
+          }
+        ]
+      },
+      {
+        "title": "Latency",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, http_request_duration_seconds_bucket)"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Provisioning
+
+### Auto-Provision Dashboards
+
+```yaml
+# grafana/provisioning/dashboards/dashboards.yml
+apiVersion: 1
+
+providers:
+  - name: 'TraceRTM'
+    orgId: 1
+    folder: 'TraceRTM'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+```
+
+## Related Documentation
+
+- [Prometheus](./04a-prometheus) - Metrics collection
+- [Logging](./05-logging) - Logging setup

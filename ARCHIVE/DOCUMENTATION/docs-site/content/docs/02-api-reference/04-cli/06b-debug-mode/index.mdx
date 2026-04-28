@@ -1,0 +1,70 @@
+---
+title: "Debug Mode"
+description: "Enable debug logging for CLI troubleshooting"
+keywords: [cli, debug, logging, troubleshooting]
+---
+
+# Debug Mode
+
+Enable debug logging to troubleshoot CLI issues.
+
+## Enable Debug Mode
+
+### Command Flag
+
+```bash
+trace --debug project list
+```
+
+### Environment Variable
+
+```bash
+export TRACERTM_DEBUG=true
+trace project list
+```
+
+### Config Setting
+
+```bash
+trace config set debug true
+```
+
+## Debug Output
+
+Debug mode shows:
+- API requests and responses
+- Authentication details
+- Error stack traces
+- Configuration values
+
+## Example Output
+
+```
+[DEBUG] API Request: GET https://api.tracertm.dev/v1/projects
+[DEBUG] Headers: {'Authorization': 'Bearer ...'}
+[DEBUG] Response: 200 OK
+[DEBUG] Response Body: {...}
+```
+
+## Logging to File
+
+```bash
+# Redirect debug output to file
+trace --debug project list 2> debug.log
+
+# Or with environment variable
+TRACERTM_DEBUG=true trace project list 2> debug.log
+```
+
+## Verbose Mode
+
+For more detailed output:
+
+```bash
+trace --verbose project list
+```
+
+## Related Documentation
+
+- [Troubleshooting](./06-troubleshooting) - General troubleshooting
+- [Common Errors](./06a-common-errors) - Error solutions

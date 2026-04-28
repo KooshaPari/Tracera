@@ -1,0 +1,727 @@
+---
+title: "Create Item"
+description: "API endpoint for creating new traceable items in TraceRTM projects"
+---
+
+# Create Item
+
+Create a new traceable item (requirement, test case, bug, etc.) within a project.
+
+## Endpoint
+
+```http
+POST /v1/projects/{project_id}/items
+```
+
+## Authentication
+
+Requires a valid API key or access token with `write:items` scope.
+
+## Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `project_id` | string | Project ID (required) |
+
+## Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | string | Yes | Item type: `requirement`, `test_case`, `bug`, `user_story`, `task`, `risk`, `decision` |
+| `title` | string | Yes | Item title (3-500 characters) |
+| `description` | string | No | Detailed description (Markdown supported, max 50000 chars) |
+| `status` | string | No | Initial status (default: workflow's initial status) |
+| `priority` | string | No | Priority: `critical`, `high`, `medium`, `low` |
+| `custom_id` | string | No | Custom identifier (auto-generated if not provided) |
+| `custom_fields` | object | No | Custom field values |
+| `tags` | array | No | Tags/labels for categorization |
+| `assignee_id` | string | No | Assigned user ID |
+| `reporter_id` | string | No | Reporter user ID (defaults to current user) |
+| `parent_id` | string | No | Parent item ID (for hierarchical items) |
+| `attachments` | array | No | Attachment file IDs |
+| `metadata` | object | No | Additional metadata |
+
+### Type-Specific Fields
+
+#### Requirement
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `acceptance_criteria` | string | Acceptance criteria (Markdown) |
+| `rationale` | string | Business rationale |
+| `source` | string | Requirement source |
+
+#### Test Case
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `preconditions` | string | Test preconditions |
+| `steps` | array | Test steps with expected results |
+| `expected_result` | string | Overall expected result |
+| `test_type` | string | `unit`, `integration`, `e2e`, `manual` |
+| `automated` | boolean | Whether test is automated |
+
+#### Bug
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `severity` | string | `blocker`, `critical`, `major`, `minor`, `trivial` |
+| `reproduction_steps` | string | Steps to reproduce |
+| `environment` | object | Environment details |
+| `found_in_version` | string | Version where bug was found |
+
+## Request Examples
+
+### Create Requirement
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_456/items" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "requirement",
+    "title": "User Authentication via OAuth 2.0",
+    "description": "## Overview\nThe system shall support OAuth 2.0 authentication for secure user login.\n\n## Details\n- Support Google, GitHub, and Microsoft providers\n- Implement PKCE flow for enhanced security\n- Store refresh tokens securely",
+    "priority": "high",
+    "status": "draft",
+    "custom_fields": {
+      "platform": ["web", "mobile"],
+      "component": "auth",
+      "story_points": 13,
+      "target_release": "2025-03-01"
+    },
+    "tags": ["security", "mvp", "sprint-1"],
+    "assignee_id": "user_xyz789",
+    "acceptance_criteria": "- [ ] Users can sign in with Google\n- [ ] Users can sign in with GitHub\n- [ ] Session persists across browser refresh\n- [ ] Logout clears all tokens"
+  }'
+```
+
+### Create Test Case
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_456/items" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "test_case",
+    "title": "Verify OAuth 2.0 Google Login",
+    "description": "Verify that users can successfully authenticate using Google OAuth 2.0",
+    "priority": "high",
+    "custom_fields": {
+      "test_type": "integration",
+      "automated": true,
+      "execution_time": "30s"
+    },
+    "tags": ["auth", "oauth", "google"],
+    "preconditions": "- User has a valid Google account\n- Application is configured with Google OAuth credentials",
+    "steps": [
+      {
+        "step": 1,
+        "action": "Click Sign in with Google button",
+        "expected": "Google OAuth consent screen appears"
+      },
+      {
+        "step": 2,
+        "action": "Enter Google credentials and authorize",
+        "expected": "User is redirected back to application"
+      },
+      {
+        "step": 3,
+        "action": "Verify user session",
+        "expected": "User is logged in and sees dashboard"
+      }
+    ],
+    "expected_result": "User is authenticated and has access to protected resources"
+  }'
+```
+
+### Create Bug
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_456/items" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "bug",
+    "title": "OAuth token refresh fails silently",
+    "description": "When the access token expires, the refresh flow fails without user notification",
+    "priority": "critical",
+    "severity": "critical",
+    "tags": ["auth", "regression"],
+    "assignee_id": "user_abc123",
+    "reproduction_steps": "1. Log in with OAuth\n2. Wait for access token to expire (1 hour)\n3. Attempt to access protected resource\n4. Observe: No error shown, user appears logged out",
+    "environment": {
+      "browser": "Chrome 120",
+      "os": "macOS 14.2",
+      "app_version": "1.2.3"
+    },
+    "found_in_version": "1.2.3"
+  }'
+```
+
+### Create Child Item (Hierarchical)
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_456/items" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "requirement",
+    "title": "TOTP-based MFA",
+    "description": "Support Time-based One-Time Password authentication",
+    "parent_id": "item_auth_parent",
+    "priority": "high",
+    "custom_fields": {
+      "component": "auth"
+    }
+  }'
+```
+
+## Response
+
+### Success Response (201 Created)
+
+```json
+{
+  "data": {
+    "id": "item_new789xyz",
+    "project_id": "proj_456",
+    "type": "requirement",
+    "title": "User Authentication via OAuth 2.0",
+    "description": "## Overview\nThe system shall support OAuth 2.0...",
+    "status": "draft",
+    "priority": "high",
+    "custom_id": "REQ-042",
+    "custom_fields": {
+      "platform": ["web", "mobile"],
+      "component": "auth",
+      "story_points": 13,
+      "target_release": "2025-03-01"
+    },
+    "tags": ["security", "mvp", "sprint-1"],
+    "assignee_id": "user_xyz789",
+    "reporter_id": "user_abc123",
+    "parent_id": null,
+    "children_ids": [],
+    "version": 1,
+    "locked": false,
+    "links_count": {
+      "total": 0,
+      "inbound": 0,
+      "outbound": 0
+    },
+    "comments_count": 0,
+    "attachments_count": 0,
+    "created_at": "2025-01-15T16:00:00Z",
+    "updated_at": "2025-01-15T16:00:00Z",
+    "created_by": "user_abc123"
+  },
+  "meta": {
+    "request_id": "req_xyz789"
+  }
+}
+```
+
+### Test Case Response
+
+```json
+{
+  "data": {
+    "id": "item_test456",
+    "project_id": "proj_456",
+    "type": "test_case",
+    "title": "Verify OAuth 2.0 Google Login",
+    "status": "draft",
+    "priority": "high",
+    "custom_id": "TC-015",
+    "preconditions": "- User has a valid Google account...",
+    "steps": [
+      {
+        "step": 1,
+        "action": "Click Sign in with Google button",
+        "expected": "Google OAuth consent screen appears"
+      }
+    ],
+    "expected_result": "User is authenticated...",
+    "custom_fields": {
+      "test_type": "integration",
+      "automated": true
+    },
+    "created_at": "2025-01-15T16:00:00Z"
+  }
+}
+```
+
+## SDK Examples
+
+### Python
+
+```python
+from tracertm import TraceRTMClient
+from tracertm.models import ItemType, Priority, Severity
+
+client = TraceRTMClient(api_key="rtm_live_...")
+
+# Create a requirement
+requirement = await client.items.create(
+    project_id="proj_456",
+    type=ItemType.REQUIREMENT,
+    title="User Authentication via OAuth 2.0",
+    description="""
+## Overview
+The system shall support OAuth 2.0 authentication.
+
+## Details
+- Support Google, GitHub, Microsoft providers
+- Implement PKCE flow
+- Secure token storage
+    """,
+    priority=Priority.HIGH,
+    custom_fields={
+        "platform": ["web", "mobile"],
+        "component": "auth",
+        "story_points": 13
+    },
+    tags=["security", "mvp"],
+    assignee_id="user_xyz789",
+    acceptance_criteria="- [ ] Google sign-in works\n- [ ] GitHub sign-in works"
+)
+print(f"Created: {requirement.custom_id}")
+
+# Create a test case
+test_case = await client.items.create(
+    project_id="proj_456",
+    type=ItemType.TEST_CASE,
+    title="Verify OAuth 2.0 Google Login",
+    priority=Priority.HIGH,
+    preconditions="User has valid Google account",
+    steps=[
+        {"step": 1, "action": "Click Google sign-in", "expected": "OAuth screen appears"},
+        {"step": 2, "action": "Authorize", "expected": "Redirected to app"},
+        {"step": 3, "action": "Verify session", "expected": "User is logged in"}
+    ],
+    expected_result="User is authenticated",
+    custom_fields={
+        "test_type": "integration",
+        "automated": True
+    }
+)
+
+# Create a bug
+bug = await client.items.create(
+    project_id="proj_456",
+    type=ItemType.BUG,
+    title="Token refresh fails silently",
+    priority=Priority.CRITICAL,
+    severity=Severity.CRITICAL,
+    reproduction_steps="1. Log in\n2. Wait for token expiry\n3. Access resource",
+    environment={
+        "browser": "Chrome 120",
+        "os": "macOS 14.2"
+    },
+    tags=["auth", "regression"]
+)
+
+# Create with parent (hierarchical)
+child = await client.items.create(
+    project_id="proj_456",
+    type=ItemType.REQUIREMENT,
+    title="TOTP-based MFA",
+    parent_id=requirement.id,
+    priority=Priority.HIGH
+)
+
+# Create and link in one operation
+test_with_link = await client.items.create(
+    project_id="proj_456",
+    type=ItemType.TEST_CASE,
+    title="Test OAuth Login Flow",
+    link_to={
+        "target_id": requirement.id,
+        "type": "verified_by"
+    }
+)
+
+# Batch create multiple items
+items = await client.items.bulk_create(
+    project_id="proj_456",
+    items=[
+        {"type": "requirement", "title": "Req 1", "priority": "high"},
+        {"type": "requirement", "title": "Req 2", "priority": "medium"},
+        {"type": "requirement", "title": "Req 3", "priority": "low"}
+    ]
+)
+print(f"Created {len(items)} items")
+```
+
+### TypeScript
+
+```typescript
+import { TraceRTMClient, ItemType, Priority, Severity } from '@tracertm/sdk'
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_...' })
+
+// Create a requirement
+const requirement = await client.items.create({
+  projectId: 'proj_456',
+  type: ItemType.Requirement,
+  title: 'User Authentication via OAuth 2.0',
+  description: `
+## Overview
+The system shall support OAuth 2.0 authentication.
+  `,
+  priority: Priority.High,
+  customFields: {
+    platform: ['web', 'mobile'],
+    component: 'auth',
+    storyPoints: 13
+  },
+  tags: ['security', 'mvp'],
+  assigneeId: 'user_xyz789',
+  acceptanceCriteria: '- [ ] Google sign-in works'
+})
+
+console.log(`Created: ${requirement.customId}`)
+
+// Create a test case with steps
+const testCase = await client.items.create({
+  projectId: 'proj_456',
+  type: ItemType.TestCase,
+  title: 'Verify OAuth 2.0 Google Login',
+  priority: Priority.High,
+  preconditions: 'User has valid Google account',
+  steps: [
+    { step: 1, action: 'Click Google sign-in', expected: 'OAuth screen appears' },
+    { step: 2, action: 'Authorize', expected: 'Redirected to app' }
+  ],
+  expectedResult: 'User is authenticated',
+  customFields: {
+    testType: 'integration',
+    automated: true
+  }
+})
+
+// Create a bug
+const bug = await client.items.create({
+  projectId: 'proj_456',
+  type: ItemType.Bug,
+  title: 'Token refresh fails silently',
+  priority: Priority.Critical,
+  severity: Severity.Critical,
+  reproductionSteps: '1. Log in\n2. Wait for token expiry',
+  environment: {
+    browser: 'Chrome 120',
+    os: 'macOS 14.2'
+  }
+})
+
+// Type-safe custom fields with generics
+interface ProjectCustomFields {
+  platform: string[]
+  component: string
+  storyPoints: number
+}
+
+const typedItem = await client.items.create<ProjectCustomFields>({
+  projectId: 'proj_456',
+  type: ItemType.Requirement,
+  title: 'Typed Requirement',
+  customFields: {
+    platform: ['web'],
+    component: 'auth',
+    storyPoints: 5
+  }
+})
+```
+
+### Go
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient("rtm_live_...")
+    ctx := context.Background()
+
+    // Create a requirement
+    requirement, err := client.Items.Create(ctx, "proj_456", &tracertm.CreateItemInput{
+        Type:        tracertm.ItemTypeRequirement,
+        Title:       "User Authentication via OAuth 2.0",
+        Description: "The system shall support OAuth 2.0 authentication.",
+        Priority:    tracertm.PriorityHigh,
+        CustomFields: map[string]interface{}{
+            "platform":  []string{"web", "mobile"},
+            "component": "auth",
+        },
+        Tags:       []string{"security", "mvp"},
+        AssigneeID: "user_xyz789",
+    })
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Printf("Created: %s (%s)\n", requirement.CustomID, requirement.ID)
+
+    // Create a test case
+    testCase, _ := client.Items.Create(ctx, "proj_456", &tracertm.CreateItemInput{
+        Type:     tracertm.ItemTypeTestCase,
+        Title:    "Verify OAuth Login",
+        Priority: tracertm.PriorityHigh,
+        Steps: []tracertm.TestStep{
+            {Step: 1, Action: "Click sign-in", Expected: "OAuth screen"},
+            {Step: 2, Action: "Authorize", Expected: "Logged in"},
+        },
+        CustomFields: map[string]interface{}{
+            "test_type": "integration",
+            "automated": true,
+        },
+    })
+
+    fmt.Printf("Test case: %s\n", testCase.CustomID)
+
+    // Create child item
+    child, _ := client.Items.Create(ctx, "proj_456", &tracertm.CreateItemInput{
+        Type:     tracertm.ItemTypeRequirement,
+        Title:    "TOTP-based MFA",
+        ParentID: &requirement.ID,
+        Priority: tracertm.PriorityHigh,
+    })
+
+    fmt.Printf("Child: %s (parent: %s)\n", child.CustomID, *child.ParentID)
+}
+```
+
+## Error Responses
+
+### Validation Error (422)
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Request validation failed",
+    "details": [
+      {
+        "field": "title",
+        "code": "too_short",
+        "message": "Title must be at least 3 characters"
+      },
+      {
+        "field": "type",
+        "code": "invalid_value",
+        "message": "Invalid item type: unknown_type"
+      }
+    ]
+  }
+}
+```
+
+### Project Not Found (404)
+
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "Project not found",
+    "details": {
+      "project_id": "proj_invalid"
+    }
+  }
+}
+```
+
+### Custom Field Validation (422)
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Custom field validation failed",
+    "details": [
+      {
+        "field": "custom_fields.platform",
+        "code": "required",
+        "message": "Platform is a required field"
+      },
+      {
+        "field": "custom_fields.story_points",
+        "code": "invalid_type",
+        "message": "Expected number, got string"
+      }
+    ]
+  }
+}
+```
+
+### Invalid Parent (400)
+
+```json
+{
+  "error": {
+    "code": "invalid_parent",
+    "message": "Invalid parent item",
+    "details": {
+      "parent_id": "item_xyz",
+      "reason": "Parent item is in a different project"
+    }
+  }
+}
+```
+
+### Quota Exceeded (402)
+
+```json
+{
+  "error": {
+    "code": "quota_exceeded",
+    "message": "Item limit reached for project",
+    "details": {
+      "current_count": 10000,
+      "limit": 10000,
+      "plan": "pro"
+    }
+  }
+}
+```
+
+## Validation Rules
+
+### Title
+- Minimum: 3 characters
+- Maximum: 500 characters
+- Required: Yes
+
+### Description
+- Maximum: 50,000 characters
+- Format: Markdown supported
+- Required: No
+
+### Custom ID
+- Format: `{PREFIX}-{NUMBER}` (e.g., REQ-001)
+- Auto-generated if not provided
+- Must be unique within project
+- Pattern: `/^[A-Z]{2,10}-\d{1,6}$/`
+
+### Tags
+- Maximum: 20 tags per item
+- Tag length: 1-50 characters
+- Allowed: letters, numbers, hyphens, underscores
+
+### Priority Values
+- `critical` - Highest priority
+- `high` - High priority
+- `medium` - Medium priority (default)
+- `low` - Low priority
+
+### Severity Values (Bugs)
+- `blocker` - Blocks all progress
+- `critical` - Critical functionality broken
+- `major` - Major feature impacted
+- `minor` - Minor issue
+- `trivial` - Cosmetic or trivial
+
+## Webhooks
+
+Creating an item triggers the `item.created` webhook event:
+
+```json
+{
+  "event": "item.created",
+  "timestamp": "2025-01-15T16:00:00Z",
+  "data": {
+    "item": {
+      "id": "item_new789",
+      "project_id": "proj_456",
+      "type": "requirement",
+      "title": "User Authentication",
+      "custom_id": "REQ-042",
+      "created_by": "user_abc123"
+    }
+  }
+}
+```
+
+## Best Practices
+
+### Use Descriptive Titles
+
+```python
+# Good - clear and specific
+await client.items.create(
+    title="User can reset password via email link",
+    type="requirement"
+)
+
+# Avoid - vague
+await client.items.create(
+    title="Password feature",
+    type="requirement"
+)
+```
+
+### Leverage Custom Fields
+
+```python
+# Define project-wide custom fields for consistency
+await client.items.create(
+    project_id="proj_456",
+    type="requirement",
+    title="OAuth Integration",
+    custom_fields={
+        "platform": ["web", "mobile"],  # Multi-select
+        "component": "auth",             # Single select
+        "story_points": 8,               # Number
+        "target_release": "2025-03-01"   # Date
+    }
+)
+```
+
+### Create Test Cases with Structure
+
+```python
+# Well-structured test case
+await client.items.create(
+    project_id="proj_456",
+    type="test_case",
+    title="Verify login with valid credentials",
+    preconditions="- User account exists\n- User is not logged in",
+    steps=[
+        {"step": 1, "action": "Navigate to login page", "expected": "Login form displayed"},
+        {"step": 2, "action": "Enter valid email", "expected": "Email accepted"},
+        {"step": 3, "action": "Enter valid password", "expected": "Password masked"},
+        {"step": 4, "action": "Click submit", "expected": "User logged in, redirected to dashboard"}
+    ],
+    expected_result="User is authenticated and sees their dashboard"
+)
+```
+
+### Use Idempotency Keys for Reliability
+
+```python
+import uuid
+
+# Generate unique key for retry safety
+idempotency_key = str(uuid.uuid4())
+
+item = await client.items.create(
+    project_id="proj_456",
+    type="requirement",
+    title="Important Requirement",
+    idempotency_key=idempotency_key  # Safe to retry
+)
+```
+
+## Related Documentation
+
+- [Items API](/docs/api-reference/rest-api/items) - All item endpoints
+- [List Items](/docs/api-reference/rest-api/items-list) - Listing items
+- [Update Item](/docs/api-reference/rest-api/items-update) - Updating items
+- [Links API](/docs/api-reference/rest-api/links) - Creating traceability links
+- [Batch Operations](/docs/api-reference/rest-api/batch-operations) - Bulk create
+

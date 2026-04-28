@@ -1,0 +1,1133 @@
+---
+title: "Azure Deployment"
+description: "Comprehensive guide for deploying TraceRTM on Microsoft Azure"
+---
+
+# Azure Deployment
+
+Deploy TraceRTM on Microsoft Azure using Virtual Machines, Container Instances, or Azure Kubernetes Service with full integration into Azure services.
+
+## Overview
+
+This guide covers multiple deployment strategies for TraceRTM on Azure:
+
+- **Azure VMs**: Traditional VM-based deployment
+- **Azure Container Instances (ACI)**: Serverless containers for simple deployments
+- **Azure Kubernetes Service (AKS)**: Production-grade orchestration
+- **Managed Services**: PostgreSQL, Redis, Blob Storage
+- **Security**: Managed Identity, RBAC, Key Vault
+- **Monitoring**: Azure Monitor, Application Insights
+- **Networking**: Application Gateway, DNS, Load Balancing
+
+## Prerequisites
+
+### Azure Subscription
+
+You'll need an active Azure subscription with sufficient permissions to create resources.
+
+```bash
+# Login to Azure
+az login
+
+# Set your subscription
+az account set --subscription "Your Subscription Name"
+
+# Verify current subscription
+az account show
+
+# List all available subscriptions
+az account list --output table
+```
+
+### Install Azure CLI
+
+**macOS:**
+```bash
+brew install azure-cli
+```
+
+**Linux:**
+```bash
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+```
+
+**Windows:**
+```powershell
+winget install -e --id Microsoft.AzureCLI
+```
+
+**Verify installation:**
+```bash
+az --version
+```
+
+### Resource Group Setup
+
+Create a resource group for all TraceRTM resources:
+
+```bash
+# Set variables
+RESOURCE_GROUP="tracertm-prod"
+LOCATION="eastus"
+
+# Create resource group
+az group create \
+  --name $RESOURCE_GROUP \
+  --location $LOCATION \
+  --tags Environment=Production Application=TraceRTM
+```
+
+## Deploying to Azure Virtual Machines
+
+### Create a Virtual Machine
+
+```bash
+# VM Configuration
+VM_NAME="tracertm-vm"
+VM_SIZE="Standard_D2s_v3"  # 2 vCPUs, 8 GB RAM
+IMAGE="Ubuntu2204"
+
+# Create VM
+az vm create \
+  --resource-group $RESOURCE_GROUP \
+  --name $VM_NAME \
+  --image $IMAGE \
+  --size $VM_SIZE \
+  --admin-username azureuser \
+  --generate-ssh-keys \
+  --public-ip-sku Standard \
+  --tags Application=TraceRTM Role=AppServer
+
+# Open ports for HTTP/HTTPS
+az vm open-port \
+  --resource-group $RESOURCE_GROUP \
+  --name $VM_NAME \
+  --port 80 \
+  --priority 1001
+
+az vm open-port \
+  --resource-group $RESOURCE_GROUP \
+  --name $VM_NAME \
+  --port 443 \
+  --priority 1002
+
+# Get public IP
+VM_IP=$(az vm show \
+  --resource-group $RESOURCE_GROUP \
+  --name $VM_NAME \
+  --show-details \
+  --query publicIps \
+  --output tsv)
+
+echo "VM Public IP: $VM_IP"
+```
+
+### Install TraceRTM on VM
+
+```bash
+# SSH into the VM
+ssh azureuser@$VM_IP
+
+# Install Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker azureuser
+
+# Install Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Create application directory
+mkdir -p ~/tracertm
+cd ~/tracertm
+
+# Create docker-compose.yml (see Docker deployment guide)
+# Then start services
+docker-compose up -d
+```
+
+## Deploying to Azure Container Instances
+
+### Simple ACI Deployment
+
+```bash
+# Container configuration
+CONTAINER_NAME="tracertm-api"
+DNS_NAME="tracertm-prod"
+
+# Deploy container
+az container create \
+  --resource-group $RESOURCE_GROUP \
+  --name $CONTAINER_NAME \
+  --image tracertm/api:latest \
+  --dns-name-label $DNS_NAME \
+  --ports 80 443 \
+  --cpu 2 \
+  --memory 4 \
+  --environment-variables \
+    DATABASE_URL="postgresql://user:pass@host/db" \
+    REDIS_URL="redis://host:6379" \
+    SECRET_KEY="your-secret-key" \
+  --restart-policy Always
+
+# Get container URL
+CONTAINER_URL=$(az container show \
+  --resource-group $RESOURCE_GROUP \
+  --name $CONTAINER_NAME \
+  --query ipAddress.fqdn \
+  --output tsv)
+
+echo "Container URL: https://$CONTAINER_URL"
+```
+
+### Multi-Container Deployment
+
+Create a `deployment.yaml` file:
+
+```yaml
+apiVersion: '2021-09-01'
+location: eastus
+name: tracertm-group
+properties:
+  containers:
+  - name: api
+    properties:
+      image: tracertm/api:latest
+      ports:
+      - port: 8000
+        protocol: TCP
+      resources:
+        requests:
+          cpu: 1.0
+          memoryInGB: 2.0
+      environmentVariables:
+      - name: DATABASE_URL
+        secureValue: postgresql://user:pass@host/db
+      - name: REDIS_URL
+        value: redis://redis:6379
+
+  - name: frontend
+    properties:
+      image: tracertm/frontend:latest
+      ports:
+      - port: 80
+        protocol: TCP
+      resources:
+        requests:
+          cpu: 0.5
+          memoryInGB: 1.0
+
+  - name: redis
+    properties:
+      image: redis:7-alpine
+      ports:
+      - port: 6379
+        protocol: TCP
+      resources:
+        requests:
+          cpu: 0.5
+          memoryInGB: 1.0
+
+  ipAddress:
+    type: Public
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 8000
+    dnsNameLabel: tracertm-prod
+  osType: Linux
+  restartPolicy: Always
+tags:
+  Application: TraceRTM
+  Environment: Production
+type: Microsoft.ContainerInstance/containerGroups
+```
+
+Deploy the container group:
+
+```bash
+az container create \
+  --resource-group $RESOURCE_GROUP \
+  --file deployment.yaml
+```
+
+## Deploying to Azure Kubernetes Service (AKS)
+
+### Create AKS Cluster
+
+```bash
+# Cluster configuration
+CLUSTER_NAME="tracertm-aks"
+NODE_COUNT=3
+NODE_SIZE="Standard_D2s_v3"
+
+# Create AKS cluster
+az aks create \
+  --resource-group $RESOURCE_GROUP \
+  --name $CLUSTER_NAME \
+  --node-count $NODE_COUNT \
+  --node-vm-size $NODE_SIZE \
+  --enable-managed-identity \
+  --enable-addons monitoring \
+  --generate-ssh-keys \
+  --network-plugin azure \
+  --network-policy azure \
+  --tags Application=TraceRTM
+
+# Get credentials
+az aks get-credentials \
+  --resource-group $RESOURCE_GROUP \
+  --name $CLUSTER_NAME
+
+# Verify cluster access
+kubectl get nodes
+```
+
+### Deploy TraceRTM to AKS
+
+Create Kubernetes manifests:
+
+**namespace.yaml:**
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tracertm
+```
+
+**deployment.yaml:**
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracertm-api
+  namespace: tracertm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: tracertm-api
+  template:
+    metadata:
+      labels:
+        app: tracertm-api
+    spec:
+      containers:
+      - name: api
+        image: tracertm/api:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: tracertm-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: tracertm-secrets
+              key: redis-url
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+```
+
+**service.yaml:**
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracertm-api
+  namespace: tracertm
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+  selector:
+    app: tracertm-api
+```
+
+Deploy to AKS:
+
+```bash
+# Create namespace
+kubectl apply -f namespace.yaml
+
+# Create secrets
+kubectl create secret generic tracertm-secrets \
+  --namespace=tracertm \
+  --from-literal=database-url="postgresql://user:pass@host/db" \
+  --from-literal=redis-url="redis://host:6379"
+
+# Deploy application
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+
+# Get external IP
+kubectl get service tracertm-api -n tracertm
+```
+
+## Azure Database for PostgreSQL
+
+### Create Flexible Server
+
+```bash
+# Database configuration
+DB_SERVER_NAME="tracertm-db"
+DB_ADMIN_USER="tracertmadmin"
+DB_ADMIN_PASS="YourSecurePassword123!"
+DB_SKU="Standard_D2ds_v4"
+
+# Create PostgreSQL Flexible Server
+az postgres flexible-server create \
+  --resource-group $RESOURCE_GROUP \
+  --name $DB_SERVER_NAME \
+  --location $LOCATION \
+  --admin-user $DB_ADMIN_USER \
+  --admin-password $DB_ADMIN_PASS \
+  --sku-name $DB_SKU \
+  --tier GeneralPurpose \
+  --storage-size 128 \
+  --version 14 \
+  --high-availability Enabled \
+  --zone 1 \
+  --standby-zone 2 \
+  --tags Application=TraceRTM
+
+# Create database
+az postgres flexible-server db create \
+  --resource-group $RESOURCE_GROUP \
+  --server-name $DB_SERVER_NAME \
+  --database-name tracertm
+
+# Configure firewall rules
+az postgres flexible-server firewall-rule create \
+  --resource-group $RESOURCE_GROUP \
+  --name $DB_SERVER_NAME \
+  --rule-name AllowAzureServices \
+  --start-ip-address 0.0.0.0 \
+  --end-ip-address 0.0.0.0
+
+# Get connection string
+DB_HOST="${DB_SERVER_NAME}.postgres.database.azure.com"
+DB_CONN_STRING="postgresql://${DB_ADMIN_USER}:${DB_ADMIN_PASS}@${DB_HOST}/tracertm?sslmode=require"
+echo "Database Connection String: $DB_CONN_STRING"
+```
+
+### Configure Database Parameters
+
+```bash
+# Set recommended parameters
+az postgres flexible-server parameter set \
+  --resource-group $RESOURCE_GROUP \
+  --server-name $DB_SERVER_NAME \
+  --name max_connections \
+  --value 200
+
+az postgres flexible-server parameter set \
+  --resource-group $RESOURCE_GROUP \
+  --server-name $DB_SERVER_NAME \
+  --name shared_buffers \
+  --value 524288
+
+az postgres flexible-server parameter set \
+  --resource-group $RESOURCE_GROUP \
+  --server-name $DB_SERVER_NAME \
+  --name work_mem \
+  --value 8192
+```
+
+## Azure Cache for Redis
+
+### Create Redis Cache
+
+```bash
+# Redis configuration
+REDIS_NAME="tracertm-cache"
+REDIS_SKU="Standard"
+REDIS_SIZE="C2"  # 2.5 GB
+
+# Create Redis cache
+az redis create \
+  --resource-group $RESOURCE_GROUP \
+  --name $REDIS_NAME \
+  --location $LOCATION \
+  --sku $REDIS_SKU \
+  --vm-size $REDIS_SIZE \
+  --enable-non-ssl-port false \
+  --minimum-tls-version 1.2 \
+  --tags Application=TraceRTM
+
+# Get Redis connection details
+REDIS_HOST=$(az redis show \
+  --resource-group $RESOURCE_GROUP \
+  --name $REDIS_NAME \
+  --query hostName \
+  --output tsv)
+
+REDIS_KEY=$(az redis list-keys \
+  --resource-group $RESOURCE_GROUP \
+  --name $REDIS_NAME \
+  --query primaryKey \
+  --output tsv)
+
+REDIS_URL="rediss://:${REDIS_KEY}@${REDIS_HOST}:6380/0"
+echo "Redis URL: $REDIS_URL"
+```
+
+### Configure Redis Settings
+
+```bash
+# Enable data persistence
+az redis patch-schedule set \
+  --resource-group $RESOURCE_GROUP \
+  --name $REDIS_NAME \
+  --schedule-entries '[{"dayOfWeek":"Sunday","startHourUtc":2,"maintenanceWindow":"PT5H"}]'
+
+# Configure maxmemory policy
+az redis update \
+  --resource-group $RESOURCE_GROUP \
+  --name $REDIS_NAME \
+  --set "redisConfiguration.maxmemory-policy=allkeys-lru"
+```
+
+## Azure Blob Storage
+
+### Create Storage Account
+
+```bash
+# Storage configuration
+STORAGE_ACCOUNT="tracertmstorage$RANDOM"
+CONTAINER_NAME="uploads"
+
+# Create storage account
+az storage account create \
+  --resource-group $RESOURCE_GROUP \
+  --name $STORAGE_ACCOUNT \
+  --location $LOCATION \
+  --sku Standard_LRS \
+  --kind StorageV2 \
+  --access-tier Hot \
+  --https-only true \
+  --min-tls-version TLS1_2 \
+  --tags Application=TraceRTM
+
+# Get storage account key
+STORAGE_KEY=$(az storage account keys list \
+  --resource-group $RESOURCE_GROUP \
+  --account-name $STORAGE_ACCOUNT \
+  --query '[0].value' \
+  --output tsv)
+
+# Create blob container
+az storage container create \
+  --name $CONTAINER_NAME \
+  --account-name $STORAGE_ACCOUNT \
+  --account-key $STORAGE_KEY \
+  --public-access off
+
+# Get connection string
+STORAGE_CONN_STRING=$(az storage account show-connection-string \
+  --resource-group $RESOURCE_GROUP \
+  --name $STORAGE_ACCOUNT \
+  --query connectionString \
+  --output tsv)
+
+echo "Storage Connection String: $STORAGE_CONN_STRING"
+```
+
+### Enable CORS for Frontend
+
+```bash
+az storage cors add \
+  --services b \
+  --methods GET POST PUT DELETE \
+  --origins "https://yourdomain.com" \
+  --allowed-headers "*" \
+  --exposed-headers "*" \
+  --max-age 3600 \
+  --account-name $STORAGE_ACCOUNT \
+  --account-key $STORAGE_KEY
+```
+
+## Application Gateway Setup
+
+### Create Application Gateway
+
+```bash
+# Network configuration
+VNET_NAME="tracertm-vnet"
+SUBNET_NAME="appgw-subnet"
+AG_NAME="tracertm-appgw"
+PUBLIC_IP_NAME="appgw-pip"
+
+# Create virtual network
+az network vnet create \
+  --resource-group $RESOURCE_GROUP \
+  --name $VNET_NAME \
+  --address-prefix 10.0.0.0/16 \
+  --subnet-name $SUBNET_NAME \
+  --subnet-prefix 10.0.1.0/24
+
+# Create public IP
+az network public-ip create \
+  --resource-group $RESOURCE_GROUP \
+  --name $PUBLIC_IP_NAME \
+  --sku Standard \
+  --zone 1 2 3
+
+# Create Application Gateway
+az network application-gateway create \
+  --resource-group $RESOURCE_GROUP \
+  --name $AG_NAME \
+  --location $LOCATION \
+  --vnet-name $VNET_NAME \
+  --subnet $SUBNET_NAME \
+  --public-ip-address $PUBLIC_IP_NAME \
+  --sku WAF_v2 \
+  --capacity 2 \
+  --http-settings-cookie-based-affinity Disabled \
+  --frontend-port 80 \
+  --http-settings-port 8000 \
+  --http-settings-protocol Http \
+  --servers $VM_IP
+
+# Enable WAF
+az network application-gateway waf-config set \
+  --resource-group $RESOURCE_GROUP \
+  --gateway-name $AG_NAME \
+  --enabled true \
+  --firewall-mode Prevention \
+  --rule-set-type OWASP \
+  --rule-set-version 3.2
+```
+
+### Configure SSL/TLS
+
+```bash
+# Upload SSL certificate
+az network application-gateway ssl-cert create \
+  --resource-group $RESOURCE_GROUP \
+  --gateway-name $AG_NAME \
+  --name tracertm-cert \
+  --cert-file /path/to/certificate.pfx \
+  --cert-password "YourCertPassword"
+
+# Create HTTPS listener
+az network application-gateway http-listener create \
+  --resource-group $RESOURCE_GROUP \
+  --gateway-name $AG_NAME \
+  --name https-listener \
+  --frontend-port 443 \
+  --ssl-cert tracertm-cert
+```
+
+## Azure DNS Configuration
+
+### Create DNS Zone
+
+```bash
+# DNS configuration
+DNS_ZONE="tracertm.com"
+
+# Create DNS zone
+az network dns zone create \
+  --resource-group $RESOURCE_GROUP \
+  --name $DNS_ZONE
+
+# Get name servers
+az network dns zone show \
+  --resource-group $RESOURCE_GROUP \
+  --name $DNS_ZONE \
+  --query nameServers
+
+# Create A record for Application Gateway
+APPGW_IP=$(az network public-ip show \
+  --resource-group $RESOURCE_GROUP \
+  --name $PUBLIC_IP_NAME \
+  --query ipAddress \
+  --output tsv)
+
+az network dns record-set a add-record \
+  --resource-group $RESOURCE_GROUP \
+  --zone-name $DNS_ZONE \
+  --record-set-name www \
+  --ipv4-address $APPGW_IP
+
+# Create CNAME for apex domain
+az network dns record-set cname set-record \
+  --resource-group $RESOURCE_GROUP \
+  --zone-name $DNS_ZONE \
+  --record-set-name api \
+  --cname www.$DNS_ZONE
+```
+
+## Managed Identity and RBAC
+
+### Enable System-Assigned Managed Identity
+
+For VMs:
+```bash
+# Enable managed identity on VM
+az vm identity assign \
+  --resource-group $RESOURCE_GROUP \
+  --name $VM_NAME
+
+# Get principal ID
+PRINCIPAL_ID=$(az vm identity show \
+  --resource-group $RESOURCE_GROUP \
+  --name $VM_NAME \
+  --query principalId \
+  --output tsv)
+```
+
+For AKS:
+```bash
+# Enable managed identity on AKS
+az aks update \
+  --resource-group $RESOURCE_GROUP \
+  --name $CLUSTER_NAME \
+  --enable-managed-identity
+
+# Get kubelet identity
+KUBELET_ID=$(az aks show \
+  --resource-group $RESOURCE_GROUP \
+  --name $CLUSTER_NAME \
+  --query identityProfile.kubeletidentity.clientId \
+  --output tsv)
+```
+
+### Assign RBAC Roles
+
+```bash
+# Storage Blob Data Contributor
+az role assignment create \
+  --assignee $PRINCIPAL_ID \
+  --role "Storage Blob Data Contributor" \
+  --scope /subscriptions/$(az account show --query id -o tsv)/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.Storage/storageAccounts/$STORAGE_ACCOUNT
+
+# Key Vault Secrets User
+az role assignment create \
+  --assignee $PRINCIPAL_ID \
+  --role "Key Vault Secrets User" \
+  --scope /subscriptions/$(az account show --query id -o tsv)/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.KeyVault/vaults/tracertm-kv
+```
+
+### Azure Key Vault Integration
+
+```bash
+# Create Key Vault
+KV_NAME="tracertm-kv"
+
+az keyvault create \
+  --resource-group $RESOURCE_GROUP \
+  --name $KV_NAME \
+  --location $LOCATION \
+  --enabled-for-deployment true \
+  --enabled-for-template-deployment true
+
+# Store secrets
+az keyvault secret set \
+  --vault-name $KV_NAME \
+  --name database-url \
+  --value "$DB_CONN_STRING"
+
+az keyvault secret set \
+  --vault-name $KV_NAME \
+  --name redis-url \
+  --value "$REDIS_URL"
+
+# Grant access to managed identity
+az keyvault set-policy \
+  --name $KV_NAME \
+  --object-id $PRINCIPAL_ID \
+  --secret-permissions get list
+```
+
+## Azure Monitor Integration
+
+### Enable Application Insights
+
+```bash
+# Create Application Insights
+APPINSIGHTS_NAME="tracertm-insights"
+
+az monitor app-insights component create \
+  --resource-group $RESOURCE_GROUP \
+  --app $APPINSIGHTS_NAME \
+  --location $LOCATION \
+  --kind web \
+  --application-type web
+
+# Get instrumentation key
+INSTRUMENTATION_KEY=$(az monitor app-insights component show \
+  --resource-group $RESOURCE_GROUP \
+  --app $APPINSIGHTS_NAME \
+  --query instrumentationKey \
+  --output tsv)
+
+echo "Application Insights Key: $INSTRUMENTATION_KEY"
+```
+
+### Configure Log Analytics
+
+```bash
+# Create Log Analytics workspace
+WORKSPACE_NAME="tracertm-logs"
+
+az monitor log-analytics workspace create \
+  --resource-group $RESOURCE_GROUP \
+  --workspace-name $WORKSPACE_NAME \
+  --location $LOCATION
+
+# Get workspace ID
+WORKSPACE_ID=$(az monitor log-analytics workspace show \
+  --resource-group $RESOURCE_GROUP \
+  --workspace-name $WORKSPACE_NAME \
+  --query customerId \
+  --output tsv)
+
+# Connect AKS to Log Analytics
+az aks enable-addons \
+  --resource-group $RESOURCE_GROUP \
+  --name $CLUSTER_NAME \
+  --addons monitoring \
+  --workspace-resource-id /subscriptions/$(az account show --query id -o tsv)/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.OperationalInsights/workspaces/$WORKSPACE_NAME
+```
+
+### Create Alerts
+
+```bash
+# CPU alert for VMs
+az monitor metrics alert create \
+  --resource-group $RESOURCE_GROUP \
+  --name "High CPU Usage" \
+  --scopes /subscriptions/$(az account show --query id -o tsv)/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.Compute/virtualMachines/$VM_NAME \
+  --condition "avg Percentage CPU > 80" \
+  --description "Alert when CPU exceeds 80%" \
+  --evaluation-frequency 5m \
+  --window-size 15m \
+  --severity 2
+
+# Database connection alert
+az monitor metrics alert create \
+  --resource-group $RESOURCE_GROUP \
+  --name "High DB Connections" \
+  --scopes /subscriptions/$(az account show --query id -o tsv)/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.DBforPostgreSQL/flexibleServers/$DB_SERVER_NAME \
+  --condition "avg active_connections > 150" \
+  --description "Alert when active connections exceed 150" \
+  --evaluation-frequency 5m \
+  --window-size 15m \
+  --severity 2
+```
+
+## Cost Management
+
+### Set Budget Alerts
+
+```bash
+# Create budget
+az consumption budget create \
+  --resource-group $RESOURCE_GROUP \
+  --budget-name "tracertm-monthly-budget" \
+  --amount 1000 \
+  --time-grain Monthly \
+  --start-date 2025-01-01 \
+  --end-date 2026-01-01 \
+  --category Cost
+
+# View cost analysis
+az consumption usage list \
+  --start-date 2025-01-01 \
+  --end-date 2025-01-31 \
+  --query "[?contains(instanceName, 'tracertm')].{Name:instanceName, Cost:pretaxCost, Date:usageStart}" \
+  --output table
+```
+
+### Cost Optimization Tips
+
+1. **Use Reserved Instances**: Save up to 72% on VMs
+   ```bash
+   az reservations reservation-order list
+   ```
+
+2. **Enable Auto-Shutdown for Dev VMs**:
+   ```bash
+   az vm auto-shutdown -g $RESOURCE_GROUP -n $VM_NAME --time 1800
+   ```
+
+3. **Use Azure Spot VMs for non-critical workloads**:
+   ```bash
+   az vm create --priority Spot --max-price 0.05 ...
+   ```
+
+4. **Right-size resources**: Monitor and adjust VM sizes
+5. **Use lifecycle management for blob storage**
+6. **Scale down AKS nodes during off-hours**
+
+## Security Recommendations
+
+### Network Security
+
+```bash
+# Create Network Security Group
+NSG_NAME="tracertm-nsg"
+
+az network nsg create \
+  --resource-group $RESOURCE_GROUP \
+  --name $NSG_NAME
+
+# Allow HTTPS only
+az network nsg rule create \
+  --resource-group $RESOURCE_GROUP \
+  --nsg-name $NSG_NAME \
+  --name AllowHTTPS \
+  --priority 100 \
+  --direction Inbound \
+  --access Allow \
+  --protocol Tcp \
+  --destination-port-ranges 443
+
+# Block direct database access
+az network nsg rule create \
+  --resource-group $RESOURCE_GROUP \
+  --nsg-name $NSG_NAME \
+  --name DenyDirectDB \
+  --priority 200 \
+  --direction Inbound \
+  --access Deny \
+  --protocol Tcp \
+  --destination-port-ranges 5432
+```
+
+### Enable Azure Security Center
+
+```bash
+# Enable Security Center Standard tier
+az security pricing create \
+  --name VirtualMachines \
+  --tier Standard
+
+az security pricing create \
+  --name SqlServers \
+  --tier Standard
+
+az security pricing create \
+  --name StorageAccounts \
+  --tier Standard
+```
+
+### Configure Private Endpoints
+
+```bash
+# Create private endpoint for PostgreSQL
+az network private-endpoint create \
+  --resource-group $RESOURCE_GROUP \
+  --name tracertm-db-pe \
+  --vnet-name $VNET_NAME \
+  --subnet default \
+  --private-connection-resource-id /subscriptions/$(az account show --query id -o tsv)/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.DBforPostgreSQL/flexibleServers/$DB_SERVER_NAME \
+  --group-id postgresqlServer \
+  --connection-name tracertm-db-connection
+```
+
+### Security Checklist
+
+- [ ] Enable managed identities for all resources
+- [ ] Use Key Vault for secrets management
+- [ ] Enable disk encryption for VMs
+- [ ] Configure private endpoints for databases
+- [ ] Enable WAF on Application Gateway
+- [ ] Implement NSG rules for network segmentation
+- [ ] Enable Azure Security Center
+- [ ] Configure Azure AD authentication
+- [ ] Enable audit logging
+- [ ] Regular security assessments
+
+## Backup and Disaster Recovery
+
+### Database Backup
+
+```bash
+# Configure automated backups
+az postgres flexible-server update \
+  --resource-group $RESOURCE_GROUP \
+  --name $DB_SERVER_NAME \
+  --backup-retention 30 \
+  --geo-redundant-backup Enabled
+
+# Create on-demand backup
+az postgres flexible-server backup create \
+  --resource-group $RESOURCE_GROUP \
+  --name $DB_SERVER_NAME \
+  --backup-name manual-backup-$(date +%Y%m%d)
+```
+
+### Storage Backup
+
+```bash
+# Enable soft delete
+az storage account blob-service-properties update \
+  --resource-group $RESOURCE_GROUP \
+  --account-name $STORAGE_ACCOUNT \
+  --enable-delete-retention true \
+  --delete-retention-days 30
+
+# Enable versioning
+az storage account blob-service-properties update \
+  --resource-group $RESOURCE_GROUP \
+  --account-name $STORAGE_ACCOUNT \
+  --enable-versioning true
+```
+
+## Complete Deployment Script
+
+Here's a complete script to deploy TraceRTM with all Azure services:
+
+```bash
+#!/bin/bash
+set -e
+
+# Configuration
+RESOURCE_GROUP="tracertm-prod"
+LOCATION="eastus"
+VM_NAME="tracertm-vm"
+DB_SERVER_NAME="tracertm-db"
+REDIS_NAME="tracertm-cache"
+STORAGE_ACCOUNT="tracertmstorage$RANDOM"
+
+# Login and set subscription
+az login
+az account set --subscription "Your Subscription Name"
+
+# Create resource group
+az group create --name $RESOURCE_GROUP --location $LOCATION
+
+# Deploy PostgreSQL
+az postgres flexible-server create \
+  --resource-group $RESOURCE_GROUP \
+  --name $DB_SERVER_NAME \
+  --location $LOCATION \
+  --admin-user tracertmadmin \
+  --admin-password "YourSecurePassword123!" \
+  --sku-name Standard_D2ds_v4 \
+  --tier GeneralPurpose \
+  --storage-size 128 \
+  --version 14
+
+# Deploy Redis
+az redis create \
+  --resource-group $RESOURCE_GROUP \
+  --name $REDIS_NAME \
+  --location $LOCATION \
+  --sku Standard \
+  --vm-size C2
+
+# Deploy Storage
+az storage account create \
+  --resource-group $RESOURCE_GROUP \
+  --name $STORAGE_ACCOUNT \
+  --location $LOCATION \
+  --sku Standard_LRS
+
+# Deploy VM or AKS (choose one)
+# Option 1: VM
+az vm create \
+  --resource-group $RESOURCE_GROUP \
+  --name $VM_NAME \
+  --image Ubuntu2204 \
+  --size Standard_D2s_v3 \
+  --admin-username azureuser \
+  --generate-ssh-keys
+
+# Option 2: AKS
+# az aks create \
+#   --resource-group $RESOURCE_GROUP \
+#   --name tracertm-aks \
+#   --node-count 3 \
+#   --enable-managed-identity
+
+echo "Deployment complete!"
+echo "Database: ${DB_SERVER_NAME}.postgres.database.azure.com"
+echo "Redis: ${REDIS_NAME}.redis.cache.windows.net"
+echo "Storage: ${STORAGE_ACCOUNT}.blob.core.windows.net"
+```
+
+## Next Steps
+
+After deployment:
+
+1. [Configure environment variables](/docs/configuration/environment-variables)
+2. [Set up CI/CD with Azure DevOps](/docs/deployment/azure-devops)
+3. [Configure monitoring and alerts](/docs/operations/monitoring)
+4. [Review security best practices](/docs/security/best-practices)
+5. [Set up automated backups](/docs/operations/backup-restore)
+
+## Troubleshooting
+
+### Common Issues
+
+**Issue: Cannot connect to PostgreSQL**
+```bash
+# Check firewall rules
+az postgres flexible-server firewall-rule list \
+  --resource-group $RESOURCE_GROUP \
+  --name $DB_SERVER_NAME
+
+# Add your IP
+az postgres flexible-server firewall-rule create \
+  --resource-group $RESOURCE_GROUP \
+  --name $DB_SERVER_NAME \
+  --rule-name AllowMyIP \
+  --start-ip-address YOUR_IP \
+  --end-ip-address YOUR_IP
+```
+
+**Issue: AKS nodes not scaling**
+```bash
+# Check autoscaler status
+kubectl get horizontalpodautoscaler -n tracertm
+
+# Update node pool
+az aks nodepool scale \
+  --resource-group $RESOURCE_GROUP \
+  --cluster-name $CLUSTER_NAME \
+  --name nodepool1 \
+  --node-count 5
+```
+
+**Issue: Storage access denied**
+```bash
+# Verify RBAC assignment
+az role assignment list \
+  --assignee $PRINCIPAL_ID \
+  --scope /subscriptions/$(az account show --query id -o tsv)/resourceGroups/$RESOURCE_GROUP
+```
+
+## Additional Resources
+
+- [Azure CLI Documentation](https://docs.microsoft.com/cli/azure/)
+- [Azure Kubernetes Service](https://docs.microsoft.com/azure/aks/)
+- [Azure Database for PostgreSQL](https://docs.microsoft.com/azure/postgresql/)
+- [Azure Application Gateway](https://docs.microsoft.com/azure/application-gateway/)
+- [Azure Cost Management](https://docs.microsoft.com/azure/cost-management-billing/)

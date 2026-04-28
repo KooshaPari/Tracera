@@ -1,0 +1,62 @@
+{
+  "timestamp": "2025-10-14T02:00:19.004172",
+  "repo_root": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk",
+  "project": "pheno-sdk",
+  "overall_health": 14.285714285714285,
+  "healthy_analyses": 1,
+  "total_analyses": 7,
+  "analyses": {
+    "coverage": {
+      "status": "error",
+      "error": "Coverage analysis failed",
+      "healthy": false
+    },
+    "complexity": {
+      "status": "error",
+      "error": "[Errno 2] No such file or directory: 'python'",
+      "healthy": false
+    },
+    "duplication": {
+      "status": "error",
+      "error": "[Errno 2] No such file or directory: 'python'",
+      "healthy": false
+    },
+    "dead_code": {
+      "status": "success",
+      "dead_code_count": 0,
+      "healthy": true
+    },
+    "security": {
+      "status": "error",
+      "error": "[Errno 2] No such file or directory: 'bandit'",
+      "healthy": false
+    },
+    "performance": {
+      "status": "error",
+      "error": "[Errno 2] No such file or directory: 'python'",
+      "healthy": false
+    },
+    "documentation": {
+      "status": "error",
+      "error": "[Errno 2] No such file or directory: 'interrogate'",
+      "healthy": false
+    }
+  },
+  "thresholds": {
+    "coverage_min": 75.0,
+    "complexity_max": 12.0,
+    "maintainability_min": 30.0,
+    "duplication_max": 8.0,
+    "dead_code_max": 3.0,
+    "response_time_max": 500.0,
+    "error_rate_max": 0.03
+  },
+  "prerequisites": {
+    "git": true,
+    "pytest": false,
+    "ruff": false,
+    "mypy": true,
+    "bandit": false,
+    "safety": false
+  }
+}

@@ -1,0 +1,22 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "queries.sql"
+    schema:
+      - "schema.sql"
+      - "internal/db/migrations/20250130000000_init.sql"
+      - "internal/db/migrations/20250210000000_create_progress_tables.sql"
+      - "internal/db/migrations/20250215000000_create_temporal_tables.sql"
+      - "internal/db/migrations/20250220000000_create_documentation_tables.sql"
+    gen:
+      go:
+        out: "internal/db"
+        package: "db"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_db_tags: true
+        emit_prepared_queries: true
+        emit_interface: true
+        emit_exact_table_names: false
+        emit_empty_slices: true
+

@@ -1,0 +1,33 @@
+inherits:
+  - strictness_medium
+
+strictness: medium
+
+doc-warnings: true
+
+max-line-length: 100
+
+ignore-patterns:
+  - pheno-sdk
+  - zen-mcp-server
+  - morph
+  - m-test
+  - example
+  - htmlcov
+  - .venv
+
+linttool: pylint
+
+pylint:
+  disable:
+    - C0114  # missing-module-docstring
+    - C0115  # missing-class-docstring
+    - C0116  # missing-function-docstring
+    - R0903  # too-few-public-methods
+    - R0801  # duplicate-code
+    - R0913  # too-many-arguments
+  reports: no
+
+pyflakes:
+  disable:
+    - F401

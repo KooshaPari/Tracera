@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/jira_import_service.py
+# hypothesis_version: 6.148.7
+
+['Bug', 'Closed', 'Done', 'Epic', 'FEATURE', 'Imported from Jira', 'In Progress', 'In Review', 'Story', 'Sub-task', 'Task', 'To Do', 'Untitled', 'blocked_by', 'blocks', 'bug', 'complete', 'description', 'duplicated_by', 'duplicates', 'epic', 'errors', 'fields', 'id', 'implemented_by', 'implements', 'in_progress', 'inwardIssue', 'is blocked by', 'is duplicated by', 'is implemented by', 'issuelinks', 'issues', 'issuetype', 'item', 'items_imported', 'jira_id', 'jira_issue_imported', 'jira_key', 'key', 'links_imported', 'name', 'outwardIssue', 'project_id', 'relates to', 'relates_to', 'status', 'story', 'subtask', 'success', 'summary', 'system', 'task', 'todo', 'type']

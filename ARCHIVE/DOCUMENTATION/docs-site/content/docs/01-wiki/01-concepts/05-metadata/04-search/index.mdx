@@ -1,0 +1,595 @@
+---
+title: "Search and Filter"
+description: "Query artifacts using metadata fields and advanced search capabilities"
+---
+
+# Search and Filter
+
+TraceRTM provides powerful search capabilities across all artifact fields. Query by standard fields, custom metadata, full-text search, and combine filters for precise results.
+
+## Basic Search
+
+### Text Search
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# Full-text search across title and description
+results = client.search("authentication")
+
+# Search in specific fields
+results = client.search(
+    query="OAuth2",
+    fields=["title", "description"]
+)
+
+# Search with type filter
+results = client.search(
+    query="login",
+    item_type="feature"
+)
+```
+
+### CLI Search
+
+```bash
+# Basic search
+tracertm search "authentication"
+
+# Search specific type
+tracertm search "login" --type feature
+
+# Search with output format
+tracertm search "OAuth" --format json
+tracertm search "OAuth" --format table
+
+# Output:
+# Search Results for "OAuth" (5 matches)
+# ═══════════════════════════════════════
+# ID         Type      Title                      Status
+# FEAT-001   feature   OAuth2 Integration         in_progress
+# CODE-005   code      oauth_handler.py           done
+# TEST-012   test      test_oauth_flow            done
+# DOC-003    doc       OAuth Setup Guide          published
+# DES-002    design    OAuth Architecture         approved
+```
+
+## Filtering by Standard Fields
+
+### Status Filter
+
+```python
+# Single status
+items = client.list_items(status="in_progress")
+
+# Multiple statuses (OR)
+items = client.list_items(
+    status=["draft", "in_progress"]
+)
+
+# Exclude status
+items = client.list_items(
+    status__ne="archived"
+)
+```
+
+### Type Filter
+
+```python
+# Single type
+features = client.list_items(item_type="feature")
+
+# Multiple types
+items = client.list_items(
+    item_type=["feature", "story"]
+)
+```
+
+### Priority Filter
+
+```python
+# High priority items
+urgent = client.list_items(
+    priority=["critical", "high"]
+)
+
+# Sort by priority
+sorted_items = client.list_items(
+    sort_by="priority",
+    sort_order="desc"
+)
+```
+
+### Date Filters
+
+```python
+from datetime import datetime, timedelta
+
+# Items created today
+today = datetime.now().date().isoformat()
+items = client.list_items(created_at__gte=today)
+
+# Updated in last 7 days
+week_ago = (datetime.now() - timedelta(days=7)).isoformat()
+items = client.list_items(updated_at__gte=week_ago)
+
+# Created between dates
+items = client.list_items(
+    created_at__gte="2024-01-01",
+    created_at__lte="2024-03-31"
+)
+```
+
+### Owner/Assignee Filter
+
+```python
+# By owner
+items = client.list_items(owner="user@example.com")
+
+# By assignee
+items = client.list_items(assignee="dev@example.com")
+
+# Unassigned items
+items = client.list_items(assignee__is_null=True)
+```
+
+## Filtering by Custom Metadata
+
+### Exact Match
+
+```python
+# Filter by metadata field
+items = client.list_items(
+    metadata={"risk_level": "high"}
+)
+
+# Multiple metadata filters (AND)
+items = client.list_items(
+    metadata={
+        "risk_level": "high",
+        "component": "api"
+    }
+)
+```
+
+### Comparison Operators
+
+```python
+# Greater than
+items = client.list_items(
+    metadata__story_points__gt=8
+)
+
+# Less than or equal
+items = client.list_items(
+    metadata__story_points__lte=5
+)
+
+# In list
+items = client.list_items(
+    metadata__component__in=["api", "backend"]
+)
+
+# Not equal
+items = client.list_items(
+    metadata__security_reviewed__ne=True
+)
+
+# Contains (for arrays)
+items = client.list_items(
+    metadata__tags__contains="security"
+)
+
+# Is null/not null
+items = client.list_items(
+    metadata__due_date__is_null=False
+)
+```
+
+### CLI Metadata Filter
+
+```bash
+# Filter by metadata
+tracertm list --metadata '{"risk_level": "high"}'
+
+# Multiple conditions
+tracertm list --metadata '{"risk_level": "high", "component": "api"}'
+
+# Using comparison operators
+tracertm list --filter "metadata.story_points > 8"
+tracertm list --filter "metadata.due_date < 2024-12-31"
+
+# Contains in array
+tracertm list --filter "metadata.tags contains security"
+```
+
+## Advanced Query Syntax
+
+### Query Builder
+
+```python
+from tracertm.query import Query
+
+# Build complex queries
+query = (
+    Query()
+    .type("feature")
+    .status(["draft", "in_progress"])
+    .priority(["high", "critical"])
+    .metadata("risk_level", "high")
+    .updated_after("2024-01-01")
+    .has_links("verified_by", min_count=1)
+    .order_by("updated_at", "desc")
+    .limit(50)
+)
+
+results = client.list_items(query)
+```
+
+### Boolean Logic
+
+```python
+from tracertm.query import Query, AND, OR, NOT
+
+# Complex boolean queries
+query = Query().where(
+    AND(
+        OR(
+            {"status": "in_progress"},
+            {"status": "review"}
+        ),
+        {"metadata.risk_level": "high"},
+        NOT({"metadata.security_reviewed": True})
+    )
+)
+
+results = client.list_items(query)
+```
+
+### CLI Query Syntax
+
+```bash
+# AND conditions
+tracertm list --filter "status = in_progress AND priority = high"
+
+# OR conditions
+tracertm list --filter "status = draft OR status = in_progress"
+
+# Combined
+tracertm list --filter "(status = in_progress OR status = review) AND metadata.risk_level = high"
+
+# NOT
+tracertm list --filter "status != archived AND NOT metadata.security_reviewed"
+```
+
+## Link-Based Queries
+
+### Has Links
+
+```python
+# Items with tests
+items = client.list_items(
+    has_links={
+        "link_type": "verified_by",
+        "target_type": "test"
+    }
+)
+
+# Items without tests
+items = client.list_items(
+    has_links={
+        "link_type": "verified_by",
+        "target_type": "test",
+        "count": 0
+    }
+)
+
+# Items with minimum link count
+items = client.list_items(
+    has_links={
+        "link_type": "realized_by",
+        "min_count": 2
+    }
+)
+```
+
+### CLI Link Filters
+
+```bash
+# Items with tests
+tracertm list --has-link "verified_by:test"
+
+# Items without code
+tracertm list --no-link "realized_by:code"
+
+# Items with specific link count
+tracertm list --link-count "verified_by:test >= 3"
+```
+
+## Sorting and Pagination
+
+### Sorting
+
+```python
+# Sort by field
+items = client.list_items(
+    sort_by="updated_at",
+    sort_order="desc"
+)
+
+# Multi-field sort
+items = client.list_items(
+    sort_by=["priority", "updated_at"],
+    sort_order=["desc", "desc"]
+)
+
+# Sort by metadata
+items = client.list_items(
+    sort_by="metadata.story_points",
+    sort_order="asc"
+)
+```
+
+### Pagination
+
+```python
+# Basic pagination
+page_size = 50
+page = 0
+
+while True:
+    items = client.list_items(
+        limit=page_size,
+        offset=page * page_size
+    )
+
+    if not items:
+        break
+
+    for item in items:
+        process(item)
+
+    page += 1
+
+# Cursor-based pagination (recommended for large datasets)
+cursor = None
+while True:
+    result = client.list_items(
+        limit=50,
+        cursor=cursor
+    )
+
+    for item in result.items:
+        process(item)
+
+    if not result.has_more:
+        break
+
+    cursor = result.next_cursor
+```
+
+### CLI Pagination
+
+```bash
+# Limit results
+tracertm list --limit 50
+
+# With offset
+tracertm list --limit 50 --offset 100
+
+# Page through results
+tracertm list --page 1 --per-page 25
+tracertm list --page 2 --per-page 25
+```
+
+## Saved Searches
+
+### Create Saved Search
+
+```python
+# Save a frequently used query
+client.save_search(
+    name="high_risk_in_progress",
+    query={
+        "status": "in_progress",
+        "metadata": {"risk_level": "high"}
+    },
+    description="High-risk items currently being worked on"
+)
+
+# Run saved search
+results = client.run_search("high_risk_in_progress")
+```
+
+### CLI Saved Searches
+
+```bash
+# Save search
+tracertm search save "urgent" \
+  --filter "priority in [critical, high] AND status = in_progress"
+
+# List saved searches
+tracertm search list
+
+# Run saved search
+tracertm search run "urgent"
+
+# Delete saved search
+tracertm search delete "urgent"
+```
+
+## Search Configuration
+
+### Search Settings
+
+```yaml
+# .tracertm/config.yaml
+search:
+  # Full-text search settings
+  full_text:
+    fields: [title, description]
+    min_length: 3
+    fuzzy: true
+    fuzzy_distance: 2
+
+  # Indexing
+  index:
+    enabled: true
+    auto_refresh: true
+    refresh_interval: "1s"
+
+  # Default sort
+  default_sort:
+    field: updated_at
+    order: desc
+
+  # Default limit
+  default_limit: 100
+  max_limit: 1000
+```
+
+### Index Custom Fields
+
+```yaml
+search:
+  indexed_fields:
+    # Index specific metadata fields for fast filtering
+    - metadata.component
+    - metadata.risk_level
+    - metadata.sprint
+    - metadata.tags
+```
+
+## Search Results
+
+### Result Object
+
+```python
+results = client.search("authentication")
+
+print(f"Total matches: {results.total}")
+print(f"Returned: {len(results.items)}")
+print(f"Page: {results.page}")
+print(f"Has more: {results.has_more}")
+
+for item in results.items:
+    print(f"{item.id}: {item.title}")
+    if item.highlights:
+        print(f"  Match: {item.highlights['description']}")
+```
+
+### Highlighting
+
+```python
+# Search with highlighting
+results = client.search(
+    query="authentication",
+    highlight=True,
+    highlight_fields=["title", "description"]
+)
+
+for item in results.items:
+    # Highlighted text with <em> tags
+    print(item.highlights.get("description", item.description))
+```
+
+## Aggregations
+
+### Count by Field
+
+```python
+# Count items by status
+counts = client.aggregate(
+    group_by="status",
+    count=True
+)
+# {"draft": 45, "in_progress": 30, "done": 120}
+
+# Count by metadata field
+risk_counts = client.aggregate(
+    group_by="metadata.risk_level",
+    count=True
+)
+# {"low": 50, "medium": 80, "high": 25, "critical": 5}
+```
+
+### CLI Aggregations
+
+```bash
+# Count by status
+tracertm list --group-by status --count
+
+# Output:
+# Status         Count
+# draft          45
+# in_progress    30
+# review         15
+# done           120
+
+# Count by metadata
+tracertm list --group-by "metadata.component" --count
+```
+
+## Best Practices
+
+### 1. Use Indexes for Frequent Queries
+
+```yaml
+search:
+  indexed_fields:
+    - status        # Always filter by status
+    - item_type     # Always filter by type
+    - metadata.component  # Frequently filtered
+    - metadata.sprint     # Frequently filtered
+```
+
+### 2. Limit Result Sets
+
+```python
+# Good: Limit results
+items = client.list_items(
+    status="in_progress",
+    limit=100
+)
+
+# Avoid: Unbounded queries
+items = client.list_items()  # Could return thousands
+```
+
+### 3. Use Saved Searches for Complex Queries
+
+```python
+# Save complex queries for reuse
+client.save_search(
+    name="security_review_needed",
+    query=Query()
+        .type("feature")
+        .status(["in_progress", "review"])
+        .metadata("security_sensitive", True)
+        .metadata("security_reviewed", False)
+)
+```
+
+### 4. Combine Filters Efficiently
+
+```python
+# Good: Multiple filters in one query
+items = client.list_items(
+    item_type="feature",
+    status="in_progress",
+    metadata={"risk_level": "high"}
+)
+
+# Avoid: Multiple queries and filtering in code
+all_items = client.list_items()
+filtered = [i for i in all_items if i.status == "in_progress"]
+```
+
+## Related Topics
+
+- [Standard Fields](/docs/wiki/concepts/metadata/standard-fields) - Filterable fields
+- [Custom Fields](/docs/wiki/concepts/metadata/custom-fields) - Custom metadata
+- [Reports](/docs/getting-started/first-project/reports) - Reporting on queries
+

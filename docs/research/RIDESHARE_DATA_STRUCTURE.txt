@@ -1,0 +1,417 @@
+SWIFTRIDE MOCK DATA - COMPLETE STRUCTURE
+=========================================
+
+FILE LOCATION:
+/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/scripts/mock_data_rideshare.sql
+
+PROJECT HIERARCHY:
+==================
+
+SwiftRide - Ride-sharing Platform (Project)
+│
+├── REQUIREMENTS (100 total)
+│   │
+│   ├── Batch 1: Core Platform (1-30)
+│   │   ├── Real-time GPS Tracking [done, high, Alex Rivera]
+│   │   ├── Intelligent Driver Matching Algorithm [in_progress, high, Jordan Kim]
+│   │   ├── Surge Pricing Engine [done, high, Taylor Washington]
+│   │   ├── Payment Processing & Wallet System [in_progress, high, Morgan Chen]
+│   │   ├── Driver Verification & Background Checks [done, high, Casey Rodriguez]
+│   │   └── ... 25 more core requirements
+│   │
+│   ├── Batch 2: Advanced Features (31-60)
+│   │   ├── Ride Cancellation & Refund Policy [done, high]
+│   │   ├── Vehicle Management & Fleet Operations [in_progress, medium]
+│   │   ├── Emergency Response Integration [in_progress, high]
+│   │   ├── Route Optimization Engine [done, high]
+│   │   ├── Customer Support Chatbot [todo, medium]
+│   │   └── ... 25 more advanced requirements
+│   │
+│   └── Batch 3: Specialized (61-100)
+│       ├── Delivery & Logistics Mode [done, medium]
+│       ├── Premium Concierge Service [in_progress, low]
+│       ├── Seamless Backend Scaling [in_progress, high]
+│       ├── Advanced Machine Learning Models [done, high]
+│       ├── Compliance Management System [in_progress, high]
+│       └── ... 25 more specialized requirements
+│
+├── FEATURES (200 total)
+│   │
+│   ├── Batch 1: Core UI & Location (1-100)
+│   │   ├── Live GPS Tracking Widget [done, high, Alex Rivera]
+│   │   ├── Driver Location Updates [done, high, Jordan Kim]
+│   │   ├── Estimated Arrival Time Calculation [done, high, Taylor Washington]
+│   │   ├── Route Polyline Rendering [in_progress, medium, Morgan Chen]
+│   │   ├── Map Zoom & Pan Controls [done, low, Casey Rodriguez]
+│   │   ├── Geolocation Permission Handler [done, high, Alex Rivera]
+│   │   ├── ML-Based Driver Suggestion Engine [in_progress, high, Alex Rivera]
+│   │   ├── Passenger Matching Algorithm [done, high, Jordan Kim]
+│   │   ├── Surge Multiplier Calculation [done, high, Casey Rodriguez]
+│   │   ├── Dynamic Base Fare Adjustment [in_progress, high, Alex Rivera]
+│   │   ├── Stripe Payment Integration [done, high, Casey Rodriguez]
+│   │   ├── Digital Wallet Implementation [in_progress, medium, Jordan Kim]
+│   │   ├── Apple Pay Integration [in_progress, medium, Morgan Chen]
+│   │   ├── Google Pay Integration [todo, medium, Casey Rodriguez]
+│   │   ├── Emergency SOS Button [done, high, Alex Rivera]
+│   │   ├── Driver Rating System [done, high, Casey Rodriguez]
+│   │   ├── Review Text & Photos [in_progress, medium, Alex Rivera]
+│   │   ├── Carbon Footprint Tracking [in_progress, low, Jordan Kim]
+│   │   ├── Dark Mode UI Theme [done, low, Alex Rivera]
+│   │   ├── Accessibility Settings Panel [done, medium, Taylor Washington]
+│   │   └── ... 80 more features (maps, payments, notifications, etc.)
+│   │
+│   └── Batch 2: Infrastructure & AI (101-200)
+│       ├── Web Dashboard Layout [done, high, Alex Rivera]
+│       ├── Mobile App UI Framework [in_progress, high, Jordan Kim]
+│       ├── Admin Control Panel [done, high, Taylor Washington]
+│       ├── Real-time Database Sync [in_progress, high, Alex Rivera]
+│       ├── Offline Data Persistence [todo, medium, Jordan Kim]
+│       ├── State Management Layer [done, high, Casey Rodriguez]
+│       ├── WebSocket Connection Manager [done, high, Alex Rivera]
+│       ├── GraphQL Query Builder [todo, medium, Jordan Kim]
+│       ├── API Request Interceptor [in_progress, high, Taylor Washington]
+│       ├── Authentication Token Manager [in_progress, high, Casey Rodriguez]
+│       ├── Permission & Authorization Layer [in_progress, high, Jordan Kim]
+│       ├── Audit Logging System [todo, high, Taylor Washington]
+│       ├── Email Marketing Integration [done, medium, Morgan Chen]
+│       ├── SMS Marketing System [todo, medium, Casey Rodriguez]
+│       ├── A/B Testing Experiment Manager [done, high, Jordan Kim]
+│       ├── Feature Flag System [in_progress, high, Taylor Washington]
+│       ├── Load Balancing [done, high, Jordan Kim]
+│       ├── Auto-Scaling Configuration [in_progress, high, Taylor Washington]
+│       ├── Redis Cache Cluster [in_progress, high, Alex Rivera]
+│       ├── Message Queue System [done, high, Jordan Kim]
+│       ├── Data Pipeline Orchestration [in_progress, medium, Alex Rivera]
+│       ├── Anomaly Detection System [in_progress, medium, Morgan Chen]
+│       ├── Recommendation Engine [done, medium, Alex Rivera]
+│       ├── Search Indexing System [in_progress, high, Jordan Kim]
+│       ├── Full-text Search [done, high, Taylor Washington]
+│       ├── Natural Language Processing [in_progress, medium, Jordan Kim]
+│       ├── Sentiment Analysis [todo, low, Taylor Washington]
+│       ├── Image Recognition & Classification [todo, medium, Alex Rivera]
+│       ├── Face Recognition [in_progress, medium, Taylor Washington]
+│       ├── License Plate Recognition [todo, medium, Morgan Chen]
+│       ├── Computer Vision Analytics [done, medium, Casey Rodriguez]
+│       ├── Video Processing Pipeline [in_progress, medium, Alex Rivera]
+│       ├── Audio Processing Engine [done, low, Taylor Washington]
+│       ├── Voice Recognition System [in_progress, medium, Morgan Chen]
+│       ├── Text-to-Speech Engine [todo, low, Casey Rodriguez]
+│       └── ... 40+ more advanced features
+│
+├── USER STORIES (100 total)
+│   │
+│   ├── Story 1: "As a passenger, I can request a ride from my current location" [done, high, Alex Rivera]
+│   │   └── Acceptance Criteria: Ride button opens request flow | Location auto-filled | Ride type selected
+│   │
+│   ├── Story 2: "As a passenger, I can see available drivers on a map" [done, high, Jordan Kim]
+│   │   └── Acceptance Criteria: Map loads within 2s | Drivers shown as markers | Updates every 2s
+│   │
+│   ├── Story 3: "As a passenger, I can track my driver in real-time" [in_progress, high, Taylor Washington]
+│   │   └── Acceptance Criteria: Driver location updates | Route shown on map | ETA displayed
+│   │
+│   ├── Story 4: "As a passenger, I can rate my driver after a ride" [done, medium, Morgan Chen]
+│   │   └── Acceptance Criteria: Rating scale displayed | Comments optional | Submit button works
+│   │
+│   ├── Story 5: "As a driver, I can accept or decline ride requests" [done, high, Casey Rodriguez]
+│   │   └── Acceptance Criteria: Notification appears | Decision buttons visible | Confirmation shown
+│   │
+│   ├── Story 6: "As a driver, I can view earnings for the day" [in_progress, high, Alex Rivera]
+│   │   └── Acceptance Criteria: Earnings total shown | Breakdown provided | Refresh works
+│   │
+│   ├── Story 7: "As a driver, I can go online and offline" [done, high, Jordan Kim]
+│   │   └── Acceptance Criteria: Toggle switch visible | Status changes immediately | Confirmed via API
+│   │
+│   ├── Story 8: "As a user, I can log in with email and password" [done, high, Taylor Washington]
+│   │   └── Acceptance Criteria: Login form functional | Validation works | Error messages clear
+│   │
+│   ├── Story 9: "As a user, I can reset my forgotten password" [in_progress, high, Morgan Chen]
+│   │   └── Acceptance Criteria: Email sent within 1s | Reset link works | New password accepted
+│   │
+│   ├── Story 10: "As a user, I can view my profile information" [done, medium, Casey Rodriguez]
+│   │   └── Acceptance Criteria: All fields displayed | Edit button present | Data accurate
+│   │
+│   └── ... 90 more user stories covering all major workflows
+│
+├── TASKS (50 total)
+│   │
+│   ├── Task 1: "Set up Google Maps API" [done, high, Alex Rivera]
+│   ├── Task 2: "Implement real-time location updates" [done, high, Jordan Kim]
+│   ├── Task 3: "Design database schema for rides" [done, high, Taylor Washington]
+│   ├── Task 4: "Set up Stripe payment integration" [in_progress, high, Morgan Chen]
+│   ├── Task 5: "Create authentication endpoints" [done, high, Casey Rodriguez]
+│   ├── Task 6: "Design matching algorithm" [in_progress, high, Alex Rivera]
+│   ├── Task 7: "Implement surge pricing calculation" [done, high, Jordan Kim]
+│   ├── Task 8: "Build notification system" [todo, high, Taylor Washington]
+│   ├── Task 9: "Set up database backups" [in_progress, high, Morgan Chen]
+│   ├── Task 10: "Create admin dashboard UI" [done, high, Casey Rodriguez]
+│   │
+│   ├── Task 11: "Implement ride rating system" [in_progress, medium, Alex Rivera]
+│   ├── Task 12: "Design driver onboarding flow" [todo, high, Jordan Kim]
+│   ├── Task 13: "Build passenger app UI" [done, high, Taylor Washington]
+│   ├── Task 14: "Implement driver app UI" [in_progress, high, Morgan Chen]
+│   ├── Task 15: "Create route optimization service" [done, high, Casey Rodriguez]
+│   │
+│   ├── ... 35 more technical implementation tasks
+│   │
+│   └── Task 50: "Implement HIPAA compliance" [in_progress, high, Casey Rodriguez]
+│
+├── TESTS (50 total)
+│   │
+│   ├── Test 1: "Test ride request creation" [done, high, Alex Rivera]
+│   │   Description: Verify ride can be requested with valid data
+│   │
+│   ├── Test 2: "Test ride cancellation" [done, high, Jordan Kim]
+│   │   Description: Verify ride cancellation refunds correctly
+│   │
+│   ├── Test 3: "Test driver acceptance" [in_progress, high, Taylor Washington]
+│   │   Description: Verify driver can accept ride requests
+│   │
+│   ├── Test 4: "Test payment processing" [done, high, Morgan Chen]
+│   │   Description: Verify payment goes through correctly
+│   │
+│   ├── Test 5: "Test authentication flow" [done, high, Casey Rodriguez]
+│   │   Description: Verify login/logout works properly
+│   │
+│   ├── ... 45 more comprehensive tests
+│   │
+│   └── Test 50: "Test background check integration" [todo, high, Casey Rodriguez]
+│       Description: Verify background checks are processed
+│
+├── API ENDPOINTS (50 total)
+│   │
+│   ├── Authentication (6 endpoints)
+│   │   ├── POST /auth/register [done, high, Alex Rivera]
+│   │   ├── POST /auth/login [done, high, Jordan Kim]
+│   │   ├── POST /auth/logout [done, medium, Taylor Washington]
+│   │   ├── POST /auth/refresh-token [in_progress, high, Morgan Chen]
+│   │   ├── POST /auth/forgot-password [done, high, Casey Rodriguez]
+│   │   └── POST /auth/reset-password [in_progress, high, Alex Rivera]
+│   │
+│   ├── Rides (7 endpoints)
+│   │   ├── GET /rides [done, high, Jordan Kim]
+│   │   ├── POST /rides [done, high, Taylor Washington]
+│   │   ├── GET /rides/{id} [in_progress, high, Morgan Chen]
+│   │   ├── PATCH /rides/{id} [done, high, Casey Rodriguez]
+│   │   ├── DELETE /rides/{id} [in_progress, high, Alex Rivera]
+│   │   ├── GET /rides/{id}/tracking [done, high, Jordan Kim]
+│   │   └── POST /rides/{id}/rate [in_progress, medium, Taylor Washington]
+│   │
+│   ├── Drivers (6 endpoints)
+│   │   ├── GET /drivers/available [done, high, Morgan Chen]
+│   │   ├── GET /drivers/{id} [todo, medium, Casey Rodriguez]
+│   │   ├── PATCH /drivers/{id} [done, medium, Alex Rivera]
+│   │   ├── POST /drivers/{id}/accept-ride [in_progress, high, Jordan Kim]
+│   │   ├── POST /drivers/{id}/decline-ride [done, high, Taylor Washington]
+│   │   └── GET /drivers/{id}/earnings [in_progress, high, Morgan Chen]
+│   │
+│   ├── Users (8 endpoints)
+│   │   ├── GET /users/profile [done, high, Alex Rivera]
+│   │   ├── PATCH /users/profile [in_progress, high, Jordan Kim]
+│   │   ├── POST /users/payment-methods [done, high, Taylor Washington]
+│   │   ├── GET /users/payment-methods [in_progress, high, Morgan Chen]
+│   │   ├── DELETE /users/payment-methods/{id} [done, medium, Casey Rodriguez]
+│   │   ├── POST /users/addresses [in_progress, medium, Alex Rivera]
+│   │   ├── GET /users/addresses [done, medium, Jordan Kim]
+│   │   └── DELETE /users/addresses/{id} [todo, low, Taylor Washington]
+│   │
+│   ├── Pricing (2 endpoints)
+│   │   ├── GET /pricing/estimate [done, high, Morgan Chen]
+│   │   └── POST /pricing/apply-promo [in_progress, high, Casey Rodriguez]
+│   │
+│   ├── Payments (2 endpoints)
+│   │   ├── GET /payments/history [done, medium, Alex Rivera]
+│   │   └── POST /payments/process [in_progress, high, Jordan Kim]
+│   │
+│   ├── Wallet (2 endpoints)
+│   │   ├── GET /wallet/balance [todo, medium, Taylor Washington]
+│   │   └── POST /wallet/topup [done, high, Morgan Chen]
+│   │
+│   ├── Notifications (3 endpoints)
+│   │   ├── GET /notifications [in_progress, medium, Casey Rodriguez]
+│   │   ├── PATCH /notifications/{id}/read [done, low, Alex Rivera]
+│   │   └── PATCH /notifications/preferences [in_progress, medium, Jordan Kim]
+│   │
+│   ├── Support (3 endpoints)
+│   │   ├── GET /support/tickets [todo, medium, Taylor Washington]
+│   │   ├── POST /support/tickets [done, high, Morgan Chen]
+│   │   └── PATCH /support/tickets/{id} [in_progress, medium, Casey Rodriguez]
+│   │
+│   ├── Referrals (2 endpoints)
+│   │   ├── GET /referrals/code [done, low, Alex Rivera]
+│   │   └── GET /referrals/stats [in_progress, low, Jordan Kim]
+│   │
+│   ├── Loyalty (2 endpoints)
+│   │   ├── GET /loyalty/balance [todo, low, Taylor Washington]
+│   │   └── POST /loyalty/redeem [done, medium, Morgan Chen]
+│   │
+│   └── Admin (6 endpoints)
+│       ├── GET /admin/rides [in_progress, high, Casey Rodriguez]
+│       ├── GET /admin/drivers [done, high, Alex Rivera]
+│       ├── PATCH /admin/drivers/{id}/suspend [todo, high, Jordan Kim]
+│       ├── GET /admin/analytics [done, high, Taylor Washington]
+│       ├── GET /admin/payments [in_progress, high, Morgan Chen]
+│       └── POST /admin/reports/generate [todo, medium, Casey Rodriguez]
+│
+└── LINKS & RELATIONSHIPS (200+)
+    │
+    ├── Requirement → Feature: implements (30+ links)
+    │   ├── Real-time GPS Tracking → Live GPS Tracking Widget
+    │   ├── Real-time GPS Tracking → Driver Location Updates
+    │   ├── Real-time GPS Tracking → Estimated Arrival Time Calculation
+    │   ├── Intelligent Driver Matching → ML-Based Driver Suggestion Engine
+    │   ├── Surge Pricing Engine → Surge Multiplier Calculation
+    │   └── ... 25+ more requirement→feature implementations
+    │
+    ├── Feature → Story: fulfilled_by (40+ links)
+    │   ├── Live GPS Tracking Widget → As a passenger, I can request a ride
+    │   ├── Live GPS Tracking Widget → As a passenger, I can see available drivers
+    │   ├── Live GPS Tracking Widget → As a passenger, I can track my driver
+    │   ├── ML-Based Driver Matching → As a driver, I can accept/decline requests
+    │   └── ... 36+ more feature→story relationships
+    │
+    ├── Story → Task: depends_on (35+ links)
+    │   ├── Request a ride → Set up Google Maps API
+    │   ├── Request a ride → Design database schema
+    │   ├── Request a ride → Set up Stripe integration
+    │   ├── See available drivers → Set up Google Maps API
+    │   ├── See available drivers → Implement location updates
+    │   └── ... 30+ more story→task dependencies
+    │
+    ├── Story → Test: tested_by (20+ links)
+    │   ├── Request a ride → Test ride request creation
+    │   ├── Accept ride → Test driver acceptance
+    │   ├── Login → Test authentication flow
+    │   └── ... 17+ more story→test relationships
+    │
+    ├── Task → Test: has_test (25+ links)
+    │   ├── Set up Google Maps API → Test ride request creation
+    │   ├── Implement location updates → Test ride request creation
+    │   ├── Set up Stripe integration → Test payment processing
+    │   ├── Create auth endpoints → Test authentication flow
+    │   └── ... 21+ more task→test relationships
+    │
+    ├── Story → API: uses_api (20+ links)
+    │   ├── Request a ride → POST /rides
+    │   ├── Track driver → GET /rides/{id}/tracking
+    │   ├── Login → POST /auth/login
+    │   ├── Reset password → POST /auth/forgot-password
+    │   └── ... 16+ more story→api relationships
+    │
+    └── Task/Feature → API: implements (30+ links)
+        ├── Set up Google Maps API → GET /rides
+        ├── Set up Stripe integration → GET /pricing/estimate
+        ├── Create auth endpoints → POST /auth/register, /auth/login
+        ├── Live GPS Tracking → GET /rides/{id}/tracking
+        ├── Payment integration → POST /rides
+        └── ... 25+ more implementation relationships
+
+
+STATUS DISTRIBUTION SUMMARY:
+============================
+
+Requirements:
+  Done: 35 (35%)
+  In Progress: 25 (25%)
+  Todo: 40 (40%)
+
+Features:
+  Done: 70 (35%)
+  In Progress: 70 (35%)
+  Todo: 60 (30%)
+
+User Stories:
+  Done: 35 (35%)
+  In Progress: 25 (25%)
+  Todo: 40 (40%)
+
+Tasks:
+  Done: 18 (36%)
+  In Progress: 18 (36%)
+  Todo: 14 (28%)
+
+Tests:
+  Done: 18 (36%)
+  In Progress: 16 (32%)
+  Todo: 16 (32%)
+
+API Endpoints:
+  Done: 18 (36%)
+  In Progress: 18 (36%)
+  Todo: 14 (28%)
+
+
+TEAM MEMBERS:
+=============
+1. Alex Rivera (16 items assigned)
+2. Jordan Kim (16 items assigned)
+3. Taylor Washington (16 items assigned)
+4. Morgan Chen (16 items assigned)
+5. Casey Rodriguez (16 items assigned)
+
+Total Distribution: Even across 5 team members (20% each)
+
+
+DATABASE STRUCTURE:
+===================
+Tables Used:
+  - projects: Stores the SwiftRide project metadata
+  - items: Stores all 600+ items (requirements, features, stories, tasks, tests, APIs)
+  - links: Stores 200+ relationships between items
+
+Item Types:
+  - requirement (100)
+  - feature (200)
+  - user_story (100)
+  - task (50)
+  - test (50)
+  - api (50)
+
+Link Types:
+  - implements (requirement→feature)
+  - fulfilled_by (feature→story)
+  - depends_on (story→task)
+  - tested_by (story→test)
+  - has_test (task→test)
+  - uses_api (story→api)
+
+Metadata Fields:
+  - item_metadata: JSONB field storing type-specific metadata
+    - requirement_id, feature_id, story_id, task_id, test_id, api_id
+    - For stories: acceptance_criteria
+    - For APIs: method, path
+
+
+FILE LOCATION & USAGE:
+======================
+Location: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/scripts/mock_data_rideshare.sql
+Size: 868 lines, 1000+ SQL statements
+
+To Load:
+  psql -U username -d database_name -f /path/to/mock_data_rideshare.sql
+
+What It Creates:
+  1. Project: SwiftRide - Ride-sharing Platform
+  2. 100 Requirements across 3 batches
+  3. 200 Features across 2 batches
+  4. 100 User Stories with acceptance criteria
+  5. 50 Tasks with clear descriptions
+  6. 50 Tests with test descriptions
+  7. 50 API Endpoints with HTTP methods
+  8. 200+ Link relationships connecting all items
+
+Data Realism:
+  - Realistic team member names
+  - Actual ride-sharing features (GPS, payments, matching, ratings, etc.)
+  - Real technologies (Stripe, Google Maps, WebSockets, Kubernetes)
+  - Authentic status distribution (35% done, 25% in progress, 40% todo)
+  - Actual acceptance criteria format
+  - Standard HTTP methods and RESTful API design
+
+Ready for:
+  - Project portfolio demonstrations
+  - Database load testing
+  - Reporting and analytics
+  - Workflow management systems
+  - Product management tools
+  - Development tracking
+  - Agile/Scrum implementations

@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/specification.py
+# hypothesis_version: 6.151.4
+
+[0.0, 100, 255, 500, 'CASCADE', 'TestCase', 'accepted', 'adr_metadata', 'adr_number', 'adrs', 'all, delete-orphan', 'and', 'approved', 'archived', 'but', 'component', 'contract_metadata', 'contract_number', 'contract_type', 'contracts', 'database', 'deprecated', 'draft', 'extend_existing', 'feature', 'feature_id', 'feature_metadata', 'feature_number', 'features', 'features.id', 'given', 'idx_adrs_status', 'idx_scenarios_status', 'integration', 'interface', 'items.id', 'metadata', 'metadata_', 'pattern', 'project_id', 'projects.id', 'proposed', 'rejected', 'review', 'scenario_id', 'scenario_metadata', 'scenario_number', 'scenarios', 'scenarios.id', 'service', 'status', 'step_definitions', 'step_metadata', 'step_type', 'superseded', 'system', 'test_case_id', 'test_cases.id', 'then', 'version_id_col', 'when']

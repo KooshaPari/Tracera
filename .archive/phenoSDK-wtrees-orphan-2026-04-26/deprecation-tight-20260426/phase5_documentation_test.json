@@ -1,0 +1,5 @@
+📊 Report: {
+  "status": "error",
+  "system": "documentation_automation",
+  "error": "  File \"/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/scripts/documentation_automation.py\", line 1072\n    \"\"\"Process data using this kit.\"\"\"\n       ^^^^^^^\nSyntaxError: invalid syntax\n"
+}

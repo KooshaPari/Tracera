@@ -1,0 +1,377 @@
+{
+  "timestamp": "2025-10-14T18:02:10.206151",
+  "summary": {
+    "total_files": 25,
+    "valid_files": 9,
+    "invalid_files": 16,
+    "missing_files": 0,
+    "average_score": 53.8,
+    "overall_status": "needs_improvement"
+  },
+  "files_by_type": {
+    "readme": [
+      {
+        "path": "README.md",
+        "type": "readme",
+        "status": "valid",
+        "issues": [],
+        "score": 100.0,
+        "last_modified": 1760490124.2449238
+      },
+      {
+        "path": "README.md",
+        "type": "readme",
+        "status": "invalid",
+        "issues": [
+          "Missing section: title",
+          "Missing section: description",
+          "Missing section: api_reference"
+        ],
+        "score": 70.0,
+        "last_modified": 1760490124.2449238
+      },
+      {
+        "path": ".pytest_cache/README.md",
+        "type": "readme",
+        "status": "invalid",
+        "issues": [
+          "README too short (302 chars, min 1000)",
+          "Missing section: title",
+          "Missing section: description",
+          "Missing section: installation",
+          "Missing section: usage",
+          "Missing section: examples",
+          "Missing section: api_reference",
+          "Missing section: contributing",
+          "Missing section: license",
+          "Missing section: changelog",
+          "No code examples found"
+        ],
+        "score": -25.0,
+        "last_modified": 1760350306.186344
+      },
+      {
+        "path": "docs/README.md",
+        "type": "readme",
+        "status": "invalid",
+        "issues": [
+          "Missing section: title",
+          "Missing section: description",
+          "Missing section: examples",
+          "Missing section: api_reference",
+          "Missing section: license",
+          "Missing section: changelog",
+          "No links found"
+        ],
+        "score": 30.0,
+        "last_modified": 1760084242.6989117
+      },
+      {
+        "path": "schemas/README.md",
+        "type": "readme",
+        "status": "invalid",
+        "issues": [
+          "README too short (936 chars, min 1000)",
+          "Missing section: title",
+          "Missing section: description",
+          "Missing section: installation",
+          "Missing section: usage",
+          "Missing section: examples",
+          "Missing section: api_reference",
+          "Missing section: contributing",
+          "Missing section: license",
+          "Missing section: changelog",
+          "No links found"
+        ],
+        "score": -20.0,
+        "last_modified": 1760437873.2617984
+      },
+      {
+        "path": ".github/README.md",
+        "type": "readme",
+        "status": "invalid",
+        "issues": [
+          "Missing section: title",
+          "Missing section: usage",
+          "Missing section: api_reference",
+          "Missing section: contributing",
+          "Missing section: license"
+        ],
+        "score": 50.0,
+        "last_modified": 1760143876.5201142
+      },
+      {
+        "path": "src/pheno/README.md",
+        "type": "readme",
+        "status": "invalid",
+        "issues": [
+          "Missing section: api_reference",
+          "Missing section: contributing",
+          "Missing section: license"
+        ],
+        "score": 70.0,
+        "last_modified": 1760490127.84074
+      },
+      {
+        "path": "src/pheno/infra/README.md",
+        "type": "readme",
+        "status": "invalid",
+        "issues": [
+          "Missing section: title",
+          "Missing section: description",
+          "Missing section: api_reference",
+          "Missing section: contributing",
+          "Missing section: changelog"
+        ],
+        "score": 50.0,
+        "last_modified": 1760342716.1012788
+      },
+      {
+        "path": "src/pheno/cli/app/tui/README.md",
+        "type": "readme",
+        "status": "invalid",
+        "issues": [
+          "Missing section: title",
+          "Missing section: api_reference",
+          "Missing section: license",
+          "Missing section: changelog"
+        ],
+        "score": 60.0,
+        "last_modified": 1760484998.1341107
+      },
+      {
+        "path": "src/pheno/infra/control_center/README.md",
+        "type": "readme",
+        "status": "invalid",
+        "issues": [
+          "Missing section: title",
+          "Missing section: description",
+          "Missing section: installation",
+          "Missing section: api_reference",
+          "Missing section: contributing",
+          "Missing section: license",
+          "Missing section: changelog"
+        ],
+        "score": 30.0,
+        "last_modified": 1760484998.096797
+      },
+      {
+        "path": "packages/performance-kit/README.md",
+        "type": "readme",
+        "status": "invalid",
+        "issues": [
+          "Missing section: title",
+          "Missing section: description",
+          "Missing section: installation",
+          "Missing section: examples",
+          "Missing section: api_reference",
+          "Missing section: changelog"
+        ],
+        "score": 40.0,
+        "last_modified": 1760489616.3882403
+      },
+      {
+        "path": "packages/ci-cd-kit/README.md",
+        "type": "readme",
+        "status": "invalid",
+        "issues": [
+          "Missing section: description",
+          "Missing section: installation",
+          "Missing section: examples",
+          "Missing section: api_reference",
+          "Missing section: changelog"
+        ],
+        "score": 50.0,
+        "last_modified": 1760489616.4095612
+      },
+      {
+        "path": "packages/qa-kit/README.md",
+        "type": "readme",
+        "status": "invalid",
+        "issues": [
+          "Missing section: title",
+          "Missing section: description",
+          "Missing section: installation",
+          "Missing section: examples",
+          "Missing section: api_reference",
+          "Missing section: changelog",
+          "No links found"
+        ],
+        "score": 30.0,
+        "last_modified": 1760489616.3732586
+      },
+      {
+        "path": "packages/config-kit/README.md",
+        "type": "readme",
+        "status": "invalid",
+        "issues": [
+          "Missing section: title",
+          "Missing section: description",
+          "Missing section: installation",
+          "Missing section: examples",
+          "Missing section: api_reference",
+          "Missing section: changelog"
+        ],
+        "score": 40.0,
+        "last_modified": 1760489616.4280794
+      },
+      {
+        "path": "packages/config-kit/pytest/README.md",
+        "type": "readme",
+        "status": "invalid",
+        "issues": [
+          "Missing section: title",
+          "Missing section: installation",
+          "Missing section: api_reference",
+          "Missing section: changelog"
+        ],
+        "score": 60.0,
+        "last_modified": 1760488717.249763
+      },
+      {
+        "path": "tests/tui/README.md",
+        "type": "readme",
+        "status": "invalid",
+        "issues": [
+          "README too short (164 chars, min 1000)",
+          "Missing section: title",
+          "Missing section: description",
+          "Missing section: installation",
+          "Missing section: usage",
+          "Missing section: examples",
+          "Missing section: api_reference",
+          "Missing section: contributing",
+          "Missing section: license",
+          "Missing section: changelog",
+          "No code examples found",
+          "No links found"
+        ],
+        "score": -35.0,
+        "last_modified": 1760349835.831205
+      }
+    ],
+    "changelog": [
+      {
+        "path": "CHANGELOG.md",
+        "type": "changelog",
+        "status": "valid",
+        "issues": [],
+        "score": 100.0,
+        "last_modified": 1760490129.8806443
+      }
+    ],
+    "license": [
+      {
+        "path": "LICENSE",
+        "type": "license",
+        "status": "valid",
+        "issues": [],
+        "score": 100.0,
+        "last_modified": 1760490129.8809977
+      }
+    ],
+    "contributing": [
+      {
+        "path": "CONTRIBUTING.md",
+        "type": "contributing",
+        "status": "valid",
+        "issues": [],
+        "score": 100.0,
+        "last_modified": 1760490129.8808582
+      }
+    ],
+    "api": [
+      {
+        "path": "docs/api/kits.md",
+        "type": "api",
+        "status": "invalid",
+        "issues": [
+          "No function documentation found",
+          "No parameter documentation found",
+          "No code examples found",
+          "No return value documentation found"
+        ],
+        "score": 15.0,
+        "last_modified": 1760490129.8769982
+      },
+      {
+        "path": "docs/api/utilities.md",
+        "type": "api",
+        "status": "valid",
+        "issues": [
+          "No code examples found"
+        ],
+        "score": 80.0,
+        "last_modified": 1760490129.8784409
+      },
+      {
+        "path": "docs/api/core.md",
+        "type": "api",
+        "status": "valid",
+        "issues": [
+          "No code examples found"
+        ],
+        "score": 80.0,
+        "last_modified": 1760490129.8762705
+      }
+    ],
+    "tutorial": [
+      {
+        "path": "docs/tutorials/basic-usage.md",
+        "type": "tutorial",
+        "status": "valid",
+        "issues": [],
+        "score": 100.0,
+        "last_modified": 1760490129.8786466
+      },
+      {
+        "path": "docs/tutorials/integration.md",
+        "type": "tutorial",
+        "status": "valid",
+        "issues": [
+          "No prerequisites section found"
+        ],
+        "score": 85.0,
+        "last_modified": 1760490129.879046
+      },
+      {
+        "path": "docs/tutorials/advanced-features.md",
+        "type": "tutorial",
+        "status": "valid",
+        "issues": [
+          "No prerequisites section found"
+        ],
+        "score": 85.0,
+        "last_modified": 1760490129.878867
+      }
+    ]
+  },
+  "api_endpoints": 6433,
+  "recommendations": [
+    "Fix 16 invalid documentation files",
+    "Improve 14 low-scoring documentation files"
+  ],
+  "standards": {
+    "readme_required_sections": [
+      "title",
+      "description",
+      "installation",
+      "usage",
+      "examples",
+      "api_reference",
+      "contributing",
+      "license",
+      "changelog"
+    ],
+    "min_readme_length": 1000,
+    "min_docstring_length": 50,
+    "required_files": [
+      "README.md",
+      "CHANGELOG.md",
+      "LICENSE",
+      "CONTRIBUTING.md"
+    ],
+    "api_doc_required": true,
+    "tutorial_required": true
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.json", "**/*.jsonc"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "lineEnding": "lf"
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "a11y": {
+        "recommended": true,
+        "noSvgWithoutTitle": "off",
+        "useSemanticElements": "warn",
+        "useValidAriaValues": "error",
+        "useAriaPropsForRole": "error",
+        "noAccessKey": "error"
+      },
+      "complexity": {
+        "recommended": true,
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": { "maxAllowedComplexity": 15 }
+        },
+        "noUselessFragments": "error",
+        "noUselessTypeConstraint": "error",
+        "useLiteralKeys": "error",
+        "useSimplifiedLogicExpression": "error"
+      },
+      "correctness": {
+        "recommended": true,
+        "noNodejsModules": "off",
+        "noUndeclaredDependencies": "off",
+        "useImportExtensions": "off",
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error",
+        "noUnusedFunctionParameters": "error",
+        "useExhaustiveDependencies": "error",
+        "useHookAtTopLevel": "error"
+      },
+      "performance": {
+        "recommended": true,
+        "noBarrelFile": "off",
+        "noReExportAll": "off",
+        "noAccumulatingSpread": "error"
+      },
+      "security": {
+        "recommended": true,
+        "noDangerouslySetInnerHtml": "error"
+      },
+      "style": {
+        "recommended": true,
+        "noDefaultExport": "off",
+        "useConst": "error",
+        "useImportType": "error",
+        "useExportType": "error",
+        "useEnumInitializers": "error",
+        "useExplicitLengthCheck": "error",
+        "useNamingConvention": {
+          "level": "error",
+          "options": {
+            "strictCase": false,
+            "conventions": [
+              {
+                "selector": { "kind": "function" },
+                "formats": ["camelCase", "PascalCase"]
+              },
+              {
+                "selector": { "kind": "variable" },
+                "formats": ["camelCase", "PascalCase", "CONSTANT_CASE"]
+              },
+              {
+                "selector": { "kind": "typeLike" },
+                "formats": ["PascalCase"]
+              }
+            ]
+          }
+        },
+        "useFilenamingConvention": {
+          "level": "error",
+          "options": {
+            "strictCase": false,
+            "filenameCases": ["camelCase", "PascalCase", "kebab-case"]
+          }
+        }
+      },
+      "suspicious": {
+        "recommended": true,
+        "noConsole": "warn",
+        "noReactSpecificProps": "off",
+        "noExplicitAny": "error",
+        "noArrayIndexKey": "warn",
+        "noAssignInExpressions": "error",
+        "noDoubleEquals": "error",
+        "noEmptyBlockStatements": "error",
+        "noImplicitAnyLet": "error",
+        "noShadowRestrictedNames": "error",
+        "useAwait": "error"
+      },
+      "nursery": {
+        "recommended": false,
+        "useSortedClasses": "warn"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
+    }
+  ],
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "double",
+      "semicolons": "asNeeded",
+      "trailingCommas": "es5",
+      "arrowParentheses": "always"
+    }
+  },
+  "json": {
+    "formatter": {
+      "trailingCommas": "none"
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
+}

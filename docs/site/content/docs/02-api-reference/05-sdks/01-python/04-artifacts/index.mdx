@@ -1,0 +1,189 @@
+---
+title: "Python SDK - Working with Artifacts"
+description: "Create, read, update, and delete items using the Python SDK"
+keywords: [python, sdk, items, artifacts, crud]
+---
+
+# Working with Artifacts
+
+The Python SDK provides methods to manage items (artifacts) in your TraceRTM projects.
+
+## Initialize Client
+
+```python
+from tracertm import TraceRTM
+
+client = TraceRTM(api_key="rtm_live_abc123...")
+```
+
+## Query Items
+
+Query items with filters:
+
+```python
+# Query by view
+items = client.query_items(
+    view="requirements",
+    limit=50
+)
+
+# Query by status
+items = client.query_items(
+    status="active",
+    limit=50
+)
+
+# Multiple filters
+items = client.query_items(
+    view="requirements",
+    status="active",
+    limit=50
+)
+```
+
+## Create Item
+
+```python
+item = client.create_item(
+    title="New Requirement",
+    view="requirements",
+    status="draft",
+    description="Item description",
+    metadata={
+        "priority": "high",
+        "component": "api"
+    }
+)
+
+print(f"Created item: {item.id}")
+```
+
+## Get Item
+
+```python
+item = client.get_item("item_abc123")
+print(f"Title: {item.title}")
+print(f"Status: {item.status}")
+```
+
+## Update Item
+
+```python
+updated = client.update_item(
+    item_id="item_abc123",
+    title="Updated Title",
+    status="active"
+)
+```
+
+## Delete Item
+
+```python
+client.delete_item("item_abc123")
+```
+
+## Working with Links
+
+### Create Link
+
+```python
+link = client.create_link(
+    source_id="item_req_001",
+    target_id="item_test_001",
+    link_type="verified_by",
+    metadata={
+        "confidence": 0.95
+    }
+)
+```
+
+### Query Links
+
+```python
+# Get links for an item
+links = client.get_item_links("item_req_001")
+
+for link in links:
+    print(f"{link.source_id} --[{link.type}]--> {link.target_id}")
+```
+
+## Agent Operations
+
+The SDK supports agent-specific operations:
+
+```python
+# Register agent
+agent_id = client.register_agent(
+    name="Analysis Agent",
+    capabilities=["impact_analysis"]
+)
+
+# Query items as agent
+items = client.query_items(
+    view="requirements",
+    limit=50
+)
+
+# Operations are automatically logged
+```
+
+## Error Handling
+
+```python
+from tracertm.exceptions import NotFoundError, ValidationError
+
+try:
+    item = client.get_item("item_abc123")
+except NotFoundError:
+    print("Item not found")
+except ValidationError as e:
+    print(f"Validation error: {e}")
+```
+
+## Examples
+
+### Create Requirement and Test Case
+
+```python
+# Create requirement
+req = client.create_item(
+    title="User Authentication",
+    view="requirements",
+    status="draft"
+)
+
+# Create test case
+test = client.create_item(
+    title="Login Test",
+    view="test-cases",
+    status="draft"
+)
+
+# Link them
+link = client.create_link(
+    source_id=req.id,
+    target_id=test.id,
+    link_type="verified_by"
+)
+```
+
+### Batch Operations
+
+```python
+# Create multiple items
+items = []
+for title in ["Req 1", "Req 2", "Req 3"]:
+    item = client.create_item(
+        title=title,
+        view="requirements",
+        status="draft"
+    )
+    items.append(item)
+
+print(f"Created {len(items)} items")
+```
+
+## Next Steps
+
+- [Workflows](./05-workflows) - Manage workflows
+- [Examples](./06-examples) - More examples

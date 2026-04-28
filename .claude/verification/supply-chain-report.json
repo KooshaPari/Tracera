@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-02-14T09:54:02Z",
+  "project_dir": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace",
+  "requirements": {
+    "signed": false,
+    "slsa": false,
+    "rekor": false
+  },
+  "observed": {
+    "slsa_present": true,
+    "signed_present": true,
+    "cosign_used": false,
+    "cosign_verified": false,
+    "rekor_verified": false
+  },
+  "error_count": 0,
+  "warn_count": 1,
+  "errors": [],
+  "warns": [
+    "cosign not installed"
+  ],
+  "pass": true
+}

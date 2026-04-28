@@ -1,0 +1,128 @@
+---
+title: "Optimization"
+description: "Code and system optimization strategies"
+keywords: [optimization, performance, efficiency, tuning]
+---
+
+# Optimization
+
+Code and system optimization strategies for TraceRTM.
+
+## Code Optimization
+
+### 1. Algorithm Optimization
+
+```python
+# Bad - O(n²)
+def find_duplicates(items):
+    duplicates = []
+    for i, item1 in enumerate(items):
+        for item2 in items[i+1:]:
+            if item1.id == item2.id:
+                duplicates.append(item1)
+    return duplicates
+
+# Good - O(n)
+def find_duplicates(items):
+    seen = set()
+    duplicates = []
+    for item in items:
+        if item.id in seen:
+            duplicates.append(item)
+        seen.add(item.id)
+    return duplicates
+```
+
+### 2. Database Query Optimization
+
+```python
+# Bad - N+1 queries
+items = await get_items(project_id)
+for item in items:
+    links = await get_links(item.id)  # N queries!
+
+# Good - Single query with join
+items = await get_items_with_links(project_id)  # 1 query
+```
+
+### 3. Caching
+
+```python
+# Cache expensive operations
+@lru_cache(maxsize=100)
+def get_config(key: str):
+    return expensive_config_lookup(key)
+```
+
+## System Optimization
+
+### 1. Connection Pooling
+
+```python
+# Reuse database connections
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=20,
+    max_overflow=10
+)
+```
+
+### 2. Async Operations
+
+```python
+# Use async for I/O
+async def get_items(project_id: str):
+    return await db.execute(
+        select(Item).where(Item.project_id == project_id)
+    )
+```
+
+### 3. Batch Operations
+
+```python
+# Batch database operations
+items = [Item(...) for _ in range(100)]
+session.add_all(items)
+await session.commit()  # Single transaction
+```
+
+## Performance Profiling
+
+### Python Profiling
+
+```python
+import cProfile
+import pstats
+
+profiler = cProfile.Profile()
+profiler.enable()
+# Your code
+profiler.disable()
+
+stats = pstats.Stats(profiler)
+stats.sort_stats('cumulative')
+stats.print_stats(10)  # Top 10
+```
+
+### Database Query Profiling
+
+```python
+# Enable query logging
+import logging
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+```
+
+## Optimization Checklist
+
+- [ ] Profile before optimizing
+- [ ] Optimize hot paths first
+- [ ] Use appropriate data structures
+- [ ] Minimize database queries
+- [ ] Cache expensive operations
+- [ ] Use async for I/O
+- [ ] Batch operations when possible
+
+## Related Documentation
+
+- [Performance](./06-performance) - Performance overview
+- [Query Optimization](../04-internals/03a-query-optimization) - Database optimization

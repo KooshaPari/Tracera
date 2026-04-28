@@ -1,0 +1,92 @@
+---
+title: "REST API Overview"
+description: "TraceRTM REST API documentation and quick start guide"
+---
+
+# REST API Overview
+
+Traceability Requirements Tracking Management API - Comprehensive REST API for managing requirements, items, links, and performing advanced analysis.
+
+## Base URLs
+
+- **Local Development Server**: `http://localhost:8000`
+- **Production Server**: `https://api.tracertm.com`
+- **Staging Server**: `https://staging-api.tracertm.com`
+
+## Authentication
+
+The TraceRTM API supports two authentication methods:
+
+### bearerAuth
+
+JWT Bearer token authentication
+
+```bash
+curl -H "Authorization: Bearer YOUR_TOKEN" https://api.tracertm.com/api/v1/items
+```
+
+### apiKeyAuth
+
+API key authentication
+
+```bash
+curl -H "X-API-Key: YOUR_API_KEY" https://api.tracertm.com/api/v1/items
+```
+
+## Quick Start
+
+```javascript
+// Initialize the client
+const client = new TraceRTMClient({ token: 'YOUR_TOKEN' });
+
+// List items in a project
+const items = await client.items.list({ project_id: "..." });
+console.log(items);
+```
+
+## Rate Limiting
+
+API requests are rate limited to ensure service stability:
+
+- **Authenticated requests**: 1000 requests/hour
+- **Unauthenticated requests**: 100 requests/hour
+
+Rate limit information is included in response headers:
+
+```
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1640995200
+```
+
+## Error Codes
+
+The API uses standard HTTP status codes:
+
+| Code | Description |
+|------|-------------|
+| 200 | Success |
+| 400 | Bad Request - Invalid parameters |
+| 401 | Unauthorized - Missing or invalid authentication |
+| 403 | Forbidden - Insufficient permissions |
+| 404 | Not Found - Resource does not exist |
+| 429 | Too Many Requests - Rate limit exceeded |
+| 500 | Internal Server Error |
+
+## Pagination
+
+List endpoints support pagination using `skip` and `limit` parameters:
+
+```bash
+GET /api/v1/items?project_id=xxx&skip=0&limit=100
+```
+
+Response includes pagination metadata:
+
+```json
+{
+  "total": 250,
+  "items": [...]
+}
+```
+

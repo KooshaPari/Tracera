@@ -1,0 +1,55 @@
+{
+  "source": {
+    "include": [
+      "app",
+      "components",
+      "lib"
+    ],
+    "includePattern": ".+\\.tsx?$",
+    "excludePattern": "(^|\\/|\\\\)_"
+  },
+  "opts": {
+    "destination": "./docs/jsdoc",
+    "recurse": true,
+    "readme": "./README.md",
+    "template": "./node_modules/better-docs",
+    "tutorials": "./docs/tutorials"
+  },
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false,
+    "default": {
+      "outputSourceFiles": true,
+      "staticFiles": {
+        "include": [
+          "./public"
+        ]
+      }
+    },
+    "better-docs": {
+      "name": "TraceRTM API Documentation",
+      "logo": "public/logo.svg",
+      "css": "styles/custom.css",
+      "navLinks": [
+        {
+          "label": "GitHub",
+          "href": "https://github.com/yourusername/tracertm"
+        },
+        {
+          "label": "Issues",
+          "href": "https://github.com/yourusername/tracertm/issues"
+        }
+      ],
+      "hideGenerator": false,
+      "trackingCode": ""
+    }
+  },
+  "markdown": {
+    "hardwrap": false,
+    "idInHeadings": true
+  }
+}
+

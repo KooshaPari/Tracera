@@ -1,0 +1,1779 @@
+{
+  "summary": {
+    "total_kits": 29,
+    "total_unique_dependencies": 55,
+    "total_dev_dependencies": 3,
+    "most_common_dependencies": [
+      [
+        "pydantic",
+        29
+      ],
+      [
+        "python-dotenv",
+        25
+      ],
+      [
+        "httpx",
+        6
+      ],
+      [
+        "pytest",
+        6
+      ],
+      [
+        "pytest-asyncio",
+        6
+      ],
+      [
+        "rich",
+        4
+      ],
+      [
+        "pyyaml",
+        4
+      ],
+      [
+        "aiohttp",
+        4
+      ],
+      [
+        "textual",
+        3
+      ],
+      [
+        "pytest-cov",
+        3
+      ],
+      [
+        "black",
+        3
+      ],
+      [
+        "mypy",
+        3
+      ],
+      [
+        "opentelemetry-sdk",
+        2
+      ],
+      [
+        "cryptography",
+        2
+      ],
+      [
+        "pytest-mock",
+        2
+      ],
+      [
+        "pyjwt",
+        1
+      ],
+      [
+        "toml",
+        1
+      ],
+      [
+        "jinja2",
+        1
+      ],
+      [
+        "packaging",
+        1
+      ],
+      [
+        "gitpython",
+        1
+      ]
+    ],
+    "most_common_dev_dependencies": [
+      [
+        "setuptools",
+        29
+      ],
+      [
+        "wheel",
+        29
+      ],
+      [
+        "hatchling",
+        2
+      ]
+    ],
+    "kits_by_dependency_count": [
+      [
+        "KInfra",
+        19
+      ],
+      [
+        "stream-kit",
+        14
+      ],
+      [
+        "pheno_cli",
+        12
+      ],
+      [
+        "test-kit",
+        12
+      ],
+      [
+        "mcp-QA",
+        9
+      ],
+      [
+        "filewatch-kit",
+        8
+      ],
+      [
+        "adapter-kit",
+        6
+      ],
+      [
+        "observability-kit",
+        6
+      ],
+      [
+        "authkit-client",
+        5
+      ],
+      [
+        "pydevkit",
+        4
+      ],
+      [
+        "tui-kit",
+        4
+      ],
+      [
+        "event-kit",
+        4
+      ],
+      [
+        "grpc-kit",
+        3
+      ],
+      [
+        "process-monitor-sdk",
+        2
+      ],
+      [
+        "workflow-kit",
+        2
+      ],
+      [
+        "api-gateway-kit",
+        2
+      ],
+      [
+        "storage-kit",
+        2
+      ],
+      [
+        "db-kit",
+        2
+      ],
+      [
+        "build-analyzer-kit",
+        2
+      ],
+      [
+        "config-kit",
+        2
+      ],
+      [
+        "orchestrator-kit",
+        2
+      ],
+      [
+        "cli-builder-kit",
+        2
+      ],
+      [
+        "vector-kit",
+        2
+      ],
+      [
+        "mcp-sdk-kit",
+        2
+      ],
+      [
+        "deploy-kit",
+        2
+      ],
+      [
+        "multi-cloud-deploy-kit",
+        2
+      ],
+      [
+        "mcp-infra-sdk",
+        2
+      ],
+      [
+        "resource-management-kit",
+        2
+      ],
+      [
+        "domain-kit",
+        2
+      ]
+    ]
+  },
+  "kit_dependencies": {
+    "pydevkit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0",
+      "httpx": "httpx>=0.27.0",
+      "opentelemetry-sdk": "opentelemetry-sdk>=1.22.0"
+    },
+    "process-monitor-sdk": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "authkit-client": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0",
+      "httpx": "httpx>=0.27.0",
+      "cryptography": "cryptography>=42.0.0",
+      "pyjwt": "pyjwt>=2.8.0"
+    },
+    "workflow-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "api-gateway-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "pheno_cli": {
+      "rich": "rich>=13.0.0",
+      "textual": "textual>=0.45.0",
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "toml": "toml>=0.10.2",
+      "jinja2": "jinja2>=3.1.0",
+      "pyyaml": "pyyaml>=6.0",
+      "packaging": "packaging>=21.0",
+      "gitpython": "gitpython>=3.1.0",
+      "httpx": "httpx>=0.25.0",
+      "python-dotenv": "python-dotenv>=1.0.0",
+      "questionary": "questionary>=2.0.0",
+      "typer": "typer>=0.12,<1.0"
+    },
+    "storage-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "adapter-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0",
+      "openfeature-sdk": "openfeature-sdk>=0.6",
+      "pytest": "pytest>=7.4.0",
+      "pytest-asyncio": "pytest-asyncio>=0.21.0",
+      "pytest-cov": "pytest-cov>=4.1.0"
+    },
+    "db-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "build-analyzer-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "test-kit": {
+      "pytest": "pytest>=8.0.0",
+      "pytest-asyncio": "pytest-asyncio>=0.23.0",
+      "pytest-cov": "pytest-cov>=4.1.0",
+      "pytest-mock": "pytest-mock>=3.12.0",
+      "polyfactory": "polyfactory>=2.14.0",
+      "faker": "faker>=22.0.0",
+      "httpx": "httpx>=0.26.0",
+      "aiohttp": "aiohttp>=3.9.0",
+      "sqlalchemy": "sqlalchemy[asyncio]>=2.0.0",
+      "asyncpg": "asyncpg>=0.29.0",
+      "psycopg": "psycopg[binary]>=3.1.0",
+      "pydantic": "pydantic>=2.12.0,<3.0.0"
+    },
+    "tui-kit": {
+      "textual": "textual>=0.45.0",
+      "rich": "rich>=13.0.0",
+      "asyncio-mqtt": "asyncio-mqtt>=0.13.0",
+      "pydantic": "pydantic>=2.12.0,<3.0.0"
+    },
+    "stream-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0",
+      "websockets": "websockets>=12.0",
+      "msgpack": "msgpack>=1.0.0",
+      "fastapi": "fastapi>=0.104.0",
+      "uvicorn": "uvicorn[standard]>=0.24.0",
+      "starlette": "starlette>=0.27.0",
+      "flask": "flask>=3.0.0",
+      "flask-cors": "flask-cors>=4.0.0",
+      "aiohttp": "aiohttp>=3.9.0",
+      "pytest": "pytest>=7.4.0",
+      "pytest-asyncio": "pytest-asyncio>=0.21.0",
+      "black": "black>=23.0.0",
+      "mypy": "mypy>=1.7.0"
+    },
+    "config-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "orchestrator-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "mcp-QA": {
+      "pytest": "pytest>=7.0.0",
+      "pytest-asyncio": "pytest-asyncio>=0.21.0",
+      "aiohttp": "aiohttp>=3.9.0",
+      "httpx": "httpx>=0.25.0",
+      "playwright": "playwright>=1.40.0",
+      "cryptography": "cryptography>=41.0.0",
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "textual": "textual>=0.40.0",
+      "rich": "rich>=13.0.0"
+    },
+    "cli-builder-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "vector-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "filewatch-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0",
+      "watchdog": "watchdog>=3.0.0",
+      "pathspec": "pathspec>=0.11.0",
+      "pytest": "pytest>=7.4.0",
+      "pytest-asyncio": "pytest-asyncio>=0.21.0",
+      "black": "black>=23.0.0",
+      "mypy": "mypy>=1.5.0"
+    },
+    "mcp-sdk-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "grpc-kit": {
+      "grpcio": "grpcio>=1.62",
+      "grpcio-tools": "grpcio-tools>=1.62",
+      "opentelemetry-api": "opentelemetry-api>=1.24"
+    },
+    "deploy-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "observability-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0",
+      "opentelemetry-sdk": "opentelemetry-sdk>=1.22.0",
+      "opentelemetry-exporter-otlp": "opentelemetry-exporter-otlp>=1.22.0",
+      "opentelemetry-instrumentation-fastapi": "opentelemetry-instrumentation-fastapi>=0.50b0",
+      "prometheus-client": "prometheus-client>=0.20.0"
+    },
+    "multi-cloud-deploy-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "event-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0",
+      "nats-py": "nats-py>=2.7.0",
+      "httpx": "httpx>=0.27.0"
+    },
+    "mcp-infra-sdk": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "resource-management-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "domain-kit": {
+      "pydantic": "pydantic>=2.12.0,<3.0.0",
+      "python-dotenv": "python-dotenv>=1.0.0"
+    },
+    "KInfra": {
+      "aiohttp": "aiohttp>=3.8.0",
+      "psutil": "psutil>=5.9.0",
+      "pyyaml": "PyYAML>=6.0.1              # For YAML configuration file support",
+      "typing-extensions": "typing-extensions",
+      "rich": "rich",
+      "aiofiles": "aiofiles>=23.2.0           # For async file operations",
+      "click": "click>=8.1.0               # For CLI interface (if building CLI tools)",
+      "pydantic": "pydantic>=2.12.0,<3.0.0     # For enhanced data validation (alternative to dataclasses)",
+      "structlog": "structlog>=23.1.0          # For structured logging (alternative to standard logging)",
+      "pytest": "pytest>=7.4.0              # Testing framework",
+      "pytest-asyncio": "pytest-asyncio>=0.21.0     # Async testing support",
+      "pytest-mock": "pytest-mock>=3.11.1        # Mocking utilities",
+      "pytest-cov": "pytest-cov>=4.1.0          # Coverage reporting",
+      "black": "black>=23.7.0              # Code formatting",
+      "isort": "isort>=5.12.0              # Import sorting",
+      "mypy": "mypy>=1.5.0                # Type checking",
+      "flake8": "flake8>=6.0.0              # Linting",
+      "sphinx": "sphinx>=7.1.0              # Documentation generation",
+      "sphinx-rtd-theme": "sphinx-rtd-theme>=1.3.0    # ReadTheDocs theme"
+    }
+  },
+  "kit_info": {
+    "pydevkit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/pydevkit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/pydevkit/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "pydevkit": "pydevkit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "process-monitor-sdk": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/process-monitor-sdk",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/process-monitor-sdk/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "process-monitor-sdk": "process-monitor-sdk[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "authkit-client": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/authkit-client",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/authkit-client/pyproject.toml",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/authkit-client/python/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "authkit-client": "authkit-client[dev,test,docs,performance,security]"
+        },
+        "automation": {
+          "playwright": "playwright>=1.40.0"
+        },
+        "middleware": {
+          "fastapi": "fastapi>=0.109.0",
+          "flask": "flask>=3.0.0",
+          "starlette": "starlette>=0.36.0"
+        }
+      }
+    },
+    "workflow-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/workflow-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/workflow-kit/pyproject.toml",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/workflow-kit/setup.py"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "workflow-kit": "workflow-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "api-gateway-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/api-gateway-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/api-gateway-kit/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "api-gateway-kit": "api-gateway-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "pheno_cli": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/pheno_cli",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/pheno_cli/pyproject.toml",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/pheno_cli/pheno_cli/commands/setup.py"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0",
+          "pytest-textual": "pytest-textual>=0.1.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "tui": {
+          "textual-dev": "textual-dev>=1.0.0"
+        },
+        "integrations": {
+          "github3": "github3.py>=4.0.0",
+          "twine": "twine>=4.0.0",
+          "docker": "docker>=6.0.0",
+          "kubernetes": "kubernetes>=28.1.0",
+          "boto3": "boto3>=1.28.0"
+        },
+        "full": {
+          "pheno-cli": "pheno-cli[dev,test,docs,tui,integrations,cli_builder]"
+        }
+      }
+    },
+    "storage-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/storage-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/storage-kit/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "storage-kit": "storage-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "adapter-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/adapter-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/adapter-kit/pyproject.toml",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/adapter-kit/setup.py",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/adapter-kit/tests/requirements.txt"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "adapter-kit": "adapter-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "db-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/db-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/db-kit/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "db-kit": "db-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "build-analyzer-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/build-analyzer-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/build-analyzer-kit/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "build-analyzer-kit": "build-analyzer-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "test-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/test-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/test-kit/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.1.0",
+          "mypy": "mypy>=1.8.0"
+        }
+      }
+    },
+    "tui-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/tui-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/tui-kit/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "monitoring": {
+          "psutil": "psutil>=5.9.0",
+          "gputil": "GPUtil>=1.4.0"
+        },
+        "dev": {
+          "pytest": "pytest>=7.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.21.0",
+          "black": "black>=23.0.0",
+          "isort": "isort>=5.12.0",
+          "mypy": "mypy>=1.5.0"
+        }
+      }
+    },
+    "stream-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/stream-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/stream-kit/pyproject.toml",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/stream-kit/setup.py",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/stream-kit/requirements.txt"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "stream-kit": "stream-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "config-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/config-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/config-kit/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "config-kit": "config-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "orchestrator-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/orchestrator-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/orchestrator-kit/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "orchestrator-kit": "orchestrator-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "mcp-QA": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/mcp-QA",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/mcp-QA/pyproject.toml",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/mcp-QA/setup.py"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "black": "black>=23.0.0",
+          "ruff": "ruff>=0.1.0",
+          "mypy": "mypy>=1.0.0"
+        }
+      }
+    },
+    "cli-builder-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/cli-builder-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/cli-builder-kit/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "cli-builder-kit": "cli-builder-kit[dev,test,docs,performance,security]"
+        },
+        "typer": {
+          "typer": "typer[all]>=0.9.0"
+        },
+        "click": {
+          "click": "click>=8.0.0"
+        },
+        "all_backends": {
+          "cli-builder-kit": "cli-builder-kit[typer,click]"
+        }
+      }
+    },
+    "vector-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/vector-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/vector-kit/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "vector-kit": "vector-kit[dev,test,docs,performance,security]"
+        },
+        "qdrant": {
+          "qdrant-client": "qdrant-client>=1.6.0"
+        },
+        "chroma": {
+          "chromadb": "chromadb>=0.4.0"
+        },
+        "faiss": {
+          "faiss-cpu": "faiss-cpu>=1.7.4"
+        },
+        "pinecone": {
+          "pinecone-client": "pinecone-client>=2.2.0"
+        },
+        "weaviate": {
+          "weaviate-client": "weaviate-client>=3.24.0"
+        },
+        "pgvector": {
+          "asyncpg": "asyncpg>=0.28.0",
+          "pgvector": "pgvector>=0.2.0"
+        },
+        "all_stores": {
+          "vector-kit": "vector-kit[qdrant,chroma,faiss,pinecone,weaviate,pgvector]"
+        },
+        "production": {
+          "vector-kit": "vector-kit[qdrant]"
+        }
+      }
+    },
+    "filewatch-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/filewatch-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/filewatch-kit/pyproject.toml",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/filewatch-kit/setup.py",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/filewatch-kit/requirements.txt"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "filewatch-kit": "filewatch-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "mcp-sdk-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/mcp-sdk-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/mcp-sdk-kit/pyproject.toml",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/mcp-sdk-kit/setup.py"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "mcp-sdk-kit": "mcp-sdk-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "grpc-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/grpc-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/grpc-kit/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "otel": {
+          "opentelemetry-sdk": "opentelemetry-sdk>=1.24"
+        }
+      }
+    },
+    "deploy-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/deploy-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/deploy-kit/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "deploy-kit": "deploy-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "observability-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/observability-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/observability-kit/pyproject.toml",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/observability-kit/observability_kit/metrics/setup.py",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/observability-kit/observability_kit/tracing/setup.py"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "observability-kit": "observability-kit[dev,test,docs,performance,security]"
+        },
+        "otel": {
+          "opentelemetry-api": "opentelemetry-api>=1.20.0",
+          "opentelemetry-sdk": "opentelemetry-sdk>=1.20.0",
+          "opentelemetry-exporter-otlp-proto-grpc": "opentelemetry-exporter-otlp-proto-grpc>=1.20.0"
+        },
+        "structlog": {
+          "structlog": "structlog>=23.1.0"
+        },
+        "bootstrap": {
+          "observability-kit": "observability-kit[otel,structlog]"
+        }
+      }
+    },
+    "multi-cloud-deploy-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/multi-cloud-deploy-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/multi-cloud-deploy-kit/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "multi-cloud-deploy-kit": "multi-cloud-deploy-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "event-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/event-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/event-kit/pyproject.toml",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/event-kit/setup.py"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "event-kit": "event-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "mcp-infra-sdk": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/mcp-infra-sdk",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/mcp-infra-sdk/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "mcp-infra-sdk": "mcp-infra-sdk[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "resource-management-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/resource-management-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/resource-management-kit/pyproject.toml",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/resource-management-kit/setup.py"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "resource-management-kit": "resource-management-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "domain-kit": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/domain-kit",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/domain-kit/pyproject.toml"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "black": "black>=24.0.0",
+          "ruff": "ruff>=0.2.0",
+          "mypy": "mypy>=1.8.0",
+          "isort": "isort>=5.12.0",
+          "pre-commit": "pre-commit>=3.0.0"
+        },
+        "test": {
+          "pytest": "pytest>=8.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.23.0",
+          "pytest-cov": "pytest-cov>=4.0.0",
+          "pytest-timeout": "pytest-timeout>=2.1.0",
+          "coverage": "coverage[toml]>=7.0.0"
+        },
+        "docs": {
+          "mkdocs": "mkdocs>=1.5.0",
+          "mkdocs-material": "mkdocs-material>=9.0.0",
+          "mkdocs-gen-files": "mkdocs-gen-files>=0.5.0",
+          "mkdocs-literate-nav": "mkdocs-literate-nav>=0.6.0"
+        },
+        "performance": {
+          "memory-profiler": "memory-profiler>=0.60.0",
+          "line-profiler": "line-profiler>=4.0.0",
+          "py-spy": "py-spy>=0.3.14"
+        },
+        "security": {
+          "bandit": "bandit>=1.7.0",
+          "safety": "safety>=2.0.0"
+        },
+        "full": {
+          "domain-kit": "domain-kit[dev,test,docs,performance,security]"
+        }
+      }
+    },
+    "KInfra": {
+      "path": "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/KInfra",
+      "packaging_files": [
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/KInfra/libraries/python/pyproject.toml",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/KInfra/libraries/python/pheno_control_center/pyproject.toml",
+        "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/KInfra/libraries/python/requirements.txt"
+      ],
+      "dependencies": {},
+      "dev_dependencies": {},
+      "optional_dependencies": {
+        "dev": {
+          "pytest": "pytest>=7.0.0",
+          "pytest-asyncio": "pytest-asyncio>=0.21.0",
+          "black": "black>=23.0.0",
+          "isort": "isort>=5.12.0",
+          "mypy": "mypy>=1.0.0",
+          "flake8": "flake8>=6.0.0"
+        },
+        "all": {
+          "aiohttp": "aiohttp>=3.8.0",
+          "psutil": "psutil>=5.9.0",
+          "pyyaml": "pyyaml>=6.0"
+        },
+        "gui": {
+          "pyqt6": "PyQt6>=6.6",
+          "qasync": "qasync>=0.24.0"
+        },
+        "tui": {
+          "textual": "textual>=0.56"
+        },
+        "monitoring": {
+          "psutil": "psutil>=5.9"
+        }
+      }
+    }
+  },
+  "consolidation_groups": {
+    "core": [
+      "pydantic (used by 29 kits)",
+      "python-dotenv (used by 25 kits)",
+      "pyyaml (used by 4 kits)",
+      "typing-extensions (used by 1 kits)"
+    ],
+    "data": [
+      "sqlalchemy (used by 1 kits)",
+      "asyncpg (used by 1 kits)",
+      "psycopg (used by 1 kits)"
+    ],
+    "web": [
+      "httpx (used by 6 kits)",
+      "aiohttp (used by 4 kits)",
+      "websockets (used by 1 kits)",
+      "fastapi (used by 1 kits)",
+      "uvicorn (used by 1 kits)",
+      "starlette (used by 1 kits)",
+      "grpcio (used by 1 kits)",
+      "grpcio-tools (used by 1 kits)",
+      "opentelemetry-instrumentation-fastapi (used by 1 kits)"
+    ],
+    "infra": [
+      "opentelemetry-sdk (used by 2 kits)",
+      "opentelemetry-api (used by 1 kits)",
+      "opentelemetry-exporter-otlp (used by 1 kits)",
+      "prometheus-client (used by 1 kits)"
+    ],
+    "ai": [],
+    "ui": [
+      "rich (used by 4 kits)",
+      "textual (used by 3 kits)",
+      "typer (used by 1 kits)",
+      "click (used by 1 kits)"
+    ],
+    "dev": [
+      "pytest (used by 6 kits)",
+      "pytest-asyncio (used by 6 kits)",
+      "pytest-cov (used by 3 kits)",
+      "pytest-mock (used by 2 kits)",
+      "black (used by 3 kits)",
+      "mypy (used by 3 kits)",
+      "isort (used by 1 kits)"
+    ]
+  },
+  "unified_dependencies": {
+    "core": [
+      "pydantic>=2.12.0,<3.0.0     # For enhanced data validation (alternative to dataclasses)",
+      "python-dotenv>=1.0.0",
+      "httpx>=0.27.0",
+      "PyYAML>=6.0.1              # For YAML configuration file support",
+      "pytest-asyncio>=0.21.0     # Async testing support",
+      "pytest-cov>=4.1.0          # Coverage reporting",
+      "aiohttp>=3.9.0",
+      "black>=23.7.0              # Code formatting",
+      "mypy>=1.5.0                # Type checking",
+      "structlog>=23.1.0          # For structured logging (alternative to standard logging)"
+    ],
+    "data": [
+      "asyncpg>=0.29.0"
+    ],
+    "web": [
+      "websockets>=12.0",
+      "fastapi>=0.104.0",
+      "uvicorn[standard]>=0.24.0"
+    ],
+    "infra": [
+      "opentelemetry-api>=1.24",
+      "prometheus-client>=0.20.0"
+    ],
+    "ai": [],
+    "ui": [
+      "rich>=13.0.0",
+      "textual>=0.45.0",
+      "typer>=0.12,<1.0"
+    ],
+    "dev": [
+      "pytest>=7.4.0              # Testing framework"
+    ]
+  }
+}

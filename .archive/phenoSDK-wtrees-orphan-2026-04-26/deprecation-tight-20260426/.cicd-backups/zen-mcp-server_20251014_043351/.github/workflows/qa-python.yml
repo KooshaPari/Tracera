@@ -1,0 +1,348 @@
+name: QA Ingestion (Python)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  PYTHON_VERSION: '3.11'
+  PYTEST_WORKERS: 'auto'
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-group: [fast, unit, tool-specific, provider-specific]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Create reports directory
+        run: mkdir -p reports
+
+      - name: Run fast tests
+        if: matrix.test-group == 'fast'
+        env:
+          ZEN_STORAGE_MODE: memory
+        run: |
+          pytest -n ${{ env.PYTEST_WORKERS }} --dist=loadscope -q -m "fast" \
+            --junitxml=reports/pytest-fast-junit.xml \
+            --cov=. --cov-report=xml:reports/coverage-fast.xml \
+            --cov-report=term-missing || true
+
+      - name: Run unit tests
+        if: matrix.test-group == 'unit'
+        env:
+          ZEN_STORAGE_MODE: memory
+        run: |
+          pytest -n ${{ env.PYTEST_WORKERS }} --dist=loadscope -q -m "unit and not integration" \
+            --junitxml=reports/pytest-unit-junit.xml \
+            --cov=. --cov-report=xml:reports/coverage-unit.xml \
+            --cov-report=term-missing || true
+
+      - name: Run tool-specific tests
+        if: matrix.test-group == 'tool-specific'
+        env:
+          ZEN_STORAGE_MODE: memory
+        run: |
+          pytest -n ${{ env.PYTEST_WORKERS }} --dist=loadscope -q -m "tool_specific and not integration" \
+            --junitxml=reports/pytest-tools-junit.xml \
+            --cov=tools/ --cov-report=xml:reports/coverage-tools.xml \
+            --cov-report=term-missing || true
+
+      - name: Run provider-specific tests
+        if: matrix.test-group == 'provider-specific'
+        env:
+          ZEN_STORAGE_MODE: memory
+        run: |
+          pytest -n ${{ env.PYTEST_WORKERS }} --dist=loadscope -q -m "provider_specific and not integration" \
+            --junitxml=reports/pytest-providers-junit.xml \
+            --cov=providers/ --cov-report=xml:reports/coverage-providers.xml \
+            --cov-report=term-missing || true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.test-group }}-${{ github.sha }}
+          path: |
+            reports/*.xml
+            reports/coverage-*.xml
+          retention-days: 30
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      nats:
+        image: nats:2.10-alpine
+        ports:
+          - 4222:4222
+          - 8222:8222
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:8222/healthz || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: zen_mcp_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Setup test environment
+        env:
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          NATS_URL: nats://localhost:4222
+          TEST_PG_DSN: postgresql://postgres:postgres@localhost:5432/zen_mcp_test
+        run: |
+          # Wait for services to be ready
+          timeout 30 bash -c 'until redis-cli -h localhost -p 6379 ping; do sleep 1; done'
+          timeout 30 bash -c 'until curl -f http://localhost:8222/healthz; do sleep 1; done'
+          timeout 30 bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 1; done'
+
+          # Initialize test database
+          python scripts/db_init.py
+
+      - name: Run integration tests
+        env:
+          ZEN_STORAGE_MODE: postgres
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          NATS_URL: nats://localhost:4222
+          TEST_PG_DSN: postgresql://postgres:postgres@localhost:5432/zen_mcp_test
+          ZEN_TEST_MODE: 1
+        run: |
+          mkdir -p reports
+          pytest -n 2 --dist=loadscope -v -m "integration" \
+            --junitxml=reports/pytest-integration-junit.xml \
+            --cov=. --cov-report=xml:reports/coverage-integration.xml \
+            --cov-report=term-missing \
+            --timeout=300 || true
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results-${{ github.sha }}
+          path: |
+            reports/*.xml
+            logs/*.log
+          retention-days: 30
+
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [unit-tests]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run performance benchmarks
+        env:
+          ZEN_STORAGE_MODE: memory
+        run: |
+          mkdir -p reports
+          pytest -v -m "benchmark or performance" \
+            --junitxml=reports/pytest-performance-junit.xml \
+            --benchmark-json=reports/benchmark-results.json \
+            --timeout=600 || true
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-results-${{ github.sha }}
+          path: reports/benchmark-results.json
+          retention-days: 90
+
+  qa-ingestion:
+    name: QA Data Ingestion
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests]
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-results-*
+          path: downloaded-results/
+          merge-multiple: true
+
+      - name: Download integration test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: integration-test-results-*
+          path: downloaded-results/
+          merge-multiple: true
+        continue-on-error: true
+
+      - name: Merge test results
+        run: |
+          mkdir -p reports
+          # Combine all JUnit XML files
+          find downloaded-results/ -name "*.xml" -type f | head -20 | while read file; do
+            if [ -f "$file" ]; then
+              cp "$file" "reports/$(basename "$file" .xml)-$(basename "$(dirname "$file")").xml"
+            fi
+          done
+
+          # Combine coverage reports if they exist
+          find downloaded-results/ -name "coverage-*.xml" -type f | head -5 | while read file; do
+            if [ -f "$file" ]; then
+              cp "$file" "reports/"
+            fi
+          done
+
+          ls -la reports/
+
+      - name: Ingest QA results to SQLite
+        run: |
+          mkdir -p dashboard/qa_data
+
+          # Ingest each test result file
+          for junit_file in reports/pytest-*-junit*.xml; do
+            if [ -f "$junit_file" ]; then
+              echo "Processing $junit_file"
+              python scripts/qa_ingest.py \
+                --project Zen \
+                --framework pytest \
+                --input "$junit_file" \
+                --format junit \
+                --commit "${{ github.sha }}" \
+                --branch "${{ github.ref_name }}" \
+                --ci github || echo "Failed to process $junit_file"
+            fi
+          done
+
+          # Ingest coverage if available
+          for coverage_file in reports/coverage-*.xml; do
+            if [ -f "$coverage_file" ]; then
+              echo "Processing coverage from $coverage_file"
+              python scripts/qa_ingest.py \
+                --project Zen \
+                --framework pytest \
+                --input reports/pytest-unit-junit.xml \
+                --format junit \
+                --coverage-xml "$coverage_file" \
+                --commit "${{ github.sha }}" \
+                --branch "${{ github.ref_name }}" \
+                --ci github || echo "Failed to process coverage"
+              break
+            fi
+          done
+
+      - name: Upload QA Database
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-database-${{ github.sha }}
+          path: dashboard/qa_data/qa.db
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Generate QA Summary
+        run: |
+          echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          total_files=$(find reports/ -name "pytest-*-junit*.xml" -type f | wc -l)
+          echo "- Total test result files processed: $total_files" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f "dashboard/qa_data/qa.db" ]; then
+            echo "- QA database successfully generated" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ⚠️ QA database generation failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts Generated" >> $GITHUB_STEP_SUMMARY
+          echo "- Test results and coverage reports" >> $GITHUB_STEP_SUMMARY
+          echo "- QA database for dashboard integration" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-02-14T08:56:02Z",
+  "delivery_model": "brownfield",
+  "enabled": true,
+  "error_count": 0,
+  "warn_count": 0,
+  "checks": [
+    {
+      "check": "playbook_present",
+      "status": "pass",
+      "file": "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/contracts/playbooks/brownfield.playbook.json"
+    },
+    {
+      "check": "playbook_json_valid",
+      "status": "pass"
+    },
+    {
+      "check": "required_fields",
+      "status": "pass"
+    }
+  ],
+  "pass": true
+}

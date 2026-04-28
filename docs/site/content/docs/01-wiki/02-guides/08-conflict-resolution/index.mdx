@@ -1,0 +1,1078 @@
+---
+title: Conflict Resolution
+description: Complete guide to detecting, managing, and resolving sync conflicts in TracerTM
+---
+
+# Conflict Resolution
+
+TracerTM's offline-first architecture enables seamless local work, but distributed changes can sometimes create conflicts. This comprehensive guide explains conflict detection, resolution strategies, and best practices for preventing conflicts.
+
+## Overview
+
+### What Are Sync Conflicts?
+
+A conflict occurs when the same entity (project, item, or link) is modified on multiple clients between synchronizations. TracerTM uses **vector clocks** to detect concurrent modifications that cannot be automatically merged.
+
+**Example Scenario:**
+```
+1. Alice opens a requirement offline and changes title to "User Authentication"
+2. Bob opens the same requirement offline and changes title to "Auth System"
+3. Both sync → Conflict detected!
+```
+
+### Conflict Detection System
+
+TracerTM employs a sophisticated conflict detection mechanism:
+
+- **Vector Clocks**: Provides partial ordering of events across distributed clients
+- **Content Hashing**: Detects actual data changes (not just timestamp differences)
+- **Concurrent Modification Detection**: Identifies when neither version happens-before the other
+
+#### Detection Criteria
+
+A conflict is detected when **all** of these conditions are met:
+
+1. **Both versions exist** (not a create/delete scenario)
+2. **Vector clocks are concurrent** (neither happens-before the other)
+3. **Content differs** (different hashes or data)
+
+```python
+# Simplified detection logic
+def is_conflict(local, remote):
+    if not (local and remote):
+        return False  # One doesn't exist
+
+    if not local.vector_clock.is_concurrent(remote.vector_clock):
+        return False  # Not concurrent
+
+    if local.content_hash == remote.content_hash:
+        return False  # Same content
+
+    return True  # Conflict!
+```
+
+---
+
+## When Conflicts Occur
+
+### Common Sync Scenarios
+
+#### 1. Concurrent Edits
+
+**Most Common**: Two clients modify the same entity while offline.
+
+```
+Timeline:
+T0: Both clients sync (entity v1)
+T1: Client A modifies entity (local v2)
+T2: Client B modifies entity (local v2)
+T3: Client A syncs → uploads v2
+T4: Client B syncs → conflict (A's v2 vs B's v2)
+```
+
+#### 2. Network Partition
+
+Prolonged offline work leads to divergent changes.
+
+```
+Day 1: Team disconnects for field work
+Day 2: Alice makes 10 changes
+Day 2: Bob makes 8 changes to same items
+Day 3: Both reconnect → multiple conflicts
+```
+
+#### 3. Rapid Edits
+
+Quick successive edits before sync propagates.
+
+```
+10:00:00 - Alice saves requirement
+10:00:05 - Bob saves same requirement (before sync)
+10:00:10 - Both sync → conflict
+```
+
+#### 4. Concurrent Link Creation
+
+Two users create different links to the same item.
+
+```
+Alice: Links REQ-001 → TEST-042
+Bob:   Links REQ-001 → TEST-043
+Sync → Potential conflict on link metadata
+```
+
+---
+
+## Types of Conflicts
+
+### 1. Entity Content Conflicts
+
+Changes to entity fields (title, description, status, etc.).
+
+**Detection:**
+- Compare field-by-field differences
+- Identify added, removed, and modified fields
+
+**Example:**
+```json
+Local version:
+  { "title": "User Login", "status": "in_progress" }
+
+Remote version:
+  { "title": "Auth System", "status": "in_review" }
+
+Differences:
+  Modified: ["title", "status"]
+```
+
+### 2. Vector Clock Conflicts
+
+Same version number from different clients (true concurrency).
+
+**Detection:**
+- `local.client_id != remote.client_id`
+- `local.version == remote.version`
+- `local.timestamp ≈ remote.timestamp`
+
+### 3. Structural Conflicts
+
+Changes to relationships or hierarchy.
+
+**Examples:**
+- Item moved to different project on both clients
+- Link created/deleted simultaneously
+- Parent-child relationship modified
+
+### 4. Metadata Conflicts
+
+Non-content changes (timestamps, versioning, user metadata).
+
+**Usually auto-resolved**, but tracked for audit purposes.
+
+---
+
+## Automatic Resolution Strategies
+
+TracerTM provides four built-in strategies for automatic conflict resolution.
+
+### 1. Last Write Wins (Default)
+
+**Strategy:** Newest modification wins based on timestamp.
+
+**When to Use:**
+- Single-user scenarios
+- Timestamp reliability is high
+- Quick resolution preferred over accuracy
+
+**How it Works:**
+```python
+def last_write_wins(conflict):
+    if local.timestamp > remote.timestamp:
+        return local
+    elif remote.timestamp > local.timestamp:
+        return remote
+    else:
+        # Tie-breaker: higher version number
+        return local if local.version > remote.version else remote
+```
+
+**Configuration:**
+```bash
+rtm config set sync_conflict_strategy last_write_wins
+```
+
+**Pros:**
+- Simple and predictable
+- No user intervention needed
+- Fast resolution
+
+**Cons:**
+- May lose valid changes
+- Timestamp-dependent (can be unreliable)
+- Not ideal for collaborative editing
+
+---
+
+### 2. Local Wins
+
+**Strategy:** Always prefer local version.
+
+**When to Use:**
+- Offline-first workflows
+- Local changes take precedence
+- Development/testing environments
+
+**How it Works:**
+```python
+def local_wins(conflict):
+    return local  # Always
+```
+
+**Configuration:**
+```bash
+rtm config set sync_conflict_strategy local_wins
+```
+
+**Pros:**
+- Preserves local work
+- Predictable for single user
+- Useful for overriding server
+
+**Cons:**
+- Discards remote changes
+- Not suitable for collaboration
+- Can create data loss
+
+---
+
+### 3. Remote Wins
+
+**Strategy:** Always prefer remote/server version.
+
+**When to Use:**
+- Server is source of truth
+- Pulling updates from authoritative source
+- Reverting local experiments
+
+**How it Works:**
+```python
+def remote_wins(conflict):
+    return remote  # Always
+```
+
+**Configuration:**
+```bash
+rtm config set sync_conflict_strategy remote_wins
+```
+
+**Pros:**
+- Ensures server consistency
+- Good for read-mostly clients
+- Simplifies multi-client scenarios
+
+**Cons:**
+- Loses local changes
+- Can be frustrating for users
+- Not ideal for offline work
+
+---
+
+### 4. Manual Resolution
+
+**Strategy:** Create conflict record for user review.
+
+**When to Use:**
+- Collaboration scenarios
+- High-value data
+- Complex merges needed
+
+**How it Works:**
+```python
+def manual(conflict):
+    # Don't auto-resolve
+    # Create conflict record
+    # Wait for user action
+    backup_conflict(conflict)
+    return None  # Unresolved
+```
+
+**Configuration:**
+```bash
+rtm config set sync_conflict_strategy manual
+```
+
+**Pros:**
+- User controls resolution
+- No data loss
+- Audit trail maintained
+
+**Cons:**
+- Requires user intervention
+- Slower workflow
+- Can accumulate unresolved conflicts
+
+---
+
+## Manual Resolution Workflow
+
+### Step 1: Detect Conflicts
+
+During sync, conflicts are automatically detected and logged.
+
+**CLI:**
+```bash
+# Check sync status
+rtm sync status
+
+# Output shows conflicts
+Status:       Conflicts
+Conflicts:    3
+
+# List conflicts
+rtm sync conflicts
+```
+
+**TUI:**
+- Sync status widget shows conflict count
+- Conflict panel activates automatically
+- Visual indicators on affected items
+
+---
+
+### Step 2: Review Conflict Details
+
+Examine both versions to understand differences.
+
+**CLI:**
+```bash
+# List all conflicts
+rtm sync conflicts
+
+# Sample output:
+ID             Entity              Type     Local Ver  Remote Ver  Detected
+conflict_abc   REQ-001-user-auth   item     5          5          2024-12-07 10:30
+conflict_def   PROJ-001            project  3          3          2024-12-07 10:32
+```
+
+**TUI Conflict Panel:**
+```
+┌─ ⚠ Sync Conflicts Detected ────────────────────────────┐
+│                                                         │
+│ Unresolved Conflicts:                                  │
+│ Type     ID           Local    Remote   Detected       │
+│ item     REQ-001...   v5       v5       2024-12-07     │
+│ project  PROJ-001     v3       v3       2024-12-07     │
+│                                                         │
+├─ Conflict Details ─────────────────────────────────────┤
+│                                                         │
+│ Entity: item - REQ-001-user-authentication             │
+│                                                         │
+│ Local Version:                                         │
+│   Version: 5                                           │
+│   Timestamp: 2024-12-07 10:25:00                       │
+│   Client: alice-laptop                                 │
+│                                                         │
+│ Remote Version:                                        │
+│   Version: 5                                           │
+│   Timestamp: 2024-12-07 10:28:00                       │
+│   Client: bob-desktop                                  │
+│                                                         │
+│ Data Differences:                                      │
+│   Modified fields: title, status                       │
+│                                                         │
+├─ Actions ──────────────────────────────────────────────┤
+│ [Use Local] [Use Remote] [Merge Manually] [Close]      │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Step 3: Examine Differences
+
+**View Field-by-Field Changes:**
+
+```bash
+# In future versions, detailed diff view:
+rtm sync conflicts show conflict_abc123 --diff
+
+# Output:
+Entity: item REQ-001-user-authentication
+
+Field: title
+  Local:  "User Authentication System"
+  Remote: "Login and Auth Module"
+
+Field: status
+  Local:  "in_progress"
+  Remote: "in_review"
+
+Field: priority (unchanged)
+  Both:   "high"
+```
+
+**Backup Files:**
+
+Conflicts automatically create backup files:
+
+```
+~/.tracertm/conflicts/
+  item/
+    REQ-001_20241207_103000/
+      local.json       # Local version
+      remote.json      # Remote version
+      conflict.json    # Metadata
+```
+
+---
+
+### Step 4: Choose Resolution Strategy
+
+Three resolution paths available:
+
+#### Option A: Use Local Version
+
+Keep your local changes, discard remote.
+
+**CLI:**
+```bash
+rtm sync resolve conflict_abc123 --strategy local_wins
+```
+
+**TUI:**
+- Select conflict
+- Press `L` or click "Use Local"
+
+**Result:**
+- Local version becomes canonical
+- Remote changes discarded (but backed up)
+- Conflict marked as resolved
+
+---
+
+#### Option B: Use Remote Version
+
+Accept remote changes, discard local.
+
+**CLI:**
+```bash
+rtm sync resolve conflict_abc123 --strategy remote_wins
+```
+
+**TUI:**
+- Select conflict
+- Press `R` or click "Use Remote"
+
+**Result:**
+- Remote version becomes canonical
+- Local changes discarded (but backed up)
+- Conflict marked as resolved
+
+---
+
+#### Option C: Manually Merge
+
+Combine changes from both versions.
+
+**CLI:**
+```bash
+# Create merged JSON with desired values
+rtm sync resolve conflict_abc123 \
+  --strategy manual \
+  --data '{
+    "title": "User Authentication and Login Module",
+    "status": "in_review",
+    "priority": "high",
+    "description": "Combined from both versions..."
+  }'
+```
+
+**TUI:**
+- Select conflict
+- Press `M` or click "Merge Manually"
+- Edit merged version in text editor
+- Save and confirm
+
+**Result:**
+- New version created (version number incremented)
+- Combines selected fields from both
+- Both original versions backed up
+
+---
+
+### Step 5: Verify Resolution
+
+After resolving, confirm the conflict is gone.
+
+**CLI:**
+```bash
+# Check remaining conflicts
+rtm sync conflicts
+
+# Should show one less conflict
+# Or: "No unresolved conflicts"
+```
+
+**TUI:**
+- Conflict count updates
+- Resolved conflict removed from list
+- Sync status returns to normal
+
+---
+
+## Using the TUI Conflict Panel
+
+### Activating the Panel
+
+**Automatic:**
+- Appears during sync when conflicts detected
+- Modal overlay with conflict summary
+
+**Manual:**
+- Press `Shift+C` in dashboard
+- Navigate to Settings → Sync → View Conflicts
+
+### Panel Layout
+
+```
+┌─────────────────────────────────────────────────┐
+│              ⚠ Sync Conflicts Detected          │ ← Title bar
+├─────────────────────────────────────────────────┤
+│ Conflict List (upper half)                      │
+│ - Table view of all conflicts                   │ ← Conflict list
+│ - Sortable by type, date                        │
+│ - Row selection                                 │
+├─────────────────────────────────────────────────┤
+│ Conflict Details (lower half)                   │
+│ - Local vs Remote comparison                    │ ← Detail pane
+│ - Field differences highlighted                 │
+│ - Timestamps and version info                   │
+├─────────────────────────────────────────────────┤
+│ [Use Local] [Use Remote] [Merge] [Close]        │ ← Action buttons
+└─────────────────────────────────────────────────┘
+```
+
+### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `↑`/`↓` | Navigate conflict list |
+| `Enter` | View conflict details |
+| `L` | Resolve using local version |
+| `R` | Resolve using remote version |
+| `M` | Manually merge |
+| `Esc` | Close panel |
+| `?` | Show help |
+
+### Visual Indicators
+
+**Color Coding:**
+- **Local version**: Cyan/Blue
+- **Remote version**: Yellow/Orange
+- **Modified fields**: Highlighted
+- **Unchanged fields**: Dim/Gray
+
+**Status Icons:**
+- `⚠` Unresolved conflict
+- `✓` Auto-resolved
+- `✎` Manually resolved
+- `⏳` Resolution in progress
+
+---
+
+## CLI Commands for Conflict Resolution
+
+### List Conflicts
+
+```bash
+# All conflicts
+rtm sync conflicts
+
+# Filter by entity type
+rtm sync conflicts --type item
+rtm sync conflicts --type project
+rtm sync conflicts --type link
+```
+
+### View Conflict Details
+
+```bash
+# Show specific conflict
+rtm sync conflicts show <conflict_id>
+
+# With detailed diff
+rtm sync conflicts show <conflict_id> --diff
+```
+
+### Resolve Single Conflict
+
+```bash
+# Last write wins
+rtm sync resolve <conflict_id> --strategy last_write_wins
+
+# Local wins
+rtm sync resolve <conflict_id> --strategy local_wins
+
+# Remote wins
+rtm sync resolve <conflict_id> --strategy remote_wins
+
+# Manual merge
+rtm sync resolve <conflict_id> \
+  --strategy manual \
+  --data '{"field": "value"}'
+```
+
+### Batch Resolution
+
+```bash
+# Resolve all conflicts with same strategy
+rtm sync resolve-all --strategy last_write_wins
+
+# Resolve all for specific type
+rtm sync resolve-all --type item --strategy local_wins
+```
+
+### View Resolution History
+
+```bash
+# Show resolved conflicts
+rtm sync conflicts --resolved
+
+# Show conflict statistics
+rtm sync conflicts --stats
+```
+
+---
+
+## Prevention Best Practices
+
+### 1. Sync Frequently
+
+**Recommendation:** Sync every 30-60 minutes during active work.
+
+```bash
+# Quick sync
+rtm sync
+
+# Automated sync (cron)
+*/30 * * * * rtm sync --quiet
+```
+
+**Benefits:**
+- Smaller change sets
+- Fewer concurrent edits
+- Easier conflict resolution
+
+### 2. Communicate with Team
+
+**Team Workflows:**
+
+- **Assign ownership**: Different team members work on different modules
+- **Lock system**: Signal when editing critical items (future feature)
+- **Change notifications**: Subscribe to item updates
+
+**Example Communication:**
+```
+Team Chat:
+Alice: "Working on REQ-001 to REQ-010, syncing at 2pm"
+Bob:   "Got it, I'll work on REQ-020-030"
+```
+
+### 3. Use Branches/Projects
+
+**Isolate Work:**
+
+- Create separate projects for experimental work
+- Use project-level permissions
+- Merge projects when ready
+
+```bash
+# Work in isolated project
+rtm project create "alice-feature-branch"
+rtm sync --project alice-feature-branch
+
+# Merge when complete (future)
+rtm project merge alice-feature-branch main-project
+```
+
+### 4. Review Before Sync
+
+**Pre-Sync Checklist:**
+
+```bash
+# 1. Check local changes
+rtm sync status
+
+# 2. Review pending changes
+rtm sync queue
+
+# 3. Sync during low-activity time
+rtm sync
+```
+
+### 5. Configure Appropriate Strategy
+
+**Choose Based on Use Case:**
+
+| Scenario | Strategy | Reason |
+|----------|----------|--------|
+| Solo developer | `last_write_wins` | Simple, fast |
+| Read-only client | `remote_wins` | Server is truth |
+| Offline-first work | `local_wins` | Preserve local |
+| Team collaboration | `manual` | Review needed |
+
+```bash
+# Set strategy
+rtm config set sync_conflict_strategy manual
+```
+
+---
+
+## Team Collaboration Patterns
+
+### Pattern 1: Module Ownership
+
+**Strategy:** Assign modules to specific team members.
+
+```
+Alice → Requirements (REQ-*)
+Bob   → Test Cases (TEST-*)
+Carol → Design (DES-*)
+```
+
+**Conflict Reduction:** ~90%
+
+### Pattern 2: Time-Boxing
+
+**Strategy:** Designate edit windows.
+
+```
+Morning (9-12):  Alice edits, Bob reviews
+Afternoon (1-4): Bob edits, Alice reviews
+```
+
+**Conflict Reduction:** ~80%
+
+### Pattern 3: Sync Coordination
+
+**Strategy:** Scheduled team syncs.
+
+```
+10:00 AM - Team sync point
+12:00 PM - Team sync point
+3:00 PM  - Team sync point
+5:00 PM  - End-of-day sync
+```
+
+**Benefits:**
+- Known merge points
+- Time to resolve conflicts together
+- Clean state at end of day
+
+### Pattern 4: Offline Coordination
+
+**Strategy:** Plan offline work in advance.
+
+```
+Before Field Trip:
+1. Full sync
+2. Assign sections to each member
+3. Document ownership
+4. Set next sync time
+
+After Field Trip:
+1. Review conflicts together
+2. Resolve as team
+3. Verify all changes merged
+```
+
+---
+
+## Troubleshooting
+
+### Conflict Not Showing in List
+
+**Symptoms:**
+- Sync reports conflict
+- `rtm sync conflicts` shows nothing
+
+**Solutions:**
+
+1. **Refresh conflict list:**
+```bash
+rtm sync status
+rtm sync conflicts --refresh
+```
+
+2. **Check filter settings:**
+```bash
+# Ensure not filtered by type
+rtm sync conflicts --all
+```
+
+3. **Database sync issue:**
+```bash
+# Re-initialize conflicts table
+rtm db migrate conflicts
+```
+
+---
+
+### Cannot Resolve Conflict
+
+**Symptoms:**
+- Resolution command fails
+- Error: "Conflict not found"
+
+**Solutions:**
+
+1. **Verify conflict ID:**
+```bash
+# Copy exact ID from list
+rtm sync conflicts
+rtm sync resolve <exact-id>
+```
+
+2. **Check conflict status:**
+```bash
+# May already be resolved
+rtm sync conflicts --resolved | grep <conflict-id>
+```
+
+3. **Force refresh:**
+```bash
+rtm sync pull
+rtm sync conflicts
+```
+
+---
+
+### Conflicts Keep Reappearing
+
+**Symptoms:**
+- Resolve conflict
+- Sync again
+- Same conflict returns
+
+**Causes:**
+
+1. **Network issue during resolution:**
+```bash
+# Check connectivity
+rtm sync status
+
+# Force upload resolution
+rtm sync push --force
+```
+
+2. **Other client not syncing:**
+- Ensure all clients sync
+- Check other client's queue
+
+3. **Server-side issue:**
+```bash
+# Full re-sync
+rtm sync pull --full
+```
+
+---
+
+### Too Many Conflicts
+
+**Symptoms:**
+- 10+ conflicts after sync
+- Overwhelmed by resolution
+
+**Solutions:**
+
+1. **Batch resolve by strategy:**
+```bash
+# Auto-resolve simple conflicts
+rtm sync resolve-all --strategy last_write_wins --auto-confirm
+
+# Then manually review remaining
+rtm sync conflicts
+```
+
+2. **Resolve by entity type:**
+```bash
+# Items first
+rtm sync resolve-all --type item --strategy local_wins
+
+# Then projects
+rtm sync resolve-all --type project --strategy manual
+```
+
+3. **Use backup and reset:**
+```bash
+# Backup current state
+rtm backup create "before-conflict-resolution"
+
+# Reset to remote state
+rtm sync pull --overwrite-local
+
+# Manually re-apply critical local changes
+```
+
+---
+
+### Merge Data Format Issues
+
+**Symptoms:**
+- Manual merge fails
+- Error: "Invalid JSON"
+
+**Solutions:**
+
+1. **Validate JSON:**
+```bash
+# Use JSON validator
+echo '{"field": "value"}' | jq .
+
+# Then pass to resolve
+rtm sync resolve <id> --strategy manual --data "$(cat merge.json)"
+```
+
+2. **Use template:**
+```bash
+# Get local version as template
+rtm sync conflicts show <id> --export-local > local.json
+
+# Edit and use
+rtm sync resolve <id> --strategy manual --data "$(cat local.json)"
+```
+
+---
+
+## Advanced Topics
+
+### Conflict Backup Files
+
+**Location:**
+```
+~/.tracertm/conflicts/
+  <entity_type>/
+    <entity_id>_<timestamp>/
+      local.json       # Local version snapshot
+      remote.json      # Remote version snapshot
+      conflict.json    # Conflict metadata
+```
+
+**Metadata Format:**
+```json
+{
+  "conflict_id": "conflict_abc123",
+  "entity_id": "REQ-001",
+  "entity_type": "item",
+  "detected_at": "2024-12-07T10:30:00Z",
+  "local_version": 5,
+  "remote_version": 5
+}
+```
+
+**Restore from Backup:**
+```bash
+# View backup
+cat ~/.tracertm/conflicts/item/REQ-001_20241207_103000/local.json
+
+# Restore if needed
+rtm sync resolve conflict_abc123 \
+  --strategy manual \
+  --data "$(cat ~/.tracertm/conflicts/item/REQ-001_20241207_103000/local.json)"
+```
+
+---
+
+### Vector Clock Mechanics
+
+**Structure:**
+```python
+VectorClock(
+  client_id="alice-laptop",
+  version=5,
+  timestamp="2024-12-07T10:30:00Z",
+  parent_version=4
+)
+```
+
+**Comparison Logic:**
+
+```python
+# Happens-before relationship
+def happens_before(clock_a, clock_b):
+    if clock_a.client_id == clock_b.client_id:
+        return clock_a.version < clock_b.version
+    else:
+        return clock_a.timestamp < clock_b.timestamp
+
+# Concurrent (conflict)
+def is_concurrent(clock_a, clock_b):
+    return not (happens_before(clock_a, clock_b) or
+                happens_before(clock_b, clock_a))
+```
+
+---
+
+### Custom Resolution Strategies
+
+**Future Feature:** Plugin-based custom resolvers.
+
+```python
+# Example custom resolver
+@conflict_resolver("field_priority")
+def resolve_by_priority(conflict):
+    """Prefer changes to high-priority fields."""
+
+    local_data = conflict.local_version.data
+    remote_data = conflict.remote_version.data
+
+    # Define field priorities
+    priorities = {
+        "title": 10,
+        "status": 9,
+        "description": 5,
+        "tags": 1
+    }
+
+    merged = {}
+    for field in set(local_data.keys()) | set(remote_data.keys()):
+        local_val = local_data.get(field)
+        remote_val = remote_data.get(field)
+
+        if local_val == remote_val:
+            merged[field] = local_val
+        else:
+            # Use timestamp for high-priority fields
+            # Use local for low-priority fields
+            if priorities.get(field, 0) >= 8:
+                merged[field] = (remote_val if
+                                conflict.remote_version.timestamp >
+                                conflict.local_version.timestamp
+                                else local_val)
+            else:
+                merged[field] = local_val
+
+    return merged
+```
+
+---
+
+## Summary
+
+**Key Takeaways:**
+
+1. **Conflicts are normal** in offline-first systems
+2. **Automatic strategies** handle most cases efficiently
+3. **Manual resolution** preserves user control for critical data
+4. **Prevention** through sync frequency and coordination reduces conflicts
+5. **TUI and CLI** provide comprehensive conflict management tools
+
+**Recommended Workflow:**
+
+```bash
+# Daily routine
+1. Start day:    rtm sync
+2. Work offline: <make changes>
+3. Before lunch: rtm sync
+4. After lunch:  rtm sync
+5. End of day:   rtm sync && rtm sync conflicts
+
+# Handle conflicts
+6. Review:       rtm sync conflicts
+7. Resolve:      rtm sync resolve <id> --strategy <choice>
+8. Verify:       rtm sync status
+```
+
+**Need Help?**
+
+- TUI: Press `?` in conflict panel for quick reference
+- CLI: `rtm sync --help` for command documentation
+- Logs: `~/.tracertm/logs/sync.log` for debugging
+
+---
+
+## See Also
+
+- [Sync Guide](/docs/wiki/guides/sync) - Full synchronization documentation
+- [TUI Guide](/docs/wiki/guides/tui-guide) - TUI interface details
+- [Backup & Restore](/docs/wiki/guides/backup-restore) - Data recovery
+- [Team Collaboration](/docs/wiki/guides/collaboration) - Multi-user patterns

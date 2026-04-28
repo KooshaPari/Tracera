@@ -1,0 +1,185 @@
+name: Parallel Test Execution
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Test parallel matrix with dynamic configuration
+  parallel-tests:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest-8-cores # Use 8-core runners for better parallelism
+
+    strategy:
+      fail-fast: false # Continue running if one group fails
+      matrix:
+        # Execution groups with parallel runs
+        test-group:
+          - name: "Database Tier"
+            processes: ["database integration", "service layer", "data access"]
+            parallel-count: 2
+            matrix-index: [1, 2]
+          - name: "API Integration Tier"
+            processes: ["api endpoints", "auth service", "business logic"]
+            parallel-count: 3
+            matrix-index: [1, 2, 3]
+          - name: "External Services Tier"
+            processes: ["external services", "api client", "payment gateway"]
+            parallel-count: 2
+            matrix-index: [1, 2]
+          - name: "Unit Test Tier"
+            processes: ["unit tests", "utility tests", "validation", "crypto"]
+            parallel-count: 3
+            matrix-index: [1, 2, 3]
+          - name: "End-to-End Tier"
+            processes: ["e2e tests", "user flows", "admin dashboard"]
+            parallel-count: 1
+            matrix-index: 1
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Configure pheno-sdk deploy key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.PHENO_SDK_DEPLOY_KEY }}" > ~/.ssh/privSSH
+        chmod 600 ~/.ssh/privSSH
+
+    - name: Install pheno-sdk package
+      env:
+        PHENO_SDK_SSH_KEY: ~/.ssh/privSSH
+        PHENO_SDK_REF: ${{ vars.PHENO_SDK_REF || 'main' }}
+      run: scripts/install_pheno_sdk.sh --upgrade
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-xdist pytest-asyncio pytest-benchmark
+
+    - name: Run parallel tests by group
+      run: |
+        # Dynamic test execution strategy based on group
+        case "${ matrix.test-group.name }" in
+          "Database Tier")
+            if [ "${ matrix.matrix-index }" = "1" ]; then
+              pytest tests/database_integration.py tests/test_services.py -n 2 -v --db-tests=1
+            else
+              pytest tests/database_integration.py tests/test_services.py -n 2 -v --db-tests=2
+            fi
+            ;;
+          "API Integration Tier")
+            if [ "${ matrix.matrix-index }" = "1" ]; then
+              pytest tests/test_api_endpoints.py tests/test_auth.py -n 2 -v
+            elif [ "${ matrix.matrix-index }" = "2" ]; then
+              pytest tests/test_business_logic.py tests/validation/ -n 2 -v
+            else
+              pytest tests/api_integration/ -n 2 -v
+            fi
+            ;;
+          "External Services Tier")
+            if [ "${ matrix.matrix-index }" = "1" ]; then
+              pytest tests/external_services/ -n 2 -v
+            else
+              pytest tests/test_payment_gateway.py tests/test_email_cms.py -n 2 -v
+            fi
+            ;;
+          "Unit Test Tier")
+            if [ "${ matrix.matrix-index }" = "1" ]; then
+              pytest tests/unit/ tests/test_crypto.py -n 3 -v
+            elif [ "${ matrix.matrix-index }" = "2" ]; then
+              pytest tests/utils/ tests/test_validation.py -n 3 -v
+            else
+              pytest tests/services/ -n 3 -v --unit-tests
+            fi
+            ;;
+          "End-to-End Tier")
+            pytest tests/e2e/ tests/test_user_flows.py -v
+            ;;
+        esac
+      timeout-minutes: 8
+
+    - name: Generate parallel test report
+      if: always()
+      run: |
+        python -m pytest --json-report
+      continue-on-error: true
+
+    - name: Aggregate coverage reports
+      if: always()
+      run: |
+        python -m coverage combine
+        python -m coverage xml
+      continue-on-error: true
+
+  # Sequential end-to-end validation (runs after all parallel jobs)
+  e2e-validation:
+    needs: parallel-tests
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Configure pheno-sdk deploy key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.PHENO_SDK_DEPLOY_KEY }}" > ~/.ssh/privSSH
+        chmod 600 ~/.ssh/privSSH
+
+    - name: Install pheno-sdk package
+      env:
+        PHENO_SDK_SSH_KEY: ~/.ssh/privSSH
+        PHENO_SDK_REF: ${{ vars.PHENO_SDK_REF || 'main' }}
+      run: scripts/install_pheno_sdk.sh --upgrade
+
+    - name: Run comprehensive E2E validation
+      run: |
+        pytest tests/e2e/comprehensive/ -v
+      timeout-minutes: 5
+
+  # Performance monitoring
+  performance-analysis:
+    needs: parallel-tests
+    timeout-minutes: 3
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Generate performance metrics
+      run: |
+        python scripts/performance_analyzer.py --analyze-parallel-tests
+      continue-on-error: true
+
+  # Success summary
+  test-summary:
+    needs: [parallel-tests, e2e-validation, performance-analysis]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+    - name: Generate test execution summary
+      run: |
+        python scripts/parallel_test_summary_report.py
+
+    - name: Upload summary artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: parallel-test-summary-$(date +%Y%m%d-%H%M%S)
+        path: reports/parallel-execution-summary.md
+        retention-days: 30

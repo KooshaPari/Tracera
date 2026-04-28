@@ -1,0 +1,10 @@
+{
+  "title": "API Documentation",
+  "pages": [
+    "index",
+    "authentication",
+    "webhooks",
+    "rest-api",
+    "schemas"
+  ]
+}

@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/widgets/conflict_panel.py
+# hypothesis_version: 6.148.7
+
+['#conflicts-table', '#detail-content', '%Y-%m-%d %H:%M', '...', 'Close', 'Close [ESC]', 'Conflict Details:', 'Detected', 'ID', 'Local', 'Merge Manually', 'Merge Manually [M]', 'Remote', 'Type', 'Use Local', 'Use Local [L]', 'Use Remote', 'Use Remote [R]', 'actions', 'added', 'btn-close', 'btn-local', 'btn-manual', 'btn-remote', 'close', 'conflict-detail', 'conflict-list', 'conflict-title', 'conflicts-table', 'default', 'detail-content', 'detail-title', 'escape', 'l', 'local', 'm', 'manual', 'modified', 'primary', 'r', 'remote', 'removed', 'resolve_local', 'resolve_manual', 'resolve_remote', 'success', 'warning']

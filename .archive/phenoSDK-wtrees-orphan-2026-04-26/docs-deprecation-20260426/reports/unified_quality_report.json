@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "analysis_date": "2025-10-14T03:38:16.065507",
+    "total_duration_seconds": 96.85119104385376,
+    "total_tools": 8,
+    "successful_tools": 4,
+    "failed_tools": 4
+  },
+  "summary": {
+    "total_violations": 77932,
+    "total_warnings": 0,
+    "total_errors": 4,
+    "quality_score": 66.0,
+    "severity_breakdown": {
+      "medium": 97683,
+      "high": 15373,
+      "low": 49968
+    }
+  },
+  "tool_reports": {
+    "atlas_health": {
+      "status": "execution_error",
+      "violations": 0,
+      "warnings": 0,
+      "errors": 1,
+      "duration": 0.07938385009765625
+    },
+    "pattern_detection": {
+      "status": "execution_error",
+      "violations": 0,
+      "warnings": 0,
+      "errors": 1,
+      "duration": 0.07131385803222656
+    },
+    "architectural_validation": {
+      "status": "success",
+      "violations": 0,
+      "warnings": 0,
+      "errors": 0,
+      "duration": 26.48137092590332
+    },
+    "performance_anti_patterns": {
+      "status": "success",
+      "violations": 0,
+      "warnings": 0,
+      "errors": 0,
+      "duration": 11.357574939727783
+    },
+    "security_scanning": {
+      "status": "execution_error",
+      "violations": 0,
+      "warnings": 0,
+      "errors": 1,
+      "duration": 0.07907295227050781
+    },
+    "code_smell_detection": {
+      "status": "success",
+      "violations": 0,
+      "warnings": 0,
+      "errors": 0,
+      "duration": 37.204972982406616
+    },
+    "integration_gates": {
+      "status": "success",
+      "violations": 77932,
+      "warnings": 0,
+      "errors": 0,
+      "duration": 19.70081090927124
+    },
+    "legacy_scanner": {
+      "status": "execution_error",
+      "violations": 0,
+      "warnings": 0,
+      "errors": 1,
+      "duration": 0.0893850326538086
+    }
+  },
+  "recommendations": [
+    "\ud83d\udea8 Critical: Fix all errors immediately - they may cause system failures",
+    "\u26a0\ufe0f High: 77932 violations exceed threshold (100) - prioritize fixing high-severity issues",
+    "\ud83d\udd27 Consider refactoring large functions and classes to reduce complexity"
+  ],
+  "thresholds": {
+    "max_violations": 100,
+    "max_warnings": 200,
+    "max_errors": 50,
+    "max_duration_minutes": 30
+  },
+  "quality_status": "CRITICAL"
+}

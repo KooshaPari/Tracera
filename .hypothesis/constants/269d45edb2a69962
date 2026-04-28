@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/github_app_installation.py
+# hypothesis_version: 6.151.4
+
+[255, 'Account', 'CASCADE', 'account_id', 'accounts.id', 'all', 'installation_id']

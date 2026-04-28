@@ -1,0 +1,107 @@
+---
+title: "CLI Troubleshooting"
+description: "Common CLI issues and solutions"
+keywords: [cli, troubleshooting, errors, problems, solutions]
+---
+
+# CLI Troubleshooting
+
+Common issues and solutions for the TraceRTM CLI.
+
+## Command Not Found
+
+### Problem
+
+```bash
+$ trace --version
+command not found: trace
+```
+
+### Solutions
+
+**macOS/Linux**:
+```bash
+# Check installation
+pip3 show tracertm-cli
+
+# Add to PATH
+export PATH="$HOME/.local/bin:$PATH"
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+
+# Or use python -m
+python3 -m tracertm --version
+```
+
+**Windows**:
+```powershell
+# Add Python Scripts to PATH
+$env:Path += ";$env:USERPROFILE\AppData\Roaming\Python\Python312\Scripts"
+```
+
+## Authentication Errors
+
+### Problem
+
+```bash
+$ trace project list
+Error: Authentication required
+```
+
+### Solutions
+
+```bash
+# Set API key
+trace config set api-key rtm_live_abc123...
+
+# Or use environment variable
+export TRACERTM_API_KEY="rtm_live_abc123..."
+
+# Verify
+trace health
+```
+
+## Connection Errors
+
+### Problem
+
+```bash
+Error: Failed to connect to API
+```
+
+### Solutions
+
+```bash
+# Check API URL
+trace config get api-url
+
+# Update if needed
+trace config set api-url https://api.tracertm.dev
+
+# Test connection
+trace health
+```
+
+## Permission Errors
+
+### Problem
+
+```bash
+PermissionError: [Errno 13] Permission denied
+```
+
+### Solutions
+
+```bash
+# Use --user flag
+pip3 install --user tracertm-cli
+
+# Or use virtual environment
+python3 -m venv venv
+source venv/bin/activate
+pip install tracertm-cli
+```
+
+## Related Documentation
+
+- [Common Errors](./06a-common-errors) - More error solutions
+- [Debug Mode](./06b-debug-mode) - Enable debug logging

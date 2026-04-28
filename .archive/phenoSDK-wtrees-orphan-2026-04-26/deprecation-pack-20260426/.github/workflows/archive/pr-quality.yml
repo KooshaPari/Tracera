@@ -1,0 +1,133 @@
+name: PR Quality Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: ["**"]
+
+concurrency:
+  group: pr-quality-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quick Lint & Format
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify documentation fingerprints
+        run: python scripts/checks/verify_pheno_docs.py
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-pheno-sdk
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install linting tools
+        run: |
+          python -m pip install -U pip
+          pip install ruff black isort
+
+      - name: Run ruff (fast linter)
+        run: |
+          ruff check . --exit-zero
+
+      - name: Check formatting with black
+        run: |
+          black --check .
+        continue-on-error: true
+
+      - name: Check import sorting with isort
+        run: |
+          isort --check-only . --profile black
+        continue-on-error: true
+
+  changed-files:
+    name: Analyze Changed Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+        with:
+          files: |
+            **/*.py
+            **/requirements*.txt
+            **/pyproject.toml
+
+      - name: List changed Python files
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "Changed Python-related files:"
+          echo "${{ steps.changed-files.outputs.all_changed_files }}"
+
+      - name: Check changed kits
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "Identifying affected kits..."
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            kit=$(echo "$file" | cut -d'/' -f1)
+            if [[ "$kit" == *-kit ]] || [[ "$kit" == "mcp-QA" ]] || [[ "$kit" == "pydevkit" ]]; then
+              echo "  • $kit"
+            fi
+          done | sort -u
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install security tools
+        run: |
+          python -m pip install -U pip
+          pip install bandit[toml] safety
+
+      - name: Run bandit security scan
+        run: |
+          bandit -r . -ll -f json -o bandit-report.json || true
+          bandit -r . -ll || true
+        continue-on-error: true
+
+      - name: Check dependencies for known vulnerabilities
+        run: |
+          # Check each kit's dependencies
+          for kit in *-kit mcp-QA pydevkit; do
+            if [ -d "$kit" ] && [ -f "$kit/requirements.txt" ]; then
+              echo "Checking $kit for vulnerabilities..."
+              safety check -r "$kit/requirements.txt" --json || true
+            fi
+          done
+        continue-on-error: true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json

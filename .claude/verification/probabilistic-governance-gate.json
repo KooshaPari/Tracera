@@ -1,0 +1,10 @@
+{
+  "generated_at": "2026-02-14T08:56:02Z",
+  "enabled": false,
+  "mode": "brownfield",
+  "tier": "critical",
+  "error_count": 0,
+  "warn_count": 0,
+  "checks": [],
+  "pass": true
+}

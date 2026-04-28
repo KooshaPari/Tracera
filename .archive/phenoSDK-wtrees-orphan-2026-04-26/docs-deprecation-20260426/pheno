@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+"""
+ATOMS-PHENO CLI Tool - Unified Command Line Interface
+"""
+
+import sys
+from pathlib import Path
+
+# Add project root to Python path
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
+
+# Add src to path for pheno modules
+src_path = project_root / "src"
+sys.path.insert(0, str(src_path))
+
+try:
+    from pheno.cli.simple import create_simple_cli
+
+    CLI_AVAILABLE = True
+except ImportError as e:
+    CLI_AVAILABLE = False
+    print(f"Error: CLI framework not available: {e}")
+
+
+def main():
+    """
+    Main CLI entry point.
+    """
+    if not CLI_AVAILABLE:
+        print("Error: Unified CLI framework not available")
+        return 1
+
+    # Use simple CLI
+    return create_simple_cli(project_path=project_root)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

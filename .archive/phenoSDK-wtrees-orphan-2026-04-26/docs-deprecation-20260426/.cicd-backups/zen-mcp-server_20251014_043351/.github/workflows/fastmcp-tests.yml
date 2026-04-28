@@ -1,0 +1,48 @@
+name: FastMCP unit/integration tests
+
+on:
+  push:
+    paths:
+      - '**'
+      - '.github/workflows/fastmcp-tests.yml'
+  pull_request:
+    paths:
+      - '**'
+      - '.github/workflows/fastmcp-tests.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout pheno-sdk
+        uses: actions/checkout@v4
+        with:
+          repository: kooshapari/pheno-sdk
+          path: ../pheno-sdk
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Verify pheno-sdk availability
+        env:
+          ZEN_REQUIRE_PHENO: "1"
+        run: |
+          python verify_pheno_imports.py
+
+      - name: Run FastMCP tests
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+          PYTHONPATH: "../pheno-sdk/src:${{ env.PYTHONPATH }}"
+          ZEN_REQUIRE_PHENO: "1"
+        run: |
+          make -C zen-mcp-server unit-fastmcp

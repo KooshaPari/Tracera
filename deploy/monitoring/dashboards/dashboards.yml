@@ -1,0 +1,13 @@
+apiVersion: 1
+
+providers:
+  - name: 'TracerTM Dashboards'
+    orgId: 1
+    folder: ''
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      # Path relative to process working_dir (repo root)
+      path: monitoring/dashboards

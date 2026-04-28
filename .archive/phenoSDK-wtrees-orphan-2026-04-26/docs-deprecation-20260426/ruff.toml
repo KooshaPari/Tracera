@@ -1,0 +1,136 @@
+target-version = "py311"
+extend-exclude = ["src", "tests", "test", "examples", "scripts", "tools",
+    "pheno-sdk",
+    "zen-mcp-server",
+    "morph",
+    "m-test",
+    "example",
+    "htmlcov",
+    ".venv",
+    "__pycache__",
+    "*.egg-info",
+    "build",
+    "dist",
+]
+
+[lint]
+# Enable all core rules from the "pandas" rule set
+select = [
+    # --- Core Quality Rules ---
+    "E",      # pycodestyle errors
+    "F",      # pyflakes
+    "I",      # isort (import sorting)
+    "W",      # pycodestyle warnings
+    
+    # --- Code Structure & Clarity ---
+    "C4",     # comprehensions - rewrite comprehensions as function calls
+    "SIM",    # simplify - simplify code
+    "RET",    # return - check for unnecessary return statements
+    "PL",     # pylint - import and emulate pylint behavior
+    "RUF",    # ruff-specific rules
+    "PIE",    # pie - miscellaneous lint rules
+    "PGH",    # pygrep-hooks - use warn-duplicate-code instead
+    
+    # --- Modern Python Features ---
+    "UP",     # pyupgrade - upgrade Python syntax to newer versions
+    "PYI",    # typing stubs - enforce type annotations in stub files
+    
+    # --- Security & Best Practices ---
+    "S",      # bandit - security checks
+    "B",      # bugbear - find likely bugs and design problems
+    "DTZ",    # datetimez - remove unnecessary datetime calls
+    "DJ",     # django - specific Django rules
+    "FA",     # future-annotations - require annotations for future Python versions
+    "FBT",    # boolean-trap - boolean trap in default arguments
+    
+    # --- Naming Conventions ---
+    "N",      # pep8-naming - enforce PEP 8 naming conventions
+    
+    # --- Quotes & String Handling ---
+    "Q",      # quotes - enforce consistent quotes
+    "ISC",    # implicit string concatenation - check for implicit string concatenation
+    
+    # --- Christmas Tree Rules ---
+    "COM",    # commas - enforce trailing comma conventions
+    
+    # --- Additional Modern Rules ---
+    "INT",    # gettext - require translations
+    "PTH",    # use-pathlib - use pathlib where appropriate
+    "TRY",    # tryceratops - try/except warnings
+    "PERF",   # perflint - performance anti-patterns
+    "LOG",    # flake8-logging - check for good logging practices
+    "FLY",    # flynt - use f-strings instead of .format() calls
+    "RSE",    # raise - check for unnecessary raise statements
+    "SLF",    # self - "private" member access
+    "TCH",    # type-checking - type check imports
+    "TD",     # deprecated & removed 2024.2.0
+    "T10",    # debugger - remove debugger calls
+]
+
+ignore = ["E203", "N806", "E302", "E303", "E305", "E401", "E402", "E501", "E701", "E702", "E711", "E721", "E731", "E741", "F401", "F811", "F821", "F822", "F823", "F841", "PTH123", "SIM102", "TRY300", "PLC0415", "FBT001", "S101", "PGH003", "TRY003", "PERF401", "PLR2004", "DTZ005", "W293", "FBT002", "S607", "FBT003", "S110", "RUF013", "S603", "TRY400", "B904", "PTH118", "PTH110", "PERF102", "B008", "PTH112", "PTH103", "B007", "S311", "E722", "RUF001", "PTH113", "SLF001", "SIM118", "SIM101", "S324", "S112", "PTH120", "PLE1142", "I001", "TRY301", "S314", "PIE810", "DTZ006", "SIM117", "SIM115", "SIM110", "S602", "S310", "S202", "PTH109", "PLR0915", "PLR0913", "PLC0207", "C416", "C401", "W291", "UP035", "UP007", "TRY004", "TC003", "SIM108", "SIM105", "SIM103", "S608", "RUF100", "RUF012", "RUF006", "RUF005", "RET504", "PTH204", "PTH108", "PTH101", "PLW2901", "PLW0603", "PLR0912", "PLR0911", "LOG015", "C414", "E402", "F401", "F821", "F841", "E731", "N802", "N803", "N801", "N812", "N815"]
+
+# Rule severity configuration - low issues that can be fixed gradually
+
+[format]
+indent-style = "space"
+quote-style = "double"
+skip-magic-trailing-comma = false
+
+# Custom rule severity configuration
+[lint.mccabe]
+max-complexity = 10  # Default complexity threshold
+
+# Configure pyupgrade
+[lint.pyupgrade]
+keep-runtime-typing = false
+
+# Configure flake8-tidy-imports
+[lint.flake8-tidy-imports]
+ban-relative-imports = "parents"
+
+# Configure flake8-quotes
+[lint.flake8-quotes]
+inline-quotes = "double"
+multiline-quotes = "double"
+
+# Configure flake8-import-conventions
+[lint.flake8-import-conventions]
+# prefer-absolute-imports = true  # Not available in current Ruff version
+
+# Configure pylint rules
+[lint.pylint]
+max-args = 7
+max-returns = 6
+max-branches = 15
+max-statements = 50
+max-bool-expr = 5
+
+# Rule customization for different file types
+[lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",     # allow assert in tests
+    "PLR2004", "DTZ005", "W293", "FBT002", "S607", "FBT003", "S110", "RUF013", "S603", "TRY400", "B904", "PTH118", "PTH110", "PERF102", "B008", "PTH112", "PTH103", "B007", "S311", "E722", "RUF001", "PTH113", "SLF001", "SIM118", "SIM101", "S324", "S112", "PTH120", "PLE1142", "I001", "TRY301", "S314", "PIE810", "DTZ006", "SIM117", "SIM115", "SIM110", "S602", "S310", "S202", "PTH109", "PLR0915", "PLR0913", "PLC0207", "C416", "C401", "W291", "UP035", "UP007", "TRY004", "TC003", "SIM108", "SIM105", "SIM103", "S608", "RUF100", "RUF012", "RUF006", "RUF005", "RET504", "PTH204", "PTH108", "PTH101", "PLW2901", "PLW0603", "PLR0912", "PLR0911", "LOG015", "C414",  # allow magic numbers in tests
+    "PT011",    # todo tests
+    "ARG001",   # unused arguments in test functions
+    "ARG002",   # unused arguments in methods
+    "ARG005",   # unused arguments in class methods
+]
+"scripts/**/*.py" = [
+    "T201",     # allow print statements in scripts
+    "T203",     # allow pprint in scripts
+    "S101",     # allow assert in scripts
+]
+"setup.py" = [
+    "T201",     # allow print statements in setup.py
+    "S101",     # allow assert in setup.py
+    "ARG001",   # unused arguments
+]
+"__init__.py" = [
+    "F401",     # allow unused imports in __init__.py
+    "F403",     # allow star imports in __init__.py
+]
+"examples/**/*.py" = [
+    "T201",     # allow print statements in examples
+    "S101",     # allow assert in examples
+    "ARG001",   # unused arguments
+]

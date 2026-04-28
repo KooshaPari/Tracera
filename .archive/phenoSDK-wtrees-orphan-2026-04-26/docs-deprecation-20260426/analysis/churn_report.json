@@ -1,0 +1,369 @@
+{
+  "generated_at": "2025-10-14T10:28:39.711265+00:00",
+  "total_commits": 47,
+  "total_files_changed": 13969,
+  "lines_added": 678913,
+  "lines_deleted": 486183,
+  "top_authors": [
+    {
+      "author": "Koosha Paridehpour",
+      "commits": 36
+    },
+    {
+      "author": "Koosh Pari",
+      "commits": 11
+    }
+  ],
+  "top_files": [
+    {
+      "path": "libraries/nodejs/package-lock.json",
+      "commits": 4,
+      "lines_added": 7418,
+      "lines_deleted": 7418,
+      "total_changes": 14836
+    },
+    {
+      "path": "KInfra/package-lock.json",
+      "commits": 1,
+      "lines_added": 0,
+      "lines_deleted": 7526,
+      "total_changes": 7526
+    },
+    {
+      "path": "package-lock.json",
+      "commits": 1,
+      "lines_added": 7526,
+      "lines_deleted": 0,
+      "total_changes": 7526
+    },
+    {
+      "path": "tools/public_api_inventory.json",
+      "commits": 1,
+      "lines_added": 6822,
+      "lines_deleted": 0,
+      "total_changes": 6822
+    },
+    {
+      "path": "libraries/rust/Cargo.lock",
+      "commits": 3,
+      "lines_added": 3283,
+      "lines_deleted": 3283,
+      "total_changes": 6566
+    },
+    {
+      "path": "mcp-QA/mcp_qa/tui/dashboard.py",
+      "commits": 5,
+      "lines_added": 3117,
+      "lines_deleted": 3117,
+      "total_changes": 6234
+    },
+    {
+      "path": "tui-kit/TUTORIAL.md",
+      "commits": 2,
+      "lines_added": 2943,
+      "lines_deleted": 2943,
+      "total_changes": 5886
+    },
+    {
+      "path": "tui-kit/API_REFERENCE_COMPLETE.md",
+      "commits": 2,
+      "lines_added": 2472,
+      "lines_deleted": 2472,
+      "total_changes": 4944
+    },
+    {
+      "path": "archive/GCP_PROVIDER_SPECIFICATION.md",
+      "commits": 2,
+      "lines_added": 2470,
+      "lines_deleted": 2470,
+      "total_changes": 4940
+    },
+    {
+      "path": "archive/VERCEL_PROVIDER_SPECIFICATION.md",
+      "commits": 2,
+      "lines_added": 2235,
+      "lines_deleted": 2235,
+      "total_changes": 4470
+    },
+    {
+      "path": "archive/PLANETSCALE_IMPLEMENTATION_SPEC.md",
+      "commits": 2,
+      "lines_added": 2104,
+      "lines_deleted": 2104,
+      "total_changes": 4208
+    },
+    {
+      "path": "archive/NEON_PROVIDER_SPECIFICATION.md",
+      "commits": 2,
+      "lines_added": 2057,
+      "lines_deleted": 2057,
+      "total_changes": 4114
+    },
+    {
+      "path": "mcp-sdk-kit/mcp_sdk/resources/project_graph.py",
+      "commits": 2,
+      "lines_added": 2001,
+      "lines_deleted": 2001,
+      "total_changes": 4002
+    },
+    {
+      "path": "archive/AZURE_PROVIDER_SPECIFICATION.md",
+      "commits": 2,
+      "lines_added": 1818,
+      "lines_deleted": 1818,
+      "total_changes": 3636
+    },
+    {
+      "path": "tui-kit/PLUGIN_DEVELOPMENT_GUIDE.md",
+      "commits": 2,
+      "lines_added": 1791,
+      "lines_deleted": 1791,
+      "total_changes": 3582
+    },
+    {
+      "path": "mcp-QA/mcp_qa/tui/widgets.py",
+      "commits": 3,
+      "lines_added": 1706,
+      "lines_deleted": 1706,
+      "total_changes": 3412
+    },
+    {
+      "path": "src/pheno/ui/tui/core/theming.py",
+      "commits": 3,
+      "lines_added": 1631,
+      "lines_deleted": 1631,
+      "total_changes": 3262
+    },
+    {
+      "path": "tui-kit/tui_kit/core/reactive.py",
+      "commits": 3,
+      "lines_added": 1622,
+      "lines_deleted": 1622,
+      "total_changes": 3244
+    },
+    {
+      "path": "src/pheno/ui/tui/core/reactive.py",
+      "commits": 2,
+      "lines_added": 1784,
+      "lines_deleted": 1271,
+      "total_changes": 3055
+    },
+    {
+      "path": "libraries/rust/go/README.md",
+      "commits": 2,
+      "lines_added": 1524,
+      "lines_deleted": 1524,
+      "total_changes": 3048
+    },
+    {
+      "path": "tui-kit/tui_kit/core/theming.py",
+      "commits": 3,
+      "lines_added": 1482,
+      "lines_deleted": 1482,
+      "total_changes": 2964
+    },
+    {
+      "path": "libraries/rust/nodejs/README.md",
+      "commits": 2,
+      "lines_added": 1452,
+      "lines_deleted": 1452,
+      "total_changes": 2904
+    },
+    {
+      "path": "tui-kit/ACCESSIBILITY_GUIDE.md",
+      "commits": 2,
+      "lines_added": 1408,
+      "lines_deleted": 1408,
+      "total_changes": 2816
+    },
+    {
+      "path": "archive/FLY_IO_IMPLEMENTATION_SPEC.md",
+      "commits": 2,
+      "lines_added": 1396,
+      "lines_deleted": 1396,
+      "total_changes": 2792
+    },
+    {
+      "path": "BLUEPRINT.md",
+      "commits": 1,
+      "lines_added": 2693,
+      "lines_deleted": 0,
+      "total_changes": 2693
+    },
+    {
+      "path": "tui-kit/tui_kit/widgets/resource_status_enhanced.py",
+      "commits": 3,
+      "lines_added": 1331,
+      "lines_deleted": 1331,
+      "total_changes": 2662
+    },
+    {
+      "path": "tui-kit/tui_kit/core/plugins.py",
+      "commits": 3,
+      "lines_added": 1272,
+      "lines_deleted": 1272,
+      "total_changes": 2544
+    },
+    {
+      "path": "tui-kit/tui_kit/core/config.py",
+      "commits": 4,
+      "lines_added": 1240,
+      "lines_deleted": 1240,
+      "total_changes": 2480
+    },
+    {
+      "path": "libraries/nodejs/TESTING_STRATEGY_COMPREHENSIVE.md",
+      "commits": 2,
+      "lines_added": 1240,
+      "lines_deleted": 1240,
+      "total_changes": 2480
+    },
+    {
+      "path": "tui-kit/ARCHITECTURE.md",
+      "commits": 2,
+      "lines_added": 1236,
+      "lines_deleted": 1236,
+      "total_changes": 2472
+    },
+    {
+      "path": "src/pheno/ui/tui/widgets/resource_status_enhanced.py",
+      "commits": 2,
+      "lines_added": 1235,
+      "lines_deleted": 1235,
+      "total_changes": 2470
+    },
+    {
+      "path": "tui-kit/WIDGET_API_REFERENCE.md",
+      "commits": 2,
+      "lines_added": 1228,
+      "lines_deleted": 1228,
+      "total_changes": 2456
+    },
+    {
+      "path": "tui-kit/tui_kit/core/components.py",
+      "commits": 3,
+      "lines_added": 1226,
+      "lines_deleted": 1226,
+      "total_changes": 2452
+    },
+    {
+      "path": "src/pheno/ui/tui/core/plugins.py",
+      "commits": 2,
+      "lines_added": 1204,
+      "lines_deleted": 1204,
+      "total_changes": 2408
+    },
+    {
+      "path": "libraries/rust/python/README.md",
+      "commits": 2,
+      "lines_added": 1170,
+      "lines_deleted": 1170,
+      "total_changes": 2340
+    },
+    {
+      "path": "libraries/rust/SNIPPETS.md",
+      "commits": 2,
+      "lines_added": 1155,
+      "lines_deleted": 1155,
+      "total_changes": 2310
+    },
+    {
+      "path": "src/pheno/ui/tui/core/events.py",
+      "commits": 2,
+      "lines_added": 1380,
+      "lines_deleted": 920,
+      "total_changes": 2300
+    },
+    {
+      "path": "src/pheno/ui/tui/core/components.py",
+      "commits": 2,
+      "lines_added": 1144,
+      "lines_deleted": 1144,
+      "total_changes": 2288
+    },
+    {
+      "path": "libraries/python/kinfra/service_manager.py",
+      "commits": 2,
+      "lines_added": 1142,
+      "lines_deleted": 1142,
+      "total_changes": 2284
+    },
+    {
+      "path": "libraries/rust/src/lib.rs",
+      "commits": 3,
+      "lines_added": 1134,
+      "lines_deleted": 1134,
+      "total_changes": 2268
+    },
+    {
+      "path": "mcp-QA/mcp_qa/oauth/credential_broker.py",
+      "commits": 4,
+      "lines_added": 1108,
+      "lines_deleted": 1108,
+      "total_changes": 2216
+    },
+    {
+      "path": "tui-kit/tests/test_events.py",
+      "commits": 3,
+      "lines_added": 1103,
+      "lines_deleted": 1103,
+      "total_changes": 2206
+    },
+    {
+      "path": "libraries/python/kinfra/tunnel_sync.py",
+      "commits": 2,
+      "lines_added": 1098,
+      "lines_deleted": 1098,
+      "total_changes": 2196
+    },
+    {
+      "path": "tui-kit/tui_kit/core/events.py",
+      "commits": 3,
+      "lines_added": 1082,
+      "lines_deleted": 1082,
+      "total_changes": 2164
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "commits": 2,
+      "lines_added": 2119,
+      "lines_deleted": 0,
+      "total_changes": 2119
+    },
+    {
+      "path": "tui-kit/PROTOCOL_GUIDE.md",
+      "commits": 2,
+      "lines_added": 1053,
+      "lines_deleted": 1053,
+      "total_changes": 2106
+    },
+    {
+      "path": "docs/guides/testing.md",
+      "commits": 2,
+      "lines_added": 2093,
+      "lines_deleted": 0,
+      "total_changes": 2093
+    },
+    {
+      "path": "tui-kit/tests/test_components.py",
+      "commits": 3,
+      "lines_added": 1027,
+      "lines_deleted": 1027,
+      "total_changes": 2054
+    },
+    {
+      "path": "libraries/rust/target/doc/src/tunnel_manager/lib.rs.html",
+      "commits": 2,
+      "lines_added": 1015,
+      "lines_deleted": 1015,
+      "total_changes": 2030
+    },
+    {
+      "path": "src/pheno/ui/tui/core/config.py",
+      "commits": 2,
+      "lines_added": 1012,
+      "lines_deleted": 991,
+      "total_changes": 2003
+    }
+  ]
+}

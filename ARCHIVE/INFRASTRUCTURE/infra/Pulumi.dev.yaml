@@ -1,0 +1,6 @@
+# Pulumi stack configuration for the dev environment
+# Set your Kubernetes context name here before running `pulumi up`.
+
+config:
+  kubernetes:context: dev-tracertm-cluster   # TODO: replace with your dev kube context name
+

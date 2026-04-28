@@ -1,0 +1,692 @@
+---
+title: "Commit Messages"
+description: "Comprehensive guide to writing effective commit messages in TraceRTM"
+---
+
+# Commit Messages
+
+Well-crafted commit messages are essential for maintaining a clear project history, enabling automated changelog generation, and facilitating collaboration. TraceRTM follows the [Conventional Commits](https://www.conventionalcommits.org/) specification.
+
+## Overview
+
+Conventional Commits provide a standardized format that makes commit history machine-readable while remaining human-friendly. This enables:
+
+- **Automated versioning**: Semantic version bumps based on commit types
+- **Changelog generation**: Automatic release notes from commit messages
+- **Easier navigation**: Quickly understand changes without reading code
+- **Better collaboration**: Clear communication of intent to team members
+
+## Commit Message Format
+
+Every commit message must follow this structure:
+
+```
+<type>(<scope>): <subject>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Structure Rules
+
+1. **Header** (required): `<type>(<scope>): <subject>`
+   - Maximum 72 characters
+   - Lowercase type and scope
+   - Imperative mood for subject
+   - No period at the end
+
+2. **Body** (optional):
+   - Separated from header by blank line
+   - Wrap at 72 characters
+   - Explain what and why, not how
+   - Can have multiple paragraphs
+
+3. **Footer** (optional):
+   - Separated from body by blank line
+   - Used for breaking changes and issue references
+   - Format: `<token>: <value>` or `<token> #<issue number>`
+
+## Type Prefixes
+
+The type categorizes the nature of the change and determines version bumping:
+
+### Primary Types
+
+| Type | Description | Version Bump | Example Use Case |
+|------|-------------|--------------|------------------|
+| `feat` | New feature | Minor (0.x.0) | Adding new API endpoint |
+| `fix` | Bug fix | Patch (0.0.x) | Fixing broken validation |
+| `docs` | Documentation only | None | Updating README |
+| `style` | Code style changes | None | Formatting, missing semicolons |
+| `refactor` | Code refactoring | None | Restructuring without changing behavior |
+| `perf` | Performance improvement | Patch (0.0.x) | Optimizing database queries |
+| `test` | Adding/updating tests | None | Adding unit tests |
+| `build` | Build system changes | None | Updating dependencies |
+| `ci` | CI/CD changes | None | Updating GitHub Actions |
+| `chore` | Maintenance tasks | None | Updating tooling |
+| `revert` | Reverting previous commit | Varies | Reverting broken feature |
+
+### Type Selection Guidelines
+
+**Use `feat` when:**
+- Adding new user-facing functionality
+- Introducing new API endpoints
+- Implementing new commands or features
+- Adding new configuration options
+
+**Use `fix` when:**
+- Resolving bugs or errors
+- Correcting unexpected behavior
+- Fixing security vulnerabilities
+- Addressing performance issues
+
+**Use `refactor` when:**
+- Improving code structure without changing behavior
+- Extracting methods or classes
+- Renaming variables for clarity
+- Removing dead code
+
+**Use `docs` when:**
+- Only documentation files are changed
+- No code changes are included
+- Updating comments doesn't count (use the appropriate type)
+
+## Scope Conventions
+
+The scope indicates which part of the codebase is affected. Use lowercase and kebab-case.
+
+### TraceRTM Scopes
+
+**Backend:**
+- `api` - API endpoints and routes
+- `cli` - Command-line interface
+- `core` - Core business logic
+- `database` - Database schemas and migrations
+- `models` - Data models and schemas
+- `services` - Service layer logic
+- `repositories` - Data access layer
+- `storage` - File storage and sync
+
+**Frontend:**
+- `web` - Web application
+- `ui` - UI components
+- `views` - View components
+- `stores` - State management
+- `hooks` - React hooks
+
+**Infrastructure:**
+- `docker` - Docker configuration
+- `deployment` - Deployment scripts
+- `monitoring` - Observability and logging
+
+**Testing:**
+- `unit` - Unit tests
+- `integration` - Integration tests
+- `e2e` - End-to-end tests
+
+**Documentation:**
+- `docs-site` - Documentation website
+- `guides` - User guides
+- `api-docs` - API documentation
+
+**Special Scopes:**
+- `deps` - Dependency updates
+- `security` - Security-related changes
+- `*` - Multiple scopes (use sparingly)
+
+### Scope Examples
+
+```
+feat(api): add project export endpoint
+fix(cli): resolve sync conflict handling
+docs(guides): update installation instructions
+test(integration): add storage sync tests
+refactor(services): extract link validation logic
+```
+
+## Subject Line Rules
+
+The subject line is the first line of the commit message. Follow these rules:
+
+### Writing Rules
+
+1. **Use imperative mood**: "add feature" not "added feature" or "adds feature"
+2. **Don't capitalize first letter**: "fix bug" not "Fix bug"
+3. **No period at end**: "update docs" not "update docs."
+4. **Maximum 72 characters**: Including type and scope
+5. **Be specific**: "fix link validation" not "fix bug"
+6. **Focus on what, not how**: "optimize query performance" not "add index to table"
+
+### Good Subject Lines
+
+```
+feat(api): add bulk item creation endpoint
+fix(storage): prevent duplicate sync events
+docs(contributing): expand PR review guidelines
+refactor(repositories): simplify query builder logic
+test(unit): add edge cases for link validation
+perf(database): optimize project loading query
+chore(deps): update FastAPI to 0.104.0
+```
+
+### Bad Subject Lines
+
+```
+feat(api): Added new endpoint for creating items (capitalized, past tense, vague)
+fix: bug fix (no scope, not specific)
+Update README.md (missing type, not imperative)
+feat(core): implemented the new feature for handling the case where... (too long)
+Fixed the thing. (capitalized, period, vague, not imperative)
+```
+
+## Body Format
+
+The body provides context and explains the motivation for changes.
+
+### When to Include a Body
+
+Include a body when:
+- The change is complex or non-obvious
+- You need to explain why, not just what
+- There are important caveats or limitations
+- The change affects multiple areas
+- You want to provide migration instructions
+
+### Body Writing Guidelines
+
+1. **Separate from subject**: Use a blank line
+2. **Wrap at 72 characters**: For readability in various tools
+3. **Use bullet points**: For multiple items
+4. **Explain motivation**: Why this change is needed
+5. **Provide context**: What problem does it solve?
+6. **Reference issues**: Link to related discussions
+
+### Body Examples
+
+**Example 1: Complex Feature**
+
+```
+feat(storage): implement conflict resolution for concurrent edits
+
+Add a three-way merge algorithm to handle conflicts when multiple
+clients edit the same item simultaneously. The resolution strategy:
+
+- Uses vector clocks to detect concurrent modifications
+- Preserves all conflicting versions in metadata
+- Allows manual resolution through the conflict panel
+- Automatically merges non-overlapping field changes
+
+This resolves the data loss issue reported by multiple users when
+working offline.
+
+Closes #234
+```
+
+**Example 2: Bug Fix with Context**
+
+```
+fix(api): prevent race condition in project creation
+
+Project creation was failing intermittently due to a race condition
+between the database transaction and the search index update.
+
+The fix ensures the search index is only updated after the database
+transaction successfully commits. Added retry logic with exponential
+backoff to handle temporary index unavailability.
+
+Fixes #456
+```
+
+**Example 3: Refactoring with Rationale**
+
+```
+refactor(services): extract item validation into separate service
+
+Item validation logic was duplicated across multiple service methods,
+making it difficult to maintain and test. This refactoring:
+
+- Creates a dedicated ItemValidationService
+- Centralizes all validation rules in one place
+- Improves test coverage by isolating validation logic
+- Makes it easier to add new validation rules
+
+No behavioral changes. All existing tests pass.
+```
+
+## Footer Conventions
+
+Footers contain metadata about the commit, particularly breaking changes and issue references.
+
+### Breaking Changes
+
+Breaking changes MUST be indicated in the footer (or in the subject with a `!`).
+
+**Footer Format:**
+
+```
+BREAKING CHANGE: <description of what breaks>
+```
+
+**Subject Format:**
+
+```
+feat(api)!: remove deprecated v1 endpoints
+```
+
+**Example with Footer:**
+
+```
+feat(api): redesign project configuration schema
+
+Introduce a more flexible project configuration format that supports
+nested settings and custom field definitions.
+
+BREAKING CHANGE: Project configuration files must be migrated to the
+new schema. Use `tracertm migrate-config` to update existing projects.
+The old `project.json` format is no longer supported.
+
+Migration guide: docs/guides/migration/v2-config.md
+```
+
+### Issue References
+
+Reference issues using these tokens:
+
+| Token | Usage | Example |
+|-------|-------|---------|
+| `Fixes` | Closes an issue | `Fixes #123` |
+| `Closes` | Closes an issue | `Closes #456` |
+| `Resolves` | Resolves an issue | `Resolves #789` |
+| `Refs` | References without closing | `Refs #111, #222` |
+| `Related to` | Loosely related | `Related to #333` |
+
+**Example:**
+
+```
+fix(storage): handle corrupted local storage files
+
+Add validation and recovery mechanism for corrupted storage files.
+If corruption is detected, the system now:
+
+1. Creates a backup of the corrupted file
+2. Attempts to recover partial data
+3. Falls back to server sync if recovery fails
+
+Fixes #567
+Refs #234
+```
+
+## Good vs Bad Examples
+
+### Example Set 1: Feature Addition
+
+**Bad:**
+
+```
+Added new endpoint
+
+I added a new endpoint for exporting projects. It supports CSV and JSON.
+```
+
+**Good:**
+
+```
+feat(api): add project export endpoint
+
+Implement `/api/projects/{id}/export` endpoint supporting CSV and JSON
+formats. The endpoint:
+
+- Streams large datasets to prevent memory issues
+- Includes all project items and relationships
+- Supports filtering by item type and status
+- Requires project read permission
+
+Closes #789
+```
+
+### Example Set 2: Bug Fix
+
+**Bad:**
+
+```
+fix: fixed the bug
+
+The sync wasn't working so I fixed it.
+```
+
+**Good:**
+
+```
+fix(storage): resolve sync loop with nested item updates
+
+Nested item updates were triggering an infinite sync loop due to
+incorrect change detection in the file watcher. Fixed by:
+
+- Debouncing file system events with 300ms window
+- Implementing content-based change detection
+- Adding sync operation ID to prevent circular updates
+
+Fixes #1234
+```
+
+### Example Set 3: Documentation
+
+**Bad:**
+
+```
+Updated docs
+```
+
+**Good:**
+
+```
+docs(guides): expand docker deployment guide
+
+Add comprehensive Docker deployment section covering:
+
+- Multi-stage build optimization
+- Environment variable configuration
+- Volume mounting for persistent data
+- Docker Compose setup for production
+- Health check configuration
+
+Includes example docker-compose.yml and .env template.
+```
+
+### Example Set 4: Refactoring
+
+**Bad:**
+
+```
+refactor: cleaned up code
+```
+
+**Good:**
+
+```
+refactor(repositories): consolidate database query builders
+
+Consolidate duplicated query building logic across repository classes
+into a shared QueryBuilder utility. This:
+
+- Reduces code duplication by ~200 lines
+- Standardizes query parameter handling
+- Improves type safety with generic methods
+- Makes queries easier to test in isolation
+
+No functional changes. All tests pass.
+```
+
+### Example Set 5: Breaking Change
+
+**Bad:**
+
+```
+feat: changed API response format
+```
+
+**Good:**
+
+```
+feat(api)!: standardize error response format
+
+Unify error responses across all endpoints to use RFC 7807 Problem
+Details format. All API errors now return:
+
+```json
+{
+  "type": "https://tracertm.dev/errors/validation",
+  "title": "Validation Error",
+  "status": 400,
+  "detail": "Item title is required",
+  "instance": "/api/items/123"
+}
+```
+
+BREAKING CHANGE: Error response format has changed. Client applications
+must update error handling to parse the new structure. See migration
+guide at docs/api/migration/v2-errors.md
+
+Closes #445
+```
+
+## Automated Validation
+
+TraceRTM uses commit message validation to ensure consistency.
+
+### Pre-commit Hooks
+
+Install pre-commit hooks to validate messages before commit:
+
+```bash
+# Install commitlint
+npm install -g @commitlint/cli @commitlint/config-conventional
+
+# Install husky for git hooks
+npm install -g husky
+
+# Setup hooks
+npx husky install
+npx husky add .husky/commit-msg 'npx --no -- commitlint --edit "$1"'
+```
+
+### CI Validation
+
+Pull requests automatically validate all commit messages. Validation failures will block merging.
+
+**Checked Rules:**
+- Type is valid
+- Scope follows conventions
+- Subject line length ≤ 72 characters
+- Subject uses imperative mood
+- Body is properly formatted
+- Breaking changes are properly marked
+
+### Manual Validation
+
+Validate your commit message before committing:
+
+```bash
+# Validate last commit
+npx commitlint --from HEAD~1 --to HEAD
+
+# Validate specific message
+echo "feat(api): add new endpoint" | npx commitlint
+```
+
+## Changelog Generation
+
+Commit messages automatically generate changelogs for releases.
+
+### Automatic Generation
+
+The CI pipeline generates changelogs using [standard-version](https://github.com/conventional-changelog/standard-version):
+
+```bash
+# Generate changelog and bump version
+npm run release
+
+# Preview without committing
+npm run release -- --dry-run
+```
+
+### Changelog Format
+
+Generated changelog groups commits by type:
+
+```markdown
+## [2.1.0] - 2024-12-07
+
+### Features
+
+- **api**: add project export endpoint (#789)
+- **cli**: implement interactive project creation (#801)
+- **storage**: add conflict resolution UI (#234)
+
+### Bug Fixes
+
+- **api**: prevent race condition in project creation (#456)
+- **storage**: resolve sync loop with nested updates (#1234)
+
+### Performance Improvements
+
+- **database**: optimize project loading query (#567)
+
+### BREAKING CHANGES
+
+- **api**: Error response format has changed. See migration guide.
+```
+
+### Customizing Changelog
+
+Exclude commits from changelog by using these types:
+- `chore`
+- `docs` (unless docs scope is important)
+- `style`
+- `test`
+- `build`
+- `ci`
+
+## Squashing Commits
+
+When squashing commits in a PR, create a meaningful squash commit message.
+
+### When to Squash
+
+**Squash when:**
+- PR contains many small fixup commits
+- Commit history is messy or contains WIP commits
+- Changes are tightly coupled and belong together
+- PR addresses a single concern
+
+**Don't squash when:**
+- PR contains multiple distinct features
+- Individual commits are meaningful and well-written
+- Commits represent logical progression
+- Commits need to be cherry-picked individually
+
+### Squash Message Format
+
+Combine information from all commits into a comprehensive message:
+
+```
+feat(api): add comprehensive project export functionality
+
+Implement project export with the following capabilities:
+
+- Support for CSV and JSON formats
+- Streaming for large datasets
+- Filtering by item type and status
+- Include/exclude options for relationships
+- Progress tracking for long exports
+
+Technical details:
+- Uses async generators for memory efficiency
+- Implements RFC 4180 for CSV formatting
+- Adds export permissions to RBAC system
+- Includes comprehensive test coverage
+
+Breaking changes:
+- Export API requires new 'project:export' permission
+
+Fixes #789
+Closes #801
+Refs #567
+```
+
+### GitHub Squash Settings
+
+Configure squash commit message in GitHub:
+
+1. Go to repository Settings > General
+2. Under "Pull Requests", enable "Allow squash merging"
+3. Select "Default to pull request title and description"
+4. Ensure PR title follows commit message format
+
+### Manual Squash
+
+Squash commits locally before pushing:
+
+```bash
+# Interactive rebase to squash last 5 commits
+git rebase -i HEAD~5
+
+# Mark commits to squash with 's' or 'squash'
+# Edit the combined commit message
+# Force push (if already pushed)
+git push --force-with-lease
+```
+
+## Tips and Best Practices
+
+### Write Commits for Future You
+
+Six months from now, you'll need to understand:
+- Why was this change made?
+- What problem did it solve?
+- What are the implications?
+- Where can I find more context?
+
+### Commit Granularity
+
+**One logical change per commit:**
+- If you use "and" in your subject, split it
+- Each commit should pass tests independently
+- Easier to review, revert, and cherry-pick
+
+**Good granularity:**
+```
+feat(api): add project validation endpoint
+test(api): add tests for project validation
+docs(api): document project validation endpoint
+```
+
+**Bad granularity:**
+```
+feat(api): add validation, fix bugs, update docs
+```
+
+### Review Before Committing
+
+Check your commit with:
+
+```bash
+# View staged changes
+git diff --staged
+
+# Review commit message
+git commit --dry-run
+
+# Amend if needed
+git commit --amend
+```
+
+### Use Git Aliases
+
+Add helpful aliases to `~/.gitconfig`:
+
+```ini
+[alias]
+  # Conventional commit helpers
+  feat = "!f() { git commit -m \"feat($1): $2\"; }; f"
+  fix = "!f() { git commit -m \"fix($1): $2\"; }; f"
+  docs = "!f() { git commit -m \"docs($1): $2\"; }; f"
+
+  # View commit history with graph
+  lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
+```
+
+## Further Reading
+
+- [Conventional Commits Specification](https://www.conventionalcommits.org/)
+- [How to Write a Git Commit Message](https://chris.beams.io/posts/git-commit/)
+- [Semantic Versioning](https://semver.org/)
+- [Commitlint Documentation](https://commitlint.js.org/)
+- [Standard Version](https://github.com/conventional-changelog/standard-version)
+
+## Next Steps
+
+- [Code Review Guidelines](/docs/development/contributing/code-review)
+- [Pull Request Process](/docs/development/contributing/pull-requests)
+- [Branching Strategy](/docs/development/contributing/branching)

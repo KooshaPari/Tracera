@@ -1,0 +1,59 @@
+# {{PROJECT_NAME}} Comprehensive Makefile
+# Extends the standard modular targets with optional advanced workflows.
+
+MAKEFILES_DIR ?= ../makefiles
+HELP_TITLE := {{PROJECT_NAME}} Comprehensive Targets
+
+include $(MAKEFILES_DIR)/common.mk
+include $(MAKEFILES_DIR)/project.mk
+include $(MAKEFILES_DIR)/testing.mk
+include $(MAKEFILES_DIR)/quality.mk
+include $(MAKEFILES_DIR)/ci.mk
+include $(MAKEFILES_DIR)/deps.mk
+
+.PHONY: benchmark benchmark-compare profile-memory load-test load-test-ui docker-build docker-run deps-graph
+
+benchmark: ## Run pytest benchmarks if the directory exists
+	@if [ -d "tests/performance" ]; then \
+		$(PYTEST) tests/performance --benchmark-only --benchmark-autosave; \
+	else \
+		echo "No performance tests found."; \
+	fi
+
+benchmark-compare: ## Compare stored benchmark results
+	@$(PYTEST) --benchmark-compare
+
+profile-memory: ## Profile memory usage helper
+	@if [ -f "scripts/profile_memory.py" ]; then \
+		$(PYTHON) -m memory_profiler scripts/profile_memory.py; \
+	else \
+		echo "scripts/profile_memory.py not found."; \
+	fi
+
+load-test: ## Run headless Locust load tests if configured
+	@if [ -f "tests/load/locustfile.py" ]; then \
+		locust -f tests/load/locustfile.py --headless -u 100 -r 10 -t 60s; \
+	else \
+		echo "tests/load/locustfile.py not found."; \
+	fi
+
+load-test-ui: ## Run Locust with the web UI
+	@if [ -f "tests/load/locustfile.py" ]; then \
+		echo "Open http://localhost:8089 in your browser"; \
+		locust -f tests/load/locustfile.py; \
+	else \
+		echo "tests/load/locustfile.py not found."; \
+	fi
+
+docker-build: ## Build Docker image if Dockerfile exists
+	@if [ -f "Dockerfile" ]; then \
+		docker build -t {{PROJECT_NAME}}:latest .; \
+	else \
+		echo "No Dockerfile found."; \
+	fi
+
+docker-run: ## Run built Docker image
+	@docker run --rm -it {{PROJECT_NAME}}:latest
+
+deps-graph: ## Generate dependency graph with pydeps
+	@pydeps . --max-bacon=2 --cluster --rankdir=TB -o dependency_graph.svg

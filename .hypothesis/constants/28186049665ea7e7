@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/execution.py
+# hypothesis_version: 6.151.4
+
+[100, 255, 500, 'CASCADE', 'Execution', 'ExecutionArtifact', 'SET NULL', 'all, delete-orphan', 'artifact_metadata', 'artifact_type', 'artifacts', 'dynamic', 'execution', 'execution_artifacts', 'execution_id', 'execution_type', 'executions', 'executions.id', 'extend_existing', 'item_id', 'items.id', 'metadata', 'pending', 'project_id', 'projects.id', 'status', 'test_runs.id', 'trigger_source']

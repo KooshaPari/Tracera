@@ -1,0 +1,49 @@
+name: Docs Lint (Informative)
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docstring-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Scan for missing module docstrings (informative)
+        run: |
+          python - << 'PY'
+          import os, sys
+          missing = []
+          for root, _, files in os.walk('.'):
+              if any(part.startswith('.') for part in root.split(os.sep)):
+                  continue
+              for f in files:
+                  if not f.endswith('.py'):
+                      continue
+                  path = os.path.join(root, f)
+                  try:
+                      with open(path, 'r', encoding='utf-8') as fh:
+                          # Read first 5 lines looking for a top-level docstring
+                          head_lines = []
+                          for i in range(5):
+                              try:
+                                  head_lines.append(next(fh))
+                              except StopIteration:
+                                  break
+                          head = ''.join(head_lines)
+                      if (head.find(""") == -1) and (head.find(''') == -1):
+                          missing.append(path)
+                  except Exception:
+                      pass
+          if missing:
+              print('Files missing module docstrings (informative):')
+              for m in missing:
+                  print('-', m)
+          else:
+              print('All scanned Python modules have top-level docstrings.')
+          # Always exit 0 (informational only)
+          sys.exit(0)
+          PY

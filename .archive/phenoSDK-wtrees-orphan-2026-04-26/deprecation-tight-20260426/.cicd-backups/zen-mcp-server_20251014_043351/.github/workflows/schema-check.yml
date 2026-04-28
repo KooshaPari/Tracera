@@ -1,0 +1,64 @@
+name: Schema Validation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 5 * * 1'  # Weekly on Monday
+
+jobs:
+  schema-validation:
+    name: Database Schema Validation
+    runs-on: ubuntu-latest
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PYTHONPATH: .:src
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+
+      - name: Install schema tools
+        run: |
+          pip install alembic sqlalchemy
+
+      - name: Check schema migrations
+        run: |
+          if [ -f "alembic.ini" ]; then
+            alembic check
+          else
+            echo "No Alembic configuration found, skipping schema check"
+          fi
+
+      - name: Validate schema files
+        run: |
+          if [ -d "migrations" ]; then
+            python scripts/validate_schema.py --migrations-dir migrations
+          else
+            echo "No migrations directory found"
+          fi
+
+      - name: Check schema drift
+        run: |
+          python scripts/check_schema_drift.py --json > schema-drift.json
+
+      - name: Upload schema artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: schema-validation-results
+          path: |
+            schema-drift.json

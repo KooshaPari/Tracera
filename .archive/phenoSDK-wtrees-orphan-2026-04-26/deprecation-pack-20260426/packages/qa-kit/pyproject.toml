@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qa-kit"
+version = "0.1.0"
+description = "Comprehensive QA testing and reporting framework for pheno-sdk ecosystem"
+requires-python = ">=3.11"
+readme = "README.md"
+license = { text = "Proprietary" }
+authors = [{ name = "PHENO-SDK Team" }]
+
+[project.optional-dependencies]
+# Core QA Dependencies
+core = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-mock>=3.11.0",
+    "pytest-cov>=4.1.0",
+    "pytest-xdist>=3.6.1",
+    "coverage>=7.4.0",
+    "factory-boy>=3.3.0",
+    "faker>=19.12.0",
+]
+
+# E2E Testing
+e2e = [
+    "playwright>=1.40.0",
+    "selenium>=4.15.0",
+    "pytest-playwright>=0.4.0",
+]
+
+# Performance Testing
+performance = [
+    "locust>=2.17.0",
+    "pytest-benchmark>=4.0.0",
+    "memory-profiler>=0.61.0",
+    "psutil>=5.9.0",
+]
+
+# API Testing
+api = [
+    "httpx>=0.28.1",
+    "requests>=2.31.0",
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+]
+
+# Database Testing
+database = [
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.13.0",
+    "asyncpg>=0.29.0",
+    "psycopg[binary]>=3.1.0",
+]
+
+# Reporting
+reporting = [
+    "pytest-html>=4.1.1",
+    "pytest-json-report>=1.5.0",
+    "allure-pytest>=2.13.0",
+    "pytest-clarity>=1.0.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["qa_kit*"]
+
+[tool.setuptools.package-data]
+qa_kit = ["scripts/*.py", "fixtures/*.py", "plugins/*.py", "configs/*.yaml"]

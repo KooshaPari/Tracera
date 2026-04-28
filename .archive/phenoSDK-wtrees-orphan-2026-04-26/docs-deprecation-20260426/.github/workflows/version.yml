@@ -1,0 +1,966 @@
+name: Version Management Automation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version update type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - 'major'
+          - 'minor'
+          - 'patch'
+          - 'prerelease'
+      check_dependencies:
+        description: 'Check dependency compatibility'
+        required: false
+        default: true
+        type: boolean
+      dry_run:
+        description: 'Dry run mode (no actual version changes)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PYTHON_VERSION: "3.13"
+
+jobs:
+  # ==========================================================================
+  # Phase 1: Version Compatibility Analysis
+  # ==========================================================================
+
+  version-compatibility-check:
+    name: "1. Version Compatibility Analysis"
+    runs-on: ubuntu-latest
+    outputs:
+      current-version: ${{ steps.current-version.outputs.version }}
+      version-type: ${{ steps.version-type.outputs.type }}
+      dependencies-status: ${{ steps.dependencies.outputs.status }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install toml semver packaging
+
+      - name: Extract current version
+        id: current-version
+        run: |
+          python -c "
+          import toml
+
+          try:
+              with open('pyproject.toml', 'r') as f:
+                  config = toml.load(f)
+              current_version = config.get('tool', {}).get('poetry', {}).get('version', '0.0.0')
+          except:
+              # Fallback to semantic-release configuration
+              import subprocess
+              try:
+                  result = subprocess.run(['python-semantic-release', '--version'], capture_output=True, text=True, cwd='packages/pydevkit')
+                  if result.returncode == 0:
+                      current_version = result.stdout.strip().split()[1] if 'version' in result.stdout else '0.0.0'
+                  else:
+                      current_version = '0.0.0'
+              except:
+                  current_version = '0.0.0'
+
+          print(f'Current version: {current_version}')
+          echo \"version=\${current_version}\" >> \$GITHUB_OUTPUT
+          "
+
+      - name: Determine version type
+        id: version-type
+        run: |
+          if [[ \"${{ github.event_name }}\" == \"workflow_dispatch\" ]]; then
+            VERSION_TYPE=\"${{ github.event.inputs.version_type }}"
+          elif [[ \"${{ github.ref_name }}\" == \"main\" ]]; then
+            VERSION_TYPE=\"patch\"  # Default to patch for main branch
+          else
+            VERSION_TYPE=\"none\"  # Don't auto-bump for other branches
+          fi
+
+          echo \"type=\${VERSION_TYPE}\" >> \$GITHUB_OUTPUT
+
+      - name: Analyze dependency compatibility
+        id: dependencies
+        run: |
+          python -c "
+          import toml
+          import json
+          import subprocess
+          from packaging.requirements import Requirement
+
+          dependencies = {}
+          packages = ['pydevkit', 'workflow-kit', 'db-kit', 'deploy-kit']
+
+          for package in packages:
+              package_path = f'packages/{package}'
+              pyproject_path = f'{package_path}/pyproject.toml'
+
+              if os.path.exists(pyproject_path):
+                  try:
+                      with open(pyproject_path, 'r') as f:
+                          config = toml.load(f)
+
+                      package_deps = config.get('tool', {}).get('poetry', {}).get('dependencies', {})
+                      dev_deps = config.get('tool', {}).get('poetry', {}).get('group', {}).get('dev', {}).get('dependencies', {})
+
+                      dependencies[package] = {
+                          'dependencies': dict(package_deps),
+                          'dev_dependencies': dict(dev_deps),
+                          'total_deps': len(package_deps) + len(dev_deps)
+                      }
+
+                      # Check for compatibility issues
+                      for dep_name, dep_spec in {**package_deps, **dev_deps}.items():
+                          if isinstance(dep_spec, str):
+                              try:
+                                  req = Requirement(dep_spec)
+                                  # Check for deprecated packages
+                                  deprecated_packages = ['six', 'enum34', 'typing_extensions<4.0']
+                                  if dep_name.lower() in deprecated_packages:
+                                      if 'problematic_deps' not in dependencies[package]:
+                                          dependencies[package]['problematic_deps'] = []
+                                      dependencies[package]['problematic_deps'].append(f'{dep_name}: Use newer alternatives')
+
+                              except Exception as e:
+                                  if 'incompatible_deps' not in dependencies[package]:
+                                      dependencies[package]['incompatible_deps'] = []
+                                  dependencies[package]['incompatible_deps'].append(f'{dep_name}: Invalid specification - {e}')
+
+                  except Exception as e:
+                      dependencies[package] = {'error': str(e)}
+
+          # Generate compatibility report
+          total_deps = sum(pkg.get('total_deps', 0) for pkg in dependencies.values())
+          problematic_deps = sum(len(pkg.get('problematic_deps', [])) for pkg in dependencies.values())
+          incompatible_deps = sum(len(pkg.get('incompatible_deps', [])) for pkg in dependencies.values())
+
+          compatibility_report = {
+              'total_packages_analyzed': len(packages),
+              'total_dependencies': total_deps,
+              'problematic_dependencies': problematic_deps,
+              'incompatible_dependencies': incompatible_deps,
+              'package_details': dependencies,
+              'status': 'pass' if problematic_deps + incompatible_deps == 0 else 'warning'
+          }
+
+          with open('dependency-compatibility.json', 'w') as f:
+              json.dump(compatibility_report, f, indent=2)
+
+          print(f'Dependency compatibility check completed')
+          print(f'  Packages analyzed: {len(packages)}')
+          print(f'  Total dependencies: {total_deps}')
+          print(f'  Issues found: {problematic_deps + incompatible_deps}')
+
+          "
+
+          echo "status=\$(jq -r '.status' dependency-compatibility.json 2>/dev/null || echo 'pass')" >> $GITHUB_OUTPUT
+
+  # ==========================================================================
+  # Phase 2: Version Bump Simulation
+  # ==========================================================================
+
+  version-bump-simulation:
+    name: "2. Version Bump Simulation"
+    runs-on: ubuntu-latest
+    needs: version-compatibility-check
+    if: needs.version-compatibility-check.outputs.version-type != 'none'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install toml semver uv
+
+      - name: Setup semantic-release
+        uses: astral-sh/setup-uv@v3
+
+      - name: Simulate version bump
+        run: |
+          python -c "
+          import subprocess
+          import json
+
+          # Get current version and bump type
+          current_version = '${{ needs.version-compatibility-check.outputs.current-version }}'
+          VERSION_TYPE='${{ needs.version-compatibility-check.outputs.version-type }}'
+
+          # Use semantic-release for simulation
+          packages = ['pydevkit', 'workflow-kit', 'db-kit', 'deploy-kit']
+          simulation_results = {}
+
+          for package in packages:
+              package_path = f'packages/{package}'
+              if os.path.exists(package_path):
+                  try:
+                      # Simulate version bump
+                      result = subprocess.run([
+                          'uv', 'run', 'python-semantic-release',
+                          '--current-version', current_version,
+                          '--increment', VERSION_TYPE,
+                          '--dry-run'
+                      ], cwd=package_path, capture_output=True, text=True)
+
+                      # Parse output to get new version
+                      import re
+                      version_match = re.search(r'v[0-9]+\.[0-9]+\.[0-9]+', result.stdout)
+                      new_version = version_match.group(0) if version_match else current_version
+
+                      simulation_results[package] = {
+                          'current_version': current_version,
+                          'new_version': new_version,
+                          'version_type': VERSION_TYPE
+                      }
+
+                      print(f'{package}: {current_version} -> {new_version}')
+
+                  except Exception as e:
+                      simulation_results[package] = {
+                          'current_version': current_version,
+                          'error': str(e),
+                          'version_type': VERSION_TYPE
+                      }
+
+          # Save simulation results
+          with open('version-simulation.json', 'w') as f:
+              json.dump(simulation_results, f, indent=2)
+
+          print(f'Version bump simulation completed for all packages')
+          "
+
+  # ==========================================================================
+  # Phase 3: Dependency Version Resolution
+  # ==========================================================================
+
+  dependency-resolution:
+    name: "3. Dependency Version Resolution"
+    runs-on: ubuntu-latest
+    needs: [version-compatibility-check, version-bump-simulation]
+    if: github.event.inputs.check_dependencies != 'false'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip toml packaging uv
+
+      - name: Setup semantic-release
+        uses: astral-sh/setup-uv@v3
+
+      - name: Check dependency conflicts and updates
+        run: |
+          python -c "
+          import toml
+          import json
+          import subprocess
+          from packaging.requirements import Requirement
+
+          packages = ['pydevkit', 'workflow-kit', 'db-kit', 'deploy-kit']
+          conflicts = []
+          updates = []
+          version_resolver = {}
+
+          for package in packages:
+              package_path = f'packages/{package}'
+              pyproject_path = f'{package_path}/pyproject.toml'
+
+              if os.path.exists(pyproject_path):
+                  try:
+                      with open(pyproject_path, 'r') as f:
+                          config = toml.load(f)
+
+                      deps = config.get('tool', {}).get('poetry', {}).get('dependencies', {})
+
+                      # Check for dependency conflicts between packages
+                      for dep_name, dep_spec in deps.items():
+                          if isinstance(dep_spec, str):
+                              dep_version = dep_spec
+                              if dep_name in ['poetry', 'python']:
+                                  continue
+
+                              # Check if dependency exists in other packages with different versions
+                              other_package_conflicts = []
+                              for other_pkg in packages:
+                                  if other_pkg != package:
+                                      other_pkg_path = f'packages/{other_pkg}'
+                                      other_pyproject = f'{other_pkg_path}/pyproject.toml'
+                                      if os.path.exists(other_pyproject):
+                                          try:
+                                              with open(other_pyproject, 'r') as f:
+                                                  other_config = toml.load(f)
+                                              other_deps = other_config.get('tool', {}).get('poetry', {}).get('dependencies', {})
+                                              other_dep_spec = other_deps.get(dep_name)
+
+                                              if other_dep_spec and isinstance(other_dep_spec, str) and other_dep_spec != dep_version:
+                                                  other_package_conflicts.append({
+                                                      'package': other_pkg,
+                                                      'version': other_dep_spec
+                                                  })
+                                          except:
+                                              continue
+
+                              if other_package_conflicts:
+                                  conflicts.append({
+                                      'dependency': dep_name,
+                                      'package': package,
+                                      'version': dep_version,
+                                      'conflicts': other_package_conflicts
+                                  })
+
+                      # Check for outdated dependencies
+                      try:
+                          result = subprocess.run([
+                              'uv', 'run', 'pip', 'list', '--outdated', '--format=json'
+                          ], cwd=package_path, capture_output=True, text=True)
+
+                          if result.stdout:
+                              outdated_packages = json.loads(result.stdout)
+                              for pkg in outdated_packages:
+                                  updates.append({
+                                      'package': package,
+                                      'dependency': pkg['name'],
+                                      'current_version': pkg['version'],
+                                      'latest_version': pkg['latest_version'],
+                                      'package_url': pkg.get('latest_file_url', '')
+                                  })
+                      except:
+                          pass
+
+                      # Store resolver information
+                      version_resolver[package] = {
+                          'dependencies': dict(deps),
+                          'dependency_count': len(deps)
+                      }
+
+                  except Exception as e:
+                      conflicts.append({
+                          'package': package,
+                          'error': str(e)
+                      })
+
+          resolution_results = {
+              'dependency_conflicts': conflicts,
+              'dependency_updates_available': updates,
+              'version_resolver': version_resolver,
+              'total_conflicts': len(conflicts),
+              'total_updates': len(updates),
+              'resolution_needed': len(conflicts) > 0,
+              'updates_available': len(updates) > 0
+          }
+
+          with open('dependency-resolution.json', 'w') as f:
+              json.dump(resolution_results, f, indent=2)
+
+          print(f'Dependency resolution analysis completed')
+          print(f'  Conflicts found: {len(conflicts)}')
+          print(f'  Updates available: {len(updates)}')
+
+          if conflicts:
+              print('  Conflicts:')
+              for conflict in conflicts:
+                  print(f'    {conflict.get(\"package\", \"unknown\")} - {conflict.get(\"dependency\", \"unknown\")}')
+
+          if updates:
+              print('  Updates:')
+              for update in updates[:5]:  # Show first 5
+                  print(f'    {update[\"package\"]}/{update[\"dependency\"]}: {update[\"current_version\"]} -> {update[\"latest_version\"]}')
+              if len(updates) > 5:
+                  print(f'    ... and {len(updates) - 5} more')
+          "
+
+  # ==========================================================================
+  # Phase 4: Version Update Implementation
+  # ==========================================================================
+
+  version-update:
+    name: "4. Version Update Implementation"
+    runs-on: ubuntu-latest
+    needs: [version-compatibility-check, version-bump-simulation, dependency-resolution]
+    if: github.event.inputs.dry_run == 'false' && needs.version-compatibility-check.outputs.version-type != 'none'
+    outputs:
+      new-version: ${{ steps.version-update.outputs.new-version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install toml semver uv
+
+      - name: Setup semantic-release
+        uses: astral-sh/setup-uv@v3
+
+      - name: Apply version bump using semantic-release
+        id: version-update
+        run: |
+          python -c "
+          import subprocess
+          import json
+          import os
+
+          packages = ['pydevkit', 'workflow-kit', 'db-kit', 'deploy-kit']
+          NEW_VERSIONS = {}
+
+          for package in packages:
+              package_path = f'packages/{package}'
+              if os.path.exists(package_path):
+                  try:
+                      # Use semantic-release to update version
+                      result = subprocess.run([
+                          'uv', 'run', 'python-semantic-release',
+                          '--version', '${{ needs.version-compatibility-check.outputs.version-type }}'
+                      ], cwd=package_path, capture_output=True, text=True)
+
+                      if result.returncode == 0:
+                          # Extract new version from output or fallback
+                          import re
+                          version_match = re.search(r'v[0-9]+\.[0-9]+\.[0-9]+', result.stdout)
+                          new_version = version_match.group(0) if version_match else '${{ needs.version-compatibility-check.outputs.current-version }}'
+
+                          NEW_VERSIONS[package] = new_version
+                          print(f'{package}: Version updated to {new_version}')
+
+                          # Update git configuration
+                          subprocess.run(['git', 'config', 'local.user.email', 'action@github.com'], cwd=package_path)
+                          subprocess.run(['git', 'config', 'local.user.name', 'GitHub Action'], cwd=package_path)
+
+                          # Commit changes if there are any
+                          subprocess.run(['git', 'add', 'pyproject.toml'], cwd=package_path)
+                          result_check = subprocess.run(['git', 'diff', '--staged', '--quiet'], cwd=package_path)
+
+                          if result_check.returncode != 0:
+                              subprocess.run(['git', 'commit', '-m', f'ci: bump version for {package} to {new_version}'], cwd=package_path)
+                          else:
+                              print(f'No version changes to commit for {package}')
+
+                      else:
+                          print(f'Error updating {package}: {result.stderr}')
+                          NEW_VERSIONS[package] = None
+
+                  except Exception as e:
+                      print(f'Exception updating {package}: {e}')
+                      NEW_VERSIONS[package] = None
+
+          # determine version for output
+          primary_version = NEW_VERSIONS.get('pydevkit', None)
+          if not primary_version:
+              primary_version = '${{ needs.version-compatibility-check.outputs.current-version }}'
+
+          print(f'primary_version={primary_version}' >> \$GITHUB_OUTPUT)
+
+          with open('version-implementation.json', 'w') as f:
+              json.dump({
+                  'updated_packages': NEW_VERSIONS,
+                  'primary_version': primary_version
+              }, f, indent=2)
+          "
+
+          echo "primary_version=$(jq -r '.primary_version' version-implementation.json 2>/dev/null)" >> $GITHUB_OUTPUT
+
+      - name: Prune PyPI package index cache
+        run: |
+          python .github/scripts/prune_pypi_cache.py --verbose
+
+      - name: Verify consistency across packages
+        run: |
+          python -c "
+          import json
+          import toml
+
+          verify_consistency = True
+
+          packages = ['pydevkit', 'workflow-kit', 'db-kit', 'deploy-kit']
+          versions = {}
+
+          for package in packages:
+              package_path = f'packages/{package}'
+              pyproject_path = f'{package_path}/pyproject.toml'
+
+              if os.path.exists(pyproject_path):
+                  try:
+                      with open(pyproject_path, 'r') as f:
+                          config = toml.load(f)
+                      version = config.get('tool', {}).get('poetry', {}).get('version', 'unknown')
+                      versions[package] = version
+                  except:
+                      versions[package] = 'unknown'
+              else:
+                  versions[package] = 'not_found'
+
+          print('Version verification across packages:')
+          for package, version in versions.items():
+              print(f'  {package}: {version}')
+
+          # Check for consistency (all versions should match)
+          unique_versions = set(v for v in versions.values() if v != 'unknown' and v != 'not_found')
+          if len(unique_versions) <= 1:
+              print('✅ Package versions are consistent')
+          else:
+              print('❌ Package versions are inconsistent')
+              verify_consistency = False
+
+          if verify_consistency:
+              exit(0)
+          else:
+              print('WARNING: Version inconsistency detected - proceeding with caution')
+          "
+
+  # ==========================================================================
+  # Phase 5: Version Impact Analysis
+  # ==========================================================================
+
+  version-impact-analysis:
+    name: "5. Version Impact Analysis"
+    runs-on: ubuntu-latest
+    needs: [version-compatibility-check, version-update]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install toml semver uv
+
+      - name: Analyze version impact
+        run: |
+          python -c "
+          import json
+          import subprocess
+          import os
+
+          # Load updated version information
+          try:
+              with open('version-implementation.json', 'r') as f:
+                  impl_data = json.load(f)
+          except:
+              impl_data = {}
+
+          current_version = '${{ needs.version-compatibility-check.outputs.current-version }}'
+          new_version = impl_data.get('primary_version', current_version)
+          version_type = '${{ needs.version-compatibility-check.outputs.version-type }}'
+
+          impact_analysis = {
+              'version_change': {
+                  'current': current_version,
+                  'new': new_version,
+                  'type': version_type
+              },
+              'impact_areas': [],
+              'breaking_changes': [],
+              'deprecations': [],
+              'new_features': [],
+              'enhancements': []
+          }
+
+          # Analyze impact areas
+          potential_impacts = [
+              {
+                  'area': 'API Compatibility',
+                  'description': f'Version {version_type} bump may affect existing API consumers',
+                  'severity': 'high' if version_type == 'major' else 'medium'
+              },
+              {
+                  'area': 'Cross-Kit Dependencies',
+                  'description': f'Internal dependency relationships between packages may require updates',
+                  'severity': 'medium' if version_type == 'major' else 'low'
+              },
+              {
+                  'area': 'Workflow Integration',
+                  'description': 'GitHub workflows and integrations may need updates for new versions',
+                  'severity': 'medium'
+              },
+              {
+                  'area': 'Documentation Updates',
+                  'description': 'Documentation and examples may need updates to reflect version changes',
+                  'severity': 'low'
+              }
+          ]
+
+          impact_analysis['impact_areas'] = potential_impacts
+
+          # Check for potential breaking changes
+          packages = ['pydevkit', 'workflow-kit', 'db-kit', 'deploy-kit']
+          for package in packages:
+              package_path = f'packages/{package}'
+              if os.path.exists(package_path):
+                  try:
+                      # Look for potentially breaking changes
+                      with open(f'{package_path}/CHANGELOG.md', 'r') as f:
+                          changelog = f.read()
+
+                      if 'BREAKING CHANGE' in changelog or 'Breaking Change' in changelog:
+                          impact_analysis['breaking_changes'].append({
+                              'package': package,
+                              'description': 'Contains breaking changes in recent updates'
+                          })
+                  except:
+                      pass
+
+          # Save impact analysis
+          with open('version-impact-analysis.json', 'w') as f:
+              json.dump(impact_analysis, f, indent=2)
+
+          print('Version impact analysis completed:')
+          print(f'  Current: {current_version}')
+          print(f'  New: {new_version}')
+          print(f'  Type: {version_type}')
+
+          for impact in potential_impacts:
+              print(f'  {impact[\"area\"]}: {impact[\"severity\"]} - {impact[\"description\"]}')
+
+          if impact_analysis['breaking_changes']:
+              print('  Breaking Changes Detected:')
+              for bc in impact_analysis['breaking_changes']:
+                  print(f'    {bc[\"package\"]}: {bc[\"description\"]}')
+          "
+
+  # ==========================================================================
+  # Phase 6: Version Validation
+  # ==========================================================================
+
+  version-validation:
+    name: "6. Version Validation"
+    runs-on: ubuntu-latest
+    needs: [version-update, version-impact-analysis]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install toml semver uv build
+
+      - name: Setup semantic-release
+        uses: astral-sh/setup-uv@v3
+
+      - name: Validate version consistency across packages
+        run: |
+          python -c "
+          import toml
+          import json
+          import subprocess
+
+          packages = ['pydevkit', 'workflow-kit', 'db-kit', 'deploy-kit']
+          versions = {}
+          consistent = True
+
+          for package in packages:
+              package_path = f'packages/{package}'
+              pyproject_path = f'{package_path}/pyproject.toml'
+
+              if os.path.exists(pyproject_path):
+                  try:
+                      with open(pyproject_path, 'r') as f:
+                          config = toml.load(f)
+                      version = config.get('tool', {}).get('poetry', {}).get('version', 'unknown')
+                      versions[package] = {
+                          'package': package,
+                          'version': version,
+                          'status': 'ok'
+                      }
+                  except Exception as e:
+                      versions[package] = {
+                          'package': package,
+                          'version': 'error',
+                          'status': 'error',
+                          'error': str(e)
+                      }
+                      consistent = False
+              else:
+                  versions[package] = {
+                      'package': package,
+                      'version': 'not_found',
+                      'status': 'missing'
+                  }
+                  consistent = False
+
+          # Check version compatibility between packages
+          version_values = [v['version'] for v in versions.values() if v['status'] == 'ok' and v['version'] != 'unknown']
+          unique_versions = set(version_values)
+
+          if len(unique_versions) <= 1:
+              consistency_status = 'consistent'
+              print('✅ All package versions are consistent')
+          else:
+              consistency_status = 'inconsistent'
+              print('❌ Package versions are inconsistent')
+              for package, info in versions.items():
+                  if info['status'] == 'ok':
+                      print(f'  {package}: {info[\"version\"]}')
+
+          validation_results = {
+              'package_versions': versions,
+              'consistency_status': consistency_status,
+              'unique_version_count': len(unique_versions),
+              'validation_passed': consistent,
+              'total_packages': len(packages),
+              'packages_ok': len([v for v in versions.values() if v['status'] == 'ok'])
+          }
+
+          with open('version-validation.json', 'w') as f:
+              json.dump(validation_results, f, indent=2)
+
+          if consistent:
+              exit(0)
+          else:
+              print('WARNING: Version consistency issues detected')
+              exit(1)
+          "
+
+      - name: Build and test packages with new versions
+        run: |
+          python -c "
+          import subprocess
+          import os
+
+          packages = ['pydevkit', 'workflow-kit', 'db-kit', 'deploy-kit']
+          build_success = True
+
+          for package in packages:
+              package_path = f'packages/{package}'
+              if os.path.exists(package_path):
+                  try:
+                      print(f'Building {package}...')
+
+                      # Try to build the package
+                      result = subprocess.run([
+                          'uv', 'build'
+                      ], cwd=package_path, capture_output=True, text=True)
+
+                      if result.returncode == 0:
+                          print(f'✅ {package} build successful')
+                      else:
+                          print(f'❌ {package} build failed: {result.stderr}')
+                          build_success = False
+
+                  except Exception as e:
+                      print(f'❌ Error building {package}: {e}')
+                      build_success = False
+
+          if build_success:
+              print('✅ All packages built successfully')
+              exit(0)
+          else:
+              print('❌ Some package builds failed')
+              exit(1)
+          "
+
+  # ==========================================================================
+  # Phase 7: Version Release Management
+  # ==========================================================================
+
+  version-release-management:
+    name: "7. Version Release Management"
+    runs-on: ubuntu-latest
+    needs: [version-validation, version-impact-analysis]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate version release report
+        run: |
+          python -c "
+          import json
+          from datetime import datetime
+
+          try:
+              # Load validation results
+              with open('version-validation.json', 'r') as f:
+                  validation_data = json.load(f)
+
+              # Load impact analysis
+              with open('version-impact-analysis.json', 'r') as f:
+                  impact_data = json.load(f)
+
+              # Load implementation results
+              try:
+                  with open('version-implementation.json', 'r') as f:
+                      impl_data = json.load(f)
+                  new_version = impl_data.get('primary_version', 'unknown')
+              except:
+                  new_version = 'unknown'
+
+              # Generate comprehensive report
+              report = {
+                  'timestamp': datetime.now().isoformat(),
+                  'version_info': impact_data.get('version_change', {}),
+                  'validation_status': validation_data.get('consistency_status', 'unknown'),
+                  'impact_analysis': impact_data,
+                  'package_details': validation_data.get('package_versions', {}),
+                  'build_success': validation_data.get('validation_passed', False),
+                  'new_version': new_version,
+                  'repository': '${{ github.repository }}',
+                  'branch': '${{ github.ref_name }}',
+                  'workflow_run': '${{ github.run_id }}'
+              }
+
+              with open('version-release-report.json', 'w') as f:
+                  json.dump(report, f, indent=2)
+
+              print('Version release report generated')
+              print(f'  New version: {new_version}')
+              print(f'  Validation status: {validation_data.get(\"consistency_status\", \"unknown\")}')
+              print(f'  Build success: {validation_data.get(\"validation_passed\", False)}')
+
+          except Exception as e:
+              print(f'Error generating report: {e}')
+              report = {'error': str(e)}
+              with open('version-release-report.json', 'w') as f:
+                  json.dump(report, f, indent=2)
+          "
+
+      - name: Upload version release artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: version-release-artifacts
+          path: |
+            version-release-report.json
+            version-validation.json
+            version-impact-analysis.json
+            version-implementation.json
+
+      - name: Comment on PR with version results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            try {
+              const report = JSON.parse(fs.readFileSync('version-release-report.json', 'utf8'));
+
+              const comment = `🚀 Version Release Management Report
+
+              **New Version:** ${report.new_version || 'Unknown'}
+              **Validation Status:** ${report.validation_status || 'Unknown'}
+              **Build Success:** ${report.build_success ? '✅' : '❌'}
+
+              **Package Versions:**
+              ${Object.entries(report.package_details || {}).map(([pkg, info]) =>
+                `  ${pkg}: ${info.version || info.status || 'unknown'}`
+              ).join('\\n')}
+
+              **Impact Analysis:**
+              - **Type:** ${report.version_info?.type || 'Unknown'}
+              - **Current:** ${report.version_info?.current || 'Unknown'}
+              - **New:** ${report.version_info?.new || 'Unknown'}
+
+              ---
+              *Automated version management by CI/CD pipeline*
+              `;
+
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (error) {
+              console.error('Error creating comment:', error);
+            }
+
+  # ==========================================================================
+  # Phase 8: Final Status Summary
+  # ==========================================================================
+
+  status-summary:
+    name: "8. Final Status Summary"
+    runs-on: ubuntu-latest
+    needs: version-validation
+    if: always()
+    steps:
+      - name: Generate final status
+        run: |
+          python -c "
+          import json
+
+          try:
+              with open('version-release-report.json', 'r') as f:
+                  report = json.load(f)
+
+              status = f'✅ Version management workflow completed successfully\\n'
+              status += f'\\n**Summary:**\\n'
+              status += f'- New version: {report.get(\"new_version\", \"Unknown\")}\\n'
+              status += f'- Validation: {report.get(\"validation_status\", \"Unknown\")}\\n'
+              status += f'- Build: {\"Success\" if report.get(\"build_success\", False) else \"Failed\"}\\n'
+              status += f'- Timestamp: {report.get(\"timestamp\", \"Unknown\")}\\n'
+
+              print(status)
+
+          except Exception as e:
+              print(f'❌ Error generating status summary: {e}')
+          "
+
+      - name: Upload final status
+        uses: actions/upload-artifact@v3
+        with:
+          name: version-management-final-status
+          path: |
+            version-release-report.json
+          retention-days: 30

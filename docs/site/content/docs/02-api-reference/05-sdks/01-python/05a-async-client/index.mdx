@@ -1,0 +1,634 @@
+---
+title: "Async Client"
+description: "Complete reference for the AsyncTraceRTMClient in the Python SDK"
+---
+
+# Async Client
+
+Complete reference for the `AsyncTraceRTMClient` class, providing non-blocking async operations for high-performance applications.
+
+## Installation
+
+```bash
+pip install tracertm[async]
+```
+
+This installs `aiohttp` and other async dependencies.
+
+---
+
+## Client Initialization
+
+### Basic Initialization
+
+```python
+from tracertm import AsyncTraceRTMClient
+
+# Reads TRACERTM_API_KEY from environment
+client = AsyncTraceRTMClient()
+```
+
+### Full Configuration
+
+```python
+client = AsyncTraceRTMClient(
+    api_key="rtm_live_sk_...",
+    base_url="https://api.tracertm.dev/v1",
+    timeout=30.0,
+    max_retries=3,
+    retry_delay=1.0,
+    max_connections=100,
+    keepalive_timeout=30,
+    headers={"X-Request-ID": "custom-id"},
+    verify_ssl=True
+)
+```
+
+### Configuration Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `api_key` | `str` | `None` | API key (or use `TRACERTM_API_KEY` env var) |
+| `base_url` | `str` | `https://api.tracertm.dev/v1` | API base URL |
+| `timeout` | `float` | `30.0` | Request timeout in seconds |
+| `max_retries` | `int` | `3` | Maximum retry attempts |
+| `retry_delay` | `float` | `1.0` | Initial retry delay in seconds |
+| `max_connections` | `int` | `100` | Maximum concurrent connections |
+| `keepalive_timeout` | `float` | `30` | Keep-alive timeout in seconds |
+| `headers` | `dict` | `{}` | Additional headers for all requests |
+| `verify_ssl` | `bool` | `True` | Verify SSL certificates |
+
+---
+
+## Connection Management
+
+### Context Manager (Recommended)
+
+```python
+import asyncio
+from tracertm import AsyncTraceRTMClient
+
+async def main():
+    async with AsyncTraceRTMClient() as client:
+        projects = await client.projects.list()
+        print(f"Found {len(projects.data)} projects")
+
+asyncio.run(main())
+```
+
+### Manual Connection Management
+
+```python
+async def main():
+    client = AsyncTraceRTMClient()
+
+    try:
+        await client.connect()
+        projects = await client.projects.list()
+    finally:
+        await client.close()
+```
+
+### Connection Properties
+
+```python
+async with AsyncTraceRTMClient() as client:
+    print(f"Connected: {client.is_connected}")
+    print(f"Base URL: {client.base_url}")
+    print(f"Timeout: {client.timeout}")
+```
+
+---
+
+## Projects API
+
+### list()
+
+```python
+async def list(
+    limit: int = 50,
+    offset: int = 0,
+    sort: str = "name",
+    order: str = "asc"
+) -> PaginatedResult[Project]
+```
+
+```python
+projects = await client.projects.list()
+
+# With pagination
+projects = await client.projects.list(limit=10, offset=20)
+
+# With sorting
+projects = await client.projects.list(sort="created_at", order="desc")
+```
+
+### get()
+
+```python
+async def get(project_id: str) -> Project
+```
+
+```python
+project = await client.projects.get("proj_abc123")
+print(f"Name: {project.name}")
+```
+
+### create()
+
+```python
+async def create(
+    name: str,
+    key: str,
+    description: str = None,
+    workflow_id: str = None,
+    settings: dict = None
+) -> Project
+```
+
+```python
+project = await client.projects.create(
+    name="My Project",
+    key="MYPROJ",
+    description="Project description"
+)
+```
+
+### update()
+
+```python
+async def update(
+    project_id: str,
+    name: str = None,
+    description: str = None,
+    settings: dict = None
+) -> Project
+```
+
+```python
+project = await client.projects.update(
+    "proj_abc123",
+    name="Updated Name"
+)
+```
+
+### delete()
+
+```python
+async def delete(project_id: str) -> None
+```
+
+```python
+await client.projects.delete("proj_abc123")
+```
+
+### iterate()
+
+```python
+async def iterate(**filters) -> AsyncIterator[Project]
+```
+
+```python
+async for project in client.projects.iterate():
+    print(project.name)
+```
+
+---
+
+## Items API
+
+### list()
+
+```python
+async def list(
+    project_id: str,
+    type: str = None,
+    status: str = None,
+    assignee_id: str = None,
+    tags: list[str] = None,
+    search: str = None,
+    created_after: datetime = None,
+    created_before: datetime = None,
+    include: list[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    sort: str = "created_at",
+    order: str = "desc"
+) -> PaginatedResult[Item]
+```
+
+```python
+# Basic list
+items = await client.items.list(project_id="proj_abc123")
+
+# With filters
+items = await client.items.list(
+    project_id="proj_abc123",
+    type="requirement",
+    status="approved",
+    tags=["security"]
+)
+
+# With includes
+items = await client.items.list(
+    project_id="proj_abc123",
+    include=["links", "history"]
+)
+```
+
+### get()
+
+```python
+async def get(
+    item_id: str,
+    include: list[str] = None
+) -> Item
+```
+
+```python
+item = await client.items.get("item_abc123")
+
+# With related data
+item = await client.items.get(
+    "item_abc123",
+    include=["links", "history", "artifacts"]
+)
+```
+
+### create()
+
+```python
+async def create(
+    project_id: str,
+    type: str,
+    title: str,
+    description: str = None,
+    status: str = None,
+    priority: str = None,
+    assignee_id: str = None,
+    due_date: date = None,
+    tags: list[str] = None,
+    fields: dict = None,
+    parent_id: str = None
+) -> Item
+```
+
+```python
+item = await client.items.create(
+    project_id="proj_abc123",
+    type="requirement",
+    title="User Authentication",
+    description="Users must authenticate",
+    priority="high",
+    tags=["security"]
+)
+```
+
+### update()
+
+```python
+async def update(
+    item_id: str,
+    title: str = None,
+    description: str = None,
+    status: str = None,
+    priority: str = None,
+    assignee_id: str = None,
+    due_date: date = None,
+    tags: list[str] = None,
+    add_tags: list[str] = None,
+    remove_tags: list[str] = None,
+    fields: dict = None
+) -> Item
+```
+
+```python
+item = await client.items.update(
+    "item_abc123",
+    title="Updated Title",
+    add_tags=["reviewed"]
+)
+```
+
+### delete()
+
+```python
+async def delete(item_id: str) -> None
+```
+
+```python
+await client.items.delete("item_abc123")
+```
+
+### bulk_create()
+
+```python
+async def bulk_create(
+    items: list[dict]
+) -> list[BulkResult]
+```
+
+```python
+results = await client.items.bulk_create([
+    {"project_id": "proj_123", "type": "requirement", "title": "Req 1"},
+    {"project_id": "proj_123", "type": "requirement", "title": "Req 2"}
+])
+
+for result in results:
+    if result.success:
+        print(f"Created: {result.item.id}")
+    else:
+        print(f"Failed: {result.error}")
+```
+
+### bulk_update()
+
+```python
+async def bulk_update(
+    updates: list[dict]
+) -> list[BulkResult]
+```
+
+```python
+results = await client.items.bulk_update([
+    {"id": "item_1", "status": "approved"},
+    {"id": "item_2", "status": "approved"}
+])
+```
+
+### bulk_delete()
+
+```python
+async def bulk_delete(
+    item_ids: list[str]
+) -> list[BulkResult]
+```
+
+```python
+results = await client.items.bulk_delete(["item_1", "item_2"])
+```
+
+### transition()
+
+```python
+async def transition(
+    item_id: str,
+    transition: str,
+    comment: str = None
+) -> Item
+```
+
+```python
+item = await client.items.transition(
+    "item_abc123",
+    transition="approve",
+    comment="Approved after review"
+)
+```
+
+### available_transitions()
+
+```python
+async def available_transitions(
+    item_id: str
+) -> list[Transition]
+```
+
+```python
+transitions = await client.items.available_transitions("item_abc123")
+for t in transitions:
+    print(f"{t.name}: {t.from_state} -> {t.to_state}")
+```
+
+### iterate()
+
+```python
+async def iterate(**filters) -> AsyncIterator[Item]
+```
+
+```python
+async for item in client.items.iterate(
+    project_id="proj_abc123",
+    type="requirement"
+):
+    print(item.title)
+```
+
+---
+
+## Links API
+
+### list()
+
+```python
+async def list(
+    project_id: str = None,
+    source_id: str = None,
+    target_id: str = None,
+    type: str = None,
+    limit: int = 50,
+    offset: int = 0
+) -> PaginatedResult[Link]
+```
+
+```python
+links = await client.links.list(project_id="proj_abc123")
+links = await client.links.list(source_id="item_abc123")
+links = await client.links.list(target_id="item_abc123", type="verified_by")
+```
+
+### get()
+
+```python
+async def get(link_id: str) -> Link
+```
+
+```python
+link = await client.links.get("link_abc123")
+```
+
+### create()
+
+```python
+async def create(
+    source_id: str,
+    target_id: str,
+    type: str,
+    description: str = None
+) -> Link
+```
+
+```python
+link = await client.links.create(
+    source_id="item_req_001",
+    target_id="item_tc_001",
+    type="verified_by"
+)
+```
+
+### delete()
+
+```python
+async def delete(link_id: str) -> None
+```
+
+```python
+await client.links.delete("link_abc123")
+```
+
+### bulk_create()
+
+```python
+async def bulk_create(
+    links: list[dict]
+) -> list[BulkResult]
+```
+
+```python
+results = await client.links.bulk_create([
+    {"source_id": "item_1", "target_id": "item_2", "type": "traces_to"},
+    {"source_id": "item_1", "target_id": "item_3", "type": "verified_by"}
+])
+```
+
+---
+
+## Search API
+
+### items()
+
+```python
+async def items(
+    query: str,
+    project_ids: list[str] = None,
+    types: list[str] = None,
+    limit: int = 20
+) -> SearchResult
+```
+
+```python
+results = await client.search.items(
+    query="authentication",
+    project_ids=["proj_abc123"],
+    types=["requirement", "test_case"]
+)
+
+for hit in results.items:
+    print(f"{hit.item.title} (score: {hit.score})")
+```
+
+---
+
+## Reports API
+
+### traceability_matrix()
+
+```python
+async def traceability_matrix(
+    project_id: str,
+    source_type: str,
+    target_type: str
+) -> TraceabilityMatrix
+```
+
+```python
+matrix = await client.reports.traceability_matrix(
+    project_id="proj_abc123",
+    source_type="requirement",
+    target_type="test_case"
+)
+
+print(f"Coverage: {matrix.summary.coverage_percent}%")
+```
+
+### coverage()
+
+```python
+async def coverage(
+    project_id: str,
+    source_type: str = "requirement",
+    target_type: str = "test_case"
+) -> CoverageReport
+```
+
+```python
+coverage = await client.reports.coverage(project_id="proj_abc123")
+print(f"Covered: {coverage.covered_count}/{coverage.covered_count + coverage.uncovered_count}")
+```
+
+---
+
+## Rate Limiting
+
+The async client automatically handles rate limiting:
+
+```python
+async with AsyncTraceRTMClient() as client:
+    # After each request, check rate limit info
+    projects = await client.projects.list()
+
+    print(f"Remaining: {client.rate_limit_remaining}")
+    print(f"Reset: {client.rate_limit_reset}")
+```
+
+### Manual Rate Limit Handling
+
+```python
+from tracertm.exceptions import RateLimitError
+import asyncio
+
+async def safe_request(client, item_id: str):
+    try:
+        return await client.items.get(item_id)
+    except RateLimitError as e:
+        print(f"Rate limited, waiting {e.retry_after}s")
+        await asyncio.sleep(e.retry_after)
+        return await safe_request(client, item_id)
+```
+
+---
+
+## Connection Pooling
+
+The async client maintains a connection pool for efficiency:
+
+```python
+client = AsyncTraceRTMClient(
+    max_connections=100,      # Maximum concurrent connections
+    keepalive_timeout=30      # Keep-alive timeout
+)
+```
+
+### Pool Statistics
+
+```python
+async with AsyncTraceRTMClient() as client:
+    # After some requests
+    stats = client.connection_stats
+    print(f"Active: {stats['active']}")
+    print(f"Idle: {stats['idle']}")
+    print(f"Total: {stats['total']}")
+```
+
+---
+
+## Type Hints
+
+The async client is fully typed for IDE support:
+
+```python
+from tracertm import AsyncTraceRTMClient
+from tracertm.models import Project, Item, Link, PaginatedResult
+
+async def get_project_items(client: AsyncTraceRTMClient, project_id: str) -> list[Item]:
+    result: PaginatedResult[Item] = await client.items.list(project_id=project_id)
+    return result.data
+```
+
+---
+
+## Related Documentation
+
+- [Async Overview](/docs/api-reference/sdks/python/async) - Async concepts
+- [Concurrent Requests](/docs/api-reference/sdks/python/concurrent-requests) - Concurrency patterns
+- [Error Handling](/docs/api-reference/sdks/python/error-handling) - Error handling

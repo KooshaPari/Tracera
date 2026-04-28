@@ -1,0 +1,205 @@
+---
+title: "Request Flow"
+description: "How requests flow through the TraceRTM system"
+keywords: [architecture, request flow, http, api]
+---
+
+# Request Flow
+
+How HTTP requests flow through the TraceRTM system from client to database and back.
+
+## Request Lifecycle
+
+```
+Client Request
+    ↓
+Load Balancer (Production)
+    ↓
+API Gateway / FastAPI
+    ↓
+Middleware (Auth, Logging, CORS)
+    ↓
+Route Handler
+    ↓
+Service Layer
+    ↓
+Repository Layer
+    ↓
+Database
+    ↓
+Response
+```
+
+## Detailed Flow
+
+### 1. Client Request
+
+```http
+POST /api/v1/items HTTP/1.1
+Host: api.tracertm.dev
+Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
+Content-Type: application/json
+
+{
+  "title": "New Requirement",
+  "view": "requirements"
+}
+```
+
+### 2. FastAPI Router
+
+```python
+# src/tracertm/api/main.py
+@app.post("/api/v1/items")
+async def create_item(
+    request: CreateItemRequest,
+    current_user: User = Depends(get_current_user)
+):
+    # Handler logic
+    pass
+```
+
+### 3. Authentication Middleware
+
+```python
+async def get_current_user(
+    token: str = Depends(oauth2_scheme)
+) -> User:
+    # Validate JWT token
+    payload = jwt.decode(token, SECRET_KEY)
+    user = await get_user(payload["sub"])
+    return user
+```
+
+### 4. Request Validation
+
+```python
+# Pydantic model validation
+class CreateItemRequest(BaseModel):
+    title: str = Field(..., min_length=1, max_length=255)
+    view: str = Field(..., pattern="^(requirements|test-cases)$")
+    
+    @validator('title')
+    def validate_title(cls, v):
+        if not v.strip():
+            raise ValueError('Title cannot be empty')
+        return v
+```
+
+### 5. Service Layer
+
+```python
+# src/tracertm/services/item_service.py
+class ItemService:
+    async def create(self, data: dict, user: User) -> Item:
+        # Business logic
+        validate_item(data)
+        check_permissions(user, "create_item")
+        
+        # Data access
+        item = await self.repo.create(data)
+        
+        # Events
+        await event_bus.publish("item.created", item)
+        
+        return item
+```
+
+### 6. Repository Layer
+
+```python
+# src/tracertm/repositories/item_repository.py
+class ItemRepository:
+    async def create(self, data: dict) -> Item:
+        item = Item(**data)
+        self.session.add(item)
+        await self.session.commit()
+        await self.session.refresh(item)
+        return item
+```
+
+### 7. Database
+
+```sql
+INSERT INTO items (id, title, view, status, project_id, created_at)
+VALUES ('item_123', 'New Requirement', 'requirements', 'draft', 'proj_123', NOW())
+RETURNING *;
+```
+
+### 8. Response
+
+```json
+{
+  "id": "item_123",
+  "title": "New Requirement",
+  "view": "requirements",
+  "status": "draft",
+  "created_at": "2025-01-20T10:30:00Z"
+}
+```
+
+## Error Handling Flow
+
+### Validation Error
+
+```
+Request → Validation → Error Response (422)
+```
+
+```python
+try:
+    validate_request(data)
+except ValidationError as e:
+    raise HTTPException(status_code=422, detail=e.errors())
+```
+
+### Authentication Error
+
+```
+Request → Auth Middleware → Error Response (401)
+```
+
+```python
+if not token_valid:
+    raise HTTPException(status_code=401, detail="Invalid token")
+```
+
+### Database Error
+
+```
+Request → Repository → Database Error → Error Response (500)
+```
+
+```python
+try:
+    item = await repo.create(data)
+except DatabaseError as e:
+    logger.error(f"Database error: {e}")
+    raise HTTPException(status_code=500, detail="Database error")
+```
+
+## Async Flow
+
+All operations are async:
+
+```python
+async def create_item(request: CreateItemRequest):
+    # Non-blocking I/O
+    item = await item_service.create(request)
+    return item
+```
+
+## Middleware Stack
+
+```python
+# Applied in order
+app.add_middleware(CORSMiddleware)
+app.add_middleware(AuthenticationMiddleware)
+app.add_middleware(LoggingMiddleware)
+app.add_middleware(ErrorHandlingMiddleware)
+```
+
+## Related Documentation
+
+- [Components](./03-components) - System components
+- [Backend Handlers](../04-internals/01-backend-handlers) - Handler implementation

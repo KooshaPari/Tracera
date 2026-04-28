@@ -1,0 +1,264 @@
+---
+title: "What is Traceability?"
+description: "Understanding requirements traceability and its importance in software development"
+---
+
+# What is Traceability?
+
+**Requirements traceability** is the ability to describe and follow the life of a requirement throughout the entire development lifecycle - from its origin through design, implementation, testing, and deployment.
+
+## Definition
+
+Traceability provides a documented chain that connects:
+
+```
+STAKEHOLDER NEED → REQUIREMENT → DESIGN → CODE → TEST → DEPLOYMENT
+```
+
+Each link in this chain answers important questions:
+
+| Link | Question Answered |
+|------|-------------------|
+| Need → Requirement | Why does this requirement exist? |
+| Requirement → Design | How will this be structured? |
+| Design → Code | Where is this implemented? |
+| Code → Test | Is this verified? |
+| Test → Deployment | Is this ready for release? |
+
+## Types of Traceability
+
+### Forward Traceability
+
+Traces from requirements **forward** to implementation and testing:
+
+```
+REQUIREMENT → CODE → TEST
+```
+
+**Purpose**: Ensure every requirement is implemented and tested.
+
+**Key Question**: "Is this requirement covered?"
+
+### Backward Traceability
+
+Traces from implementation **backward** to requirements:
+
+```
+TEST → CODE → REQUIREMENT
+```
+
+**Purpose**: Ensure every piece of code and test has a purpose.
+
+**Key Question**: "Why does this code/test exist?"
+
+### Bidirectional Traceability
+
+Combines forward and backward traceability:
+
+```
+REQUIREMENT ←→ CODE ←→ TEST
+```
+
+**Purpose**: Complete visibility in both directions.
+
+**Key Question**: "What's the full picture?"
+
+## The Traceability Matrix
+
+The Requirements Traceability Matrix (RTM) is the primary deliverable:
+
+```
+                         TESTS
+                    T-001  T-002  T-003  T-004
+REQUIREMENTS        ────────────────────────────
+REQ-001 Login         ✓      ✓                    [2 tests]
+REQ-002 Logout        ✓                           [1 test]
+REQ-003 Password            ✓      ✓      ✓      [3 tests]
+REQ-004 Profile                                   [0 tests] ⚠
+────────────────────────────────────────────────
+Coverage             75%   (3/4 requirements have tests)
+```
+
+The matrix reveals:
+- **Coverage**: REQ-004 has no tests (gap)
+- **Over-testing**: REQ-003 has 3 tests (may be appropriate for critical features)
+- **Relationships**: T-002 covers multiple requirements
+
+## Why Traceability Matters
+
+### 1. Completeness Verification
+
+Without traceability, you can't answer:
+- Are all requirements implemented?
+- Are all requirements tested?
+- Are there orphan tests (tests without requirements)?
+
+### 2. Impact Analysis
+
+When a requirement changes:
+- What code needs to change?
+- What tests need updating?
+- What other requirements are affected?
+
+```
+If REQ-001 changes:
+├── CODE-001 (implements REQ-001) → needs review
+├── CODE-002 (implements REQ-001) → needs review
+├── TEST-001 (tests REQ-001) → needs update
+└── REQ-005 (depends on REQ-001) → needs review
+```
+
+### 3. Compliance & Audits
+
+Regulated industries require proof that:
+- Every requirement has an origin (business justification)
+- Every requirement is implemented
+- Every requirement is tested
+- All changes are tracked
+
+### 4. Change Management
+
+Before approving a change request:
+- What's the scope of impact?
+- What's the effort required?
+- What's the risk?
+
+### 5. Project Visibility
+
+At any time, stakeholders can ask:
+- What's the coverage percentage?
+- What requirements are at risk?
+- What's blocking release?
+
+## Real-World Example
+
+Consider a banking application with a requirement:
+
+**REQ-042**: "Users must be able to transfer funds between accounts"
+
+With traceability:
+
+```
+Business Need (BN-012): "Enable self-service banking"
+    └── REQ-042: "Users must transfer funds"
+            ├── DESIGN-018: "Transfer Service Architecture"
+            │       └── CODE-089: transfer_service.py
+            │               ├── TEST-201: test_transfer_valid_amount
+            │               ├── TEST-202: test_transfer_insufficient_funds
+            │               └── TEST-203: test_transfer_daily_limit
+            └── DESIGN-019: "Transfer UI Wireframe"
+                    └── CODE-090: TransferForm.tsx
+                            └── TEST-210: test_transfer_form_validation
+```
+
+Now if REQ-042 changes (e.g., "add international transfers"):
+1. Impact analysis shows exactly what's affected
+2. QA knows which tests need updating
+3. Developers know which code to modify
+4. Managers can estimate effort accurately
+
+## Traceability vs. Tracking
+
+| Traceability | Tracking |
+|--------------|----------|
+| Relationships between artifacts | Status of individual items |
+| "What's connected to what?" | "What's the status?" |
+| Graph structure | List/table structure |
+| Answers "why" and "what if" | Answers "where is it" |
+
+Both are important, but traceability provides deeper insights.
+
+## Common Traceability Challenges
+
+### 1. Link Rot
+
+Links become stale when:
+- Code is refactored without updating links
+- Requirements change without updating tests
+- Items are deleted without updating dependents
+
+**Solution**: Automated validation, link integrity checks
+
+### 2. Over-Tracing
+
+Too many links create noise:
+- Every function linked to every requirement
+- Generic "related to" links everywhere
+
+**Solution**: Use semantic link types, trace at appropriate granularity
+
+### 3. Under-Tracing
+
+Too few links create gaps:
+- Critical requirements without test links
+- Code without requirement justification
+
+**Solution**: Coverage reports, gap analysis, mandatory linking rules
+
+### 4. Manual Maintenance
+
+Keeping traceability up-to-date manually is:
+- Time-consuming
+- Error-prone
+- Often abandoned
+
+**Solution**: Automation, CI/CD integration, agent-based linking
+
+## Traceability in TraceRTM
+
+TraceRTM makes traceability practical:
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# Create requirement
+req = client.create_item(
+    title="User Authentication",
+    item_type="feature"
+)
+
+# Create test and link
+test = client.create_item(
+    title="Test Login Flow",
+    item_type="test"
+)
+client.create_link(test.id, req.id, "tests")
+
+# Check coverage
+coverage = client.get_test_coverage()
+print(f"Coverage: {coverage.percentage}%")
+
+# Impact analysis
+impact = client.analyze_impact(req.id)
+print(f"Affected items: {impact.total_count}")
+```
+
+## Industry Standards
+
+Traceability is required or recommended by:
+
+| Standard | Industry | Requirement |
+|----------|----------|-------------|
+| DO-178C | Aerospace | Mandatory bidirectional traceability |
+| ISO 26262 | Automotive | Safety requirements traceability |
+| IEC 62304 | Medical Devices | Software requirements traceability |
+| FDA 21 CFR Part 11 | Pharma/Medical | Audit trail requirements |
+| ISO 27001 | Security | Change management traceability |
+
+## Getting Started
+
+1. **Start Simple**: Begin with requirement → test links
+2. **Add Design**: Include architecture and design artifacts
+3. **Connect Code**: Link implementation to requirements
+4. **Automate**: Use CI/CD to maintain links
+5. **Report**: Generate matrices and coverage reports
+
+## Next Steps
+
+- [Types of Traceability](/docs/wiki/concepts/traceability/types) - Deep dive into trace types
+- [Benefits](/docs/wiki/concepts/traceability/benefits) - ROI of traceability
+- [Best Practices](/docs/wiki/concepts/traceability/best-practices) - Industry guidance
+- [Your First Project](/docs/getting-started/first-project) - Hands-on tutorial
+

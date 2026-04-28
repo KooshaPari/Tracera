@@ -1,0 +1,312 @@
+project:
+  id: 4b9e92e0-cb65-4aaf-a663-6129c8588b36
+  name: pokemon-go
+  description: Pokemon Go Mobile Game Requirements
+  created_at: '2025-11-29T11:13:26'
+  updated_at: '2025-11-29T11:13:26'
+items:
+- id: fd22d355-f07c-48fd-b18c-1823368b5fc7
+  title: Pokemon Catching System
+  description: Core gameplay mechanic - NOW IN DEVELOPMENT
+  view: FEATURE
+  type: epic
+  status: in_progress
+  priority: high
+  owner: GameDesign
+  parent_id: null
+  metadata: {}
+  version: 2
+  created_at: '2025-11-29T11:13:56'
+  updated_at: '2025-11-29T11:15:10'
+- id: 420813fa-f7f3-49bd-ac60-1a30b1b66d44
+  title: Wild Pokemon Encounters
+  description: Players can encounter wild Pokemon on the map
+  view: FEATURE
+  type: story
+  status: todo
+  priority: high
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:13:57'
+  updated_at: '2025-11-29T11:13:57'
+- id: fcd35845-cf41-41ba-b758-74e2070784ef
+  title: Pokeball Throwing Mechanic
+  description: Swipe to throw Pokeballs at Pokemon
+  view: FEATURE
+  type: story
+  status: todo
+  priority: high
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:13:57'
+  updated_at: '2025-11-29T11:13:57'
+- id: ad8e33d5-d468-438f-a3a0-e3d0d59d9bd3
+  title: Catch Rate Calculation
+  description: Calculate catch probability based on Pokemon level and ball type
+  view: FEATURE
+  type: story
+  status: todo
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:13:58'
+  updated_at: '2025-11-29T11:13:58'
+- id: 36732713-09d2-4ea2-9045-4dd803144352
+  title: Implement AR Camera Mode
+  description: Use device camera for AR Pokemon encounters
+  view: FEATURE
+  type: task
+  status: todo
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:13:58'
+  updated_at: '2025-11-29T11:13:58'
+- id: 1e757fbb-081f-4021-a3a7-38629404b7e3
+  title: Add Pokemon Flee Logic
+  description: Pokemon can flee after failed catch attempts
+  view: FEATURE
+  type: task
+  status: todo
+  priority: low
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:13:59'
+  updated_at: '2025-11-29T11:13:59'
+- id: be2fd4af-b589-4a7a-b39d-340d71e8388a
+  title: PokemonCatcher.swift
+  description: Main catching logic implementation
+  view: CODE
+  type: file
+  status: in_progress
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:14:15'
+  updated_at: '2025-11-29T11:14:15'
+- id: f8b23825-87af-41d0-ab1c-8e95aa0dc342
+  title: CatchRateCalculator
+  description: Calculates catch probability
+  view: CODE
+  type: class
+  status: todo
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:14:15'
+  updated_at: '2025-11-29T11:14:15'
+- id: 51fa1347-f74c-4d4e-8a13-effba8a7558b
+  title: throwPokeball()
+  description: Handles pokeball throwing physics
+  view: CODE
+  type: function
+  status: todo
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:14:16'
+  updated_at: '2025-11-29T11:14:16'
+- id: d0531822-302c-4ad2-bf80-b77fb51d5144
+  title: pokemon_encounters
+  description: Stores wild Pokemon encounter data
+  view: DATABASE
+  type: table
+  status: done
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:14:16'
+  updated_at: '2025-11-29T11:14:16'
+- id: 93e7f3c8-f046-4b9e-bf8d-3901355bbda8
+  title: catch_attempts
+  description: Logs all catch attempts
+  view: DATABASE
+  type: table
+  status: done
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:14:17'
+  updated_at: '2025-11-29T11:14:17'
+- id: 59887fe9-d28c-44ac-b986-06f1cea5f57b
+  title: idx_pokemon_location
+  description: Index on Pokemon location for fast queries
+  view: DATABASE
+  type: index
+  status: todo
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:14:17'
+  updated_at: '2025-11-29T11:14:17'
+- id: fb28b580-1abc-4d20-b39b-b1a87dd28a63
+  title: POST /api/v1/catch
+  description: Submit catch attempt
+  view: API
+  type: endpoint
+  status: in_progress
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:14:18'
+  updated_at: '2025-11-29T11:14:18'
+- id: 165159f2-35d0-4f0d-91c0-a35580a902ac
+  title: GET /api/v1/pokemon/nearby
+  description: Get nearby wild Pokemon
+  view: API
+  type: endpoint
+  status: done
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:14:18'
+  updated_at: '2025-11-29T11:14:18'
+- id: 257b5ead-4220-41f5-9307-d1431b392e81
+  title: CatchRequest
+  description: Request schema for catch endpoint
+  view: API
+  type: schema
+  status: done
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:14:19'
+  updated_at: '2025-11-29T11:14:19'
+- id: 277aedf3-e699-4c53-b4d0-edd150eaa9b3
+  title: Catch Screen
+  description: Main Pokemon catching interface
+  view: WIREFRAME
+  type: screen
+  status: done
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:14:34'
+  updated_at: '2025-11-29T11:14:34'
+- id: 9b8e644c-3549-4493-8026-6fc00d5da97e
+  title: Pokeball Selector
+  description: UI for selecting Pokeball type
+  view: WIREFRAME
+  type: component
+  status: in_progress
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:14:34'
+  updated_at: '2025-11-29T11:14:34'
+- id: 01fe62da-c452-44f3-b227-547c68313841
+  title: Catch Flow
+  description: User flow from encounter to catch
+  view: WIREFRAME
+  type: flow
+  status: todo
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:14:35'
+  updated_at: '2025-11-29T11:14:35'
+- id: df09d2fc-c417-4dbd-8919-2a57dfea835a
+  title: Catching Tests
+  description: All tests for catching system
+  view: TEST
+  type: test_suite
+  status: in_progress
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:14:35'
+  updated_at: '2025-11-29T11:14:35'
+- id: ed66f9ad-448b-441f-84db-26de40c06a54
+  title: Test Catch Rate Calculation
+  description: Verify catch rate formula
+  view: TEST
+  type: test_case
+  status: done
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:14:36'
+  updated_at: '2025-11-29T11:14:36'
+- id: 7967253a-1fc2-45ee-93b6-2a15b1834ed7
+  title: Test Pokemon Flee
+  description: Verify flee mechanics
+  view: TEST
+  type: test_case
+  status: todo
+  priority: medium
+  owner: null
+  parent_id: null
+  metadata: {}
+  version: 1
+  created_at: '2025-11-29T11:14:37'
+  updated_at: '2025-11-29T11:14:37'
+links:
+- id: 59db9d7a-bf20-44ca-8bee-724ee91ce47a
+  source_id: fb28b580-1abc-4d20-b39b-b1a87dd28a63
+  target_id: d0531822-302c-4ad2-bf80-b77fb51d5144
+  type: depends_on
+  metadata: {}
+  created_at: '2025-11-29T11:15:37'
+- id: f7fcb4bf-d14e-40de-9244-eb0eb49c30ff
+  source_id: 277aedf3-e699-4c53-b4d0-edd150eaa9b3
+  target_id: 420813fa-f7f3-49bd-ac60-1a30b1b66d44
+  type: designs
+  metadata: {}
+  created_at: '2025-11-29T11:15:38'
+- id: f502d963-01cb-4aea-999a-5581caf0b651
+  source_id: 420813fa-f7f3-49bd-ac60-1a30b1b66d44
+  target_id: fd22d355-f07c-48fd-b18c-1823368b5fc7
+  type: implements
+  metadata: {}
+  created_at: '2025-11-29T11:15:36'
+- id: f51081bd-0c8a-40b5-889a-b032b5c32691
+  source_id: be2fd4af-b589-4a7a-b39d-340d71e8388a
+  target_id: 420813fa-f7f3-49bd-ac60-1a30b1b66d44
+  type: implements
+  metadata: {}
+  created_at: '2025-11-29T11:15:36'
+- id: ee474a82-f1e3-49dd-b5ab-4f9cf1de1216
+  source_id: ed66f9ad-448b-441f-84db-26de40c06a54
+  target_id: ad8e33d5-d468-438f-a3a0-e3d0d59d9bd3
+  type: tests
+  metadata: {}
+  created_at: '2025-11-29T11:15:37'
+exported_at: '2025-11-29T12:06:52.246524'

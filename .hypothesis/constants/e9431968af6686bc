@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/linear_app.py
+# hypothesis_version: 6.151.4
+
+[255, 'Account', 'CASCADE', 'SET NULL', 'account_id', 'accounts.id', 'workspace_id']

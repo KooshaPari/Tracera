@@ -1,0 +1,173 @@
+---
+title: "API Documentation"
+description: "Generating and maintaining API documentation"
+keywords: [api docs, openapi, swagger, documentation]
+---
+
+# API Documentation
+
+Generating and maintaining API documentation for TraceRTM.
+
+## OpenAPI/Swagger
+
+### FastAPI Auto-Docs
+
+FastAPI automatically generates OpenAPI schema:
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI(
+    title="TraceRTM API",
+    description="TraceRTM Requirements Traceability API",
+    version="2.4.0"
+)
+
+# Access docs at:
+# - Swagger UI: http://localhost:8000/docs
+# - ReDoc: http://localhost:8000/redoc
+# - OpenAPI JSON: http://localhost:8000/openapi.json
+```
+
+### Customize Documentation
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI(
+    title="TraceRTM API",
+    description="""
+    TraceRTM Requirements Traceability Management API.
+    
+    ## Features
+    
+    * Manage requirements, test cases, and design documents
+    * Create traceability links
+    * Perform impact analysis
+    * Export/import project data
+    """,
+    version="2.4.0",
+    contact={
+        "name": "TraceRTM Support",
+        "email": "support@tracertm.dev"
+    },
+    license_info={
+        "name": "MIT"
+    }
+)
+```
+
+## Endpoint Documentation
+
+### Document Endpoints
+
+```python
+@router.post(
+    "/api/v1/items",
+    summary="Create Item",
+    description="Create a new item in the project",
+    response_description="Created item with ID",
+    tags=["Items"]
+)
+async def create_item(request: CreateItemRequest):
+    """Create a new item.
+    
+    Creates an item with the specified title and view. The item
+    will be created with status "draft" by default.
+    """
+    pass
+```
+
+### Response Models
+
+```python
+from pydantic import BaseModel
+
+class ItemResponse(BaseModel):
+    """Item response model."""
+    id: str
+    title: str
+    view: str
+    status: str
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "id": "item_123",
+                "title": "User Authentication",
+                "view": "requirements",
+                "status": "draft"
+            }
+        }
+
+@router.get("/api/v1/items/{item_id}", response_model=ItemResponse)
+async def get_item(item_id: str):
+    """Get item by ID."""
+    pass
+```
+
+## Generating Docs
+
+### Export OpenAPI Schema
+
+```bash
+# Get OpenAPI JSON
+curl http://localhost:8000/openapi.json > openapi.json
+
+# Generate static docs
+npx @redocly/cli build-docs openapi.json -o docs/api.html
+```
+
+### Update Documentation Site
+
+```bash
+# Generate API docs for documentation site
+python scripts/generate-api-docs.py
+
+# Or use automated script
+npm run generate:api-docs
+```
+
+## Best Practices
+
+### 1. Document All Endpoints
+
+```python
+# Good - documented
+@router.get("/api/v1/items", summary="List Items", tags=["Items"])
+async def list_items():
+    """List all items in the project."""
+    pass
+
+# Bad - undocumented
+@router.get("/api/v1/items")
+async def list_items():
+    pass
+```
+
+### 2. Use Examples
+
+```python
+class CreateItemRequest(BaseModel):
+    title: str
+    view: str
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "title": "User Authentication",
+                "view": "requirements"
+            }
+        }
+```
+
+### 3. Keep Docs Updated
+
+- Update docs when API changes
+- Review generated docs regularly
+- Test examples in documentation
+
+## Related Documentation
+
+- [Documentation](./05-documentation) - Documentation overview
+- [API Reference](/docs/api-reference) - API documentation

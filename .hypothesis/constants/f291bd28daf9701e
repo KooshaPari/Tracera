@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/webhook_integration.py
+# hypothesis_version: 6.151.4
+
+[100, 128, 200, 255, 500, 1000, 'CASCADE', 'POST', 'SET NULL', 'active', 'azure_devops', 'bulk_results', 'circleci', 'created_at', 'custom', 'disabled', 'event_type', 'github_actions', 'gitlab_ci', 'jenkins', 'paused', 'project_id', 'projects.id', 'provider', 'status', 'success', 'test_result_submit', 'test_run_complete', 'test_run_start', 'test_suites.id', 'travis_ci', 'webhook_id', 'webhook_integrations', 'webhook_logs']

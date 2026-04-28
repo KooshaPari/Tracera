@@ -1,0 +1,84 @@
+---
+title: "Client Guides"
+description: "Complete guides for all TraceRTM client applications - CLI, TUI, Web UI, and Desktop"
+keywords: [clients, applications, cli, tui, web ui, desktop]
+---
+
+# Client Guides
+
+TraceRTM provides multiple client applications to suit different workflows and preferences.
+
+## Available Clients
+
+### Command Line Interface (CLI)
+Terminal-based interface for automation and scripting.
+
+**Best for**: Automation, CI/CD, scripting, server environments
+
+👉 [CLI Guide](./cli-guide)
+
+### Terminal User Interface (TUI)
+Interactive terminal application with visual interface.
+
+**Best for**: Terminal users, keyboard-driven workflows, offline work
+
+👉 [TUI Guide](./tui-guide)
+
+### Web UI
+Browser-based interface for visual project management.
+
+**Best for**: Visual workflows, collaboration, browser-based access
+
+👉 [Web UI Guide](./web-ui)
+
+### Desktop Application
+Native desktop application (coming soon).
+
+**Best for**: Native performance, offline access, desktop integration
+
+👉 [Desktop Guide](./desktop)
+
+## Choosing a Client
+
+| Client | Use Case | Platform |
+|--------|----------|----------|
+| **CLI** | Automation, scripts, CI/CD | All platforms |
+| **TUI** | Interactive terminal work | Terminal |
+| **Web UI** | Visual management, collaboration | Browser |
+| **Desktop** | Native app experience | Desktop OS |
+
+## Quick Start
+
+### CLI
+
+```bash
+# Install
+pip install tracertm-cli
+
+# Configure
+trace config set api-key rtm_live_abc123...
+
+# Use
+trace project list
+```
+
+### TUI
+
+```bash
+# Install
+pip install tracertm[tui]
+
+# Launch
+rtm tui dashboard
+```
+
+### Web UI
+
+Access at: `https://app.tracertm.dev` (or your self-hosted instance)
+
+## Related Documentation
+
+- [CLI Guide](./cli-guide) - Command-line interface
+- [TUI Guide](./tui-guide) - Terminal UI
+- [Web UI Guide](./web-ui) - Web interface
+- [Desktop Guide](./desktop) - Desktop app

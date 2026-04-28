@@ -1,0 +1,183 @@
+---
+title: "HTTP Handlers"
+description: "HTTP request handler implementation details"
+keywords: [http, handlers, fastapi, routes, endpoints]
+---
+
+# HTTP Handlers
+
+Detailed implementation of HTTP request handlers in TraceRTM.
+
+## FastAPI Router
+
+### Router Setup
+
+```python
+from fastapi import APIRouter
+
+router = APIRouter(prefix="/api/v1", tags=["items"])
+
+@router.get("/items")
+async def list_items():
+    """List all items."""
+    pass
+```
+
+### Route Registration
+
+```python
+from fastapi import FastAPI
+from tracertm.api.routers import items, projects, links
+
+app = FastAPI()
+
+app.include_router(items.router)
+app.include_router(projects.router)
+app.include_router(links.router)
+```
+
+## HTTP Methods
+
+### GET
+
+```python
+@router.get("/items/{item_id}")
+async def get_item(item_id: str):
+    """Retrieve item."""
+    pass
+```
+
+### POST
+
+```python
+@router.post("/items")
+async def create_item(request: CreateItemRequest):
+    """Create item."""
+    pass
+```
+
+### PUT
+
+```python
+@router.put("/items/{item_id}")
+async def update_item(item_id: str, request: UpdateItemRequest):
+    """Update item."""
+    pass
+```
+
+### DELETE
+
+```python
+@router.delete("/items/{item_id}")
+async def delete_item(item_id: str):
+    """Delete item."""
+    pass
+```
+
+## Path Parameters
+
+### Simple Parameter
+
+```python
+@router.get("/items/{item_id}")
+async def get_item(item_id: str):
+    """Get item by ID."""
+    pass
+```
+
+### Typed Parameter
+
+```python
+@router.get("/items/{item_id}")
+async def get_item(item_id: str):
+    """Get item with string ID."""
+    pass
+```
+
+## Query Parameters
+
+### Optional Parameters
+
+```python
+from typing import Optional
+
+@router.get("/items")
+async def list_items(
+    skip: int = 0,
+    limit: int = 100,
+    status: Optional[str] = None
+):
+    """List items with pagination and filtering."""
+    pass
+```
+
+### Required Parameters
+
+```python
+@router.get("/items")
+async def list_items(project_id: str):
+    """List items (project_id required)."""
+    pass
+```
+
+## Request Body
+
+### JSON Body
+
+```python
+from pydantic import BaseModel
+
+class CreateItemRequest(BaseModel):
+    title: str
+    view: str
+
+@router.post("/items")
+async def create_item(request: CreateItemRequest):
+    """Create item from JSON body."""
+    pass
+```
+
+## Response Types
+
+### JSON Response
+
+```python
+@router.get("/items")
+async def list_items() -> list[dict]:
+    """Return JSON list."""
+    return [{"id": "1", "title": "Item 1"}]
+```
+
+### Response Model
+
+```python
+from pydantic import BaseModel
+
+class ItemResponse(BaseModel):
+    id: str
+    title: str
+
+@router.get("/items/{item_id}", response_model=ItemResponse)
+async def get_item(item_id: str) -> ItemResponse:
+    """Return validated response."""
+    pass
+```
+
+## Status Codes
+
+### Custom Status Codes
+
+```python
+from fastapi import status
+from fastapi.responses import JSONResponse
+
+@router.post("/items", status_code=status.HTTP_201_CREATED)
+async def create_item(request: CreateItemRequest):
+    """Create item (returns 201)."""
+    pass
+```
+
+## Related Documentation
+
+- [Backend Handlers](./01-backend-handlers) - Handler overview
+- [Middleware](./02-middleware) - Request middleware

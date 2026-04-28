@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/external_integration_service.py
+# hypothesis_version: 6.148.7
+
+['by_type', 'custom', 'disabled', 'enabled', 'error', 'extension_id', 'full', 'github', 'gitlab', 'integration', 'items_synced', 'jira', 'message', 'now', 'repo', 'slack', 'status', 'success', 'sync_type', 'timestamp', 'token', 'total_integrations', 'total_syncs', 'type', 'vscode', 'webhook_url']

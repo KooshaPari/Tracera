@@ -1,0 +1,101 @@
+---
+title: "Python SDK Authentication"
+description: "Authenticate with the TraceRTM Python SDK using API keys or tokens"
+keywords: [python, sdk, authentication, api keys, tokens]
+---
+
+# Python SDK Authentication
+
+The TraceRTM Python SDK supports multiple authentication methods.
+
+## API Key Authentication
+
+### Basic Usage
+
+```python
+from tracertm import TraceRTM
+
+client = TraceRTM(api_key="rtm_live_abc123...")
+```
+
+### From Environment Variable
+
+```python
+import os
+from tracertm import TraceRTM
+
+client = TraceRTM(api_key=os.getenv("TRACERTM_API_KEY"))
+```
+
+### From Config File
+
+```python
+from tracertm import TraceRTM
+from tracertm.config import ConfigManager
+
+config = ConfigManager()
+api_key = config.get("api_key")
+
+client = TraceRTM(api_key=api_key)
+```
+
+## Token Authentication
+
+### Using Access Token
+
+```python
+from tracertm import TraceRTM
+
+client = TraceRTM(access_token="eyJhbGciOiJSUzI1NiIs...")
+```
+
+### Token Refresh
+
+```python
+from tracertm import TraceRTM
+
+client = TraceRTM(
+    access_token="current_token",
+    refresh_token="refresh_token_abc123..."
+)
+
+# Token will be automatically refreshed when expired
+projects = client.projects.list()
+```
+
+## Agent Registration
+
+For AI agents, register with the system:
+
+```python
+from tracertm import TraceRTM
+
+client = TraceRTM()
+
+# Register agent
+agent_id = client.register_agent(
+    name="My AI Agent",
+    capabilities=["item_creation", "link_analysis"],
+    agent_type="ai_agent"
+)
+
+print(f"Registered agent: {agent_id}")
+```
+
+## Error Handling
+
+```python
+from tracertm import TraceRTM
+from tracertm.exceptions import AuthenticationError
+
+try:
+    client = TraceRTM(api_key="invalid_key")
+    projects = client.projects.list()
+except AuthenticationError as e:
+    print(f"Authentication failed: {e}")
+```
+
+## Next Steps
+
+- [Artifacts](./04-artifacts) - Working with items
+- [Examples](./06-examples) - Code examples

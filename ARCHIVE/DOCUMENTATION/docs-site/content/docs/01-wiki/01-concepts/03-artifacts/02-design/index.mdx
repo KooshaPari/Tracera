@@ -1,0 +1,524 @@
+---
+title: "Design Documents"
+description: "Managing architecture, detailed design, wireframes, and API specifications in TraceRTM"
+---
+
+# Design Documents
+
+Design artifacts document **how** the system will be built. They bridge the gap between requirements (what) and implementation (code), providing architectural decisions, detailed designs, and visual specifications.
+
+## Design Artifact Types
+
+| Type | Purpose | Example |
+|------|---------|---------|
+| Architecture | High-level system structure | Component diagrams, deployment views |
+| Design | Detailed module design | Class diagrams, sequence diagrams |
+| Wireframe | UI/UX mockups | Page layouts, user flows |
+| Database | Data model definitions | ERD, schema specifications |
+| API | Interface specifications | OpenAPI specs, GraphQL schemas |
+
+## Creating Design Artifacts
+
+### Architecture Document
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# System architecture
+arch = client.create_item(
+    title="Authentication System Architecture",
+    item_type="architecture",
+    description="""
+    ## Overview
+    Microservice-based authentication system using OAuth2 and JWT.
+
+    ## Components
+    1. **Auth Gateway** - Entry point for all auth requests
+    2. **Token Service** - JWT generation and validation
+    3. **Identity Provider** - User credential management
+    4. **Session Store** - Redis-backed session management
+
+    ## Key Decisions
+    - ADR-001: JWT over opaque tokens (stateless scaling)
+    - ADR-002: Redis for sessions (performance)
+    - ADR-003: OAuth2 + OIDC (industry standard)
+    """,
+    metadata={
+        "diagram_url": "https://figma.com/...",
+        "components": ["Auth Gateway", "Token Service", "Identity Provider", "Session Store"],
+        "patterns": ["OAuth2", "JWT", "CQRS"],
+        "adrs": ["ADR-001", "ADR-002", "ADR-003"],
+        "status": "approved"
+    }
+)
+```
+
+### Detailed Design
+
+```python
+# Module-level design
+design = client.create_item(
+    title="Login Flow Detailed Design",
+    item_type="design",
+    description="""
+    ## Sequence Flow
+
+    1. User submits credentials
+    2. Gateway validates input format
+    3. Identity Provider verifies credentials
+    4. Token Service generates JWT
+    5. Session Store creates session
+    6. Gateway returns token to user
+
+    ## Error Handling
+    - Invalid credentials: 401 with generic message
+    - Account locked: 403 with unlock instructions
+    - Rate limited: 429 with retry-after header
+
+    ## Security Considerations
+    - Constant-time password comparison
+    - Failed attempt logging
+    - Brute force protection
+    """,
+    metadata={
+        "type": "sequence",
+        "diagram_url": "https://...",
+        "security_reviewed": True
+    }
+)
+
+# Link to architecture
+client.create_link(design.id, arch.id, "refines")
+
+# Link to requirement it realizes
+client.create_link(design.id, feature_auth.id, "realizes")
+```
+
+### Wireframe
+
+```python
+# UI wireframe
+wireframe = client.create_item(
+    title="Login Page Wireframe",
+    item_type="wireframe",
+    description="""
+    ## Layout
+    - Centered card (400px width)
+    - Logo at top
+    - Email input with validation
+    - Password input with visibility toggle
+    - "Remember me" checkbox
+    - "Login" primary button
+    - "Forgot password" link
+    - "Sign up" link
+    - Social login buttons (Google, GitHub)
+
+    ## States
+    1. Default (empty form)
+    2. Validation errors (inline)
+    3. Loading (spinner)
+    4. Error (toast message)
+    5. Success (redirect)
+
+    ## Accessibility
+    - Form labels linked to inputs
+    - Error messages announced
+    - Keyboard navigation
+    """,
+    metadata={
+        "figma_url": "https://figma.com/...",
+        "page": "login",
+        "device": "desktop",
+        "a11y_reviewed": True
+    }
+)
+
+# Link to design
+client.create_link(wireframe.id, design.id, "visualizes")
+```
+
+### Database Schema
+
+```python
+# Database design
+db_design = client.create_item(
+    title="User Authentication Schema",
+    item_type="database",
+    description="""
+    ## Tables
+
+    ### users
+    | Column | Type | Constraints |
+    |--------|------|-------------|
+    | id | UUID | PK |
+    | email | VARCHAR(255) | UNIQUE, NOT NULL |
+    | password_hash | VARCHAR(255) | NOT NULL |
+    | created_at | TIMESTAMP | NOT NULL |
+    | updated_at | TIMESTAMP | NOT NULL |
+    | last_login | TIMESTAMP | |
+    | status | ENUM | active/locked/deleted |
+
+    ### sessions
+    | Column | Type | Constraints |
+    |--------|------|-------------|
+    | id | UUID | PK |
+    | user_id | UUID | FK users |
+    | token_hash | VARCHAR(255) | NOT NULL |
+    | expires_at | TIMESTAMP | NOT NULL |
+    | created_at | TIMESTAMP | NOT NULL |
+
+    ## Indexes
+    - users(email) - login lookup
+    - sessions(token_hash) - validation
+    - sessions(user_id, expires_at) - cleanup
+    """,
+    metadata={
+        "dbms": "PostgreSQL",
+        "version": "15",
+        "migration": "V001__auth_tables.sql"
+    }
+)
+
+# Link to architecture
+client.create_link(db_design.id, arch.id, "part_of")
+```
+
+### API Specification
+
+```python
+# API design
+api_design = client.create_item(
+    title="Authentication API Specification",
+    item_type="api",
+    description="""
+    ## Endpoints
+
+    ### POST /auth/login
+    Login with credentials.
+
+    **Request:**
+    ```json
+    {
+      "email": "user@example.com",
+      "password": "secret",
+      "remember_me": false
+    }
+    ```
+
+    **Response 200:**
+    ```json
+    {
+      "access_token": "eyJ...",
+      "refresh_token": "abc...",
+      "expires_in": 3600
+    }
+    ```
+
+    **Errors:**
+    - 400: Invalid request format
+    - 401: Invalid credentials
+    - 403: Account locked
+    - 429: Rate limited
+
+    ### POST /auth/logout
+    Invalidate current session.
+
+    ### POST /auth/refresh
+    Get new access token using refresh token.
+    """,
+    metadata={
+        "openapi_url": "/api/v1/openapi.yaml",
+        "version": "v1",
+        "authentication": "Bearer JWT"
+    }
+)
+
+# Link to design
+client.create_link(api_design.id, design.id, "specifies")
+```
+
+## CLI Usage
+
+```bash
+# Create design artifacts
+tracertm create architecture "Auth System Architecture" \
+  --description "OAuth2-based authentication" \
+  --metadata '{"patterns": ["OAuth2", "JWT"]}'
+
+tracertm create design "Login Flow Design" \
+  --parent ARCH-001 \
+  --link-type refines
+
+tracertm create wireframe "Login Page" \
+  --metadata '{"figma_url": "https://..."}'
+
+# List design artifacts
+tracertm list --type architecture,design,wireframe,database,api
+
+# Link design to requirement
+tracertm link DES-001 FEAT-001 --type realizes
+```
+
+## Design Workflows
+
+### Design Review Workflow
+
+```yaml
+# .tracertm/workflows/design.yaml
+name: design
+states:
+  - draft        # Being created
+  - review       # Under peer review
+  - approved     # Approved for implementation
+  - implemented  # Code complete
+  - deprecated   # No longer current
+
+transitions:
+  - from: draft
+    to: review
+    requires:
+      - field: description
+        min_length: 100
+      - link_type: realizes
+        target_type: feature
+        min_count: 1
+
+  - from: review
+    to: approved
+    requires:
+      - approval:
+          role: architect
+      - approval:
+          role: security_reviewer
+        when:
+          metadata.security_relevant: true
+```
+
+### Architecture Decision Records
+
+```python
+# Track architectural decisions
+adr = client.create_item(
+    title="ADR-001: Use JWT for Authentication Tokens",
+    item_type="decision",
+    description="""
+    ## Status
+    Accepted
+
+    ## Context
+    Need to choose token format for authentication.
+
+    ## Decision
+    Use JWT (JSON Web Tokens) instead of opaque tokens.
+
+    ## Consequences
+    **Positive:**
+    - Stateless - no token lookup needed
+    - Self-contained claims
+    - Industry standard
+
+    **Negative:**
+    - Cannot revoke individual tokens
+    - Token size larger than opaque
+    - Must manage signing keys
+
+    ## Alternatives Considered
+    1. Opaque tokens with Redis lookup
+    2. Session cookies
+    3. PASETO tokens
+    """,
+    metadata={
+        "decision_date": "2024-01-15",
+        "decided_by": "Architecture Board",
+        "status": "accepted"
+    }
+)
+
+# Link ADR to architecture
+client.create_link(adr.id, arch.id, "documents")
+```
+
+## Traceability for Design
+
+### Linking Design to Requirements
+
+```python
+# Design realizes requirements
+for req_id in ["FEAT-001", "FEAT-002", "FEAT-003"]:
+    client.create_link(design.id, req_id, "realizes")
+
+# Query: Which designs realize this requirement?
+designs = client.trace_backward(
+    item_id="FEAT-001",
+    link_type="realizes",
+    source_type="design"
+)
+
+# Query: Which requirements does this design realize?
+requirements = client.trace_forward(
+    item_id="DES-001",
+    link_type="realizes",
+    target_type="feature"
+)
+```
+
+### Linking Design to Code
+
+```python
+# Code implements design
+client.create_link(code.id, design.id, "implements")
+
+# Check implementation coverage
+coverage = client.get_coverage(
+    source_type="code",
+    target_type="design",
+    link_type="implements"
+)
+
+print(f"Design implementation coverage: {coverage.percentage}%")
+```
+
+### Full Traceability Chain
+
+```
+REQUIREMENT → DESIGN → CODE → TEST
+     ↑          ↑        ↑       ↑
+   What       How    Build   Verify
+```
+
+```bash
+# Trace from requirement through design to code
+tracertm trace FEAT-001 --through design --to code
+
+# Output:
+# FEAT-001: User Authentication
+#   └── realized_by: DES-001 (Login Flow Design)
+#         └── implemented_by: CODE-001 (auth_handler.py)
+#         └── implemented_by: CODE-002 (token_service.py)
+#   └── realized_by: DES-002 (Session Management Design)
+#         └── implemented_by: CODE-003 (session_store.py)
+```
+
+## Design Documentation
+
+### Auto-Generate Documentation
+
+```bash
+# Generate design documentation
+tracertm docs generate --type design --format html --output design-docs/
+
+# Contents:
+# design-docs/
+#   ├── index.html
+#   ├── architecture/
+#   │   └── auth-system.html
+#   ├── designs/
+#   │   ├── login-flow.html
+#   │   └── session-management.html
+#   ├── database/
+#   │   └── auth-schema.html
+#   └── api/
+#       └── auth-api.html
+```
+
+### Design Review Reports
+
+```bash
+# Generate design review package
+tracertm report design-review --project PROJ-001
+
+# Output:
+# Design Review Package
+# ═════════════════════
+#
+# Architecture Documents: 3
+#   ARCH-001: Auth System ✓ Approved
+#   ARCH-002: Data Layer ✓ Approved
+#   ARCH-003: API Gateway → In Review
+#
+# Detailed Designs: 12
+#   Approved: 10
+#   In Review: 2
+#   Draft: 0
+#
+# Coverage:
+#   Requirements with designs: 95% (38/40)
+#   Designs with code: 85% (34/40)
+#
+# Pending Reviews:
+#   ARCH-003: Needs architect approval
+#   DES-011: Needs security review
+```
+
+## Best Practices
+
+### 1. Design Before Code
+
+```
+✓ Requirement → Design → Code → Test
+✗ Requirement → Code → "Maybe add design later"
+```
+
+### 2. Keep Designs Updated
+
+```python
+# When code changes significantly, update design
+def update_design_on_refactor(code_id: str, changes: str):
+    # Find linked design
+    designs = client.trace_backward(code_id, "implements", "design")
+
+    for design in designs:
+        # Add change note
+        client.update_item(
+            design.id,
+            metadata={
+                **design.metadata,
+                "change_history": [
+                    *design.metadata.get("change_history", []),
+                    {"date": "2024-12-01", "changes": changes}
+                ]
+            }
+        )
+```
+
+### 3. Link ADRs to Designs
+
+```python
+# Every significant design decision should have an ADR
+if design.metadata.get("significant_decision"):
+    adr = client.create_item(
+        title=f"ADR: {design.title}",
+        item_type="decision",
+        description="..."
+    )
+    client.create_link(adr.id, design.id, "documents")
+```
+
+### 4. Include Security Review
+
+```yaml
+# Require security review for sensitive designs
+workflows:
+  design:
+    transitions:
+      - from: review
+        to: approved
+        requires:
+          - approval:
+              role: security_reviewer
+            when:
+              any:
+                - metadata.security_relevant: true
+                - metadata.pii_involved: true
+                - metadata.authentication: true
+```
+
+## Related Topics
+
+- [Requirements](/docs/wiki/concepts/artifacts/requirements) - What to build
+- [Code](/docs/wiki/concepts/artifacts/code) - Implementation
+- [API](/docs/api-reference) - API specifications
+- [Best Practices](/docs/wiki/best-practices/design) - Design guidelines
+

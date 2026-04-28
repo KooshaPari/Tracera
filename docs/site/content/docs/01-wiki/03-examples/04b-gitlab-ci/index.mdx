@@ -1,0 +1,878 @@
+---
+title: "GitLab CI Integration"
+description: "Comprehensive guide to integrating TraceRTM with GitLab CI/CD pipelines"
+---
+
+# GitLab CI Integration
+
+Integrate TraceRTM into your GitLab CI/CD pipelines to automate requirements traceability, enforce coverage policies, and generate compliance reports.
+
+## Overview
+
+This guide demonstrates how to:
+- Validate requirements traceability in GitLab pipelines
+- Enforce coverage thresholds before merging
+- Generate and publish traceability reports
+- Integrate TraceRTM with GitLab merge requests
+- Configure GitLab Pages for report hosting
+- Set up webhook notifications
+
+## Prerequisites
+
+### Required Tools
+
+1. **GitLab Account**: GitLab.com or self-hosted instance (13.0+)
+2. **GitLab Runner**: Configured runner with Docker executor
+3. **TraceRTM CLI**: Installed in your project
+4. **Repository Access**: Maintainer or Owner role for CI/CD configuration
+
+### Project Setup
+
+Ensure your project has TraceRTM initialized:
+
+```bash
+# Install TraceRTM
+pip install tracertm
+
+# Initialize project
+tracertm init
+
+# Verify configuration
+tracertm status
+```
+
+### GitLab Runner Configuration
+
+Configure a runner with appropriate resources:
+
+```toml
+# config.toml
+[[runners]]
+  name = "tracertm-runner"
+  url = "https://gitlab.com/"
+  token = "YOUR_RUNNER_TOKEN"
+  executor = "docker"
+  [runners.docker]
+    image = "python:3.11"
+    privileged = false
+    volumes = ["/cache"]
+  [runners.cache]
+    Type = "s3"
+```
+
+## Basic GitLab CI Configuration
+
+### Simple .gitlab-ci.yml
+
+Create `.gitlab-ci.yml` in your repository root:
+
+```yaml
+# .gitlab-ci.yml - Basic Configuration
+stages:
+  - validate
+  - test
+  - report
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  TRACERTM_PROJECT: "$CI_PROJECT_DIR"
+
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+before_script:
+  - python -m venv venv
+  - source venv/bin/activate
+  - pip install tracertm
+
+traceability:validate:
+  stage: validate
+  script:
+    - tracertm validate
+    - tracertm coverage --format json > coverage.json
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.json
+    paths:
+      - coverage.json
+    expire_in: 1 week
+
+traceability:report:
+  stage: report
+  script:
+    - tracertm report --format html --output reports/
+    - tracertm matrix --output reports/matrix.html
+  artifacts:
+    paths:
+      - reports/
+    expire_in: 30 days
+  only:
+    - main
+    - develop
+```
+
+## Advanced Pipeline Configuration
+
+### Complete .gitlab-ci.yml with Multiple Stages
+
+```yaml
+# .gitlab-ci.yml - Complete Configuration
+image: python:3.11-slim
+
+stages:
+  - setup
+  - validate
+  - test
+  - coverage
+  - report
+  - deploy
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  TRACERTM_PROJECT: "$CI_PROJECT_DIR"
+  TRACERTM_API_URL: "https://tracertm.example.com"
+  COVERAGE_THRESHOLD: "80"
+  PYTEST_COVERAGE_THRESHOLD: "85"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .cache/pip
+    - venv/
+    - .tracertm/cache
+
+# Install dependencies
+.install_template: &install_deps
+  before_script:
+    - apt-get update && apt-get install -y git curl
+    - python -m venv venv
+    - source venv/bin/activate
+    - pip install --upgrade pip
+    - pip install tracertm pytest pytest-cov
+
+# Setup TraceRTM
+setup:tracertm:
+  stage: setup
+  <<: *install_deps
+  script:
+    - tracertm --version
+    - tracertm sync --dry-run
+  artifacts:
+    paths:
+      - .tracertm/
+    expire_in: 1 hour
+
+# Validate traceability
+validate:requirements:
+  stage: validate
+  <<: *install_deps
+  needs:
+    - setup:tracertm
+  script:
+    - echo "Validating requirements traceability..."
+    - tracertm validate --strict
+    - tracertm lint --check-links --check-duplicates
+  allow_failure: false
+
+validate:links:
+  stage: validate
+  <<: *install_deps
+  needs:
+    - setup:tracertm
+  script:
+    - echo "Checking requirement links..."
+    - tracertm graph validate
+    - tracertm links verify --fail-on-orphans
+  allow_failure: false
+
+# Run tests with coverage
+test:unit:
+  stage: test
+  <<: *install_deps
+  needs:
+    - validate:requirements
+  script:
+    - pytest tests/unit --cov=src --cov-report=xml --cov-report=html
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - htmlcov/
+      - coverage.xml
+    expire_in: 7 days
+
+test:integration:
+  stage: test
+  <<: *install_deps
+  needs:
+    - validate:requirements
+  script:
+    - pytest tests/integration --cov=src --cov-report=xml
+  artifacts:
+    reports:
+      junit: junit.xml
+    paths:
+      - coverage.xml
+    expire_in: 7 days
+
+# Coverage enforcement
+coverage:traceability:
+  stage: coverage
+  <<: *install_deps
+  needs:
+    - test:unit
+    - test:integration
+  script:
+    - echo "Checking traceability coverage..."
+    - tracertm coverage --format json > coverage.json
+    - tracertm coverage --threshold ${COVERAGE_THRESHOLD} --fail-below
+    - |
+      python3 << EOF
+      import json
+      with open('coverage.json') as f:
+          data = json.load(f)
+          coverage = data.get('total_coverage', 0)
+          print(f"Traceability Coverage: {coverage}%")
+          if coverage < ${COVERAGE_THRESHOLD}:
+              raise Exception(f"Coverage {coverage}% below threshold ${COVERAGE_THRESHOLD}%")
+      EOF
+  artifacts:
+    paths:
+      - coverage.json
+    expire_in: 30 days
+  allow_failure: false
+
+coverage:code:
+  stage: coverage
+  <<: *install_deps
+  needs:
+    - test:unit
+  script:
+    - echo "Checking code coverage..."
+    - coverage report --fail-under=${PYTEST_COVERAGE_THRESHOLD}
+  allow_failure: false
+
+# Generate reports
+report:html:
+  stage: report
+  <<: *install_deps
+  needs:
+    - coverage:traceability
+  script:
+    - mkdir -p public/reports
+    - tracertm report --format html --output public/reports/
+    - tracertm matrix --output public/reports/matrix.html
+    - tracertm graph export --format svg --output public/reports/graph.svg
+    - cp htmlcov/* public/reports/code-coverage/ || true
+  artifacts:
+    paths:
+      - public/
+    expire_in: 30 days
+
+report:json:
+  stage: report
+  <<: *install_deps
+  needs:
+    - coverage:traceability
+  script:
+    - tracertm export --format json --output tracertm-data.json
+    - tracertm report --format json --output report.json
+  artifacts:
+    paths:
+      - tracertm-data.json
+      - report.json
+    expire_in: 90 days
+
+# Deploy to GitLab Pages (main branch only)
+pages:
+  stage: deploy
+  needs:
+    - report:html
+  script:
+    - echo "Deploying to GitLab Pages..."
+    - ls -la public/
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
+```
+
+## Coverage Enforcement Stages
+
+### Enforcing Traceability Thresholds
+
+Configure strict coverage requirements:
+
+```yaml
+# Coverage enforcement with detailed reporting
+coverage:strict:
+  stage: coverage
+  script:
+    - |
+      # Check overall coverage
+      COVERAGE=$(tracertm coverage --format json | jq -r '.total_coverage')
+      echo "Current Coverage: ${COVERAGE}%"
+
+      if (( $(echo "$COVERAGE < $COVERAGE_THRESHOLD" | bc -l) )); then
+        echo "ERROR: Coverage ${COVERAGE}% is below threshold ${COVERAGE_THRESHOLD}%"
+        tracertm coverage --details
+        exit 1
+      fi
+
+      # Check per-type coverage
+      tracertm coverage --by-type --fail-below ${COVERAGE_THRESHOLD}
+
+      # Check for orphaned requirements
+      ORPHANS=$(tracertm links verify --format json | jq -r '.orphaned | length')
+      if [ "$ORPHANS" -gt 0 ]; then
+        echo "ERROR: Found $ORPHANS orphaned requirements"
+        exit 1
+      fi
+  allow_failure: false
+```
+
+### Progressive Coverage Requirements
+
+Different thresholds for different branches:
+
+```yaml
+variables:
+  COVERAGE_MAIN: "90"
+  COVERAGE_DEVELOP: "80"
+  COVERAGE_FEATURE: "70"
+
+coverage:check:
+  stage: coverage
+  script:
+    - |
+      if [ "$CI_COMMIT_BRANCH" = "main" ]; then
+        THRESHOLD=$COVERAGE_MAIN
+      elif [ "$CI_COMMIT_BRANCH" = "develop" ]; then
+        THRESHOLD=$COVERAGE_DEVELOP
+      else
+        THRESHOLD=$COVERAGE_FEATURE
+      fi
+
+      echo "Branch: $CI_COMMIT_BRANCH, Threshold: ${THRESHOLD}%"
+      tracertm coverage --threshold $THRESHOLD --fail-below
+```
+
+## Merge Request Integration
+
+### MR Pipeline Configuration
+
+Add merge request-specific jobs:
+
+```yaml
+# Merge request validation
+mr:validate:
+  stage: validate
+  script:
+    - echo "Validating changes in merge request..."
+    - |
+      # Get changed files
+      git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+      CHANGED_FILES=$(git diff --name-only origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME...HEAD)
+
+      # Check if requirements changed
+      if echo "$CHANGED_FILES" | grep -q "requirements/"; then
+        echo "Requirements modified, running full validation..."
+        tracertm validate --strict
+        tracertm coverage --fail-below ${COVERAGE_THRESHOLD}
+      else
+        echo "No requirement changes detected"
+      fi
+  only:
+    - merge_requests
+
+mr:impact:
+  stage: validate
+  script:
+    - echo "Analyzing impact of changes..."
+    - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    - |
+      # Generate impact analysis
+      tracertm impact analyze \
+        --base origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME \
+        --head HEAD \
+        --format markdown > impact.md
+
+      # Post as MR comment (requires GitLab API token)
+      if [ -n "$GITLAB_API_TOKEN" ]; then
+        curl --request POST \
+          --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+          --data-urlencode "body=$(cat impact.md)" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}/notes"
+      fi
+  artifacts:
+    paths:
+      - impact.md
+  only:
+    - merge_requests
+```
+
+### MR Comment with Coverage Report
+
+```yaml
+mr:comment:
+  stage: report
+  needs:
+    - coverage:traceability
+  script:
+    - |
+      # Generate coverage summary
+      COVERAGE=$(jq -r '.total_coverage' coverage.json)
+      DETAILS=$(tracertm coverage --summary)
+
+      # Create comment body
+      cat > comment.md << EOF
+      ## Traceability Coverage Report
+
+      **Overall Coverage:** ${COVERAGE}%
+      **Threshold:** ${COVERAGE_THRESHOLD}%
+      **Status:** $([ "$COVERAGE" -ge "$COVERAGE_THRESHOLD" ] && echo "✅ PASS" || echo "❌ FAIL")
+
+      ### Details
+      \`\`\`
+      $DETAILS
+      \`\`\`
+
+      [View Full Report](${CI_PAGES_URL}/reports/)
+      EOF
+
+      # Post comment
+      if [ -n "$GITLAB_API_TOKEN" ]; then
+        curl --request POST \
+          --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+          --header "Content-Type: application/json" \
+          --data "{\"body\": $(jq -Rs . < comment.md)}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}/notes"
+      fi
+  only:
+    - merge_requests
+```
+
+## GitLab Variables and Secrets
+
+### Project Variables Configuration
+
+Set variables in GitLab: **Settings > CI/CD > Variables**
+
+```yaml
+# Required Variables
+TRACERTM_API_URL: "https://tracertm.example.com"
+TRACERTM_API_TOKEN: "your-api-token"  # Protected, Masked
+GITLAB_API_TOKEN: "your-gitlab-token"  # Protected, Masked
+COVERAGE_THRESHOLD: "80"
+
+# Optional Variables
+TRACERTM_PROJECT_ID: "project-123"
+TRACERTM_SYNC_ENABLED: "true"
+SLACK_WEBHOOK_URL: "https://hooks.slack.com/..."  # Masked
+```
+
+### Using Variables in Pipeline
+
+```yaml
+variables:
+  # Use project variables
+  TRACERTM_API_URL: "${TRACERTM_API_URL}"
+
+sync:remote:
+  stage: validate
+  script:
+    - |
+      if [ "$TRACERTM_SYNC_ENABLED" = "true" ]; then
+        tracertm sync \
+          --api-url $TRACERTM_API_URL \
+          --api-token $TRACERTM_API_TOKEN \
+          --project-id $TRACERTM_PROJECT_ID
+      fi
+  only:
+    variables:
+      - $TRACERTM_SYNC_ENABLED == "true"
+```
+
+### Protected Variables
+
+Use protected variables for sensitive data:
+
+```yaml
+deploy:production:
+  stage: deploy
+  script:
+    - tracertm publish --api-token $TRACERTM_API_TOKEN
+  only:
+    - main
+  environment:
+    name: production
+    url: https://tracertm.example.com
+```
+
+## Artifact Reports
+
+### Coverage Reports
+
+```yaml
+coverage:artifacts:
+  stage: coverage
+  script:
+    - tracertm coverage --format json > coverage.json
+    - tracertm coverage --format xml > coverage.xml
+    - tracertm coverage --format html > coverage.html
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - coverage.json
+      - coverage.xml
+      - coverage.html
+    expire_in: 30 days
+```
+
+### JUnit Test Reports
+
+```yaml
+test:reports:
+  stage: test
+  script:
+    - tracertm test --junit-xml junit.xml
+  artifacts:
+    reports:
+      junit: junit.xml
+```
+
+### Downloadable Artifacts
+
+```yaml
+report:package:
+  stage: report
+  script:
+    - mkdir -p artifacts/
+    - tracertm export --format json --output artifacts/data.json
+    - tracertm report --format pdf --output artifacts/report.pdf
+    - tar -czf tracertm-artifacts.tar.gz artifacts/
+  artifacts:
+    name: "tracertm-reports-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - tracertm-artifacts.tar.gz
+      - artifacts/
+    expire_in: 90 days
+```
+
+## GitLab Pages for Reports
+
+### Pages Configuration
+
+```yaml
+pages:
+  stage: deploy
+  script:
+    - echo "Building pages..."
+    - mkdir -p public
+
+    # Copy HTML reports
+    - tracertm report --format html --output public/
+    - tracertm matrix --output public/matrix.html
+
+    # Generate graph visualizations
+    - tracertm graph export --format svg --output public/graph.svg
+    - tracertm graph export --format html --output public/graph.html
+
+    # Copy code coverage
+    - cp -r htmlcov public/code-coverage/ || true
+
+    # Create index
+    - |
+      cat > public/index.html << EOF
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>TraceRTM Reports</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 40px; }
+          h1 { color: #333; }
+          ul { list-style-type: none; padding: 0; }
+          li { margin: 10px 0; }
+          a { color: #1a73e8; text-decoration: none; }
+          a:hover { text-decoration: underline; }
+        </style>
+      </head>
+      <body>
+        <h1>TraceRTM Reports - ${CI_COMMIT_SHORT_SHA}</h1>
+        <p>Generated: $(date)</p>
+        <ul>
+          <li><a href="report.html">Traceability Report</a></li>
+          <li><a href="matrix.html">Traceability Matrix</a></li>
+          <li><a href="graph.html">Dependency Graph</a></li>
+          <li><a href="code-coverage/index.html">Code Coverage</a></li>
+        </ul>
+      </body>
+      </html>
+      EOF
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
+```
+
+### Accessing Pages
+
+Reports will be available at:
+- **Project Pages**: `https://<username>.gitlab.io/<project>`
+- **Group Pages**: `https://<group>.gitlab.io/<project>`
+
+## Webhook Configuration
+
+### Setting Up Webhooks
+
+Configure webhooks in GitLab: **Settings > Webhooks**
+
+**Webhook URL**: `https://tracertm.example.com/webhooks/gitlab`
+
+**Trigger events**:
+- Push events
+- Merge request events
+- Pipeline events
+
+### Webhook Handler
+
+```yaml
+webhook:notify:
+  stage: report
+  script:
+    - |
+      # Send webhook notification
+      curl -X POST \
+        -H "Content-Type: application/json" \
+        -H "X-Gitlab-Token: $WEBHOOK_SECRET" \
+        -d '{
+          "event": "pipeline_complete",
+          "project": "'$CI_PROJECT_NAME'",
+          "branch": "'$CI_COMMIT_BRANCH'",
+          "commit": "'$CI_COMMIT_SHA'",
+          "coverage": '$(cat coverage.json | jq '.total_coverage')',
+          "pipeline_url": "'$CI_PIPELINE_URL'",
+          "reports_url": "'$CI_PAGES_URL'"
+        }' \
+        $WEBHOOK_URL
+  when: always
+  only:
+    - main
+    - develop
+```
+
+### Slack Notifications
+
+```yaml
+notify:slack:
+  stage: report
+  script:
+    - |
+      COVERAGE=$(jq -r '.total_coverage' coverage.json)
+      STATUS=$([ "$CI_JOB_STATUS" = "success" ] && echo "✅" || echo "❌")
+
+      curl -X POST \
+        -H "Content-Type: application/json" \
+        -d '{
+          "text": "'"$STATUS"' TraceRTM Pipeline",
+          "attachments": [{
+            "color": "'"$([ "$CI_JOB_STATUS" = "success" ] && echo "good" || echo "danger")"'",
+            "fields": [
+              {"title": "Project", "value": "'"$CI_PROJECT_NAME"'", "short": true},
+              {"title": "Branch", "value": "'"$CI_COMMIT_BRANCH"'", "short": true},
+              {"title": "Coverage", "value": "'"$COVERAGE"'%", "short": true},
+              {"title": "Pipeline", "value": "<'"$CI_PIPELINE_URL"'|#'"$CI_PIPELINE_ID"'>", "short": true}
+            ]
+          }]
+        }' \
+        $SLACK_WEBHOOK_URL
+  when: always
+  only:
+    - main
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### 1. Runner Cannot Find TraceRTM
+
+**Problem**: `tracertm: command not found`
+
+**Solution**:
+```yaml
+before_script:
+  - python -m venv venv
+  - source venv/bin/activate
+  - pip install tracertm
+  - which tracertm  # Verify installation
+```
+
+#### 2. Coverage Threshold Failures
+
+**Problem**: Pipeline fails due to low coverage
+
+**Solution**:
+```yaml
+# Add detailed output
+coverage:traceability:
+  script:
+    - tracertm coverage --details --verbose
+    - tracertm coverage --by-type  # Show per-type coverage
+    - tracertm links verify --show-orphans
+```
+
+#### 3. Artifact Upload Failures
+
+**Problem**: Reports not appearing in artifacts
+
+**Solution**:
+```yaml
+report:html:
+  script:
+    - mkdir -p public/reports
+    - tracertm report --output public/reports/
+    - ls -R public/  # Verify files created
+  artifacts:
+    paths:
+      - public/
+    when: always  # Upload even on failure
+```
+
+#### 4. GitLab Pages Not Updating
+
+**Problem**: Pages showing old content
+
+**Solution**:
+- Ensure job is named `pages`
+- Check artifacts include `public/` directory
+- Verify job runs on correct branch
+- Clear browser cache
+
+#### 5. API Token Authentication Failures
+
+**Problem**: `401 Unauthorized` errors
+
+**Solution**:
+```yaml
+variables:
+  TRACERTM_API_TOKEN: "${TRACERTM_API_TOKEN}"  # Use project variable
+
+before_script:
+  - |
+    # Verify token is set
+    if [ -z "$TRACERTM_API_TOKEN" ]; then
+      echo "ERROR: TRACERTM_API_TOKEN not set"
+      exit 1
+    fi
+```
+
+### Debug Mode
+
+Enable verbose logging:
+
+```yaml
+variables:
+  TRACERTM_LOG_LEVEL: "DEBUG"
+
+validate:debug:
+  script:
+    - tracertm --verbose validate
+    - tracertm --debug coverage
+```
+
+### Testing Pipeline Locally
+
+Use GitLab Runner locally:
+
+```bash
+# Install gitlab-runner
+curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh | sudo bash
+sudo apt-get install gitlab-runner
+
+# Run pipeline locally
+gitlab-runner exec docker traceability:validate
+```
+
+## Best Practices
+
+### 1. Cache Dependencies
+
+```yaml
+cache:
+  key:
+    files:
+      - requirements.txt
+  paths:
+    - venv/
+    - .cache/pip
+```
+
+### 2. Parallel Job Execution
+
+```yaml
+test:
+  parallel:
+    matrix:
+      - TEST_SUITE: [unit, integration, e2e]
+  script:
+    - pytest tests/$TEST_SUITE
+```
+
+### 3. Conditional Job Execution
+
+```yaml
+validate:requirements:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - changes:
+        - requirements/**/*
+```
+
+### 4. Resource Optimization
+
+```yaml
+.resource_template:
+  tags:
+    - docker
+    - high-memory
+  timeout: 30m
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+```
+
+## Complete Example Repository
+
+See a complete working example:
+
+```
+my-project/
+├── .gitlab-ci.yml
+├── requirements.txt
+├── tracertm.yaml
+├── requirements/
+│   ├── REQ-001.md
+│   └── REQ-002.md
+├── tests/
+│   └── test_requirements.py
+└── src/
+    └── app.py
+```
+
+This configuration provides enterprise-grade traceability automation integrated seamlessly with your GitLab workflow.

@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/chaos.py
+# hypothesis_version: 6.148.7
+
+[',', '--cleanup', '--days', '--description', '--items', '--project', '--view', '-d', '-i', '-p', '-v', 'Days Inactive', 'FEATURE', 'ID', 'Snapshot description', 'Status', 'Title', 'Zombie Items', 'crash', 'current_project_id', 'cyan', 'database_url', 'days_inactive', 'disable', 'enable', 'explode', 'green', 'item_id', 'postgresql://', 'red', 'snapshot', 'sqlite+aiosqlite:///', 'sqlite:///', 'status', 'title', 'total_items', 'utf-8', 'yellow', 'zombie_count', 'zombie_percentage', 'zombies']

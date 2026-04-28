@@ -1,0 +1,76 @@
+{
+  "name": "pheno-sdk-cicd",
+  "project_path": ".",
+  "config": {
+    "project_name": "pheno-sdk",
+    "project_type": "pheno-sdk",
+    "python_versions": [
+      "3.11",
+      "3.12",
+      "3.13"
+    ],
+    "os_versions": [
+      "ubuntu-latest",
+      "macos-latest",
+      "windows-latest"
+    ],
+    "quality_thresholds": {
+      "coverage_threshold": 65.0,
+      "loc_threshold": 70000,
+      "complexity_threshold": 10
+    },
+    "security_checks": [
+      "bandit",
+      "safety",
+      "semgrep"
+    ],
+    "test_commands": [
+      "pytest",
+      "pytest-cov"
+    ],
+    "build_commands": [
+      "python -m build"
+    ],
+    "deploy_commands": [
+      "make deploy"
+    ],
+    "dependencies": [
+      "pheno-sdk[quality,test]"
+    ],
+    "environment_variables": {
+      "PYTHON_VERSION": "3.12",
+      "CACHE_VERSION": "v1"
+    },
+    "secrets": [
+      "PYPI_TOKEN",
+      "GITHUB_TOKEN"
+    ],
+    "artifacts": [
+      "dist/",
+      "coverage.xml",
+      "test-results.xml"
+    ],
+    "notifications": {},
+    "custom_stages": []
+  },
+  "files": {
+    ".github/workflows/ci.yml": "",
+    ".github/workflows/quality-full.yml": "name: Code Quality Gates\n\non:\n  push:\n    branches: [main, develop]\n  pull_request:\n    branches: [main]\n\njobs:\n  quality-full:\n    name: Full Quality Analysis\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout code\n        uses: actions/checkout@v4\n\n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: \"3.12\"\n\n      - name: Install dependencies\n        run: |\n          python -m pip install --upgrade pip\n          pip install -e \".[quality,test]\"\n\n      - name: Run comprehensive quality analysis\n        run: |\n          make quality-full\n\n      - name: Upload quality reports\n        uses: actions/upload-artifact@v3\n        with:\n          name: quality-reports\n          path: reports/\n",
+    ".github/workflows/performance.yml": "name: Performance Analysis\n\non:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\n\njobs:\n  performance:\n    name: Performance Tests\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout code\n        uses: actions/checkout@v4\n\n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: \"3.12\"\n\n      - name: Install dependencies\n        run: |\n          python -m pip install --upgrade pip\n          pip install -e \".[quality,test]\"\n\n      - name: Run performance tests\n        run: |\n          make performance\n\n      - name: Upload performance reports\n        uses: actions/upload-artifact@v3\n        with:\n          name: performance-reports\n          path: reports/performance/\n",
+    "Dockerfile": "",
+    "docker-compose.yml": "",
+    "Makefile": "",
+    ".github/cicd-config.json": "{\n  \"project_name\": \"pheno-sdk\",\n  \"project_type\": \"pheno-sdk\",\n  \"python_versions\": [\n    \"3.11\",\n    \"3.12\",\n    \"3.13\"\n  ],\n  \"os_versions\": [\n    \"ubuntu-latest\",\n    \"macos-latest\",\n    \"windows-latest\"\n  ],\n  \"quality_thresholds\": {\n    \"coverage_threshold\": 65.0,\n    \"loc_threshold\": 70000,\n    \"complexity_threshold\": 10\n  },\n  \"security_checks\": [\n    \"bandit\",\n    \"safety\",\n    \"semgrep\"\n  ],\n  \"test_commands\": [\n    \"pytest\",\n    \"pytest-cov\"\n  ],\n  \"build_commands\": [\n    \"python -m build\"\n  ],\n  \"deploy_commands\": [\n    \"make deploy\"\n  ],\n  \"dependencies\": [\n    \"pheno-sdk[quality,test]\"\n  ],\n  \"environment_variables\": {\n    \"PYTHON_VERSION\": \"3.12\",\n    \"CACHE_VERSION\": \"v1\"\n  },\n  \"secrets\": [\n    \"PYPI_TOKEN\",\n    \"GITHUB_TOKEN\"\n  ],\n  \"artifacts\": [\n    \"dist/\",\n    \"coverage.xml\",\n    \"test-results.xml\"\n  ],\n  \"notifications\": {},\n  \"custom_stages\": []\n}",
+    ".github/config.json": "{\n  \"workflows\": {\n    \"ci\": {\n      \"enabled\": true,\n      \"triggers\": [\n        \"push\",\n        \"pull_request\"\n      ],\n      \"branches\": [\n        \"main\",\n        \"develop\"\n      ]\n    },\n    \"quality\": {\n      \"enabled\": true,\n      \"triggers\": [\n        \"push\"\n      ],\n      \"branches\": [\n        \"main\"\n      ]\n    }\n  },\n  \"environments\": {\n    \"production\": {\n      \"protection_rules\": [\n        \"required_reviewers\"\n      ],\n      \"secrets\": [\n        \"DEPLOY_TOKEN\"\n      ]\n    }\n  }\n}",
+    ".github/quality-config.json": "{\n  \"quality_score_threshold\": 80.0,\n  \"coverage_threshold\": 65.0,\n  \"loc_threshold\": 70000,\n  \"complexity_threshold\": 10,\n  \"max_violations\": 50,\n  \"max_warnings\": 100,\n  \"max_errors\": 10,\n  \"enabled_checks\": [\n    \"pattern_detector\",\n    \"architectural_validator\",\n    \"performance_detector\",\n    \"security_scanner\",\n    \"code_smell_detector\",\n    \"integration_gates\",\n    \"atlas_health\"\n  ],\n  \"quality_gates\": [\n    \"coverage_gate\",\n    \"complexity_gate\",\n    \"security_gate\",\n    \"performance_gate\",\n    \"maintainability_gate\"\n  ]\n}",
+    ".github/workflows/lint.yml": "",
+    ".github/workflows/test.yml": "",
+    ".github/workflows/build.yml": "",
+    ".github/workflows/security.yml": "",
+    ".github/workflows/quality.yml": "",
+    ".github/workflows/deploy.yml": "",
+    ".github/workflows/release.yml": ""
+  },
+  "metadata": {},
+  "generated_at": "2025-10-14T04:33:23.196096"
+}

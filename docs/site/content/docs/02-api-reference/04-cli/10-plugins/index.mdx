@@ -1,0 +1,27 @@
+---
+title: "CLI Plugins"
+description: "Extend the CLI with custom plugins."
+---
+
+## What this covers
+- How to manage plugins with the Trace CLI
+- Expected inputs, flags, and outputs
+- Safety checks before executing
+
+## Quick commands
+```bash
+trace plugins list
+```
+
+```bash
+trace plugins install ./my-plugin.tgz
+```
+
+```bash
+trace plugins info my-plugin
+```
+
+## Best practices
+- Use `--project` to scope actions and avoid cross-project edits.
+- Prefer idempotent operations (`trace ... upsert`) in automation.
+- Pipe to jq for verification before destructive changes.

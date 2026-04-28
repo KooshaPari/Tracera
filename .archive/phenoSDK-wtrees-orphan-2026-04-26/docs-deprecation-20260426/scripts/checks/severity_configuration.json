@@ -1,0 +1,184 @@
+{
+  "severity_levels": {
+    "critical": {
+      "score": 10,
+      "colors": ["red", "bold"],
+      "description": "Critical errors that must be fixed immediately",
+      "rules": ["E999", "S603", "S604", "S605", "S606", "S607", "S608", "S109", "S201", "S202", "S301"]
+    },
+    "high": {
+      "score": 8,
+      "colors": ["red"],
+      "description": "High severity issues that should be fixed soon",
+      "rules": ["B904", "B905", "S602", "F401", "F811", "F901", "F841"]
+    },
+    "medium": {
+      "score": 6,
+      "colors": ["yellow"],
+      "description": "Medium priority issues for code quality improvement",
+      "rules": ["UP007", "UP032", "PERF101", "PERF401", "N", "I", "W2"]
+    },
+    "low": {
+      "score": 3,
+      "colors": ["blue"],
+      "description": "Low priority style and formatting issues",
+      "rules": ["Q000", "Q001", "Q002", "Q003", "W391", "E501"]
+    },
+    "minimal": {
+      "score": 1,
+      "colors": ["white"],
+      "description": "Minimal impact issues, can be addressed gradually",
+      "rules": ["ISC2", "F841", "C416", "UP032"]
+    }
+  },
+  
+  "file_type_severity_adjustments": {
+    "tests/**/*.py": {
+      "critical": 10,
+      "high": 8,
+      "medium": 6,
+      "low": 2,
+      "minimal": 1,
+      "exceptions": ["S101", "PLR2004", "PT011", "ARG001", "ARG002", "ARG005"]
+    },
+    "scripts/**/*.py": {
+      "critical": 10,
+      "high": 8,
+      "medium": 6,
+      "low": 2,
+      "minimal": 1,
+      "exceptions": ["T201", "T203", "S101"]
+    },
+    "__init__.py": {
+      "critical": 10,
+      "high": 8,
+      "medium": 4,
+      "low": 1,
+      "minimal": 1,
+      "exceptions": ["F401", "F403"]
+    },
+    "setup.py": {
+      "critical": 10,
+      "high": 8,
+      "medium": 6,
+      "low": 1,
+      "minimal": 1,
+      "exceptions": ["T201", "S101", "ARG001"]
+    },
+    "examples/**/*.py": {
+      "critical": 10,
+      "high": 8,
+      "medium": 6,
+      "low": 2,
+      "minimal": 1,
+      "exceptions": ["T201", "S101", "ARG001"]
+    },
+    "src/**/*.py": {
+      "critical": 10,
+      "high": 9,
+      "medium": 7,
+      "low": 3,
+      "minimal": 2,
+      "exceptions": []
+    }
+  },
+  
+  "severity_thresholds": {
+    "auto_fix_threshold": 5,
+    "auto_fix_exclude_severity": ["critical", "high"],
+    "fix_max_batch_size": 10,
+    "fix_progressive_thresholds": {
+      "phase1": ["critical"],
+      "phase2": ["high"],
+      "phase3": ["medium"],
+      "phase4": ["low"],
+      "phase5": ["minimal"]
+    }
+  },
+  
+  "rule_groupings": {
+    "security": {
+      "description": "Security vulnerabilities and risks",
+      "severity": "critical",
+      "priority": 1,
+      "rules": ["S", "B"]
+    },
+    "syntax_errors": {
+      "description": "Syntax and runtime errors",
+      "severity": "critical", 
+      "priority": 2,
+      "rules": ["E999", "F"]
+    },
+    "code_quality": {
+      "description": "Code structure and maintainability",
+      "severity": "medium",
+      "priority": 3,
+      "rules": ["C4", "SIM", "RET", "SLF", "PGH"]
+    },
+    "modern_python": {
+      "description": "Python feature recommendations",
+      "severity": "low",
+      "priority": 4,
+      "rules": ["UP", "PYI", "FA"]
+    },
+    "performance": {
+      "description": "Performance anti-patterns",
+      "severity": "medium",
+      "priority": 5,
+      "rules": ["PERF", "PIE"]
+    },
+    "formatting": {
+      "description": "Code formatting and style",
+      "severity": "minimal",
+      "priority": 6,
+      "rules": ["E", "W", "Q", "COM"]
+    },
+    "naming": {
+      "description": "Naming conventions",
+      "severity": "low",
+      "priority": 7,
+      "rules": ["N"]
+    },
+    "documentation": {
+      "description": "Documentation quality",
+      "severity": "minimal",
+      "priority": 8,
+      "rules": ["D", "B904", "RUF006", "RUF013"]
+    }
+  },
+  
+  "severity_display": {
+    "output_format": {
+      "critical": {
+        "symbol": "🔴",
+        "format": "{symbol} {code} ({severity}): {message}"
+      },
+      "high": {
+        "symbol": "🟠", 
+        "format": "{symbol} {code} ({severity}): {message}"
+      },
+      "medium": {
+        "symbol": "🟡",
+        "format": "{symbol} {code} ({severity}): {message}"
+      },
+      "low": {
+        "symbol": "🔵",
+        "format": "{symbol} {code} ({severity}): {message}"
+      },
+      "minimal": {
+        "symbol": "⚪",
+        "format": "{symbol} {code} ({severity}): {message}"
+      }
+    },
+    "grouping_colors": {
+      "security": "red",
+      "syntax_errors": "red",
+      "code_quality": "yellow", 
+      "modern_python": "blue",
+      "performance": "yellow",
+      "formatting": "white",
+      "naming": "blue",
+      "documentation": "white"
+    }
+  }
+}

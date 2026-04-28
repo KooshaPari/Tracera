@@ -1,0 +1,299 @@
+# Comprehensive Error Prevention Rules Configuration
+# Complements Ruff configuration with specific error prevention patterns
+
+error_prevention_categories:
+  security_rules:
+    rules:
+      sql_injection:
+        codes: ["S603", "S604", "S605", "S606", "S607", "S608"]
+        severity: "high"
+        patterns:
+          - pattern: "f\""
+            context: "string formatting in queries"
+            restriction: "use parameterized queries"
+          - pattern: "format("
+            context: "query construction"
+            restriction: "avoid string formatting in SQL"
+          - pattern: "%("
+            context: "query parameters"
+            restriction: "use parameter binding"
+      
+      subprocess_security:
+        codes: ["S603", "S604"]
+        severity: "critical"
+        patterns:
+          - pattern: "os.system"
+            restriction: "use subprocess.run instead"
+          - pattern: "subprocess.Popen"
+            context: "without shell=False"
+            restriction: "always use shell=False for security"
+      
+      path_traversal:
+        codes: ["S608"]
+        severity: "high"
+        patterns:
+          - pattern: "open("
+            context: "user-controlled paths"
+            restriction: "validate/normalize file paths"
+          - pattern: "../"
+            context: "path operations"
+            restriction: "prevent directory traversal"
+
+  code_quality_rules:
+    complexity_rules:
+      max_cyclomatic_complexity: 10
+      maintainability_threshold: 65
+      cognitive_complexity_limit: 15
+      
+      error_patterns:
+        - pattern: "if.*if.*if"
+          complexity_adder: 2
+          description: "nested ifs increase complexity"
+        - pattern: "for.*for"
+          complexity_adder: 2
+          description: "nested loops increase complexity"
+        - pattern: "while.*while"
+          complexity_adder: 2
+          description: "nested while loops"
+
+    maintainability_rules:
+      max_function_length: 50
+      max_class_length: 300
+      max_module_length: 500
+      
+      maintainability_patterns:
+        - pattern: "too many lines in function"
+          action: "refactor into smaller functions"
+        - pattern: "too many instance attributes"
+          action: "group related attributes into classes"
+        - pattern: "too many branches (X > X)"
+          action: "extract complex conditions into helper functions"
+
+  performance_rules:
+    performance_antipatterns:
+      rules:
+        code_duplication:
+          patterns:
+            - pattern: "similar.*function.*function"
+              severity: "medium"
+              action: "extract common logic"
+            - pattern: "duplicate.*code"
+              severity: "high"
+              action: "remove duplicate code"
+          
+        memory_efficiency:
+          patterns:
+            - pattern: "list.*append.*in.*loop"
+              context: "memory growth"
+              action: "use list comprehensions when appropriate"
+            - pattern: "open.*without.*close"
+              context: "file handles"
+              action: "use context managers"
+              
+        cpu_efficiency:
+          patterns:
+            - pattern: "repeated.*same.*computation"
+              action: "cache results or use precomputation"
+            - pattern: "regular.*compile.*in.*loop"
+              action: "compile regex outside loops"
+
+  type_safety_rules:
+    type_consistency:
+      rules:
+        typed_functions:
+          rules:
+            - pattern: "def.*\(.*\):"
+              requirement: "should have return type annotation"
+            - pattern: "def.*\(.*\):\s*\"*"
+              requirement: "should have type hints"
+            
+        type_consistency_checks:
+          patterns:
+            - pattern: "None.*|.*None"
+              action: "allow Optional[type] type hints"
+            - pattern: "list.*|.*list"
+              action: "use proper typing.List[type]"
+
+    async_patterns:
+      rules:
+        async_consistency:
+          patterns:
+            - pattern: "async def.*await"
+              requirement: "correct async/await usage"
+            - pattern: "await.*async"
+              context: "reverse order"
+              action: "fix async/await order"
+              
+        event_loop_safety:
+          patterns:
+            - pattern: "asyncio.run.*in.*async"
+              action: "avoid nested asyncio.run calls"
+
+  exception_handling_rules:
+    best_practices:
+      rules:
+        specific_exceptions:
+          patterns:
+            - pattern: "except.*Exception"
+              action: "catch specific exceptions"
+            - pattern: "bare.*except"
+              action: "always specify exception type"
+              
+        exception_chaining:
+          patterns:
+            - pattern: "raise.*from e"
+              context: "proper exception chaining"
+              action: "use when re-raising exceptions"
+            - pattern: "raise.*without.*from"
+              context: "suppressing context"
+              action: "consider using 'from' to preserve chain"
+
+        resource_cleanup:
+          patterns:
+            - pattern: "try.*finally.*close"
+              context: "resource management"
+              action: "use context managers when possible"
+            - pattern: "open.*without.*context"
+              action: "use 'with' statements for file operations"
+
+  import_rules:
+    import_organization:
+      rules:
+        cyclic_imports:
+          detection: "import...import...import"
+          action: "break circular dependencies"
+          
+        relative_imports:
+          patterns:
+            - pattern: "from.*import.*\.\."
+              action: "use relative imports within package"
+            - pattern: "absolute.*in.*package"
+              context: "mixing import styles"
+              action: "be consistent with import styles"
+              
+        import_dependencies:
+          patterns:
+            - pattern: "import.*used.*only.*once"
+              action: "consider using shorter imports or context managers"
+            - pattern: "*import.*same.*module"
+              action: "combine imports from same module"
+
+  naming_conventions:
+    naming_standards:
+      rules:
+        function_names:
+          pattern: "[a-z_]+"
+          max_length: 30
+          
+        variable_names:
+          pattern: "[a-z_]+"
+          max_length: 25
+          
+        class_names:
+          pattern: "[A-Z][a-zA-Z0-9]*"
+          max_length: 30
+          
+        constant_names:
+          pattern: "[A-Z_]+"
+          max_length: 25
+          
+        method_names:
+          pattern: "[a-z_]+"
+          max_length: 30
+
+  warning_control_rules:
+    suppress_control:
+      rules:
+        safe_suppressions:
+          conditions:
+            - "test code patterns"
+            - "development utility code"
+            - "legacy code with migration plan"
+          allowed_suppressions:
+            - "assert_*"
+            - "print_in_scripts"
+            - "magic_numbers_in_tests"
+            
+        suppression_tracking:
+          patterns:
+            - pattern: "# type: ignore"
+              action: "document reason for ignore"
+            - pattern: "# noqa"
+              action: "specify specific error codes ignored"
+
+  test_coverage_rules:
+    test_patterns:
+      rules:
+        missing_tests:
+          patterns:
+            - pattern: "def.*\(.*\):"
+              context: "public functions"
+              action: "should have corresponding test function"
+              
+        test_structure:
+          patterns:
+            - pattern: "test_\w+\("
+              requirement: "should follow test naming convention"
+            - pattern: "self\.assert"
+              requirement: "should use appropriate assertions"
+              
+        data_driven_tests:
+          patterns:
+            - pattern: "test.*with.*multiple.*inputs"
+              action: "consider parameterized test scenarios"
+
+  documentation_rules:
+    docstring_requirements:
+      rules:
+        public_api_documentation:
+          patterns:
+            - pattern: "def.*\("
+              context: "public functions and methods"
+              action: "should have docstring"
+              
+        docstring_standards:
+          format: "google"
+          sections:
+            - "Args"
+            - "Returns"
+            - "Raises"
+            - "Examples"
+
+  dependency_rules:
+    dependency_management:
+      rules:
+        direct_imports:
+          patterns:
+            - pattern: "import.*stdlib"
+              action: "consider relative imports where appropriate"
+            - pattern: "from.*import.*\*"
+              restriction: "avoid star imports"
+              
+        build_dependencies:
+          patterns:
+            - pattern: "import.*build.*only"
+              action: "move to build requirements"
+
+  configuration_rules:
+    project_structure:
+      rules:
+        file_organization:
+          patterns:
+            - pattern: "same.*name.*in.*packages"
+              action: "avoid filename conflicts"
+              
+        module_boundaries:
+          patterns:
+            - pattern: "cross.*package.*import"
+              context: "architecture violations"
+              action: "respect package boundaries"
+
+  deployment_rules:
+    deployment_safety:
+      rules:
+        configuration_safety:
+          patterns:
+            - pattern: "hardcoded.*credentials"
+              restriction: "use environment variables"
+            - pattern: "print.*password.*token"
+              restriction: "avoid logging sensitive data"

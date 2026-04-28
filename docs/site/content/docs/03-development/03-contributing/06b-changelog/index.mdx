@@ -1,0 +1,136 @@
+---
+title: "Changelog"
+description: "Changelog format and maintenance"
+keywords: [changelog, changes, releases, history]
+---
+
+# Changelog
+
+Format and guidelines for maintaining the CHANGELOG.
+
+## Changelog Format
+
+### Keep a Changelog Format
+
+```markdown
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [2.4.1] - 2025-01-20
+
+### Fixed
+- Fixed authentication token refresh issue
+- Resolved database connection timeout
+
+### Changed
+- Updated dependency versions
+
+## [2.4.0] - 2025-01-15
+
+### Added
+- New export to Excel functionality
+- Batch item creation endpoint
+- Webhook support
+
+### Changed
+- Improved search performance
+- Updated API response format
+
+### Fixed
+- Fixed pagination bug
+- Resolved memory leak in cache
+
+## [2.3.0] - 2024-12-20
+
+### Added
+- Initial release
+```
+
+## Change Categories
+
+### Added
+New features.
+
+```markdown
+### Added
+- Export to Excel functionality
+- Batch operations API
+```
+
+### Changed
+Changes in existing functionality.
+
+```markdown
+### Changed
+- Improved search performance
+- Updated authentication flow
+```
+
+### Deprecated
+Soon-to-be removed features.
+
+```markdown
+### Deprecated
+- Old API endpoint `/api/v1/legacy` (use `/api/v1/new` instead)
+```
+
+### Removed
+Removed features.
+
+```markdown
+### Removed
+- Removed deprecated `/api/v1/old` endpoint
+```
+
+### Fixed
+Bug fixes.
+
+```markdown
+### Fixed
+- Fixed authentication token refresh
+- Resolved database connection issue
+```
+
+### Security
+Security fixes.
+
+```markdown
+### Security
+- Fixed XSS vulnerability in search
+- Updated dependencies with security patches
+```
+
+## Best Practices
+
+### 1. Write for Users
+
+```markdown
+# Good
+- Fixed authentication token refresh issue
+
+# Bad
+- Fixed bug in auth.py line 45
+```
+
+### 2. Group Related Changes
+
+```markdown
+### Added
+- Export to Excel functionality
+- Export to CSV functionality
+- Export to JSON functionality
+```
+
+### 3. Link to Issues/PRs
+
+```markdown
+### Fixed
+- Fixed authentication token refresh (#123)
+- Resolved database connection timeout (#124)
+```
+
+## Related Documentation
+
+- [Releases](./06-releases) - Release process
+- [Versioning](./06a-versioning) - Version management

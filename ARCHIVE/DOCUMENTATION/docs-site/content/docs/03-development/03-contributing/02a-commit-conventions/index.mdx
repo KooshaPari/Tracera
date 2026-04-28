@@ -1,0 +1,211 @@
+---
+title: "Commit Conventions"
+description: "Git commit message conventions for TraceRTM"
+keywords: [commits, git, conventions, messages]
+---
+
+# Commit Conventions
+
+Follow these conventions for Git commit messages in TraceRTM.
+
+## Format
+
+Use [Conventional Commits](https://www.conventionalcommits.org/) format:
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+## Types
+
+### feat
+
+New feature:
+
+```
+feat: add export to Excel functionality
+feat(api): add batch item creation endpoint
+```
+
+### fix
+
+Bug fix:
+
+```
+fix: resolve authentication token refresh issue
+fix(cli): handle missing config file gracefully
+```
+
+### docs
+
+Documentation changes:
+
+```
+docs: update API authentication guide
+docs(cli): add export command examples
+```
+
+### style
+
+Code style changes (formatting, whitespace):
+
+```
+style: format code with Black
+style(api): fix indentation in handlers
+```
+
+### refactor
+
+Code refactoring:
+
+```
+refactor: extract item validation logic
+refactor(database): simplify query methods
+```
+
+### test
+
+Test additions or changes:
+
+```
+test: add unit tests for item service
+test(api): add integration tests for links endpoint
+```
+
+### chore
+
+Maintenance tasks:
+
+```
+chore: update dependencies
+chore: update CI configuration
+```
+
+## Examples
+
+### Simple Commit
+
+```
+feat: add item search functionality
+```
+
+### Commit with Scope
+
+```
+feat(api): add pagination to items endpoint
+```
+
+### Commit with Body
+
+```
+fix(cli): handle missing API key gracefully
+
+Previously, the CLI would crash with a cryptic error
+when API key was missing. Now it shows a helpful
+message and suggests running 'trace config set api-key'.
+```
+
+### Breaking Change
+
+```
+feat(api)!: change item status enum values
+
+BREAKING CHANGE: Status values have changed from
+'draft,active' to 'draft,in_review,approved'.
+Update your code accordingly.
+```
+
+## Best Practices
+
+### 1. Use Imperative Mood
+
+```bash
+# Good
+feat: add user authentication
+
+# Bad
+feat: added user authentication
+feat: adds user authentication
+```
+
+### 2. Keep Subject Under 50 Characters
+
+```bash
+# Good
+fix: resolve database connection timeout
+
+# Bad
+fix: resolve database connection timeout issue that occurs when many concurrent requests are made
+```
+
+### 3. Capitalize First Letter
+
+```bash
+# Good
+feat: Add export functionality
+
+# Bad
+feat: add export functionality
+```
+
+### 4. No Period at End
+
+```bash
+# Good
+feat: add export functionality
+
+# Bad
+feat: add export functionality.
+```
+
+## Scope
+
+Use scope to indicate the area affected:
+
+- `api`: API changes
+- `cli`: CLI changes
+- `frontend`: Frontend changes
+- `database`: Database changes
+- `docs`: Documentation
+
+## Body
+
+Use body for:
+- Explanation of what and why
+- Breaking changes
+- References to issues
+
+```
+feat: add item filtering
+
+Add support for filtering items by status, view,
+and metadata. This enables more efficient querying
+of large datasets.
+
+Closes #123
+```
+
+## Footer
+
+Use footer for:
+- Breaking changes
+- Issue references
+
+```
+feat: change authentication method
+
+BREAKING CHANGE: API now requires JWT tokens
+instead of API keys.
+
+Closes #456
+Refs #789
+```
+
+## Related Documentation
+
+- [PR Process](./03a-pr-process) - Pull request workflow
+- [Code Style](./01-code-style) - Coding standards

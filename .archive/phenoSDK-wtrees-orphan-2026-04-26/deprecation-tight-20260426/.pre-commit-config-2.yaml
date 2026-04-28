@@ -1,0 +1,163 @@
+# Pre-commit hooks configuration
+# See https://pre-commit.com for more information
+
+repos:
+  # Ruff - Fast Python linter (replaces flake8, isort, and more)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [python, pyi]
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  # Black - Python code formatter (backup)
+  - repo: https://github.com/psf/black
+    rev: 24.8.0
+    hooks:
+      - id: black
+        language_version: python3.11
+        exclude: ^(pheno_vendor|lib-sdks|archive)/
+
+  # isort - Import sorter (backup, ruff handles this)
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: [--profile, black, --line-length, "100"]
+        exclude: ^(pheno_vendor|lib-sdks|archive)/
+
+  # MyPy - Static type checker
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - types-requests
+          - types-python-dateutil
+        exclude: ^(pheno_vendor|lib-sdks|archive|tests)/
+
+  # Cleanup hooks - Remove cache files / OS artefacts
+  - repo: local
+    hooks:
+      - id: cleanup-python-cache
+        name: Clean Python cache files
+        entry: bash -c 'find . -type d -name "__pycache__" -not -path "./.venv/*" -exec rm -rf {} + 2>/dev/null || true; find . -type f -name "*.pyc" -not -path "./.venv/*" -delete 2>/dev/null || true'
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: cleanup-os-files
+        name: Clean OS metadata files
+        entry: bash -c 'find . -name ".DS_Store" -not -path "./.venv/*" -not -path "./.git/*" -delete 2>/dev/null || true'
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # Architecture fitness tests - Enforce hexagonal architecture boundaries
+  - repo: local
+    hooks:
+      - id: file-size-check
+        name: Architecture - File Size Check
+        entry: python scripts/check_file_sizes.py --max-loc 500
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [commit]
+      - id: architecture-import-boundaries
+        name: Architecture - Import Boundaries
+        entry: pytest tests/architecture/test_import_boundaries.py -v --tb=short -x
+        language: system
+        pass_filenames: false
+        files: \.py$
+        stages: [commit]
+      - id: architecture-fitness-full
+        name: Architecture - Full Fitness Tests
+        entry: pytest tests/architecture/ -v --tb=short -x
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [push]
+
+  # Standard pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-json
+      - id: end-of-file-fixer
+        exclude: ^(pheno_vendor|lib-sdks|archive)/
+      - id: trailing-whitespace
+        exclude: ^(pheno_vendor|lib-sdks|archive)/
+      - id: mixed-line-ending
+        args: [--fix=lf]
+        exclude: ^(pheno_vendor|lib-sdks|archive)/
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: check-docstring-first
+      - id: debug-statements
+      - id: name-tests-test
+        args: [--pytest-test-first]
+      - id: requirements-txt-fixer
+        files: requirements.*\.txt$
+
+  # Security checks
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.9
+    hooks:
+      - id: bandit
+        args: [-c, pyproject.toml]
+        additional_dependencies: ["bandit[toml]"]
+        exclude: ^(tests|pheno_vendor|lib-sdks|archive)/
+
+  # Markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.39.0
+    hooks:
+      - id: markdownlint
+        args: [--fix]
+        exclude: ^(pheno_vendor|lib-sdks|archive)/
+
+  # YAML linting
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [-c=.yamllint.yaml]
+        exclude: ^(pheno_vendor|lib-sdks|archive)/
+
+  # Shell script linting
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        exclude: ^(pheno_vendor|lib-sdks|archive)/
+
+  # Dockerfile linting
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint
+        args: [--ignore, DL3008, --ignore, DL3013]
+
+default_language_version:
+  python: python3.11
+
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false

@@ -1,0 +1,6 @@
+{
+  "generated_at": "2026-02-14T06:21:35Z",
+  "project": "trace",
+  "executed": false,
+  "notes": "Bootstrap placeholder; execute rollback drill and set executed=true before cutover."
+}

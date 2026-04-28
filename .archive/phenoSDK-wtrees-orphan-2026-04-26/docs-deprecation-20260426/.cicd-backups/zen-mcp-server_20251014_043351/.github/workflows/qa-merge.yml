@@ -1,0 +1,49 @@
+name: QA Merge (Artifacts Consolidation)
+
+on:
+  workflow_run:
+    workflows: ["QA Ingestion (Python)"]
+    types:
+      - completed
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Download QA artifacts from triggering run
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          path: qa_artifacts
+
+      - name: Find DB files
+        id: find
+        run: |
+          echo "dbs=$(ls -1 qa_artifacts/**/qa.db 2>/dev/null | tr '\n' ' ')" >> $GITHUB_OUTPUT
+
+      - name: Merge DBs
+        if: steps.find.outputs.dbs != ''
+        run: |
+          python -m pip install --upgrade pip
+          python scripts/qa_merge_db.py --output qa_merged.db --inputs ${{ steps.find.outputs.dbs }}
+
+      - name: Upload merged QA DB
+        if: steps.find.outputs.dbs != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-merged-${{ github.event.workflow_run.head_sha }}
+          path: qa_merged.db
+          if-no-files-found: warn

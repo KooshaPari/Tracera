@@ -1,0 +1,543 @@
+---
+title: "Testing"
+description: "Testing patterns and best practices for the TraceRTM Go SDK"
+---
+
+# Testing
+
+Best practices for testing code that uses the TraceRTM Go SDK.
+
+## Testing Strategies
+
+### Unit Testing with Mocks
+
+Create mock implementations of SDK interfaces:
+
+```go
+// mock_client.go
+type MockClient struct {
+    Projects *MockProjectsService
+    Items    *MockItemsService
+    Links    *MockLinksService
+}
+
+type MockItemsService struct {
+    GetFunc    func(ctx context.Context, id string) (*tracertm.Item, error)
+    ListFunc   func(ctx context.Context, projectID string, opts *tracertm.ListItemsOptions) (*tracertm.ItemList, error)
+    CreateFunc func(ctx context.Context, projectID string, input *tracertm.CreateItemInput) (*tracertm.Item, error)
+}
+
+func (m *MockItemsService) Get(ctx context.Context, id string) (*tracertm.Item, error) {
+    if m.GetFunc != nil {
+        return m.GetFunc(ctx, id)
+    }
+    return nil, nil
+}
+
+func (m *MockItemsService) List(ctx context.Context, projectID string, opts *tracertm.ListItemsOptions) (*tracertm.ItemList, error) {
+    if m.ListFunc != nil {
+        return m.ListFunc(ctx, projectID, opts)
+    }
+    return nil, nil
+}
+
+func (m *MockItemsService) Create(ctx context.Context, projectID string, input *tracertm.CreateItemInput) (*tracertm.Item, error) {
+    if m.CreateFunc != nil {
+        return m.CreateFunc(ctx, projectID, input)
+    }
+    return nil, nil
+}
+```
+
+### Using Mocks in Tests
+
+```go
+func TestProcessItems(t *testing.T) {
+    mockItems := &MockItemsService{
+        ListFunc: func(ctx context.Context, projectID string, opts *tracertm.ListItemsOptions) (*tracertm.ItemList, error) {
+            return &tracertm.ItemList{
+                Data: []*tracertm.Item{
+                    {ID: "item_1", Key: "REQ-1", Title: "Requirement 1"},
+                    {ID: "item_2", Key: "REQ-2", Title: "Requirement 2"},
+                },
+                Total: 2,
+            }, nil
+        },
+    }
+
+    client := &MockClient{
+        Items: mockItems,
+    }
+
+    result, err := processItems(context.Background(), client, "proj_123")
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+
+    if result.Count != 2 {
+        t.Errorf("expected 2 items, got %d", result.Count)
+    }
+}
+```
+
+---
+
+## Interface-Based Testing
+
+### Define Interfaces
+
+```go
+// interfaces.go
+type ItemsServiceInterface interface {
+    Get(ctx context.Context, id string) (*tracertm.Item, error)
+    List(ctx context.Context, projectID string, opts *tracertm.ListItemsOptions) (*tracertm.ItemList, error)
+    Create(ctx context.Context, projectID string, input *tracertm.CreateItemInput) (*tracertm.Item, error)
+    Update(ctx context.Context, id string, input *tracertm.UpdateItemInput) (*tracertm.Item, error)
+    Delete(ctx context.Context, id string) error
+}
+
+type ClientInterface interface {
+    Items() ItemsServiceInterface
+    Projects() ProjectsServiceInterface
+    Links() LinksServiceInterface
+}
+```
+
+### Implement Interface Adapter
+
+```go
+// adapter.go
+type ClientAdapter struct {
+    client *tracertm.Client
+}
+
+func NewClientAdapter(client *tracertm.Client) *ClientAdapter {
+    return &ClientAdapter{client: client}
+}
+
+func (a *ClientAdapter) Items() ItemsServiceInterface {
+    return &ItemsServiceAdapter{service: a.client.Items}
+}
+
+type ItemsServiceAdapter struct {
+    service *tracertm.ItemsService
+}
+
+func (a *ItemsServiceAdapter) Get(ctx context.Context, id string) (*tracertm.Item, error) {
+    return a.service.Get(ctx, id)
+}
+
+func (a *ItemsServiceAdapter) List(ctx context.Context, projectID string, opts *tracertm.ListItemsOptions) (*tracertm.ItemList, error) {
+    return a.service.List(ctx, projectID, opts)
+}
+```
+
+### Use Interfaces in Code
+
+```go
+// service.go
+type RequirementsService struct {
+    client ClientInterface
+}
+
+func NewRequirementsService(client ClientInterface) *RequirementsService {
+    return &RequirementsService{client: client}
+}
+
+func (s *RequirementsService) GetUncovered(ctx context.Context, projectID string) ([]*tracertm.Item, error) {
+    items, err := s.client.Items().List(ctx, projectID, &tracertm.ListItemsOptions{
+        Type: "requirement",
+    })
+    if err != nil {
+        return nil, err
+    }
+    // Filter uncovered...
+    return items.Data, nil
+}
+```
+
+---
+
+## HTTP Mock Testing
+
+### Using httptest
+
+```go
+func TestClientWithMockServer(t *testing.T) {
+    // Create mock server
+    server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        switch r.URL.Path {
+        case "/v1/items/item_123":
+            json.NewEncoder(w).Encode(&tracertm.Item{
+                ID:    "item_123",
+                Key:   "REQ-1",
+                Title: "Test Requirement",
+            })
+        default:
+            w.WriteHeader(http.StatusNotFound)
+        }
+    }))
+    defer server.Close()
+
+    // Create client with mock server URL
+    client := tracertm.NewClient(
+        "test_api_key",
+        tracertm.WithBaseURL(server.URL+"/v1"),
+    )
+
+    ctx := context.Background()
+    item, err := client.Items.Get(ctx, "item_123")
+
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+
+    if item.Key != "REQ-1" {
+        t.Errorf("expected key REQ-1, got %s", item.Key)
+    }
+}
+```
+
+### Mock Server with Multiple Endpoints
+
+```go
+func newMockServer() *httptest.Server {
+    mux := http.NewServeMux()
+
+    // Mock projects endpoint
+    mux.HandleFunc("/v1/projects", func(w http.ResponseWriter, r *http.Request) {
+        json.NewEncoder(w).Encode(&tracertm.ProjectList{
+            Data: []*tracertm.Project{
+                {ID: "proj_1", Name: "Project 1", Key: "P1"},
+            },
+            Total: 1,
+        })
+    })
+
+    // Mock items endpoint
+    mux.HandleFunc("/v1/projects/proj_1/items", func(w http.ResponseWriter, r *http.Request) {
+        json.NewEncoder(w).Encode(&tracertm.ItemList{
+            Data: []*tracertm.Item{
+                {ID: "item_1", Key: "P1-1", Title: "Item 1"},
+            },
+            Total: 1,
+        })
+    })
+
+    // Mock single item
+    mux.HandleFunc("/v1/items/", func(w http.ResponseWriter, r *http.Request) {
+        id := strings.TrimPrefix(r.URL.Path, "/v1/items/")
+        json.NewEncoder(w).Encode(&tracertm.Item{
+            ID:    id,
+            Key:   "REQ-1",
+            Title: "Test Item",
+        })
+    })
+
+    return httptest.NewServer(mux)
+}
+```
+
+---
+
+## Table-Driven Tests
+
+```go
+func TestItemValidation(t *testing.T) {
+    tests := []struct {
+        name        string
+        input       *tracertm.CreateItemInput
+        wantErr     bool
+        errContains string
+    }{
+        {
+            name: "valid requirement",
+            input: &tracertm.CreateItemInput{
+                Type:  "requirement",
+                Title: "Valid Title",
+            },
+            wantErr: false,
+        },
+        {
+            name: "missing type",
+            input: &tracertm.CreateItemInput{
+                Title: "No Type",
+            },
+            wantErr:     true,
+            errContains: "type is required",
+        },
+        {
+            name: "missing title",
+            input: &tracertm.CreateItemInput{
+                Type: "requirement",
+            },
+            wantErr:     true,
+            errContains: "title is required",
+        },
+        {
+            name: "title too long",
+            input: &tracertm.CreateItemInput{
+                Type:  "requirement",
+                Title: strings.Repeat("x", 501),
+            },
+            wantErr:     true,
+            errContains: "title exceeds",
+        },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            err := validateItemInput(tt.input)
+            if tt.wantErr {
+                if err == nil {
+                    t.Error("expected error, got nil")
+                } else if !strings.Contains(err.Error(), tt.errContains) {
+                    t.Errorf("error %q should contain %q", err.Error(), tt.errContains)
+                }
+            } else if err != nil {
+                t.Errorf("unexpected error: %v", err)
+            }
+        })
+    }
+}
+```
+
+---
+
+## Error Testing
+
+```go
+func TestErrorHandling(t *testing.T) {
+    tests := []struct {
+        name      string
+        setupMock func(*MockItemsService)
+        wantErr   error
+    }{
+        {
+            name: "not found error",
+            setupMock: func(m *MockItemsService) {
+                m.GetFunc = func(ctx context.Context, id string) (*tracertm.Item, error) {
+                    return nil, &tracertm.NotFoundError{
+                        ResourceType: "item",
+                        ResourceID:   id,
+                    }
+                }
+            },
+            wantErr: &tracertm.NotFoundError{},
+        },
+        {
+            name: "authentication error",
+            setupMock: func(m *MockItemsService) {
+                m.GetFunc = func(ctx context.Context, id string) (*tracertm.Item, error) {
+                    return nil, &tracertm.AuthenticationError{
+                        Message: "invalid API key",
+                    }
+                }
+            },
+            wantErr: &tracertm.AuthenticationError{},
+        },
+        {
+            name: "rate limit error",
+            setupMock: func(m *MockItemsService) {
+                m.GetFunc = func(ctx context.Context, id string) (*tracertm.Item, error) {
+                    return nil, &tracertm.RateLimitError{
+                        RetryAfter: 60,
+                    }
+                }
+            },
+            wantErr: &tracertm.RateLimitError{},
+        },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            mock := &MockItemsService{}
+            tt.setupMock(mock)
+
+            _, err := mock.Get(context.Background(), "item_123")
+
+            if err == nil {
+                t.Fatal("expected error, got nil")
+            }
+
+            // Check error type
+            switch tt.wantErr.(type) {
+            case *tracertm.NotFoundError:
+                var notFoundErr *tracertm.NotFoundError
+                if !errors.As(err, &notFoundErr) {
+                    t.Errorf("expected NotFoundError, got %T", err)
+                }
+            case *tracertm.AuthenticationError:
+                var authErr *tracertm.AuthenticationError
+                if !errors.As(err, &authErr) {
+                    t.Errorf("expected AuthenticationError, got %T", err)
+                }
+            case *tracertm.RateLimitError:
+                var rateLimitErr *tracertm.RateLimitError
+                if !errors.As(err, &rateLimitErr) {
+                    t.Errorf("expected RateLimitError, got %T", err)
+                }
+            }
+        })
+    }
+}
+```
+
+---
+
+## Context Testing
+
+```go
+func TestContextCancellation(t *testing.T) {
+    mock := &MockItemsService{
+        GetFunc: func(ctx context.Context, id string) (*tracertm.Item, error) {
+            // Simulate slow operation
+            select {
+            case <-ctx.Done():
+                return nil, ctx.Err()
+            case <-time.After(100 * time.Millisecond):
+                return &tracertm.Item{ID: id}, nil
+            }
+        },
+    }
+
+    ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+    defer cancel()
+
+    _, err := mock.Get(ctx, "item_123")
+
+    if !errors.Is(err, context.DeadlineExceeded) {
+        t.Errorf("expected DeadlineExceeded, got %v", err)
+    }
+}
+
+func TestContextValues(t *testing.T) {
+    requestIDKey := "request_id"
+    ctx := context.WithValue(context.Background(), requestIDKey, "req-123")
+
+    mock := &MockItemsService{
+        GetFunc: func(ctx context.Context, id string) (*tracertm.Item, error) {
+            reqID := ctx.Value(requestIDKey)
+            if reqID != "req-123" {
+                return nil, fmt.Errorf("missing request ID")
+            }
+            return &tracertm.Item{ID: id}, nil
+        },
+    }
+
+    _, err := mock.Get(ctx, "item_123")
+    if err != nil {
+        t.Errorf("unexpected error: %v", err)
+    }
+}
+```
+
+---
+
+## Integration Testing
+
+```go
+// +build integration
+
+func TestIntegration_CRUD(t *testing.T) {
+    apiKey := os.Getenv("TRACERTM_API_KEY")
+    if apiKey == "" {
+        t.Skip("TRACERTM_API_KEY not set")
+    }
+
+    client := tracertm.NewClient(apiKey)
+    ctx := context.Background()
+
+    // Create
+    item, err := client.Items.Create(ctx, "proj_test", &tracertm.CreateItemInput{
+        Type:  "requirement",
+        Title: "Integration Test Item",
+    })
+    if err != nil {
+        t.Fatalf("create failed: %v", err)
+    }
+    t.Logf("Created item: %s", item.ID)
+
+    // Cleanup
+    defer func() {
+        if err := client.Items.Delete(ctx, item.ID); err != nil {
+            t.Logf("cleanup failed: %v", err)
+        }
+    }()
+
+    // Read
+    fetched, err := client.Items.Get(ctx, item.ID)
+    if err != nil {
+        t.Fatalf("get failed: %v", err)
+    }
+    if fetched.Title != "Integration Test Item" {
+        t.Errorf("expected title 'Integration Test Item', got '%s'", fetched.Title)
+    }
+
+    // Update
+    updated, err := client.Items.Update(ctx, item.ID, &tracertm.UpdateItemInput{
+        Title: "Updated Title",
+    })
+    if err != nil {
+        t.Fatalf("update failed: %v", err)
+    }
+    if updated.Title != "Updated Title" {
+        t.Errorf("expected title 'Updated Title', got '%s'", updated.Title)
+    }
+}
+```
+
+---
+
+## Test Helpers
+
+```go
+// testhelpers.go
+func newTestClient(t *testing.T) (*tracertm.Client, func()) {
+    t.Helper()
+
+    server := httptest.NewServer(newMockHandler())
+
+    client := tracertm.NewClient(
+        "test_key",
+        tracertm.WithBaseURL(server.URL+"/v1"),
+    )
+
+    cleanup := func() {
+        server.Close()
+    }
+
+    return client, cleanup
+}
+
+func assertItem(t *testing.T, item *tracertm.Item, expectedKey, expectedTitle string) {
+    t.Helper()
+
+    if item.Key != expectedKey {
+        t.Errorf("expected key %s, got %s", expectedKey, item.Key)
+    }
+    if item.Title != expectedTitle {
+        t.Errorf("expected title %s, got %s", expectedTitle, item.Title)
+    }
+}
+
+func assertError(t *testing.T, err error, expectedType interface{}) {
+    t.Helper()
+
+    if err == nil {
+        t.Fatal("expected error, got nil")
+    }
+
+    if !errors.As(err, expectedType) {
+        t.Errorf("expected error type %T, got %T", expectedType, err)
+    }
+}
+```
+
+---
+
+## Related Documentation
+
+- [Unit Tests](/docs/api-reference/sdks/go/unit-tests) - Unit testing patterns
+- [Mocking](/docs/api-reference/sdks/go/mocking) - Mock implementations
+- [Error Handling](/docs/api-reference/sdks/go/error-handling) - Error types

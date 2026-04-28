@@ -1,0 +1,664 @@
+---
+title: "Link Management"
+description: "Advanced operations for managing traceability links in TraceRTM"
+---
+
+# Link Management
+
+Advanced link management operations including AI-powered suggestions, impact analysis, and bulk operations.
+
+## AI-Powered Link Suggestions
+
+TraceRTM can automatically suggest traceability links using semantic analysis.
+
+### Get Link Suggestions
+
+```http
+GET /v1/items/{id}/link-suggestions
+```
+
+#### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `target_type` | string | Suggest links to specific item type |
+| `link_type` | string | Suggest specific link type |
+| `min_confidence` | float | Minimum confidence score (0-1) |
+| `limit` | integer | Max suggestions (default: 10) |
+
+#### Request
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/items/item_req001/link-suggestions?target_type=test_case&min_confidence=0.7" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "source_item": {
+      "id": "item_req001",
+      "custom_id": "REQ-001",
+      "title": "User Authentication via OAuth 2.0"
+    },
+    "suggestions": [
+      {
+        "target": {
+          "id": "item_test015",
+          "type": "test_case",
+          "custom_id": "TC-015",
+          "title": "Test OAuth 2.0 Google Login"
+        },
+        "suggested_link_type": "verified_by",
+        "confidence": 0.95,
+        "reasoning": "Test case directly tests OAuth 2.0 login functionality",
+        "matching_keywords": ["OAuth", "authentication", "login"],
+        "semantic_similarity": 0.92
+      },
+      {
+        "target": {
+          "id": "item_test016",
+          "type": "test_case",
+          "custom_id": "TC-016",
+          "title": "Test Token Refresh"
+        },
+        "suggested_link_type": "verified_by",
+        "confidence": 0.85,
+        "reasoning": "Token refresh is part of OAuth 2.0 flow",
+        "matching_keywords": ["token", "OAuth"],
+        "semantic_similarity": 0.78
+      }
+    ],
+    "total_analyzed": 150,
+    "suggestions_count": 2
+  }
+}
+```
+
+### Accept Suggestion
+
+```http
+POST /v1/link-suggestions/{suggestion_id}/accept
+```
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/link-suggestions/sug_abc123/accept" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metadata": {
+      "accepted_by": "user_xyz789",
+      "acceptance_note": "Confirmed relevant test"
+    }
+  }'
+```
+
+### Reject Suggestion
+
+```http
+POST /v1/link-suggestions/{suggestion_id}/reject
+```
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/link-suggestions/sug_abc123/reject" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "Test covers different functionality"
+  }'
+```
+
+### Python SDK
+
+```python
+from tracertm import TraceRTMClient
+from tracertm.models import ItemType, LinkType
+
+client = TraceRTMClient(api_key="rtm_live_...")
+
+# Get suggestions for a requirement
+suggestions = await client.links.get_suggestions(
+    item_id="item_req001",
+    target_type=ItemType.TEST_CASE,
+    min_confidence=0.7
+)
+
+for suggestion in suggestions:
+    print(f"Suggested: {suggestion.target.custom_id}")
+    print(f"  Confidence: {suggestion.confidence:.0%}")
+    print(f"  Reason: {suggestion.reasoning}")
+
+# Accept high-confidence suggestions automatically
+for suggestion in suggestions:
+    if suggestion.confidence >= 0.9:
+        await suggestion.accept(
+            metadata={"auto_accepted": True}
+        )
+        print(f"Accepted: {suggestion.target.custom_id}")
+
+# Interactive review
+for suggestion in suggestions:
+    if 0.7 <= suggestion.confidence < 0.9:
+        # Present to user for review
+        if user_approves(suggestion):
+            await suggestion.accept()
+        else:
+            await suggestion.reject(reason="Not relevant")
+
+# Bulk suggestions for project
+all_suggestions = await client.links.get_project_suggestions(
+    project_id="proj_456",
+    source_type=ItemType.REQUIREMENT,
+    target_type=ItemType.TEST_CASE,
+    min_confidence=0.8
+)
+```
+
+## Impact Analysis
+
+Analyze the impact of changes across linked items.
+
+### Get Impact Analysis
+
+```http
+GET /v1/items/{id}/impact
+```
+
+#### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `depth` | integer | Analysis depth (1-5, default: 3) |
+| `link_types` | string | Comma-separated link types to follow |
+| `include_indirect` | boolean | Include indirect impacts |
+
+#### Request
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/items/item_req001/impact?depth=3&include_indirect=true" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "source_item": {
+      "id": "item_req001",
+      "custom_id": "REQ-001",
+      "title": "User Authentication"
+    },
+    "impact_summary": {
+      "total_impacted": 15,
+      "by_type": {
+        "test_case": 8,
+        "design": 3,
+        "task": 4
+      },
+      "by_depth": {
+        "1": 5,
+        "2": 7,
+        "3": 3
+      }
+    },
+    "impacted_items": [
+      {
+        "item": {
+          "id": "item_test001",
+          "type": "test_case",
+          "custom_id": "TC-001",
+          "title": "Test OAuth Login",
+          "status": "passed"
+        },
+        "depth": 1,
+        "impact_type": "direct",
+        "link_path": [
+          {"type": "verified_by", "to": "TC-001"}
+        ],
+        "impact_severity": "high",
+        "recommendation": "Re-run test after requirement changes"
+      },
+      {
+        "item": {
+          "id": "item_design001",
+          "type": "design",
+          "custom_id": "DES-001",
+          "title": "Auth Flow Design"
+        },
+        "depth": 2,
+        "impact_type": "indirect",
+        "link_path": [
+          {"type": "satisfies", "to": "REQ-001"},
+          {"type": "implemented_by", "to": "DES-001"}
+        ],
+        "impact_severity": "medium",
+        "recommendation": "Review design for alignment"
+      }
+    ],
+    "risk_assessment": {
+      "overall_risk": "medium",
+      "factors": [
+        "8 test cases require re-verification",
+        "3 design documents may need updates",
+        "No blocking dependencies"
+      ]
+    }
+  }
+}
+```
+
+### Python SDK
+
+```python
+# Get impact analysis
+impact = await client.items.get_impact(
+    item_id="item_req001",
+    depth=3,
+    include_indirect=True
+)
+
+print(f"Total impacted items: {impact.summary.total_impacted}")
+print(f"Risk level: {impact.risk_assessment.overall_risk}")
+
+# Review impacted items by type
+for item_type, count in impact.summary.by_type.items():
+    print(f"  {item_type}: {count}")
+
+# Get items that need re-testing
+tests_to_rerun = [
+    item for item in impact.impacted_items
+    if item.item.type == "test_case" and item.depth == 1
+]
+
+print(f"\nTests to re-run ({len(tests_to_rerun)}):")
+for test in tests_to_rerun:
+    print(f"  {test.item.custom_id}: {test.recommendation}")
+
+# Bulk impact analysis for multiple items
+impacts = await client.items.bulk_impact_analysis(
+    item_ids=["item_req001", "item_req002", "item_req003"],
+    depth=2
+)
+```
+
+## Link Validation
+
+Validate link integrity and detect issues.
+
+### Validate Links
+
+```http
+POST /v1/projects/{project_id}/links/validate
+```
+
+#### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_456/links/validate" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "checks": ["orphaned", "circular", "type_mismatch", "missing_coverage"]
+  }'
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "project_id": "proj_456",
+    "validation_results": {
+      "passed": false,
+      "total_links": 245,
+      "issues_found": 8
+    },
+    "issues": [
+      {
+        "type": "orphaned_link",
+        "severity": "error",
+        "link_id": "link_orphan1",
+        "message": "Target item no longer exists",
+        "details": {
+          "source_id": "item_req010",
+          "target_id": "item_deleted123"
+        },
+        "recommendation": "Delete orphaned link"
+      },
+      {
+        "type": "missing_coverage",
+        "severity": "warning",
+        "item_id": "item_req015",
+        "message": "High priority requirement without test coverage",
+        "details": {
+          "custom_id": "REQ-015",
+          "priority": "high"
+        },
+        "recommendation": "Create test cases for this requirement"
+      },
+      {
+        "type": "circular_reference",
+        "severity": "warning",
+        "message": "Circular dependency detected",
+        "details": {
+          "cycle": ["item_a", "item_b", "item_c", "item_a"]
+        },
+        "recommendation": "Review and break circular dependency"
+      }
+    ],
+    "summary": {
+      "errors": 2,
+      "warnings": 6,
+      "by_type": {
+        "orphaned_link": 2,
+        "missing_coverage": 5,
+        "circular_reference": 1
+      }
+    }
+  }
+}
+```
+
+### Python SDK
+
+```python
+# Validate all links
+validation = await client.links.validate(
+    project_id="proj_456",
+    checks=["orphaned", "circular", "type_mismatch", "missing_coverage"]
+)
+
+if not validation.passed:
+    print(f"Found {validation.issues_found} issues")
+
+    # Handle errors
+    errors = [i for i in validation.issues if i.severity == "error"]
+    for error in errors:
+        print(f"ERROR: {error.message}")
+
+        if error.type == "orphaned_link":
+            # Auto-fix orphaned links
+            await client.links.delete(error.link_id)
+            print(f"  Fixed: Deleted orphaned link {error.link_id}")
+
+    # Report warnings
+    warnings = [i for i in validation.issues if i.severity == "warning"]
+    for warning in warnings:
+        print(f"WARNING: {warning.message}")
+        print(f"  Recommendation: {warning.recommendation}")
+
+# Schedule regular validation
+await client.webhooks.create(
+    url="https://your-app.com/webhooks/link-validation",
+    events=["project.validation_complete"],
+    schedule="weekly"
+)
+```
+
+## Bulk Link Operations
+
+### Bulk Delete Links
+
+```http
+POST /v1/links/bulk-delete
+```
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/links/bulk-delete" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "link_ids": ["link_1", "link_2", "link_3"]
+  }'
+```
+
+### Bulk Update Links
+
+```http
+POST /v1/links/bulk-update
+```
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/links/bulk-update" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "links": [
+      {"id": "link_1", "metadata": {"verified": true}},
+      {"id": "link_2", "metadata": {"verified": true}},
+      {"id": "link_3", "type": "implements"}
+    ]
+  }'
+```
+
+### Python SDK
+
+```python
+# Bulk delete orphaned links
+orphaned_ids = [
+    issue.link_id for issue in validation.issues
+    if issue.type == "orphaned_link"
+]
+
+await client.links.bulk_delete(link_ids=orphaned_ids)
+print(f"Deleted {len(orphaned_ids)} orphaned links")
+
+# Bulk create from mapping
+mapping = {
+    "item_req001": ["item_test001", "item_test002"],
+    "item_req002": ["item_test003"],
+    "item_req003": ["item_test004", "item_test005", "item_test006"]
+}
+
+await client.links.bulk_create_from_mapping(
+    project_id="proj_456",
+    mapping=mapping,
+    link_type=LinkType.VERIFIED_BY
+)
+
+# Bulk transfer links (when replacing items)
+await client.links.transfer(
+    from_item_id="item_old",
+    to_item_id="item_new",
+    preserve_metadata=True
+)
+```
+
+## Link History and Audit
+
+### Get Link History
+
+```http
+GET /v1/links/{id}/history
+```
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/links/link_abc123/history" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "version": 2,
+      "action": "updated",
+      "changes": {
+        "metadata.verified": {"from": false, "to": true}
+      },
+      "changed_by": "user_xyz789",
+      "changed_at": "2025-01-15T14:00:00Z"
+    },
+    {
+      "version": 1,
+      "action": "created",
+      "changed_by": "user_abc123",
+      "changed_at": "2025-01-10T09:00:00Z"
+    }
+  ]
+}
+```
+
+### Get Link Audit Trail
+
+```http
+GET /v1/projects/{project_id}/links/audit
+```
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_456/links/audit?after=2025-01-01" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+```json
+{
+  "data": [
+    {
+      "timestamp": "2025-01-15T14:30:00Z",
+      "action": "link.created",
+      "user_id": "user_abc123",
+      "link": {
+        "id": "link_new789",
+        "type": "verified_by",
+        "source_id": "item_req001",
+        "target_id": "item_test001"
+      }
+    },
+    {
+      "timestamp": "2025-01-15T10:00:00Z",
+      "action": "link.deleted",
+      "user_id": "user_xyz789",
+      "link": {
+        "id": "link_old123",
+        "type": "relates_to"
+      },
+      "reason": "Replaced with more specific link type"
+    }
+  ],
+  "meta": {
+    "total": 150,
+    "period": {
+      "from": "2025-01-01T00:00:00Z",
+      "to": "2025-01-15T23:59:59Z"
+    }
+  }
+}
+```
+
+## Link Visualization
+
+### Get Traceability Graph
+
+```http
+GET /v1/projects/{project_id}/links/graph
+```
+
+#### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `root_id` | string | Start from specific item |
+| `depth` | integer | Graph depth (1-5) |
+| `link_types` | string | Filter link types |
+| `format` | string | `json`, `dot`, `mermaid` |
+
+```bash
+# Get as Mermaid diagram
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_456/links/graph?root_id=item_epic001&depth=3&format=mermaid" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+#### Response (Mermaid Format)
+
+```json
+{
+  "data": {
+    "format": "mermaid",
+    "diagram": "graph LR\n  EPIC-001[\"Epic: User Auth\"] --> REQ-001[\"REQ: OAuth Login\"]\n  EPIC-001 --> REQ-002[\"REQ: Password Reset\"]\n  REQ-001 --> TC-001[\"TC: Test OAuth\"]\n  REQ-001 --> TC-002[\"TC: Test Token\"]\n  REQ-002 --> TC-003[\"TC: Test Reset\"]"
+  }
+}
+```
+
+### Python SDK
+
+```python
+# Get graph as different formats
+json_graph = await client.links.get_graph(
+    project_id="proj_456",
+    root_id="item_epic001",
+    depth=3,
+    format="json"
+)
+
+mermaid_graph = await client.links.get_graph(
+    project_id="proj_456",
+    format="mermaid"
+)
+
+# Generate traceability matrix
+matrix = await client.links.get_traceability_matrix(
+    project_id="proj_456",
+    row_type=ItemType.REQUIREMENT,
+    column_type=ItemType.TEST_CASE,
+    link_type=LinkType.VERIFIED_BY
+)
+
+# Export as CSV
+csv_data = matrix.to_csv()
+with open("traceability_matrix.csv", "w") as f:
+    f.write(csv_data)
+```
+
+## Webhooks for Links
+
+### Link Events
+
+| Event | Description |
+|-------|-------------|
+| `link.created` | New link created |
+| `link.updated` | Link metadata updated |
+| `link.deleted` | Link removed |
+| `link.suggestion_created` | AI suggested new link |
+| `link.coverage_changed` | Coverage percentage changed |
+
+### Webhook Payload
+
+```json
+{
+  "event": "link.created",
+  "timestamp": "2025-01-15T16:00:00Z",
+  "data": {
+    "link": {
+      "id": "link_new789",
+      "type": "verified_by",
+      "source": {
+        "id": "item_req001",
+        "custom_id": "REQ-001"
+      },
+      "target": {
+        "id": "item_test001",
+        "custom_id": "TC-001"
+      }
+    },
+    "coverage_impact": {
+      "before": 80.0,
+      "after": 81.25,
+      "change": 1.25
+    },
+    "created_by": "user_abc123"
+  }
+}
+```
+
+## Related Documentation
+
+- [Links API](/docs/api-reference/rest-api/links) - Core link operations
+- [Impact Analysis](/docs/wiki/concepts/impact-analysis) - Understanding impact
+- [Traceability Matrix](/docs/wiki/concepts/traceability-matrix) - Matrix reports
+- [AI Features](/docs/wiki/concepts/ai-features) - AI-powered suggestions
+

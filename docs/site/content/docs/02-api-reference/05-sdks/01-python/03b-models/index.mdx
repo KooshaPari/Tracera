@@ -1,0 +1,417 @@
+---
+title: "Models"
+description: "Data models and types in the TraceRTM Python SDK"
+---
+
+# Models
+
+Reference for all data models and types in the TraceRTM Python SDK.
+
+## Core Models
+
+### Project
+
+Represents a TraceRTM project.
+
+```python
+from tracertm.models import Project
+
+@dataclass
+class Project:
+    id: str                          # Unique project ID (proj_xxx)
+    name: str                        # Project name
+    key: str                         # Unique project key (e.g., "PROJ")
+    description: Optional[str]       # Project description
+    owner_id: str                    # Owner user ID
+    workflow_id: str                 # Default workflow ID
+    created_at: datetime             # Creation timestamp
+    updated_at: datetime             # Last update timestamp
+    settings: ProjectSettings        # Project settings
+
+    # Computed properties
+    @property
+    def url(self) -> str:
+        """Get the project URL in the web app."""
+        return f"https://app.tracertm.dev/projects/{self.key}"
+```
+
+**Example:**
+
+```python
+project = client.projects.get("proj_abc123")
+
+print(f"Name: {project.name}")
+print(f"Key: {project.key}")
+print(f"Created: {project.created_at}")
+print(f"URL: {project.url}")
+```
+
+### Item
+
+Represents a traceability item (requirement, test case, etc.).
+
+```python
+from tracertm.models import Item
+
+@dataclass
+class Item:
+    id: str                          # Unique item ID
+    project_id: str                  # Parent project ID
+    type: str                        # Item type
+    title: str                       # Item title
+    description: Optional[str]       # Item description (markdown)
+    status: str                      # Current status
+    status_category: str             # Status category (initial, in_progress, done)
+    priority: Optional[str]          # Priority level
+    assignee_id: Optional[str]       # Assigned user ID
+    assignee: Optional[User]         # Assigned user (when included)
+    reporter_id: str                 # Reporter user ID
+    due_date: Optional[date]         # Due date
+    tags: list[str]                  # Item tags
+    fields: dict[str, Any]           # Custom field values
+    parent_id: Optional[str]         # Parent item ID (hierarchy)
+    created_at: datetime             # Creation timestamp
+    updated_at: datetime             # Last update timestamp
+    created_by: str                  # Creator user ID
+
+    # Related data (when included)
+    links: Optional[list[Link]]      # Related links
+    history: Optional[list[HistoryEntry]]  # Change history
+    artifacts: Optional[list[Artifact]]    # File attachments
+    comments: Optional[list[Comment]]      # Comments
+
+    # Computed properties
+    @property
+    def is_complete(self) -> bool:
+        """Check if item is in a completed status."""
+        return self.status_category == "done"
+```
+
+**Item Types:**
+
+| Type | Description |
+|------|-------------|
+| `requirement` | Business or system requirement |
+| `test_case` | Test case with steps |
+| `user_story` | User story (agile) |
+| `bug` | Bug or defect |
+| `task` | Work task |
+| `risk` | Risk item |
+| `decision` | Architectural decision |
+| `epic` | Epic (large feature) |
+
+**Example:**
+
+```python
+item = client.items.get("item_abc123", include=["links"])
+
+print(f"Title: {item.title}")
+print(f"Type: {item.type}")
+print(f"Status: {item.status} ({item.status_category})")
+print(f"Complete: {item.is_complete}")
+
+# Access custom fields
+print(f"Acceptance Criteria: {item.fields.get('acceptance_criteria')}")
+
+# Access links (when included)
+if item.links:
+    for link in item.links:
+        print(f"Linked to: {link.target_id}")
+```
+
+### Link
+
+Represents a traceability link between items.
+
+```python
+from tracertm.models import Link
+
+@dataclass
+class Link:
+    id: str                          # Unique link ID
+    source_id: str                   # Source item ID
+    target_id: str                   # Target item ID
+    type: str                        # Link type
+    description: Optional[str]       # Link description
+    created_at: datetime             # Creation timestamp
+    created_by: str                  # Creator user ID
+
+    # Expanded data (when included)
+    source: Optional[Item]           # Source item details
+    target: Optional[Item]           # Target item details
+```
+
+**Link Types:**
+
+| Type | Description | Direction |
+|------|-------------|-----------|
+| `traces_to` | Generic trace | Source traces to target |
+| `verified_by` | Verification | Source verified by target |
+| `implements` | Implementation | Source implements target |
+| `parent_of` | Hierarchy | Source is parent of target |
+| `relates_to` | Related | Bidirectional |
+| `depends_on` | Dependency | Source depends on target |
+| `duplicates` | Duplicate | Source duplicates target |
+| `blocks` | Blocking | Source blocks target |
+
+### User
+
+Represents a user.
+
+```python
+from tracertm.models import User
+
+@dataclass
+class User:
+    id: str                          # Unique user ID
+    email: str                       # Email address
+    name: str                        # Display name
+    avatar_url: Optional[str]        # Avatar URL
+    role: str                        # Role in organization
+    created_at: datetime             # Account creation
+    last_active_at: Optional[datetime]  # Last activity
+```
+
+---
+
+## Artifact Models
+
+### Artifact
+
+Represents a file attachment.
+
+```python
+from tracertm.models import Artifact
+
+@dataclass
+class Artifact:
+    id: str                          # Unique artifact ID
+    filename: str                    # Original filename
+    size: int                        # File size in bytes
+    content_type: str                # MIME type
+    description: Optional[str]       # Artifact description
+    version: int                     # Version number
+    checksum: str                    # SHA-256 checksum
+    download_url: str                # Pre-signed download URL
+    created_at: datetime             # Upload timestamp
+    created_by: str                  # Uploader user ID
+    metadata: dict[str, Any]         # Custom metadata
+```
+
+---
+
+## Workflow Models
+
+### Workflow
+
+Represents a workflow definition.
+
+```python
+from tracertm.models import Workflow
+
+@dataclass
+class Workflow:
+    id: str                          # Unique workflow ID
+    name: str                        # Workflow name
+    description: Optional[str]       # Workflow description
+    is_default: bool                 # Is default workflow
+    item_types: list[str]            # Applicable item types
+    states: list[WorkflowState]      # Workflow states
+    transitions: list[WorkflowTransition]  # Allowed transitions
+    created_at: datetime
+    updated_at: datetime
+```
+
+### WorkflowState
+
+Represents a workflow state.
+
+```python
+@dataclass
+class WorkflowState:
+    id: str                          # State ID
+    name: str                        # State name (e.g., "Draft")
+    category: str                    # Category: initial, in_progress, done
+    color: str                       # Display color
+    description: Optional[str]       # State description
+```
+
+### WorkflowTransition
+
+Represents a workflow transition.
+
+```python
+@dataclass
+class WorkflowTransition:
+    id: str                          # Transition ID
+    name: str                        # Transition name (e.g., "Approve")
+    from_state: str                  # Source state name
+    to_state: str                    # Target state name
+    required_fields: list[str]       # Required fields
+    required_permissions: list[str]  # Required permissions
+```
+
+---
+
+## Report Models
+
+### TraceabilityMatrix
+
+Represents a traceability matrix.
+
+```python
+from tracertm.models import TraceabilityMatrix
+
+@dataclass
+class TraceabilityMatrix:
+    project_id: str
+    source_type: str                 # e.g., "requirement"
+    target_type: str                 # e.g., "test_case"
+    generated_at: datetime
+    rows: list[MatrixRow]            # Matrix rows
+    summary: MatrixSummary           # Coverage summary
+
+@dataclass
+class MatrixRow:
+    source: Item                     # Source item
+    targets: list[Item]              # Linked target items
+    link_count: int                  # Number of links
+
+@dataclass
+class MatrixSummary:
+    total_sources: int               # Total source items
+    covered_sources: int             # Sources with at least one link
+    uncovered_sources: int           # Sources with no links
+    coverage_percent: float          # Coverage percentage
+    total_targets: int               # Total target items
+    linked_targets: int              # Targets linked to sources
+```
+
+### CoverageReport
+
+Represents a coverage analysis.
+
+```python
+@dataclass
+class CoverageReport:
+    project_id: str
+    source_type: str
+    target_type: str
+    generated_at: datetime
+    coverage_percent: float
+    covered_count: int
+    uncovered_count: int
+    uncovered_items: list[Item]      # Items without coverage
+```
+
+---
+
+## Pagination Models
+
+### PaginatedResult
+
+Generic paginated result.
+
+```python
+from tracertm.models import PaginatedResult
+
+@dataclass
+class PaginatedResult[T]:
+    data: list[T]                    # Result items
+    total: int                       # Total count
+    limit: int                       # Page size
+    offset: int                      # Current offset
+    has_more: bool                   # More results available
+
+    def __iter__(self):
+        """Iterate over data items."""
+        return iter(self.data)
+
+    def __len__(self):
+        """Return count of items in current page."""
+        return len(self.data)
+```
+
+**Example:**
+
+```python
+result = client.items.list(project_id="proj_abc123", limit=20)
+
+print(f"Page size: {len(result)}")
+print(f"Total items: {result.total}")
+print(f"Has more: {result.has_more}")
+
+for item in result:
+    print(item.title)
+```
+
+---
+
+## Search Models
+
+### SearchResult
+
+Search result with highlights.
+
+```python
+@dataclass
+class SearchResult:
+    items: list[SearchHit]
+    total: int
+    query: str
+    took_ms: int                     # Search duration
+
+@dataclass
+class SearchHit:
+    item: Item                       # Matched item
+    score: float                     # Relevance score
+    highlights: dict[str, list[str]] # Highlighted matches
+```
+
+---
+
+## History Models
+
+### HistoryEntry
+
+Represents a change history entry.
+
+```python
+@dataclass
+class HistoryEntry:
+    id: str
+    item_id: str
+    action: str                      # created, updated, transitioned, etc.
+    changes: list[FieldChange]       # Field changes
+    user_id: str
+    user: Optional[User]
+    timestamp: datetime
+    comment: Optional[str]
+
+@dataclass
+class FieldChange:
+    field: str                       # Field name
+    old_value: Any                   # Previous value
+    new_value: Any                   # New value
+```
+
+---
+
+## Type Aliases
+
+```python
+from tracertm.types import (
+    ItemType,      # Literal["requirement", "test_case", "bug", ...]
+    LinkType,      # Literal["traces_to", "verified_by", ...]
+    Priority,      # Literal["critical", "high", "medium", "low"]
+    StatusCategory # Literal["initial", "in_progress", "done"]
+)
+```
+
+---
+
+## Related Documentation
+
+- [Client Methods](/docs/api-reference/sdks/python/client-methods) - API methods
+- [API Reference](/docs/api-reference/sdks/python/api-reference) - Full reference
+- [Examples](/docs/api-reference/sdks/python/examples) - Usage examples

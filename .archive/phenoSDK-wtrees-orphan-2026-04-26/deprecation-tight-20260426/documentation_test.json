@@ -1,0 +1,17 @@
+
+📚 DOCUMENTATION AUTOMATION REPORT
+==================================================
+Overall Status: NEEDS_IMPROVEMENT
+Average Score: 53.8/100
+
+Summary:
+  Total Files: 25
+  Valid Files: 9
+  Invalid Files: 16
+  Missing Files: 0
+
+API Endpoints: 6433
+
+Recommendations:
+  • Fix 16 invalid documentation files
+  • Improve 14 low-scoring documentation files

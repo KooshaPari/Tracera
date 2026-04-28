@@ -1,0 +1,80 @@
+{
+  "project_name": "src",
+  "config": {
+    "enabled_tools": [
+      "pattern_detector",
+      "architectural_validator",
+      "performance_detector",
+      "security_scanner",
+      "code_smell_detector",
+      "integration_gates",
+      "atlas_health"
+    ],
+    "thresholds": {
+      "max_violations": 50,
+      "max_warnings": 100,
+      "max_errors": 10,
+      "quality_score_threshold": 80.0,
+      "max_loop_iterations": 1000,
+      "max_nested_loops": 3,
+      "max_function_calls": 50,
+      "max_memory_usage_mb": 100,
+      "max_response_time_ms": 1000,
+      "max_database_queries": 10,
+      "max_file_operations": 5,
+      "max_network_calls": 3,
+      "long_method_lines": 50,
+      "long_method_complexity": 15,
+      "large_class_methods": 20,
+      "large_class_lines": 500,
+      "long_parameter_list": 5,
+      "duplicate_code_lines": 10,
+      "dead_code_unused_days": 30,
+      "magic_number_count": 5,
+      "deep_nesting": 4,
+      "long_chain_calls": 5,
+      "too_many_returns": 3,
+      "cyclomatic_complexity": 10
+    },
+    "filters": {
+      "severity": [
+        "high",
+        "critical"
+      ],
+      "impact": [
+        "High",
+        "Critical"
+      ],
+      "file_patterns": [
+        "*.py"
+      ],
+      "exclude_patterns": [
+        "__pycache__",
+        "*.pyc",
+        ".git",
+        "node_modules"
+      ]
+    },
+    "output_format": "json",
+    "output_path": "reports",
+    "include_metadata": true,
+    "parallel_analysis": true,
+    "max_workers": 4,
+    "timeout_seconds": 300
+  },
+  "issues": [],
+  "metrics": {
+    "total_issues": 0,
+    "issues_by_severity": {},
+    "issues_by_type": {},
+    "issues_by_tool": {},
+    "issues_by_impact": {},
+    "files_affected": 0,
+    "quality_score": 100.0,
+    "analysis_duration": 0.0006680488586425781
+  },
+  "tool_reports": {},
+  "analysis_start_time": 1760439489.112706,
+  "analysis_end_time": 1760439489.113374,
+  "metadata": {}
+}

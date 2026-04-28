@@ -1,0 +1,52 @@
+name: Check Legacy Kit Imports
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  check-imports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for legacy kit imports
+        run: |
+          echo "Checking for deprecated legacy kit imports..."
+
+          # Check for config_kit imports
+          if grep -r "from config_kit" --include="*.py" src/ tests/ 2>/dev/null; then
+            echo "❌ ERROR: Found config_kit imports. Use 'from pheno.config' instead."
+            exit 1
+          fi
+
+          if grep -r "import config_kit" --include="*.py" src/ tests/ 2>/dev/null; then
+            echo "❌ ERROR: Found config_kit imports. Use 'from pheno.config' instead."
+            exit 1
+          fi
+
+          # Check for observability_kit imports
+          if grep -r "from observability_kit" --include="*.py" src/ tests/ 2>/dev/null; then
+            echo "❌ ERROR: Found observability_kit imports. Use 'from pheno.observability' instead."
+            exit 1
+          fi
+
+          if grep -r "import observability_kit" --include="*.py" src/ tests/ 2>/dev/null; then
+            echo "❌ ERROR: Found observability_kit imports. Use 'from pheno.observability' instead."
+            exit 1
+          fi
+
+          # Check for api_gateway_kit imports
+          if grep -r "from api_gateway_kit" --include="*.py" src/ tests/ 2>/dev/null; then
+            echo "❌ ERROR: Found api_gateway_kit imports. Use 'from pheno.gateway' instead."
+            exit 1
+          fi
+
+          if grep -r "import api_gateway_kit" --include="*.py" src/ tests/ 2>/dev/null; then
+            echo "❌ ERROR: Found api_gateway_kit imports. Use 'from pheno.gateway' instead."
+            exit 1
+          fi
+
+          echo "✅ No legacy kit imports found in src/ and tests/"

@@ -1,0 +1,28 @@
+# Ruff Import Sorting Configuration
+# Add to pyproject.toml in the project root
+
+[tool.ruff.lint.isort]
+# Enable isort-compatible import sorting
+# Ruff's import sorter is faster than isort and is compatible with isort config
+
+# Define which imports should be considered "first-party"
+known-first-party = ["tracertm"]
+
+# Define the order of import sections
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+# Required import style (optional, for strict enforcement)
+# required-imports = ["from __future__ import annotations"]
+
+# Force specific imports to the top (optional)
+# force-single-line = false
+# force-sort-within-sections = true
+
+# Split on trailing commas (optional)
+# split-on-trailing-comma = false
+
+# Example of more detailed configuration:
+# [tool.ruff.lint.isort]
+# known-first-party = ["tracertm"]
+# known-third-party = ["fastapi", "pydantic", "sqlalchemy"]
+# sections = [{ "name": "future" }, { "name": "standard-library" }, { "name": "third-party" }, { "name": "first-party" }, { "name": "local-folder" }]

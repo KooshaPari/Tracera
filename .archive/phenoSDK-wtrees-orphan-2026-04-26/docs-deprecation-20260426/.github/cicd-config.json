@@ -1,0 +1,52 @@
+{
+  "project_name": "pheno-sdk",
+  "project_type": "pheno-sdk",
+  "python_versions": [
+    "3.11",
+    "3.12",
+    "3.13"
+  ],
+  "os_versions": [
+    "ubuntu-latest",
+    "macos-latest",
+    "windows-latest"
+  ],
+  "quality_thresholds": {
+    "coverage_threshold": 65.0,
+    "loc_threshold": 70000,
+    "complexity_threshold": 10
+  },
+  "security_checks": [
+    "bandit",
+    "safety",
+    "semgrep"
+  ],
+  "test_commands": [
+    "pytest",
+    "pytest-cov"
+  ],
+  "build_commands": [
+    "python -m build"
+  ],
+  "deploy_commands": [
+    "make deploy"
+  ],
+  "dependencies": [
+    "pheno-sdk[quality,test]"
+  ],
+  "environment_variables": {
+    "PYTHON_VERSION": "3.12",
+    "CACHE_VERSION": "v1"
+  },
+  "secrets": [
+    "PYPI_TOKEN",
+    "GITHUB_TOKEN"
+  ],
+  "artifacts": [
+    "dist/",
+    "coverage.xml",
+    "test-results.xml"
+  ],
+  "notifications": {},
+  "custom_stages": []
+}

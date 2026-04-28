@@ -1,0 +1,867 @@
+---
+title: "Types"
+description: "Complete type definitions for the TraceRTM Go SDK"
+---
+
+# Types
+
+Complete reference for all types, structs, and interfaces in the TraceRTM Go SDK.
+
+## Core Types
+
+### Client
+
+The main client for interacting with TraceRTM:
+
+```go
+type Client struct {
+    Projects  *ProjectsService
+    Items     *ItemsService
+    Links     *LinksService
+    Reports   *ReportsService
+    Search    *SearchService
+    Workflows *WorkflowsService
+    Users     *UsersService
+    Artifacts *ArtifactsService
+}
+```
+
+### ClientOption
+
+Functional option for configuring the client:
+
+```go
+type ClientOption func(*clientConfig)
+```
+
+---
+
+## Project Types
+
+### Project
+
+```go
+type Project struct {
+    ID          string            `json:"id"`
+    Name        string            `json:"name"`
+    Key         string            `json:"key"`
+    Description string            `json:"description"`
+    OwnerID     string            `json:"owner_id"`
+    Settings    *ProjectSettings  `json:"settings"`
+    CreatedAt   time.Time         `json:"created_at"`
+    UpdatedAt   time.Time         `json:"updated_at"`
+}
+```
+
+### ProjectSettings
+
+```go
+type ProjectSettings struct {
+    DefaultWorkflowID string            `json:"default_workflow_id"`
+    ItemTypes         []string          `json:"item_types"`
+    LinkTypes         []string          `json:"link_types"`
+    CustomFields      []*CustomField    `json:"custom_fields"`
+    Permissions       map[string]string `json:"permissions"`
+}
+```
+
+### ProjectStats
+
+```go
+type ProjectStats struct {
+    ItemCount     int            `json:"item_count"`
+    LinkCount     int            `json:"link_count"`
+    ItemsByType   map[string]int `json:"items_by_type"`
+    ItemsByStatus map[string]int `json:"items_by_status"`
+    CoverageRate  float64        `json:"coverage_rate"`
+}
+```
+
+### ProjectList
+
+```go
+type ProjectList struct {
+    Data    []*Project `json:"data"`
+    Total   int        `json:"total"`
+    Limit   int        `json:"limit"`
+    Offset  int        `json:"offset"`
+    HasMore bool       `json:"has_more"`
+}
+```
+
+### CreateProjectInput
+
+```go
+type CreateProjectInput struct {
+    Name        string            `json:"name"`
+    Key         string            `json:"key"`
+    Description string            `json:"description,omitempty"`
+    Settings    *ProjectSettings  `json:"settings,omitempty"`
+}
+```
+
+### UpdateProjectInput
+
+```go
+type UpdateProjectInput struct {
+    Name        string            `json:"name,omitempty"`
+    Description string            `json:"description,omitempty"`
+    Settings    *ProjectSettings  `json:"settings,omitempty"`
+}
+```
+
+### ListProjectsOptions
+
+```go
+type ListProjectsOptions struct {
+    Key    string `url:"key,omitempty"`
+    Limit  int    `url:"limit,omitempty"`
+    Offset int    `url:"offset,omitempty"`
+    Sort   string `url:"sort,omitempty"`
+    Order  string `url:"order,omitempty"`
+}
+```
+
+---
+
+## Item Types
+
+### Item
+
+```go
+type Item struct {
+    ID             string                 `json:"id"`
+    ProjectID      string                 `json:"project_id"`
+    Key            string                 `json:"key"`
+    Type           string                 `json:"type"`
+    Title          string                 `json:"title"`
+    Description    string                 `json:"description"`
+    Status         string                 `json:"status"`
+    StatusCategory string                 `json:"status_category"`
+    Priority       string                 `json:"priority"`
+    Tags           []string               `json:"tags"`
+    AssigneeID     string                 `json:"assignee_id"`
+    CreatedBy      string                 `json:"created_by"`
+    ParentID       string                 `json:"parent_id"`
+    DueDate        string                 `json:"due_date"`
+    CustomFields   map[string]interface{} `json:"custom_fields"`
+    CreatedAt      time.Time              `json:"created_at"`
+    UpdatedAt      time.Time              `json:"updated_at"`
+}
+```
+
+### ItemList
+
+```go
+type ItemList struct {
+    Data    []*Item `json:"data"`
+    Total   int     `json:"total"`
+    Limit   int     `json:"limit"`
+    Offset  int     `json:"offset"`
+    HasMore bool    `json:"has_more"`
+}
+```
+
+### CreateItemInput
+
+```go
+type CreateItemInput struct {
+    Type         string                 `json:"type"`
+    Title        string                 `json:"title"`
+    Description  string                 `json:"description,omitempty"`
+    Priority     string                 `json:"priority,omitempty"`
+    Status       string                 `json:"status,omitempty"`
+    Tags         []string               `json:"tags,omitempty"`
+    ParentID     string                 `json:"parent_id,omitempty"`
+    AssigneeID   string                 `json:"assignee_id,omitempty"`
+    DueDate      string                 `json:"due_date,omitempty"`
+    CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
+}
+```
+
+### UpdateItemInput
+
+```go
+type UpdateItemInput struct {
+    Title        string                 `json:"title,omitempty"`
+    Description  string                 `json:"description,omitempty"`
+    Priority     string                 `json:"priority,omitempty"`
+    Tags         []string               `json:"tags,omitempty"`
+    AssigneeID   string                 `json:"assignee_id,omitempty"`
+    DueDate      string                 `json:"due_date,omitempty"`
+    CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
+}
+```
+
+### ListItemsOptions
+
+```go
+type ListItemsOptions struct {
+    Type     string   `url:"type,omitempty"`
+    Status   string   `url:"status,omitempty"`
+    Priority string   `url:"priority,omitempty"`
+    Tags     []string `url:"tags,omitempty"`
+    ParentID string   `url:"parent_id,omitempty"`
+    Limit    int      `url:"limit,omitempty"`
+    Offset   int      `url:"offset,omitempty"`
+    Sort     string   `url:"sort,omitempty"`
+    Order    string   `url:"order,omitempty"`
+}
+```
+
+### TransitionInput
+
+```go
+type TransitionInput struct {
+    Transition string `json:"transition"`
+    Comment    string `json:"comment,omitempty"`
+}
+```
+
+### Transition
+
+```go
+type Transition struct {
+    ID        string `json:"id"`
+    Name      string `json:"name"`
+    FromState string `json:"from_state"`
+    ToState   string `json:"to_state"`
+}
+```
+
+### BulkUpdateInput
+
+```go
+type BulkUpdateInput struct {
+    ID     string           `json:"id"`
+    Update *UpdateItemInput `json:"update"`
+}
+```
+
+### BulkUpdateResult
+
+```go
+type BulkUpdateResult struct {
+    ID      string `json:"id"`
+    Success bool   `json:"success"`
+    Error   string `json:"error,omitempty"`
+    Item    *Item  `json:"item,omitempty"`
+}
+```
+
+### BulkDeleteResult
+
+```go
+type BulkDeleteResult struct {
+    Deleted int      `json:"deleted"`
+    Failed  int      `json:"failed"`
+    Errors  []string `json:"errors,omitempty"`
+}
+```
+
+---
+
+## Link Types
+
+### Link
+
+```go
+type Link struct {
+    ID          string    `json:"id"`
+    SourceID    string    `json:"source_id"`
+    TargetID    string    `json:"target_id"`
+    LinkType    string    `json:"link_type"`
+    Description string    `json:"description"`
+    CreatedBy   string    `json:"created_by"`
+    CreatedAt   time.Time `json:"created_at"`
+}
+```
+
+### LinkList
+
+```go
+type LinkList struct {
+    Data    []*Link `json:"data"`
+    Total   int     `json:"total"`
+    Limit   int     `json:"limit"`
+    Offset  int     `json:"offset"`
+    HasMore bool    `json:"has_more"`
+}
+```
+
+### CreateLinkInput
+
+```go
+type CreateLinkInput struct {
+    SourceID    string `json:"source_id"`
+    TargetID    string `json:"target_id"`
+    LinkType    string `json:"link_type"`
+    Description string `json:"description,omitempty"`
+}
+```
+
+### ListLinksInput
+
+```go
+type ListLinksInput struct {
+    ProjectID string `url:"project_id,omitempty"`
+    SourceID  string `url:"source_id,omitempty"`
+    TargetID  string `url:"target_id,omitempty"`
+    LinkType  string `url:"link_type,omitempty"`
+    Limit     int    `url:"limit,omitempty"`
+    Offset    int    `url:"offset,omitempty"`
+}
+```
+
+---
+
+## Report Types
+
+### CoverageReportInput
+
+```go
+type CoverageReportInput struct {
+    ProjectID  string   `json:"project_id"`
+    SourceType string   `json:"source_type"`
+    TargetType string   `json:"target_type"`
+    LinkType   string   `json:"link_type,omitempty"`
+    Tags       []string `json:"tags,omitempty"`
+}
+```
+
+### CoverageReport
+
+```go
+type CoverageReport struct {
+    TotalSources    int                `json:"total_sources"`
+    CoveredCount    int                `json:"covered_count"`
+    UncoveredCount  int                `json:"uncovered_count"`
+    CoveragePercent float64            `json:"coverage_percent"`
+    UncoveredItems  []*Item            `json:"uncovered_items"`
+    CoveredItems    []*CoverageDetail  `json:"covered_items"`
+}
+```
+
+### CoverageDetail
+
+```go
+type CoverageDetail struct {
+    Source      *Item   `json:"source"`
+    Targets     []*Item `json:"targets"`
+    TargetCount int     `json:"target_count"`
+}
+```
+
+### TraceabilityMatrixInput
+
+```go
+type TraceabilityMatrixInput struct {
+    ProjectID string `json:"project_id"`
+    RowType   string `json:"row_type"`
+    ColType   string `json:"col_type"`
+    LinkType  string `json:"link_type,omitempty"`
+}
+```
+
+### TraceabilityMatrix
+
+```go
+type TraceabilityMatrix struct {
+    Rows       []*MatrixRow    `json:"rows"`
+    Columns    []*MatrixColumn `json:"columns"`
+    Cells      [][]*MatrixCell `json:"cells"`
+    TotalRows  int             `json:"total_rows"`
+    TotalCols  int             `json:"total_cols"`
+}
+```
+
+### MatrixRow
+
+```go
+type MatrixRow struct {
+    ID    string `json:"id"`
+    Key   string `json:"key"`
+    Title string `json:"title"`
+}
+```
+
+### MatrixColumn
+
+```go
+type MatrixColumn struct {
+    ID    string `json:"id"`
+    Key   string `json:"key"`
+    Title string `json:"title"`
+}
+```
+
+### MatrixCell
+
+```go
+type MatrixCell struct {
+    Linked   bool   `json:"linked"`
+    LinkID   string `json:"link_id,omitempty"`
+    LinkType string `json:"link_type,omitempty"`
+}
+```
+
+### ImpactAnalysisInput
+
+```go
+type ImpactAnalysisInput struct {
+    ItemID    string `json:"item_id"`
+    Direction string `json:"direction"` // "upstream", "downstream", "both"
+    Depth     int    `json:"depth,omitempty"`
+}
+```
+
+### ImpactAnalysis
+
+```go
+type ImpactAnalysis struct {
+    SourceItem    *Item            `json:"source_item"`
+    ImpactedItems []*ImpactedItem  `json:"impacted_items"`
+    TotalImpacted int              `json:"total_impacted"`
+    ByType        map[string]int   `json:"by_type"`
+    ByDepth       map[int]int      `json:"by_depth"`
+}
+```
+
+### ImpactedItem
+
+```go
+type ImpactedItem struct {
+    Item      *Item    `json:"item"`
+    Depth     int      `json:"depth"`
+    Path      []string `json:"path"`
+    LinkType  string   `json:"link_type"`
+    Direction string   `json:"direction"`
+}
+```
+
+### GapAnalysisInput
+
+```go
+type GapAnalysisInput struct {
+    ProjectID  string `json:"project_id"`
+    SourceType string `json:"source_type"`
+    TargetType string `json:"target_type"`
+}
+```
+
+### GapAnalysis
+
+```go
+type GapAnalysis struct {
+    MissingLinks    []*GapItem `json:"missing_links"`
+    OrphanedTargets []*Item    `json:"orphaned_targets"`
+    TotalGaps       int        `json:"total_gaps"`
+}
+```
+
+### GapItem
+
+```go
+type GapItem struct {
+    Source          *Item    `json:"source"`
+    SuggestedLinks  []*Item  `json:"suggested_links"`
+    RequiredTypes   []string `json:"required_types"`
+}
+```
+
+---
+
+## Search Types
+
+### SearchInput
+
+```go
+type SearchInput struct {
+    Query     string   `json:"query"`
+    ProjectID string   `json:"project_id,omitempty"`
+    Type      string   `json:"type,omitempty"`
+    Status    string   `json:"status,omitempty"`
+    Tags      []string `json:"tags,omitempty"`
+    Limit     int      `json:"limit,omitempty"`
+    Offset    int      `json:"offset,omitempty"`
+}
+```
+
+### SearchResults
+
+```go
+type SearchResults struct {
+    Data    []*SearchResult `json:"data"`
+    Total   int             `json:"total"`
+    Limit   int             `json:"limit"`
+    Offset  int             `json:"offset"`
+    HasMore bool            `json:"has_more"`
+}
+```
+
+### SearchResult
+
+```go
+type SearchResult struct {
+    ID         string   `json:"id"`
+    Key        string   `json:"key"`
+    Type       string   `json:"type"`
+    Title      string   `json:"title"`
+    Score      float64  `json:"score"`
+    Highlights []string `json:"highlights"`
+}
+```
+
+### SuggestInput
+
+```go
+type SuggestInput struct {
+    Query     string `json:"query"`
+    ProjectID string `json:"project_id,omitempty"`
+    Limit     int    `json:"limit,omitempty"`
+}
+```
+
+### SuggestResults
+
+```go
+type SuggestResults struct {
+    Suggestions []*Suggestion `json:"suggestions"`
+}
+```
+
+### Suggestion
+
+```go
+type Suggestion struct {
+    Text   string  `json:"text"`
+    Score  float64 `json:"score"`
+    Type   string  `json:"type"`
+    ItemID string  `json:"item_id,omitempty"`
+}
+```
+
+### AdvancedSearchInput
+
+```go
+type AdvancedSearchInput struct {
+    Query     string `json:"query"`
+    ProjectID string `json:"project_id,omitempty"`
+    Limit     int    `json:"limit,omitempty"`
+    Offset    int    `json:"offset,omitempty"`
+}
+```
+
+---
+
+## Workflow Types
+
+### Workflow
+
+```go
+type Workflow struct {
+    ID          string            `json:"id"`
+    Name        string            `json:"name"`
+    Description string            `json:"description"`
+    ProjectID   string            `json:"project_id"`
+    States      []*WorkflowState  `json:"states"`
+    Transitions []*WorkflowTrans  `json:"transitions"`
+    CreatedAt   time.Time         `json:"created_at"`
+    UpdatedAt   time.Time         `json:"updated_at"`
+}
+```
+
+### WorkflowState
+
+```go
+type WorkflowState struct {
+    ID       string `json:"id"`
+    Name     string `json:"name"`
+    Category string `json:"category"` // "todo", "in_progress", "done"
+    IsStart  bool   `json:"is_start"`
+    IsFinal  bool   `json:"is_final"`
+    Color    string `json:"color,omitempty"`
+}
+```
+
+### WorkflowTrans
+
+```go
+type WorkflowTrans struct {
+    ID        string   `json:"id"`
+    Name      string   `json:"name"`
+    FromState string   `json:"from_state"`
+    ToState   string   `json:"to_state"`
+    Roles     []string `json:"roles,omitempty"`
+}
+```
+
+### WorkflowList
+
+```go
+type WorkflowList struct {
+    Data    []*Workflow `json:"data"`
+    Total   int         `json:"total"`
+    Limit   int         `json:"limit"`
+    Offset  int         `json:"offset"`
+    HasMore bool        `json:"has_more"`
+}
+```
+
+### CreateWorkflowInput
+
+```go
+type CreateWorkflowInput struct {
+    Name        string                `json:"name"`
+    Description string                `json:"description,omitempty"`
+    States      []*WorkflowStateInput `json:"states"`
+    Transitions []*WorkflowTransInput `json:"transitions,omitempty"`
+}
+```
+
+### WorkflowStateInput
+
+```go
+type WorkflowStateInput struct {
+    Name     string `json:"name"`
+    Category string `json:"category"`
+    IsStart  bool   `json:"is_start,omitempty"`
+    IsFinal  bool   `json:"is_final,omitempty"`
+    Color    string `json:"color,omitempty"`
+}
+```
+
+### WorkflowTransInput
+
+```go
+type WorkflowTransInput struct {
+    Name      string   `json:"name"`
+    FromState string   `json:"from_state"`
+    ToState   string   `json:"to_state"`
+    Roles     []string `json:"roles,omitempty"`
+}
+```
+
+### ListWorkflowsInput
+
+```go
+type ListWorkflowsInput struct {
+    ProjectID string `url:"project_id,omitempty"`
+    Limit     int    `url:"limit,omitempty"`
+    Offset    int    `url:"offset,omitempty"`
+}
+```
+
+---
+
+## User Types
+
+### User
+
+```go
+type User struct {
+    ID        string    `json:"id"`
+    Email     string    `json:"email"`
+    Name      string    `json:"name"`
+    Avatar    string    `json:"avatar,omitempty"`
+    Role      string    `json:"role"`
+    CreatedAt time.Time `json:"created_at"`
+    UpdatedAt time.Time `json:"updated_at"`
+}
+```
+
+### UserList
+
+```go
+type UserList struct {
+    Data    []*User `json:"data"`
+    Total   int     `json:"total"`
+    Limit   int     `json:"limit"`
+    Offset  int     `json:"offset"`
+    HasMore bool    `json:"has_more"`
+}
+```
+
+---
+
+## Artifact Types
+
+### Artifact
+
+```go
+type Artifact struct {
+    ID        string    `json:"id"`
+    ItemID    string    `json:"item_id"`
+    Name      string    `json:"name"`
+    MimeType  string    `json:"mime_type"`
+    Size      int64     `json:"size"`
+    URL       string    `json:"url"`
+    CreatedBy string    `json:"created_by"`
+    CreatedAt time.Time `json:"created_at"`
+}
+```
+
+### ArtifactList
+
+```go
+type ArtifactList struct {
+    Data    []*Artifact `json:"data"`
+    Total   int         `json:"total"`
+    Limit   int         `json:"limit"`
+    Offset  int         `json:"offset"`
+    HasMore bool        `json:"has_more"`
+}
+```
+
+### UploadArtifactInput
+
+```go
+type UploadArtifactInput struct {
+    Name     string    `json:"name"`
+    File     io.Reader `json:"-"`
+    MimeType string    `json:"mime_type,omitempty"`
+}
+```
+
+---
+
+## History Types
+
+### HistoryEntry
+
+```go
+type HistoryEntry struct {
+    ID        string      `json:"id"`
+    ItemID    string      `json:"item_id"`
+    UserID    string      `json:"user_id"`
+    User      string      `json:"user"`
+    Action    string      `json:"action"`
+    Field     string      `json:"field,omitempty"`
+    OldValue  interface{} `json:"old_value,omitempty"`
+    NewValue  interface{} `json:"new_value,omitempty"`
+    Timestamp time.Time   `json:"timestamp"`
+}
+```
+
+### HistoryList
+
+```go
+type HistoryList struct {
+    Data    []*HistoryEntry `json:"data"`
+    Total   int             `json:"total"`
+    Limit   int             `json:"limit"`
+    Offset  int             `json:"offset"`
+    HasMore bool            `json:"has_more"`
+}
+```
+
+### HistoryOptions
+
+```go
+type HistoryOptions struct {
+    Limit  int `url:"limit,omitempty"`
+    Offset int `url:"offset,omitempty"`
+}
+```
+
+---
+
+## Custom Field Types
+
+### CustomField
+
+```go
+type CustomField struct {
+    Name        string        `json:"name"`
+    Type        string        `json:"type"` // "string", "number", "boolean", "date", "select"
+    Required    bool          `json:"required"`
+    Default     interface{}   `json:"default,omitempty"`
+    Options     []string      `json:"options,omitempty"` // For select type
+    Validation  *FieldValidation `json:"validation,omitempty"`
+}
+```
+
+### FieldValidation
+
+```go
+type FieldValidation struct {
+    Min       *float64 `json:"min,omitempty"`
+    Max       *float64 `json:"max,omitempty"`
+    Pattern   string   `json:"pattern,omitempty"`
+    MinLength *int     `json:"min_length,omitempty"`
+    MaxLength *int     `json:"max_length,omitempty"`
+}
+```
+
+---
+
+## Iterator Types
+
+### ItemIterator
+
+```go
+type ItemIterator struct {
+    // contains filtered or unexported fields
+}
+
+func (i *ItemIterator) Next() bool
+func (i *ItemIterator) Item() *Item
+func (i *ItemIterator) Err() error
+```
+
+### ProjectIterator
+
+```go
+type ProjectIterator struct {
+    // contains filtered or unexported fields
+}
+
+func (p *ProjectIterator) Next() bool
+func (p *ProjectIterator) Project() *Project
+func (p *ProjectIterator) Err() error
+```
+
+### LinkIterator
+
+```go
+type LinkIterator struct {
+    // contains filtered or unexported fields
+}
+
+func (l *LinkIterator) Next() bool
+func (l *LinkIterator) Link() *Link
+func (l *LinkIterator) Err() error
+```
+
+---
+
+## Interface Types
+
+### Logger
+
+```go
+type Logger interface {
+    Debug(msg string, args ...interface{})
+    Info(msg string, args ...interface{})
+    Warn(msg string, args ...interface{})
+    Error(msg string, args ...interface{})
+}
+```
+
+### TokenProvider
+
+```go
+type TokenProvider interface {
+    GetToken(ctx context.Context) (string, error)
+    RefreshToken(ctx context.Context) (string, error)
+}
+```
+
+---
+
+## Related Documentation
+
+- [Client Methods](/docs/api-reference/sdks/go/client-methods) - Method reference
+- [API Reference](/docs/api-reference/sdks/go/api-reference) - Complete API reference
+- [Error Handling](/docs/api-reference/sdks/go/error-handling) - Error types
+- [Examples](/docs/api-reference/sdks/go/examples) - Code examples

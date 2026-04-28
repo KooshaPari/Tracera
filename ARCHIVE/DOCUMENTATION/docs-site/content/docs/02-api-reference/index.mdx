@@ -1,0 +1,197 @@
+---
+title: "API Reference"
+description: "Complete API documentation for TraceRTM - REST API, CLI, and SDKs"
+keywords: [api, rest, cli, sdk, authentication, endpoints]
+---
+
+# API Reference
+
+TraceRTM provides multiple ways to interact with the system programmatically. Choose the method that best fits your workflow.
+
+## API Access Methods
+
+TraceRTM offers three main ways to access the API:
+
+### 1. REST API
+The REST API provides HTTP-based access to all TraceRTM features. Perfect for:
+- Web applications
+- Server-side integrations
+- Automated workflows
+- Third-party integrations
+
+**Base URL**: `https://api.tracertm.dev/v1` (or your self-hosted instance)
+
+👉 [View REST API Documentation](/docs/api-reference/rest-api)
+
+### 2. Command Line Interface (CLI)
+The CLI provides terminal-based access for:
+- Local development
+- Scripting and automation
+- Quick operations
+- CI/CD pipelines
+
+👉 [View CLI Documentation](/docs/api-reference/cli)
+
+### 3. Software Development Kits (SDKs)
+Official SDKs for popular programming languages:
+- **Python SDK** - `pip install tracertm`
+- **JavaScript/TypeScript SDK** - `npm install @tracertm/sdk`
+- **Go SDK** - `go get github.com/tracertm/tracertm-go`
+
+👉 [View SDK Documentation](/docs/api-reference/sdks)
+
+## Quick Start
+
+### Using the REST API
+
+```bash
+# Get your API key from the TraceRTM dashboard
+export TRACERTM_API_KEY="rtm_live_abc123..."
+
+# List all projects
+curl -X GET "https://api.tracertm.dev/v1/projects" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json"
+```
+
+### Using the CLI
+
+```bash
+# Install the CLI
+pip install tracertm-cli
+
+# Configure your API key
+trace config set api-key $TRACERTM_API_KEY
+
+# List projects
+trace project list
+```
+
+### Using the Python SDK
+
+```python
+from tracertm import TraceRTM
+
+# Initialize client
+client = TraceRTM(api_key="rtm_live_abc123...")
+
+# List projects
+projects = client.projects.list()
+for project in projects:
+    print(f"{project.id}: {project.name}")
+```
+
+## Authentication
+
+All API access requires authentication. TraceRTM supports multiple authentication methods:
+
+### API Keys
+Simple, permanent keys for server-to-server communication.
+
+👉 [API Keys Guide](/docs/api-reference/authentication/api-keys)
+
+### OAuth 2.0
+Standard OAuth 2.0 flow for user authorization.
+
+👉 [OAuth 2.0 Guide](/docs/api-reference/authentication/oauth2)
+
+### JWT Tokens
+JSON Web Tokens for stateless authentication.
+
+👉 [JWT Tokens Guide](/docs/api-reference/authentication/jwt)
+
+## API Overview
+
+### Core Resources
+
+| Resource | Endpoint | Description |
+|----------|----------|-------------|
+| **Projects** | `/projects` | Manage TraceRTM projects |
+| **Items** | `/items` | Requirements, test cases, and artifacts |
+| **Links** | `/links` | Traceability relationships |
+| **Workflows** | `/workflows` | Status workflows and transitions |
+| **Search** | `/search` | Full-text and semantic search |
+| **Analysis** | `/analysis` | Impact analysis and cycle detection |
+| **Graph** | `/graph` | Graph queries and path finding |
+
+### Common Operations
+
+- **Create**: `POST /resource`
+- **Read**: `GET /resource/{id}`
+- **Update**: `PUT /resource/{id}` or `PATCH /resource/{id}`
+- **Delete**: `DELETE /resource/{id}`
+- **List**: `GET /resource` (with pagination)
+
+## Rate Limiting
+
+API requests are rate-limited to ensure fair usage:
+
+| Plan | Requests/minute | Requests/day |
+|------|----------------|--------------|
+| Free | 60 | 1,000 |
+| Pro | 300 | 50,000 |
+| Enterprise | 1,000 | Unlimited |
+
+Rate limit information is included in response headers:
+- `X-RateLimit-Limit`: Maximum requests allowed
+- `X-RateLimit-Remaining`: Requests remaining
+- `X-RateLimit-Reset`: Time when limit resets
+
+👉 [Rate Limiting Details](/docs/api-reference/authentication/rate-limiting)
+
+## Error Handling
+
+The API uses standard HTTP status codes:
+
+| Code | Meaning |
+|------|---------|
+| `200` | Success |
+| `201` | Created |
+| `400` | Bad Request |
+| `401` | Unauthorized |
+| `403` | Forbidden |
+| `404` | Not Found |
+| `429` | Rate Limited |
+| `500` | Server Error |
+
+Error responses include detailed information:
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Invalid request parameters",
+    "details": [
+      {
+        "field": "title",
+        "message": "Title is required"
+      }
+    ]
+  }
+}
+```
+
+👉 [Error Handling Guide](/docs/api-reference/rest-api/error-handling)
+
+## API Versioning
+
+The API is versioned in the URL path:
+- Current version: `/api/v1/`
+- Future versions: `/api/v2/`, `/api/v3/`, etc.
+
+Breaking changes will be introduced in new versions with migration guides.
+
+## Getting Help
+
+- 📖 [REST API Documentation](/docs/api-reference/rest-api) - Complete endpoint reference
+- 🔑 [Authentication Guide](/docs/api-reference/authentication) - Auth methods and setup
+- 💻 [CLI Reference](/docs/api-reference/cli) - Command-line interface
+- 📦 [SDK Documentation](/docs/api-reference/sdks) - Language-specific SDKs
+- 💬 [Support](/docs/getting-started/support) - Get help from the community
+
+## Next Steps
+
+1. **Set up authentication**: [Get your API key](/docs/api-reference/authentication/api-keys)
+2. **Explore the REST API**: [View all endpoints](/docs/api-reference/rest-api)
+3. **Try the CLI**: [Install and configure](/docs/api-reference/cli/installation)
+4. **Use an SDK**: [Choose your language](/docs/api-reference/sdks)

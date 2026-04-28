@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/account.py
+# hypothesis_version: 6.151.4
+
+[255, 'AccountUser', 'account', 'account_metadata', 'accounts', 'all, delete-orphan', 'extend_existing', 'metadata', 'organization', 'personal']

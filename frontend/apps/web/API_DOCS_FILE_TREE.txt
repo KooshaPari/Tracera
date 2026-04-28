@@ -1,0 +1,210 @@
+API Documentation - Complete File Structure
+===========================================
+
+frontend/apps/web/
+│
+├── Configuration & Documentation
+│   ├── .env.api-docs.example           # Environment config template
+│   ├── API_DOCS_SETUP.md              # Complete setup guide (8.8 KB)
+│   ├── API_DOCS_QUICK_REFERENCE.md    # Quick reference (7.1 KB)
+│   ├── API_DOCS_SUMMARY.md            # Feature summary (10 KB)
+│   ├── API_DOCS_COMPLETE_SETUP.md     # Quick start guide
+│   └── verify-api-docs.sh             # Verification script
+│
+├── public/
+│   └── specs/
+│       └── openapi.json               # OpenAPI 3.1.0 specification (15 KB)
+│                                      # - 8 endpoints documented
+│                                      # - 2 security schemes (Bearer + API Key)
+│                                      # - 10+ schemas defined
+│                                      # - Complete with examples
+│
+├── src/
+│   ├── components/
+│   │   └── api-docs/
+│   │       ├── swagger-ui-wrapper.tsx  # Swagger UI component (9 KB)
+│   │       │                          # - Dark/light mode toggle
+│   │       │                          # - Try-it-out functionality
+│   │       │                          # - Download/copy spec
+│   │       │                          # - Request interceptors
+│   │       │
+│   │       └── redoc-wrapper.tsx       # ReDoc component (10 KB)
+│   │                                  # - Three-panel layout
+│   │                                  # - Dark/light mode toggle
+│   │                                  # - Search functionality
+│   │                                  # - Responsive design
+│   │
+│   ├── lib/
+│   │   └── openapi-utils.ts           # Utility functions (8 KB)
+│   │                                  # Functions:
+│   │                                  # - fetchOpenAPISpec()
+│   │                                  # - validateOpenAPISpec()
+│   │                                  # - getHttpMethods()
+│   │                                  # - getTags()
+│   │                                  # - requiresAuth()
+│   │                                  # - getSupportedAuthTypes()
+│   │                                  # - generateCodeExamples()
+│   │                                  # - downloadSpec()
+│   │                                  # - formatPathWithParams()
+│   │                                  # - authStorage helpers
+│   │                                  # + 10 more functions
+│   │
+│   └── routes/
+│       ├── api/                       # API endpoints
+│       │   ├── spec.ts                # GET /api/spec (2 KB)
+│       │   │                          # - Serves OpenAPI spec
+│       │   │                          # - 1 hour cache
+│       │   │                          # - CORS enabled
+│       │   │
+│       │   ├── swagger-config.ts      # GET /api/swagger-config (2 KB)
+│       │   │                          # - Swagger UI config
+│       │   │                          # - 5 minute cache
+│       │   │
+│       │   └── auth-test.ts           # POST /api/auth-test (4 KB)
+│       │                              # - Test Bearer tokens
+│       │                              # - Test API keys
+│       │                              # - Detailed responses
+│       │
+│       └── api-docs/
+│           ├── index.tsx              # Landing page (11 KB)
+│           │                          # URL: /api-docs
+│           │                          # - Beautiful gradient design
+│           │                          # - Feature comparison cards
+│           │                          # - Quick links section
+│           │                          # - API information
+│           │
+│           ├── swagger.tsx            # Swagger UI page (1 KB)
+│           │                          # URL: /api-docs/swagger
+│           │                          # - Interactive documentation
+│           │                          # - Try-it-out enabled
+│           │
+│           └── redoc.tsx              # ReDoc page (1 KB)
+│                                      # URL: /api-docs/redoc
+│                                      # - Reference documentation
+│                                      # - Clean layout
+
+Package Dependencies
+===================
+✓ swagger-ui-react@5.30.3       # Swagger UI component
+✓ redoc@2.5.2                   # ReDoc component
+✓ @types/swagger-ui-react@5.18.0  # TypeScript types
+✓ swagger-ui-dist@5.30.3        # Swagger UI assets
+✓ redocly@1.0.0                 # ReDoc CLI tools
+
+Routes Available
+===============
+Landing:     http://localhost:3000/api-docs
+Swagger UI:  http://localhost:3000/api-docs/swagger
+ReDoc:       http://localhost:3000/api-docs/redoc
+
+API Endpoints:
+GET  /api/spec              # Returns OpenAPI specification
+GET  /api/swagger-config    # Returns Swagger configuration
+POST /api/auth-test         # Tests authentication
+
+Features Implemented
+===================
+Documentation:
+✓ OpenAPI 3.1.0 specification with 8 endpoints
+✓ Bearer token authentication scheme
+✓ API key authentication scheme
+✓ Comprehensive request/response schemas
+✓ Error handling documentation
+
+Swagger UI:
+✓ Interactive try-it-out functionality
+✓ Dark/light mode toggle
+✓ Download OpenAPI spec button
+✓ Copy spec URL button
+✓ Request duration tracking
+✓ Persistent authorization
+✓ Filter/search endpoints
+✓ Deep linking support
+✓ Custom request interceptors
+✓ Custom response interceptors
+
+ReDoc:
+✓ Three-panel responsive layout
+✓ Dark/light mode toggle
+✓ Search functionality
+✓ Download spec button
+✓ Link to Swagger UI
+✓ Code examples in multiple languages
+✓ Deep linking support
+✓ Required props first sorting
+✓ Customizable theme
+
+Utilities:
+✓ 20+ utility functions
+✓ Code generation (cURL, JS, Python, TS)
+✓ Spec validation
+✓ Auth token management
+✓ Path formatting
+✓ Response parsing
+
+API Endpoints Documented
+========================
+Health:
+  GET /health                              # Service health check
+
+Items:
+  GET /api/v1/items                        # List items (paginated)
+  GET /api/v1/items/{item_id}             # Get item details
+
+Links:
+  GET /api/v1/links                        # List links (paginated)
+
+Analysis:
+  GET /api/v1/analysis/impact/{item_id}    # Impact analysis
+  GET /api/v1/analysis/cycles/{project_id} # Cycle detection
+  GET /api/v1/analysis/shortest-path       # Find shortest path
+
+Security Schemes
+===============
+Bearer Token (JWT):
+  Header: Authorization: Bearer <token>
+  Format: JWT
+  Description: JWT Bearer token authentication
+
+API Key:
+  Header: X-API-Key: <key>
+  In: header
+  Description: API key authentication
+
+Quick Start
+===========
+1. Start server:
+   cd /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web
+   bun run dev
+
+2. Visit documentation:
+   http://localhost:3000/api-docs
+
+3. Test authentication:
+   localStorage.setItem('api_token', 'your-token');
+
+4. Try endpoints:
+   Use Swagger UI to test API calls
+
+Verification
+===========
+Run the verification script:
+  ./verify-api-docs.sh
+
+Or manually check:
+  1. Packages installed: grep "swagger-ui-react\|redoc" package.json
+  2. Files exist: ls -la public/specs/openapi.json
+  3. Routes work: curl http://localhost:3000/api/spec
+  4. Components load: Visit /api-docs in browser
+
+Documentation Files
+==================
+API_DOCS_SETUP.md              # Comprehensive setup instructions
+API_DOCS_QUICK_REFERENCE.md    # Quick commands and usage
+API_DOCS_SUMMARY.md            # Complete feature summary
+API_DOCS_COMPLETE_SETUP.md     # Quick start guide
+API_DOCS_FILE_TREE.txt         # This file
+.env.api-docs.example          # Environment config template
+verify-api-docs.sh             # Verification script
+
+Total Size: ~65 KB code + ~300 KB dependencies

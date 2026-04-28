@@ -1,0 +1,80 @@
+================================================================================
+CHECKPOINT 3 COORDINATOR - AWAITING TEAM-LEAD CLARIFICATION
+================================================================================
+
+Date: 2026-02-06 (Session 5, Checkpoint 3)
+Coordinator: type-precision-fixer (Integration-Tests-Architect)
+Status: ⏳ AWAITING TEAM-LEAD CLARIFICATION
+
+================================================================================
+SITUATION
+================================================================================
+
+Team-lead issued authoritative decision:
+- Phase 5 only (confirmed ✅)
+- Phase 3 permanently closed (acknowledged ✅)
+- Test target adjusted: 34/80 tests (vs. 65+ previously tracked)
+- MSW has GraphQL blocker (vs. abc3ae926 showing MSW re-enabled)
+
+Checkpoint 3 Coordinator has identified discrepancies:
+1. MSW Status: Is abc3ae926 current, or has regression occurred?
+2. Build Blocker: Should I fix TypeScript errors (tsconfig.json + 2 exports)?
+3. Test Target: 34/80 or 65+/80?
+4. Timeline: T+100-115 or adjusted?
+
+================================================================================
+ASSESSMENT OPTIONS
+================================================================================
+
+OPTION A: Current State = abc3ae926 (MSW re-enabled)
+- MSW is working with error handling
+- TypeScript build is blocking Wave 2-3 validation
+- Fix: 4 configuration changes (15 min)
+- Target: 65+ tests
+- Timeline: T+100-115
+
+OPTION B: Current State = commit 87367db90 (MSW GraphQL blocker)
+- MSW has unresolved graphql ESM/CommonJS issue
+- TypeScript build may also have issues
+- Fix: Different approach needed
+- Target: 34/80 tests (Gaps 5.4, 5.7, 5.8 only)
+- Timeline: Shorter completion (fewer tests)
+
+================================================================================
+COORDINATOR STANDING BY
+================================================================================
+
+I am ready to proceed with whichever approach is correct:
+
+IF Option A (abc3ae926 current):
+✅ Apply TypeScript configuration fix (4 changes, 15 min)
+✅ Rebuild and validate
+✅ Proceed to Checkpoint 4 with Wave 2-3 validation
+
+IF Option B (commit 87367db90 current):
+✅ Acknowledge adjusted test target (34/80)
+✅ Focus support on Gaps 5.4, 5.7, 5.8 only
+✅ Proceed with limited Wave 2-3 execution
+
+Awaiting team-lead clarification on:
+1. Current actual commit state
+2. MSW status (working or broken)
+3. Correct test target (34 or 65+)
+4. Correct timeline (full or partial completion)
+
+================================================================================
+NOTES
+================================================================================
+
+The discrepancy may be due to:
+- Different view of git history (my assessment vs. team-lead's view)
+- Regression that occurred after abc3ae926
+- My assessment being incorrect about current state
+- Multiple execution paths being tracked
+
+Team-lead's authoritative decision on Phase 5 vs Phase 3 is clear.
+The state clarification is needed to apply the correct next steps.
+
+================================================================================
+AWAITING RESPONSE FROM TEAM-LEAD
+================================================================================

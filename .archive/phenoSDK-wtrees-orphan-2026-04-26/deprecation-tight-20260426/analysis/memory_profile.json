@@ -1,0 +1,9 @@
+{
+  "mode": "report",
+  "metrics": {
+    "total_gb": 16.0,
+    "available_gb": 2.72955322265625,
+    "used_gb": 6.3521575927734375,
+    "percent_used": 82.9
+  }
+}

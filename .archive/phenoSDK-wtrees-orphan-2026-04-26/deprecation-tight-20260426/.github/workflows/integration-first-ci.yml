@@ -1,0 +1,401 @@
+name: Integration-First CI (Phases 1-3)
+
+# Task 4.3: Quality gates for integration-first patterns
+# Validates unified Registry, observability helpers, CLI wrappers,
+# gRPC kit, vector-kit, and integration examples
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  PYTHON_VERSION: "3.13"
+
+jobs:
+  # ==========================================================================
+  # Phase 1: Core Baselines
+  # ==========================================================================
+
+  test-phase1-registry:
+    name: "Phase 1.1: Unified Registry"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install adapter-kit
+        run: |
+          cd adapter-kit
+          pip install -e ".[test]" || pip install -e .
+
+      - name: Test Unified Registry
+        run: |
+          cd adapter-kit
+          python -m pytest tests/test_plugin_registry.py -v --tb=short
+
+      - name: Verify backward compatibility
+        run: |
+          cd adapter-kit
+          # Legacy registries should still work
+          python -c "from adapter_kit.registry import ClassRegistry, InstanceRegistry; print('✅ Legacy APIs available')"
+
+  test-phase1-observability:
+    name: "Phase 1.3: Observability Helpers"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install observability-kit (base)
+        run: |
+          cd observability-kit
+          pip install -e .
+
+      - name: Test graceful degradation (no OTEL SDK)
+        run: |
+          cd observability-kit
+          # Helpers should import even without OTEL SDK
+          python -c "
+from observability_kit.helpers import configure_otel, configure_structlog, get_logger
+print('✅ Helpers import without OTEL SDK')
+
+# configure_otel should gracefully degrade
+try:
+    configure_otel('test-service', enable_tracing=False, enable_metrics=False)
+    print('✅ configure_otel graceful degradation works')
+except ImportError as e:
+    print(f'ℹ Expected: {e}')
+
+# configure_structlog should work without OTEL
+configure_structlog('test-service')
+logger = get_logger(__name__)
+logger.info('test_log')
+print('✅ Structlog works independently')
+"
+
+      - name: Test with OTEL SDK
+        run: |
+          pip install "observability-kit[otel,structlog]"
+          python -c "
+from observability_kit.helpers import configure_otel, configure_structlog, get_logger
+
+configure_otel('test-service', console_export=True, enable_tracing=True, enable_metrics=True)
+configure_structlog('test-service')
+
+logger = get_logger(__name__)
+logger.info('test_with_otel')
+print('✅ OTEL + structlog full bootstrap works')
+"
+
+  test-phase1-cli:
+    name: "Phase 1.4: CLI Typer Wrappers"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install cli-builder-kit
+        run: |
+          cd cli-builder-kit
+          pip install -e ".[typer]" || pip install -e .
+
+      - name: Test Typer wrappers
+        run: |
+          python -c "
+from cli_builder import make_typer_app
+import typer
+
+app = make_typer_app('test-cli', help='Test CLI')
+
+@app.command()
+def test_cmd(ctx: typer.Context):
+    assert 'verbose' in ctx.obj
+    assert 'debug' in ctx.obj
+    assert 'workspace' in ctx.obj
+    assert 'config_path' in ctx.obj
+    print('✅ Standard options available')
+
+print('✅ Typer wrapper works')
+"
+
+  # ==========================================================================
+  # Phase 2: Early Adoption
+  # ==========================================================================
+
+  test-phase2-pheno-cli:
+    name: "Phase 2.2: pheno_cli Typer Integration"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e cli-builder-kit[typer] || pip install -e cli-builder-kit
+          cd pheno_cli
+          pip install -e .
+
+      - name: Test pheno_cli imports
+        run: |
+          python -c "from pheno_cli.typer_main import app; print('✅ pheno_cli Typer integration works')"
+
+      - name: Test pheno_cli --help
+        run: |
+          cd pheno_cli
+          python -m pheno_cli.typer_main --help
+
+  test-phase2-fastapi-example:
+    name: "Phase 2.3: FastAPI OTEL/structlog Integration"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e adapter-kit
+          pip install -e "observability-kit[bootstrap]"
+          pip install fastapi httpx pydantic
+
+      - name: Test FastAPI example
+        run: |
+          cd examples/stack
+          python -c "
+from fastapi_pheno_example import create_app
+
+app = create_app()
+print(f'✅ FastAPI app created with {len(app.routes)} routes')
+
+# Check observability endpoint exists
+observability_route = any(r.path == '/observability' for r in app.routes)
+assert observability_route, 'Missing /observability endpoint'
+print('✅ Observability endpoint available')
+"
+
+  # ==========================================================================
+  # Phase 3: Extended Integrations
+  # ==========================================================================
+
+  test-phase3-grpc:
+    name: "Phase 3.1: gRPC Kit"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install grpc-kit
+        run: |
+          pip install grpcio grpcio-tools
+          cd grpc-kit
+          pip install -e .
+
+      - name: Test gRPC imports
+        run: |
+          python -c "
+from grpc_kit import (
+    create_server, create_channel,
+    GrpcServerConfig, GrpcClientConfig,
+    ServerTelemetryInterceptor, ClientTelemetryInterceptor,
+    MetadataAuthInterceptor,
+)
+print('✅ All gRPC-kit exports available')
+
+# Test config creation
+server_config = GrpcServerConfig(port=50051)
+assert server_config.port == 50051
+print('✅ GrpcServerConfig works')
+
+client_config = GrpcClientConfig(target='localhost:50051')
+assert client_config.target == 'localhost:50051'
+print('✅ GrpcClientConfig works')
+"
+
+      - name: Test gRPC example
+        run: |
+          cd grpc-kit/examples
+          python hello_world_example.py --help
+
+  test-phase3-vector:
+    name: "Phase 3.3: Vector-Kit Provider Matrix"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install vector-kit
+        run: |
+          cd vector-kit
+          pip install -e .
+          pip install numpy  # Required for vector operations
+
+      - name: Test provider stubs import
+        run: |
+          python -c "
+from vector_kit import (
+    VectorStore, Document, SearchResult,
+    InMemoryVectorStore,
+    QdrantVectorStore, ChromaVectorStore, FAISSVectorStore,
+    PineconeVectorStore, WeaviateVectorStore, PgVectorStore,
+)
+print('✅ All vector store providers import successfully')
+
+# Test InMemory store works
+import numpy as np
+store = InMemoryVectorStore()
+print('✅ InMemoryVectorStore instantiates')
+"
+
+      - name: Test InMemory vector store
+        run: |
+          python -c "
+import numpy as np
+from vector_kit import InMemoryVectorStore, Document
+import asyncio
+
+async def test():
+    store = InMemoryVectorStore()
+
+    # Add documents
+    docs = [
+        Document(id='1', text='test1', vector=np.random.rand(10)),
+        Document(id='2', text='test2', vector=np.random.rand(10)),
+    ]
+    await store.add_documents(docs)
+
+    # Search
+    query = np.random.rand(10)
+    results = await store.search(query, k=2)
+
+    assert len(results) == 2, f'Expected 2 results, got {len(results)}'
+    assert results[0].document.id in ['1', '2']
+    print(f'✅ InMemory search returned {len(results)} results')
+
+asyncio.run(test())
+print('✅ InMemoryVectorStore functional test passed')
+"
+
+  # ==========================================================================
+  # Documentation Validation
+  # ==========================================================================
+
+  test-documentation:
+    name: "Documentation Completeness"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check ADRs exist
+        run: |
+          test -f docs/adr/0001-pheno-sdk-integration-layer.md
+          test -f docs/adr/0002-unified-plugin-registry.md
+          test -f docs/adr/0003-grpc-kit.md
+          echo "✅ All ADRs present"
+
+      - name: Check Phase guides exist
+        run: |
+          test -f docs/guides/getting-started-v2.md
+          test -f docs/guides/migration-v1-to-v2.md
+          test -f docs/guides/auth-consolidation.md
+          test -f docs/guides/quality-gates.md
+          test -f vector-kit/docs/VECTOR_STORE_MATRIX.md
+          test -f workflow-kit/docs/LOCAL_VS_DURABLE.md
+          echo "✅ All essential guides present"
+
+      - name: Check implementation summaries
+        run: |
+          test -f docs/implementation-summary-pr1-4.md
+          test -f docs/implementation-summary-phase2.md
+          test -f docs/implementation-summary-phase3.md
+          test -f docs/IMPLEMENTATION_COMPLETE.md
+          echo "✅ All implementation summaries present"
+
+  # ==========================================================================
+  # Summary
+  # ==========================================================================
+
+  integration-first-summary:
+    name: "✅ Integration-First CI Summary"
+    needs:
+      - test-phase1-registry
+      - test-phase1-observability
+      - test-phase1-cli
+      - test-phase2-pheno-cli
+      - test-phase2-fastapi-example
+      - test-phase3-grpc
+      - test-phase3-vector
+      - test-documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Summary
+        run: |
+          echo "════════════════════════════════════════════════════════════"
+          echo "✅ All Integration-First (Phases 1-3) Tests Passed!"
+          echo "════════════════════════════════════════════════════════════"
+          echo ""
+          echo "Phase 1: Core Baselines"
+          echo "  ✅ Unified Registry (adapter-kit)"
+          echo "  ✅ Observability Helpers (observability-kit)"
+          echo "  ✅ CLI Typer Wrappers (cli-builder-kit)"
+          echo ""
+          echo "Phase 2: Early Adoption"
+          echo "  ✅ pheno_cli Typer Integration"
+          echo "  ✅ FastAPI OTEL/structlog Example"
+          echo ""
+          echo "Phase 3: Extended Integrations"
+          echo "  ✅ gRPC Kit (server/client + interceptors)"
+          echo "  ✅ Vector-Kit (provider matrix + stubs)"
+          echo ""
+          echo "Documentation"
+          echo "  ✅ ADRs (3 total)"
+          echo "  ✅ Guides (6 total)"
+          echo "  ✅ Implementation Summaries (4 total)"
+          echo ""
+          echo "════════════════════════════════════════════════════════════"
+          echo "Ready for Phase 4 completion!"
+          echo "════════════════════════════════════════════════════════════"

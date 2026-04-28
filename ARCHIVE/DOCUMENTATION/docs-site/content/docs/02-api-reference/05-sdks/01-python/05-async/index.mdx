@@ -1,0 +1,404 @@
+---
+title: "Async Overview"
+description: "Overview of async operations with the TraceRTM Python SDK"
+---
+
+# Async Overview
+
+The TraceRTM Python SDK provides full async support through the `AsyncTraceRTMClient`, enabling high-performance concurrent operations for demanding workloads.
+
+## Why Async?
+
+Async operations provide significant benefits for:
+
+- **High-throughput applications** - Process thousands of items concurrently
+- **API integrations** - Handle multiple external API calls without blocking
+- **Web applications** - Non-blocking operations for FastAPI, Starlette, aiohttp
+- **Batch processing** - Parallel processing of large datasets
+- **Real-time systems** - Event-driven architectures
+
+---
+
+## Quick Start
+
+### Installation
+
+The async client requires the `aiohttp` extra:
+
+```bash
+pip install tracertm[async]
+```
+
+### Basic Usage
+
+```python
+import asyncio
+from tracertm import AsyncTraceRTMClient
+
+async def main():
+    async with AsyncTraceRTMClient() as client:
+        # List projects
+        projects = await client.projects.list()
+        print(f"Found {len(projects.data)} projects")
+
+        # Get specific item
+        item = await client.items.get("item_abc123")
+        print(f"Item: {item.title}")
+
+asyncio.run(main())
+```
+
+---
+
+## Async Client vs Sync Client
+
+| Feature | TraceRTMClient | AsyncTraceRTMClient |
+|---------|----------------|---------------------|
+| Thread blocking | Yes | No |
+| Concurrent requests | Sequential | Parallel |
+| Framework support | Any | Async frameworks |
+| Context manager | Optional | Recommended |
+| Iteration | Blocking iterator | Async iterator |
+
+### When to Use Sync Client
+
+```python
+from tracertm import TraceRTMClient
+
+# Simple scripts
+client = TraceRTMClient()
+projects = client.projects.list()
+
+# CLI applications
+for item in client.items.iterate(project_id="proj_123"):
+    print(item.title)
+```
+
+### When to Use Async Client
+
+```python
+from tracertm import AsyncTraceRTMClient
+import asyncio
+
+# Web applications (FastAPI, Starlette)
+async def get_dashboard_data(project_id: str):
+    async with AsyncTraceRTMClient() as client:
+        # Parallel requests
+        projects, items, coverage = await asyncio.gather(
+            client.projects.list(),
+            client.items.list(project_id=project_id, limit=10),
+            client.reports.coverage(project_id=project_id)
+        )
+        return {"projects": projects, "items": items, "coverage": coverage}
+
+# Batch processing
+async def process_all_items(project_id: str):
+    async with AsyncTraceRTMClient() as client:
+        async for item in client.items.iterate(project_id=project_id):
+            await process_item(item)
+```
+
+---
+
+## Client Configuration
+
+### Initialization Options
+
+```python
+from tracertm import AsyncTraceRTMClient
+
+# Basic (reads TRACERTM_API_KEY from environment)
+client = AsyncTraceRTMClient()
+
+# Full configuration
+client = AsyncTraceRTMClient(
+    api_key="rtm_live_sk_...",
+    base_url="https://api.tracertm.dev/v1",
+    timeout=30.0,
+    max_retries=3,
+    retry_delay=1.0,
+    max_connections=100,
+    headers={"X-Custom-Header": "value"}
+)
+```
+
+### Context Manager (Recommended)
+
+Always use the async context manager to ensure proper connection cleanup:
+
+```python
+async with AsyncTraceRTMClient() as client:
+    # Client is ready
+    projects = await client.projects.list()
+# Connections are automatically closed
+```
+
+### Manual Connection Management
+
+```python
+client = AsyncTraceRTMClient()
+try:
+    await client.connect()
+    projects = await client.projects.list()
+finally:
+    await client.close()
+```
+
+---
+
+## Concurrent Requests
+
+### Using asyncio.gather
+
+Execute multiple requests in parallel:
+
+```python
+import asyncio
+from tracertm import AsyncTraceRTMClient
+
+async def fetch_project_details(project_id: str):
+    async with AsyncTraceRTMClient() as client:
+        # All requests execute concurrently
+        project, items, links, matrix = await asyncio.gather(
+            client.projects.get(project_id),
+            client.items.list(project_id=project_id),
+            client.links.list(project_id=project_id),
+            client.reports.traceability_matrix(
+                project_id=project_id,
+                source_type="requirement",
+                target_type="test_case"
+            )
+        )
+
+        return {
+            "project": project,
+            "items": items.data,
+            "links": links.data,
+            "coverage": matrix.summary.coverage_percent
+        }
+```
+
+### Controlled Concurrency with Semaphore
+
+Limit concurrent requests to avoid overwhelming the API:
+
+```python
+import asyncio
+from tracertm import AsyncTraceRTMClient
+
+async def process_items_controlled(item_ids: list[str], max_concurrent: int = 10):
+    semaphore = asyncio.Semaphore(max_concurrent)
+
+    async def process_one(client, item_id: str):
+        async with semaphore:
+            item = await client.items.get(item_id, include=["links"])
+            # Process item...
+            return item
+
+    async with AsyncTraceRTMClient() as client:
+        tasks = [process_one(client, id) for id in item_ids]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        successful = [r for r in results if not isinstance(r, Exception)]
+        failed = [r for r in results if isinstance(r, Exception)]
+
+        print(f"Processed: {len(successful)}, Failed: {len(failed)}")
+        return successful
+```
+
+### Task Groups (Python 3.11+)
+
+```python
+import asyncio
+from tracertm import AsyncTraceRTMClient
+
+async def fetch_multiple_projects(project_ids: list[str]):
+    async with AsyncTraceRTMClient() as client:
+        async with asyncio.TaskGroup() as tg:
+            tasks = [
+                tg.create_task(client.projects.get(pid))
+                for pid in project_ids
+            ]
+
+        return [task.result() for task in tasks]
+```
+
+---
+
+## Async Iteration
+
+### Iterate All Items
+
+```python
+async with AsyncTraceRTMClient() as client:
+    async for item in client.items.iterate(project_id="proj_abc123"):
+        print(f"{item.title} ({item.status})")
+```
+
+### Iterate with Filters
+
+```python
+async with AsyncTraceRTMClient() as client:
+    async for item in client.items.iterate(
+        project_id="proj_abc123",
+        type="requirement",
+        status="approved"
+    ):
+        await process_approved_requirement(item)
+```
+
+### Collect to List
+
+```python
+async with AsyncTraceRTMClient() as client:
+    items = [
+        item async for item in client.items.iterate(
+            project_id="proj_abc123",
+            type="test_case"
+        )
+    ]
+    print(f"Found {len(items)} test cases")
+```
+
+---
+
+## Framework Integration
+
+### FastAPI
+
+```python
+from fastapi import FastAPI, Depends, HTTPException
+from tracertm import AsyncTraceRTMClient
+from contextlib import asynccontextmanager
+
+# Shared client instance
+tracertm_client: AsyncTraceRTMClient | None = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global tracertm_client
+    tracertm_client = AsyncTraceRTMClient()
+    await tracertm_client.connect()
+    yield
+    await tracertm_client.close()
+
+app = FastAPI(lifespan=lifespan)
+
+async def get_client() -> AsyncTraceRTMClient:
+    if tracertm_client is None:
+        raise HTTPException(500, "Client not initialized")
+    return tracertm_client
+
+@app.get("/projects")
+async def list_projects(client: AsyncTraceRTMClient = Depends(get_client)):
+    projects = await client.projects.list()
+    return {"projects": [p.dict() for p in projects.data]}
+
+@app.get("/items/{item_id}")
+async def get_item(item_id: str, client: AsyncTraceRTMClient = Depends(get_client)):
+    try:
+        item = await client.items.get(item_id, include=["links"])
+        return item.dict()
+    except NotFoundError:
+        raise HTTPException(404, "Item not found")
+```
+
+### Starlette
+
+```python
+from starlette.applications import Starlette
+from starlette.responses import JSONResponse
+from starlette.routing import Route
+from tracertm import AsyncTraceRTMClient
+
+client: AsyncTraceRTMClient | None = None
+
+async def startup():
+    global client
+    client = AsyncTraceRTMClient()
+    await client.connect()
+
+async def shutdown():
+    if client:
+        await client.close()
+
+async def list_projects(request):
+    projects = await client.projects.list()
+    return JSONResponse({"projects": [p.dict() for p in projects.data]})
+
+app = Starlette(
+    routes=[Route("/projects", list_projects)],
+    on_startup=[startup],
+    on_shutdown=[shutdown]
+)
+```
+
+---
+
+## Error Handling
+
+### Async Exception Handling
+
+```python
+from tracertm import AsyncTraceRTMClient
+from tracertm.exceptions import (
+    NotFoundError,
+    RateLimitError,
+    TraceRTMError
+)
+import asyncio
+
+async def safe_get_item(client: AsyncTraceRTMClient, item_id: str):
+    try:
+        return await client.items.get(item_id)
+    except NotFoundError:
+        print(f"Item {item_id} not found")
+        return None
+    except RateLimitError as e:
+        print(f"Rate limited, waiting {e.retry_after}s")
+        await asyncio.sleep(e.retry_after)
+        return await safe_get_item(client, item_id)
+    except TraceRTMError as e:
+        print(f"API error: {e.message}")
+        raise
+```
+
+### Handling Errors in Concurrent Operations
+
+```python
+async def fetch_all_items(item_ids: list[str]):
+    async with AsyncTraceRTMClient() as client:
+        results = await asyncio.gather(
+            *[client.items.get(id) for id in item_ids],
+            return_exceptions=True
+        )
+
+        items = []
+        errors = []
+
+        for id, result in zip(item_ids, results):
+            if isinstance(result, Exception):
+                errors.append({"id": id, "error": str(result)})
+            else:
+                items.append(result)
+
+        return {"items": items, "errors": errors}
+```
+
+---
+
+## Performance Tips
+
+1. **Reuse the client** - Create one client and share it across requests
+2. **Use connection pooling** - The async client maintains a connection pool
+3. **Limit concurrency** - Use semaphores to avoid overwhelming the API
+4. **Batch operations** - Use bulk methods when available
+5. **Handle rate limits** - Implement exponential backoff
+
+---
+
+## Related Documentation
+
+- [Async Client](/docs/api-reference/sdks/python/async-client) - Detailed async client reference
+- [Concurrent Requests](/docs/api-reference/sdks/python/concurrent-requests) - Concurrency patterns
+- [Error Handling](/docs/api-reference/sdks/python/error-handling) - Error handling guide

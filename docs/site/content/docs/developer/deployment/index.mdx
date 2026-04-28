@@ -1,0 +1,192 @@
+---
+title: "Deployment"
+description: "Deploy TraceRTM to production environments"
+keywords: [deployment, production, docker, kubernetes, cloud]
+---
+
+# Deployment Guide
+
+Guide for deploying TraceRTM to production environments.
+
+## Deployment Options
+
+### Docker Deployment
+
+Simplest deployment option using Docker Compose.
+
+```bash
+# Clone repository
+git clone https://github.com/tracertm/tracertm.git
+cd tracertm
+
+# Copy environment file
+cp .env.example .env
+
+# Edit .env with your settings
+nano .env
+
+# Start services
+docker-compose up -d
+```
+
+### Kubernetes Deployment
+
+For scalable, production deployments.
+
+```bash
+# Apply Kubernetes manifests
+kubectl apply -f k8s/
+```
+
+### Cloud Platforms
+
+- **AWS**: EC2, ECS, EKS
+- **Azure**: App Service, AKS
+- **GCP**: Cloud Run, GKE
+
+## Pre-Deployment Checklist
+
+- [ ] Database configured and migrated
+- [ ] Environment variables set
+- [ ] SSL/TLS certificates configured
+- [ ] Backup strategy in place
+- [ ] Monitoring configured
+- [ ] Logging configured
+- [ ] Security settings reviewed
+
+## Environment Configuration
+
+### Required Variables
+
+```bash
+# Database
+DATABASE_URL=postgresql://user:pass@host:5432/tracertm
+
+# API
+API_URL=https://api.yourdomain.com
+SECRET_KEY=your-secret-key
+
+# Authentication
+JWT_SECRET=your-jwt-secret
+```
+
+### Optional Variables
+
+```bash
+# Redis (for caching)
+REDIS_URL=redis://localhost:6379
+
+# Email
+SMTP_HOST=smtp.example.com
+SMTP_USER=user@example.com
+SMTP_PASSWORD=password
+
+# Storage
+STORAGE_BACKEND=s3
+AWS_ACCESS_KEY_ID=your-key
+AWS_SECRET_ACCESS_KEY=your-secret
+```
+
+## Database Migration
+
+```bash
+# Run migrations
+python -m tracertm.cli migrate
+
+# Or using Docker
+docker-compose exec api python -m tracertm.cli migrate
+```
+
+## Health Checks
+
+### API Health
+
+```bash
+curl https://api.yourdomain.com/health
+```
+
+### Database Health
+
+```bash
+curl https://api.yourdomain.com/health/db
+```
+
+## Monitoring
+
+### Application Metrics
+
+- Response times
+- Error rates
+- Request counts
+- Database query performance
+
+### Infrastructure Metrics
+
+- CPU usage
+- Memory usage
+- Disk I/O
+- Network traffic
+
+## Backup Strategy
+
+### Database Backups
+
+```bash
+# Automated backup script
+#!/bin/bash
+pg_dump tracertm > backup_$(date +%Y%m%d).sql
+```
+
+### File Backups
+
+- Use cloud storage (S3, Azure Blob, GCS)
+- Enable versioning
+- Set retention policies
+
+## Scaling
+
+### Horizontal Scaling
+
+- Add more API instances
+- Use load balancer
+- Database read replicas
+
+### Vertical Scaling
+
+- Increase instance size
+- Add more memory
+- Upgrade database tier
+
+## Security
+
+### SSL/TLS
+
+- Use Let's Encrypt for free certificates
+- Enable HTTPS only
+- Configure HSTS
+
+### Firewall
+
+- Restrict database access
+- Use security groups
+- Enable DDoS protection
+
+## Troubleshooting
+
+### Common Issues
+
+**Database connection errors:**
+- Check DATABASE_URL
+- Verify network connectivity
+- Check firewall rules
+
+**High memory usage:**
+- Review query performance
+- Enable caching
+- Optimize database indexes
+
+## Related Documentation
+
+- [Docker Deployment](../03-development/02-setup/03-docker-setup) - Docker setup
+- [Environment Variables](../03-development/02-setup/05-environment-variables) - Configuration
+- [Monitoring](../03-development/04-internals/06-caching) - Monitoring setup

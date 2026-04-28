@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ci-cd-kit"
+version = "0.1.0"
+description = "Centralized CI/CD workflows and automation for pheno-sdk ecosystem"
+requires-python = ">=3.11"
+readme = "README.md"
+license = { text = "Proprietary" }
+authors = [{ name = "PHENO-SDK Team" }]
+
+[project.optional-dependencies]
+# CI/CD Dependencies
+cicd = [
+    "github-actions>=0.1.0",
+    "pyyaml>=6.0",
+    "jinja2>=3.1.0",
+    "click>=8.1.0",
+    "rich>=13.0.0",
+]
+
+# Workflow Dependencies
+workflows = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "coverage>=7.4.0",
+    "bandit>=1.7.5",
+    "ruff>=0.1.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.5.0",
+]
+
+# Documentation Dependencies
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings[python]>=0.23.0",
+]
+
+# Security Dependencies
+security = [
+    "bandit>=1.7.5",
+    "safety>=3.0.0",
+    "pip-audit>=2.7.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ci_cd_kit*"]
+
+[tool.setuptools.package-data]
+ci_cd_kit = ["workflows/*.yml", "templates/*.j2", "configs/*.yaml"]

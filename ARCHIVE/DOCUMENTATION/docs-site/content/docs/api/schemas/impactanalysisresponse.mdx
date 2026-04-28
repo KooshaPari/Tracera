@@ -1,0 +1,27 @@
+---
+title: "ImpactAnalysisResponse"
+description: "Schema definition for ImpactAnalysisResponse"
+---
+
+# ImpactAnalysisResponse
+
+## Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `root_item_id` | string (uuid) | ✓ | ID of the item being analyzed |
+| `total_affected` | integer | ✓ | Total number of items affected by changes |
+| `max_depth` | integer | ✓ | Maximum depth of dependency chain |
+| `affected_items` | string (uuid)[] | ✓ | List of affected item IDs |
+
+## Example
+
+```json
+{
+  "root_item_id": "550e8400-e29b-41d4-a716-446655440000",
+  "total_affected": 0,
+  "max_depth": 0,
+  "affected_items": []
+}
+```
+

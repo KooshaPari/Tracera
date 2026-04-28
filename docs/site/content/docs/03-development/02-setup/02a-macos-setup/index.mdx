@@ -1,0 +1,816 @@
+---
+title: "macOS Setup"
+description: "Complete guide to setting up TraceRTM development environment on macOS"
+---
+
+# macOS Development Setup
+
+This guide provides comprehensive instructions for setting up a complete TraceRTM development environment on macOS. It covers all prerequisites, tools, and configurations needed for both backend (Python) and frontend (Node.js) development.
+
+## Prerequisites
+
+### Xcode Command Line Tools
+
+The Xcode Command Line Tools are required for compiling native extensions and include essential development tools like `git`, `make`, and compilers.
+
+```bash
+# Install Xcode Command Line Tools
+xcode-select --install
+
+# Verify installation
+xcode-select -p
+# Expected output: /Library/Developer/CommandLineTools
+
+# Check installed tools
+which git
+which gcc
+which make
+```
+
+If you already have Xcode installed, ensure the command line tools are properly configured:
+
+```bash
+# Set the path to the command line tools
+sudo xcode-select --switch /Library/Developer/CommandLineTools
+```
+
+### Homebrew
+
+Homebrew is the package manager for macOS and is essential for installing development dependencies.
+
+```bash
+# Install Homebrew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Add Homebrew to your PATH (for Apple Silicon Macs)
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# For Intel Macs, Homebrew installs to /usr/local/bin (already in PATH)
+
+# Verify installation
+brew --version
+# Expected: Homebrew 4.x.x or newer
+
+# Update Homebrew
+brew update
+```
+
+## Python Development Setup
+
+TraceRTM requires Python 3.12 or newer for the CLI, TUI, and backend services.
+
+### Install pyenv (Recommended)
+
+`pyenv` allows you to manage multiple Python versions and is the recommended approach for Python development.
+
+```bash
+# Install pyenv using Homebrew
+brew install pyenv
+
+# Add pyenv to your shell configuration
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zprofile
+echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.zprofile
+echo 'eval "$(pyenv init --path)"' >> ~/.zprofile
+echo 'eval "$(pyenv init -)"' >> ~/.zprofile
+
+# For bash users, use ~/.bash_profile instead of ~/.zprofile
+# echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bash_profile
+# echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bash_profile
+# echo 'eval "$(pyenv init --path)"' >> ~/.bash_profile
+# echo 'eval "$(pyenv init -)"' >> ~/.bash_profile
+
+# Restart your shell or source the profile
+source ~/.zprofile
+
+# Verify pyenv installation
+pyenv --version
+```
+
+### Install Python 3.12+
+
+```bash
+# List available Python versions
+pyenv install --list | grep "3.12"
+
+# Install Python 3.12 (use the latest stable version)
+pyenv install 3.12.7
+
+# Set Python 3.12 as global default
+pyenv global 3.12.7
+
+# Verify Python installation
+python --version
+# Expected: Python 3.12.7
+
+# Verify pip is installed
+pip --version
+# Expected: pip 24.x.x from .pyenv/versions/3.12.7/lib/python3.12/site-packages/pip
+```
+
+### Install uv Package Manager
+
+TraceRTM uses `uv` as a modern, fast Python package manager alongside `pip`.
+
+```bash
+# Install uv
+brew install uv
+
+# Verify installation
+uv --version
+
+# Alternative: Install via pip
+pip install uv
+```
+
+## Node.js Development Setup
+
+The frontend web application requires Node.js 20+ for React 19 and modern JavaScript tooling.
+
+### Install nvm (Recommended)
+
+`nvm` (Node Version Manager) allows you to manage multiple Node.js versions.
+
+```bash
+# Install nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+
+# Add nvm to your shell configuration
+echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.zprofile
+echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.zprofile
+echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> ~/.zprofile
+
+# For bash users, use ~/.bash_profile instead of ~/.zprofile
+
+# Restart your shell or source the profile
+source ~/.zprofile
+
+# Verify nvm installation
+nvm --version
+```
+
+### Install Node.js 20+
+
+```bash
+# Install latest Node.js LTS version
+nvm install 20
+
+# Set Node.js 20 as default
+nvm alias default 20
+
+# Verify Node.js installation
+node --version
+# Expected: v20.x.x
+
+# Verify npm installation
+npm --version
+# Expected: 10.x.x or newer
+
+# Install pnpm (TraceRTM uses pnpm for frontend)
+npm install -g pnpm
+
+# Verify pnpm installation
+pnpm --version
+# Expected: 9.x.x or newer
+```
+
+## Database Setup
+
+### PostgreSQL
+
+TraceRTM uses PostgreSQL 14+ as the primary database for structured data.
+
+```bash
+# Install PostgreSQL using Homebrew
+brew install postgresql@14
+
+# Add PostgreSQL to PATH
+echo 'export PATH="/opt/homebrew/opt/postgresql@14/bin:$PATH"' >> ~/.zprofile
+source ~/.zprofile
+
+# For Intel Macs:
+# echo 'export PATH="/usr/local/opt/postgresql@14/bin:$PATH"' >> ~/.zprofile
+
+# Start PostgreSQL service
+brew services start postgresql@14
+
+# Verify PostgreSQL is running
+brew services list | grep postgresql
+# Expected: postgresql@14 started
+
+# Check PostgreSQL version
+psql --version
+# Expected: psql (PostgreSQL) 14.x
+
+# Create database and user for TraceRTM
+psql postgres -c "CREATE USER tracertm WITH PASSWORD 'tracertm_dev';"
+psql postgres -c "CREATE DATABASE tracertm OWNER tracertm;"
+psql postgres -c "GRANT ALL PRIVILEGES ON DATABASE tracertm TO tracertm;"
+
+# Verify database creation
+psql -U tracertm -d tracertm -c "SELECT version();"
+```
+
+#### PostgreSQL Configuration
+
+For development, configure PostgreSQL for local access:
+
+```bash
+# Find PostgreSQL configuration file
+psql -U postgres -c "SHOW config_file;"
+
+# Edit pg_hba.conf to allow local connections
+# For Homebrew installations, typically located at:
+# /opt/homebrew/var/postgresql@14/pg_hba.conf (Apple Silicon)
+# /usr/local/var/postgresql@14/pg_hba.conf (Intel)
+
+# Add the following line for local development:
+# local   all             all                                     trust
+# host    all             all             127.0.0.1/32            trust
+# host    all             all             ::1/128                 trust
+
+# Restart PostgreSQL after configuration changes
+brew services restart postgresql@14
+```
+
+### Redis
+
+Redis is used for caching and session management.
+
+```bash
+# Install Redis using Homebrew
+brew install redis
+
+# Start Redis service
+brew services start redis
+
+# Verify Redis is running
+redis-cli ping
+# Expected: PONG
+
+# Check Redis version
+redis-server --version
+# Expected: Redis server v=7.x.x or newer
+
+# Test Redis connection
+redis-cli
+# In Redis CLI:
+127.0.0.1:6379> SET test "Hello TraceRTM"
+127.0.0.1:6379> GET test
+# Expected: "Hello TraceRTM"
+127.0.0.1:6379> exit
+```
+
+## Git Configuration
+
+Configure Git with your identity and preferred settings.
+
+```bash
+# Set your name and email
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+
+# Set default branch name
+git config --global init.defaultBranch main
+
+# Enable credential caching (for HTTPS)
+git config --global credential.helper osxkeychain
+
+# Set default editor (choose one)
+git config --global core.editor "vim"              # vim
+git config --global core.editor "nano"             # nano
+git config --global core.editor "code --wait"      # VS Code
+
+# Enable colored output
+git config --global color.ui auto
+
+# Verify configuration
+git config --list --global
+```
+
+## Clone TraceRTM Repository
+
+```bash
+# Create a directory for your projects
+mkdir -p ~/Projects
+cd ~/Projects
+
+# Clone the repository
+git clone https://github.com/yourusername/tracertm.git
+cd tracertm
+
+# Verify repository structure
+ls -la
+# Expected: README.md, src/, frontend/, tests/, docs/, pyproject.toml, etc.
+```
+
+## Python Virtual Environment Setup
+
+### Create Virtual Environment
+
+```bash
+# Navigate to project root
+cd ~/Projects/tracertm
+
+# Create virtual environment using pyenv Python
+python -m venv .venv
+
+# Activate virtual environment
+source .venv/bin/activate
+
+# Your prompt should change to show (.venv)
+
+# Upgrade pip, setuptools, and wheel
+pip install --upgrade pip setuptools wheel
+
+# Verify virtual environment
+which python
+# Expected: /Users/yourname/Projects/tracertm/.venv/bin/python
+
+python --version
+# Expected: Python 3.12.7
+```
+
+### Install Python Dependencies
+
+```bash
+# Ensure virtual environment is activated
+source .venv/bin/activate
+
+# Install core dependencies
+pip install -e .
+
+# Install development dependencies
+pip install -e ".[dev]"
+
+# Or install all optional dependencies
+pip install -e ".[all]"
+
+# Verify installation
+rtm --version
+tracertm --version
+
+# List installed packages
+pip list
+
+# Alternative: Use uv for faster installation
+uv pip install -e ".[dev]"
+```
+
+## Frontend Dependencies Setup
+
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Install frontend dependencies using pnpm
+pnpm install
+
+# This will install dependencies for all workspace packages:
+# - apps/web (React web application)
+# - packages/api-client (API client)
+# - packages/state (State management)
+# - packages/types (TypeScript types)
+# - packages/ui (Shared UI components)
+
+# Verify installation
+pnpm list
+
+# Build shared packages
+pnpm --filter @tracertm/types build
+pnpm --filter @tracertm/api-client build
+pnpm --filter @tracertm/ui build
+pnpm --filter @tracertm/state build
+```
+
+## Database Initialization
+
+### Create Environment Configuration
+
+```bash
+# Navigate to project root
+cd ~/Projects/tracertm
+
+# Create .env file from template
+cat > .env << 'EOF'
+# Database Configuration
+DATABASE_URL=postgresql://tracertm:tracertm_dev@localhost:5432/tracertm
+POSTGRES_USER=tracertm
+POSTGRES_PASSWORD=tracertm_dev
+POSTGRES_DB=tracertm
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+
+# Redis Configuration
+REDIS_URL=redis://localhost:6379/0
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# Application Configuration
+ENVIRONMENT=development
+DEBUG=true
+LOG_LEVEL=DEBUG
+
+# API Configuration
+API_HOST=localhost
+API_PORT=8000
+API_BASE_URL=http://localhost:8000
+
+# Security (generate new secrets for production)
+SECRET_KEY=dev-secret-key-change-in-production
+JWT_SECRET=dev-jwt-secret-change-in-production
+EOF
+
+# Set proper permissions
+chmod 600 .env
+```
+
+### Initialize Database Schema
+
+```bash
+# Ensure virtual environment is activated
+source .venv/bin/activate
+
+# Initialize database with Alembic migrations
+alembic upgrade head
+
+# Verify database tables were created
+psql -U tracertm -d tracertm -c "\dt"
+
+# Expected: List of tables (projects, items, links, agents, events, etc.)
+
+# Optional: Seed database with sample data
+python -m tracertm.cli seed --sample-data
+```
+
+## Running the Development Server
+
+### Start Backend Services
+
+```bash
+# Terminal 1: Activate virtual environment and start API server
+cd ~/Projects/tracertm
+source .venv/bin/activate
+
+# Start FastAPI development server
+uvicorn tracertm.api.main:app --reload --host 0.0.0.0 --port 8000
+
+# Or use the CLI command
+rtm serve
+
+# API will be available at:
+# - http://localhost:8000 (API endpoints)
+# - http://localhost:8000/docs (Swagger UI)
+# - http://localhost:8000/redoc (ReDoc)
+```
+
+### Start Frontend Development Server
+
+```bash
+# Terminal 2: Start frontend dev server
+cd ~/Projects/tracertm/frontend
+pnpm dev
+
+# Frontend will be available at:
+# - http://localhost:3000 (Web application)
+
+# Or start specific app
+cd apps/web
+pnpm dev
+```
+
+### Start TUI (Terminal UI)
+
+```bash
+# Terminal 3: Start TUI application
+cd ~/Projects/tracertm
+source .venv/bin/activate
+
+# Launch TUI
+rtm tui
+
+# Or use the full command
+python -m tracertm.tui.apps.dashboard
+```
+
+## IDE Setup Recommendations
+
+### Visual Studio Code
+
+VS Code is recommended for TypeScript/React frontend development.
+
+```bash
+# Install VS Code
+brew install --cask visual-studio-code
+
+# Install recommended extensions
+code --install-extension dbaeumer.vscode-eslint
+code --install-extension esbenp.prettier-vscode
+code --install-extension bradlc.vscode-tailwindcss
+code --install-extension ms-python.python
+code --install-extension ms-python.vscode-pylance
+code --install-extension charliermarsh.ruff
+code --install-extension tamasfe.even-better-toml
+code --install-extension GitHub.copilot
+
+# Open project in VS Code
+cd ~/Projects/tracertm
+code .
+```
+
+#### VS Code Settings for TraceRTM
+
+Create `.vscode/settings.json`:
+
+```json
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "python.linting.enabled": true,
+  "python.linting.ruffEnabled": true,
+  "python.formatting.provider": "none",
+  "python.analysis.typeCheckingMode": "strict",
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+  ]
+}
+```
+
+### PyCharm (Alternative for Python)
+
+PyCharm is excellent for Python development with advanced debugging and refactoring.
+
+```bash
+# Install PyCharm Community Edition (free)
+brew install --cask pycharm-ce
+
+# Or install PyCharm Professional (paid, but free for students)
+brew install --cask pycharm
+```
+
+#### PyCharm Project Setup
+
+1. Open PyCharm and select "Open" → Navigate to `~/Projects/tracertm`
+2. Configure Python interpreter:
+   - Go to **Preferences** → **Project** → **Python Interpreter**
+   - Click the gear icon → **Add**
+   - Select **Existing environment**
+   - Choose `~/Projects/tracertm/.venv/bin/python`
+3. Enable pytest as test runner:
+   - Go to **Preferences** → **Tools** → **Python Integrated Tools**
+   - Set **Default test runner** to **pytest**
+4. Configure code style:
+   - Go to **Preferences** → **Editor** → **Code Style** → **Python**
+   - Set line length to 120
+   - Enable "Optimize imports on the fly"
+
+## Common macOS Development Issues
+
+### Issue 1: Permission Denied When Installing Packages
+
+**Problem**: `Permission denied` errors when running `pip install` or `npm install -g`.
+
+**Solution**:
+```bash
+# For pip: Always use virtual environment (recommended)
+source .venv/bin/activate
+pip install package-name
+
+# For npm: Don't use sudo with nvm-managed Node.js
+# nvm automatically manages permissions correctly
+
+# If using system Node.js, fix npm permissions:
+mkdir ~/.npm-global
+npm config set prefix '~/.npm-global'
+echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.zprofile
+source ~/.zprofile
+```
+
+### Issue 2: PostgreSQL Connection Refused
+
+**Problem**: `psycopg2.OperationalError: could not connect to server`
+
+**Solution**:
+```bash
+# Check if PostgreSQL is running
+brew services list | grep postgresql
+
+# Start PostgreSQL if stopped
+brew services start postgresql@14
+
+# Check PostgreSQL logs
+tail -f /opt/homebrew/var/log/postgresql@14.log
+
+# Verify port is open
+lsof -i :5432
+
+# Test connection manually
+psql -U tracertm -d tracertm -h localhost
+```
+
+### Issue 3: Redis Connection Issues
+
+**Problem**: `redis.exceptions.ConnectionError: Error connecting to Redis`
+
+**Solution**:
+```bash
+# Check if Redis is running
+brew services list | grep redis
+
+# Start Redis if stopped
+brew services start redis
+
+# Test Redis connection
+redis-cli ping
+
+# Check Redis logs
+tail -f /opt/homebrew/var/log/redis.log
+```
+
+### Issue 4: Python SSL Certificate Errors
+
+**Problem**: `[SSL: CERTIFICATE_VERIFY_FAILED]` when downloading packages
+
+**Solution**:
+```bash
+# Install certificates for Python
+cd /Applications/Python\ 3.12/
+./Install\ Certificates.command
+
+# Or manually install certifi
+pip install --upgrade certifi
+
+# For pyenv-installed Python
+pyenv install --patch 3.12.7 < <(curl -sSL https://github.com/python/cpython/commit/8ea6353.patch)
+```
+
+### Issue 5: Node.js Native Module Compilation Fails
+
+**Problem**: `gyp ERR! build error` when installing npm packages
+
+**Solution**:
+```bash
+# Ensure Xcode Command Line Tools are installed
+xcode-select --install
+
+# Reinstall node-gyp
+npm install -g node-gyp
+
+# Clear npm cache
+npm cache clean --force
+
+# Reinstall dependencies
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### Issue 6: Port Already in Use
+
+**Problem**: `Address already in use` when starting development server
+
+**Solution**:
+```bash
+# Find process using port 8000 (backend)
+lsof -ti:8000
+
+# Kill the process
+kill -9 $(lsof -ti:8000)
+
+# Find process using port 3000 (frontend)
+lsof -ti:3000
+kill -9 $(lsof -ti:3000)
+
+# Or change port in configuration
+# Backend: Set PORT=8001 in .env
+# Frontend: Set PORT=3001 in frontend/.env
+```
+
+### Issue 7: Python Import Errors After Installation
+
+**Problem**: `ModuleNotFoundError` even after installing package
+
+**Solution**:
+```bash
+# Ensure virtual environment is activated
+which python
+# Should show: .venv/bin/python
+
+# If not activated:
+source .venv/bin/activate
+
+# Reinstall in editable mode
+pip install -e ".[dev]"
+
+# Verify package is installed
+pip show tracertm
+
+# Check Python path
+python -c "import sys; print(sys.path)"
+```
+
+### Issue 8: File Descriptor Limits
+
+**Problem**: `Too many open files` error during development
+
+**Solution**:
+```bash
+# Check current limits
+ulimit -n
+
+# Temporarily increase limit (current session)
+ulimit -n 10240
+
+# Permanently increase limit
+echo 'ulimit -n 10240' >> ~/.zprofile
+source ~/.zprofile
+
+# For system-wide changes, create /etc/sysctl.conf:
+# sudo nano /etc/sysctl.conf
+# Add: kern.maxfiles=65536
+# Add: kern.maxfilesperproc=65536
+```
+
+## Verification Checklist
+
+After completing setup, verify everything works:
+
+```bash
+# Check Python
+python --version          # Should be 3.12+
+which python             # Should be in .venv
+pip list                 # Should show tracertm packages
+
+# Check Node.js
+node --version           # Should be v20.x.x+
+pnpm --version          # Should be 9.x.x+
+
+# Check databases
+psql -U tracertm -d tracertm -c "SELECT 1;"  # Should return 1
+redis-cli ping                                # Should return PONG
+
+# Check TraceRTM CLI
+rtm --version            # Should show version
+rtm health              # Should show all services healthy
+
+# Check frontend
+cd frontend/apps/web
+pnpm dev                # Should start without errors
+
+# Check backend API
+cd ~/Projects/tracertm
+source .venv/bin/activate
+rtm serve               # Should start API server
+
+# Visit http://localhost:8000/docs
+# Should see Swagger UI with API documentation
+```
+
+## Next Steps
+
+After completing the macOS setup:
+
+1. **Run Tests**: Verify your environment with `pytest` and `pnpm test`
+2. **Explore the CLI**: Try `rtm --help` to see available commands
+3. **Start Development**: Follow the [Development Guide](/docs/development/workflow)
+4. **Read Architecture**: Understand the [System Architecture](/docs/development/architecture)
+5. **Join Community**: Check our [Contributing Guide](/docs/development/contributing)
+
+## Additional Resources
+
+- [TraceRTM Documentation](/)
+- [API Reference](/api)
+- [CLI Reference](/docs/cli)
+- [Troubleshooting Guide](/docs/development/troubleshooting)
+- [macOS Homebrew Documentation](https://docs.brew.sh)
+- [pyenv Documentation](https://github.com/pyenv/pyenv)
+- [nvm Documentation](https://github.com/nvm-sh/nvm)
+
+## Getting Help
+
+If you encounter issues not covered in this guide:
+
+- Check the [Troubleshooting Guide](/docs/development/troubleshooting)
+- Search [GitHub Issues](https://github.com/tracertm/tracertm/issues)
+- Ask in [GitHub Discussions](https://github.com/tracertm/tracertm/discussions)
+- Join our Discord community (coming soon)
+
+---
+
+**Last Updated**: 2025-12-07
+**macOS Version Tested**: macOS Sonoma 14.0+, macOS Sequoia 15.0+
+**Platform**: Apple Silicon (M1/M2/M3) and Intel

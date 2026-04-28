@@ -1,0 +1,88 @@
+---
+title: "Finance"
+description: "TraceRTM for financial services and risk management"
+keywords: [finance, risk management, compliance, audit, regulatory]
+---
+
+# Finance
+
+Using TraceRTM for requirements traceability in financial services.
+
+## Risk Management
+
+### Risk Requirements
+
+```python
+# Track risk requirements
+risk_req = client.items.create(
+    title="Risk Requirement: Credit Risk Assessment",
+    view="requirements",
+    metadata={"risk_type": "credit", "severity": "high"}
+)
+
+# Link to controls
+control = client.items.create(
+    title="Control: Automated Credit Scoring",
+    view="requirements"
+)
+
+client.links.create(
+    source_id=risk_req.id,
+    target_id=control.id,
+    link_type="mitigated_by"
+)
+```
+
+## Regulatory Compliance
+
+### Basel III Compliance
+
+```python
+# Basel III requirements
+basel_req = client.items.create(
+    title="Basel III: Capital Adequacy",
+    view="requirements",
+    metadata={"regulation": "Basel III"}
+)
+
+# Link to implementation
+implementation = client.items.create(
+    title="Capital Calculation System",
+    view="requirements"
+)
+
+client.links.create(
+    source_id=implementation.id,
+    target_id=basel_req.id,
+    link_type="complies_with"
+)
+```
+
+### SOX Compliance
+
+```python
+# SOX requirements
+sox_req = client.items.create(
+    title="SOX 404: Internal Controls",
+    view="requirements",
+    metadata={"regulation": "SOX"}
+)
+```
+
+## Audit Trails
+
+### Financial Audit Support
+
+```python
+# Export audit trail for financial audits
+audit_report = client.export.audit_trail(
+    project_id=project_id,
+    format="excel",
+    include_metadata=True
+)
+```
+
+## Related Documentation
+
+- [Risk Management](./04a-risk-management) - Risk management workflows
+- [Audit Trails](./04b-audit-trails) - Audit trail management

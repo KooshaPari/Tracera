@@ -1,0 +1,288 @@
+---
+title: "Yarn Install"
+description: "Detailed guide to installing the TraceRTM SDK with Yarn"
+---
+
+# Yarn Install
+
+Comprehensive guide to installing and managing the TraceRTM JavaScript SDK using Yarn.
+
+## Basic Installation
+
+### Yarn Classic (1.x)
+
+```bash
+yarn add @tracertm/sdk
+```
+
+### Yarn Berry (2.x, 3.x, 4.x)
+
+```bash
+yarn add @tracertm/sdk
+```
+
+---
+
+## Installation Options
+
+### Production Dependency
+
+```bash
+yarn add @tracertm/sdk
+```
+
+Results in:
+
+```json
+{
+  "dependencies": {
+    "@tracertm/sdk": "^2.0.0"
+  }
+}
+```
+
+### Dev Dependency
+
+```bash
+yarn add @tracertm/sdk --dev
+```
+
+### Specific Version
+
+```bash
+# Latest stable
+yarn add @tracertm/sdk@latest
+
+# Specific version
+yarn add @tracertm/sdk@2.0.0
+
+# Version range
+yarn add @tracertm/sdk@^2.0.0
+
+# Pre-release
+yarn add @tracertm/sdk@next
+```
+
+### Exact Version
+
+```bash
+yarn add @tracertm/sdk --exact
+```
+
+---
+
+## Yarn Berry (Modern Yarn)
+
+### Plug'n'Play (PnP)
+
+Yarn Berry uses PnP by default for faster installs:
+
+```yaml
+# .yarnrc.yml
+nodeLinker: pnp
+```
+
+The SDK is fully compatible with PnP.
+
+### Classic node_modules
+
+If you prefer traditional node_modules:
+
+```yaml
+# .yarnrc.yml
+nodeLinker: node-modules
+```
+
+### Zero-Installs
+
+Enable zero-installs for instant dependency resolution:
+
+```yaml
+# .yarnrc.yml
+enableGlobalCache: false
+```
+
+Add `.yarn/cache` to git:
+
+```gitignore
+# .gitignore
+!.yarn/cache
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+```
+
+---
+
+## Workspaces
+
+### Setup
+
+```json
+// package.json (root)
+{
+  "private": true,
+  "workspaces": ["packages/*", "apps/*"]
+}
+```
+
+### Install in Specific Workspace
+
+```bash
+# Yarn Classic
+yarn workspace @myorg/api add @tracertm/sdk
+
+# Yarn Berry
+yarn workspace @myorg/api add @tracertm/sdk
+```
+
+### Install in Root
+
+```bash
+yarn add @tracertm/sdk -W
+```
+
+---
+
+## Lock File
+
+### yarn.lock
+
+Yarn automatically maintains `yarn.lock`:
+
+```bash
+# Install from lock file
+yarn install --frozen-lockfile
+
+# Update lock file
+yarn install
+```
+
+### Best Practices
+
+1. **Commit** `yarn.lock` to version control
+2. **Use `--frozen-lockfile`** in CI/CD
+3. **Review changes** to yarn.lock during PRs
+
+---
+
+## Updating
+
+### Check Outdated
+
+```bash
+yarn outdated @tracertm/sdk
+```
+
+### Upgrade Package
+
+```bash
+# Interactive upgrade
+yarn upgrade-interactive
+
+# Direct upgrade
+yarn upgrade @tracertm/sdk
+
+# Upgrade to latest
+yarn upgrade @tracertm/sdk --latest
+```
+
+### Yarn Berry Upgrade
+
+```bash
+yarn up @tracertm/sdk
+yarn up @tracertm/sdk@latest
+```
+
+---
+
+## Scripts
+
+```json
+{
+  "scripts": {
+    "tracertm:check": "yarn info @tracertm/sdk version",
+    "tracertm:test": "node -e \"import('@tracertm/sdk').then(m => console.log('SDK v' + m.version))\""
+  }
+}
+```
+
+Run with:
+
+```bash
+yarn tracertm:check
+```
+
+---
+
+## Removing
+
+```bash
+yarn remove @tracertm/sdk
+```
+
+---
+
+## Troubleshooting
+
+### Clear Cache
+
+```bash
+# Yarn Classic
+yarn cache clean
+
+# Yarn Berry
+yarn cache clean --all
+```
+
+### Reinstall Dependencies
+
+```bash
+rm -rf node_modules yarn.lock
+yarn install
+```
+
+### PnP Issues
+
+If a dependency doesn't work with PnP:
+
+```yaml
+# .yarnrc.yml
+packageExtensions:
+  "@tracertm/sdk@*":
+    dependencies:
+      some-peer-dep: "*"
+```
+
+### SDK Configuration
+
+```bash
+# Check yarn version
+yarn --version
+
+# Set yarn version
+yarn set version stable
+```
+
+---
+
+## Migration from npm
+
+```bash
+# Remove npm artifacts
+rm -rf node_modules package-lock.json
+
+# Install with yarn
+yarn install
+```
+
+---
+
+## Related Documentation
+
+- [Installation Overview](/docs/api-reference/sdks/javascript/installation) - All installation methods
+- [NPM Install](/docs/api-reference/sdks/javascript/npm-install) - Using npm instead
+- [Quickstart](/docs/api-reference/sdks/javascript/quickstart) - Get started quickly

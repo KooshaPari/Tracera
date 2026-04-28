@@ -1,0 +1,315 @@
+---
+title: "API Endpoints"
+description: "Complete reference for all TraceRTM REST API endpoints organized by resource type"
+keywords: [api, endpoints, rest, reference]
+---
+
+# API Endpoints
+
+This section provides complete documentation for all TraceRTM REST API endpoints. All endpoints are organized by resource type for easy navigation.
+
+## Endpoint Categories
+
+### Core Resources
+
+| Resource | Description | Documentation |
+|----------|-------------|--------------|
+| **[Projects](/docs/api-reference/rest-api/endpoints/projects)** | Create and manage projects, the top-level organizational unit | Full CRUD operations, archiving, statistics |
+| **[Requirements](/docs/api-reference/rest-api/endpoints/requirements)** | Manage requirements, test cases, designs, and other traceable items | Items API with filtering, search, batch operations |
+| **[Relationships](/docs/api-reference/rest-api/endpoints/relationships)** | Create and manage traceability links between items | Link management, impact analysis, path tracing |
+
+### Testing & Quality
+
+| Resource | Description | Documentation |
+|----------|-------------|--------------|
+| **[Tests](/docs/api-reference/rest-api/endpoints/tests)** | Test case management, test runs, and results | Test execution tracking, coverage reports |
+| **[Reports](/docs/api-reference/rest-api/endpoints/reports)** | Generate traceability matrices and compliance reports | PDF, Excel, HTML exports, live matrices |
+
+### Collaboration & Access
+
+| Resource | Description | Documentation |
+|----------|-------------|--------------|
+| **[Users](/docs/api-reference/rest-api/endpoints/users)** | User management, profiles, and permissions | User CRUD, permissions, activity tracking |
+| **[Teams](/docs/api-reference/rest-api/endpoints/teams)** | Team management and member assignments | Team operations, project assignments |
+| **[Workflows](/docs/api-reference/rest-api/endpoints/workflows)** | Status workflows and approval processes | Workflow configuration, status transitions |
+
+### Integration
+
+| Resource | Description | Documentation |
+|----------|-------------|--------------|
+| **[Webhooks](/docs/api-reference/rest-api/endpoints/webhooks)** | Real-time event notifications | Webhook configuration, delivery tracking |
+
+---
+
+## Quick Reference
+
+### Base URL
+
+All endpoints use the base URL:
+
+```
+https://api.tracertm.dev/v1
+```
+
+### Authentication
+
+All requests require authentication via API key or JWT token:
+
+```bash
+Authorization: Bearer rtm_live_sk_...
+```
+
+See [Authentication documentation](/docs/api-reference/authentication) for details.
+
+### Common Patterns
+
+#### List Resources
+
+Most resources support listing with filtering, sorting, and pagination:
+
+```http
+GET /v1/{resource}
+```
+
+**Query Parameters:**
+- `limit` - Results per page (1-100, default: 20)
+- `cursor` - Pagination cursor
+- `sort` - Sort field
+- `order` - Sort order (`asc`, `desc`)
+- `search` - Full-text search
+- Resource-specific filters
+
+#### Get Single Resource
+
+```http
+GET /v1/{resource}/{id}
+```
+
+#### Create Resource
+
+```http
+POST /v1/{resource}
+Content-Type: application/json
+
+{
+  "field1": "value1",
+  "field2": "value2"
+}
+```
+
+#### Update Resource
+
+```http
+PATCH /v1/{resource}/{id}
+Content-Type: application/json
+
+{
+  "field1": "new_value"
+}
+```
+
+#### Delete Resource
+
+```http
+DELETE /v1/{resource}/{id}
+```
+
+---
+
+## Endpoint Summary
+
+### Projects
+
+- `GET /v1/projects` - List projects
+- `POST /v1/projects` - Create project
+- `GET /v1/projects/{id}` - Get project
+- `PATCH /v1/projects/{id}` - Update project
+- `DELETE /v1/projects/{id}` - Delete project
+- `POST /v1/projects/{id}/archive` - Archive project
+- `POST /v1/projects/{id}/restore` - Restore project
+- `GET /v1/projects/{id}/stats` - Get statistics
+
+### Items (Requirements, Tests, etc.)
+
+- `GET /v1/projects/{project_id}/items` - List items
+- `POST /v1/projects/{project_id}/items` - Create item
+- `GET /v1/projects/{project_id}/items/{id}` - Get item
+- `PATCH /v1/projects/{project_id}/items/{id}` - Update item
+- `DELETE /v1/projects/{project_id}/items/{id}` - Delete item
+- `POST /v1/projects/{project_id}/items/batch` - Batch operations
+- `POST /v1/projects/{project_id}/items/query` - Advanced query
+- `GET /v1/projects/{project_id}/items/{id}/history` - Item history
+- `GET /v1/projects/{project_id}/items/{id}/links` - Item links
+
+### Links (Relationships)
+
+- `GET /v1/projects/{project_id}/links` - List links
+- `POST /v1/projects/{project_id}/links` - Create link
+- `GET /v1/projects/{project_id}/links/{id}` - Get link
+- `DELETE /v1/projects/{project_id}/links/{id}` - Delete link
+- `POST /v1/projects/{project_id}/links/batch` - Batch create
+- `GET /v1/projects/{project_id}/trace` - Trace path
+- `GET /v1/projects/{project_id}/impact-analysis` - Impact analysis
+
+### Test Runs
+
+- `GET /v1/projects/{project_id}/test-runs` - List test runs
+- `POST /v1/projects/{project_id}/test-runs` - Create test run
+- `GET /v1/projects/{project_id}/test-runs/{id}` - Get test run
+- `POST /v1/projects/{project_id}/test-runs/{id}/results` - Submit results
+- `GET /v1/projects/{project_id}/test-coverage` - Coverage report
+
+### Reports
+
+- `GET /v1/projects/{project_id}/reports` - List reports
+- `POST /v1/projects/{project_id}/reports` - Generate report
+- `GET /v1/projects/{project_id}/reports/{id}` - Get report
+- `GET /v1/projects/{project_id}/reports/{id}/download` - Download report
+- `GET /v1/projects/{project_id}/traceability-matrix` - Live matrix
+- `GET /v1/projects/{project_id}/coverage-summary` - Coverage summary
+
+### Users
+
+- `GET /v1/users` - List users
+- `GET /v1/users/me` - Get current user
+- `GET /v1/users/{id}` - Get user
+- `PATCH /v1/users/{id}` - Update user
+- `GET /v1/users/{id}/permissions` - Get permissions
+- `PATCH /v1/users/{id}/permissions` - Update permissions
+- `GET /v1/users/{id}/activity` - Get activity
+- `POST /v1/users/invite` - Invite user
+- `DELETE /v1/users/{id}` - Remove user
+
+### Teams
+
+- `GET /v1/teams` - List teams
+- `POST /v1/teams` - Create team
+- `GET /v1/teams/{id}` - Get team
+- `PATCH /v1/teams/{id}` - Update team
+- `DELETE /v1/teams/{id}` - Delete team
+- `GET /v1/teams/{id}/members` - List members
+- `POST /v1/teams/{id}/members` - Add member
+- `DELETE /v1/teams/{id}/members/{user_id}` - Remove member
+- `GET /v1/teams/{id}/projects` - List team projects
+
+### Workflows
+
+- `GET /v1/projects/{project_id}/workflows` - List workflows
+- `POST /v1/projects/{project_id}/workflows` - Create workflow
+- `GET /v1/projects/{project_id}/workflows/{id}` - Get workflow
+- `PATCH /v1/projects/{project_id}/workflows/{id}` - Update workflow
+- `DELETE /v1/projects/{project_id}/workflows/{id}` - Delete workflow
+- `POST /v1/projects/{project_id}/items/{item_id}/transitions` - Transition item
+- `GET /v1/projects/{project_id}/items/{item_id}/transitions` - Get transitions
+- `POST /v1/projects/{project_id}/items/{item_id}/approve` - Approve item
+- `POST /v1/projects/{project_id}/items/{item_id}/reject` - Reject item
+
+### Webhooks
+
+- `GET /v1/webhooks` - List webhooks
+- `POST /v1/webhooks` - Create webhook
+- `GET /v1/webhooks/{id}` - Get webhook
+- `PATCH /v1/webhooks/{id}` - Update webhook
+- `DELETE /v1/webhooks/{id}` - Delete webhook
+- `POST /v1/webhooks/{id}/test` - Test webhook
+- `GET /v1/webhooks/{id}/deliveries` - List deliveries
+- `POST /v1/webhooks/{id}/deliveries/{delivery_id}/retry` - Retry delivery
+
+---
+
+## Response Format
+
+All successful responses follow this structure:
+
+```json
+{
+  "data": {
+    // Resource object(s)
+  },
+  "pagination": {
+    // Pagination info (for list endpoints)
+  }
+}
+```
+
+Error responses:
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message",
+    "status": 400,
+    "details": {
+      // Additional error details
+    }
+  }
+}
+```
+
+---
+
+## Rate Limiting
+
+API requests are rate-limited. See [Rate Limiting documentation](/docs/api-reference/rest-api/rate-limiting) for details.
+
+**Default Limits:**
+- **Free tier**: 100 requests/minute
+- **Pro tier**: 1,000 requests/minute
+- **Enterprise**: Custom limits
+
+Rate limit headers are included in all responses:
+- `X-RateLimit-Limit` - Request limit per window
+- `X-RateLimit-Remaining` - Remaining requests
+- `X-RateLimit-Reset` - Reset timestamp
+
+---
+
+## Pagination
+
+List endpoints use cursor-based pagination:
+
+```json
+{
+  "data": [...],
+  "pagination": {
+    "total": 150,
+    "limit": 20,
+    "has_next": true,
+    "has_prev": false,
+    "next_cursor": "eyJpZCI6InByb2pfYWJjMTIzIn0",
+    "prev_cursor": null
+  }
+}
+```
+
+Use the `cursor` query parameter to fetch the next page:
+
+```http
+GET /v1/projects?cursor=eyJpZCI6InByb2pfYWJjMTIzIn0
+```
+
+See [Pagination documentation](/docs/api-reference/rest-api/pagination) for details.
+
+---
+
+## Filtering & Search
+
+Most list endpoints support filtering and search:
+
+- **Query parameters**: Simple filters (`status=active`, `type=requirement`)
+- **Advanced query**: POST to `/items/query` for complex filters
+- **Full-text search**: `search` parameter for text matching
+
+See [Filtering documentation](/docs/api-reference/rest-api/filtering) for complete syntax.
+
+---
+
+## Related Documentation
+
+- [Authentication](/docs/api-reference/authentication) - API authentication methods
+- [Base URL](/docs/api-reference/rest-api/base-url) - API base URL and regions
+- [Error Handling](/docs/api-reference/rest-api/error-handling) - Error response format
+- [Versioning](/docs/api-reference/rest-api/versioning) - API versioning strategy
+- [SDKs](/docs/api-reference/sdks) - Official SDKs for Python, TypeScript, Go
+

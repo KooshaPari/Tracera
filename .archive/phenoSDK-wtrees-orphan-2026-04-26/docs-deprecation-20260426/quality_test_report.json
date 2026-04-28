@@ -1,0 +1,20 @@
+
+🔍 QUALITY_METRICS RESULT
+==================================================
+Status: ERROR
+Error: Traceback (most recent call last):
+  File "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/scripts/quality_metrics_collector.py", line 783, in <module>
+    main()
+    ~~~~^^
+  File "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/scripts/quality_metrics_collector.py", line 749, in main
+    report = collector.collect_all_metrics()
+  File "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/scripts/quality_metrics_collector.py", line 79, in collect_all_metrics
+    self._collect_technical_debt_metrics()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/scripts/quality_metrics_collector.py", line 530, in _collect_technical_debt_metrics
+    total_lines = sum(len(open(f, 'r', encoding='utf-8').readlines()) for f in python_files)
+  File "/Users/kooshapari/temp-PRODVERCEL/485/kush/pheno-sdk/scripts/quality_metrics_collector.py", line 530, in <genexpr>
+    total_lines = sum(len(open(f, 'r', encoding='utf-8').readlines()) for f in python_files)
+                          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+IsADirectoryError: [Errno 21] Is a directory: 'src/pheno/infra/proxy_gateway/fallback_manager.py'
+

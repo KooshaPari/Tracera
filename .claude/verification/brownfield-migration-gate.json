@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-02-14T08:53:27Z",
+  "enabled": true,
+  "mode": "brownfield",
+  "error_count": 1,
+  "checks": [
+    {
+      "check": "characterization",
+      "status": "pass"
+    },
+    {
+      "check": "strangler_plan",
+      "status": "fail"
+    },
+    {
+      "check": "canary",
+      "status": "pass"
+    },
+    {
+      "check": "rollback",
+      "status": "pass"
+    }
+  ],
+  "pass": false
+}

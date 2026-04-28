@@ -1,0 +1,550 @@
+---
+title: "Cycle Detection"
+description: "Detecting and preventing circular dependencies in traceability graphs to maintain graph integrity and prevent infinite loops"
+---
+
+# Cycle Detection
+
+Cycle detection is a critical feature that identifies and prevents circular dependencies in your traceability graph. TracerTM automatically detects cycles during link creation and provides tools to analyze existing cycles in your project.
+
+## Overview
+
+A cycle occurs when following directional links from an item eventually leads back to the same item, creating a circular dependency. For example:
+
+```
+Item A depends_on Item B
+Item B depends_on Item C
+Item C depends_on Item A  ← Creates a cycle
+```
+
+## What Are Cycles in Traceability Graphs?
+
+In graph theory, a cycle is a path that starts and ends at the same vertex. In TracerTM's traceability context:
+
+- **Cycle**: A sequence of items where following `depends_on` links returns to the starting item
+- **Circular Dependency**: An artifact directly or indirectly depends on itself
+- **Dependency Chain**: The path of items that form the cycle
+
+### Types of Cycles
+
+**Direct Cycle (Length 2)**
+```
+Item A --depends_on--> Item B
+Item B --depends_on--> Item A
+```
+
+**Indirect Cycle (Length 3+)**
+```
+Item A --depends_on--> Item B
+Item B --depends_on--> Item C
+Item C --depends_on--> Item D
+Item D --depends_on--> Item A
+```
+
+**Self-Loop (Length 1)**
+```
+Item A --depends_on--> Item A
+```
+
+## Why Cycles Are Problematic
+
+Circular dependencies create several serious issues:
+
+### 1. Logical Inconsistencies
+
+- **Paradox**: If A depends on B and B depends on A, which should be built first?
+- **Ordering Impossibility**: Cannot establish a valid build or execution order
+- **Causality Violations**: Creates logical contradictions in dependencies
+
+### 2. Infinite Loops
+
+- **Graph Traversal**: Algorithms may loop infinitely when traversing the graph
+- **Impact Analysis**: Cannot determine complete impact without hitting cycles
+- **Report Generation**: Traceability reports may fail or hang
+
+### 3. Build and Deployment Issues
+
+- **Build Systems**: Cannot resolve dependency order for compilation
+- **Test Execution**: Test dependencies cannot be properly ordered
+- **Deployment Planning**: Cannot determine safe deployment sequences
+
+### 4. Development Confusion
+
+- **Unclear Ownership**: Difficult to determine which team should work on what first
+- **Planning Complexity**: Sprint planning becomes complicated with circular dependencies
+- **Technical Debt**: Often indicates architectural problems that need refactoring
+
+## How TracerTM Detects Cycles
+
+TracerTM uses sophisticated graph algorithms to detect cycles efficiently:
+
+### Prevention During Link Creation
+
+When creating a `depends_on` link, TracerTM:
+
+1. **Pre-validation**: Checks if the new link would create a cycle
+2. **Graph Simulation**: Temporarily adds the link to the dependency graph
+3. **Reachability Test**: Uses Depth-First Search (DFS) to check if target can reach source
+4. **Rejection**: Blocks the link creation if a cycle would be formed
+
+```python
+# Algorithm: has_cycle(source, target)
+# 1. Build dependency graph from existing links
+# 2. Check if path exists from target to source
+# 3. If path exists, adding source→target would create cycle
+# 4. Return True to prevent link creation
+```
+
+### Detection in Existing Graphs
+
+For analyzing existing projects:
+
+1. **Graph Construction**: Builds dependency graph from all `depends_on` links
+2. **DFS with Recursion Stack**: Traverses graph while tracking current path
+3. **Cycle Identification**: Detects when revisiting a node in the current path
+4. **Path Extraction**: Captures the exact items forming each cycle
+
+```python
+# Algorithm: detect_cycles()
+# For each node:
+#   - Mark as visiting (in recursion stack)
+#   - Explore neighbors
+#   - If neighbor is in recursion stack → cycle found
+#   - Mark as visited and remove from recursion stack
+#   - Record all found cycles
+```
+
+### Performance Characteristics
+
+- **Time Complexity**: O(V + E) where V = items, E = links
+- **Space Complexity**: O(V) for visited tracking
+- **Scalability**: Handles thousands of items efficiently
+- **Caching**: Results can be cached until graph changes
+
+## Using Cycle Detection via CLI
+
+TracerTM provides comprehensive CLI commands for cycle detection:
+
+### Detect Cycles in Current Project
+
+```bash
+# Detect all cycles in depends_on relationships
+rtm link detect-cycles
+
+# Detect cycles in specific link type
+rtm link detect-cycles --type blocks
+```
+
+**Output Example:**
+```
+✗ Found 2 cycle(s) in depends_on relationships
+
+Cycles detected:
+
+  Cycle 1:
+    Authentication Service (auth-001) →
+    User Management (user-001) →
+    Session Handler (sess-001) →
+    Authentication Service (auth-001)
+
+  Cycle 2:
+    API Gateway (api-001) →
+    Rate Limiter (rate-001) →
+    API Gateway (api-001)
+```
+
+### Prevent Cycles During Link Creation
+
+```bash
+# Attempt to create a link (will fail if cycle detected)
+rtm link create ITEM-001 ITEM-002 --type depends_on
+```
+
+**Success:**
+```
+✓ Created link: Feature A --[depends_on]--> Feature B
+  Link ID: abc12345
+```
+
+**Cycle Prevention:**
+```
+✗ Circular dependency detected: Adding this link would create a cycle
+  Cannot create depends_on link from Feature B to Feature A
+```
+
+### Analyze Impact of Item Changes
+
+```bash
+# Show what would be affected by changing an item
+rtm link impact ITEM-001 --depth 10 --type depends_on
+```
+
+**Output:**
+```
+Impact Analysis for: Authentication Service
+Item ID: auth-001
+
+Total Affected Items: 15
+Max Depth Reached: 4
+
+Affected by Depth:
+  Depth 1: 3 items
+  Depth 2: 7 items
+  Depth 3: 4 items
+  Depth 4: 1 items
+
+Affected by View:
+  CODE: 8 items
+  TEST: 5 items
+  EPIC: 2 items
+```
+
+### Detect Missing Dependencies
+
+```bash
+# Find links pointing to non-existent items
+rtm link detect-missing --type depends_on
+```
+
+### Detect Orphaned Items
+
+```bash
+# Find items with no links
+rtm link detect-orphans
+```
+
+## Using Cycle Detection via API
+
+TracerTM's REST API provides programmatic access to cycle detection:
+
+### Detect Cycles Endpoint
+
+```http
+GET /api/v1/analysis/cycles/{project_id}
+```
+
+**Response:**
+```json
+{
+  "has_cycles": true,
+  "total_cycles": 2,
+  "severity": "high",
+  "affected_items": [
+    "auth-001",
+    "user-001",
+    "sess-001",
+    "api-001",
+    "rate-001"
+  ],
+  "cycles": [
+    [
+      "auth-001",
+      "user-001",
+      "sess-001",
+      "auth-001"
+    ],
+    [
+      "api-001",
+      "rate-001",
+      "api-001"
+    ]
+  ]
+}
+```
+
+### Impact Analysis Endpoint
+
+```http
+GET /api/v1/analysis/impact/{project_id}/{item_id}?max_depth=10
+```
+
+**Response:**
+```json
+{
+  "root_item_id": "auth-001",
+  "root_item_title": "Authentication Service",
+  "total_affected": 15,
+  "max_depth_reached": 4,
+  "affected_by_depth": {
+    "1": 3,
+    "2": 7,
+    "3": 4,
+    "4": 1
+  },
+  "affected_by_view": {
+    "CODE": 8,
+    "TEST": 5,
+    "EPIC": 2
+  },
+  "affected_items": [
+    {
+      "item_id": "login-001",
+      "item_title": "Login Handler",
+      "view": "CODE",
+      "item_type": "component",
+      "status": "in_progress",
+      "depth": 1,
+      "path": ["auth-001", "login-001"]
+    }
+  ]
+}
+```
+
+### Programmatic Usage
+
+```python
+import requests
+
+# Detect cycles
+response = requests.get(
+    f"http://localhost:8000/api/v1/analysis/cycles/{project_id}"
+)
+result = response.json()
+
+if result["has_cycles"]:
+    print(f"Found {result['total_cycles']} cycles")
+    for cycle in result["cycles"]:
+        print(f"Cycle: {' → '.join(cycle)}")
+else:
+    print("No cycles detected")
+```
+
+## Interpreting and Fixing Cycles
+
+### Understanding Cycle Reports
+
+When a cycle is detected, analyze the output:
+
+1. **Cycle Path**: The sequence of items forming the circular dependency
+2. **Item Details**: ID, title, view, and type of each item in cycle
+3. **Link Types**: What type of relationship creates the cycle
+4. **Cycle Length**: Number of items in the circular path
+
+### Root Cause Analysis
+
+Common causes of cycles:
+
+1. **Bidirectional Dependencies**: Two components depending on each other
+2. **Layering Violations**: Lower layer depending on higher layer
+3. **Incorrect Modeling**: Dependencies not matching actual architecture
+4. **Refactoring Issues**: Stale links after code reorganization
+5. **Over-specification**: Too many dependency links
+
+### Fix Strategies
+
+**1. Remove Redundant Links**
+```bash
+# Identify the weakest dependency in the cycle
+# Delete that link to break the cycle
+rtm link delete <link-id>
+```
+
+**2. Introduce Abstraction**
+```
+Before (Cycle):
+  ServiceA → ServiceB → ServiceC → ServiceA
+
+After (No Cycle):
+  ServiceA → Interface
+  ServiceB → Interface
+  ServiceC → Interface
+```
+
+**3. Refactor Architecture**
+- Extract shared functionality to a common module
+- Introduce dependency injection
+- Use event-driven patterns instead of direct dependencies
+
+**4. Reverse Link Direction**
+```bash
+# Sometimes the dependency is modeled backwards
+rtm link delete <old-link>
+rtm link create <target> <source> --type depends_on
+```
+
+**5. Change Link Type**
+```bash
+# Maybe it's not a depends_on relationship
+# Use 'related_to' or 'blocks' instead
+rtm link delete <old-link>
+rtm link create <source> <target> --type related_to
+```
+
+### Verification After Fixes
+
+```bash
+# Verify cycles are resolved
+rtm link detect-cycles
+
+# Check for new orphaned items
+rtm link detect-orphans
+
+# Verify impact analysis works correctly
+rtm link impact <item-id>
+```
+
+## Prevention Strategies
+
+### Design-Time Prevention
+
+**1. Layered Architecture**
+```
+Presentation Layer
+    ↓ (depends_on only flows downward)
+Business Logic Layer
+    ↓
+Data Access Layer
+    ↓
+Database
+```
+
+**2. Dependency Direction Rules**
+- High-level modules should not depend on low-level modules
+- Dependencies flow in one direction through layers
+- Cross-cutting concerns use injection patterns
+
+**3. Modular Design**
+- Keep modules loosely coupled
+- Use interfaces and abstractions
+- Minimize inter-module dependencies
+
+### Development-Time Prevention
+
+**1. Pre-Commit Validation**
+```bash
+# Add to git pre-commit hook
+#!/bin/bash
+rtm link detect-cycles
+if [ $? -ne 0 ]; then
+    echo "Cycle detected! Commit rejected."
+    exit 1
+fi
+```
+
+**2. CI/CD Integration**
+```yaml
+# .github/workflows/traceability.yml
+- name: Check for cycles
+  run: |
+    rtm link detect-cycles
+    if [ $? -ne 0 ]; then
+      echo "::error::Circular dependencies detected"
+      exit 1
+    fi
+```
+
+**3. Link Review Process**
+- Require peer review for `depends_on` links
+- Document rationale for complex dependencies
+- Regular dependency audits
+
+### Monitoring and Maintenance
+
+**1. Periodic Checks**
+```bash
+# Weekly cron job
+0 0 * * 1 rtm link detect-cycles --type depends_on
+```
+
+**2. Automated Alerts**
+- Configure notifications for cycle detection
+- Dashboard showing dependency health metrics
+- Track cycle count over time
+
+**3. Dependency Visualization**
+```bash
+# Generate visual dependency graph
+rtm link graph <root-item> --depth 5
+```
+
+## Best Practices
+
+### Link Creation
+
+1. **Think Before Linking**: Consider if the dependency is truly necessary
+2. **Use Correct Types**: Only use `depends_on` for true dependencies
+3. **Check Impact**: Run impact analysis before major changes
+4. **Document Rationale**: Add metadata explaining complex dependencies
+
+### Architecture
+
+1. **Acyclic Dependencies Principle**: Design architecture to avoid cycles
+2. **Single Direction**: Ensure dependencies flow in one primary direction
+3. **Interface Segregation**: Use interfaces to break circular dependencies
+4. **Dependency Inversion**: Depend on abstractions, not concretions
+
+### Project Management
+
+1. **Regular Audits**: Schedule periodic cycle detection runs
+2. **Track Metrics**: Monitor cycle count and complexity over time
+3. **Team Education**: Ensure team understands cycle implications
+4. **Quick Resolution**: Fix detected cycles immediately
+
+### Testing
+
+1. **Test Coverage**: Ensure cycle detection is tested in CI/CD
+2. **Integration Tests**: Verify cycle prevention works end-to-end
+3. **Load Testing**: Confirm performance with large graphs
+4. **Edge Cases**: Test self-loops, direct cycles, and long chains
+
+## Technical Implementation
+
+### Algorithms Used
+
+**Depth-First Search (DFS)**
+- Primary algorithm for cycle detection
+- Uses recursion stack to track current path
+- O(V + E) time complexity
+- Detects all cycles in single traversal
+
+**Tarjan's Algorithm** (Future Enhancement)
+- Finds strongly connected components
+- More efficient for large graphs
+- Can identify cycle groups
+
+### Graph Representation
+
+TracerTM uses adjacency list representation:
+```python
+graph = {
+    "item-1": {"item-2", "item-3"},
+    "item-2": {"item-4"},
+    "item-3": {"item-4"},
+    "item-4": set()
+}
+```
+
+Benefits:
+- Space efficient: O(V + E)
+- Fast neighbor lookup
+- Easy to modify
+- Works well with DFS
+
+### Optimization Techniques
+
+1. **Early Termination**: Stops on first cycle for has_cycle checks
+2. **Visited Tracking**: Avoids redundant traversal
+3. **Link Type Filtering**: Only checks relevant link types
+4. **Caching**: Caches results for unchanged graphs
+
+## Related Concepts
+
+- [Relationships](../04-relationships/) - Understanding link types
+- [Dependencies](../04-relationships/04a-relationship-types/) - Dependency relationships
+- [Impact Analysis](../11-impact-analysis/) - Analyzing change effects
+- [Traceability](../01-traceability/) - Overall traceability concepts
+
+## See Also
+
+- **CLI Reference**: `rtm link detect-cycles --help`
+- **API Documentation**: `/api/v1/analysis/cycles` endpoint
+- **Architecture Guide**: Designing acyclic dependencies
+- **Troubleshooting**: Common cycle resolution patterns
+
+---
+
+**Next Steps:**
+- Review your project for cycles: `rtm link detect-cycles`
+- Set up automated cycle detection in CI/CD
+- Establish dependency design guidelines for your team
+- Configure pre-commit hooks to prevent cycle introduction

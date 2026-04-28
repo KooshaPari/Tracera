@@ -1,0 +1,158 @@
+---
+title: "JavaScript SDK - Working with Artifacts"
+description: "Create, read, update, and delete items using the JavaScript SDK"
+keywords: [javascript, sdk, items, artifacts, crud]
+---
+
+# Working with Artifacts
+
+The JavaScript SDK provides methods to manage items (artifacts) in your TraceRTM projects.
+
+## Initialize Client
+
+```javascript
+import { TraceRTM } from '@tracertm/sdk';
+
+const client = new TraceRTM({
+  apiKey: 'rtm_live_abc123...'
+});
+```
+
+## Query Items
+
+```javascript
+// Query by view
+const items = await client.items.query({
+  view: 'requirements',
+  limit: 50
+});
+
+// Query by status
+const items = await client.items.query({
+  status: 'active',
+  limit: 50
+});
+
+// Multiple filters
+const items = await client.items.query({
+  view: 'requirements',
+  status: 'active',
+  limit: 50
+});
+```
+
+## Create Item
+
+```javascript
+const item = await client.items.create({
+  title: 'New Requirement',
+  view: 'requirements',
+  status: 'draft',
+  description: 'Item description',
+  metadata: {
+    priority: 'high',
+    component: 'api'
+  }
+});
+
+console.log(`Created item: ${item.id}`);
+```
+
+## Get Item
+
+```javascript
+const item = await client.items.get('item_abc123');
+console.log(`Title: ${item.title}`);
+console.log(`Status: ${item.status}`);
+```
+
+## Update Item
+
+```javascript
+const updated = await client.items.update('item_abc123', {
+  title: 'Updated Title',
+  status: 'active'
+});
+```
+
+## Delete Item
+
+```javascript
+await client.items.delete('item_abc123');
+```
+
+## Working with Links
+
+### Create Link
+
+```javascript
+const link = await client.links.create({
+  sourceId: 'item_req_001',
+  targetId: 'item_test_001',
+  linkType: 'verified_by',
+  metadata: {
+    confidence: 0.95
+  }
+});
+```
+
+### Query Links
+
+```javascript
+const links = await client.links.query({
+  projectId: 'proj_123',
+  linkType: 'verified_by'
+});
+
+links.forEach(link => {
+  console.log(`${link.sourceId} --[${link.linkType}]--> ${link.targetId}`);
+});
+```
+
+## Examples
+
+### Create Requirement and Test Case
+
+```javascript
+// Create requirement
+const req = await client.items.create({
+  title: 'User Authentication',
+  view: 'requirements',
+  status: 'draft'
+});
+
+// Create test case
+const test = await client.items.create({
+  title: 'Login Test',
+  view: 'test-cases',
+  status: 'draft'
+});
+
+// Link them
+const link = await client.links.create({
+  sourceId: req.id,
+  targetId: test.id,
+  linkType: 'verified_by'
+});
+```
+
+## Error Handling
+
+```javascript
+import { NotFoundError, ValidationError } from '@tracertm/sdk';
+
+try {
+  const item = await client.items.get('item_abc123');
+} catch (error) {
+  if (error instanceof NotFoundError) {
+    console.log('Item not found');
+  } else if (error instanceof ValidationError) {
+    console.log(`Validation error: ${error.message}`);
+  }
+}
+```
+
+## Next Steps
+
+- [Workflows](./05-workflows) - Manage workflows
+- [Examples](./06-examples) - More examples

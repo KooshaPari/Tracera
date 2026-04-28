@@ -1,0 +1,107 @@
+name: SonarCloud Integration
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+concurrency:
+  group: sonar-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sonar-analysis:
+    name: SonarCloud Code Analysis
+    runs-on: ubuntu-latest
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PYTHONPATH: .
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed for SonarCloud
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[quality,test,database,security]"
+          pip install sonar-scanner
+
+      - name: Clean workspace artifacts
+        run: |
+          python scripts/cleanup_workspace.py --verbose
+
+      - name: Run tests with coverage
+        run: |
+          python scripts/cleanup_workspace.py --verbose
+
+          # Run tests with coverage for SonarCloud
+          pytest --cov=src --cov-report=xml --cov-report=html || true
+
+      - name: Generate analysis data
+        run: |
+          # Generate additional metrics for SonarCloud
+          make complexity || true
+          make coverage-report || true
+
+          # Create custom analysis reports
+          mkdir -p sonar-reports
+
+          # Quality metrics
+          {
+            echo "{"
+            echo "  \"code_quality\": {"
+            echo "    \"ruff_issues\": $(ruff check . --output-format=json | jq 'length' 2>/dev/null || echo 0),"
+            echo "    \"mypy_errors\": $(mypy . --show-error-codes 2>&1 | grep -c 'error:' || echo 0),"
+            echo "    \"prospector_score\": $(python -c \"import json; data=json.load(open('prospector_report.json', 'r')) if os.path.exists('prospector_report.json') else {}; print(data.get('summary', {}).get('message_count', 0))\" 2>/dev/null || echo 0)"
+            echo "  }"
+            echo "}"
+          } > sonar-reports/custom-metrics.json
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=atoms-pheno-sdk
+            -Dsonar.organization=your-org
+            -Dsonar.sources=src
+            -Dsonar.tests=tests
+            -Dsonar.inclusions=**/*.py
+            -Dsonar.exclusions=**/venv/**,**/vendor/**,**/migrations/**,**/tests/load/**
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+            -Dsonar.python.junit.reportPaths=test-results.xml
+            -Dsonar.python.bandit.reportPaths=bandit-report.json
+            -Dsonar.python.pylint.reportPaths=pylint-report.json
+            -Dsonar.python.xunit.reportPaths=xunit-result.xml
+            -Dsonar.python.flake8.reportPaths=flake8-report.txt
+            -Dsonar.python.mypy.reportPaths=mypy-report.json
+            -Dsonar.python.vulture.reportPaths=vulture-report.json
+            -Dsonar.python.radon.reportPaths=radon-report.json
+
+      - name: SonarCloud Quality Gate
+        run: |
+          # Wait for analysis to complete
+          sleep 60
+
+          # Check quality gate status
+          curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+            "https://sonarcloud.io/api/qualitygates/project_status?analysisId=${{ github.sha }}" \
+            | jq -r '.projectStatus.status' || echo "FAILED"
+
+      - name: Upload SonarCloud reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonarcloud-reports
+          path: |
+            sonar-reports/
+            coverage.xml
+            test-results.xml

@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/schemas/execution.py
+# hypothesis_version: 6.151.4
+
+[100, 240, 255, 300, 320, 365, 500, 600, 720, 1000, 1200, 1280, 1800, 2160, 3600, 3840, 'Additional input', 'Artifact to analyze', 'Associated execution', 'Associated test run', 'CPU, memory limits', 'Dracula', 'Type of AI task', 'Type of artifact', 'Type of execution', '^(bash|zsh|sh|fish)$', '^(bridge|host|none)$', '^(gif|mp4|webm)$', '^\\d+ms$', 'bash', 'bridge', 'chromium', "e.g., '50ms'", 'from_attributes', 'gif', 'manual', 'node:20-alpine', 'workspace-write']

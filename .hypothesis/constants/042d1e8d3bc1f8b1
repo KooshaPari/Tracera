@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/user.py
+# hypothesis_version: 6.151.4
+
+[255, 500, 'createdAt', 'email', 'emailVerified', 'firstName', 'id', 'ix_users_email', 'ix_users_synced_at', 'lastName', 'profilePictureUrl', 'synced_at', 'updatedAt', 'users']

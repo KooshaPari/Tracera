@@ -1,0 +1,113 @@
+---
+title: "CLI Guide"
+description: "Command-line interface guide for TraceRTM"
+keywords: [cli, command line, terminal, commands]
+---
+
+# CLI Guide
+
+Complete guide to using the TraceRTM command-line interface.
+
+## Installation
+
+### Install CLI
+
+```bash
+pip install tracertm-cli
+```
+
+Or using the TraceRTM package:
+
+```bash
+pip install tracertm
+```
+
+## Configuration
+
+### Set API Key
+
+```bash
+# Set API key
+trace config set api-key rtm_live_abc123...
+
+# Or use environment variable
+export TRACERTM_API_KEY="rtm_live_abc123..."
+```
+
+### Configure Default Project
+
+```bash
+# Set default project
+trace config set default-project proj_123
+```
+
+## Common Commands
+
+### Projects
+
+```bash
+# List projects
+trace projects list
+
+# Create project
+trace projects create "My Project"
+
+# Get project
+trace projects get proj_123
+```
+
+### Items
+
+```bash
+# List items
+trace items list --project proj_123
+
+# Create item
+trace items create \
+  --title "User Authentication" \
+  --view requirements \
+  --project proj_123
+
+# Get item
+trace items get item_123
+```
+
+### Links
+
+```bash
+# Create link
+trace links create \
+  --source item_123 \
+  --target item_456 \
+  --type verified_by
+
+# List links
+trace links list --project proj_123
+```
+
+## Advanced Usage
+
+### Scripting
+
+```bash
+#!/bin/bash
+# Create requirement and test case
+REQ_ID=$(trace items create --title "Req 1" --view requirements --project proj_123 --json | jq -r .id)
+TEST_ID=$(trace items create --title "Test 1" --view test-cases --project proj_123 --json | jq -r .id)
+trace links create --source $REQ_ID --target $TEST_ID --type verified_by
+```
+
+### Export
+
+```bash
+# Export project
+trace export project proj_123 --format json --output project.json
+
+# Export traceability matrix
+trace export matrix proj_123 --format excel --output matrix.xlsx
+```
+
+## Related Documentation
+
+- [CLI Reference](/docs/api-reference/cli/installation) - Complete CLI reference
+- [CLI Commands](/docs/wiki/guides/cli-commands) - Detailed command reference

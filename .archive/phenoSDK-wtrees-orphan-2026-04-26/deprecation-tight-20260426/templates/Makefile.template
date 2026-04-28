@@ -1,0 +1,16 @@
+# {{PROJECT_NAME}} Standard Makefile
+# Includes shared pheno-sdk targets via modular includes.
+
+MAKEFILES_DIR ?= ../makefiles
+HELP_TITLE := {{PROJECT_NAME}} Targets
+
+include $(MAKEFILES_DIR)/common.mk
+include $(MAKEFILES_DIR)/project.mk
+include $(MAKEFILES_DIR)/testing.mk
+include $(MAKEFILES_DIR)/quality.mk
+include $(MAKEFILES_DIR)/ci.mk
+include $(MAKEFILES_DIR)/deps.mk
+
+# Add project-specific overrides or custom targets below, for example:
+# migrate: ## Run database migrations
+# 	$(PYTHON) manage.py migrate

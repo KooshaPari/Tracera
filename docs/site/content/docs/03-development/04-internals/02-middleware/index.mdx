@@ -1,0 +1,186 @@
+---
+title: "Middleware"
+description: "Request middleware in TraceRTM API"
+keywords: [middleware, fastapi, request, response, processing]
+---
+
+# Middleware
+
+Middleware components that process requests and responses in TraceRTM.
+
+## Middleware Stack
+
+Middleware is applied in order:
+
+1. CORS Middleware
+2. Authentication Middleware
+3. Logging Middleware
+4. Error Handling Middleware
+
+## CORS Middleware
+
+### Configuration
+
+```python
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://app.tracertm.dev"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+## Authentication Middleware
+
+### Token Validation
+
+```python
+from fastapi import Request, HTTPException
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class AuthenticationMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # Skip auth for public endpoints
+        if request.url.path.startswith("/public"):
+            return await call_next(request)
+        
+        # Validate token
+        token = request.headers.get("Authorization")
+        if not token:
+            raise HTTPException(status_code=401, detail="Missing token")
+        
+        # Verify token
+        user = await verify_token(token)
+        request.state.user = user
+        
+        return await call_next(request)
+```
+
+## Logging Middleware
+
+### Request Logging
+
+```python
+import logging
+import time
+from starlette.middleware.base import BaseHTTPMiddleware
+
+logger = logging.getLogger(__name__)
+
+class LoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.time()
+        
+        # Log request
+        logger.info(
+            f"{request.method} {request.url.path}",
+            extra={
+                "method": request.method,
+                "path": request.url.path,
+                "client": request.client.host
+            }
+        )
+        
+        # Process request
+        response = await call_next(request)
+        
+        # Log response
+        process_time = time.time() - start_time
+        logger.info(
+            f"{request.method} {request.url.path} - {response.status_code}",
+            extra={
+                "status_code": response.status_code,
+                "process_time": process_time
+            }
+        )
+        
+        return response
+```
+
+## Error Handling Middleware
+
+### Global Error Handler
+
+```python
+from fastapi import Request, status
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": exc.errors()}
+    )
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": "Internal server error"}
+    )
+```
+
+## Custom Middleware
+
+### Example: Rate Limiting
+
+```python
+from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi import HTTPException
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, calls: int = 100, period: int = 60):
+        super().__init__(app)
+        self.calls = calls
+        self.period = period
+        self.clients = {}
+    
+    async def dispatch(self, request: Request, call_next):
+        client_ip = request.client.host
+        now = time.time()
+        
+        # Clean old entries
+        if client_ip in self.clients:
+            self.clients[client_ip] = [
+                t for t in self.clients[client_ip]
+                if now - t < self.period
+            ]
+        else:
+            self.clients[client_ip] = []
+        
+        # Check limit
+        if len(self.clients[client_ip]) >= self.calls:
+            raise HTTPException(
+                status_code=429,
+                detail="Rate limit exceeded"
+            )
+        
+        # Record request
+        self.clients[client_ip].append(now)
+        
+        return await call_next(request)
+```
+
+## Middleware Registration
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+# Add middleware
+app.add_middleware(CORSMiddleware, ...)
+app.add_middleware(AuthenticationMiddleware)
+app.add_middleware(LoggingMiddleware)
+app.add_middleware(RateLimitMiddleware, calls=100, period=60)
+```
+
+## Related Documentation
+
+- [Auth Middleware](./02a-auth-middleware) - Authentication details
+- [Logging Middleware](./02b-logging-middleware) - Logging details

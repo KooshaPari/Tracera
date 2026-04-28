@@ -1,0 +1,14 @@
+---
+title: "Indexing"
+description: "Index and search."
+---
+
+## Role in the architecture
+- Maintain search index in sync with primary DB.
+- Batch updates to reduce churn.
+- Verify consistency with periodic checks.
+
+## Considerations
+- Throughput vs. latency trade-offs.
+- Failure domains and retry/backoff strategies.
+- Data model ownership and boundaries.

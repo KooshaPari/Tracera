@@ -1,0 +1,11 @@
+{
+  "name": "redocly",
+  "version": "1.0.0",
+  "packageManager": "yarn@4.9.2",
+  "bin": {
+    "redocly": "not.js"
+  },
+  "scripts": {
+    "postinstall": "chmod +x not.js"
+  }
+}

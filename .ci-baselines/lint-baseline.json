@@ -1,0 +1,10 @@
+{
+  "python_ruff": 0,
+  "python_mypy": 0,
+  "python_bandit": 0,
+  "go_lint": 0,
+  "frontend_oxlint": 0,
+  "last_updated": "2026-02-02T00:00:00Z",
+  "phase": "phase1-strict-enforcement",
+  "description": "Phase 1 linting baselines - strict enforcement with AI-optimized configs"
+}

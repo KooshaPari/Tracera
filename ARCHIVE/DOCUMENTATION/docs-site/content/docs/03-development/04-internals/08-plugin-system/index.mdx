@@ -1,0 +1,14 @@
+---
+title: "Plugin System"
+description: "Extensibility."
+---
+
+## Role in the architecture
+- Sandbox plugin execution and validate inputs.
+- Version plugins and maintain compatibility contracts.
+- Expose lifecycle hooks (init, beforeSave, afterSave).
+
+## Considerations
+- Throughput vs. latency trade-offs.
+- Failure domains and retry/backoff strategies.
+- Data model ownership and boundaries.

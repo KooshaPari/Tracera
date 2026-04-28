@@ -1,0 +1,3 @@
+[submodule "AgilePlus"]
+	path = AgilePlus
+	url = git@github.com:KooshaPari/AgilePlus.git

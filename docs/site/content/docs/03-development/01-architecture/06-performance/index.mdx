@@ -1,0 +1,152 @@
+---
+title: "Performance"
+description: "Performance optimization strategies for TraceRTM"
+keywords: [performance, optimization, speed, caching, queries]
+---
+
+# Performance
+
+Performance optimization strategies for TraceRTM.
+
+## Performance Goals
+
+### Response Times
+
+- **Simple queries**: < 50ms
+- **Complex queries**: < 200ms
+- **Bulk operations**: < 1s per 100 items
+- **Search queries**: < 300ms
+
+## Optimization Strategies
+
+### 1. Database Optimization
+
+#### Indexes
+
+```sql
+-- Create indexes for frequently queried fields
+CREATE INDEX idx_items_project_status ON items(project_id, status);
+CREATE INDEX idx_items_created_at ON items(created_at);
+CREATE INDEX idx_links_source_target ON links(source_id, target_id);
+```
+
+#### Query Optimization
+
+```python
+# Use select only needed columns
+stmt = select(Item.id, Item.title).where(Item.project_id == project_id)
+
+# Use joins efficiently
+stmt = select(Item).options(joinedload(Item.links))
+
+# Avoid N+1 queries
+items = await get_items_with_links(project_id)  # Single query
+```
+
+### 2. Caching
+
+#### Redis Caching
+
+```python
+# Cache frequently accessed data
+async def get_item_cached(item_id: str):
+    cached = await redis.get(f"item:{item_id}")
+    if cached:
+        return json.loads(cached)
+    
+    item = await item_repo.get_by_id(item_id)
+    await redis.setex(f"item:{item_id}", 3600, json.dumps(item))
+    return item
+```
+
+#### Cache Strategies
+
+- **Cache-aside**: Check cache, fallback to DB
+- **Write-through**: Write to cache and DB
+- **Write-behind**: Write to cache, async to DB
+
+### 3. Pagination
+
+```python
+# Always paginate large result sets
+items = await item_repo.list(
+    project_id=project_id,
+    skip=0,
+    limit=50
+)
+```
+
+### 4. Async Operations
+
+```python
+# Use async for I/O operations
+async def get_items(project_id: str):
+    return await db.execute(
+        select(Item).where(Item.project_id == project_id)
+    )
+```
+
+### 5. Connection Pooling
+
+```python
+# Configure connection pool
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=20,
+    max_overflow=10,
+    pool_pre_ping=True
+)
+```
+
+## Monitoring
+
+### Performance Metrics
+
+- Response times
+- Database query times
+- Cache hit rates
+- Error rates
+
+### Tools
+
+- **Prometheus**: Metrics collection
+- **Grafana**: Visualization
+- **APM**: Application performance monitoring
+
+## Best Practices
+
+### 1. Profile Before Optimizing
+
+```python
+import cProfile
+
+profiler = cProfile.Profile()
+profiler.enable()
+# Your code
+profiler.disable()
+profiler.print_stats()
+```
+
+### 2. Measure, Don't Guess
+
+```python
+import time
+
+start = time.time()
+result = expensive_operation()
+duration = time.time() - start
+logger.info(f"Operation took {duration:.2f}s")
+```
+
+### 3. Optimize Hot Paths
+
+Focus optimization on:
+- Frequently called functions
+- Slow database queries
+- Large data processing
+
+## Related Documentation
+
+- [Query Optimization](../04-internals/03a-query-optimization) - Query optimization
+- [Caching](../04-internals/06-caching) - Caching strategies
+- [Scalability](./06b-scalability) - Scaling strategies

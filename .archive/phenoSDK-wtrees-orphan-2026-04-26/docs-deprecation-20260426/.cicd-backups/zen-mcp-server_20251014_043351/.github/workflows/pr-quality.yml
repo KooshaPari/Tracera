@@ -1,0 +1,56 @@
+name: PR Quality Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: ["**"]
+
+concurrency:
+  group: pr-quality-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint & Format (Quick)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout pheno-sdk
+        uses: actions/checkout@v4
+        with:
+          repository: kooshapari/pheno-sdk
+          path: ../pheno-sdk
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'pyproject.toml') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Create venv and install base deps
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          python -m pip install -U pip wheel
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Verify Pheno-SDK documentation fingerprints
+        run: |
+          . .venv/bin/activate
+          python scripts/checks/verify_pheno_docs.py
+
+      - name: Run quick quality checks (ruff/black/isort)
+        run: |
+          . .venv/bin/activate
+          chmod +x code_quality_checks.sh
+          ./code_quality_checks.sh --quick

@@ -1,0 +1,987 @@
+---
+title: User Guides
+description: Comprehensive task-based guides for using TraceRTM effectively
+keywords: [guides, how-to, tutorial, requirements, testing, traceability, workflows]
+audience: user
+difficulty: intermediate
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { FileTree } from 'fumadocs-ui/components/file-tree';
+
+# User Guides
+
+Task-based guides to help you accomplish specific goals with TraceRTM.
+
+## Quick Navigation
+
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 my-8">
+  <a href="#creating-requirements" className="card">
+    <h3>📝 Creating Requirements</h3>
+    <p>Write effective, traceable requirements</p>
+  </a>
+
+  <a href="#linking-items" className="card">
+    <h3>🔗 Linking Items</h3>
+    <p>Build traceability relationships</p>
+  </a>
+
+  <a href="#generating-matrices" className="card">
+    <h3>📊 Generating Matrices</h3>
+    <p>Create traceability matrices and reports</p>
+  </a>
+
+  <a href="#managing-baselines" className="card">
+    <h3>📸 Managing Baselines</h3>
+    <p>Version control for requirements</p>
+  </a>
+
+  <a href="#team-collaboration" className="card">
+    <h3>👥 Team Collaboration</h3>
+    <p>Multi-user workflows and approvals</p>
+  </a>
+
+  <a href="#importing-exporting" className="card">
+    <h3>⬆️⬇️ Import/Export</h3>
+    <p>Integrate with existing tools</p>
+  </a>
+</div>
+
+## Creating Requirements
+
+### Writing Effective Requirements
+
+Good requirements are **clear**, **testable**, **atomic**, and **traceable**.
+
+<Callout type="tip" title="SMART Requirements">
+- **Specific**: Precisely defined, no ambiguity
+- **Measurable**: Can verify if met
+- **Achievable**: Technically feasible
+- **Relevant**: Tied to business goals
+- **Testable**: Can create objective tests
+</Callout>
+
+<Tabs items={['Good Examples', 'Bad Examples', 'Templates']}>
+  <Tab value="Good Examples">
+    ✅ **Excellent Functional Requirement**
+
+    ```yaml
+    ID: FR-AUTH-001
+    Title: Email/Password Authentication
+    Description: |
+      The system shall authenticate users using email address
+      and password with the following constraints:
+
+      - Email must be valid RFC 5322 format
+      - Password minimum 12 characters
+      - Password must contain: uppercase, lowercase, digit, special char
+      - Maximum 5 failed attempts before 15-minute lockout
+      - Session expires after 24 hours of inactivity
+
+    Acceptance Criteria:
+      - Valid credentials create session token
+      - Invalid credentials return 401 with error message
+      - Locked accounts cannot authenticate until timeout expires
+      - Sessions auto-expire per inactivity timeout
+
+    Priority: MUST (MoSCoW)
+    Verification Method: Automated testing
+    ```
+
+    ✅ **Excellent Non-Functional Requirement**
+
+    ```yaml
+    ID: NFR-PERF-005
+    Title: API Response Time - 95th Percentile
+    Description: |
+      95th percentile response time for all API endpoints shall
+      be under 200ms when measured over 24-hour period with
+      production-equivalent load.
+
+    Measurement Method:
+      - Prometheus metrics collection
+      - P95 calculation over rolling 24h window
+      - Load profile: 1000 concurrent users, 10K req/min
+
+    Acceptance Criteria:
+      - Dashboard shows P95 < 200ms (green)
+      - Alerts trigger if P95 > 250ms for 5 minutes
+      - Monthly SLI report shows 99.5% compliance
+
+    Priority: SHOULD
+    Verification Method: Performance testing + monitoring
+    ```
+  </Tab>
+
+  <Tab value="Bad Examples">
+    ❌ **Poor Requirements (Avoid These)**
+
+    **Too Vague**:
+    ```
+    FR-001: The system should be fast
+    → Problem: "Fast" is not measurable
+    → Fix: Define specific latency targets with percentiles
+    ```
+
+    **Not Testable**:
+    ```
+    FR-002: The UI should be intuitive
+    → Problem: "Intuitive" is subjective
+    → Fix: Define specific usability metrics (task completion time,
+           error rate, user satisfaction score)
+    ```
+
+    **Multiple Requirements**:
+    ```
+    FR-003: System shall support login, logout, and password reset
+    → Problem: Three separate requirements
+    → Fix: Split into FR-003 (login), FR-004 (logout), FR-005 (reset)
+    ```
+
+    **Implementation Details**:
+    ```
+    FR-004: Use bcrypt with 12 rounds for password hashing
+    → Problem: Specifies implementation, not requirement
+    → Fix: "Passwords shall be stored using industry-standard
+           cryptographic hashing (irreversible)"
+           → Implementation choice goes in System Design
+    ```
+
+    **Missing Acceptance Criteria**:
+    ```
+    FR-005: Support file uploads
+    → Problem: No success criteria
+    → Fix: Add max file size, allowed types, validation rules
+    ```
+  </Tab>
+
+  <Tab value="Templates">
+    **Functional Requirement Template**
+
+    ```markdown
+    ## FR-{ID}: {Title}
+
+    ### Description
+    The system shall {action} when {condition} by {method}
+
+    ### Rationale
+    {Why this requirement exists - business justification}
+
+    ### Acceptance Criteria
+    - [ ] Criterion 1 (testable, specific)
+    - [ ] Criterion 2 (testable, specific)
+    - [ ] Criterion 3 (testable, specific)
+
+    ### Dependencies
+    - Depends on: {FR-XXX, FR-YYY}
+    - Required by: {FR-ZZZ}
+
+    ### Priority
+    {MUST | SHOULD | COULD | WON'T} (MoSCoW)
+
+    ### Complexity
+    {XS | S | M | L | XL} (T-shirt sizing)
+
+    ### Verification Method
+    {Testing | Inspection | Analysis | Demonstration}
+
+    ### Related Items
+    - Satisfies: BR-{ID}
+    - Implemented by: SD-{ID}
+    - Verified by: TC-{ID}
+    ```
+
+    **Non-Functional Requirement Template**
+
+    ```markdown
+    ## NFR-{CATEGORY}-{ID}: {Title}
+
+    ### Category
+    {Performance | Security | Scalability | Usability | Reliability}
+
+    ### Description
+    {Specific, measurable quality attribute}
+
+    ### Measurement
+    - Metric: {What to measure}
+    - Target: {Specific threshold}
+    - Measurement Method: {How to measure}
+    - Measurement Frequency: {When to measure}
+
+    ### Acceptance Criteria
+    - [ ] {Quantitative criterion with threshold}
+    - [ ] {Monitoring/alerting configured}
+    - [ ] {SLI/SLO defined}
+
+    ### Verification Method
+    {Load testing | Security audit | Usability study | etc.}
+    ```
+  </Tab>
+</Tabs>
+
+### Creating Requirements in TraceRTM
+
+<Steps>
+  <Step>
+    ### Navigate to project
+
+    Select your project from the dashboard or use quick search (`Cmd+K`)
+  </Step>
+
+  <Step>
+    ### Choose item type
+
+    Click **Create** → Select appropriate type:
+    - Business Requirement (BR) for high-level goals
+    - Functional Requirement (FR) for features
+    - Non-Functional Requirement (NFR) for quality attributes
+  </Step>
+
+  <Step>
+    ### Fill in required fields
+
+    **Minimum Required**:
+    - Title (clear, concise)
+    - Description (detailed, unambiguous)
+    - Priority (using MoSCoW or custom scale)
+
+    **Recommended**:
+    - Acceptance criteria (testable)
+    - Rationale (business justification)
+    - Dependencies (other requirements)
+    - Verification method
+  </Step>
+
+  <Step>
+    ### Add relationships
+
+    Link to related items:
+    - **Satisfies**: What business need does this address?
+    - **Depends on**: What must exist first?
+    - **Parent/Child**: Is this part of a larger requirement?
+
+    <Callout type="tip">
+    Create links during requirement creation to maintain traceability
+    from the start!
+    </Callout>
+  </Step>
+
+  <Step>
+    ### Submit for review
+
+    Change status to **Review** to trigger approval workflow:
+    - Notifies designated approvers
+    - Locks editing (prevents changes during review)
+    - Records review comments and decisions
+  </Step>
+</Steps>
+
+### Bulk Import Requirements
+
+For large sets of requirements, use bulk import:
+
+<Tabs items={['CSV Import', 'Excel Import', 'API Import']}>
+  <Tab value="CSV Import">
+    **CSV Format**:
+
+    ```csv
+    type,title,description,priority,status,satisfies
+    FR,"User Login","System shall authenticate users",MUST,Draft,BR-1
+    FR,"Password Reset","System shall allow password reset",SHOULD,Draft,BR-1
+    NFR,"Login Performance","Login shall complete in <2s",MUST,Draft,BR-1
+    ```
+
+    **Import Steps**:
+    1. Navigate to **Import** → **CSV**
+    2. Upload CSV file
+    3. Map columns to fields
+    4. Preview import
+    5. Confirm and create items
+
+    <Callout type="warn">
+    CSV import creates items but you'll need to create detailed links separately
+    </Callout>
+  </Tab>
+
+  <Tab value="Excel Import">
+    **Excel Template** (download from TraceRTM):
+
+    | ID | Type | Title | Description | Priority | Satisfies | Verified By |
+    |----|------|-------|-------------|----------|-----------|-------------|
+    | FR-1 | FR | Login | User auth | MUST | BR-1 | TC-1, TC-2 |
+
+    **Rich Import Features**:
+    - Multiple worksheets (Requirements, Test Cases, Links)
+    - Formulas and validation preserved
+    - Batch link creation
+    - Automatic ID generation
+
+    Import via: **Import** → **Excel** → Upload `.xlsx`
+  </Tab>
+
+  <Tab value="API Import">
+    **Programmatic Import** via REST API or SDK:
+
+    ```python
+    from tracertm import TraceRTMClient
+
+    client = TraceRTMClient(api_key="your-key")
+
+    # Create requirement
+    req = client.requirements.create(
+        project_id="proj-123",
+        type="FR",
+        title="User Login",
+        description="System shall authenticate users",
+        priority="MUST",
+        custom_fields={
+            "component": "Auth",
+            "sprint": "Sprint 5"
+        }
+    )
+
+    # Create link
+    client.links.create(
+        source_id=req.id,
+        target_id="BR-1",
+        link_type="satisfies"
+    )
+    ```
+
+    See [SDK Documentation](/sdk/python) for details.
+  </Tab>
+</Tabs>
+
+## Linking Items
+
+Building traceability relationships is the core of TraceRTM.
+
+### When to Create Links
+
+Create links at these key moments:
+
+1. **During Requirement Creation** - Link to business needs
+2. **During Design** - Link designs to requirements
+3. **During Implementation** - Link code to designs
+4. **During Testing** - Link tests to requirements/code
+5. **During Reviews** - Verify completeness of links
+
+<Callout type="info" title="Best Practice">
+Maintain **bidirectional completeness**:
+- Every requirement should have forward links (to design/code/tests)
+- Every test should have backward links (to requirements)
+</Callout>
+
+### Creating Links
+
+<Steps>
+  <Step>
+    ### Select source item
+
+    Open the item you want to link from (e.g., FR-15)
+  </Step>
+
+  <Step>
+    ### Choose link type
+
+    Click **Add Link** → Select relationship type:
+    - **Satisfies**: FR satisfies BR
+    - **Implements**: SD implements FR
+    - **Verifies**: TC verifies FR
+    - **Depends on**: FR depends on another FR
+
+    <Callout type="tip">
+    Use autocomplete to find the right link type - start typing
+    "satisf..." and it will suggest "satisfies"
+    </Callout>
+  </Step>
+
+  <Step>
+    ### Select target item
+
+    Search for target item:
+    - By ID: `BR-1`
+    - By title: `user authentication`
+    - By type: Filter to show only Business Requirements
+
+    Select from filtered results
+  </Step>
+
+  <Step>
+    ### Add optional metadata
+
+    Enhance link with:
+    - **Rationale**: Why this link exists
+    - **Strength**: Strong/Weak relationship
+    - **Status**: Proposed/Confirmed/Deprecated
+  </Step>
+
+  <Step>
+    ### Verify inverse link
+
+    TraceRTM automatically creates the inverse:
+    - You create: FR-15 **satisfies** BR-1
+    - Auto-created: BR-1 **satisfied_by** FR-15
+
+    Check both items to verify
+  </Step>
+</Steps>
+
+### Link Patterns
+
+Common traceability patterns:
+
+**Requirements Decomposition**:
+```
+BR-1 (Business: Increase engagement)
+  ├─ FR-10 (satisfied_by: Recommendation engine)
+  ├─ FR-11 (satisfied_by: Personalization)
+  └─ FR-12 (satisfied_by: A/B testing)
+```
+
+**Full Lifecycle Trace**:
+```
+BR-1 (Business Need)
+  └─ FR-10 (satisfies)
+      └─ SD-5 (implements)
+          └─ CM-23 (code_in)
+              └─ TC-45 (tests)
+                  └─ TR-100 (executed_in)
+```
+
+**Test Coverage Matrix**:
+```
+FR-10 (Recommendation Engine)
+  ├─ TC-45 (verifies: Happy path)
+  ├─ TC-46 (verifies: Empty history)
+  ├─ TC-47 (verifies: Error handling)
+  └─ TC-48 (verifies: Performance)
+```
+
+### Validating Traceability
+
+Use built-in validation to ensure completeness:
+
+<Tabs items={['Gap Analysis', 'Orphan Detection', 'Coverage Metrics']}>
+  <Tab value="Gap Analysis">
+    **Find Missing Links**:
+
+    Navigate to **Analysis** → **Gap Analysis**
+
+    Reports show:
+    - ❌ Requirements without test cases
+    - ❌ Test cases without requirements
+    - ❌ Code without design documents
+    - ❌ Designs without requirements
+
+    **Example Output**:
+    ```
+    ⚠️  Gap Analysis Report
+
+    Missing Test Coverage (15 items):
+    - FR-23: User profile editing (0 test cases)
+    - FR-45: Password complexity (0 test cases)
+    - NFR-12: API rate limiting (0 test cases)
+
+    Orphaned Test Cases (3 items):
+    - TC-156: No linked requirement
+    - TC-203: No linked requirement
+
+    Untraceable Requirements (5 items):
+    - FR-67: Not linked to any business requirement
+    ```
+  </Tab>
+
+  <Tab value="Orphan Detection">
+    **Find Disconnected Items**:
+
+    Navigate to **Analysis** → **Orphan Detection**
+
+    Finds items with:
+    - No incoming links (not traced from)
+    - No outgoing links (not tracing to)
+    - Isolated clusters (connected to each other but not main tree)
+
+    **Orphan Categories**:
+    1. **True Orphans**: No links at all → Likely mistakes
+    2. **Leaf Orphans**: Only incoming links → OK for test cases
+    3. **Root Orphans**: Only outgoing links → OK for business requirements
+    4. **Isolated Clusters**: Connected to each other but not main graph → Review needed
+  </Tab>
+
+  <Tab value="Coverage Metrics">
+    **Quantitative Traceability**:
+
+    Dashboard shows:
+
+    | **Metric** | **Target** | **Current** | **Status** |
+    |------------|------------|-------------|------------|
+    | Requirements with Tests | 100% | 87% | ⚠️ |
+    | Tests with Requirements | 100% | 95% | ✅ |
+    | Requirements with Design | 100% | 92% | ⚠️ |
+    | Code with Tests | 80% | 94% | ✅ |
+    | Forward Trace Complete | 100% | 89% | ⚠️ |
+    | Backward Trace Complete | 100% | 91% | ⚠️ |
+
+    Set custom targets per project/item type
+  </Tab>
+</Tabs>
+
+## Generating Traceability Matrices
+
+### Requirements Traceability Matrix (RTM)
+
+The classic RTM shows complete forward and backward traceability:
+
+<Steps>
+  <Step>
+    ### Navigate to RTM view
+
+    **Views** → **Requirements Traceability Matrix**
+  </Step>
+
+  <Step>
+    ### Configure matrix
+
+    **Filters**:
+    - Item types to include
+    - Priority filter (e.g., MUST only)
+    - Status filter (e.g., Approved only)
+    - Date range
+
+    **Layout**:
+    - Rows: Source items (e.g., Business Requirements)
+    - Columns: Target items (e.g., Functional Requirements)
+    - Cell content: Link indicator, link type, coverage %
+  </Step>
+
+  <Step>
+    ### Analyze results
+
+    Matrix shows:
+    - ✅ Green cells: Complete traceability
+    - ⚠️ Yellow cells: Partial traceability
+    - ❌ Red cells: Missing links
+    - 📊 Coverage % per row/column
+  </Step>
+
+  <Step>
+    ### Export matrix
+
+    Export formats:
+    - **PDF**: Professional reports for stakeholders
+    - **Excel**: Editable spreadsheet with formulas
+    - **CSV**: Raw data for custom analysis
+    - **HTML**: Interactive web view
+
+    ```bash
+    # CLI export
+    tracertm matrix export \
+      --format pdf \
+      --filter "priority=MUST" \
+      --output rtm-release-1.0.pdf
+    ```
+  </Step>
+</Steps>
+
+### Custom Views
+
+Create custom views for specific needs:
+
+**Test Coverage View**:
+```yaml
+view:
+  name: Test Coverage - High Priority Requirements
+  rows:
+    item_type: FR
+    filter: priority IN ['MUST', 'SHOULD']
+  columns:
+    item_type: TC
+  cell:
+    show: link_count
+    color_by: coverage_percentage
+  thresholds:
+    green: ">= 3 test cases"
+    yellow: "1-2 test cases"
+    red: "0 test cases"
+```
+
+**Implementation Status View**:
+```yaml
+view:
+  name: Development Progress
+  rows:
+    item_type: FR
+    group_by: component
+  columns:
+    - item_type: SD (Design)
+    - item_type: CM (Code)
+    - item_type: TC (Tests)
+  cell:
+    show: status
+    icon: true
+```
+
+## Managing Baselines
+
+Baselines capture snapshots for version control and auditing.
+
+### Creating Baselines
+
+<Steps>
+  <Step>
+    ### Prepare for baseline
+
+    Ensure:
+    - All items in correct status
+    - All required links created
+    - All approvals obtained
+    - Gap analysis shows acceptable coverage
+  </Step>
+
+  <Step>
+    ### Create baseline
+
+    **UI**: **Baselines** → **Create New Baseline**
+
+    **CLI**:
+    ```bash
+    tracertm baseline create v1.0.0 \
+      --name "Release 1.0.0" \
+      --description "First production release" \
+      --freeze-items \
+      --include-type BR,FR,NFR,TC \
+      --tag "release/1.0.0"
+    ```
+
+    **Options**:
+    - `--freeze-items`: Make items immutable
+    - `--include-type`: Item types to include
+    - `--exclude-status`: Exclude draft items
+    - `--tag`: Git-style tag for reference
+  </Step>
+
+  <Step>
+    ### Verify baseline
+
+    Review baseline summary:
+    - Total items: 245
+    - Requirements: 89 (BR: 12, FR: 67, NFR: 10)
+    - Test Cases: 134
+    - Coverage: 92%
+    - Status: Frozen
+  </Step>
+</Steps>
+
+### Comparing Baselines
+
+Compare current state to baseline or between baselines:
+
+```bash
+# Compare current to v1.0.0
+tracertm baseline diff v1.0.0
+
+# Compare two baselines
+tracertm baseline diff v1.0.0 v2.0.0
+```
+
+**Diff Output**:
+```
+Baseline Comparison: v1.0.0 → Current
+
+Added (15 items):
+  BR-13: New business requirement
+  FR-90 - FR-95: New features
+  TC-200 - TC-207: New test cases
+
+Modified (8 items):
+  FR-23: Description updated
+  FR-45: Acceptance criteria refined
+  NFR-12: Performance target increased
+
+Deleted (2 items):
+  FR-OLD-1: Deprecated requirement
+  TC-OLD-5: Obsolete test
+
+Link Changes:
+  Added: 24 links
+  Removed: 3 links
+  Modified: 5 links
+
+Coverage Change: 87% → 92% (+5%)
+```
+
+### Baseline Workflows
+
+**Release Management**:
+```
+v1.0.0 (Baseline) → Development → v1.1.0 (Baseline)
+```
+
+**Audit Trail**:
+```
+v1.0.0-audit (Frozen, immutable)
+↓
+Changes during development
+↓
+v2.0.0-audit (New frozen baseline)
+```
+
+## Team Collaboration
+
+### Approval Workflows
+
+Configure multi-stage approvals:
+
+<Steps>
+  <Step>
+    ### Define approval chain
+
+    **Project Settings** → **Workflows** → **Requirement Approval**
+
+    ```yaml
+    workflow:
+      requirement_approval:
+        stages:
+          - stage: technical_review
+            approvers: [tech_lead, architect]
+            required: 1  # Any 1 approver
+          - stage: business_approval
+            approvers: [product_manager, stakeholder]
+            required: all  # All must approve
+          - stage: compliance_check
+            approvers: [compliance_officer]
+            required: 1
+    ```
+  </Step>
+
+  <Step>
+    ### Submit for approval
+
+    Item owner submits requirement:
+    - Status: Draft → Review
+    - Notifications sent to Stage 1 approvers
+    - Item locked for editing
+  </Step>
+
+  <Step>
+    ### Approval process
+
+    Each approver:
+    - Reviews requirement
+    - Adds comments/suggestions
+    - Approves or rejects
+
+    **On Rejection**:
+    - Item returns to Draft
+    - Author addresses feedback
+    - Resubmits for review
+
+    **On Approval**:
+    - Proceeds to next stage
+    - Final approval → Status: Approved
+  </Step>
+</Steps>
+
+### Comments and Discussions
+
+Collaborate on requirements:
+
+```markdown
+## FR-45: Password Complexity
+
+**@alice (Author)**: Initial draft ready for review
+
+**@bob (Tech Lead)**: Looks good, but 12 characters might be
+too restrictive for some users. Consider 10 minimum with
+stronger complexity rules?
+
+**@alice**: Good point. Updated to:
+- Minimum 10 characters
+- Must contain 3 of 4: uppercase, lowercase, digit, special
+
+**@charlie (Security)**: Recommend adding:
+- No common passwords (check against top 10k list)
+- No sequential characters (123, abc)
+
+**@alice**: Added both suggestions. Ready for approval?
+
+**@bob**: ✅ Approved
+**@charlie**: ✅ Approved
+```
+
+### Notifications
+
+Configure notifications for key events:
+
+| **Event** | **Recipients** | **Channel** |
+|-----------|---------------|-------------|
+| Item created | Team members | Email, Slack |
+| Approval needed | Approvers | Email, push |
+| Approval granted | Author, watchers | Email |
+| Link created | Related item owners | In-app |
+| Baseline created | All team | Email, Slack |
+| Coverage < 80% | Tech leads | Email |
+
+## Importing and Exporting
+
+### Import from Other Tools
+
+<Tabs items={['Jira Import', 'Azure DevOps', 'Confluence', 'Requirements One']}>
+  <Tab value="Jira Import">
+    **Import Jira Issues as Requirements**:
+
+    1. **Export from Jira**:
+       - Jira → Export → CSV (all fields)
+
+    2. **Import to TraceRTM**:
+       - **Import** → **Jira CSV**
+       - Map fields:
+         - Summary → Title
+         - Description → Description
+         - Priority → Priority
+         - Issue Type → Item Type
+       - Import linked issues as relationships
+
+    3. **Maintain sync** (optional):
+       ```bash
+       # Enable two-way sync
+       tracertm integrations enable jira \
+         --url https://yourcompany.atlassian.net \
+         --api-token $JIRA_TOKEN \
+         --sync-interval 1h
+       ```
+  </Tab>
+
+  <Tab value="Azure DevOps">
+    **Import Work Items**:
+
+    1. **Connect to Azure DevOps**:
+       ```bash
+       tracertm integrations add azure-devops \
+         --org yourorg \
+         --project yourproject \
+         --pat $AZURE_PAT
+       ```
+
+    2. **Import work items**:
+       ```bash
+       tracertm import azure-devops \
+         --query "WorkItemType='Requirement' AND State='Active'" \
+         --map "title=Title,description=Description"
+       ```
+
+    3. **Import relationships**:
+       - Parent/Child → parent/child
+       - Related → related_to
+       - Tests → verifies
+  </Tab>
+
+  <Tab value="Confluence">
+    **Import Requirements from Confluence Pages**:
+
+    Uses Confluence page structure to create requirements:
+
+    ```bash
+    tracertm import confluence \
+      --space-key REQ \
+      --page-id 123456 \
+      --heading-as-type H1=BR,H2=FR \
+      --create-hierarchy
+    ```
+
+    **Page Structure**:
+    ```markdown
+    # Business Requirements (becomes BR)
+    ## Functional Requirements (becomes FR)
+    ### Test Cases (becomes TC)
+    ```
+  </Tab>
+
+  <Tab value="Requirements One">
+    **Import from Requirements One**:
+
+    Native integration with Requirements One:
+
+    1. Export from Requirements One to XML
+    2. Import to TraceRTM:
+       ```bash
+       tracertm import requirements-one \
+         --file requirements.xml \
+         --preserve-ids \
+         --import-links
+       ```
+
+    All traceability links are preserved!
+  </Tab>
+</Tabs>
+
+### Export for Reports
+
+Generate professional reports:
+
+```bash
+# Compliance report (PDF)
+tracertm report compliance \
+  --baseline v1.0.0 \
+  --include-evidence \
+  --output compliance-report.pdf
+
+# Test coverage report (Excel)
+tracertm report coverage \
+  --format xlsx \
+  --include-charts \
+  --output coverage-report.xlsx
+
+# Full traceability matrix (HTML)
+tracertm report rtm \
+  --format html \
+  --interactive \
+  --output rtm.html
+```
+
+**Custom Report Templates**:
+
+Create reusable report templates:
+
+```yaml
+# .tracertm/reports/monthly-status.yml
+report:
+  name: Monthly Status Report
+  sections:
+    - title: Executive Summary
+      content: summary_stats
+    - title: Requirements Status
+      content: requirements_table
+      filter: priority=MUST
+    - title: Test Coverage
+      content: coverage_matrix
+    - title: Gap Analysis
+      content: gap_report
+  format: pdf
+  style: corporate
+```
+
+Generate: `tracertm report generate monthly-status`
+
+## Next Steps
+
+<Callout type="success" title="You're Ready!">
+You now know how to use TraceRTM effectively for requirements traceability.
+</Callout>
+
+### Advanced Topics
+
+- [Custom Workflows](/docs/user/advanced/workflows) - Build custom approval processes
+- [Integrations](/docs/user/advanced/integrations) - Connect to your toolchain
+- [Automation](/docs/user/advanced/automation) - Script common tasks
+- [Best Practices](/docs/user/advanced/best-practices) - Industry patterns
+
+### Get Help
+
+- [FAQ](/docs/user/faq) - Common questions
+- [API Reference](/api) - Programmatic access
+- [SDK Documentation](/docs/sdk) - Language-specific guides
+- [Community Forum](https://community.tracertm.io) - Ask questions

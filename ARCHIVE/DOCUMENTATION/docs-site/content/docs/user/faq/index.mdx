@@ -1,0 +1,864 @@
+---
+title: Frequently Asked Questions
+description: Common questions and answers about using TraceRTM
+keywords: [faq, questions, troubleshooting, help, common issues]
+audience: user
+difficulty: beginner
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+
+# Frequently Asked Questions
+
+Quick answers to common questions about TraceRTM.
+
+## General Questions
+
+<Accordions>
+<Accordion title="What is requirements traceability and why do I need it?">
+
+**Requirements traceability** is the ability to track relationships between requirements, design, code, and tests throughout the product lifecycle.
+
+**You need it for**:
+- **Compliance**: Prove regulatory requirements are met (FDA, ISO, DO-178C, IEC 62304)
+- **Quality**: Ensure complete test coverage and no missing requirements
+- **Change Management**: Understand impact before making changes
+- **Audits**: Quickly demonstrate completeness to auditors
+- **Risk Management**: Identify high-risk areas with poor coverage
+
+<Callout type="info">
+Industries like medical devices, aerospace, automotive, and finance **require** traceability for regulatory compliance.
+</Callout>
+
+</Accordion>
+
+<Accordion title="How is TraceRTM different from Jira/Azure DevOps?">
+
+| **Feature** | **TraceRTM** | **Jira/Azure DevOps** |
+|-------------|--------------|----------------------|
+| **Purpose** | Requirements traceability | Task/project management |
+| **Item Types** | 16 standardized types | Generic issue types |
+| **Link Types** | 60+ semantic relationships | Basic link types |
+| **Traceability** | Built-in matrices, coverage analysis | Manual/plugin-based |
+| **Compliance** | Audit-ready reports, baselines | Limited support |
+| **Views** | 16 analytical views | Custom queries |
+
+**Use both together**: TraceRTM for traceability, Jira/ADO for daily work. We provide bidirectional sync!
+
+</Accordion>
+
+<Accordion title="Can I use TraceRTM for Agile projects?">
+
+**Absolutely!** TraceRTM adapts to Agile workflows:
+
+- **User Stories** → Functional Requirements (FR)
+- **Epics** → Business Requirements (BR)
+- **Acceptance Criteria** → Built into requirements
+- **Sprints** → Baseline snapshots
+- **Test Cases** → Link to stories for coverage
+
+**Agile-Friendly Features**:
+- Lightweight requirement creation
+- Continuous baseline updates
+- Real-time coverage metrics
+- Integration with Jira for sprint planning
+
+<Callout type="tip">
+Many teams use "Agile for development, Traceability for compliance" - best of both worlds!
+</Callout>
+
+</Accordion>
+
+<Accordion title="Is TraceRTM suitable for small projects?">
+
+**Yes!** TraceRTM scales down gracefully:
+
+**Small Project Mode**:
+- Use fewer item types (just BR, FR, TC)
+- Simplified workflows (Draft → Approved → Done)
+- Lightweight templates
+- Quick setup (< 30 minutes)
+
+**When to Use TraceRTM** (even for small projects):
+- Regulatory requirements (even small medical devices need traceability)
+- Client demands audit trail
+- Team wants to establish good habits
+- Project may grow larger
+
+**Free Tier**: Up to 100 items, single project, community support
+
+</Accordion>
+
+<Accordion title="Does TraceRTM support multiple projects?">
+
+**Yes!** TraceRTM supports:
+- Unlimited projects (depending on plan)
+- Cross-project links (shared components)
+- Multi-project views (portfolio level)
+- Project templates (standardized setup)
+- Project hierarchies (programs → projects)
+
+**Common Patterns**:
+- **One project per product**: Independent products
+- **One project per version**: Major version baselines
+- **Shared platform project**: Reusable components linked from product projects
+
+</Accordion>
+</Accordions>
+
+## Getting Started
+
+<Accordions>
+<Accordion title="What's the fastest way to get started?">
+
+**5-Minute Quickstart**:
+
+1. **Install** (2 minutes):
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Create Project** (1 minute):
+   - Navigate to http://localhost:3000
+   - Click "New Project"
+   - Enter name and key
+
+3. **Add Items** (2 minutes):
+   - Create 1 Business Requirement
+   - Create 2 Functional Requirements (link to BR)
+   - Create 2 Test Cases (link to FRs)
+
+4. **View Matrix**:
+   - Click "Views" → "Requirements Traceability Matrix"
+   - See complete traceability!
+
+See [Getting Started Guide](/docs/user/getting-started) for details.
+
+</Accordion>
+
+<Accordion title="Do I need to install anything locally?">
+
+**No!** Multiple deployment options:
+
+1. **Cloud Hosted** (easiest):
+   - Sign up at https://app.tracertm.io
+   - Start using immediately
+   - No installation needed
+
+2. **Docker** (local):
+   - `docker-compose up -d`
+   - Runs entirely on your machine
+
+3. **Native Installation** (development):
+   - Install Python + Node.js
+   - See [Developer Setup](/docs/developer/setup)
+
+</Accordion>
+
+<Accordion title="Can I import existing requirements from Excel/Jira?">
+
+**Yes!** Import from multiple sources:
+
+**Supported Formats**:
+- Excel (.xlsx)
+- CSV
+- Jira (via API or export)
+- Azure DevOps
+- Confluence
+- Requirements One
+- DOORS (XML export)
+
+**Import Process**:
+1. **Import** → Choose source
+2. Map columns to TraceRTM fields
+3. Preview imported data
+4. Confirm and create items
+
+**Relationships**: Some formats (Jira, Azure DevOps) preserve links automatically!
+
+See [Import Guide](/docs/user/guides#importing-exporting) for details.
+
+</Accordion>
+</Accordions>
+
+## Using TraceRTM
+
+<Accordions>
+<Accordion title="What's the difference between link types?">
+
+Common link types explained:
+
+| **Link Type** | **Direction** | **Example** | **When to Use** |
+|---------------|---------------|-------------|-----------------|
+| **satisfies** | FR → BR | FR-1 satisfies BR-1 | Requirement addresses business need |
+| **implements** | SD → FR | SD-5 implements FR-1 | Design realizes requirement |
+| **verifies** | TC → FR | TC-10 verifies FR-1 | Test validates requirement |
+| **tests** | TC → CM | TC-10 tests CM-23 | Test covers code |
+| **depends_on** | FR → FR | FR-2 depends on FR-1 | Implementation dependency |
+| **parent/child** | Any ↔ Any | FR-1 is parent of FR-1.1 | Hierarchical decomposition |
+
+**Direction matters!**
+- ✅ FR-1 **satisfies** BR-1 (correct)
+- ❌ BR-1 **satisfies** FR-1 (backwards)
+
+TraceRTM automatically creates inverse links (satisfied_by, implemented_by, etc.)
+
+</Accordion>
+
+<Accordion title="How do I know if I have complete traceability?">
+
+**Check these indicators**:
+
+1. **Gap Analysis** (Views → Gap Analysis):
+   - Shows requirements without tests
+   - Shows tests without requirements
+   - Shows orphaned items
+
+2. **Coverage Metrics** (Dashboard):
+   - Requirements with tests: Should be 100%
+   - Tests with requirements: Should be 100%
+   - Forward trace complete: Should be 100%
+   - Backward trace complete: Should be 100%
+
+3. **Validation Rules**:
+   - Configure minimum links per item type
+   - Alerts when validation fails
+
+**Example Validation**:
+```yaml
+validation:
+  FR:  # Functional Requirements
+    min_satisfies: 1    # Must satisfy at least 1 BR
+    min_verified_by: 2  # Must have at least 2 test cases
+  TC:  # Test Cases
+    min_verifies: 1     # Must verify at least 1 requirement
+```
+
+<Callout type="success">
+**Green Checkmark** on dashboard = Complete traceability!
+</Callout>
+
+</Accordion>
+
+<Accordion title="Can I customize item types and fields?">
+
+**Yes!** Extensive customization:
+
+**Custom Fields**:
+```yaml
+custom_fields:
+  functional_requirement:
+    - name: component
+      type: select
+      options: [Auth, API, UI, Database]
+    - name: story_points
+      type: number
+      min: 1
+      max: 13
+    - name: regulatory_impact
+      type: boolean
+```
+
+**Custom Item Types**:
+```yaml
+custom_types:
+  - id: USER_STORY
+    name: User Story
+    category: requirements
+    fields: [title, description, acceptance_criteria, story_points]
+    workflows: agile_workflow
+```
+
+**Custom Link Types**:
+```yaml
+custom_links:
+  - id: blocks_deployment
+    name: Blocks Deployment
+    inverse: deployment_blocked_by
+    allowed_source: [ISS]
+    allowed_target: [FR, NFR]
+```
+
+See [Configuration Guide](/docs/developer/configuration) for details.
+
+</Accordion>
+
+<Accordion title="How do I generate reports for audits?">
+
+**Audit-Ready Reports**:
+
+<Tabs items={['Compliance Report', 'Coverage Report', 'Traceability Matrix']}>
+  <Tab value="Compliance Report">
+    **Generate Compliance Report**:
+
+    ```bash
+    tracertm report compliance \
+      --baseline v1.0.0 \
+      --standard FDA-21CFR11 \
+      --include-evidence \
+      --include-signatures \
+      --output compliance-report.pdf
+    ```
+
+    **Report Includes**:
+    - Complete requirements list
+    - Traceability matrix (BR → FR → Design → Code → Tests)
+    - Coverage percentages
+    - Approval history with signatures
+    - Test execution results
+    - Baseline comparison (what changed since last audit)
+    - Gap analysis (if any)
+
+    **Supports Standards**:
+    - FDA 21 CFR Part 11
+    - IEC 62304
+    - ISO 13485
+    - DO-178C
+    - ISO 26262
+  </Tab>
+
+  <Tab value="Coverage Report">
+    **Test Coverage Report**:
+
+    ```bash
+    tracertm report coverage \
+      --format xlsx \
+      --include-charts \
+      --group-by priority \
+      --output coverage-report.xlsx
+    ```
+
+    **Shows**:
+    - Coverage by priority (MUST: 95%, SHOULD: 87%, etc.)
+    - Coverage by component
+    - Coverage trends over time
+    - Gap list (untested requirements)
+    - Over-testing analysis
+  </Tab>
+
+  <Tab value="Traceability Matrix">
+    **Full RTM**:
+
+    ```bash
+    tracertm report rtm \
+      --format pdf \
+      --layout landscape \
+      --highlight-gaps \
+      --output rtm.pdf
+    ```
+
+    **Professional formatting** for stakeholder presentations
+  </Tab>
+</Tabs>
+
+<Callout type="tip">
+**Schedule automated reports**: Generate weekly coverage reports automatically
+</Callout>
+
+</Accordion>
+
+<Accordion title="How do I handle requirement changes?">
+
+**Change Management Workflow**:
+
+1. **Identify Change**:
+   - Create Change Request (CR) item
+   - Link to affected requirements
+   - Document rationale
+
+2. **Impact Analysis**:
+   - Use **Change Impact Analysis** view
+   - See all affected items (design, code, tests)
+   - Estimate effort
+
+3. **Approve Change**:
+   - Submit CR for approval
+   - Stakeholders review impact
+   - Approve or reject
+
+4. **Implement Change**:
+   - Update requirement
+   - Version history preserved automatically
+   - Update linked items (design, tests)
+   - Verify traceability maintained
+
+5. **Audit Trail**:
+   - All changes logged
+   - Approval history retained
+   - Baseline comparison shows delta
+
+**Example Impact Analysis**:
+```
+CR-15: Add biometric authentication
+└─ Affects:
+    ├─ FR-1: User authentication (modified)
+    ├─ SD-5: Auth service design (modified)
+    ├─ CM-23: auth_service.py (modified)
+    ├─ TC-45, TC-46, TC-47: Auth tests (need updates)
+    └─ NEW: TC-150: Biometric test (needs creation)
+
+Estimated Impact: 3 design docs, 5 code files, 8 test cases
+```
+
+</Accordion>
+</Accordions>
+
+## Technical Questions
+
+<Accordions>
+<Accordion title="What databases does TraceRTM support?">
+
+**Supported Databases**:
+
+- **PostgreSQL** 15+ (recommended)
+  - Full feature support
+  - Best performance
+  - JSON support for custom fields
+
+- **Neo4j** (optional, for graph queries)
+  - Advanced relationship queries
+  - Impact analysis
+  - Dependency visualization
+
+- **Redis** (caching layer)
+  - Session management
+  - Real-time features
+  - Performance optimization
+
+**Not Supported**:
+- MySQL (no JSON support)
+- MongoDB (schema required)
+- SQLite (production - OK for development)
+
+</Accordion>
+
+<Accordion title="Can I use TraceRTM offline?">
+
+**Yes!** With the desktop app:
+
+- **Desktop App** (Electron-based):
+  - Works completely offline
+  - Local SQLite database
+  - Sync when back online
+
+**Offline Capabilities**:
+- View all items
+- Create/edit items
+- Create links
+- Generate reports
+- Export data
+
+**Sync**:
+- Automatic when connected
+- Conflict resolution (last-write-wins or manual merge)
+- Background sync
+
+Download: [Desktop App](/clients/desktop)
+
+</Accordion>
+
+<Accordion title="How does TraceRTM handle access control?">
+
+**Role-Based Access Control (RBAC)**:
+
+| **Role** | **Permissions** |
+|----------|----------------|
+| **Viewer** | Read-only access |
+| **Contributor** | Create/edit items, create links |
+| **Approver** | Approve requirements, state transitions |
+| **Project Admin** | Manage project settings, users, baselines |
+| **System Admin** | All permissions, system configuration |
+
+**Fine-Grained Permissions**:
+```yaml
+permissions:
+  business_requirements:
+    create: [business_analyst, product_manager]
+    edit_own: [business_analyst]
+    edit_any: [product_manager]
+    approve: [stakeholder, product_manager]
+
+  test_cases:
+    create: [qa_engineer, developer]
+    edit_own: [qa_engineer, developer]
+    execute: [qa_engineer]
+    approve: [qa_lead]
+```
+
+**Field-Level Security**:
+- Restrict editing of specific fields
+- Hide sensitive fields from certain roles
+
+**Audit Log**:
+- All actions logged with user, timestamp, IP
+- Immutable audit trail for compliance
+
+</Accordion>
+
+<Accordion title="Is my data secure?">
+
+**Security Features**:
+
+1. **Encryption**:
+   - Data at rest: AES-256
+   - Data in transit: TLS 1.3
+   - Encrypted backups
+
+2. **Authentication**:
+   - OAuth2 / SAML 2.0
+   - Multi-factor authentication (MFA)
+   - SSO integration (Okta, Auth0, Azure AD)
+
+3. **Authorization**:
+   - Role-based access control (RBAC)
+   - Row-level security (RLS) in database
+   - API key scoping
+
+4. **Compliance**:
+   - SOC 2 Type II certified
+   - GDPR compliant
+   - HIPAA compliant (enterprise plan)
+   - ISO 27001
+
+5. **Monitoring**:
+   - Real-time security alerts
+   - Anomaly detection
+   - Failed login monitoring
+
+**Self-Hosted**: Full control over your data, deploy in your VPC
+
+</Accordion>
+
+<Accordion title="What are the system requirements?">
+
+**Minimum Requirements**:
+
+**Development**:
+- 4 GB RAM
+- 2 CPU cores
+- 10 GB disk space
+- PostgreSQL 15+
+
+**Production (Small - 100 users)**:
+- 8 GB RAM
+- 4 CPU cores
+- 50 GB SSD
+- PostgreSQL 15+ (dedicated instance)
+
+**Production (Large - 1000 users)**:
+- 16 GB RAM
+- 8 CPU cores
+- 200 GB SSD
+- PostgreSQL cluster
+- Redis cluster
+- Load balancer
+
+**Supported Platforms**:
+- Linux (Ubuntu 22.04+, RHEL 8+)
+- macOS (12+)
+- Windows (WSL2)
+- Docker (anywhere)
+- Kubernetes
+
+**Browser Support**:
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+
+</Accordion>
+</Accordions>
+
+## Integrations
+
+<Accordions>
+<Accordion title="What tools does TraceRTM integrate with?">
+
+**Native Integrations**:
+
+**Project Management**:
+- Jira (bidirectional sync)
+- Azure DevOps (work items)
+- GitHub Issues
+- Linear
+
+**Documentation**:
+- Confluence
+- Notion
+- Google Docs
+
+**Testing**:
+- Pytest (test result import)
+- JUnit (XML results)
+- Selenium
+- Cypress
+
+**CI/CD**:
+- GitHub Actions
+- GitLab CI
+- Jenkins
+- CircleCI
+
+**Communication**:
+- Slack (notifications)
+- Microsoft Teams
+- Email
+
+**Version Control**:
+- GitHub (commit linking)
+- GitLab
+- Bitbucket
+
+See [Integrations Guide](/docs/user/integrations) for setup instructions.
+
+</Accordion>
+
+<Accordion title="Can I sync TraceRTM with Jira?">
+
+**Yes! Bidirectional sync**:
+
+**Setup**:
+```bash
+tracertm integrations enable jira \
+  --url https://yourcompany.atlassian.net \
+  --email your-email@company.com \
+  --api-token $JIRA_API_TOKEN \
+  --project-key PROJ
+```
+
+**Sync Mapping**:
+- Jira Epic ↔ TraceRTM Business Requirement
+- Jira Story ↔ TraceRTM Functional Requirement
+- Jira Bug ↔ TraceRTM Issue
+- Jira Task ↔ TraceRTM Test Case
+
+**What Syncs**:
+- Title, description, status
+- Comments
+- Attachments
+- Links (Parent/Child, Blocks, etc.)
+
+**Sync Frequency**:
+- Real-time (webhook-based)
+- Scheduled (hourly, daily)
+- Manual (on-demand)
+
+**Conflict Resolution**:
+- Last-write-wins (default)
+- Manual merge (review conflicts)
+- Jira-primary (Jira always wins)
+- TraceRTM-primary (TraceRTM always wins)
+
+</Accordion>
+
+<Accordion title="Can I trigger TraceRTM from CI/CD?">
+
+**Yes! CI/CD Integration**:
+
+**GitHub Actions Example**:
+```yaml
+name: Update Traceability
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  update-trace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Link commits to requirements
+        run: |
+          # Extract requirement IDs from commit messages
+          # Example: "Implements FR-123: Add login feature"
+          tracertm link commits \
+            --from-git \
+            --commit-range ${{ github.event.before }}..${{ github.sha }}
+
+      - name: Import test results
+        run: |
+          pytest --junitxml=results.xml
+          tracertm import test-results \
+            --format junit \
+            --file results.xml \
+            --link-to-requirements
+
+      - name: Check coverage
+        run: |
+          tracertm validate coverage \
+            --min-requirement-coverage 80 \
+            --min-code-coverage 90 \
+            --fail-below-threshold
+```
+
+**Common CI/CD Uses**:
+- Auto-link commits to requirements
+- Import test results
+- Validate coverage before merge
+- Update implementation status
+- Generate compliance reports
+
+</Accordion>
+</Accordions>
+
+## Troubleshooting
+
+<Accordions>
+<Accordion title="Why can't I see my items in the traceability matrix?">
+
+**Common Causes**:
+
+1. **Filters Applied**:
+   - Check active filters (status, priority, type)
+   - Reset to defaults: Click "Clear Filters"
+
+2. **No Links Created**:
+   - Matrix shows linked items only
+   - Create links between items
+   - Use Gap Analysis to find orphaned items
+
+3. **Wrong View Selected**:
+   - Different views show different perspectives
+   - Try "Requirements Traceability Matrix" view
+
+4. **Permissions**:
+   - Check if you have access to item types
+   - Ask admin to verify permissions
+
+**Debug Steps**:
+```bash
+# List all items
+tracertm items list --project your-project
+
+# Check links
+tracertm links list --item FR-123
+
+# Validate traceability
+tracertm validate trace --item FR-123
+```
+
+</Accordion>
+
+<Accordion title="Why is my baseline comparison showing unexpected changes?">
+
+**Possible Reasons**:
+
+1. **Indirect Changes**:
+   - Items you didn't edit might have new links
+   - Related items might have status changes
+
+2. **Baseline Scope**:
+   - Baseline might not include all item types
+   - Check baseline creation options
+
+3. **Date Range**:
+   - Baseline comparison uses creation/modification dates
+   - Items modified before baseline won't show
+
+**Fix**:
+```bash
+# Show baseline details
+tracertm baseline show v1.0.0
+
+# Detailed diff
+tracertm baseline diff v1.0.0 --verbose
+```
+
+</Accordion>
+
+<Accordion title="Import failed - what should I check?">
+
+**Common Import Issues**:
+
+1. **Format Problems**:
+   - ✅ CSV: UTF-8 encoding, comma-separated
+   - ✅ Excel: .xlsx format (not .xls)
+   - ✅ Column headers match expected names
+
+2. **Data Validation**:
+   - Required fields missing
+   - Invalid status values
+   - Invalid priority values
+
+3. **Relationship Errors**:
+   - Referenced items don't exist
+   - Invalid link types
+
+**Debug**:
+```bash
+# Validate before import
+tracertm import validate --file requirements.csv
+
+# Import with detailed logging
+tracertm import csv --file requirements.csv --verbose --dry-run
+```
+
+**Preview** import results before committing!
+
+</Accordion>
+</Accordions>
+
+## Pricing and Plans
+
+<Accordions>
+<Accordion title="What does TraceRTM cost?">
+
+**Pricing Tiers**:
+
+| **Plan** | **Price** | **Items** | **Users** | **Features** |
+|----------|-----------|-----------|-----------|--------------|
+| **Free** | $0 | 100 | 3 | Core features, community support |
+| **Team** | $49/user/mo | Unlimited | Unlimited | Advanced views, integrations, email support |
+| **Business** | $99/user/mo | Unlimited | Unlimited | Custom workflows, SSO, priority support |
+| **Enterprise** | Custom | Unlimited | Unlimited | HIPAA, dedicated instance, SLA, training |
+
+**Academic/Non-Profit**: 50% discount on Team and Business plans
+
+**Self-Hosted**: All plans available for self-hosting (same pricing)
+
+</Accordion>
+
+<Accordion title="Is there a free tier?">
+
+**Yes! Free Forever Plan**:
+
+**Includes**:
+- 1 project
+- 100 items
+- 3 users
+- 16 item types
+- Basic traceability matrix
+- PDF/CSV export
+- Community support (Discord)
+
+**Limitations**:
+- No integrations (Jira, etc.)
+- No advanced views
+- No custom workflows
+- No SSO
+
+**Perfect for**:
+- Learning TraceRTM
+- Small personal projects
+- Proof of concept
+
+**Upgrade anytime** - all data migrates automatically!
+
+</Accordion>
+</Accordions>
+
+## Still Have Questions?
+
+<Callout type="info" title="Get Help">
+- 📚 [Documentation](/docs) - Comprehensive guides
+- 💬 [Community Discord](https://discord.gg/tracertm) - Chat with users and team
+- 📧 [Email Support](mailto:support@tracertm.io) - Direct help
+- 🎓 [Video Tutorials](https://youtube.com/tracertm) - Visual learning
+- 🐛 [GitHub Issues](https://github.com/tracertm/tracertm/issues) - Report bugs
+</Callout>
+
+**Enterprise Customers**: Contact your dedicated account manager or call 1-800-TRACERTM

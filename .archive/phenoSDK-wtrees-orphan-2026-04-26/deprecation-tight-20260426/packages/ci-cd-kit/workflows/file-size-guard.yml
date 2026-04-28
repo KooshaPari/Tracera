@@ -1,0 +1,61 @@
+name: File Size Guard
+
+on:
+  workflow_call:
+    inputs:
+      file_size_limit_mb:
+        description: 'Maximum file size in MB'
+        required: false
+        default: '50'
+        type: string
+      check_draft_prs:
+        description: 'Check draft pull requests'
+        required: false
+        default: 'false'
+        type: boolean
+    outputs:
+      large_files:
+        description: 'List of files exceeding size limit'
+        value: ${{ steps.check-files.outputs.large-files }}
+
+jobs:
+  guard-large-files:
+    name: Block files >${{ inputs.file_size_limit_mb }}MB in PRs
+    runs-on: ubuntu-latest
+    if: ${{ !inputs.check_draft_prs || github.event.pull_request.draft == false }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect large files in PR changes (>${{ inputs.file_size_limit_mb }}MB)
+        id: check-files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -eo pipefail
+          echo "Comparing $BASE_SHA..$HEAD_SHA"
+          changed=$(git diff --name-only --diff-filter=AM "$BASE_SHA" "$HEAD_SHA")
+          [ -z "$changed" ] && echo "No added/modified files" && exit 0
+
+          threshold=$((${{ inputs.file_size_limit_mb }}*1024*1024))
+          bad_files=()
+          while IFS= read -r f; do
+            [ -f "$f" ] || continue
+            size=$(python -c 'import os,sys;print(os.path.getsize(sys.argv[1]))' "$f")
+            if [ "$size" -gt "$threshold" ]; then
+              bad_files+=("$f: $size bytes")
+            fi
+          done <<< "$changed"
+
+          if [ ${#bad_files[@]} -gt 0 ]; then
+            echo "❌ The following files exceed ${{ inputs.file_size_limit_mb }}MB:"
+            for bf in "${bad_files[@]}"; do echo "  - $bf"; done
+            echo "Use Git LFS for approved binaries or reduce artifact size."
+            echo "large-files=${{ toJson(bad_files) }}" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          echo "✅ No files >${{ inputs.file_size_limit_mb }}MB detected in PR changes"
+          echo "large-files=[]" >> $GITHUB_OUTPUT

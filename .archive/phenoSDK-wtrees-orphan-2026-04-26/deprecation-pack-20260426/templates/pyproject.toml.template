@@ -1,0 +1,291 @@
+# Pheno-SDK Standardized pyproject.toml Template
+# This template combines best practices from atoms_mcp-old and zen-mcp-server
+# Usage: Copy this template and customize the project-specific sections
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+# PROJECT-SPECIFIC: Update these values for your project
+name = "{{PROJECT_NAME}}"
+version = "{{PROJECT_VERSION}}"
+description = "{{PROJECT_DESCRIPTION}}"
+readme = "README.md"
+requires-python = ">=3.10"  # Standardized on Python 3.10+ across pheno-sdk
+license = {text = "MIT"}
+authors = [
+    {name = "Koosha Pari", email = "kooshapari@gmail.com"}
+]
+
+# PROJECT-SPECIFIC: Update keywords for your project
+keywords = ["{{KEYWORDS}}"]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+# PROJECT-SPECIFIC: Add your core dependencies
+dependencies = [
+    "pydantic>=2.12.0,<3.0.0",
+    "python-dotenv>=1.0.0",
+    # Add project-specific dependencies here
+]
+
+[project.optional-dependencies]
+# Standard development dependencies for all pheno-sdk projects
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.0.0",
+    "pytest-timeout>=2.1.0",
+    "black>=24.0.0",
+    "ruff>=0.2.0",
+    "mypy>=1.8.0",
+    "isort>=5.12.0",
+    "pre-commit>=3.0.0",
+]
+
+# Testing with coverage
+test = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.0.0",
+    "pytest-timeout>=2.1.0",
+    "coverage[toml]>=7.0.0",
+]
+
+# Documentation
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocs-gen-files>=0.5.0",
+    "mkdocs-literate-nav>=0.6.0",
+]
+
+# Performance and profiling
+performance = [
+    "memory-profiler>=0.60.0",
+    "line-profiler>=4.0.0",
+    "py-spy>=0.3.14",
+]
+
+# Security scanning
+security = [
+    "bandit>=1.7.0",
+    "safety>=2.0.0",
+]
+
+# Full development environment
+full = [
+    "{{PROJECT_NAME}}[dev,test,docs,performance,security]",
+]
+
+# PROJECT-SPECIFIC: Add project-specific optional dependencies
+# Example:
+# automation = ["playwright>=1.40.0"]
+# middleware = ["fastapi>=0.109.0", "starlette>=0.36.0"]
+
+[project.urls]
+# PROJECT-SPECIFIC: Update URLs for your project
+Homepage = "https://github.com/kooshapari/pheno-sdk/{{PROJECT_NAME}}"
+Documentation = "https://github.com/kooshapari/pheno-sdk/{{PROJECT_NAME}}/README.md"
+Repository = "https://github.com/kooshapari/pheno-sdk"
+Issues = "https://github.com/kooshapari/pheno-sdk/issues"
+
+# PROJECT-SPECIFIC: Add CLI scripts if needed
+[project.scripts]
+# example-cli = "{{PROJECT_NAME}}.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["{{PROJECT_NAME}}_kit*", "{{PROJECT_NAME}}*"]
+exclude = ["tests*", "examples*", "docs*"]
+
+# Standardized tool configurations
+
+[tool.black]
+line-length = 120  # Standardized on 120 for consistency with zen-mcp-server
+target-version = ['py310', 'py311', 'py312', 'py313']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | node_modules
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 120
+skip_glob = ["venv/*", ".venv/*"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+extend-exclude = [
+    "tests/integration/**",
+    "examples/**",
+    "docs/**",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+    "N",  # pep8-naming
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+    "B904",  # exception handling with raise from
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["B011", "E721", "UP045", "B023", "B017", "F401"]
+"tests/conftest.py" = ["E402"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+check_untyped_defs = true
+no_implicit_reexport = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = """
+    -ra -q --strict-markers --strict-config
+    --tb=short
+    --maxfail=3
+    --durations=10
+    --cache-clear
+    --cov=.
+    --cov-report=term-missing
+    --cov-report=html:htmlcov
+    --cov-report=xml
+    --cov-fail-under=80
+"""
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "asyncio: mark test as async",
+    "integration: mark test as integration test requiring external services",
+    "unit: mark test as unit test (default)",
+    "slow: mark test as slow running",
+    "network: mark test as requiring network access",
+    "redis: mark test as requiring Redis",
+    "postgres: mark test as requiring PostgreSQL",
+    "nats: mark test as requiring NATS",
+    "temporal: mark test as requiring Temporal",
+    "performance: performance and load tests",
+    "security: security-related tests",
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore:.*unclosed.*:ResourceWarning",
+    "ignore:.*coroutine.*never awaited:RuntimeWarning",
+]
+asyncio_mode = "auto"
+timeout = 300
+junit_family = "xunit2"
+
+[tool.pytest.timeout]
+timeout = 300
+timeout_method = "thread"
+
+[tool.coverage.run]
+# PROJECT-SPECIFIC: Update source directories
+source = ["{{PROJECT_NAME}}_kit", "{{PROJECT_NAME}}"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/conftest.py",
+    "*/__init__.py",
+    "examples/*",
+    "docs/*",
+]
+parallel = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+show_missing = true
+precision = 2
+
+# Optional: Semantic release configuration
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+branch = "main"
+version_source = "tag"
+version_pattern = "v(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
+major_on_zero = false
+build_command = "python -m pip install --upgrade build && python -m build"
+dist_path = "dist/"
+upload_to_vcs_release = false
+upload_to_repository = false
+remove_dist = false
+commit_version_number = true
+commit_message = "chore(release): {version}\n\nAutomatically generated by python-semantic-release"
+tag_format = "v{version}"
+
+[tool.semantic_release.branches.main]
+match = "main"
+prerelease = false
+
+[tool.semantic_release.changelog]
+exclude_commit_patterns = []
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = ["build", "chore", "ci", "docs", "feat", "fix", "perf", "style", "refactor", "test"]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]

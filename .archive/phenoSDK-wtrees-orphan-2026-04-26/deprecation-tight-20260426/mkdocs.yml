@@ -1,0 +1,24 @@
+site_name: phenoSDK
+site_description: Monorepo documentation for phenoSDK kits
+site_url: https://example.com
+repo_url: https://github.com/KooshaPari/phenoSDK
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Kits:
+      - PyDevKit: kits/pydevkit.md
+      - Workflow Kit: kits/workflow-kit.md
+      - DB Kit: kits/db-kit.md
+      - Deploy Kit: kits/deploy-kit.md
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true

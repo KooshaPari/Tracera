@@ -1,0 +1,460 @@
+{
+  "report": {
+    "timestamp": "2025-01-23T00:00:00Z",
+    "totalErrors": 70,
+    "failedPackage": "@tracertm/web",
+    "location": "frontend/apps/web",
+    "status": "FAILED"
+  },
+  "errorsByCategory": {
+    "TS6133_UNUSED": {
+      "name": "Unused Imports/Variables",
+      "count": 19,
+      "percentage": 27,
+      "severity": "MEDIUM",
+      "description": "Imports and variables declared but never used",
+      "errors": [
+        {
+          "file": "src/components/CommandPalette.tsx",
+          "line": 4,
+          "column": 2,
+          "message": "BookOpen is declared but its value is never read",
+          "fix": "Remove import"
+        },
+        {
+          "file": "src/components/CommandPalette.tsx",
+          "line": 5,
+          "column": 2,
+          "message": "Cloud is declared but its value is never read",
+          "fix": "Remove import"
+        },
+        {
+          "file": "src/routes/matrix.index.tsx",
+          "line": 1,
+          "column": 27,
+          "message": "redirect is declared but its value is never read",
+          "fix": "Remove import"
+        },
+        {
+          "file": "src/views/DashboardView.tsx",
+          "line": 17,
+          "column": 2,
+          "message": "FileText is declared but its value is never read",
+          "fix": "Remove import"
+        },
+        {
+          "file": "src/views/DashboardView.tsx",
+          "line": 18,
+          "column": 2,
+          "message": "Lightbulb is declared but its value is never read",
+          "fix": "Remove import"
+        },
+        {
+          "file": "src/views/DashboardView.tsx",
+          "line": 21,
+          "column": 1,
+          "message": "useItems is declared but its value is never read",
+          "fix": "Remove import"
+        },
+        {
+          "file": "src/views/DashboardView.tsx",
+          "line": 233,
+          "column": 8,
+          "message": "currentProject is declared but its value is never read",
+          "fix": "Remove variable"
+        },
+        {
+          "file": "src/views/ProjectDetailView.tsx",
+          "line": 32,
+          "column": 2,
+          "message": "AlertCircle is declared but its value is never read",
+          "fix": "Remove import"
+        },
+        {
+          "file": "src/views/ProjectDetailView.tsx",
+          "line": 38,
+          "column": 2,
+          "message": "Users is declared but its value is never read",
+          "fix": "Remove import"
+        },
+        {
+          "file": "src/views/ProjectDetailView.tsx",
+          "line": 196,
+          "column": 31,
+          "message": "projectId is declared but its value is never read",
+          "fix": "Remove variable"
+        },
+        {
+          "file": "src/views/ProjectDetailView.tsx",
+          "line": 548,
+          "column": 51,
+          "message": "count is declared but its value is never read",
+          "fix": "Remove variable"
+        },
+        {
+          "file": "src/views/ProjectDetailView.tsx",
+          "line": 548,
+          "column": 58,
+          "message": "completed is declared but its value is never read",
+          "fix": "Remove variable"
+        },
+        {
+          "file": "src/views/ProjectsListView.tsx",
+          "line": 8,
+          "column": 2,
+          "message": "DialogContent is declared but its value is never read",
+          "fix": "Remove import"
+        },
+        {
+          "file": "src/views/ProjectsListView.tsx",
+          "line": 9,
+          "column": 2,
+          "message": "DialogHeader is declared but its value is never read",
+          "fix": "Remove import"
+        },
+        {
+          "file": "src/views/ProjectsListView.tsx",
+          "line": 10,
+          "column": 2,
+          "message": "DialogTitle is declared but its value is never read",
+          "fix": "Remove import"
+        },
+        {
+          "file": "src/views/ProjectsListView.tsx",
+          "line": 26,
+          "column": 1,
+          "message": "useItems is declared but its value is never read",
+          "fix": "Remove import"
+        },
+        {
+          "file": "src/views/ProjectsListView.tsx",
+          "line": 29,
+          "column": 2,
+          "message": "useDeleteProject is declared but its value is never read",
+          "fix": "Remove import"
+        }
+      ]
+    },
+    "TS2551_PROPERTY_NOT_EXIST": {
+      "name": "Property Name Mismatch",
+      "count": 28,
+      "percentage": 40,
+      "severity": "CRITICAL",
+      "description": "snake_case vs camelCase naming convention mismatch",
+      "rootCause": "Type definitions use camelCase but code uses snake_case",
+      "patterns": {
+        "created_at": 14,
+        "updated_at": 2,
+        "project_id": 2
+      },
+      "affectedFiles": [
+        {
+          "file": "src/views/ItemDetailView.tsx",
+          "count": 2,
+          "lines": [28, 32, 154],
+          "pattern": "project_id → projectId"
+        },
+        {
+          "file": "src/views/ItemsTableView.tsx",
+          "count": 6,
+          "lines": [199, 200, 202, 203, 497, 498],
+          "pattern": "created_at → createdAt"
+        },
+        {
+          "file": "src/views/ProjectDetailView.tsx",
+          "count": 8,
+          "lines": [248, 253, 412, 413, 489, 490, 494, 499],
+          "pattern": "created_at/updated_at → createdAt/updatedAt"
+        },
+        {
+          "file": "src/views/ProjectsListView.tsx",
+          "count": 6,
+          "lines": [66, 67, 300, 301, 303, 304],
+          "pattern": "created_at → createdAt"
+        }
+      ]
+    },
+    "TS2322_CHECKBOX_API": {
+      "name": "Checkbox Component Props Mismatch",
+      "count": 9,
+      "percentage": 13,
+      "severity": "CRITICAL",
+      "description": "onCheckedChange prop doesn't exist on Checkbox component",
+      "rootCause": "Component API uses onChange, not onCheckedChange",
+      "affectedFiles": [
+        {
+          "file": "src/views/ItemsTableView.tsx",
+          "count": 2,
+          "lines": [410, 452],
+          "errors": ["TS2322: Property onCheckedChange does not exist", "TS7006: Parameter checked has implicit any type"]
+        },
+        {
+          "file": "src/views/SettingsView.tsx",
+          "count": 3,
+          "lines": [228, 249, 267],
+          "errors": ["TS2322: Property onCheckedChange does not exist", "TS7006: Parameter checked has implicit any type"]
+        }
+      ]
+    },
+    "TS2375_EXACT_OPTIONAL": {
+      "name": "ExactOptionalPropertyTypes Strictness",
+      "count": 2,
+      "percentage": 3,
+      "severity": "HIGH",
+      "description": "Undefined values in optional property objects",
+      "rootCause": "TypeScript config has exactOptionalPropertyTypes: true",
+      "affectedFiles": [
+        {
+          "file": "src/api/settings.ts",
+          "count": 2,
+          "lines": [79, 82],
+          "issue": "Undefined values not allowed in optional object properties"
+        }
+      ]
+    },
+    "TS2339_PROPERTY_MISSING": {
+      "name": "Missing Property Definition",
+      "count": 2,
+      "percentage": 3,
+      "severity": "HIGH",
+      "description": "Property metadata does not exist on Project type",
+      "affectedFiles": [
+        {
+          "file": "src/views/ProjectDetailView.tsx",
+          "count": 2,
+          "lines": [473, 475],
+          "issue": "Project type has no metadata property"
+        }
+      ]
+    },
+    "TS2322_TYPE_MISMATCH": {
+      "name": "Type Conversion Error",
+      "count": 1,
+      "percentage": 1,
+      "severity": "MEDIUM",
+      "affectedFiles": [
+        {
+          "file": "src/views/GraphView.tsx",
+          "line": 151,
+          "issue": "number not assignable to PropertyValue<NodeSingular, string>"
+        }
+      ]
+    },
+    "TS2304_MISSING_IMPORT": {
+      "name": "Missing Import",
+      "count": 1,
+      "percentage": 1,
+      "severity": "MEDIUM",
+      "affectedFiles": [
+        {
+          "file": "src/views/ProjectsListView.tsx",
+          "line": 445,
+          "issue": "Cannot find name 'Folder'"
+        }
+      ]
+    },
+    "TS5076_OPERATOR_MIX": {
+      "name": "Operator Precedence",
+      "count": 1,
+      "percentage": 1,
+      "severity": "LOW",
+      "affectedFiles": [
+        {
+          "file": "src/views/DashboardView.tsx",
+          "line": 454,
+          "issue": "Mixed ?? and || operators need parentheses"
+        }
+      ]
+    },
+    "TS2367_COMPARE_MISMATCH": {
+      "name": "Unintentional Type Comparison",
+      "count": 3,
+      "percentage": 4,
+      "severity": "HIGH",
+      "description": "ItemStatus enum does not include closed value",
+      "affectedFiles": [
+        {
+          "file": "src/views/ProjectDetailView.tsx",
+          "count": 3,
+          "lines": [231, 275, 424],
+          "issue": "Comparing ItemStatus with string 'closed' that's not in enum"
+        }
+      ]
+    }
+  },
+  "fileErrorDistribution": {
+    "src/views/ProjectDetailView.tsx": {
+      "totalErrors": 14,
+      "breakdown": {
+        "TS2551_PROPERTY_NOT_EXIST": 8,
+        "TS6133_UNUSED": 2,
+        "TS2367_COMPARE_MISMATCH": 3,
+        "TS2339_PROPERTY_MISSING": 2
+      }
+    },
+    "src/views/ProjectsListView.tsx": {
+      "totalErrors": 12,
+      "breakdown": {
+        "TS2551_PROPERTY_NOT_EXIST": 6,
+        "TS6133_UNUSED": 5,
+        "TS2304_MISSING_IMPORT": 1
+      }
+    },
+    "src/views/ItemsTableView.tsx": {
+      "totalErrors": 9,
+      "breakdown": {
+        "TS2551_PROPERTY_NOT_EXIST": 6,
+        "TS2322_CHECKBOX_API": 3
+      }
+    },
+    "src/views/SettingsView.tsx": {
+      "totalErrors": 6,
+      "breakdown": {
+        "TS2322_CHECKBOX_API": 6
+      }
+    },
+    "src/api/settings.ts": {
+      "totalErrors": 2,
+      "breakdown": {
+        "TS2375_EXACT_OPTIONAL": 2
+      }
+    },
+    "src/views/DashboardView.tsx": {
+      "totalErrors": 5,
+      "breakdown": {
+        "TS6133_UNUSED": 4,
+        "TS5076_OPERATOR_MIX": 1
+      }
+    },
+    "src/views/GraphView.tsx": {
+      "totalErrors": 1,
+      "breakdown": {
+        "TS2322_TYPE_MISMATCH": 1
+      }
+    },
+    "src/views/ItemDetailView.tsx": {
+      "totalErrors": 3,
+      "breakdown": {
+        "TS2551_PROPERTY_NOT_EXIST": 2,
+        "TS6133_UNUSED": 1
+      }
+    },
+    "src/components/CommandPalette.tsx": {
+      "totalErrors": 2,
+      "breakdown": {
+        "TS6133_UNUSED": 2
+      }
+    },
+    "src/routes/matrix.index.tsx": {
+      "totalErrors": 1,
+      "breakdown": {
+        "TS6133_UNUSED": 1
+      }
+    }
+  },
+  "fixingStrategy": {
+    "phase1": {
+      "name": "Type Definition Review",
+      "duration": "30 min",
+      "tasks": [
+        "Review /types/index.ts for Item and Project types",
+        "Verify camelCase vs snake_case convention",
+        "Add missing properties (metadata)",
+        "Update ItemStatus enum with all valid values"
+      ]
+    },
+    "phase2": {
+      "name": "Property Naming Fixes",
+      "duration": "40 min",
+      "tasks": [
+        "Replace created_at → createdAt",
+        "Replace updated_at → updatedAt",
+        "Replace project_id → projectId",
+        "Verify in 4 affected view files"
+      ]
+    },
+    "phase3": {
+      "name": "Component API Fixes",
+      "duration": "25 min",
+      "tasks": [
+        "Review Checkbox component definition",
+        "Update ItemsTableView (2 locations)",
+        "Update SettingsView (3 locations)",
+        "Add type annotations"
+      ]
+    },
+    "phase_four": {
+      "name": "API Contract Fixes",
+      "duration": "15 min",
+      "tasks": [
+        "Fix settings.ts optional properties",
+        "Update GraphView type conversion",
+        "Fix ProjectDetailView metadata",
+        "Update status comparisons"
+      ]
+    },
+    "phase_five": {
+      "name": "Code Cleanup",
+      "duration": "15 min",
+      "tasks": [
+        "Remove unused imports",
+        "Remove unused variables",
+        "Add missing imports",
+        "Fix operator precedence"
+      ]
+    },
+    "phase6": {
+      "name": "Validation",
+      "duration": "10 min",
+      "tasks": [
+        "Run bun run typecheck (expect 0 errors)",
+        "Run bun run lint",
+        "Run test suite",
+        "Commit changes"
+      ]
+    },
+    "totalEstimatedTime": "2.5 hours"
+  },
+  "recommendedFixes": [
+    {
+      "priority": 1,
+      "category": "CRITICAL",
+      "issue": "Property naming mismatch",
+      "affectedErrors": 28,
+      "estimatedEffort": "HIGH",
+      "action": "Standardize all property names to camelCase"
+    },
+    {
+      "priority": 2,
+      "category": "CRITICAL",
+      "issue": "Checkbox component API",
+      "affectedErrors": 9,
+      "estimatedEffort": "MEDIUM",
+      "action": "Update Checkbox props: onCheckedChange → onChange"
+    },
+    {
+      "priority": 3,
+      "category": "CRITICAL",
+      "issue": "ItemStatus comparisons",
+      "affectedErrors": 3,
+      "estimatedEffort": "LOW",
+      "action": "Update ItemStatus enum or fix string comparisons"
+    },
+    {
+      "priority": 4,
+      "category": "HIGH",
+      "issue": "Missing Project.metadata",
+      "affectedErrors": 2,
+      "estimatedEffort": "LOW",
+      "action": "Add metadata property or remove usage"
+    },
+    {
+      "priority": 5,
+      "category": "MEDIUM",
+      "issue": "Unused imports/variables",
+      "affectedErrors": 19,
+      "estimatedEffort": "TRIVIAL",
+      "action": "Run eslint --fix to auto-remove"
+    }
+  ]
+}

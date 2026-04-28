@@ -1,0 +1,25 @@
+name: Block forbidden vendor path changes
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  check-forbidden-paths:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fail if vendor paths are modified
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.sha }}"
+          files=$(git diff --name-only "$base" "$head")
+          echo "Changed files:\n$files"
+          if echo "$files" | grep -E '^(atoms_mcp-old/pheno_vendor/|zen-mcp-server/pheno_vendor/)' >/dev/null; then
+            echo "❌ Forbidden path modifications detected" >&2
+            exit 1
+          fi
+          echo "✅ No forbidden vendor path changes"

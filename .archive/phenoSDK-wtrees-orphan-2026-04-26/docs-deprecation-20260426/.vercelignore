@@ -1,0 +1,16 @@
+# Vercel ignore patterns
+.env.production
+coverage/
+htmlcov/
+.pytest_cache/
+__pycache__/
+*.pyc
+.*.swp
+.DS_Store
+.git/
+.venv/
+pheno-sdk/
+zen-mcp-server/
+morph/
+m-test/
+example/

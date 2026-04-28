@@ -1,0 +1,36 @@
+---
+title: "Relationship Types"
+description: "Typed links: hierarchy, implementation, testing, dependency, operational, temporal"
+---
+
+# Relationship Types
+
+Relationship types define how artifacts connect. Picking the right type keeps traceability queries accurate and prevents invalid graph shapes.
+
+## Overview
+
+- **Hierarchical**: `parent_of`, `child_of`, `contains`, `part_of`
+- **Implementation**: `implements`, `realizes`, `satisfies`
+- **Testing**: `tests`, `verifies`, `validates`
+- **Dependency**: `depends_on`, `blocks`, `enables`, `requires`
+- **Operational**: `deploys_to`, `monitors`, `alerts_on`
+- **Temporal**: `precedes`, `follows`, `triggers`
+
+## Choosing the right type
+
+- Use implementation links from code → requirement; testing links from test → target.
+- Use dependency links when order or availability matters (`blocks` vs `depends_on`).
+- Use operational links to connect runtime assets (deployments, monitors) back to intent.
+- Avoid generic catch-all links; be explicit for better reports.
+
+## Enforcement
+
+- Validation rules can block invalid types for certain artifacts.
+- Workflow guards can require specific link types before state transitions (e.g., tests before Done).
+- Reports and matrices rely on consistent link typing.
+
+## Related
+
+- [Relationships](./04-relationships/)
+- [Workflow States](./02a-workflow-states/)
+- [Traceability](./01-traceability/)

@@ -1,0 +1,36 @@
+name: MCP OAuth Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest pytest-xdist rich
+          # Playwright optional
+          pip install playwright || true
+          python -m playwright install --with-deps || true
+      - name: Run OAuth tests (with reports)
+        env:
+          MCP_ENDPOINT: ${{ secrets.MCP_ENDPOINT }}
+          AUTH_EMAIL: ${{ secrets.AUTH_EMAIL }}
+          AUTH_PASSWORD: ${{ secrets.AUTH_PASSWORD }}
+        run: |
+          pytest -q --enable-reports --validate-auth || true
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-test-reports
+          path: tests/reports/

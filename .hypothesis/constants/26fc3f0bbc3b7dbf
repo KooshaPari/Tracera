@@ -1,0 +1,4 @@
+# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/repositories/problem_repository.py
+# hypothesis_version: 6.151.4
+
+[100, '%Y%m%d', 'assigned_to', 'available', 'awaiting_fix', 'closed', 'created', 'impact_level', 'in_investigation', 'known_error', 'medium', 'open', 'pending_workaround', 'permanent_fix_added', 'priority', 'rca_completed', 'rca_method', 'rowcount', 'status', 'status_transition', 'system', 'workaround_added']

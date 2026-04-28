@@ -1,0 +1,317 @@
+_export(
+    '.adapter_factory',
+    """
+    AdapterBuilder AdapterFactory builder create_auth_adapter create_cache_adapter
+    create_cli_adapter create_custom_adapter create_database_adapter create_http_adapter
+    create_infrastructure_adapter create_mcp_adapter create_message_queue_adapter
+    create_monitoring_adapter create_storage_adapter
+    """)
+
+_export(
+    '.adapter_registry',
+    """
+    AdapterRegistration AdapterRegistry AdapterType FrameworkAdapterRegistry
+    MFAAdapterRegistry RegistryMetrics RegistryPlugin RegistryStatus
+    UnifiedAdapterRegistry create_adapter get_adapter get_global_registry list_adapters
+    register_adapter set_global_registry
+    """)
+
+_export(
+    '.configuration_factory',
+    """
+    ConfigurationBuilder ConfigurationFactory create_application_configuration
+    create_cache_configuration create_configuration_with_context
+    create_custom_configuration create_database_configuration
+    create_deployment_configuration create_integration_configuration
+    create_logging_configuration create_monitoring_configuration
+    create_network_configuration create_quality_configuration
+    create_security_configuration create_ui_configuration
+    """,
+    aliases="""
+    configuration_builder=builder
+    """)
+
+_export(
+    '.configuration_registry',
+    """
+    ConfigurationRegistry UnifiedConfigurationRegistry list_configurations
+    load_configuration register_configuration reload_configuration switch_profile
+    """,
+    aliases="""
+    ConfigurationRegistryMetrics=RegistryMetrics
+    ConfigurationRegistryPlugin=RegistryPlugin ConfigurationRegistryStatus=RegistryStatus
+    get_configuration_registry=get_global_registry
+    set_configuration_registry=set_global_registry
+    """)
+
+_export(
+    '.exception_factory',
+    """
+    ExceptionBuilder ExceptionFactory create_adapter_error create_authentication_error
+    create_authorization_error create_business_rule_error create_cli_error
+    create_cloud_error create_configuration_error create_custom_error
+    create_database_error create_error_with_context create_factory_error
+    create_fatal_error create_internal_error create_network_error
+    create_non_retryable_error create_not_found_error create_port_error
+    create_recoverable_error create_retryable_error create_security_error
+    create_serialization_error create_storage_error create_validation_error
+    create_validator_error
+    """,
+    aliases="""
+    exception_builder=builder
+    """)
+
+_export(
+    '.exception_registry',
+    """
+    ExceptionHandler ExceptionRegistry RecoveryStrategy UnifiedExceptionRegistry
+    handle_and_recover handle_exception list_handlers list_strategies recover_exception
+    register_handler register_strategy
+    """,
+    aliases="""
+    ExceptionRegistryMetrics=RegistryMetrics ExceptionRegistryPlugin=RegistryPlugin
+    ExceptionRegistryStatus=RegistryStatus get_exception_registry=get_global_registry
+    set_exception_registry=set_global_registry
+    """)
+
+_export(
+    '.factory_factory',
+    """
+    FactoryBuilder FactoryFactory create_adapter_factory create_custom_factory
+    create_entity_factory create_manager_factory create_process_factory
+    create_storage_factory create_test_factory
+    """,
+    aliases="""
+    factory_builder=builder
+    """)
+
+_export(
+    '.factory_registry',
+    """
+    FactoryRegistration FactoryRegistry UnifiedFactoryRegistry create_factory get_factory
+    list_factories register_factory
+    """,
+    aliases="""
+    FactoryRegistryMetrics=RegistryMetrics FactoryRegistryPlugin=RegistryPlugin
+    FactoryRegistryStatus=RegistryStatus get_factory_registry=get_global_registry
+    set_factory_registry=set_global_registry
+    """)
+
+_export(
+    '.manager_factory',
+    """
+    ManagerFactory create_auth_manager create_custom_manager create_deployment_manager
+    create_full_featured_manager create_infrastructure_manager create_quality_manager
+    create_service_manager
+    """)
+
+_export(
+    '.port_factory',
+    """
+    PortBuilder PortFactory create_advanced_port create_authentication_port
+    create_custom_port create_database_port create_inference_port create_llm_port
+    create_mcp_port create_messaging_port create_observability_port create_registry_port
+    create_streaming_port create_tunneling_port
+    """,
+    aliases="""
+    port_builder=builder
+    """)
+
+_export(
+    '.port_registry',
+    """
+    PortRegistration PortRegistry UnifiedPortRegistry create_port get_port list_ports
+    register_port
+    """,
+    aliases="""
+    PortRegistryMetrics=RegistryMetrics PortRegistryPlugin=RegistryPlugin
+    PortRegistryStatus=RegistryStatus get_port_registry=get_global_registry
+    set_port_registry=set_global_registry
+    """)
+
+_export(
+    '.registry',
+    """
+    ProviderRegistry Registry get_provider_registry get_tool_registry
+    """)
+
+_export(
+    '.storage_factory',
+    """
+    StorageBuilder StorageFactory create_cache_storage create_credential_storage
+    create_custom_storage create_file_storage create_metrics_storage
+    create_repository_storage create_task_storage
+    """,
+    aliases="""
+    storage_builder=builder
+    """)
+
+_export(
+    '.storage_registry',
+    """
+    StorageRegistration StorageRegistry UnifiedStorageRegistry create_storage get_storage
+    list_storages register_storage
+    """,
+    aliases="""
+    StorageRegistryMetrics=RegistryMetrics StorageRegistryPlugin=RegistryPlugin
+    StorageRegistryStatus=RegistryStatus get_storage_registry=get_global_registry
+    set_storage_registry=set_global_registry
+    """)
+
+_export(
+    '.unified_adapter',
+    """
+    AdapterCapability AdapterConfig AdapterContext AdapterError AdapterMetrics
+    AdapterOperationError AdapterPlugin AdapterStatus BaseAdapter BasePrebuiltAdapter
+    CacheAdapter CLIAdapter DatabaseAdapter HTTPAdapter LazyDependencyLoader
+    MCPClientAdapter MessageQueueAdapter MissingDependencyError MonitoringAdapter
+    ResourceAdapter StatelessAdapter StorageAdapter UnifiedAdapter
+    """,
+    aliases="""
+    UnifiedAdapterType=AdapterType
+    """)
+
+_export(
+    '.unified_configuration',
+    """
+    ApplicationConfiguration BaseConfiguration CacheConfiguration Config Configuration
+    ConfigurationCapability ConfigurationContext ConfigurationMetrics ConfigurationPlugin
+    ConfigurationStatus ConfigurationType CustomConfiguration DatabaseConfiguration
+    DeploymentConfiguration IntegrationConfiguration LoggingConfiguration
+    MonitoringConfiguration NetworkConfiguration QualityConfiguration
+    SecurityConfiguration UIConfiguration
+    """)
+
+_export(
+    '.unified_exception',
+    """
+    AdapterError APIError AuthenticationError AuthorizationError BaseException
+    BusinessRuleViolation CheckConstraintError CLIError CloudError ConfigurationError
+    ConstraintViolationError DatabaseConnectionError DatabaseError DomainError
+    EntityNotFoundError ErrorCategory ErrorContext ErrorHandlingError ErrorSeverity
+    ErrorType Exception ExceptionPlugin ExternalServiceError FactoryError FatalError
+    FieldValidationError FileSystemError ForeignKeyError InsufficientPermissionsError
+    IntegrationError InternalError InvalidConfigurationError InvalidCredentialsError
+    InvalidStateTransitionError JWTError MissingAuthenticationError
+    MissingConfigurationError NetworkError NonRetryableError NotFoundError
+    NotImplementedError NotNullConstraintError PathValidationError PermissionDeniedError
+    PermissionError PhenoError PhenoException PolicyViolationError PortAuthenticationError
+    PortAuthorizationError PortConnectionError PortError PortOperationError
+    PortValidationError RateLimitError RecoverableError ResourceExhaustedError
+    ResourceNotFoundError RetryableError SandboxError SchemaValidationError SecurityError
+    SerializationError StorageError StructuredError TokenExpiredError
+    UnauthorizedAccessError UnifiedException UniqueConstraintError ValidationError
+    ValidatorError ValidatorOperationError ValidatorValidationError ZenMCPError is_fatal
+    is_recoverable is_retryable normalize_error normalize_postgres_error
+    """)
+
+_export(
+    '.unified_factory',
+    """
+    AdapterFactory BaseFactory EntityFactory FactoryCapability FactoryConfig
+    FactoryContext FactoryError FactoryMetrics FactoryOperationError FactoryPlugin
+    FactoryStatus FactoryType FactoryValidationError ManagerFactory ProcessFactory
+    StorageFactory TestFactory UnifiedFactory
+    """)
+
+_export(
+    '.unified_manager',
+    """
+    AuthenticationMixin AuthManager DeploymentManager DeploymentMixin
+    HealthMonitoringMixin InfrastructureManager LifecycleMixin ManagerCapability
+    ManagerConfig ManagerMixin ManagerState ManagerStatus QualityAnalysisManager
+    QualityAnalysisMixin ResourceAllocationMixin ServiceManager UnifiedManager
+    """)
+
+_export(
+    '.unified_port',
+    """
+    AuthenticationPort BasePort DatabasePort InferencePort LLMPort MCPPort MessagingPort
+    ObservabilityPort Port PortAuthenticationError PortAuthorizationError PortCapability
+    PortConfig PortConnectionError PortContext PortError PortMetrics PortOperation
+    PortOperationError PortPlugin PortResult PortStatus PortType PortValidationError
+    RegistryPort StreamingPort TunnelingPort UnifiedPort
+    """)
+
+_export(
+    '.unified_storage',
+    """
+    CacheStorage CredentialStorage CredentialStore EntityNotFoundError FileStorage
+    MetricsStorage RepositoryBackend RepositoryStorage StorageBackend StorageBackendType
+    StorageCapability StorageConfig StorageContext StorageError StorageMetrics
+    StorageOperationError StoragePlugin StorageProvider StorageStatus StorageType
+    TaskStorage TransactionError UnifiedStorage
+    """)
+
+_export(
+    '.unified_utility',
+    """
+    AsyncUtility BaseUtility CacheUtility ConcurrencyUtility DataUtility DateTimeUtility
+    FileUtility FilterUtility FormatUtility GenerationUtility HelperUtility NetworkUtility
+    PerformanceUtility QualityUtility QueueUtility SecurityUtility StringUtility
+    TestingUtility TimeUtility TracingUtility UnifiedUtility Utility UtilityCapability
+    UtilityContext UtilityMetrics UtilityPlugin UtilityStatus UtilityType
+    ValidationUtility
+    """)
+
+_export(
+    '.unified_validator',
+    """
+    ArchitecturalValidator BaseValidator BusinessRuleValidator CompositeValidator
+    CustomValidator DependencyValidator DTOValidator FieldValidator LayerValidator
+    PortAdapterValidator ResponseValidator UnifiedValidator ValidationIssue
+    ValidationResult ValidationSeverity Validator ValidatorCapability ValidatorConfig
+    ValidatorContext ValidatorError ValidatorMetrics ValidatorOperationError
+    ValidatorPlugin ValidatorStatus ValidatorType ValidatorValidationError
+    """)
+
+_export(
+    '.utility_factory',
+    """
+    UtilityBuilder UtilityFactory create_async_utility create_cache_utility
+    create_concurrency_utility create_custom_utility create_data_utility
+    create_datetime_utility create_file_utility create_filter_utility
+    create_format_utility create_generation_utility create_helper_utility
+    create_network_utility create_performance_utility create_quality_utility
+    create_queue_utility create_security_utility create_string_utility
+    create_testing_utility create_tracing_utility create_utility_with_context
+    create_validation_utility
+    """,
+    aliases="""
+    utility_builder=builder
+    """)
+
+_export(
+    '.utility_registry',
+    """
+    UnifiedUtilityRegistry UtilityRegistry execute_utility execute_utility_async
+    list_utilities register_utility
+    """,
+    aliases="""
+    UtilityRegistryMetrics=RegistryMetrics UtilityRegistryPlugin=RegistryPlugin
+    UtilityRegistryStatus=RegistryStatus get_utility_registry=get_global_registry
+    set_utility_registry=set_global_registry
+    """)
+
+_export(
+    '.validator_factory',
+    """
+    ValidatorBuilder ValidatorFactory create_advanced_validator
+    create_architectural_validator create_business_rule_validator create_custom_validator
+    create_dto_validator create_field_validator create_response_validator
+    """,
+    aliases="""
+    validator_builder=builder
+    """)
+
+_export(
+    '.validator_registry',
+    """
+    UnifiedValidatorRegistry ValidatorRegistration ValidatorRegistry create_validator
+    get_validator list_validators register_validator
+    """,
+    aliases="""
+    ValidatorRegistryMetrics=RegistryMetrics ValidatorRegistryPlugin=RegistryPlugin
+    ValidatorRegistryStatus=RegistryStatus get_validator_registry=get_global_registry
+    set_validator_registry=set_global_registry
+    """)

@@ -1,0 +1,43 @@
+{
+  "generated_at": "2026-02-14T08:53:15Z",
+  "tier": "critical",
+  "enabled": true,
+  "policy": {
+    "max_age_days": 30,
+    "require_proof_refs": true,
+    "block_placeholders": true
+  },
+  "error_count": 0,
+  "warn_count": 0,
+  "checks": [
+    {
+      "check": "assurance_case_freshness",
+      "status": "pass"
+    },
+    {
+      "check": "rolling_wave_freshness",
+      "status": "pass"
+    },
+    {
+      "check": "privacy_proof_freshness",
+      "status": "info",
+      "output": "artifact_missing"
+    },
+    {
+      "check": "statistical_acceptance_freshness",
+      "status": "info",
+      "output": "artifact_missing"
+    },
+    {
+      "check": "placeholder_refs",
+      "status": "pass",
+      "count": 0
+    },
+    {
+      "check": "proof_refs_present",
+      "status": "pass",
+      "count": 1
+    }
+  ],
+  "pass": true
+}

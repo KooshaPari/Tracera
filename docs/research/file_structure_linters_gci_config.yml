@@ -1,0 +1,36 @@
+# GCI (Go Control Imports) Configuration Snippet
+# Add this section to backend/.golangci.yml
+
+# Add to linters section:
+linters:
+  enable:
+    # ... existing linters ...
+    - gci  # ADD THIS: Go Control Imports for deterministic import ordering
+
+# Add to formatters section (if using as formatter):
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - gci  # ADD THIS (optional - can also run as linter)
+
+# Add to linters-settings section:
+linters-settings:
+  # ... existing settings ...
+
+  # GCI configuration for import organization
+  gci:
+    # Define custom import sections and their order
+    sections:
+      - Standard     # Go standard library (fmt, os, etc.)
+      - Default      # Third-party packages (github.com, golang.org, etc.)
+      - Prefix(github.com/kooshapari/trace)  # Local project imports (update org/path as needed)
+
+    # Skip generated files (don't reformat)
+    skip-generated: true
+
+    # Custom section definitions (advanced usage)
+    # custom_order: true
+
+    # Section-specific separators (blank lines between sections)
+    # section_separator: true

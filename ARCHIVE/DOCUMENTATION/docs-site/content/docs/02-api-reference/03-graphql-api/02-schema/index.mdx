@@ -1,0 +1,634 @@
+---
+title: "GraphQL Schema"
+description: "Complete GraphQL schema reference for TraceRTM - types, queries, mutations, and subscriptions"
+keywords: [graphql, schema, types, reference, introspection]
+---
+
+# GraphQL Schema Reference
+
+This document provides a complete reference for the TraceRTM GraphQL schema. Use this to understand available types, fields, queries, mutations, and subscriptions.
+
+## Schema Discovery
+
+### Introspection Query
+
+Query the schema programmatically:
+
+```graphql
+query IntrospectSchema {
+  __schema {
+    queryType { name }
+    mutationType { name }
+    subscriptionType { name }
+    types {
+      name
+      kind
+      description
+    }
+  }
+}
+```
+
+### Download Schema
+
+Download the complete schema in SDL format:
+
+```bash
+curl https://api.tracertm.dev/graphql/schema \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### GraphQL Playground
+
+Explore the schema interactively:
+
+```
+https://api.tracertm.dev/graphql/playground
+```
+
+---
+
+## Root Types
+
+### Query
+
+Read operations:
+
+```graphql
+type Query {
+  # Projects
+  projects(filter: ProjectFilter, first: Int, after: String): ProjectConnection
+  project(id: ID!): Project
+  
+  # Items
+  items(projectId: ID!, filter: ItemFilter, first: Int, after: String): ItemConnection
+  item(id: ID!): Item
+  
+  # Links
+  links(projectId: ID!, filter: LinkFilter, first: Int, after: String): LinkConnection
+  link(id: ID!): Link
+  
+  # Users
+  users(filter: UserFilter, first: Int, after: String): UserConnection
+  user(id: ID!): User
+  me: User
+  
+  # Teams
+  teams(filter: TeamFilter, first: Int, after: String): TeamConnection
+  team(id: ID!): Team
+  
+  # Search
+  searchItems(projectId: ID!, query: String!, first: Int): SearchResultConnection
+  
+  # Analysis
+  impactAnalysis(projectId: ID!, itemId: ID!, depth: Int): ImpactAnalysis
+  tracePath(projectId: ID!, from: ID!, to: ID!, maxDepth: Int): TracePath
+}
+```
+
+### Mutation
+
+Write operations:
+
+```graphql
+type Mutation {
+  # Projects
+  createProject(input: CreateProjectInput!): Project
+  updateProject(id: ID!, input: UpdateProjectInput!): Project
+  deleteProject(id: ID!): DeleteResult
+  archiveProject(id: ID!): Project
+  restoreProject(id: ID!): Project
+  
+  # Items
+  createItem(input: CreateItemInput!): Item
+  updateItem(id: ID!, input: UpdateItemInput!): Item
+  deleteItem(id: ID!): DeleteResult
+  batchCreateItems(inputs: [CreateItemInput!]!): BatchResult
+  
+  # Links
+  createLink(input: CreateLinkInput!): Link
+  deleteLink(id: ID!): DeleteResult
+  batchCreateLinks(inputs: [CreateLinkInput!]!): BatchResult
+  
+  # Workflows
+  transitionItem(id: ID!, transition: String!, comment: String): Item
+  approveItem(id: ID!, comment: String): Item
+  rejectItem(id: ID!, comment: String!): Item
+}
+```
+
+### Subscription
+
+Real-time updates:
+
+```graphql
+type Subscription {
+  itemUpdated(projectId: ID!): ItemUpdateEvent
+  itemCreated(projectId: ID!): Item
+  itemDeleted(projectId: ID!): ItemDeleteEvent
+  linkChanged(projectId: ID!): LinkChangeEvent
+  projectUpdated(projectId: ID!): Project
+}
+```
+
+---
+
+## Core Types
+
+### Project
+
+```graphql
+type Project {
+  id: ID!
+  name: String!
+  key: String!
+  description: String
+  status: ProjectStatus!
+  visibility: Visibility!
+  owner: User!
+  team: Team
+  settings: ProjectSettings
+  metadata: JSON
+  stats: ProjectStats
+  items(
+    filter: ItemFilter
+    first: Int
+    after: String
+  ): ItemConnection
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+enum Visibility {
+  PRIVATE
+  TEAM
+  ORGANIZATION
+}
+```
+
+### Item
+
+```graphql
+type Item {
+  id: ID!
+  project: Project!
+  type: ItemType!
+  itemNumber: String!
+  title: String!
+  description: String
+  status: String!
+  priority: Priority
+  assignee: User
+  parent: Item
+  children: ItemConnection
+  tags: [String!]!
+  customFields: JSON
+  version: Int!
+  links: ItemLinks
+  history: [ItemHistory!]!
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  approvedAt: DateTime
+  approvedBy: User
+}
+
+enum ItemType {
+  REQUIREMENT
+  TEST_CASE
+  DESIGN
+  ISSUE
+  TASK
+  USER_STORY
+}
+
+enum Priority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  TRIVIAL
+}
+```
+
+### Link
+
+```graphql
+type Link {
+  id: ID!
+  project: Project!
+  source: Item!
+  target: Item!
+  type: LinkType!
+  direction: LinkDirection!
+  status: LinkStatus!
+  description: String
+  metadata: JSON
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum LinkType {
+  SATISFIES
+  DERIVES_FROM
+  IMPLEMENTS
+  VERIFIED_BY
+  VALIDATES
+  TRACES_TO
+  DEPENDS_ON
+  RELATES_TO
+  DUPLICATES
+  BLOCKS
+}
+
+enum LinkDirection {
+  FORWARD
+  BACKWARD
+  BIDIRECTIONAL
+}
+
+enum LinkStatus {
+  ACTIVE
+  SUSPECT
+  OBSOLETE
+}
+```
+
+### User
+
+```graphql
+type User {
+  id: ID!
+  email: String!
+  name: String!
+  displayName: String
+  avatarUrl: String
+  role: UserRole!
+  status: UserStatus!
+  teams: [TeamMembership!]!
+  permissions: UserPermissions
+  preferences: UserPreferences
+  lastActiveAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MEMBER
+  GUEST
+}
+
+enum UserStatus {
+  ACTIVE
+  INVITED
+  SUSPENDED
+  DEACTIVATED
+}
+```
+
+### Team
+
+```graphql
+type Team {
+  id: ID!
+  name: String!
+  description: String
+  slug: String!
+  visibility: Visibility!
+  defaultProjectRole: ProjectRole
+  settings: TeamSettings
+  members: TeamMemberConnection
+  projects: ProjectConnection
+  memberCount: Int!
+  projectCount: Int!
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+```
+
+---
+
+## Input Types
+
+### CreateItemInput
+
+```graphql
+input CreateItemInput {
+  projectId: ID!
+  type: ItemType!
+  title: String!
+  description: String
+  priority: Priority
+  assigneeId: ID
+  parentId: ID
+  tags: [String!]
+  customFields: JSON
+}
+```
+
+### UpdateItemInput
+
+```graphql
+input UpdateItemInput {
+  title: String
+  description: String
+  priority: Priority
+  assigneeId: ID
+  parentId: ID
+  tags: [String!]
+  customFields: JSON
+  changeReason: String
+}
+```
+
+### CreateLinkInput
+
+```graphql
+input CreateLinkInput {
+  projectId: ID!
+  sourceId: ID!
+  targetId: ID!
+  type: LinkType!
+  description: String
+  metadata: JSON
+}
+```
+
+### ItemFilter
+
+```graphql
+input ItemFilter {
+  type: ItemType
+  status: String
+  priority: Priority
+  assigneeId: ID
+  parentId: ID
+  tags: [String!]
+  createdAfter: DateTime
+  createdBefore: DateTime
+  updatedAfter: DateTime
+  search: String
+}
+```
+
+---
+
+## Connection Types
+
+### Pagination Pattern
+
+GraphQL uses the Relay connection pattern for pagination:
+
+```graphql
+type ItemConnection {
+  edges: [ItemEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ItemEdge {
+  node: Item!
+  cursor: String!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+```
+
+---
+
+## Scalar Types
+
+### DateTime
+
+ISO 8601 formatted date-time strings:
+
+```graphql
+scalar DateTime
+```
+
+**Example:** `"2024-12-08T10:30:00Z"`
+
+### JSON
+
+Arbitrary JSON objects:
+
+```graphql
+scalar JSON
+```
+
+**Example:** `{"key": "value", "nested": {"field": 123}}`
+
+### ID
+
+Unique identifier strings:
+
+```graphql
+scalar ID
+```
+
+**Example:** `"proj_abc123"`, `"item_req_001"`
+
+---
+
+## Subscription Events
+
+### ItemUpdateEvent
+
+```graphql
+type ItemUpdateEvent {
+  item: Item!
+  previousValues: Item
+  changes: [FieldChange!]!
+  updatedBy: User!
+  updatedAt: DateTime!
+}
+
+type FieldChange {
+  field: String!
+  oldValue: JSON
+  newValue: JSON
+}
+```
+
+### LinkChangeEvent
+
+```graphql
+type LinkChangeEvent {
+  link: Link!
+  event: LinkEventType!
+  changedBy: User!
+  changedAt: DateTime!
+}
+
+enum LinkEventType {
+  CREATED
+  DELETED
+  UPDATED
+  SUSPECT
+}
+```
+
+---
+
+## Querying the Schema
+
+### Get All Types
+
+```graphql
+query GetAllTypes {
+  __schema {
+    types {
+      name
+      kind
+      description
+    }
+  }
+}
+```
+
+### Get Type Details
+
+```graphql
+query GetItemType {
+  __type(name: "Item") {
+    name
+    description
+    fields {
+      name
+      description
+      type {
+        name
+        kind
+        ofType {
+          name
+          kind
+        }
+      }
+      args {
+        name
+        type {
+          name
+        }
+        defaultValue
+      }
+    }
+  }
+}
+```
+
+### Get Enum Values
+
+```graphql
+query GetItemStatusEnum {
+  __type(name: "ItemStatus") {
+    name
+    enumValues {
+      name
+      description
+      isDeprecated
+    }
+  }
+}
+```
+
+---
+
+## Schema Versioning
+
+The GraphQL schema follows semantic versioning:
+
+- **Breaking changes** → New major version
+- **New fields/types** → Minor version
+- **Bug fixes** → Patch version
+
+### Checking Schema Version
+
+```graphql
+query GetSchemaInfo {
+  __schema {
+    queryType {
+      name
+    }
+  }
+}
+```
+
+Response headers include schema version:
+
+```http
+X-GraphQL-Schema-Version: 1.2.0
+```
+
+---
+
+## Best Practices
+
+### 1. Use Type System
+
+Leverage GraphQL's type system for validation:
+
+```graphql
+# TypeScript automatically gets types
+type Item {
+  id: ID!           # Required, non-null
+  title: String!     # Required, non-null
+  description: String # Optional, nullable
+  priority: Priority # Optional, nullable
+}
+```
+
+### 2. Use Enums for Constants
+
+```graphql
+# ✅ Good: Type-safe enum
+enum Priority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+# ❌ Bad: String with magic values
+priority: String
+```
+
+### 3. Document Your Queries
+
+```graphql
+"""
+Fetches a project with its items and links.
+Use this for project detail views.
+"""
+query GetProjectDetails($id: ID!) {
+  project(id: $id) {
+    id
+    name
+    items { ... }
+  }
+}
+```
+
+---
+
+## Related Documentation
+
+- [GraphQL Overview](/docs/api-reference/graphql-api/overview) - Introduction
+- [Queries](/docs/api-reference/graphql-api/queries) - Query examples
+- [Mutations](/docs/api-reference/graphql-api/mutations) - Mutation reference
+- [Subscriptions](/docs/api-reference/graphql-api/subscriptions) - Real-time updates
+

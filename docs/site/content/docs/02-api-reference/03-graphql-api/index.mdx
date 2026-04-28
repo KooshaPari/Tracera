@@ -1,0 +1,606 @@
+---
+title: "GraphQL API"
+description: "Complete GraphQL API reference for TraceRTM - queries, mutations, subscriptions, and schema documentation"
+keywords: [graphql, api, queries, mutations, subscriptions, schema]
+---
+
+# GraphQL API
+
+TraceRTM provides a comprehensive GraphQL API that offers flexible data fetching, real-time subscriptions, and type-safe operations. Use GraphQL when you need to fetch exactly the data you need in a single request, or when building real-time applications.
+
+## Why GraphQL?
+
+| Feature | REST API | GraphQL API |
+|---------|----------|-------------|
+| **Data Fetching** | Multiple requests | Single request |
+| **Over-fetching** | Common | Avoided |
+| **Under-fetching** | Common | Avoided |
+| **Type Safety** | Runtime | Compile-time |
+| **Real-time** | Webhooks | Subscriptions |
+| **Schema Discovery** | Documentation | Introspection |
+
+### When to Use GraphQL
+
+✅ **Use GraphQL when:**
+- You need to fetch related data in one request
+- You want to avoid over-fetching or under-fetching
+- You're building a real-time application
+- You need type-safe queries
+- You want to reduce network requests
+
+⚠️ **Use REST when:**
+- Simple CRUD operations
+- Caching is critical
+- You prefer simpler HTTP semantics
+- Team is more familiar with REST
+
+---
+
+## Endpoint
+
+### GraphQL Endpoint
+
+```
+POST https://api.tracertm.dev/graphql
+```
+
+### GraphQL Playground
+
+Interactive GraphQL explorer:
+
+```
+https://api.tracertm.dev/graphql/playground
+```
+
+### GraphQL Schema
+
+Download the schema:
+
+```
+https://api.tracertm.dev/graphql/schema
+```
+
+---
+
+## Authentication
+
+GraphQL uses the same authentication as REST API:
+
+```bash
+curl -X POST https://api.tracertm.dev/graphql \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "{ projects { id name } }"
+  }'
+```
+
+### Headers
+
+| Header | Required | Description |
+|--------|----------|-------------|
+| `Authorization` | Yes | `Bearer rtm_live_sk_...` or JWT token |
+| `Content-Type` | Yes | `application/json` |
+
+---
+
+## Quick Start
+
+### Simple Query
+
+```graphql
+query {
+  projects {
+    id
+    name
+    key
+    description
+  }
+}
+```
+
+### Query with Variables
+
+```graphql
+query GetProject($id: ID!) {
+  project(id: $id) {
+    id
+    name
+    items {
+      id
+      title
+      status
+    }
+  }
+}
+```
+
+**Variables:**
+```json
+{
+  "id": "proj_abc123"
+}
+```
+
+### Mutation
+
+```graphql
+mutation CreateItem($input: CreateItemInput!) {
+  createItem(input: $input) {
+    id
+    title
+    itemNumber
+  }
+}
+```
+
+**Variables:**
+```json
+{
+  "input": {
+    "projectId": "proj_abc123",
+    "type": "requirement",
+    "title": "User Authentication",
+    "description": "Implement secure login"
+  }
+}
+```
+
+---
+
+## Core Concepts
+
+### Queries
+
+Fetch data without side effects:
+
+```graphql
+query {
+  project(id: "proj_abc123") {
+    name
+    items(filter: { type: "requirement" }) {
+      id
+      title
+      status
+    }
+  }
+}
+```
+
+### Mutations
+
+Modify data:
+
+```graphql
+mutation {
+  createItem(input: {
+    projectId: "proj_abc123"
+    type: requirement
+    title: "New Requirement"
+  }) {
+    id
+    title
+  }
+}
+```
+
+### Subscriptions
+
+Real-time updates:
+
+```graphql
+subscription {
+  itemUpdated(projectId: "proj_abc123") {
+    id
+    title
+    status
+    updatedAt
+  }
+}
+```
+
+---
+
+## Schema Overview
+
+### Root Types
+
+| Type | Description |
+|------|-------------|
+| `Query` | Read operations |
+| `Mutation` | Write operations |
+| `Subscription` | Real-time updates |
+
+### Core Types
+
+- **Project** - Projects and settings
+- **Item** - Requirements, tests, designs
+- **Link** - Traceability relationships
+- **User** - User accounts and permissions
+- **Team** - Team management
+- **Workflow** - Status workflows
+
+---
+
+## Example Queries
+
+### Fetch Project with Items
+
+```graphql
+query GetProjectWithItems($projectId: ID!) {
+  project(id: $projectId) {
+    id
+    name
+    key
+    items(first: 20, filter: { status: approved }) {
+      edges {
+        node {
+          id
+          itemNumber
+          title
+          status
+          priority
+          links {
+            id
+            type
+            target {
+              id
+              title
+            }
+          }
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+}
+```
+
+### Search Items
+
+```graphql
+query SearchItems($projectId: ID!, $query: String!) {
+  searchItems(projectId: $projectId, query: $query) {
+    id
+    title
+    type
+    highlights {
+      title
+      description
+    }
+    score
+  }
+}
+```
+
+### Get Item with Full Context
+
+```graphql
+query GetItemContext($itemId: ID!) {
+  item(id: $itemId) {
+    id
+    title
+    description
+    status
+    priority
+    assignee {
+      id
+      name
+      email
+    }
+    links {
+      outgoing {
+        id
+        type
+        target {
+          id
+          title
+          type
+        }
+      }
+      incoming {
+        id
+        type
+        source {
+          id
+          title
+          type
+        }
+      }
+    }
+    history {
+      version
+      changedAt
+      changedBy {
+        name
+      }
+      changes {
+        field
+        oldValue
+        newValue
+      }
+    }
+  }
+}
+```
+
+---
+
+## Example Mutations
+
+### Create Item
+
+```graphql
+mutation CreateItem($input: CreateItemInput!) {
+  createItem(input: $input) {
+    id
+    itemNumber
+    title
+    status
+    createdAt
+  }
+}
+```
+
+### Update Item
+
+```graphql
+mutation UpdateItem($id: ID!, $input: UpdateItemInput!) {
+  updateItem(id: $id, input: $input) {
+    id
+    title
+    status
+    updatedAt
+    version
+  }
+}
+```
+
+### Create Link
+
+```graphql
+mutation CreateLink($input: CreateLinkInput!) {
+  createLink(input: $input) {
+    id
+    type
+    source {
+      id
+      title
+    }
+    target {
+      id
+      title
+    }
+  }
+}
+```
+
+### Transition Item Status
+
+```graphql
+mutation TransitionItem($id: ID!, $transition: String!) {
+  transitionItem(id: $id, transition: $transition) {
+    id
+    status
+    previousStatus
+    transitionedAt
+  }
+}
+```
+
+---
+
+## Subscriptions
+
+### Item Updates
+
+```graphql
+subscription ItemUpdates($projectId: ID!) {
+  itemUpdated(projectId: $projectId) {
+    id
+    title
+    status
+    updatedAt
+    changes {
+      field
+      oldValue
+      newValue
+    }
+  }
+}
+```
+
+### Link Changes
+
+```graphql
+subscription LinkChanges($projectId: ID!) {
+  linkChanged(projectId: $projectId) {
+    id
+    type
+    source {
+      id
+      title
+    }
+    target {
+      id
+      title
+    }
+    event
+  }
+}
+```
+
+---
+
+## Using GraphQL
+
+### HTTP Request
+
+```bash
+curl -X POST https://api.tracertm.dev/graphql \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "query { projects { id name } }"
+  }'
+```
+
+### JavaScript/TypeScript
+
+```typescript
+import { GraphQLClient } from 'graphql-request';
+
+const client = new GraphQLClient('https://api.tracertm.dev/graphql', {
+  headers: {
+    authorization: `Bearer ${process.env.TRACERTM_API_KEY}`
+  }
+});
+
+const query = `
+  query GetProjects {
+    projects {
+      id
+      name
+      key
+    }
+  }
+`;
+
+const data = await client.request(query);
+console.log(data.projects);
+```
+
+### Python
+
+```python
+from gql import Client, gql
+from gql.transport.requests import RequestsHTTPTransport
+
+transport = RequestsHTTPTransport(
+    url="https://api.tracertm.dev/graphql",
+    headers={"Authorization": f"Bearer {api_key}"}
+)
+
+client = Client(transport=transport, fetch_schema_from_transport=True)
+
+query = gql("""
+    query GetProjects {
+        projects {
+            id
+            name
+            key
+        }
+    }
+""")
+
+result = client.execute(query)
+print(result)
+```
+
+### React with Apollo
+
+```tsx
+import { ApolloClient, InMemoryCache, gql, useQuery } from '@apollo/client';
+
+const client = new ApolloClient({
+  uri: 'https://api.tracertm.dev/graphql',
+  headers: {
+    authorization: `Bearer ${process.env.REACT_APP_TRACERTM_KEY}`
+  },
+  cache: new InMemoryCache()
+});
+
+const GET_PROJECTS = gql`
+  query GetProjects {
+    projects {
+      id
+      name
+      key
+    }
+  }
+`;
+
+function ProjectsList() {
+  const { loading, error, data } = useQuery(GET_PROJECTS);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
+
+  return (
+    <ul>
+      {data.projects.map(project => (
+        <li key={project.id}>{project.name}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+---
+
+## Pagination
+
+GraphQL uses cursor-based pagination:
+
+```graphql
+query GetItems($projectId: ID!, $cursor: String) {
+  items(projectId: $projectId, first: 20, after: $cursor) {
+    edges {
+      node {
+        id
+        title
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+  }
+}
+```
+
+---
+
+## Error Handling
+
+GraphQL errors are returned in the `errors` array:
+
+```json
+{
+  "data": null,
+  "errors": [
+    {
+      "message": "Item not found",
+      "locations": [{"line": 2, "column": 3}],
+      "path": ["item"],
+      "extensions": {
+        "code": "NOT_FOUND",
+        "resourceId": "item_invalid"
+      }
+    }
+  ]
+}
+```
+
+---
+
+## Rate Limiting
+
+GraphQL requests count toward the same rate limits as REST API. Complex queries may consume more rate limit tokens.
+
+---
+
+## Related Documentation
+
+- [GraphQL Overview](/docs/api-reference/graphql-api/overview) - Introduction to GraphQL
+- [Schema Reference](/docs/api-reference/graphql-api/schema) - Complete schema documentation
+- [Queries](/docs/api-reference/graphql-api/queries) - Query examples and patterns
+- [Mutations](/docs/api-reference/graphql-api/mutations) - Mutation reference
+- [Subscriptions](/docs/api-reference/graphql-api/subscriptions) - Real-time subscriptions
+

@@ -1,0 +1,61 @@
+name: Legacy Imports Guard
+
+on:
+  workflow_call:
+    inputs:
+      python_version:
+        description: 'Python version to use'
+        required: false
+        default: '3.12'
+        type: string
+      legacy_script_path:
+        description: 'Path to legacy import check script'
+        required: false
+        default: 'scripts/ci_check_legacy_imports.py'
+        type: string
+      requirements_files:
+        description: 'Requirements files to install'
+        required: false
+        default: 'requirements.txt,requirements-dev.txt'
+        type: string
+    outputs:
+      legacy_imports_found:
+        description: 'Whether legacy imports were found'
+        value: ${{ steps.check-legacy.outputs.legacy-imports-found }}
+
+jobs:
+  legacy-imports:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      - name: Install minimal deps
+        run: |
+          python -m pip install --upgrade pip
+          IFS=',' read -ra FILES <<< "${{ inputs.requirements_files }}"
+          for file in "${FILES[@]}"; do
+            if [ -f "$file" ]; then
+              pip install -r "$file"
+            fi
+          done
+          # import-linter is optional; script will still enforce legacy guard
+          pip install import-linter || true
+
+      - name: Run legacy import guard
+        id: check-legacy
+        run: |
+          python ${{ inputs.legacy_script_path }}
+          # Run import-linter if available
+          if command -v import-linter >/dev/null 2>&1; then
+            import-linter
+            echo "legacy-imports-found=false" >> $GITHUB_OUTPUT
+          else
+            echo "(import-linter not installed; skipping)"
+            echo "legacy-imports-found=false" >> $GITHUB_OUTPUT
+          fi

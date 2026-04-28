@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-02-14T08:53:15Z",
+  "tier": "critical",
+  "enabled": true,
+  "error_count": 1,
+  "warn_count": 0,
+  "checks": [
+    {
+      "check": "policy_report_present",
+      "status": "fail"
+    }
+  ],
+  "pass": false
+}

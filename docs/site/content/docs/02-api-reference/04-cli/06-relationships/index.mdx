@@ -1,0 +1,27 @@
+---
+title: "CLI Relationships Commands"
+description: "Create and inspect relationships between items."
+---
+
+## What this covers
+- How to manage relationships with the Trace CLI
+- Expected inputs, flags, and outputs
+- Safety checks before executing
+
+## Quick commands
+```bash
+trace link create --from <feature-id> --to <code-id> --type implements
+```
+
+```bash
+trace link list --project <id> --filter "type=implements"
+```
+
+```bash
+trace link delete --id <link-id>
+```
+
+## Best practices
+- Use `--project` to scope actions and avoid cross-project edits.
+- Prefer idempotent operations (`trace ... upsert`) in automation.
+- Pipe to jq for verification before destructive changes.

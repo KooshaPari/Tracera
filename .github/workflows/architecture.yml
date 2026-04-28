@@ -1,0 +1,58 @@
+name: Architecture Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v2
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Check architecture
+        run: uv run --extra dev tach check
+
+      - name: Generate architecture diagram
+        run: uv run --extra dev tach show --mermaid > architecture.md
+
+      - name: Upload architecture diagram
+        uses: actions/upload-artifact@v4
+        with:
+          name: architecture-diagram
+          path: architecture.md
+
+      - name: Comment architecture on PR
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const diagram = fs.readFileSync('architecture.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## Architecture Diagram\n\n' + diagram
+            });

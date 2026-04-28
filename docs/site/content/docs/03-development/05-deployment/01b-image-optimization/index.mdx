@@ -1,0 +1,151 @@
+---
+title: "Image Optimization"
+description: "Optimize Docker images for size and performance"
+keywords: [docker, optimization, images, size, performance]
+---
+
+# Image Optimization
+
+Optimize Docker images for smaller size and faster builds.
+
+## Size Optimization
+
+### Use Alpine Base Images
+
+```dockerfile
+# Standard image: ~900MB
+FROM python:3.12
+
+# Alpine image: ~150MB
+FROM python:3.12-alpine
+```
+
+### Multi-Stage Builds
+
+```dockerfile
+# Build stage (includes build tools)
+FROM python:3.12-slim as builder
+RUN pip install --user -r requirements.txt
+
+# Runtime stage (only runtime dependencies)
+FROM python:3.12-slim
+COPY --from=builder /root/.local /root/.local
+```
+
+### Remove Unnecessary Files
+
+```dockerfile
+# Clean up after installs
+RUN apt-get update && \
+    apt-get install -y package && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Remove pip cache
+RUN pip install --no-cache-dir -r requirements.txt
+```
+
+## Build Optimization
+
+### Layer Caching
+
+```dockerfile
+# Order matters - copy stable files first
+COPY requirements.txt .          # Changes rarely
+RUN pip install -r requirements.txt
+
+COPY . .                          # Changes frequently
+```
+
+### .dockerignore
+
+```dockerignore
+# Exclude unnecessary files
+.git
+*.pyc
+__pycache__
+.pytest_cache
+.coverage
+*.md
+.env
+node_modules
+```
+
+## Build Arguments
+
+### Use Build Args
+
+```dockerfile
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION
+
+LABEL org.label-schema.build-date=$BUILD_DATE \
+      org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.version=$VERSION
+```
+
+### Build Command
+
+```bash
+docker build \
+  --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+  --build-arg VCS_REF=$(git rev-parse --short HEAD) \
+  --build-arg VERSION=2.4.0 \
+  -t tracertm:2.4.0 .
+```
+
+## Image Analysis
+
+### Check Image Size
+
+```bash
+# List image sizes
+docker images tracertm
+
+# Detailed size breakdown
+docker history tracertm:latest
+```
+
+### Dive Tool
+
+```bash
+# Analyze image layers
+dive tracertm:latest
+```
+
+## Best Practices
+
+### 1. Minimize Layers
+
+```dockerfile
+# Combine RUN commands
+RUN apt-get update && \
+    apt-get install -y package1 package2 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+```
+
+### 2. Use Specific Tags
+
+```dockerfile
+# Bad - uses latest
+FROM python:latest
+
+# Good - uses specific version
+FROM python:3.12-slim
+```
+
+### 3. Remove Build Dependencies
+
+```dockerfile
+# Remove after build
+RUN apt-get install -y gcc && \
+    pip install package && \
+    apt-get remove -y gcc
+```
+
+## Related Documentation
+
+- [Dockerfile](./01a-dockerfile) - Dockerfile guide
+- [Docker Deployment](./01-docker-deployment) - Deployment

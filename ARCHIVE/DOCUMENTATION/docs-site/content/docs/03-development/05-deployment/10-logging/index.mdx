@@ -1,0 +1,19 @@
+---
+title: "Logging"
+description: "Logging practices and pipelines."
+---
+
+## Summary
+- Use request IDs and correlate across services.
+- Redact secrets before emit; enforce size limits.
+- Route to centralized storage with retention policies.
+
+## Steps
+```bash
+kubectl logs deploy/api | jq "{ts:.time, level:.level, msg:.msg}"
+```
+
+## Operational checks
+- Health endpoints return 200 for API and worker pods.
+- Background queues drain within SLO after deploy.
+- Logs and metrics flowing to your observability stack.

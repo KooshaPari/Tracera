@@ -1,0 +1,557 @@
+#!/usr/bin/env python3
+"""
+ATOMS-PHENO CLI Tool - Unified Command Line Interface
+"""
+
+import sys
+from pathlib import Path
+
+# Add project root to Python path
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
+
+# Add src to path for pheno modules
+src_path = project_root / "src"
+sys.path.insert(0, str(src_path))
+
+try:
+    from pheno.cli.main import create_pheno_cli
+
+    CLI_AVAILABLE = True
+except ImportError as e:
+    CLI_AVAILABLE = False
+    print(f"Error: CLI framework not available: {e}")
+
+
+def setup_commands(cli):
+    """
+    Setup available commands.
+    """
+
+    # Status command
+    def status_cmd(args):
+        if CLI_AVAILABLE:
+            run_status_check(detailed=args.detailed, json_output=args.json)
+        else:
+            print("Status command not available")
+
+    cli.register_command("status", status_cmd, "Show project status")
+
+    # Build command
+    def build_cmd(args):
+        os.system("make build")
+
+    cli.register_command("build", build_cmd, "Build the project")
+
+    # Test command
+    def test_cmd(args):
+        test_type = getattr(args, "test_type", "all")
+        if test_type == "domain":
+            os.system("make test-domain")
+        elif test_type == "no-auth":
+            os.system("make test-no-auth")
+        else:
+            os.system("make test")
+
+    cli.register_command("test", test_cmd, "Run tests")
+
+    # Quality command
+    def quality_cmd(args):
+        os.system("make quality")
+
+    cli.register_command("quality", quality_cmd, "Run code quality checks")
+
+    # Vendor command
+    def vendor_cmd(args):
+        action = getattr(args, "action", "status")
+        if action == "setup":
+            os.system("make vendor-setup")
+        elif action == "sync":
+            os.system("make vendor-sync")
+        elif action == "verify":
+            os.system("make vendor-verify")
+        else:
+            os.system(f"python lib/vendor_manager.py {action}")
+
+    cli.register_command("vendor", vendor_cmd, "Manage vendor packages")
+
+    # Schema command
+    def schema_cmd(args):
+        action = getattr(args, "action", "status")
+        os.system(f"python pheno-sdk/scripts/migrate_schema.py --{action}")
+
+    cli.register_command("schema", schema_cmd, "Manage database schema")
+
+    # Performance command
+    def performance_cmd(args):
+        action = getattr(args, "action", "test")
+        if action == "benchmarks":
+            os.system("make benchmarks")
+        elif action == "load":
+            os.system("make load")
+        else:
+            os.system("make performance")
+
+    cli.register_command("performance", performance_cmd, "Run performance tests")
+
+    # Deploy command
+    def deploy_cmd(args):
+        action = getattr(args, "action", "check")
+        if action == "check":
+            os.system("make deploy-check")
+        else:
+            print(f"Deploy action {action} not implemented")
+
+    cli.register_command("deploy", deploy_cmd, "Deployment operations")
+
+    # Atlas commands
+    def atlas_health_cmd(args):
+        from cli.commands.atlas import atlas_health
+
+        return atlas_health()
+
+    cli.register_command("atlas-health", atlas_health_cmd, "Generate atlas health report")
+
+    def atlas_status_cmd(args):
+        from cli.commands.atlas import atlas_status
+
+        return atlas_status()
+
+    cli.register_command("atlas-status", atlas_status_cmd, "Show atlas status")
+
+    def atlas_monitor_cmd(args):
+        from cli.commands.atlas import atlas_monitor
+
+        return atlas_monitor()
+
+    cli.register_command("atlas-monitor", atlas_monitor_cmd, "Monitor atlas health continuously")
+
+    def atlas_report_cmd(args):
+        from cli.commands.atlas import atlas_report
+
+        return atlas_report()
+
+    cli.register_command("atlas-report", atlas_report_cmd, "Generate comprehensive atlas report")
+
+    def health_dashboard_cmd(args):
+        from cli.commands.atlas import health_dashboard
+
+        return health_dashboard()
+
+    cli.register_command("health-dashboard", health_dashboard_cmd, "Show health dashboard")
+
+    # Quality analysis commands
+    def pattern_detection_cmd(args):
+        os.system("python3 scripts/advanced_pattern_detector.py . --json")
+
+    cli.register_command(
+        "pattern-detection", pattern_detection_cmd, "Run advanced pattern detection"
+    )
+
+    def architectural_validation_cmd(args):
+        os.system("python3 scripts/architectural_pattern_validator.py . --json")
+
+    cli.register_command(
+        "architectural-validation",
+        architectural_validation_cmd,
+        "Run architectural pattern validation",
+    )
+
+    def performance_anti_patterns_cmd(args):
+        os.system("python3 scripts/performance_anti_pattern_detector.py . --json")
+
+    cli.register_command(
+        "performance-anti-patterns",
+        performance_anti_patterns_cmd,
+        "Run performance anti-pattern detection",
+    )
+
+    def security_scanning_cmd(args):
+        os.system("python3 scripts/security_pattern_scanner.py . --json")
+
+    cli.register_command(
+        "security-scanning", security_scanning_cmd, "Run comprehensive security scanning"
+    )
+
+    def code_smell_detection_cmd(args):
+        os.system("python3 scripts/code_smell_detector.py . --json")
+
+    cli.register_command(
+        "code-smell-detection", code_smell_detection_cmd, "Run comprehensive code smell detection"
+    )
+
+    def integration_gates_cmd(args):
+        os.system("python3 scripts/integration_quality_gates.py . --json")
+
+    cli.register_command(
+        "integration-gates", integration_gates_cmd, "Run integration quality gates"
+    )
+
+    def comprehensive_quality_cmd(args):
+        os.system("python3 scripts/comprehensive_quality_analyzer.py .")
+
+    cli.register_command(
+        "comprehensive-quality", comprehensive_quality_cmd, "Run comprehensive quality analysis"
+    )
+
+    # CI/CD commands
+    def cicd_generate_cmd(args):
+        from src.pheno.cicd.cli import CICDCLI
+
+        cli = CICDCLI()
+        return cli.generate(args)
+
+    cli.register_command("cicd-generate", cicd_generate_cmd, "Generate CI/CD pipeline")
+
+    def cicd_sync_cmd(args):
+        from src.pheno.cicd.cli import CICDCLI
+
+        cli = CICDCLI()
+        return cli.sync(args)
+
+    cli.register_command("cicd-sync", cicd_sync_cmd, "Synchronize CI/CD configuration")
+
+    def cicd_update_cmd(args):
+        from src.pheno.cicd.cli import CICDCLI
+
+        cli = CICDCLI()
+        return cli.update(args)
+
+    cli.register_command("cicd-update", cicd_update_cmd, "Update soft dependencies")
+
+    def cicd_status_cmd(args):
+        from src.pheno.cicd.cli import CICDCLI
+
+        cli = CICDCLI()
+        return cli.status(args)
+
+    cli.register_command("cicd-status", cicd_status_cmd, "Show CI/CD status")
+
+    def cicd_validate_cmd(args):
+        from src.pheno.cicd.cli import CICDCLI
+
+        cli = CICDCLI()
+        return cli.validate(args)
+
+    cli.register_command("cicd-validate", cicd_validate_cmd, "Validate CI/CD configuration")
+
+    # CI/CD management commands
+    def cicd_manage_cmd(args):
+        from src.pheno.cicd.manager import main
+
+        return main()
+
+    cli.register_command("cicd-manage", cicd_manage_cmd, "Manage CI/CD across all projects")
+
+
+def main():
+    """
+    Main CLI entry point.
+    """
+
+    # Basic CLI without rich as fallback
+    if not CLI_AVAILABLE:
+        parser = argparse.ArgumentParser(description="ATOMS-PHENO CLI Tool")
+        parser.add_argument(
+            "command",
+            choices=[
+                "build",
+                "test",
+                "quality",
+                "status",
+                "vendor",
+                "schema",
+                "performance",
+                "deploy",
+                "atlas-health",
+                "atlas-status",
+                "atlas-monitor",
+                "atlas-report",
+                "health-dashboard",
+                "pattern-detection",
+                "architectural-validation",
+                "performance-anti-patterns",
+                "security-scanning",
+                "code-smell-detection",
+                "integration-gates",
+                "comprehensive-quality",
+                "cicd-generate",
+                "cicd-sync",
+                "cicd-update",
+                "cicd-status",
+                "cicd-validate",
+                "cicd-manage",
+            ],
+            help="Command to execute",
+        )
+        parser.add_argument("--help", "-h", action="store_true", help="Show help")
+
+        args = parser.parse_args()
+
+        if args.help:
+            print("ATOMS-PHENO CLI Tool")
+            print("Commands: build, test, quality, status, vendor, schema, performance, deploy")
+            print(
+                "Atlas: atlas-health, atlas-status, atlas-monitor, atlas-report, health-dashboard"
+            )
+            return 0
+
+        # Simple command mapping
+        commands = {
+            "build": "make build",
+            "test": "make test",
+            "quality": "make quality",
+            "status": "python scripts/check_deployment.py",
+            "vendor": "make vendor-setup",
+            "schema": "python pheno-sdk/scripts/migrate_schema.py --status",
+            "performance": "make performance",
+            "deploy": "make deploy-check",
+            "atlas-health": "python3 scripts/atlas_health.py --report",
+            "atlas-status": "python3 scripts/atlas_health.py --status",
+            "atlas-monitor": "python3 scripts/atlas_health.py --monitor",
+            "atlas-report": "python3 scripts/atlas_health.py --report --json",
+            "health-dashboard": "python3 scripts/health_dashboard.py --live",
+            "pattern-detection": "python3 scripts/advanced_pattern_detector.py . --json",
+            "architectural-validation": "python3 scripts/architectural_pattern_validator.py . --json",
+            "performance-anti-patterns": "python3 scripts/performance_anti_pattern_detector.py . --json",
+            "security-scanning": "python3 scripts/security_pattern_scanner.py . --json",
+            "code-smell-detection": "python3 scripts/code_smell_detector.py . --json",
+            "integration-gates": "python3 scripts/integration_quality_gates.py . --json",
+            "comprehensive-quality": "python3 scripts/comprehensive_quality_analyzer.py .",
+            "cicd-generate": "python3 -m src.pheno.cicd.cli generate",
+            "cicd-sync": "python3 -m src.pheno.cicd.cli sync",
+            "cicd-update": "python3 -m src.pheno.cicd.cli update",
+            "cicd-status": "python3 -m src.pheno.cicd.cli status",
+            "cicd-validate": "python3 -m src.pheno.cicd.cli validate",
+            "cicd-manage": "python3 -m src.pheno.cicd.manager",
+        }
+
+        if args.command in commands:
+            os.system(commands[args.command])
+            return 0
+        else:
+            print(f"Unknown command: {args.command}")
+            return 1
+
+    # Rich CLI available
+    cli = get_cli()
+
+    parser = argparse.ArgumentParser(
+        description="ATOMS-PHENO CLI Tool", formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+
+    parser.add_argument("command", nargs="?", help="Command to execute")
+    parser.add_argument("-v", "--version", action="store_true", help="Show version")
+
+    # Sub-commands
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    # Status command
+    status_parser = subparsers.add_parser("status", help="Show project status")
+    status_parser.add_argument("--detailed", action="store_true", help="Show detailed status")
+    status_parser.add_argument("--json", action="store_true", help="Output as JSON")
+
+    # Test command
+    test_parser = subparsers.add_parser("test", help="Run tests")
+    test_parser.add_argument(
+        "--type", choices=["all", "domain", "no-auth"], default="all", help="Type of tests to run"
+    )
+
+    # Vendor command
+    vendor_parser = subparsers.add_parser("vendor", help="Manage vendor packages")
+    vendor_parser.add_argument(
+        "action",
+        choices=["status", "add", "remove", "update", "sync", "verify"],
+        nargs="?",
+        default="status",
+        help="Vendor action",
+    )
+    vendor_parser.add_argument("--name", help="Package name")
+    vendor_parser.add_argument("--url", help="Source URL")
+
+    # Schema command
+    schema_parser = subparsers.add_parser("schema", help="Manage database schema")
+    schema_parser.add_argument(
+        "action",
+        choices=["status", "validate", "run", "create-baseline"],
+        nargs="?",
+        default="status",
+        help="Schema action",
+    )
+
+    # Performance command
+    perf_parser = subparsers.add_parser("performance", help="Performance testing")
+    perf_parser.add_argument(
+        "action",
+        choices=["test", "benchmarks", "load"],
+        nargs="?",
+        default="test",
+        help="Performance action",
+    )
+
+    # Deploy command
+    deploy_parser = subparsers.add_parser("deploy", help="Deployment operations")
+    deploy_parser.add_argument(
+        "action", choices=["check", "validate"], nargs="?", default="check", help="Deploy action"
+    )
+
+    # Atlas commands
+    atlas_health_parser = subparsers.add_parser("atlas-health", help="Generate atlas health report")
+
+    atlas_status_parser = subparsers.add_parser("atlas-status", help="Show atlas status")
+
+    atlas_monitor_parser = subparsers.add_parser(
+        "atlas-monitor", help="Monitor atlas health continuously"
+    )
+
+    atlas_report_parser = subparsers.add_parser(
+        "atlas-report", help="Generate comprehensive atlas report"
+    )
+
+    health_dashboard_parser = subparsers.add_parser(
+        "health-dashboard", help="Show health dashboard"
+    )
+
+    # Quality analysis commands
+    pattern_detection_parser = subparsers.add_parser(
+        "pattern-detection", help="Run advanced pattern detection"
+    )
+
+    architectural_validation_parser = subparsers.add_parser(
+        "architectural-validation", help="Run architectural pattern validation"
+    )
+
+    performance_anti_patterns_parser = subparsers.add_parser(
+        "performance-anti-patterns", help="Run performance anti-pattern detection"
+    )
+
+    security_scanning_parser = subparsers.add_parser(
+        "security-scanning", help="Run comprehensive security scanning"
+    )
+
+    code_smell_detection_parser = subparsers.add_parser(
+        "code-smell-detection", help="Run comprehensive code smell detection"
+    )
+
+    integration_gates_parser = subparsers.add_parser(
+        "integration-gates", help="Run integration quality gates"
+    )
+
+    comprehensive_quality_parser = subparsers.add_parser(
+        "comprehensive-quality", help="Run comprehensive quality analysis"
+    )
+
+    # CI/CD commands
+    cicd_generate_parser = subparsers.add_parser("cicd-generate", help="Generate CI/CD pipeline")
+    cicd_generate_parser.add_argument("path", help="Project path")
+    cicd_generate_parser.add_argument(
+        "--project-type",
+        choices=["pheno-sdk", "zen-mcp-server", "atoms_mcp-old", "morph", "router"],
+        help="Project type",
+    )
+    cicd_generate_parser.add_argument("--project-name", help="Project name")
+    cicd_generate_parser.add_argument("--config", help="Configuration file path")
+
+    cicd_sync_parser = subparsers.add_parser("cicd-sync", help="Synchronize CI/CD configuration")
+    cicd_sync_parser.add_argument("source", help="Source project path")
+    cicd_sync_parser.add_argument("targets", nargs="+", help="Target project paths")
+    cicd_sync_parser.add_argument(
+        "--strategy",
+        choices=["overwrite", "merge", "backup_and_overwrite", "manual_review"],
+        help="Sync strategy",
+    )
+
+    cicd_update_parser = subparsers.add_parser("cicd-update", help="Update soft dependencies")
+    cicd_update_parser.add_argument("project", help="Project name")
+    cicd_update_parser.add_argument("--types", nargs="+", help="Dependency types to update")
+
+    cicd_status_parser = subparsers.add_parser("cicd-status", help="Show CI/CD status")
+    cicd_status_parser.add_argument("path", help="Project path")
+
+    cicd_validate_parser = subparsers.add_parser(
+        "cicd-validate", help="Validate CI/CD configuration"
+    )
+    cicd_validate_parser.add_argument("path", help="Project path")
+
+    cicd_manage_parser = subparsers.add_parser(
+        "cicd-manage", help="Manage CI/CD across all projects"
+    )
+    cicd_manage_parser.add_argument(
+        "command",
+        choices=["generate", "sync", "update", "status", "validate", "quality"],
+        help="Management command",
+    )
+    cicd_manage_parser.add_argument("--force", action="store_true", help="Force regeneration")
+    cicd_manage_parser.add_argument(
+        "--strategy",
+        choices=["overwrite", "merge", "backup_and_overwrite", "manual_review"],
+        help="Sync strategy",
+    )
+    cicd_manage_parser.add_argument("--project", help="Specific project to update")
+    cicd_manage_parser.add_argument("--types", nargs="+", help="Dependency types to update")
+
+    args = parser.parse_args()
+
+    # Show version
+    if args.version:
+        cli.print(f"{cli.name} CLI v{cli.version}")
+        return 0
+
+    # Show help if no command
+    if not args.command:
+        cli.show_help()
+        return 0
+
+    # Setup commands
+    setup_commands(cli)
+
+    # Execute command
+    if args.command in [
+        "status",
+        "test",
+        "build",
+        "quality",
+        "vendor",
+        "schema",
+        "performance",
+        "deploy",
+        "atlas-health",
+        "atlas-status",
+        "atlas-monitor",
+        "atlas-report",
+        "health-dashboard",
+        "pattern-detection",
+        "architectural-validation",
+        "performance-anti-patterns",
+        "security-scanning",
+        "code-smell-detection",
+        "integration-gates",
+        "comprehensive-quality",
+        "cicd-generate",
+        "cicd-sync",
+        "cicd-update",
+        "cicd-status",
+        "cicd-validate",
+        "cicd-manage",
+    ]:
+        result = cli.run_command(args.command, args)
+
+        if result.success:
+            if hasattr(args, "json") and args.json:
+                # JSON output handled by command
+                pass
+            elif result.data:
+                cli.info(f"Command completed successfully ({result.execution_time:.2f}s)")
+            else:
+                cli.success(f"Command completed successfully ({result.execution_time:.2f}s)")
+            return 0
+        else:
+            cli.error(f"Command failed: {result.message}")
+            return 1
+    else:
+        cli.error(f"Unknown command: {args.command}")
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,115 @@
+---
+title: "Retry Logic"
+description: "Documentation for Retry Logic"
+---
+
+# Retry Logic
+
+
+## Overview
+
+Complete API reference for Retry Logic.
+
+## Authentication
+
+All API requests require authentication:
+
+```typescript
+const headers = {
+  'Authorization': 'Bearer YOUR_JWT_TOKEN',
+  'Content-Type': 'application/json'
+}
+```
+
+## Endpoints
+
+### List All Retry Logic
+
+```http
+GET /api/v1/retry-logic
+```
+
+**Response:**
+```json
+{
+  "data": [],
+  "pagination": {
+    "page": 1,
+    "per_page": 20,
+    "total": 100
+  }
+}
+```
+
+### Get Retry Logic by ID
+
+```http
+GET /api/v1/retry-logic/:id
+```
+
+### Create Retry Logic
+
+```http
+POST /api/v1/retry-logic
+```
+
+**Request Body:**
+```json
+{
+  "name": "Example Retry Logic",
+  "description": "Description here"
+}
+```
+
+### Update Retry Logic
+
+```http
+PUT /api/v1/retry-logic/:id
+```
+
+### Delete Retry Logic
+
+```http
+DELETE /api/v1/retry-logic/:id
+```
+
+## Query Parameters
+
+- `page` - Page number (default: 1)
+- `per_page` - Items per page (default: 20)
+- `sort` - Sort field
+- `order` - Sort order (asc/desc)
+- `filter` - Filter criteria
+
+## Error Responses
+
+### 400 Bad Request
+Invalid request parameters
+
+### 401 Unauthorized
+Missing or invalid authentication token
+
+### 404 Not Found
+Resource not found
+
+### 500 Internal Server Error
+Server error
+
+## SDK Examples
+
+### TypeScript
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk'
+
+const client = new TraceRTMClient({ apiKey: 'YOUR_KEY' })
+const items = await client.retry-logic.list()
+```
+
+### Python
+```python
+from tracertm import Client
+
+client = Client(api_key='YOUR_KEY')
+items = client.retry-logic.list()
+```
+

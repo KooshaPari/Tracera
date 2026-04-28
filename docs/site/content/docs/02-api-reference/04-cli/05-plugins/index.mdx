@@ -1,0 +1,75 @@
+---
+title: "CLI Plugins"
+description: "Extend CLI functionality with plugins"
+keywords: [cli, plugins, extensions, customization]
+---
+
+# CLI Plugins
+
+Extend TraceRTM CLI functionality with custom plugins.
+
+## Plugin System
+
+Plugins allow you to:
+- Add custom commands
+- Integrate with other tools
+- Automate workflows
+- Extend functionality
+
+## Installing Plugins
+
+### From Plugin Marketplace
+
+```bash
+trace plugin install <plugin-name>
+```
+
+### From Local Path
+
+```bash
+trace plugin install /path/to/plugin
+```
+
+### From Git Repository
+
+```bash
+trace plugin install https://github.com/user/plugin.git
+```
+
+## List Plugins
+
+```bash
+# List installed plugins
+trace plugin list
+
+# List available plugins
+trace plugin search
+```
+
+## Plugin Development
+
+Create custom plugins:
+
+1. Create plugin directory structure
+2. Implement plugin interface
+3. Register commands
+4. Package and distribute
+
+### Example Plugin
+
+```python
+# my_plugin.py
+from tracertm.plugin import Plugin
+
+class MyPlugin(Plugin):
+    def register_commands(self, cli):
+        @cli.command()
+        def my_command():
+            """Custom command"""
+            print("Hello from plugin!")
+```
+
+## Related Documentation
+
+- [Plugin Development](./05a-plugin-development) - Create plugins
+- [Plugin Marketplace](./05b-plugin-marketplace) - Browse plugins

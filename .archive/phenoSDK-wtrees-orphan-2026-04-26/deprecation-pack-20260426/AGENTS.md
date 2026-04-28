@@ -1,0 +1,1 @@
+../template-commons/AGENTS.md

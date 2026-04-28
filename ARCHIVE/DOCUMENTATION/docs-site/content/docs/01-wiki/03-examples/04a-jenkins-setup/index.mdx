@@ -1,0 +1,947 @@
+---
+title: "Jenkins Setup"
+description: "Complete guide to integrating TracerTM with Jenkins CI/CD pipelines"
+---
+
+# Jenkins Integration Guide
+
+This comprehensive guide covers integrating TracerTM with Jenkins to automate traceability tracking, requirements validation, and compliance reporting in your CI/CD pipeline.
+
+## Overview
+
+TracerTM integrates seamlessly with Jenkins to:
+
+- Automatically sync requirements and test cases during builds
+- Generate traceability reports as build artifacts
+- Validate requirement coverage before deployment
+- Track changes and link commits to requirements
+- Trigger builds when traceability data changes
+- Visualize traceability metrics in Blue Ocean
+
+## Prerequisites
+
+### Jenkins Requirements
+
+Before setting up TracerTM integration, ensure you have:
+
+1. **Jenkins LTS Version**: 2.375.x or newer
+2. **Java Runtime**: Java 11 or Java 17
+3. **Required Plugins**:
+   - Pipeline (workflow-aggregator)
+   - Git Plugin
+   - Credentials Binding Plugin
+   - HTTP Request Plugin
+   - JUnit Plugin (for test result integration)
+   - Blue Ocean (optional, for enhanced visualization)
+   - Generic Webhook Trigger Plugin (for webhook support)
+
+Install plugins via Jenkins UI:
+```
+Manage Jenkins → Manage Plugins → Available → Search and install
+```
+
+Or via Jenkins CLI:
+```bash
+java -jar jenkins-cli.jar -s http://localhost:8080/ install-plugin \
+  workflow-aggregator \
+  git \
+  credentials-binding \
+  http-request \
+  junit \
+  blueocean \
+  generic-webhook-trigger
+```
+
+### System Requirements
+
+- **Python**: 3.11 or newer (for TracerTM CLI)
+- **pip**: Latest version
+- **Git**: 2.30 or newer
+- **Disk Space**: At least 500MB for TracerTM data and reports
+
+## Installing TracerTM on Jenkins Agents
+
+### Option 1: Install on Agent Startup (Recommended)
+
+Create a global tool configuration for TracerTM:
+
+1. **Navigate to**: Manage Jenkins → Global Tool Configuration
+2. **Add Custom Tool**: Create a new tool installer
+3. **Use the following script** as a build step:
+
+```bash
+#!/bin/bash
+# Install TracerTM if not present
+if ! command -v tracertm &> /dev/null; then
+    echo "Installing TracerTM..."
+    python3 -m pip install --user tracertm
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+
+# Verify installation
+tracertm --version
+```
+
+### Option 2: Docker-based Agents
+
+Use a Docker image with TracerTM pre-installed:
+
+```dockerfile
+FROM jenkins/inbound-agent:latest
+
+USER root
+
+# Install Python and dependencies
+RUN apt-get update && apt-get install -y \
+    python3.11 \
+    python3-pip \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install TracerTM
+RUN pip3 install tracertm
+
+# Verify installation
+RUN tracertm --version
+
+USER jenkins
+```
+
+Build and register the image:
+```bash
+docker build -t jenkins-tracertm-agent:latest .
+docker push your-registry/jenkins-tracertm-agent:latest
+```
+
+### Option 3: Ansible Provisioning
+
+For managing multiple agents, use Ansible:
+
+```yaml
+---
+# playbook.yml
+- name: Install TracerTM on Jenkins Agents
+  hosts: jenkins_agents
+  become: yes
+  tasks:
+    - name: Install Python 3.11
+      apt:
+        name:
+          - python3.11
+          - python3-pip
+        state: present
+        update_cache: yes
+
+    - name: Install TracerTM
+      pip:
+        name: tracertm
+        executable: pip3
+
+    - name: Verify TracerTM installation
+      command: tracertm --version
+      register: version_output
+      changed_when: false
+
+    - name: Display TracerTM version
+      debug:
+        msg: "{{ version_output.stdout }}"
+```
+
+## Environment Variable Configuration
+
+### Global Environment Variables
+
+Set these in **Manage Jenkins → Configure System → Global properties → Environment variables**:
+
+```
+TRACERTM_API_URL=https://tracertm.yourcompany.com/api/v1
+TRACERTM_STORAGE_DIR=/var/jenkins_home/tracertm-data
+TRACERTM_AUTO_SYNC=true
+TRACERTM_LOG_LEVEL=INFO
+```
+
+### Project-Specific Variables
+
+Define in your Jenkinsfile:
+
+```groovy
+environment {
+    TRACERTM_PROJECT_ID = 'proj_aerospace_2024'
+    TRACERTM_EXPORT_FORMAT = 'json,csv,markdown'
+    TRACERTM_REPORT_DIR = "${WORKSPACE}/tracertm-reports"
+    TRACERTM_VALIDATE_COVERAGE = 'true'
+    TRACERTM_MIN_COVERAGE = '85'
+}
+```
+
+## Credentials Management
+
+### Creating TracerTM API Credentials
+
+1. **Navigate to**: Manage Jenkins → Manage Credentials
+2. **Add Credentials** with these details:
+   - **Kind**: Secret text
+   - **Scope**: Global
+   - **Secret**: Your TracerTM API token
+   - **ID**: `tracertm-api-token`
+   - **Description**: TracerTM API authentication token
+
+### Using Credentials in Pipeline
+
+```groovy
+pipeline {
+    agent any
+
+    environment {
+        TRACERTM_API_TOKEN = credentials('tracertm-api-token')
+    }
+
+    stages {
+        stage('Sync Requirements') {
+            steps {
+                sh '''
+                    tracertm config set api_token "$TRACERTM_API_TOKEN"
+                    tracertm sync push
+                '''
+            }
+        }
+    }
+}
+```
+
+### Database Credentials
+
+For projects using PostgreSQL/MySQL:
+
+```groovy
+environment {
+    TRACERTM_DB_URL = credentials('tracertm-database-url')
+}
+
+stages {
+    stage('Configure Database') {
+        steps {
+            sh 'tracertm config set database_url "$TRACERTM_DB_URL"'
+        }
+    }
+}
+```
+
+## Jenkinsfile Examples
+
+### Example 1: Declarative Pipeline - Basic Integration
+
+```groovy
+// Jenkinsfile
+pipeline {
+    agent any
+
+    environment {
+        TRACERTM_PROJECT_ID = 'proj_medical_device_2024'
+        TRACERTM_API_TOKEN = credentials('tracertm-api-token')
+        TRACERTM_REPORT_DIR = "${WORKSPACE}/reports/traceability"
+    }
+
+    options {
+        timestamps()
+        timeout(time: 1, unit: 'HOURS')
+        buildDiscarder(logRotator(numToKeepStr: '30'))
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Setup TracerTM') {
+            steps {
+                sh '''
+                    # Configure TracerTM
+                    tracertm config set project_id "$TRACERTM_PROJECT_ID"
+                    tracertm config set api_token "$TRACERTM_API_TOKEN"
+
+                    # Initialize project if needed
+                    tracertm project init "$TRACERTM_PROJECT_ID" \
+                        --description "Medical Device Requirements" \
+                        || echo "Project already exists"
+                '''
+            }
+        }
+
+        stage('Sync Requirements') {
+            steps {
+                sh '''
+                    # Pull latest from central server
+                    tracertm sync pull
+
+                    # Import any new markdown files
+                    tracertm import markdown docs/requirements/
+
+                    # Push changes back
+                    tracertm sync push
+                '''
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'make build'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'make test'
+                junit 'test-results/*.xml'
+            }
+        }
+
+        stage('Validate Traceability') {
+            steps {
+                script {
+                    def coverage = sh(
+                        script: 'tracertm progress --format json | jq -r .coverage_percentage',
+                        returnStdout: true
+                    ).trim()
+
+                    echo "Traceability Coverage: ${coverage}%"
+
+                    if (coverage.toFloat() < 85.0) {
+                        error("Traceability coverage ${coverage}% below minimum 85%")
+                    }
+                }
+            }
+        }
+
+        stage('Generate Reports') {
+            steps {
+                sh '''
+                    mkdir -p "$TRACERTM_REPORT_DIR"
+
+                    # Export to multiple formats
+                    tracertm export json --output "$TRACERTM_REPORT_DIR/traceability.json"
+                    tracertm export csv --output "$TRACERTM_REPORT_DIR/traceability.csv"
+                    tracertm export markdown --output "$TRACERTM_REPORT_DIR/traceability.md"
+
+                    # Generate traceability matrix
+                    tracertm view matrix --export "$TRACERTM_REPORT_DIR/matrix.html"
+
+                    # Generate progress report
+                    tracertm progress --export "$TRACERTM_REPORT_DIR/progress.json"
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            // Archive traceability reports
+            archiveArtifacts artifacts: 'reports/traceability/**/*',
+                           allowEmptyArchive: true
+
+            // Publish HTML reports
+            publishHTML([
+                reportDir: 'reports/traceability',
+                reportFiles: 'matrix.html',
+                reportName: 'Traceability Matrix',
+                keepAll: true
+            ])
+        }
+
+        success {
+            echo 'Build and traceability validation successful!'
+        }
+
+        failure {
+            echo 'Build failed - check traceability reports for details'
+        }
+    }
+}
+```
+
+### Example 2: Declarative Pipeline - Advanced with Parallel Stages
+
+```groovy
+// Jenkinsfile
+pipeline {
+    agent none
+
+    environment {
+        TRACERTM_PROJECT_ID = 'proj_automotive_safety'
+        TRACERTM_API_TOKEN = credentials('tracertm-api-token')
+        TRACERTM_DB_URL = credentials('tracertm-database-url')
+    }
+
+    stages {
+        stage('Initialize') {
+            agent any
+            steps {
+                sh '''
+                    tracertm config set project_id "$TRACERTM_PROJECT_ID"
+                    tracertm config set database_url "$TRACERTM_DB_URL"
+                    tracertm sync pull
+                '''
+            }
+        }
+
+        stage('Parallel Analysis') {
+            parallel {
+                stage('Link Analysis') {
+                    agent { label 'tracertm-worker' }
+                    steps {
+                        sh '''
+                            # Analyze requirement links
+                            tracertm view graph --format json > graph-analysis.json
+
+                            # Check for orphaned requirements
+                            tracertm search --query "status:active AND links:0" \
+                                --format json > orphaned-requirements.json
+                        '''
+                        archiveArtifacts artifacts: '*-analysis.json'
+                    }
+                }
+
+                stage('Coverage Analysis') {
+                    agent { label 'tracertm-worker' }
+                    steps {
+                        sh '''
+                            # Generate coverage report
+                            tracertm progress --detailed --format json > coverage.json
+
+                            # Check critical requirements
+                            tracertm search --query "priority:critical AND status:pending" \
+                                --format json > critical-pending.json
+                        '''
+                        archiveArtifacts artifacts: 'coverage.json,critical-pending.json'
+                    }
+                }
+
+                stage('Impact Analysis') {
+                    agent { label 'tracertm-worker' }
+                    steps {
+                        sh '''
+                            # Analyze changes since last build
+                            git diff HEAD~1 --name-only > changed-files.txt
+
+                            # Find affected requirements
+                            tracertm search --query "modified_since:24h" \
+                                --format json > recent-changes.json
+                        '''
+                        archiveArtifacts artifacts: 'recent-changes.json'
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gates') {
+            agent any
+            steps {
+                script {
+                    // Check multiple quality metrics
+                    def results = sh(
+                        script: '''
+                            tracertm progress --format json > progress.json
+                            cat progress.json
+                        ''',
+                        returnStdout: true
+                    )
+
+                    def progress = readJSON text: results
+
+                    // Validate coverage
+                    if (progress.coverage_percentage < 85) {
+                        unstable("Coverage ${progress.coverage_percentage}% below 85%")
+                    }
+
+                    // Validate critical requirements
+                    def critical = sh(
+                        script: 'tracertm search --query "priority:critical AND status:pending" --count',
+                        returnStdout: true
+                    ).trim().toInteger()
+
+                    if (critical > 0) {
+                        error("${critical} critical requirements still pending")
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            node('master') {
+                // Consolidate all reports
+                sh '''
+                    mkdir -p final-reports
+                    find . -name "*-analysis.json" -o -name "coverage.json" | \
+                        xargs -I {} cp {} final-reports/
+                '''
+                archiveArtifacts artifacts: 'final-reports/**/*'
+            }
+        }
+    }
+}
+```
+
+### Example 3: Scripted Pipeline
+
+```groovy
+// Jenkinsfile - Scripted Pipeline
+node('tracertm-agent') {
+    def projectId = 'proj_financial_compliance'
+
+    try {
+        stage('Checkout') {
+            checkout scm
+        }
+
+        stage('Configure TracerTM') {
+            withCredentials([
+                string(credentialsId: 'tracertm-api-token', variable: 'API_TOKEN')
+            ]) {
+                sh """
+                    tracertm config set project_id ${projectId}
+                    tracertm config set api_token \$API_TOKEN
+                    tracertm config set auto_sync true
+                """
+            }
+        }
+
+        stage('Import Requirements') {
+            sh """
+                # Import from various sources
+                tracertm import markdown docs/requirements/
+                tracertm import jira --project FIN --jql "project=FIN AND type=Requirement"
+
+                # Sync with central database
+                tracertm sync push
+            """
+        }
+
+        stage('Run Compliance Checks') {
+            def complianceStatus = sh(
+                script: """
+                    tracertm search --query "tag:sox_compliance AND status:approved" --count
+                """,
+                returnStdout: true
+            ).trim()
+
+            echo "Approved SOX compliance requirements: ${complianceStatus}"
+
+            // Store for later use
+            env.COMPLIANCE_COUNT = complianceStatus
+        }
+
+        stage('Generate Audit Report') {
+            sh """
+                mkdir -p audit-reports
+
+                # Generate compliance-specific reports
+                tracertm export json \
+                    --filter "tag:sox_compliance" \
+                    --output audit-reports/sox-compliance.json
+
+                tracertm export csv \
+                    --filter "tag:gdpr_compliance" \
+                    --output audit-reports/gdpr-compliance.csv
+
+                # Generate traceability matrix for auditors
+                tracertm view matrix \
+                    --filter "tag:compliance" \
+                    --export audit-reports/compliance-matrix.html
+            """
+
+            archiveArtifacts artifacts: 'audit-reports/**/*'
+        }
+
+        currentBuild.result = 'SUCCESS'
+
+    } catch (Exception e) {
+        currentBuild.result = 'FAILURE'
+        throw e
+    } finally {
+        // Cleanup
+        sh 'tracertm sync push || true'
+
+        // Send notification with traceability status
+        if (currentBuild.result == 'SUCCESS') {
+            echo "Build successful - ${env.COMPLIANCE_COUNT} compliance requirements approved"
+        }
+    }
+}
+```
+
+## Post-Build Actions
+
+### Archiving Traceability Artifacts
+
+```groovy
+post {
+    always {
+        // Archive all traceability reports
+        archiveArtifacts artifacts: 'reports/**/*.{json,csv,html,md}',
+                       fingerprint: true,
+                       allowEmptyArchive: true
+
+        // Publish HTML reports
+        publishHTML([
+            reportDir: 'reports',
+            reportFiles: 'matrix.html,graph.html',
+            reportName: 'Traceability Reports',
+            keepAll: true,
+            alwaysLinkToLastBuild: true
+        ])
+    }
+}
+```
+
+### Email Notifications with Traceability Summary
+
+```groovy
+post {
+    success {
+        script {
+            def summary = sh(
+                script: 'tracertm progress --format json',
+                returnStdout: true
+            )
+            def progress = readJSON text: summary
+
+            emailext(
+                subject: "Build ${env.BUILD_NUMBER} - Traceability: ${progress.coverage_percentage}%",
+                body: """
+                    Build: ${env.BUILD_URL}
+                    Coverage: ${progress.coverage_percentage}%
+                    Total Items: ${progress.total_items}
+                    Linked Items: ${progress.linked_items}
+
+                    View reports: ${env.BUILD_URL}Traceability_Reports/
+                """,
+                to: '${DEFAULT_RECIPIENTS}'
+            )
+        }
+    }
+}
+```
+
+## Webhook Triggers from TracerTM
+
+### Configure Generic Webhook Trigger
+
+1. Install **Generic Webhook Trigger Plugin**
+2. Configure in your pipeline:
+
+```groovy
+pipeline {
+    agent any
+
+    triggers {
+        GenericTrigger(
+            genericVariables: [
+                [key: 'TRACERTM_EVENT', value: '$.event_type'],
+                [key: 'TRACERTM_PROJECT_ID', value: '$.project_id'],
+                [key: 'TRACERTM_ITEM_ID', value: '$.item_id'],
+                [key: 'TRACERTM_TIMESTAMP', value: '$.timestamp']
+            ],
+
+            causeString: 'Triggered by TracerTM event: $TRACERTM_EVENT',
+
+            token: 'tracertm-webhook-token',
+
+            printContributedVariables: true,
+            printPostContent: true,
+
+            regexpFilterText: '$TRACERTM_EVENT',
+            regexpFilterExpression: '^(requirement_updated|link_created|item_approved)$'
+        )
+    }
+
+    stages {
+        stage('Process Webhook') {
+            steps {
+                script {
+                    echo "Webhook Event: ${env.TRACERTM_EVENT}"
+                    echo "Project ID: ${env.TRACERTM_PROJECT_ID}"
+                    echo "Item ID: ${env.TRACERTM_ITEM_ID}"
+
+                    // Trigger different actions based on event
+                    switch(env.TRACERTM_EVENT) {
+                        case 'requirement_updated':
+                            sh 'tracertm sync pull'
+                            sh 'tracertm export json --output updated-requirements.json'
+                            break
+                        case 'link_created':
+                            sh 'tracertm view graph --export graph.html'
+                            break
+                        case 'item_approved':
+                            sh 'tracertm progress --export progress-report.json'
+                            break
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+### Webhook URL Format
+
+```
+https://jenkins.yourcompany.com/generic-webhook-trigger/invoke?token=tracertm-webhook-token
+```
+
+### Configure TracerTM to Send Webhooks
+
+```bash
+# Configure webhook in TracerTM
+tracertm config set webhook_url "https://jenkins.yourcompany.com/generic-webhook-trigger/invoke?token=tracertm-webhook-token"
+tracertm config set webhook_events "requirement_updated,link_created,item_approved"
+```
+
+## Blue Ocean Visualization
+
+### Enhanced Pipeline Visualization
+
+Blue Ocean provides a modern UI for visualizing TracerTM integration:
+
+1. **Install Blue Ocean**: Manage Jenkins → Manage Plugins → Blue Ocean
+2. **Access**: Jenkins URL → Open Blue Ocean
+3. **View Pipeline**: Select your pipeline to see visual flow
+
+### Custom Stage Naming
+
+```groovy
+stages {
+    stage('Sync Requirements') {
+        steps {
+            echo 'Syncing with TracerTM server...'
+            sh 'tracertm sync pull'
+        }
+    }
+
+    stage('Validate Coverage: 85%+') {
+        steps {
+            script {
+                def coverage = sh(
+                    script: 'tracertm progress --format json | jq -r .coverage_percentage',
+                    returnStdout: true
+                ).trim()
+
+                if (coverage.toFloat() < 85.0) {
+                    error("Coverage: ${coverage}% (Required: 85%+)")
+                }
+            }
+        }
+    }
+}
+```
+
+### Trend Charts
+
+Create custom trend charts for traceability metrics:
+
+```groovy
+post {
+    always {
+        script {
+            // Store metrics for trending
+            def progress = sh(
+                script: 'tracertm progress --format json',
+                returnStdout: true
+            )
+            def data = readJSON text: progress
+
+            // Write metrics file for plot plugin
+            writeFile file: 'tracertm-metrics.properties', text: """
+                COVERAGE=${data.coverage_percentage}
+                TOTAL_ITEMS=${data.total_items}
+                LINKED_ITEMS=${data.linked_items}
+            """
+        }
+
+        // Plot using Plot Plugin
+        plot csvFileName: 'tracertm-coverage.csv',
+             group: 'Traceability Metrics',
+             title: 'Coverage Trend',
+             style: 'line',
+             csvSeries: [[
+                 file: 'tracertm-metrics.properties',
+                 inclusionFlag: 'INCLUDE_BY_STRING',
+                 url: ''
+             ]]
+    }
+}
+```
+
+## Troubleshooting Jenkins Integration
+
+### Common Issues
+
+#### 1. TracerTM Command Not Found
+
+**Symptoms**:
+```
+sh: tracertm: command not found
+```
+
+**Solution**:
+```groovy
+stage('Setup PATH') {
+    steps {
+        sh '''
+            export PATH="$HOME/.local/bin:$PATH"
+            which tracertm
+            tracertm --version
+        '''
+    }
+}
+```
+
+#### 2. Database Connection Failures
+
+**Symptoms**:
+```
+Error: Could not connect to database
+```
+
+**Solution**:
+```groovy
+stage('Verify Database') {
+    steps {
+        sh '''
+            # Test database connection
+            tracertm db health
+
+            # Initialize if needed
+            tracertm db init || echo "Database already initialized"
+        '''
+    }
+}
+```
+
+#### 3. Permission Denied on Reports Directory
+
+**Symptoms**:
+```
+Permission denied: cannot create directory 'reports'
+```
+
+**Solution**:
+```groovy
+stage('Setup Workspace') {
+    steps {
+        sh '''
+            mkdir -p reports/traceability
+            chmod -R 755 reports
+        '''
+    }
+}
+```
+
+#### 4. API Authentication Failures
+
+**Symptoms**:
+```
+Error: 401 Unauthorized
+```
+
+**Solution**:
+```groovy
+environment {
+    TRACERTM_API_TOKEN = credentials('tracertm-api-token')
+}
+
+stage('Verify Auth') {
+    steps {
+        sh '''
+            if [ -z "$TRACERTM_API_TOKEN" ]; then
+                echo "Error: API token not set"
+                exit 1
+            fi
+
+            tracertm config set api_token "$TRACERTM_API_TOKEN"
+
+            # Verify authentication
+            curl -H "Authorization: Bearer $TRACERTM_API_TOKEN" \
+                 $TRACERTM_API_URL/health
+        '''
+    }
+}
+```
+
+### Debug Mode
+
+Enable verbose logging:
+
+```groovy
+stage('Debug TracerTM') {
+    steps {
+        sh '''
+            export TRACERTM_LOG_LEVEL=DEBUG
+            tracertm --verbose sync pull
+        '''
+    }
+}
+```
+
+### Health Check Script
+
+```groovy
+stage('Pre-flight Check') {
+    steps {
+        sh '''
+            #!/bin/bash
+            set -e
+
+            echo "=== TracerTM Health Check ==="
+
+            # Check TracerTM installation
+            if ! command -v tracertm &> /dev/null; then
+                echo "ERROR: TracerTM not installed"
+                exit 1
+            fi
+
+            echo "TracerTM version: $(tracertm --version)"
+
+            # Check configuration
+            if ! tracertm config list &> /dev/null; then
+                echo "WARNING: TracerTM not configured"
+            fi
+
+            # Check database connectivity
+            if ! tracertm db health &> /dev/null; then
+                echo "WARNING: Database not accessible"
+            fi
+
+            # Check API connectivity
+            if ! curl -sf "$TRACERTM_API_URL/health" &> /dev/null; then
+                echo "WARNING: API not accessible"
+            fi
+
+            echo "=== Health Check Complete ==="
+        '''
+    }
+}
+```
+
+## Best Practices
+
+1. **Use Shared Libraries**: Create reusable TracerTM functions
+2. **Cache Dependencies**: Use workspace caching for faster builds
+3. **Parallel Execution**: Run traceability checks in parallel with tests
+4. **Quality Gates**: Enforce minimum coverage thresholds
+5. **Artifact Management**: Archive reports for audit trails
+6. **Notification Strategy**: Alert teams on coverage degradation
+7. **Regular Syncs**: Pull before build, push after successful completion
+8. **Credential Security**: Use Jenkins credentials, never hardcode tokens
+9. **Error Handling**: Gracefully handle TracerTM failures
+10. **Documentation**: Keep Jenkinsfile comments up to date
+
+## Next Steps
+
+- [GitHub Actions Integration](../04b-github-actions-setup)
+- [GitLab CI Integration](../04c-gitlab-ci-setup)
+- [API Reference](/api)
+- [CLI Commands Reference](/docs/cli)

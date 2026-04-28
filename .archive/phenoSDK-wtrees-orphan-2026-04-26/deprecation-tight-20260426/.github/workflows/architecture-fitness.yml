@@ -1,0 +1,257 @@
+name: Architecture Fitness Compliance
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main", "develop"]
+
+jobs:
+  file-size-validation:
+    name: File Size Enforcement (500 LOC limit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install radon
+
+      - name: Check file sizes
+        run: |
+          python scripts/checks/check_file_size.py --max-lines 500 $(find src/ -name "*.py")
+
+  import-boundary-validation:
+    name: Import Boundary Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run import boundary validation
+        run: |
+          python scripts/checks/validate_kit_boundaries.py $(find src/pheno/ -name "*.py")
+
+  dependency-direction-validation:
+    name: Dependency Direction Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install pylint
+
+      - name: Validate dependency directions
+        run: |
+          python scripts/architectural_pattern_validator.py --dependency-direction
+
+  naming-convention-validation:
+    name: Naming Convention Enforcement
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check naming conventions
+        run: |
+          python scripts/checks/validate_architecture.py --naming-conventions $(find src/ -name "*.py")
+
+  cyclomatic-complexity:
+    name: Cyclomatic Complexity Monitoring
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install radon
+
+      - name: Check cyclomatic complexity
+        run: |
+          radon cc src/ --min B -s --xml > complexity_report.xml || true
+          echo "Cyclomatic complexity check completed"
+
+      - name: Upload complexity report
+        uses: actions/upload-artifact@v4
+        with:
+          name: complexity-report
+          path: complexity_report.xml
+
+  maintainability-index:
+    name: Maintainability Index Tracking
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install radon
+
+      - name: Check maintainability index
+        run: |
+          radon mi src/ --min B -s --json > maintainability_report.json || true
+
+      - name: Upload maintainability report
+        uses: actions/upload-artifact@v4
+        with:
+          name: maintainability-report
+          path: maintainability_report.json
+
+  test-coverage-validation:
+    name: Test Coverage Validation
+    runs-on: ubuntu-latest
+    needs: [file-size-validation, import-boundary-validation]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-cov
+
+      - name: Run tests with coverage
+        run: |
+          python -m pytest tests/ --cov=src/pheno --cov-report=xml --cov-report=html
+
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); print(root.get('line-rate'))")
+          echo "Coverage: $COVERAGE"
+          if (( $(echo "$COVERAGE < 0.80" | bc -l) )); then
+            echo "Coverage below 80% threshold"
+            exit 1
+          fi
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            coverage.xml
+            htmlcov/
+
+  configuration-validation:
+    name: Configuration Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate configuration files
+        run: |
+          python -c "import tomli; tomli.load(open('pyproject.toml', 'rb'))" || exit 1
+          python -c "import json; json.load(open('ruff.toml'))" || echo "Warning: ruff.toml not JSON"
+
+  dependency-security-audit:
+    name: Dependency Security Auditing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install safety bandit
+
+      - name: Run safety check
+        run: |
+          safety check --json --output safety-report.json || true
+
+      - name: Run bandit security scan
+        run: |
+          bandit -r src/ -f json -o bandit-report.json || true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            safety-report.json
+            bandit-report.json
+
+  comprehensive-architecture-report:
+    name: Comprehensive Architecture Reporting
+    runs-on: ubuntu-latest
+    needs: [
+      file-size-validation,
+      import-boundary-validation,
+      dependency-direction-validation,
+      naming-convention-validation,
+      cyclomatic-complexity,
+      maintainability-index,
+      test-coverage-validation,
+      configuration-validation,
+      dependency-security-audit
+    ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate architecture report
+        run: |
+          python scripts/comprehensive_quality_analyzer.py --architecture-report
+
+      - name: Upload architecture report
+        uses: actions/upload-artifact@v4
+        with:
+          name: architecture-reports
+          path: |
+            reports/architecture-report.html
+            reports/architecture-metrics.json

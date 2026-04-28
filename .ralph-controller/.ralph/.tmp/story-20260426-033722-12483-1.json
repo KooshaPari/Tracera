@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "total": 4,
+  "remaining": 4,
+  "quality_gates": [
+    "Use live GitHub or local repo state before acting.",
+    "Preserve dirty worktrees and avoid parent repos/ pushes.",
+    "Close stale semantic PRs; merge small cleanly rebasable PRs.",
+    "Prefer focused validation commands over broad destructive sweeps.",
+    "If disk drops below 10 GiB free, pause implementation work and prune stale target directories only when no cargo/rustc processes are active."
+  ],
+  "id": "LOOP-001",
+  "title": "Harvest safe fleet PRs"
+}
