@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 tasks:
   build:
@@ -6,10 +6,6 @@ tasks:
     cmds:
       - |
         set -eu
-
-        if [ -f backend/go.mod ]; then
-          (cd backend && task build)
-        fi
 
         if [ -f pyproject.toml ]; then
           uv build
@@ -25,10 +21,6 @@ tasks:
       - |
         set -eu
 
-        if [ -f backend/go.mod ]; then
-          (cd backend && task test)
-        fi
-
         if [ -f pyproject.toml ]; then
           uv run pytest
         fi
@@ -43,10 +35,6 @@ tasks:
       - |
         set -eu
 
-        if [ -f backend/go.mod ]; then
-          (cd backend && task lint)
-        fi
-
         if [ -f pyproject.toml ]; then
           uv run ruff check .
           uv run ruff format --check .
@@ -56,40 +44,18 @@ tasks:
           bun run lint
         fi
 
-  format:
-    desc: "Format detected project components"
-    cmds:
-      - |
-        set -eu
-
-        if [ -f backend/go.mod ]; then
-          (cd backend && task format)
-        fi
-
-        if [ -f pyproject.toml ]; then
-          uv run ruff format .
-        fi
-
-        if [ -f package.json ]; then
-          bun run format
-        fi
-
   clean:
     desc: "Remove build artifacts for detected project components"
     cmds:
       - |
         set -eu
 
-        if [ -f backend/go.mod ]; then
-          (cd backend && task clean)
-        fi
-
         if [ -f pyproject.toml ]; then
           rm -rf .pytest_cache .ruff_cache .mypy_cache .coverage htmlcov dist build
         fi
 
         if [ -f package.json ]; then
-          bun run clean
+          rm -rf node_modules .turbo frontend/dist frontend/.turbo
         fi
 
   quality:
