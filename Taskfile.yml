@@ -2,105 +2,35 @@ version: "3"
 
 tasks:
   build:
-    desc: Build detected Python, frontend, and Go components
+    desc: Build the detected Python package
     cmds:
       - |
         set -eu
 
-        if [ -f pyproject.toml ]; then
-          uv build
-        fi
-
-        if [ -d frontend ] && [ -f frontend/package.json ]; then
-          bun --cwd frontend run build
-        fi
-
-        if [ -f backend/go.mod ]; then
-          (cd backend && go build ./...)
-        fi
-
-        if [ -f go.mod ]; then
-          go build ./...
-        fi
+        uv build
 
   test:
-    desc: Run detected Python, frontend, and Go test suites
+    desc: Run the detected Python test suite
     cmds:
       - |
         set -eu
 
-        if [ -f pyproject.toml ]; then
-          uv run pytest
-        fi
-
-        if [ -d frontend ] && [ -f frontend/package.json ]; then
-          bun --cwd frontend run test
-        fi
-
-        if [ -f backend/go.mod ]; then
-          (cd backend && go test ./...)
-        fi
-
-        if [ -f go.mod ]; then
-          go test ./...
-        fi
+        uv run pytest
 
   lint:
-    desc: Run detected Python, frontend, and Go linters
+    desc: Run the detected Python linters and format check
     cmds:
       - |
         set -eu
 
-        if [ -f pyproject.toml ]; then
-          uv run ruff check .
-          uv run ruff format --check .
-        fi
-
-        if [ -d frontend ] && [ -f frontend/package.json ]; then
-          bun --cwd frontend run lint
-        fi
-
-        if [ -f backend/go.mod ]; then
-          if command -v golangci-lint >/dev/null 2>&1; then
-            (cd backend && golangci-lint run)
-          else
-            (cd backend && go vet ./...)
-          fi
-        fi
-
-        if [ -f go.mod ]; then
-          if command -v golangci-lint >/dev/null 2>&1; then
-            golangci-lint run
-          else
-            go vet ./...
-          fi
-        fi
+        uv run ruff check .
+        uv run ruff format --check .
 
   clean:
-    desc: Remove build artifacts for detected components
+    desc: Remove Python build and test artifacts
     cmds:
       - |
         set -eu
 
-        if [ -f pyproject.toml ]; then
-          rm -rf .pytest_cache .ruff_cache .mypy_cache .coverage htmlcov dist build
-          find . -type d -name __pycache__ -prune -exec rm -rf {} +
-        fi
-
-        if [ -d frontend ] && [ -f frontend/package.json ]; then
-          if grep -q '"clean"' frontend/package.json; then
-            bun --cwd frontend run clean
-          else
-            rm -rf frontend/node_modules frontend/.turbo frontend/dist
-          fi
-        fi
-
-        if [ -f backend/go.mod ]; then
-          (cd backend && go clean ./...)
-          rm -rf backend/bin backend/coverage.out
-        fi
-
-        if [ -f go.mod ]; then
-          go clean ./...
-          rm -rf bin coverage.out
-        fi
+        rm -rf .pytest_cache .ruff_cache .mypy_cache .coverage htmlcov dist build
+        find . -type d -name __pycache__ -prune -exec rm -rf {} +
