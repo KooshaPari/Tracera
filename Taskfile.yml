@@ -52,10 +52,10 @@ tasks:
           node -e "const p=require('./package.json'); process.exit(p.scripts?.[process.argv[1]] ? 0 : 1)" "$1"
         }
 
-        if [ -f "{{.FRONTEND_DIR}}/package.json" ] && (cd "{{.FRONTEND_DIR}}" && has_script build); then
-          bun --cwd "{{.FRONTEND_DIR}}" run build
-        elif [ -f package.json ] && has_script build; then
+        if [ -f package.json ] && has_script build; then
           bun run build
+        elif [ -f "{{.FRONTEND_DIR}}/package.json" ] && (cd "{{.FRONTEND_DIR}}" && has_script build); then
+          (cd "{{.FRONTEND_DIR}}" && bun run build)
         fi
 
   test:
@@ -93,10 +93,10 @@ tasks:
           node -e "const p=require('./package.json'); process.exit(p.scripts?.[process.argv[1]] ? 0 : 1)" "$1"
         }
 
-        if [ -f "{{.FRONTEND_DIR}}/package.json" ] && (cd "{{.FRONTEND_DIR}}" && has_script test); then
-          bun --cwd "{{.FRONTEND_DIR}}" run test
-        elif [ -f package.json ] && has_script test; then
+        if [ -f package.json ] && has_script test; then
           bun run test
+        elif [ -f "{{.FRONTEND_DIR}}/package.json" ] && (cd "{{.FRONTEND_DIR}}" && has_script test); then
+          (cd "{{.FRONTEND_DIR}}" && bun run test)
         fi
 
   lint:
@@ -140,7 +140,14 @@ tasks:
           node -e "const p=require('./package.json'); process.exit(p.scripts?.[process.argv[1]] ? 0 : 1)" "$1"
         }
 
-        if [ -f "{{.FRONTEND_DIR}}/package.json" ]; then
+        if [ -f package.json ]; then
+          if has_script lint; then
+            bun run lint
+          fi
+          if has_script typecheck; then
+            bun run typecheck
+          fi
+        elif [ -f "{{.FRONTEND_DIR}}/package.json" ]; then
           (
             cd "{{.FRONTEND_DIR}}"
             if has_script lint; then
@@ -150,13 +157,6 @@ tasks:
               bun run typecheck
             fi
           )
-        elif [ -f package.json ]; then
-          if has_script lint; then
-            bun run lint
-          fi
-          if has_script typecheck; then
-            bun run typecheck
-          fi
         fi
 
   clean:
@@ -173,15 +173,15 @@ tasks:
           (cd "$module_dir" && go clean -cache -testcache)
         done
 
-        if [ -f "{{.FRONTEND_DIR}}/package.json" ]; then
+        if [ -f package.json ]; then
+          if node -e "const p=require('./package.json'); process.exit(p.scripts?.clean ? 0 : 1)"; then
+            bun run clean
+          fi
+        elif [ -f "{{.FRONTEND_DIR}}/package.json" ]; then
           if node -e "const p=require('./{{.FRONTEND_DIR}}/package.json'); process.exit(p.scripts?.clean ? 0 : 1)"; then
-            bun --cwd "{{.FRONTEND_DIR}}" run clean
+            (cd "{{.FRONTEND_DIR}}" && bun run clean)
           else
             rm -rf "{{.FRONTEND_DIR}}/.turbo" "{{.FRONTEND_DIR}}/coverage" "{{.FRONTEND_DIR}}"/apps/*/dist "{{.FRONTEND_DIR}}"/apps/*/build
             find "{{.FRONTEND_DIR}}" -type d \( -name dist -o -name build -o -name coverage \) -prune -exec rm -rf {} +
-          fi
-        elif [ -f package.json ]; then
-          if node -e "const p=require('./package.json'); process.exit(p.scripts?.clean ? 0 : 1)"; then
-            bun run clean
           fi
         fi
