@@ -43,11 +43,13 @@ tasks:
         done
 
   build:bun:
-    desc: Build the Bun frontend workspace when frontend/package.json is present
+    desc: Build the Bun workspace when a package.json build script is present
     cmds:
       - |
         set -eu
-        if [ -f frontend/package.json ]; then
+        if [ -f package.json ]; then
+          bun run build
+        elif [ -f frontend/package.json ]; then
           (cd frontend && bun run build)
         fi
 
@@ -78,11 +80,13 @@ tasks:
         done
 
   test:bun:
-    desc: Run Bun frontend tests when frontend/package.json is present
+    desc: Run Bun workspace tests when a package.json test script is present
     cmds:
       - |
         set -eu
-        if [ -f frontend/package.json ]; then
+        if [ -f package.json ]; then
+          bun run test
+        elif [ -f frontend/package.json ]; then
           (cd frontend && bun run test)
         fi
 
@@ -119,11 +123,14 @@ tasks:
         done
 
   lint:bun:
-    desc: Run Bun frontend lint and type checks when frontend/package.json is present
+    desc: Run Bun workspace lint and type checks when package scripts are present
     cmds:
       - |
         set -eu
-        if [ -f frontend/package.json ]; then
+        if [ -f package.json ]; then
+          bun run lint
+          bun run typecheck
+        elif [ -f frontend/package.json ]; then
           (cd frontend && bun run lint && bun run typecheck)
         fi
 
@@ -141,7 +148,9 @@ tasks:
           (cd "$module_dir" && go clean -cache -testcache)
         done
 
-        if [ -d frontend ]; then
+        if [ -f package.json ]; then
+          bun run clean
+        elif [ -d frontend ]; then
           rm -rf frontend/.turbo frontend/coverage frontend/apps/*/dist frontend/apps/*/build
           find frontend -type d \( -name dist -o -name build -o -name coverage \) -prune -exec rm -rf {} +
         fi
