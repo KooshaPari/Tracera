@@ -2,7 +2,7 @@ version: "3"
 
 tasks:
   build:
-    desc: "Build detected project components"
+    desc: Build detected Python, frontend, and Go components
     cmds:
       - |
         set -eu
@@ -12,19 +12,19 @@ tasks:
         fi
 
         if [ -d frontend ] && [ -f frontend/package.json ]; then
-          (cd frontend && bun run build)
+          bun --cwd frontend run build
+        fi
+
+        if [ -f backend/go.mod ]; then
+          (cd backend && go build ./...)
         fi
 
         if [ -f go.mod ]; then
           go build ./...
         fi
 
-        if [ -f Cargo.toml ]; then
-          cargo build
-        fi
-
   test:
-    desc: "Run detected test suites"
+    desc: Run detected Python, frontend, and Go test suites
     cmds:
       - |
         set -eu
@@ -34,19 +34,19 @@ tasks:
         fi
 
         if [ -d frontend ] && [ -f frontend/package.json ]; then
-          (cd frontend && bun test)
+          bun --cwd frontend run test
+        fi
+
+        if [ -f backend/go.mod ]; then
+          (cd backend && go test ./...)
         fi
 
         if [ -f go.mod ]; then
           go test ./...
         fi
 
-        if [ -f Cargo.toml ]; then
-          cargo test
-        fi
-
   lint:
-    desc: "Run detected linters"
+    desc: Run detected Python, frontend, and Go linters
     cmds:
       - |
         set -eu
@@ -57,35 +57,50 @@ tasks:
         fi
 
         if [ -d frontend ] && [ -f frontend/package.json ]; then
-          (cd frontend && bun run lint)
+          bun --cwd frontend run lint
+        fi
+
+        if [ -f backend/go.mod ]; then
+          if command -v golangci-lint >/dev/null 2>&1; then
+            (cd backend && golangci-lint run)
+          else
+            (cd backend && go vet ./...)
+          fi
         fi
 
         if [ -f go.mod ]; then
-          golangci-lint run
-        fi
-
-        if [ -f Cargo.toml ]; then
-          cargo clippy --all-targets --all-features -- -D warnings
+          if command -v golangci-lint >/dev/null 2>&1; then
+            golangci-lint run
+          else
+            go vet ./...
+          fi
         fi
 
   clean:
-    desc: "Remove build artifacts for detected project components"
+    desc: Remove build artifacts for detected components
     cmds:
       - |
         set -eu
 
         if [ -f pyproject.toml ]; then
           rm -rf .pytest_cache .ruff_cache .mypy_cache .coverage htmlcov dist build
+          find . -type d -name __pycache__ -prune -exec rm -rf {} +
         fi
 
         if [ -d frontend ] && [ -f frontend/package.json ]; then
-          rm -rf frontend/node_modules frontend/.turbo frontend/dist
+          if grep -q '"clean"' frontend/package.json; then
+            bun --cwd frontend run clean
+          else
+            rm -rf frontend/node_modules frontend/.turbo frontend/dist
+          fi
+        fi
+
+        if [ -f backend/go.mod ]; then
+          (cd backend && go clean ./...)
+          rm -rf backend/bin backend/coverage.out
         fi
 
         if [ -f go.mod ]; then
+          go clean ./...
           rm -rf bin coverage.out
-        fi
-
-        if [ -f Cargo.toml ]; then
-          cargo clean
         fi
