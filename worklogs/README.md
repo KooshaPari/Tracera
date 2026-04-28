@@ -16,4 +16,4 @@ Project worklogs capturing research, decisions, architecture, and completion not
 
 ## Index
 
-See `../../INDEX.md` for cross-repo worklog index.
+See `../worklog.md` for the active log and `../README.md` for repo-local docs navigation.
