@@ -15,6 +15,14 @@ tasks:
           bun run build
         fi
 
+        if [ -f go.mod ]; then
+          go build ./...
+        fi
+
+        if [ -f Cargo.toml ]; then
+          cargo build
+        fi
+
   test:
     desc: "Run detected test suites"
     cmds:
@@ -27,6 +35,14 @@ tasks:
 
         if [ -f package.json ]; then
           bun run test
+        fi
+
+        if [ -f go.mod ]; then
+          go test ./...
+        fi
+
+        if [ -f Cargo.toml ]; then
+          cargo test
         fi
 
   lint:
@@ -44,6 +60,14 @@ tasks:
           bun run lint
         fi
 
+        if [ -f go.mod ]; then
+          golangci-lint run
+        fi
+
+        if [ -f Cargo.toml ]; then
+          cargo clippy --all-targets --all-features -- -D warnings
+        fi
+
   clean:
     desc: "Remove build artifacts for detected project components"
     cmds:
@@ -56,6 +80,14 @@ tasks:
 
         if [ -f package.json ]; then
           rm -rf node_modules .turbo frontend/dist frontend/.turbo
+        fi
+
+        if [ -f go.mod ]; then
+          rm -rf bin coverage.out
+        fi
+
+        if [ -f Cargo.toml ]; then
+          cargo clean
         fi
 
   quality:
