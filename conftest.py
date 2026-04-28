@@ -47,7 +47,11 @@ def asyncio_mode() -> str:
 
 
 try:
-    from router import TOOL_REGISTRY, ArchRouter, ToolRegistry  # type: ignore[import-untyped,unresolved-import]
+    from router import (  # type: ignore[import-untyped,unresolved-import]
+        TOOL_REGISTRY,
+        ArchRouter,
+        ToolRegistry,
+    )
 except ImportError:
     # Router module not available in test environment
     ArchRouter = None  # type: ignore[assignment,misc]
@@ -138,7 +142,9 @@ async def async_db_engine() -> None:
 @pytest_asyncio.fixture
 async def async_db_session(async_db_engine: Any) -> None:
     """Async SQLAlchemy session."""
-    async_session_maker = async_sessionmaker(async_db_engine, class_=AsyncSession, expire_on_commit=False)
+    async_session_maker = async_sessionmaker(
+        async_db_engine, class_=AsyncSession, expire_on_commit=False
+    )
     async with async_session_maker() as session:
         yield session
         await session.rollback()
