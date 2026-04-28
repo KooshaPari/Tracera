@@ -2,7 +2,7 @@ version: "3"
 
 tasks:
   build:
-    desc: Build the detected Python package, Go backend, and Bun frontend workspace
+    desc: Build detected Python, Go, and Bun workspace outputs
     cmds:
       - |
         set -eu
@@ -20,7 +20,7 @@ tasks:
         fi
 
   test:
-    desc: Run the detected Python, Go, and Bun test suites
+    desc: Run detected Python, Go, and Bun test suites
     cmds:
       - |
         set -eu
@@ -34,11 +34,11 @@ tasks:
         fi
 
         if [ -f frontend/package.json ]; then
-          (cd frontend && bun test)
+          (cd frontend && bun run test)
         fi
 
   lint:
-    desc: Run the detected Python, Go, and frontend lint checks
+    desc: Run detected Python, Go, and Bun lint checks
     cmds:
       - |
         set -eu
