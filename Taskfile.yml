@@ -47,9 +47,13 @@ tasks:
     cmds:
       - |
         set -eu
-        if [ -f package.json ]; then
+        has_script() {
+          node -e "const p=require('./package.json'); process.exit(p.scripts?.[process.argv[1]] ? 0 : 1)" "$1"
+        }
+
+        if [ -f package.json ] && has_script build; then
           bun run build
-        elif [ -f frontend/package.json ]; then
+        elif [ -f frontend/package.json ] && (cd frontend && has_script build); then
           (cd frontend && bun run build)
         fi
 
@@ -84,9 +88,13 @@ tasks:
     cmds:
       - |
         set -eu
-        if [ -f package.json ]; then
+        has_script() {
+          node -e "const p=require('./package.json'); process.exit(p.scripts?.[process.argv[1]] ? 0 : 1)" "$1"
+        }
+
+        if [ -f package.json ] && has_script test; then
           bun run test
-        elif [ -f frontend/package.json ]; then
+        elif [ -f frontend/package.json ] && (cd frontend && has_script test); then
           (cd frontend && bun run test)
         fi
 
@@ -127,11 +135,27 @@ tasks:
     cmds:
       - |
         set -eu
+        has_script() {
+          node -e "const p=require('./package.json'); process.exit(p.scripts?.[process.argv[1]] ? 0 : 1)" "$1"
+        }
+
         if [ -f package.json ]; then
-          bun run lint
-          bun run typecheck
+          if has_script lint; then
+            bun run lint
+          fi
+          if has_script typecheck; then
+            bun run typecheck
+          fi
         elif [ -f frontend/package.json ]; then
-          (cd frontend && bun run lint && bun run typecheck)
+          (
+            cd frontend
+            if has_script lint; then
+              bun run lint
+            fi
+            if has_script typecheck; then
+              bun run typecheck
+            fi
+          )
         fi
 
   clean:
