@@ -14,7 +14,7 @@ This directory contains historical status reports, phase summaries, and implemen
 For current, authoritative project status, see:
 - [docs/STATUS.md](/docs/STATUS.md) - Single source of truth for project status
 - [START_HERE.md](/START_HERE.md) - Current project orientation
-- [README.md](/README.md) - Current project overview
+- [README.md](../../../README.md) - Current project overview
 
 ---
 
