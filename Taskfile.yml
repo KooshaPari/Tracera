@@ -1,8 +1,23 @@
 version: "3"
 
+vars:
+  GO_MODULE_FIND_ARGS: >-
+    -name go.mod
+    -not -path './.git/*'
+    -not -path './vendor/*'
+    -not -path './node_modules/*'
+    -not -path './ARCHIVE/*'
+    -not -path './.archive/*'
+    -not -path './default/*'
+
 tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
   build:
-    desc: Build all detected project workspaces
+    desc: Build all detected Python, Go, and Bun workspaces
     deps:
       - build:python
       - build:go
@@ -22,12 +37,7 @@ tasks:
     cmds:
       - |
         set -eu
-        find . -name go.mod \
-          -not -path './vendor/*' \
-          -not -path './ARCHIVE/*' \
-          -not -path './.archive/*' \
-          -not -path './default/*' \
-          -print | while IFS= read -r module; do
+        find . {{.GO_MODULE_FIND_ARGS}} -print | while IFS= read -r module; do
           module_dir="$(dirname "$module")"
           (cd "$module_dir" && go build ./...)
         done
@@ -42,7 +52,7 @@ tasks:
         fi
 
   test:
-    desc: Run all detected test suites
+    desc: Run all detected Python, Go, and Bun test suites
     deps:
       - test:python
       - test:go
@@ -62,12 +72,7 @@ tasks:
     cmds:
       - |
         set -eu
-        find . -name go.mod \
-          -not -path './vendor/*' \
-          -not -path './ARCHIVE/*' \
-          -not -path './.archive/*' \
-          -not -path './default/*' \
-          -print | while IFS= read -r module; do
+        find . {{.GO_MODULE_FIND_ARGS}} -print | while IFS= read -r module; do
           module_dir="$(dirname "$module")"
           (cd "$module_dir" && go test ./...)
         done
@@ -82,7 +87,7 @@ tasks:
         fi
 
   lint:
-    desc: Run all detected lint and format checks
+    desc: Run all detected Python, Go, and Bun lint and format checks
     deps:
       - lint:python
       - lint:go
@@ -103,12 +108,7 @@ tasks:
     cmds:
       - |
         set -eu
-        find . -name go.mod \
-          -not -path './vendor/*' \
-          -not -path './ARCHIVE/*' \
-          -not -path './.archive/*' \
-          -not -path './default/*' \
-          -print | while IFS= read -r module; do
+        find . {{.GO_MODULE_FIND_ARGS}} -print | while IFS= read -r module; do
           module_dir="$(dirname "$module")"
           unformatted="$(cd "$module_dir" && gofmt -l .)"
           if [ -n "$unformatted" ]; then
@@ -136,12 +136,7 @@ tasks:
         rm -rf .pytest_cache .ruff_cache .mypy_cache .coverage htmlcov dist build
         find . -type d -name __pycache__ -prune -exec rm -rf {} +
 
-        find . -name go.mod \
-          -not -path './vendor/*' \
-          -not -path './ARCHIVE/*' \
-          -not -path './.archive/*' \
-          -not -path './default/*' \
-          -print | while IFS= read -r module; do
+        find . {{.GO_MODULE_FIND_ARGS}} -print | while IFS= read -r module; do
           module_dir="$(dirname "$module")"
           (cd "$module_dir" && go clean -cache -testcache)
         done
