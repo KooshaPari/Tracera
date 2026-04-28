@@ -11,8 +11,8 @@ tasks:
           uv build
         fi
 
-        if [ -f package.json ]; then
-          bun run build
+        if [ -d frontend ] && [ -f frontend/package.json ]; then
+          (cd frontend && bun run build)
         fi
 
         if [ -f go.mod ]; then
@@ -33,8 +33,8 @@ tasks:
           uv run pytest
         fi
 
-        if [ -f package.json ]; then
-          bun run test
+        if [ -d frontend ] && [ -f frontend/package.json ]; then
+          (cd frontend && bun test)
         fi
 
         if [ -f go.mod ]; then
@@ -56,8 +56,8 @@ tasks:
           uv run ruff format --check .
         fi
 
-        if [ -f package.json ]; then
-          bun run lint
+        if [ -d frontend ] && [ -f frontend/package.json ]; then
+          (cd frontend && bun run lint)
         fi
 
         if [ -f go.mod ]; then
@@ -78,8 +78,8 @@ tasks:
           rm -rf .pytest_cache .ruff_cache .mypy_cache .coverage htmlcov dist build
         fi
 
-        if [ -f package.json ]; then
-          rm -rf node_modules .turbo frontend/dist frontend/.turbo
+        if [ -d frontend ] && [ -f frontend/package.json ]; then
+          rm -rf frontend/node_modules frontend/.turbo frontend/dist
         fi
 
         if [ -f go.mod ]; then
@@ -89,14 +89,3 @@ tasks:
         if [ -f Cargo.toml ]; then
           cargo clean
         fi
-
-  quality:
-    desc: "Run lint and test"
-    cmds:
-      - task: lint
-      - task: test
-
-  sync:
-    desc: "Sync Python dependencies"
-    cmds:
-      - uv sync
