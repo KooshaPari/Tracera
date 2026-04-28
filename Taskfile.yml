@@ -2,62 +2,115 @@ version: "3"
 
 tasks:
   build:
-    desc: Build detected Python, Go, and Bun workspace outputs
+    desc: Build all detected project workspaces
+    deps:
+      - build:python
+      - build:go
+      - build:frontend
+
+  build:python:
+    desc: Build the Python package when pyproject.toml is present
     cmds:
       - |
         set -eu
-
         if [ -f pyproject.toml ]; then
           uv build
         fi
 
+  build:go:
+    desc: Build the Go backend when backend/go.mod is present
+    cmds:
+      - |
+        set -eu
         if [ -f backend/go.mod ]; then
           (cd backend && go build ./...)
         fi
 
+  build:frontend:
+    desc: Build the Bun frontend workspace when frontend/package.json is present
+    cmds:
+      - |
+        set -eu
         if [ -f frontend/package.json ]; then
           (cd frontend && bun run build)
         fi
 
   test:
-    desc: Run detected Python, Go, and Bun test suites
+    desc: Run all detected test suites
+    deps:
+      - test:python
+      - test:go
+      - test:frontend
+
+  test:python:
+    desc: Run Python tests when pyproject.toml and tests/ are present
     cmds:
       - |
         set -eu
-
         if [ -f pyproject.toml ] && [ -d tests ]; then
           uv run pytest
         fi
 
+  test:go:
+    desc: Run Go backend tests when backend/go.mod is present
+    cmds:
+      - |
+        set -eu
         if [ -f backend/go.mod ]; then
           (cd backend && go test ./...)
         fi
 
+  test:frontend:
+    desc: Run Bun frontend tests when frontend/package.json is present
+    cmds:
+      - |
+        set -eu
         if [ -f frontend/package.json ]; then
           (cd frontend && bun run test)
         fi
 
   lint:
-    desc: Run detected Python, Go, and Bun lint checks
+    desc: Run all detected lint and format checks
+    deps:
+      - lint:python
+      - lint:go
+      - lint:frontend
+
+  lint:python:
+    desc: Run Python Ruff lint and format checks when pyproject.toml is present
     cmds:
       - |
         set -eu
-
         if [ -f pyproject.toml ]; then
           uv run ruff check .
           uv run ruff format --check .
         fi
 
+  lint:go:
+    desc: Run Go formatting and vet checks when backend/go.mod is present
+    cmds:
+      - |
+        set -eu
         if [ -f backend/go.mod ]; then
-          (cd backend && test -z "$(gofmt -l .)" && go vet ./...)
+          unformatted="$(cd backend && gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            printf '%s\n' "$unformatted"
+            exit 1
+          fi
+          (cd backend && go vet ./...)
         fi
 
+  lint:frontend:
+    desc: Run Bun frontend lint and type checks when frontend/package.json is present
+    cmds:
+      - |
+        set -eu
         if [ -f frontend/package.json ]; then
           (cd frontend && bun run lint && bun run typecheck)
         fi
 
   clean:
-    desc: Remove Python, Go, and frontend build/test artifacts
+    desc: Remove detected Python, Go, and frontend build/test artifacts
     cmds:
       - |
         set -eu
