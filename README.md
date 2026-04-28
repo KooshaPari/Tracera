@@ -127,12 +127,12 @@ We maintain a rigorous multi-layer testing strategy:
 - **[Changelog Entry Template](./docs/reference/CHANGELOG_ENTRY_TEMPLATE.md)** — Copy/paste snippet for new entries.
 - **[Project Setup Style](./docs/guides/PROJECT_SETUP_STYLE.md)** — Standardized repo command/process baseline.
 - **[API Documentation](http://localhost:4000/docs)** — Interactive API explorer.
-- **[Architecture Overview](./docs/reference/ARCHITECTURE_LAYERS.md)** — Deep dive into internals.
+- **[Architecture Overview](./docs/reference/architecture.md)** — Deep dive into internals.
 - **[Verification Policy](VERIFICATION_POLICY.md)** — Quality standards and dispute workflows.
 
 ### Documentation Hub
 
-For a unified view of all Kush ecosystem projects, visit the [Docs Hub](../docs-hub/index.md).
+For the local docs landing page, visit the [Docs Hub](./docs/index.md).
 
 ---
 
