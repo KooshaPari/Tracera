@@ -21,7 +21,7 @@ tasks:
     deps:
       - build:python
       - build:go
-      - build:frontend
+      - build:bun
 
   build:python:
     desc: Build the Python package when pyproject.toml is present
@@ -42,7 +42,7 @@ tasks:
           (cd "$module_dir" && go build ./...)
         done
 
-  build:frontend:
+  build:bun:
     desc: Build the Bun frontend workspace when frontend/package.json is present
     cmds:
       - |
@@ -56,7 +56,7 @@ tasks:
     deps:
       - test:python
       - test:go
-      - test:frontend
+      - test:bun
 
   test:python:
     desc: Run Python tests when pyproject.toml and tests/ are present
@@ -77,7 +77,7 @@ tasks:
           (cd "$module_dir" && go test ./...)
         done
 
-  test:frontend:
+  test:bun:
     desc: Run Bun frontend tests when frontend/package.json is present
     cmds:
       - |
@@ -91,7 +91,7 @@ tasks:
     deps:
       - lint:python
       - lint:go
-      - lint:frontend
+      - lint:bun
 
   lint:python:
     desc: Run Python Ruff lint and format checks when pyproject.toml is present
@@ -118,7 +118,7 @@ tasks:
           (cd "$module_dir" && go vet ./...)
         done
 
-  lint:frontend:
+  lint:bun:
     desc: Run Bun frontend lint and type checks when frontend/package.json is present
     cmds:
       - |
