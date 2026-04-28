@@ -25,7 +25,7 @@ Deep technical research on Trace system features, algorithms, and patterns.
 
 - **Parent**: [Research Overview](../README.md)
 - **Related**: [RTM Deep Dives](../rtm-deep-dives/)
-- **Master Index**: [Documentation Index](../../INDEX.md)
+- **Master Index**: [Research Overview](../README.md)
 
 ---
 
