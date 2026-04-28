@@ -9,6 +9,9 @@ vars:
     -not -path './ARCHIVE/*'
     -not -path './.archive/*'
     -not -path './default/*'
+  FRONTEND_DIR: frontend
+  BUN_WORKSPACE_DIR: >-
+    {{if eq (OS "test -f frontend/package.json && printf yes || printf no") "yes"}}frontend{{else}}.{{end}}
 
 tasks:
   default:
@@ -51,10 +54,8 @@ tasks:
           node -e "const p=require('./package.json'); process.exit(p.scripts?.[process.argv[1]] ? 0 : 1)" "$1"
         }
 
-        if [ -f package.json ] && has_script build; then
-          bun run build
-        elif [ -f frontend/package.json ] && (cd frontend && has_script build); then
-          (cd frontend && bun run build)
+        if [ -f "{{.BUN_WORKSPACE_DIR}}/package.json" ] && (cd "{{.BUN_WORKSPACE_DIR}}" && has_script build); then
+          (cd "{{.BUN_WORKSPACE_DIR}}" && bun run build)
         fi
 
   test:
@@ -92,10 +93,8 @@ tasks:
           node -e "const p=require('./package.json'); process.exit(p.scripts?.[process.argv[1]] ? 0 : 1)" "$1"
         }
 
-        if [ -f package.json ] && has_script test; then
-          bun run test
-        elif [ -f frontend/package.json ] && (cd frontend && has_script test); then
-          (cd frontend && bun run test)
+        if [ -f "{{.BUN_WORKSPACE_DIR}}/package.json" ] && (cd "{{.BUN_WORKSPACE_DIR}}" && has_script test); then
+          (cd "{{.BUN_WORKSPACE_DIR}}" && bun run test)
         fi
 
   lint:
@@ -139,23 +138,14 @@ tasks:
           node -e "const p=require('./package.json'); process.exit(p.scripts?.[process.argv[1]] ? 0 : 1)" "$1"
         }
 
-        if [ -f package.json ]; then
+        if [ -f "{{.BUN_WORKSPACE_DIR}}/package.json" ]; then
+          cd "{{.BUN_WORKSPACE_DIR}}"
           if has_script lint; then
             bun run lint
           fi
           if has_script typecheck; then
             bun run typecheck
           fi
-        elif [ -f frontend/package.json ]; then
-          (
-            cd frontend
-            if has_script lint; then
-              bun run lint
-            fi
-            if has_script typecheck; then
-              bun run typecheck
-            fi
-          )
         fi
 
   clean:
@@ -172,9 +162,12 @@ tasks:
           (cd "$module_dir" && go clean -cache -testcache)
         done
 
-        if [ -f package.json ]; then
-          bun run clean
-        elif [ -d frontend ]; then
-          rm -rf frontend/.turbo frontend/coverage frontend/apps/*/dist frontend/apps/*/build
-          find frontend -type d \( -name dist -o -name build -o -name coverage \) -prune -exec rm -rf {} +
+        if [ -f "{{.BUN_WORKSPACE_DIR}}/package.json" ]; then
+          if node -e "const p=require('./{{.BUN_WORKSPACE_DIR}}/package.json'); process.exit(p.scripts?.clean ? 0 : 1)"; then
+            cd "{{.BUN_WORKSPACE_DIR}}"
+            bun run clean
+          else
+            rm -rf "{{.BUN_WORKSPACE_DIR}}/.turbo" "{{.BUN_WORKSPACE_DIR}}/coverage" "{{.BUN_WORKSPACE_DIR}}"/apps/*/dist "{{.BUN_WORKSPACE_DIR}}"/apps/*/build
+            find "{{.BUN_WORKSPACE_DIR}}" -type d \( -name dist -o -name build -o -name coverage \) -prune -exec rm -rf {} +
+          fi
         fi
