@@ -7,7 +7,7 @@ Welcome to the Trace RTM documentation! This section provides everything you nee
 - **[Quick Start Guide](quick-start.md)** - Get up and running in 10 minutes
 - **[Team Onboarding](onboarding.md)** - Comprehensive onboarding for new team members
 - **[Contributing](contributing.md)** - How to contribute to this project
-- **[Project Overview](../INDEX.md)** - Master index of all documentation
+- **[Project Overview](../README.md)** - Local documentation hub
 
 ## For First-Time Users
 
@@ -32,4 +32,4 @@ Welcome to the Trace RTM documentation! This section provides everything you nee
 
 - Ready to develop? → [Developer Guide](../04-guides/developer-guide.md)
 - Want to understand the system? → [Architecture Overview](../02-architecture/README.md)
-- Looking for specific topics? → [Master Index](../INDEX.md)
+- Looking for specific topics? → [Research Overview](../05-research/README.md)
