@@ -1,29 +1,104 @@
 version: '3'
 
 tasks:
-  lint:
-    desc: "Run all linters (ruff check + format check)"
+  build:
+    desc: "Build detected project components"
     cmds:
-      - ruff check .
-      - ruff format --check .
+      - |
+        set -eu
 
-  format:
-    desc: "Format code with ruff"
-    cmds:
-      - ruff format .
+        if [ -f backend/go.mod ]; then
+          (cd backend && task build)
+        fi
+
+        if [ -f pyproject.toml ]; then
+          uv build
+        fi
+
+        if [ -f package.json ]; then
+          bun run build
+        fi
 
   test:
-    desc: "Run pytest"
+    desc: "Run detected test suites"
     cmds:
-      - pytest
+      - |
+        set -eu
+
+        if [ -f backend/go.mod ]; then
+          (cd backend && task test)
+        fi
+
+        if [ -f pyproject.toml ]; then
+          uv run pytest
+        fi
+
+        if [ -f package.json ]; then
+          bun run test
+        fi
+
+  lint:
+    desc: "Run detected linters"
+    cmds:
+      - |
+        set -eu
+
+        if [ -f backend/go.mod ]; then
+          (cd backend && task lint)
+        fi
+
+        if [ -f pyproject.toml ]; then
+          uv run ruff check .
+          uv run ruff format --check .
+        fi
+
+        if [ -f package.json ]; then
+          bun run lint
+        fi
+
+  format:
+    desc: "Format detected project components"
+    cmds:
+      - |
+        set -eu
+
+        if [ -f backend/go.mod ]; then
+          (cd backend && task format)
+        fi
+
+        if [ -f pyproject.toml ]; then
+          uv run ruff format .
+        fi
+
+        if [ -f package.json ]; then
+          bun run format
+        fi
+
+  clean:
+    desc: "Remove build artifacts for detected project components"
+    cmds:
+      - |
+        set -eu
+
+        if [ -f backend/go.mod ]; then
+          (cd backend && task clean)
+        fi
+
+        if [ -f pyproject.toml ]; then
+          rm -rf .pytest_cache .ruff_cache .mypy_cache .coverage htmlcov dist build
+        fi
+
+        if [ -f package.json ]; then
+          bun run clean
+        fi
 
   quality:
-    desc: "Run full quality checks (lint + test)"
+    desc: "Run lint and test"
     cmds:
       - task: lint
       - task: test
 
   sync:
-    desc: "Sync dependencies with uv"
+    desc: "Sync Python dependencies"
     cmds:
       - uv sync
