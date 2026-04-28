@@ -29,7 +29,7 @@ Advanced technical investigations into Requirements Traceability Matrix systems 
 
 - **Parent**: [Research Overview](../README.md)
 - **Related**: [Trace Research](../trace-research/)
-- **Master Index**: [Documentation Index](../../INDEX.md)
+- **Master Index**: [Research Overview](../README.md)
 
 ---
 
