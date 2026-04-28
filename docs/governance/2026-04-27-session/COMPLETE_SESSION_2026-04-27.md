@@ -67,3 +67,4 @@ AgilePlus PRs #465/#464/#463 — cannot merge until governance-gate passes. Thes
 - Created Tracera CODEOWNERS + FUNDING.yml via API
 - Closed conflicting/stale PRs
 - Tracera: 0 alerts
+- pip-compile approach for AgilePlus locks blocked (needs requirements.in source)
