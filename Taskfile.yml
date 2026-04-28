@@ -10,8 +10,6 @@ vars:
     -not -path './.archive/*'
     -not -path './default/*'
   FRONTEND_DIR: frontend
-  BUN_WORKSPACE_DIR: >-
-    {{if eq (OS "test -f frontend/package.json && printf yes || printf no") "yes"}}frontend{{else}}.{{end}}
 
 tasks:
   default:
@@ -54,8 +52,13 @@ tasks:
           node -e "const p=require('./package.json'); process.exit(p.scripts?.[process.argv[1]] ? 0 : 1)" "$1"
         }
 
-        if [ -f "{{.BUN_WORKSPACE_DIR}}/package.json" ] && (cd "{{.BUN_WORKSPACE_DIR}}" && has_script build); then
-          (cd "{{.BUN_WORKSPACE_DIR}}" && bun run build)
+        bun_dir="."
+        if [ -f "{{.FRONTEND_DIR}}/package.json" ]; then
+          bun_dir="{{.FRONTEND_DIR}}"
+        fi
+
+        if [ -f "$bun_dir/package.json" ] && (cd "$bun_dir" && has_script build); then
+          (cd "$bun_dir" && bun run build)
         fi
 
   test:
@@ -93,8 +96,13 @@ tasks:
           node -e "const p=require('./package.json'); process.exit(p.scripts?.[process.argv[1]] ? 0 : 1)" "$1"
         }
 
-        if [ -f "{{.BUN_WORKSPACE_DIR}}/package.json" ] && (cd "{{.BUN_WORKSPACE_DIR}}" && has_script test); then
-          (cd "{{.BUN_WORKSPACE_DIR}}" && bun run test)
+        bun_dir="."
+        if [ -f "{{.FRONTEND_DIR}}/package.json" ]; then
+          bun_dir="{{.FRONTEND_DIR}}"
+        fi
+
+        if [ -f "$bun_dir/package.json" ] && (cd "$bun_dir" && has_script test); then
+          (cd "$bun_dir" && bun run test)
         fi
 
   lint:
@@ -138,8 +146,13 @@ tasks:
           node -e "const p=require('./package.json'); process.exit(p.scripts?.[process.argv[1]] ? 0 : 1)" "$1"
         }
 
-        if [ -f "{{.BUN_WORKSPACE_DIR}}/package.json" ]; then
-          cd "{{.BUN_WORKSPACE_DIR}}"
+        bun_dir="."
+        if [ -f "{{.FRONTEND_DIR}}/package.json" ]; then
+          bun_dir="{{.FRONTEND_DIR}}"
+        fi
+
+        if [ -f "$bun_dir/package.json" ]; then
+          cd "$bun_dir"
           if has_script lint; then
             bun run lint
           fi
@@ -162,12 +175,17 @@ tasks:
           (cd "$module_dir" && go clean -cache -testcache)
         done
 
-        if [ -f "{{.BUN_WORKSPACE_DIR}}/package.json" ]; then
-          if node -e "const p=require('./{{.BUN_WORKSPACE_DIR}}/package.json'); process.exit(p.scripts?.clean ? 0 : 1)"; then
-            cd "{{.BUN_WORKSPACE_DIR}}"
+        bun_dir="."
+        if [ -f "{{.FRONTEND_DIR}}/package.json" ]; then
+          bun_dir="{{.FRONTEND_DIR}}"
+        fi
+
+        if [ -f "$bun_dir/package.json" ]; then
+          if (cd "$bun_dir" && node -e "const p=require('./package.json'); process.exit(p.scripts?.clean ? 0 : 1)"); then
+            cd "$bun_dir"
             bun run clean
           else
-            rm -rf "{{.BUN_WORKSPACE_DIR}}/.turbo" "{{.BUN_WORKSPACE_DIR}}/coverage" "{{.BUN_WORKSPACE_DIR}}"/apps/*/dist "{{.BUN_WORKSPACE_DIR}}"/apps/*/build
-            find "{{.BUN_WORKSPACE_DIR}}" -type d \( -name dist -o -name build -o -name coverage \) -prune -exec rm -rf {} +
+            rm -rf "$bun_dir/.turbo" "$bun_dir/coverage" "$bun_dir"/apps/*/dist "$bun_dir"/apps/*/build
+            find "$bun_dir" -type d \( -name dist -o -name build -o -name coverage \) -prune -exec rm -rf {} +
           fi
         fi
