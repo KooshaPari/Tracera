@@ -22,7 +22,12 @@ tasks:
     cmds:
       - |
         set -eu
-        find . -name go.mod -not -path './vendor/*' -print | while IFS= read -r module; do
+        find . -name go.mod \
+          -not -path './vendor/*' \
+          -not -path './ARCHIVE/*' \
+          -not -path './.archive/*' \
+          -not -path './default/*' \
+          -print | while IFS= read -r module; do
           module_dir="$(dirname "$module")"
           (cd "$module_dir" && go build ./...)
         done
@@ -57,7 +62,12 @@ tasks:
     cmds:
       - |
         set -eu
-        find . -name go.mod -not -path './vendor/*' -print | while IFS= read -r module; do
+        find . -name go.mod \
+          -not -path './vendor/*' \
+          -not -path './ARCHIVE/*' \
+          -not -path './.archive/*' \
+          -not -path './default/*' \
+          -print | while IFS= read -r module; do
           module_dir="$(dirname "$module")"
           (cd "$module_dir" && go test ./...)
         done
@@ -93,7 +103,12 @@ tasks:
     cmds:
       - |
         set -eu
-        find . -name go.mod -not -path './vendor/*' -print | while IFS= read -r module; do
+        find . -name go.mod \
+          -not -path './vendor/*' \
+          -not -path './ARCHIVE/*' \
+          -not -path './.archive/*' \
+          -not -path './default/*' \
+          -print | while IFS= read -r module; do
           module_dir="$(dirname "$module")"
           unformatted="$(cd "$module_dir" && gofmt -l .)"
           if [ -n "$unformatted" ]; then
@@ -121,7 +136,12 @@ tasks:
         rm -rf .pytest_cache .ruff_cache .mypy_cache .coverage htmlcov dist build
         find . -type d -name __pycache__ -prune -exec rm -rf {} +
 
-        find . -name go.mod -not -path './vendor/*' -print | while IFS= read -r module; do
+        find . -name go.mod \
+          -not -path './vendor/*' \
+          -not -path './ARCHIVE/*' \
+          -not -path './.archive/*' \
+          -not -path './default/*' \
+          -print | while IFS= read -r module; do
           module_dir="$(dirname "$module")"
           (cd "$module_dir" && go clean -cache -testcache)
         done
