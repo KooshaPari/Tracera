@@ -18,13 +18,14 @@ tasks:
         fi
 
   build:go:
-    desc: Build the Go backend when backend/go.mod is present
+    desc: Build detected Go modules
     cmds:
       - |
         set -eu
-        if [ -f backend/go.mod ]; then
-          (cd backend && go build ./...)
-        fi
+        find . -name go.mod -not -path './vendor/*' -print | while IFS= read -r module; do
+          module_dir="$(dirname "$module")"
+          (cd "$module_dir" && go build ./...)
+        done
 
   build:frontend:
     desc: Build the Bun frontend workspace when frontend/package.json is present
@@ -52,13 +53,14 @@ tasks:
         fi
 
   test:go:
-    desc: Run Go backend tests when backend/go.mod is present
+    desc: Run tests for detected Go modules
     cmds:
       - |
         set -eu
-        if [ -f backend/go.mod ]; then
-          (cd backend && go test ./...)
-        fi
+        find . -name go.mod -not -path './vendor/*' -print | while IFS= read -r module; do
+          module_dir="$(dirname "$module")"
+          (cd "$module_dir" && go test ./...)
+        done
 
   test:frontend:
     desc: Run Bun frontend tests when frontend/package.json is present
@@ -87,18 +89,19 @@ tasks:
         fi
 
   lint:go:
-    desc: Run Go formatting and vet checks when backend/go.mod is present
+    desc: Run Go formatting and vet checks for detected Go modules
     cmds:
       - |
         set -eu
-        if [ -f backend/go.mod ]; then
-          unformatted="$(cd backend && gofmt -l .)"
+        find . -name go.mod -not -path './vendor/*' -print | while IFS= read -r module; do
+          module_dir="$(dirname "$module")"
+          unformatted="$(cd "$module_dir" && gofmt -l .)"
           if [ -n "$unformatted" ]; then
             printf '%s\n' "$unformatted"
             exit 1
           fi
-          (cd backend && go vet ./...)
-        fi
+          (cd "$module_dir" && go vet ./...)
+        done
 
   lint:frontend:
     desc: Run Bun frontend lint and type checks when frontend/package.json is present
@@ -118,9 +121,10 @@ tasks:
         rm -rf .pytest_cache .ruff_cache .mypy_cache .coverage htmlcov dist build
         find . -type d -name __pycache__ -prune -exec rm -rf {} +
 
-        if [ -f backend/go.mod ]; then
-          (cd backend && go clean -cache -testcache)
-        fi
+        find . -name go.mod -not -path './vendor/*' -print | while IFS= read -r module; do
+          module_dir="$(dirname "$module")"
+          (cd "$module_dir" && go clean -cache -testcache)
+        done
 
         if [ -d frontend ]; then
           rm -rf frontend/.turbo frontend/coverage frontend/apps/*/dist frontend/apps/*/build
