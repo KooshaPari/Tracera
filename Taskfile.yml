@@ -2,35 +2,74 @@ version: "3"
 
 tasks:
   build:
-    desc: Build the detected Python package
+    desc: Build the detected Python package, Go backend, and Bun frontend workspace
     cmds:
       - |
         set -eu
 
-        uv build
+        if [ -f pyproject.toml ]; then
+          uv build
+        fi
+
+        if [ -f backend/go.mod ]; then
+          (cd backend && go build ./...)
+        fi
+
+        if [ -f frontend/package.json ]; then
+          (cd frontend && bun run build)
+        fi
 
   test:
-    desc: Run the detected Python test suite
+    desc: Run the detected Python, Go, and Bun test suites
     cmds:
       - |
         set -eu
 
-        uv run pytest
+        if [ -f pyproject.toml ] && [ -d tests ]; then
+          uv run pytest
+        fi
+
+        if [ -f backend/go.mod ]; then
+          (cd backend && go test ./...)
+        fi
+
+        if [ -f frontend/package.json ]; then
+          (cd frontend && bun test)
+        fi
 
   lint:
-    desc: Run the detected Python linters and format check
+    desc: Run the detected Python, Go, and frontend lint checks
     cmds:
       - |
         set -eu
 
-        uv run ruff check .
-        uv run ruff format --check .
+        if [ -f pyproject.toml ]; then
+          uv run ruff check .
+          uv run ruff format --check .
+        fi
+
+        if [ -f backend/go.mod ]; then
+          (cd backend && test -z "$(gofmt -l .)" && go vet ./...)
+        fi
+
+        if [ -f frontend/package.json ]; then
+          (cd frontend && bun run lint && bun run typecheck)
+        fi
 
   clean:
-    desc: Remove Python build and test artifacts
+    desc: Remove Python, Go, and frontend build/test artifacts
     cmds:
       - |
         set -eu
 
         rm -rf .pytest_cache .ruff_cache .mypy_cache .coverage htmlcov dist build
         find . -type d -name __pycache__ -prune -exec rm -rf {} +
+
+        if [ -f backend/go.mod ]; then
+          (cd backend && go clean -cache -testcache)
+        fi
+
+        if [ -d frontend ]; then
+          rm -rf frontend/.turbo frontend/coverage frontend/apps/*/dist frontend/apps/*/build
+          find frontend -type d \( -name dist -o -name build -o -name coverage \) -prune -exec rm -rf {} +
+        fi
