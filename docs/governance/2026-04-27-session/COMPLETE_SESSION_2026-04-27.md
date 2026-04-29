@@ -100,3 +100,7 @@ AgilePlus PRs #465/#464/#463 — cannot merge until governance-gate passes. Thes
 - 8 repos: FUNDING.yml added (PhenoRuntime, HexaKit, PhenoKits, PhenoAgent, PhenoDocs, portage, GDK, Httpora)
 - 8 repos: topics added (same)
 - 8 repos: branch protection enabled (portage, Httpora, PhenoRuntime, HexaKit, PhenoKits, PhenoAgent, PhenoDocs, GDK)
+
+## ADDITIONAL COMPLETED
+- 4 repos checked for license: agent-devops-setups, Benchora, heliosApp already have LICENSE (MIT-style)
+- phenoForge is archived, no license needed
