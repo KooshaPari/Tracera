@@ -90,3 +90,13 @@ AgilePlus PRs #465/#464/#463 — cannot merge until governance-gate passes. Thes
 
 ## DISK STATUS
 7.3Gi free. AgilePlus repo is bare (cannot commit to it). Worktrees are git-managed.
+
+## NEW: heliosCLI CI FAILURES
+- rust-ci: Format + Tests + Lint/Build failing on main (cargo fmt, multiple platforms)
+- Bazel (experimental): failing on main
+- Needs worktree to investigate + fix
+
+## HYGIENE COMPLETED THIS SESSION
+- 8 repos: FUNDING.yml added (PhenoRuntime, HexaKit, PhenoKits, PhenoAgent, PhenoDocs, portage, GDK, Httpora)
+- 8 repos: topics added (same)
+- 8 repos: branch protection enabled (portage, Httpora, PhenoRuntime, HexaKit, PhenoKits, PhenoAgent, PhenoDocs, GDK)
