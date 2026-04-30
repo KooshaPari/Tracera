@@ -7,6 +7,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/kooshapari/tracertm)](https://goreportcard.com/report/github.com/kooshapari/tracertm)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![AI Slop Inside](https://sladge.net/badge.svg)](https://sladge.net)
 
 **Agent-native, multi-view requirements traceability and project management system.**
 
