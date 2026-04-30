@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
@@ -89,7 +89,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -136,7 +136,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Download pact files
         uses: actions/download-artifact@v4
@@ -186,7 +186,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Download pact files
         uses: actions/download-artifact@v4

@@ -63,7 +63,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Check for performance baseline
         id: check_baseline
@@ -142,7 +142,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -313,7 +313,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -428,7 +428,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Download smoke test results
         if: needs['smoke-test'].result == 'success'

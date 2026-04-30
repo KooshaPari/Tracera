@@ -20,7 +20,7 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout # v4.1.1@v4
 
       # npm audit for frontend
       - name: Run npm audit
@@ -96,7 +96,7 @@ jobs:
       security-events: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout # v4.1.1@v4
       
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
