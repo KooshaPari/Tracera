@@ -147,4 +147,4 @@ For production, set these in Vercel dashboard.
 - [Quick Start](./QUICK_START.md) - Get started quickly
 - [Deployment Guide](./DEPLOYMENT.md) - Full deployment documentation
 - [GitHub Actions Setup](./GITHUB_ACTIONS_SETUP.md) - CI/CD configuration
-- [Implementation Summary](./IMPLEMENTATION_SUMMARY.md) - Technical overview
+- [Implementation Summary](./PHASE_2_IMPLEMENTATION_SUMMARY.md) - Technical overview
