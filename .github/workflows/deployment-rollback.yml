@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
         with:
           fetch-depth: 0
 
@@ -134,7 +134,7 @@ jobs:
 
     steps:
       - name: Checkout target version
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
         with:
           ref: ${{ needs.validate-rollback.outputs.target_version }}
 
@@ -214,7 +214,7 @@ jobs:
 
     steps:
       - name: Checkout target version
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
         with:
           ref: ${{ needs.validate-rollback.outputs.target_version }}
 

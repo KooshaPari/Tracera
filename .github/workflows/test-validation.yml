@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Setup test users and credentials
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout # v4.1.1@v4
 
       - uses: actions/setup-node@v4
         with:
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Frontend E2E Tests (Playwright)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout # v4.1.1@v4
 
       - uses: actions/setup-node@v4
         with:
@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Frontend API Tests (Vitest)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout # v4.1.1@v4
 
       - uses: actions/setup-node@v4
         with:
@@ -126,7 +126,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Backend Go Tests
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout # v4.1.1@v4
 
       - uses: actions/setup-go@v5
         with:
@@ -157,7 +157,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Backend Python Tests
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout # v4.1.1@v4
 
       - uses: actions/setup-python@v5
         with:
@@ -198,7 +198,7 @@ jobs:
     name: Generate Validation Report
     if: always()
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout # v4.1.1@v4
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4

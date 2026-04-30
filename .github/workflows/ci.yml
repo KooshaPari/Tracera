@@ -58,7 +58,7 @@ jobs:
       frontend: ${{ steps.filter.outputs.frontend }}
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout # v4.1.1@v4
       with:
         fetch-depth: 0
 
@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout # v4.1.1@v4
     - name: Run naming explosion + LOC guards
       run: make lint-naming
 
@@ -142,7 +142,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout # v4.1.1@v4
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
@@ -382,7 +382,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout # v4.1.1@v4
 
     - name: Set up Python 3.13
       uses: actions/setup-python@v5
@@ -460,7 +460,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout # v4.1.1@v4
 
     - name: Set up Go ${{ matrix.go-version }}
       uses: actions/setup-go@v5
@@ -747,7 +747,7 @@ jobs:
     if: needs.detect-changes.outputs.frontend == 'true'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -896,7 +896,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -1008,7 +1008,7 @@ jobs:
     needs: [frontend-checks]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -1045,7 +1045,7 @@ jobs:
         package: [ui, api-client, state, env-manager]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -1083,7 +1083,7 @@ jobs:
     needs: [frontend-checks]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -1121,7 +1121,7 @@ jobs:
     needs: [frontend-checks]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -1159,7 +1159,7 @@ jobs:
     needs: [frontend-checks]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -1201,7 +1201,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout # v4.1.1@v4
 
     - name: Setup Bun (for frontend audit)
       uses: oven-sh/setup-bun@v2
@@ -1242,7 +1242,7 @@ jobs:
     if: always()
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout # v4.1.1@v4
 
     - name: Download current coverage artifacts
       uses: actions/download-artifact@v4
@@ -1434,7 +1434,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout # v4.1.1@v4
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -1513,7 +1513,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout # v4.1.1@v4
 
     - name: Install Pulumi Node.js dependencies
       if: env.PULUMI_ACCESS_TOKEN != ''
@@ -1543,7 +1543,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout # v4.1.1@v4
 
     - name: Set up kubectl
       uses: azure/setup-kubectl@v4
@@ -1582,7 +1582,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout # v4.1.1@v4
 
     - name: Set up kubectl
       uses: azure/setup-kubectl@v4

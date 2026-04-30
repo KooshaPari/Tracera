@@ -44,7 +44,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
         with:
           fetch-depth: 0
 
@@ -135,7 +135,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
@@ -189,7 +189,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
@@ -259,7 +259,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout # v4.1.1@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
