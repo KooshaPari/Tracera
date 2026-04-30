@@ -14,7 +14,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           go-version: '1.23'
           cache-dependency-path: backend/go.sum
@@ -24,7 +24,7 @@ jobs:
           GOTOOLCHAIN: local
         run: go test ./benchmarks/... -bench=. -benchmem -count=3 -timeout=5m | tee benchmark-results.txt
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: go-benchmark-results
           path: backend/benchmark-results.txt

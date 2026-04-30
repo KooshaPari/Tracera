@@ -80,7 +80,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           cache: 'pip'
         with:
@@ -188,7 +188,7 @@ jobs:
 
       - name: Upload chaos test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: chaos-test-results
           path: |

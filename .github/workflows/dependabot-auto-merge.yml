@@ -46,7 +46,7 @@ jobs:
 
       - name: Set up Node.js
         if: contains(steps.metadata.outputs.dependency-names, 'npm') || contains(steps.metadata.outputs.dependency-names, 'node')
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           cache: 'npm'
         with:
@@ -55,7 +55,7 @@ jobs:
 
       - name: Set up Python
         if: contains(steps.metadata.outputs.dependency-names, 'python')
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           cache: 'pip'
         with:
@@ -64,7 +64,7 @@ jobs:
 
       - name: Set up Go
         if: contains(steps.metadata.outputs.dependency-names, 'go')
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           go-version: '1.23'
           cache: true

@@ -18,7 +18,7 @@ jobs:
           version: "latest"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           cache: 'pip'
         with:
@@ -34,14 +34,14 @@ jobs:
         run: tach show --mermaid > architecture.md
 
       - name: Upload architecture diagram
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: architecture-diagram
           path: architecture.md
 
       - name: Comment architecture on PR
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           script: |
             const fs = require('fs');

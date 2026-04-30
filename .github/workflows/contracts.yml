@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           go-version: '1.22'
 
@@ -58,13 +58,13 @@ jobs:
           version: 'latest'
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           cache: 'pip'
           python-version: '3.12'
 
       - name: Cache uv dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4
         with:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}

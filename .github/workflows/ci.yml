@@ -93,7 +93,7 @@ jobs:
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
@@ -104,7 +104,7 @@ jobs:
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
     - name: Cache uv dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4
       with:
         path: ~/.cache/uv
         key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
@@ -152,7 +152,7 @@ jobs:
 
     - name: Upload Python lint results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
       with:
         name: python-lint-results
         path: |
@@ -274,7 +274,7 @@ jobs:
 
     - name: Archive test results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
       with:
         name: python-test-results
         path: |
@@ -284,7 +284,7 @@ jobs:
 
     - name: Store Python coverage baseline
       if: github.ref == 'refs/heads/main' && success()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
       with:
         name: python-coverage-baseline
         path: python-coverage-by-package.txt
@@ -330,7 +330,7 @@ jobs:
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
     - name: Set up Python 3.12
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
         python-version: '3.12'
         cache: 'pip'
@@ -406,13 +406,13 @@ jobs:
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
     - name: Set up Go ${{ matrix.go-version }}
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@330a01c490aca151604b8cf639adc76d48f6c5d4
       with:
         go-version: ${{ matrix.go-version }}
         cache-dependency-path: backend/go.mod
 
     - name: Cache Go modules
-      uses: actions/cache@v3
+      uses: actions/cache@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -449,7 +449,7 @@ jobs:
 
     - name: Upload Go lint results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
       with:
         name: go-lint-results
         path: /tmp/go-lint-results.json
@@ -595,7 +595,7 @@ jobs:
 
     - name: Download benchmark baseline
       if: github.event_name == 'pull_request'
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
       with:
         name: go-benchmark-baseline
         path: /tmp/
@@ -634,7 +634,7 @@ jobs:
 
     - name: Upload benchmark metrics as artifact
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
       with:
         name: go-benchmark-baseline
         path: /tmp/benchmark-metrics.json
@@ -664,7 +664,7 @@ jobs:
 
     - name: Archive test results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
       with:
         name: go-test-results
         path: |
@@ -673,7 +673,7 @@ jobs:
 
     - name: Store Go coverage baseline
       if: github.ref == 'refs/heads/main' && success()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
       with:
         name: go-coverage-baseline
         path: backend/coverage-by-file.txt
@@ -694,7 +694,7 @@ jobs:
           bun-version: latest
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -735,7 +735,7 @@ jobs:
 
       - name: Upload frontend lint results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: frontend-lint-results
           path: /tmp/oxlint-results.json
@@ -793,7 +793,7 @@ jobs:
 
       - name: Store frontend coverage baseline
         if: github.ref == 'refs/heads/main' && success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: frontend-coverage-baseline
           path: frontend/coverage-by-file.txt
@@ -841,7 +841,7 @@ jobs:
           bun-version: latest
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -853,7 +853,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v3
+        uses: actions/cache@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
@@ -905,7 +905,7 @@ jobs:
 
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: playwright-report
           path: frontend/apps/web/playwright-report/
@@ -913,7 +913,7 @@ jobs:
 
       - name: Upload Playwright test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: playwright-results
           path: |
@@ -923,7 +923,7 @@ jobs:
 
       - name: Upload screenshots on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: playwright-screenshots
           path: frontend/apps/web/test-results/**/*.png
@@ -931,7 +931,7 @@ jobs:
 
       - name: Upload videos on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: playwright-videos
           path: frontend/apps/web/test-results/**/*.webm
@@ -952,7 +952,7 @@ jobs:
           bun-version: latest
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -989,7 +989,7 @@ jobs:
           bun-version: latest
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -1006,7 +1006,7 @@ jobs:
 
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: coverage-package-${{ matrix.package }}
           path: frontend/packages/${{ matrix.package }}/coverage/
@@ -1027,7 +1027,7 @@ jobs:
           bun-version: latest
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -1044,7 +1044,7 @@ jobs:
 
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: coverage-desktop
           path: frontend/apps/desktop/coverage/
@@ -1065,7 +1065,7 @@ jobs:
           bun-version: latest
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -1082,7 +1082,7 @@ jobs:
 
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: coverage-docs
           path: frontend/apps/docs/coverage/
@@ -1103,7 +1103,7 @@ jobs:
           bun-version: latest
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -1124,7 +1124,7 @@ jobs:
 
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: coverage-storybook
           path: frontend/apps/storybook/coverage/
@@ -1181,13 +1181,13 @@ jobs:
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
     - name: Download current coverage artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
       with:
         path: current-coverage
       continue-on-error: true
 
     - name: Download baseline coverage (if available)
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
       with:
         name: go-coverage-baseline
         path: baseline-coverage

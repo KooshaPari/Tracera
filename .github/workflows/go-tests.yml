@@ -33,13 +33,13 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: backend/tests/go.sum
 
       - name: Cache Go modules
-        uses: actions/cache@v3
+        uses: actions/cache@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -85,7 +85,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Upload unit coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: unit-coverage
           path: |
@@ -140,13 +140,13 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: backend/tests/go.sum
 
       - name: Cache Go modules
-        uses: actions/cache@v3
+        uses: actions/cache@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -213,7 +213,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Upload integration coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: integration-coverage
           path: |
@@ -247,13 +247,13 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: backend/tests/go.sum
 
       - name: Cache Go modules
-        uses: actions/cache@v3
+        uses: actions/cache@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -317,7 +317,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Upload API coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: api-coverage
           path: |
@@ -336,7 +336,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: backend/tests/go.sum
@@ -418,7 +418,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Upload E2E coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: e2e-coverage
           path: |
@@ -437,13 +437,13 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: backend/tests/go.sum
 
       - name: Cache Go modules
-        uses: actions/cache@v3
+        uses: actions/cache@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -484,7 +484,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Upload security coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: security-coverage
           path: |
@@ -504,12 +504,12 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Download all coverage artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           path: coverage-artifacts
 
@@ -549,7 +549,7 @@ jobs:
           cat coverage-summary.md
 
       - name: Upload coverage summary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           name: coverage-summary
           path: coverage-summary.md
