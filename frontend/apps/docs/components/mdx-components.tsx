@@ -22,7 +22,8 @@ import { DocImage } from './optimized-image';
  *
  * PHASE 1 OPTIMIZATION: Heavy components are lazy-loaded to reduce bundle size
  */
-export const mdxComponents = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const mdxComponents: Record<string, any> = {
   ...defaultMdxComponents,
 
   // Navigation components (lazy-loaded)
