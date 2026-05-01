@@ -6,10 +6,9 @@ import uuid
 from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, Index, String
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from tracertm.models.base import Base, TimestampMixin
+from tracertm.models.base import Base, GUID, TimestampMixin
 from tracertm.models.types import JSONType
 
 if TYPE_CHECKING:
@@ -35,9 +34,9 @@ class Link(Base, TimestampMixin):
         {"extend_existing": True},
     )
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=generate_link_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=generate_link_uuid)
     project_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        GUID(),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -51,14 +50,14 @@ class Link(Base, TimestampMixin):
     )
 
     source_item_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        GUID(),
         ForeignKey("items.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
 
     target_item_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        GUID(),
         ForeignKey("items.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -85,10 +84,10 @@ class Link(Base, TimestampMixin):
         """Initialize Link instance.
 
         Handles field aliasing for backward compatibility:
-        - 'type' → 'link_type'
-        - 'metadata' → 'link_metadata'
-        - 'source_id' → 'source_item_id'
-        - 'target_id' → 'target_item_id'
+        - 'type' -> 'link_type'
+        - 'metadata' -> 'link_metadata'
+        - 'source_id' -> 'source_item_id'
+        - 'target_id' -> 'target_item_id'
 
         Args:
             **kwargs: Keyword arguments for model fields.
