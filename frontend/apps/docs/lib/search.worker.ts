@@ -76,6 +76,36 @@ function initializeSearch(indexData: SearchIndex) {
 
 /**
  * Perform search with Fuse.js
+ *
+ * @param query - Search query string
+ * @param maxResults - Maximum number of results to return (default: 20)
+ * @returns Search results array (for direct invocation)
+ *
+ * @remarks
+ * This function has **dual return semantics** which may be confusing:
+ *
+ * 1. **Primary**: Posts results via `postMessage` with type `'search-complete'`
+ *    - This is the intended communication channel when called from the message handler
+ *    - The caller (message handler at line 128) ignores the return value
+ *
+ * 2. **Secondary**: Returns results directly as the function's return value
+ *    - This enables direct invocation without message passing
+ *    - However, when called via `postMessage` (the typical flow), the return value is discarded
+ *
+ * **Important**: The message handler (line 128) does NOT use the return value.
+ * Results are communicated exclusively through `postMessage`. The return value
+ * exists only for edge cases where the function might be called directly
+ * (e.g., in tests or if the worker is imported as a module).
+ *
+ * @example
+ * // Via message handler (typical usage) - return value is ignored:
+ * self.postMessage({ type: 'search', query: 'docs' });
+ * // Results arrive via 'search-complete' message
+ *
+ * @example
+ * // Direct invocation - return value is used:
+ * const results = performSearch('docs', 10);
+ * // Results returned directly (but postMessage is still sent!)
  */
 function performSearch(query: string, maxResults: number = 20): SearchResult[] {
   if (!fuse) {
@@ -93,7 +123,7 @@ function performSearch(query: string, maxResults: number = 20): SearchResult[] {
 
   const duration = performance.now() - startTime;
 
-  // Return results with performance metrics
+  // Post results via message (primary communication channel)
   self.postMessage({
     type: 'search-complete',
     results: results.map((result) => ({
@@ -106,11 +136,17 @@ function performSearch(query: string, maxResults: number = 20): SearchResult[] {
     resultCount: results.length,
   });
 
+  // Also return results directly (for direct invocation use cases)
+  // Note: When called from message handler, this return value is discarded
   return results;
 }
 
 /**
  * Message handler
+ *
+ * Receives search requests and dispatches to appropriate handlers.
+ * Note: The return value from performSearch is intentionally ignored;
+ * results are communicated back via postMessage from within performSearch.
  */
 self.addEventListener('message', (event: MessageEvent<SearchMessage>) => {
   const { type, query, maxResults, indexData } = event.data;
@@ -125,6 +161,7 @@ self.addEventListener('message', (event: MessageEvent<SearchMessage>) => {
 
       case 'search':
         if (query) {
+          // Return value ignored - results posted via message from performSearch
           performSearch(query, maxResults);
         }
         break;
