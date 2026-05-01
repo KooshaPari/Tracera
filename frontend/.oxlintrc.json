@@ -361,7 +361,7 @@
     "eslint/no-new-func": "error",
     "eslint/no-script-url": "error",
     "eslint/no-throw-literal": "error",
-    "eslint/switch-exhaustiveness-check": "warn",
+    "typescript/switch-exhaustiveness-check": "warn",
     "eslint/no-unused-vars": "error",
     "eslint/no-unused-expressions": "error",
     "eslint/no-console": ["error", { "allow": ["warn", "error", "info"] }],
@@ -395,18 +395,6 @@
       }
     ],
     "eslint/complexity": ["error", 15],
-    "jsdoc/require-jsdoc": [
-      "warn",
-      {
-        "contexts": ["export const", "export function", "export class"],
-        "require": {
-          "ClassDeclaration": true,
-          "FunctionDeclaration": true,
-          "MethodDefinition": false,
-          "ArrowFunctionExpression": false
-        }
-      }
-    ],
     "eslint/no-magic-numbers": [
       "error",
       {

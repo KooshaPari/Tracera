@@ -36,7 +36,7 @@ export const mdxComponents = {
 
   // Media (optimized with Next.js Image)
   ImageZoom: ImageZoomLazy,
-  img: (props: any) => {
+  img: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
     // For documentation images, use optimized component
     if (props.src && !props.src.startsWith('http')) {
       return <DocImage src={props.src} alt={props.alt || ''} />;
