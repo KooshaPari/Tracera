@@ -22,8 +22,7 @@ import { DocImage } from './optimized-image';
  *
  * PHASE 1 OPTIMIZATION: Heavy components are lazy-loaded to reduce bundle size
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const mdxComponents: Record<string, any> = {
+export const mdxComponents = {
   ...defaultMdxComponents,
 
   // Navigation components (lazy-loaded)
@@ -37,7 +36,7 @@ export const mdxComponents: Record<string, any> = {
 
   // Media (optimized with Next.js Image)
   ImageZoom: ImageZoomLazy,
-  img: (props: any) => {
+  img: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
     // For documentation images, use optimized component
     if (props.src && !props.src.startsWith('http')) {
       return <DocImage src={props.src} alt={props.alt || ''} />;
