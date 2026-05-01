@@ -189,6 +189,23 @@ updates:
           - "github.com/testcontainers/*"
     versioning-strategy: "increase"
 
+  # Go bifrost-extensions (Go plugins/modules)
+  - package-ecosystem: "gomod"
+    directory: "/bifrost-extensions"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "09:30"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps-bifrost)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "golang"
+      - "bifrost-extensions"
+    versioning-strategy: "increase"
+
   # Go backend tests module
   - package-ecosystem: "gomod"
     directory: "/backend/tests"
