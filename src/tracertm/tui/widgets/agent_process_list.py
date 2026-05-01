@@ -4,7 +4,6 @@ Displays fix agent jobs (name, status). Placeholder until fix runner is implemen
 """
 
 import json
-from pathlib import Path
 from typing import Any
 
 try:
