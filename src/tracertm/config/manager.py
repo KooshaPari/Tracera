@@ -9,7 +9,7 @@ Handles configuration hierarchy:
 
 import os
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 import yaml
 
