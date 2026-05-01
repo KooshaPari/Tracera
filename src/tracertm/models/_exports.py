@@ -28,6 +28,7 @@ from tracertm.models.problem import Problem, ProblemActivity
 from tracertm.models.process import Process, ProcessExecution
 from tracertm.models.project import Project
 from tracertm.models.user import User
+from tracertm.models.workflow import Workflow
 from tracertm.models.workflow_run import WorkflowRun
 from tracertm.models.workflow_schedule import WorkflowSchedule
 
@@ -306,6 +307,7 @@ __all__ = [
     "View",
     "WebhookIntegration",
     "WebhookLog",
+    "Workflow",
     "WorkflowRun",
     "WorkflowSchedule",
 ]

@@ -136,20 +136,12 @@ class Item(Base, TimestampMixin):
 
     @property
     def node_kind_id(self) -> None:
-        """Compatibility property for Go-backed schema.
-
-        Returns:
-            Always None (not used in current schema).
-        """
+        """Compatibility property for Go-backed schema."""
         return None
 
     @property
     def owner(self) -> None:
-        """Compatibility property for Go-backed schema.
-
-        Returns:
-            Always None (not used in current schema).
-        """
+        """Compatibility property for Go-backed schema."""
         return None
 
     def __getitem__(self, key: str) -> object:
