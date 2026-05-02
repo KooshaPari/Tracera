@@ -3,12 +3,10 @@
 Works around pytest-asyncio auto-discovery issues.
 """
 
-import sys
 
 # Manually import and register pytest-asyncio plugin
 from typing import Any
 
-import pytest
 
 
 def pytest_configure(config: Any) -> None:

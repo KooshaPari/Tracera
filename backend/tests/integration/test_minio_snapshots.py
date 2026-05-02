@@ -170,7 +170,7 @@ async def test_snapshot_metadata(
 
     assert stored_metadata["session_id"] == session_id
     assert stored_metadata["file_count"] == 10
-    assert stored_metadata["compression_ratio"] == 0.3
+    assert stored_metadata["compression_ratio"] == 0.3  # noqa: RUF069
 
     # Create checkpoint with S3 key
     await db_session.execute(
