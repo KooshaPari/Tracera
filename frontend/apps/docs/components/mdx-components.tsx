@@ -37,12 +37,14 @@ export const mdxComponents = {
   // Media (optimized with Next.js Image)
   ImageZoom: ImageZoomLazy,
   img: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
+    const src = typeof props.src === 'string' ? props.src : null;
     // For documentation images, use optimized component
-    if (props.src && !props.src.startsWith('http')) {
-      return <DocImage src={props.src} alt={props.alt || ''} />;
+    if (src && !src.startsWith('http')) {
+      return <DocImage src={src} alt={props.alt || ''} />;
     }
-    // For external images, use ImageZoom
-    return <ImageZoomLazy {...props} />;
+    // For external images, use ImageZoom with sizes default
+    const { src: _src, ...rest } = props;
+    return <ImageZoomLazy {...rest} src={src ?? ''} sizes={rest.sizes ?? '100vw'} />;
   },
 
   // File tree visualization (lazy-loaded)
