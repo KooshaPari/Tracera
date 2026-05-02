@@ -8,7 +8,6 @@ Works around pytest-asyncio auto-discovery issues.
 from typing import Any
 
 
-
 def pytest_configure(config: Any) -> None:
     """Manually register pytest-asyncio plugin."""
     try:

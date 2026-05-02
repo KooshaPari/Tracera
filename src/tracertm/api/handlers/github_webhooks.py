@@ -5,11 +5,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from fastapi import Depends, HTTPException, Request
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.deps import get_db
 from tracertm.repositories.integration_repository import IntegrationSyncQueueRepository
 from tracertm.repositories.webhook_repository import WebhookRepository
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def receive_github_webhook(

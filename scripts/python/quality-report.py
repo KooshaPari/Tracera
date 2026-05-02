@@ -493,8 +493,6 @@ def run_report_split() -> int:
     print_issues_by_category(by_file_lint, by_file_test, sep)
 
     if by_file_lint or by_file_test:
-        if failed_steps:
-            pass
         return 0
 
     # No parseable by-file: show failed steps and per-step log excerpts
@@ -524,8 +522,6 @@ def run_report() -> int:
 
     if by_file:
         print_action_plan_by_file(by_file, cwd)
-        if failed_suites:
-            pass
         return 0
 
     # All passed, no file-level issues: short success (skip verbose by-log listing)

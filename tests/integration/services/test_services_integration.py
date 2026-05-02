@@ -1321,7 +1321,7 @@ class TestTraceabilityService:
         assert link.source_item_id == str(test_items[0].id)
         assert link.target_item_id == str(test_items[3].id)
         assert link.link_type == "implements"
-        assert link.link_metadata["confidence"] == 0.95
+        assert link.link_metadata["confidence"] == 0.95  # noqa: RUF069
 
         # Verify in database
         stmt = select(Link).where(Link.id == link.id)

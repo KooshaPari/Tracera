@@ -540,7 +540,7 @@ class TestSyncEngine:
     def test_initialization(self, sync_engine: Any) -> None:
         """Test SyncEngine initializes correctly."""
         assert sync_engine.max_retries == COUNT_THREE
-        assert sync_engine.retry_delay == 0.1
+        assert sync_engine.retry_delay == 0.1  # noqa: RUF069
         assert sync_engine.conflict_strategy == ConflictStrategy.LAST_WRITE_WINS
         assert sync_engine._syncing is False
 
@@ -849,7 +849,7 @@ class TestSyncEngineFactory:
 
         assert isinstance(engine, SyncEngine)
         assert engine.max_retries == COUNT_FIVE
-        assert engine.retry_delay == float(COUNT_TWO + 0.0)
+        assert engine.retry_delay == float(COUNT_TWO + 0.0)  # noqa: RUF069
 
 
 # ============================================================================

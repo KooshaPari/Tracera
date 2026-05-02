@@ -1089,7 +1089,7 @@ class TestApiConfig:
 
         assert config.base_url == "https://api.example.com"
         assert config.token == "my-token"
-        assert config.timeout == 30.0
+        assert config.timeout == 30.0  # noqa: RUF069
         assert config.max_retries == COUNT_FIVE
         assert config.verify_ssl is False
 
@@ -1098,7 +1098,7 @@ class TestApiConfig:
         config = ApiConfig(base_url="https://api.test.com")
 
         assert config.token is None
-        assert config.timeout == 30.0
+        assert config.timeout == 30.0  # noqa: RUF069
         assert config.max_retries == COUNT_THREE
         assert config.verify_ssl is True
 
@@ -1118,7 +1118,7 @@ class TestApiConfig:
 
             assert config.base_url == "https://custom.api.com"  # Trailing slash removed
             assert config.token == "custom-token"
-            assert config.timeout == 45.0
+            assert config.timeout == 45.0  # noqa: RUF069
             assert config.max_retries == COUNT_FIVE
 
     def test_api_config_from_config_manager_creates_new(self) -> None:

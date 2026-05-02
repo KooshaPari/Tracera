@@ -131,7 +131,7 @@ async def test_adr_create_with_full_metadata(db_session: AsyncSession, test_proj
 
     assert adr.decision_drivers == ["performance", "scalability"]
     assert len(adr.considered_options or []) == COUNT_TWO
-    assert adr.compliance_score == 0.95
+    assert adr.compliance_score == 0.95  # noqa: RUF069
     assert adr.version == 1
 
 
@@ -311,7 +311,7 @@ async def test_adr_verify_compliance(db_session: AsyncSession, test_project: Pro
     await db_session.commit()
 
     verified = await repo.verify_compliance(adr.id, compliance_score=0.85)
-    assert verified.compliance_score == 0.85
+    assert verified.compliance_score == 0.85  # noqa: RUF069
     assert verified.last_verified_at is not None
 
 
@@ -605,7 +605,7 @@ async def test_scenario_create_with_steps(db_session: AsyncSession, test_project
     assert len(scenario.given_steps or []) == COUNT_TWO
     assert len(scenario.when_steps or []) == 1
     assert len(scenario.then_steps or []) == COUNT_TWO
-    assert scenario.pass_rate == 0.0
+    assert scenario.pass_rate == 0.0  # noqa: RUF069
 
 
 @pytest.mark.asyncio
@@ -663,7 +663,7 @@ async def test_scenario_update_pass_rate(db_session: AsyncSession, test_project:
 
     # Update pass rate
     updated = await repo_scenario.update_pass_rate(scenario.id, 0.85)
-    assert updated.pass_rate == 0.85
+    assert updated.pass_rate == 0.85  # noqa: RUF069
 
 
 @pytest.mark.asyncio

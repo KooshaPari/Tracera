@@ -3,11 +3,10 @@
 import os
 import time
 from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter
 from pydantic import BaseModel
-
-from typing import Any
 
 from tracertm.api.handlers.health import (
     check_database,

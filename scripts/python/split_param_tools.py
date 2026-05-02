@@ -54,5 +54,3 @@ for tool_names in domain_groups.values():
     total_lines = sum(t["lines"] for t in tools_info if t["name"] in tool_names)
     for name in tool_names:
         tool = next((t for t in tools_info if t["name"] == name), None)
-        if tool:
-            pass

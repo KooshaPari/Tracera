@@ -13,5 +13,5 @@ class JSONType(TypeDecorator):
     impl = JSON
     cache_ok = True
 
-    def load_dialect_impl(self, dialect):
+    def load_dialect_impl(self, dialect):  # noqa: ANN001, ANN201, D102
         return dialect.type_descriptor(JSON())

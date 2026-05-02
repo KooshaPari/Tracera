@@ -46,27 +46,21 @@ def main() -> None:
     if migration_file.exists():
         # Use psql to apply migrations with separate arguments
         cmd = ["psql", db_url, "-f", str(migration_file)]
-        if run_command(cmd, "Apply PostgreSQL migrations"):
-            pass
+        run_command(cmd, "Apply PostgreSQL migrations")
 
     # Phase 2: Neo4j Setup
-    neo4j_uri = os.getenv("NEO4J_URI")
-    neo4j_user = os.getenv("NEO4J_USERNAME")
-    neo4j_pass = os.getenv("NEO4J_PASSWORD")
-
-    if neo4j_uri and neo4j_user and neo4j_pass:
-        pass
+    os.getenv("NEO4J_URI")
+    os.getenv("NEO4J_USERNAME")
+    os.getenv("NEO4J_PASSWORD")
 
     # Phase 3: Build Backend
     # Use safe subprocess invocation without shell=True
     # Split command into separate list items to avoid shell injection
     backend_dir = Path(__file__).parent.parent / "backend"
-    if run_command(["go", "build", "-o", "tracertm-backend", "."], "Build backend binary", cwd=str(backend_dir)):
-        pass
+    run_command(["go", "build", "-o", "tracertm-backend", "."], "Build backend binary", cwd=str(backend_dir))
 
     # Phase 4: Run Tests
-    if run_command(["go", "test", "./...", "-v"], "Run all tests", cwd=str(backend_dir)):
-        pass
+    run_command(["go", "test", "./...", "-v"], "Run all tests", cwd=str(backend_dir))
 
 
 if __name__ == "__main__":

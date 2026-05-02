@@ -76,7 +76,7 @@ class TestSyncClientEdgeCases:
         config = ApiConfig.from_config_manager(None)
 
         assert config.base_url == "https://api.tracertm.io"
-        assert config.timeout == 30.0
+        assert config.timeout == 30.0  # noqa: RUF069
         assert config.max_retries == COUNT_THREE
 
     @pytest.mark.asyncio
@@ -97,7 +97,7 @@ class TestSyncClientEdgeCases:
         with patch("tracertm.api.sync_client.ConfigManager", return_value=mock_manager):
             config = ApiConfig.from_config_manager()
 
-        assert config.timeout == 45.5
+        assert config.timeout == 45.5  # noqa: RUF069
         assert config.max_retries == COUNT_FIVE
 
     @pytest.mark.asyncio
@@ -1174,7 +1174,7 @@ links:
         result = link.to_dict()
 
         assert "metadata" in result
-        assert result["metadata"]["confidence"] == 0.95
+        assert result["metadata"]["confidence"] == 0.95  # noqa: RUF069
 
     def test_link_data_to_dict_without_metadata(self) -> None:
         """TC-MP-E16: LinkData excludes empty metadata from to_dict.

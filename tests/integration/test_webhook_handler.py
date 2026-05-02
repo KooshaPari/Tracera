@@ -11,11 +11,10 @@ Tests verify webhook signature verification, GitHub App webhook handling,
 installation event processing, and automated sync triggers.
 """
 
-from typing import Any
-
 import hashlib
 import hmac
 import pathlib
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest

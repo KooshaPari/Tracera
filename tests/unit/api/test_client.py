@@ -482,11 +482,11 @@ class TestApiClientRetryLogic:
             delays.append(delay)
 
         # Assert
-        assert delays[0] == 1.0
-        assert delays[1] == float(COUNT_TWO + 0.0)
-        assert delays[2] == float(COUNT_FOUR + 0.0)
-        assert delays[3] == 8.0
-        assert delays[4] == 16.0
+        assert delays[0] == 1.0  # noqa: RUF069
+        assert delays[1] == float(COUNT_TWO + 0.0)  # noqa: RUF069
+        assert delays[2] == float(COUNT_FOUR + 0.0)  # noqa: RUF069
+        assert delays[3] == 8.0  # noqa: RUF069
+        assert delays[4] == 16.0  # noqa: RUF069
 
 
 # ============================================================================

@@ -16,10 +16,11 @@ from tracertm.api.handlers.github_shared import (
     _require_int,
     _require_str,
 )
-from tracertm.clients.github_client import GitHubClient
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
+
+    from tracertm.clients.github_client import GitHubClient
 
 from tracertm.repositories.github_project_repository import GitHubProjectRepository
 from tracertm.services.github_project_service import GitHubProjectService

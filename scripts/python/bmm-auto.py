@@ -215,9 +215,6 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
                 prompt,
             ])
 
-        if self.verbose:
-            pass
-
         try:
             if interactive:
                 # Run interactively
@@ -251,9 +248,6 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
             prompt = self._build_agent_prompt(workflow_command, structured)
             cmd.extend(["--print", "--output-format", "stream-json" if structured else "text", prompt])
 
-        if self.verbose:
-            pass
-
         try:
             if interactive:
                 result = subprocess.run(cmd, cwd=self.project_root)
@@ -278,8 +272,7 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
                         data = json.loads(line)
                         self._process_streaming_message(data)
                     except json.JSONDecodeError:
-                        if self.verbose:
-                            pass
+                        pass
 
             process.wait()
             return process.returncode == 0
@@ -369,9 +362,6 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
 
     async def _run_single_task(self, task: WorkflowTask, interactive: bool) -> None:
         """Run a single workflow task."""
-        if task.note:
-            pass
-
         task.status = WorkflowStatus.RUNNING
         success = await self._run_workflow(agent=task.agent, workflow_command=task.command, interactive=interactive)
 
@@ -438,8 +428,7 @@ Follow the workflow instructions exactly. Use the structured JSON format above f
                 "✅" if isinstance(status, str) and status.startswith("docs/") else "⏳"
                 workflow_info.get("status", "unknown")
 
-                if workflow_info.get("note"):
-                    pass
+                workflow_info.get("note")
 
 
 def main() -> None:

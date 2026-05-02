@@ -4,16 +4,18 @@ from __future__ import annotations
 
 import json
 import logging
-from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from fastapi import Request
-from sqlalchemy.ext.asyncio import AsyncSession
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
-from tracertm.agent.agent_service import AgentService
-from tracertm.schemas.chat import ChatRequest
+    from fastapi import Request
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from tracertm.agent.agent_service import AgentService
+    from tracertm.schemas.chat import ChatRequest
 
 logger = logging.getLogger(__name__)
 

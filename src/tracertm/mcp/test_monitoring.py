@@ -54,8 +54,7 @@ async def test_metrics() -> None:
     # Export metrics
     metrics = MetricsExporter.export_metrics_text()
     for line in metrics.split("\n")[:20]:
-        if line and not line.startswith("#"):
-            pass
+        line and not line.startswith("#")
 
 
 async def test_telemetry() -> None:
@@ -145,8 +144,7 @@ def test_error_enhancement() -> None:
 
     for error in errors:
         error_dict = error.to_dict()
-        if error_dict.get("context"):
-            pass
+        error_dict.get("context")
 
 
 def test_structured_logging() -> None:
@@ -206,9 +204,8 @@ def test_metrics_endpoint() -> None:
         response = requests.get("http://127.0.0.1:19090/metrics", timeout=2)
 
         lines = response.text.split("\n")[:10]
-        for line in lines:
-            if line:
-                pass
+        for _line in lines:
+            pass
 
     except Exception:
         pass

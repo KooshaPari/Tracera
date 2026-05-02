@@ -4,11 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import hmac
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.config.rate_limiting import enforce_rate_limit
 from tracertm.api.deps import auth_guard, get_db
@@ -17,6 +16,9 @@ from tracertm.models.webhook_integration import WebhookStatus
 from tracertm.repositories.integration_repository import IntegrationSyncQueueRepository
 from tracertm.repositories.webhook_repository import WebhookRepository
 from tracertm.services.webhook_service import WebhookService
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/api/v1/webhooks", tags=["webhooks"])
 project_router = APIRouter(prefix="/api/v1/projects", tags=["webhooks"])

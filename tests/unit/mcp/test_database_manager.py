@@ -110,8 +110,8 @@ class TestQueryMetrics:
 
         stats = metrics.get_stats()
         assert stats["total_queries"] == COUNT_TWO
-        assert stats["total_duration_ms"] == float(HTTP_OK)
-        assert stats["avg_duration_ms"] == 100.0
+        assert stats["total_duration_ms"] == float(HTTP_OK)  # noqa: RUF069
+        assert stats["avg_duration_ms"] == 100.0  # noqa: RUF069
         assert stats["slow_queries_count"] == 1  # Only 150ms is slow (>100ms)
 
     def test_slow_query_threshold(self) -> None:
@@ -126,7 +126,7 @@ class TestQueryMetrics:
         # Slow query
         metrics.record_query("SELECT * FROM large_table", 150.0)
         assert len(metrics.slow_queries) == 1
-        assert metrics.slow_queries[0]["duration_ms"] == 150.0
+        assert metrics.slow_queries[0]["duration_ms"] == 150.0  # noqa: RUF069
 
     def test_reset(self) -> None:
         """Test metrics reset."""
@@ -142,7 +142,7 @@ class TestQueryMetrics:
 
         assert metrics.query_count == 0
         assert len(metrics.slow_queries) == 0
-        assert metrics.total_duration == 0.0
+        assert metrics.total_duration == 0.0  # noqa: RUF069
 
 
 @pytest.mark.asyncio

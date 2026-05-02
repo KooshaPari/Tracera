@@ -34,7 +34,7 @@ def load_fix_dag() -> dict:
 
 def _topological_tiers(steps: dict[str, dict]) -> list[list[str]]:
     """Return steps in tiers (each tier can run in parallel)."""
-    in_degree = {s: 0 for s in steps}
+    in_degree = dict.fromkeys(steps, 0)
     for name, cfg in steps.items():
         for dep in cfg.get("deps", []):
             if dep in steps:
@@ -85,7 +85,7 @@ def run_fix_agents() -> int:
         if not cmd:
             return {"name": step_name, "status": "skipped", "pid": None}
         try:
-            proc = subprocess.run(
+            proc = subprocess.run(  # noqa: S602
                 cmd, shell=True, cwd=ROOT, capture_output=True, text=True, timeout=300
             )
             return {
@@ -99,8 +99,7 @@ def run_fix_agents() -> int:
     for tier in tiers:
         with ThreadPoolExecutor(max_workers=len(tier)) as ex:
             futures = [ex.submit(_run_one, name) for name in tier]
-            for fut in as_completed(futures):
-                agents.append(fut.result())
+            agents.extend(fut.result() for fut in as_completed(futures))
 
     FIX_AGENTS_JSON.parent.mkdir(parents=True, exist_ok=True)
     FIX_AGENTS_JSON.write_text(json.dumps({"agents": agents}, indent=2))
@@ -108,7 +107,7 @@ def run_fix_agents() -> int:
     return 0 if all(a.get("status") == "passed" for a in agents) else 1
 
 
-def main() -> int:
+def main() -> int:  # noqa: D103
     return run_fix_agents()
 
 

@@ -974,7 +974,7 @@ class TestMetricsCalculation:
         assert len(gaps) == COUNT_THREE
         # Coverage is 70%
         coverage_percent = ((10 - len(gaps)) / 10) * 100
-        assert coverage_percent == 70.0
+        assert coverage_percent == 70.0  # noqa: RUF069
 
 
 # Test execution summary

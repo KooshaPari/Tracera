@@ -681,7 +681,7 @@ class TestCoverageRepositoryTraceability:
         assert matrix["total_requirements"] == COUNT_FIVE
         assert matrix["covered_requirements"] == COUNT_THREE
         assert matrix["uncovered_requirements"] == COUNT_TWO
-        assert matrix["coverage_percentage"] == 60.0
+        assert matrix["coverage_percentage"] == 60.0  # noqa: RUF069
         assert len(matrix["matrix"]) == COUNT_FIVE
 
     @pytest.mark.asyncio
@@ -718,7 +718,7 @@ class TestCoverageRepositoryTraceability:
         assert gaps["project_id"] == entities["project"].id
         assert gaps["total_requirements"] == COUNT_FIVE
         assert gaps["uncovered_count"] == COUNT_TWO
-        assert gaps["coverage_percentage"] == 60.0
+        assert gaps["coverage_percentage"] == 60.0  # noqa: RUF069
         assert len(gaps["gaps"]) == COUNT_TWO
 
     @pytest.mark.asyncio
@@ -1002,7 +1002,7 @@ class TestCoverageRepositoryEdgeCases:
         gaps = await repo.get_coverage_gaps(entities["project"].id)
 
         assert gaps["uncovered_count"] == 0
-        assert gaps["coverage_percentage"] == 100.0
+        assert gaps["coverage_percentage"] == 100.0  # noqa: RUF069
         assert len(gaps["gaps"]) == 0
 
     @pytest.mark.asyncio

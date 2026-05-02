@@ -11,7 +11,7 @@ from importlib import import_module
 from typing import Any
 
 
-def _exports_module() -> object:
+def _exports_module() -> object:  # noqa: RUF067
     return import_module("tracertm.mcp._exports")
 
 

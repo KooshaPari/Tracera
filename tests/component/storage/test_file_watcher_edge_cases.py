@@ -137,7 +137,7 @@ class TestFileWatcherEdgeCases:
         # Test with different debounce values
         for debounce_ms in [10, 50, 200]:
             watcher = TraceFileWatcher(repo, mgr, debounce_ms=debounce_ms)
-            assert watcher.debounce_delay == debounce_ms / 1000.0
+            assert watcher.debounce_delay == debounce_ms / 1000.0  # noqa: RUF069
 
             item_file = trace_dir / "epics" / f"EPIC-{debounce_ms}.md"
             item_file.parent.mkdir(parents=True, exist_ok=True)

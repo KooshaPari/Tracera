@@ -643,11 +643,11 @@ class TestSyncEngineErrorHandling:
             delays.append(delay)
 
         # Assert
-        assert delays[0] == 1.0  # 2^0 = 1
-        assert delays[1] == float(COUNT_TWO + 0.0)  # 2^1 = 2
-        assert delays[2] == float(COUNT_FOUR + 0.0)  # 2^2 = 4
-        assert delays[3] == 8.0  # 2^3 = 8
-        assert delays[4] == 16.0  # 2^4 = 16
+        assert delays[0] == 1.0  # 2^0 = 1  # noqa: RUF069
+        assert delays[1] == float(COUNT_TWO + 0.0)  # 2^1 = 2  # noqa: RUF069
+        assert delays[2] == float(COUNT_FOUR + 0.0)  # 2^2 = 4  # noqa: RUF069
+        assert delays[3] == 8.0  # 2^3 = 8  # noqa: RUF069
+        assert delays[4] == 16.0  # 2^4 = 16  # noqa: RUF069
 
     @pytest.mark.unit
     @pytest.mark.asyncio

@@ -531,7 +531,7 @@ class TestPerformancePathOptimization:
         pattern = [1, 1, 0, 1, 1, 1, 0, 1, 1, 1]
         hit_rate = predict_hit_rate(pattern)
         assert 0 <= hit_rate <= 1
-        assert hit_rate == 0.8
+        assert hit_rate == 0.8  # noqa: RUF069
 
     def test_parallel_path_execution(self) -> None:
         """Test parallel execution paths."""

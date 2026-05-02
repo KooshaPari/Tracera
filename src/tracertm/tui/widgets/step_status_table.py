@@ -16,13 +16,14 @@ except ImportError:
 from tracertm.tui.quality_root import DAG_CONFIG, LAST_RUN_JSON, LOG_DIR
 
 
-def load_step_status() -> tuple[list[str], list[tuple[str, str, str]]]:
+def load_step_status() -> tuple[list[str], list[tuple[str, str, str]]]:  # noqa: C901
     """Load step order and status from DAG config and last-run.
 
     Returns (step_names, rows) where rows are (display, status, duration).
     """
-    import json
-    import yaml
+    import json  # noqa: PLC0415
+
+    import yaml  # noqa: PLC0415
 
     steps: dict[str, dict] = {}
     if DAG_CONFIG.exists():
@@ -43,7 +44,7 @@ def load_step_status() -> tuple[list[str], list[tuple[str, str, str]]]:
     def _fmt_duration(sec: float) -> str:
         if sec <= 0:
             return "-"
-        return f"{sec:.1f}s" if sec < 60 else f"{sec / 60:.1f}m"
+        return f"{sec:.1f}s" if sec < 60 else f"{sec / 60:.1f}m"  # noqa: PLR2004
 
     rows: list[tuple[str, str, str]] = []
     for name in step_order:
@@ -88,11 +89,11 @@ if TEXTUAL_AVAILABLE:
     class StepStatusTable(DataTable):
         """DataTable showing quality DAG step status."""
 
-        def __init__(self, *args: Any, **kwargs: Any) -> None:
+        def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: D107
             super().__init__(*args, **kwargs)
             self._step_names: list[str] = []
 
-        def on_mount(self) -> None:
+        def on_mount(self) -> None:  # noqa: D102
             self.add_columns("Step", "Status", "Duration")
             self.refresh_steps()
 

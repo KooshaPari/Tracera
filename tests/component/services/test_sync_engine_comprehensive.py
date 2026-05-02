@@ -19,7 +19,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from sqlalchemy import create_engine
 
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+from tests.test_constants import (
+    COUNT_FIVE,
+    COUNT_FOUR,
+    COUNT_TEN,
+    COUNT_THREE,
+    COUNT_TWO,
+    HTTP_INTERNAL_SERVER_ERROR,
+)
 from tracertm.models.base import Base
 from tracertm.storage.conflict_resolver import ConflictStrategy
 from tracertm.storage.sync_engine import (
@@ -56,8 +63,7 @@ def db_connection() -> None:
     """In-memory SQLite database for testing."""
     engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
-    connection = MockDatabaseConnection(engine=engine)
-    yield connection
+    yield MockDatabaseConnection(engine=engine)
     engine.dispose()
 
 
@@ -466,7 +472,7 @@ class TestSyncEngineBasic:
         assert sync_engine.storage is not None
         assert sync_engine.conflict_strategy == ConflictStrategy.LAST_WRITE_WINS
         assert sync_engine.max_retries == COUNT_THREE
-        assert sync_engine.retry_delay == 0.1
+        assert sync_engine.retry_delay == 0.1  # noqa: RUF069
 
     @pytest.mark.asyncio
     async def test_engine_is_not_syncing_initially(self, sync_engine: Any) -> None:
@@ -979,7 +985,7 @@ class TestSyncEngineAdvanced:
     async def test_exponential_backoff_max_delay(self) -> None:
         """Test exponential backoff respects max delay."""
         delay = min(1.0 * (2**10), 60.0)
-        assert delay == 60.0
+        assert delay == 60.0  # noqa: RUF069
 
     def test_create_sync_engine_factory(
         self, db_connection: Any, mock_api_client: Any, mock_storage_manager: Any

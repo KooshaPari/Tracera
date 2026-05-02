@@ -943,7 +943,9 @@ def test_conflict_panel_placeholder() -> None:
     from tracertm.tui.widgets.conflict_panel import TEXTUAL_AVAILABLE
 
     if not TEXTUAL_AVAILABLE:
-        from tracertm.tui.widgets.conflict_panel import ConflictPanel  # pyright: ignore[reportOptionalMemberAccess]
+        from tracertm.tui.widgets.conflict_panel import (
+            ConflictPanel,  # pyright: ignore[reportOptionalMemberAccess]
+        )
 
         # Should be an empty placeholder class
         assert ConflictPanel is not None
@@ -954,7 +956,9 @@ def test_sync_status_widget_placeholder() -> None:
     from tracertm.tui.widgets.sync_status import TEXTUAL_AVAILABLE
 
     if not TEXTUAL_AVAILABLE:
-        from tracertm.tui.widgets.sync_status import SyncStatusWidget  # pyright: ignore[reportOptionalMemberAccess]
+        from tracertm.tui.widgets.sync_status import (
+            SyncStatusWidget,  # pyright: ignore[reportOptionalMemberAccess]
+        )
 
         # Should be an empty placeholder class
         assert SyncStatusWidget is not None
@@ -965,7 +969,9 @@ def test_compact_sync_status_placeholder() -> None:
     from tracertm.tui.widgets.sync_status import TEXTUAL_AVAILABLE
 
     if not TEXTUAL_AVAILABLE:
-        from tracertm.tui.widgets.sync_status import CompactSyncStatus  # pyright: ignore[reportOptionalMemberAccess]
+        from tracertm.tui.widgets.sync_status import (
+            CompactSyncStatus,  # pyright: ignore[reportOptionalMemberAccess]
+        )
 
         # Should be an empty placeholder class
         assert CompactSyncStatus is not None

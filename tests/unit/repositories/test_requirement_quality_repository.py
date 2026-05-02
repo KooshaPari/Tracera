@@ -72,7 +72,7 @@ async def test_create_basic(db_session: AsyncSession) -> None:
     assert spec.id is not None
     assert spec.item_id == item.id
     assert spec.project_id == project.id
-    assert spec.overall_quality_score == 0.5
+    assert spec.overall_quality_score == 0.5  # noqa: RUF069
     assert spec.quality_scores == {}
     assert spec.quality_issues == []
     assert spec.is_verified is False
@@ -101,7 +101,7 @@ async def test_create_with_quality_scores(db_session: AsyncSession) -> None:
     )
 
     assert spec.quality_scores == quality_scores
-    assert spec.overall_quality_score == 0.8
+    assert spec.overall_quality_score == 0.8  # noqa: RUF069
 
 
 @pytest.mark.unit
@@ -123,7 +123,7 @@ async def test_create_with_impact_metrics(db_session: AsyncSession) -> None:
         impact_assessment={"risk": "high", "reason": "core component"},
     )
 
-    assert spec.change_propagation_index == 0.75
+    assert spec.change_propagation_index == 0.75  # noqa: RUF069
     assert spec.downstream_impact_count == COUNT_FIVE
     assert spec.upstream_dependency_count == COUNT_THREE
     assert spec.impact_assessment["risk"] == "high"
@@ -152,7 +152,7 @@ async def test_create_with_wsjf(db_session: AsyncSession) -> None:
         wsjf_components=wsjf_components,
     )
 
-    assert spec.wsjf_score == float(COUNT_THREE + 0.2)
+    assert spec.wsjf_score == float(COUNT_THREE + 0.2)  # noqa: RUF069
     assert spec.wsjf_components == wsjf_components
 
 
@@ -477,7 +477,7 @@ async def test_update_quality_scores(db_session: AsyncSession) -> None:
     )
 
     assert updated.quality_scores == new_scores
-    assert updated.overall_quality_score == 0.875
+    assert updated.overall_quality_score == 0.875  # noqa: RUF069
     assert updated.version == COUNT_TWO  # Version should increment
 
 
@@ -555,9 +555,9 @@ async def test_update_all_fields(db_session: AsyncSession) -> None:
     )
 
     assert updated.quality_scores == {"test": 0.9}
-    assert updated.change_propagation_index == 0.8
-    assert updated.volatility_index == 0.6
-    assert updated.wsjf_score == float(COUNT_FOUR + 0.5)
+    assert updated.change_propagation_index == 0.8  # noqa: RUF069
+    assert updated.volatility_index == 0.6  # noqa: RUF069
+    assert updated.wsjf_score == float(COUNT_FOUR + 0.5)  # noqa: RUF069
 
 
 # ============================================================================
@@ -659,7 +659,7 @@ async def test_get_stats(db_session: AsyncSession) -> None:
     assert "average_volatility" in stats
     assert "average_impact_index" in stats
     assert stats["verified_count"] == COUNT_TWO
-    assert stats["verification_rate"] == 0.5
+    assert stats["verification_rate"] == 0.5  # noqa: RUF069
 
 
 @pytest.mark.unit

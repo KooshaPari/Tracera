@@ -452,7 +452,7 @@ class TestADRRepositoryVerify:
 
         updated = await repo.verify_compliance(adr_for_verify.id, compliance_score=0.85)
 
-        assert updated.compliance_score == 0.85
+        assert updated.compliance_score == 0.85  # noqa: RUF069
         assert updated.last_verified_at is not None
         assert updated.version == COUNT_TWO
 
@@ -2058,7 +2058,7 @@ class TestScenarioRepositoryStats:
         repo = ScenarioRepository(db_session)
         avg_pass_rate = await repo.get_average_pass_rate(feature.id)
 
-        assert avg_pass_rate == 0.0
+        assert avg_pass_rate == 0.0  # noqa: RUF069
 
 
 class TestScenarioRepositoryUpdatePassRate:
@@ -2091,7 +2091,7 @@ class TestScenarioRepositoryUpdatePassRate:
 
         updated = await repo.update_pass_rate(scenario_for_pass_rate.id, 0.85)
 
-        assert updated.pass_rate == 0.85
+        assert updated.pass_rate == 0.85  # noqa: RUF069
         assert updated.version == COUNT_TWO
 
     @pytest.mark.asyncio
@@ -2955,7 +2955,7 @@ class TestADRVerifyComplianceExplicitTime:
         updated = await repo.verify_compliance(adr_for_verify.id, compliance_score=0.92, verified_at=explicit_time)
 
         # Lines 220-225 should be covered
-        assert updated.compliance_score == 0.92
+        assert updated.compliance_score == 0.92  # noqa: RUF069
         assert updated.last_verified_at == explicit_time
         assert updated.version == COUNT_TWO
 

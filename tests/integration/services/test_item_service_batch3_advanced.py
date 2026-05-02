@@ -447,7 +447,7 @@ class TestRelationshipManagement:
         result = await item_service.links.get("proj-1", "link-1")
 
         assert result.link_type == "implements"
-        assert result.strength == 0.8
+        assert result.strength == 0.8  # noqa: RUF069
 
 
 # ==============================================================================

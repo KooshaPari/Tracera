@@ -55,7 +55,7 @@ class AnnotationData:
 class APIEndpointExtractor:
     """Extract API endpoint to FR mappings."""
 
-    def __init__(self, fr_file: Path):
+    def __init__(self, fr_file: Path) -> None:
         """Initialize extractor."""
         self.fr_file = fr_file
         self.mappings: list[EndpointMapping] = []
@@ -81,12 +81,7 @@ class APIEndpointExtractor:
         pattern = r"(###\s+FR-[A-Z]+-\d+:)"
         parts = re.split(pattern, content)
 
-        sections = []
-        for i in range(1, len(parts), 2):
-            if i + 1 < len(parts):
-                sections.append(parts[i] + parts[i + 1])
-
-        return sections
+        return [parts[i] + parts[i + 1] for i in range(1, len(parts), 2) if i + 1 < len(parts)]
 
     def _parse_api_endpoints(self, section: str) -> list[EndpointMapping]:
         """Parse API endpoints from FR section."""
@@ -103,7 +98,7 @@ class APIEndpointExtractor:
         user_story_ids = re.findall(r"US-[A-Z]+-\d+", section)
 
         # Extract API endpoints
-        # Format: POST /api/v1/integrations/github/app/installations/{id}/link
+        # Format: POST /api/v1/integrations/github/app/installations/{id}/link  # noqa: ERA001
         endpoint_match = re.search(
             r"\*\*API Endpoints:\*\*\s*`([^`]+)`",
             section,
@@ -141,7 +136,7 @@ class APIEndpointExtractor:
 class EndpointAnnotator:
     """Annotate API endpoint functions with FR references."""
 
-    def __init__(self, endpoint_mappings: list[EndpointMapping]):
+    def __init__(self, endpoint_mappings: list[EndpointMapping]) -> None:
         """Initialize annotator."""
         self.endpoint_mappings = endpoint_mappings
         # Build lookup: (method, path) -> AnnotationData
@@ -182,13 +177,13 @@ class EndpointAnnotator:
         logger.info(f"Processing {file_path}")
 
         # Read file
-        original_content = file_path.read_text()
+        original_content = file_path.read_text(encoding="utf-8")
 
         # Parse AST
         try:
             tree = ast.parse(original_content)
         except SyntaxError as e:
-            logger.error(f"Syntax error in {file_path}: {e}")
+            logger.exception(f"Syntax error in {file_path}: {e}")
             return False
 
         # Annotate endpoints
@@ -203,7 +198,7 @@ class EndpointAnnotator:
             return True
 
         # Write changes
-        file_path.write_text(modified_content)
+        file_path.write_text(modified_content, encoding="utf-8")
         logger.info(f"✓ Updated {file_path}")
         return True
 
@@ -247,7 +242,7 @@ class EndpointAnnotator:
                 key = (method, path_attempt)
                 logger.debug(f"Checking endpoint: {method} {path_attempt}")
                 if key in self.annotation_map:
-                    logger.debug(f"  Found exact match")
+                    logger.debug("  Found exact match")
                     annotation = self.annotation_map[key]
                     break
 
@@ -256,12 +251,12 @@ class EndpointAnnotator:
                 normalized_key = (method, normalized_path)
                 logger.debug(f"  Normalized: {method} {normalized_path}")
                 if normalized_key in self.annotation_map:
-                    logger.debug(f"  Found via normalization")
+                    logger.debug("  Found via normalization")
                     annotation = self.annotation_map[normalized_key]
                     break
 
             if annotation is None:
-                logger.debug(f"  No FR mapping found for any variation")
+                logger.debug("  No FR mapping found for any variation")
                 continue
 
             # Get existing docstring
@@ -280,18 +275,15 @@ class EndpointAnnotator:
 
             if annotation.frs:
                 sections.append("Functional Requirements:")
-                for fr in annotation.frs:
-                    sections.append(f"- {fr}")
+                sections.extend(f"- {fr}" for fr in annotation.frs)
 
             if annotation.user_stories:
                 sections.append("\nUser Stories:")
-                for us in annotation.user_stories:
-                    sections.append(f"- {us}")
+                sections.extend(f"- {us}" for us in annotation.user_stories)
 
             if annotation.epics:
                 sections.append("\nEpics:")
-                for epic in annotation.epics:
-                    sections.append(f"- {epic}")
+                sections.extend(f"- {epic}" for epic in annotation.epics)
 
             if not sections:
                 continue

@@ -133,7 +133,7 @@ class TestProgressCalculationAccuracy:
         mock_session.query.return_value = mock_query
 
         result = real_service.calculate_completion("item1")
-        assert result == 0.0
+        assert result == 0.0  # noqa: RUF069
 
     def test_progress_calculation_leaf_item_in_progress(self, real_service: Any, mock_session: Any) -> None:
         """Test progress calculation for leaf item in progress."""
@@ -150,7 +150,7 @@ class TestProgressCalculationAccuracy:
         mock_session.query.return_value = mock_query
 
         result = real_service.calculate_completion("item2")
-        assert result == 50.0
+        assert result == 50.0  # noqa: RUF069
 
     def test_progress_calculation_leaf_item_complete(self, real_service: Any, mock_session: Any) -> None:
         """Test progress calculation for leaf item complete."""
@@ -167,7 +167,7 @@ class TestProgressCalculationAccuracy:
         mock_session.query.return_value = mock_query
 
         result = real_service.calculate_completion("item3")
-        assert result == 100.0
+        assert result == 100.0  # noqa: RUF069
 
     def test_progress_calculation_leaf_item_blocked(self, real_service: Any, mock_session: Any) -> None:
         """Test progress calculation for blocked item."""
@@ -184,7 +184,7 @@ class TestProgressCalculationAccuracy:
         mock_session.query.return_value = mock_query
 
         result = real_service.calculate_completion("item4")
-        assert result == 0.0
+        assert result == 0.0  # noqa: RUF069
 
     def test_progress_calculation_nonexistent_item(self, real_service: Any, mock_session: Any) -> None:
         """Test progress calculation for nonexistent item."""
@@ -196,7 +196,7 @@ class TestProgressCalculationAccuracy:
         mock_session.query.return_value = mock_query
 
         result = real_service.calculate_completion("nonexistent")
-        assert result == 0.0
+        assert result == 0.0  # noqa: RUF069
 
 
 @pytest.mark.asyncio
@@ -426,7 +426,7 @@ class TestVelocityCalculations:
         result = real_service.calculate_velocity("project1", days=7)
         assert result["items_completed"] == COUNT_TEN
         assert result["items_created"] == 15
-        assert result["completion_rate"] == COUNT_TEN / 7
+        assert result["completion_rate"] == COUNT_TEN / 7  # noqa: RUF069
         assert result["net_change"] == COUNT_FIVE
 
 

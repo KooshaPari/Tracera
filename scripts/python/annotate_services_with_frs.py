@@ -29,7 +29,6 @@ import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -62,7 +61,7 @@ class AnnotationData:
 class FRExtractor:
     """Extract FR mappings from FUNCTIONAL_REQUIREMENTS.md."""
 
-    def __init__(self, fr_file: Path):
+    def __init__(self, fr_file: Path) -> None:
         """Initialize extractor."""
         self.fr_file = fr_file
         self.mappings: list[FRMapping] = []
@@ -90,12 +89,7 @@ class FRExtractor:
         pattern = r"(###\s+FR-[A-Z]+-\d+:)"
         parts = re.split(pattern, content)
 
-        sections = []
-        for i in range(1, len(parts), 2):
-            if i + 1 < len(parts):
-                sections.append(parts[i] + parts[i + 1])
-
-        return sections
+        return [parts[i] + parts[i + 1] for i in range(1, len(parts), 2) if i + 1 < len(parts)]
 
     def _parse_fr_section(self, section: str) -> FRMapping | None:
         """Parse single FR section."""
@@ -167,7 +161,7 @@ class FRExtractor:
 class EpicExtractor:
     """Extract Epic hierarchy from PRD.md."""
 
-    def __init__(self, prd_file: Path):
+    def __init__(self, prd_file: Path) -> None:
         """Initialize extractor."""
         self.prd_file = prd_file
         self.epics: dict[str, str] = {}
@@ -206,7 +200,7 @@ class EpicExtractor:
 class ADRExtractor:
     """Extract ADR list from docs/adr/*.md."""
 
-    def __init__(self, adr_dir: Path):
+    def __init__(self, adr_dir: Path) -> None:
         """Initialize extractor."""
         self.adr_dir = adr_dir
         self.adrs: dict[str, str] = {}
@@ -246,7 +240,7 @@ class DocstringAnnotator:
         fr_mappings: list[FRMapping],
         epics: dict[str, str],
         adrs: dict[str, str],
-    ):
+    ) -> None:
         """Initialize annotator."""
         self.fr_mappings = fr_mappings
         self.epics = epics
@@ -276,13 +270,13 @@ class DocstringAnnotator:
         logger.info(f"Processing {file_path} ({len(mappings)} mappings)")
 
         # Read file
-        original_content = file_path.read_text()
+        original_content = file_path.read_text(encoding="utf-8")
 
         # Parse AST
         try:
             tree = ast.parse(original_content)
         except SyntaxError as e:
-            logger.error(f"Syntax error in {file_path}: {e}")
+            logger.exception(f"Syntax error in {file_path}: {e}")
             return False
 
         # Build annotation map: function/class name -> AnnotationData
@@ -304,7 +298,7 @@ class DocstringAnnotator:
             return True
 
         # Write changes
-        file_path.write_text(modified_content)
+        file_path.write_text(modified_content, encoding="utf-8")
         logger.info(f"✓ Updated {file_path}")
         return True
 
@@ -397,13 +391,11 @@ class DocstringAnnotator:
 
             if annotation.frs:
                 sections.append(f"{base_indent}Functional Requirements:")
-                for fr in annotation.frs:
-                    sections.append(f"{base_indent}- {fr}")
+                sections.extend(f"{base_indent}- {fr}" for fr in annotation.frs)
 
             if annotation.user_stories:
                 sections.append(f"\n{base_indent}User Stories:")
-                for us in annotation.user_stories:
-                    sections.append(f"{base_indent}- {us}")
+                sections.extend(f"{base_indent}- {us}" for us in annotation.user_stories)
 
             if annotation.epics:
                 sections.append(f"\n{base_indent}Epics:")
@@ -525,7 +517,7 @@ def main() -> int:
     annotator = DocstringAnnotator(fr_mappings, epics, adrs)
 
     # Determine files to process
-    if args.file:
+    if args.file:  # noqa: SIM108
         files = [args.file]
     else:
         # Process all service files

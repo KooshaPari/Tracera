@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import AsyncGenerator
+from typing import Any
 
 from fastapi import HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,7 +13,6 @@ from tracertm.infrastructure.event_bus import EventBus
 from tracertm.infrastructure.nats_client import NATSClient
 from tracertm.services.cache_service import CacheService, RedisUnavailableError
 from tracertm.services.token_bridge import TokenBridge, get_token_bridge
-from typing import Any
 
 logger = logging.getLogger(__name__)
 

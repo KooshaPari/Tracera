@@ -335,7 +335,7 @@ async def download_artifact(
 
     path_str = artifact_obj.file_path
     path = Path(path_str)
-    if not path.exists():
+    if not path.exists():  # noqa: ASYNC240
         raise HTTPException(status_code=404, detail="Artifact file not found")
 
     return FileResponse(

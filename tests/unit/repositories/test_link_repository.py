@@ -1215,7 +1215,7 @@ async def test_create_link_with_link_metadata_parameter(db_session: AsyncSession
         link_metadata={"confidence": 0.95, "automated": True},  # Using link_metadata
     )
 
-    assert link.link_metadata["confidence"] == 0.95
+    assert link.link_metadata["confidence"] == 0.95  # noqa: RUF069
     assert link.link_metadata["automated"] is True
 
 

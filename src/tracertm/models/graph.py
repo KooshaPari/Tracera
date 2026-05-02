@@ -6,7 +6,7 @@ import sqlalchemy as sa
 from sqlalchemy import ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from tracertm.models.base import Base, GUID, TimestampMixin
+from tracertm.models.base import GUID, Base, TimestampMixin
 from tracertm.models.types import JSONType
 
 

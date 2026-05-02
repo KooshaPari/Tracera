@@ -9,16 +9,17 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from tracertm.api.config.rate_limiting import enforce_rate_limit
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.repositories.test_case_repository import TestCaseRepository
-from tracertm.schemas.test_case import (
-    TestCaseCreate,
-    TestCaseDeprecation,
-    TestCaseReview,
-    TestCaseStatusTransition,
-    TestCaseUpdate,
-)
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
+
+    from tracertm.schemas.test_case import (
+        TestCaseCreate,
+        TestCaseDeprecation,
+        TestCaseReview,
+        TestCaseStatusTransition,
+        TestCaseUpdate,
+    )
 
 router = APIRouter(tags=["Test Cases"])
 

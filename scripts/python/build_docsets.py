@@ -339,9 +339,6 @@ def build_docset(docset: Docset, output_root: Path, quiet: bool = False) -> None
             "last_modified": updated.isoformat(),
         })
 
-        if not quiet:
-            pass
-
     write_index(docset, manifest, destination)
     copy_assets(docset.source, destination)
     (destination / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")

@@ -38,7 +38,7 @@ class TestGraphAppInitialization:
         assert app.db is None
         assert app.nodes == {}
         assert app.links == []
-        assert app.zoom == 1.0
+        assert app.zoom == 1.0  # noqa: RUF069
         assert app.config_manager is not None
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
@@ -392,7 +392,7 @@ class TestGraphAppZoomControls:
 
         app.action_zoom_in()
 
-        assert app.zoom == 1.2
+        assert app.zoom == 1.2  # noqa: RUF069
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
@@ -407,7 +407,7 @@ class TestGraphAppZoomControls:
 
         app.action_zoom_in()
 
-        assert app.zoom == float(COUNT_FIVE + 0.0)  # Should not exceed max
+        assert app.zoom == float(COUNT_FIVE + 0.0)  # Should not exceed max  # noqa: RUF069
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
@@ -422,7 +422,7 @@ class TestGraphAppZoomControls:
 
         app.action_zoom_out()
 
-        assert app.zoom == 1.0
+        assert app.zoom == 1.0  # noqa: RUF069
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
@@ -437,7 +437,7 @@ class TestGraphAppZoomControls:
 
         app.action_zoom_out()
 
-        assert app.zoom == 0.5  # Should not go below min
+        assert app.zoom == 0.5  # Should not go below min  # noqa: RUF069
         app.render_graph.assert_called_once()
 
 

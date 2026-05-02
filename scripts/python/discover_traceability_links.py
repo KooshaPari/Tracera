@@ -21,7 +21,7 @@ import json
 import re
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -85,7 +85,7 @@ class TraceLinkDiscoverer:
         "test": re.compile(r"tests?/.*/test_([a-z_]+)\.py$"),
     }
 
-    def __init__(self, project_root: Path):
+    def __init__(self, project_root: Path) -> None:  # noqa: D107
         self.project_root = project_root
         self.links: list[TraceLink] = []
         self.doc_refs: dict[str, DocReference] = {}
@@ -93,26 +93,16 @@ class TraceLinkDiscoverer:
 
     def discover_all(self) -> list[TraceLink]:
         """Run all discovery phases."""
-        print("🔍 Phase 1: Scanning documentation files...")
         self._scan_documentation()
 
-        print(f"📚 Found {len(self.doc_refs)} documentation references")
-
-        print("\n🔍 Phase 2: Scanning code files...")
         self._scan_python_code()
 
-        print(f"💾 Found {len(self.code_refs)} code references")
-
-        print("\n🔍 Phase 3: Extracting explicit links from docs...")
         self._extract_doc_links()
 
-        print("\n🔍 Phase 4: Scanning code for docstring references...")
         self._scan_code_references()
 
-        print("\n🔍 Phase 5: Matching test files to source files...")
         self._match_test_files()
 
-        print(f"\n✅ Total links discovered: {len(self.links)}")
         return self.links
 
     def _scan_documentation(self) -> None:
@@ -159,8 +149,8 @@ class TraceLinkDiscoverer:
                         key = f"{ref.type}:{ref.id}:{ref.file}:{ref.line}"
                         if key not in self.doc_refs:
                             self.doc_refs[key] = ref
-        except Exception as e:
-            print(f"⚠️  Error scanning {file_path}: {e}")
+        except Exception:
+            pass
 
     def _scan_python_code(self) -> None:
         """Scan Python source files and extract code references."""
@@ -227,8 +217,8 @@ class TraceLinkDiscoverer:
         except SyntaxError:
             # Skip files with syntax errors
             pass
-        except Exception as e:
-            print(f"⚠️  Error scanning {file_path}: {e}")
+        except Exception:
+            pass
 
     def _get_module_name(self, file_path: Path) -> str:
         """Extract module name from file path."""
@@ -279,7 +269,7 @@ class TraceLinkDiscoverer:
                             break
 
                         # Extract Epic references (EPIC-NNN format)
-                        epic_match = re.search(r'\b(EPIC-\d+)\b', next_line)
+                        epic_match = re.search(r"\b(EPIC-\d+)\b", next_line)
                         if epic_match:
                             self._create_link(
                                 from_id=current_fr,
@@ -295,7 +285,7 @@ class TraceLinkDiscoverer:
                             )
 
                         # Extract User Story references
-                        us_match = re.search(r'\b(US-[A-Z]+-\d+)\b', next_line)
+                        us_match = re.search(r"\b(US-[A-Z]+-\d+)\b", next_line)
                         if us_match:
                             self._create_link(
                                 from_id=current_fr,
@@ -359,8 +349,8 @@ class TraceLinkDiscoverer:
                                 source_line=line_num + i,
                             )
 
-        except Exception as e:
-            print(f"⚠️  Error extracting links from {file_path}: {e}")
+        except Exception:
+            pass
 
     def _scan_code_references(self) -> None:
         """Scan code docstrings for references to documentation IDs."""
@@ -378,7 +368,7 @@ class TraceLinkDiscoverer:
 
             for line_num, line in enumerate(lines, start=1):
                 # Skip non-comment/docstring lines
-                if not ("\"\"\"" in line or "#" in line):
+                if not ('"""' in line or "#" in line):
                     continue
 
                 # Check for FR/ADR/Epic references in comments
@@ -401,8 +391,8 @@ class TraceLinkDiscoverer:
                                 source_line=line_num,
                             )
 
-        except Exception as e:
-            print(f"⚠️  Error scanning {file_path} for doc refs: {e}")
+        except Exception:
+            pass
 
     def _find_code_ref_at_line(
         self, file_path: Path, line_num: int
@@ -410,7 +400,7 @@ class TraceLinkDiscoverer:
         """Find the code reference that contains the given line number."""
         rel_path = str(file_path.relative_to(self.project_root))
 
-        for key, ref in self.code_refs.items():
+        for ref in self.code_refs.values():
             if ref.file == rel_path and ref.line_start <= line_num <= (
                 ref.line_end or ref.line_start
             ):
@@ -429,7 +419,7 @@ class TraceLinkDiscoverer:
             test_name = test_file.stem.replace("test_", "")
 
             # Find corresponding source file
-            for code_key, code_ref in self.code_refs.items():
+            for code_ref in self.code_refs.values():
                 if test_name in code_ref.file:
                     # Create tested_by link
                     link = TraceLink(
@@ -446,7 +436,7 @@ class TraceLinkDiscoverer:
                         confidence="medium",
                         auto_discovered=True,
                         metadata={
-                            "created_at": datetime.now(timezone.utc).isoformat(),
+                            "created_at": datetime.now(UTC).isoformat(),
                             "created_by": "auto_discovery",
                             "match_pattern": "file_name_match",
                         },
@@ -456,9 +446,9 @@ class TraceLinkDiscoverer:
     def _create_link(
         self,
         from_id: str,
-        from_type: str,
+        from_type: str,  # noqa: ARG002
         to_id: str,
-        to_type: str,
+        to_type: str,  # noqa: ARG002
         link_type: str,
         confidence: str,
         source_file: str,
@@ -488,7 +478,7 @@ class TraceLinkDiscoverer:
                 confidence=confidence,
                 auto_discovered=True,
                 metadata={
-                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "created_at": datetime.now(UTC).isoformat(),
                     "created_by": "auto_discovery",
                     "source_line": source_line,
                     "source_file": source_file,
@@ -499,7 +489,7 @@ class TraceLinkDiscoverer:
     def _create_code_link(
         self,
         from_id: str,
-        from_type: str,
+        from_type: str,  # noqa: ARG002
         to_file: str,
         to_line_start: int,
         to_line_end: int,
@@ -534,7 +524,7 @@ class TraceLinkDiscoverer:
                 confidence=confidence,
                 auto_discovered=True,
                 metadata={
-                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "created_at": datetime.now(UTC).isoformat(),
                     "created_by": "auto_discovery",
                     "source_line": source_line,
                     "source_file": source_file,
@@ -545,7 +535,7 @@ class TraceLinkDiscoverer:
     def _create_test_link(
         self,
         from_id: str,
-        from_type: str,
+        from_type: str,  # noqa: ARG002
         to_file: str,
         to_test: str,
         link_type: str,
@@ -578,7 +568,7 @@ class TraceLinkDiscoverer:
                 confidence=confidence,
                 auto_discovered=True,
                 metadata={
-                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "created_at": datetime.now(UTC).isoformat(),
                     "created_by": "auto_discovery",
                     "source_line": source_line,
                     "source_file": source_file,
@@ -589,7 +579,7 @@ class TraceLinkDiscoverer:
     def _create_doc_to_code_link(
         self,
         from_id: str,
-        from_type: str,
+        from_type: str,  # noqa: ARG002
         to_code_ref: CodeReference,
         link_type: str,
         confidence: str,
@@ -613,7 +603,7 @@ class TraceLinkDiscoverer:
                 confidence=confidence,
                 auto_discovered=True,
                 metadata={
-                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "created_at": datetime.now(UTC).isoformat(),
                     "created_by": "auto_discovery",
                     "source_line": source_line,
                     "source_file": source_file,
@@ -634,24 +624,20 @@ class TraceLinkDiscoverer:
                     "title": ref.title,
                     "status": ref.status,
                 }
-            else:
-                result: dict[str, Any] = {
-                    "type": ref.type,
-                    "name": ref.name,
-                    "file": ref.file,
-                    "line_start": ref.line_start,
-                    "language": ref.language,
-                }
-                if ref.line_end:
-                    result["line_end"] = ref.line_end
-                if ref.module:
-                    result["module"] = ref.module
-                return result
+            result: dict[str, Any] = {
+                "type": ref.type,
+                "name": ref.name,
+                "file": ref.file,
+                "line_start": ref.line_start,
+                "language": ref.language,
+            }
+            if ref.line_end:
+                result["line_end"] = ref.line_end
+            if ref.module:
+                result["module"] = ref.module
+            return result
 
-        links_json = []
-        for link in self.links:
-            links_json.append(
-                {
+        links_json = [{
                     "id": link.id,
                     "from": ref_to_dict(link.from_ref),
                     "to": ref_to_dict(link.to_ref),
@@ -659,8 +645,7 @@ class TraceLinkDiscoverer:
                     "confidence": link.confidence,
                     "auto_discovered": link.auto_discovered,
                     "metadata": link.metadata,
-                }
-            )
+                } for link in self.links]
 
         # Calculate statistics
         link_types = {}
@@ -680,7 +665,7 @@ class TraceLinkDiscoverer:
                 "id": "tracertm",
                 "description": "Requirements Traceability Matrix System",
             },
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "links": links_json,
             "statistics": {
                 "total_links": len(self.links),
@@ -714,11 +699,9 @@ def main() -> None:
     script_path = Path(__file__).resolve()
     project_root = script_path.parent.parent.parent
 
-    print(f"📂 Project root: {project_root}")
-
     # Run discovery
     discoverer = TraceLinkDiscoverer(project_root)
-    links = discoverer.discover_all()
+    discoverer.discover_all()
 
     # Save to JSON
     output_path = project_root / args.output
@@ -728,15 +711,6 @@ def main() -> None:
 
     with output_path.open("w", encoding="utf-8") as f:
         json.dump(link_db, f, indent=2)
-
-    print(f"\n💾 Saved {len(links)} links to {output_path}")
-    print("\n📊 Statistics:")
-    print(f"  Total links: {link_db['statistics']['total_links']}")
-    print(f"  By type: {link_db['statistics']['by_type']}")
-    print(f"  By confidence: {link_db['statistics']['by_confidence']}")
-    print(
-        f"  Auto-discovered: {link_db['statistics']['auto_discovered_count']} ({link_db['statistics']['auto_discovered_count'] / max(1, link_db['statistics']['total_links']) * 100:.1f}%)"
-    )
 
 
 if __name__ == "__main__":

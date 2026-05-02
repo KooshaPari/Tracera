@@ -27,14 +27,14 @@ from typing import Any
 # FR reference patterns in code
 FR_PATTERNS = {
     "python_docstring": re.compile(r'""".*?FR-[A-Z]+-\d{3}.*?"""', re.DOTALL),
-    "python_comment": re.compile(r'#.*?(FR-[A-Z]+-\d{3})'),
-    "go_comment": re.compile(r'//.*?(FR-[A-Z]+-\d{3})'),
-    "ts_comment": re.compile(r'//.*?(FR-[A-Z]+-\d{3})'),
-    "ts_jsdoc": re.compile(r'/\*\*.*?FR-[A-Z]+-\d{3}.*?\*/', re.DOTALL),
+    "python_comment": re.compile(r"#.*?(FR-[A-Z]+-\d{3})"),
+    "go_comment": re.compile(r"//.*?(FR-[A-Z]+-\d{3})"),
+    "ts_comment": re.compile(r"//.*?(FR-[A-Z]+-\d{3})"),
+    "ts_jsdoc": re.compile(r"/\*\*.*?FR-[A-Z]+-\d{3}.*?\*/", re.DOTALL),
 }
 
 # Extract FR ID from text
-FR_ID_PATTERN = re.compile(r'(FR-[A-Z]+-\d{3})')
+FR_ID_PATTERN = re.compile(r"(FR-[A-Z]+-\d{3})")
 
 
 @dataclass
@@ -57,7 +57,7 @@ class TestLocation:
 class DocStatusSyncer:
     """Synchronize documentation status from codebase."""
 
-    def __init__(self, project_root: Path, verbose: bool = False, dry_run: bool = False):
+    def __init__(self, project_root: Path, verbose: bool = False, dry_run: bool = False) -> None:  # noqa: D107
         self.project_root = project_root
         self.verbose = verbose
         self.dry_run = dry_run
@@ -75,9 +75,6 @@ class DocStatusSyncer:
 
     def log(self, msg: str, level: str = "INFO") -> None:
         """Log message if verbose enabled."""
-        if self.verbose or level == "ERROR":
-            prefix = "🔍" if level == "INFO" else "❌" if level == "ERROR" else "✅"
-            print(f"{prefix} {msg}")
 
     def load_fr_status(self) -> dict[str, Any]:
         """Load FUNCTIONAL_REQUIREMENTS_STATUS.json."""
@@ -125,7 +122,7 @@ class DocStatusSyncer:
         self.log(f"Found {sum(len(v) for v in fr_locations.values())} FR references in code")
         return fr_locations
 
-    def _scan_file(self, file_path: Path, lang: str, fr_locations: dict[str, list[str]]) -> None:
+    def _scan_file(self, file_path: Path, lang: str, fr_locations: dict[str, list[str]]) -> None:  # noqa: ARG002
         """Scan single file for FR references."""
         try:
             content = file_path.read_text(encoding="utf-8")
@@ -179,7 +176,7 @@ class DocStatusSyncer:
 
         # Run pytest with coverage
         try:
-            result = subprocess.run(
+            subprocess.run(
                 ["pytest", "--cov=src", "--cov-report=json", "--quiet"],
                 cwd=self.project_root,
                 capture_output=True,
@@ -330,7 +327,7 @@ class DocStatusSyncer:
 
             # 2. Run tests and update coverage
             # Note: Disabled by default as it's slow - enable with --run-tests
-            # self.run_tests_and_update_coverage(fr_status)
+            # self.run_tests_and_update_coverage(fr_status)  # noqa: ERA001
 
             # 3. Check git commits
             self.check_git_commits_for_frs(fr_status)
@@ -342,13 +339,6 @@ class DocStatusSyncer:
             self.regenerate_dashboard()
 
             # Print summary
-            print("\n" + "=" * 60)
-            print("📊 Synchronization Summary")
-            print("=" * 60)
-            print(f"✅ Code locations updated: {self.changes['code_locations_updated']}")
-            print(f"✅ Test coverage updated: {self.changes['test_coverage_updated']}")
-            print(f"✅ Git commits linked: {self.changes['git_commits_linked']}")
-            print("=" * 60)
 
             return True
 

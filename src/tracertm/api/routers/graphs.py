@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.deps import auth_guard, get_cache_service, get_db
 from tracertm.models.graph import Graph
 from tracertm.repositories.link_repository import LinkRepository
-from tracertm.services.cache_service import CacheService
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from tracertm.services.cache_service import CacheService
 
 router = APIRouter(prefix="/projects/{project_id}", tags=["graphs"])
 

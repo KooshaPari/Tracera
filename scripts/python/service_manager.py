@@ -78,9 +78,8 @@ def start_service(brew_name: str, fallbacks: list[str] | None = None) -> bool:
                 text=True,
             )
             return True
-        except subprocess.CalledProcessError as e:
-            if e.stderr:
-                pass
+        except subprocess.CalledProcessError:
+            pass
     return False
 
 
@@ -119,9 +118,6 @@ def ensure_services_running(retries: int = 5, delay: int = 3) -> bool:
 
         if not service_started and service.required:
             all_healthy = False
-
-    if all_healthy:
-        pass
 
     return all_healthy
 

@@ -16,7 +16,14 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+from tests.test_constants import (
+    COUNT_FIVE,
+    COUNT_FOUR,
+    COUNT_TEN,
+    COUNT_THREE,
+    COUNT_TWO,
+    HTTP_INTERNAL_SERVER_ERROR,
+)
 from tracertm.storage.conflict_resolver import ConflictStrategy, VectorClock
 from tracertm.storage.sync_engine import (
     ChangeDetector,

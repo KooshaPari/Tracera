@@ -407,7 +407,7 @@ class TestCacheServiceEdgeCases:
 
             assert stats.hits == 7
             assert stats.misses == COUNT_THREE
-            assert stats.hit_rate == 70.0  # 7/10 * 100
+            assert stats.hit_rate == 70.0  # 7/10 * 100  # noqa: RUF069
             assert stats.evictions == 1
 
     @pytest.mark.asyncio
@@ -616,7 +616,7 @@ class TestCacheStatsDataclass:
 
         assert stats.hits == COUNT_TEN
         assert stats.misses == COUNT_FIVE
-        assert stats.hit_rate == 66.67
+        assert stats.hit_rate == 66.67  # noqa: RUF069
         assert stats.total_size_bytes == 1024
         assert stats.evictions == COUNT_TWO
 
@@ -625,7 +625,7 @@ class TestCacheStatsDataclass:
         stats = CacheStats(hits=0, misses=0, hit_rate=0.0, total_size_bytes=0, evictions=0)
 
         assert stats.hits == 0
-        assert stats.hit_rate == 0.0
+        assert stats.hit_rate == 0.0  # noqa: RUF069
 
     def test_cache_stats_large_values(self) -> None:
         """Test CacheStats with large values."""

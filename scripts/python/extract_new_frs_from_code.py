@@ -25,10 +25,9 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 # Pattern matchers
-FR_ID_PATTERN = re.compile(r'(FR-[A-Z]+-\d{3})')
+FR_ID_PATTERN = re.compile(r"(FR-[A-Z]+-\d{3})")
 FASTAPI_ROUTE_PATTERN = re.compile(r'@router\.(get|post|put|delete|patch)\(.*?["\'](.+?)["\']')
 
 
@@ -70,7 +69,7 @@ class DraftFR:
 class FRExtractor:
     """Extract new functional requirements from code."""
 
-    def __init__(self, project_root: Path, verbose: bool = False):
+    def __init__(self, project_root: Path, verbose: bool = False) -> None:  # noqa: D107
         self.project_root = project_root
         self.verbose = verbose
 
@@ -89,9 +88,6 @@ class FRExtractor:
 
     def log(self, msg: str, level: str = "INFO") -> None:
         """Log message if verbose enabled."""
-        if self.verbose:
-            prefix = "🔍" if level == "INFO" else "✅" if level == "SUCCESS" else "⚠️"
-            print(f"{prefix} {msg}")
 
     def load_known_entities(self) -> None:
         """Load known FR IDs from FR status file."""
@@ -191,7 +187,7 @@ class FRExtractor:
             has_fr_ref = bool(FR_ID_PATTERN.search(content))
 
             # Simple pattern matching for Go routes
-            # r.GET("/path", handler)
+            # r.GET("/path", handler)  # noqa: ERA001
             route_pattern = re.compile(r'r\.(GET|POST|PUT|DELETE|PATCH)\("(.+?)",\s*(\w+)\)')
 
             for match in route_pattern.finditer(content):
@@ -303,7 +299,7 @@ class FRExtractor:
         title = self._path_to_title(endpoint.path, endpoint.method)
 
         # Generate description
-        description = endpoint.docstring if endpoint.docstring else f"{endpoint.method} {endpoint.path} endpoint"
+        description = endpoint.docstring or f"{endpoint.method} {endpoint.path} endpoint"
 
         # Determine confidence
         confidence = "medium" if endpoint.docstring else "low"
@@ -341,7 +337,7 @@ class FRExtractor:
         title = service_name.title()
 
         # Generate description
-        description = service.docstring if service.docstring else f"{service.name} provides {service_name.lower()} functionality"
+        description = service.docstring or f"{service.name} provides {service_name.lower()} functionality"
 
         # Add methods to description
         if service.methods:
@@ -385,8 +381,7 @@ class FRExtractor:
 
         if title_parts:
             return f"{method_verb} {' '.join(title_parts)}"
-        else:
-            return f"{method_verb} Resource"
+        return f"{method_verb} Resource"
 
     def write_report(self, output_path: Path) -> None:
         """Write NEW_FRS_DETECTED.md report."""
@@ -534,13 +529,9 @@ FUNCTIONAL_REQUIREMENTS_STATUS.json.
         # Write report
         output_path.write_text(report, encoding="utf-8")
 
-        print(f"\n✅ Report written to {output_path}")
-        print(f"   {len(self.draft_frs)} draft FRs generated")
-
         # Print category summary
-        print("\n📊 Draft FRs by Category:")
         for category in sorted(by_category.keys()):
-            print(f"   {category}: {len(by_category[category])} FRs")
+            pass
 
     def extract(self, output_path: Path) -> None:
         """Run extraction process."""
@@ -602,10 +593,7 @@ Weekly cron:
     project_root = script_dir.parent.parent
 
     # Determine output path
-    if args.output:
-        output_path = args.output
-    else:
-        output_path = project_root / "docs" / "generated" / "NEW_FRS_DETECTED.md"
+    output_path = args.output or project_root / "docs" / "generated" / "NEW_FRS_DETECTED.md"
 
     # Run extraction
     extractor = FRExtractor(project_root, verbose=args.verbose)

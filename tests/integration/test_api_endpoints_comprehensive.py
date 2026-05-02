@@ -14,7 +14,13 @@ from typing import Any
 
 import pytest
 
-from tests.test_constants import COUNT_THREE, COUNT_TWO, HTTP_NOT_FOUND, HTTP_OK, HTTP_UNPROCESSABLE_ENTITY
+from tests.test_constants import (
+    COUNT_THREE,
+    COUNT_TWO,
+    HTTP_NOT_FOUND,
+    HTTP_OK,
+    HTTP_UNPROCESSABLE_ENTITY,
+)
 from tracertm.api.main import app, get_db
 from tracertm.models.item import Item
 from tracertm.models.link import Link

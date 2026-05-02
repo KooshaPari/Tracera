@@ -96,14 +96,10 @@ def main() -> None:
 
     if not results:
         # Check if we saw any summary lines
-        summary_found = False
         for line in lines:
             m = re.search(r"(\d+) passed", line)
             if m:
-                summary_found = True
                 break
-        if not summary_found:
-            pass
         return
 
     # Build tree

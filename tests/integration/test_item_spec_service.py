@@ -190,7 +190,7 @@ class TestRequirementSpecServiceIntegration:
 
         assert updated.wsjf_score is not None
         assert 0 <= updated.wsjf_score <= 1.0
-        assert updated.wsjf_components["business_value"] == 0.9
+        assert updated.wsjf_components["business_value"] == 0.9  # noqa: RUF069
 
     @pytest.mark.asyncio
     async def test_verify_requirement(self, session: Any, _setup: Any) -> None:

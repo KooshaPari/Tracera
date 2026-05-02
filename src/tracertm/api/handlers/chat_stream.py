@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncGenerator
+from typing import TYPE_CHECKING
 
 from fastapi import Depends, Request
 from fastapi.responses import StreamingResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.config.rate_limiting import enforce_rate_limit
 from tracertm.api.deps import auth_guard, get_db
@@ -20,7 +19,13 @@ from tracertm.api.handlers.chat_shared import (
     _stream_with_agent_sandbox,
     _stream_with_ai_service,
 )
-from tracertm.schemas.chat import ChatRequest
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from tracertm.schemas.chat import ChatRequest
 
 
 async def _generate_sse_stream(
@@ -67,7 +72,7 @@ async def _generate_sse_stream(
         yield _format_error_sse("An unexpected error occurred")
 
 
-async def stream_chat(
+async def stream_chat(  # noqa: D103
     request: Request,
     request_body: ChatRequest,
     claims: dict[str, object] = Depends(auth_guard),

@@ -112,14 +112,14 @@ class TestApiConfig:
         )
         assert config.base_url == "https://api.example.com"
         assert config.token == "test-token"
-        assert config.timeout == 30.0
+        assert config.timeout == 30.0  # noqa: RUF069
         assert config.max_retries == COUNT_THREE
-        assert config.retry_backoff_base == float(COUNT_TWO + 0.0)
+        assert config.retry_backoff_base == float(COUNT_TWO + 0.0)  # noqa: RUF069
 
     def test_api_config_defaults(self) -> None:
         """Test ApiConfig default values."""
         config = ApiConfig(base_url="https://api.test.com")
-        assert config.timeout == 30.0
+        assert config.timeout == 30.0  # noqa: RUF069
         assert config.max_retries == COUNT_THREE
         assert config.verify_ssl is True
         assert config.token is None
@@ -137,7 +137,7 @@ class TestApiConfig:
         config = ApiConfig.from_config_manager(mock_config_manager)
         assert config.base_url == "https://api.test.com"
         assert config.token == "test-token"
-        assert config.timeout == 60.0
+        assert config.timeout == 60.0  # noqa: RUF069
         assert config.max_retries == COUNT_FIVE
 
     def test_api_config_from_config_manager_defaults(self) -> None:
@@ -147,7 +147,7 @@ class TestApiConfig:
 
         config = ApiConfig.from_config_manager(mock_config_manager)
         assert config.base_url == "https://api.tracertm.io"
-        assert config.timeout == 30.0
+        assert config.timeout == 30.0  # noqa: RUF069
         assert config.max_retries == COUNT_THREE
 
     def test_api_config_url_trailing_slash_removed(self) -> None:
@@ -169,7 +169,7 @@ class TestApiConfig:
         }.get
 
         config = ApiConfig.from_config_manager(mock_config_manager)
-        assert config.timeout == 45.5
+        assert config.timeout == 45.5  # noqa: RUF069
         assert isinstance(config.timeout, float)
 
     def test_api_config_max_retries_conversion(self) -> None:
@@ -878,9 +878,9 @@ class TestApiClientTimeouts:
         )
         client = ApiClient(config)
         # AsyncClient timeout is a Timeout object with individual read/write/connect/pool props
-        assert client.client.timeout.read == 45.0
-        assert client.client.timeout.write == 45.0
-        assert client.client.timeout.connect == 45.0
+        assert client.client.timeout.read == 45.0  # noqa: RUF069
+        assert client.client.timeout.write == 45.0  # noqa: RUF069
+        assert client.client.timeout.connect == 45.0  # noqa: RUF069
         await client.close()
 
     @pytest.mark.asyncio
@@ -1754,10 +1754,10 @@ class TestApiFinal:
         )
         assert "api.test.com" in config.base_url
         assert config.token == "secret-token"
-        assert config.timeout == 60.0
+        assert config.timeout == 60.0  # noqa: RUF069
         assert config.max_retries == COUNT_FIVE
-        assert config.retry_backoff_base == 1.5
-        assert config.retry_backoff_max == 120.0
+        assert config.retry_backoff_base == 1.5  # noqa: RUF069
+        assert config.retry_backoff_max == 120.0  # noqa: RUF069
         assert config.verify_ssl is False
 
     @pytest.mark.asyncio
@@ -3265,8 +3265,8 @@ class TestConfigurationInitialization:
             retry_backoff_base=1.5,
             retry_backoff_max=30.0,
         )
-        assert config.retry_backoff_base == 1.5
-        assert config.retry_backoff_max == 30.0
+        assert config.retry_backoff_base == 1.5  # noqa: RUF069
+        assert config.retry_backoff_max == 30.0  # noqa: RUF069
 
     @pytest.mark.asyncio
     async def test_api_client_timeout_configuration_various_values(self) -> None:
