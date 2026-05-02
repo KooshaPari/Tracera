@@ -11,13 +11,12 @@ This module provides comprehensive test fixtures for all infrastructure componen
 All fixtures handle lifecycle management and cleanup between tests.
 """
 
-import asyncio
 import os
 
 # Import application components
 import sys
 from collections.abc import AsyncGenerator, Generator
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
@@ -29,9 +28,7 @@ from nats.js import JetStreamContext
 from neo4j import AsyncDriver, AsyncGraphDatabase
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from temporalio import activity, workflow
 from temporalio.testing import WorkflowEnvironment
-from temporalio.worker import Worker
 
 sys.path.insert(0, "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src")
 
@@ -40,9 +37,6 @@ import contextlib
 from tracertm.agent.agent_service import AgentService
 from tracertm.agent.events import AgentEventPublisher
 from tracertm.agent.graph_session_store import GraphSessionStore
-from tracertm.workflows.activities import (
-    create_session_checkpoint,
-)
 
 # ============================================================================
 # Test Configuration
@@ -116,12 +110,11 @@ async def postgres_engine() -> None:
 @pytest_asyncio.fixture(scope="session")
 async def postgres_sessionmaker(postgres_engine: Any) -> None:
     """Create session factory."""
-    sessionmaker = async_sessionmaker(
+    yield async_sessionmaker(
         postgres_engine,
         class_=AsyncSession,
         expire_on_commit=False,
     )
-    yield sessionmaker
 
 
 @pytest_asyncio.fixture
@@ -281,8 +274,7 @@ async def nats_client() -> AsyncGenerator[NATSClient, None]:
 @pytest_asyncio.fixture
 async def nats_jetstream(nats_client: Any) -> JetStreamContext:
     """Provide JetStream context for tests."""
-    js = nats_client.jetstream()
-    yield js
+    yield nats_client.jetstream()
 
 
 @pytest_asyncio.fixture
@@ -327,8 +319,7 @@ async def temporal_worker(temporal_env: Any) -> None:
 @pytest_asyncio.fixture
 async def event_publisher(nats_client: Any) -> AgentEventPublisher:
     """Provide configured event publisher."""
-    publisher = AgentEventPublisher(nats_client)
-    yield publisher
+    yield AgentEventPublisher(nats_client)
 
 
 @pytest_asyncio.fixture
