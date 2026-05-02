@@ -341,7 +341,7 @@ class AgentRunWorkflow:
                 ),
             )
             messages = result.get("messages_json", messages)
-            if result.get("done", False):
+            if result.get("done"):
                 workflow.logger.info("Agent run completed at turn %s", turn + 1)
                 return result
         workflow.logger.info("Agent run hit max_turns")

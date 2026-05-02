@@ -143,7 +143,7 @@ class TestQueryCache:
         assert stats["hits"] == COUNT_TWO
         assert stats["misses"] == 1
         assert stats["total_requests"] == COUNT_THREE
-        assert stats["hit_rate"] == COUNT_TWO / 3
+        assert stats["hit_rate"] == COUNT_TWO / 3  # noqa: RUF069
         assert stats["size"] == 1  # One entry
 
     @pytest.mark.asyncio

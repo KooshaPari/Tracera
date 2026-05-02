@@ -189,7 +189,7 @@ class TestGraphApp:
             assert app.db is None
             assert app.nodes == {}
             assert app.links == []
-            assert app.zoom == 1.0
+            assert app.zoom == 1.0  # noqa: RUF069
 
     @patch("tracertm.tui.apps.graph.Session")
     @patch("tracertm.tui.apps.graph.DatabaseConnection")
@@ -377,7 +377,7 @@ class TestGraphApp:
 
         app.action_zoom_in()
 
-        assert app.zoom == 1.2
+        assert app.zoom == 1.2  # noqa: RUF069
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
@@ -391,7 +391,7 @@ class TestGraphApp:
 
         app.action_zoom_in()
 
-        assert app.zoom == float(COUNT_FIVE + 0.0)  # Capped at 5.0
+        assert app.zoom == float(COUNT_FIVE + 0.0)  # Capped at 5.0  # noqa: RUF069
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
     def test_graph_app_action_zoom_out(self, mock_cm: Any) -> None:
@@ -404,7 +404,7 @@ class TestGraphApp:
 
         app.action_zoom_out()
 
-        assert app.zoom == 1.0
+        assert app.zoom == 1.0  # noqa: RUF069
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
@@ -418,7 +418,7 @@ class TestGraphApp:
 
         app.action_zoom_out()
 
-        assert app.zoom == 0.5  # Capped at 0.5
+        assert app.zoom == 0.5  # Capped at 0.5  # noqa: RUF069
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
     def test_graph_app_action_help(self, mock_cm: Any) -> None:
@@ -1227,8 +1227,7 @@ class TestConflictPanel:
 
         class TestApp(App):
             def compose(self) -> None:
-                panel = cast("Any", ConflictPanel())
-                yield panel
+                yield cast("Any", ConflictPanel())
 
         # Execute compose in Textual app context
         async def run_test() -> None:

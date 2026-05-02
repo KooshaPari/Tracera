@@ -77,7 +77,7 @@ def get_rate_limit_key(request: Request, claims: dict[str, Any] | None) -> str:
     Returns:
         Rate limit key string
     """
-    from typing import Any, cast
+    from typing import cast
 
     from tracertm.api.security import get_client_ip
 

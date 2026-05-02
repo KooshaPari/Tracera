@@ -37,10 +37,10 @@ if TEXTUAL_AVAILABLE:
     class AgentProcessList(Static):
         """Static widget showing fix agent jobs."""
 
-        def __init__(self, *args: Any, **kwargs: Any) -> None:
+        def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: D107
             super().__init__("", *args, **kwargs)
 
-        def on_mount(self) -> None:
+        def on_mount(self) -> None:  # noqa: D102
             self.refresh_content()
 
         def refresh_content(self) -> None:

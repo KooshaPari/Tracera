@@ -432,8 +432,7 @@ class TestProjectStorage:
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
             manager = LocalStorageManager(base_dir=tmpdir / "storage")
-            storage = manager.get_project_storage("test-project")
-            yield storage
+            yield manager.get_project_storage("test-project")
 
     def test_initialization(self, project_storage: Any) -> None:
         """Test project storage initializes correctly."""
@@ -487,8 +486,7 @@ class TestItemStorage:
             manager = LocalStorageManager(base_dir=tmpdir / "storage")
             project_storage = manager.get_project_storage("test-project")
             project = project_storage.create_or_update_project(name="Test Project")
-            storage = project_storage.get_item_storage(project)
-            yield storage
+            yield project_storage.get_item_storage(project)
 
     def test_create_item(self, item_storage: Any) -> None:
         """Test creating an item."""
@@ -686,7 +684,7 @@ class TestFileWatcher:
 
         assert watcher.project_path == project_path.resolve()
         assert watcher.trace_path == project_path / ".trace"
-        assert watcher.debounce_delay == 0.5
+        assert watcher.debounce_delay == 0.5  # noqa: RUF069
         assert watcher.auto_sync is False
 
     def test_initialization_no_trace_dir(self) -> None:

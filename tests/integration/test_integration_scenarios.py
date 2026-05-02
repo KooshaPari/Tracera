@@ -41,7 +41,13 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
+from tests.test_constants import (
+    COUNT_FIVE,
+    COUNT_TEN,
+    COUNT_THREE,
+    HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_OK,
+)
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project

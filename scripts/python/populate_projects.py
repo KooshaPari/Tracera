@@ -143,8 +143,6 @@ def populate_demo_project() -> None:
 
         for title, desc, priority in catalog_stories:
             story_id = create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic2_id)
-            if story_id:
-                pass
 
     # Epic 3: Shopping Cart & Checkout
     epic3_id = create_item(
@@ -192,8 +190,6 @@ def populate_demo_project() -> None:
 
         for title, desc, priority in checkout_stories:
             story_id = create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic3_id)
-            if story_id:
-                pass
 
     # API Endpoints
     api_endpoints = [
@@ -211,9 +207,7 @@ def populate_demo_project() -> None:
     ]
 
     for title, desc, priority in api_endpoints:
-        endpoint_id = create_item(project_path, title, "API", "endpoint", desc, "todo", priority)
-        if endpoint_id:
-            pass
+        create_item(project_path, title, "API", "endpoint", desc, "todo", priority)
 
     # Database Tables
     db_tables = [
@@ -228,9 +222,7 @@ def populate_demo_project() -> None:
     ]
 
     for title, desc, priority in db_tables:
-        table_id = create_item(project_path, title, "DATABASE", "table", desc, "todo", priority)
-        if table_id:
-            pass
+        create_item(project_path, title, "DATABASE", "table", desc, "todo", priority)
 
     # Test Cases
     test_cases = [
@@ -243,9 +235,7 @@ def populate_demo_project() -> None:
     ]
 
     for title, desc, priority in test_cases:
-        test_id = create_item(project_path, title, "TEST", "test_case", desc, "todo", priority)
-        if test_id:
-            pass
+        create_item(project_path, title, "TEST", "test_case", desc, "todo", priority)
 
     # Wireframes/Screens
     screens = [
@@ -258,9 +248,7 @@ def populate_demo_project() -> None:
     ]
 
     for title, desc, priority in screens:
-        screen_id = create_item(project_path, title, "WIREFRAME", "screen", desc, "todo", priority)
-        if screen_id:
-            pass
+        create_item(project_path, title, "WIREFRAME", "screen", desc, "todo", priority)
 
 
 def populate_frontend_project() -> None:
@@ -309,9 +297,7 @@ def populate_frontend_project() -> None:
         ]
 
         for title, desc, priority in component_stories:
-            story_id = create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic1_id)
-            if story_id:
-                pass
+            create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic1_id)
 
     # Epic: Authentication UI
     epic2_id = create_item(
@@ -336,9 +322,7 @@ def populate_frontend_project() -> None:
         ]
 
         for title, desc, priority in auth_stories:
-            story_id = create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic2_id)
-            if story_id:
-                pass
+            create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic2_id)
 
     # Code Components (React)
     react_components = [
@@ -353,9 +337,7 @@ def populate_frontend_project() -> None:
     ]
 
     for title, desc, priority in react_components:
-        comp_id = create_item(project_path, title, "CODE", "file", desc, "todo", priority)
-        if comp_id:
-            pass
+        create_item(project_path, title, "CODE", "file", desc, "todo", priority)
 
     # Wireframes
     wireframes = [
@@ -366,9 +348,7 @@ def populate_frontend_project() -> None:
     ]
 
     for title, desc, priority in wireframes:
-        wireframe_id = create_item(project_path, title, "WIREFRAME", "screen", desc, "todo", priority)
-        if wireframe_id:
-            pass
+        create_item(project_path, title, "WIREFRAME", "screen", desc, "todo", priority)
 
 
 def populate_backend_project() -> None:
@@ -408,9 +388,7 @@ def populate_backend_project() -> None:
         ]
 
         for title, desc, priority in auth_stories:
-            story_id = create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic1_id)
-            if story_id:
-                pass
+            create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic1_id)
 
     # Epic: Product Service
     epic2_id = create_item(
@@ -432,9 +410,7 @@ def populate_backend_project() -> None:
         ]
 
         for title, desc, priority in product_stories:
-            story_id = create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic2_id)
-            if story_id:
-                pass
+            create_item(project_path, title, "FEATURE", "story", desc, "todo", priority, None, epic2_id)
 
     # API Endpoints
     api_endpoints = [
@@ -455,9 +431,7 @@ def populate_backend_project() -> None:
     ]
 
     for title, desc, priority in api_endpoints:
-        endpoint_id = create_item(project_path, title, "API", "endpoint", desc, "todo", priority)
-        if endpoint_id:
-            pass
+        create_item(project_path, title, "API", "endpoint", desc, "todo", priority)
 
     # Database Tables
     db_tables = [
@@ -475,9 +449,7 @@ def populate_backend_project() -> None:
     ]
 
     for title, desc, priority in db_tables:
-        table_id = create_item(project_path, title, "DATABASE", "table", desc, "todo", priority)
-        if table_id:
-            pass
+        create_item(project_path, title, "DATABASE", "table", desc, "todo", priority)
 
     # Code Files (Services)
     service_files = [
@@ -490,9 +462,7 @@ def populate_backend_project() -> None:
     ]
 
     for title, desc, priority in service_files:
-        file_id = create_item(project_path, title, "CODE", "file", desc, "todo", priority)
-        if file_id:
-            pass
+        create_item(project_path, title, "CODE", "file", desc, "todo", priority)
 
     # Test Suites
     test_suites = [
@@ -503,9 +473,7 @@ def populate_backend_project() -> None:
     ]
 
     for title, desc, priority in test_suites:
-        suite_id = create_item(project_path, title, "TEST", "test_suite", desc, "todo", priority)
-        if suite_id:
-            pass
+        create_item(project_path, title, "TEST", "test_suite", desc, "todo", priority)
 
 
 def main() -> None:

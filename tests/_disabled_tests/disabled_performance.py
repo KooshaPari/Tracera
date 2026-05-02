@@ -122,7 +122,7 @@ class TestPerformance:
 
         stats = router.get_cache_stats()
         assert stats["size"] == 100
-        assert stats["utilization"] == 0.1  # 100/1000
+        assert stats["utilization"] == 0.1  # 100/1000  # noqa: RUF069
 
     def test_throughput_queries_per_second(self, router: Any, registry: Any) -> None:
         """Test throughput (queries per second)."""

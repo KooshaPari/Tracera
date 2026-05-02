@@ -552,7 +552,7 @@ class FFmpegPipeline:
         fps_parts = video_stream.get("r_frame_rate", "30/1").split("/")
         fps = (
             float(fps_parts[0]) / float(fps_parts[1])
-            if len(fps_parts) == FPS_RATE_PARTS and float(fps_parts[1]) != 0
+            if len(fps_parts) == FPS_RATE_PARTS and float(fps_parts[1]) != 0  # noqa: RUF069
             else 30.0
         )
 

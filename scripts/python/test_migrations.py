@@ -31,9 +31,7 @@ def check_tables(inspector: Any) -> bool:
     if missing_tables:
         return False
 
-    extra_tables = actual_tables - expected_tables
-    if extra_tables:
-        pass
+    actual_tables - expected_tables
 
     return True
 
@@ -47,11 +45,10 @@ def check_extensions(engine: Any) -> None:
             WHERE extname IN ('vector', 'pg_trgm')
         """),
         )
-        extensions = {row[0] for row in result}
+        {row[0] for row in result}
 
     for ext in ["vector", "pg_trgm"]:
-        if ext not in extensions:
-            pass
+        pass
 
 
 def check_indexes(inspector: Any) -> None:
@@ -67,9 +64,7 @@ def check_indexes(inspector: Any) -> None:
         "idx_items_title_trgm",
     }
 
-    missing_indexes = expected_indexes - index_names
-    if missing_indexes:
-        pass
+    expected_indexes - index_names
 
 
 def check_foreign_keys(inspector: Any) -> bool:

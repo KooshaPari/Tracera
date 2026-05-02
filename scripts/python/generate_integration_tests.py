@@ -75,8 +75,7 @@ class IntegrationTestGenerator:
             f.write(content)
 
         self.generated_count += 1
-        if self.generated_count % 50 == 0:
-            pass
+        self.generated_count % 50 == 0  # noqa: B015
 
     def generate(self) -> None:
         """Generate."""

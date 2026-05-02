@@ -232,13 +232,17 @@ class TestPerformanceOptimizationService:
 
     def test_performance_optimization_service_import(self) -> None:
         """Test PerformanceOptimizationService can be imported."""
-        from tracertm.services.performance_optimization_service import PerformanceOptimizationService
+        from tracertm.services.performance_optimization_service import (
+            PerformanceOptimizationService,
+        )
 
         assert PerformanceOptimizationService is not None
 
     def test_performance_optimization_service_init(self) -> None:
         """Test PerformanceOptimizationService initialization."""
-        from tracertm.services.performance_optimization_service import PerformanceOptimizationService
+        from tracertm.services.performance_optimization_service import (
+            PerformanceOptimizationService,
+        )
 
         mock_session = MagicMock()
         service = PerformanceOptimizationService(session=mock_session)

@@ -59,7 +59,7 @@ class AnnotationData:
 class FinalAPIEndpointExtractor:
     """Extract API endpoint to FR mappings."""
 
-    def __init__(self, fr_file: Path):
+    def __init__(self, fr_file: Path) -> None:
         """Initialize extractor."""
         self.fr_file = fr_file
         self.mappings: list[EndpointMapping] = []
@@ -85,12 +85,7 @@ class FinalAPIEndpointExtractor:
         pattern = r"(###\s+FR-[A-Z]+-\d+:)"
         parts = re.split(pattern, content)
 
-        sections = []
-        for i in range(1, len(parts), 2):
-            if i + 1 < len(parts):
-                sections.append(parts[i] + parts[i + 1])
-
-        return sections
+        return [parts[i] + parts[i + 1] for i in range(1, len(parts), 2) if i + 1 < len(parts)]
 
     def _parse_api_endpoints(self, section: str) -> list[EndpointMapping]:
         """Parse API endpoints from FR section."""
@@ -138,7 +133,7 @@ class FinalAPIEndpointExtractor:
 class FinalEndpointAnnotator:
     """Annotate API endpoints with FR references using prefix map."""
 
-    def __init__(self, endpoint_mappings: list[EndpointMapping]):
+    def __init__(self, endpoint_mappings: list[EndpointMapping]) -> None:
         """Initialize annotator."""
         self.endpoint_mappings = endpoint_mappings
         self.annotation_map = self._build_annotation_map()
@@ -176,12 +171,12 @@ class FinalEndpointAnnotator:
 
         logger.info(f"Processing {file_path.name}")
 
-        original_content = file_path.read_text()
+        original_content = file_path.read_text(encoding="utf-8")
 
         try:
             tree = ast.parse(original_content)
         except SyntaxError as e:
-            logger.error(f"Syntax error in {file_path}: {e}")
+            logger.exception(f"Syntax error in {file_path}: {e}")
             return 0
 
         # Get full prefix from map
@@ -202,7 +197,7 @@ class FinalEndpointAnnotator:
             logger.info(f"[DRY RUN] Would update {file_path.name} ({count} endpoints)")
             return count
 
-        file_path.write_text(modified_content)
+        file_path.write_text(modified_content, encoding="utf-8")
         logger.info(f"✓ Updated {file_path.name} ({count} endpoints)")
         return count
 
@@ -229,10 +224,7 @@ class FinalEndpointAnnotator:
 
             # Combine full prefix + decorator path
             # Handle "/" decorator path specially
-            if decorator_path == "/":
-                full_path = full_prefix
-            else:
-                full_path = full_prefix + decorator_path
+            full_path = full_prefix if decorator_path == "/" else full_prefix + decorator_path
 
             # Normalize {parameter_name} to {id}
             normalized_path = re.sub(r"\{[^}]+\}", "{id}", full_path)
@@ -262,16 +254,13 @@ class FinalEndpointAnnotator:
             sections = []
             if annotation.frs:
                 sections.append("Functional Requirements:")
-                for fr in annotation.frs:
-                    sections.append(f"- {fr}")
+                sections.extend(f"- {fr}" for fr in annotation.frs)
             if annotation.user_stories:
                 sections.append("\nUser Stories:")
-                for us in annotation.user_stories:
-                    sections.append(f"- {us}")
+                sections.extend(f"- {us}" for us in annotation.user_stories)
             if annotation.epics:
                 sections.append("\nEpics:")
-                for epic in annotation.epics:
-                    sections.append(f"- {epic}")
+                sections.extend(f"- {epic}" for epic in annotation.epics)
 
             if not sections:
                 continue

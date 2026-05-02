@@ -160,7 +160,12 @@ except _OPTIONAL_IMPORT_ERRORS:
     design_module = None  # type: ignore[assignment]
 
 try:
-    from tracertm.cli.commands.export import export_to_csv, export_to_json, export_to_markdown, export_to_yaml
+    from tracertm.cli.commands.export import (
+        export_to_csv,
+        export_to_json,
+        export_to_markdown,
+        export_to_yaml,
+    )
 except _OPTIONAL_IMPORT_ERRORS:
     export_to_csv = export_to_json = export_to_markdown = export_to_yaml = None
 

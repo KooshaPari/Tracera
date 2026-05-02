@@ -291,8 +291,7 @@ def main() -> int:
     generator.save_report(week_number, report)
 
     # Append to standup log
-    if generator.append_to_standup_log(week_number, report):
-        pass
+    generator.append_to_standup_log(week_number, report)
 
     # Print report for verification
 

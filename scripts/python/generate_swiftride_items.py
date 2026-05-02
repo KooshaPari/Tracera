@@ -368,8 +368,7 @@ async def generate_items() -> None:
                 str(init["description"]),
                 priority=int(init["priority"]) if isinstance(init.get("priority"), (int, float)) else 5,
             )
-            if (idx + 1) % 10 == 0:
-                pass
+            (idx + 1) % 10 == 0  # noqa: B015
 
         await session.commit()
 
@@ -388,8 +387,7 @@ async def generate_items() -> None:
             initiative_id = items_db["initiative"][init_idx % len(items_db["initiative"])]
             await create_link(session, epic_id, initiative_id, "implements")
 
-            if (idx + 1) % 10 == 0:
-                pass
+            (idx + 1) % 10 == 0  # noqa: B015
 
         await session.commit()
 
@@ -461,8 +459,7 @@ async def generate_items() -> None:
                 epic_id = items_db["epic"][(idx * 3) % len(items_db["epic"])]
                 await create_link(session, cap_id, epic_id, "supports")
 
-            if (idx + 1) % 10 == 0:
-                pass
+            (idx + 1) % 10 == 0  # noqa: B015
 
         await session.commit()
 
@@ -506,8 +503,7 @@ async def generate_items() -> None:
 
                 feature_counter += 1
 
-                if feature_counter % 20 == 0:
-                    pass
+                feature_counter % 20 == 0  # noqa: B015
 
             if feature_counter >= 100:
                 break
@@ -556,8 +552,7 @@ async def generate_items() -> None:
 
                 story_counter += 1
 
-                if story_counter % 40 == 0:
-                    pass
+                story_counter % 40 == 0  # noqa: B015
 
             if story_counter >= 200:
                 break
@@ -595,8 +590,7 @@ async def generate_items() -> None:
                 feature_id = items_db["feature"][idx % len(items_db["feature"])]
                 await create_link(session, use_case_id, feature_id, "validates")
 
-            if (idx + 1) % 20 == 0:
-                pass
+            (idx + 1) % 20 == 0  # noqa: B015
 
         await session.commit()
 
@@ -634,8 +628,7 @@ async def generate_items() -> None:
             # Link to user story
             await create_link(session, ac_id, story_id, "validates")
 
-            if (idx + 1) % 30 == 0:
-                pass
+            (idx + 1) % 30 == 0  # noqa: B015
 
         await session.commit()
 
@@ -681,8 +674,7 @@ async def generate_items() -> None:
                 items_db["task"].append(task_id)
                 task_counter += 1
 
-                if task_counter % 50 == 0:
-                    pass
+                task_counter % 50 == 0  # noqa: B015
 
         await session.commit()
 

@@ -18,7 +18,14 @@ from typing import Any
 
 import pytest
 
-from tests.test_constants import COUNT_FIVE, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
+from tests.test_constants import (
+    COUNT_FIVE,
+    COUNT_TEN,
+    COUNT_THREE,
+    COUNT_TWO,
+    HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_OK,
+)
 from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.project import Project

@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Any, cast
+from typing import TYPE_CHECKING, Annotated, Any, cast
 
 from fastapi import Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.api.routers.workflows import ensure_write_permission, router
 from tracertm.services.temporal_service import TemporalService
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class WorkflowTriggerPayload(BaseModel):

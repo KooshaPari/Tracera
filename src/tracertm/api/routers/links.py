@@ -280,7 +280,7 @@ async def update_link(
     if request_body.link_type:
         link.link_type = request_body.link_type
     if request_body.metadata is not None:
-        setattr(link, "metadata", request_body.metadata)
+        link.metadata = request_body.metadata
 
     flush = getattr(db, "flush", None)
     if callable(flush):

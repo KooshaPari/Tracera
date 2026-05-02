@@ -1117,7 +1117,7 @@ class TestSyncResultsAndMetrics:
         assert result.entities_synced == COUNT_FIVE
         assert len(result.conflicts) == COUNT_TWO
         assert len(result.errors) == 1
-        assert result.duration_seconds == 1.5
+        assert result.duration_seconds == 1.5  # noqa: RUF069
 
     @pytest.mark.asyncio
     async def test_queued_change_attributes(self, sync_engine: Any) -> None:

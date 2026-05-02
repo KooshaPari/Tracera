@@ -969,7 +969,7 @@ class TestAdvancedAnalyticsAlgorithms:
         metrics = await service.project_metrics("proj1")
 
         assert metrics["total_items"] == 0
-        assert metrics["completion_rate"] == 0.0
+        assert metrics["completion_rate"] == 0.0  # noqa: RUF069
 
     @pytest.mark.asyncio
     async def test_project_metrics_with_items(self, service: Any) -> None:
@@ -986,7 +986,7 @@ class TestAdvancedAnalyticsAlgorithms:
 
         assert metrics["total_items"] == COUNT_FOUR
         assert metrics["by_status"]["done"] == COUNT_TWO
-        assert metrics["completion_rate"] == 50.0  # 2/4 done
+        assert metrics["completion_rate"] == 50.0  # 2/4 done  # noqa: RUF069
 
     # Completion Rate Tests
     def test_completion_rate_all_done(self, service: Any) -> None:
@@ -995,7 +995,7 @@ class TestAdvancedAnalyticsAlgorithms:
 
         rate = service._calculate_completion_rate(status_counts)
 
-        assert rate == 100.0
+        assert rate == 100.0  # noqa: RUF069
 
     def test_completion_rate_none_done(self, service: Any) -> None:
         """Test completion rate when no items done."""
@@ -1003,7 +1003,7 @@ class TestAdvancedAnalyticsAlgorithms:
 
         rate = service._calculate_completion_rate(status_counts)
 
-        assert rate == 0.0
+        assert rate == 0.0  # noqa: RUF069
 
     def test_completion_rate_mixed(self, service: Any) -> None:
         """Test completion rate with mixed statuses."""
@@ -1011,7 +1011,7 @@ class TestAdvancedAnalyticsAlgorithms:
 
         rate = service._calculate_completion_rate(status_counts)
 
-        assert rate == 50.0  # (7+3)/20 = 50%
+        assert rate == 50.0  # (7+3)/20 = 50%  # noqa: RUF069
 
     # Dependency Metrics Tests
     @pytest.mark.asyncio
@@ -1038,7 +1038,7 @@ class TestAdvancedAnalyticsAlgorithms:
 
         assert metrics["total_items"] == COUNT_TWO
         assert metrics["total_links"] == COUNT_THREE
-        assert metrics["average_links_per_item"] == 1.5
+        assert metrics["average_links_per_item"] == 1.5  # noqa: RUF069
         assert metrics["link_types"]["depends_on"] == COUNT_TWO
         assert metrics["link_types"]["references"] == 1
 
@@ -1054,8 +1054,8 @@ class TestAdvancedAnalyticsAlgorithms:
 
         metrics = await service.quality_metrics("proj1")
 
-        assert metrics["description_coverage"] == 100.0
-        assert metrics["link_coverage"] == 100.0
+        assert metrics["description_coverage"] == 100.0  # noqa: RUF069
+        assert metrics["link_coverage"] == 100.0  # noqa: RUF069
 
     @pytest.mark.asyncio
     async def test_quality_metrics_partial_coverage(self, service: Any) -> None:
@@ -1072,8 +1072,8 @@ class TestAdvancedAnalyticsAlgorithms:
         metrics = await service.quality_metrics("proj1")
 
         assert metrics["total_items"] == COUNT_FOUR
-        assert metrics["description_coverage"] == 50.0  # 2/4 have descriptions
-        assert metrics["link_coverage"] == 50.0  # 2/4 have links (items 0 and 3)
+        assert metrics["description_coverage"] == 50.0  # 2/4 have descriptions  # noqa: RUF069
+        assert metrics["link_coverage"] == 50.0  # 2/4 have links (items 0 and 3)  # noqa: RUF069
 
 
 # ============================================================================

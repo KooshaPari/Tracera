@@ -262,8 +262,7 @@ def main() -> int | None:
 
         # Update dashboard
         updater = DashboardUpdater()
-        if updater.update_dashboard(metrics):
-            pass
+        updater.update_dashboard(metrics)
 
         # Print JSON for CI/CD integration
 

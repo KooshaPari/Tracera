@@ -132,8 +132,7 @@ def main() -> None:
 
     # Output summary for operator
     for result in results:
-        if result["skipped"]:
-            pass
+        result["skipped"]
 
 
 if __name__ == "__main__":

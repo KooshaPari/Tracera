@@ -18,7 +18,13 @@ from uuid import uuid4
 
 import pytest
 
-from tests.test_constants import COUNT_FIVE, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR, HTTP_OK
+from tests.test_constants import (
+    COUNT_FIVE,
+    COUNT_THREE,
+    COUNT_TWO,
+    HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_OK,
+)
 from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link

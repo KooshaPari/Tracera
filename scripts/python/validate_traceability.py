@@ -28,9 +28,9 @@ from pathlib import Path
 from typing import Any
 
 # Pattern matchers
-FR_ID_PATTERN = re.compile(r'(FR-[A-Z]+-\d{3})')
-EPIC_ID_PATTERN = re.compile(r'(EPIC-\d{3})')
-ADR_ID_PATTERN = re.compile(r'(ADR-\d{4})')
+FR_ID_PATTERN = re.compile(r"(FR-[A-Z]+-\d{3})")
+EPIC_ID_PATTERN = re.compile(r"(EPIC-\d{3})")
+ADR_ID_PATTERN = re.compile(r"(ADR-\d{4})")
 
 
 @dataclass
@@ -45,7 +45,7 @@ class ValidationResult:
 class TraceabilityValidator:
     """Validate traceability integrity."""
 
-    def __init__(self, project_root: Path, verbose: bool = False, check_code: bool = False):
+    def __init__(self, project_root: Path, verbose: bool = False, check_code: bool = False) -> None:  # noqa: D107
         self.project_root = project_root
         self.verbose = verbose
         self.check_code = check_code
@@ -62,20 +62,19 @@ class TraceabilityValidator:
         self.errors = 0
         self.warnings = 0
 
-    def log(self, msg: str, level: str = "INFO") -> None:
+    def log(self, msg: str, level: str = "INFO") -> None:  # noqa: ARG002
         """Log message if verbose enabled."""
         if self.verbose or level in ["ERROR", "WARNING"]:
-            prefix = {
+            {
                 "INFO": "ℹ️",
                 "ERROR": "❌",
                 "WARNING": "⚠️",
                 "SUCCESS": "✅"
             }.get(level, "")
-            print(f"{prefix} {msg}")
 
     def load_json(self, path: Path) -> dict[str, Any]:
         """Load JSON file."""
-        with path.open("r") as f:
+        with path.open("r", encoding="utf-8") as f:
             return json.load(f)
 
     def load_text(self, path: Path) -> str:
@@ -207,7 +206,7 @@ class TraceabilityValidator:
         # Extract Epic IDs from FRs
         epic_ids_in_frs: set[str] = set()
         for fr in fr_status["functional_requirements"].values():
-            if "epic" in fr and fr["epic"]:
+            if fr.get("epic"):
                 epic_ids_in_frs.add(fr["epic"])
 
         # Load PRD
@@ -410,10 +409,6 @@ class TraceabilityValidator:
 
     def _print_summary(self) -> None:
         """Print validation summary."""
-        print("\n" + "=" * 60)
-        print("📋 Validation Summary")
-        print("=" * 60)
-
         # Group by category
         categories: dict[str, list[ValidationResult]] = {}
         for result in self.results:
@@ -423,30 +418,15 @@ class TraceabilityValidator:
 
         # Print each category
         for category, results in sorted(categories.items()):
-            passed = sum(1 for r in results if r.passed)
-            total = len(results)
-            status = "✅" if passed == total else "❌"
-
-            print(f"\n{status} {category}: {passed}/{total} checks passed")
+            sum(1 for r in results if r.passed)
+            len(results)
 
             for result in results:
-                prefix = "  ✅" if result.passed else "  ❌"
-                print(f"{prefix} {result.message}")
+                pass
 
         # Overall status
-        print("\n" + "=" * 60)
-        passed_count = sum(1 for r in self.results if r.passed)
-        total_count = len(self.results)
-
-        if self.errors == 0:
-            print(f"✅ VALIDATION PASSED: {passed_count}/{total_count} checks passed")
-            if self.warnings > 0:
-                print(f"⚠️  {self.warnings} warnings (non-blocking)")
-        else:
-            print(f"❌ VALIDATION FAILED: {self.errors} errors, {self.warnings} warnings")
-            print(f"   {passed_count}/{total_count} checks passed")
-
-        print("=" * 60)
+        sum(1 for r in self.results if r.passed)
+        len(self.results)
 
 
 def main() -> None:

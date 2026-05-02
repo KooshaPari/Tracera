@@ -3031,7 +3031,7 @@ async def test_link_metadata_complex(db_session_wp34: AsyncSession) -> None:
 
     found = await link_repo.get_by_id(str(link.id))
     assert found.link_metadata["strength"] == "critical"
-    assert found.link_metadata["impact_score"] == 8.5
+    assert found.link_metadata["impact_score"] == 8.5  # noqa: RUF069
     assert found.link_metadata["verified"] is True
 
 

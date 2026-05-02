@@ -4,16 +4,18 @@ from __future__ import annotations
 
 import hashlib
 import re
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import ValidationError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.models.account_user import AccountRole
 from tracertm.repositories.account_repository import AccountRepository
 from tracertm.schemas.account import AccountCreate, AccountResponse
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/api/v1/accounts", tags=["accounts"])
 

@@ -12,7 +12,6 @@ Epics:
 """
 
 from typing import Any
-
 from unittest.mock import AsyncMock
 from uuid import uuid4
 

@@ -11,7 +11,6 @@ for parsing and managing structured specifications in TraceRTM.
 """
 
 from typing import Any
-
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -198,7 +197,7 @@ class TestADRService:
         result = await service.verify_compliance("adr-1", 0.85)
 
         # Assert
-        assert result.compliance_score == 0.85
+        assert result.compliance_score == 0.85  # noqa: RUF069
         assert result.version == COUNT_TWO
         assert result.last_verified_at is not None
 
@@ -410,7 +409,7 @@ class TestFeatureService:
         pass_rate = await service.calculate_pass_rate("feat-1")
 
         # Assert
-        assert pass_rate == 0.75
+        assert pass_rate == 0.75  # noqa: RUF069
 
 
 class TestScenarioService:
@@ -457,7 +456,7 @@ class TestScenarioService:
         assert scenario.title == "User login with valid credentials"
         assert scenario.scenario_number == "FEAT-0001-SC-001"
         assert scenario.status == "draft"
-        assert scenario.pass_rate == 0.0
+        assert scenario.pass_rate == 0.0  # noqa: RUF069
 
     @pytest.mark.asyncio
     async def test_run_scenario(self, service: Any, _mock_session: Any) -> None:
@@ -483,7 +482,7 @@ class TestScenarioService:
         result = await service.run("scenario-1", results)
 
         # Assert
-        assert result.pass_rate == 1.0
+        assert result.pass_rate == 1.0  # noqa: RUF069
         assert result.status == "executed"
         assert result.metadata_.get("last_run") == results
 
@@ -506,7 +505,7 @@ class TestScenarioService:
         result = await service.update_pass_rate("scenario-1", 0.85)
 
         # Assert
-        assert result.pass_rate == 0.85
+        assert result.pass_rate == 0.85  # noqa: RUF069
         assert result.version == COUNT_TWO
 
     @pytest.mark.asyncio

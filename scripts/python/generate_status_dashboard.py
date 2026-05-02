@@ -16,7 +16,7 @@ from typing import Any
 
 def load_json(file_path: Path) -> dict[str, Any]:
     """Load and parse JSON file."""
-    with file_path.open("r") as f:
+    with file_path.open("r", encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -158,8 +158,8 @@ def generate_dashboard(
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| **Functional Requirements** | {fr_stats['complete']}/{fr_stats['total']} ({round(fr_stats['complete']/fr_stats['total']*100)}%) | ✅ Complete |
-| **Architecture Decisions** | {adr_stats['complete']}/{adr_stats['total']} ({round(adr_stats['complete']/adr_stats['total']*100)}%) | ✅ Accepted |
+| **Functional Requirements** | {fr_stats['complete']}/{fr_stats['total']} ({round(fr_stats['complete'] / fr_stats['total'] * 100)}%) | ✅ Complete |
+| **Architecture Decisions** | {adr_stats['complete']}/{adr_stats['total']} ({round(adr_stats['complete'] / adr_stats['total'] * 100)}%) | ✅ Accepted |
 | **Implementation Status** | {fr_stats['complete']}/{fr_stats['total']} (100%) | ✅ Production |
 | **Test Coverage (Avg)** | {fr_stats['avg_coverage']:.1f}% | ✅ Above Target |
 | **Quality Gates** | 6/6 Passing | ✅ Green |
@@ -178,18 +178,18 @@ def generate_dashboard(
 |--------------|-------|------------|
 """
 
-    for quality, count in sorted(fr_stats['quality_counts'].items(), reverse=True):
-        pct = round(count / fr_stats['total'] * 100)
+    for quality, count in sorted(fr_stats["quality_counts"].items(), reverse=True):
+        pct = round(count / fr_stats["total"] * 100)
         dashboard += f"| **{quality}** | {count} | {pct}% |\n"
 
-    dashboard += f"""
+    dashboard += """
 ### Test Coverage Distribution
 
 | Coverage Range | Count | FRs |
 |----------------|-------|-----|
 """
 
-    for range_name, fr_list in fr_stats['coverage_ranges'].items():
+    for range_name, fr_list in fr_stats["coverage_ranges"].items():
         count = len(fr_list)
         frs_str = ", ".join(sorted(fr_list)[:10])  # Show first 10
         if len(fr_list) > 10:
@@ -211,12 +211,12 @@ def generate_dashboard(
 |--------|-------|------|
 """
 
-    for status, count in sorted(adr_stats['impl_status'].items()):
+    for status, count in sorted(adr_stats["impl_status"].items()):
         dashboard += f"| **{status}** | {count} | "
         if status == "Partial":
             dashboard += "ADR-0005 (Test Strategy - Go coverage 32.5%, target 70%)"
         else:
-            dashboard += f"ADR-0001 through ADR-0015"
+            dashboard += "ADR-0001 through ADR-0015"
         dashboard += " |\n"
 
     dashboard += f"""
@@ -262,11 +262,7 @@ def generate_dashboard(
 """
 
     # Write to file
-    output_path.write_text(dashboard)
-    print(f"✅ Generated status dashboard: {output_path}")
-    print(f"   - {fr_stats['total']} Functional Requirements")
-    print(f"   - {adr_stats['total']} Architecture Decisions")
-    print(f"   - {fr_stats['avg_coverage']:.1f}% average test coverage")
+    output_path.write_text(dashboard, encoding="utf-8")
 
 
 def main() -> None:
@@ -280,17 +276,10 @@ def main() -> None:
     adr_status_path = project_root / "docs" / "ADR_STATUS.json"
     output_path = project_root / "docs" / "reports" / "STATUS_DASHBOARD.md"
 
-    print("📊 Generating Status Dashboard")
-    print(f"   Reading: {fr_status_path.relative_to(project_root)}")
-    print(f"   Reading: {adr_status_path.relative_to(project_root)}")
-
     fr_data = load_json(fr_status_path)
     adr_data = load_json(adr_status_path)
 
     generate_dashboard(fr_data, adr_data, output_path)
-
-    print(f"   Output: {output_path.relative_to(project_root)}")
-    print("\n✅ Dashboard generation complete!")
 
 
 if __name__ == "__main__":

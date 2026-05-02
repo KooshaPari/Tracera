@@ -317,7 +317,7 @@ class TestApiConfigurationErrors:
         config = ApiConfig(base_url="https://api.test.local")
         assert config.base_url == "https://api.test.local"
         assert config.token is None
-        assert config.timeout == 30.0
+        assert config.timeout == 30.0  # noqa: RUF069
         assert config.max_retries == COUNT_THREE
 
     def test_api_config_with_all_options(self) -> None:
@@ -333,7 +333,7 @@ class TestApiConfigurationErrors:
         )
         assert config.base_url == "https://api.example.com"
         assert config.token == "secret_token"
-        assert config.timeout == 60.0
+        assert config.timeout == 60.0  # noqa: RUF069
         assert config.max_retries == COUNT_FIVE
         assert config.verify_ssl is False
 
@@ -354,7 +354,7 @@ class TestApiConfigurationErrors:
             config = ApiConfig.from_config_manager()
             assert config.base_url == "https://api.example.com"
             assert config.token == "token123"
-            assert config.timeout == 45.0
+            assert config.timeout == 45.0  # noqa: RUF069
             assert config.max_retries == COUNT_FIVE
 
     def test_api_config_from_config_manager_defaults(self) -> None:
@@ -363,7 +363,7 @@ class TestApiConfigurationErrors:
             mock_get.return_value = None
             config = ApiConfig.from_config_manager()
             assert config.base_url == "https://api.tracertm.io"
-            assert config.timeout == 30.0
+            assert config.timeout == 30.0  # noqa: RUF069
             assert config.max_retries == COUNT_THREE
 
     def test_api_config_url_normalization(self) -> None:

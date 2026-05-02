@@ -71,7 +71,7 @@ class TestApiConfig:
 
         assert config.base_url == "https://api.example.com"
         assert config.token is None
-        assert config.timeout == 30.0
+        assert config.timeout == 30.0  # noqa: RUF069
         assert config.max_retries == COUNT_THREE
         assert config.verify_ssl is True
 
@@ -87,7 +87,7 @@ class TestApiConfig:
 
         assert config.base_url == "http://localhost:8000"
         assert config.token == "test-token"
-        assert config.timeout == float(COUNT_TEN + 0.0)
+        assert config.timeout == float(COUNT_TEN + 0.0)  # noqa: RUF069
         assert config.max_retries == COUNT_FIVE
         assert config.verify_ssl is False
 
@@ -108,7 +108,7 @@ class TestApiConfig:
 
         assert config.base_url == "https://custom.api.com"
         assert config.token == "custom-token"
-        assert config.timeout == 15.0
+        assert config.timeout == 15.0  # noqa: RUF069
         assert config.max_retries == COUNT_FIVE
 
 

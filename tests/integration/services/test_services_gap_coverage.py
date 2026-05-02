@@ -987,7 +987,7 @@ class TestProgressServiceGapCoverage:
 
         completion = service.calculate_completion("nonexistent-id")
 
-        assert completion == 0.0
+        assert completion == 0.0  # noqa: RUF069
 
     def test_calculate_completion_leaf_item_todo(self, service: Any, mock_session: Any) -> None:
         """Test completion for leaf item with todo status."""
@@ -998,7 +998,7 @@ class TestProgressServiceGapCoverage:
 
         completion = service.calculate_completion("item-1")
 
-        assert completion == 0.0
+        assert completion == 0.0  # noqa: RUF069
 
     def test_calculate_completion_leaf_item_in_progress(self, service: Any, mock_session: Any) -> None:
         """Test completion for leaf item in progress."""
@@ -1009,7 +1009,7 @@ class TestProgressServiceGapCoverage:
 
         completion = service.calculate_completion("item-1")
 
-        assert completion == 50.0
+        assert completion == 50.0  # noqa: RUF069
 
     def test_calculate_completion_leaf_item_blocked(self, service: Any, mock_session: Any) -> None:
         """Test completion for blocked item."""
@@ -1020,7 +1020,7 @@ class TestProgressServiceGapCoverage:
 
         completion = service.calculate_completion("item-1")
 
-        assert completion == 0.0
+        assert completion == 0.0  # noqa: RUF069
 
     def test_calculate_completion_leaf_item_complete(self, service: Any, mock_session: Any) -> None:
         """Test completion for completed item."""
@@ -1031,7 +1031,7 @@ class TestProgressServiceGapCoverage:
 
         completion = service.calculate_completion("item-1")
 
-        assert completion == 100.0
+        assert completion == 100.0  # noqa: RUF069
 
     def test_calculate_completion_leaf_item_cancelled(self, service: Any, mock_session: Any) -> None:
         """Test completion for cancelled item."""
@@ -1042,7 +1042,7 @@ class TestProgressServiceGapCoverage:
 
         completion = service.calculate_completion("item-1")
 
-        assert completion == 0.0
+        assert completion == 0.0  # noqa: RUF069
 
     def test_calculate_completion_leaf_item_unknown_status(self, service: Any, mock_session: Any) -> None:
         """Test completion for item with unknown status."""
@@ -1053,7 +1053,7 @@ class TestProgressServiceGapCoverage:
 
         completion = service.calculate_completion("item-1")
 
-        assert completion == 0.0
+        assert completion == 0.0  # noqa: RUF069
 
     def test_calculate_completion_parent_with_children(self, service: Any, mock_session: Any) -> None:
         """Test completion calculation for parent with children."""
@@ -1099,7 +1099,7 @@ class TestProgressServiceGapCoverage:
         completion = service.calculate_completion("parent-1")
 
         # Should be average of children: (100 + 50) / 2 = 75
-        assert completion == 75.0
+        assert completion == 75.0  # noqa: RUF069
 
     def test_calculate_completion_parent_no_children(self, service: Any, mock_session: Any) -> None:
         """Test parent with empty children list."""
@@ -1111,7 +1111,7 @@ class TestProgressServiceGapCoverage:
         completion = service.calculate_completion("parent-1")
 
         # Falls back to leaf calculation
-        assert completion == 50.0
+        assert completion == 50.0  # noqa: RUF069
 
     # ========================================================================
     # BLOCKED ITEMS
@@ -1285,7 +1285,7 @@ class TestProgressServiceGapCoverage:
         assert velocity["period_days"] == 7
         assert velocity["items_completed"] == COUNT_FIVE
         assert velocity["items_created"] == COUNT_TEN
-        assert velocity["completion_rate"] == COUNT_FIVE / 7
+        assert velocity["completion_rate"] == COUNT_FIVE / 7  # noqa: RUF069
         assert velocity["net_change"] == COUNT_FIVE
 
     def test_calculate_velocity_custom_period(self, service: Any, mock_session: Any) -> None:
@@ -1305,7 +1305,7 @@ class TestProgressServiceGapCoverage:
         velocity = service.calculate_velocity("project-1")
 
         assert velocity["items_completed"] == 0
-        assert velocity["completion_rate"] == 0.0
+        assert velocity["completion_rate"] == 0.0  # noqa: RUF069
 
     def test_calculate_velocity_null_results(self, service: Any, mock_session: Any) -> None:
         """Test velocity handles None results from database."""

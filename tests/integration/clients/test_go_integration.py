@@ -96,7 +96,7 @@ async def test_go_client_create_link(mock_go_server: Any) -> None:
         assert result["source_id"] == "item-1"
         assert result["target_id"] == "item-2"
         assert result["link_type"] == "DEPENDS_ON"
-        assert result["metadata"]["weight"] == 1.0
+        assert result["metadata"]["weight"] == 1.0  # noqa: RUF069
 
 
 @pytest.mark.asyncio
@@ -133,7 +133,7 @@ async def test_go_client_connection_pooling() -> None:
         # Verify client was created with correct limits
         mock_client_class.assert_called_once()
         call_kwargs = mock_client_class.call_args[1]
-        assert call_kwargs["timeout"] == 30.0
+        assert call_kwargs["timeout"] == 30.0  # noqa: RUF069
         assert call_kwargs["limits"].max_connections == 100
         assert call_kwargs["limits"].max_keepalive_connections == 20
 

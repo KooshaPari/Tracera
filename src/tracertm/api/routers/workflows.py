@@ -3,17 +3,18 @@
 from __future__ import annotations
 
 import os
-from typing import Annotated, Any, cast
+from typing import TYPE_CHECKING, Annotated, Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.models.graph import Graph
 from tracertm.repositories.workflow_run_repository import WorkflowRunRepository
 from tracertm.repositories.workflow_schedule_repository import WorkflowScheduleRepository
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(tags=["Workflows"])
 
@@ -87,7 +88,7 @@ async def bootstrap_workflow_schedules(
     """Create default Temporal schedules for graph snapshots and integration retries."""
     ensure_project_access(project_id, claims)
 
-    service = TemporalService()
+    service = TemporalService()  # noqa: F821
     repo = WorkflowScheduleRepository(db)
 
     created: list[dict[str, Any]] = []
@@ -230,7 +231,7 @@ async def delete_workflow_schedule(
     if schedule is None:
         raise HTTPException(status_code=404, detail="Schedule not found")
 
-    service = TemporalService()
+    service = TemporalService()  # noqa: F821
     try:
         await service.delete_schedule(cron_id)
     except Exception as exc:

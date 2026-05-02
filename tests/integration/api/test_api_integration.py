@@ -146,8 +146,7 @@ def fastapi_test_client(test_db_engine: Any, _test_project: Any) -> None:
                 await async_engine.dispose()
 
     app.dependency_overrides[get_db] = override_get_db
-    client = TestClient(app)
-    yield client
+    yield TestClient(app)
     app.dependency_overrides.clear()
 
 
@@ -1261,7 +1260,7 @@ class TestApiConfigClass:
         config = ApiConfig(base_url="https://api.test.com", token="test-token")
         assert config.base_url == "https://api.test.com"
         assert config.token == "test-token"
-        assert config.timeout == 30.0
+        assert config.timeout == 30.0  # noqa: RUF069
         assert config.max_retries == COUNT_THREE
 
     def test_api_config_from_config_manager(self, tmp_path: Any, monkeypatch: Any) -> None:
@@ -1279,7 +1278,7 @@ class TestApiConfigClass:
         config = ApiConfig.from_config_manager(config_manager)
         assert config.base_url == "https://custom.api.com"
         assert config.token == "custom-token"
-        assert config.timeout == 60.0
+        assert config.timeout == 60.0  # noqa: RUF069
         assert config.max_retries == COUNT_FIVE
 
     def test_api_config_defaults(self, tmp_path: Any, monkeypatch: Any) -> None:

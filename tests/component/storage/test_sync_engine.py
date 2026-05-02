@@ -211,7 +211,7 @@ async def test_exponential_backoff_caps_delay(monkeypatch: Any) -> None:
     monkeypatch.setattr(asyncio, "sleep", fake_sleep)
     await exponential_backoff(attempt=4, initial_delay=0.5, max_delay=1.0)
 
-    assert captured["delay"] == 1.0
+    assert captured["delay"] == 1.0  # noqa: RUF069
 
 
 @pytest.mark.asyncio

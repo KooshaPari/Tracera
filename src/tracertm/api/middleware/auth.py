@@ -2,6 +2,7 @@
 
 import logging
 import os
+from typing import Any
 
 from fastapi import HTTPException, Request
 
@@ -9,7 +10,6 @@ from tracertm.core.context import current_account_id, current_user_id
 from tracertm.models.integration import IntegrationCredential
 from tracertm.services.token_bridge import get_token_bridge
 from tracertm.services.workos_auth_service import authenticate_with_refresh_token
-from typing import Any
 
 logger = logging.getLogger(__name__)
 

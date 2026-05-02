@@ -408,7 +408,7 @@ class TestRequirementSpecRepository:
         assert spec.requirement_type == RequirementType.FUNCTIONAL.value
         assert spec.constraint_type == ConstraintType.SOFT.value
         assert spec.risk_level == RiskLevel.HIGH.value
-        assert spec.business_value == 8.0
+        assert spec.business_value == 8.0  # noqa: RUF069
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -570,10 +570,10 @@ class TestRequirementSpecRepository:
         )
         await db_session.commit()
 
-        assert updated.quality_scores["unambiguity"] == 0.9
-        assert updated.ambiguity_score == 0.1
-        assert updated.completeness_score == 0.85
-        assert updated.overall_quality_score == 0.88
+        assert updated.quality_scores["unambiguity"] == 0.9  # noqa: RUF069
+        assert updated.ambiguity_score == 0.1  # noqa: RUF069
+        assert updated.completeness_score == 0.85  # noqa: RUF069
+        assert updated.overall_quality_score == 0.88  # noqa: RUF069
         assert len(updated.quality_issues) == 1
 
     @pytest.mark.unit
@@ -589,7 +589,7 @@ class TestRequirementSpecRepository:
         updated = await repo.update_volatility(spec.id, volatility_index=0.75, change_count=5)
         await db_session.commit()
 
-        assert updated.volatility_index == 0.75
+        assert updated.volatility_index == 0.75  # noqa: RUF069
         assert updated.change_count == COUNT_FIVE
         assert updated.last_changed_at is not None
 
@@ -702,12 +702,12 @@ class TestRequirementSpecRepository:
         await db_session.commit()
 
         # WSJF = (8 + 6 + 4) / 3 = 6.0
-        assert wsjf == 6.0
+        assert wsjf == 6.0  # noqa: RUF069
 
         # Verify it's saved
         found = await repo.get_by_id(spec.id)
         assert found is not None
-        assert found.wsjf_score == 6.0
+        assert found.wsjf_score == 6.0  # noqa: RUF069
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -731,7 +731,7 @@ class TestRequirementSpecRepository:
 
         wsjf = await repo.calculate_wsjf(spec.id)
         # WSJF = (10 + 8 + 6) / 8 = 3.0
-        assert wsjf == float(COUNT_THREE + 0.0)
+        assert wsjf == float(COUNT_THREE + 0.0)  # noqa: RUF069
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1183,7 +1183,7 @@ class TestEpicSpecRepository:
         assert spec.id is not None
         assert spec.epic_type == EpicType.FEATURE.value
         assert spec.status == "planned"
-        assert spec.progress_percentage == 0.0
+        assert spec.progress_percentage == 0.0  # noqa: RUF069
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1279,7 +1279,7 @@ class TestEpicSpecRepository:
         assert updated.user_story_count == COUNT_TEN
         assert updated.completed_story_count == COUNT_FOUR
         assert updated.defect_count == COUNT_TWO
-        assert updated.progress_percentage == 40.0
+        assert updated.progress_percentage == 40.0  # noqa: RUF069
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1500,7 +1500,7 @@ class TestTaskSpecRepository:
 
         assert spec.id is not None
         assert spec.status == "todo"
-        assert spec.progress_percentage == 0.0
+        assert spec.progress_percentage == 0.0  # noqa: RUF069
         assert spec.is_blocked is False
 
     @pytest.mark.unit
@@ -1521,7 +1521,7 @@ class TestTaskSpecRepository:
         await db_session.commit()
 
         assert spec.parent_story_item_id == story_item_id
-        assert spec.estimated_hours == float(COUNT_FOUR + 0.0)
+        assert spec.estimated_hours == float(COUNT_FOUR + 0.0)  # noqa: RUF069
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1571,7 +1571,7 @@ class TestTaskSpecRepository:
         )
         await db_session.commit()
 
-        assert updated.progress_percentage == 66.7
+        assert updated.progress_percentage == 66.7  # noqa: RUF069
         assert updated.completed_checklist_items == COUNT_TWO
 
     @pytest.mark.unit
@@ -2509,7 +2509,7 @@ class TestTaskSpecRepositoryBranchCoverage:
         updated = await repo.update_progress(spec.id, progress_percentage=50.0)
         await db_session.commit()
 
-        assert updated.progress_percentage == 50.0
+        assert updated.progress_percentage == 50.0  # noqa: RUF069
         # completed_checklist_items should remain at its original value (not modified)
         assert updated.completed_checklist_items == original_checklist_items
 
@@ -3120,7 +3120,7 @@ class TestPrivateFlakinessAndPerformanceMethods:
         await repo._recalculate_flakiness(spec)
 
         # flakiness = 1/5 = 0.2 (below 0.3 threshold)
-        assert spec.flakiness_score == 0.2
+        assert spec.flakiness_score == 0.2  # noqa: RUF069
         assert spec.flaky_patterns == []  # No pattern detected
 
     @pytest.mark.unit

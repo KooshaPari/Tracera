@@ -310,7 +310,7 @@ class TestPerformanceCharacteristics:
         total = cache_hits + cache_misses
 
         hit_rate = cache_hits / total
-        assert hit_rate == 0.9
+        assert hit_rate == 0.9  # noqa: RUF069
 
     def test_throughput_performance(self) -> None:
         """Test throughput."""
@@ -467,7 +467,7 @@ class TestMonitoring:
         metrics = {"requests": 1000, "errors": 5, "latency_ms": 50}
 
         error_rate = metrics["errors"] / metrics["requests"]
-        assert error_rate == 0.005
+        assert error_rate == 0.005  # noqa: RUF069
 
     def test_logging(self) -> None:
         """Test logging."""
