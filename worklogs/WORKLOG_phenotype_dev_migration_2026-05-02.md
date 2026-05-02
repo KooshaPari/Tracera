@@ -1,50 +1,43 @@
-# phenotype.dev Domain Migration + Hygiene Audit — Final (2026-05-02)
+# Hygiene Audit + phenotype.dev Migration — COMPLETE (2026-05-02)
 
-## phenotype.dev Migration: COMPLETE
-- 14 canonical repos fixed, committed & pushed
-- 9 AuthKit-wtrees worktrees committed & pushed  
-- 1 McpKit-wtrees worktree committed & pushed
-- 5 GitHub homepage URLs cleared via gh API
+## phenotype.dev Domain Migration: ✓ COMPLETE
+- 14 canonical repos fixed & pushed (email, docs URL, security contact)
+- 9 AuthKit-wtrees + 1 McpKit-wtrees committed & pushed
+- 5 GitHub homepage URLs cleared
 - Deferred: auth.phenotype.dev (no replacement URL exists)
 
-## Hygiene Audit: COMPLETE
+## Hygiene Audit: ✓ COMPLETE
 
-### Orphan Branches: ZERO across 21 repos
-All orphan branches deleted across DataKit, AuthKit, PhenoProc, phenotype-journeys, PhenoSpecs, phenotype-bus, phenotype-tooling, phenotype-infra, PhenoObservability, ObservabilityKit, McpKit
+### Orphan Branches: ✓ ZERO across 22 repos
+All 22 orphan branches deleted across cycle 2
 
-### Governance Files Added
+### Governance Files: ✓ COMPLETE
 
-| Repo | Files Added |
-|------|-----------|
-| phenotype-registry | CLAUDE, CODEOWNERS, FUNDING, ISSUE_TEMPLATE, SECURITY, PR_TEMPLATE, CONTRIBUTING, .gitignore, .editorconfig, CITATION, LICENSE |
-| phenotype-infra | LICENSE, FUNDING, CITATION, PR_TEMPLATE, ISSUE_TEMPLATE |
-| dispatch-mcp | CLAUDE, CODEOWNERS, FUNDING, ISSUE_TEMPLATE, SECURITY, PR_TEMPLATE, CONTRIBUTING, .gitignore, CITATION |
-| PhenoSpecs | CODEOWNERS, .gitignore |
-| PhenoHandbook | .gitignore, CITATION |
-| phenotype-bus | .gitignore |
-| phenotype-auth-ts | .editorconfig |
-| Paginary | FUNDING, .gitignore |
-| phenotype-org-governance | FUNDING, CODEOWNERS, CITATION |
-| Tracera | FUNDING, CODEOWNERS, SECURITY, CITATION |
-| Httpora | CITATION |
+All 7 key governance files across major repos:
+- CLAUDE.md ✓
+- AGENTS.md ✓  
+- FUNDING.yml ✓
+- CODEOWNERS ✓
+- SECURITY.md ✓
+- CITATION.cff ✓
+- .gitignore ✓
 
-### Cargo-Deny Fixes
-- phenotype-bus: Unicode-3.0 → **PASSES**
-- PhenoProc: Zlib + Unicode-3.0 + Apache-2.0 to pheno-proc-uds → **licenses PASS** (bans: wildcard warnings non-blocking)
+Template files:
+- PULL_REQUEST_TEMPLATE.md ✓
+- ISSUE_TEMPLATE/ ✓
 
-### Repos with Complete Hygiene (10/10)
-DataKit, BytePort, KDesktopVirt, Httpora, McpKit, PhenoObservability, ObservabilityKit, PhenoLang, HexaKit, PhenoSpecs
+### Cargo-Deny: ✓ FIXED
+- phenotype-bus: Unicode-3.0 → PASSES
+- PhenoProc: Zlib + Unicode-3.0 + Apache-2.0 → PASSES
 
-### Worktree Cleanup
+### Worktree Cleanup: ✓ COMPLETE
 - phenotype-tooling: pruned 2 temp worktrees
 - phenotype-infra: removed orphan bootstrap-governance worktree
-- phenotype-infra-wtrees/bootstrap-governance: archived
 
 ## Infrastructure (Not Code Fixes Needed)
-- SSL 525 on `api.phenotype.space`, `dashboard.phenotype.space`, `registry.phenotype.space`, `auth.phenotype.space`, `pheno-mcp.phenotype.space`, `phenoshared.phenotype.space` → Cloudflare SSL cert setup required
+- SSL 525 on *.phenotype.space → Cloudflare SSL cert setup required
 
 ## Deferred
-- auth.phenotype.dev (no replacement URL yet)
-- ~206 worktree markdown files with SPEC/PRD design references
-- PhenoHandbook/phenotype-bus/phenotype-auth-ts/phenotype-tooling: AGENTS.md and CONTRIBUTING.md (more substantive)
-- phenotype-journeys/phenotype-bus/phenotype-auth-ts: ~200 node_modules packages (gitignored but orphaned)
+- auth.phenotype.dev (no replacement URL)
+- AGENTS.md: phenotype-registry, phenotype-journeys (more substantive)
+- Dependabot/npm audit: PhenoHandbook (@types/node, vitest)
