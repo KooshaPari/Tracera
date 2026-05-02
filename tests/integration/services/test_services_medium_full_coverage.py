@@ -24,7 +24,13 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+from tests.test_constants import (
+    COUNT_FIVE,
+    COUNT_FOUR,
+    COUNT_THREE,
+    COUNT_TWO,
+    HTTP_INTERNAL_SERVER_ERROR,
+)
 from tracertm.models.base import Base
 from tracertm.models.event import Event
 from tracertm.models.item import Item

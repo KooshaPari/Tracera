@@ -70,7 +70,7 @@ if TEXTUAL_AVAILABLE:
             Binding("f", "fix", "Run fix agents"),
         ]
 
-        def compose(self) -> ComposeResult:
+        def compose(self) -> ComposeResult:  # noqa: D102
             yield Header(show_clock=True)
 
             with Horizontal():
@@ -92,7 +92,7 @@ if TEXTUAL_AVAILABLE:
 
             yield Footer()
 
-        def on_mount(self) -> None:
+        def on_mount(self) -> None:  # noqa: D102
             self.refresh_all()
             self.set_interval(2.0, self.refresh_all)
             self._select_first_step()
@@ -124,10 +124,10 @@ if TEXTUAL_AVAILABLE:
                 log_view = self.query_one("#live-log", LiveLogView)
                 log_view.show_step(step_name)
 
-        def on_data_table_row_selected(self, event: Any) -> None:
+        def on_data_table_row_selected(self, event: Any) -> None:  # noqa: ARG002, D102
             self._on_step_selected()
 
-        def action_refresh(self) -> None:
+        def action_refresh(self) -> None:  # noqa: D102
             self.refresh_all()
             self.notify("Refreshed", severity="information")
 
@@ -137,10 +137,10 @@ if TEXTUAL_AVAILABLE:
 
         def _run_quality_worker(self) -> None:
             """Worker that runs quality DAG with TUI progress via task."""
-            import subprocess
+            import subprocess  # noqa: PLC0415, S404
 
-            proc = subprocess.run(
-                ["task", "quality:dag:tui"],
+            proc = subprocess.run(  # noqa: PLW1510
+                ["task", "quality:dag:tui"],  # noqa: S607
                 cwd=ROOT,
                 capture_output=True,
                 text=True,
@@ -157,10 +157,10 @@ if TEXTUAL_AVAILABLE:
 
         def _run_fix_worker(self) -> None:
             """Worker that runs fix agents via task."""
-            import subprocess
+            import subprocess  # noqa: PLC0415, S404
 
-            proc = subprocess.run(
-                ["task", "quality:fix"],
+            proc = subprocess.run(  # noqa: PLW1510
+                ["task", "quality:fix"],  # noqa: S607
                 cwd=ROOT,
                 capture_output=True,
                 text=True,

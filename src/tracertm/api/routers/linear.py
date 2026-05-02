@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import os
-from typing import Annotated, Any, cast
+from typing import TYPE_CHECKING, Annotated, Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.config.rate_limiting import enforce_rate_limit
 from tracertm.api.deps import auth_guard, get_db
@@ -14,6 +13,9 @@ from tracertm.api.routers.oauth import ensure_credential_access
 from tracertm.clients.linear_client import LinearClient
 from tracertm.repositories.integration_repository import IntegrationCredentialRepository
 from tracertm.services.encryption_service import EncryptionService
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/api/v1/integrations/linear", tags=["linear"])
 

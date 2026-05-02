@@ -72,7 +72,7 @@ async def test_complete_project_workflow(db_session: AsyncSession) -> None:
     traceability = TraceabilityService(db_session)
     matrix = await traceability.generate_matrix(str(project.id), "FEATURE", "CODE")
 
-    assert matrix.coverage_percentage == 100.0
+    assert matrix.coverage_percentage == 100.0  # noqa: RUF069
     assert len(matrix.links) == 1
 
     # 5. Analyze impact

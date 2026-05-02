@@ -75,7 +75,7 @@ def test_calculate_completion_leaf() -> None:
     session.commit()
 
     svc = ProgressService(session)
-    assert svc.calculate_completion("i1") == 100.0
+    assert svc.calculate_completion("i1") == 100.0  # noqa: RUF069
 
 
 def test_calculate_completion_parent_average() -> None:
@@ -83,7 +83,7 @@ def test_calculate_completion_parent_average() -> None:
     parent, _child_done, _child_todo = _seed_items(session)
     svc = ProgressService(session)
     pct = svc.calculate_completion(parent.id)
-    assert pct == (100.0 + 0.0) / 2
+    assert pct == (100.0 + 0.0) / 2  # noqa: RUF069
 
 
 def test_get_blocked_items_returns_blockers() -> None:

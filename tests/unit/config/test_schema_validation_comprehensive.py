@@ -34,7 +34,7 @@ class TestConfigTypeCoercion:
     def test_api_timeout_int_to_float_coercion(self) -> None:
         """Test that api_timeout coerces int to float."""
         config = Config(api_timeout=30)
-        assert config.api_timeout == 30.0
+        assert config.api_timeout == 30.0  # noqa: RUF069
         assert isinstance(config.api_timeout, float)
 
     @pytest.mark.unit
@@ -249,11 +249,11 @@ class TestConfigEdgeCases:
         """Test api_timeout at boundary values."""
         # Minimum
         config = Config(api_timeout=1.0)
-        assert config.api_timeout == 1.0
+        assert config.api_timeout == 1.0  # noqa: RUF069
 
         # Maximum
         config = Config(api_timeout=300.0)
-        assert config.api_timeout == 300.0
+        assert config.api_timeout == 300.0  # noqa: RUF069
 
     @pytest.mark.unit
     def test_api_max_retries_boundary_values(self) -> None:

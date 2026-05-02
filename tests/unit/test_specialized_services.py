@@ -36,8 +36,8 @@ class TestTraceabilityMatrix:
             return coverage
 
         result = analyze(matrix)
-        assert result[1] == COUNT_TWO / 3
-        assert result[3] == 1 / 3
+        assert result[1] == COUNT_TWO / 3  # noqa: RUF069
+        assert result[3] == 1 / 3  # noqa: RUF069
 
     def test_gap_identification(self) -> None:
         """Test gap identification."""
@@ -169,7 +169,7 @@ class TestPerformanceTuning:
             return stats["hits"] / total if total > 0 else 0
 
         result = hit_rate(stats)
-        assert result == 0.9
+        assert result == 0.9  # noqa: RUF069
 
 
 class TestDataTransformation:

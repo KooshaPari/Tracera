@@ -248,7 +248,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         assert result["total_items"] == 0
         assert result["by_status"] == {}
         assert result["by_view"] == {}
-        assert result["completion_rate"] == 0.0
+        assert result["completion_rate"] == 0.0  # noqa: RUF069
 
     @pytest.mark.asyncio
     async def test_calculate_completion_rate_mixed_statuses(self, db_session: AsyncSession) -> None:
@@ -262,7 +262,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         status_counts = {"todo": 3, "in_progress": 2, "done": 4, "complete": 1}
         result = service._calculate_completion_rate(status_counts)
 
-        assert result == 50.0  # (4 done + 1 complete) / 10 total * 100
+        assert result == 50.0  # (4 done + 1 complete) / 10 total * 100  # noqa: RUF069
 
     @pytest.mark.asyncio
     async def test_calculate_completion_rate_all_done(self, db_session: AsyncSession) -> None:
@@ -276,7 +276,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         status_counts = {"done": 5, "complete": 5}
         result = service._calculate_completion_rate(status_counts)
 
-        assert result == 100.0
+        assert result == 100.0  # noqa: RUF069
 
     @pytest.mark.asyncio
     async def test_calculate_completion_rate_none_done(self, db_session: AsyncSession) -> None:
@@ -290,7 +290,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         status_counts = {"todo": 8, "in_progress": 2}
         result = service._calculate_completion_rate(status_counts)
 
-        assert result == 0.0
+        assert result == 0.0  # noqa: RUF069
 
     @pytest.mark.asyncio
     async def test_team_analytics_with_events(
@@ -415,7 +415,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         result = await service.dependency_metrics(str(test_project.id))
 
         assert result["total_links"] == 0
-        assert result["average_links_per_item"] == 0.0
+        assert result["average_links_per_item"] == 0.0  # noqa: RUF069
         assert result["link_types"] == {}
 
     @pytest.mark.asyncio
@@ -936,7 +936,7 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
 
         assert result["source_view"] == "FEATURE"
         assert result["target_view"] == "CODE"
-        assert result["coverage_percent"] == 100.0
+        assert result["coverage_percent"] == 100.0  # noqa: RUF069
         assert result["uncovered_items"] == 0
 
     @pytest.mark.asyncio
@@ -985,7 +985,7 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         service = AdvancedTraceabilityEnhancementsService(db_session)
         result = await service.coverage_gap_analysis(str(test_project.id), "FEATURE", "CODE")
 
-        assert result["coverage_percent"] == 50.0  # 1 of 2 covered
+        assert result["coverage_percent"] == 50.0  # 1 of 2 covered  # noqa: RUF069
         assert result["uncovered_items"] == 1
         assert feature2.id in result["uncovered_item_ids"]
 
@@ -1001,7 +1001,7 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         result = await service.coverage_gap_analysis(str(test_project.id), "NONEXISTENT", "CODE")
 
         assert result["total_source_items"] == 0
-        assert result["coverage_percent"] == 0.0
+        assert result["coverage_percent"] == 0.0  # noqa: RUF069
 
     @pytest.mark.asyncio
     async def test_bidirectional_link_analysis_with_links(

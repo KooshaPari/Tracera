@@ -124,5 +124,5 @@ class TestExecutionResult:
         assert res.output == "done"
         assert res.metadata == {}
         assert res.error is None
-        assert res.execution_time_ms == 0.0
+        assert res.execution_time_ms == 0.0  # noqa: RUF069
         assert res.tokens_used == 0

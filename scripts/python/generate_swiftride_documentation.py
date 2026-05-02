@@ -1463,8 +1463,7 @@ async def generate_documentation() -> None:
                 epic_id = existing_items["epic"][idx % len(existing_items["epic"])]
                 await create_link(session, adr_id, epic_id, "documents")
 
-            if (idx + 1) % 10 == 0:
-                pass
+            (idx + 1) % 10 == 0  # noqa: B015
 
         await session.commit()
 
@@ -1488,8 +1487,7 @@ async def generate_documentation() -> None:
                 story_id = existing_items["user_story"][idx]
                 await create_link(session, spec_id, story_id, "documents")
 
-            if (idx + 1) % 10 == 0:
-                pass
+            (idx + 1) % 10 == 0  # noqa: B015
 
         await session.commit()
 
@@ -1513,8 +1511,7 @@ async def generate_documentation() -> None:
                 spec_id = items_db["technical_spec"][idx % len(items_db["technical_spec"])]
                 await create_link(session, api_id, spec_id, "documents")
 
-            if (idx + 1) % 10 == 0:
-                pass
+            (idx + 1) % 10 == 0  # noqa: B015
 
         await session.commit()
 
@@ -1533,8 +1530,7 @@ async def generate_documentation() -> None:
                 feature_id = existing_items["feature"][idx % len(existing_items["feature"])]
                 await create_link(session, guide_id, feature_id, "documents")
 
-            if (idx + 1) % 10 == 0:
-                pass
+            (idx + 1) % 10 == 0  # noqa: B015
 
         await session.commit()
 
@@ -1560,8 +1556,7 @@ async def generate_documentation() -> None:
                 feature_id = existing_items["feature"][idx % len(existing_items["feature"])]
                 await create_link(session, tutorial_id, feature_id, "demonstrates")
 
-            if (idx + 1) % 10 == 0:
-                pass
+            (idx + 1) % 10 == 0  # noqa: B015
 
         await session.commit()
 
@@ -1587,8 +1582,7 @@ async def generate_documentation() -> None:
                 api_id = items_db["api_documentation"][idx % len(items_db["api_documentation"])]
                 await create_link(session, ts_id, api_id, "documents")
 
-            if (idx + 1) % 10 == 0:
-                pass
+            (idx + 1) % 10 == 0  # noqa: B015
 
         await session.commit()
 
@@ -1609,8 +1603,7 @@ async def generate_documentation() -> None:
                     feature_id = existing_items["feature"][(idx * 3 + f_idx) % len(existing_items["feature"])]
                     await create_link(session, release_id, feature_id, "releases")
 
-            if (idx + 1) % 10 == 0:
-                pass
+            (idx + 1) % 10 == 0  # noqa: B015
 
         await session.commit()
 
@@ -1634,8 +1627,7 @@ async def generate_documentation() -> None:
                 spec_id = items_db["technical_spec"][idx % len(items_db["technical_spec"])]
                 await create_link(session, diagram_id, spec_id, "illustrates")
 
-            if (idx + 1) % 10 == 0:
-                pass
+            (idx + 1) % 10 == 0  # noqa: B015
 
         await session.commit()
 

@@ -79,8 +79,7 @@ class BenchmarkRunner:
             elapsed = (time.perf_counter() - start) * 1000
             times.append(elapsed)
 
-            if (i + 1) % _PROGRESS_UPDATE_FREQ == 0:
-                pass
+            (i + 1) % _PROGRESS_UPDATE_FREQ == 0  # noqa: B015
 
         avg_time = sum(times) / len(times)
         min_time = min(times)
@@ -127,8 +126,7 @@ class BenchmarkRunner:
             elapsed = (time.perf_counter() - start) * 1000
             times.append(elapsed)
 
-            if (i + 1) % _PROGRESS_UPDATE_FREQ == 0:
-                pass
+            (i + 1) % _PROGRESS_UPDATE_FREQ == 0  # noqa: B015
 
         avg_time = sum(times) / len(times)
         min_time = min(times)
@@ -171,8 +169,7 @@ class BenchmarkRunner:
             elapsed = (time.perf_counter() - start) * 1000
             times.append(elapsed)
 
-            if (i + 1) % _PROGRESS_UPDATE_FREQ == 0:
-                pass
+            (i + 1) % _PROGRESS_UPDATE_FREQ == 0  # noqa: B015
 
         avg_time = sum(times) / len(times)
         min_time = min(times)
@@ -225,8 +222,7 @@ class BenchmarkRunner:
             elapsed = (time.perf_counter() - start) * 1000
             times.append(elapsed)
 
-            if (i + 1) % _PROGRESS_UPDATE_FREQ == 0:
-                pass
+            (i + 1) % _PROGRESS_UPDATE_FREQ == 0  # noqa: B015
 
         avg_time = sum(times) / len(times)
         min_time = min(times)
@@ -263,10 +259,7 @@ class BenchmarkRunner:
         if "old_implementation" in self.results and "with_caching" in self.results:
             old_avg = cast("dict[str, object]", self.results["old_implementation"])["avg_ms"]
             final_avg = cast("dict[str, object]", self.results["with_caching"])["avg_ms"]
-            total_improvement = ((old_avg - final_avg) / old_avg) * 100  # type: ignore[operator]
-
-            if total_improvement >= _TARGET_IMPROVEMENT_PCT:
-                pass
+            ((old_avg - final_avg) / old_avg) * 100  # type: ignore[operator]
 
 
 async def run_benchmark(database_url: str, project_id: str) -> None:

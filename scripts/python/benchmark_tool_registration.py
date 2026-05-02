@@ -141,11 +141,9 @@ def main() -> None:
             ((mono_avg - split_avg) / mono_avg) * 100
 
     if server_times:
-        server_avg = sum(server_times) / len(server_times)
+        sum(server_times) / len(server_times)
 
         # Check if we met the <100ms target
-        if server_avg < 100:
-            pass
 
 
 if __name__ == "__main__":

@@ -4,22 +4,24 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import delete
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.deps import auth_guard, get_cache_service, get_db
 from tracertm.models.item import Item
-from tracertm.models.link import Link
 from tracertm.models.project import Project
 from tracertm.repositories.link_repository import LinkRepository
 from tracertm.repositories.project_repository import ProjectRepository
-from tracertm.services.cache_service import CacheService
 from tracertm.services.export_import_service import ExportImportService
 from tracertm.services.import_service import ImportService
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from tracertm.services.cache_service import CacheService
 
 logger = logging.getLogger(__name__)
 

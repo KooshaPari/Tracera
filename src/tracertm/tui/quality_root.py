@@ -1,7 +1,7 @@
 """Quality root path for TUI. Supports QUALITY_ROOT for shared-project usage."""
 
-from pathlib import Path
 import os
+from pathlib import Path
 
 # Default: trace root (trace/src/tracertm/tui/quality_root.py -> trace/)
 _DEFAULT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent

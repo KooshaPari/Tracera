@@ -689,13 +689,13 @@ class TestGraphAppInitialization:
         assert hasattr(app, "zoom")
         assert isinstance(app.nodes, dict)
         assert isinstance(app.links, list)
-        assert app.zoom == 1.0
+        assert app.zoom == 1.0  # noqa: RUF069
 
     def test_zoom_constraints(self) -> None:
         """Test zoom constraints."""
         app = GraphApp()
         app.zoom = 0.3  # Should be allowed
-        assert app.zoom == 0.3
+        assert app.zoom == 0.3  # noqa: RUF069
 
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
@@ -1458,16 +1458,16 @@ class TestGraphAppZoomBehavior:
     def test_graph_app_zoom_initialization(self) -> None:
         """Test GraphApp initializes zoom."""
         app = GraphApp()
-        assert app.zoom == 1.0
+        assert app.zoom == 1.0  # noqa: RUF069
 
     def test_graph_app_zoom_range_constraints(self) -> None:
         """Test zoom can be adjusted."""
         app = GraphApp()
         app.zoom = 0.5
-        assert app.zoom == 0.5
+        assert app.zoom == 0.5  # noqa: RUF069
 
         app.zoom = 2.0
-        assert app.zoom == float(COUNT_TWO + 0.0)
+        assert app.zoom == float(COUNT_TWO + 0.0)  # noqa: RUF069
 
     def test_graph_app_nodes_initialization(self) -> None:
         """Test GraphApp initializes nodes dict."""

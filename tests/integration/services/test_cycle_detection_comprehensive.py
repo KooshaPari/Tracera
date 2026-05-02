@@ -23,7 +23,14 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from tests.test_constants import COUNT_FIVE, COUNT_FOUR, COUNT_TEN, COUNT_THREE, COUNT_TWO, HTTP_INTERNAL_SERVER_ERROR
+from tests.test_constants import (
+    COUNT_FIVE,
+    COUNT_FOUR,
+    COUNT_TEN,
+    COUNT_THREE,
+    COUNT_TWO,
+    HTTP_INTERNAL_SERVER_ERROR,
+)
 from tracertm.models.base import Base
 from tracertm.models.item import Item
 from tracertm.models.link import Link

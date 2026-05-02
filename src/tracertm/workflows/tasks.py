@@ -42,7 +42,7 @@ async def _get_async_session() -> AsyncSession:
     elif database_url.startswith("sqlite://"):
         async_database_url = database_url.replace("sqlite://", "sqlite+aiosqlite://", 1)
     elif database_url.startswith("postgresql://"):
-        base_url = database_url.split("?")[0]
+        base_url = database_url.split("?", maxsplit=1)[0]
         async_database_url = base_url.replace("postgresql://", "postgresql+asyncpg://", 1)
     else:
         async_database_url = database_url

@@ -182,7 +182,7 @@ class TestLinkCreation:
 
         result = await link_service.create_link("proj-1", "item-1", "item-2", "relates_to", strength=0.7)
 
-        assert result.strength == 0.7
+        assert result.strength == 0.7  # noqa: RUF069
 
 
 # ==============================================================================
@@ -543,7 +543,7 @@ class TestLinkMetadataAndProperties:
 
         result = await link_service.update_link("proj-1", "link-1", strength=0.9)
 
-        assert result.strength == 0.9
+        assert result.strength == 0.9  # noqa: RUF069
 
     @pytest.mark.asyncio
     async def test_timestamp_link_metadata(self, link_service: Any) -> None:

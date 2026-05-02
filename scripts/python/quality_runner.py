@@ -53,7 +53,6 @@ def _filter_steps(
         want = {s.strip() for s in only.split(",") if s.strip()}
         invalid = want - names
         if invalid:
-            print(f"Unknown steps in --only: {', '.join(sorted(invalid))}", file=sys.stderr)
             raise SystemExit(1)
         included = set(want)
         changed = True
@@ -70,7 +69,6 @@ def _filter_steps(
         skip_set = {s.strip() for s in skip.split(",") if s.strip()}
         invalid = skip_set - names
         if invalid:
-            print(f"Unknown steps in --skip: {', '.join(sorted(invalid))}", file=sys.stderr)
             raise SystemExit(1)
         excluded = set(skip_set)
         changed = True
@@ -92,17 +90,12 @@ def load_dag() -> dict:
     import yaml
 
     if not DAG_CONFIG.exists():
-        print(f"DAG config not found: {DAG_CONFIG}", file=sys.stderr)
-        print("Create config/quality-dag.yaml or run from project root.", file=sys.stderr)
-        print("Alternative: task quality:gate (full quality gate)", file=sys.stderr)
         raise SystemExit(1)
     try:
         data = yaml.safe_load(DAG_CONFIG.read_text())
     except yaml.YAMLError as e:
-        print(f"Invalid YAML in {DAG_CONFIG}: {e}", file=sys.stderr)
         raise SystemExit(1) from e
     if not data or not isinstance(data.get("steps"), dict):
-        print(f"Invalid config: {DAG_CONFIG} must have a 'steps' dict.", file=sys.stderr)
         raise SystemExit(1)
     steps = data.get("steps", {})
     _validate_dag(steps)
@@ -116,13 +109,11 @@ def _validate_dag(steps: dict[str, dict]) -> None:
     for name, cfg in steps.items():
         cmd = cfg.get("command")
         if not cmd or not str(cmd).strip():
-            print(f"Step '{name}' has no command.", file=sys.stderr)
             raise SystemExit(1)
         for dep in cfg.get("deps", []):
             if dep not in steps:
-                print(f"Step '{name}' depends on undefined step '{dep}'.", file=sys.stderr)
                 raise SystemExit(1)
-    in_degree = {s: 0 for s in steps}
+    in_degree = dict.fromkeys(steps, 0)
     for name, cfg in steps.items():
         for dep in cfg.get("deps", []):
             if dep in steps:
@@ -138,13 +129,12 @@ def _validate_dag(steps: dict[str, dict]) -> None:
                 if name in remaining and s in cfg.get("deps", []):
                     in_degree[name] -= 1
     if remaining:
-        print(f"Cycle detected in DAG: {', '.join(sorted(remaining))}", file=sys.stderr)
         raise SystemExit(1)
 
 
 def topological_tiers(steps: dict[str, dict]) -> list[list[str]]:
     """Return steps in tiers (each tier can run in parallel)."""
-    in_degree = {s: 0 for s in steps}
+    in_degree = dict.fromkeys(steps, 0)
     for name, cfg in steps.items():
         for dep in cfg.get("deps", []):
             if dep in steps:
@@ -171,8 +161,7 @@ def topological_tiers(steps: dict[str, dict]) -> list[list[str]]:
 
 def _log(verbose: bool, msg: str) -> None:
     if verbose:
-        ts = time.strftime("%H:%M:%S", time.localtime())
-        print(f"[{ts}] {msg}", file=sys.stderr, flush=True)
+        time.strftime("%H:%M:%S", time.localtime())
 
 
 def run_step(
@@ -189,7 +178,7 @@ def run_step(
     _log(verbose, f"Starting {step_name}")
     start = time.perf_counter()
     try:
-        proc = subprocess.run(
+        proc = subprocess.run(  # noqa: S602
             command,
             shell=True,
             cwd=cwd,
@@ -324,17 +313,14 @@ def main() -> int:
     steps = load_dag()
     steps = _filter_steps(steps, only=args.only, skip=args.skip)
     if not steps:
-        print("No steps to run after filtering.", file=sys.stderr)
         return 0
     tiers = topological_tiers(steps)
 
     if args.dry_run:
-        for i, tier in enumerate(tiers):
-            print(f"Tier {i + 1}: {', '.join(tier)}")
+        for tier in tiers:
             for name in tier:
-                cmd = steps[name].get("command", "?")
-                display = steps[name].get("display", name)
-                print(f"  {display}: {cmd}")
+                steps[name].get("command", "?")
+                steps[name].get("display", name)
         return 0
 
     results: dict[str, int | str] = {}

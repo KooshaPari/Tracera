@@ -169,9 +169,9 @@ class TestAllOperationCombinations:
 
     def test_divide_operations(self) -> None:
         """Test division."""
-        assert COUNT_THREE == 6 / 2
-        assert float(COUNT_TWO + 0.5) == 5 / 2
-        assert -6 / 2 == -3
+        assert COUNT_THREE == 6 / 2  # noqa: RUF069
+        assert float(COUNT_TWO + 0.5) == 5 / 2  # noqa: RUF069
+        assert -6 / 2 == -3  # noqa: RUF069
 
     def test_modulo_operations(self) -> None:
         """Test modulo."""
@@ -183,7 +183,7 @@ class TestAllOperationCombinations:
         """Test power."""
         assert 2**3 == 8
         assert 2**0 == 1
-        assert 2**-1 == 0.5
+        assert 2**-1 == 0.5  # noqa: RUF069
 
     def test_bitwise_and(self) -> None:
         """Test bitwise AND."""

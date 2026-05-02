@@ -3,7 +3,6 @@
 Displays streaming log content for the selected step.
 """
 
-from pathlib import Path
 from typing import Any
 
 try:
@@ -16,13 +15,12 @@ except ImportError:
 
 from tracertm.tui.quality_root import LOG_DIR
 
-
 if TEXTUAL_AVAILABLE:
 
     class LiveLogView(RichLog):
         """RichLog that tails a step's log file."""
 
-        def __init__(self, *args: Any, **kwargs: Any) -> None:
+        def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: D107
             super().__init__(*args, **kwargs)
             self._current_step: str | None = None
             self._last_size: int = 0

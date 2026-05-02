@@ -44,8 +44,7 @@ version: 1.0.0
 def storage() -> None:
     """Create a temporary storage manager."""
     with TemporaryDirectory() as tmpdir:
-        storage = LocalStorageManager(base_dir=Path(tmpdir))
-        yield storage
+        yield LocalStorageManager(base_dir=Path(tmpdir))
 
 
 def test_watcher_initialization(temp_project: Any, storage: Any) -> None:

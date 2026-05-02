@@ -9,7 +9,12 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 
-from tests.test_constants import HTTP_INTERNAL_SERVER_ERROR, HTTP_NOT_FOUND, HTTP_OK, HTTP_UNAUTHORIZED
+from tests.test_constants import (
+    HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_NOT_FOUND,
+    HTTP_OK,
+    HTTP_UNAUTHORIZED,
+)
 
 
 @pytest.fixture

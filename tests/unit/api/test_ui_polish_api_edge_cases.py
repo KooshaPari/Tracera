@@ -223,21 +223,21 @@ class TestApiConfigurationEdgeCases:
         from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000", timeout=60.0)
-        assert config.timeout == 60.0
+        assert config.timeout == 60.0  # noqa: RUF069
 
     def test_config_with_zero_timeout(self) -> None:
         """Test API config with zero timeout."""
         from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000", timeout=0.0)
-        assert config.timeout == 0.0
+        assert config.timeout == 0.0  # noqa: RUF069
 
     def test_config_with_very_large_timeout(self) -> None:
         """Test API config with very large timeout."""
         from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000", timeout=3600.0)
-        assert config.timeout == 3600.0
+        assert config.timeout == 3600.0  # noqa: RUF069
 
 
 # =============================================================================
@@ -274,8 +274,8 @@ class TestApiRetryConfigurationEdgeCases:
         from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000", retry_backoff_base=3.0, retry_backoff_max=120.0)
-        assert config.retry_backoff_base == float(COUNT_THREE + 0.0)
-        assert config.retry_backoff_max == 120.0
+        assert config.retry_backoff_base == float(COUNT_THREE + 0.0)  # noqa: RUF069
+        assert config.retry_backoff_max == 120.0  # noqa: RUF069
 
 
 # =============================================================================

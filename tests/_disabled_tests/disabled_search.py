@@ -24,8 +24,7 @@ class TestSearchIntegration:
 
         try:
             await db_service.connect()
-            service = SearchService(db_service)
-            yield service
+            yield SearchService(db_service)
         finally:
             await db_service.disconnect()
 

@@ -216,8 +216,8 @@ class TestQueryOptimizationService:
         stats = service.get_query_statistics()
 
         assert stats["total_queries"] == COUNT_THREE
-        assert stats["min_execution_time"] == 0.1
-        assert stats["max_execution_time"] == 0.3
+        assert stats["min_execution_time"] == 0.1  # noqa: RUF069
+        assert stats["max_execution_time"] == 0.3  # noqa: RUF069
         assert stats["total_items_returned"] == 45
 
     def test_recommend_indexes_not_enough_data(self) -> None:

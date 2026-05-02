@@ -821,7 +821,7 @@ class TestGraphAppComprehensive:
         assert getattr(app, "db", None) is None
         assert getattr(app, "nodes", {}) == {}
         assert getattr(app, "links", []) == []
-        assert getattr(app, "zoom", 1.0) == 1.0
+        assert getattr(app, "zoom", 1.0) == 1.0  # noqa: RUF069
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
     def test_graph_css_defined(self, mock_config_manager: Any) -> None:

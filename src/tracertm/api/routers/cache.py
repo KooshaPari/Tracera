@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import APIRouter, Depends
 
 from tracertm.api.deps import auth_guard, get_cache_service
-from tracertm.services.cache_service import CacheService
+
+if TYPE_CHECKING:
+    from tracertm.services.cache_service import CacheService
 
 router = APIRouter(prefix="/api/v1", tags=["cache"])
 

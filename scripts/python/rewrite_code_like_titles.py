@@ -395,8 +395,7 @@ def main() -> None:
     root = str(Path(__file__).resolve().parent.parent)
     for db_path in sorted(set(iter_db_files(root))):
         res = rewrite_sqlite(db_path)
-        if res["skipped"]:
-            pass
+        res["skipped"]
 
 
 if __name__ == "__main__":

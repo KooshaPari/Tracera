@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from fastapi import Depends, HTTPException, Request
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.config.rate_limiting import enforce_rate_limit
 from tracertm.api.deps import auth_guard, get_db
@@ -12,10 +13,14 @@ from tracertm.api.handlers.chat_shared import (
     _chat_with_ai_service,
     _get_agent_service,
 )
-from tracertm.schemas.chat import ChatRequest
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from tracertm.schemas.chat import ChatRequest
 
 
-async def simple_chat(
+async def simple_chat(  # noqa: D103
     request: Request,
     request_body: ChatRequest,
     claims: dict[str, object] = Depends(auth_guard),

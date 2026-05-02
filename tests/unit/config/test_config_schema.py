@@ -28,7 +28,7 @@ class TestConfigSchemaDefaults:
         assert config.aliases == {}
         assert config.api_url == "https://api.tracertm.io"
         assert config.api_token is None
-        assert config.api_timeout == 30.0
+        assert config.api_timeout == 30.0  # noqa: RUF069
         assert config.api_max_retries == COUNT_THREE
         assert config.sync_enabled is True
         assert config.sync_interval_seconds == 300
@@ -226,10 +226,10 @@ class TestConfigApiTimeoutValidation:
     def test_api_timeout_valid(self) -> None:
         """Test valid API timeout values."""
         config = Config(api_timeout=1.0)
-        assert config.api_timeout == 1.0
+        assert config.api_timeout == 1.0  # noqa: RUF069
 
         config = Config(api_timeout=300.0)
-        assert config.api_timeout == 300.0
+        assert config.api_timeout == 300.0  # noqa: RUF069
 
     @pytest.mark.unit
     def test_api_timeout_invalid_below_min(self) -> None:

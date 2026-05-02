@@ -83,9 +83,7 @@ async def postgres_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[st
 
     # Connection string through proxy
     db_password = os.getenv("DB_PASSWORD", "tracertm_password")
-    connection_string = f"postgresql+asyncpg://tracertm:{db_password}@localhost:{POSTGRES_PROXY_PORT}/tracertm"
-
-    yield connection_string
+    yield f"postgresql+asyncpg://tracertm:{db_password}@localhost:{POSTGRES_PROXY_PORT}/tracertm"
 
     await toxiproxy_client.delete_proxy(proxy_name)
 
@@ -105,9 +103,7 @@ async def redis_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, 
         upstream=REDIS_UPSTREAM,
     )
 
-    redis_url = f"redis://localhost:{REDIS_PROXY_PORT}"
-
-    yield redis_url
+    yield f"redis://localhost:{REDIS_PROXY_PORT}"
 
     await toxiproxy_client.delete_proxy(proxy_name)
 
@@ -127,9 +123,7 @@ async def nats_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, N
         upstream=NATS_UPSTREAM,
     )
 
-    nats_url = f"nats://localhost:{NATS_PROXY_PORT}"
-
-    yield nats_url
+    yield f"nats://localhost:{NATS_PROXY_PORT}"
 
     await toxiproxy_client.delete_proxy(proxy_name)
 
@@ -149,9 +143,7 @@ async def go_backend_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[
         upstream=GO_BACKEND_UPSTREAM,
     )
 
-    backend_url = f"http://localhost:{GO_BACKEND_PROXY_PORT}"
-
-    yield backend_url
+    yield f"http://localhost:{GO_BACKEND_PROXY_PORT}"
 
     await toxiproxy_client.delete_proxy(proxy_name)
 
@@ -171,9 +163,7 @@ async def python_backend_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenera
         upstream=PYTHON_BACKEND_UPSTREAM,
     )
 
-    backend_url = f"http://localhost:{PYTHON_BACKEND_PROXY_PORT}"
-
-    yield backend_url
+    yield f"http://localhost:{PYTHON_BACKEND_PROXY_PORT}"
 
     await toxiproxy_client.delete_proxy(proxy_name)
 

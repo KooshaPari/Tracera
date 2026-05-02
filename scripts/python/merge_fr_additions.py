@@ -17,11 +17,9 @@ def main() -> int:
     additions_file = root / "docs/reference/FR_ADDITIONS_30_ENDPOINTS.md"
 
     if not fr_file.exists():
-        print(f"Error: {fr_file} not found")
         return 1
 
     if not additions_file.exists():
-        print(f"Error: {additions_file} not found")
         return 1
 
     # Read both files
@@ -53,7 +51,6 @@ def main() -> int:
             break
 
     if summary_idx is None:
-        print("Error: ## Summary section not found")
         return 1
 
     # Build new sections based on category
@@ -129,17 +126,6 @@ def main() -> int:
     # Write back
     new_content = "\n".join(new_content_lines)
     fr_file.write_text(new_content)
-
-    print(f"✓ Merged 30 FR additions into {fr_file}")
-    print("✓ Updated Summary section counts")
-    print("")
-    print("New FRs added:")
-    print("  - FR-APP-001 through FR-APP-010 (10 FRs)")
-    print("  - FR-QUAL-001 through FR-QUAL-008 (8 FRs)")
-    print("  - FR-RPT-001 through FR-RPT-009 (9 FRs)")
-    print("  - FR-COLLAB-001 through FR-COLLAB-003 (3 FRs)")
-    print("")
-    print("Ready to run: python scripts/python/annotate_apis_with_frs.py")
 
     return 0
 

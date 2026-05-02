@@ -81,9 +81,8 @@ class MCPHealthChecker:
         failed = sum(1 for c in self.checks if c.status == "fail")
         sum(1 for c in self.checks if c.status == "warn")
 
-        for check in self.checks:
-            if check.details:
-                pass
+        for _check in self.checks:
+            pass
 
         return failed == 0
 

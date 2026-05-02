@@ -696,7 +696,7 @@ class TestSyncStateManagerComprehensive:
         assert result.entities_synced == COUNT_TEN
         assert len(result.conflicts) == 1
         assert len(result.errors) == 1
-        assert result.duration_seconds == float(COUNT_FIVE + 0.5)
+        assert result.duration_seconds == float(COUNT_FIVE + 0.5)  # noqa: RUF069
 
     def test_sync_result_defaults(self) -> None:
         """Test SyncResult with defaults."""
@@ -705,7 +705,7 @@ class TestSyncStateManagerComprehensive:
         assert result.entities_synced == 0
         assert result.conflicts == []
         assert result.errors == []
-        assert result.duration_seconds == 0.0
+        assert result.duration_seconds == 0.0  # noqa: RUF069
 
     def test_sync_result_with_many_errors(self) -> None:
         """Test SyncResult with multiple errors."""
@@ -755,7 +755,7 @@ class TestSyncEngineLifecycleComprehensive:
         assert sync_engine.api is not None
         assert sync_engine.storage is not None
         assert sync_engine.max_retries == COUNT_THREE
-        assert sync_engine.retry_delay == 0.1
+        assert sync_engine.retry_delay == 0.1  # noqa: RUF069
         assert not sync_engine._syncing
 
     def test_is_syncing_initial(self, sync_engine: Any) -> None:
@@ -947,7 +947,7 @@ class TestSyncEngineLifecycleComprehensive:
             retry_delay=2.0,
         )
         assert engine.max_retries == COUNT_FIVE
-        assert engine.retry_delay == float(COUNT_TWO + 0.0)
+        assert engine.retry_delay == float(COUNT_TWO + 0.0)  # noqa: RUF069
 
     def test_vector_clock_creation(self, sync_engine: Any) -> None:
         """Test creating a vector clock."""
@@ -1436,7 +1436,7 @@ class TestSyncEngineEdgeCases:
     def test_sync_result_with_negative_duration(self) -> None:
         """Test SyncResult with negative duration."""
         result = SyncResult(success=True, duration_seconds=-1.5)
-        assert result.duration_seconds == -1.5
+        assert result.duration_seconds == -1.5  # noqa: RUF069
 
     def test_sync_result_with_extreme_entity_count(self) -> None:
         """Test SyncResult with extreme entity count."""

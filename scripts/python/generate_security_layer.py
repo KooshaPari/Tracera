@@ -95,8 +95,7 @@ async def create_item(
     stats[item_type] += 1
     created_items[item_type].append((item_id, title))
 
-    if stats[item_type] % 10 == 0:
-        pass
+    stats[item_type] % 10 == 0  # noqa: B015
 
     return item_id
 

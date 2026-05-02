@@ -410,7 +410,7 @@ class TestProjectMetricsSchemaValidation:
         })
         result = validate_project_metrics(df)
         assert len(result) == 1
-        assert result["coverage"].iloc[0] == 0.0
+        assert result["coverage"].iloc[0] == 0.0  # noqa: RUF069
 
     def test_metrics_coverage_100_percent(self) -> None:
         """Test coverage at 100 percent."""
@@ -423,7 +423,7 @@ class TestProjectMetricsSchemaValidation:
         })
         result = validate_project_metrics(df)
         assert len(result) == 1
-        assert result["coverage"].iloc[0] == 100.0
+        assert result["coverage"].iloc[0] == 100.0  # noqa: RUF069
 
 
 # ============================================================================

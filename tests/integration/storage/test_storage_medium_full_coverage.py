@@ -1186,7 +1186,7 @@ class TestStoragePerformance:
         result = SyncResult(success=True, entities_synced=10, duration_seconds=1.5)
         assert result.success
         assert result.entities_synced == COUNT_TEN
-        assert result.duration_seconds == 1.5
+        assert result.duration_seconds == 1.5  # noqa: RUF069
 
     @pytest.mark.asyncio
     async def test_max_retry_backoff(self) -> None:

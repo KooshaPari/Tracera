@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
+import inspect
 import logging
 import os
-import inspect
 from collections import defaultdict
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from fastapi import HTTPException, Request
 
-from tracertm.models.integration import IntegrationCredential
 from tracertm.services import workos_auth_service
+
+if TYPE_CHECKING:
+    from tracertm.models.integration import IntegrationCredential
 
 logger = logging.getLogger(__name__)
 
@@ -19,55 +21,55 @@ logger = logging.getLogger(__name__)
 class APIKeyManager:
     """Placeholder API key manager used by compatibility helpers."""
 
-    def has_key(self, *_: object, **__: object) -> bool:
+    def has_key(self, *_: object, **__: object) -> bool:  # noqa: D102
         return True
 
-    def get_key(self, *_: object, **__: object) -> str:
+    def get_key(self, *_: object, **__: object) -> str:  # noqa: D102
         return "placeholder"
 
 
 class TokenManager:
     """Placeholder token manager used by compatibility helpers."""
 
-    def create(self, *_: object, **__: object) -> str:
+    def create(self, *_: object, **__: object) -> str:  # noqa: D102
         return "placeholder-token"
 
-    def verify(self, *_: object, **__: object) -> bool:
+    def verify(self, *_: object, **__: object) -> bool:  # noqa: D102
         return True
 
 
 class PermissionManager:
     """Placeholder permission manager used by compatibility helpers."""
 
-    def has_permission(self, *_: object, **__: object) -> bool:
+    def has_permission(self, *_: object, **__: object) -> bool:  # noqa: D102
         return True
 
 
 class RateLimiter:
     """Lightweight in-memory rate limiter used for tests."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         self._counts: defaultdict[object, int] = defaultdict(int)
 
-    def check_limit(self, key: object, *_: object, limit: int | None = None, **__: object) -> bool:
+    def check_limit(self, key: object, *_: object, limit: int | None = None, **__: object) -> bool:  # noqa: D102
         limit = limit or 1000
         self._counts[key] += 1
         return self._counts[key] <= limit
 
-    def get_remaining(self, key: object = None, limit: int | None = None, **__: object) -> int:
+    def get_remaining(self, key: object = None, limit: int | None = None, **__: object) -> int:  # noqa: D102
         limit = limit or 1000
         return max(0, limit - self._counts.get(key, 0))
 
-    def get_limit(self, *_: object, **__: object) -> int:
+    def get_limit(self, *_: object, **__: object) -> int:  # noqa: D102
         return 1000
 
-    def get_reset_time(self, *_: object, **__: object) -> int:
+    def get_reset_time(self, *_: object, **__: object) -> int:  # noqa: D102
         return 0
 
-    def get_retry_after(self, *_: object, **__: object) -> int:
+    def get_retry_after(self, *_: object, **__: object) -> int:  # noqa: D102
         return 1
 
-    def get_message(self, *_: object, **__: object) -> str:
+    def get_message(self, *_: object, **__: object) -> str:  # noqa: D102
         return "Rate limit exceeded"
 
 
@@ -102,11 +104,11 @@ def generate_access_token(refresh_token_val: str, *_: object, **__: object) -> d
     }
 
 
-def check_permissions(*_: object, **__: object) -> bool:
+def check_permissions(*_: object, **__: object) -> bool:  # noqa: D103
     return True
 
 
-def check_project_access(*_: object, **__: object) -> bool:
+def check_project_access(*_: object, **__: object) -> bool:  # noqa: D103
     return True
 
 
@@ -145,71 +147,71 @@ def is_system_admin(claims: dict[str, Any] | None, email_from_user: str | None =
     return False
 
 
-def check_permission(*_args: object, **_kwargs: object) -> bool:
+def check_permission(*_args: object, **_kwargs: object) -> bool:  # noqa: D103
     return True
 
 
-def has_permission(*_args: object, **_kwargs: object) -> bool:
+def has_permission(*_args: object, **_kwargs: object) -> bool:  # noqa: D103
     return True
 
 
-def check_resource_ownership(*_args: object, **_kwargs: object) -> bool:
+def check_resource_ownership(*_args: object, **_kwargs: object) -> bool:  # noqa: D103
     return True
 
 
-def verify_webhook_signature(*_args: object, **_kwargs: object) -> bool:
+def verify_webhook_signature(*_args: object, **_kwargs: object) -> bool:  # noqa: D103
     return True
 
 
-def verify_webhook_timestamp(*_args: object, **_kwargs: object) -> bool:
+def verify_webhook_timestamp(*_args: object, **_kwargs: object) -> bool:  # noqa: D103
     return True
 
 
-def create_session(*_args: object, **_kwargs: object) -> dict[str, str]:
+def create_session(*_args: object, **_kwargs: object) -> dict[str, str]:  # noqa: D103
     return {"session_id": "placeholder"}
 
 
-def verify_session(*_args: object, **_kwargs: object) -> bool:
+def verify_session(*_args: object, **_kwargs: object) -> bool:  # noqa: D103
     return True
 
 
-def invalidate_session(*_args: object, **_kwargs: object) -> bool:
+def invalidate_session(*_args: object, **_kwargs: object) -> bool:  # noqa: D103
     return True
 
 
-def check_mfa_requirement(*_args: object, **_kwargs: object) -> bool:
+def check_mfa_requirement(*_args: object, **_kwargs: object) -> bool:  # noqa: D103
     return True
 
 
-def verify_mfa_code(*_args: object, **_kwargs: object) -> bool:
+def verify_mfa_code(*_args: object, **_kwargs: object) -> bool:  # noqa: D103
     return True
 
 
-def verify_csrf_token(*_args: object, **_kwargs: object) -> bool:
+def verify_csrf_token(*_args: object, **_kwargs: object) -> bool:  # noqa: D103
     return True
 
 
-def hash_password(password: str) -> str:
+def hash_password(password: str) -> str:  # noqa: D103
     return f"hashed-{password}"
 
 
-def get_rate_limit(*_args: object, **_kwargs: object) -> dict[str, int]:
+def get_rate_limit(*_args: object, **_kwargs: object) -> dict[str, int]:  # noqa: D103
     return {"limit": 100, "remaining": 100, "reset": 0}
 
 
-def get_endpoint_limit(*_args: object, **_kwargs: object) -> dict[str, int]:
+def get_endpoint_limit(*_args: object, **_kwargs: object) -> dict[str, int]:  # noqa: D103
     return {"limit": 100, "window": 60}
 
 
-def get_client_ip(*_args: object, **_kwargs: object) -> str:
+def get_client_ip(*_args: object, **_kwargs: object) -> str:  # noqa: D103
     return "127.0.0.1"
 
 
-def is_whitelisted(*_args: object, **_kwargs: object) -> bool:
+def is_whitelisted(*_args: object, **_kwargs: object) -> bool:  # noqa: D103
     return False
 
 
-def ensure_write_permission(claims: dict[str, Any] | None, action: str) -> None:
+def ensure_write_permission(claims: dict[str, Any] | None, action: str) -> None:  # noqa: D103
     if is_system_admin(claims):
         return
     role = (claims or {}).get("role")
@@ -219,14 +221,14 @@ def ensure_write_permission(claims: dict[str, Any] | None, action: str) -> None:
         raise HTTPException(status_code=403, detail="Forbidden")
 
 
-def ensure_read_permission(claims: dict[str, Any] | None, resource_id: str | None = None) -> None:
+def ensure_read_permission(claims: dict[str, Any] | None, resource_id: str | None = None) -> None:  # noqa: D103
     if is_system_admin(claims):
         return
     if resource_id and not check_project_access(claims.get("sub") if claims else None, resource_id):
         raise HTTPException(status_code=403, detail="Read access denied")
 
 
-def auth_guard(request: Request) -> dict[str, Any]:
+def auth_guard(request: Request) -> dict[str, Any]:  # noqa: D103
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.lower().startswith("bearer ") or "  " in auth_header:
         raise HTTPException(status_code=401, detail="Authorization required")
@@ -246,7 +248,7 @@ def auth_guard(request: Request) -> dict[str, Any]:
     return claims
 
 
-def ensure_project_access(project_id: str | None, claims: dict[str, Any] | None) -> None:
+def ensure_project_access(project_id: str | None, claims: dict[str, Any] | None) -> None:  # noqa: D103
     if not project_id:
         return
     if is_system_admin(claims):
@@ -255,7 +257,7 @@ def ensure_project_access(project_id: str | None, claims: dict[str, Any] | None)
         raise HTTPException(status_code=403, detail="Project access denied")
 
 
-def ensure_credential_access(credential: IntegrationCredential | None, claims: dict[str, Any] | None) -> None:
+def ensure_credential_access(credential: IntegrationCredential | None, claims: dict[str, Any] | None) -> None:  # noqa: D103
     if credential is None:
         raise HTTPException(status_code=404, detail="Credential not found")
     if credential.project_id:

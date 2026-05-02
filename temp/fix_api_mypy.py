@@ -1,7 +1,6 @@
-"""Fix dict[str, object] -> dict[str, Any] across api/ files and ensure Any is imported."""
+"""Fix dict[str, object] -> dict[str, Any] across api/ files and ensure Any is imported."""  # noqa: INP001
 
 import re
-import sys
 from pathlib import Path
 
 # Files to fix (excluding client.py and main.py which is already done)
@@ -36,14 +35,14 @@ FILES = [
 def ensure_any_import(content: str) -> str:
     """Ensure Any is imported from typing."""
     # Check if Any is already imported
-    if re.search(r'\bAny\b', content[:2000]):  # Check in first 2000 chars (imports area)
+    if re.search(r"\bAny\b", content[:2000]):  # Check in first 2000 chars (imports area)  # noqa: SIM102
         # Check if it's actually imported (not just used)
-        if re.search(r'from typing import.*\bAny\b', content) or re.search(r'import Any', content):
+        if re.search(r"from typing import.*\bAny\b", content) or r"import Any" in content:
             return content
 
     # Try to add Any to existing typing import
     # Pattern: from typing import X, Y, Z
-    pattern = r'(from typing import\s+)((?:\w+(?:\s*,\s*)?)+)'
+    pattern = r"(from typing import\s+)((?:\w+(?:\s*,\s*)?)+)"
     match = re.search(pattern, content)
     if match:
         existing = match.group(2).strip()
@@ -52,8 +51,7 @@ def ensure_any_import(content: str) -> str:
             imports.append("Any")
             imports.sort()
             new_import = match.group(1) + ", ".join(imports)
-            content = content[:match.start()] + new_import + content[match.end():]
-            return content
+            return content[:match.start()] + new_import + content[match.end():]
 
     # No existing typing import, add one after other imports
     # Find last import line
@@ -61,7 +59,7 @@ def ensure_any_import(content: str) -> str:
     last_import_idx = 0
     for i, line in enumerate(lines):
         stripped = line.strip()
-        if stripped.startswith("import ") or stripped.startswith("from "):
+        if stripped.startswith(("import ", "from ")):
             last_import_idx = i
         elif stripped and not stripped.startswith("#") and not stripped.startswith('"""') and last_import_idx > 0:
             break
@@ -74,7 +72,6 @@ total_replacements = 0
 for filepath in FILES:
     path = Path(filepath)
     if not path.exists():
-        print(f"SKIP (not found): {filepath}")
         continue
 
     content = path.read_text(encoding="utf-8")
@@ -89,8 +86,3 @@ for filepath in FILES:
 
     if content != original:
         path.write_text(content, encoding="utf-8")
-        print(f"FIXED: {filepath} ({count} replacements)")
-    else:
-        print(f"SKIP (no changes): {filepath}")
-
-print(f"\nTotal: {total_replacements} replacements across {len(FILES)} files")

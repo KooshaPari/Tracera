@@ -137,7 +137,7 @@ class TestVolatilityTracker:
         """Test volatility of stable, unchanging requirement."""
         score = tracker.calculate_volatility(change_count=0, days_since_creation=30)
 
-        assert score == 0.0
+        assert score == 0.0  # noqa: RUF069
 
     def test_volatile_requirement(self, tracker: Any) -> None:
         """Test volatility of frequently-changing requirement."""
@@ -210,17 +210,17 @@ class TestWSJFCalculator:
         )
 
         # Should be capped at 1.0
-        assert score == 1.0
+        assert score == 1.0  # noqa: RUF069
 
     def test_wsjf_boundary_values(self, calculator: Any) -> None:
         """Test WSJF with boundary values."""
         # All zeros
         score_zero = calculator.calculate_wsjf(0, 0, 0, 1)
-        assert score_zero == 0.0
+        assert score_zero == 0.0  # noqa: RUF069
 
         # All ones
         score_one = calculator.calculate_wsjf(1, 1, 1, 1)
-        assert score_one == 1.0
+        assert score_one == 1.0  # noqa: RUF069
 
     def test_wsjf_weighting(self, calculator: Any) -> None:
         """Test WSJF uses correct component weights."""
@@ -252,7 +252,7 @@ class TestTestSpecFlakinessDector:
             recent_failures=[],
         )
 
-        assert score == 0.0
+        assert score == 0.0  # noqa: RUF069
 
     def test_completely_failing_test(self, detector: Any) -> None:
         """Test flakiness of consistently failing test."""
@@ -263,7 +263,7 @@ class TestTestSpecFlakinessDector:
             recent_failures=[{"status": "fail", "error": "AssertionError"}] * 100,
         )
 
-        assert score == 1.0
+        assert score == 1.0  # noqa: RUF069
 
     def test_intermittent_failures(self, detector: Any) -> None:
         """Test flakiness detection with intermittent failures."""
@@ -348,6 +348,6 @@ class TestIntegrationWithModels:
         )
 
         assert spec.item_id == "item-1"
-        assert spec.overall_quality_score == 0.88
-        assert spec.quality_scores["unambiguity"] == 0.85
+        assert spec.overall_quality_score == 0.88  # noqa: RUF069
+        assert spec.quality_scores["unambiguity"] == 0.85  # noqa: RUF069
         assert spec.is_verified is False

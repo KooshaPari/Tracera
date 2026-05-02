@@ -4,7 +4,10 @@ Provides type-safe DataFrame schemas for data validation at boundaries.
 """
 
 import pandera as pa  # type: ignore[possibly-unknown-member]  # pandera type stubs incomplete
-from pandera.typing import DataFrame, Series  # type: ignore[possibly-missing-import]  # pandera.typing stubs incomplete
+from pandera.typing import (  # type: ignore[possibly-missing-import]  # pandera.typing stubs incomplete
+    DataFrame,
+    Series,
+)
 
 
 class RequirementSchema(pa.DataFrameModel):

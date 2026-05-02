@@ -131,14 +131,12 @@ async def async_session_factory() -> None:
         await conn.run_sync(Base.metadata.create_all, checkfirst=True)
 
     # Create session factory
-    async_session = async_sessionmaker(
+    yield async_sessionmaker(
         engine,
         class_=AsyncSession,
         expire_on_commit=False,
         future=True,
     )
-
-    yield async_session
 
     # Cleanup
     try:

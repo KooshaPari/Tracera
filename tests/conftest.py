@@ -53,16 +53,16 @@ except ImportError:
 try:
     # Import ALL models to ensure they're registered with Base.metadata
     # This is critical - SQLAlchemy only creates tables for imported models
-    from tracertm.models.base import Base
-    from tracertm.models.project import Project
-    from tracertm.models.link import Link  # Must import Link before Item
-    from tracertm.models.item import Item
     from tracertm.models.agent import Agent
     from tracertm.models.agent_event import AgentEvent
     from tracertm.models.agent_lock import AgentLock
+    from tracertm.models.base import Base
     from tracertm.models.event import Event
+    from tracertm.models.item import Item
+    from tracertm.models.link import Link  # Must import Link before Item
     from tracertm.models.problem import Problem, ProblemActivity
     from tracertm.models.process import Process, ProcessExecution
+    from tracertm.models.project import Project
 except ImportError:
     Base = None
 

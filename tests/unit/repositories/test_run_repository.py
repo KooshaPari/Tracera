@@ -1274,7 +1274,7 @@ async def test_complete_run_calculates_pass_rate(db_session: AsyncSession) -> No
     completed = await repo.complete(run.id)
 
     assert completed is not None
-    assert completed.pass_rate == 80.0  # 8/10 * 100
+    assert completed.pass_rate == 80.0  # 8/10 * 100  # noqa: RUF069
 
 
 @pytest.mark.unit

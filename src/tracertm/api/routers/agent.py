@@ -2,7 +2,7 @@
 
 import logging
 import uuid
-from typing import Annotated, Any, TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Annotated, Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
