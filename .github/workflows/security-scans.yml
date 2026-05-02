@@ -20,7 +20,7 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout # v4.1.1@v4
+      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
 
       # npm audit for frontend
       - name: Run npm audit
@@ -46,7 +46,7 @@ jobs:
 
       # Upload security reports
       - name: Upload security reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: security-reports
           path: |
@@ -96,7 +96,7 @@ jobs:
       security-events: write
       contents: read
     steps:
-      - uses: actions/checkout # v4.1.1@v4
+      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
       
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -114,7 +114,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: 'Dependency Review'
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v4@2031cfc080254a8a887f58cffee85186f0e49e48
         with:
           fail-on-severity: high
           comment-summary-in-pr: on-failure
