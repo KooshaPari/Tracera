@@ -14,13 +14,6 @@
     "typescript",
     "unicorn",
     "oxc",
-    "react",
-    "react-perf",
-    "import",
-    "jsx-a11y",
-    "promise",
-    "vitest",
-    "react-hooks",
     "jsdoc"
   ],
   "jsPlugins": [
