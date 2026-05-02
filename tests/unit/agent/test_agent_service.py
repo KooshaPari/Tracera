@@ -10,6 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from tracertm.agent import AgentService, get_agent_service
+from tracertm.agent.agent_service import StreamChatOptions
 from tracertm.agent.sandbox.local_fs import LocalFilesystemSandboxProvider
 from tracertm.agent.session_store import SessionSandboxStore
 from tracertm.agent.types import SandboxConfig
@@ -61,7 +62,7 @@ class TestAgentServiceGetOrCreateSandbox:
         assert created is True
 
     @pytest.mark.asyncio
-    async def test_get_or_create_publishes_event_when_created(self, store: Any, _base_dir: Any) -> None:
+    async def test_get_or_create_publishes_event_when_created(self, store: Any, base_dir: Any) -> None:
         event_bus = AsyncMock()
         event_bus.publish = AsyncMock()
         agent_svc = AgentService(session_store=store, event_bus=event_bus)
@@ -96,6 +97,7 @@ class TestAgentServiceSimpleChatWithSandbox:
     @pytest.mark.asyncio
     async def test_simple_chat_with_sandbox_calls_ai_and_returns_reply(self, agent_service: Any) -> None:
         messages = [{"role": "user", "content": "Hi"}]
+        options = StreamChatOptions(provider="claude")
         with patch("tracertm.services.ai_service.get_ai_service") as get_ai:
             mock_ai = MagicMock()
             mock_ai.simple_chat = AsyncMock(return_value="Hello!")
@@ -103,7 +105,7 @@ class TestAgentServiceSimpleChatWithSandbox:
             reply = await agent_service.simple_chat_with_sandbox(
                 messages=messages,
                 session_id="chat-s1",
-                provider="claude",
+                options=options,
             )
             assert reply == "Hello!"
             mock_ai.simple_chat.assert_called_once()

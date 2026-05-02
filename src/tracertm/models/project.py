@@ -6,10 +6,9 @@ import uuid
 from typing import TYPE_CHECKING
 
 from sqlalchemy import String, Text
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from tracertm.models.base import Base, TimestampMixin
+from tracertm.models.base import Base, GUID, TimestampMixin
 from tracertm.models.types import JSONType
 
 if TYPE_CHECKING:
@@ -30,7 +29,7 @@ class Project(Base, TimestampMixin):
     __tablename__ = "projects"
     __table_args__ = {"extend_existing": True}  # noqa: RUF012
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=generate_uuid)
     profile_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     account_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
@@ -43,8 +42,6 @@ class Project(Base, TimestampMixin):
         foreign_keys="Item.project_id",
         lazy="select",
     )
-    # account: Mapped["Account"] = relationship(
-    #     "Account", back_populates="projects"
 
     def __getattribute__(self, name: str) -> object:
         """__getattribute__ implementation."""

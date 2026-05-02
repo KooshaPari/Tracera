@@ -5,7 +5,6 @@ from __future__ import annotations
 import uuid
 
 from sqlalchemy import ForeignKey, Index, String
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tracertm.models.base import Base, TimestampMixin
@@ -25,15 +24,14 @@ class AgentSession(Base, TimestampMixin):
 
     __tablename__ = "agent_sessions"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=generate_agent_session_uuid)
-    session_id: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(uuid.UUID, primary_key=True, default=generate_agent_session_uuid)
+    session_id: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)  # Index defined in __table_args__
     sandbox_root: Mapped[str] = mapped_column(String(1024), nullable=False)
     project_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True),
+        uuid.UUID,
         ForeignKey("projects.id", ondelete="SET NULL"),
         nullable=True,
-        index=True,
-    )
+    )  # Index defined in __table_args__
 
     __table_args__ = (
         Index("ix_agent_sessions_session_id", "session_id", unique=True),
