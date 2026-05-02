@@ -1,24 +1,17 @@
-"""Custom SQLAlchemy types for TraceRTM."""
-
-from typing import Any
+"""Custom SQLAlchemy types for TracerTM."""
 
 from sqlalchemy import JSON
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.engine.interfaces import Dialect
-from sqlalchemy.types import TypeDecorator, TypeEngine
+from sqlalchemy.types import TypeDecorator
 
 
-class JSONType(TypeDecorator[dict[str, object]]):
-    """JSON type that uses JSONB for PostgreSQL and JSON for other databases.
+class JSONType(TypeDecorator):
+    """Platform-independent JSON type.
 
-    This allows us to use SQLite for testing while using JSONB in production.
+    Uses PostgreSQL JSON type when available, falls back to JSON TEXT.
     """
 
     impl = JSON
     cache_ok = True
 
-    def load_dialect_impl(self, dialect: Dialect) -> TypeEngine[Any]:
-        """Load the appropriate type for the dialect."""
-        if dialect.name == "postgresql":
-            return dialect.type_descriptor(JSONB())
+    def load_dialect_impl(self, dialect):
         return dialect.type_descriptor(JSON())

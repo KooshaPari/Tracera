@@ -7,6 +7,7 @@ Focus lines: 63-71, 87-102, 115-126, 137-139, 153-171, 181-182, 214-345, 377-483
 import datetime
 import json
 import tempfile
+import uuid
 from collections.abc import Generator
 from pathlib import Path
 from unittest.mock import patch
@@ -20,6 +21,9 @@ from tracertm.cli.commands.item import app as item_app
 from tracertm.models.item import Item
 from tracertm.models.project import Project
 from tracertm.storage import LocalStorageManager
+
+# Fixed UUID for test project - used across all tests for consistency
+TEST_PROJECT_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 
 
 @pytest.fixture
@@ -45,7 +49,7 @@ def temp_project_dir_with_db(temp_project_dir: Path, db_session: Session) -> Pat
     """Create temporary project directory with database setup."""
     # Initialize project in database
     project = Project(
-        id="test-project",
+        id=TEST_PROJECT_ID,
         name="Test Project",
         description="Test project for CLI tests",
         project_metadata={"test": True},
@@ -78,6 +82,7 @@ class TestBasicCRUDOperations:
                     item_app,
                     [
                         "create",
+                        "--title",
                         "Test Item",
                         "--view",
                         "FEATURE",

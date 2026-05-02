@@ -1,8 +1,8 @@
-from typing import Any
-
 """Tests for streaming and pagination MCP tools."""
 
 from __future__ import annotations
+
+from typing import Any
 
 import pytest
 
@@ -19,9 +19,6 @@ class TestStreamImpactAnalysis:
         """Test that impact analysis returns items at each depth level."""
         items = mock_items_factory(5)
         mock_links_factory(items)
-
-        # Mock storage would be injected here
-        # The actual implementation queries the database
 
     @pytest.mark.asyncio
     async def test_stream_impact_respects_max_depth(self) -> None:
