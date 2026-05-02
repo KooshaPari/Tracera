@@ -63,7 +63,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout # v4.1.1@v4
+        uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
 
       - name: Check for performance baseline
         id: check_baseline
@@ -142,16 +142,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout # v4.1.1@v4
+        uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v5@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           cache: 'pip'
           python-version: '3.11'
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v5@40f1582b2485089dde7abd97c1529aa768e1baff
         with:
           go-version: '1.25.7'
 
@@ -240,7 +240,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: smoke-test-results
           path: |
@@ -313,16 +313,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout # v4.1.1@v4
+        uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v5@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           cache: 'pip'
           python-version: '3.11'
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v5@40f1582b2485089dde7abd97c1529aa768e1baff
         with:
           go-version: '1.25.7'
 
@@ -401,7 +401,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: load-test-results
           path: |
@@ -428,24 +428,24 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout # v4.1.1@v4
+        uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
 
       - name: Download smoke test results
         if: needs['smoke-test'].result == 'success'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
         with:
           name: smoke-test-results
           path: results/smoke
 
       - name: Download load test results
         if: needs['load-test'].result == 'success'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
         with:
           name: load-test-results
           path: results/load
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v5@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           cache: 'pip'
           python-version: '3.11'
@@ -461,14 +461,14 @@ jobs:
             --output performance-report.html
 
       - name: Upload performance report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: performance-report
           path: performance-report.html
 
       - name: Comment PR with results
         if: github.event_name == 'pull_request' && hashFiles('results/smoke/smoke-test-summary.json') != ''
-        uses: actions/github-script@v7
+        uses: actions/github-script@v7@f28e40c7f34bde8b3046d885e986cb6290c5673b
         with:
           script: |
             const fs = require('fs');

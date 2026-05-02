@@ -28,14 +28,14 @@ jobs:
     runs-on: ubuntu-latest
     name: Setup test users and credentials
     steps:
-      - uses: actions/checkout # v4.1.1@v4
+      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4@8f152de45cc393bb48ce5d89d36b731f54556e65
         with:
           cache: 'npm'
           node-version: '20'
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5@40f1582b2485089dde7abd97c1529aa768e1baff
         with:
           go-version: '1.25.7'
 
@@ -51,9 +51,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Frontend E2E Tests (Playwright)
     steps:
-      - uses: actions/checkout # v4.1.1@v4
+      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4@8f152de45cc393bb48ce5d89d36b731f54556e65
         with:
           cache: 'npm'
           node-version: '20'
@@ -80,7 +80,7 @@ jobs:
 
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: playwright-report
           path: frontend/apps/web/playwright-report/
@@ -91,9 +91,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Frontend API Tests (Vitest)
     steps:
-      - uses: actions/checkout # v4.1.1@v4
+      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4@8f152de45cc393bb48ce5d89d36b731f54556e65
         with:
           cache: 'npm'
           node-version: '20'
@@ -115,7 +115,7 @@ jobs:
 
       - name: Upload Vitest report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: vitest-report
           path: frontend/apps/web/test-results/
@@ -126,9 +126,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Backend Go Tests
     steps:
-      - uses: actions/checkout # v4.1.1@v4
+      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5@40f1582b2485089dde7abd97c1529aa768e1baff
         with:
           go-version: '1.25.7'
 
@@ -144,7 +144,7 @@ jobs:
 
       - name: Upload Go test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: go-test-results
           path: |
@@ -157,9 +157,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Backend Python Tests
     steps:
-      - uses: actions/checkout # v4.1.1@v4
+      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.13'
 
@@ -180,7 +180,7 @@ jobs:
 
       - name: Upload Python test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: python-test-results
           path: |
@@ -198,10 +198,10 @@ jobs:
     name: Generate Validation Report
     if: always()
     steps:
-      - uses: actions/checkout # v4.1.1@v4
+      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
         with:
           path: validation-artifacts/
 
@@ -240,7 +240,7 @@ jobs:
 
       - name: Comment PR with report
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v7@f28e40c7f34bde8b3046d885e986cb6290c5673b
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -254,7 +254,7 @@ jobs:
             });
 
       - name: Upload validation report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: validation-report
           path: VALIDATION_REPORT.md
