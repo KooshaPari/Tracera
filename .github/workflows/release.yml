@@ -1,9 +1,16 @@
 name: Release
 
+permissions:
+  contents: read
+
 on:
   push:
     tags:
       - "v*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   release:
