@@ -90,7 +90,7 @@ jobs:
           go tool cover -html=coverage.out -o coverage.html
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238
         with:
           files: ./backend/tests/coverage.out
           flags: backend
@@ -139,7 +139,7 @@ jobs:
 
       - name: Upload coverage
         if: steps.cli.outputs.exists == 'true'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238
         with:
           files: ./cli/coverage.xml
           flags: cli
@@ -154,7 +154,7 @@ jobs:
       - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
 
       - name: Set up Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7
         with:
           bun-version: latest
 
@@ -167,7 +167,7 @@ jobs:
         run: bun run test
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238
         with:
           files: ./frontend/apps/web/coverage/coverage-final.json
           flags: frontend
@@ -182,7 +182,7 @@ jobs:
       - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
 
       - name: Start services
         run: |

@@ -77,7 +77,7 @@ jobs:
 
       - name: Install UV
         if: steps.python-scope.outputs.run == 'true'
-        uses: astral-sh/setup-uv@v2
+        uses: astral-sh/setup-uv@6dfebec6ddbcd197e02256fbdf54deb334fb7f06
         with:
           version: "latest"
 
@@ -149,7 +149,7 @@ jobs:
 
       - name: Upload coverage
         if: steps.python-scope.outputs.run == 'true' && matrix.test-type == 'unit'
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@ab904c41d6ece82784817410c45d8b8c02684457
         with:
           files: ./coverage.xml
           flags: ${{ matrix.test-type }}-python${{ matrix.python-version }}
@@ -226,7 +226,7 @@ jobs:
 
       - name: Install UV
         if: steps.python-scope.outputs.run == 'true'
-        uses: astral-sh/setup-uv@v2
+        uses: astral-sh/setup-uv@6dfebec6ddbcd197e02256fbdf54deb334fb7f06
         with:
           version: "latest"
 
@@ -301,7 +301,7 @@ jobs:
 
       - name: Upload coverage
         if: steps.python-scope.outputs.run == 'true'
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@ab904c41d6ece82784817410c45d8b8c02684457
         with:
           files: ./coverage.xml
           flags: parallel-all

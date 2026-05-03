@@ -25,7 +25,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup k6
-        uses: grafana/setup-k6-action@v1
+        uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065
 
       - name: Start backend service
         run: |
