@@ -30,10 +30,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Set up Go
-        uses: actions/setup-go@v5@40f1582b2485089dde7abd97c1529aa768e1baff
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
         with:
           go-version: '1.23'
           cache: true
@@ -102,7 +102,7 @@ jobs:
           echo "- **Schemas**: $(jq '[.components.schemas | keys[]] | length' docs/tracertm_swagger.json 2>/dev/null || echo 0)" >> ../openapi-coverage.md
 
       - name: Upload OpenAPI spec as artifact
-        uses: actions/upload-artifact@v4@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: openapi-spec
           path: |
@@ -113,7 +113,7 @@ jobs:
 
       - name: Comment PR with stats
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7@f28e40c7f34bde8b3046d885e986cb6290c5673b
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
         with:
           script: |
             const fs = require('fs');
@@ -136,14 +136,14 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: main
           persist-credentials: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download OpenAPI spec
-        uses: actions/download-artifact@v4@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+        uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
         with:
           name: openapi-spec
           path: .
@@ -181,10 +181,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Download OpenAPI spec
-        uses: actions/download-artifact@v4@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+        uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
         with:
           name: openapi-spec
           path: .
@@ -201,7 +201,7 @@ jobs:
             --additional-properties=packageName=tracertm-client
 
       - name: Upload client as artifact
-        uses: actions/upload-artifact@v4@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: client-${{ matrix.language }}
           path: clients/${{ matrix.language }}

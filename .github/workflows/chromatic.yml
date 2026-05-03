@@ -35,7 +35,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 1
           sparse-checkout: |
@@ -44,7 +44,7 @@ jobs:
           lfs: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4@8f152de45cc393bb48ce5d89d36b731f54556e65
+        uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65
         with:
           node-version: "22"
           cache: "npm"
@@ -55,7 +55,7 @@ jobs:
           bun-version: latest
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v3@6f8efc29b200d32929f49075959781ed54ec270c
+        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -78,7 +78,7 @@ jobs:
 
       - name: Upload chromatic report
         if: always()
-        uses: actions/upload-artifact@v4@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: chromatic-report
           path: frontend/apps/web/junit-report.xml
@@ -86,7 +86,7 @@ jobs:
 
       - name: Comment PR with results
         if: github.event_name == 'pull_request' && always()
-        uses: actions/github-script@v7@f28e40c7f34bde8b3046d885e986cb6290c5673b
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
         with:
           script: |
             const fs = require('fs');
