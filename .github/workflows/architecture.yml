@@ -15,7 +15,7 @@ jobs:
   architecture:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Install UV
         uses: astral-sh/setup-uv@6dfebec6ddbcd197e02256fbdf54deb334fb7f06
@@ -23,7 +23,7 @@ jobs:
           version: "latest"
 
       - name: Set up Python
-        uses: actions/setup-python@v5@a26af69be951a213d495a4c3e4e4022e16d87065
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: "3.13"
 
@@ -37,7 +37,7 @@ jobs:
         run: uv run --extra dev tach show --mermaid > architecture.md
 
       - name: Upload architecture diagram
-        uses: actions/upload-artifact@v4@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: architecture-diagram
           path: architecture.md
@@ -45,7 +45,7 @@ jobs:
       - name: Comment architecture on PR
         if: github.event_name == 'pull_request'
         continue-on-error: true
-        uses: actions/github-script@v7@f28e40c7f34bde8b3046d885e986cb6290c5673b
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
         with:
           script: |
             const fs = require('fs');

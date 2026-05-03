@@ -15,7 +15,7 @@ jobs:
     outputs:
       code: ${{ steps.filter.outputs.code }}
     steps:
-    - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       with:
         fetch-depth: 0
     - id: filter
@@ -56,12 +56,12 @@ jobs:
           - 5432:5432
 
     steps:
-    - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       with:
         fetch-depth: 0
     
     - name: Set up Python
-      uses: actions/setup-python@v4@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c
+      uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c
       with:
         python-version: '3.13'
     
@@ -88,10 +88,10 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     
     - name: Set up Python
-      uses: actions/setup-python@v4@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c
+      uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c
       with:
         python-version: '3.13'
     
@@ -164,7 +164,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@885d1462b80bc1c1c7f0b00334ad271f09369c55
@@ -182,7 +182,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
-    - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     
     - name: Deploy to production
       run: |
