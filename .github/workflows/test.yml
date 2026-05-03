@@ -19,7 +19,7 @@ jobs:
       frontend: ${{ steps.filter.outputs.frontend }}
       integration: ${{ steps.filter.outputs.integration }}
     steps:
-      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
+      - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
 
@@ -67,7 +67,7 @@ jobs:
     if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
+      - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Set up Go
         uses: actions/setup-go@v5@40f1582b2485089dde7abd97c1529aa768e1baff
@@ -105,7 +105,7 @@ jobs:
       matrix:
         python-version: ['3.13']
     steps:
-      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
+      - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Check CLI package exists
         id: cli
@@ -151,7 +151,7 @@ jobs:
     if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
+      - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7
@@ -179,7 +179,7 @@ jobs:
     needs: [changes, backend-tests, frontend-tests]
     if: always() && needs.changes.outputs.integration == 'true' && needs.backend-tests.result != 'failure' && needs.frontend-tests.result != 'failure'
     steps:
-      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
+      - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f

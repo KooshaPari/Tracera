@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Setup test users and credentials
     steps:
-      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
+      - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - uses: actions/setup-node@v4@8f152de45cc393bb48ce5d89d36b731f54556e65
         with:
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Frontend E2E Tests (Playwright)
     steps:
-      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
+      - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - uses: actions/setup-node@v4@8f152de45cc393bb48ce5d89d36b731f54556e65
         with:
@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Frontend API Tests (Vitest)
     steps:
-      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
+      - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - uses: actions/setup-node@v4@8f152de45cc393bb48ce5d89d36b731f54556e65
         with:
@@ -126,7 +126,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Backend Go Tests
     steps:
-      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
+      - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - uses: actions/setup-go@v5@40f1582b2485089dde7abd97c1529aa768e1baff
         with:
@@ -157,7 +157,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Backend Python Tests
     steps:
-      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
+      - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - uses: actions/setup-python@v5@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
@@ -198,7 +198,7 @@ jobs:
     name: Generate Validation Report
     if: always()
     steps:
-      - uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
+      - uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4@d7aade707a79a3bc4130f2605987cbbf2ecfac6c

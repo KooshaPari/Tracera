@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
+        uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7
@@ -89,7 +89,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
+        uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Setup Go
         uses: actions/setup-go@v5@40f1582b2485089dde7abd97c1529aa768e1baff
@@ -136,7 +136,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
+        uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Download pact files
         uses: actions/download-artifact@v4@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
@@ -186,7 +186,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
+        uses: actions/checkout@@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Download pact files
         uses: actions/download-artifact@v4@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
