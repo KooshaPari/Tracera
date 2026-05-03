@@ -8,7 +8,9 @@ jobs:
   trufflehog:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
         with:
-      - uses: trufflehog/actions/setup@main
-      - run: trufflehog github --only-verified --no-update
-        env:
+          fetch-depth: 0
+      - uses: trufflehog/trufflehog@main
+        with:
+          extra_args: --only-verified --no-update
