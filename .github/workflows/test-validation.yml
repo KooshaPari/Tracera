@@ -59,7 +59,7 @@ jobs:
           node-version: '20'
 
       - name: Install bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7
         with:
           bun-version: latest
 
@@ -99,7 +99,7 @@ jobs:
           node-version: '20'
 
       - name: Install bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7
         with:
           bun-version: latest
 
@@ -164,7 +164,7 @@ jobs:
           python-version: '3.13'
 
       - name: Install UV
-        uses: astral-sh/setup-uv@v2
+        uses: astral-sh/setup-uv@6dfebec6ddbcd197e02256fbdf54deb334fb7f06
         with:
           version: latest
 

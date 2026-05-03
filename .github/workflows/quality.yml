@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install UV
-        uses: astral-sh/setup-uv@v2
+        uses: astral-sh/setup-uv@6dfebec6ddbcd197e02256fbdf54deb334fb7f06
         with:
           version: "latest"
 
