@@ -119,15 +119,15 @@ export function LandingPage() {
         <div className='container mx-auto flex flex-col items-center justify-between gap-4 md:flex-row'>
           <p className='text-muted-foreground text-sm'>© 2026 TraceRTM. All rights reserved.</p>
           <div className='text-muted-foreground flex gap-6 text-sm'>
-            <a href='/privacy' className='hover:text-foreground'>
+            <Link to='/auth/login' className='hover:text-foreground'>
               Privacy
-            </a>
-            <a href='/terms' className='hover:text-foreground'>
+            </Link>
+            <Link to='/auth/login' className='hover:text-foreground'>
               Terms
-            </a>
-            <a href='mailto:support@tracertm.io' className='hover:text-foreground'>
+            </Link>
+            <Link to='/auth/register' className='hover:text-foreground'>
               Contact
-            </a>
+            </Link>
           </div>
         </div>
       </footer>
