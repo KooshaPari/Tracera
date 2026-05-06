@@ -1,101 +1,79 @@
 name: Performance Regression Testing
-
-on:
-  # Run on PR to main/master
+true:
   pull_request:
-    branches: [main, master]
+    branches:
+    - main
+    - master
     paths:
-      - 'backend/**'
-      - 'alembic/**'
-      - 'src/**'
-      - 'tests/load/**'
-      - '.github/workflows/performance-regression.yml'
-
-  # Run on push to main (establish baseline)
+    - backend/**
+    - alembic/**
+    - src/**
+    - tests/load/**
+    - .github/workflows/performance-regression.yml
   push:
-    branches: [main, master]
+    branches:
+    - main
+    - master
     paths:
-      - 'backend/**'
-      - 'alembic/**'
-      - 'src/**'
-
-  # Allow manual trigger
+    - backend/**
+    - alembic/**
+    - src/**
   workflow_dispatch:
     inputs:
       test_type:
-        description: 'Test type to run'
+        description: Test type to run
         required: true
-        default: 'smoke'
+        default: smoke
         type: choice
         options:
-          - smoke
-          - load
-          - stress
-          - spike
-          - all
-
-  # Scheduled runs for regular performance monitoring
+        - smoke
+        - load
+        - stress
+        - spike
+        - all
   schedule:
-    - cron: '0 2 * * 1' # Weekly on Monday at 2 AM UTC
-
+  - cron: 0 2 * * 1
 env:
   BASE_URL: http://localhost:4000
   TEST_ENV: ci
-  K6_VERSION: '0.48.0'
-  RATE_LIMIT_API_RPM: "10000"
-  RATE_LIMIT_AUTH_RPM: "10000"
-
+  K6_VERSION: 0.48.0
+  RATE_LIMIT_API_RPM: '10000'
+  RATE_LIMIT_AUTH_RPM: '10000'
 permissions:
   contents: read
   issues: write
   pull-requests: write
-
 jobs:
-  # =============================================================================
-  # Setup and Environment Preparation
-  # =============================================================================
   setup:
     name: Setup Test Environment
     runs-on: ubuntu-latest
     outputs:
       baseline_exists: ${{ steps.check_baseline.outputs.exists }}
       test_type: ${{ steps.determine_test.outputs.type }}
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-
-      - name: Check for performance baseline
-        id: check_baseline
-        run: |
-          if [ -f "tests/load/.baseline/smoke-baseline.json" ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Determine test type
-        id: determine_test
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "type=${{ github.event.inputs.test_type }}" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event_name }}" = "schedule" ]; then
-            echo "type=load" >> $GITHUB_OUTPUT
-          else
-            echo "type=smoke" >> $GITHUB_OUTPUT
-          fi
-
-  # =============================================================================
-  # Smoke Test (Quick Performance Check)
-  # =============================================================================
+    - name: Checkout code
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - name: Check for performance baseline
+      id: check_baseline
+      run: "if [ -f \"tests/load/.baseline/smoke-baseline.json\" ]; then\n  echo \"\
+        exists=true\" >> $GITHUB_OUTPUT\nelse\n  echo \"exists=false\" >> $GITHUB_OUTPUT\n\
+        fi\n"
+    - name: Determine test type
+      id: determine_test
+      run: "if [ \"${{ github.event_name }}\" = \"workflow_dispatch\" ]; then\n  echo\
+        \ \"type=${{ github.event.inputs.test_type }}\" >> $GITHUB_OUTPUT\nelif [\
+        \ \"${{ github.event_name }}\" = \"schedule\" ]; then\n  echo \"type=load\"\
+        \ >> $GITHUB_OUTPUT\nelse\n  echo \"type=smoke\" >> $GITHUB_OUTPUT\nfi\n"
+    timeout-minutes: 60
   smoke-test:
     name: Smoke Test - Quick Performance Check
     runs-on: ubuntu-latest
     needs: setup
-    if: |
-      needs.setup.outputs.test_type == 'smoke' ||
-      needs.setup.outputs.test_type == 'all'
+    if: 'needs.setup.outputs.test_type == ''smoke'' ||
 
+      needs.setup.outputs.test_type == ''all''
+
+      '
     services:
       postgres:
         image: pgvector/pgvector:pg17
@@ -103,170 +81,166 @@ jobs:
           POSTGRES_USER: tracertm
           POSTGRES_PASSWORD: testpass
           POSTGRES_DB: tracertm
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s
           --health-retries 5
         ports:
-          - 5432:5432
-
+        - 5432:5432
       redis:
         image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout
+          5s --health-retries 5
         ports:
-          - 6379:6379
-
+        - 6379:6379
       nats:
         image: nats:2.10-alpine
         ports:
-          - 4222:4222
-
+        - 4222:4222
       neo4j:
         image: neo4j:5-community
         env:
           NEO4J_AUTH: neo4j/testpassword
-          NEO4J_ACCEPT_LICENSE_AGREEMENT: "yes"
-        options: >-
-          --health-cmd "cypher-shell -u neo4j -p testpassword 'RETURN 1' || exit 1"
-          --health-interval 10s
-          --health-timeout 10s
-          --health-retries 18
+          NEO4J_ACCEPT_LICENSE_AGREEMENT: 'yes'
+        options: --health-cmd "cypher-shell -u neo4j -p testpassword 'RETURN 1' ||
+          exit 1" --health-interval 10s --health-timeout 10s --health-retries 18
         ports:
-          - 7474:7474
-          - 7687:7687
-
+        - 7474:7474
+        - 7687:7687
     steps:
-      - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - name: Checkout code
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - name: Set up Python
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+      with:
+        cache: pip
+        python-version: '3.11'
+    - name: Set up Go
+      uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
+      with:
+        go-version: 1.25.7
+    - name: Install k6
+      run: 'sudo gpg -k
 
-      - name: Set up Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-        with:
-          cache: 'pip'
-          python-version: '3.11'
+        sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg
+        --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
 
-      - name: Set up Go
-        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
-        with:
-          go-version: '1.25.7'
+        echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb
+        stable main" | sudo tee /etc/apt/sources.list.d/k6.list
 
-      - name: Install k6
-        run: |
-          sudo gpg -k
-          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
-          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-          sudo apt-get update
-          sudo apt-get install k6
+        sudo apt-get update
 
-      - name: Install Python dependencies
-        run: |
-          pip install uv
-          uv sync
+        sudo apt-get install k6
 
-      - name: Run database migrations
-        run: |
-          uv run alembic upgrade head
-        env:
-          DATABASE_URL: postgresql://tracertm:testpass@localhost:5432/tracertm
+        '
+    - name: Install Python dependencies
+      run: 'pip install uv
 
-      - name: Build Go backend
-        run: |
-          cd backend
-          go build -o api .
+        uv sync
 
-      - name: Start backend services
-        run: |
-          python -m http.server 9000 >/tmp/tracertm-s3-placeholder.log 2>&1 &
-          echo $! > s3-placeholder.pid
-          python -m http.server 7233 >/tmp/tracertm-temporal-placeholder.log 2>&1 &
-          echo $! > temporal-placeholder.pid
-          timeout 15 bash -c 'until curl -fsS http://127.0.0.1:9000 >/dev/null; do sleep 1; done'
-          timeout 15 bash -c 'until curl -fsS http://127.0.0.1:7233 >/dev/null; do sleep 1; done'
+        '
+    - name: Run database migrations
+      run: 'uv run alembic upgrade head
 
-          # Start Go API in background
-          cd backend
-          ./api &
-          echo $! > api.pid
+        '
+      env:
+        DATABASE_URL: postgresql://tracertm:testpass@localhost:5432/tracertm
+    - name: Build Go backend
+      run: 'cd backend
 
-          # Wait for API to be ready
-          timeout 90 bash -c 'until curl -f http://localhost:8080/health; do sleep 1; done'
-        env:
-          DATABASE_URL: postgresql://tracertm:testpass@localhost:5432/tracertm
-          REDIS_URL: redis://localhost:6379
-          NATS_URL: nats://localhost:4222
-          NEO4J_URI: neo4j://localhost:7687
-          NEO4J_USER: neo4j
-          NEO4J_PASSWORD: testpassword
-          S3_ENDPOINT: http://127.0.0.1:9000
-          S3_ACCESS_KEY_ID: minioadmin
-          S3_SECRET_ACCESS_KEY: minioadmin
-          S3_BUCKET: tracertm-performance
-          TEMPORAL_HOST: tcp://127.0.0.1:7233
-          TEMPORAL_NAMESPACE: default
-          WORKOS_CLIENT_ID: client_ci_performance
-          WORKOS_API_KEY: sk_test_ci_performance
-          WORKOS_AUTHKIT_DOMAIN: http://localhost:4000
-          CSRF_SECRET: ci-csrf-secret-at-least-32-bytes
-          TRACING_ENABLED: "false"
+        go build -o api .
 
-      - name: Run smoke test
-        run: |
-          k6 run \
-            --out json=smoke-test-results.json \
-            --summary-export=smoke-test-summary.json \
-            tests/load/k6/scenarios/smoke.js
-        env:
-          BASE_URL: http://localhost:8080
-          K6_AUTH_MODE: csrf-only
+        '
+    - name: Start backend services
+      run: 'python -m http.server 9000 >/tmp/tracertm-s3-placeholder.log 2>&1 &
 
-      - name: Compare with baseline
-        if: needs.setup.outputs.baseline_exists == 'true'
-        run: |
-          python tests/load/scripts/compare-performance.py \
-            --baseline tests/load/.baseline/smoke-baseline.json \
-            --current smoke-test-summary.json \
-            --threshold 10
+        echo $! > s3-placeholder.pid
 
-      - name: Save as new baseline (on main branch)
-        if: github.ref == 'refs/heads/main' && success()
-        run: |
-          mkdir -p tests/load/.baseline
-          cp smoke-test-summary.json tests/load/.baseline/smoke-baseline.json
+        python -m http.server 7233 >/tmp/tracertm-temporal-placeholder.log 2>&1 &
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: smoke-test-results
-          path: |
-            smoke-test-results.json
-            smoke-test-summary.json
+        echo $! > temporal-placeholder.pid
 
-      - name: Stop backend services
-        if: always()
-        run: |
-          if [ -f backend/api.pid ]; then
-            kill $(cat backend/api.pid) || true
-          fi
-          [ -f s3-placeholder.pid ] && kill $(cat s3-placeholder.pid) || true
-          [ -f temporal-placeholder.pid ] && kill $(cat temporal-placeholder.pid) || true
+        timeout 15 bash -c ''until curl -fsS http://127.0.0.1:9000 >/dev/null; do
+        sleep 1; done''
 
-  # =============================================================================
-  # Load Test (Standard Performance Validation)
-  # =============================================================================
+        timeout 15 bash -c ''until curl -fsS http://127.0.0.1:7233 >/dev/null; do
+        sleep 1; done''
+
+
+        # Start Go API in background
+
+        cd backend
+
+        ./api &
+
+        echo $! > api.pid
+
+
+        # Wait for API to be ready
+
+        timeout 90 bash -c ''until curl -f http://localhost:8080/health; do sleep
+        1; done''
+
+        '
+      env:
+        DATABASE_URL: postgresql://tracertm:testpass@localhost:5432/tracertm
+        REDIS_URL: redis://localhost:6379
+        NATS_URL: nats://localhost:4222
+        NEO4J_URI: neo4j://localhost:7687
+        NEO4J_USER: neo4j
+        NEO4J_PASSWORD: testpassword
+        S3_ENDPOINT: http://127.0.0.1:9000
+        S3_ACCESS_KEY_ID: minioadmin
+        S3_SECRET_ACCESS_KEY: minioadmin
+        S3_BUCKET: tracertm-performance
+        TEMPORAL_HOST: tcp://127.0.0.1:7233
+        TEMPORAL_NAMESPACE: default
+        WORKOS_CLIENT_ID: client_ci_performance
+        WORKOS_API_KEY: sk_test_ci_performance
+        WORKOS_AUTHKIT_DOMAIN: http://localhost:4000
+        CSRF_SECRET: ci-csrf-secret-at-least-32-bytes
+        TRACING_ENABLED: 'false'
+    - name: Run smoke test
+      run: "k6 run \\\n  --out json=smoke-test-results.json \\\n  --summary-export=smoke-test-summary.json\
+        \ \\\n  tests/load/k6/scenarios/smoke.js\n"
+      env:
+        BASE_URL: http://localhost:8080
+        K6_AUTH_MODE: csrf-only
+    - name: Compare with baseline
+      if: needs.setup.outputs.baseline_exists == 'true'
+      run: "python tests/load/scripts/compare-performance.py \\\n  --baseline tests/load/.baseline/smoke-baseline.json\
+        \ \\\n  --current smoke-test-summary.json \\\n  --threshold 10\n"
+    - name: Save as new baseline (on main branch)
+      if: github.ref == 'refs/heads/main' && success()
+      run: 'mkdir -p tests/load/.baseline
+
+        cp smoke-test-summary.json tests/load/.baseline/smoke-baseline.json
+
+        '
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: smoke-test-results
+        path: 'smoke-test-results.json
+
+          smoke-test-summary.json
+
+          '
+    - name: Stop backend services
+      if: always()
+      run: "if [ -f backend/api.pid ]; then\n  kill $(cat backend/api.pid) || true\n\
+        fi\n[ -f s3-placeholder.pid ] && kill $(cat s3-placeholder.pid) || true\n\
+        [ -f temporal-placeholder.pid ] && kill $(cat temporal-placeholder.pid) ||\
+        \ true\n"
+    timeout-minutes: 60
   load-test:
     name: Load Test - Standard Performance Validation
     runs-on: ubuntu-latest
     needs: setup
-    if: |
-      needs.setup.outputs.test_type == 'load' ||
-      needs.setup.outputs.test_type == 'all'
+    if: 'needs.setup.outputs.test_type == ''load'' ||
 
+      needs.setup.outputs.test_type == ''all''
+
+      '
     services:
       postgres:
         image: pgvector/pgvector:pg17
@@ -274,232 +248,210 @@ jobs:
           POSTGRES_USER: tracertm
           POSTGRES_PASSWORD: testpass
           POSTGRES_DB: tracertm
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s
           --health-retries 5
         ports:
-          - 5432:5432
-
+        - 5432:5432
       redis:
         image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout
+          5s --health-retries 5
         ports:
-          - 6379:6379
-
+        - 6379:6379
       nats:
         image: nats:2.10-alpine
         ports:
-          - 4222:4222
-
+        - 4222:4222
       neo4j:
         image: neo4j:5-community
         env:
           NEO4J_AUTH: neo4j/testpassword
-          NEO4J_ACCEPT_LICENSE_AGREEMENT: "yes"
-        options: >-
-          --health-cmd "cypher-shell -u neo4j -p testpassword 'RETURN 1' || exit 1"
-          --health-interval 10s
-          --health-timeout 10s
-          --health-retries 18
+          NEO4J_ACCEPT_LICENSE_AGREEMENT: 'yes'
+        options: --health-cmd "cypher-shell -u neo4j -p testpassword 'RETURN 1' ||
+          exit 1" --health-interval 10s --health-timeout 10s --health-retries 18
         ports:
-          - 7474:7474
-          - 7687:7687
-
+        - 7474:7474
+        - 7687:7687
     steps:
-      - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - name: Checkout code
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - name: Set up Python
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+      with:
+        cache: pip
+        python-version: '3.11'
+    - name: Set up Go
+      uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
+      with:
+        go-version: 1.25.7
+    - name: Install k6
+      run: 'sudo gpg -k
 
-      - name: Set up Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-        with:
-          cache: 'pip'
-          python-version: '3.11'
+        sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg
+        --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
 
-      - name: Set up Go
-        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
-        with:
-          go-version: '1.25.7'
+        echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb
+        stable main" | sudo tee /etc/apt/sources.list.d/k6.list
 
-      - name: Install k6
-        run: |
-          sudo gpg -k
-          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
-          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-          sudo apt-get update
-          sudo apt-get install k6
+        sudo apt-get update
 
-      - name: Install dependencies and setup
-        run: |
-          pip install uv
-          uv sync
-          uv run alembic upgrade head
-        env:
-          DATABASE_URL: postgresql://tracertm:testpass@localhost:5432/tracertm
+        sudo apt-get install k6
 
-      - name: Build and start services
-        run: |
-          python -m http.server 9000 >/tmp/tracertm-s3-placeholder.log 2>&1 &
-          echo $! > s3-placeholder.pid
-          python -m http.server 7233 >/tmp/tracertm-temporal-placeholder.log 2>&1 &
-          echo $! > temporal-placeholder.pid
-          timeout 15 bash -c 'until curl -fsS http://127.0.0.1:9000 >/dev/null; do sleep 1; done'
-          timeout 15 bash -c 'until curl -fsS http://127.0.0.1:7233 >/dev/null; do sleep 1; done'
+        '
+    - name: Install dependencies and setup
+      run: 'pip install uv
 
-          cd backend
-          go build -o api .
-          ./api &
-          echo $! > api.pid
-          timeout 90 bash -c 'until curl -f http://localhost:8080/health; do sleep 1; done'
-        env:
-          DATABASE_URL: postgresql://tracertm:testpass@localhost:5432/tracertm
-          REDIS_URL: redis://localhost:6379
-          NATS_URL: nats://localhost:4222
-          NEO4J_URI: neo4j://localhost:7687
-          NEO4J_USER: neo4j
-          NEO4J_PASSWORD: testpassword
-          S3_ENDPOINT: http://127.0.0.1:9000
-          S3_ACCESS_KEY_ID: minioadmin
-          S3_SECRET_ACCESS_KEY: minioadmin
-          S3_BUCKET: tracertm-performance
-          TEMPORAL_HOST: tcp://127.0.0.1:7233
-          TEMPORAL_NAMESPACE: default
-          WORKOS_CLIENT_ID: client_ci_performance
-          WORKOS_API_KEY: sk_test_ci_performance
-          WORKOS_AUTHKIT_DOMAIN: http://localhost:4000
-          CSRF_SECRET: ci-csrf-secret-at-least-32-bytes
-          TRACING_ENABLED: "false"
+        uv sync
 
-      - name: Run load test
-        run: |
-          k6 run \
-            --out json=load-test-results.json \
-            --summary-export=load-test-summary.json \
-            tests/load/k6/scenarios/load.js
-        env:
-          BASE_URL: http://localhost:8080
-          K6_AUTH_MODE: csrf-only
+        uv run alembic upgrade head
 
-      - name: Compare with baseline
-        if: needs.setup.outputs.baseline_exists == 'true'
-        run: |
-          python tests/load/scripts/compare-performance.py \
-            --baseline tests/load/.baseline/load-baseline.json \
-            --current load-test-summary.json \
-            --threshold 15
+        '
+      env:
+        DATABASE_URL: postgresql://tracertm:testpass@localhost:5432/tracertm
+    - name: Build and start services
+      run: 'python -m http.server 9000 >/tmp/tracertm-s3-placeholder.log 2>&1 &
 
-      - name: Save as new baseline (on main branch)
-        if: github.ref == 'refs/heads/main' && success()
-        run: |
-          mkdir -p tests/load/.baseline
-          cp load-test-summary.json tests/load/.baseline/load-baseline.json
+        echo $! > s3-placeholder.pid
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: load-test-results
-          path: |
-            load-test-results.json
-            load-test-summary.json
+        python -m http.server 7233 >/tmp/tracertm-temporal-placeholder.log 2>&1 &
 
-      - name: Stop services
-        if: always()
-        run: |
-          [ -f backend/api.pid ] && kill $(cat backend/api.pid) || true
-          [ -f s3-placeholder.pid ] && kill $(cat s3-placeholder.pid) || true
-          [ -f temporal-placeholder.pid ] && kill $(cat temporal-placeholder.pid) || true
+        echo $! > temporal-placeholder.pid
 
-  # =============================================================================
-  # Performance Report
-  # =============================================================================
+        timeout 15 bash -c ''until curl -fsS http://127.0.0.1:9000 >/dev/null; do
+        sleep 1; done''
+
+        timeout 15 bash -c ''until curl -fsS http://127.0.0.1:7233 >/dev/null; do
+        sleep 1; done''
+
+
+        cd backend
+
+        go build -o api .
+
+        ./api &
+
+        echo $! > api.pid
+
+        timeout 90 bash -c ''until curl -f http://localhost:8080/health; do sleep
+        1; done''
+
+        '
+      env:
+        DATABASE_URL: postgresql://tracertm:testpass@localhost:5432/tracertm
+        REDIS_URL: redis://localhost:6379
+        NATS_URL: nats://localhost:4222
+        NEO4J_URI: neo4j://localhost:7687
+        NEO4J_USER: neo4j
+        NEO4J_PASSWORD: testpassword
+        S3_ENDPOINT: http://127.0.0.1:9000
+        S3_ACCESS_KEY_ID: minioadmin
+        S3_SECRET_ACCESS_KEY: minioadmin
+        S3_BUCKET: tracertm-performance
+        TEMPORAL_HOST: tcp://127.0.0.1:7233
+        TEMPORAL_NAMESPACE: default
+        WORKOS_CLIENT_ID: client_ci_performance
+        WORKOS_API_KEY: sk_test_ci_performance
+        WORKOS_AUTHKIT_DOMAIN: http://localhost:4000
+        CSRF_SECRET: ci-csrf-secret-at-least-32-bytes
+        TRACING_ENABLED: 'false'
+    - name: Run load test
+      run: "k6 run \\\n  --out json=load-test-results.json \\\n  --summary-export=load-test-summary.json\
+        \ \\\n  tests/load/k6/scenarios/load.js\n"
+      env:
+        BASE_URL: http://localhost:8080
+        K6_AUTH_MODE: csrf-only
+    - name: Compare with baseline
+      if: needs.setup.outputs.baseline_exists == 'true'
+      run: "python tests/load/scripts/compare-performance.py \\\n  --baseline tests/load/.baseline/load-baseline.json\
+        \ \\\n  --current load-test-summary.json \\\n  --threshold 15\n"
+    - name: Save as new baseline (on main branch)
+      if: github.ref == 'refs/heads/main' && success()
+      run: 'mkdir -p tests/load/.baseline
+
+        cp load-test-summary.json tests/load/.baseline/load-baseline.json
+
+        '
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: load-test-results
+        path: 'load-test-results.json
+
+          load-test-summary.json
+
+          '
+    - name: Stop services
+      if: always()
+      run: '[ -f backend/api.pid ] && kill $(cat backend/api.pid) || true
+
+        [ -f s3-placeholder.pid ] && kill $(cat s3-placeholder.pid) || true
+
+        [ -f temporal-placeholder.pid ] && kill $(cat temporal-placeholder.pid) ||
+        true
+
+        '
+    timeout-minutes: 60
   report:
     name: Generate Performance Report
     runs-on: ubuntu-latest
-    needs: [smoke-test, load-test]
-    if: |
-      always() &&
-      (needs['smoke-test'].result == 'success' || needs['load-test'].result == 'success')
+    needs:
+    - smoke-test
+    - load-test
+    if: 'always() &&
 
+      (needs[''smoke-test''].result == ''success'' || needs[''load-test''].result
+      == ''success'')
+
+      '
     steps:
-      - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - name: Checkout code
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - name: Download smoke test results
+      if: needs['smoke-test'].result == 'success'
+      uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+      with:
+        name: smoke-test-results
+        path: results/smoke
+    - name: Download load test results
+      if: needs['load-test'].result == 'success'
+      uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+      with:
+        name: load-test-results
+        path: results/load
+    - name: Set up Python
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+      with:
+        cache: pip
+        python-version: '3.11'
+    - name: Install dependencies
+      run: 'pip install jinja2 matplotlib pandas
 
-      - name: Download smoke test results
-        if: needs['smoke-test'].result == 'success'
-        uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
-        with:
-          name: smoke-test-results
-          path: results/smoke
-
-      - name: Download load test results
-        if: needs['load-test'].result == 'success'
-        uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
-        with:
-          name: load-test-results
-          path: results/load
-
-      - name: Set up Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-        with:
-          cache: 'pip'
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          pip install jinja2 matplotlib pandas
-
-      - name: Generate performance report
-        run: |
-          python tests/load/scripts/generate-report.py \
-            --results-dir results \
-            --output performance-report.html
-
-      - name: Upload performance report
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: performance-report
-          path: performance-report.html
-
-      - name: Comment PR with results
-        if: github.event_name == 'pull_request' && hashFiles('results/smoke/smoke-test-summary.json') != ''
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
-        with:
-          script: |
-            const fs = require('fs');
-            const summary = JSON.parse(fs.readFileSync('results/smoke/smoke-test-summary.json', 'utf8'));
-            const metricValue = (metric, ...keys) => {
-              for (const key of keys) {
-                if (summary.metrics[metric] && summary.metrics[metric][key] !== undefined) {
-                  return summary.metrics[metric][key];
-                }
-              }
-              return 0;
-            };
-
-            const comment = `
-            ## Performance Test Results
-
-            ### Smoke Test
-            - **Total Requests**: ${metricValue('http_reqs', 'count')}
-            - **P95 Latency**: ${metricValue('http_req_duration', 'p(95)', 'p95').toFixed(2)}ms
-            - **Error Rate**: ${(metricValue('http_req_failed', 'rate') * 100).toFixed(2)}%
-
-            [Full Report](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
-            `;
-
-            try {
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: comment
-              });
-            } catch (error) {
-              core.warning(`Unable to comment performance results: ${error.message}`);
-            }
+        '
+    - name: Generate performance report
+      run: "python tests/load/scripts/generate-report.py \\\n  --results-dir results\
+        \ \\\n  --output performance-report.html\n"
+    - name: Upload performance report
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: performance-report
+        path: performance-report.html
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request' && hashFiles('results/smoke/smoke-test-summary.json')
+        != ''
+      uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
+      with:
+        script: "const fs = require('fs');\nconst summary = JSON.parse(fs.readFileSync('results/smoke/smoke-test-summary.json',\
+          \ 'utf8'));\nconst metricValue = (metric, ...keys) => {\n  for (const key\
+          \ of keys) {\n    if (summary.metrics[metric] && summary.metrics[metric][key]\
+          \ !== undefined) {\n      return summary.metrics[metric][key];\n    }\n\
+          \  }\n  return 0;\n};\n\nconst comment = `\n## Performance Test Results\n\
+          \n### Smoke Test\n- **Total Requests**: ${metricValue('http_reqs', 'count')}\n\
+          - **P95 Latency**: ${metricValue('http_req_duration', 'p(95)', 'p95').toFixed(2)}ms\n\
+          - **Error Rate**: ${(metricValue('http_req_failed', 'rate') * 100).toFixed(2)}%\n\
+          \n[Full Report](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})\n\
+          `;\n\ntry {\n  await github.rest.issues.createComment({\n    issue_number:\
+          \ context.issue.number,\n    owner: context.repo.owner,\n    repo: context.repo.repo,\n\
+          \    body: comment\n  });\n} catch (error) {\n  core.warning(`Unable to\
+          \ comment performance results: ${error.message}`);\n}\n"
+    timeout-minutes: 60
