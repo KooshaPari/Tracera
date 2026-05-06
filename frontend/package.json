@@ -1,5 +1,6 @@
 {
   "name": "tracertm-frontend",
+  "packageManager": "bun@1.1.38",
   "version": "0.1.0",
   "private": true,
   "workspaces": [

@@ -11,7 +11,7 @@ repos:
         args: ["--maxkb=500"]
       - id: detect-private-key
   - repo: https://github.com/trufflesecurity/trufflehog
-    rev: v3.93.6
+    rev: v3.95.2
     hooks:
       - id: trufflehog
         stages: [pre-push]
