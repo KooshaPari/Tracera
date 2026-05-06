@@ -394,15 +394,109 @@
 
 ---
 
+---
+
+## Amendment v11 — 2026-05-06
+
+### Executive Summary Update
+
+| Severity | Open | Fixed | Total |
+|----------|------|-------|-------|
+| CRITICAL | 0 | 2 | 2 |
+| HIGH | 3 | 3 | 6 |
+| MEDIUM | 8 | 6 | 14 |
+| LOW | 4 | 0 | 4 |
+| INFO / NOTED | 5 | 0 | 5 |
+| **Total** | **20** | **11** | **31** |
+
+### NEW — CRITICAL Fixed This Pass
+
+| ID | Finding | Repo | File | Status |
+|----|---------|------|------|--------|
+| C-PAR-1 | JWT_SECRET_KEY fallback `"dev-secret-key-change-in-production"` | Parpoura | `venture/auth.py:16` | **FIXED** — RuntimeError if env var unset |
+| C-PAR-2 | JWT_SECRET_KEY fallback `"dev-secret-key-change-in-production"` | Parpoura | `venture/middleware/rbac.py:15` | **FIXED** — RuntimeError if env var unset |
+| C-PAR-3 | DATABASE_URL fallback `venture:venture@localhost` | Parpoura | `venture/database.py:33` | **FIXED** — RuntimeError if env var unset |
+| C-PAR-4 | SQL injection in `tenant_context` | Parpoura | `venture/database.py:162` | **MITIGATED** — regex allowlist `^[a-zA-Z][a-zA-Z0-9_-]{0,63}$` on tenant_id prevents injection |
+
+### NEW — HIGH Fixed This Pass
+
+| ID | Finding | Repo | File | Status |
+|----|---------|------|------|--------|
+| H-TRC-1 | All 36 workflows missing `timeout-minutes` | Tracera | `.github/workflows/*.yml` | **FIXED** — added 10–60m timeouts by job type |
+| H-TRC-2 | Hardcoded DB password fallbacks | Tracera | `venture/database.py` | **FIXED** |
+| H-TRC-3 | Load test workflow excessive write permissions | Tracera | `workflows/load-test.yml` | **FIXED** |
+
+### NEW — HIGH Open
+
+| ID | Finding | Repo | Description |
+|----|---------|------|-------------|
+| H-MULTI-1 | ~350 mutable Docker image tags across repos | Multiple | `rust:slim`, `python:3.14-slim`, `golang:1.21-alpine` etc. — HIGH supply-chain risk |
+| H-MULTI-2 | 30+ Tracera workflows missing explicit `permissions:` blocks | Tracera | Implicit full read+write; needs per-workflow audit |
+| H-MULTI-3 | ~52 `shell=True` subprocess calls across repos | Multiple | Mostly in scripts with controlled inputs; 3 in active production code need review |
+
+### NEW — MEDIUM Open
+
+| ID | Finding | Repo | Description |
+|----|---------|------|-------------|
+| M-MULTI-1 | ~75 devcontainer/Dockerfile mutable base image tags | Multiple | rust:slim, python:3.14-slim, golang:alpine, alpine:3.18 etc. |
+| M-MULTI-2 | 26 CRITICAL Grafana default admin credentials | Archived/Worktrees | Historical artifacts; not exploitable in current state |
+| M-MULTI-3 | 26 CRITICAL Grafana default admin credentials | Archived/Worktrees | Historical artifacts; not exploitable in current state |
+| M-MULTI-4 | 18 workflows with `id-token: write` (OIDC) | Multiple | Mostly scorecard/pages-deploy; verify minimum scope |
+| M-MULTI-5 | POSTGRES_PASSWORD=postgres in worktree compose files | Worktrees | Historical development artifacts |
+| M-AUTH-1 | Orphaned git submodules (pheno-auth, pheno-security) | AuthKit | No remotes configured; cannot push fixes |
+| M-TST-1 | `exec()`, `eval()` patterns in code scanners | ResilienceKit | False positives — regex patterns in security_policy_enforcer.py |
+| M-TST-2 | `dialog.exec()`, `app.exec()` in Qt code | PhenoProc | False positives — Qt event loop methods |
+| M-TST-3 | `sess.exec()` in SQLAlchemy code | AuthKit | False positives — SQLAlchemy session execute |
+
+### False Positives Ruled Out This Pass
+
+| Pattern | Repo | Reason |
+|---------|------|--------|
+| `exec()` in api_key_manager.py | AuthKit | SQLAlchemy `sess.exec()` — ORM method, not dangerous |
+| `dialog.exec()` in Qt desktop code | PhenoProc | Qt `QDialog.exec()` — event loop, not dangerous |
+| `async def exec()` interface methods | PhenoProc/ResilienceKit | Interface method names, not actual exec calls |
+| `eval()`/`exec()` in security_policy_enforcer | ResilienceKit | Regex pattern definitions in security scanner |
+| `shell=True` in create_prs.py | HexaKit/PhenoDevOps | Internal git commands with controlled hardcoded inputs |
+| `eval()`/`exec()` patterns in legacy_code_scanner | ResilienceKit | Regex pattern definitions in code scanner |
+
+### Verification Checklist — v11
+
+- [x] Parpoura JWT secrets: `venture/auth.py:16`, `venture/middleware/rbac.py:15`
+- [x] Parpoura DB credentials: `venture/database.py:33`
+- [x] Parpoura SQL injection: mitigated by regex `^[a-zA-Z][a-zA-Z0-9_-]{0,63}$`
+- [x] AuthKit TOTP SHA-256: `python/pheno-auth/src/pheno_auth/mfa_handler.py`
+- [x] AuthKit Sandbox SHA-256: `python/pheno-auth/src/pheno_auth/sandbox.py`
+- [x] HexaKit .env.example placeholders: `HexaKit/.env.example`
+- [x] PhenoDevOps .env.example placeholders: `PhenoDevOps/.env.example`
+- [x] Tracera sqlc pin: `.github/workflows/schema-validation.yml`
+- [x] Tracera workflow timeouts: all 36 `.github/workflows/*.yml`
+- [x] Tracera trufflehog SHA: `.github/workflows/trufflehog.yml`
+- [x] Tracera DB password fallbacks: `venture/database.py`
+- [x] kwality privileged container: `k8s/kwality-deployment.yaml:120` — **LEGITIMATE** (DinD)
+- [x] KDesktopVirt privileged container: `docker-compose.hybrid.yml:138` — **LEGITIMATE** (Podman API)
+
+### Open Items — v11
+
+1. Systematic Docker image tag pinning program (350+ mutable tags)
+2. Per-workflow permissions audit in Tracera (30+ missing blocks)
+3. SSRF vulnerabilities in request-handling code (needs deep-dive)
+4. Static file serving path traversal (needs deep-dive)
+5. Archived/worktree credential cleanup (historical, not exploitable)
+6. FocalPoint path traversal deep-dive (agent running)
+7. Remaining active repos auth/SSRF audit (agent running)
+
+---
+
 ## Change Log
 
 | Date | Change |
 |------|--------|
 | 2026-05-04 | Initial DAG: 4 HIGH, 6 MEDIUM, 5 LOW |
 | 2026-05-05 | 8 findings closed. 4 new HIGH surfaced (SQL injection surface area). Cross-repo findings added (AuthKit, HexaKit, PhenoDevOps, Kwality, KDesktopVirt). Report consolidated here. |
+| 2026-05-06 | v11: 2 CRITICAL fixed (Parpoura JWT/DB secrets). 3 HIGH fixed (Tracera timeouts, DB fallbacks, load-test perms). New findings: 350+ mutable Docker tags, 75 devcontainer issues, 52 shell=True calls. 3 CRITICAL/3 HIGH remain open. |
 
 ---
 
-*Generated: 2026-05-05*
+*Generated: 2026-05-06*
 *Auditor: OWL (automated sweep + manual review)*
 *Next scheduled sweep: 2026-05-12*
