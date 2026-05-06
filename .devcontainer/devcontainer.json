@@ -7,11 +7,11 @@
   // Features - Install additional tools and runtimes
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "version": "latest",
+      "version": "2.1.5",
       "moby": true
     },
     "ghcr.io/devcontainers/features/github-cli:1": {
-      "version": "latest"
+      "version": "1.0.37"
     }
   },
 
@@ -30,12 +30,12 @@
     "CHOKIDAR_USEPOLLING": "true",
 
     // Database
-    "DATABASE_URL": "postgresql+asyncpg://tracertm:tracertm_password@postgres:5432/tracertm",
+    "DATABASE_URL": "postgresql+asyncpg://${DB_USER:-tracertm}:${DB_PASSWORD}@postgres:5432/tracertm",
     "DB_HOST": "postgres",
     "DB_PORT": "5432",
-    "DB_USER": "tracertm",
-    "DB_PASSWORD": "tracertm_password",
-    "DB_NAME": "tracertm",
+    "DB_USER": "${DB_USER:-tracertm}",
+    "DB_PASSWORD": "${DB_PASSWORD}",
+    "DB_NAME": "${DB_NAME:-tracertm}",
 
     // Redis
     "REDIS_URL": "redis://redis:6379",
