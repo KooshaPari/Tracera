@@ -1,6 +1,16 @@
 name: Chaos Engineering Tests
 
 on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'tests/chaos/**'
+      - '.github/workflows/chaos-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'tests/chaos/**'
+      - '.github/workflows/chaos-tests.yml'
   schedule:
     # Run chaos tests daily at 2 AM UTC
     - cron: '0 2 * * *'
@@ -14,11 +24,6 @@ on:
         options:
           - staging
           - production
-  pull_request:
-    branches: [ main, develop ]
-    paths:
-      - 'tests/chaos/**'
-      - '.github/workflows/chaos-tests.yml'
 
 permissions:
   contents: read
