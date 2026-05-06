@@ -437,12 +437,14 @@
 | H-MULTI-1 | ~350 mutable Docker image tags across repos | Multiple | `rust:slim`, `python:3.14-slim`, `golang:1.21-alpine` etc. — HIGH supply-chain risk |
 | H-MULTI-2 | 30+ Tracera workflows missing explicit `permissions:` blocks | Tracera | Implicit full read+write; needs per-workflow audit |
 | H-MULTI-3 | ~52 `shell=True` subprocess calls across repos | Multiple | Mostly in scripts with controlled inputs; 3 in active production code need review |
+| H-MULTI-4 | 7 mutable Docker images in Tracera devcontainer | Tracera | `postgres:15-alpine`, `redis:7-alpine`, `neo4j:5-community`, `nats:2.10.15-alpine`, `temporalio/auto-setup:1.24.0`, `prom/prometheus:v2.52.0`, `grafana/grafana:11.1.0` — no @sha256 digests |
 
 ### NEW — MEDIUM Open
 
 | ID | Finding | Repo | Description |
 |----|---------|------|-------------|
 | M-MULTI-1 | ~75 devcontainer/Dockerfile mutable base image tags | Multiple | rust:slim, python:3.14-slim, golang:alpine, alpine:3.18 etc. |
+| M-MCP-1 | HttpSchemeHandler accepts user-controlled URIs (SSRF surface) | McpKit | `pheno_mcp/schemes/http_scheme.py` — `get_resource(uri)` accepts any http/https URL without allowlist validation. Opt-in via `with_extended_schemes`. Risk depends on deployment exposure. |
 | M-MULTI-2 | 26 CRITICAL Grafana default admin credentials | Archived/Worktrees | Historical artifacts; not exploitable in current state |
 | M-MULTI-3 | 26 CRITICAL Grafana default admin credentials | Archived/Worktrees | Historical artifacts; not exploitable in current state |
 | M-MULTI-4 | 18 workflows with `id-token: write` (OIDC) | Multiple | Mostly scorecard/pages-deploy; verify minimum scope |
