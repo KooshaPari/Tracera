@@ -417,6 +417,8 @@
 | C-PAR-2 | JWT_SECRET_KEY fallback `"dev-secret-key-change-in-production"` | Parpoura | `venture/middleware/rbac.py:15` | **FIXED** — RuntimeError if env var unset |
 | C-PAR-3 | DATABASE_URL fallback `venture:venture@localhost` | Parpoura | `venture/database.py:33` | **FIXED** — RuntimeError if env var unset |
 | C-PAR-4 | SQL injection in `tenant_context` | Parpoura | `venture/database.py:162` | **MITIGATED** — regex allowlist `^[a-zA-Z][a-zA-Z0-9_-]{0,63}$` on tenant_id prevents injection |
+| C-TRC-1 | Grafana admin:admin defaults in compose files | Tracera | `docker-compose.yml`, `docker-compose.prod.yml` | **FIXED** — replaced `:-admin` with `:-error` forcing explicit env vars |
+| C-TRC-2 | Grafana admin:admin in .env.example | Tracera | `.env.example` | **FIXED** — replaced with empty values + generation instructions |
 
 ### NEW — HIGH Fixed This Pass
 
@@ -425,6 +427,8 @@
 | H-TRC-1 | All 36 workflows missing `timeout-minutes` | Tracera | `.github/workflows/*.yml` | **FIXED** — added 10–60m timeouts by job type |
 | H-TRC-2 | Hardcoded DB password fallbacks | Tracera | `venture/database.py` | **FIXED** |
 | H-TRC-3 | Load test workflow excessive write permissions | Tracera | `workflows/load-test.yml` | **FIXED** |
+| H-TRC-4 | NATS monitoring port 8222 publicly exposed | Tracera | `docker-compose.yml`, `docker-compose.prod.yml` | **FIXED** — restricted to 127.0.0.1 |
+| H-TRC-5 | NATS HTTP listener bound to 0.0.0.0 | Tracera | `config/nats-server.conf` | **FIXED** — bound to 127.0.0.1:8222 |
 
 ### NEW — HIGH Open
 
@@ -494,6 +498,7 @@
 | 2026-05-04 | Initial DAG: 4 HIGH, 6 MEDIUM, 5 LOW |
 | 2026-05-05 | 8 findings closed. 4 new HIGH surfaced (SQL injection surface area). Cross-repo findings added (AuthKit, HexaKit, PhenoDevOps, Kwality, KDesktopVirt). Report consolidated here. |
 | 2026-05-06 | v11: 2 CRITICAL fixed (Parpoura JWT/DB secrets). 3 HIGH fixed (Tracera timeouts, DB fallbacks, load-test perms). New findings: 350+ mutable Docker tags, 75 devcontainer issues, 52 shell=True calls. 3 CRITICAL/3 HIGH remain open. |
+| 2026-05-06b | v11b: 2 more CRITICAL fixed (Grafana admin:admin defaults → :-error). 2 HIGH fixed (NATS monitoring port 8222 → localhost only, nats-server.conf bind address). DAG updated with latest fixes. |
 
 ---
 
