@@ -437,7 +437,7 @@
 | H-MULTI-1 | ~350 mutable Docker image tags across repos | Multiple | `rust:slim`, `python:3.14-slim`, `golang:1.21-alpine` etc. — HIGH supply-chain risk |
 | H-MULTI-2 | 30+ Tracera workflows missing explicit `permissions:` blocks | Tracera | Implicit full read+write; needs per-workflow audit |
 | H-MULTI-3 | ~52 `shell=True` subprocess calls across repos | Multiple | Mostly in scripts with controlled inputs; 3 in active production code need review |
-| H-MULTI-4 | 7 mutable Docker images in Tracera devcontainer | Tracera | `postgres:15-alpine`, `redis:7-alpine`, `neo4j:5-community`, `nats:2.10.15-alpine`, `temporalio/auto-setup:1.24.0`, `prom/prometheus:v2.52.0`, `grafana/grafana:11.1.0` — no @sha256 digests |
+| H-MULTI-4 | 7 mutable Docker images in Tracera devcontainer | Tracera | **FIXED** — all 7 compose images already have @sha256 pins. Remaining: `.devcontainer/Dockerfile` uses mutable `ubuntu:22.04` (needs network lookup to pin). |
 
 ### NEW — MEDIUM Open
 
