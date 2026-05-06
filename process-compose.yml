@@ -4,7 +4,7 @@ processes:
   # ── Infrastructure ──────────────────────────────────────────────────────────
 
   postgres:
-    command: "docker run --rm --name trace-postgres -e POSTGRES_USER=tracertm -e POSTGRES_PASSWORD=tracertm_password -e POSTGRES_DB=tracertm -p 5432:5432 pgvector/pgvector:pg16"
+    command: "docker run --rm --name trace-postgres -e POSTGRES_USER=tracertm -e POSTGRES_PASSWORD=${DB_PASSWORD} -e POSTGRES_DB=tracertm -p 5432:5432 pgvector/pgvector:pg16"
     availability:
       restart: on_failure
       max_restarts: 3
@@ -50,7 +50,7 @@ processes:
       - PORT=8080
       - ENV=development
       - GIN_MODE=debug
-      - DATABASE_URL=postgres://tracertm:tracertm_password@localhost:5432/tracertm?sslmode=disable
+      - DATABASE_URL=postgres://tracertm:${DB_PASSWORD}@localhost:5432/tracertm?sslmode=disable
       - REDIS_URL=redis://localhost:6379
       - NATS_URL=nats://localhost:4222
     depends_on:

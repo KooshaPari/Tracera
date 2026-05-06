@@ -1,25 +1,28 @@
 name: Security Guard
-
-on:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+true:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types:
+    - opened
+    - synchronize
+    - reopened
   push:
     branches:
-      - "**"
-
+    - '**'
 permissions:
   contents: read
-
 jobs:
   guard:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v4
-        with:
-          fetch-depth: 0
-
-      - name: Run pre-commit guard checks
-        uses: pre-commit/action@v3.0.1
-        with:
-          extra_args: --hook-stage pre-commit --config .pre-commit-config.yaml --show-diff-on-failure
+    - name: Checkout
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with:
+        fetch-depth: 0
+    - name: Run pre-commit guard checks
+      uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd
+      with:
+        extra_args: --hook-stage pre-commit --config .pre-commit-config.yaml --show-diff-on-failure
+    timeout-minutes: 30
