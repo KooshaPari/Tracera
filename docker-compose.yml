@@ -186,7 +186,7 @@ services:
     container_name: tracertm-nats
     ports:
       - "4222:4222"  # Client connections
-      - "8222:8222"  # HTTP management/metrics
+      - "127.0.0.1:8222:8222"  # HTTP management/metrics — localhost only
       - "6222:6222"  # Cluster connections
     command: ["-js", "-m", "8222"]
     volumes:
@@ -226,8 +226,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?GRAFANA_ADMIN_USER must be set}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
       GF_INSTALL_PLUGINS: redis-datasource
     volumes:
       - grafana_data:/var/lib/grafana
