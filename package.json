@@ -1,5 +1,8 @@
 {
   "name": "tracertm-workspace",
+  "private": true,
+  "license": "MIT",
+  "packageManager": "bun@1.1.38",
   "scripts": {
     "dev": "make dev",
     "dev:tui": "make dev-tui",
