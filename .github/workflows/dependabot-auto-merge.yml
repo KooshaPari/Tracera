@@ -11,6 +11,8 @@ true:
 permissions:
   contents: write
   pull-requests: write
+  actions: read
+  actions: read
 jobs:
   verify-tests:
     name: Verify Tests Pass
