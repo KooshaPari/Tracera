@@ -112,7 +112,8 @@ backend/.trace/
 backend/**/*.md
 backend/artifacts/
 backend/docs/
-cli/
+# Track CLI package files under cli/
+!cli/
 
 # Local MinIO (Homebrew)
 backend/.minio-data/
