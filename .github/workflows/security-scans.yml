@@ -2,7 +2,7 @@ name: Security Scans
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-true:
+on:
   push:
     branches:
     - main

@@ -2,7 +2,7 @@ name: Dependabot Auto-Merge
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-true:
+on:
   pull_request:
     types:
     - opened
@@ -60,7 +60,7 @@ jobs:
         cache: true
     - name: Install dependencies
       run: "if [ -f \"frontend/package.json\" ]; then\n  cd frontend && bun install\n\
-        fi\nif [ -f \"pyproject.toml\" ]; then\n  pip install -e .\nfi\nif [ -f \"\
+        fi\nif [ -f \"pyproject.toml\" ]; then\n  uv pip install --system -e .\nfi\nif [ -f \"\
         backend/go.mod\" ]; then\n  cd backend && go mod download\nfi\n"
     - name: Run linting
       run: "if [ -f \"frontend/package.json\" ]; then\n  cd frontend && bun run lint\
