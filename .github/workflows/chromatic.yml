@@ -78,17 +78,23 @@ jobs:
       if: github.event_name == 'pull_request' && always()
       uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
       with:
-        script: "const fs = require('fs');\nconst reportPath = 'frontend/apps/web/junit-report.xml';\n\
-          \nif (fs.existsSync(reportPath)) {\n  const report = fs.readFileSync(reportPath,\
-          \ 'utf8');\n  const passMatch = report.match(/tests=\"(\\d+)\"/);\n  const\
-          \ failureMatch = report.match(/failures=\"(\\d+)\"/);\n\n  const tests =\
-          \ passMatch ? passMatch[1] : 'unknown';\n  const failures = failureMatch\
-          \ ? failureMatch[1] : '0';\n\n  github.rest.issues.createComment({\n   \
-          \ issue_number: context.issue.number,\n    owner: context.repo.owner,\n\
-          \    repo: context.repo.repo,\n    body: `## Visual Regression Test Results\\\
-          n\\n- **Total Snapshots**: ${tests}\\n- **Regressions Found**: ${failures}\\\
-          n\\n[View full Chromatic report](${process.env.CHROMATIC_URL})`\n  });\n\
-          }\n"
+        script: |
+          const fs = require('fs');
+          const reportPath = 'frontend/apps/web/junit-report.xml';
+          if (fs.existsSync(reportPath)) {
+            const report = fs.readFileSync(reportPath, 'utf8');
+            const passMatch = report.match(/tests="(\d+)"/);
+            const failureMatch = report.match(/failures="(\d+)"/);
+            const tests = passMatch ? passMatch[1] : 'unknown';
+            const failures = failureMatch ? failureMatch[1] : '0';
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## Visual Regression Test Results\n\n- **Total Snapshots**: ' + tests + '\n- **Regressions Found**: ' + failures + '\n\n[View full Chromatic report](' + process.env.CHROMATIC_URL + ')'
+            });
+          }
+
   visual-test-status:
     name: Visual Test Status Check
     runs-on: ubuntu-latest

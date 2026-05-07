@@ -208,7 +208,7 @@ jobs:
       with:
         script: "const fs = require('fs');\nconst coverage = fs.readFileSync('tests/contracts/docs/coverage.md',\
           \ 'utf8');\n\ngithub.rest.issues.createComment({\n  issue_number: context.issue.number,\n\
-          \  owner: context.repo.owner,\n  repo: context.repo.repo,\n  body: `## \U0001F4CB\
-          \ Contract Test Coverage\\n\\n${coverage}`\n});"
+          \  owner: context.repo.owner,\n  repo: context.repo.repo,\n  body: '## Contract\
+          \ Test Coverage\\n\\n' + coverage\n});"
     timeout-minutes: 20
 

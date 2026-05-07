@@ -1,4 +1,4 @@
-![Build Status](https://github.com/KooshaPari/Tracera/actions/workflows/quality-gate.yml/badge.svg)
+![Build Status](https://github.com/KooshaPari/Tracera/actions/workflows/quality.yml/badge.svg)
 ![Security Audit](https://github.com/KooshaPari/Tracera/actions/workflows/security-guard.yml/badge.svg)
 ![Policy Compliance](https://github.com/KooshaPari/Tracera/actions/workflows/policy-gate.yml/badge.svg)
 

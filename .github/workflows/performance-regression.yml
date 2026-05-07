@@ -438,22 +438,33 @@ jobs:
         name: performance-report
         path: performance-report.html
     - name: Comment PR with results
-      if: github.event_name == 'pull_request' && hashFiles('results/smoke/smoke-test-summary.json')
-        != ''
+      if: github.event_name == 'pull_request' && hashFiles('results/smoke/smoke-test-summary.json') != ''
       uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
       with:
-        script: "const fs = require('fs');\nconst summary = JSON.parse(fs.readFileSync('results/smoke/smoke-test-summary.json',\
-          \ 'utf8'));\nconst metricValue = (metric, ...keys) => {\n  for (const key\
-          \ of keys) {\n    if (summary.metrics[metric] && summary.metrics[metric][key]\
-          \ !== undefined) {\n      return summary.metrics[metric][key];\n    }\n\
-          \  }\n  return 0;\n};\n\nconst comment = `\n## Performance Test Results\n\
-          \n### Smoke Test\n- **Total Requests**: ${metricValue('http_reqs', 'count')}\n\
-          - **P95 Latency**: ${metricValue('http_req_duration', 'p(95)', 'p95').toFixed(2)}ms\n\
-          - **Error Rate**: ${(metricValue('http_req_failed', 'rate') * 100).toFixed(2)}%\n\
-          \n[Full Report](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})\n\
-          `;\n\ntry {\n  await github.rest.issues.createComment({\n    issue_number:\
-          \ context.issue.number,\n    owner: context.repo.owner,\n    repo: context.repo.repo,\n\
-          \    body: comment\n  });\n} catch (error) {\n  core.warning(`Unable to\
-          \ comment performance results: ${error.message}`);\n}\n"
+        script: |
+          const fs = require('fs');
+          const summary = JSON.parse(fs.readFileSync('results/smoke/smoke-test-summary.json', 'utf8'));
+          const metricValue = (metric, ...keys) => {
+            for (const key of keys) {
+              if (summary.metrics[metric] && summary.metrics[metric][key] !== undefined) {
+                return summary.metrics[metric][key];
+              }
+            }
+            return 0;
+          };
+          const reqs = metricValue('http_reqs', 'count');
+          const p95 = metricValue('http_req_duration', 'p(95)', 'p95').toFixed(2);
+          const errRate = (metricValue('http_req_failed', 'rate') * 100).toFixed(2);
+          const comment = '## Performance Test Results\n\n### Smoke Test\n- **Total Requests**: ' + reqs + '\n- **P95 Latency**: ' + p95 + 'ms\n- **Error Rate**: ' + errRate + '%\n\n[Full Report](https://github.com/' + context.repo.owner + '/' + context.repo.repo + '/actions/runs/' + context.runId + ')\n';
+          try {
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          } catch (error) {
+            core.warning('Unable to comment performance results: ' + error.message);
+          }
     timeout-minutes: 60
 

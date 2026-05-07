@@ -95,6 +95,22 @@ export class DesignSync {
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       result.errors.push(errorMsg);
+      console.error(`[TASK #175] Figma sync error: ${errorMsg}`);
+      process.exit(1);  // Make failures fatal
+    }
+
+    // TASK #175/#178: Print conflict and error details
+    if (result.conflicts.length > 0) {
+      console.warn(`[TASK #178] Figma sync conflicts detected:`);
+      for (const conflict of result.conflicts) {
+        console.warn(`  - ${conflict}`);
+      }
+    }
+    if (result.errors.length > 0) {
+      console.error(`[TASK #194] Figma sync errors:`);
+      for (const err of result.errors) {
+        console.error(`  - ${err}`);
+      }
     }
 
     return result;

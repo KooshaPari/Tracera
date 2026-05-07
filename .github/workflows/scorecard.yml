@@ -12,7 +12,9 @@ on:
     paths-ignore:
     - ARCHIVE/**
     - '**/ARCHIVE/**'
-permissions: read-all
+permissions:
+  contents: read
+  actions: read
 jobs:
   analysis:
     name: Scorecard analysis

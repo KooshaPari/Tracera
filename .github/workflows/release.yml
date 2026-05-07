@@ -50,4 +50,4 @@ jobs:
       with:
         name: release-artifacts
         path: dist/
-    timeout-minutes: 30
+      timeout-minutes: 30

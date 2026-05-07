@@ -52,7 +52,7 @@ jobs:
         \ Version $TARGET_VERSION does not exist\"\n  exit 1\nfi\n\necho \"target_version=$TARGET_VERSION\"\
         \ >> $GITHUB_OUTPUT\necho \"✅ Rollback from $CURRENT_VERSION to $TARGET_VERSION\
         \ validated\"\n"
-    - name: Create rollback issue
+    - name: Comment rollback result on PR
       uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
       with:
         script: "const environment = '${{ github.event.inputs.environment }}' || '${{\
@@ -110,63 +110,66 @@ jobs:
         echo "Target Version: $TARGET_VERSION"
     - name: Rollback container deployment
       run: |
-        echo "🐳 Rolling back container deployment..."
+        echo "Rolling back container deployment..."
+        # This is a placeholder - actual implementation depends on deployment platform
+        echo "Container rollback initiated"
 
-
-        # This is a placeholder - actual implementation depends on your deployment
-        platform
-
-        # Examples:
-
-
-        # For Kubernetes:
-
-        # kubectl rollout undo deployment/tracertm-backend -n $ENVIRONMENT
-
-
-        # For Docker Swarm:
-
-        # docker service update --image tracertm-backend:$TARGET_VERSION tracertm-backend
-
-
-        # For Cloud Run:
-
-        # gcloud run services update-traffic tracertm-backend --to-revisions=$TARGET_VERSION=100
-
-
-        # For Vercel/similar:
-
-        # Use deployment ID to rollback
-
-
-        echo "✅ Container rollback initiated"
-
+    - name: Wait for stabilization
       run: |
-        echo "⏳ Waiting for deployment to stabilize..."
-
+        echo "Waiting for deployment to stabilize..."
         sleep 30
 
-      run: "echo \"Checking health after rollback...\"\n\nENVIRONMENT=\"\
-        ${{ github.event.inputs.environment || github.event.client_payload.environment || 'production' }}\"\nif [ \"$ENVIRONMENT\" = \"production\"\
-        \ ]; then\n  HEALTH_URL=\"${{ secrets.PRODUCTION_HEALTH_URL }}\"\nelse\n \
-        \ HEALTH_URL=\"${{ secrets.STAGING_HEALTH_URL }}\"\nfi\n\nMAX_RETRIES=10\n\
-        RETRY_DELAY=10\n\nfor i in $(seq 1 $MAX_RETRIES); do\n  echo \"Health check\
-        \ attempt $i/$MAX_RETRIES...\"\n\n  RESPONSE=$(curl -s -w \"\\n%{http_code}\"\
-        \ \"$HEALTH_URL/health\" || echo \"000\")\n  HTTP_CODE=$(echo \"$RESPONSE\"\
-        \ | tail -n1)\n\n  if [ \"$HTTP_CODE\" = \"200\" ]; then\n    echo \"✅ Health\
-        \ check passed!\"\n    exit 0\n  fi\n\n  echo \"⚠️  Health check failed (status:\
-        \ $HTTP_CODE). Retrying in ${RETRY_DELAY}s...\"\n  sleep $RETRY_DELAY\ndone\n\
-        \necho \"❌ Health check failed after $MAX_RETRIES attempts\"\nexit 1\n"
-    timeout-minutes: 30
-  rollback-frontend:
-    name: Rollback Frontend
-    runs-on: ubuntu-latest
-    needs:
-    - validate-rollback
-    - rollback-backend
-    environment:
-      name: ${{ github.event.inputs.environment || github.event.client_payload.environment || 'production' }}
-    steps:
+    - name: Health check after rollback
+      run: |
+        ENVIRONMENT="${{ github.event.inputs.environment || github.event.client_payload.environment || 'production' }}"
+        if [ "$ENVIRONMENT" = "production" ]; then
+          HEALTH_URL="${{ secrets.PRODUCTION_HEALTH_URL }}"
+        else
+          HEALTH_URL="${{ secrets.STAGING_HEALTH_URL }}"
+        fi
+        MAX_RETRIES=10
+        RETRY_DELAY=10
+        for i in $(seq 1 $MAX_RETRIES); do
+          echo "Health check attempt $i/$MAX_RETRIES..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" "$HEALTH_URL/health" || echo "000")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "Health check passed!"
+            exit 0
+          fi
+          echo "Health check failed (status: $HTTP_CODE). Retrying in ${RETRY_DELAY}s..."
+          sleep $RETRY_DELAY
+        done
+        echo "Health check failed after $MAX_RETRIES attempts"
+        exit 1
+    - name: Wait for stabilization
+      run: |
+        echo "Waiting for deployment to stabilize..."
+        sleep 30
+
+    - name: Health check after rollback
+      run: |
+        ENVIRONMENT="${{ github.event.inputs.environment || github.event.client_payload.environment || 'production' }}"
+        if [ "$ENVIRONMENT" = "production" ]; then
+          HEALTH_URL="${{ secrets.PRODUCTION_HEALTH_URL }}"
+        else
+          HEALTH_URL="${{ secrets.STAGING_HEALTH_URL }}"
+        fi
+        MAX_RETRIES=10
+        RETRY_DELAY=10
+        for i in $(seq 1 $MAX_RETRIES); do
+          echo "Health check attempt $i/$MAX_RETRIES..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" "$HEALTH_URL/health" || echo "000")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "Health check passed!"
+            exit 0
+          fi
+          echo "Health check failed (status: $HTTP_CODE). Retrying in ${RETRY_DELAY}s..."
+          sleep $RETRY_DELAY
+        done
+        echo "Health check failed after $MAX_RETRIES attempts"
+        exit 1
     - name: Checkout target version
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       with:
@@ -201,7 +204,7 @@ jobs:
         \ || exit 1\n\necho \"✅ Smoke tests passed\"\n"
     - name: Monitor error rates
       run: |
-        echo "📊 Monitoring error rates..."
+        echo "Monitoring error rates..."
 
 
         # This would integrate with your monitoring system
