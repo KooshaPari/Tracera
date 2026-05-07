@@ -1,6 +1,6 @@
-# Contributing to TracerTM 🚀
+# Contributing to Tracera
 
-Thank you for your interest in contributing to **TracerTM**! We are building a world-class requirements traceability system, and your contributions are essential.
+Thank you for your interest in contributing to **Tracera**! We are building a world-class requirements traceability system, and your contributions are essential.
 
 ## 📋 Code of Conduct
 
@@ -8,11 +8,11 @@ By participating, you agree to uphold a professional and respectful environment 
 
 ## 🛠️ Development Setup
 
-TracerTM is a polyglot system (Go, Python, TypeScript). We use `Task` and `Process Compose` for unified orchestration.
+Tracera is a polyglot system (Go, Python, TypeScript). We use `Task` and `Process Compose` for unified orchestration.
 
 1. **Clone and Install**:
    ```bash
-   git clone https://github.com/KooshaPari/Tracera.git
+   git clone git@github.com:KooshaPari/Tracera.git
    cd Tracera
    task install
    ```

@@ -200,13 +200,16 @@ jobs:
       if: github.event_name == 'pull_request'
       uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
       with:
-        script: "const previewUrl = '${{ steps.deploy.outputs.preview-url }}';\nconst\
-          \ comment = `## \U0001F4DA Documentation Preview Deployed!\n\nPreview URL:\
-          \ ${previewUrl}\n\n### What's included:\n- ✅ Updated OpenAPI specification\n\
-          - ✅ API reference documentation\n- ✅ User guides and tutorials\n\nThis preview\
-          \ will be available until the PR is closed.`;\n\ngithub.rest.issues.createComment({\n\
-          \  issue_number: context.issue.number,\n  owner: context.repo.owner,\n \
-          \ repo: context.repo.repo,\n  body: comment\n});\n"
+        script: |
+          const previewUrl = '${{ steps.deploy.outputs.preview-url }}';
+          const comment = '## Documentation Preview Deployed!\n\nPreview URL: ' + previewUrl + '\n\n### What\'s included:\n- Updated OpenAPI specification\n- API reference documentation\n- User guides and tutorials\n\nThis preview will be available until the PR is closed.';
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
     timeout-minutes: 30
   deploy-production:
     name: Deploy to Production

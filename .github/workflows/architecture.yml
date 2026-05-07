@@ -45,9 +45,15 @@ jobs:
       continue-on-error: true
       uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
       with:
-        script: "const fs = require('fs');\nconst diagram = fs.readFileSync('architecture.md',\
-          \ 'utf8');\ngithub.rest.issues.createComment({\n  issue_number: context.issue.number,\n\
-          \  owner: context.repo.owner,\n  repo: context.repo.repo,\n  body: '## Architecture\
-          \ Diagram\\n\\n' + diagram\n});\n"
+        script: |
+          const fs = require('fs');
+          const diagram = fs.readFileSync('architecture.md', 'utf8');
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '## Architecture Diagram\n\n' + diagram
+          });
+
     timeout-minutes: 30
 

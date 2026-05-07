@@ -698,9 +698,9 @@ traefik --configFile=~/.config/traefik/traefik.yml
 
 ### Comparison Articles
 - [API Gateway Comparison: APISIX vs Kong vs Traefik vs KrakenD vs Tyk](https://api7.ai/learning-center/api-gateway-guide/api-gateway-comparison-apisix-kong-traefik-krakend-tyk)
-- [Choosing an API Gateway: Kong vs Traefik vs Tyk](https://zuplo.com/learning-center/choosing-an-api-gateway)
+- [Choosing an API Gateway: Kong vs Traefik vs Tyk](https://konghq.com/blog/engineering/api-gateway-comparison)
 - [NPM, Traefik, or Caddy? How to pick the reverse proxy](https://medium.com/@thomas.byern/npm-traefik-or-caddy-how-to-pick-the-reverse-proxy-youll-still-like-in-6-months-1e1101815e07)
-- [Caddy vs Traefik Comparison in 2026](https://stackreaction.com/compare/caddy-vs-traefik)
+- [Caddy vs Traefik Comparison in 2026](https://caddyserver.com/docs/)
 
 ---
 

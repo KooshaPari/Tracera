@@ -138,6 +138,12 @@ export class FigmaGenerator {
         console.error(`[TASK #194] Figma parse error in ${file}: ${parseErr}`);
         throw error;  // Make failures fatal
       }
+    }
+
+    return definitions;
+    }
+
+    return definitions;
   }
 
   /**

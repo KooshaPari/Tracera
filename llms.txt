@@ -1,9 +1,9 @@
-# TracerTM 🚀
+# Tracera
 
 > Agent-native, multi-view requirements traceability and project management system.
 
 ## Overview
-TracerTM is a high-assurance RTM system that links requirements to code, tests, and deployments. It is designed for human-agent collaboration and operates at a **critical** quality tier.
+Tracera is a high-assurance RTM system that links requirements to code, tests, and deployments. It is designed for human-agent collaboration and operates at a **critical** quality tier.
 
 ## Key Components
 - **Backend (Go)**: `/backend/` - Core API server (Go 1.21+).
