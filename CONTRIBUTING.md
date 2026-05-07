@@ -12,8 +12,8 @@ TracerTM is a polyglot system (Go, Python, TypeScript). We use `Task` and `Proce
 
 1. **Clone and Install**:
    ```bash
-   git clone https://github.com/kooshapari/tracertm.git
-   cd tracertm
+   git clone https://github.com/KooshaPari/Tracera.git
+   cd Tracera
    task install
    ```
 

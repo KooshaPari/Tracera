@@ -13,8 +13,6 @@ true:
     - develop
 permissions:
   contents: read
-  issues: write
-  pull-requests: read
 jobs:
   architecture:
     runs-on: ubuntu-latest

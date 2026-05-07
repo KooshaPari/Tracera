@@ -86,7 +86,7 @@ processes:
       success_threshold: 1
       failure_threshold: 2
     environment:
-      - "NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-password}"
+      - "NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-changeme}"
       - "NEO4J_ACCEPT_LICENSE_AGREEMENT=yes"
 
   nats:
@@ -126,8 +126,8 @@ processes:
       success_threshold: 1
       failure_threshold: 2
     environment:
-      - "MINIO_ROOT_USER=${S3_ACCESS_KEY_ID:-minioadmin}"
-      - "MINIO_ROOT_PASSWORD=${S3_SECRET_ACCESS_KEY:-minioadmin}"
+      - "MINIO_ROOT_USER=${S3_ACCESS_KEY_ID:-changeme}"
+      - "MINIO_ROOT_PASSWORD=${S3_SECRET_ACCESS_KEY:-changeme}"
 
   vault:
     # Wrapper: skip start if already running; dev mode for local development
@@ -148,7 +148,7 @@ processes:
       timeout_seconds: 5
     environment:
       - "VAULT_ADDR=http://127.0.0.1:8200"
-      - "VAULT_DEV_ROOT_TOKEN_ID=dev-root-token"
+      - "VAULT_DEV_ROOT_TOKEN_ID=${VAULT_DEV_ROOT_TOKEN_ID:-changeme}"
 
   #############################################################################
   # Layer 2: Workflow & Monitoring
@@ -248,7 +248,7 @@ processes:
       postgres:
         condition: process_healthy
     environment:
-      - "DATA_SOURCE_NAME=postgresql://tracertm:${DB_PASSWORD:-tracertm_password}@localhost:5432/tracertm?sslmode=disable"
+      - "DATA_SOURCE_NAME=postgresql://tracertm:${DB_PASSWORD:-changeme}@localhost:5432/tracertm?sslmode=disable"
     readiness_probe:
       http_get:
         host: localhost
@@ -343,9 +343,9 @@ processes:
       - "DB_HOST=localhost"
       - "DB_PORT=5432"
       - "DB_USER=tracertm"
-      - "DB_PASSWORD=${DB_PASSWORD:-tracertm_password}"
+      - "DB_PASSWORD=${DB_PASSWORD:-changeme}"
       - "DB_NAME=tracertm"
-      - "DATABASE_URL=postgres://tracertm:${DB_PASSWORD:-tracertm_password}@localhost:5432/tracertm?sslmode=disable"
+      - "DATABASE_URL=postgres://tracertm:${DB_PASSWORD:-changeme}@localhost:5432/tracertm?sslmode=disable"
       - "REDIS_URL=redis://localhost:6379"
       - "NATS_URL=nats://localhost:4222"
       - "TEMPORAL_HOST=localhost:7233"
@@ -397,7 +397,7 @@ processes:
       - "WORKOS_AUTHKIT_DOMAIN=${WORKOS_AUTHKIT_DOMAIN}"
       - "WORKOS_API_BASE_URL=${WORKOS_API_BASE_URL:-https://api.workos.com}"
       - "CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:4000,http://127.0.0.1:4000,http://localhost:5173,http://127.0.0.1:5173}"
-      - "DATABASE_URL=postgresql+asyncpg://tracertm:${DB_PASSWORD:-tracertm_password}@localhost:5432/tracertm"
+      - "DATABASE_URL=postgresql+asyncpg://tracertm:${DB_PASSWORD:-changeme}@localhost:5432/tracertm"
       - "REDIS_URL=redis://localhost:6379"
       - "NATS_URL=nats://localhost:4222"
       - "TEMPORAL_HOST=localhost:7233"
@@ -528,7 +528,7 @@ processes:
       - "WATCH_DEBOUNCE_MS=60000"
       - "GF_SERVER_HTTP_PORT=3000"
       - "GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}"
-      - "GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}"
+      - "GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-changeme}"
       - "PHENO_OBSERVABILITY_TEMPO_URL=${PHENO_OBSERVABILITY_TEMPO_URL:-http://127.0.0.1:3200}"
       - "GF_INSTALL_PLUGINS=redis-datasource"
 

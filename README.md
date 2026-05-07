@@ -1,10 +1,10 @@
-![Build Status](https://github.com/Phenotype-Enterprise/trace/actions/workflows/quality-gate.yml/badge.svg)
-![Security Audit](https://github.com/Phenotype-Enterprise/trace/actions/workflows/security-guard.yml/badge.svg)
-![Policy Compliance](https://github.com/Phenotype-Enterprise/trace/actions/workflows/policy-gate.yml/badge.svg)
+![Build Status](https://github.com/KooshaPari/Tracera/actions/workflows/quality-gate.yml/badge.svg)
+![Security Audit](https://github.com/KooshaPari/Tracera/actions/workflows/security-guard.yml/badge.svg)
+![Policy Compliance](https://github.com/KooshaPari/Tracera/actions/workflows/policy-gate.yml/badge.svg)
 
 # TracerTM 🚀
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/kooshapari/tracertm)](https://goreportcard.com/report/github.com/kooshapari/tracertm)
+[![Go Report Card](https://goreportcard.com/badge/github.com/KooshaPari/Tracera)](https://goreportcard.com/report/github.com/KooshaPari/Tracera)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
@@ -182,7 +182,7 @@ bun run quality  # Full lint + type + format + build + test
 
 ### Quality Gates
 Both backend and frontend enforce strict quality standards:
-- **Linting**: clippy (Rust-based backend checks), oxlint (frontend)
+- **Linting**: golangci-lint (Go backend), oxlint (frontend)
 - **Type Safety**: Go strict typing, TypeScript strict mode
 - **Code Coverage**: Minimum 80% target
 - **Security**: SAST, dependency scanning, secret detection
