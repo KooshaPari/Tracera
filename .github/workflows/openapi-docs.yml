@@ -38,7 +38,7 @@ jobs:
         cache: true
         cache-dependency-path: backend/go.sum
     - name: Install swag
-      run: go install github.com/swaggo/swag/cmd/swag@latest
+      run: go install github.com/swaggo/swag/cmd/swag@v1.16.4
     - name: Install validation tools
       run: 'npm install -g @apidevtools/swagger-cli@4.0.11
 

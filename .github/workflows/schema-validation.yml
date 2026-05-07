@@ -117,7 +117,7 @@ jobs:
         cache: true
         cache-dependency-path: backend/go.sum
     - name: Install sqlc
-      run: 'go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+      run: 'go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.28.0
 
         echo "$HOME/go/bin" >> $GITHUB_PATH
 
