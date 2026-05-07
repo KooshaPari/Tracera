@@ -3,6 +3,13 @@
   "packageManager": "bun@1.1.38",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
+  "author": "Koosha Pari <koosha@kooshapari.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KooshaPari/Tracera.git",
+    "directory": "frontend"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"
