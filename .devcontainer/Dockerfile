@@ -44,10 +44,10 @@ RUN apt-get update && \
 # ============================================================================
 # LAYER 2: Docker CLI (for docker-in-docker)
 # ============================================================================
-RUN curl -fsSL https://get.docker.com -o get-docker.sh && \
-    sh get-docker.sh && \
-    rm get-docker.sh && \
-    rm -rf /var/lib/apt/lists/*
+RUN curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-27.5.1.tgz -o docker.tgz && \
+    tar xzf docker.tgz && \
+    mv docker/docker /usr/local/bin/docker && \
+    rm -rf docker docker.tgz /var/lib/apt/lists/*
 
 # ============================================================================
 # LAYER 3: Go language runtime (relatively stable version)
