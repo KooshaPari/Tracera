@@ -20,6 +20,10 @@ on:
       - 'tests/chaos/**'
       - '.github/workflows/chaos-tests.yml'
 
+  concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 permissions:
   contents: read
 
