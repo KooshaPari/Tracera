@@ -1,6 +1,7 @@
 name: Canary Deployment
 
 permissions:
+  actions: read
   contents: read
   actions: read
   deployments: write
@@ -394,3 +395,4 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "All traffic has been restored to the stable version." >> $GITHUB_STEP_SUMMARY
         echo "Review logs for failure details." >> $GITHUB_STEP_SUMMARY
+

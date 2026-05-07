@@ -30,6 +30,7 @@ on:
     cancel-in-progress: true
 
 permissions:
+  actions: read
   contents: read
 
 env:

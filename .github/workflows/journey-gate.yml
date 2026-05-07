@@ -6,6 +6,7 @@ on:
   pull_request:
 
 permissions:
+  actions: read
   contents: read
   actions: read
 
@@ -53,3 +54,4 @@ jobs:
           else
             echo "No manifests yet (placeholder only)"
           fi
+

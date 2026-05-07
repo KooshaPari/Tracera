@@ -23,5 +23,5 @@ fi
 bash scripts/shell/clear-port.sh "${PYTHON_BACKEND_PORT}" python-backend
 
 exec .venv/bin/uvicorn tracertm.api.main:app \
-  --host 0.0.0.0 \
+  --host 127.0.0.1 \
   --port "${PYTHON_BACKEND_PORT}"

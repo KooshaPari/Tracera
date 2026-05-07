@@ -48,20 +48,20 @@ Server started on :8080
 
 ```bash
 # From project root
-uvicorn tracertm.api.main:app --reload
+PYTHONPATH=./src uvicorn tracertm.api.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 **Expected Output**:
 ```
-INFO:     Will watch for changes in these directories: ['/Users/kooshapari/temp-PRODVERCEL/485/kush/trace']
-INFO:     Uvicorn running on http://127.0.0.1:4000 (Press CTRL+C to quit)
+INFO:     Will watch for changes in these directories: ['/workspace/src']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 INFO:     Started reloader process
 INFO:     Started server process
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 ```
 
-**Verify**: `curl http://localhost:4000/health`
+**Verify**: `curl http://localhost:8000/health`
 
 ---
 
@@ -96,7 +96,7 @@ curl http://localhost:8080/health
 # Expected: {"status":"ok"}
 
 # Python backend
-curl http://localhost:4000/health
+curl http://localhost:8000/health
 # Expected: {"status":"healthy"}
 ```
 
@@ -169,7 +169,7 @@ alembic upgrade head
 **Error**: API calls fail with network errors
 
 **Check**:
-1. Backend is running: `curl http://localhost:4000/health`
+1. Backend is running: `curl http://localhost:8000/health`
 2. CORS is configured (should work by default)
 3. `.env.local` has correct API URL:
    ```bash
@@ -193,7 +193,7 @@ After starting, you should see these performance improvements from backend conso
 
 ```bash
 # Time a feature listing request
-time curl http://localhost:4000/api/v1/projects/{project_id}/features
+time curl http://localhost:8000/api/v1/projects/{project_id}/features
 
 # Should complete in <100ms
 ```

@@ -43,6 +43,7 @@ on:
     types: [ published ]
 
 permissions:
+  actions: read
   contents: read
   security-events: write
 
