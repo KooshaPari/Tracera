@@ -56,8 +56,8 @@
   "remoteEnv": {
     "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}",
     "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
-    "NEO4J_PASSWORD": "${localEnv:NEO4J_PASSWORD:password}",
-    "GRAFANA_ADMIN_PASSWORD": "${localEnv:GRAFANA_ADMIN_PASSWORD:admin}"
+    "NEO4J_PASSWORD": "${localEnv:NEO4J_PASSWORD}",
+    "GRAFANA_ADMIN_PASSWORD": "${localEnv:GRAFANA_ADMIN_PASSWORD}"
   },
 
   // Forward ports for all services

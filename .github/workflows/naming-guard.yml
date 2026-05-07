@@ -37,6 +37,7 @@ on:
     - frontend/scripts/check-naming-explosion.sh
 permissions:
   contents: read
+  actions: read
 jobs:
   check-naming:
     runs-on: ubuntu-latest
@@ -63,3 +64,4 @@ jobs:
     - name: Check for naming explosion patterns (Frontend)
       run: bash frontend/scripts/check-naming-explosion.sh
     timeout-minutes: 15
+

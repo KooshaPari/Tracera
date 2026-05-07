@@ -28,6 +28,7 @@ on:
   workflow_dispatch: null
 permissions:
   contents: read
+  actions: read
 env:
   GO_VERSION: '1.23'
 jobs:
@@ -256,3 +257,4 @@ jobs:
         path: schema-doc.md
         retention-days: 90
     timeout-minutes: 30
+

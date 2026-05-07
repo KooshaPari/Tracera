@@ -20,6 +20,7 @@ on:
   workflow_dispatch: null
 permissions:
   contents: read
+  actions: read
 env:
   GO_VERSION: 1.25.7
   POSTGRES_DB: tracertm_test
@@ -489,3 +490,4 @@ jobs:
         path: coverage-summary.md
         retention-days: 30
     timeout-minutes: 30
+

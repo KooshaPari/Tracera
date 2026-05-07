@@ -23,6 +23,7 @@ on:
   workflow_dispatch: null
 permissions:
   contents: read
+  actions: read
 jobs:
   generate-and-validate:
     name: Generate and Validate OpenAPI Spec
@@ -39,9 +40,9 @@ jobs:
     - name: Install swag
       run: go install github.com/swaggo/swag/cmd/swag@latest
     - name: Install validation tools
-      run: 'npm install -g @apidevtools/swagger-cli
+      run: 'npm install -g @apidevtools/swagger-cli@4.0.11
 
-        npm install -g @stoplight/spectral-cli
+        npm install -g @stoplight/spectral-cli@6.14.3
 
         '
     - name: Verify swag installation
@@ -182,7 +183,7 @@ jobs:
         name: openapi-spec
         path: .
     - name: Install OpenAPI Generator
-      run: npm install -g @openapitools/openapi-generator-cli
+      run: npm install -g @openapitools/openapi-generator-cli@2.25.0@2.25.0
     - name: Generate ${{ matrix.language }} client
       run: "openapi-generator-cli generate \\\n  -i backend/docs/tracertm_swagger.json\
         \ \\\n  -g ${{ matrix.language }} \\\n  -o clients/${{ matrix.language }}\
@@ -194,3 +195,4 @@ jobs:
         path: clients/${{ matrix.language }}
         retention-days: 30
     timeout-minutes: 30
+

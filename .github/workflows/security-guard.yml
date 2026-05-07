@@ -13,6 +13,7 @@ on:
     - '**'
 permissions:
   contents: read
+  actions: read
 jobs:
   guard:
     runs-on: ubuntu-latest
@@ -26,3 +27,4 @@ jobs:
       with:
         extra_args: --hook-stage pre-commit --config .pre-commit-config.yaml --show-diff-on-failure
     timeout-minutes: 30
+

@@ -9,6 +9,7 @@ concurrency:
   cancel-in-progress: true
 permissions:
   contents: read
+  actions: read
 jobs:
   trufflehog:
     runs-on: ubuntu-latest
@@ -20,3 +21,4 @@ jobs:
       - uses: trufflesecurity/trufflehog@17456f8c7d042d8c82c9a8ca9e937231f9f42e26  # v3.92.0
         with:
           extra_args: --only-verified
+

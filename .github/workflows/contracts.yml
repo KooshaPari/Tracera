@@ -39,6 +39,7 @@ on:
     - bun.lock
 permissions:
   contents: read
+  actions: read
 jobs:
   contracts:
     runs-on: ubuntu-latest
@@ -77,3 +78,4 @@ jobs:
     - name: Check generated contracts
       run: bash scripts/shell/check-generated-contracts.sh
     timeout-minutes: 20
+

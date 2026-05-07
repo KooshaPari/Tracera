@@ -20,6 +20,7 @@ on:
     - frontend/apps/web/package.json
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: chromatic-${{ github.ref }}
   cancel-in-progress: true
@@ -105,3 +106,4 @@ jobs:
       if: needs.chromatic.result == 'success'
       run: echo "All visual regression tests passed"
     timeout-minutes: 20
+

@@ -13,6 +13,7 @@ on:
     - develop
 permissions:
   contents: read
+  actions: read
   issues: write
   pull-requests: read
 jobs:
@@ -23,7 +24,7 @@ jobs:
     - name: Install UV
       uses: astral-sh/setup-uv@6dfebec6ddbcd197e02256fbdf54deb334fb7f06
       with:
-        version: latest
+        version: 0.6.14
     - name: Set up Python
       uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
       with:
@@ -49,3 +50,4 @@ jobs:
           \  owner: context.repo.owner,\n  repo: context.repo.repo,\n  body: '## Architecture\
           \ Diagram\\n\\n' + diagram\n});\n"
     timeout-minutes: 30
+

@@ -16,6 +16,7 @@ on:
   workflow_dispatch: null
 permissions:
   contents: read
+  actions: read
   security-events: write
 jobs:
   scan:
@@ -103,3 +104,4 @@ jobs:
         fail-on-severity: high
         comment-summary-in-pr: on-failure
     timeout-minutes: 45
+

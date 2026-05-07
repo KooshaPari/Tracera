@@ -27,6 +27,7 @@ on:
     - uv.lock
 permissions:
   contents: read
+  actions: read
 jobs:
   setup-test-users:
     runs-on: ubuntu-latest
@@ -291,3 +292,4 @@ jobs:
         \ \"- [Run Artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{\
         \ github.run_id }})\"\n} >> \"$GITHUB_STEP_SUMMARY\""
     timeout-minutes: 30
+

@@ -23,6 +23,7 @@ on:
     - .github/workflows/contract-tests.yml
 permissions:
   contents: read
+  actions: read
 env:
   TEST_DB_HOST: localhost
   TEST_DB_PORT: 5432
@@ -210,3 +211,4 @@ jobs:
           \  owner: context.repo.owner,\n  repo: context.repo.repo,\n  body: `## \U0001F4CB\
           \ Contract Test Coverage\\n\\n${coverage}`\n});"
     timeout-minutes: 20
+
