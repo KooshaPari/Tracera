@@ -154,8 +154,8 @@ jobs:
 
         '
     - name: Health check post-rollback
-      run: "echo \"\U0001F3E5 Checking health after rollback...\"\n\nENVIRONMENT=\"\
-        ${{ github.event.inputs.environment }}\"\nif [ \"$ENVIRONMENT\" = \"production\"\
+      run: "echo \"Checking health after rollback...\"\n\nENVIRONMENT=\"\
+        ${{ github.event.inputs.environment || github.event.client_payload.environment || 'production' }}\"\nif [ \"$ENVIRONMENT\" = \"production\"\
         \ ]; then\n  HEALTH_URL=\"${{ secrets.PRODUCTION_HEALTH_URL }}\"\nelse\n \
         \ HEALTH_URL=\"${{ secrets.STAGING_HEALTH_URL }}\"\nfi\n\nMAX_RETRIES=10\n\
         RETRY_DELAY=10\n\nfor i in $(seq 1 $MAX_RETRIES); do\n  echo \"Health check\
@@ -201,8 +201,8 @@ jobs:
     - rollback-frontend
     steps:
     - name: Run smoke tests
-      run: "echo \"\U0001F52C Running smoke tests on rolled-back version...\"\n\n\
-        ENVIRONMENT=\"${{ github.event.inputs.environment }}\"\nif [ \"$ENVIRONMENT\"\
+      run: "echo \"Running smoke tests on rolled-back version...\"\n\n\
+        ENVIRONMENT=\"${{ github.event.inputs.environment || github.event.client_payload.environment || 'production' }}\"\nif [ \"$ENVIRONMENT\"\
         \ = \"production\" ]; then\n  BASE_URL=\"${{ secrets.PRODUCTION_BASE_URL }}\"\
         \nelse\n  BASE_URL=\"${{ secrets.STAGING_BASE_URL }}\"\nfi\n\n# Test critical\
         \ endpoints\necho \"Testing /health endpoint...\"\ncurl -f \"$BASE_URL/health\"\

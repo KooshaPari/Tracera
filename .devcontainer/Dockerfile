@@ -4,7 +4,7 @@
 # Optimized for faster builds with strategic layer caching
 # ============================================================================
 
-FROM ubuntu:22.04@sha256:962f6cadeae0ea6284001009daa4cc9a8c37e75d1f5191cf0eb83fe565b63dd7@sha256:962f6cadeae0ea6284001009daa4cc9a8c37e75d1f5191cf0eb83fe565b63dd7
+FROM ubuntu:22.04@sha256:962f6cadeae0ea6284001009daa4cc9a8c37e75d1f5191cf0eb83fe565b63dd7
 
 LABEL maintainer="TracerTM Team"
 LABEL description="TracerTM development environment with Go, Python, Node.js/Bun"

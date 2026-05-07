@@ -3,19 +3,7 @@
   "packageManager": "bun@1.1.38",
   "version": "0.1.0",
   "private": true,
-<<<<<<< HEAD
   "description": "TracerTM frontend monorepo with React 19, TanStack Router, and Tailwind CSS",
-  "author": "Phenotype Org <phenotype@example.com>",
-  "license": "MIT OR Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Phenotype/Tracera"
-  },
-  "bugs": {
-    "url": "https://github.com/Phenotype/Tracera/issues"
-  },
-  "homepage": "https://github.com/Phenotype/Tracera#readme",
-=======
   "license": "MIT",
   "author": "Koosha Pari <koosha@kooshapari.com>",
   "repository": {
@@ -23,7 +11,10 @@
     "url": "https://github.com/KooshaPari/Tracera.git",
     "directory": "frontend"
   },
->>>>>>> ci/concurrency-workflows
+  "bugs": {
+    "url": "https://github.com/KooshaPari/Tracera/issues"
+  },
+  "homepage": "https://github.com/KooshaPari/Tracera#readme",
   "workspaces": [
     "apps/*",
     "packages/*"

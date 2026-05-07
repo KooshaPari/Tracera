@@ -169,9 +169,9 @@ jobs:
 
         git add tests/contracts/versions/
 
-        git commit -m "chore: version contracts for $VERSION" || true
+        git commit -m "chore: version contracts for $VERSION"
 
-        git push || true
+        git push
 
         '
     timeout-minutes: 20

@@ -159,7 +159,7 @@ jobs:
         git add docs/public/openapi.json docs/public/openapi.yaml\nif [ -n \"$(git\
         \ status --porcelain docs/public/openapi.json docs/public/openapi.yaml)\"\
         \ ]; then\n  git commit -m \"chore(openapi): regenerate spec artifact [skip\
-        \ ci]\"\n  git push origin HEAD:main\nelse\n  echo \"No OpenAPI spec changes\
+        \ ci]\"\n  git push origin HEAD:${{ github.ref_name }}\nelse\n  echo \"No OpenAPI spec changes\
         \ to commit.\"\nfi\n"
     timeout-minutes: 30
   generate-clients:
