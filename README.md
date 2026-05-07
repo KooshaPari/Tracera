@@ -3,7 +3,7 @@
 ![Policy Compliance](https://github.com/KooshaPari/Tracera/actions/workflows/policy-gate.yml/badge.svg)
 [![AI Slop Inside](https://sladge.net/badge.svg)](https://sladge.net)
 
-# TracerTM 🚀
+# tracertm
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/KooshaPari/Tracera)](https://goreportcard.com/report/github.com/KooshaPari/Tracera)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -11,7 +11,7 @@
 
 **Agent-native requirements traceability and project management dashboard.**
 
-TracerTM is a modern requirements traceability matrix (RTM) and project management system designed for agent-driven development workflows. It provides a unified dashboard and control plane for linking requirements to code, tests, and deployments—built on a Go backend with a TypeScript/React Turbo frontend.
+tracertm is a modern requirements traceability matrix (RTM) and project management system designed for agent-driven development workflows. It provides a unified dashboard and control plane for linking requirements to code, tests, and deployments—built on a Go backend with a TypeScript/React Turbo frontend.
 
 ---
 
