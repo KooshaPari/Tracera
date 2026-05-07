@@ -91,6 +91,7 @@ jobs:
   rollback-backend:
     name: Rollback Backend
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs:
     - validate-rollback
     - health-check-pre-rollback
