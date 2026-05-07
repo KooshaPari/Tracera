@@ -1,5 +1,5 @@
 name: Deployment Rollback
-true:
+on:
   workflow_dispatch:
     inputs:
       environment:
@@ -20,6 +20,10 @@ true:
   repository_dispatch:
     types:
     - auto-rollback
+
+  concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 permissions:
   contents: read
   deployments: write

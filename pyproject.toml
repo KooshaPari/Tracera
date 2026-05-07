@@ -11,10 +11,14 @@ description = "Agent-native, multi-view requirements traceability and project ma
 readme = "README.md"
 requires-python = ">=3.13"
 authors = [
+<<<<<<< HEAD
     { name = "Phenotype Org", email = "phenotype@example.com" },
+=======
+    { name = "Koosha Pari", email = "koosha@kooshapari.com" },
+>>>>>>> ci/concurrency-workflows
 ]
-license = "MIT OR Apache-2.0"
-license-files = ["LICENSE-MIT", "LICENSE-APACHE"]
+license = "MIT"
+license-files = ["LICENSE"]
 keywords = [
     "requirements",
     "traceability",
@@ -26,10 +30,14 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
+<<<<<<< HEAD
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+=======
+    "Programming Language :: Python :: 3.13",
+>>>>>>> ci/concurrency-workflows
     "Topic :: Software Development :: Quality Assurance",
     "Environment :: Console",
     "Intended Audience :: System Administrators",
@@ -37,7 +45,16 @@ classifiers = [
     "Operating System :: OS Independent",
     "Topic :: Office/Business",
 ]
+<<<<<<< HEAD
 urls = { homepage = "https://github.com/Phenotype/Tracera", repository = "https://github.com/Phenotype/Tracera", documentation = "https://github.com/Phenotype/Tracera#readme", changelog = "https://github.com/Phenotype/Tracera/blob/main/CHANGELOG.md" }
+=======
+
+[project.urls]
+Repository = "https://github.com/KooshaPari/Tracera"
+Documentation = "https://github.com/KooshaPari/Tracera/blob/main/README.md"
+Changelog = "https://github.com/KooshaPari/Tracera/blob/main/CHANGELOG.md"
+
+>>>>>>> ci/concurrency-workflows
 dependencies = [
     "typer>=0.21.1",
     "rich>=14.3.1",

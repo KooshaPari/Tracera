@@ -1,10 +1,11 @@
 name: Release
-permissions:
-  contents: read
-true:
+on:
   push:
     tags:
     - v*
+permissions:
+  contents: read
+  actions: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
