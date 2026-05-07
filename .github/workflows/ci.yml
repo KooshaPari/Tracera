@@ -490,7 +490,7 @@ jobs:
     - name: Run golangci-lint (strict enforcement)
       uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20
       with:
-        version: latest
+        version: 'v1.64.8'
         working-directory: backend
         args: --timeout=5m --config=.golangci.yml
       continue-on-error: false
@@ -1553,7 +1553,7 @@ jobs:
     - name: Set up kubectl
       uses: azure/setup-kubectl@776406bce94f63e41d621b960d78ee25c8b76ede
       with:
-        version: 'latest'
+        version: '1.32.0'
 
     - name: Configure kubectl
       run: |
@@ -1592,7 +1592,7 @@ jobs:
     - name: Set up kubectl
       uses: azure/setup-kubectl@776406bce94f63e41d621b960d78ee25c8b76ede
       with:
-        version: 'latest'
+        version: '1.32.0'
 
     - name: Configure kubectl
       run: |
