@@ -29,7 +29,7 @@ services:
 
   # Nginx Prometheus Exporter
   nginx-exporter:
-    image: nginx/nginx-prometheus-exporter:1.0.0@sha256:36dc92d75ab040f2bda0362c3803165a40bab47a16e1197afd43d5acc96407fa
+    image: nginx/nginx-prometheus-exporter:1.0.0@sha256:36dc92d75ab040f2bda0362c3803165a40bab47a16e1197afd43d5acc96407fa@sha256:36dc92d75ab040f2bda0362c3803165a40bab47a16e1197afd43d5acc96407fa
     container_name: tracertm-nginx-exporter
     command:
       - '-nginx.scrape-uri=http://nginx/metrics'
@@ -114,7 +114,7 @@ services:
   # PostgreSQL Database
   # NOTE: DB_PASSWORD must be set via environment variable - no default fallback for security
   postgres:
-    image: postgres:15-alpine@sha256:09e4f20b14ddb3dfe3a0c825b206032aaf8f28300ba2070c0b60fc1c10c6abc7
+    image: postgres:15-alpine@sha256:09e4f20b14ddb3dfe3a0c825b206032aaf8f28300ba2070c0b60fc1c10c6abc7@sha256:09e4f20b14ddb3dfe3a0c825b206032aaf8f28300ba2070c0b60fc1c10c6abc7
     container_name: tracertm-postgres
     environment:
       POSTGRES_DB: ${DB_NAME:-tracertm}
@@ -135,7 +135,7 @@ services:
 
   # PostgreSQL Exporter
   postgres-exporter:
-    image: prometheuscommunity/postgres-exporter:v0.15.0@sha256:386b12d19eab2a37d7cd8ca8b4c7491cc7a830d9581f49af6c98a393da9605e6
+    image: prometheuscommunity/postgres-exporter:v0.15.0@sha256:386b12d19eab2a37d7cd8ca8b4c7491cc7a830d9581f49af6c98a393da9605e6@sha256:386b12d19eab2a37d7cd8ca8b4c7491cc7a830d9581f49af6c98a393da9605e6
     container_name: tracertm-postgres-exporter
     environment:
       DATA_SOURCE_NAME: "postgresql://${DB_USER:-tracertm}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-tracertm}?sslmode=disable"
@@ -150,7 +150,7 @@ services:
 
   # Redis-compatible cache
   dragonfly:
-    image: docker.dragonflydb.io/dragonflydb/dragonfly:v1.22.0@sha256:268b2df1e4ba07a0ba08944b2dfe95235c6a8dfce4621e0c39b242498351a9f8
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:v1.22.0@sha256:268b2df1e4ba07a0ba08944b2dfe95235c6a8dfce4621e0c39b242498351a9f8@sha256:268b2df1e4ba07a0ba08944b2dfe95235c6a8dfce4621e0c39b242498351a9f8
     container_name: tracertm-dragonfly
     ports:
       - "6379:6379"
@@ -167,7 +167,7 @@ services:
 
   # Redis Exporter
   redis-exporter:
-    image: oliver006/redis_exporter:v1.55.0@sha256:d82625bda93823fb40de881ffbb45b65aca772a39c30141387f92314c258da5d
+    image: oliver006/redis_exporter:v1.55.0@sha256:d82625bda93823fb40de881ffbb45b65aca772a39c30141387f92314c258da5d@sha256:d82625bda93823fb40de881ffbb45b65aca772a39c30141387f92314c258da5d
     container_name: tracertm-redis-exporter
     environment:
       REDIS_ADDR: redis://dragonfly:6379
@@ -202,7 +202,7 @@ services:
 
   # Prometheus Monitoring
   prometheus:
-    image: prom/prometheus:v2.52.0@sha256:5c435642ca4d8427ca26f4901c11114023004709037880cd7860d5b7176aa731
+    image: prom/prometheus:v2.52.0@sha256:5c435642ca4d8427ca26f4901c11114023004709037880cd7860d5b7176aa731@sha256:5c435642ca4d8427ca26f4901c11114023004709037880cd7860d5b7176aa731
     container_name: tracertm-prometheus
     ports:
       - "9090:9090"
@@ -221,7 +221,7 @@ services:
 
   # Grafana Dashboards
   grafana:
-    image: grafana/grafana:11.1.0@sha256:079600c9517b678c10cda6006b4487d3174512fd4c6cface37df7822756ed7a5
+    image: grafana/grafana:11.1.0@sha256:079600c9517b678c10cda6006b4487d3174512fd4c6cface37df7822756ed7a5@sha256:079600c9517b678c10cda6006b4487d3174512fd4c6cface37df7822756ed7a5
     container_name: tracertm-grafana
     ports:
       - "3000:3000"

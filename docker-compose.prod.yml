@@ -8,7 +8,7 @@ services:
   #############################################################################
 
   postgres:
-    image: postgres:17-alpine
+    image: postgres:17-alpine@sha256:c7526c0f6c3f30260a563d7bcf8ad778effac59a44f8ffa86678c35418338609@sha256:c7526c0f6c3f30260a563d7bcf8ad778effac59a44f8ffa86678c35418338609
     container_name: tracertm-postgres
     environment:
       POSTGRES_USER: tracertm
@@ -31,7 +31,7 @@ services:
     cpus: '1'
 
   dragonfly:
-    image: docker.dragonflydb.io/dragonflydb/dragonfly:v1.22.0
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:v1.22.0@sha256:268b2df1e4ba07a0ba08944b2dfe95235c6a8dfce4621e0c39b242498351a9f8@sha256:268b2df1e4ba07a0ba08944b2dfe95235c6a8dfce4621e0c39b242498351a9f8
     container_name: tracertm-dragonfly
     ports:
       - "6379:6379"
@@ -49,7 +49,7 @@ services:
     cpus: '0.5'
 
   nats:
-    image: nats:2.10-alpine
+    image: nats:2.10-alpine@sha256:b83efabe3e7def1e0a4a31ec6e078999bb17c80363f881df35edc70fcb6bb927@sha256:b83efabe3e7def1e0a4a31ec6e078999bb17c80363f881df35edc70fcb6bb927
     container_name: tracertm-nats
     command: nats-server -c /etc/nats/nats.conf -js
     ports:
@@ -71,7 +71,7 @@ services:
     cpus: '1'
 
   neo4j:
-    image: neo4j:5.20-community
+    image: neo4j:5.20-community@sha256:52d3dec8d45585b21edeca8517d752b2512e52aa94f80fc36a5788c88c95f8e4@sha256:52d3dec8d45585b21edeca8517d752b2512e52aa94f80fc36a5788c88c95f8e4
     container_name: tracertm-neo4j
     environment:
       NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-tracertm_password}
@@ -93,7 +93,7 @@ services:
     cpus: '2'
 
   minio:
-    image: minio/minio:RELEASE.2024-05-01T01-11-10Z
+    image: minio/minio:RELEASE.2024-05-01T01-11-10Z@sha256:f95dc4fc35439654a71300f765b485e114e7a720318dbce24ccd4f324d1475cf@sha256:f95dc4fc35439654a71300f765b485e114e7a720318dbce24ccd4f324d1475cf
     container_name: tracertm-minio
     environment:
       MINIO_ROOT_USER: ${S3_ACCESS_KEY_ID:-minioadmin}
@@ -120,7 +120,7 @@ services:
   #############################################################################
 
   temporal:
-    image: temporalio/auto-setup:1.24
+    image: temporalio/auto-setup:1.24@sha256:98cdb6b5e02d64cb933864a9ba91cb66065eb320623a0dafdf44beba535bca88@sha256:98cdb6b5e02d64cb933864a9ba91cb66065eb320623a0dafdf44beba535bca88
     container_name: tracertm-temporal
     depends_on:
       postgres:
@@ -154,7 +154,7 @@ services:
   #############################################################################
 
   prometheus:
-    image: prom/prometheus:v2.52.0
+    image: prom/prometheus:v2.52.0@sha256:5c435642ca4d8427ca26f4901c11114023004709037880cd7860d5b7176aa731@sha256:5c435642ca4d8427ca26f4901c11114023004709037880cd7860d5b7176aa731
     container_name: tracertm-prometheus
     volumes:
       - ./deploy/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -178,7 +178,7 @@ services:
     cpus: '1'
 
   loki:
-    image: grafana/loki:2.9.0
+    image: grafana/loki:2.9.0@sha256:b025a0220f390baaab01578aea2fe0ba677584d9f248c3fe5af15f84dd1de60d@sha256:b025a0220f390baaab01578aea2fe0ba677584d9f248c3fe5af15f84dd1de60d
     container_name: tracertm-loki
     ports:
       - "3100:3100"
@@ -197,7 +197,7 @@ services:
     cpus: '0.5'
 
   tempo:
-    image: grafana/tempo:2.5.0
+    image: grafana/tempo:2.5.0@sha256:f0200a9bff6d14eb3a4332194f7b77c37ee1a3535e7e41db024d95aab6f1b4e8@sha256:f0200a9bff6d14eb3a4332194f7b77c37ee1a3535e7e41db024d95aab6f1b4e8
     container_name: tracertm-tempo
     command: ["-config.file=/etc/tempo.yaml"]
     ports:
@@ -219,7 +219,7 @@ services:
     cpus: '1'
 
   grafana:
-    image: grafana/grafana:10.2
+    image: grafana/grafana:10.2.0@sha256:b24884097937b88badf18d95c158a125a4173a650af8d82db83a4f66127c4b18.0@sha256:b24884097937b88badf18d95c158a125a4173a650af8d82db83a4f66127c4b18
     container_name: tracertm-grafana
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?GRAFANA_ADMIN_USER must be set}
