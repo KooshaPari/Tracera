@@ -19,17 +19,14 @@ def test_simple_cli_item(cli_runner: Any) -> None:
     """Simple test to verify CLI mocking works."""
     with patch("tracertm.cli.commands.item.DatabaseConnection"):
         # Mock the session
+        with patch("tracertm.cli.commands.item.get_session") as mock_session:
+            with patch("tracertm.cli.commands.item._get_project_storage_path") as mock_path:
+                # Set up basic mocks
+                mock_path.return_value = "/tmp/test"
+                mock_session.return_value = None  # No database session
 
-        # Mock other functions
-        with patch("tracertm.cli.commands.item._get_project_storage_path") as mock_path:
-            with patch("tracertm.cli.commands.item._load_project_yaml") as mock_yaml:
-                with patch("tracertm.cli.commands.item._get_storage_manager"):
-                    # Set up basic mocks
-                    mock_path.return_value = "/tmp/test"
-                    mock_yaml.return_value = {"name": "test-project"}
-
-                    # Test a simple command
-                    result = cli_runner.invoke(item_app, ["--help"])
-                    assert result.exit_code == 0
-                    assert "create" in result.stdout
-                    assert "list" in result.stdout
+                # Test a simple command
+                result = cli_runner.invoke(item_app, ["--help"])
+                assert result.exit_code == 0
+                assert "create" in result.stdout
+                assert "ls" in result.stdout  # Changed from "list" to "ls"

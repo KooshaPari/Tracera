@@ -4,8 +4,8 @@ services:
     image: nginx:alpine
     container_name: tracertm-nginx
     ports:
-      - "80:80"
-      - "443:443"
+      - "127.0.0.1:80:80"
+      - "127.0.0.1:443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
@@ -29,7 +29,7 @@ services:
 
   # Nginx Prometheus Exporter
   nginx-exporter:
-    image: nginx/nginx-prometheus-exporter:latest
+    image: nginx/nginx-prometheus-exporter:1.0.0
     container_name: tracertm-nginx-exporter
     command:
       - '-nginx.scrape-uri=http://nginx/metrics'
@@ -42,6 +42,7 @@ services:
     restart: unless-stopped
 
   # Go Backend Service
+  # NOTE: DB_PASSWORD must be set via environment variable - no default fallback for security
   go-backend:
     build:
       context: ./backend
@@ -53,7 +54,7 @@ services:
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USER=${DB_USER:-tracertm}
-      - DB_PASSWORD=${DB_PASSWORD:-tracertm_password}
+      - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME:-tracertm}
       - REDIS_URL=redis://dragonfly:6379
       - NATS_URL=nats://nats:4222
@@ -86,7 +87,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${DB_USER:-tracertm}:${DB_PASSWORD:-tracertm_password}@postgres:5432/${DB_NAME:-tracertm}
+      - DATABASE_URL=postgresql+asyncpg://${DB_USER:-tracertm}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-tracertm}
       - REDIS_URL=redis://dragonfly:6379
       - NATS_URL=nats://nats:4222
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
@@ -111,13 +112,14 @@ services:
     restart: unless-stopped
 
   # PostgreSQL Database
+  # NOTE: DB_PASSWORD must be set via environment variable - no default fallback for security
   postgres:
     image: postgres:15-alpine
     container_name: tracertm-postgres
     environment:
       POSTGRES_DB: ${DB_NAME:-tracertm}
       POSTGRES_USER: ${DB_USER:-tracertm}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-tracertm_password}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -133,10 +135,10 @@ services:
 
   # PostgreSQL Exporter
   postgres-exporter:
-    image: prometheuscommunity/postgres-exporter:latest
+    image: prometheuscommunity/postgres-exporter:v0.15.0
     container_name: tracertm-postgres-exporter
     environment:
-      DATA_SOURCE_NAME: "postgresql://${DB_USER:-tracertm}:${DB_PASSWORD:-tracertm_password}@postgres:5432/${DB_NAME:-tracertm}?sslmode=disable"
+      DATA_SOURCE_NAME: "postgresql://${DB_USER:-tracertm}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-tracertm}?sslmode=disable"
     ports:
       - "9187:9187"
     depends_on:
@@ -148,7 +150,7 @@ services:
 
   # Redis-compatible cache
   dragonfly:
-    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:v1.22.0
     container_name: tracertm-dragonfly
     ports:
       - "6379:6379"
@@ -165,7 +167,7 @@ services:
 
   # Redis Exporter
   redis-exporter:
-    image: oliver006/redis_exporter:latest
+    image: oliver006/redis_exporter:v1.55.0
     container_name: tracertm-redis-exporter
     environment:
       REDIS_ADDR: redis://dragonfly:6379
@@ -180,11 +182,11 @@ services:
 
   # NATS Message Broker
   nats:
-    image: nats:latest
+    image: nats:2.10.15-alpine
     container_name: tracertm-nats
     ports:
       - "4222:4222"  # Client connections
-      - "8222:8222"  # HTTP management/metrics
+      - "127.0.0.1:8222:8222"  # HTTP management/metrics — localhost only
       - "6222:6222"  # Cluster connections
     command: ["-js", "-m", "8222"]
     volumes:
@@ -200,7 +202,7 @@ services:
 
   # Prometheus Monitoring
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.52.0
     container_name: tracertm-prometheus
     ports:
       - "9090:9090"
@@ -219,13 +221,13 @@ services:
 
   # Grafana Dashboards
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:11.1.0
     container_name: tracertm-grafana
     ports:
       - "3000:3000"
     environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?GRAFANA_ADMIN_USER must be set}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
       GF_INSTALL_PLUGINS: redis-datasource
     volumes:
       - grafana_data:/var/lib/grafana

@@ -29,12 +29,12 @@ services:
 
   # PostgreSQL Database
   postgres:
-    image: postgres:15-alpine
+    image: postgres@sha256:b4a5f2de972016bd62ded6206c10face6ed16a469ef276c569dd130cb2f07f92
     container_name: tracertm-postgres-dev
     environment:
-      POSTGRES_DB: tracertm
-      POSTGRES_USER: tracertm
-      POSTGRES_PASSWORD: tracertm_password
+      POSTGRES_DB: ${DB_NAME:-tracertm}
+      POSTGRES_USER: ${DB_USER:-tracertm}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -50,7 +50,7 @@ services:
 
   # Redis Cache
   redis:
-    image: redis:7-alpine
+    image: redis@sha256:0740145ae712d64d951f281cb40a763df4963362d8b070338afba8f03725800b
     container_name: tracertm-redis-dev
     ports:
       - "6379:6379"
@@ -67,7 +67,7 @@ services:
 
   # Neo4j Graph Database
   neo4j:
-    image: neo4j:5-community
+    image: neo4j@sha256:4c014459f95e2f5e52f15c9b960cbec1a0b0889485f613ddac221b559dfa1cb5
     container_name: tracertm-neo4j-dev
     ports:
       - "7474:7474"  # HTTP
@@ -76,7 +76,7 @@ services:
       - neo4j-data:/data
       - neo4j-logs:/logs
     environment:
-      - NEO4J_AUTH=neo4j/password
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
       - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
       - NEO4J_dbms_memory_pagecache_size=512M
       - NEO4J_dbms_memory_heap_max__size=1G
@@ -91,7 +91,7 @@ services:
 
   # NATS Message Broker
   nats:
-    image: nats:latest
+    image: nats@sha256:7e2f895a12d5bc4586191452f5dd20968e8c800d53622073a2730c38d6b0eccb
     container_name: tracertm-nats-dev
     ports:
       - "4222:4222"  # Client connections
@@ -111,7 +111,7 @@ services:
 
   # Temporal (optional - can be started separately)
   temporal:
-    image: temporalio/auto-setup:latest
+    image: temporalio/auto-setup@sha256:329a6f800665c2d9434ca85f757596552fbc8975542e3f1423ff4e61365720d6
     container_name: tracertm-temporal-dev
     ports:
       - "7233:7233"  # gRPC
@@ -120,7 +120,7 @@ services:
       - DB=postgresql
       - DB_PORT=5432
       - POSTGRES_USER=tracertm
-      - POSTGRES_PWD=tracertm_password
+      - POSTGRES_PWD=${DB_PASSWORD}
       - POSTGRES_SEEDS=postgres
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
     depends_on:
@@ -134,7 +134,7 @@ services:
 
   # Prometheus (optional - for monitoring)
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus@sha256:60f8194a41d3229b9e70684965ebdaa8f5a265f042d9de3d2079ba2ce677ec78
     container_name: tracertm-prometheus-dev
     ports:
       - "9090:9090"
@@ -151,13 +151,13 @@ services:
 
   # Grafana (optional - for monitoring)
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana@sha256:83c197f05ad57b51f5186ca902f0c95fcce45810e7fe738a84cc38f481a2227a
     container_name: tracertm-grafana-dev
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
       - GF_INSTALL_PLUGINS=redis-datasource
     volumes:
       - grafana-data:/var/lib/grafana
