@@ -76,9 +76,9 @@ jobs:
     needs: validate-rollback
     steps:
     - name: Check current deployment health
-      run: "echo \"\U0001F3E5 Checking current deployment health...\"\n\n# Determine\
+      run: "echo \"Checking current deployment health...\"\n\n# Determine\
         \ health endpoint based on environment\nENVIRONMENT=\"${{ github.event.inputs.environment\
-        \ }}\"\nif [ \"$ENVIRONMENT\" = \"production\" ]; then\n  HEALTH_URL=\"${{\
+        \ || github.event.client_payload.environment || 'production' }}\"\nif [ \"$ENVIRONMENT\" = \"production\" ]; then\n  HEALTH_URL=\"${{\
         \ secrets.PRODUCTION_HEALTH_URL }}\"\nelse\n  HEALTH_URL=\"${{ secrets.STAGING_HEALTH_URL\
         \ }}\"\nfi\n\n# Check health endpoint\nRESPONSE=$(curl -s -w \"\\n%{http_code}\"\
         \ \"$HEALTH_URL/health\" || echo \"000\")\nHTTP_CODE=$(echo \"$RESPONSE\"\
