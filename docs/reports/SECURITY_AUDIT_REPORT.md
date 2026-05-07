@@ -441,12 +441,9 @@
 | H-MULTI-3 | ~52 `shell=True` subprocess calls across repos | Multiple | Mostly in scripts with controlled inputs; 3 in active production code need review |
 | H-MULTI-4 | `.devcontainer/Dockerfile` uses mutable `ubuntu:22.04` | Tracera | Needs Docker network access to pin with @sha256 digest |
 
-### NEW — HIGH Fixed This Pass
+### NEW — MEDIUM Open
 
-| ID | Finding | Repo | File | Status |
-|----|---------|------|------|--------|
-| H-TRC-6 | trufflehog scan_depth=4 missed deep files (depth 11+) | Tracera | `trufflehog.yml` | **FIXED** — increased to scan_depth=15 |
-| H-PAR-1 | 4 Parpoura API routes missing @require_permission | Parpoura | `venture/api/main.py` | **FIXED** — suspend/resume → WORKFLOW_EXECUTE; ledger query/verify → WORKFLOW_READ |
+| ID | Finding | Repo | Description |
 
 | ID | Finding | Repo | Description |
 |----|---------|------|-------------|

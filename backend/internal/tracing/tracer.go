@@ -78,6 +78,12 @@ func InitTracer(ctx context.Context, collectorEndpoint string, environment strin
 		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
+	// Sampler: always sample in dev/staging; ratio-based in production
+	sampler := sdktrace.AlwaysSample()
+	if environment == "production" {
+		sampler = sdktrace.ParentBased(sdktrace.TraceIDRatioBased(0.1))
+	}
+
 	// Create tracer provider with batch span processor
 	// BatchSpanProcessor is more efficient than SimpleSpanProcessor for production
 	tp := sdktrace.NewTracerProvider(
@@ -87,7 +93,7 @@ func InitTracer(ctx context.Context, collectorEndpoint string, environment strin
 			sdktrace.WithMaxQueueSize(tracerMaxQueueSize),
 		),
 		sdktrace.WithResource(res),
-		sdktrace.WithSampler(sdktrace.AlwaysSample()), // Sample all traces in development
+		sdktrace.WithSampler(sampler),
 	)
 
 	// Register the tracer provider globally
@@ -113,27 +119,28 @@ func (tp *TracerProvider) Shutdown(ctx context.Context) error {
 		return nil
 	}
 
-	slog.Debug("🔍 Shutting down tracer provider...")
+	slog.Info("🔍 Shutting down distributed tracing")
 
-	// Create a timeout context for shutdown
+	// Create timeout context for shutdown
 	shutdownCtx, cancel := context.WithTimeout(ctx, tracerShutdownTimeout)
 	defer cancel()
 
+	// Shutdown the provider (flushes remaining spans)
 	if err := tp.provider.Shutdown(shutdownCtx); err != nil {
 		return fmt.Errorf("failed to shutdown tracer provider: %w", err)
 	}
 
-	slog.Debug("✅ Tracer provider shut down successfully")
+	slog.Info("✅ Distributed tracing shutdown complete")
 	return nil
 }
 
-// ForceFlush forces all pending spans to be exported
+// ForceFlush forces a flush of all pending spans
 func (tp *TracerProvider) ForceFlush(ctx context.Context) error {
 	if tp.provider == nil {
 		return nil
 	}
 
-	// Create a timeout context for flush
+	// Create timeout context for flush
 	flushCtx, cancel := context.WithTimeout(ctx, tracerFlushTimeout)
 	defer cancel()
 
