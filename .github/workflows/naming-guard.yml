@@ -1,79 +1,65 @@
 name: Naming Explosion Guard
-
-on:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+true:
   pull_request:
     paths:
-      - 'src/**/*.py'
-      - 'internal/**/*.go'
-      - 'backend/**/*.go'
-      - 'frontend/**/*.ts'
-      - '!frontend/apps/web/vitest.contract.config.ts'
-      - 'frontend/**/*.tsx'
-      - 'frontend/**/*.js'
-      - 'frontend/**/*.jsx'
-      - 'scripts/shell/check-file-loc.sh'
-      - 'scripts/quality/check_file_loc.py'
-      - 'config/loc-guard.json'
-      - 'scripts/shell/check-naming-explosion-*.sh'
-      - 'frontend/scripts/check-naming-explosion.sh'
+    - src/**/*.py
+    - internal/**/*.go
+    - backend/**/*.go
+    - frontend/**/*.ts
+    - '!frontend/apps/web/vitest.contract.config.ts'
+    - frontend/**/*.tsx
+    - frontend/**/*.js
+    - frontend/**/*.jsx
+    - scripts/shell/check-file-loc.sh
+    - scripts/quality/check_file_loc.py
+    - config/loc-guard.json
+    - scripts/shell/check-naming-explosion-*.sh
+    - frontend/scripts/check-naming-explosion.sh
   push:
     branches:
-      - main
+    - main
     paths:
-      - 'src/**/*.py'
-      - 'internal/**/*.go'
-      - 'backend/**/*.go'
-      - 'frontend/**/*.ts'
-      - '!frontend/apps/web/vitest.contract.config.ts'
-      - 'frontend/**/*.tsx'
-      - 'frontend/**/*.js'
-      - 'frontend/**/*.jsx'
-      - 'scripts/shell/check-file-loc.sh'
-      - 'scripts/quality/check_file_loc.py'
-      - 'config/loc-guard.json'
-      - 'scripts/shell/check-naming-explosion-*.sh'
-      - 'frontend/scripts/check-naming-explosion.sh'
-
+    - src/**/*.py
+    - internal/**/*.go
+    - backend/**/*.go
+    - frontend/**/*.ts
+    - '!frontend/apps/web/vitest.contract.config.ts'
+    - frontend/**/*.tsx
+    - frontend/**/*.js
+    - frontend/**/*.jsx
+    - scripts/shell/check-file-loc.sh
+    - scripts/quality/check_file_loc.py
+    - config/loc-guard.json
+    - scripts/shell/check-naming-explosion-*.sh
+    - frontend/scripts/check-naming-explosion.sh
 permissions:
   contents: read
-
 jobs:
   check-naming:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4@11bd71901bbe5b1630ceea73d27597364c9af683@v3
-        with:
-          fetch-depth: 0
-
-      - name: Check file length limits
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            base="${{ github.event.pull_request.base.sha }}"
-            git fetch --no-tags --depth=1 origin "$base"
-            mapfile -t files < <(
-              git diff --name-only "$base"...HEAD -- \
-                '*.py' '*.go' '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' '*.cjs'
-            )
-            if (( ${#files[@]} == 0 )); then
-              echo "No changed source files to LOC-check"
-              exit 0
-            fi
-            bash scripts/shell/check-file-loc.sh "${files[@]}"
-          else
-            bash scripts/shell/check-file-loc.sh
-          fi
-
-      - name: Check route entrypoint rules (frontend)
-        run: bash scripts/shell/check-route-entrypoints.sh
-
-      - name: Check for naming explosion patterns (Python)
-        run: bash scripts/shell/check-naming-explosion-python.sh
-
-      - name: Check for naming explosion patterns (Go)
-        run: bash scripts/shell/check-naming-explosion-go.sh
-
-      - name: Check for naming explosion patterns (Frontend)
-        run: bash frontend/scripts/check-naming-explosion.sh
+    - name: Checkout code
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with:
+        fetch-depth: 0
+    - name: Check file length limits
+      shell: bash
+      run: "set -euo pipefail\nif [[ \"${{ github.event_name }}\" == \"pull_request\"\
+        \ ]]; then\n  base=\"${{ github.event.pull_request.base.sha }}\"\n  git fetch\
+        \ --no-tags --depth=1 origin \"$base\"\n  mapfile -t files < <(\n    git diff\
+        \ --name-only \"$base\"...HEAD -- \\\n      '*.py' '*.go' '*.ts' '*.tsx' '*.js'\
+        \ '*.jsx' '*.mjs' '*.cjs'\n  )\n  if (( ${#files[@]} == 0 )); then\n    echo\
+        \ \"No changed source files to LOC-check\"\n    exit 0\n  fi\n  bash scripts/shell/check-file-loc.sh\
+        \ \"${files[@]}\"\nelse\n  bash scripts/shell/check-file-loc.sh\nfi\n"
+    - name: Check route entrypoint rules (frontend)
+      run: bash scripts/shell/check-route-entrypoints.sh
+    - name: Check for naming explosion patterns (Python)
+      run: bash scripts/shell/check-naming-explosion-python.sh
+    - name: Check for naming explosion patterns (Go)
+      run: bash scripts/shell/check-naming-explosion-go.sh
+    - name: Check for naming explosion patterns (Frontend)
+      run: bash frontend/scripts/check-naming-explosion.sh
+    timeout-minutes: 15

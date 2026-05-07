@@ -1,18 +1,17 @@
 name: Alert sync issues
-on:
+true:
   schedule:
-    - cron: '17 * * * *'
-  workflow_dispatch:
+  - cron: 17 * * * *
+  workflow_dispatch: null
 
   concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
-
 permissions:
   contents: read
-
 jobs:
   sync:
     uses: KooshaPari/phenoShared/.github/workflows/reusable/alert-sync-issues.yml@6a6e1b06026e9443449e419a2892cd0e47c19442
     with:
       auto-label: auto-alert-sync
+    timeout-minutes: 15

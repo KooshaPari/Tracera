@@ -10,9 +10,9 @@ services:
       - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql
       - ./scripts/dev-init.sql:/docker-entrypoint-initdb.d/dev-init.sql
     environment:
-      POSTGRES_DB: tracertm_dev
-      POSTGRES_USER: tracertm_dev
-      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: ${DB_NAME:-tracertm_dev}
+      POSTGRES_USER: ${DB_USER:-tracertm_dev}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
 
@@ -37,9 +37,9 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: tracertm_dev
-      DB_PASSWORD: dev_password
-      DB_NAME: tracertm_dev
+      DB_USER: ${DB_USER:-tracertm_dev}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-tracertm_dev}
       REDIS_URL: redis://redis:6379
       NATS_URL: nats://nats:4222
       PORT: 8080
@@ -59,7 +59,7 @@ services:
       dockerfile: Dockerfile
       target: builder  # Use builder stage for development
     environment:
-      DATABASE_URL: postgresql+asyncpg://tracertm_dev:dev_password@postgres:5432/tracertm_dev
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-tracertm_dev}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-tracertm_dev}
       REDIS_URL: redis://redis:6379
       NATS_URL: nats://nats:4222
       LOG_LEVEL: DEBUG
@@ -78,7 +78,7 @@ services:
 
   # Development tools
   adminer:
-    image: adminer:latest
+    image: adminer:4.8.1
     container_name: tracertm-adminer
     environment:
       ADMINER_DEFAULT_SERVER: postgres
@@ -88,7 +88,7 @@ services:
       - tracertm-network
 
   redis-commander:
-    image: rediscommander/redis-commander:latest
+    image: rediscommander/redis-commander:0.8.0
     container_name: tracertm-redis-commander
     environment:
       REDIS_HOSTS: local:redis:6379
