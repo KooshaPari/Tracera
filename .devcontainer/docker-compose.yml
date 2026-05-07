@@ -137,7 +137,7 @@ services:
     image: prom/prometheus@sha256:60f8194a41d3229b9e70684965ebdaa8f5a265f042d9de3d2079ba2ce677ec78
     container_name: tracertm-prometheus-dev
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     volumes:
       - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
@@ -154,7 +154,7 @@ services:
     image: grafana/grafana@sha256:83c197f05ad57b51f5186ca902f0c95fcce45810e7fe738a84cc38f481a2227a
     container_name: tracertm-grafana-dev
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}

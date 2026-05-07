@@ -41,10 +41,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Publish to PyPI
+      if: success()
       run: 'uv publish --token ${{ secrets.PYPI_TOKEN }}
 
         '
-      if: success()
     - name: Upload artifacts
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:

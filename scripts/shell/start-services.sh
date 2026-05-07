@@ -49,11 +49,11 @@ start_postgres() {
 
     # Try to start
     if command -v brew &> /dev/null; then
-        brew services start postgresql@14 2>/dev/null || \
+        brew services start postgresql@17 2>/dev/null || \
         brew services start postgresql 2>/dev/null || \
-        pg_ctl -D /usr/local/var/postgres start
+        pg_ctl -D /opt/homebrew/var/postgresql@17 start
     else
-        pg_ctl -D /usr/local/var/postgres start
+        pg_ctl -D /opt/homebrew/var/postgresql@17 start
     fi
 
     sleep 2

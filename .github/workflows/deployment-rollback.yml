@@ -26,6 +26,7 @@ on:
     cancel-in-progress: true
 permissions:
   contents: read
+  actions: read
   deployments: write
   issues: write
 jobs:
@@ -94,17 +95,16 @@ jobs:
     - validate-rollback
     - health-check-pre-rollback
     environment:
-      name: ${{ github.event.inputs.environment || github.event.client_payload.environment
-        }}
+      name: ${{ github.event.inputs.environment || github.event.client_payload.environment || 'production' }}
     steps:
     - name: Checkout target version
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       with:
         ref: ${{ needs.validate-rollback.outputs.target_version }}
     - name: Configure deployment
-      run: 'echo "🔧 Configuring rollback deployment..."
+      run: 'echo "Configuring rollback deployment..."
 
-        ENVIRONMENT="${{ github.event.inputs.environment }}"
+        ENVIRONMENT="${{ github.event.inputs.environment || github.event.client_payload.environment || 'production' }}"
 
         TARGET_VERSION="${{ needs.validate-rollback.outputs.target_version }}"
 
@@ -173,8 +173,7 @@ jobs:
     - validate-rollback
     - rollback-backend
     environment:
-      name: ${{ github.event.inputs.environment || github.event.client_payload.environment
-        }}
+      name: ${{ github.event.inputs.environment || github.event.client_payload.environment || 'production' }}
     steps:
     - name: Checkout target version
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
