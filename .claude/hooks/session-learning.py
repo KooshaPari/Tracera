@@ -9,6 +9,7 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
+import re
 from typing import Any
 
 
@@ -65,7 +66,9 @@ def format_retrospective(learnings: Any, topic: Any) -> None:
 
 def update_memory_files(retro: Any, timestamp: Any, topic: Any) -> None:
     """Update memory files with learnings."""
-    memory_dir = Path.home() / ".claude" / "projects" / "-Users-kooshapari-temp-PRODVERCEL-485-kush-trace" / "memory"
+    memory_dir = # TASK #201: Use relative project path (scoped to active repo)
+    repo_name = Path.cwd().name
+    memory_dir = Path.cwd() / ".claude" / "memory"
 
     # Save full retrospective
     retro_file = memory_dir / f"retrospectives/{topic}-{timestamp}.md"
@@ -90,7 +93,11 @@ def main() -> None:
         session_data = json.load(sys.stdin)
 
         # Detect topic from session
+        # TASK #216: Sanitize topic name - remove special chars that break filesystem
+        # TASK #216: Sanitize topic name - remove special chars that break filesystem
         topic = session_data.get("topic", "general")
+        topic = re.sub(r"[^a-zA-Z0-9_\-]", "_", topic)
+        topic = re.sub(r"[^a-zA-Z0-9_\-]", "_", topic)
 
         # Extract learnings
         learnings = extract_learnings(session_data)

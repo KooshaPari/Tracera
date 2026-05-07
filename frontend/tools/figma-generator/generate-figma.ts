@@ -132,10 +132,12 @@ export class FigmaGenerator {
       try {
         const componentDefs = await this.parser.parseFile(file);
         definitions.push(...componentDefs);
-      } catch (error) {}
-    }
-
-    return definitions;
+      } catch (error) {
+        // TASK #194: Print Figma parse errors instead of silently swallowing
+        const parseErr = error instanceof Error ? error.message : String(error);
+        console.error(`[TASK #194] Figma parse error in ${file}: ${parseErr}`);
+        throw error;  // Make failures fatal
+      }
   }
 
   /**
