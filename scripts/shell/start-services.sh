@@ -290,7 +290,7 @@ start_go_backend() {
     # Check if air is installed
     if ! command -v air &> /dev/null; then
         print_warning "air not found. Installing..."
-        go install github.com/cosmtrek/air@latest
+        go install github.com/air-verse/air@latest
     fi
 
     air
@@ -309,18 +309,14 @@ start_python_backend() {
 
     # Check if virtual environment exists
     if [ ! -d ".venv" ]; then
-        print_warning "Virtual environment not found. Creating..."
-        python3 -m venv .venv
-        source .venv/bin/activate
-        pip install -e ".[dev]"
-    else
-        source .venv/bin/activate
+        print_warning "Virtual environment not found. Creating with uv..."
+        uv sync
     fi
 
     print_info "Starting with uvicorn (hot reload)..."
     print_warning "Press Ctrl+C to stop"
 
-    uvicorn tracertm.api.main:app --reload --host 0.0.0.0 --port 8000
+    uv run uvicorn tracertm.api.main:app --reload --host 0.0.0.0 --port 8000
 }
 
 start_frontend() {

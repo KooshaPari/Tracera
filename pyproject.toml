@@ -34,16 +34,11 @@ classifiers = [
     "Operating System :: OS Independent",
     "Topic :: Office/Business",
 ]
-<<<<<<< HEAD
-urls = { homepage = "https://github.com/Phenotype/Tracera", repository = "https://github.com/Phenotype/Tracera", documentation = "https://github.com/Phenotype/Tracera#readme", changelog = "https://github.com/Phenotype/Tracera/blob/main/CHANGELOG.md" }
-=======
 
 [project.urls]
 Repository = "https://github.com/KooshaPari/Tracera"
 Documentation = "https://github.com/KooshaPari/Tracera/blob/main/README.md"
 Changelog = "https://github.com/KooshaPari/Tracera/blob/main/CHANGELOG.md"
-
->>>>>>> ci/concurrency-workflows
 dependencies = [
     "typer>=0.21.1",
     "rich>=14.3.1",
