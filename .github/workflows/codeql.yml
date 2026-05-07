@@ -1,16 +1,18 @@
 name: CodeQL
-
-on:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+true:
   push:
-    branches: [main]
+    branches:
+    - main
   pull_request:
-    branches: [main]
+    branches:
+    - main
   schedule:
-    - cron: '17 4 * * 1'
-
+  - cron: 17 4 * * 1
 permissions:
   contents: read
-
 jobs:
   analyze:
     uses: KooshaPari/phenoShared/.github/workflows/reusable/codeql.yml@30358ce629168f0e1ec3699706cb73d1f77cb751
@@ -20,4 +22,5 @@ jobs:
       security-events: write
     with:
       languages: '["actions"]'
-      build-mode: 'none'
+      build-mode: none
+    timeout-minutes: 45
