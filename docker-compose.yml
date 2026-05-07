@@ -1,7 +1,7 @@
 services:
   # Nginx API Gateway
   nginx:
-    image: nginx:alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+    image: nginx:alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
     container_name: tracertm-nginx
     ports:
       - "127.0.0.1:80:80"
@@ -221,7 +221,7 @@ services:
 
   # Grafana Dashboards
   grafana:
-    image: grafana/grafana:11.1.0
+    image: grafana/grafana:11.1.0@sha256:079600c9517b678c10cda6006b4487d3174512fd4c6cface37df7822756ed7a5
     container_name: tracertm-grafana
     ports:
       - "3000:3000"
