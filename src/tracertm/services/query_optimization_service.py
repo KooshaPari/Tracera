@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
@@ -37,6 +38,11 @@ class QueryOptimizationService:
         self.query_cache: dict[str, Any] = {}
         self.query_stats: list[dict[str, Any]] = []
 
+    @staticmethod
+    def _query_cache_key(project_id: str, query_filters: dict[str, Any]) -> str:
+        """Stable cache key for analyze_query_performance deduplication."""
+        return f"{project_id}:{json.dumps(query_filters, sort_keys=True, default=str)}"
+
     async def analyze_query_performance(
         self,
         project_id: str,
@@ -44,12 +50,15 @@ class QueryOptimizationService:
     ) -> dict[str, Any]:
         """Analyze query performance."""
         start_time = datetime.now(UTC)
-
-        # Execute query
-        items = await self.items.query(project_id, query_filters)
-
-        end_time = datetime.now(UTC)
-        execution_time = (end_time - start_time).total_seconds()
+        cache_key = self._query_cache_key(project_id, query_filters)
+        cached_items = self.get_cached_query(cache_key)
+        if cached_items is not None:
+            items = cached_items
+            execution_time = 0.0
+        else:
+            items = await self.items.query(project_id, query_filters)
+            self.cache_query(cache_key, items)
+            execution_time = (datetime.now(UTC) - start_time).total_seconds()
 
         # Record stats
         stats = {
