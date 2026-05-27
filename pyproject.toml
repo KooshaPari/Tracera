@@ -109,6 +109,7 @@ dev = [
     "pip-audit>=2.7.4",
     "vulture>=2.14",
     "radon>=6.0.1",
+    "pycln>=2.6.0",
 ]
 tui = [
     "textual>=0.47.0",
@@ -119,6 +120,7 @@ lint = [
     "bandit[toml]>=1.7.10",
     "pip-audit>=2.7.4",
     "import-linter>=2.4.1",
+    "pycln>=2.6.0",
 ]
 test = [
     "pytest>=9.0.2",
@@ -1781,4 +1783,5 @@ dev = [
     "vulture>=2.14",
     "radon>=6.0.1",
     "interrogate>=1.7.0",
+    "pycln>=2.6.0",
 ]
