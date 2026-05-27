@@ -97,7 +97,7 @@ async def _maybe_await(value: object) -> object:
 
 
 @asynccontextmanager
-async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def _lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """Startup then yield then shutdown (replaces deprecated on_event)."""
     # Startup - now using extracted module to reduce complexity
     await startup_initialization(app)

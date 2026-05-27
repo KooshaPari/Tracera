@@ -184,7 +184,7 @@ class DatabaseManager:
             self.metrics.record_query(str(statement), duration_ms, parameters if isinstance(parameters, dict) else None)
 
     @asynccontextmanager
-    async def session(self) -> AsyncGenerator[AsyncSession, None]:
+    async def session(self) -> AsyncGenerator[AsyncSession]:
         """Get a database session from the pool.
 
         Usage:

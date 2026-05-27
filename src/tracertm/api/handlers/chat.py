@@ -1,13 +1,14 @@
 """Compatibility exports for chat handlers."""
-from typing import Any, Dict, Optional
+from typing import Any
+
 from fastapi import Request
 
 
 async def simple_chat(
     request: Request,
     message: str,
-    context: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    context: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Simple chat handler for compatibility."""
     return {
         "response": f"Echo: {message}",
@@ -18,7 +19,7 @@ async def simple_chat(
 async def stream_chat(
     request: Request,
     message: str,
-    context: Optional[Dict[str, Any]] = None,
+    context: dict[str, Any] | None = None,
 ):
     """Stream chat handler for compatibility."""
     yield f"Echo: {message}"

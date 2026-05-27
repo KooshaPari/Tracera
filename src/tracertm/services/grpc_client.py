@@ -133,7 +133,7 @@ class GoBackendClient:
         await self.close()
 
     @asynccontextmanager
-    async def _retry_context(self, operation_name: str) -> AsyncGenerator[None, None]:
+    async def _retry_context(self, operation_name: str) -> AsyncGenerator[None]:
         """Context manager for retry logic with exponential backoff.
 
         Args:

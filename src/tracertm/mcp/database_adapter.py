@@ -115,7 +115,7 @@ def _convert_to_async_url(database_url: str) -> str:
 
 
 @asynccontextmanager
-async def get_mcp_session() -> AsyncGenerator[AsyncSession, None]:
+async def get_mcp_session() -> AsyncGenerator[AsyncSession]:
     """Get an async database session with RLS context for MCP tools.
 
     This session:
