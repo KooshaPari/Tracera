@@ -421,7 +421,7 @@ export default defineConfig({
     warmup: {
       clientFiles: [
         './src/routes/__root.tsx',
-        './src/routes/index.tsx',
+        './src/routes/landing.tsx',
         './src/routes/projects.tsx',
         './src/components/layout/Layout.tsx',
         './src/lib/lazy-loading.tsx',
