@@ -13,7 +13,7 @@ describe('traceMatrixExport', () => {
   });
 
   it('requests analysis trace-matrix export endpoint', async () => {
-    vi.mocked(fetch).mockResolvedValue({
+    (fetch as Mock).mockResolvedValue({
       ok: true,
       text: async () => '"Source","Col"\n"Row","link"',
     } as Response);
