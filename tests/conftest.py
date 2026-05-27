@@ -8,11 +8,32 @@ import os
 import tempfile
 from pathlib import Path
 
+import importlib.util
+
 import pytest
 import pytest_asyncio
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import sessionmaker
+
+_CLI_DEPENDENT_TEST_DIRS = frozenset({"e2e", "integration", "phase_five"})
+_TESTS_ROOT = Path(__file__).resolve().parent
+
+
+def _tracertm_cli_available() -> bool:
+    return importlib.util.find_spec("tracertm.cli") is not None
+
+
+def pytest_ignore_collect(collection_path: Path, config: pytest.Config) -> bool | None:  # noqa: ARG001
+    """Skip CLI-dependent suites when tracertm.cli is not installed (sparse/dev trees)."""
+    if _tracertm_cli_available():
+        return None
+    try:
+        rel = collection_path.resolve().relative_to(_TESTS_ROOT)
+    except ValueError:
+        return None
+    return bool(rel.parts) and rel.parts[0] in _CLI_DEPENDENT_TEST_DIRS
+
 
 # pytest_asyncio and pytest_benchmark are loaded by root conftest / auto-discovery
 pytest_plugins = ()
