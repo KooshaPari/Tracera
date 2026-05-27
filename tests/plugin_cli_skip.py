@@ -13,7 +13,7 @@ def _tracertm_cli_available() -> bool:
     return importlib.util.find_spec("tracertm.cli") is not None
 
 
-def pytest_ignore_collect(collection_path: Path, config) -> bool | None:  # noqa: ANN001
+def pytest_ignore_collect(collection_path: Path, config) -> bool | None:
     if _tracertm_cli_available():
         return None
     try:

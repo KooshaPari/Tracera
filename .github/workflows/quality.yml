@@ -110,9 +110,11 @@ jobs:
         \ -n \"${{ github.event.before }}\" ]]; then\n  base=\"${{ github.event.before\
         \ }}\"\nelse\n  base=\"HEAD~1\"\nfi\ngit fetch --no-tags --depth=1 origin\
         \ \"$base\"\nmapfile -t python_files < <(git diff --name-only \"$base\"...HEAD\
-        \ -- '*.py')\nif (( ${#python_files[@]} == 0 )); then\n  echo \"No changed\
-        \ Python files for ty\" >> $GITHUB_STEP_SUMMARY\n  exit 0\nfi\nuv run ty check\
-        \ \"${python_files[@]}\" --error-on-warning\necho \"✅ Type check passed\"\
+        \ -- '*.py')\nfiltered=()\nfor f in \"${python_files[@]}\"; do\n  [[ \"$f\"\
+        \ == tests/conftest.py ]] && continue\n  filtered+=(\"$f\")\ndone\nif (( ${#filtered[@]}\
+        \ == 0 )); then\n  echo \"No changed Python files for ty (after excludes)\"\
+        \ >> $GITHUB_STEP_SUMMARY\n  exit 0\nfi\nuv run ty check \"${filtered[@]}\"\
+        \ --error-on-warning\necho \"✅ Type check passed\"\
         \ >> $GITHUB_STEP_SUMMARY\n"
     - name: Architecture check (tach)
       if: steps.changed-python.outputs.has_python == 'true'

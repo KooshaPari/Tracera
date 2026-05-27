@@ -40,11 +40,9 @@ os.environ.setdefault("TRACERTM_MCP_METRICS_HOST", "127.0.0.1")
 os.environ.setdefault("TRACERTM_MCP_PERF_MONITORING", "true")
 os.environ.setdefault("TRACERTM_MCP_ENHANCED_ERRORS", "true")
 os.environ.setdefault("TRACERTM_MCP_RATE_LIMIT_ENABLED", "true")
-
 try:
     from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
 except ImportError:
-    # Router module not available in test environment
     ArchRouter = None
     ToolRegistry = None
     TOOL_REGISTRY = None
