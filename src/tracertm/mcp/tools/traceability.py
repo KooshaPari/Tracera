@@ -114,6 +114,47 @@ async def get_trace_matrix(
         )
 
 
+@mcp.tool(description="Export traceability matrix as CSV")
+async def export_trace_matrix_csv(
+    source_view: str | None = None,
+    target_view: str | None = None,
+    ctx: object | None = None,
+) -> dict[str, object]:
+    """Generate and export a traceability matrix as CSV text.
+
+    Args:
+        source_view: Optional filter for source items' view
+        target_view: Optional filter for target items' view
+
+    Returns:
+        CSV payload plus row/column counts for agents and tooling
+    """
+    project_id = require_project()
+
+    async with get_async_session() as session:
+        service = TraceabilityMatrixService(session)
+        matrix = await service.generate_matrix(
+            project_id=project_id,
+            source_view=source_view.upper() if source_view else None,
+            target_view=target_view.upper() if target_view else None,
+        )
+        csv_text = await service.export_matrix_csv(matrix)
+
+        return wrap_success(  # type: ignore[return-value]
+            {
+                "source_view": source_view,
+                "target_view": target_view,
+                "csv": csv_text,
+                "row_count": len(matrix.rows),
+                "column_count": len(matrix.columns),
+                "coverage_percent": round(matrix.coverage, 2),
+                "total_links": matrix.total_links,
+            },
+            "export_trace_matrix_csv",
+            ctx,
+        )
+
+
 @mcp.tool(description="Analyze downstream impact of an item")
 async def analyze_impact(
     item_id: str,
@@ -288,6 +329,7 @@ def project_health(
 __all__ = [
     "analyze_impact",
     "analyze_reverse_impact",
+    "export_trace_matrix_csv",
     "find_gaps",
     "get_trace_matrix",
     "project_health",
