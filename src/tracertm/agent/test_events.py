@@ -70,7 +70,9 @@ def publisher(mock_nats: MockNATSClient) -> AgentEventPublisher:
 
 
 @pytest.mark.asyncio
-async def test_publish_session_created(publisher: AgentEventPublisher, mock_nats: MockNATSClient) -> None:
+async def test_publish_session_created(
+    publisher: AgentEventPublisher, mock_nats: MockNATSClient
+) -> None:
     """Test session created event publishing."""
     await publisher.publish_session_created(
         session_id="sess-123",
@@ -94,7 +96,9 @@ async def test_publish_session_created(publisher: AgentEventPublisher, mock_nats
 
 
 @pytest.mark.asyncio
-async def test_publish_session_checkpoint(publisher: AgentEventPublisher, mock_nats: MockNATSClient) -> None:
+async def test_publish_session_checkpoint(
+    publisher: AgentEventPublisher, mock_nats: MockNATSClient
+) -> None:
     """Test session checkpoint event publishing."""
     payload = SessionCheckpointPayload(
         checkpoint_id="ckpt-789",
@@ -120,7 +124,9 @@ async def test_publish_session_checkpoint(publisher: AgentEventPublisher, mock_n
 
 
 @pytest.mark.asyncio
-async def test_publish_session_destroyed(publisher: AgentEventPublisher, mock_nats: MockNATSClient) -> None:
+async def test_publish_session_destroyed(
+    publisher: AgentEventPublisher, mock_nats: MockNATSClient
+) -> None:
     """Test session destroyed event publishing."""
     await publisher.publish_session_destroyed(
         session_id="sess-123",
@@ -137,7 +143,9 @@ async def test_publish_session_destroyed(publisher: AgentEventPublisher, mock_na
 
 
 @pytest.mark.asyncio
-async def test_publish_session_status_changed(publisher: AgentEventPublisher, mock_nats: MockNATSClient) -> None:
+async def test_publish_session_status_changed(
+    publisher: AgentEventPublisher, mock_nats: MockNATSClient
+) -> None:
     """Test session status change event publishing."""
     await publisher.publish_session_status_changed(
         session_id="sess-123",
@@ -158,7 +166,9 @@ async def test_publish_session_status_changed(publisher: AgentEventPublisher, mo
 
 
 @pytest.mark.asyncio
-async def test_publish_chat_message(publisher: AgentEventPublisher, mock_nats: MockNATSClient) -> None:
+async def test_publish_chat_message(
+    publisher: AgentEventPublisher, mock_nats: MockNATSClient
+) -> None:
     """Test chat message event publishing."""
     long_content = "A" * TEST_CONTENT_LENGTH
     payload = ChatMessagePayload(
@@ -186,7 +196,9 @@ async def test_publish_chat_message(publisher: AgentEventPublisher, mock_nats: M
 
 
 @pytest.mark.asyncio
-async def test_publish_chat_tool_use(publisher: AgentEventPublisher, mock_nats: MockNATSClient) -> None:
+async def test_publish_chat_tool_use(
+    publisher: AgentEventPublisher, mock_nats: MockNATSClient
+) -> None:
     """Test tool use event publishing."""
     payload = ChatToolUsePayload(
         tool_name="read_file",
@@ -211,7 +223,9 @@ async def test_publish_chat_tool_use(publisher: AgentEventPublisher, mock_nats: 
 
 
 @pytest.mark.asyncio
-async def test_publish_chat_error(publisher: AgentEventPublisher, mock_nats: MockNATSClient) -> None:
+async def test_publish_chat_error(
+    publisher: AgentEventPublisher, mock_nats: MockNATSClient
+) -> None:
     """Test chat error event publishing."""
     await publisher.publish_chat_error(
         session_id="sess-123",
@@ -231,7 +245,9 @@ async def test_publish_chat_error(publisher: AgentEventPublisher, mock_nats: Moc
 
 
 @pytest.mark.asyncio
-async def test_publish_snapshot_created(publisher: AgentEventPublisher, mock_nats: MockNATSClient) -> None:
+async def test_publish_snapshot_created(
+    publisher: AgentEventPublisher, mock_nats: MockNATSClient
+) -> None:
     """Test snapshot created event publishing."""
     payload = SnapshotCreatedPayload(
         snapshot_id="snap-789",
@@ -257,7 +273,9 @@ async def test_publish_snapshot_created(publisher: AgentEventPublisher, mock_nat
 
 
 @pytest.mark.asyncio
-async def test_publish_snapshot_restored(publisher: AgentEventPublisher, mock_nats: MockNATSClient) -> None:
+async def test_publish_snapshot_restored(
+    publisher: AgentEventPublisher, mock_nats: MockNATSClient
+) -> None:
     """Test snapshot restored event publishing."""
     await publisher.publish_snapshot_restored(
         session_id="sess-123",
@@ -276,7 +294,9 @@ async def test_publish_snapshot_restored(publisher: AgentEventPublisher, mock_na
 
 
 @pytest.mark.asyncio
-async def test_event_payload_structure(publisher: AgentEventPublisher, mock_nats: MockNATSClient) -> None:
+async def test_event_payload_structure(
+    publisher: AgentEventPublisher, mock_nats: MockNATSClient
+) -> None:
     """Test that all events follow standard payload structure."""
     await publisher.publish_session_created(
         session_id="sess-123",
@@ -334,7 +354,7 @@ async def test_publisher_disabled_when_no_nats() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.usefixtures("_mock_nats")
+@pytest.mark.usefixtures("mock_nats")
 async def test_health_check(publisher: AgentEventPublisher) -> None:
     """Test event publisher health check."""
     health = await publisher.health_check()

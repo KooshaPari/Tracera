@@ -19,6 +19,10 @@ from sqlalchemy.ext.asyncio import (
 )
 
 pytest_plugins = ["pytest_asyncio"]
+collect_ignore = [
+    "src/tracertm/mcp/test_monitoring.py",
+    "src/tracertm/mcp/tools/params/query_test.py",
+]
 
 # Disable problematic Pydantic plugins during tests
 os.environ.setdefault("PYDANTIC_DISABLE_PLUGINS", "logfire-plugin")
