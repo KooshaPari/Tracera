@@ -2,7 +2,7 @@ name: Naming Explosion Guard
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-true:
+on:
   pull_request:
     paths:
     - src/**/*.py

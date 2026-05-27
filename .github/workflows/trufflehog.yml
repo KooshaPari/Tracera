@@ -1,5 +1,5 @@
 name: Trufflehog Secrets Scan
-true:
+on:
   push:
     branches:
     - main

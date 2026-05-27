@@ -2,7 +2,7 @@ name: Contracts & SDKs
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-true:
+on:
   pull_request:
     branches:
     - main
