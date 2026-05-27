@@ -53,14 +53,14 @@ repos:
       - id: check-yaml
         pass_filenames: true
       - id: check-added-large-files
-        args: ['--maxkb=1000']
+        args: ["--maxkb=1000"]
         pass_filenames: true
       - id: check-merge-conflict
         pass_filenames: true
       - id: debug-statements
         pass_filenames: true
       - id: mixed-line-ending
-        args: ['--fix=lf']
+        args: ["--fix=lf"]
         pass_filenames: true
 
   # Unused imports and variables (fast cleanup)
@@ -295,8 +295,7 @@ exclude: |
 
 # Performance optimizations
 default_stages: [pre-commit]
-fail_fast: true  # Stop on first error for faster feedback
+fail_fast: true # Stop on first error for faster feedback
 minimum_pre_commit_version: 2.15.0
-
 # Parallel execution (enabled by default in pre-commit v3.0+)
 # This will run independent hooks in parallel automatically

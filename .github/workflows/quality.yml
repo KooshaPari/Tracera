@@ -121,7 +121,7 @@ jobs:
         '
     - name: Security scan (Bandit - high severity)
       if: steps.changed-python.outputs.has_python == 'true'
-      run: 'uv run bandit -r src/ -l high -i high --format json --output /tmp/quality-bandit-results.json
+      run: 'uv run bandit -r src/ --severity-level high --confidence-level high --format json --output /tmp/quality-bandit-results.json
         || true
 
         BANDIT_HIGH=$(jq ''[.results // []] | length'' /tmp/quality-bandit-results.json
@@ -129,7 +129,7 @@ jobs:
 
         echo "Bandit high-severity issues: $BANDIT_HIGH" >> $GITHUB_STEP_SUMMARY
 
-        uv run bandit -r src/ -l high -i high
+        uv run bandit -r src/ --severity-level high --confidence-level high
 
         '
     - name: Install Semgrep (binary; project does not depend on semgrep package)
