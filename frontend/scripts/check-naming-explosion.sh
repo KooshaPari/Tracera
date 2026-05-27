@@ -13,4 +13,7 @@ NC='\033[0m' # No Color
 
 echo "🔍 Checking for naming explosion patterns..."
 
-python3 scripts/quality/check_naming_explosion.py --lang frontend --root .
+FRONTEND_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(cd "$FRONTEND_ROOT/.." && pwd)"
+
+python3 "$REPO_ROOT/scripts/quality/check_naming_explosion.py" --lang frontend --root "$FRONTEND_ROOT"
